@@ -1,0 +1,25 @@
+{
+  "name": "hazelcast-nodejs-client",
+  "version": "0.0.1",
+  "description": "Hazelcast - open source In-Memory Data Grid - client for NodeJS",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hazelcast-incubator/hazelcast-nodejs-client.git"
+  },
+  "keywords": [
+    "hazelcast",
+    "nodejs",
+    "data",
+    "grid"
+  ],
+  "author": "Dmytro Kulaiev",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/hazelcast-incubator/hazelcast-nodejs-client/issues"
+  },
+  "homepage": "https://github.com/hazelcast-incubator/hazelcast-nodejs-client#readme"
+}
