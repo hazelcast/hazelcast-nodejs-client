@@ -2,9 +2,13 @@
   "name": "hazelcast-nodejs-client",
   "version": "0.0.1",
   "description": "Hazelcast - open source In-Memory Data Grid - client for NodeJS",
-  "main": "index.js",
-  "scripts": {
-    "test": "test"
+  "dependencies": {
+    "long": "3.0.1",
+    "q": "1.4.1"
+  },
+  "devDependencies": {
+    "chai": "3.4.1",
+    "mocha": "2.3.4"
   },
   "repository": {
     "type": "git",
@@ -13,6 +17,8 @@
   "keywords": [
     "hazelcast",
     "nodejs",
+    "node",
+    "client",
     "data",
     "grid"
   ],
