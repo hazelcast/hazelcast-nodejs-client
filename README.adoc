@@ -6,7 +6,7 @@ Node.js Client for Hazelcast, using Hazelcast Open Client Protocol 1.0 for Hazel
 
 WARNING: This project currently in active development. 
 
-https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge[image:https://badges.gitter.im/Join%20Chat.svg[Join the chat at https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client]] NodeJS
+https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge[image:https://badges.gitter.im/Join%20Chat.svg[Join the chat at https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client]]
 
 == Installation
 
@@ -16,9 +16,9 @@ npm install
 
 == Test
 
----
+----
 npm test
----
+----
 
 == Implemented Features
 
@@ -30,7 +30,7 @@ npm test
 ----
 HazelcastClient.create({
             "username": "dev",
-            "password": "dev",
+            "password": "dev-pass",
             "port": 5701,
             "host": "localhost"
         }).then(function (client) {
