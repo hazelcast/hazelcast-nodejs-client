@@ -14,6 +14,12 @@ https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&u
 npm install
 ----
 
+== Test
+
+---
+npm test
+---
+
 == Implemented Features
 
 * AtomicLong

@@ -12,6 +12,9 @@
     "chai": "3.4.1",
     "mocha": "2.3.4"
   },
+  "scripts" : {
+    "test" : "mocha"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hazelcast-incubator/hazelcast-nodejs-client.git"
