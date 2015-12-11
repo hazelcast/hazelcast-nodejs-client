@@ -9,7 +9,7 @@ describe("Atomic Long", function() {
     before(function() {
         return HazelcastClient.create({
             "username": "dev",
-            "password": "dev",
+            "password": "dev-pass",
             "port": 5701,
             "host": "localhost"
         }).then(function (client) {
