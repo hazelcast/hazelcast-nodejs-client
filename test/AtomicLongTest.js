@@ -3,7 +3,6 @@ var HazelcastClient = require("../lib/client")
 
 
 describe("Atomic Long", function() {
-
     var atomicLong;
 
     before(function() {
