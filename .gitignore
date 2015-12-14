@@ -2,4 +2,18 @@ target/*
 .idea/*
 node_modules/*
 *.iml
+
+### Java ###
+*.class
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
 coverage/*
+hs_err_pid*
+
