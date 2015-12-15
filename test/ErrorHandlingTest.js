@@ -1,5 +1,6 @@
 var expect = require("chai").expect;
 var HazelcastClient = require("../lib/client");
+var connectionProperties = require("./TestProperties").connectionProperties;
 
 var toBuffer = function (value, serializerId) {
     var valueLength = value.length;
@@ -14,12 +15,7 @@ describe("Map", function () {
     var map;
 
     before(function () {
-        return HazelcastClient.create({
-            "username": "dev",
-            "password": "dev",
-            "port": 5701,
-            "host": "localhost"
-        }).then(function (client) {
+        return HazelcastClient.create(connectionProperties).then(function (client) {
             map = client.getMap("objects");
         });
     });
