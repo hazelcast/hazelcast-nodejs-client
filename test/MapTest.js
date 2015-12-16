@@ -1,5 +1,6 @@
 var expect = require("chai").expect;
-var HazelcastClient = require("../lib/client")
+var HazelcastClient = require("../lib/client");
+var connectionProperties = require("./TestProperties").connectionProperties;
 
 
 describe("Map", function() {
@@ -9,12 +10,7 @@ describe("Map", function() {
     var testValue = {"value": "bar"};
 
     before(function() {
-        return HazelcastClient.create({
-            "username": "dev",
-            "password": "dev",
-            "port": 5701,
-            "host": "localhost"
-        }).then(function (client) {
+        return HazelcastClient.create(connectionProperties).then(function (client) {
             map = client.getMap("map");
         });
     });
