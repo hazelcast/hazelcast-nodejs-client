@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "description": "Hazelcast - open source In-Memory Data Grid - client for NodeJS",
   "main": "index.js",
+  "files": [
+    "lib"
+  ],
   "dependencies": {
     "long": "3.0.1",
     "q": "1.4.1",
@@ -10,10 +13,21 @@
   },
   "devDependencies": {
     "chai": "3.4.1",
+    "gulp": "^3.9.0",
+    "gulp-eslint": "^1.0.0",
+    "gulp-exclude-gitignore": "^1.0.0",
+    "gulp-exec": "^2.1.2",
+    "gulp-istanbul": "^0.9.0",
+    "gulp-jshint": "^2.0.0",
+    "gulp-mocha": "^2.0.0",
+    "gulp-nsp": "^2.1.0",
+    "gulp-plumber": "^1.0.0",
+    "jshint": "^2.8.0",
+    "jshint-stylish": "^2.1.0",
     "mocha": "2.3.4"
   },
-  "scripts" : {
-    "test" : "mocha"
+  "scripts": {
+    "test": "gulp"
   },
   "repository": {
     "type": "git",
