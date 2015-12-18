@@ -20,14 +20,6 @@ gulp.task('pre-test', function () {
         .pipe(istanbul.hookRequire());
 });
 
-/*gulp.task('startHazelcast', function (cb) {
-    exec('java -showversion -cp "$PWD/hazelcast-all-3.6-EA2.jar:" com.hazelcast.core.server.StartServer', function (err, stdout, stderr) {
-        console.log(stdout);
-        console.log(stderr);
-        //cb(err);
-    });
-});*/
-
 gulp.task('test', ['pre-test'], function (cb) {
     var mochaErr;
 
