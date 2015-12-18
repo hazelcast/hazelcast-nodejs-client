@@ -16,6 +16,23 @@ npm install
 
 == Test
 
+=== Test prerequisites
+
+* Java 6+
+* Hazelcast jars
++
+
+----
+curl -OL https://jcenter.bintray.com/com/hazelcast/hazelcast-all/3.6-EA2/hazelcast-all-3.6-EA2.jar
+----
+* Running Hazelcast members
+
++
+----
+java -showversion -cp "$PWD/hazelcast-all-3.6-EA2.jar:" com.hazelcast.core.server.StartServer
+----
+
+
 ----
 npm test
 ----
