@@ -8,8 +8,14 @@ WARNING: This project currently in active development.
 
 https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge[image:https://badges.gitter.im/Join%20Chat.svg[Join the chat at https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client]]
 
-== Installation
+== Development
 
+.Install global tools
+----
+npm install gulp typescript -g
+----
+
+.Install dependencies
 ----
 npm install
 ----
