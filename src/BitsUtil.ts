@@ -1,0 +1,31 @@
+class BitsUtil {
+    static BYTE_SIZE_IN_BYTES = 1;
+    static BOOLEAN_SIZE_IN_BYTES = 1;
+    static SHORT_SIZE_IN_BYTES = 2;
+    static CHAR_SIZE_IN_BYTES = 2;
+    static INT_SIZE_IN_BYTES = 4;
+    static FLOAT_SIZE_IN_BYTES = 4;
+    static LONG_SIZE_IN_BYTES = 8;
+    static DOUBLE_SIZE_IN_BYTES = 8;
+
+    static BIG_ENDIAN = 2;
+    static LITTLE_ENDIAN = 1;
+
+    static VERSION = 1;
+    static BEGIN_FLAG = 0x80;
+    static END_FLAG = 0x40;
+    static BEGIN_END_FLAG = BitsUtil.BEGIN_FLAG | BitsUtil.END_FLAG;
+    static LISTENER_FLAG = 0x01;
+
+    static PAYLOAD_OFFSET = 18;
+    static SIZE_OFFSET = 0;
+
+    static FRAME_LENGTH_FIELD_OFFSET = 0;
+    static VERSION_FIELD_OFFSET = BitsUtil.FRAME_LENGTH_FIELD_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+    static FLAGS_FIELD_OFFSET = BitsUtil.VERSION_FIELD_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
+    static TYPE_FIELD_OFFSET = BitsUtil.FLAGS_FIELD_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
+    static CORRELATION_ID_FIELD_OFFSET = BitsUtil.TYPE_FIELD_OFFSET + BitsUtil.SHORT_SIZE_IN_BYTES;
+    static PARTITION_ID_FIELD_OFFSET = BitsUtil.CORRELATION_ID_FIELD_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
+    static DATA_OFFSET_FIELD_OFFSET = BitsUtil.PARTITION_ID_FIELD_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+    static HEADER_SIZE = BitsUtil.DATA_OFFSET_FIELD_OFFSET + BitsUtil.SHORT_SIZE_IN_BYTES;
+}
