@@ -18,3 +18,8 @@ hs_err_pid*
 typings/
 npm-debug.log
 
+**/typings/**/*.d.ts
+**/typings/tsd.cached.json
+
+# TypeScript
+*.js.map

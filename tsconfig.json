@@ -11,5 +11,12 @@
   "filesGlob": [
     "src/**/*.ts"
   ],
-  "files": []
+  "files": [
+      "src/BitsUtil.ts",
+      "src/ClientMessage.ts",
+      "typings/node/node.d.ts"
+  ],
+  "exclude": [
+        "node_modules"
+    ]
 }
