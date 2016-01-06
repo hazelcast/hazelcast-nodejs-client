@@ -13,7 +13,8 @@
   ],
   "files": [
     "src/BitsUtil.ts",
-    "src/ClientMessage.ts"
+    "src/ClientMessage.ts",
+    "src/Config.ts"
   ],
   "exclude": [
     "node_modules"
