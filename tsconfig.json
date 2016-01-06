@@ -12,11 +12,10 @@
     "src/**/*.ts"
   ],
   "files": [
-      "src/BitsUtil.ts",
-      "src/ClientMessage.ts",
-      "typings/node/node.d.ts"
+    "src/BitsUtil.ts",
+    "src/ClientMessage.ts"
   ],
   "exclude": [
-        "node_modules"
-    ]
+    "node_modules"
+  ]
 }
