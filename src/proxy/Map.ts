@@ -7,6 +7,11 @@ export class MapProxy<K, V> extends BaseProxy implements MapInterface<K, V> {
         return Q.defer<boolean>().promise;
     }
 
+    containsValue(value: V) : Q.Promise<boolean> {
+        //TODO
+        return Q.defer<boolean>().promise;
+    }
+
     put(key: K, value: V) : Q.Promise<V> {
         //TODO
         return Q.defer<V>().promise;

@@ -11,14 +11,25 @@ export interface MapInterface<K, V> {
     containsKey(key: K) : Promise<boolean>;
 
     /**
+     * This method return true if this map has key(s) associated with given value
+     * @throws {Error} if value is undefined or null
+     * @param value
+     * @return a promise to be resolved to true if the map has key or keys associated with given value.
+     */
+    containsValue(value: V) : Promise<boolean>;
+
+    /**
      * Associates the specified value with the specified key.
      * If key was associated with another value, it replaces the old value.
+     * If specified, value is evicted after ttl seconds.
      * @param key
      * @param value
-     * @throws {Error} if specified key or value is undefined or null
+     * @param ttl Time to live in seconds. 0 means infinite.
+     * If ttl is not an integer, it is rounded up to the nearest integer value.
+     * @throws {Error} if specified key or value is undefined or null or ttl is negative.
      * @return a promise to be resolved to the old value if there was any, undefined otherwise.
      */
-    put(key: K, value: V) : Promise<V>;
+    put(key: K, value: V, ttl?: number) : Promise<V>;
 
     /**
      * Retrieves the value associated with given key.
@@ -29,12 +40,15 @@ export interface MapInterface<K, V> {
     get(key: K) : Promise<V>;
 
     /**
-     * Removes specified key from map
+     * Removes specified key from map. If optional value is specified, the key is removed only if currently mapped to
+     * given value.
+     * Note that serialized version of value is used in comparison.
      * @param key
+     * @param value
      * @throws {Error} if key is undefined or null
      * @return a promise to be resolved to the value associated with key, undefined if the key did not exist before.
      */
-    remove(key: K) : Promise<V>;
+    remove(key: K, value? : V) : Promise<V>;
 
     /**
      * Retrieves the number of elements in map
