@@ -1,11 +1,6 @@
-export class SerializationService {
-    toData(object: any) : Buffer {
-        var jsonObject : string = JSON.stringify(object);
-        var buffer : Buffer = new Buffer(jsonObject);
-        return buffer;
-    }
+import {Data} from './Data';
+export interface SerializationService {
+    toData(object: any) : Data;
 
-    toObject(buffer : Buffer) : any {
-        return JSON.parse(buffer.toString());
-    }
+    toObject(data : Data) : any;
 }

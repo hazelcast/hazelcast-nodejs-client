@@ -1,4 +1,5 @@
 import {SerializationService} from '../serialization/SerializationService';
+import {Data} from '../serialization/Data';
 export class BaseProxy {
 
     protected client : any;
@@ -12,11 +13,11 @@ export class BaseProxy {
         this.serviceName = serviceName;
     }
 
-    protected toData(object : any) : Buffer {
+    protected toData(object : any) : Data {
         return this.client.serializationService.toData(object);
     }
 
-    protected toObject(buffer : Buffer) : any {
-        return this.client.serializationService.toObject(buffer);
+    protected toObject(data : Data) : any {
+        return this.client.serializationService.toObject(data);
     }
 }

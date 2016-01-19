@@ -18,6 +18,7 @@
     "src/MapInterface.ts",
     "src/proxy/BaseProxy.ts",
     "src/proxy/Map.ts",
+    "src/serialization/Data.ts",
     "src/serialization/SerializationService.ts"
   ],
   "exclude": [
