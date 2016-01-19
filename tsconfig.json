@@ -14,7 +14,12 @@
   "files": [
     "src/BitsUtil.ts",
     "src/ClientMessage.ts",
-    "src/Config.ts"
+    "src/Config.ts",
+    "src/MapInterface.ts",
+    "src/proxy/BaseProxy.ts",
+    "src/proxy/Map.ts",
+    "src/serialization/Data.ts",
+    "src/serialization/SerializationService.ts"
   ],
   "exclude": [
     "node_modules"
