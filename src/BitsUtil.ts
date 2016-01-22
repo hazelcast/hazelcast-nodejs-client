@@ -18,7 +18,6 @@ export class BitsUtil {
     static BEGIN_END_FLAG : number = BitsUtil.BEGIN_FLAG | BitsUtil.END_FLAG;
     static LISTENER_FLAG : number = 0x01;
 
-    static PAYLOAD_OFFSET : number = 18;
     static SIZE_OFFSET : number = 0;
 
     static FRAME_LENGTH_FIELD_OFFSET : number = 0;
@@ -28,5 +27,6 @@ export class BitsUtil {
     static CORRELATION_ID_FIELD_OFFSET : number = BitsUtil.TYPE_FIELD_OFFSET + BitsUtil.SHORT_SIZE_IN_BYTES;
     static PARTITION_ID_FIELD_OFFSET : number = BitsUtil.CORRELATION_ID_FIELD_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
     static DATA_OFFSET_FIELD_OFFSET : number = BitsUtil.PARTITION_ID_FIELD_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+
     static HEADER_SIZE : number = BitsUtil.DATA_OFFSET_FIELD_OFFSET + BitsUtil.SHORT_SIZE_IN_BYTES;
 }

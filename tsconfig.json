@@ -1,27 +1,17 @@
 {
-  "compilerOptions": {
-    "declaration": true,
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "noImplicitAny": true,
-    "outDir": "./lib",
-    "preserveConstEnums": true,
-    "removeComments": true
-  },
-  "filesGlob": [
-    "src/**/*.ts"
-  ],
-  "files": [
-    "src/BitsUtil.ts",
-    "src/ClientMessage.ts",
-    "src/Config.ts",
-    "src/MapInterface.ts",
-    "src/proxy/BaseProxy.ts",
-    "src/proxy/Map.ts",
-    "src/serialization/Data.ts",
-    "src/serialization/SerializationService.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+    "compilerOptions": {
+        "declaration": true,
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "noImplicitAny": true,
+        "outDir": "./lib",
+        "preserveConstEnums": true,
+        "removeComments": true
+    },
+    "filesGlob": [
+        "src/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
 }
