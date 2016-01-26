@@ -1,13 +1,13 @@
 import {BaseProxy} from '../../lib/proxy/BaseProxy';
-import {SetInterface} from '../SetInterface';
+import {ISet} from '../ISet';
 import Q = require('q');
-export class Set<E> extends BaseProxy implements SetInterface<E> {
+export class Set<E> extends BaseProxy implements ISet<E> {
     add(entry : E) : Q.Promise<boolean> {
         //TODO
         return Q.defer<boolean>().promise;
     }
 
-    addAll(collection : any) : Q.Promise<boolean> {
+    addAll(items : E[]) : Q.Promise<boolean> {
         //TODO
         return Q.defer<boolean>().promise;
     }
@@ -22,7 +22,7 @@ export class Set<E> extends BaseProxy implements SetInterface<E> {
         return Q.defer<boolean>().promise;
     }
 
-    containsAll(collection : any) :  Q.Promise<boolean> {
+    containsAll(items : E[]) :  Q.Promise<boolean> {
         //TODO
         return Q.defer<boolean>().promise;
     }
@@ -37,12 +37,12 @@ export class Set<E> extends BaseProxy implements SetInterface<E> {
         return Q.defer<boolean>().promise;
     }
 
-    removeAll(collection : any) : Q.Promise<boolean> {
+    removeAll(items : E[]) : Q.Promise<boolean> {
         //TODO
         return Q.defer<boolean>().promise;
     }
 
-    retainAll(collection : any) : Q.Promise<boolean> {
+    retainAll(items : E[]) : Q.Promise<boolean> {
         //TODO
         return Q.defer<boolean>().promise;
     }

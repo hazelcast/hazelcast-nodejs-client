@@ -1,6 +1,7 @@
 ///<reference path="../typings/q/Q.d.ts" />
 import Promise = Q.Promise;
-export interface MapInterface<K, V> {
+import {DistributedObject} from './DistributedObject';
+export interface IMap<K, V> extends DistributedObject {
 
     /**
      * This method checks whether the map has an item asssociated with key
