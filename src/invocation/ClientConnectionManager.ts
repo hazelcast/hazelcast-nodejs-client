@@ -6,7 +6,7 @@ import ClientConnection = require('./ClientConnection');
 import OwnerConnectionPicker = require('./OwnerConnectionPicker');
 import InvocationService = require('./InvocationService');
 
-import {GroupConfig} from '../Config';
+import {GroupConfig, ClientNetworkConfig} from '../Config';
 
 import ConnectionAuthenticator = require('./ConnectionAuthenticator');
 
@@ -19,10 +19,10 @@ class ClientConnectionManager {
 
     private ready = Q.defer<ClientConnectionManager>();
 
-    constructor(addresses: Address[], groupConfig: GroupConfig, invocationService: InvocationService) {
+    constructor(config: ClientNetworkConfig, groupConfig: GroupConfig, invocationService: InvocationService) {
         this.groupConfig = groupConfig;
         this.invocationService = invocationService;
-        this.ownerConnectionPicker = new OwnerConnectionPicker(addresses);
+        this.ownerConnectionPicker = new OwnerConnectionPicker(config.addresses);
     }
 
     public start(): Q.Promise<ClientConnectionManager> {

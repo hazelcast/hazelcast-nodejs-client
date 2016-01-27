@@ -1,3 +1,4 @@
+import Address = require('./Address');
 const DEFAULT_GROUP_NAME = 'dev';
 const DEFAULT_GROUP_PASSWORD = 'dev-pass';
 
@@ -11,7 +12,7 @@ export class SocketOptions {
 }
 
 export class ClientNetworkConfig {
-    addresses: string[];
+    addresses: Address[];
     connectionAttemptLimit: number = 2;
     connectionAttemptPeriod: number = 3000;
     connectionTimeout: number = 5000;
