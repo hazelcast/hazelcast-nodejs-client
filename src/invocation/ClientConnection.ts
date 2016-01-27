@@ -1,16 +1,16 @@
-import net = require("net");
-import Q = require("q")
-import Address = require("../Address")
+import net = require('net');
+import Q = require('q');
+import Address = require('../Address');
 
 class ClientConnection {
-    private address:Address;
-    private socket:net.Socket;
+    private address: Address;
+    private socket: net.Socket;
 
-    constructor(address:Address) {
+    constructor(address: Address) {
         this.address = address;
     }
 
-    connect():Q.Promise<ClientConnection> {
+    connect(): Q.Promise<ClientConnection> {
         var ready = Q.defer<ClientConnection>();
 
         this.socket = net.connect(this.address.port, this.address.host, () => {
@@ -18,25 +18,25 @@ class ClientConnection {
 
             // Send the protocol version
             var buffer = new Buffer(3);
-            buffer.write("CB2");
+            buffer.write('CB2');
             this.socket.write(buffer);
             ready.resolve(this);
         });
 
-        this.socket.on("error", (e: any) => {
-            console.log("Couldn't connect to address " + this.address);
+        this.socket.on('error', (e: any) => {
+            console.log('Could not connect to address ' + this.address);
             ready.reject(e);
         });
 
         return ready.promise;
     }
 
-    write (buffer: Buffer) {
+    write(buffer: Buffer) {
         this.socket.write(buffer);
     }
 
-    registerReadCallback(callback:Function) {
-        this.socket.on("data", callback);
+    registerReadCallback(callback: Function) {
+        this.socket.on('data', callback);
     }
 }
 

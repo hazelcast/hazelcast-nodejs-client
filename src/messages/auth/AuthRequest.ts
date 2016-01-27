@@ -1,16 +1,16 @@
 class AuthRequest {
 
-    public group:string;
-    public password:string;
-    public ownerConnection:boolean;
-    public uuid:string;
-    public ownerUuid:string;
-    public clientType:string;
-    public serializationVersion:number;
+    public group: string;
+    public password: string;
+    public ownerConnection: boolean;
+    public uuid: string;
+    public ownerUuid: string;
+    public clientType: string;
+    public serializationVersion: number;
 
-    constructor(group:string, password:string, ownerConnection:boolean,
-                uuid:string, ownerUuid:string,
-                clientType:string, serializationVersion:number) {
+    constructor(group: string, password: string, ownerConnection: boolean,
+                uuid: string, ownerUuid: string,
+                clientType: string, serializationVersion: number) {
         this.group = group;
         this.password = password;
         this.ownerConnection = ownerConnection;

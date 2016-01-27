@@ -1,5 +1,5 @@
 export class SizeUtil {
-    public static getStringSize(value:string, nullable:boolean = false):number {
+    public static getStringSize(value: string, nullable: boolean = false): number {
         // int32 for string length
         var size = 4;
 

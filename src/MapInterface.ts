@@ -48,7 +48,7 @@ export interface MapInterface<K, V> {
      * @throws {Error} if key is undefined or null
      * @return a promise to be resolved to the value associated with key, undefined if the key did not exist before.
      */
-    remove(key: K, value? : V) : Promise<V>;
+    remove(key: K, value?: V) : Promise<V>;
 
     /**
      * Retrieves the number of elements in map

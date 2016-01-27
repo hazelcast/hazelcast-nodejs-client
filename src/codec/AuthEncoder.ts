@@ -1,9 +1,9 @@
-import ClientMessage = require("../ClientMessage");
-import AuthRequest = require("../messages/auth/AuthRequest");
-import {SizeUtil} from "./Utils"
+import ClientMessage = require('../ClientMessage');
+import AuthRequest = require('../messages/auth/AuthRequest');
+import {SizeUtil} from './Utils';
 
 class AuthEncoder {
-    public static encodeRequest(request:AuthRequest):ClientMessage {
+    public static encodeRequest(request: AuthRequest): ClientMessage {
         var clientMessage = ClientMessage.newClientMessage(this.calculateSize(request));
         clientMessage.setMessageType(0x02);
         clientMessage.appendString(request.group);
@@ -30,7 +30,7 @@ class AuthEncoder {
         return clientMessage;
     }
 
-    private static calculateSize(request:AuthRequest):number {
+    private static calculateSize(request: AuthRequest): number {
         var size = 0;
 
         size += SizeUtil.getStringSize(request.group);
