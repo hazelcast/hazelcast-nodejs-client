@@ -49,12 +49,13 @@ class ClientMessage {
         return this.buffer;
     }
 
-    getCorrelationId(): number {
-        return this.buffer.readUInt32LE(BitsUtil.CORRELATION_ID_FIELD_OFFSET);
+    getCorrelationId(): Long {
+        var offset = BitsUtil.CORRELATION_ID_FIELD_OFFSET;
+        return this.readLongInternal(offset);
     }
 
-    setCorrelationId(value: number) {
-        this.buffer.writeUInt32LE(value, BitsUtil.CORRELATION_ID_FIELD_OFFSET);
+    setCorrelationId(value: Long) {
+        this.writeLongInternal(value, BitsUtil.CORRELATION_ID_FIELD_OFFSET)
     }
 
     getPartitionId(): number {
@@ -124,13 +125,19 @@ class ClientMessage {
         this.cursor += BitsUtil.BYTE_SIZE_IN_BYTES;
     }
 
-    appendLong(value: any) {
+
+    private writeLongInternal(value: any, offset: number) {
         if (!Long.isLong(value)) {
             value = Long.fromValue(value);
         }
 
-        this.buffer.writeInt32LE(value.low, this.cursor);
-        this.buffer.writeInt32LE(value.high, this.cursor + 4);
+        this.buffer.writeInt32LE(value.low, offset);
+        this.buffer.writeInt32LE(value.high, offset + 4);
+    }
+
+
+    appendLong(value: any) {
+        this.writeLongInternal(value, this.cursor);
         this.cursor += BitsUtil.LONG_SIZE_IN_BYTES;
     }
 
@@ -180,11 +187,15 @@ class ClientMessage {
     }
 
     readLong(): Long {
-        var low = this.buffer.readInt32LE(this.cursor);
-        var high = this.buffer.readInt32LE(this.cursor + 4);
-        var value = new Long(low, high);
+        var value = this.readLongInternal(this.cursor);
         this.cursor += BitsUtil.LONG_SIZE_IN_BYTES;
         return value;
+    }
+
+    private readLongInternal(offset: number) {
+        var low = this.buffer.readInt32LE(offset);
+        var high = this.buffer.readInt32LE(offset + 4);
+        return new Long(low, high);
     }
 
     readString(): string {

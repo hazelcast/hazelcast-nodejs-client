@@ -1,6 +1,7 @@
 import ClientConnection = require('./ClientConnection');
 import ClientMessage = require('../ClientMessage');
 import Q = require('q');
+import Long = require('long');
 
 class InvocationService {
 
@@ -9,7 +10,7 @@ class InvocationService {
 
     public invokeOnConnection(connection: ClientConnection, clientMessage: ClientMessage): Q.Promise<ClientMessage> {
         var correlationId = this.correlationCounter++;
-        clientMessage.setCorrelationId(correlationId);
+        clientMessage.setCorrelationId(Long.fromNumber(correlationId));
         connection.write(clientMessage.getBuffer());
         var deferred = Q.defer<ClientMessage>();
         this.pending[correlationId] = deferred;
@@ -18,7 +19,7 @@ class InvocationService {
 
     public processResponse(buffer: Buffer) {
         var clientMessage = new ClientMessage(buffer);
-        var correlationId = clientMessage.getCorrelationId();
+        var correlationId = clientMessage.getCorrelationId().toNumber();
         this.pending[correlationId].resolve(clientMessage);
     }
 }
