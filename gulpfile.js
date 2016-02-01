@@ -59,7 +59,7 @@ gulp.task('tslint', 'Lints all TypeScript source files', function () {
 });
 
 //run tslint task, then run _tsconfig_files and _gen_tsrefs in parallel, then run _build
-gulp.task('tsBuild', 'Compiles all TypeScript source files and updates module references', gulpSequence('tslint', ['tsconfig_files', 'gen_tsrefs'], '_build'));
+gulp.task('tsBuild', 'Compiles all TypeScript source files and updates module references', gulpSequence('tslint', ['gen_tsrefs'], '_build'));
 
 
 gulp.task('nsp', function (cb) {
