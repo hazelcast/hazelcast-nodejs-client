@@ -55,7 +55,7 @@ class ClientMessage {
     }
 
     setCorrelationId(value: Long) {
-        this.writeLongInternal(value, BitsUtil.CORRELATION_ID_FIELD_OFFSET)
+        this.writeLongInternal(value, BitsUtil.CORRELATION_ID_FIELD_OFFSET);
     }
 
     getPartitionId(): number {
