@@ -1,24 +1,24 @@
 import {SerializationService} from '../serialization/SerializationService';
 import {Data} from '../serialization/Data';
+import HazelcastClient = require('../HazelcastClient');
 export class BaseProxy {
 
-    protected client: any;
+    protected client: HazelcastClient;
     private name: string;
     private serviceName: string;
 
-    //TODO client should be of type {real client type}
-    constructor(client: { serializationService : SerializationService}, serviceName: string, name: string) {
+    constructor(client: HazelcastClient, serviceName: string, name: string) {
         this.client = client;
         this.name = name;
         this.serviceName = serviceName;
     }
 
     protected toData(object: any): Data {
-        return this.client.serializationService.toData(object);
+        return this.client.getSerializationService().toData(object);
     }
 
     protected toObject(data: Data): any {
-        return this.client.serializationService.toObject(data);
+        return this.client.getSerializationService().toObject(data);
     }
 
     public getPartitionKey() : string {

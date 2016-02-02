@@ -2,7 +2,7 @@ var expect = require("chai").expect;
 var HazelcastClient = require("../lib/client")
 
 
-describe("Map", function() {
+describe.skip("Map", function() {
     var map;
 
     var testKey = "foo";

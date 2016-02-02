@@ -14,7 +14,7 @@ class ClientConnection {
         var ready = Q.defer<ClientConnection>();
 
         this.socket = net.connect(this.address.port, this.address.host, () => {
-            console.log('Connection established');
+            console.log('Connection established to ' + this.address );
 
             // Send the protocol version
             var buffer = new Buffer(3);

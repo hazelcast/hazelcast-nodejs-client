@@ -10,7 +10,7 @@ var toBuffer = function (value, serializerId) {
     return buffer;
 };
 
-describe("Map", function () {
+describe.skip("Map", function () {
     var map;
 
     before(function () {

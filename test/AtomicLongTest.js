@@ -2,7 +2,7 @@ var expect = require("chai").expect;
 var HazelcastClient = require("../lib/client")
 
 
-describe("Atomic Long", function() {
+describe.skip("Atomic Long", function() {
     var atomicLong;
 
     before(function() {
