@@ -1,8 +1,8 @@
 import {BaseProxy} from './BaseProxy';
-import {MapInterface} from '../MapInterface';
+import {IMap} from '../IMap';
 import Q = require('q');
-export class MapProxy<K, V> extends BaseProxy implements MapInterface<K, V> {
-    containsKey(key: K): Q.Promise<boolean> {
+export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
+    containsKey(key: K) : Q.Promise<boolean> {
         //TODO
         return Q.defer<boolean>().promise;
     }
