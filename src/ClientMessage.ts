@@ -149,7 +149,7 @@ class ClientMessage {
         this.cursor += length;
     }
 
-    appendByteArray(buffer: Buffer) {
+    appendBuffer(buffer: Buffer) {
         var length = buffer.length;
         this.appendInt32(length);
         buffer.copy(this.buffer, this.cursor);
@@ -206,7 +206,7 @@ class ClientMessage {
         return value;
     }
 
-    readByteArray(): Buffer {
+    readBuffer(): Buffer {
         var size = this.buffer.readUInt32LE(this.cursor);
         this.cursor += BitsUtil.INT_SIZE_IN_BYTES;
         var result = new Buffer(size);
@@ -214,7 +214,6 @@ class ClientMessage {
         this.cursor += size;
         return result;
     }
-
 }
 
 export = ClientMessage
