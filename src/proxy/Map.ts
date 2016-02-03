@@ -1,8 +1,12 @@
 import {BaseProxy} from './BaseProxy';
 import {IMap} from '../IMap';
 import Q = require('q');
-export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
-    containsKey(key: K) : Q.Promise<boolean> {
+import {Data} from '../serialization/Data';
+import {MapPutCodec} from '../codec/MapPutCodec';
+import ClientMessage = require('../ClientMessage');
+import murmur = require('../invocation/Murmur');
+export class Map<K, V> extends BaseProxy implements IMap<K, V> {
+    containsKey(key: K): Q.Promise<boolean> {
         //TODO
         return Q.defer<boolean>().promise;
     }
@@ -13,8 +17,16 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     put(key: K, value: V): Q.Promise<V> {
-        //TODO
-        return Q.defer<V>().promise;
+        var deferred: Q.Deferred<V> = Q.defer<V>();
+        var keyData: Data = this.toData(key);
+        var valueData: Data = this.toData(value);
+        var that = this;
+        this.invokeWithPartitionId(MapPutCodec.encodeRequest(this.name, keyData, valueData, 0, 0), key)
+            .then(function(clientMessage: ClientMessage) {
+                var parameters: any = MapPutCodec.decodeResponse(clientMessage);
+                deferred.resolve(that.toObject(parameters.response));
+            });
+        return deferred.promise;
     }
 
     get(key: K): Q.Promise<V> {

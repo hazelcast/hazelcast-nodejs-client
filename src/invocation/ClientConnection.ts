@@ -3,11 +3,15 @@ import Q = require('q');
 import Address = require('../Address');
 
 class ClientConnection {
-    private address: Address;
-    private socket: net.Socket;
+    public address: Address;
+    public socket: net.Socket;
 
     constructor(address: Address) {
         this.address = address;
+    }
+
+    public getAddress(): Address {
+        return this.address;
     }
 
     connect(): Q.Promise<ClientConnection> {

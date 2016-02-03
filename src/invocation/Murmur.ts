@@ -1,7 +1,8 @@
+/* tslint:disable */
 var seed = 0x01000193;
 
-function murmurhash3_32_gc(key) {
-    var remainder, bytes, h1, h1b, c1, c2, k1, i;
+function murmurhash3_32_gc(key: any) {
+    var remainder: any, bytes: any, h1: any, h1b: any, c1: any, c2: any, k1: any, i: any;
 
     remainder = key.length & 3; // key.length % 4
     bytes = key.length - remainder;
@@ -58,4 +59,4 @@ function murmurhash3_32_gc(key) {
     return result | 0;
 }
 
-module.exports = murmurhash3_32_gc;
+export = murmurhash3_32_gc;

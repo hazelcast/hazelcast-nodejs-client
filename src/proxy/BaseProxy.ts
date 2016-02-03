@@ -1,16 +1,23 @@
 import {SerializationService} from '../serialization/SerializationService';
 import {Data} from '../serialization/Data';
 import HazelcastClient = require('../HazelcastClient');
+import ClientMessage = require('../ClientMessage');
 export class BaseProxy {
 
     protected client: HazelcastClient;
-    private name: string;
-    private serviceName: string;
+    protected name: string;
+    protected serviceName: string;
 
     constructor(client: HazelcastClient, serviceName: string, name: string) {
         this.client = client;
         this.name = name;
         this.serviceName = serviceName;
+    }
+
+    protected invokeWithPartitionId(clientMessage: ClientMessage, key: any): Q.Promise<ClientMessage> {
+        var partitionId: number = Math.abs(this.client.getSerializationService().toData(key).getPartitionHash()) % 271;
+        clientMessage.setPartitionId(partitionId);
+        return this.client.getInvocationService().invokeNonSmart(clientMessage);
     }
 
     protected toData(object: any): Data {

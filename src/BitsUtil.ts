@@ -1,4 +1,5 @@
 /* tslint:disable:no-bitwise */
+import {Data} from './serialization/Data';
 export class BitsUtil {
     static BYTE_SIZE_IN_BYTES: number = 1;
     static BOOLEAN_SIZE_IN_BYTES: number = 1;
@@ -29,4 +30,8 @@ export class BitsUtil {
     static DATA_OFFSET_FIELD_OFFSET: number = BitsUtil.PARTITION_ID_FIELD_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
     static HEADER_SIZE: number = BitsUtil.DATA_OFFSET_FIELD_OFFSET + BitsUtil.SHORT_SIZE_IN_BYTES;
+
+    static calculateSizeData(data: Data) {
+        return BitsUtil.INT_SIZE_IN_BYTES + data.totalSize();
+    }
 }

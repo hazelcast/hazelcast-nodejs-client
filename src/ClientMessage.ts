@@ -22,6 +22,8 @@
 
 import Long = require('long');
 import {BitsUtil} from './BitsUtil';
+import {Data} from './serialization/Data';
+import {HeapData} from './serialization/HeapData';
 
 class ClientMessage {
 
@@ -156,12 +158,21 @@ class ClientMessage {
         this.cursor += length;
     }
 
+    appendData(data: Data) {
+        this.appendBuffer(data.toBuffer());
+    }
+
     addFlag(value: number) {
         this.buffer.writeUInt8(value | this.getFlags(), BitsUtil.FLAGS_FIELD_OFFSET);
     }
 
     updateFrameLength() {
         this.setFrameLength(this.cursor);
+    }
+
+    readData(): Data {
+        var dataPayload: Buffer = this.readBuffer();
+        return new HeapData(dataPayload);
     }
 
     readByte(): number {

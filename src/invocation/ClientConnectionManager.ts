@@ -41,6 +41,10 @@ class ClientConnectionManager {
         return this.ready.promise;
     }
 
+    public getOwnerConnection(): ClientConnection {
+        return this.ownerConnection;
+    }
+
     private authenticate() {
         var authenticator = new ConnectionAuthenticator(this.ownerConnection, this.invocationService,
             this.groupConfig.name, this.groupConfig.password);

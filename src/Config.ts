@@ -22,7 +22,7 @@ export class ClientNetworkConfig {
 
     constructor() {
         this.addresses = [
-            new Address('localhost',5701)
+            new Address('localhost', 5701)
         ];
     }
 }
