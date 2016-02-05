@@ -5,36 +5,33 @@ import {BitsUtil} from '../BitsUtil';
 import Address = require('../Address');
 import {Data} from '../serialization/Data';
 import {MapMessageType} from './MapMessageType';
+import {EntryViewCodec} from "./EntryViewCodec";
 
-var REQUEST_TYPE = MapMessageType.MAP_PUT;
-var RESPONSE_TYPE = 105;
-var RETRYABLE = false;
-
-
-export class MapPutCodec {
+var REQUEST_TYPE = MapMessageType.MAP_GETENTRYVIEW;
+var RESPONSE_TYPE = 111;
+var RETRYABLE = true;
 
 
-    static calculateSize(name:string, key:Data, value:Data, threadId:number, ttl:number) {
+export class MapGetEntryViewCodec {
+
+
+    static calculateSize(name:string, key:Data, threadId:number) {
         // Calculates the request payload size
         var dataSize:number = 0;
         dataSize += BitsUtil.calculateSizeString(name);
         dataSize += BitsUtil.calculateSizeData(key);
-        dataSize += BitsUtil.calculateSizeData(value);
-        dataSize += BitsUtil.LONG_SIZE_IN_BYTES;
         dataSize += BitsUtil.LONG_SIZE_IN_BYTES;
         return dataSize;
     }
 
-    static encodeRequest(name:string, key:Data, value:Data, threadId:number, ttl:number) {
+    static encodeRequest(name:string, key:Data, threadId:number) {
         // Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, key, value, threadId, ttl));
+        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, key, threadId));
         clientMessage.setMessageType(REQUEST_TYPE);
         clientMessage.setRetryable(RETRYABLE);
         clientMessage.appendString(name);
         clientMessage.appendData(key);
-        clientMessage.appendData(value);
         clientMessage.appendLong(threadId);
-        clientMessage.appendLong(ttl);
         clientMessage.updateFrameLength();
         return clientMessage;
     }
@@ -44,7 +41,7 @@ export class MapPutCodec {
         var parameters:any = {};
 
         if (clientMessage.readBoolean() !== true) {
-            parameters['response'] = toObjectFunction(clientMessage.readData());
+            parameters['response'] = EntryViewCodec.decode(clientMessage)
         }
         return parameters;
 

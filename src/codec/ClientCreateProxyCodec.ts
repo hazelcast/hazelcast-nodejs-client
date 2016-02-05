@@ -1,6 +1,6 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
-import {SizeUtil} from './Utils';
+import {BitsUtil} from '../BitsUtil';
 import Address = require("../Address");
 
 var REQUEST_TYPE = 0x5;
@@ -16,9 +16,9 @@ export class ClientCreateProxyCodec{
     static calculateSize(name: string, serviceName: string, target: Address){
         // Calculates the request payload size
         var dataSize = 0;
-        dataSize += SizeUtil.getStringSize(name);
-        dataSize += SizeUtil.getStringSize(serviceName);
-        dataSize += SizeUtil.getStringSize(target.host);
+        dataSize += BitsUtil.getStringSize(name);
+        dataSize += BitsUtil.getStringSize(serviceName);
+        dataSize += BitsUtil.getStringSize(target.host);
         dataSize += 4;
         return dataSize;
     }

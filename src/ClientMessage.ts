@@ -29,6 +29,7 @@ class ClientMessage {
 
     private buffer: Buffer;
     private cursor: number = BitsUtil.HEADER_SIZE;
+    private isRetryable : boolean;
 
     public static newClientMessage(payloadSize: number): ClientMessage {
         var totalSize = BitsUtil.HEADER_SIZE + payloadSize;
@@ -106,6 +107,10 @@ class ClientMessage {
 
     setDataOffset(value: number) {
         this.buffer.writeInt16LE(value, BitsUtil.DATA_OFFSET_FIELD_OFFSET);
+    }
+
+    setRetryable(value: boolean) {
+        this.isRetryable = value;
     }
 
     appendByte(value: number) {
@@ -225,6 +230,9 @@ class ClientMessage {
         this.cursor += size;
         return result;
     }
-}
 
+    readMapEntry(): any {
+        // TODO
+    }
+}
 export = ClientMessage

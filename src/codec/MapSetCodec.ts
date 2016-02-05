@@ -6,12 +6,12 @@ import Address = require('../Address');
 import {Data} from '../serialization/Data';
 import {MapMessageType} from './MapMessageType';
 
-var REQUEST_TYPE = MapMessageType.MAP_PUT;
-var RESPONSE_TYPE = 105;
+var REQUEST_TYPE = MapMessageType.MAP_SET;
+var RESPONSE_TYPE = 100;
 var RETRYABLE = false;
 
 
-export class MapPutCodec {
+export class MapSetCodec {
 
 
     static calculateSize(name:string, key:Data, value:Data, threadId:number, ttl:number) {
@@ -39,16 +39,7 @@ export class MapPutCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage:ClientMessage, toObjectFunction:(data:Data) => any = null) {
-        // Decode response from client message
-        var parameters:any = {};
-
-        if (clientMessage.readBoolean() !== true) {
-            parameters['response'] = toObjectFunction(clientMessage.readData());
-        }
-        return parameters;
-
-    }
+// Empty decodeResponse(ClientMessage), this message has no parameters to decode
 
 
 }

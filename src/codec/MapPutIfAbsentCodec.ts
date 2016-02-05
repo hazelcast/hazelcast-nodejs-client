@@ -6,12 +6,12 @@ import Address = require('../Address');
 import {Data} from '../serialization/Data';
 import {MapMessageType} from './MapMessageType';
 
-var REQUEST_TYPE = MapMessageType.MAP_PUT;
+var REQUEST_TYPE = MapMessageType.MAP_PUTIFABSENT;
 var RESPONSE_TYPE = 105;
 var RETRYABLE = false;
 
 
-export class MapPutCodec {
+export class MapPutIfAbsentCodec {
 
 
     static calculateSize(name:string, key:Data, value:Data, threadId:number, ttl:number) {
