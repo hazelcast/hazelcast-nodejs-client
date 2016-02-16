@@ -17,10 +17,10 @@ export class BaseProxy {
 
     private createPromise<T>(codec: any, promise: Q.Promise<ClientMessage>): Q.Promise<T> {
         var deferred: Q.Deferred<T> = Q.defer<T>();
-        var that = this;
+        var toObject = this.toObject.bind(this);
         promise.then(function(clientMessage: ClientMessage) {
-            var parameters: any = codec.decodeResponse(clientMessage);
-            deferred.resolve(that.toObject(parameters.response));
+            var parameters: any = codec.decodeResponse(clientMessage, toObject);
+            deferred.resolve(parameters.response);
         });
         return deferred.promise;
     }

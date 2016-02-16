@@ -32,13 +32,13 @@ export class MapPutCodec{
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage){
+    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any){
         // Decode response from client message
         var parameters: any = {};
         parameters['response'] = null;
 
         if(clientMessage.readBoolean() !== true){
-            parameters['response'] = clientMessage.readData();
+            parameters['response'] = toObjectFunction(clientMessage.readData());
         }
         return parameters;
     }
