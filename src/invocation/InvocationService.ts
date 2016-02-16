@@ -24,7 +24,8 @@ class InvocationService {
         return deferred.promise;
     }
 
-    public invokeNonSmart(clientMessage: ClientMessage): Q.Promise<ClientMessage> {
+    public invokeOnPartition(clientMessage: ClientMessage, partitionId: number): Q.Promise<ClientMessage> {
+        clientMessage.setPartitionId(partitionId);
         var connection: ClientConnection = this.client.getConnectionManager().getOwnerConnection();
         return this.invokeOnConnection(connection, clientMessage);
     }

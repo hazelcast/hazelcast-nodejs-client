@@ -6,12 +6,14 @@ import ProxyManager = require('./proxy/ProxyManager');
 import Q = require('q');
 import {IMap} from './IMap';
 import {JsonSerializationService} from './serialization/SerializationService';
+import PartitionService = require('./PartitionService');
 
 class HazelcastClient {
     private config: ClientConfig;
     private serializationService: SerializationService;
     private invocationService: InvocationService;
     private connectionManager: ClientConnectionManager;
+    private partitionService: PartitionService;
     private proxyManager: ProxyManager;
 
     public static newHazelcastClient(config?: ClientConfig): Q.Promise<HazelcastClient> {
@@ -27,6 +29,7 @@ class HazelcastClient {
         this.invocationService = new InvocationService(this);
         this.serializationService = new JsonSerializationService();
         this.proxyManager = new ProxyManager(this);
+        this.partitionService = new PartitionService(this);
         this.connectionManager = new ClientConnectionManager(this.config.networkConfig,
             this.config.groupConfig, this.invocationService);
     }
@@ -59,6 +62,10 @@ class HazelcastClient {
 
     public getConnectionManager(): ClientConnectionManager {
         return this.connectionManager;
+    }
+
+    public getPartitionService(): PartitionService {
+        return this.partitionService;
     }
 }
 export = HazelcastClient;

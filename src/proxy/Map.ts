@@ -17,16 +17,10 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     put(key: K, value: V): Q.Promise<V> {
-        var deferred: Q.Deferred<V> = Q.defer<V>();
         var keyData: Data = this.toData(key);
         var valueData: Data = this.toData(value);
         var that = this;
-        this.invokeWithPartitionId(MapPutCodec.encodeRequest(this.name, keyData, valueData, 0, 0), key)
-            .then(function(clientMessage: ClientMessage) {
-                var parameters: any = MapPutCodec.decodeResponse(clientMessage);
-                deferred.resolve(that.toObject(parameters.response));
-            });
-        return deferred.promise;
+        return this.encodeInvokeOnKey<V>(MapPutCodec, keyData, keyData, valueData, 0, 0);
     }
 
     get(key: K): Q.Promise<V> {
