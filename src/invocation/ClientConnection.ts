@@ -3,18 +3,22 @@ import Q = require('q');
 import Address = require('../Address');
 
 class ClientConnection {
-    private address: Address;
-    private socket: net.Socket;
+    public address: Address;
+    public socket: net.Socket;
 
     constructor(address: Address) {
         this.address = address;
+    }
+
+    public getAddress(): Address {
+        return this.address;
     }
 
     connect(): Q.Promise<ClientConnection> {
         var ready = Q.defer<ClientConnection>();
 
         this.socket = net.connect(this.address.port, this.address.host, () => {
-            console.log('Connection established');
+            console.log('Connection established to ' + this.address );
 
             // Send the protocol version
             var buffer = new Buffer(3);

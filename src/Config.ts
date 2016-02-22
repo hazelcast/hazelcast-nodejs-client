@@ -19,6 +19,12 @@ export class ClientNetworkConfig {
     redoOperation: boolean = false;
     smartRouting: boolean = false;
     socketOptions: SocketOptions = new SocketOptions();
+
+    constructor() {
+        this.addresses = [
+            new Address('localhost', 5701)
+        ];
+    }
 }
 
 export class SerializationConfig {

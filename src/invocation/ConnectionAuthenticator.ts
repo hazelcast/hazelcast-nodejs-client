@@ -32,6 +32,7 @@ class ConnectionAuthenticator {
             .then((msg: ClientMessage) => {
                 var authResponse = AuthDecoder.decode(msg);
                 if (authResponse.status === 0) {
+                    this.connection.address = authResponse.address;
                     deferred.resolve(true);
                 } else {
                     deferred.reject(false);

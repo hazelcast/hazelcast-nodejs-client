@@ -1,4 +1,3 @@
-///<reference path="../typings/q/Q.d.ts" />
 import Promise = Q.Promise;
 export interface DistributedObject {
     /*
