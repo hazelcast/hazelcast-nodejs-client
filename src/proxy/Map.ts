@@ -16,11 +16,11 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
         return Q.defer<boolean>().promise;
     }
 
-    put(key: K, value: V): Q.Promise<V> {
+    put(key: K, value: V, ttl: number = -1): Q.Promise<V> {
         var keyData: Data = this.toData(key);
         var valueData: Data = this.toData(value);
         var that = this;
-        return this.encodeInvokeOnKey<V>(MapPutCodec, keyData, keyData, valueData, 0, 0);
+        return this.encodeInvokeOnKey<V>(MapPutCodec, keyData, keyData, valueData, 0, ttl);
     }
 
     get(key: K): Q.Promise<V> {
@@ -28,7 +28,7 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
         return Q.defer<V>().promise;
     }
 
-    remove(key: K): Q.Promise<V> {
+    remove(key: K, value: V): Q.Promise<V> {
         //TODO
         return Q.defer<V>().promise;
     }
