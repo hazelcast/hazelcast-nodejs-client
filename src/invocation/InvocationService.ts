@@ -4,6 +4,7 @@ import Q = require('q');
 import Long = require('long');
 import HazelcastClient = require('../HazelcastClient');
 import {Data} from '../serialization/Data';
+import Address = require('../Address');
 
 class InvocationService {
 
@@ -15,7 +16,7 @@ class InvocationService {
         this.client = hazelcastClient;
     }
 
-    public invokeOnConnection(connection: ClientConnection, clientMessage: ClientMessage): Q.Promise<ClientMessage> {
+    invokeOnConnection(connection: ClientConnection, clientMessage: ClientMessage): Q.Promise<ClientMessage> {
         var correlationId = this.correlationCounter++;
         clientMessage.setCorrelationId(Long.fromNumber(correlationId));
         connection.write(clientMessage.getBuffer());
@@ -24,13 +25,16 @@ class InvocationService {
         return deferred.promise;
     }
 
-    public invokeOnPartition(clientMessage: ClientMessage, partitionId: number): Q.Promise<ClientMessage> {
+    invokeOnPartition(clientMessage: ClientMessage, partitionId: number): Q.Promise<ClientMessage> {
         clientMessage.setPartitionId(partitionId);
-        var connection: ClientConnection = this.client.getConnectionManager().getOwnerConnection();
-        return this.invokeOnConnection(connection, clientMessage);
+        var address: Address = this.client.getPartitionService().getAddressForPartition(partitionId);
+        return this.client.getConnectionManager().getOrConnect(address)
+            .then<ClientMessage>((connection: ClientConnection) => {
+                return this.invokeOnConnection(connection, clientMessage);
+            });
     }
 
-    public processResponse(buffer: Buffer) {
+    processResponse(buffer: Buffer) {
         var clientMessage = new ClientMessage(buffer);
         var correlationId = clientMessage.getCorrelationId().toNumber();
         this.pending[correlationId].resolve(clientMessage);

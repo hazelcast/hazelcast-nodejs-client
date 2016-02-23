@@ -19,7 +19,7 @@ describe("MapProxy Test", function() {
         }).then(function(returnVal) {
             expect(returnVal).to.be.equal('first-val');
         });
-    })
+    });
 });
 
 
