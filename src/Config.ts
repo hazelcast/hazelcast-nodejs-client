@@ -17,7 +17,7 @@ export class ClientNetworkConfig {
     connectionAttemptPeriod: number = 3000;
     connectionTimeout: number = 5000;
     redoOperation: boolean = false;
-    smartRouting: boolean = false;
+    smartRouting: boolean = true;
     socketOptions: SocketOptions = new SocketOptions();
 
     constructor() {
