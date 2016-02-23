@@ -34,7 +34,7 @@ class ProxyManager {
     }
 
     private createProxy(name: string, serviceName: string): Q.Promise<ClientMessage> {
-        var connection: ClientConnection = this.client.getConnectionManager().getOwnerConnection();
+        var connection: ClientConnection = this.client.getClusterService().getOwnerConnection();
         var request = ClientCreateProxyCodec.encodeRequest(name, serviceName, connection.getAddress());
 
         var createProxyPromise: Q.Promise<ClientMessage> = this.client.getInvocationService()
