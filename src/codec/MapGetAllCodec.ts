@@ -6,35 +6,35 @@ import Address = require('../Address');
 import {Data} from '../serialization/Data';
 import {MapMessageType} from './MapMessageType';
 
-var REQUEST_TYPE = MapMessageType.MAP_PUT;
-var RESPONSE_TYPE = 105;
+var REQUEST_TYPE = MapMessageType.MAP_GETALL;
+var RESPONSE_TYPE = 117;
 var RETRYABLE = false;
 
 
-export class MapPutCodec {
+export class MapGetAllCodec {
 
 
-    static calculateSize(name:string, key:Data, value:Data, threadId:number, ttl:number) {
+    static calculateSize(name:string, keys:any) {
         // Calculates the request payload size
         var dataSize:number = 0;
         dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.calculateSizeData(key);
-        dataSize += BitsUtil.calculateSizeData(value);
-        dataSize += BitsUtil.LONG_SIZE_IN_BYTES;
-        dataSize += BitsUtil.LONG_SIZE_IN_BYTES;
+        dataSize += BitsUtil.INT_SIZE_IN_BYTES;
+        for (var keysItem in keys) {
+            dataSize += BitsUtil.calculateSizeData(keysItem);
+        }
         return dataSize;
     }
 
-    static encodeRequest(name:string, key:Data, value:Data, threadId:number, ttl:number) {
+    static encodeRequest(name:string, keys:any) {
         // Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, key, value, threadId, ttl));
+        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, keys));
         clientMessage.setMessageType(REQUEST_TYPE);
         clientMessage.setRetryable(RETRYABLE);
         clientMessage.appendString(name);
-        clientMessage.appendData(key);
-        clientMessage.appendData(value);
-        clientMessage.appendLong(threadId);
-        clientMessage.appendLong(ttl);
+        clientMessage.appendInt32(keys.length);
+        for (var keysItem in keys) {
+            clientMessage.appendData(keysItem);
+        }
         clientMessage.updateFrameLength();
         return clientMessage;
     }
@@ -42,10 +42,14 @@ export class MapPutCodec {
     static decodeResponse(clientMessage:ClientMessage, toObjectFunction:(data:Data) => any = null) {
         // Decode response from client message
         var parameters:any = {};
+        var responseSize = clientMessage.readInt32();
+        var response:any = [];
+        for (var responseIndex = 0; responseIndex <= responseSize; responseIndex++) {
+            var responseItem = clientMessage.readMapEntry();
 
-        if (clientMessage.readBoolean() !== true) {
-            parameters['response'] = toObjectFunction(clientMessage.readData());
+            response.push(responseItem)
         }
+        parameters['response'] = new ImmutableLazyDataList(response, toObjectFunction);
         return parameters;
 
     }

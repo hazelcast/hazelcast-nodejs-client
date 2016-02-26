@@ -1,6 +1,25 @@
 /* tslint:disable:no-bitwise */
 import {Data} from './serialization/Data';
+import Address = require('./Address');
 export class BitsUtil {
+    static EVENT_MEMBER = 200;
+    static EVENT_MEMBERLIST = 201;
+    static EVENT_MEMBERATTRIBUTECHANGE = 202;
+    static EVENT_ENTRY = 203;
+    static EVENT_ITEM = 204;
+    static EVENT_TOPIC = 205;
+    static EVENT_PARTITIONLOST = 206;
+    static EVENT_DISTRIBUTEDOBJECT = 207;
+    static EVENT_CACHEINVALIDATION = 208;
+    static EVENT_MAPPARTITIONLOST = 209;
+    static EVENT_CACHE = 210;
+    static EVENT_CACHEBATCHINVALIDATION = 211;
+    static EVENT_QUERYCACHESINGLE = 212;
+    static EVENT_QUERYCACHEBATCH = 213;
+
+    static EVENT_CACHEPARTITIONLOST = 214;
+    static EVENT_IMAPINVALIDATION = 215;
+    static EVENT_IMAPBATCHINVALIDATION = 216;
     static BYTE_SIZE_IN_BYTES: number = 1;
     static BOOLEAN_SIZE_IN_BYTES: number = 1;
     static SHORT_SIZE_IN_BYTES: number = 2;
@@ -10,7 +29,7 @@ export class BitsUtil {
     static LONG_SIZE_IN_BYTES: number = 8;
     static DOUBLE_SIZE_IN_BYTES: number = 8;
 
-    static  BIG_ENDIAN: number = 2;
+    static BIG_ENDIAN: number = 2;
     static LITTLE_ENDIAN: number = 1;
 
     static VERSION: number = 1;
@@ -33,5 +52,32 @@ export class BitsUtil {
 
     static calculateSizeData(data: Data) {
         return BitsUtil.INT_SIZE_IN_BYTES + data.totalSize();
+    }
+    public static getStringSize(value: string, nullable: boolean = false): number {
+        // int32 for string length
+        var size = 4;
+
+        if (nullable) {
+            size += 1;
+        }
+
+        size += value == null ? 0 : value.length;
+
+        return size;
+    }
+
+    public static calculateSizeString(value: string) {
+        return this.getStringSize(value);
+    }
+
+    public static calculateSizeBuffer(value: Buffer) {
+        var size = 4;
+        size += value.length;
+        return size;
+    }
+    public static calculateSizeAddress(value: Address) {
+        var size = 4;
+        size += this.calculateSizeString(value.host);
+        return size;
     }
 }

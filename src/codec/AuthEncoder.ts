@@ -1,6 +1,6 @@
 import ClientMessage = require('../ClientMessage');
 import AuthRequest = require('../messages/auth/AuthRequest');
-import {SizeUtil} from './Utils';
+import {Utils} from './Utils';
 
 class AuthEncoder {
     public static encodeRequest(request: AuthRequest): ClientMessage {
@@ -33,18 +33,18 @@ class AuthEncoder {
     private static calculateSize(request: AuthRequest): number {
         var size = 0;
 
-        size += SizeUtil.getStringSize(request.group);
-        size += SizeUtil.getStringSize(request.password);
+        size += Utils.getStringSize(request.group);
+        size += Utils.getStringSize(request.password);
 
 
-        size += SizeUtil.getStringSize(request.uuid, true);
-        size += SizeUtil.getStringSize(request.ownerUuid, true);
+        size += Utils.getStringSize(request.uuid, true);
+        size += Utils.getStringSize(request.ownerUuid, true);
 
         // ownerConnection
         size += 1;
 
 
-        size += SizeUtil.getStringSize(request.clientType);
+        size += Utils.getStringSize(request.clientType);
         // serializationVersion
         size += 1;
 
