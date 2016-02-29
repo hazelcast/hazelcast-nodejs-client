@@ -67,5 +67,9 @@ class HazelcastClient {
     public getPartitionService(): PartitionService {
         return this.partitionService;
     }
+
+    getProxyManager(): ProxyManager {
+        return this.proxyManager;
+    }
 }
 export = HazelcastClient;

@@ -19,8 +19,12 @@ export class BaseProxy {
         var deferred: Q.Deferred<T> = Q.defer<T>();
         var toObject = this.toObject.bind(this);
         promise.then(function(clientMessage: ClientMessage) {
-            var parameters: any = codec.decodeResponse(clientMessage, toObject);
-            deferred.resolve(parameters.response);
+            if (codec.hasOwnProperty('decodeResponse')) {
+                var parameters: any = codec.decodeResponse(clientMessage, toObject);
+                deferred.resolve(parameters.response);
+            } else {
+                deferred.resolve();
+            }
         });
         return deferred.promise;
     }
@@ -28,6 +32,12 @@ export class BaseProxy {
     protected encodeInvokeOnKey<T>(codec: any, key: any, ...codecArguments: any[]): Q.Promise<T> {
         var partitionId: number = this.client.getPartitionService().getPartitionId(key);
         return this.encodeInvokeOnPartition<T>(codec, partitionId, ...codecArguments);
+    }
+
+    protected encodeInvokeOnRandomTarget<T>(codec: any, ...codecArguments: any[]): Q.Promise<T> {
+        var clientMessage = codec.encodeRequest(this.name, ...codecArguments);
+        var invocationResponse = this.client.getInvocationService().invokeOnRandomTarget(clientMessage);
+        return this.createPromise<T>(codec, invocationResponse);
     }
 
     protected encodeInvokeOnPartition<T>(codec: any, partitionId: number, ...codecArguments: any[]): Q.Promise<T> {
@@ -60,7 +70,6 @@ export class BaseProxy {
     }
 
     public destroy() : Q.Promise<void> {
-        //TODO
-        return Q.defer<void>().promise;
+        return this.client.getProxyManager().destroyProxy(this.name, this.serviceName);
     }
 }

@@ -18,7 +18,7 @@ export class JsonSerializationService implements SerializationService {
     }
 
     public toObject(data: Data): any {
-        if (data === null) {
+        if (data == null) {
             return null;
         }
         return JSON.parse(data.toBuffer().toString('utf8', 8));

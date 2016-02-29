@@ -37,7 +37,7 @@ export class MapGetCodec {
 
     static decodeResponse(clientMessage:ClientMessage, toObjectFunction:(data:Data) => any = null) {
         // Decode response from client message
-        var parameters:any = {};
+        var parameters:any = { 'response': null};
 
         if (clientMessage.readBoolean() !== true) {
             parameters['response'] = toObjectFunction(clientMessage.readData());
