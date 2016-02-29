@@ -29,9 +29,9 @@ class ClientConnectionManager {
         this.ownerConnectionPicker.pick().then((connection) => {
             this.ownerConnection = connection;
 
-            this.ownerConnection.registerReadCallback((data: Buffer) => {
-                this.invocationService.processResponse(data);
-            });
+            this.ownerConnection.registerResponseCallback(
+                this.invocationService.processResponse.bind(this.invocationService)
+            );
 
             this.authenticate();
         }).catch((e) => {

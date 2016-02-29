@@ -1,13 +1,16 @@
 import net = require('net');
 import Q = require('q');
 import Address = require('../Address');
+import {BitsUtil} from '../BitsUtil';
 
 class ClientConnection {
     public address: Address;
     public socket: net.Socket;
+    private readBuffer: Buffer;
 
     constructor(address: Address) {
         this.address = address;
+        this.readBuffer = new Buffer(0);
     }
 
     public getAddress(): Address {
@@ -39,8 +42,20 @@ class ClientConnection {
         this.socket.write(buffer);
     }
 
-    registerReadCallback(callback: Function) {
-        this.socket.on('data', callback);
+    registerResponseCallback(callback: Function) {
+        this.socket.on('data', (buffer: Buffer) => {
+            this.readBuffer = Buffer.concat([this.readBuffer, buffer], this.readBuffer.length + buffer.length);
+            while (this.readBuffer.length >= BitsUtil.INT_SIZE_IN_BYTES ) {
+                var frameSize = this.readBuffer.readInt32LE(0);
+                if (frameSize > this.readBuffer.length) {
+                    return;
+                }
+                var message: Buffer = new Buffer(frameSize);
+                this.readBuffer.copy(message, 0, 0, frameSize);
+                this.readBuffer = this.readBuffer.slice(frameSize);
+                callback(message);
+            }
+        });
     }
 }
 
