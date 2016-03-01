@@ -30,6 +30,11 @@ class InvocationService {
         return this.invokeOnConnection(connection, clientMessage);
     }
 
+    invokeOnRandomTarget(clientMessage: ClientMessage): Q.Promise<ClientMessage> {
+        var connection = this.client.getConnectionManager().getOwnerConnection();
+        return this.invokeOnConnection(connection, clientMessage);
+    }
+
     public processResponse(buffer: Buffer) {
         var clientMessage = new ClientMessage(buffer);
         var correlationId = clientMessage.getCorrelationId().toNumber();

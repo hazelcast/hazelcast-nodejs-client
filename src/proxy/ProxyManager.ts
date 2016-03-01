@@ -6,6 +6,8 @@ import {BaseProxy} from './BaseProxy';
 import {ClientCreateProxyCodec} from '../codec/ClientCreateProxyCodec';
 import ClientConnection = require('../invocation/ClientConnection');
 import ClientMessage = require('../ClientMessage');
+import {ClientDestroyProxyCodec} from '../codec/ClientDestroyProxyCodec';
+import defer = Q.defer;
 
 class ProxyManager {
     public MAP_SERVICE: string = 'hz:impl:mapService';
@@ -43,6 +45,17 @@ class ProxyManager {
             ClientCreateProxyCodec.decodeResponse(clientMessage);
         });
         return createProxyPromise;
+    }
+
+    destroyProxy(name: string, serviceName: string): Q.Promise<void> {
+        var deferred = Q.defer<void>();
+        delete this.proxies[name];
+        var clientMessage = ClientDestroyProxyCodec.encodeRequest(name, serviceName);
+        clientMessage.setPartitionId(-1);
+        this.client.getInvocationService().invokeOnRandomTarget(clientMessage).then(function() {
+            deferred.resolve();
+        });
+        return deferred.promise;
     }
 }
 export = ProxyManager;

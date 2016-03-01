@@ -62,4 +62,9 @@ export interface IMap<K, V> extends DistributedObject {
      * @return
      */
     clear() : Promise<void>;
+
+    /**
+     * Returns whether this map is empty or not
+     */
+    isEmpty() : Promise<boolean>;
 }
