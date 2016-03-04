@@ -57,6 +57,7 @@ class InvocationService {
         var clientMessage = new ClientMessage(buffer);
         var correlationId = clientMessage.getCorrelationId().toNumber();
         this.pending[correlationId].resolve(clientMessage);
+        delete this.pending[correlationId];
     }
 }
 
