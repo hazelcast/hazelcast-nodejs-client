@@ -1,5 +1,6 @@
 var expect = require("chai").expect;
 var HazelcastClient = require("../lib/HazelcastClient");
+var Q = require("q");
 
 
 describe("MapProxy Test", function() {
@@ -15,10 +16,14 @@ describe("MapProxy Test", function() {
     });
 
     beforeEach(function(done) {
-        for(i=0; i<100; i++) {
-            map.put('key'+i, 'val'+i);
+        var promises = [];
+        for (var i = 0; i < 100; i++) {
+            var promise = map.put('key' + i, 'val' + i);
+            promises.push(promise);
         }
-        done();
+        Q.all(promises).then(function () {
+            done();
+        });
     });
 
     after(function() {
