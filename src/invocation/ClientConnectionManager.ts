@@ -3,58 +3,78 @@ import Q = require('q');
 import Address = require('../Address');
 import ClientConnection = require('./ClientConnection');
 
-import OwnerConnectionPicker = require('./OwnerConnectionPicker');
 import InvocationService = require('./InvocationService');
 
 import {GroupConfig, ClientNetworkConfig} from '../Config';
 
 import ConnectionAuthenticator = require('./ConnectionAuthenticator');
+import HazelcastClient = require('../HazelcastClient');
 
 class ClientConnectionManager {
 
-    private groupConfig: GroupConfig;
-    private ownerConnection: ClientConnection;
-    private ownerConnectionPicker: OwnerConnectionPicker;
-    private invocationService: InvocationService;
+    private client: HazelcastClient;
 
-    private ready = Q.defer<ClientConnectionManager>();
+    private pendingConnections: {[address: string]: Q.Deferred<ClientConnection>} = {};
+    private establishedConnections: {[address: string]: ClientConnection} = {};
 
-    constructor(config: ClientNetworkConfig, groupConfig: GroupConfig, invocationService: InvocationService) {
-        this.groupConfig = groupConfig;
-        this.invocationService = invocationService;
-        this.ownerConnectionPicker = new OwnerConnectionPicker(config.addresses);
+    constructor(client: HazelcastClient) {
+        this.client = client;
     }
 
-    public start(): Q.Promise<ClientConnectionManager> {
-        this.ownerConnectionPicker.pick().then((connection) => {
-            this.ownerConnection = connection;
+    public getOrConnect(address: Address): Q.Promise<ClientConnection> {
+        var addressIndex = address.toString();
+        var result: Q.Deferred<ClientConnection> = Q.defer<ClientConnection>();
 
-            this.ownerConnection.registerResponseCallback(
-                this.invocationService.processResponse.bind(this.invocationService)
-            );
+        var establishedConnection = this.establishedConnections[addressIndex];
 
-            this.authenticate();
-        }).catch((e) => {
-            this.ready.reject(e);
+        if (establishedConnection) {
+            result.resolve(establishedConnection);
+            return result.promise;
+        }
+
+        var pendingConnection = this.pendingConnections[addressIndex];
+
+        if (pendingConnection) {
+            return pendingConnection.promise;
+        }
+
+        this.pendingConnections[addressIndex] = result;
+
+        var clientConnection = new ClientConnection(address);
+
+        clientConnection.connect().then((connection: ClientConnection) => {
+
+            connection.registerResponseCallback((data: Buffer) => {
+                this.client.getInvocationService().processResponse(data);
+            });
+
+            var callback = (authenticated: boolean) => {
+                if (authenticated) {
+                    result.resolve(connection);
+                    this.establishedConnections[addressIndex] = connection;
+                } else {
+                    result.reject('Authentication failed');
+                }
+            };
+
+            this.authenticate(connection).then(callback).finally(() => {
+                delete this.pendingConnections[addressIndex];
+            });
+        }).catch((e: any) => {
+            result.reject(e);
         });
 
-        return this.ready.promise;
+        return result.promise;
     }
 
-    public getOwnerConnection(): ClientConnection {
-        return this.ownerConnection;
-    }
+    private authenticate(connection: ClientConnection): Q.Promise<boolean> {
+        var name = this.client.getConfig().groupConfig.name;
+        var password = this.client.getConfig().groupConfig.password;
+        var invocationService = this.client.getInvocationService();
 
-    private authenticate() {
-        var authenticator = new ConnectionAuthenticator(this.ownerConnection, this.invocationService,
-            this.groupConfig.name, this.groupConfig.password);
-        authenticator.authenticate().then((authenticated: boolean) => {
-            if (authenticated) {
-                this.ready.resolve(this);
-            } else {
-                this.ready.reject('Authentication failed');
-            }
-        });
+        var authenticator = new ConnectionAuthenticator(connection, invocationService, name, password);
+
+        return authenticator.authenticate();
     }
 }
 

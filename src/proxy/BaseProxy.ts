@@ -29,8 +29,8 @@ export class BaseProxy {
         return deferred.promise;
     }
 
-    protected encodeInvokeOnKey<T>(codec: any, key: any, ...codecArguments: any[]): Q.Promise<T> {
-        var partitionId: number = this.client.getPartitionService().getPartitionId(key);
+    protected encodeInvokeOnKey<T>(codec: any, partitionKey: any, ...codecArguments: any[]): Q.Promise<T> {
+        var partitionId: number = this.client.getPartitionService().getPartitionId(partitionKey);
         return this.encodeInvokeOnPartition<T>(codec, partitionId, ...codecArguments);
     }
 
