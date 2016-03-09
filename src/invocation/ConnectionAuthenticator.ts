@@ -35,7 +35,7 @@ class ConnectionAuthenticator {
                     this.connection.address = authResponse.address;
                     deferred.resolve(true);
                 } else {
-                    deferred.reject(false);
+                    deferred.resolve(false);
                 }
             });
 
