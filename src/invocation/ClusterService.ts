@@ -23,7 +23,8 @@ class ClusterService {
 
     private tryAddress(index: number) {
         if (index >= this.addresses.length) {
-            this.ready.reject('Unable to connect to any of the following addresses ' + this.addresses);
+            var error = new Error('Unable to connect to any of the following addresses ' + this.addresses);
+            this.ready.reject(error);
         }
 
         var currentAddress = this.addresses[index];
@@ -31,7 +32,9 @@ class ClusterService {
         this.client.getConnectionManager().getOrConnect(currentAddress).then((connection: ClientConnection) => {
             this.ownerConnection = connection;
             this.ready.resolve(this);
-        }).catch(() => {
+        }).catch((e) => {
+            console.log('An error occurred while connecting to: ' + currentAddress);
+            console.log(e);
             this.tryAddress(index + 1);
         });
     }

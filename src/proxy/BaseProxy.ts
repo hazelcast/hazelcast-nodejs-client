@@ -3,6 +3,7 @@ import {Data} from '../serialization/Data';
 import HazelcastClient = require('../HazelcastClient');
 import ClientMessage = require('../ClientMessage');
 import Q = require('q');
+
 export class BaseProxy {
 
     protected client: HazelcastClient;
@@ -25,6 +26,8 @@ export class BaseProxy {
             } else {
                 deferred.resolve();
             }
+        }).catch(function (e) {
+            deferred.reject(e);
         });
         return deferred.promise;
     }

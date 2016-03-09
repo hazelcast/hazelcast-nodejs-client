@@ -44,8 +44,8 @@ class HazelcastClient {
             return this.partitionService.initialize();
         }).then(() => {
             deferred.resolve(this);
-        }).catch(() => {
-            deferred.reject('Client failed to start');
+        }).catch((e) => {
+            deferred.reject(e);
         });
 
         return deferred.promise;

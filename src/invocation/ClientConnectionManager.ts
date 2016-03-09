@@ -53,7 +53,7 @@ class ClientConnectionManager {
                     result.resolve(connection);
                     this.establishedConnections[addressIndex] = connection;
                 } else {
-                    result.reject('Authentication failed');
+                    result.reject(new Error('Authentication failed'));
                 }
             };
 

@@ -5,8 +5,11 @@ import Long = require('long');
 import HazelcastClient = require('../HazelcastClient');
 import {Data} from '../serialization/Data';
 import Address = require('../Address');
+import ExceptionCodec = require('../codec/ExceptionCodec');
 
 class InvocationService {
+
+    private static EXCEPTION_MESSAGE_TYPE = 109;
 
     private correlationCounter = 0;
     private pending: {[id: number]: Q.Deferred<ClientMessage>} = {};
@@ -56,7 +59,16 @@ class InvocationService {
     processResponse(buffer: Buffer) {
         var clientMessage = new ClientMessage(buffer);
         var correlationId = clientMessage.getCorrelationId().toNumber();
-        this.pending[correlationId].resolve(clientMessage);
+        var messageType = clientMessage.getMessageType();
+        var pending = this.pending[correlationId];
+
+        if (messageType === InvocationService.EXCEPTION_MESSAGE_TYPE) {
+            var remoteException = ExceptionCodec.decodeResponse(clientMessage);
+            pending.reject(remoteException);
+        } else {
+            pending.resolve(clientMessage);
+        }
+
         delete this.pending[correlationId];
     }
 }
