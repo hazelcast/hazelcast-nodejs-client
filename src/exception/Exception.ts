@@ -1,4 +1,4 @@
-import StackTraceElement = require('./StackTraceElement')
+import StackTraceElement = require('./StackTraceElement');
 
 class RemoteException {
     errorCode: number = null;

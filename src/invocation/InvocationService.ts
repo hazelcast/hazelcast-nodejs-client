@@ -6,6 +6,7 @@ import HazelcastClient = require('../HazelcastClient');
 import {Data} from '../serialization/Data';
 import Address = require('../Address');
 import ExceptionCodec = require('../codec/ExceptionCodec');
+import {BitsUtil} from '../BitsUtil';
 
 class InvocationService {
 
@@ -13,6 +14,7 @@ class InvocationService {
 
     private correlationCounter = 0;
     private pending: {[id: number]: Q.Deferred<ClientMessage>} = {};
+    private eventHandlers: {[id: number]: (...args: any[]) => any} = {};
     private client: HazelcastClient;
     private smartRoutingEnabled: boolean;
 
@@ -21,12 +23,16 @@ class InvocationService {
         this.smartRoutingEnabled = hazelcastClient.getConfig().networkConfig.smartRouting;
     }
 
-    invokeOnConnection(connection: ClientConnection, request: ClientMessage): Q.Promise<ClientMessage> {
+    invokeOnConnection(connection: ClientConnection, request: ClientMessage, handler: (...args: any[]) => any = null)
+    : Q.Promise<ClientMessage> {
         var correlationId = this.correlationCounter++;
         request.setCorrelationId(Long.fromNumber(correlationId));
         connection.write(request.getBuffer());
         var deferred = Q.defer<ClientMessage>();
         this.pending[correlationId] = deferred;
+        if (handler != null) {
+            this.eventHandlers[correlationId] = handler;
+        }
         return deferred.promise;
     }
 
@@ -62,13 +68,15 @@ class InvocationService {
         var messageType = clientMessage.getMessageType();
         var pending = this.pending[correlationId];
 
-        if (messageType === InvocationService.EXCEPTION_MESSAGE_TYPE) {
+        if (clientMessage.hasFlags(BitsUtil.LISTENER_FLAG)) {
+            Q.fcall(this.eventHandlers[correlationId], clientMessage);
+            return;
+        } else if (messageType === InvocationService.EXCEPTION_MESSAGE_TYPE) {
             var remoteException = ExceptionCodec.decodeResponse(clientMessage);
             pending.reject(remoteException);
         } else {
             pending.resolve(clientMessage);
         }
-
         delete this.pending[correlationId];
     }
 }
