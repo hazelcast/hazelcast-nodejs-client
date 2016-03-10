@@ -1,5 +1,5 @@
 import {SerializationService} from './serialization/SerializationService';
-import InvocationService = require('./invocation/InvocationService');
+import {InvocationService} from './invocation/InvocationService';
 import ClientConnectionManager = require('./invocation/ClientConnectionManager');
 import {ClientConfig} from './Config';
 import ProxyManager = require('./proxy/ProxyManager');

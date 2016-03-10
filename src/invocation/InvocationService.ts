@@ -8,70 +8,110 @@ import Address = require('../Address');
 import ExceptionCodec = require('../codec/ExceptionCodec');
 import {BitsUtil} from '../BitsUtil';
 
-class InvocationService {
+export interface Invocation {
+    request: ClientMessage;
+    partitionId?: number;
+    address?: Address;
+    connection?: ClientConnection;
+    deferred?: Q.Deferred<ClientMessage>;
+    handler?: (...args: any[]) => any;
+}
+
+export class InvocationService {
 
     private static EXCEPTION_MESSAGE_TYPE = 109;
 
     private correlationCounter = 0;
-    private pending: {[id: number]: Q.Deferred<ClientMessage>} = {};
-    private eventHandlers: {[id: number]: (...args: any[]) => any} = {};
+    private eventHandlers: {[id: number]: Invocation} = {};
+    private pending: {[id: number]: Invocation} = {};
     private client: HazelcastClient;
     private smartRoutingEnabled: boolean;
+    public invoke: (invocation: Invocation) => Q.Promise<ClientMessage>;
 
     constructor(hazelcastClient: HazelcastClient) {
         this.client = hazelcastClient;
         this.smartRoutingEnabled = hazelcastClient.getConfig().networkConfig.smartRouting;
+        if (hazelcastClient.getConfig().networkConfig.smartRouting) {
+            this.invoke = this.invokeSmart;
+        } else {
+            this.invoke = this.invokeNonSmart;
+        }
     }
 
-    invokeOnConnection(connection: ClientConnection, request: ClientMessage, handler: (...args: any[]) => any = null)
-    : Q.Promise<ClientMessage> {
-        var correlationId = this.correlationCounter++;
-        request.setCorrelationId(Long.fromNumber(correlationId));
-        connection.write(request.getBuffer());
-        var deferred = Q.defer<ClientMessage>();
-        this.pending[correlationId] = deferred;
-        if (handler != null) {
-            this.eventHandlers[correlationId] = handler;
-        }
-        return deferred.promise;
+    invokeOnConnection(connection: ClientConnection, request: ClientMessage): Q.Promise<ClientMessage> {
+        return this.invoke({request: request, connection: connection});
     }
 
     invokeOnPartition(request: ClientMessage, partitionId: number): Q.Promise<ClientMessage> {
-        request.setPartitionId(partitionId);
-        if (this.smartRoutingEnabled) {
-            return this.invokeSmart(request, partitionId);
-        } else {
-            return this.invokeRegular(request);
-        }
+        return this.invoke({request: request, partitionId: partitionId});
     }
 
-    invokeSmart(request: ClientMessage, partitionId: number): Q.Promise<ClientMessage> {
-        var address: Address = this.client.getPartitionService().getAddressForPartition(partitionId);
-        return this.client.getConnectionManager().getOrConnect(address)
-            .then<ClientMessage>((connection: ClientConnection) => {
-                return this.invokeOnConnection(connection, request);
-            });
-    }
-
-    invokeRegular(request: ClientMessage): Q.Promise<ClientMessage> {
-        return this.invokeOnConnection(this.client.getClusterService().getOwnerConnection(), request);
+    invokeOnTarget(request: ClientMessage, target: Address): Q.Promise<ClientMessage> {
+        return this.invoke({request: request, address: target});
     }
 
     invokeOnRandomTarget(clientMessage: ClientMessage): Q.Promise<ClientMessage> {
-        var connection = this.client.getClusterService().getOwnerConnection();
-        return this.invokeOnConnection(connection, clientMessage);
+        return this.invoke({request: clientMessage});
+    }
+
+    invokeSmart(invocation: Invocation) {
+        if (invocation.hasOwnProperty('connection')) {
+            return this.send(invocation, invocation.connection);
+        } else if (invocation.hasOwnProperty('partitionId')) {
+            var addr = this.client.getPartitionService().getAddressForPartition(invocation.partitionId);
+            return this.sendToAddress(invocation, addr);
+        } else if (invocation.hasOwnProperty('address')) {
+            return this.sendToAddress(invocation, invocation.address);
+        } else {
+            return this.send(invocation, this.client.getClusterService().getOwnerConnection());
+        }
+    }
+
+    invokeNonSmart(invocation: Invocation) {
+        if (invocation.hasOwnProperty('connection')) {
+            return this.send(invocation, invocation.connection);
+        } else {
+            return this.send(invocation, this.client.getClusterService().getOwnerConnection());
+        }
+    }
+
+    private sendToAddress(invocation: Invocation, addres: Address): Q.Promise<ClientMessage> {
+        return this.client.getConnectionManager().getOrConnect(addres)
+            .then<ClientMessage>((connection: ClientConnection) => {
+                return this.send(invocation, connection);
+            });
+    }
+
+    private send(invocation: Invocation, connection: ClientConnection): Q.Promise<ClientMessage> {
+        var correlationId = this.correlationCounter++;
+        var message = invocation.request;
+        message.setCorrelationId(Long.fromNumber(correlationId));
+        if (invocation.hasOwnProperty('partitionId')) {
+            message.setPartitionId(invocation.partitionId);
+        } else {
+            message.setPartitionId(-1);
+        }
+        invocation.deferred = Q.defer<ClientMessage>();
+        if (invocation.hasOwnProperty('handler')) {
+            this.eventHandlers[correlationId] = invocation;
+        }
+        this.pending[correlationId] = invocation;
+        connection.write(invocation.request.getBuffer());
+        return invocation.deferred.promise;
     }
 
     processResponse(buffer: Buffer) {
         var clientMessage = new ClientMessage(buffer);
         var correlationId = clientMessage.getCorrelationId().toNumber();
         var messageType = clientMessage.getMessageType();
-        var pending = this.pending[correlationId];
 
         if (clientMessage.hasFlags(BitsUtil.LISTENER_FLAG)) {
-            Q.fcall(this.eventHandlers[correlationId], clientMessage);
+            Q.fcall(this.eventHandlers[correlationId].handler, clientMessage);
             return;
-        } else if (messageType === InvocationService.EXCEPTION_MESSAGE_TYPE) {
+        }
+
+        var pending = this.pending[correlationId].deferred;
+        if (messageType === InvocationService.EXCEPTION_MESSAGE_TYPE) {
             var remoteException = ExceptionCodec.decodeResponse(clientMessage);
             pending.reject(remoteException);
         } else {
@@ -81,4 +121,3 @@ class InvocationService {
     }
 }
 
-export = InvocationService

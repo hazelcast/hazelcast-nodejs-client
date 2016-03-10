@@ -63,11 +63,9 @@ class ClusterService {
             AddMembershipListenerCodec.handle(m, handleMember, handleMemberList, null, null);
         };
 
-        this.client.getInvocationService().invokeOnConnection(
-            this.getOwnerConnection()
-            , request
-            , handler
-        ).then((resp) => {
+        this.client.getInvocationService().invoke(
+            {request: request, handler: handler, connection: this.getOwnerConnection()}
+        ).then((resp: ClientMessage) => {
             console.log('registered listener with id ' + AddMembershipListenerCodec.decodeResponse(resp).response);
             deferred.resolve();
         });
