@@ -4,13 +4,17 @@ import Address = require('../Address');
 import {BitsUtil} from '../BitsUtil';
 
 class ClientConnection {
-    public address: Address;
-    public socket: net.Socket;
+    address: Address;
+    socket: net.Socket;
+    lastRead: number;
+    heartbeating = true;
+
     private readBuffer: Buffer;
 
     constructor(address: Address) {
         this.address = address;
         this.readBuffer = new Buffer(0);
+        this.lastRead = 0;
     }
 
     public getAddress(): Address {
@@ -44,6 +48,7 @@ class ClientConnection {
 
     registerResponseCallback(callback: Function) {
         this.socket.on('data', (buffer: Buffer) => {
+            this.lastRead = new Date().getTime();
             this.readBuffer = Buffer.concat([this.readBuffer, buffer], this.readBuffer.length + buffer.length);
             while (this.readBuffer.length >= BitsUtil.INT_SIZE_IN_BYTES ) {
                 var frameSize = this.readBuffer.readInt32LE(0);

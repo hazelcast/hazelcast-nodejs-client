@@ -15,7 +15,7 @@ class ClientConnectionManager {
     private client: HazelcastClient;
 
     private pendingConnections: {[address: string]: Q.Deferred<ClientConnection>} = {};
-    private establishedConnections: {[address: string]: ClientConnection} = {};
+    establishedConnections: {[address: string]: ClientConnection} = {};
 
     constructor(client: HazelcastClient) {
         this.client = client;

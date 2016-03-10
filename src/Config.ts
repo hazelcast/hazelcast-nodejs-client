@@ -41,7 +41,10 @@ export class ListenerConfig {
 
 export class ClientConfig {
     instanceName: string;
-    properties = {};
+    properties: any = {
+        'hazelcast.client.heartbeat.interval': 5000,
+        'hazelcast.client.heartbeat.timeout': 60000
+    };
     groupConfig: GroupConfig = new GroupConfig();
     networkConfig: ClientNetworkConfig = new ClientNetworkConfig();
     listenerConfigs: ListenerConfig[];
