@@ -1,7 +1,7 @@
 import Q = require('q');
 
 import ClientConnection = require('./ClientConnection');
-import InvocationService = require('./InvocationService');
+import {InvocationService} from './InvocationService';
 import AuthRequest = require('../messages/auth/AuthRequest');
 import AuthEncoder = require('../codec/AuthEncoder');
 import AuthDecoder = require('../codec/AuthDecoder');
