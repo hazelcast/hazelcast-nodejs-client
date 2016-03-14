@@ -23,7 +23,7 @@ class PartitionService {
         return deferred.promise;
     }
 
-    private refresh(): Q.Promise<void> {
+    refresh(): Q.Promise<void> {
         var ownerConnection = this.client.getClusterService().getOwnerConnection();
         var clientMessage: ClientMessage = GetPartitionsCodec.encodeRequest();
 
