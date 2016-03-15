@@ -18,7 +18,6 @@ export class ClientDestroyProxyCodec{
         var dataSize = 0;
         dataSize += BitsUtil.getStringSize(name);
         dataSize += BitsUtil.getStringSize(serviceName);
-        dataSize += 4;
         return dataSize;
     }
 
