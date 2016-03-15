@@ -4,7 +4,7 @@
 
 Node.js Client for Hazelcast, using Hazelcast Open Client Protocol 1.0 for Hazelcast 3.6 and higher
 
-WARNING: This project currently in active development. 
+WARNING: This project currently in active development.
 
 https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge[image:https://badges.gitter.im/Join%20Chat.svg[Join the chat at https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client]]
 
@@ -45,18 +45,22 @@ npm test
 
 == Implemented Features
 
-* AtomicLong
+* Map
+** Get
+** Put
+** Remove
 
 == Usage
 
 [source,javascript]
 ----
-HazelcastClient.create({
-            "username": "dev",
-            "password": "dev-pass",
-            "port": 5701,
-            "host": "localhost"
-        }).then(function (client) {
-            atomicLong = client.getAtomicLong("short");
-        });
+var map;
+HazelcastClient.newHazelcastClient().then(function(client)  {
+    map = client.getMap('test-map');
+    return map.put('test-key', 'test-value');
+}).then(function() {
+    return map.get('test-key');
+}).then(function(value) {
+    console.log(value);
+});
 ----
