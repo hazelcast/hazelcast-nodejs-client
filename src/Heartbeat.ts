@@ -1,6 +1,8 @@
 import {ClientPingCodec} from './codec/ClientPingCodec';
 import HazelcastClient = require('./HazelcastClient');
 import ClientConnection = require('./invocation/ClientConnection');
+import {ConnectionHeartbeatListener} from './ConnectionHeartbeatListener';
+import Q = require('q');
 
 var PROPERTY_HEARTBEAT_INTERVAL: string = 'hazelcast.client.heartbeat.interval';
 var PROPERTY_HEARTBEAT_TIMEOUT: string = 'hazelcast.client.heartbeat.timeout';
@@ -10,6 +12,7 @@ class Heartbeat {
     private client: HazelcastClient;
     private heartbeatTimeout: number;
     private heartbeatInterval: number;
+    private listeners: ConnectionHeartbeatListener[] = [];
 
     //Actually it is a NodeJS.Timer. Another typing file that comes with a module we use causes TSD to see
     //return type of setTimeout as number. Because of this we defined timer property as `any` type.
@@ -29,6 +32,10 @@ class Heartbeat {
         clearTimeout(this.timer);
     }
 
+    addListener(heartbeatListener: ConnectionHeartbeatListener) {
+        this.listeners.push(heartbeatListener);
+    }
+
     private heartbeatFunction() {
         var estConnections = this.client.getConnectionManager().establishedConnections;
         for (var address in estConnections) {
@@ -37,7 +44,7 @@ class Heartbeat {
                 var timeSinceLastRead = new Date().getTime() - conn.lastRead;
                 if (timeSinceLastRead > this.heartbeatTimeout) {
                     if (conn.heartbeating) {
-                        process.nextTick(this.onHeartbeatStopped.bind(this, conn));
+                        setImmediate(this.onHeartbeatStopped.bind(this), conn);
                     }
                 }
                 if (timeSinceLastRead > this.heartbeatInterval) {
@@ -45,7 +52,7 @@ class Heartbeat {
                     this.client.getInvocationService().invokeOnConnection(conn, req);
                 } else {
                     if (!conn.heartbeating) {
-                        process.nextTick(this.onHeartbeatRestored.bind(this, conn));
+                        setImmediate(this.onHeartbeatRestored.bind(this), conn);
                     }
                 }
             }
@@ -56,11 +63,21 @@ class Heartbeat {
     private onHeartbeatStopped(connection: ClientConnection) {
         connection.heartbeating = false;
         console.log('heartbeat stopped on ' + connection.address);
+        this.listeners.forEach((listener) => {
+            if (listener.hasOwnProperty('onHeartbeatStopped')) {
+                Q.fcall(listener.onHeartbeatStopped.bind(this), connection);
+            }
+        });
     }
 
     private onHeartbeatRestored(connection: ClientConnection) {
         connection.heartbeating = true;
         console.log('heartbeat restored on ' + connection.address);
+        this.listeners.forEach((listener) => {
+            if (listener.hasOwnProperty('onHeartbeatRestored')) {
+                Q.fcall(listener.onHeartbeatRestored.bind(this), connection);
+            }
+        });
     }
 
 }

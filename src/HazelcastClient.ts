@@ -90,6 +90,10 @@ class HazelcastClient {
     public getClusterService(): ClusterService {
         return this.clusterService;
     }
+
+    getHeartbeat(): Heartbeat {
+        return this.heartbeat;
+    }
 }
 
 export = HazelcastClient;

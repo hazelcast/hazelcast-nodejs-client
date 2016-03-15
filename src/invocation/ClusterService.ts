@@ -15,7 +15,6 @@ class ClusterService {
     private members: Member[];
 
     private client: HazelcastClient;
-    private ready = Q.defer<ClusterService>();
     private ownerConnection: ClientConnection;
 
     constructor(client: HazelcastClient) {
@@ -25,27 +24,74 @@ class ClusterService {
     }
 
     start(): Q.Promise<ClusterService> {
-        this.tryAddress(0);
-        return this.ready.promise;
+        this.initHeartbeatListener();
+        this.initConnectionListener();
+        return this.connectToCluster();
     }
 
-    private tryAddress(index: number) {
-        if (index >= this.addresses.length) {
-            var error = new Error('Unable to connect to any of the following addresses ' + this.addresses);
-            this.ready.reject(error);
+    connectToCluster() {
+        var deferred = Q.defer<ClusterService>();
+        var attemptLimit = this.client.getConfig().networkConfig.connectionAttemptLimit;
+        var attemptPeriod = this.client.getConfig().networkConfig.connectionAttemptPeriod;
+        var attempt = 1;
+
+        this.tryAddressIndex(0, attemptLimit, attemptPeriod, deferred);
+
+        return deferred.promise;
+    }
+
+    private initHeartbeatListener() {
+        this.client.getHeartbeat().addListener({
+            onHeartbeatStopped: this.onHeartbeatStopped.bind(this)
+        });
+    }
+
+    private initConnectionListener() {
+        this.client.getConnectionManager().addListener({
+            onConnectionClosed: this.onConnectionClosed.bind(this)
+        });
+    }
+
+    private onConnectionClosed(connection: ClientConnection) {
+        if (connection.address === this.getOwnerConnection().address) {
+            this.ownerConnection = null;
+            console.log('ClusterService: connection closed: ' + connection.address.toString());
+            this.connectToCluster();
         }
+    }
 
-        var currentAddress = this.addresses[index];
+    private onHeartbeatStopped(connection: ClientConnection): void {
+        if (connection.getAddress() === this.ownerConnection.address) {
+            this.client.getConnectionManager().destroyConnection(connection.address);
+        }
+        console.log('Cluster service ' + connection.address + ' stopped heartbeating');
+    }
 
-        this.client.getConnectionManager().getOrConnect(currentAddress).then((connection: ClientConnection) => {
-            this.ownerConnection = connection;
-            this.initMemberShipListener().then(() => {
-                this.ready.resolve(this);
+    private tryAddressIndex(index: number
+        , attemptLimit: number
+        , attemptPeriod: number
+        , deferred: Q.Deferred<ClusterService>) {
+        setImmediate(() => {
+            var currentAddress = this.addresses[index];
+            this.client.getConnectionManager().getOrConnect(currentAddress).then((connection: ClientConnection) => {
+                this.ownerConnection = connection;
+                this.initMemberShipListener().then(() => {
+                    deferred.resolve(this);
+                });
+            }).catch((e) => {
+                console.log(e);
+                if (index === this.addresses.length) {
+                    attemptLimit = attemptLimit - 1;
+                    if (attemptLimit === 0) {
+                        var error = new Error('Unable to connect to any of the following addresses ' + this.addresses);
+                        deferred.reject(error);
+                        return;
+                    } else {
+                        setTimeout(this.tryAddressIndex(0, attemptLimit, attemptPeriod, deferred), attemptPeriod);
+                    }
+                }
+                this.tryAddressIndex(index + 1, attemptLimit, attemptPeriod, deferred);
             });
-        }).catch((e) => {
-            console.log('An error occurred while connecting to: ' + currentAddress);
-            console.log(e);
-            this.tryAddress(index + 1);
         });
     }
 

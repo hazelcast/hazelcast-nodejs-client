@@ -17,7 +17,7 @@ class ClientConnection {
         this.lastRead = 0;
     }
 
-    public getAddress(): Address {
+    getAddress(): Address {
         return this.address;
     }
 
@@ -25,7 +25,6 @@ class ClientConnection {
         var ready = Q.defer<ClientConnection>();
 
         this.socket = net.connect(this.address.port, this.address.host, () => {
-            console.log('Connection established to ' + this.address );
 
             // Send the protocol version
             var buffer = new Buffer(3);
@@ -44,6 +43,10 @@ class ClientConnection {
 
     write(buffer: Buffer) {
         this.socket.write(buffer);
+    }
+
+    close() {
+        this.socket.destroy();
     }
 
     registerResponseCallback(callback: Function) {
