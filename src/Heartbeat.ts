@@ -65,7 +65,7 @@ class Heartbeat {
         console.log('heartbeat stopped on ' + connection.address);
         this.listeners.forEach((listener) => {
             if (listener.hasOwnProperty('onHeartbeatStopped')) {
-                Q.fcall(listener.onHeartbeatStopped.bind(this), connection);
+                setImmediate(listener.onHeartbeatStopped.bind(this), connection);
             }
         });
     }
@@ -75,7 +75,7 @@ class Heartbeat {
         console.log('heartbeat restored on ' + connection.address);
         this.listeners.forEach((listener) => {
             if (listener.hasOwnProperty('onHeartbeatRestored')) {
-                Q.fcall(listener.onHeartbeatRestored.bind(this), connection);
+                setImmediate(listener.onHeartbeatRestored.bind(this), connection);
             }
         });
     }
