@@ -30,14 +30,16 @@
     "gulp-tslint": "^3.1",
     "jshint": "^2.8.0",
     "jshint-stylish": "^2.1.0",
-    "mocha": "2.3.4"
+    "mocha": "2.3.4",
+    "rimraf": "^2.5.2"
   },
   "scripts": {
-    "test": "gulp"
+    "install": "gulp",
+    "test": "gulp test"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hazelcast-incubator/hazelcast-nodejs-client.git"
+    "url": "git+https://github.com/hazelcast/hazelcast-nodejs-client.git"
   },
   "keywords": [
     "hazelcast",
