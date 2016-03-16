@@ -1,4 +1,4 @@
-import {BaseProxy} from '../../lib/proxy/BaseProxy';
+import {BaseProxy} from '../proxy/BaseProxy';
 import {ISet} from '../ISet';
 import Q = require('q');
 export class Set<E> extends BaseProxy implements ISet<E> {

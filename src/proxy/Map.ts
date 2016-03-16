@@ -5,7 +5,7 @@ import {Data} from '../serialization/Data';
 import {MapPutCodec} from '../codec/MapPutCodec';
 import ClientMessage = require('../ClientMessage');
 import murmur = require('../invocation/Murmur');
-import {MapGetCodec} from '../../lib/codec/MapGetCodec';
+import {MapGetCodec} from '../codec/MapGetCodec';
 import {MapClearCodec} from '../codec/MapClearCodec';
 import {MapSizeCodec} from '../codec/MapSizeCodec';
 import {MapRemoveCodec} from '../codec/MapRemoveCodec';
