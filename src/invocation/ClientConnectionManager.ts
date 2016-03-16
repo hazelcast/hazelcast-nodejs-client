@@ -9,19 +9,20 @@ import {GroupConfig, ClientNetworkConfig} from '../Config';
 
 import ConnectionAuthenticator = require('./ConnectionAuthenticator');
 import HazelcastClient = require('../HazelcastClient');
+import {ConnectionListener} from '../ConnectionListener';
 
 class ClientConnectionManager {
 
     private client: HazelcastClient;
-
+    private listeners: ConnectionListener[] = [];
     private pendingConnections: {[address: string]: Q.Deferred<ClientConnection>} = {};
-    private establishedConnections: {[address: string]: ClientConnection} = {};
+    establishedConnections: {[address: string]: ClientConnection} = {};
 
     constructor(client: HazelcastClient) {
         this.client = client;
     }
 
-    public getOrConnect(address: Address): Q.Promise<ClientConnection> {
+    getOrConnect(address: Address): Q.Promise<ClientConnection> {
         var addressIndex = address.toString();
         var result: Q.Deferred<ClientConnection> = Q.defer<ClientConnection>();
 
@@ -43,7 +44,6 @@ class ClientConnectionManager {
         var clientConnection = new ClientConnection(address);
 
         clientConnection.connect().then((connection: ClientConnection) => {
-
             connection.registerResponseCallback((data: Buffer) => {
                 this.client.getInvocationService().processResponse(data);
             });
@@ -51,13 +51,16 @@ class ClientConnectionManager {
             var callback = (authenticated: boolean) => {
                 if (authenticated) {
                     result.resolve(connection);
-                    this.establishedConnections[addressIndex] = connection;
+                    this.establishedConnections[connection.address.toString()] = connection;
                 } else {
                     result.reject(new Error('Authentication failed'));
                 }
             };
-
-            this.authenticate(connection).then(callback).finally(() => {
+            this.authenticate(connection).then(callback).then(() => {
+                this.onConnectionOpened(connection);
+            }).catch((e: any) => {
+                result.reject(e);
+            }).finally(() => {
                 delete this.pendingConnections[addressIndex];
             });
         }).catch((e: any) => {
@@ -65,6 +68,40 @@ class ClientConnectionManager {
         });
 
         return result.promise;
+    }
+
+    destroyConnection(address: Address): void {
+        var addressStr = address.toString();
+        if (this.pendingConnections.hasOwnProperty(addressStr)) {
+            this.pendingConnections[addressStr].reject(null);
+        }
+        if (this.establishedConnections.hasOwnProperty(addressStr)) {
+            var conn = this.establishedConnections[addressStr];
+            conn.close();
+            this.onConnectionClosed(conn);
+            delete this.establishedConnections[addressStr];
+        }
+    }
+
+    addListener(listener: ConnectionListener) {
+        this.listeners.push(listener);
+    }
+
+    private onConnectionClosed(connection: ClientConnection) {
+        this.listeners.forEach((listener) => {
+            if (listener.hasOwnProperty('onConnectionClosed')) {
+                setImmediate(listener.onConnectionClosed.bind(this), connection);
+            }
+        });
+    }
+
+    private onConnectionOpened(connection: ClientConnection) {
+        console.log('Authenticated to ' + connection.address);
+        this.listeners.forEach((listener) => {
+            if (listener.hasOwnProperty('onConnectionOpened')) {
+                setImmediate(listener.onConnectionOpened.bind(this), connection);
+            }
+        });
     }
 
     private authenticate(connection: ClientConnection): Q.Promise<boolean> {

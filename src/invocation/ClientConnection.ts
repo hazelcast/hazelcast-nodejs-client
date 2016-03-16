@@ -4,16 +4,20 @@ import Address = require('../Address');
 import {BitsUtil} from '../BitsUtil';
 
 class ClientConnection {
-    public address: Address;
-    public socket: net.Socket;
+    address: Address;
+    socket: net.Socket;
+    lastRead: number;
+    heartbeating = true;
+
     private readBuffer: Buffer;
 
     constructor(address: Address) {
         this.address = address;
         this.readBuffer = new Buffer(0);
+        this.lastRead = 0;
     }
 
-    public getAddress(): Address {
+    getAddress(): Address {
         return this.address;
     }
 
@@ -21,7 +25,6 @@ class ClientConnection {
         var ready = Q.defer<ClientConnection>();
 
         this.socket = net.connect(this.address.port, this.address.host, () => {
-            console.log('Connection established to ' + this.address );
 
             // Send the protocol version
             var buffer = new Buffer(3);
@@ -42,8 +45,13 @@ class ClientConnection {
         this.socket.write(buffer);
     }
 
+    close() {
+        this.socket.destroy();
+    }
+
     registerResponseCallback(callback: Function) {
         this.socket.on('data', (buffer: Buffer) => {
+            this.lastRead = new Date().getTime();
             this.readBuffer = Buffer.concat([this.readBuffer, buffer], this.readBuffer.length + buffer.length);
             while (this.readBuffer.length >= BitsUtil.INT_SIZE_IN_BYTES ) {
                 var frameSize = this.readBuffer.readInt32LE(0);

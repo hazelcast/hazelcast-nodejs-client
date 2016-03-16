@@ -8,6 +8,7 @@ import {IMap} from './IMap';
 import {JsonSerializationService} from './serialization/SerializationService';
 import PartitionService = require('./PartitionService');
 import ClusterService = require('./invocation/ClusterService');
+import Heartbeat = require('./Heartbeat');
 
 class HazelcastClient {
 
@@ -18,6 +19,7 @@ class HazelcastClient {
     private partitionService: PartitionService;
     private clusterService: ClusterService;
     private proxyManager: ProxyManager;
+    private heartbeat: Heartbeat;
 
     public static newHazelcastClient(config?: ClientConfig): Q.Promise<HazelcastClient> {
         var client: HazelcastClient = new HazelcastClient(config);
@@ -35,16 +37,22 @@ class HazelcastClient {
         this.partitionService = new PartitionService(this);
         this.connectionManager = new ClientConnectionManager(this);
         this.clusterService = new ClusterService(this);
+        this.heartbeat = new Heartbeat(this);
     }
 
     private init(): Q.Promise<HazelcastClient> {
         var deferred = Q.defer<HazelcastClient>();
 
-        this.clusterService.start().then(() => {
-            return this.partitionService.initialize();
-        }).then(() => {
-            deferred.resolve(this);
-        }).catch((e) => {
+        this.clusterService.start()
+            .then(() => {
+                return this.partitionService.initialize();
+            })
+            .then(() => {
+                return this.heartbeat.start();
+            })
+            .then(() => {
+                deferred.resolve(this);
+            }).catch((e) => {
             deferred.reject(e);
         });
 
@@ -81,6 +89,10 @@ class HazelcastClient {
 
     public getClusterService(): ClusterService {
         return this.clusterService;
+    }
+
+    getHeartbeat(): Heartbeat {
+        return this.heartbeat;
     }
 }
 

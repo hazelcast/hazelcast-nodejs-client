@@ -113,6 +113,7 @@ export class InvocationService {
         var pending = this.pending[correlationId].deferred;
         if (messageType === InvocationService.EXCEPTION_MESSAGE_TYPE) {
             var remoteException = ExceptionCodec.decodeResponse(clientMessage);
+            console.log(remoteException);
             pending.reject(remoteException);
         } else {
             pending.resolve(clientMessage);
