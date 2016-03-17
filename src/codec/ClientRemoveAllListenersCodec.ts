@@ -9,31 +9,25 @@ import {Data} from '../serialization/Data';
 import {EntryViewCodec} from './EntryViewCodec';
 import {ClientMessageType} from './ClientMessageType';
 
-var REQUEST_TYPE = ClientMessageType.CLIENT_CREATEPROXY;
+var REQUEST_TYPE = ClientMessageType.CLIENT_REMOVEALLLISTENERS;
 var RESPONSE_TYPE = 100;
 var RETRYABLE = false;
 
 
-export class ClientCreateProxyCodec {
+export class ClientRemoveAllListenersCodec {
 
 
-    static calculateSize(name:string, serviceName:string, target:Address) {
+    static calculateSize() {
         // Calculates the request payload size
         var dataSize:number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.calculateSizeString(serviceName);
-        dataSize += BitsUtil.calculateSizeAddress(target);
         return dataSize;
     }
 
-    static encodeRequest(name:string, serviceName:string, target:Address) {
+    static encodeRequest() {
         // Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, serviceName, target));
+        var clientMessage = ClientMessage.newClientMessage(this.calculateSize());
         clientMessage.setMessageType(REQUEST_TYPE);
         clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendString(serviceName);
-        AddressCodec.encode(clientMessage, target);
         clientMessage.updateFrameLength();
         return clientMessage;
     }
