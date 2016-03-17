@@ -3,7 +3,10 @@ import ClientMessage = require('../ClientMessage');
 import ImmutableLazyDataList = require('./ImmutableLazyDataList');
 import {BitsUtil} from '../BitsUtil';
 import Address = require('../Address');
+import {AddressCodec} from './AddressCodec';
+import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
+import {EntryViewCodec} from './EntryViewCodec';
 import {MapMessageType} from './MapMessageType';
 
 var REQUEST_TYPE = MapMessageType.MAP_LOADGIVENKEYS;
@@ -19,9 +22,10 @@ export class MapLoadGivenKeysCodec {
         var dataSize:number = 0;
         dataSize += BitsUtil.calculateSizeString(name);
         dataSize += BitsUtil.INT_SIZE_IN_BYTES;
-        for (var keysItem in keys) {
+
+        keys.foreach((keysItem:any) => {
             dataSize += BitsUtil.calculateSizeData(keysItem);
-        }
+        });
         dataSize += BitsUtil.BOOLEAN_SIZE_IN_BYTES;
         return dataSize;
     }
@@ -33,9 +37,11 @@ export class MapLoadGivenKeysCodec {
         clientMessage.setRetryable(RETRYABLE);
         clientMessage.appendString(name);
         clientMessage.appendInt32(keys.length);
-        for (var keysItem in keys) {
+
+        keys.foreach((keysItem:any) => {
             clientMessage.appendData(keysItem);
-        }
+        });
+
         clientMessage.appendBoolean(replaceExistingValues);
         clientMessage.updateFrameLength();
         return clientMessage;

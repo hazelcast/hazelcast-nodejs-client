@@ -3,7 +3,10 @@ import ClientMessage = require('../ClientMessage');
 import ImmutableLazyDataList = require('./ImmutableLazyDataList');
 import {BitsUtil} from '../BitsUtil';
 import Address = require('../Address');
+import {AddressCodec} from './AddressCodec';
+import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
+import {EntryViewCodec} from './EntryViewCodec';
 import {MapMessageType} from './MapMessageType';
 
 var REQUEST_TYPE = MapMessageType.MAP_REMOVE;
@@ -37,7 +40,7 @@ export class MapRemoveCodec {
 
     static decodeResponse(clientMessage:ClientMessage, toObjectFunction:(data:Data) => any = null) {
         // Decode response from client message
-        var parameters:any = {};
+        var parameters:any = {'response': null};
 
         if (clientMessage.readBoolean() !== true) {
             parameters['response'] = toObjectFunction(clientMessage.readData());

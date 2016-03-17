@@ -3,7 +3,10 @@ import ClientMessage = require('../ClientMessage');
 import ImmutableLazyDataList = require('./ImmutableLazyDataList');
 import {BitsUtil} from '../BitsUtil';
 import Address = require('../Address');
+import {AddressCodec} from './AddressCodec';
+import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
+import {EntryViewCodec} from './EntryViewCodec';
 import {MapMessageType} from './MapMessageType';
 
 var REQUEST_TYPE = MapMessageType.MAP_PUTALL;
@@ -18,10 +21,10 @@ export class MapPutAllCodec {
         // Calculates the request payload size
         var dataSize:number = 0;
         dataSize += BitsUtil.calculateSizeString(name);
-        for (var entry in entries) {
+        entries.foreach((entry:any) => {
             dataSize += BitsUtil.calculateSizeData(entry.key);
             dataSize += BitsUtil.calculateSizeData(entry.val);
-        }
+        });
         return dataSize;
     }
 
@@ -32,10 +35,10 @@ export class MapPutAllCodec {
         clientMessage.setRetryable(RETRYABLE);
         clientMessage.appendString(name);
         clientMessage.appendInt32(entries.length);
-        for (var entry in entries) {
+        entries.foreach((entry:any) => {
             clientMessage.appendData(entry.key);
             clientMessage.appendData(entry.val);
-        }
+        });
         clientMessage.updateFrameLength();
         return clientMessage;
     }

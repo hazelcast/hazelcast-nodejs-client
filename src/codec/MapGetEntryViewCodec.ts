@@ -3,9 +3,11 @@ import ClientMessage = require('../ClientMessage');
 import ImmutableLazyDataList = require('./ImmutableLazyDataList');
 import {BitsUtil} from '../BitsUtil';
 import Address = require('../Address');
+import {AddressCodec} from './AddressCodec';
+import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
+import {EntryViewCodec} from './EntryViewCodec';
 import {MapMessageType} from './MapMessageType';
-import {EntryViewCodec} from "./EntryViewCodec";
 
 var REQUEST_TYPE = MapMessageType.MAP_GETENTRYVIEW;
 var RESPONSE_TYPE = 111;
@@ -38,10 +40,10 @@ export class MapGetEntryViewCodec {
 
     static decodeResponse(clientMessage:ClientMessage, toObjectFunction:(data:Data) => any = null) {
         // Decode response from client message
-        var parameters:any = {};
+        var parameters:any = {'response': null};
 
         if (clientMessage.readBoolean() !== true) {
-            parameters['response'] = EntryViewCodec.decode(clientMessage)
+            parameters['response'] = EntryViewCodec.decode(clientMessage);
         }
         return parameters;
 
