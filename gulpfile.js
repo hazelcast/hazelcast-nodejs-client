@@ -41,6 +41,14 @@ gulp.task('gen_tsrefs', 'Generates the app.d.ts references file dynamically for 
         .pipe(gulp.dest(path.join('.', typeDefsPath)));
 });
 
+gulp.task('tsd_reinstall', function(cb) {
+    exec('tsd reinstall --clean', function(err, stdout, stderr) {
+        console.log(stdout);
+        console.log(stderr);
+        cb(err)
+    });
+});
+
 gulp.task('_build', 'INTERNAL TASK - Compiles all TypeScript source files', function (cb) {
     exec('tsc', function (err, stdout, stderr) {
         console.log(stdout);
@@ -55,7 +63,7 @@ gulp.task('tslint', 'Lints all TypeScript source files', function () {
         .pipe(tslint.report('verbose'));
 });
 
-gulp.task('tsBuild', 'Compiles all TypeScript source files and updates module references', gulpSequence('tslint', 'gen_tsrefs', '_build'));
+gulp.task('tsBuild', 'Compiles all TypeScript source files and updates module references', gulpSequence('tslint', 'tsd_reinstall', 'gen_tsrefs', '_build'));
 
 
 gulp.task('nsp', function (cb) {
