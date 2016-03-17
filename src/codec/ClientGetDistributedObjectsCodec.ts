@@ -8,13 +8,14 @@ import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
 import {EntryViewCodec} from './EntryViewCodec';
 import {ClientMessageType} from './ClientMessageType';
+import DistributedObjectInfoCodec = require("./DistributedObjectInfoCodec");
 
-var REQUEST_TYPE = ClientMessageType.CLIENT_PING;
-var RESPONSE_TYPE = 100;
-var RETRYABLE = true;
+var REQUEST_TYPE = ClientMessageType.CLIENT_GETDISTRIBUTEDOBJECTS;
+var RESPONSE_TYPE = 110;
+var RETRYABLE = false;
 
 
-export class ClientPingCodec {
+export class ClientGetDistributedObjectsCodec {
 
 
     static calculateSize() {
@@ -32,7 +33,20 @@ export class ClientPingCodec {
         return clientMessage;
     }
 
-// Empty decodeResponse(ClientMessage), this message has no parameters to decode
+    static decodeResponse(clientMessage:ClientMessage, toObjectFunction:(data:Data) => any = null) {
+        // Decode response from client message
+        var parameters:any = {'response': null};
+        var responseSize = clientMessage.readInt32();
+        var response:any = [];
+        for (var responseIndex = 0; responseIndex < responseSize; responseIndex++) {
+            var responseItem:any;
+            responseItem = DistributedObjectInfoCodec.decode(clientMessage);
+            response.push(responseItem)
+        }
+        parameters['response'] = new ImmutableLazyDataList(response, toObjectFunction);
+        return parameters;
+
+    }
 
 
 }
