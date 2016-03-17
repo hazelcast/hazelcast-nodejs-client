@@ -13,6 +13,7 @@ var inject = require('gulp-inject');
 var tsconfig = require('gulp-tsconfig-files');
 var tslint = require('gulp-tslint');
 var debug = require('gulp-debug');
+var rimraf = require('rimraf');
 
 var typeDefsPath = (function (tsd) {
     return tsd.path || 'typings';
@@ -21,10 +22,6 @@ var typeDefsPath = (function (tsd) {
 var tsFilesGlob = (function (c) {
     return c.filesGlob || c.files || '**/*.ts';
 })(require('./tsconfig.json'));
-
-gulp.task('tsconfig_files', 'Update files section in tsconfig.json', function () {
-    gulp.src(tsFilesGlob).pipe(tsconfig());
-});
 
 gulp.task('gen_tsrefs', 'Generates the app.d.ts references file dynamically for all application *.ts files', function () {
     var target = gulp.src(path.join('.', typeDefsPath, 'app.d.ts'));
@@ -58,8 +55,7 @@ gulp.task('tslint', 'Lints all TypeScript source files', function () {
         .pipe(tslint.report('verbose'));
 });
 
-//run tslint task, then run _tsconfig_files and _gen_tsrefs in parallel, then run _build
-gulp.task('tsBuild', 'Compiles all TypeScript source files and updates module references', gulpSequence('tslint', ['gen_tsrefs'], '_build'));
+gulp.task('tsBuild', 'Compiles all TypeScript source files and updates module references', gulpSequence('tslint', 'gen_tsrefs', '_build'));
 
 
 gulp.task('nsp', function (cb) {
@@ -74,7 +70,7 @@ gulp.task('pre-test', function () {
         .pipe(istanbul.hookRequire());
 });
 
-gulp.task('test', ['tsBuild', 'pre-test'], function (cb) {
+gulp.task('test', ['pre-test'], function (cb) {
     var mochaErr;
 
     gulp.src('test/**/*.js')
@@ -97,5 +93,9 @@ gulp.task('jshint', function () {
         .pipe(jshint.reporter('fail'));
 });
 
+gulp.task('clean', function(cb) {
+    rimraf('lib', cb);
+});
+gulp.task('compile', ['tsBuild']);
+gulp.task('default', gulpSequence('tsBuild', 'test'));
 
-gulp.task('default', ['tsBuild', 'test']);
