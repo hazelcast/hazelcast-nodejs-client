@@ -9,34 +9,38 @@ import {Data} from '../serialization/Data';
 import {EntryViewCodec} from './EntryViewCodec';
 import {ClientMessageType} from './ClientMessageType';
 
-var REQUEST_TYPE = ClientMessageType.CLIENT_DESTROYPROXY;
-var RESPONSE_TYPE = 100;
-var RETRYABLE = false;
+var REQUEST_TYPE = ClientMessageType.CLIENT_REMOVEDISTRIBUTEDOBJECTLISTENER;
+var RESPONSE_TYPE = 101;
+var RETRYABLE = true;
 
 
-export class ClientDestroyProxyCodec {
+export class ClientRemoveDistributedObjectListenerCodec {
 
 
-    static calculateSize(name:string, serviceName:string) {
+    static calculateSize(registrationId:string) {
         // Calculates the request payload size
         var dataSize:number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.calculateSizeString(serviceName);
+        dataSize += BitsUtil.calculateSizeString(registrationId);
         return dataSize;
     }
 
-    static encodeRequest(name:string, serviceName:string) {
+    static encodeRequest(registrationId:string) {
         // Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, serviceName));
+        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(registrationId));
         clientMessage.setMessageType(REQUEST_TYPE);
         clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendString(serviceName);
+        clientMessage.appendString(registrationId);
         clientMessage.updateFrameLength();
         return clientMessage;
     }
 
-// Empty decodeResponse(ClientMessage), this message has no parameters to decode
+    static decodeResponse(clientMessage:ClientMessage, toObjectFunction:(data:Data) => any = null) {
+        // Decode response from client message
+        var parameters:any = {'response': null};
+        parameters['response'] = clientMessage.readBoolean();
+        return parameters;
+
+    }
 
 
 }
