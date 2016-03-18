@@ -2,10 +2,8 @@ import Q = require('q');
 
 import ClientConnection = require('./ClientConnection');
 import {InvocationService} from './InvocationService';
-import AuthRequest = require('../messages/auth/AuthRequest');
-import AuthEncoder = require('../codec/AuthEncoder');
-import AuthDecoder = require('../codec/AuthDecoder');
 import ClientMessage = require('../ClientMessage');
+import {ClientAuthenticationCodec} from '../codec/ClientAuthenticationCodec';
 
 class ConnectionAuthenticator {
 
@@ -22,15 +20,15 @@ class ConnectionAuthenticator {
     }
 
     authenticate(): Q.Promise<boolean> {
-        var authRequest = new AuthRequest(this.group, this.password, true, null, null, 'NodeJS', 1);
-        var clientMessage = AuthEncoder.encodeRequest(authRequest);
+        var clientMessage = ClientAuthenticationCodec
+            .encodeRequest(this.group, this.password, null, null, true, 'NodeJS', 1);
 
         var deferred = Q.defer<boolean>();
 
         this.invocationService
             .invokeOnConnection(this.connection, clientMessage)
             .then((msg: ClientMessage) => {
-                var authResponse = AuthDecoder.decode(msg);
+                var authResponse = ClientAuthenticationCodec.decodeResponse(msg);
                 if (authResponse.status === 0) {
                     this.connection.address = authResponse.address;
                     deferred.resolve(true);

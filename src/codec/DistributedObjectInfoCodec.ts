@@ -1,3 +1,4 @@
+/* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {Utils} from './Utils';
 import Address = require("./../Address");

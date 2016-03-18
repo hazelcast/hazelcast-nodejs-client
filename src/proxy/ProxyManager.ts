@@ -41,9 +41,6 @@ class ProxyManager {
 
         var createProxyPromise: Q.Promise<ClientMessage> = this.client.getInvocationService()
             .invokeOnConnection(connection, request);
-        createProxyPromise.then((clientMessage: ClientMessage) => {
-            ClientCreateProxyCodec.decodeResponse(clientMessage);
-        });
         return createProxyPromise;
     }
 
