@@ -8,18 +8,26 @@ import Address = require('../Address');
 import ExceptionCodec = require('../codec/ExceptionCodec');
 import {BitsUtil} from '../BitsUtil';
 
-export interface Invocation {
+var EXCEPTION_MESSAGE_TYPE = 109;
+var INVOCATION_TIMEOUT = 120000;
+var INVOCATION_RETRY_DELAY = 1000;
+
+class Invocation {
+
+    constructor(request: ClientMessage) {
+        this.request = request;
+    }
+
     request: ClientMessage;
-    partitionId?: number;
-    address?: Address;
-    connection?: ClientConnection;
-    deferred?: Q.Deferred<ClientMessage>;
-    handler?: (...args: any[]) => any;
+    partitionId: number;
+    address: Address;
+    deadline: Date = new Date(new Date().getTime() + INVOCATION_TIMEOUT);
+    connection: ClientConnection;
+    deferred: Q.Deferred<ClientMessage>;
+    handler: (...args: any[]) => any;
 }
 
 export class InvocationService {
-
-    private static EXCEPTION_MESSAGE_TYPE = 109;
 
     private correlationCounter = 0;
     private eventHandlers: {[id: number]: Invocation} = {};
@@ -38,28 +46,38 @@ export class InvocationService {
         }
     }
 
-    invokeOnConnection(connection: ClientConnection, request: ClientMessage): Q.Promise<ClientMessage> {
-        return this.invoke({request: request, connection: connection});
+    invokeOnConnection(connection: ClientConnection, request: ClientMessage,
+                       handler?: (...args: any[]) => any): Q.Promise<ClientMessage> {
+        var invocation = new Invocation(request);
+        invocation.connection = connection;
+        if (handler) {
+            invocation.handler = handler;
+        }
+        return this.invoke(invocation);
     }
 
     invokeOnPartition(request: ClientMessage, partitionId: number): Q.Promise<ClientMessage> {
-        return this.invoke({request: request, partitionId: partitionId});
+        var invocation = new Invocation(request);
+        invocation.partitionId = partitionId;
+        return this.invoke(invocation);
     }
 
     invokeOnTarget(request: ClientMessage, target: Address): Q.Promise<ClientMessage> {
-        return this.invoke({request: request, address: target});
+        var invocation = new Invocation(request);
+        invocation.address = target;
+        return this.invoke(invocation);
     }
 
-    invokeOnRandomTarget(clientMessage: ClientMessage): Q.Promise<ClientMessage> {
-        return this.invoke({request: clientMessage});
+    invokeOnRandomTarget(request: ClientMessage): Q.Promise<ClientMessage> {
+        return this.invoke(new Invocation(request));
     }
 
     invokeSmart(invocation: Invocation) {
         if (invocation.hasOwnProperty('connection')) {
             return this.send(invocation, invocation.connection);
         } else if (invocation.hasOwnProperty('partitionId')) {
-            var addr = this.client.getPartitionService().getAddressForPartition(invocation.partitionId);
-            return this.sendToAddress(invocation, addr);
+            var address = this.client.getPartitionService().getAddressForPartition(invocation.partitionId);
+            return this.sendToAddress(invocation, address);
         } else if (invocation.hasOwnProperty('address')) {
             return this.sendToAddress(invocation, invocation.address);
         } else {
@@ -106,19 +124,35 @@ export class InvocationService {
         var messageType = clientMessage.getMessageType();
 
         if (clientMessage.hasFlags(BitsUtil.LISTENER_FLAG)) {
-            Q.fcall(this.eventHandlers[correlationId].handler, clientMessage);
+            this.eventHandlers[correlationId].handler(clientMessage);
             return;
         }
 
-        var pending = this.pending[correlationId].deferred;
-        if (messageType === InvocationService.EXCEPTION_MESSAGE_TYPE) {
+        var invocationFinished = true;
+        var pendingInvocation = this.pending[correlationId];
+        var deferred = pendingInvocation.deferred;
+        if (messageType === EXCEPTION_MESSAGE_TYPE) {
             var remoteException = ExceptionCodec.decodeResponse(clientMessage);
-            console.log(remoteException);
-            pending.reject(remoteException);
+            var boundToConnection = pendingInvocation.connection;
+            var deadlineExceeded = new Date().getTime() > pendingInvocation.deadline.getTime();
+            var shouldRetry = !boundToConnection && !deadlineExceeded && remoteException.isRetryable();
+
+            if (shouldRetry) {
+                invocationFinished = false;
+                setTimeout(() => {
+                    this.invoke(pendingInvocation);
+                }, INVOCATION_RETRY_DELAY);
+            } else {
+                console.log(remoteException);
+                deferred.reject(remoteException);
+            }
         } else {
-            pending.resolve(clientMessage);
+            deferred.resolve(clientMessage);
         }
-        delete this.pending[correlationId];
+
+        if (invocationFinished) {
+            delete this.pending[correlationId];
+        }
     }
 }
 
