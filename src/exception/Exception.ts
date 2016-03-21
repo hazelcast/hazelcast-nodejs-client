@@ -3,7 +3,7 @@ import StackTraceElement = require('./StackTraceElement');
 class RemoteException {
 
     private static CODE_HAZELCAST_INSTANCE_NOT_ACTIVE = 21;
-    private static CODE_IO_ERROR = 21;
+    private static CODE_IO_ERROR = 24;
     private static CODE_AUTHENTICATION_ERROR = 3;
 
     errorCode: number = null;

@@ -134,7 +134,7 @@ export class InvocationService {
         if (messageType === EXCEPTION_MESSAGE_TYPE) {
             var remoteException = ExceptionCodec.decodeResponse(clientMessage);
             var boundToConnection = pendingInvocation.connection;
-            var deadlineExceeded = pendingInvocation.deadline.getTime() > new Date().getTime();
+            var deadlineExceeded = new Date().getTime() > pendingInvocation.deadline.getTime();
             var shouldRetry = !boundToConnection && !deadlineExceeded && remoteException.isRetryable();
 
             if (shouldRetry) {
