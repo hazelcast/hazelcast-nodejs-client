@@ -2,7 +2,7 @@ import ClientConnection = require('./ClientConnection');
 import HazelcastClient = require('../HazelcastClient');
 import Address = require('../Address');
 import Q = require('q');
-import {AddMembershipListenerCodec} from '../codec/AddMembershipListenerCodec';
+import {ClientAddMembershipListenerCodec} from '../codec/ClientAddMembershipListenerCodec';
 import ClientMessage = require('../ClientMessage');
 import {Member} from '../Member';
 
@@ -101,18 +101,18 @@ class ClusterService {
 
     initMemberShipListener(): Q.Promise<void> {
         var deferred = Q.defer<void>();
-        var request = AddMembershipListenerCodec.encodeRequest(false);
+        var request = ClientAddMembershipListenerCodec.encodeRequest(false);
 
         var handler = (m: ClientMessage) => {
             var handleMember = this.handleMember.bind(this);
             var handleMemberList = this.handleMemberList.bind(this);
-            AddMembershipListenerCodec.handle(m, handleMember, handleMemberList, null, null);
+            ClientAddMembershipListenerCodec.handle(m, handleMember, handleMemberList, null, null);
         };
 
         this.client.getInvocationService().invoke(
             {request: request, handler: handler, connection: this.getOwnerConnection()}
         ).then((resp: ClientMessage) => {
-            console.log('registered listener with id ' + AddMembershipListenerCodec.decodeResponse(resp).response);
+            console.log('registered listener ' + ClientAddMembershipListenerCodec.decodeResponse(resp).response);
             deferred.resolve();
         });
 
