@@ -124,7 +124,9 @@ export class InvocationService {
         var messageType = clientMessage.getMessageType();
 
         if (clientMessage.hasFlags(BitsUtil.LISTENER_FLAG)) {
-            this.eventHandlers[correlationId].handler(clientMessage);
+            setImmediate(() => {
+                this.eventHandlers[correlationId].handler(clientMessage);
+            });
             return;
         }
 
