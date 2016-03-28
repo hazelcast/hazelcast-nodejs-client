@@ -33,7 +33,7 @@ class HazelcastClient {
             this.config = config;
         }
 
-        LoggingService.initialize(this.config.properties['hazelcast.logging.module']);
+        LoggingService.initialize(this.config.properties['hazelcast.logging']);
         this.loggingService = LoggingService.getLoggingService();
         this.invocationService = new InvocationService(this);
         this.serializationService = new JsonSerializationService();

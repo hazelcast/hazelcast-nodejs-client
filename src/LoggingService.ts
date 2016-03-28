@@ -1,5 +1,6 @@
 import HazelcastClient = require('./HazelcastClient');
 import DefaultLogger = require('./DefaultLogger');
+import NoLogger = require('./NoLogger');
 export enum LogLevel {
     ERROR = 0,
     WARN = 1,
@@ -8,13 +9,17 @@ export enum LogLevel {
     TRACE = 4
 }
 
+export interface ILogger {
+    log(level: LogLevel, className: string, message: string, furtherInfo: any): void;
+}
+
 export class LoggingService {
 
     private static loggingService: LoggingService;
-    logger: any;
+    logger: ILogger;
 
-    constructor(externalLogger: string = null) {
-        if (externalLogger != null && externalLogger !== '') {
+    constructor(externalLogger: ILogger = null) {
+        if (externalLogger != null) {
             this.logger = externalLogger;
         }
         if (this.logger == null) {
@@ -30,8 +35,18 @@ export class LoggingService {
         }
     }
 
-    static initialize(loggerModuleName: string = null) {
-        LoggingService.loggingService = new LoggingService(loggerModuleName);
+    static initialize(loggerModule: string | ILogger = null) {
+        if (typeof loggerModule === 'string') {
+            if (loggerModule === 'off') {
+                LoggingService.loggingService = new LoggingService(new NoLogger());
+            } else if (loggerModule === 'default') {
+                LoggingService.loggingService = new LoggingService();
+            } else {
+                throw new Error('Logging type unknown: ' + loggerModule);
+            }
+        } else {
+            LoggingService.loggingService = new LoggingService(<ILogger>loggerModule);
+        }
     }
 
     log(level: LogLevel, className: string, message: string, furtherInfo: any) {

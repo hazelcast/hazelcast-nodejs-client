@@ -49,7 +49,7 @@ class ClientConnection {
             if (e === undefined) {
                 deferred.resolve();
             } else {
-                console.log('Error sending message to ' + this.address + ' ' + e);
+                this.logging.warn('ClientConnection', 'Error sending message to ' + this.address + ' ' + e);
                 deferred.reject(e);
             }
         });

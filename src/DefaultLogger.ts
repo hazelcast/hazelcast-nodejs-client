@@ -1,5 +1,5 @@
-import {LogLevel} from './LoggingService';
-class DefaultLogger {
+import {LogLevel, ILogger} from './LoggingService';
+class DefaultLogger implements ILogger {
     level = LogLevel.INFO;
 
     log(level: LogLevel, className: string, message: string, furtherInfo: any) {
