@@ -9,10 +9,12 @@ import {JsonSerializationService} from './serialization/SerializationService';
 import PartitionService = require('./PartitionService');
 import ClusterService = require('./invocation/ClusterService');
 import Heartbeat = require('./Heartbeat');
+import {LoggingService} from './LoggingService';
 
 class HazelcastClient {
 
     private config: ClientConfig = new ClientConfig();
+    private loggingService: LoggingService;
     private serializationService: SerializationService;
     private invocationService: InvocationService;
     private connectionManager: ClientConnectionManager;
@@ -31,6 +33,8 @@ class HazelcastClient {
             this.config = config;
         }
 
+        LoggingService.initialize(this.config.properties['hazelcast.logging.module']);
+        this.loggingService = LoggingService.getLoggingService();
         this.invocationService = new InvocationService(this);
         this.serializationService = new JsonSerializationService();
         this.proxyManager = new ProxyManager(this);
@@ -51,35 +55,37 @@ class HazelcastClient {
                 return this.heartbeat.start();
             })
             .then(() => {
+                this.loggingService.info('HazelcastClient', 'Client started');
                 deferred.resolve(this);
             }).catch((e) => {
+            this.loggingService.error('HazelcastClient', 'Client failed to start', e);
             deferred.reject(e);
         });
 
         return deferred.promise;
     }
 
-    public getMap<K, V>(name: string): IMap<K, V> {
+    getMap<K, V>(name: string): IMap<K, V> {
         return <IMap<K, V>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.MAP_SERVICE);
     }
 
-    public getConfig(): ClientConfig {
+    getConfig(): ClientConfig {
         return this.config;
     }
 
-    public getSerializationService(): SerializationService {
+    getSerializationService(): SerializationService {
         return this.serializationService;
     }
 
-    public getInvocationService(): InvocationService {
+    getInvocationService(): InvocationService {
         return this.invocationService;
     }
 
-    public getConnectionManager(): ClientConnectionManager {
+    getConnectionManager(): ClientConnectionManager {
         return this.connectionManager;
     }
 
-    public getPartitionService(): PartitionService {
+    getPartitionService(): PartitionService {
         return this.partitionService;
     }
 
@@ -87,7 +93,7 @@ class HazelcastClient {
         return this.proxyManager;
     }
 
-    public getClusterService(): ClusterService {
+    getClusterService(): ClusterService {
         return this.clusterService;
     }
 

@@ -10,12 +10,14 @@ import {GroupConfig, ClientNetworkConfig} from '../Config';
 import ConnectionAuthenticator = require('./ConnectionAuthenticator');
 import HazelcastClient = require('../HazelcastClient');
 import {ConnectionListener} from '../ConnectionListener';
+import {LoggingService} from '../LoggingService';
 
 class ClientConnectionManager {
 
     private client: HazelcastClient;
     private listeners: ConnectionListener[] = [];
     private pendingConnections: {[address: string]: Q.Deferred<ClientConnection>} = {};
+    private logger = LoggingService.getLoggingService();
     establishedConnections: {[address: string]: ClientConnection} = {};
 
     constructor(client: HazelcastClient) {
@@ -96,7 +98,6 @@ class ClientConnectionManager {
     }
 
     private onConnectionOpened(connection: ClientConnection) {
-        console.log('Authenticated to ' + connection.address);
         this.listeners.forEach((listener) => {
             if (listener.hasOwnProperty('onConnectionOpened')) {
                 setImmediate(listener.onConnectionOpened.bind(this), connection);

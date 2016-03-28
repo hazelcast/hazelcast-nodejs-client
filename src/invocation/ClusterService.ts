@@ -5,6 +5,7 @@ import Q = require('q');
 import {ClientAddMembershipListenerCodec} from '../codec/ClientAddMembershipListenerCodec';
 import ClientMessage = require('../ClientMessage');
 import {Member} from '../Member';
+import {LoggingService} from '../LoggingService';
 
 const MEMBER_ADDED = 1;
 const MEMBER_REMOVED = 2;
@@ -16,6 +17,7 @@ class ClusterService {
 
     private client: HazelcastClient;
     private ownerConnection: ClientConnection;
+    private logger = LoggingService.getLoggingService();
 
     constructor(client: HazelcastClient) {
         this.client = client;
@@ -52,18 +54,18 @@ class ClusterService {
     }
 
     private onConnectionClosed(connection: ClientConnection) {
+        this.logger.warn('ClusterService', 'Connection closed to ' + connection.address);
         if (connection.address === this.getOwnerConnection().address) {
             this.ownerConnection = null;
-            console.log('ClusterService: connection closed: ' + connection.address.toString());
             this.connectToCluster();
         }
     }
 
     private onHeartbeatStopped(connection: ClientConnection): void {
+        this.logger.warn('ClusterService', connection.address + ' stopped heartbeating.');
         if (connection.getAddress() === this.ownerConnection.address) {
             this.client.getConnectionManager().destroyConnection(connection.address);
         }
-        console.log('Cluster service ' + connection.address + ' stopped heartbeating');
     }
 
     private tryAddressIndex(index: number
@@ -88,7 +90,7 @@ class ClusterService {
                         deferred.resolve();
                     });
                 }).catch((e) => {
-                    console.log(e);
+                    this.logger.warn('ClusterService', e);
                     this.tryAddressIndex(index + 1, attemptLimit, attemptPeriod, deferred);
                 });
             }
@@ -108,30 +110,30 @@ class ClusterService {
             var handleMemberList = this.handleMemberList.bind(this);
             ClientAddMembershipListenerCodec.handle(m, handleMember, handleMemberList, null, null);
         };
-
         this.client.getInvocationService().invokeOnConnection(this.getOwnerConnection(), request, handler)
             .then((resp: ClientMessage) => {
-                console.log('registered listener id ' + ClientAddMembershipListenerCodec.decodeResponse(resp).response);
+                this.logger.trace('ClusterService', 'Registered listener with id '
+                    + ClientAddMembershipListenerCodec.decodeResponse(resp).response);
                 deferred.resolve();
             });
-
         return deferred.promise;
     }
 
     private handleMember(member: Member, eventType: number) {
         if (eventType === MEMBER_ADDED) {
+            this.logger.info('ClusterService', member + ' added to cluster');
             this.memberAdded(member);
         } else if (eventType === MEMBER_REMOVED) {
+            this.logger.info('ClusterService', member + ' removed from cluster');
             this.memberRemoved(member);
         }
         this.client.getPartitionService().refresh();
-        console.log(this.members);
     }
 
     private handleMemberList(members: Member[]) {
         this.members = members;
         this.client.getPartitionService().refresh();
-        console.log(this.members);
+        this.logger.info('ClusterService', 'Members received.', this.members);
     }
 
     private memberAdded(member: Member) {

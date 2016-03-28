@@ -3,6 +3,7 @@ import HazelcastClient = require('./HazelcastClient');
 import ClientConnection = require('./invocation/ClientConnection');
 import {ConnectionHeartbeatListener} from './ConnectionHeartbeatListener';
 import Q = require('q');
+import {LoggingService} from './LoggingService';
 
 var PROPERTY_HEARTBEAT_INTERVAL: string = 'hazelcast.client.heartbeat.interval';
 var PROPERTY_HEARTBEAT_TIMEOUT: string = 'hazelcast.client.heartbeat.timeout';
@@ -13,6 +14,7 @@ class Heartbeat {
     private heartbeatTimeout: number;
     private heartbeatInterval: number;
     private listeners: ConnectionHeartbeatListener[] = [];
+    private logger = LoggingService.getLoggingService();
 
     //Actually it is a NodeJS.Timer. Another typing file that comes with a module we use causes TSD to see
     //return type of setTimeout as number. Because of this we defined timer property as `any` type.
@@ -62,7 +64,7 @@ class Heartbeat {
 
     private onHeartbeatStopped(connection: ClientConnection) {
         connection.heartbeating = false;
-        console.log('heartbeat stopped on ' + connection.address);
+        this.logger.warn('HeartbeatService', 'Heartbeat stopped on ' + connection.address);
         this.listeners.forEach((listener) => {
             if (listener.hasOwnProperty('onHeartbeatStopped')) {
                 setImmediate(listener.onHeartbeatStopped.bind(this), connection);
@@ -72,7 +74,7 @@ class Heartbeat {
 
     private onHeartbeatRestored(connection: ClientConnection) {
         connection.heartbeating = true;
-        console.log('heartbeat restored on ' + connection.address);
+        this.logger.warn('HeartbeatService', 'Heartbeat restored on ' + connection.address);
         this.listeners.forEach((listener) => {
             if (listener.hasOwnProperty('onHeartbeatRestored')) {
                 setImmediate(listener.onHeartbeatRestored.bind(this), connection);

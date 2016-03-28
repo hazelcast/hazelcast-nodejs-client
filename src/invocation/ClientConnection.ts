@@ -2,6 +2,7 @@ import net = require('net');
 import Q = require('q');
 import Address = require('../Address');
 import {BitsUtil} from '../BitsUtil';
+import {LoggingService} from '../LoggingService';
 
 class ClientConnection {
     address: Address;
@@ -10,6 +11,7 @@ class ClientConnection {
     heartbeating = true;
 
     private readBuffer: Buffer;
+    private logging =  LoggingService.getLoggingService();
 
     constructor(address: Address) {
         this.address = address;
@@ -34,6 +36,7 @@ class ClientConnection {
         });
 
         this.socket.on('error', (e: any) => {
+            this.logging.warn('ClientConnection', 'Could not connect to address ' + this.address, e);
             ready.reject(e);
         });
 
