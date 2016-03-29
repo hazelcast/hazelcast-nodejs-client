@@ -34,7 +34,6 @@
     "rimraf": "^2.5.2"
   },
   "scripts": {
-    "install": "gulp",
     "test": "gulp test"
   },
   "repository": {
