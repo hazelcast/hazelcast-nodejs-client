@@ -60,11 +60,11 @@ class ClientConnectionManager {
                 this.onConnectionOpened(connection);
             }).catch((e: any) => {
                 result.reject(e);
-            }).finally(() => {
-                delete this.pendingConnections[addressIndex];
             });
         }).catch((e: any) => {
             result.reject(e);
+        }).finally(() => {
+            delete this.pendingConnections[addressIndex];
         });
 
         return result.promise;
@@ -78,8 +78,8 @@ class ClientConnectionManager {
         if (this.establishedConnections.hasOwnProperty(addressStr)) {
             var conn = this.establishedConnections[addressStr];
             conn.close();
-            this.onConnectionClosed(conn);
             delete this.establishedConnections[addressStr];
+            this.onConnectionClosed(conn);
         }
     }
 

@@ -96,7 +96,9 @@ export class InvocationService {
             this.eventHandlers[correlationId] = invocation;
         }
         this.pending[correlationId] = invocation;
-        connection.write(invocation.request.getBuffer());
+        connection.write(invocation.request.getBuffer()).catch((e) => {
+            invocation.deferred.reject(e);
+        });
         return invocation.deferred.promise;
     }
 

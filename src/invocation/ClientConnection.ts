@@ -24,7 +24,7 @@ class ClientConnection {
     connect(): Q.Promise<ClientConnection> {
         var ready = Q.defer<ClientConnection>();
 
-        this.socket = net.connect(this.address.port, this.address.host, () => {
+        this.socket = net.connect(this.address.port, this.address.host, (e: any) => {
 
             // Send the protocol version
             var buffer = new Buffer(3);
@@ -34,15 +34,23 @@ class ClientConnection {
         });
 
         this.socket.on('error', (e: any) => {
-            console.log('Could not connect to address ' + this.address);
             ready.reject(e);
         });
 
         return ready.promise;
     }
 
-    write(buffer: Buffer) {
-        this.socket.write(buffer);
+    write(buffer: Buffer): Q.Promise<void> {
+        var deferred = Q.defer<void>();
+        this.socket.write(buffer, 'utf8', (e: any) => {
+            if (e === undefined) {
+                deferred.resolve();
+            } else {
+                console.log('Error sending message to ' + this.address + ' ' + e);
+                deferred.reject(e);
+            }
+        });
+        return deferred.promise;
     }
 
     close() {

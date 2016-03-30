@@ -23,17 +23,16 @@ class ClusterService {
         this.members = [];
     }
 
-    start(): Q.Promise<ClusterService> {
+    start(): Q.Promise<void> {
         this.initHeartbeatListener();
         this.initConnectionListener();
         return this.connectToCluster();
     }
 
-    connectToCluster() {
-        var deferred = Q.defer<ClusterService>();
+    connectToCluster(): Q.Promise<void> {
+        var deferred = Q.defer<void>();
         var attemptLimit = this.client.getConfig().networkConfig.connectionAttemptLimit;
         var attemptPeriod = this.client.getConfig().networkConfig.connectionAttemptPeriod;
-        var attempt = 1;
 
         this.tryAddressIndex(0, attemptLimit, attemptPeriod, deferred);
 
@@ -70,28 +69,29 @@ class ClusterService {
     private tryAddressIndex(index: number
         , attemptLimit: number
         , attemptPeriod: number
-        , deferred: Q.Deferred<ClusterService>) {
+        , deferred: Q.Deferred<void>) {
         setImmediate(() => {
-            var currentAddress = this.addresses[index];
-            this.client.getConnectionManager().getOrConnect(currentAddress).then((connection: ClientConnection) => {
-                this.ownerConnection = connection;
-                this.initMemberShipListener().then(() => {
-                    deferred.resolve(this);
-                });
-            }).catch((e) => {
-                console.log(e);
-                if (index === this.addresses.length) {
-                    attemptLimit = attemptLimit - 1;
-                    if (attemptLimit === 0) {
-                        var error = new Error('Unable to connect to any of the following addresses ' + this.addresses);
-                        deferred.reject(error);
-                        return;
-                    } else {
-                        setTimeout(this.tryAddressIndex(0, attemptLimit, attemptPeriod, deferred), attemptPeriod);
-                    }
+            if (this.addresses.length <= index) {
+                attemptLimit = attemptLimit - 1;
+                if (attemptLimit === 0) {
+                    var error = new Error('Unable to connect to any of the following addresses ' + this.addresses);
+                    deferred.reject(error);
+                    return;
+                } else {
+                    setTimeout(this.tryAddressIndex(0, attemptLimit, attemptPeriod, deferred), attemptPeriod);
                 }
-                this.tryAddressIndex(index + 1, attemptLimit, attemptPeriod, deferred);
-            });
+            } else {
+                var currentAddress = this.addresses[index];
+                this.client.getConnectionManager().getOrConnect(currentAddress).then((connection: ClientConnection) => {
+                    this.ownerConnection = connection;
+                    this.initMemberShipListener().then(() => {
+                        deferred.resolve();
+                    });
+                }).catch((e) => {
+                    console.log(e);
+                    this.tryAddressIndex(index + 1, attemptLimit, attemptPeriod, deferred);
+                });
+            }
         });
     }
 
