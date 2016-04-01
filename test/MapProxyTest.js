@@ -1,21 +1,29 @@
 var expect = require("chai").expect;
-var HazelcastClient = require("../lib/HazelcastClient");
+var HazelcastClient = require("../.");
 var Q = require("q");
-
+var Controller = require('./RC');
 
 describe("MapProxy Test", function() {
 
+    var cluster;
     var client;
     var map;
 
     before(function () {
-        return HazelcastClient.newHazelcastClient().then(function(hazelcastClient) {
-            map = hazelcastClient.getMap('test-map');
-            client = hazelcastClient;
+        this.timeout(32000);
+        return Controller.createCluster(null, null).then(function(res) {
+            cluster = res;
+            return Controller.startMember(cluster.id);
+        }).then(function(member) {
+            return HazelcastClient.newHazelcastClient().then(function(hazelcastClient) {
+                map = hazelcastClient.getMap('test-map');
+                client = hazelcastClient;
+            });
         });
     });
 
     beforeEach(function(done) {
+        this.timeout(10000);
         var promises = [];
         for (var i = 0; i < 100; i++) {
             var promise = map.put('key' + i, 'val' + i);
@@ -27,7 +35,7 @@ describe("MapProxy Test", function() {
     });
 
     after(function() {
-        return map.destroy();
+        return map.destroy().then(Controller.shutdownCluster.bind(null, cluster.id));
     });
 
     it('get_basic', function() {

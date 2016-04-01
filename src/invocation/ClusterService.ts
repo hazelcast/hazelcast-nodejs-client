@@ -12,8 +12,8 @@ const MEMBER_REMOVED = 2;
 
 class ClusterService {
 
-    private addresses: Address[];
-    private members: Member[];
+    private knownAddresses: Address[] = [];
+    private members: Member[] = [];
 
     private client: HazelcastClient;
     private ownerConnection: ClientConnection;
@@ -21,7 +21,6 @@ class ClusterService {
 
     constructor(client: HazelcastClient) {
         this.client = client;
-        this.addresses = client.getConfig().networkConfig.addresses;
         this.members = [];
     }
 
@@ -32,13 +31,24 @@ class ClusterService {
     }
 
     connectToCluster(): Q.Promise<void> {
+        if (this.members.length > 0) {
+            this.knownAddresses = new Array<Address>();
+            this.members.forEach((member: Member) => {
+                this.knownAddresses.push(member.address);
+            });
+        } else {
+            this.knownAddresses = this.client.getConfig().networkConfig.addresses;
+        }
         var deferred = Q.defer<void>();
         var attemptLimit = this.client.getConfig().networkConfig.connectionAttemptLimit;
         var attemptPeriod = this.client.getConfig().networkConfig.connectionAttemptPeriod;
-
         this.tryAddressIndex(0, attemptLimit, attemptPeriod, deferred);
 
         return deferred.promise;
+    }
+
+    getSize() {
+        return this.members.length;
     }
 
     private initHeartbeatListener() {
@@ -73,17 +83,17 @@ class ClusterService {
         , attemptPeriod: number
         , deferred: Q.Deferred<void>) {
         setImmediate(() => {
-            if (this.addresses.length <= index) {
+            if (this.knownAddresses.length <= index) {
                 attemptLimit = attemptLimit - 1;
                 if (attemptLimit === 0) {
-                    var error = new Error('Unable to connect to any of the following addresses ' + this.addresses);
+                    var error = new Error('Unable to connect to any of the following addresses ' + this.knownAddresses);
                     deferred.reject(error);
                     return;
                 } else {
                     setTimeout(this.tryAddressIndex(0, attemptLimit, attemptPeriod, deferred), attemptPeriod);
                 }
             } else {
-                var currentAddress = this.addresses[index];
+                var currentAddress = this.knownAddresses[index];
                 this.client.getConnectionManager().getOrConnect(currentAddress).then((connection: ClientConnection) => {
                     this.ownerConnection = connection;
                     this.initMemberShipListener().then(() => {
