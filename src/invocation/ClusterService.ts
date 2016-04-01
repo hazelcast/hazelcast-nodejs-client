@@ -111,7 +111,7 @@ class ClusterService {
 
         this.client.getInvocationService().invokeOnConnection(this.getOwnerConnection(), request, handler)
             .then((resp: ClientMessage) => {
-                console.log('registered listener with id ' + ClientAddMembershipListenerCodec.decodeResponse(resp).response);
+                console.log('registered listener id ' + ClientAddMembershipListenerCodec.decodeResponse(resp).response);
                 deferred.resolve();
             });
 

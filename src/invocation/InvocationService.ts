@@ -34,7 +34,7 @@ export class InvocationService {
     private pending: {[id: number]: Invocation} = {};
     private client: HazelcastClient;
     private smartRoutingEnabled: boolean;
-    public invoke: (invocation: Invocation) => Q.Promise<ClientMessage>;
+    private invoke: (invocation: Invocation) => Q.Promise<ClientMessage>;
 
     constructor(hazelcastClient: HazelcastClient) {
         this.client = hazelcastClient;
@@ -72,7 +72,7 @@ export class InvocationService {
         return this.invoke(new Invocation(request));
     }
 
-    invokeSmart(invocation: Invocation) {
+    private invokeSmart(invocation: Invocation) {
         if (invocation.hasOwnProperty('connection')) {
             return this.send(invocation, invocation.connection);
         } else if (invocation.hasOwnProperty('partitionId')) {
@@ -85,7 +85,7 @@ export class InvocationService {
         }
     }
 
-    invokeNonSmart(invocation: Invocation) {
+    private invokeNonSmart(invocation: Invocation) {
         if (invocation.hasOwnProperty('connection')) {
             return this.send(invocation, invocation.connection);
         } else {
