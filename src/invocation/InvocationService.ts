@@ -7,6 +7,7 @@ import {Data} from '../serialization/Data';
 import Address = require('../Address');
 import ExceptionCodec = require('../codec/ExceptionCodec');
 import {BitsUtil} from '../BitsUtil';
+import {LoggingService} from '../LoggingService';
 
 var EXCEPTION_MESSAGE_TYPE = 109;
 var INVOCATION_TIMEOUT = 120000;
@@ -35,6 +36,7 @@ export class InvocationService {
     private client: HazelcastClient;
     private smartRoutingEnabled: boolean;
     private invoke: (invocation: Invocation) => Q.Promise<ClientMessage>;
+    private logger = LoggingService.getLoggingService();
 
     constructor(hazelcastClient: HazelcastClient) {
         this.client = hazelcastClient;
@@ -147,7 +149,7 @@ export class InvocationService {
                     this.invoke(pendingInvocation);
                 }, INVOCATION_RETRY_DELAY);
             } else {
-                console.log(remoteException);
+                this.logger.error('InvocationService', 'Received exception as response', remoteException);
                 deferred.reject(remoteException);
             }
         } else {
