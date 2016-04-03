@@ -6,11 +6,20 @@ import {ClientAddMembershipListenerCodec} from '../codec/ClientAddMembershipList
 import ClientMessage = require('../ClientMessage');
 import {Member} from '../Member';
 import {LoggingService} from '../LoggingService';
+import {EventEmitter} from 'events';
 
 const MEMBER_ADDED = 1;
 const MEMBER_REMOVED = 2;
 
-class ClusterService {
+const EMIT_MEMBER_ADDED = 'memberAdded';
+const EMIT_MEMBER_REMOVED = 'memberRemoved';
+const EMIT_ATTRIBUTE_CHANGE = 'memberAttributeChange';
+const ATTRIBUTE_CHANGE: {[key: string]: string} = {
+    1: 'put',
+    2: 'remove'
+};
+
+class ClusterService extends EventEmitter {
 
     private knownAddresses: Address[] = [];
     private members: Member[] = [];
@@ -20,6 +29,7 @@ class ClusterService {
     private logger = LoggingService.getLoggingService();
 
     constructor(client: HazelcastClient) {
+        super();
         this.client = client;
         this.members = [];
     }
@@ -118,7 +128,8 @@ class ClusterService {
         var handler = (m: ClientMessage) => {
             var handleMember = this.handleMember.bind(this);
             var handleMemberList = this.handleMemberList.bind(this);
-            ClientAddMembershipListenerCodec.handle(m, handleMember, handleMemberList, null, null);
+            var handleAttributeChange = this.handleMemberAttributeChange.bind(this);
+            ClientAddMembershipListenerCodec.handle(m, handleMember, handleMemberList, handleAttributeChange, null);
         };
         this.client.getInvocationService().invokeOnConnection(this.getOwnerConnection(), request, handler)
             .then((resp: ClientMessage) => {
@@ -131,10 +142,10 @@ class ClusterService {
 
     private handleMember(member: Member, eventType: number) {
         if (eventType === MEMBER_ADDED) {
-            this.logger.info('ClusterService', member + ' added to cluster');
+            this.logger.info('ClusterService', member.toString() + ' added to cluster');
             this.memberAdded(member);
         } else if (eventType === MEMBER_REMOVED) {
-            this.logger.info('ClusterService', member + ' removed from cluster');
+            this.logger.info('ClusterService', member.toString() + ' removed from cluster');
             this.memberRemoved(member);
         }
         this.client.getPartitionService().refresh();
@@ -146,12 +157,18 @@ class ClusterService {
         this.logger.info('ClusterService', 'Members received.', this.members);
     }
 
+    private handleMemberAttributeChange(uuid: string, key: string, operationType: number, value: string) {
+        this.emit(EMIT_ATTRIBUTE_CHANGE, uuid, key, ATTRIBUTE_CHANGE[operationType], value);
+    }
+
     private memberAdded(member: Member) {
         this.members.push(member);
+        this.emit(EMIT_MEMBER_ADDED, member);
     }
 
     private memberRemoved(member: Member) {
         this.members.splice(this.members.indexOf(member), 1);
+        this.emit(EMIT_MEMBER_REMOVED, member);
     }
 }
 

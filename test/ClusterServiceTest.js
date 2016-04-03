@@ -26,11 +26,12 @@ describe('ClusterService', function() {
     });
 
     after(function() {
+        client.shutdown();
         return Controller.shutdownCluster(cluster.id);
     });
 
     it('should know when a new member joins to cluster', function() {
-        this.timeout(10000);
+        this.timeout(15000);
         var member2;
         return Controller.startMember(cluster.id).then(function(res) {
             member2 = res;
@@ -41,7 +42,7 @@ describe('ClusterService', function() {
     });
 
     it('should know when a member leaves cluster', function() {
-        this.timeout(10000);
+        this.timeout(15000);
         var member2;
         return Controller.startMember(cluster.id).then(function(res) {
             member2 = res;

@@ -48,8 +48,18 @@ function shutdownCluster(clusterId) {
     return deferrred.promise;
 }
 
+function executeOnController(clusterId, script, lang) {
+    var deferred = Q.defer();
+    controller.executeOnController(clusterId, script, lang, function(err, res) {
+        if (err) return deferred.reject(err);
+        return deferred.resolve(res);
+    });
+    return deferred.promise;
+}
+
 exports.exit = exit;
 exports.createCluster = createCluster;
 exports.startMember = startMember;
 exports.shutdownMember = shutdownMember;
 exports.shutdownCluster = shutdownCluster;
+exports.executeOnController = executeOnController;

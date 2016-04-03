@@ -3,7 +3,7 @@ var sinon = require('sinon');
 var winston = require('winston');
 var Config = require('../lib/Config');
 var HazelcastClient = require('../lib/HazelcastClient');
-describe('Logging Test', function() {
+describe.skip('Logging Test', function() {
     var client;
 
     var winstonAdapter = {

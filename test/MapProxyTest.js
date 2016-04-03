@@ -35,7 +35,8 @@ describe("MapProxy Test", function() {
     });
 
     after(function() {
-        return map.destroy().then(Controller.shutdownCluster.bind(null, cluster.id));
+        client.shutdown();
+        return Controller.shutdownCluster(cluster.id);
     });
 
     it('get_basic', function() {
