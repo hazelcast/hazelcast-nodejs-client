@@ -9,18 +9,20 @@ import {GroupConfig, ClientNetworkConfig} from '../Config';
 
 import ConnectionAuthenticator = require('./ConnectionAuthenticator');
 import HazelcastClient = require('../HazelcastClient');
-import {ConnectionListener} from '../ConnectionListener';
 import {LoggingService} from '../LoggingService';
+import {EventEmitter} from 'events';
 
-class ClientConnectionManager {
+const EMIT_CONNECTION_CLOSED = 'connectionClosed';
+const EMIT_CONNECTION_OPENED = 'connectionOpened';
 
+class ClientConnectionManager extends EventEmitter {
     private client: HazelcastClient;
-    private listeners: ConnectionListener[] = [];
     private pendingConnections: {[address: string]: Q.Deferred<ClientConnection>} = {};
     private logger = LoggingService.getLoggingService();
     establishedConnections: {[address: string]: ClientConnection} = {};
 
     constructor(client: HazelcastClient) {
+        super();
         this.client = client;
     }
 
@@ -85,24 +87,12 @@ class ClientConnectionManager {
         }
     }
 
-    addListener(listener: ConnectionListener) {
-        this.listeners.push(listener);
-    }
-
     private onConnectionClosed(connection: ClientConnection) {
-        this.listeners.forEach((listener) => {
-            if (listener.hasOwnProperty('onConnectionClosed')) {
-                setImmediate(listener.onConnectionClosed.bind(this), connection);
-            }
-        });
+        this.emit(EMIT_CONNECTION_CLOSED, connection);
     }
 
     private onConnectionOpened(connection: ClientConnection) {
-        this.listeners.forEach((listener) => {
-            if (listener.hasOwnProperty('onConnectionOpened')) {
-                setImmediate(listener.onConnectionOpened.bind(this), connection);
-            }
-        });
+        this.emit(EMIT_CONNECTION_OPENED, connection);
     }
 
     private authenticate(connection: ClientConnection): Q.Promise<boolean> {
