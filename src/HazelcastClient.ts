@@ -11,6 +11,9 @@ import ClusterService = require('./invocation/ClusterService');
 import Heartbeat = require('./Heartbeat');
 import {LoggingService} from './LoggingService';
 import {LifecycleService, LifecycleEvent} from './LifecycleService';
+import {ClientGetDistributedObjectsCodec} from './codec/ClientGetDistributedObjectsCodec';
+import {DistributedObject} from './DistributedObject';
+import defer = Q.defer;
 
 class HazelcastClient {
 
@@ -65,6 +68,22 @@ class HazelcastClient {
             deferred.reject(e);
         });
 
+        return deferred.promise;
+    }
+
+    getDistributedObjects(): Q.Promise<DistributedObject[]> {
+        var deferred = Q.defer<DistributedObject[]>();
+        var clientMessage = ClientGetDistributedObjectsCodec.encodeRequest();
+        var toObjectFunc = this.serializationService.toObject.bind(this);
+        var proxyManager = this.proxyManager;
+        this.invocationService.invokeOnRandomTarget(clientMessage).then(function(resp) {
+            var objectsInfoList = ClientGetDistributedObjectsCodec.decodeResponse(resp, toObjectFunc).response;
+            var proxies: DistributedObject[] = [];
+            for (var i = 0; i < objectsInfoList.size(); i++)  {
+                proxies.push(proxyManager.getOrCreateProxy(objectsInfoList.get(i)[1], objectsInfoList.get(i)[0]));
+            }
+            deferred.resolve(proxies);
+        }).catch(deferred.reject);
         return deferred.promise;
     }
 
