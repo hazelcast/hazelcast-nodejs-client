@@ -3,11 +3,11 @@ var Controller = require('./RC');
 var assert = require('chai').assert;
 var sinon = require('sinon');
 describe('MembershipListener', function() {
+    this.timeout(10000);
     var cluster;
     var member;
     var client;
     before(function(done) {
-        this.timeout(4000);
         Controller.createCluster(null, null).then(function(res) {
             cluster = res;
             return Controller.startMember(cluster.id).then(function(res) {
@@ -30,7 +30,6 @@ describe('MembershipListener', function() {
     });
 
     it('sees member added event', function(done) {
-        this.timeout(10000);
         var memberAddedSpy = sinon.spy();
         var newMember;
         client.clusterService.on('memberAdded', memberAddedSpy);
@@ -49,7 +48,6 @@ describe('MembershipListener', function() {
     });
 
     it('sees member removed event', function(done) {
-        this.timeout(10000);
         var memberRemovedSpy = sinon.spy();
         var newMember;
         client.clusterService.on('memberRemoved', memberRemovedSpy);

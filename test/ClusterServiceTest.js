@@ -3,6 +3,7 @@ var expect = require('chai').expect;
 var HazelcastClient = require('../.');
 var Config = require('../lib/Config');
 describe('ClusterService', function() {
+    this.timeout(15000);
     var cluster;
     var ownerMember;
     before(function(done) {
@@ -31,7 +32,6 @@ describe('ClusterService', function() {
     });
 
     it('should know when a new member joins to cluster', function() {
-        this.timeout(15000);
         var member2;
         return Controller.startMember(cluster.id).then(function(res) {
             member2 = res;
@@ -42,7 +42,6 @@ describe('ClusterService', function() {
     });
 
     it('should know when a member leaves cluster', function() {
-        this.timeout(15000);
         var member2;
         return Controller.startMember(cluster.id).then(function(res) {
             member2 = res;
