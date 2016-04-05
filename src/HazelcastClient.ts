@@ -1,5 +1,5 @@
 import {SerializationService} from './serialization/SerializationService';
-import {InvocationService} from './invocation/InvocationService';
+import {InvocationService, ListenerService} from './invocation/InvocationService';
 import ClientConnectionManager = require('./invocation/ClientConnectionManager');
 import {ClientConfig} from './Config';
 import ProxyManager = require('./proxy/ProxyManager');
@@ -15,6 +15,7 @@ import {ClientGetDistributedObjectsCodec} from './codec/ClientGetDistributedObje
 import {DistributedObject} from './DistributedObject';
 import defer = Q.defer;
 import {ClientInfo} from './ClientInfo';
+import ClientMessage = require('./ClientMessage');
 
 class HazelcastClient {
 
@@ -22,6 +23,7 @@ class HazelcastClient {
     private loggingService: LoggingService;
     private serializationService: SerializationService;
     private invocationService: InvocationService;
+    private listenerService: ListenerService;
     private connectionManager: ClientConnectionManager;
     private partitionService: PartitionService;
     private clusterService: ClusterService;
@@ -42,6 +44,7 @@ class HazelcastClient {
         LoggingService.initialize(this.config.properties['hazelcast.logging']);
         this.loggingService = LoggingService.getLoggingService();
         this.invocationService = new InvocationService(this);
+        this.listenerService = new ListenerService(this);
         this.serializationService = new JsonSerializationService();
         this.proxyManager = new ProxyManager(this);
         this.partitionService = new PartitionService(this);
@@ -109,6 +112,10 @@ class HazelcastClient {
         return this.invocationService;
     }
 
+    getListenerService(): ListenerService {
+        return this.listenerService;
+    }
+
     getConnectionManager(): ClientConnectionManager {
         return this.connectionManager;
     }
@@ -127,6 +134,14 @@ class HazelcastClient {
 
     getHeartbeat(): Heartbeat {
         return this.heartbeat;
+    }
+
+    addDistributedObjectListener(listenerFunc: Function): Q.Promise<string> {
+        return this.proxyManager.addDistributedObjectListener(listenerFunc);
+    }
+
+    removeDistributedObjectListener(listenerId: string): Q.Promise<boolean> {
+        return this.proxyManager.removeDistributedObjectListener(listenerId);
     }
 
     shutdown() {

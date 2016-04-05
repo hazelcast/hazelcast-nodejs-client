@@ -8,6 +8,8 @@ import ClientConnection = require('../invocation/ClientConnection');
 import ClientMessage = require('../ClientMessage');
 import {ClientDestroyProxyCodec} from '../codec/ClientDestroyProxyCodec';
 import defer = Q.defer;
+import {ClientAddDistributedObjectListenerCodec} from '../codec/ClientAddDistributedObjectListenerCodec';
+import {ClientRemoveDistributedObjectListenerCodec} from '../codec/ClientRemoveDistributedObjectListenerCodec';
 
 class ProxyManager {
     public MAP_SERVICE: string = 'hz:impl:mapService';
@@ -55,6 +57,25 @@ class ProxyManager {
             deferred.resolve();
         });
         return deferred.promise;
+    }
+
+    addDistributedObjectListener(listenerFunc: Function): Q.Promise<string> {
+        var handler = function(clientMessage: ClientMessage) {
+            var converterFunc = function(name: string, serviceName: string, eventType: string) {
+                if (eventType === 'CREATED') {
+                    listenerFunc(name, serviceName, 'created');
+                } else if (eventType === 'DESTROYED') {
+                    listenerFunc(name, serviceName, 'destroyed');
+                }
+            };
+            ClientAddDistributedObjectListenerCodec.handle(clientMessage, converterFunc, null);
+        };
+        return this.client.getListenerService().registerListener(ClientAddDistributedObjectListenerCodec, handler);
+    }
+
+    removeDistributedObjectListener(listenerId: string) {
+        return this.client.getListenerService()
+            .deregisterListener(ClientRemoveDistributedObjectListenerCodec, listenerId);
     }
 }
 export = ProxyManager;

@@ -8,12 +8,13 @@ import Address = require('../Address');
 import ExceptionCodec = require('../codec/ExceptionCodec');
 import {BitsUtil} from '../BitsUtil';
 import {LoggingService} from '../LoggingService';
+import {EventEmitter} from 'events';
 
 var EXCEPTION_MESSAGE_TYPE = 109;
 var INVOCATION_TIMEOUT = 120000;
 var INVOCATION_RETRY_DELAY = 1000;
 
-class Invocation {
+export class Invocation {
 
     constructor(request: ClientMessage) {
         this.request = request;
@@ -35,8 +36,9 @@ export class InvocationService {
     private pending: {[id: number]: Invocation} = {};
     private client: HazelcastClient;
     private smartRoutingEnabled: boolean;
-    private invoke: (invocation: Invocation) => Q.Promise<ClientMessage>;
     private logger = LoggingService.getLoggingService();
+
+    invoke: (invocation: Invocation) => Q.Promise<ClientMessage>;
 
     constructor(hazelcastClient: HazelcastClient) {
         this.client = hazelcastClient;
@@ -122,6 +124,12 @@ export class InvocationService {
         return invocation.deferred.promise;
     }
 
+    removeEventHandler(id: number): void {
+        if (this.eventHandlers.hasOwnProperty('' + id)) {
+            delete this.eventHandlers[id];
+        }
+    }
+
     processResponse(buffer: Buffer) {
         var clientMessage = new ClientMessage(buffer);
         var correlationId = clientMessage.getCorrelationId().toNumber();
@@ -162,3 +170,44 @@ export class InvocationService {
     }
 }
 
+export class ListenerService {
+    private client: HazelcastClient;
+    private listenerIdToCorrelation: { [id: string]: Long} = {};
+    private internalEventEmitter: EventEmitter;
+
+    constructor(client: HazelcastClient) {
+        this.client = client;
+        this.internalEventEmitter = new EventEmitter();
+        this.internalEventEmitter.setMaxListeners(0);
+    }
+
+    registerListener(codec: any, handler: any): Q.Promise<string> {
+        var deferred = Q.defer<string>();
+        var invocation = new Invocation(codec.encodeRequest(true));
+        invocation.handler = handler;
+        var listenerIdToCorrelation = this.listenerIdToCorrelation;
+        this.client.getInvocationService().invoke(invocation).then(function(responseMessage) {
+            var correlationId = responseMessage.getCorrelationId();
+            var response = codec.decodeResponse(responseMessage);
+            listenerIdToCorrelation[response.response] = correlationId;
+            deferred.resolve(response.response);
+        });
+        return deferred.promise;
+    }
+
+    deregisterListener(codec: any, listenerId: string): Q.Promise<boolean> {
+        var deferred = Q.defer<boolean>();
+        var invocation = new Invocation(codec.encodeRequest(listenerId));
+        var listenerIdToCorrelation = this.listenerIdToCorrelation;
+        this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
+            var correlationId = responseMessage.getCorrelationId().toString();
+            if (listenerIdToCorrelation.hasOwnProperty(correlationId)) {
+                this.client.getInvocationService().removeEventHandler(listenerIdToCorrelation[correlationId].low);
+                delete listenerIdToCorrelation[correlationId];
+            }
+            var response = codec.decodeResponse(responseMessage);
+            deferred.resolve(response.response);
+        });
+        return deferred.promise;
+    }
+}
