@@ -100,6 +100,10 @@ class HazelcastClient {
     getHeartbeat(): Heartbeat {
         return this.heartbeat;
     }
+
+    shutdown() {
+        this.heartbeat.cancel();
+    }
 }
 
 export = HazelcastClient;

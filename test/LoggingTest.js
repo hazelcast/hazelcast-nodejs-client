@@ -2,8 +2,10 @@ var expect = require('chai').expect;
 var sinon = require('sinon');
 var winston = require('winston');
 var Config = require('../lib/Config');
+var Controller = require('./RC');
 var HazelcastClient = require('../lib/HazelcastClient');
 describe('Logging Test', function() {
+    var cluster;
     var client;
 
     var winstonAdapter = {
@@ -26,11 +28,26 @@ describe('Logging Test', function() {
         }
     };
 
+    before(function() {
+        return Controller.createCluster(null, null).then(function(res) {
+            cluster = res;
+            return Controller.startMember(cluster.id);
+        });
+    });
+
+    after(function() {
+        return Controller.shutdownCluster(cluster.id);
+    });
+
     beforeEach(function() {
         sinon.spy(console, 'log');
     });
 
     afterEach(function() {
+        if (client != null) {
+            client.shutdown();
+            client = null;
+        }
         console.log.restore();
     });
 
@@ -44,7 +61,7 @@ describe('Logging Test', function() {
         });
         var cfg = new Config.ClientConfig();
         cfg.properties['hazelcast.logging'] = winstonAdapter;
-        return HazelcastClient.newHazelcastClient(cfg).then(function(hz) {
+        HazelcastClient.newHazelcastClient(cfg).then(function(hz) {
             client = hz;
         });
     });
@@ -53,12 +70,14 @@ describe('Logging Test', function() {
         var cfg = new Config.ClientConfig();
         cfg.properties['hazelcast.logging'] = 'off';
         return HazelcastClient.newHazelcastClient(cfg).then(function(hz) {
+            client = hz;
             return sinon.assert.notCalled(console.log);
         });
     });
 
     it('default logging in case of empty property', function() {
         return HazelcastClient.newHazelcastClient().then(function(hz) {
+            client = hz;
             return sinon.assert.called(console.log);
         });
     });
@@ -67,6 +86,7 @@ describe('Logging Test', function() {
         var cfg = new Config.ClientConfig();
         cfg.properties['hazelcast.logging'] = 'default';
         return HazelcastClient.newHazelcastClient(cfg).then(function(hz) {
+            client = hz;
             return sinon.assert.called(console.log);
         });
     });
@@ -75,5 +95,5 @@ describe('Logging Test', function() {
         var cfg = new Config.ClientConfig();
         cfg.properties['hazelcast.logging'] = 'unknw';
         return expect(HazelcastClient.newHazelcastClient.bind(this, cfg)).to.throw(Error);
-    })
+    });
 });
