@@ -57,6 +57,10 @@ class ClusterService extends EventEmitter {
         return deferred.promise;
     }
 
+    getMembers() {
+        return this.members;
+    }
+
     getSize() {
         return this.members.length;
     }
