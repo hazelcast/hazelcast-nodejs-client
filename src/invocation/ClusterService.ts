@@ -68,9 +68,7 @@ class ClusterService extends EventEmitter {
     }
 
     private initConnectionListener() {
-        this.client.getConnectionManager().addListener({
-            onConnectionClosed: this.onConnectionClosed.bind(this)
-        });
+        this.client.getConnectionManager().on('connectionClosed', this.onConnectionClosed.bind(this));
     }
 
     private onConnectionClosed(connection: ClientConnection) {
