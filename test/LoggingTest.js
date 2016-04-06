@@ -51,18 +51,16 @@ describe('Logging Test', function() {
         console.log.restore();
     });
 
-    it('winston should emit logging event', function(done) {
-        var calledDone = false;
+    it('winston should emit logging event', function() {
+        var loggingHappened = false;
         winstonAdapter.logger.on('logging', function(transport, level, msg, meta) {
-            if (!calledDone) {
-                calledDone = true;
-                done();
-            }
+            loggingHappened = true;
         });
         var cfg = new Config.ClientConfig();
         cfg.properties['hazelcast.logging'] = winstonAdapter;
-        HazelcastClient.newHazelcastClient(cfg).then(function(hz) {
+        return HazelcastClient.newHazelcastClient(cfg).then(function(hz) {
             client = hz;
+            return expect(loggingHappened).to.be.true;
         });
     });
 
