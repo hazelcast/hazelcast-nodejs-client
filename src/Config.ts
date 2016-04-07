@@ -39,8 +39,16 @@ export interface LifecycleListener {
     (event: string): void;
 }
 
-export interface ListenerConfigs {
-    lifecycle?: LifecycleListener[];
+export class ListenerConfig {
+    lifecycle: Function[] = [];
+
+    addLifecycleListener(listener: Function) {
+        this.lifecycle.push(listener);
+    }
+
+    getLifecycleListeners() {
+        return this.lifecycle;
+    }
 }
 
 export class ClientConfig {
@@ -51,6 +59,6 @@ export class ClientConfig {
     };
     groupConfig: GroupConfig = new GroupConfig();
     networkConfig: ClientNetworkConfig = new ClientNetworkConfig();
-    listeners: ListenerConfigs = [];
+    listeners: ListenerConfig = new ListenerConfig();
     serializationConfig: SerializationConfig = new SerializationConfig();
 }

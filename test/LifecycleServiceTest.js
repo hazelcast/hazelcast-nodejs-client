@@ -21,7 +21,7 @@ describe('LifecycleService', function() {
     it('client should emit starting, started, shuttingDown and shutdown events in order', function(done) {
         var cfg = new Config.ClientConfig();
         var expectedState = 'starting';
-        cfg.listeners.lifecycle = [
+        cfg.listeners.addLifecycleListener(
             function(state) {
                 if (state === 'starting' && expectedState === 'starting') {
                     expectedState = 'started'
@@ -35,7 +35,7 @@ describe('LifecycleService', function() {
                     done('Got lifecycle event ' + state + ' instead of ' + expectedState);
                 }
             }
-        ];
+        );
         HazelcastClient.newHazelcastClient(cfg).then(function(client) {
             client.shutdown();
         });
