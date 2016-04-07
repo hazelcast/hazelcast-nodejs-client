@@ -1,0 +1,9 @@
+{
+  "name": "hazelcast-nodejs-client",
+  "version": false,
+  "ambientDependencies": {
+    "node": "github:DefinitelyTyped/DefinitelyTyped/node/node.d.ts#dc9dabe74a5be62613b17a3605309783a12ff28a",
+    "Q": "github:DefinitelyTyped/DefinitelyTyped/q/Q.d.ts#dc9dabe74a5be62613b17a3605309783a12ff28a",
+    "long": "github:DefinitelyTyped/DefinitelyTyped/long/long.d.ts#1984ea435fe9e93a012d50db7773db58ae5d494b"
+  }
+}

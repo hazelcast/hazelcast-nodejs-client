@@ -8,8 +8,7 @@
   ],
   "dependencies": {
     "long": "3.0.1",
-    "q": "1.4.1",
-    "lodash": "3.10.1"
+    "q": "1.4.1"
   },
   "devDependencies": {
     "chai": "3.4.1",
