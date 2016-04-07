@@ -35,8 +35,20 @@ export class GlobalSerializerConfig {
     //TO-DO when implementing serialization
 }
 
+export interface LifecycleListener {
+    (event: string): void;
+}
+
 export class ListenerConfig {
-    //TO-DO
+    lifecycle: Function[] = [];
+
+    addLifecycleListener(listener: Function) {
+        this.lifecycle.push(listener);
+    }
+
+    getLifecycleListeners() {
+        return this.lifecycle;
+    }
 }
 
 export class ClientConfig {
@@ -47,6 +59,6 @@ export class ClientConfig {
     };
     groupConfig: GroupConfig = new GroupConfig();
     networkConfig: ClientNetworkConfig = new ClientNetworkConfig();
-    listenerConfigs: ListenerConfig[];
+    listeners: ListenerConfig = new ListenerConfig();
     serializationConfig: SerializationConfig = new SerializationConfig();
 }

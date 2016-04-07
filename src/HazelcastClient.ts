@@ -10,6 +10,7 @@ import PartitionService = require('./PartitionService');
 import ClusterService = require('./invocation/ClusterService');
 import Heartbeat = require('./Heartbeat');
 import {LoggingService} from './LoggingService';
+import {LifecycleService, LifecycleEvent} from './LifecycleService';
 
 class HazelcastClient {
 
@@ -20,6 +21,7 @@ class HazelcastClient {
     private connectionManager: ClientConnectionManager;
     private partitionService: PartitionService;
     private clusterService: ClusterService;
+    private lifecycleService: LifecycleService;
     private proxyManager: ProxyManager;
     private heartbeat: Heartbeat;
 
@@ -41,12 +43,12 @@ class HazelcastClient {
         this.partitionService = new PartitionService(this);
         this.connectionManager = new ClientConnectionManager(this);
         this.clusterService = new ClusterService(this);
+        this.lifecycleService = new LifecycleService(this);
         this.heartbeat = new Heartbeat(this);
     }
 
     private init(): Q.Promise<HazelcastClient> {
         var deferred = Q.defer<HazelcastClient>();
-
         this.clusterService.start()
             .then(() => {
                 return this.partitionService.initialize();
@@ -55,6 +57,7 @@ class HazelcastClient {
                 return this.heartbeat.start();
             })
             .then(() => {
+                this.lifecycleService.emitLifecycleEvent(LifecycleEvent.started);
                 this.loggingService.info('HazelcastClient', 'Client started');
                 deferred.resolve(this);
             }).catch((e) => {
@@ -102,7 +105,9 @@ class HazelcastClient {
     }
 
     shutdown() {
+        this.lifecycleService.emitLifecycleEvent(LifecycleEvent.shuttingDown);
         this.heartbeat.cancel();
+        this.lifecycleService.emitLifecycleEvent(LifecycleEvent.shutdown);
     }
 }
 
