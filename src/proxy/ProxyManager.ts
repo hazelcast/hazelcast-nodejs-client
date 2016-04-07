@@ -24,12 +24,14 @@ class ProxyManager {
         this.client = client;
     }
 
-    public getOrCreateProxy(name: string, serviceName: string): DistributedObject {
+    public getOrCreateProxy(name: string, serviceName: string, createAtServer = true): DistributedObject {
         if (this.proxies.hasOwnProperty(name)) {
             return this.proxies[name];
         } else {
             var newProxy: DistributedObject = new this.service[serviceName](this.client, serviceName, name);
-            this.createProxy(name, serviceName);
+            if (createAtServer) {
+                this.createProxy(name, serviceName);
+            }
             this.proxies[name] = newProxy;
             return newProxy;
         }

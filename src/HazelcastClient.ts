@@ -80,7 +80,8 @@ class HazelcastClient {
             var objectsInfoList = ClientGetDistributedObjectsCodec.decodeResponse(resp, toObjectFunc).response;
             var proxies: DistributedObject[] = [];
             for (var i = 0; i < objectsInfoList.size(); i++)  {
-                proxies.push(proxyManager.getOrCreateProxy(objectsInfoList.get(i)[1], objectsInfoList.get(i)[0]));
+                var objectInfo = objectsInfoList.get(i);
+                proxies.push(proxyManager.getOrCreateProxy(objectInfo[1], objectInfo[0], false));
             }
             deferred.resolve(proxies);
         }).catch(deferred.reject);
