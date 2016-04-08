@@ -57,6 +57,29 @@ describe("MapProxy Test", function() {
         });
     });
 
+    it('put with ttl puts value to map', function() {
+        return map.put('key-with-ttl', 'val-with-ttl', 3000).then(function() {
+            return map.get('key-with-ttl').then(function(val) {
+                return expect(val).to.equal('val-with-ttl');
+            });
+        });
+    });
+
+    it('put with ttl removes value after ttl', function(done) {
+        return map.put('ttl-to-remove', 'val', 1500).then(function() {
+            setTimeout(function() {
+                map.get('ttl-to-remove').then(function(val) {
+                    try {
+                        expect(val).to.be.null;
+                        done();
+                    } catch (e) {
+                        done(e);
+                    }
+                })
+            }, 1500);
+        });
+    });
+
     it('clear', function() {
         return map.clear().then(function() {
             return map.isEmpty();
