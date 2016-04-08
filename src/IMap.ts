@@ -1,4 +1,3 @@
-///<reference path="../typings/q/Q.d.ts" />
 import Promise = Q.Promise;
 import {DistributedObject} from './DistributedObject';
 export interface IMap<K, V> extends DistributedObject {
