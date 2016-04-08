@@ -143,6 +143,18 @@ describe("MapProxy Test", function() {
             return expect(val).to.be.false;
         });
     });
+
+    it('destroy', function() {
+        var dmap = client.getMap('map-to-be-destroyed');
+        return dmap.put('key', 'val').then(function() {
+            return dmap.destroy();
+        }).then(function() {
+            var newMap = client.getMap('map-to-be-destroyed');
+            return newMap.size();
+        }).then(function(s) {
+            expect(s).to.equal(0);
+        })
+    });
 });
 
 
