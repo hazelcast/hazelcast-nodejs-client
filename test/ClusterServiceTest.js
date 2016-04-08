@@ -50,4 +50,15 @@ describe('ClusterService', function() {
             return expect(client.clusterService.getSize()).to.be.eq(1);
         });
     });
+
+    it('should throw with wrong host address in config', function(done) {
+        var cfg = new Config.ClientConfig();
+        cfg.networkConfig.addresses = [{host: '0.0.0.0', port: '5709'}];
+        return HazelcastClient.newHazelcastClient(cfg).then(function(newClient) {
+            newClient.shutdown();
+            done('Client falsely started with 0.0.0.0 target host');
+        }).catch(function (err) {
+            done();
+        });
+    });
 });

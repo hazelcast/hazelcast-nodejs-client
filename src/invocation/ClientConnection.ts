@@ -26,7 +26,7 @@ class ClientConnection {
     connect(): Q.Promise<ClientConnection> {
         var ready = Q.defer<ClientConnection>();
 
-        this.socket = net.connect(this.address.port, this.address.host, (e: any) => {
+        this.socket = net.connect(this.address.port, this.address.host, () => {
 
             // Send the protocol version
             var buffer = new Buffer(3);
