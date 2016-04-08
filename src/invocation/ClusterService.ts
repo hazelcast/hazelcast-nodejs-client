@@ -21,6 +21,12 @@ const ATTRIBUTE_CHANGE: {[key: string]: string} = {
 
 class ClusterService extends EventEmitter {
 
+    // The unique identifier of the owner server node. This node is responsible for resource cleanup
+    public ownerUuid: string = null;
+
+    // The unique identifier of this client instance. Assigned by owner node on authentication
+    public uuid: string = null;
+
     private knownAddresses: Address[] = [];
     private members: Member[] = [];
 
@@ -106,7 +112,7 @@ class ClusterService extends EventEmitter {
                 }
             } else {
                 var currentAddress = this.knownAddresses[index];
-                this.client.getConnectionManager().getOrConnect(currentAddress).then((connection: ClientConnection) => {
+                this.client.getConnectionManager().getOrConnect(currentAddress, true).then((connection: ClientConnection) => {
                     this.ownerConnection = connection;
                     this.initMemberShipListener().then(() => {
                         deferred.resolve();

@@ -26,7 +26,7 @@ class ClientConnectionManager extends EventEmitter {
         this.client = client;
     }
 
-    getOrConnect(address: Address): Q.Promise<ClientConnection> {
+    getOrConnect(address: Address, ownerConnection: boolean = false): Q.Promise<ClientConnection> {
         var addressIndex = address.toString();
         var result: Q.Deferred<ClientConnection> = Q.defer<ClientConnection>();
 
@@ -60,7 +60,8 @@ class ClientConnectionManager extends EventEmitter {
                     result.reject(new Error('Authentication failed'));
                 }
             };
-            this.authenticate(connection).then(callback).then(() => {
+
+            this.authenticate(connection, ownerConnection).then(callback).then(() => {
                 this.onConnectionOpened(connection);
             }).catch((e: any) => {
                 result.reject(e);
@@ -95,14 +96,10 @@ class ClientConnectionManager extends EventEmitter {
         this.emit(EMIT_CONNECTION_OPENED, connection);
     }
 
-    private authenticate(connection: ClientConnection): Q.Promise<boolean> {
-        var name = this.client.getConfig().groupConfig.name;
-        var password = this.client.getConfig().groupConfig.password;
-        var invocationService = this.client.getInvocationService();
+    private authenticate(connection: ClientConnection, ownerConnection: boolean): Q.Promise<boolean> {
+        var authenticator = new ConnectionAuthenticator(connection, this.client);
 
-        var authenticator = new ConnectionAuthenticator(connection, invocationService, name, password);
-
-        return authenticator.authenticate();
+        return authenticator.authenticate(ownerConnection);
     }
 }
 

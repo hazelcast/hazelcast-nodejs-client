@@ -4,33 +4,42 @@ import ClientConnection = require('./ClientConnection');
 import {InvocationService} from './InvocationService';
 import ClientMessage = require('../ClientMessage');
 import {ClientAuthenticationCodec} from '../codec/ClientAuthenticationCodec';
+import HazelcastClient = require('../HazelcastClient');
 
 class ConnectionAuthenticator {
 
     private connection: ClientConnection;
-    private group: string;
-    private password: string;
-    private invocationService: InvocationService;
+    private client: HazelcastClient;
 
-    constructor(connection: ClientConnection, invocationService: InvocationService, group: string, password: string) {
+    constructor(connection: ClientConnection, client: HazelcastClient) {
         this.connection = connection;
-        this.invocationService = invocationService;
-        this.group = group;
-        this.password = password;
+        this.client = client;
     }
 
-    authenticate(): Q.Promise<boolean> {
+    authenticate(ownerConnection: boolean): Q.Promise<boolean> {
+        var groupConfig = this.client.getConfig().groupConfig;
+        var clusterService = this.client.getClusterService();
+        var uuid: string = clusterService.uuid;
+        var ownerUuid: string = clusterService.ownerUuid;
+
+
         var clientMessage = ClientAuthenticationCodec
-            .encodeRequest(this.group, this.password, null, null, true, 'NodeJS', 1);
+            .encodeRequest(groupConfig.name, groupConfig.password,
+                uuid, ownerUuid, ownerConnection, 'NodeJS', 1);
+
 
         var deferred = Q.defer<boolean>();
 
-        this.invocationService
+        this.client.getInvocationService()
             .invokeOnConnection(this.connection, clientMessage)
             .then((msg: ClientMessage) => {
                 var authResponse = ClientAuthenticationCodec.decodeResponse(msg);
                 if (authResponse.status === 0) {
                     this.connection.address = authResponse.address;
+                    if (ownerConnection) {
+                        clusterService.uuid = authResponse.uuid;
+                        clusterService.ownerUuid = authResponse.ownerUuid;
+                    }
                     deferred.resolve(true);
                 } else {
                     deferred.resolve(false);
