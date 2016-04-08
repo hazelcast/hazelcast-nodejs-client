@@ -16,14 +16,11 @@ class ImmutableLazyDataList {
     }
 
     public size(): number {
-        return this.response.size();
+        return this.response.length;
     }
-    public getItem(index : number) : any {
-        var element = this.response.getItem(index);
-        var result : any = {};
-        result.key = this.toObjectFunction(element.key);
-        result.value = this.toObjectFunction(element.value);
-        return result;
+    public get(index : number) : any {
+        var element = this.response[index];
+        return [element.key, element.value];
     }
     public populate() : any {
         //TODO
