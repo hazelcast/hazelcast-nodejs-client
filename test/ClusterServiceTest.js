@@ -56,7 +56,29 @@ describe('ClusterService', function() {
         cfg.networkConfig.addresses = [{host: '0.0.0.0', port: '5709'}];
         return HazelcastClient.newHazelcastClient(cfg).then(function(newClient) {
             newClient.shutdown();
-            done('Client falsely started with 0.0.0.0 target host');
+            done(new Error('Client falsely started with 0.0.0.0 target host'));
+        }).catch(function (err) {
+            done();
+        });
+    });
+
+    it('should throw with wrong group name', function(done) {
+        var cfg = new Config.ClientConfig();
+        cfg.groupConfig.name = 'wrong';
+        return HazelcastClient.newHazelcastClient(cfg).then(function(newClient) {
+            newClient.shutdown();
+            done(new Error('Client falsely started with wrong group name'));
+        }).catch(function (err) {
+            done();
+        });
+    });
+
+    it('should throw with wrong group password', function(done) {
+        var cfg = new Config.ClientConfig();
+        cfg.groupConfig.password = 'wrong';
+        return HazelcastClient.newHazelcastClient(cfg).then(function(newClient) {
+            newClient.shutdown();
+            done(new Error('Client falsely started with wrong group password'));
         }).catch(function (err) {
             done();
         });

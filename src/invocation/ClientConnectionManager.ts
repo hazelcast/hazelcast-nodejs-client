@@ -47,31 +47,26 @@ class ClientConnectionManager extends EventEmitter {
 
         var clientConnection = new ClientConnection(address);
 
-        clientConnection.connect().then((connection: ClientConnection) => {
-            connection.registerResponseCallback((data: Buffer) => {
+        clientConnection.connect().then(() => {
+            clientConnection.registerResponseCallback((data: Buffer) => {
                 this.client.getInvocationService().processResponse(data);
             });
-
-            var callback = (authenticated: boolean) => {
-                if (authenticated) {
-                    result.resolve(connection);
-                    this.establishedConnections[connection.address.toString()] = connection;
-                } else {
-                    result.reject(new Error('Authentication failed'));
-                }
-            };
-
-            this.authenticate(connection, ownerConnection).then(callback).then(() => {
-                this.onConnectionOpened(connection);
-            }).catch((e: any) => {
-                result.reject(e);
-            });
+        }).then(() => {
+            return this.authenticate(clientConnection, ownerConnection);
+        }).then((authenticated: boolean) => {
+            if (authenticated) {
+                this.establishedConnections[clientConnection.address.toString()] = clientConnection;
+            } else {
+                throw new Error('Authentication failed');
+            }
+        }).then(() => {
+            this.onConnectionOpened(clientConnection);
+            result.resolve(clientConnection);
         }).catch((e: any) => {
             result.reject(e);
         }).finally(() => {
             delete this.pendingConnections[addressIndex];
         });
-
         return result.promise;
     }
 
