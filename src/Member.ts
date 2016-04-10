@@ -13,6 +13,6 @@ export class Member {
     }
 
     toString() {
-        return this.address;
+        return 'Member[ uuid: ' + this.uuid + ', address: ' + Address.encodeToString(this.address) + ']';
     }
 }

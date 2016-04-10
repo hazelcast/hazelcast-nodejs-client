@@ -4,6 +4,7 @@ import ClientConnection = require('./invocation/ClientConnection');
 import {ConnectionHeartbeatListener} from './ConnectionHeartbeatListener';
 import Q = require('q');
 import {LoggingService} from './LoggingService';
+import Address = require('./Address');
 
 var PROPERTY_HEARTBEAT_INTERVAL: string = 'hazelcast.client.heartbeat.interval';
 var PROPERTY_HEARTBEAT_TIMEOUT: string = 'hazelcast.client.heartbeat.timeout';
@@ -64,7 +65,7 @@ class Heartbeat {
 
     private onHeartbeatStopped(connection: ClientConnection) {
         connection.heartbeating = false;
-        this.logger.warn('HeartbeatService', 'Heartbeat stopped on ' + connection.address);
+        this.logger.warn('HeartbeatService', 'Heartbeat stopped on ' + Address.encodeToString(connection.address));
         this.listeners.forEach((listener) => {
             if (listener.hasOwnProperty('onHeartbeatStopped')) {
                 setImmediate(listener.onHeartbeatStopped.bind(this), connection);
@@ -74,7 +75,7 @@ class Heartbeat {
 
     private onHeartbeatRestored(connection: ClientConnection) {
         connection.heartbeating = true;
-        this.logger.warn('HeartbeatService', 'Heartbeat restored on ' + connection.address);
+        this.logger.warn('HeartbeatService', 'Heartbeat restored on ' + Address.encodeToString(connection.address));
         this.listeners.forEach((listener) => {
             if (listener.hasOwnProperty('onHeartbeatRestored')) {
                 setImmediate(listener.onHeartbeatRestored.bind(this), connection);

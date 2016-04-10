@@ -27,7 +27,7 @@ class ClientConnectionManager extends EventEmitter {
     }
 
     getOrConnect(address: Address, ownerConnection: boolean = false): Q.Promise<ClientConnection> {
-        var addressIndex = address.toString();
+        var addressIndex = address.host + ':' + address.port;
         var result: Q.Deferred<ClientConnection> = Q.defer<ClientConnection>();
 
         var establishedConnection = this.establishedConnections[addressIndex];
@@ -55,7 +55,7 @@ class ClientConnectionManager extends EventEmitter {
             return this.authenticate(clientConnection, ownerConnection);
         }).then((authenticated: boolean) => {
             if (authenticated) {
-                this.establishedConnections[clientConnection.address.toString()] = clientConnection;
+                this.establishedConnections[Address.encodeToString(clientConnection.address)] = clientConnection;
             } else {
                 throw new Error('Authentication failed');
             }
@@ -71,7 +71,7 @@ class ClientConnectionManager extends EventEmitter {
     }
 
     destroyConnection(address: Address): void {
-        var addressStr = address.toString();
+        var addressStr = Address.encodeToString(address);
         if (this.pendingConnections.hasOwnProperty(addressStr)) {
             this.pendingConnections[addressStr].reject(null);
         }
