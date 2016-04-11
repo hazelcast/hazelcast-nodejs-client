@@ -185,11 +185,10 @@ export class ListenerService {
         var deferred = Q.defer<string>();
         var invocation = new Invocation(codec.encodeRequest(true));
         invocation.handler = handler;
-        var listenerIdToCorrelation = this.listenerIdToCorrelation;
-        this.client.getInvocationService().invoke(invocation).then(function(responseMessage) {
+        this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
             var correlationId = responseMessage.getCorrelationId();
             var response = codec.decodeResponse(responseMessage);
-            listenerIdToCorrelation[response.response] = correlationId;
+            this.listenerIdToCorrelation[response.response] = correlationId;
             deferred.resolve(response.response);
         });
         return deferred.promise;
