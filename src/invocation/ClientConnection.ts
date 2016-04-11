@@ -19,6 +19,10 @@ class ClientConnection {
         this.lastRead = 0;
     }
 
+    getLocalAddress() {
+        return new Address(this.socket.localAddress, this.socket.localPort);
+    }
+
     getAddress(): Address {
         return this.address;
     }

@@ -33,6 +33,14 @@ describe('HazelcastClient', function() {
         });
     });
 
+    it('getLocalEndpoint returns correct info', function() {
+        var info = client.getLocalEndpoint();
+        expect(info.localAddress.host).to.equal(client.clusterService.getOwnerConnection().socket.localAddress);
+        expect(info.localAddress.port).to.equal(client.clusterService.getOwnerConnection().socket.localPort);
+        expect(info.uuid).to.equal(client.clusterService.uuid);
+        expect(info.type).to.equal('NodeJS');
+    });
+
     describe('create many maps', function() {
         before(function(done) {
             var map0 = client.getMap('map0');
