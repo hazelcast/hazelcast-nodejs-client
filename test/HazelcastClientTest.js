@@ -52,24 +52,21 @@ describe('HazelcastClient', function() {
             done();
         });
 
-        it('getDistributedObjects returns an array of distributed objects', function() {
-            this.timeout(100000);
-            var equalChecker = function(expected, actual) {
-                return expect(actual).to.eq(expected);
-            };
-            return client.getDistributedObjects().then(function(distributedObjects) {
-                var objects = {};
-                distributedObjects.forEach(function(distObject) {
-                    objects[distObject.getName()] = 'exist';
+        it('getDistributedObjects returns an array of distributed objects', function(done) {
+            setTimeout(function() {
+                return client.getDistributedObjects().then(function(distributedObjects) {
+                    var objects = {};
+                    distributedObjects.forEach(function(distObject) {
+                        objects[distObject.getName()] = 'exist';
+                    });
+                    expect(objects).to.have.property('map0');
+                    expect(objects).to.have.property('map1');
+                    expect(objects).to.have.property('map2');
+                    expect(objects).to.have.property('map3');
+                    expect(objects).to.have.property('map4');
+                    done();
                 });
-                return Q.all([
-                    expect(objects).to.have.property('map0'),
-                    expect(objects).to.have.property('map1'),
-                    expect(objects).to.have.property('map2'),
-                    expect(objects).to.have.property('map3'),
-                    expect(objects).to.have.property('map4')
-                ]);
-            });
+            }, 500);
         });
     });
 });
