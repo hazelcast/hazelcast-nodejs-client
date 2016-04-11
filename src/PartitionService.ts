@@ -1,8 +1,8 @@
-import HazelcastClient = require('./HazelcastClient');
 import Q = require('q');
 import GetPartitionsCodec = require('./codec/GetPartitionsCodec');
 import ClientMessage = require('./ClientMessage');
 import Address = require('./Address');
+import HazelcastClient from './HazelcastClient';
 
 class PartitionService {
 

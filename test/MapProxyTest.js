@@ -1,5 +1,5 @@
 var expect = require("chai").expect;
-var HazelcastClient = require("../.");
+var HazelcastClient = require("../.").Client;
 var Q = require("q");
 var Controller = require('./RC');
 

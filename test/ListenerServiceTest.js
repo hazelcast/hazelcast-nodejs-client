@@ -1,6 +1,6 @@
 var Q = require('q');
 var RC = require('./RC');
-var HazelcastClient = require('../.');
+var HazelcastClient = require('../.').Client;
 var expect = require('chai').expect;
 describe('DistributedObjectListener', function() {
     var cluster;

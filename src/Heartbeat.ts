@@ -1,5 +1,5 @@
 import {ClientPingCodec} from './codec/ClientPingCodec';
-import HazelcastClient = require('./HazelcastClient');
+import HazelcastClient from './HazelcastClient';
 import ClientConnection = require('./invocation/ClientConnection');
 import {ConnectionHeartbeatListener} from './ConnectionHeartbeatListener';
 import Q = require('q');

@@ -1,4 +1,4 @@
-var HazelcastClient = require('../.');
+var HazelcastClient = require('../.').Client;
 var Controller = require('./RC');
 var assert = require('chai').assert;
 var sinon = require('sinon');

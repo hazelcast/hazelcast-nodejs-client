@@ -17,7 +17,7 @@ import defer = Q.defer;
 import {ClientInfo} from './ClientInfo';
 import ClientMessage = require('./ClientMessage');
 
-class HazelcastClient {
+export default class HazelcastClient {
 
     private config: ClientConfig = new ClientConfig();
     private loggingService: LoggingService;
@@ -151,4 +151,3 @@ class HazelcastClient {
     }
 }
 
-export = HazelcastClient;

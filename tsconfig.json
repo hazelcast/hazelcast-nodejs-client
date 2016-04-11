@@ -4,6 +4,7 @@
         "module": "commonjs",
         "moduleResolution": "node",
         "noImplicitAny": true,
+        "target": "es5",
         "outDir": "./lib",
         "preserveConstEnums": true,
         "removeComments": true

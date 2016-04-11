@@ -2,13 +2,13 @@ import ClientConnection = require('./ClientConnection');
 import ClientMessage = require('../ClientMessage');
 import Q = require('q');
 import Long = require('long');
-import HazelcastClient = require('../HazelcastClient');
 import {Data} from '../serialization/Data';
 import Address = require('../Address');
 import ExceptionCodec = require('../codec/ExceptionCodec');
 import {BitsUtil} from '../BitsUtil';
 import {LoggingService} from '../LoggingService';
 import {EventEmitter} from 'events';
+import HazelcastClient from '../HazelcastClient';
 
 var EXCEPTION_MESSAGE_TYPE = 109;
 var INVOCATION_TIMEOUT = 120000;
