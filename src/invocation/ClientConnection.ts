@@ -40,7 +40,8 @@ class ClientConnection {
         });
 
         this.socket.on('error', (e: any) => {
-            this.logging.warn('ClientConnection', 'Could not connect to address ' + this.address, e);
+            this.logging.warn('ClientConnection',
+                'Could not connect to address ' + Address.encodeToString(this.address), e);
             ready.reject(e);
         });
 
@@ -53,7 +54,8 @@ class ClientConnection {
             if (e === undefined) {
                 deferred.resolve();
             } else {
-                this.logging.warn('ClientConnection', 'Error sending message to ' + this.address + ' ' + e);
+                this.logging.warn('ClientConnection',
+                    'Error sending message to ' + Address.encodeToString(this.address) + ' ' + e);
                 deferred.reject(e);
             }
         });
