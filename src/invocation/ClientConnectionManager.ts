@@ -27,7 +27,7 @@ class ClientConnectionManager extends EventEmitter {
     }
 
     getOrConnect(address: Address, ownerConnection: boolean = false): Q.Promise<ClientConnection> {
-        var addressIndex = address.host + ':' + address.port;
+        var addressIndex = Address.encodeToString(address);
         var result: Q.Deferred<ClientConnection> = Q.defer<ClientConnection>();
 
         var establishedConnection = this.establishedConnections[addressIndex];
