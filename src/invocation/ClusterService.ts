@@ -7,6 +7,7 @@ import ClientMessage = require('../ClientMessage');
 import {Member} from '../Member';
 import {LoggingService} from '../LoggingService';
 import {EventEmitter} from 'events';
+import {ClientInfo} from '../ClientInfo';
 
 const MEMBER_ADDED = 1;
 const MEMBER_REMOVED = 2;
@@ -69,6 +70,13 @@ class ClusterService extends EventEmitter {
 
     getSize() {
         return this.members.length;
+    }
+
+    getClientInfo(): ClientInfo {
+        var info = new ClientInfo();
+        info.uuid = this.uuid;
+        info.localAddress = this.getOwnerConnection().getLocalAddress();
+        return info;
     }
 
     private initHeartbeatListener() {

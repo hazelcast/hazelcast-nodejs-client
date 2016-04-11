@@ -120,7 +120,6 @@ describe("MapProxy Test", function() {
             return expect(val).to.be.false;
         });
     });
-
 });
 
 

@@ -14,6 +14,7 @@ import {LifecycleService, LifecycleEvent} from './LifecycleService';
 import {ClientGetDistributedObjectsCodec} from './codec/ClientGetDistributedObjectsCodec';
 import {DistributedObject} from './DistributedObject';
 import defer = Q.defer;
+import {ClientInfo} from './ClientInfo';
 
 class HazelcastClient {
 
@@ -69,6 +70,10 @@ class HazelcastClient {
         });
 
         return deferred.promise;
+    }
+
+    getLocalEndpoint(): ClientInfo {
+        return this.clusterService.getClientInfo();
     }
 
     getDistributedObjects(): Q.Promise<DistributedObject[]> {
