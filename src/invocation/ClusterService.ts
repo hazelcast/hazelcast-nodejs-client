@@ -185,6 +185,7 @@ class ClusterService extends EventEmitter {
 
     private memberRemoved(member: Member) {
         this.members.splice(this.members.indexOf(member), 1);
+        this.client.getConnectionManager().destroyConnection(member.address);
         this.emit(EMIT_MEMBER_REMOVED, member);
     }
 }
