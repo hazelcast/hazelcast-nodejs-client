@@ -1,9 +1,8 @@
 src/
-typings/
 coverage/
 .idea/
 tslint.json
-typings.json
 *.iml
 .editorconfig
 .jshintrc
+test/

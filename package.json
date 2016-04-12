@@ -2,10 +2,7 @@
     "name": "hazelcast-nodejs-client",
     "version": "0.1.0",
     "description": "Hazelcast - open source In-Memory Data Grid - client for NodeJS",
-    "main": "index.js",
-    "files": [
-        "lib"
-    ],
+    "main": "lib/index.js",
     "dependencies": {
         "long": "3.0.1",
         "q": "1.4.1"
@@ -54,5 +51,5 @@
         "url": "https://github.com/hazelcast/hazelcast-nodejs-client/issues"
     },
     "homepage": "https://github.com/hazelcast/hazelcast-nodejs-client#readme",
-    "typings": "./lib/index.d.ts"
+    "typings": "./lib/index"
 }
