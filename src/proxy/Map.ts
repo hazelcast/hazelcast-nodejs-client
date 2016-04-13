@@ -1,6 +1,6 @@
 import {BaseProxy} from './BaseProxy';
 import {IMap} from '../IMap';
-import Q = require('q');
+import * as Q from 'q';
 import {Data} from '../serialization/Data';
 import {MapPutCodec} from '../codec/MapPutCodec';
 import ClientMessage = require('../ClientMessage');

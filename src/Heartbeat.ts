@@ -2,7 +2,7 @@ import {ClientPingCodec} from './codec/ClientPingCodec';
 import HazelcastClient from './HazelcastClient';
 import ClientConnection = require('./invocation/ClientConnection');
 import {ConnectionHeartbeatListener} from './ConnectionHeartbeatListener';
-import Q = require('q');
+import * as Q from 'q';
 import {LoggingService} from './LoggingService';
 import Address = require('./Address');
 

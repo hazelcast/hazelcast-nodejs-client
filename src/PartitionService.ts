@@ -1,4 +1,4 @@
-import Q = require('q');
+import * as Q from 'q';
 import GetPartitionsCodec = require('./codec/GetPartitionsCodec');
 import ClientMessage = require('./ClientMessage');
 import Address = require('./Address');

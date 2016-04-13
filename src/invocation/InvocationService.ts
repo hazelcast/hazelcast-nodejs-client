@@ -1,6 +1,6 @@
 import ClientConnection = require('./ClientConnection');
 import ClientMessage = require('../ClientMessage');
-import Q = require('q');
+import * as Q from 'q';
 import Long = require('long');
 import {Data} from '../serialization/Data';
 import Address = require('../Address');

@@ -1,6 +1,6 @@
 import {BaseProxy} from '../proxy/BaseProxy';
 import {ISet} from '../ISet';
-import Q = require('q');
+import * as Q from 'q';
 export class Set<E> extends BaseProxy implements ISet<E> {
     add(entry : E) : Q.Promise<boolean> {
         //TODO

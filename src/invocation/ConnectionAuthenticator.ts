@@ -1,4 +1,4 @@
-import Q = require('q');
+import * as Q from 'q';
 
 import ClientConnection = require('./ClientConnection');
 import {InvocationService} from './InvocationService';

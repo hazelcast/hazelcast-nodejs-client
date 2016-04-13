@@ -1,4 +1,4 @@
-import Q = require('q');
+import * as Q from 'q';
 import {DistributedObject} from '../DistributedObject';
 import {Map} from './Map';
 import {BaseProxy} from './BaseProxy';

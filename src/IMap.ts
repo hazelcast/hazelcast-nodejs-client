@@ -1,4 +1,4 @@
-import Promise = Q.Promise;
+import * as Q from 'q';
 import {DistributedObject} from './DistributedObject';
 export interface IMap<K, V> extends DistributedObject {
 
@@ -8,7 +8,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws {Error} if key is undefined or null
      * @return a promise to be resolved to true if the map contains the key, false otherwise.
      */
-    containsKey(key: K) : Promise<boolean>;
+    containsKey(key: K) : Q.Promise<boolean>;
 
     /**
      * This method return true if this map has key(s) associated with given value
@@ -16,7 +16,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param value
      * @return a promise to be resolved to true if the map has key or keys associated with given value.
      */
-    containsValue(value: V) : Promise<boolean>;
+    containsValue(value: V) : Q.Promise<boolean>;
 
     /**
      * Associates the specified value with the specified key.
@@ -29,7 +29,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws {Error} if specified key or value is undefined or null or ttl is negative.
      * @return a promise to be resolved to the old value if there was any, undefined otherwise.
      */
-    put(key: K, value: V, ttl?: number) : Promise<V>;
+    put(key: K, value: V, ttl?: number) : Q.Promise<V>;
 
     /**
      * Retrieves the value associated with given key.
@@ -37,7 +37,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws {Error} if key is undefined or null
      * @return a promise to be resolved to the value associated with key, undefined if the key does not exist.
      */
-    get(key: K) : Promise<V>;
+    get(key: K) : Q.Promise<V>;
 
     /**
      * Removes specified key from map. If optional value is specified, the key is removed only if currently mapped to
@@ -48,24 +48,24 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws {Error} if key is undefined or null
      * @return a promise to be resolved to the value associated with key, undefined if the key did not exist before.
      */
-    remove(key: K, value?: V) : Promise<V>;
+    remove(key: K, value?: V) : Q.Promise<V>;
 
     /**
      * Retrieves the number of elements in map
      * @return a promise to be resolved to the number of elements in map
      */
-    size() : Promise<number>;
+    size() : Q.Promise<number>;
 
     /**
      * Removes all of the mappings
      * @return
      */
-    clear() : Promise<void>;
+    clear() : Q.Promise<void>;
 
     /**
      * Returns whether this map is empty or not
      */
-    isEmpty() : Promise<boolean>;
+    isEmpty() : Q.Promise<boolean>;
 
     /**
      *

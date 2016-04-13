@@ -1,6 +1,6 @@
 import ClientConnection = require('./ClientConnection');
 import Address = require('../Address');
-import Q = require('q');
+import * as Q from 'q';
 import {ClientAddMembershipListenerCodec} from '../codec/ClientAddMembershipListenerCodec';
 import ClientMessage = require('../ClientMessage');
 import {Member} from '../Member';

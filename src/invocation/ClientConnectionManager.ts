@@ -1,4 +1,4 @@
-import Q = require('q');
+import * as Q from 'q';
 
 import Address = require('../Address');
 import ClientConnection = require('./ClientConnection');
