@@ -3,7 +3,7 @@ import {InvocationService, ListenerService} from './invocation/InvocationService
 import ClientConnectionManager = require('./invocation/ClientConnectionManager');
 import {ClientConfig} from './Config';
 import ProxyManager = require('./proxy/ProxyManager');
-import Q = require('q');
+import * as Q from 'q';
 import {IMap} from './IMap';
 import {JsonSerializationService} from './serialization/SerializationService';
 import PartitionService = require('./PartitionService');
@@ -17,7 +17,7 @@ import defer = Q.defer;
 import {ClientInfo} from './ClientInfo';
 import ClientMessage = require('./ClientMessage');
 
-class HazelcastClient {
+export default class HazelcastClient {
 
     private config: ClientConfig = new ClientConfig();
     private loggingService: LoggingService;
@@ -151,4 +151,3 @@ class HazelcastClient {
     }
 }
 
-export = HazelcastClient;

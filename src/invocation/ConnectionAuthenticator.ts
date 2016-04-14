@@ -1,10 +1,10 @@
-import Q = require('q');
+import * as Q from 'q';
 
 import ClientConnection = require('./ClientConnection');
 import {InvocationService} from './InvocationService';
 import ClientMessage = require('../ClientMessage');
 import {ClientAuthenticationCodec} from '../codec/ClientAuthenticationCodec';
-import HazelcastClient = require('../HazelcastClient');
+import HazelcastClient from '../HazelcastClient';
 
 class ConnectionAuthenticator {
 

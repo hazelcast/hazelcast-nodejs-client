@@ -1,7 +1,7 @@
 var Controller = require('./RC');
 var expect = require('chai').expect;
-var HazelcastClient = require('../.');
-var Config = require('../lib/Config');
+var HazelcastClient = require('../.').Client;
+var Config = require('../.').Config;
 describe('ClusterService', function() {
     this.timeout(15000);
     var cluster;

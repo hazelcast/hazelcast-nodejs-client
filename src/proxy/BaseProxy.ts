@@ -1,8 +1,8 @@
 import {SerializationService} from '../serialization/SerializationService';
 import {Data} from '../serialization/Data';
-import HazelcastClient = require('../HazelcastClient');
 import ClientMessage = require('../ClientMessage');
-import Q = require('q');
+import * as Q from 'q';
+import HazelcastClient from '../HazelcastClient';
 
 export class BaseProxy {
 

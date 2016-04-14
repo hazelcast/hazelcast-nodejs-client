@@ -1,5 +1,4 @@
-import Q = require('q');
-import HazelcastClient = require('../HazelcastClient');
+import * as Q from 'q';
 import {DistributedObject} from '../DistributedObject';
 import {Map} from './Map';
 import {BaseProxy} from './BaseProxy';
@@ -10,6 +9,7 @@ import {ClientDestroyProxyCodec} from '../codec/ClientDestroyProxyCodec';
 import defer = Q.defer;
 import {ClientAddDistributedObjectListenerCodec} from '../codec/ClientAddDistributedObjectListenerCodec';
 import {ClientRemoveDistributedObjectListenerCodec} from '../codec/ClientRemoveDistributedObjectListenerCodec';
+import HazelcastClient from '../HazelcastClient';
 
 class ProxyManager {
     public MAP_SERVICE: string = 'hz:impl:mapService';

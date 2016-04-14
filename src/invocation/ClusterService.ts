@@ -1,13 +1,13 @@
 import ClientConnection = require('./ClientConnection');
-import HazelcastClient = require('../HazelcastClient');
 import Address = require('../Address');
-import Q = require('q');
+import * as Q from 'q';
 import {ClientAddMembershipListenerCodec} from '../codec/ClientAddMembershipListenerCodec';
 import ClientMessage = require('../ClientMessage');
 import {Member} from '../Member';
 import {LoggingService} from '../LoggingService';
 import {EventEmitter} from 'events';
 import {ClientInfo} from '../ClientInfo';
+import HazelcastClient from '../HazelcastClient';
 
 const MEMBER_ADDED = 1;
 const MEMBER_REMOVED = 2;

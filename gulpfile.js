@@ -15,31 +15,9 @@ var tslint = require('gulp-tslint');
 var debug = require('gulp-debug');
 var rimraf = require('rimraf');
 
-var typeDefsPath = (function (typings) {
-    return typings.path || 'typings';
-})(require('./typings.json'));
-
 var tsFilesGlob = (function (c) {
     return c.filesGlob || c.files || '**/*.ts';
 })(require('./tsconfig.json'));
-
-gulp.task('gen_tsrefs', 'Generates the main.d.ts references file dynamically for all application *.ts files', function () {
-    var target = gulp.src(path.join('.', typeDefsPath, 'typings/main.d.ts'));
-    var sources = gulp.src([path.join('.', 'src', '**', '*.ts')], {read: false});
-    // sources.pipe(debug());
-    // target.pipe(debug());
-    var transformation = inject(sources, {
-        starttag: '//{',
-        endtag: '//}',
-        transform: function (filepath) {
-            console.log(filepath);
-            return '/// <reference path="..' + filepath + '" />';
-        }
-    });
-    return target
-        .pipe(transformation)
-        .pipe(gulp.dest(path.join('.', typeDefsPath)));
-});
 
 gulp.task('typings install', function(cb) {
     exec('typings install', function(err, stdout, stderr) {
@@ -63,7 +41,7 @@ gulp.task('tslint', 'Lints all TypeScript source files', function () {
         .pipe(tslint.report('verbose'));
 });
 
-gulp.task('tsBuild', 'Compiles all TypeScript source files and updates module references', gulpSequence('tslint', 'typings install', 'gen_tsrefs', '_build'));
+gulp.task('tsBuild', 'Compiles all TypeScript source files and updates module references', gulpSequence('tslint', 'typings install', '_build'));
 
 
 gulp.task('nsp', function (cb) {

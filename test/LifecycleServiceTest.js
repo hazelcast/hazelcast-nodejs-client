@@ -1,6 +1,6 @@
 var RC = require('./RC');
-var HazelcastClient = require('../.');
-var Config = require('../lib/Config');
+var HazelcastClient = require('../.').Client;
+var Config = require('../.').Config;
 var expect = require('chai').expect;
 
 describe('LifecycleService', function() {

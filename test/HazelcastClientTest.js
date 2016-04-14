@@ -1,7 +1,7 @@
 var expect = require('chai').expect;
-var Config = require('../lib/Config');
+var Config = require('../.').ClientConfig;
 var Controller = require('./RC');
-var HazelcastClient = require('../lib/HazelcastClient');
+var HazelcastClient = require('../.').Client;
 var Q = require('q');
 describe('HazelcastClient', function() {
     this.timeout(4000);

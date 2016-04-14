@@ -1,5 +1,5 @@
 import net = require('net');
-import Q = require('q');
+import * as Q from 'q';
 import Address = require('../Address');
 import {BitsUtil} from '../BitsUtil';
 import {LoggingService} from '../LoggingService';

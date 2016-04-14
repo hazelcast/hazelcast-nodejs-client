@@ -1,0 +1,8 @@
+src/
+coverage/
+.idea/
+tslint.json
+*.iml
+.editorconfig
+.jshintrc
+test/

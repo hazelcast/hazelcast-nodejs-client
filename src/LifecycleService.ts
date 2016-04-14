@@ -1,5 +1,5 @@
-import HazelcastClient = require('./HazelcastClient');
 import {EventEmitter} from 'events';
+import HazelcastClient from './HazelcastClient';
 
 export var LifecycleEvent = {
     name: 'lifecycleEvent',

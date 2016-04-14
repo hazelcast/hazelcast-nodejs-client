@@ -1,4 +1,4 @@
-import Q = require('q');
+import * as Q from 'q';
 
 import Address = require('../Address');
 import ClientConnection = require('./ClientConnection');
@@ -8,9 +8,9 @@ import InvocationService = require('./InvocationService');
 import {GroupConfig, ClientNetworkConfig} from '../Config';
 
 import ConnectionAuthenticator = require('./ConnectionAuthenticator');
-import HazelcastClient = require('../HazelcastClient');
 import {LoggingService} from '../LoggingService';
 import {EventEmitter} from 'events';
+import HazelcastClient from '../HazelcastClient';
 
 const EMIT_CONNECTION_CLOSED = 'connectionClosed';
 const EMIT_CONNECTION_OPENED = 'connectionOpened';

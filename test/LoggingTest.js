@@ -1,9 +1,9 @@
 var expect = require('chai').expect;
 var sinon = require('sinon');
 var winston = require('winston');
-var Config = require('../lib/Config');
+var Config = require('../.').Config;
 var Controller = require('./RC');
-var HazelcastClient = require('../lib/HazelcastClient');
+var HazelcastClient = require('../.').Client;
 describe('Logging Test', function() {
     var cluster;
     var client;
