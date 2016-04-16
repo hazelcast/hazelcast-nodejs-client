@@ -13,7 +13,6 @@ import {LoggingService} from './LoggingService';
 import {LifecycleService, LifecycleEvent} from './LifecycleService';
 import {ClientGetDistributedObjectsCodec} from './codec/ClientGetDistributedObjectsCodec';
 import {DistributedObject} from './DistributedObject';
-import defer = Q.defer;
 import {ClientInfo} from './ClientInfo';
 import ClientMessage = require('./ClientMessage');
 
