@@ -1,8 +1,15 @@
 [[hazelcast-nodejs-client]]
 = Hazelcast Node.js Client
 :icon: font
+:toc: auto
+:toc-placement: auto
+:toc-position: right
+:toc-title: Table of content
+:toclevels: 3
 
 Node.js Client for Hazelcast, using Hazelcast Open Client Protocol 1.0 for Hazelcast 3.6 and higher
+
+toc::[]
 
 NOTE: This project currently in active development.
 
