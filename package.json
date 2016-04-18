@@ -1,55 +1,57 @@
 {
-    "name": "hazelcast-nodejs-client",
-    "version": "0.1.0",
-    "description": "Hazelcast - open source In-Memory Data Grid - client for NodeJS",
-    "main": "lib/index.js",
-    "dependencies": {
-        "long": "3.0.1",
-        "q": "1.4.1"
-    },
-    "devDependencies": {
-        "chai": "3.4.1",
-        "gulp": "^3.9.0",
-        "gulp-debug": "^2.1.2",
-        "gulp-eslint": "^1.0.0",
-        "gulp-exclude-gitignore": "^1.0.0",
-        "gulp-exec": "^2.1.2",
-        "gulp-help": "^1.6.0",
-        "gulp-inject": "3.0.0",
-        "gulp-istanbul": "^0.9.0",
-        "gulp-jshint": "^2.0.0",
-        "gulp-mocha": "^2.0.0",
-        "gulp-nsp": "^2.1.0",
-        "gulp-plumber": "^1.0.0",
-        "gulp-sequence": "^0.4.4",
-        "gulp-tsconfig-files": "0.0.2",
-        "gulp-tslint": "^3.1",
-        "jshint": "^2.8.0",
-        "jshint-stylish": "^2.1.0",
-        "mocha": "2.3.4",
-        "rimraf": "^2.5.2",
-        "sinon": "^1.17.3",
-        "winston": "^2.2.0"
-    },
-    "scripts": {
-        "test": "gulp test"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/hazelcast/hazelcast-nodejs-client.git"
-    },
-    "keywords": [
-        "hazelcast",
-        "nodejs",
-        "node",
-        "client",
-        "data",
-        "grid"
-    ],
-    "license": "Apache-2.0",
-    "bugs": {
-        "url": "https://github.com/hazelcast/hazelcast-nodejs-client/issues"
-    },
-    "homepage": "https://github.com/hazelcast/hazelcast-nodejs-client#readme",
-    "typings": "./lib/index"
+  "name": "hazelcast-nodejs-client",
+  "version": "0.1.0",
+  "description": "Hazelcast - open source In-Memory Data Grid - client for NodeJS",
+  "main": "lib/index.js",
+  "dependencies": {
+    "long": "3.0.1",
+    "q": "1.4.1"
+  },
+  "devDependencies": {
+    "chai": "3.4.1",
+    "gulp": "^3.9.0",
+    "gulp-debug": "^2.1.2",
+    "gulp-eslint": "^1.0.0",
+    "gulp-exclude-gitignore": "^1.0.0",
+    "gulp-exec": "^2.1.2",
+    "gulp-help": "^1.6.0",
+    "gulp-inject": "3.0.0",
+    "gulp-istanbul": "^0.9.0",
+    "gulp-jshint": "^2.0.0",
+    "gulp-mocha": "^2.0.0",
+    "gulp-nsp": "^2.1.0",
+    "gulp-plumber": "^1.0.0",
+    "gulp-sequence": "^0.4.4",
+    "gulp-tsconfig-files": "0.0.2",
+    "gulp-tslint": "^3.1",
+    "jshint": "^2.8.0",
+    "jshint-stylish": "^2.1.0",
+    "mocha": "2.3.4",
+    "rimraf": "^2.5.2",
+    "sinon": "^1.17.3",
+    "typescript": "^1.8.10",
+    "typings": "^0.7.12",
+    "winston": "^2.2.0"
+  },
+  "scripts": {
+    "test": "gulp test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hazelcast/hazelcast-nodejs-client.git"
+  },
+  "keywords": [
+    "hazelcast",
+    "nodejs",
+    "node",
+    "client",
+    "data",
+    "grid"
+  ],
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/hazelcast/hazelcast-nodejs-client/issues"
+  },
+  "homepage": "https://github.com/hazelcast/hazelcast-nodejs-client#readme",
+  "typings": "./lib/index"
 }
