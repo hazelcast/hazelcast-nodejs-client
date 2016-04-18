@@ -14,23 +14,52 @@ var EXCEPTION_MESSAGE_TYPE = 109;
 var INVOCATION_TIMEOUT = 120000;
 var INVOCATION_RETRY_DELAY = 1000;
 
+/**
+ * A request to be sent to a hazelcast node.
+ */
 export class Invocation {
 
     constructor(request: ClientMessage) {
         this.request = request;
     }
 
+    /**
+     * Representatiton of the request in binary form.
+     */
     request: ClientMessage;
+    /**
+     * Partition id of the request. If request is not bound to a specific partition, should be set to -1.
+     */
     partitionId: number;
+    /**
+     * Address of the request. If request is not bound to any specific address, should be set to null.
+     */
     address: Address;
+    /**
+     * Deadline of validity. Client will not try to send this request to server after the deadline passes.
+     */
     deadline: Date = new Date(new Date().getTime() + INVOCATION_TIMEOUT);
+    /**
+     * Connection of the request. If request is not bound to any specific address, should be set to null.
+     */
     connection: ClientConnection;
+
+    /**
+     * Promise managing object.
+     */
     deferred: Q.Deferred<ClientMessage>;
+
+    /**
+     * If this is an event listener registration, handler should be set to the function to be called on events.
+     * Otherwise, should be set to null.
+     */
     handler: (...args: any[]) => any;
 }
 
+/**
+ * Sends requests to appropriate nodes. Resolves waiting promises with responses.
+ */
 export class InvocationService {
-
     private correlationCounter = 0;
     private eventHandlers: {[id: number]: Invocation} = {};
     private pending: {[id: number]: Invocation} = {};
@@ -50,6 +79,13 @@ export class InvocationService {
         }
     }
 
+    /**
+     * Invokes given invocation on specified connection.
+     * @param connection
+     * @param request
+     * @param handler called with values returned from server for this invocation.
+     * @returns
+     */
     invokeOnConnection(connection: ClientConnection, request: ClientMessage,
                        handler?: (...args: any[]) => any): Q.Promise<ClientMessage> {
         var invocation = new Invocation(request);
@@ -60,18 +96,36 @@ export class InvocationService {
         return this.invoke(invocation);
     }
 
+    /**
+     * Invokes given invocation on the node that owns given partition.
+     * @param request
+     * @param partitionId
+     * @returns
+     */
     invokeOnPartition(request: ClientMessage, partitionId: number): Q.Promise<ClientMessage> {
         var invocation = new Invocation(request);
         invocation.partitionId = partitionId;
         return this.invoke(invocation);
     }
 
+    /**
+     * Invokes given invocation on the host with given address.
+     * @param request
+     * @param target
+     * @returns
+     */
     invokeOnTarget(request: ClientMessage, target: Address): Q.Promise<ClientMessage> {
         var invocation = new Invocation(request);
         invocation.address = target;
         return this.invoke(invocation);
     }
 
+    /**
+     * Invokes given invocation on any host.
+     * Useful when an operation is not bound to any host but a generic operation.
+     * @param request
+     * @returns
+     */
     invokeOnRandomTarget(request: ClientMessage): Q.Promise<ClientMessage> {
         return this.invoke(new Invocation(request));
     }
@@ -124,13 +178,21 @@ export class InvocationService {
         return invocation.deferred.promise;
     }
 
+    /**
+     * Removes the handler for all event handlers with a specific correlation id.
+     * @param id correlation id
+     */
     removeEventHandler(id: number): void {
         if (this.eventHandlers.hasOwnProperty('' + id)) {
             delete this.eventHandlers[id];
         }
     }
 
-    processResponse(buffer: Buffer) {
+    /**
+     * Extract codec specific properties in a protocol message and resolves waiting promise.
+     * @param buffer
+     */
+    processResponse(buffer: Buffer): void {
         var clientMessage = new ClientMessage(buffer);
         var correlationId = clientMessage.getCorrelationId().toNumber();
         var messageType = clientMessage.getMessageType();
@@ -170,6 +232,9 @@ export class InvocationService {
     }
 }
 
+/**
+ * Handles registration and de-registration of cluster-wide events listeners.
+ */
 export class ListenerService {
     private client: HazelcastClient;
     private listenerIdToCorrelation: { [id: string]: Long} = {};

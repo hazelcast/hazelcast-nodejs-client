@@ -15,6 +15,9 @@ import HazelcastClient from '../HazelcastClient';
 const EMIT_CONNECTION_CLOSED = 'connectionClosed';
 const EMIT_CONNECTION_OPENED = 'connectionOpened';
 
+/**
+ * Maintains connections between the client and members of the cluster.
+ */
 class ClientConnectionManager extends EventEmitter {
     private client: HazelcastClient;
     private pendingConnections: {[address: string]: Q.Deferred<ClientConnection>} = {};
@@ -26,6 +29,13 @@ class ClientConnectionManager extends EventEmitter {
         this.client = client;
     }
 
+    /**
+     * Returns the {@link ClientConnection} with given {@link Address}. If there is no such connection established,
+     * it first connects to the address and then return the {@link ClientConnection}.
+     * @param address
+     * @param ownerConnection Sets the connected node as owner of this client if true.
+     * @returns {Promise<ClientConnection>|Promise<T>}
+     */
     getOrConnect(address: Address, ownerConnection: boolean = false): Q.Promise<ClientConnection> {
         var addressIndex = Address.encodeToString(address);
         var result: Q.Deferred<ClientConnection> = Q.defer<ClientConnection>();
@@ -70,6 +80,10 @@ class ClientConnectionManager extends EventEmitter {
         return result.promise;
     }
 
+    /**
+     * Destroys the connection with given node address.
+     * @param address
+     */
     destroyConnection(address: Address): void {
         var addressStr = Address.encodeToString(address);
         if (this.pendingConnections.hasOwnProperty(addressStr)) {

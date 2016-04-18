@@ -23,6 +23,10 @@ class PartitionService {
         return deferred.promise;
     }
 
+    /**
+     * Refreshes the internal partition table.
+     * @returns {Q.Promise<U>}
+     */
     refresh(): Q.Promise<void> {
         var ownerConnection = this.client.getClusterService().getOwnerConnection();
         var clientMessage: ClientMessage = GetPartitionsCodec.encodeRequest();
@@ -35,10 +39,20 @@ class PartitionService {
             });
     };
 
+    /**
+     * Returns the {@link Address} of the node which owns given partition id.
+     * @param partitionId
+     * @returns the address of the node.
+     */
     getAddressForPartition(partitionId: number): Address {
         return this.partitionMap[partitionId];
     }
 
+    /**
+     * Computes the partition id for a given key.
+     * @param key
+     * @returns the partition id.
+     */
     getPartitionId(key: any) {
         var partitionHash = this.client.getSerializationService().toData(key).getPartitionHash();
         return Math.abs(partitionHash) % this.partitionCount;

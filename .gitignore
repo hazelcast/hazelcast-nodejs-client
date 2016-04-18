@@ -24,3 +24,6 @@ npm-debug.log
 # TypeScript
 *.js.map
 lib/*
+
+# TSDoc
+docs/
