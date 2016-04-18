@@ -47,7 +47,7 @@ npm test
 
 [source,javascript]
 ----
-var HazelcastClient = require('hazelcast-nodejs-client').Client;
+var HazelcastClient = require('hazelcast-client').Client;
 var map;
 HazelcastClient.newHazelcastClient().then(function(client)  {
     map = client.getMap('test-map');
