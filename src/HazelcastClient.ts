@@ -30,6 +30,11 @@ export default class HazelcastClient {
     private proxyManager: ProxyManager;
     private heartbeat: Heartbeat;
 
+    /**
+     * Creates a new client object and automatically connects to cluster.
+     * @param config Default {@link ClientConfig} is used when this parameter is absent.
+     * @returns {Q.Promise<HazelcastClient>}
+     */
     public static newHazelcastClient(config?: ClientConfig): Q.Promise<HazelcastClient> {
         var client: HazelcastClient = new HazelcastClient(config);
         return client.init();
@@ -74,10 +79,18 @@ export default class HazelcastClient {
         return deferred.promise;
     }
 
+    /**
+     * Gathers information of this local client.
+     * @returns {ClientInfo}
+     */
     getLocalEndpoint(): ClientInfo {
         return this.clusterService.getClientInfo();
     }
 
+    /**
+     * Gives all known distributed objects in cluster.
+     * @returns {Promise<DistributedObject[]>|Promise<T>}
+     */
     getDistributedObjects(): Q.Promise<DistributedObject[]> {
         var deferred = Q.defer<DistributedObject[]>();
         var clientMessage = ClientGetDistributedObjectsCodec.encodeRequest();
@@ -95,10 +108,20 @@ export default class HazelcastClient {
         return deferred.promise;
     }
 
+    /**
+     * Returns the distributed map instance with given name.
+     * @param name
+     * @returns {IMap<K, V>}
+     */
     getMap<K, V>(name: string): IMap<K, V> {
         return <IMap<K, V>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.MAP_SERVICE);
     }
 
+    /**
+     * Return configuration that this instance started with.
+     * Returned configuration object should not be modified.
+     * @returns {ClientConfig}
+     */
     getConfig(): ClientConfig {
         return this.config;
     }
@@ -135,15 +158,33 @@ export default class HazelcastClient {
         return this.heartbeat;
     }
 
+    /**
+     * Registers a distributed object listener to cluster.
+     * @param listenerFunc Callback function will be called with following arguments.
+     * <ul>
+     *     <li>service name</li>
+     *     <li>distributed object name</li>
+     *     <li>name of the event that happened: either 'created' or 'destroyed'</li>
+     * </ul>
+     * @returns {Q.Promise<string>} registration id of the listener.
+     */
     addDistributedObjectListener(listenerFunc: Function): Q.Promise<string> {
         return this.proxyManager.addDistributedObjectListener(listenerFunc);
     }
 
+    /**
+     * Removes a distributed object listener from cluster.
+     * @param listenerId id of the listener to be removed.
+     * @returns {Q.Promise<boolean>} true if registration is removed, false otherwise.
+     */
     removeDistributedObjectListener(listenerId: string): Q.Promise<boolean> {
         return this.proxyManager.removeDistributedObjectListener(listenerId);
     }
 
-    shutdown() {
+    /**
+     * Shutsdown this client instance.
+     */
+    shutdown(): void {
         this.lifecycleService.emitLifecycleEvent(LifecycleEvent.shuttingDown);
         this.heartbeat.cancel();
         this.lifecycleService.emitLifecycleEvent(LifecycleEvent.shutdown);

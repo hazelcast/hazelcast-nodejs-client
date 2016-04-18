@@ -6,11 +6,13 @@ import * as Q from 'q';
 import {LoggingService} from './LoggingService';
 import Address = require('./Address');
 
-var PROPERTY_HEARTBEAT_INTERVAL: string = 'hazelcast.client.heartbeat.interval';
-var PROPERTY_HEARTBEAT_TIMEOUT: string = 'hazelcast.client.heartbeat.timeout';
+const PROPERTY_HEARTBEAT_INTERVAL: string = 'hazelcast.client.heartbeat.interval';
+const PROPERTY_HEARTBEAT_TIMEOUT: string = 'hazelcast.client.heartbeat.timeout';
 
+/**
+ * Hearbeat Service
+ */
 class Heartbeat {
-
     private client: HazelcastClient;
     private heartbeatTimeout: number;
     private heartbeatInterval: number;
@@ -27,14 +29,24 @@ class Heartbeat {
         this.heartbeatTimeout = this.client.getConfig().properties[PROPERTY_HEARTBEAT_TIMEOUT];
     }
 
+    /**
+     * Starts sending periodic heartbeat operations.
+     */
     start() {
         this.timer = setTimeout(this.heartbeatFunction.bind(this), this.heartbeatInterval);
     }
 
+    /**
+     * Cancels scheduled heartbeat operations.
+     */
     cancel() {
         clearTimeout(this.timer);
     }
 
+    /**
+     * Registers a heartbeat listener. Listener is invoked when a heartbeat related event occurs.
+     * @param heartbeatListener
+     */
     addListener(heartbeatListener: ConnectionHeartbeatListener) {
         this.listeners.push(heartbeatListener);
     }

@@ -1,7 +1,16 @@
 import Address = require('./Address');
 export class Member {
+    /**
+     * Network address of member.
+     */
     address: Address;
+    /**
+     * Unique id of member in cluster.
+     */
     uuid: string;
+    /**
+     * true if member is a lite member.
+     */
     isLiteMember: boolean;
     attributes: {[id: string]: string};
 

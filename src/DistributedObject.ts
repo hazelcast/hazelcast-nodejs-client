@@ -1,6 +1,6 @@
 import * as Q from 'q';
 export interface DistributedObject {
-    /*
+    /**
      * Returns the key of the partition that this DistributedObject is assigned to.
      * For a partitioned data structure, the returned value will not be null, but otherwise undefined.
      */

@@ -20,12 +20,19 @@ const ATTRIBUTE_CHANGE: {[key: string]: string} = {
     2: 'remove'
 };
 
+/**
+ * Manages the relationship of this client with the cluster.
+ */
 class ClusterService extends EventEmitter {
 
-    // The unique identifier of the owner server node. This node is responsible for resource cleanup
+    /**
+     * The unique identifier of the owner server node. This node is responsible for resource cleanup
+     */
     public ownerUuid: string = null;
 
-    // The unique identifier of this client instance. Assigned by owner node on authentication
+    /**
+     * The unique identifier of this client instance. Assigned by owner node on authentication
+     */
     public uuid: string = null;
 
     private knownAddresses: Address[] = [];
@@ -41,12 +48,20 @@ class ClusterService extends EventEmitter {
         this.members = [];
     }
 
+    /**
+     * Starts cluster service.
+     * @returns
+     */
     start(): Q.Promise<void> {
         this.initHeartbeatListener();
         this.initConnectionListener();
         return this.connectToCluster();
     }
 
+    /**
+     * Connects to cluster. It uses the addresses provided in the configuration.
+     * @returns
+     */
     connectToCluster(): Q.Promise<void> {
         if (this.members.length > 0) {
             this.knownAddresses = new Array<Address>();
@@ -64,14 +79,26 @@ class ClusterService extends EventEmitter {
         return deferred.promise;
     }
 
+    /**
+     * Returns the list of members in the cluster.
+     * @returns
+     */
     getMembers() {
         return this.members;
     }
 
+    /**
+     * Returns the number of nodes in cluster.
+     * @returns {number}
+     */
     getSize() {
         return this.members.length;
     }
 
+    /**
+     * Returns information about this client.
+     * @returns {ClientInfo}
+     */
     getClientInfo(): ClientInfo {
         var info = new ClientInfo();
         info.uuid = this.uuid;
@@ -134,6 +161,10 @@ class ClusterService extends EventEmitter {
         });
     }
 
+    /**
+     * Returns the connection associated with owner node of this client.
+     * @returns {ClientConnection}
+     */
     getOwnerConnection(): ClientConnection {
         return this.ownerConnection;
     }

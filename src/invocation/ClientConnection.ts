@@ -19,14 +19,26 @@ class ClientConnection {
         this.lastRead = 0;
     }
 
+    /**
+     * Returns the address of local port that is associated with this connection.
+     * @returns
+     */
     getLocalAddress() {
         return new Address(this.socket.localAddress, this.socket.localPort);
     }
 
+    /**
+     * Returns the address of remote node that is associated with this connection.
+     * @returns
+     */
     getAddress(): Address {
         return this.address;
     }
 
+    /**
+     * Connects to remote server and sets the hazelcast protocol.
+     * @returns
+     */
     connect(): Q.Promise<ClientConnection> {
         var ready = Q.defer<ClientConnection>();
 
@@ -62,10 +74,17 @@ class ClientConnection {
         return deferred.promise;
     }
 
+    /**
+     * Closes this connection.
+     */
     close() {
         this.socket.destroy();
     }
 
+    /**
+     * Registers a function to pass received data on 'data' events on this connection.
+     * @param callback
+     */
     registerResponseCallback(callback: Function) {
         this.socket.on('data', (buffer: Buffer) => {
             this.lastRead = new Date().getTime();
