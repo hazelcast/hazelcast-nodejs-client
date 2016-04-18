@@ -31,6 +31,13 @@ https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&u
 . use a locally linked module `npm link hazelcast-nodejs-client`
 . follow <<usage>> example
 
+NOTE: Typescript users should install some typings in order to compile the project.
+----
+typings install q
+typings install long
+typings install node
+----
+
 == Test
 
 === Test prerequisites
