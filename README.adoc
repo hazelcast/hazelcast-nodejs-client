@@ -4,31 +4,36 @@
 
 Node.js Client for Hazelcast, using Hazelcast Open Client Protocol 1.0 for Hazelcast 3.6 and higher
 
-WARNING: This project currently in active development.
+NOTE: This project currently in active development.
 
 https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge[image:https://badges.gitter.im/Join%20Chat.svg[Join the chat at https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client]]
 
 == Development
 
-.Install global tools
-----
-npm install gulp typescript -g
-----
+=== Build And Install `hazelcast-client` From Sources
 
-.Install dependencies
-----
-npm install
-----
+. clone repo https://github.com/hazelcast/hazelcast-nodejs-client.git
+. install global dependencies `npm install -g typescript typings`
+. install dependencies `npm install`
+. compile TypeScript `gulp compile`
+. link package locally `npm link`
+
+== Use Locally Installed Package
+
+. `cd` to project directory
+. use a locally linked module `npm link hazelcast-nodejs-client`
+. follow <<usage>> example
 
 == Test
 
 === Test prerequisites
 
-* Java 6+
-* Hazelcast Remote Controller
+* http://www.oracle.com/technetwork/java/javase/downloads/server-jre8-downloads-2133154.html[Java 6+]
+* https://github.com/hazelcast/hazelcast-remote-controller[Hazelcast Remote Controller]
+** https://github.com/hazelcast/hazelcast-remote-controller/blob/master/nodejs-controller/README.md[Follow README]
+* run the tests
 +
 ----
-Follow README: https://github.com/hazelcast/hazelcast-remote-controller/tree/master/nodejs-controller
 npm test
 ----
 
@@ -42,20 +47,28 @@ npm test
 * Lifecycle Service
 * Smart Client
 
-
+[[usage]]
 == Usage
 
+.JavaScript Example
 [source,javascript]
 ----
 var HazelcastClient = require('hazelcast-client').Client;
+var person = {
+    firstName: "Joe",
+    lastName: "Doe",
+    age: 42
+};
 var map;
-HazelcastClient.newHazelcastClient().then(function(client)  {
-    map = client.getMap('test-map');
-    return map.put('test-key', 'test-value');
-}).then(function() {
-    return map.get('test-key');
-}).then(function(value) {
-    console.log(value);
+HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
+    map = hazelcastClient.getMap("personMap");
+    map.put(1, person).then(function (val) {
+        // prints previous value for key `1`
+        console.log(val);
+    });
+    map.get(1).then(function (value) {
+        console.log(value);
+    })
 });
 ----
 
