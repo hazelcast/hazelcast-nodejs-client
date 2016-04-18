@@ -83,4 +83,8 @@ describe('ClusterService', function() {
             done();
         });
     });
+
+    it('null', function(done) {
+        done();
+    })
 });
