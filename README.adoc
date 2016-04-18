@@ -25,21 +25,10 @@ npm install
 === Test prerequisites
 
 * Java 6+
-* Hazelcast jars
-+
-
-----
-curl -OL https://jcenter.bintray.com/com/hazelcast/hazelcast-all/3.6-EA2/hazelcast-all-3.6-EA2.jar
-----
-* Running Hazelcast members
-
+* Hazelcast Remote Controller
 +
 ----
-java -showversion -cp "$PWD/hazelcast-all-3.6-EA2.jar:" com.hazelcast.core.server.StartServer
-----
-
-
-----
+Follow README: https://github.com/hazelcast/hazelcast-remote-controller/tree/master/nodejs-controller
 npm test
 ----
 
@@ -49,11 +38,16 @@ npm test
 ** Get
 ** Put
 ** Remove
+* Distributed Object Listener
+* Lifecycle Service
+* Smart Client
+
 
 == Usage
 
 [source,javascript]
 ----
+var HazelcastClient = require('hazelcast-nodejs-client').Client;
 var map;
 HazelcastClient.newHazelcastClient().then(function(client)  {
     map = client.getMap('test-map');
