@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Hazelcast-nodejs-client by hazelcast</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Hazelcast-nodejs-client</h1>
+      <h2 class="project-tagline">NodeJS Client for Hazelcast, using Hazelcast Open Client Protocol 1.0 for Hazelcast 3.6 and higher</h2>
+      <a href="https://github.com/hazelcast/hazelcast-nodejs-client" class="btn">View on GitHub</a>
+      <a href="https://github.com/hazelcast/hazelcast-nodejs-client/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/hazelcast/hazelcast-nodejs-client/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <div id="toc">
+<div id="toctitle">Table of content</div>
+<ul>
+<li>
+<a href="#_development">Development</a>
+<ul>
+<li><a href="#_build_and_install_code_hazelcast_client_code_from_sources">Build And Install <code>hazelcast-client</code> From Sources</a></li>
+</ul>
+</li>
+<li><a href="#_use_locally_installed_package">Use Locally Installed Package</a></li>
+<li>
+<a href="#_test">Test</a>
+<ul>
+<li><a href="#_test_prerequisites">Test prerequisites</a></li>
+</ul>
+</li>
+<li><a href="#_implemented_features">Implemented Features</a></li>
+<li><a href="#usage">Usage</a></li>
+<li>
+<a href="#_mail_group">Mail Group</a>
+<ul>
+<li><a href="#_license">License</a></li>
+<li><a href="#_copyright">Copyright</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+<div id="preamble">
+<div>
+<div>
+<p>Node.js Client for Hazelcast, using Hazelcast Open Client Protocol 1.0 for Hazelcast 3.6 and higher</p>
+</div>
+
+
+
+<div>
+<table>
+<tr>
+<td>
+<div>Note</div>
+</td>
+<td>
+This project currently in active development.
+</td>
+</tr>
+</table>
+</div>
+
+<div>
+<p><a href="https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img src="https://badges.gitter.im/Join%20Chat.svg" alt="Join the chat at https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client"></a></p>
+</div>
+
+<p></p>
+</div>
+</div>
+
+<div>
+<h2 id="_development">
+<a id="development" class="anchor" href="#development" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Development</h2>
+<div>
+<div>
+<h3 id="_build_and_install_code_hazelcast_client_code_from_sources">
+<a id="build-and-install-hazelcast-client-from-sources" class="anchor" href="#build-and-install-hazelcast-client-from-sources" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Build And Install <code>hazelcast-client</code> From Sources</h3>
+<div>
+<ol>
+<li>
+<p>clone repo <a href="https://github.com/hazelcast/hazelcast-nodejs-client.git">https://github.com/hazelcast/hazelcast-nodejs-client.git</a></p>
+</li>
+<li>
+<p>install global dependencies <code>npm install -g typescript typings</code></p>
+</li>
+<li>
+<p>install dependencies <code>npm install</code></p>
+</li>
+<li>
+<p>compile TypeScript <code>gulp compile</code></p>
+</li>
+<li>
+<p>link package locally <code>npm link</code></p>
+</li>
+</ol>
+</div>
+
+<p></p>
+</div>
+</div>
+</div>
+
+<div>
+<h2 id="_use_locally_installed_package">
+<a id="use-locally-installed-package" class="anchor" href="#use-locally-installed-package" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Use Locally Installed Package</h2>
+<div>
+<div>
+<ol>
+<li>
+<p><code>cd</code> to project directory</p>
+</li>
+<li>
+<p>use a locally linked module <code>npm link hazelcast-nodejs-client</code></p>
+</li>
+<li>
+<p>follow <a href="#usage">Usage</a> example</p>
+</li>
+</ol>
+</div>
+
+<p></p>
+</div>
+</div>
+
+<div>
+<h2 id="_test">
+<a id="test" class="anchor" href="#test" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Test</h2>
+<div>
+<div>
+<h3 id="_test_prerequisites">
+<a id="test-prerequisites" class="anchor" href="#test-prerequisites" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Test prerequisites</h3>
+<div>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/technetwork/java/javase/downloads/server-jre8-downloads-2133154.html">Java 6+</a></p>
+</li>
+<li>
+<p><a href="https://github.com/hazelcast/hazelcast-remote-controller">Hazelcast Remote Controller</a></p>
+<div>
+<ul>
+<li>
+<p><a href="https://github.com/hazelcast/hazelcast-remote-controller/blob/master/nodejs-controller/README.md">Follow README</a></p>
+</li>
+</ul>
+</div>
+
+<p></p>
+</li>
+<li>
+
+<p>run the tests</p>
+
+<div>
+<div>
+<pre>npm test</pre>
+</div>
+
+<p></p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+
+<div>
+<h2 id="_implemented_features">
+<a id="implemented-features" class="anchor" href="#implemented-features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Implemented Features</h2>
+<div>
+<div>
+<ul>
+<li>
+<p>Map</p>
+<div>
+<ul>
+<li>
+<p>Get</p>
+</li>
+<li>
+<p>Put</p>
+</li>
+<li>
+<p>Remove</p>
+</li>
+</ul>
+</div>
+
+<p></p>
+</li>
+<li>
+
+<p>Distributed Object Listener</p>
+
+<p></p>
+</li>
+<li>
+
+<p>Lifecycle Service</p>
+
+<p></p>
+</li>
+<li>
+
+<p>Smart Client</p>
+
+<p></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div>
+<h2 id="usage">
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
+<div>
+<div>
+<div>JavaScript Example</div>
+<div>
+<pre><code>var HazelcastClient = require('hazelcast-client').Client;
+var person = {
+    firstName: "Joe",
+    lastName: "Doe",
+    age: 42
+};
+var map;
+HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
+    map = hazelcastClient.getMap("personMap");
+    map.put(1, person).then(function (val) {
+        // prints previous value for key `1`
+        console.log(val);
+    });
+    map.get(1).then(function (value) {
+        console.log(value);
+    })
+});</code></pre>
+</div>
+
+<p></p>
+</div>
+</div>
+</div>
+
+<div>
+<h2 id="_mail_group">
+<a id="mail-group" class="anchor" href="#mail-group" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Mail Group</h2>
+<div>
+<div>
+<p>Please join the mail group if you are interested in using or developing Hazelcast.</p>
+</div>
+
+<div>
+<p><a href="http://groups.google.com/group/hazelcast">http://groups.google.com/group/hazelcast</a></p>
+</div>
+
+<div>
+<h3 id="_license">
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h3>
+<div>
+<p>Hazelcast is available under the Apache 2 License. Please see the <a href="http://docs.hazelcast.org/docs/latest/manual/html-single/hazelcast-documentation.html#license-questions">Licensing appendix</a> for more information.</p>
+</div>
+
+<p></p>
+</div>
+
+<div>
+<h3 id="_copyright">
+<a id="copyright" class="anchor" href="#copyright" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Copyright</h3>
+<div>
+<p>Copyright (c) 2008-2016, Hazelcast, Inc. All Rights Reserved.</p>
+</div>
+
+<div>
+<p>Visit <a href="http://www.hazelcast.com">www.hazelcast.com</a> for more info.</p>
+</div>
+
+<p></p>
+</div>
+</div>
+</div>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/hazelcast/hazelcast-nodejs-client">Hazelcast-nodejs-client</a> is maintained by <a href="https://github.com/hazelcast">hazelcast</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
