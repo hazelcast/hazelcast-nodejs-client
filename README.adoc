@@ -78,7 +78,7 @@ typings install node
 
 . `cd` to project directory
 . use a locally linked module `npm link hazelcast-nodejs-client`
-. follow <<usage>> example
+. follow <<Usage>> example
 
 == Test
 
