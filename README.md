@@ -1,6 +1,10 @@
 # Hazelcast Node.js Client
 Node.js Client for Hazelcast, using Hazelcast Open Client Protocol 1.0 for Hazelcast 3.6 and higher
 
+**Hazelcast** is a clustering and highly scalable data distribution platform.
+
+With its various distributed data structures, distributed caching capabilities, elastic nature and more importantly with so many happy users, Hazelcast is feature-rich, enterprise-ready and developer-friendly in-memory data grid solution.
+
 > **NOTE: This project is currently in active development.**
 
 [![Join the chat at https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
