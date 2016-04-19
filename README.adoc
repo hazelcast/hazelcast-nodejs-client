@@ -15,42 +15,6 @@ NOTE: This project currently in active development.
 
 https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge[image:https://badges.gitter.im/Join%20Chat.svg[Join the chat at https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client]]
 
-== Development
-
-=== Build And Install `hazelcast-client` From Sources
-
-. clone repo https://github.com/hazelcast/hazelcast-nodejs-client.git
-. install global dependencies `npm install -g typescript typings`
-. install dependencies `npm install`
-. compile TypeScript `gulp compile`
-. link package locally `npm link`
-
-== Use Locally Installed Package
-
-. `cd` to project directory
-. use a locally linked module `npm link hazelcast-nodejs-client`
-. follow <<usage>> example
-
-NOTE: Typescript users should install some typings in order to compile the project.
-----
-typings install q
-typings install long
-typings install node
-----
-
-== Test
-
-=== Test prerequisites
-
-* http://www.oracle.com/technetwork/java/javase/downloads/server-jre8-downloads-2133154.html[Java 6+]
-* https://github.com/hazelcast/hazelcast-remote-controller[Hazelcast Remote Controller]
-** https://github.com/hazelcast/hazelcast-remote-controller/blob/master/nodejs-controller/README.md[Follow README]
-* run the tests
-+
-----
-npm test
-----
-
 == Implemented Features
 
 * Map
@@ -62,6 +26,12 @@ npm test
 * Smart Client
 
 [[usage]]
+
+== Installation
+----
+npm install hazelcast-client --save
+----
+
 == Usage
 
 .JavaScript Example
@@ -84,6 +54,43 @@ HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
         console.log(value);
     })
 });
+----
+
+NOTE: Typescript users should install some typings in order to compile the project.
+----
+npm install typings -g
+typings install q
+typings install long
+typings install node
+----
+
+== Development
+
+=== Build And Install `hazelcast-client` From Sources
+
+. clone repo https://github.com/hazelcast/hazelcast-nodejs-client.git
+. install global dependencies `npm install -g typescript typings`
+. install dependencies `npm install`
+. compile TypeScript `gulp compile`
+. link package locally `npm link`
+
+== Use Locally Installed Package
+
+. `cd` to project directory
+. use a locally linked module `npm link hazelcast-nodejs-client`
+. follow <<usage>> example
+
+== Test
+
+=== Test prerequisites
+
+* http://www.oracle.com/technetwork/java/javase/downloads/server-jre8-downloads-2133154.html[Java 6+]
+* https://github.com/hazelcast/hazelcast-remote-controller[Hazelcast Remote Controller]
+** https://github.com/hazelcast/hazelcast-remote-controller/blob/master/nodejs-controller/README.md[Follow README]
+* run the tests
++
+----
+npm test
 ----
 
 == Mail Group
