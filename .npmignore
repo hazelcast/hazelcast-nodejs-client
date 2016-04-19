@@ -6,3 +6,4 @@ tslint.json
 .editorconfig
 .jshintrc
 test/
+docs/
