@@ -158,6 +158,10 @@ export default class HazelcastClient {
         return this.heartbeat;
     }
 
+    getLifecycleService(): LifecycleService {
+        return this.lifecycleService;
+    }
+
     /**
      * Registers a distributed object listener to cluster.
      * @param listenerFunc Callback function will be called with following arguments.

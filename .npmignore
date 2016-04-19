@@ -7,3 +7,4 @@ tslint.json
 .jshintrc
 test/
 docs/
+code_samples/
