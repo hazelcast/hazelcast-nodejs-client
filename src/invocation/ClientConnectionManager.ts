@@ -97,6 +97,15 @@ class ClientConnectionManager extends EventEmitter {
         }
     }
 
+    shutdown() {
+        for (var pending in this.pendingConnections) {
+            this.pendingConnections[pending].reject(new Error('Client is shutting down!'));
+        }
+        for (var conn in this.establishedConnections) {
+            this.establishedConnections[conn].close();
+        }
+    }
+
     private onConnectionClosed(connection: ClientConnection) {
         this.emit(EMIT_CONNECTION_CLOSED, connection);
     }

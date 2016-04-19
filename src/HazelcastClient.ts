@@ -187,6 +187,7 @@ export default class HazelcastClient {
     shutdown(): void {
         this.lifecycleService.emitLifecycleEvent(LifecycleEvent.shuttingDown);
         this.heartbeat.cancel();
+        this.connectionManager.shutdown();
         this.lifecycleService.emitLifecycleEvent(LifecycleEvent.shutdown);
     }
 }

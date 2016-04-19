@@ -3,7 +3,6 @@
     "class-name": true,
     "curly": true,
     "eofline": true,
-    "forin": true,
     "indent": [
       false
     ],

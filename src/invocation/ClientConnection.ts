@@ -78,7 +78,7 @@ class ClientConnection {
      * Closes this connection.
      */
     close() {
-        this.socket.destroy();
+        this.socket.end();
     }
 
     /**
