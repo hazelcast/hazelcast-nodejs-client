@@ -57,12 +57,12 @@ typings install node
 - clone repo [https://github.com/hazelcast/hazelcast-nodejs-client.git](https://github.com/hazelcast/hazelcast-nodejs-client.git)
 - install global dependencies `npm install -g typescript typings`
 - install dependencies `npm install`
-- compile TypeScript `gulp compile`
+- compile TypeScript `npm run compile`
 - link package locally `npm link`
 
 ### Use Locally Installed Package
 - `cd` to project directory
-- use a locally linked module `npm link hazelcast-nodejs-client`
+- use a locally linked module `npm link hazelcast-client`
 - follow [usage](#Usage) example
 
 ## Test
