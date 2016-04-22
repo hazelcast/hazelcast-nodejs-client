@@ -7,6 +7,7 @@
         "target": "es5",
         "outDir": "./lib",
         "preserveConstEnums": true,
+        "noLib": true,
         "removeComments": true
     },
     "filesGlob": [

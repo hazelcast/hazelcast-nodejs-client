@@ -22,7 +22,7 @@
   "scripts": {
     "clean": "rimraf lib typings",
     "precompile": "typings install",
-    "compile": "tsc -noLib",
+    "compile": "tsc",
     "test": "mocha",
     "coverage": "rimraf coverage && istanbul cover --root lib/ --include-all-sources _mocha -- --reporter spec",
     "generate-docs": "rimraf docs && typedoc --out docs/ --exclude src/codec/*.ts --module commonjs src typings/main",
