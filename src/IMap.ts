@@ -32,12 +32,24 @@ export interface IMap<K, V> extends DistributedObject {
     put(key: K, value: V, ttl?: number) : Q.Promise<V>;
 
     /**
+     * Puts all key value pairs from this array to the map as key -> value mappings.
+     * @param pairs
+     */
+    putAll(pairs: [K, V][]): Q.Promise<void>;
+
+    /**
      * Retrieves the value associated with given key.
      * @param key
      * @throws {Error} if key is undefined or null
      * @return a promise to be resolved to the value associated with key, undefined if the key does not exist.
      */
     get(key: K) : Q.Promise<V>;
+
+    /**
+     * Retrieves key value pairs of given keys.
+     * @param keys the array of keys
+     */
+    getAll(keys: K[]): Q.Promise<[K, V][]>;
 
     /**
      * Removes specified key from map. If optional value is specified, the key is removed only if currently mapped to
@@ -49,6 +61,13 @@ export interface IMap<K, V> extends DistributedObject {
      * @return a promise to be resolved to the value associated with key, undefined if the key did not exist before.
      */
     remove(key: K, value?: V) : Q.Promise<V>;
+
+    /**
+     * Removes specified key from map. Unlike {@link remove} this method does not return deleted value.
+     * Therefore it eliminates deserialization cost of returned value.
+     * @param key
+     */
+    delete(key: K): Q.Promise<void>;
 
     /**
      * Retrieves the number of elements in map
@@ -68,6 +87,108 @@ export interface IMap<K, V> extends DistributedObject {
     isEmpty() : Q.Promise<boolean>;
 
     /**
-     *
+     * Returns entries as an array of key-value pairs.
      */
+    entrySet(): Q.Promise<[K, V][]>;
+
+    /**
+     * Evicts the specified key from this map.
+     * @param key
+     */
+    evict(key: K): Q.Promise<boolean>;
+
+    /**
+     * Evicts all keys from this map.
+     */
+    evictAll(): Q.Promise<void>;
+
+    /**
+     * If this map has a MapStore, this method flushes all local dirty entries.
+     */
+    flush(): Q.Promise<void>;
+
+    /**
+     * Releases the lock for the specified key regardless of the owner.
+     * It always unlocks the key.
+     * @param key
+     */
+    forceUnlock(key: K): Q.Promise<void>;
+
+    /**
+     * Checks whether given key is locked.
+     * @param key
+     * @return {true} if key is locked, {false} otherwise
+     */
+    isLocked(key: K): Q.Promise<boolean>;
+
+    /**
+     * Locks the given key for this map. Promise is resolved when lock is successfully acquired.
+     * This means it may never be resolved if some other process holds the lock and does not unlock it.
+     * A lock may be acquired on non-existent keys. Other processes wait on non-existent key.
+     * When this client puts the non-existent key, it is allowed to do that.
+     * Locks are re-entrant meaning that if lock is taken N times, it should be released N times.
+     * @param key
+     * @param ttl lock is automatically unlocked after ttl milliseconds
+     */
+    lock(key: K, ttl?: number): Q.Promise<void>;
+
+    /**
+     * Returns the keys of this map as an array.
+     */
+    keySet(): Q.Promise<K[]>;
+
+    /**
+     * Loads keys to the store.
+     * @param keys loads only given keys if set.
+     * @param replaceExistingValues if {true} existing keys will be replaced by newly loaded keys.
+     */
+    loadAll(keys?: K[], replaceExistingValues?: boolean): Q.Promise<void>;
+
+    /**
+     * Puts specified key value association if it was not present before.
+     * @param key
+     * @param value
+     * @param ttl if set, key will be evicted automatically after ttl milliseconds.
+     * @return old value of the entry.
+     */
+    putIfAbsent(key: K, value: V, ttl?: number): Q.Promise<V>;
+
+    /**
+     * Same as {@link #put} except it does not call underlyinh MapStore.
+     * @param key
+     * @param value
+     * @param ttl
+     */
+    putTransient(key: K, value: V, ttl?: number): Q.Promise<V>;
+
+    /**
+     * Replaces value of the key if only it was associated with some value before.
+     * @param key
+     * @param value
+     * @param oldValue if specified, this method replaces value of the key only if it was equal to oldValue before.
+     * @return old value associated to key.
+     */
+    replace(key: K, value: V, oldValue?: V): Q.Promise<V>;
+
+    /**
+     * Similar to {@link #put} except it does not return the old value.
+     * @param key
+     * @param value
+     * @param ttl
+     */
+    set(key: K, value: V, ttl?: number): Q.Promise<void>;
+
+    /**
+     * Releases the lock for this key.
+     * If this client holds the lock, hold count is decremented.
+     * If hold count is zero, lock is released.
+     * @throws {Error} if this client is not the owner of the key.
+     * @param key
+     */
+    unlock(key: K): Q.Promise<void>;
+
+    /**
+     * Returns an array of values contained in this map.
+     */
+    values(): Q.Promise<V[]>;
 }
