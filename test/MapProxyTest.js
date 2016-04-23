@@ -16,22 +16,18 @@ describe("MapProxy Test", function() {
             return Controller.startMember(cluster.id);
         }).then(function(member) {
             return HazelcastClient.newHazelcastClient().then(function(hazelcastClient) {
-                map = hazelcastClient.getMap('test-map');
                 client = hazelcastClient;
             });
         });
     });
 
-    beforeEach(function(done) {
-        this.timeout(10000);
-        var promises = [];
-        for (var i = 0; i < 100; i++) {
-            var promise = map.put('key' + i, 'val' + i);
-            promises.push(promise);
-        }
-        Q.all(promises).then(function () {
-            done();
-        });
+    beforeEach(function() {
+        map = client.getMap('test');
+        return _fillMap();
+    });
+
+    afterEach(function() {
+        return map.destroy();
     });
 
     after(function() {
@@ -39,10 +35,13 @@ describe("MapProxy Test", function() {
         return Controller.shutdownCluster(cluster.id);
     });
 
-    function _fillMap(map, size) {
+    function _fillMap(size) {
+        if (size == void 0) {
+            size = 10;
+        }
         var promises = [];
         for (var i = 0; i< size; i++) {
-            promises.push(map.put('k' + i, 'v' + i));
+            promises.push(map.put('key' + i, 'val' + i));
         }
         return Q.all(promises);
     }
@@ -98,13 +97,13 @@ describe("MapProxy Test", function() {
 
     it('size', function() {
         return map.size().then(function(size) {
-            expect(size).to.equal(100);
+            expect(size).to.equal(10);
         })
     });
 
     it('basic_remove_return_value', function() {
-        return map.remove('key10').then(function(val) {
-            return expect(val).to.equal('val10');
+        return map.remove('key9').then(function(val) {
+            return expect(val).to.equal('val9');
         });
     });
 
@@ -129,7 +128,7 @@ describe("MapProxy Test", function() {
     });
 
     it('containsKey_true', function() {
-        return map.containsKey('key25').then(function(val) {
+        return map.containsKey('key1').then(function(val) {
            return expect(val).to.be.true;
         });
     });
@@ -141,7 +140,7 @@ describe("MapProxy Test", function() {
     });
 
     it('containsValue_true', function() {
-        return map.containsValue('val25').then(function(val) {
+        return map.containsValue('val1').then(function(val) {
             return expect(val).to.be.true;
         });
     });
@@ -220,9 +219,7 @@ describe("MapProxy Test", function() {
     });
 
     it('evict', function() {
-        return _fillMap(map, 10).then(function() {
-            return map.evict('k0');
-        }).then(function() {
+        return map.evict('key0').then(function() {
             return map.size();
         }).then(function(s) {
             return expect(s).to.equal(9);
