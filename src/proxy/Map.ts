@@ -17,6 +17,7 @@ import {MapPutAllCodec} from '../codec/MapPutAllCodec';
 import defer = Q.defer;
 import {MapDeleteCodec} from '../codec/MapDeleteCodec';
 import {MapEntrySetCodec} from '../codec/MapEntrySetCodec';
+import {MapEvictCodec} from '../codec/MapEvictCodec';
 export class Map<K, V> extends BaseProxy implements IMap<K, V> {
     containsKey(key: K): Q.Promise<boolean> {
         var keyData = this.toData(key);
@@ -112,7 +113,8 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     evict(key: K) : Q.Promise<boolean> {
-        return null;
+        var keyData = this.toData(key);
+        return this.encodeInvokeOnKey(MapEvictCodec, keyData, keyData, 0);
     }
 
     evictAll(): Q.Promise<void> {

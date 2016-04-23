@@ -39,6 +39,14 @@ describe("MapProxy Test", function() {
         return Controller.shutdownCluster(cluster.id);
     });
 
+    function _fillMap(map, size) {
+        var promises = [];
+        for (var i = 0; i< size; i++) {
+            promises.push(map.put('k' + i, 'v' + i));
+        }
+        return Q.all(promises);
+    }
+
     it('get_basic', function() {
         return map.get('key0').then(function(v) {
             return expect(v).to.equal('val0');
@@ -208,6 +216,26 @@ describe("MapProxy Test", function() {
         var entryMap = client.getMap('null-entry-map');
         return entryMap.entrySet().then(function(entrySet) {
             return expect(entrySet).to.be.empty;
+        });
+    });
+
+    it('evict', function() {
+        return _fillMap(map, 10).then(function() {
+            return map.evict('k0');
+        }).then(function() {
+            return map.size();
+        }).then(function(s) {
+            return expect(s).to.equal(9);
+        });
+    });
+
+    it('evict_nonexist_key', function() {
+        return _fillMap(map, 10).then(function() {
+            return map.evict('non-key');
+        }).then(function() {
+            return map.size();
+        }).then(function(s) {
+            return expect(s).to.equal(10);
         });
     });
 
