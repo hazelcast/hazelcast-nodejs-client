@@ -2,6 +2,7 @@ var expect = require("chai").expect;
 var HazelcastClient = require("../.").Client;
 var Q = require("q");
 var Controller = require('./RC');
+var Util = require('./Util');
 
 describe("MapProxy Test", function() {
 
@@ -72,18 +73,15 @@ describe("MapProxy Test", function() {
         });
     });
 
-    it('put with ttl removes value after ttl', function(done) {
-        return map.put('ttl-to-remove', 'val', 1500).then(function() {
-            setTimeout(function() {
-                map.get('ttl-to-remove').then(function(val) {
-                    try {
-                        expect(val).to.be.null;
-                        done();
-                    } catch (e) {
-                        done(e);
-                    }
-                })
-            }, 1500);
+    it('put with ttl removes value after ttl', function() {
+        return map.put('key10', 'val10', 1000).then(function() {
+            return map.get('key10');
+        }).then(function(val) {
+            return expect(val).to.equal('val10');
+        }).then(function() {
+            return Util.promiseLater(1000, map.get.bind(map, 'key10'));
+        }).then(function(val) {
+            return expect(val).to.be.null;
         });
     });
 
@@ -227,13 +225,174 @@ describe("MapProxy Test", function() {
     });
 
     it('evict_nonexist_key', function() {
-        return _fillMap(map, 10).then(function() {
-            return map.evict('non-key');
-        }).then(function() {
+        return map.evict('non-key').then(function() {
             return map.size();
         }).then(function(s) {
             return expect(s).to.equal(10);
         });
+    });
+
+    it('evictAll', function() {
+        return map.evictAll().then(function() {
+            return map.size();
+        }).then(function(s) {
+            return expect(s).to.equal(0);
+        });
+    });
+
+    it('flush', function() {
+        return map.flush();
+    });
+
+    it('lock', function() {
+        return map.lock('key0').then(function() {
+            return map.isLocked('key0');
+        }).then(function(isLocked) {
+            return expect(isLocked).to.be.true;
+        }).finally(function() {
+            return map.unlock('key0');
+        });
+    });
+
+    it('unlock', function() {
+        return map.lock('key0').then(function() {
+            return map.unlock('key0');
+        }).then(function() {
+            return map.isLocked('key0');
+        }).then(function(isLocked) {
+            return expect(isLocked).to.be.false;
+        });
+    });
+
+    it('forceUnlock');
+
+    it('keySet', function() {
+        return map.keySet().then(function(keySet) {
+            return expect(keySet).to.deep.have.members([
+                'key0', 'key1', 'key2', 'key3', 'key4',
+                'key5', 'key6', 'key7', 'key8', 'key9'
+            ]);
+        });
+    });
+
+    it('loadAll');
+
+    it('putIfAbsent_success', function() {
+        return map.putIfAbsent('key10', 'new-val').then(function(oldVal) {
+            return expect(oldVal).to.be.null;
+        }).then(function() {
+            return map.get('key10');
+        }).then(function(val) {
+            return expect(val).to.equal('new-val');
+        });
+    });
+
+    it('putIfAbsent_fail', function() {
+        return map.putIfAbsent('key9', 'new-val').then(function() {
+            return map.get('key9');
+        }).then(function(val) {
+            return expect(val).to.equal('val9');
+        });
+    });
+
+    it('putIfAbsent_with_ttl', function () {
+        return map.putIfAbsent('key10', 'new-val', 1000).then(function() {
+            return map.get('key10');
+        }).then(function(val) {
+            return expect(val).to.equal('new-val');
+        }).then(function() {
+            return Util.promiseLater(1000, map.get.bind(map, 'key10'));
+        }).then(function(val) {
+            return expect(val).to.be.null;
+        });
+
+    });
+
+    it('putTransient', function() {
+        return map.putTransient('key10', 'val10').then(function() {
+            return map.get('key10');
+        }).then(function(val) {
+            return expect(val).to.equal('val10');
+        });
+    });
+
+    it('putTransient_withTTL', function() {
+        return map.putTransient('key10', 'val10', 1000).then(function() {
+            return map.get('key10');
+        }).then(function(val) {
+            return expect(val).to.equal('val10');
+        }).then(function() {
+            return Util.promiseLater(1000, map.get.bind(map, 'key10'))
+        }).then(function(val) {
+            return expect(val).to.be.null;
+        });
+    });
+
+    it('replace', function() {
+        return map.replace('key9', 'new-val').then(function(oldVal) {
+            return expect(oldVal).to.equal('val9');
+        }).then(function() {
+            return map.get('key9');
+        }).then(function(val) {
+            return expect(val).to.equal('new-val');
+        });
+    });
+
+    it('replaceIfSame_success', function() {
+        return map.replaceIfSame('key9', 'val9', 'new-val').then(function(success) {
+            return expect(success).to.be.true;
+        }).then(function() {
+            return map.get('key9');
+        }).then(function(val) {
+            return expect(val).to.equal('new-val');
+        });
+    });
+
+    it('replaceIfSame_fail', function() {
+        return map.replaceIfSame('key9', 'wrong', 'new-val', function(success) {
+            return expect(success).to.be.false;
+        }).then(function() {
+            return map.get('key9');
+        }).then(function(val) {
+            return expect(val).to.equal('val9');
+        });
+    });
+
+    it('set', function() {
+        return map.set('key10', 'val10').then(function() {
+            return map.get('key10');
+        }).then(function(val) {
+            return expect(val).to.equal('val10');
+        })
+    });
+
+    it('set_withTTL', function() {
+        return map.set('key10', 'val10', 1000).then(function() {
+            return map.get('key10');
+        }).then(function(val) {
+            return expect(val).to.equal('val10');
+        }).then(function() {
+            return Util.promiseLater(1000, map.get.bind(map, 'key10'));
+        }).then(function(val) {
+            return expect(val).to.be.null;
+        })
+    });
+
+    it('values', function() {
+        return map.values().then(function(vals) {
+            return expect(vals).to.deep.have.members([
+                'val0', 'val1', 'val2', 'val3', 'val4',
+                'val5', 'val6', 'val7', 'val8', 'val9'
+            ]);
+        });
+    });
+
+    it('values_null', function() {
+        return map.clear().then(function() {
+            return map.values();
+        }).then(function(vals) {
+            return expect(vals).to.have.lengthOf(0);
+        })
     });
 
     it('destroy', function() {

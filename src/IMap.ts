@@ -154,21 +154,29 @@ export interface IMap<K, V> extends DistributedObject {
     putIfAbsent(key: K, value: V, ttl?: number): Q.Promise<V>;
 
     /**
-     * Same as {@link #put} except it does not call underlyinh MapStore.
+     * Same as {@link #put} except it does not call underlying MapStore.
      * @param key
      * @param value
      * @param ttl
      */
-    putTransient(key: K, value: V, ttl?: number): Q.Promise<V>;
+    putTransient(key: K, value: V, ttl?: number): Q.Promise<void>;
 
     /**
-     * Replaces value of the key if only it was associated with some value before.
+     * Replaces value of the key if only it was associated to oldValue.
      * @param key
      * @param value
-     * @param oldValue if specified, this method replaces value of the key only if it was equal to oldValue before.
-     * @return old value associated to key.
+     * @param oldValue
+     * @return {true} if the value was replaced.
      */
-    replace(key: K, value: V, oldValue?: V): Q.Promise<V>;
+    replaceIfSame(key: K, oldValue: V,  newValue: V): Q.Promise<boolean>;
+
+    /**
+     * Replaces value of given key with newValue.
+     * @param key
+     * @param newValue
+     * @return previous value
+     */
+    replace(key: K, newValue: V): Q.Promise<V>;
 
     /**
      * Similar to {@link #put} except it does not return the old value.

@@ -18,6 +18,20 @@ import defer = Q.defer;
 import {MapDeleteCodec} from '../codec/MapDeleteCodec';
 import {MapEntrySetCodec} from '../codec/MapEntrySetCodec';
 import {MapEvictCodec} from '../codec/MapEvictCodec';
+import {MapEvictAllCodec} from '../codec/MapEvictAllCodec';
+import {MapFlushCodec} from '../codec/MapFlushCodec';
+import {MapLockCodec} from '../codec/MapLockCodec';
+import {MapIsLockedCodec} from '../codec/MapIsLockedCodec';
+import {MapUnlockCodec} from '../codec/MapUnlockCodec';
+import {MapForceUnlockCodec} from '../codec/MapForceUnlockCodec';
+import {MapKeySetCodec} from '../codec/MapKeySetCodec';
+import {MapLoadAllCodec} from '../codec/MapLoadAllCodec';
+import {MapPutIfAbsentCodec} from '../codec/MapPutIfAbsentCodec';
+import {MapPutTransientCodec} from '../codec/MapPutTransientCodec';
+import {MapReplaceCodec} from '../codec/MapReplaceCodec';
+import {MapReplaceIfSameCodec} from '../codec/MapReplaceIfSameCodec';
+import {MapSetCodec} from '../codec/MapSetCodec';
+import {MapValuesCodec} from '../codec/MapValuesCodec';
 export class Map<K, V> extends BaseProxy implements IMap<K, V> {
     containsKey(key: K): Q.Promise<boolean> {
         var keyData = this.toData(key);
@@ -114,58 +128,95 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
 
     evict(key: K) : Q.Promise<boolean> {
         var keyData = this.toData(key);
-        return this.encodeInvokeOnKey(MapEvictCodec, keyData, keyData, 0);
+        return this.encodeInvokeOnKey<boolean>(MapEvictCodec, keyData, keyData, 0);
     }
 
     evictAll(): Q.Promise<void> {
-        return null;
+        return this.encodeInvokeOnRandomTarget<void>(MapEvictAllCodec);
     }
 
     flush(): Q.Promise<void> {
-        return null;
+        return this.encodeInvokeOnRandomTarget<void>(MapFlushCodec);
     }
 
-    forceUnlock(key: K): Q.Promise<void> {
-        return null;
+    lock(key: K, ttl: number = -1): Q.Promise<void> {
+        var keyData = this.toData(key);
+        return this.encodeInvokeOnKey<void>(MapLockCodec, keyData, keyData, 0, ttl);
     }
 
     isLocked(key: K): Q.Promise<boolean> {
-        return null;
-    }
-
-    lock(key: K, ttl?: number): Q.Promise<void> {
-        return null;
-    }
-
-    keySet(): Q.Promise<K[]> {
-        return null;
-    }
-
-    loadAll(keys?: K[], replaceExistingValues?: boolean): Q.Promise<void> {
-        return null;
-    }
-
-    putIfAbsent(key: K, value: V, ttl?: number): Q.Promise<V> {
-        return null;
-    }
-
-    putTransient(key: K, value: V, ttl?: number): Q.Promise<V> {
-        return null;
-    }
-
-    replace(key: K, value: V, oldValue?: V): Q.Promise<V> {
-        return null;
-    }
-
-    set(key: K, value: V, ttl?: number): Q.Promise<void> {
-        return null;
+        var keyData = this.toData(key);
+        return this.encodeInvokeOnKey<boolean>(MapIsLockedCodec, keyData, keyData);
     }
 
     unlock(key: K): Q.Promise<void> {
-        return null;
+        var keyData = this.toData(key);
+        return this.encodeInvokeOnKey<void>(MapUnlockCodec, keyData, keyData, 0);
+    }
+
+    forceUnlock(key: K): Q.Promise<void> {
+        var keyData = this.toData(key);
+        return this.encodeInvokeOnKey<void>(MapForceUnlockCodec, keyData, keyData);
+    }
+
+    keySet(): Q.Promise<K[]> {
+        var deserializedSet: K[] = [];
+        var toObject = this.toObject.bind(this);
+        return this.encodeInvokeOnRandomTarget<K[]>(MapKeySetCodec).then(function(entrySet) {
+            entrySet.forEach(function(entry) {
+                deserializedSet.push(toObject(entry));
+            });
+            return deserializedSet;
+        });
+    }
+
+    loadAll(keys: K[] = null, replaceExistingValues: boolean = true): Q.Promise<void> {
+        if (keys == null) {
+            return this.encodeInvokeOnRandomTarget<void>(MapLoadAllCodec, replaceExistingValues);
+        } else {
+            //TODO MapLoadGivenKeysCodec
+        }
+    }
+
+    putIfAbsent(key: K, value: V, ttl: number = -1): Q.Promise<V> {
+        var keyData = this.toData(key);
+        var valueData = this.toData(value);
+        return this.encodeInvokeOnKey<V>(MapPutIfAbsentCodec, keyData, keyData, valueData, 0, ttl);
+    }
+
+    putTransient(key: K, value: V, ttl: number = -1): Q.Promise<void> {
+        var keyData = this.toData(key);
+        var valueData = this.toData(value);
+        return this.encodeInvokeOnKey<void>(MapPutTransientCodec, keyData, keyData, valueData, 0, ttl);
+    }
+
+    replace(key: K, newValue: V): Q.Promise<V> {
+        var keyData = this.toData(key);
+        var newValueData = this.toData(newValue);
+        return this.encodeInvokeOnKey<V>(MapReplaceCodec, keyData, keyData, newValueData, 0);
+    }
+
+    replaceIfSame(key: K, oldValue: V, newValue: V): Q.Promise<boolean> {
+        var keyData = this.toData(key);
+        var newValueData = this.toData(newValue);
+        var oldValueData = this.toData(oldValue);
+        return this.encodeInvokeOnKey<boolean>(MapReplaceIfSameCodec, keyData, keyData, oldValueData, newValueData, 0);
+    }
+
+    set(key: K, value: V, ttl: number = -1): Q.Promise<void> {
+        var keyData = this.toData(key);
+        var valueData = this.toData(value);
+        return this.encodeInvokeOnKey<void>(MapSetCodec, keyData, keyData, valueData, 0, ttl);
     }
 
     values(): Q.Promise<V[]> {
-        return null;
+        var values: V[] = [];
+        var toObject = this.toObject.bind(this);
+        return this.encodeInvokeOnRandomTarget<V[]>(MapValuesCodec).then(function(valuesData) {
+            valuesData.forEach(function(valueData) {
+                values.push(toObject(valueData));
+            });
+            return values;
+        });
     }
 }
