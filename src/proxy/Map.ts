@@ -32,6 +32,7 @@ import {MapReplaceCodec} from '../codec/MapReplaceCodec';
 import {MapReplaceIfSameCodec} from '../codec/MapReplaceIfSameCodec';
 import {MapSetCodec} from '../codec/MapSetCodec';
 import {MapValuesCodec} from '../codec/MapValuesCodec';
+import {MapLoadGivenKeysCodec} from '../codec/MapLoadGivenKeysCodec';
 export class Map<K, V> extends BaseProxy implements IMap<K, V> {
     containsKey(key: K): Q.Promise<boolean> {
         var keyData = this.toData(key);
@@ -174,7 +175,9 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
         if (keys == null) {
             return this.encodeInvokeOnRandomTarget<void>(MapLoadAllCodec, replaceExistingValues);
         } else {
-            //TODO MapLoadGivenKeysCodec
+            var toData = this.toData.bind(this);
+            var keysData: Data[] = keys.map<Data>(toData);
+            return this.encodeInvokeOnRandomTarget<void>(MapLoadGivenKeysCodec, keysData, replaceExistingValues);
         }
     }
 

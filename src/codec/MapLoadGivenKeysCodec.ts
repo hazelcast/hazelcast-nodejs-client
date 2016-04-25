@@ -1,12 +1,12 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
-import ImmutableLazyDataList = require('./ImmutableLazyDataList');
 import {BitsUtil} from '../BitsUtil';
 import Address = require('../Address');
 import {AddressCodec} from './AddressCodec';
 import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
 import {EntryViewCodec} from './EntryViewCodec';
+import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 import {MapMessageType} from './MapMessageType';
 
 var REQUEST_TYPE = MapMessageType.MAP_LOADGIVENKEYS;
@@ -23,7 +23,7 @@ export class MapLoadGivenKeysCodec {
         dataSize += BitsUtil.calculateSizeString(name);
         dataSize += BitsUtil.INT_SIZE_IN_BYTES;
 
-        keys.foreach((keysItem:any) => {
+        keys.forEach((keysItem:any) => {
             dataSize += BitsUtil.calculateSizeData(keysItem);
         });
         dataSize += BitsUtil.BOOLEAN_SIZE_IN_BYTES;
@@ -38,7 +38,7 @@ export class MapLoadGivenKeysCodec {
         clientMessage.appendString(name);
         clientMessage.appendInt32(keys.length);
 
-        keys.foreach((keysItem:any) => {
+        keys.forEach((keysItem:any) => {
             clientMessage.appendData(keysItem);
         });
 
