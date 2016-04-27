@@ -33,6 +33,7 @@ import {MapReplaceIfSameCodec} from '../codec/MapReplaceIfSameCodec';
 import {MapSetCodec} from '../codec/MapSetCodec';
 import {MapValuesCodec} from '../codec/MapValuesCodec';
 import {MapLoadGivenKeysCodec} from '../codec/MapLoadGivenKeysCodec';
+import {MapGetAllCodec} from '../codec/MapGetAllCodec';
 export class Map<K, V> extends BaseProxy implements IMap<K, V> {
     containsKey(key: K): Q.Promise<boolean> {
         var keyData = this.toData(key);
@@ -106,9 +107,35 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
         return this.encodeInvokeOnRandomTarget<boolean>(MapIsEmptyCodec);
     }
 
-
     getAll(keys: K[]): Q.Promise<any[]> {
-        return null;
+        var partitionService = this.client.getPartitionService();
+        var partitionsToKeys: {[id: string]: any} = {};
+        var key: K;
+        for (var i in keys) {
+            key = keys[i];
+            var keyData = this.toData(key);
+            var pId: number = partitionService.getPartitionId(keyData);
+            if (partitionsToKeys.hasOwnProperty(pId) === false) {
+                partitionsToKeys[pId] = [];
+            }
+            partitionsToKeys[pId].push(keyData);
+        }
+
+        var partitionPromises: Q.Promise<[Data, Data][]>[] = [];
+        for (var partition in partitionsToKeys) {
+            partitionPromises.push(this.encodeInvokeOnPartition<[Data, Data][]>(
+                MapGetAllCodec,
+                Number(partition),
+                partitionsToKeys[partition])
+            );
+        }
+        var toObject = this.toObject.bind(this);
+        var deserializeEntry = function(entry: [Data, Data]) {
+            return [toObject(entry[0]), toObject(entry[1])];
+        };
+        return Q.all(partitionPromises).then(function(serializedEntryArrayArray: [Data, Data][][]) {
+            return Array.prototype.concat.apply([], serializedEntryArrayArray).map(deserializeEntry);
+        });
     }
 
     delete(key: K): Q.Promise<void> {
