@@ -418,6 +418,41 @@ describe("MapProxy Test", function() {
         })
     });
 
+    it('getEntryView', function(done) {
+        map.getEntryView('key0').then(function(entry) {
+            try {
+                expect(entry.key).to.equal('key0');
+                expect(entry.value).to.equal('val0');
+                expect(entry.cost).to.be.above(0);
+                expect(entry.creationTime).to.not.equal(0);
+                expect(entry.expirationTime).to.not.equal(0);
+                expect(entry.hits).to.not.equal(0);
+                expect(entry.lastAccessTime).to.not.equal(0);
+                expect(entry.lastStoreTime).to.not.equal(0);
+                expect(entry.lastUpdateTime).to.not.equal(0);
+                expect(entry.version).to.not.equal(0);
+                expect(entry.evictionCriteriaNumber).to.not.equal(0);
+                expect(entry.ttl).to.not.equal(0);
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+    });
+
+    it('getEntryView_null', function() {
+        return map.getEntryView('non-exist').then(function(entry) {
+            return expect(entry).to.be.null;
+        });
+    });
+
+    it('addIndex', function() {
+        return Q.all([
+            map.addIndex('length', false),
+            map.addIndex('length', true)
+        ]);
+    });
+
     it('destroy', function() {
         var dmap = client.getMap('map-to-be-destroyed');
         return dmap.put('key', 'val').then(function() {

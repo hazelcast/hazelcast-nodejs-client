@@ -34,6 +34,9 @@ import {MapSetCodec} from '../codec/MapSetCodec';
 import {MapValuesCodec} from '../codec/MapValuesCodec';
 import {MapLoadGivenKeysCodec} from '../codec/MapLoadGivenKeysCodec';
 import {MapGetAllCodec} from '../codec/MapGetAllCodec';
+import {MapGetEntryViewCodec} from '../codec/MapGetEntryViewCodec';
+import {EntryView} from '../core/EntryView';
+import {MapAddIndexCodec} from '../codec/MapAddIndexCodec';
 export class Map<K, V> extends BaseProxy implements IMap<K, V> {
     containsKey(key: K): Q.Promise<boolean> {
         var keyData = this.toData(key);
@@ -248,5 +251,14 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
             });
             return values;
         });
+    }
+
+    getEntryView(key: K): Q.Promise<EntryView<K, V>> {
+        var keyData = this.toData(key);
+        return this.encodeInvokeOnKey<EntryView<K, V>>(MapGetEntryViewCodec, keyData, keyData, 0);
+    }
+
+    addIndex(attribute: string, ordered: boolean): Q.Promise<void> {
+        return this.encodeInvokeOnRandomTarget<void>(MapAddIndexCodec, attribute, ordered);
     }
 }

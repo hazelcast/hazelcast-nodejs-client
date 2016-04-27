@@ -1,5 +1,6 @@
 import * as Q from 'q';
 import {DistributedObject} from './DistributedObject';
+import {EntryView} from './core/EntryView';
 export interface IMap<K, V> extends DistributedObject {
 
     /**
@@ -199,4 +200,17 @@ export interface IMap<K, V> extends DistributedObject {
      * Returns an array of values contained in this map.
      */
     values(): Q.Promise<V[]>;
+
+    /**
+     * Returns a key-value pair representing the association of given key
+     * @param key
+     */
+    getEntryView(key: K): Q.Promise<EntryView<K, V>>;
+
+    /**
+     * Adds an index for attribute in this map.
+     * @param attribute
+     * @param ordered index is kept ordered if {true}, unordered otherwise.
+     */
+    addIndex(attribute: string, ordered: boolean): void;
 }

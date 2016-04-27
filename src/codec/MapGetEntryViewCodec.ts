@@ -43,7 +43,7 @@ export class MapGetEntryViewCodec {
         var parameters:any = {'response': null};
 
         if (clientMessage.readBoolean() !== true) {
-            parameters['response'] = EntryViewCodec.decode(clientMessage);
+            parameters['response'] = EntryViewCodec.decode(clientMessage, toObjectFunction);
         }
         return parameters;
 
