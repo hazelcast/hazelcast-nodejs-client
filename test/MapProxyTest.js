@@ -181,6 +181,21 @@ describe("MapProxy Test", function() {
         })
     });
 
+    it.skip('getAll', function() {
+        return map.getAll([
+            'key0', 'key1', 'key2', 'key3', 'key4',
+            'key5', 'key6', 'key7', 'key8', 'key9'
+        ]).then(function (values) {
+            return expect(values).to.deep.have.members([
+                ['key0', 'val0'], ['key1', 'val1'],
+                ['key2', 'val2'], ['key3', 'val3'],
+                ['key4', 'val4'], ['key5', 'val5'],
+                ['key6', 'val6'], ['key7', 'val7'],
+                ['key8', 'val8'], ['key9', 'val9']
+            ]);
+        })
+    });
+
     it('delete', function() {
         return map.put('key-to-delete', 'value').then(function() {
             return map.delete('key-to-delete');
@@ -264,7 +279,15 @@ describe("MapProxy Test", function() {
         });
     });
 
-    it('forceUnlock');
+    it('forceUnlock', function() {
+        return map.lock('key0').then(function() {
+            return map.forceUnlock('key0');
+        }).then(function() {
+            return map.isLocked('key0');
+        }).then(function(isLocked) {
+            return expect(isLocked).to.be.false;
+        });
+    });
 
     it('keySet', function() {
         return map.keySet().then(function(keySet) {
