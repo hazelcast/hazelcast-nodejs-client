@@ -54,7 +54,12 @@ class PartitionService {
      * @returns the partition id.
      */
     getPartitionId(key: any) {
-        var partitionHash = this.client.getSerializationService().toData(key).getPartitionHash();
+        var partitionHash: number;
+        if ('getPartitionHash' in key) {
+            partitionHash = key.getPartitionHash();
+        } else {
+            partitionHash = this.client.getSerializationService().toData(key).getPartitionHash();
+        }
         return Math.abs(partitionHash) % this.partitionCount;
     }
 }
