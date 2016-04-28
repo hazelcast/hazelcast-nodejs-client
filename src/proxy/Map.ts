@@ -289,7 +289,6 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
         if (key !== undefined) {
             return null;
         } else {
-            this.client.getListenerService().registerListener(MapAddEntryListenerCodec, null);
             return null;
         }
     }

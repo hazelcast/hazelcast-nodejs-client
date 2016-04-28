@@ -70,7 +70,11 @@ class ProxyManager {
             };
             ClientAddDistributedObjectListenerCodec.handle(clientMessage, converterFunc, null);
         };
-        return this.client.getListenerService().registerListener(ClientAddDistributedObjectListenerCodec, handler);
+        return this.client.getListenerService().registerListener(
+            ClientAddDistributedObjectListenerCodec.encodeRequest(true),
+            handler,
+            ClientAddDistributedObjectListenerCodec.decodeResponse
+        );
     }
 
     removeDistributedObjectListener(listenerId: string) {

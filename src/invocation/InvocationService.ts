@@ -246,13 +246,13 @@ export class ListenerService {
         this.internalEventEmitter.setMaxListeners(0);
     }
 
-    registerListener(codec: any, handler: any): Q.Promise<string> {
+    registerListener(request: ClientMessage, handler: any, decoder: any, key: any = undefined): Q.Promise<string> {
         var deferred = Q.defer<string>();
-        var invocation = new Invocation(codec.encodeRequest(true));
+        var invocation = new Invocation(request);
         invocation.handler = handler;
         this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
             var correlationId = responseMessage.getCorrelationId();
-            var response = codec.decodeResponse(responseMessage);
+            var response = decoder(responseMessage);
             this.listenerIdToCorrelation[response.response] = correlationId;
             deferred.resolve(response.response);
         });
