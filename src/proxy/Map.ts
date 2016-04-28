@@ -40,6 +40,8 @@ import {MapAddIndexCodec} from '../codec/MapAddIndexCodec';
 import {MapTryLockCodec} from '../codec/MapTryLockCodec';
 import {MapTryPutCodec} from '../codec/MapTryPutCodec';
 import {MapTryRemoveCodec} from '../codec/MapTryRemoveCodec';
+import {IMapListener} from '../core/IMapListener';
+import {MapAddEntryListenerCodec} from '../codec/MapAddEntryListenerCodec';
 export class Map<K, V> extends BaseProxy implements IMap<K, V> {
     containsKey(key: K): Q.Promise<boolean> {
         var keyData = this.toData(key);
@@ -279,5 +281,20 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
     tryRemove(key: K, timeout: number): Q.Promise<boolean> {
         var keyData = this.toData(key);
         return this.encodeInvokeOnKey<boolean>(MapTryRemoveCodec, keyData, keyData, 0, timeout);
+    }
+
+    addEntryListener(
+        listener: IMapListener<K, V>, key: K = undefined, includeValue: boolean = false):
+    Q.Promise<string> {
+        if (key !== undefined) {
+            return null;
+        } else {
+            this.client.getListenerService().registerListener(MapAddEntryListenerCodec, null);
+            return null;
+        }
+    }
+
+    removeEntryListener(listenerId: string): Q.Promise<boolean> {
+        return null;
     }
 }

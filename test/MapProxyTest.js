@@ -538,6 +538,23 @@ describe("MapProxy Test", function() {
         })
     });
 
+    it.skip('addEntryListener on map entryAdded', function(done) {
+        var listenerObject = {
+            added: function(key, oldValue, value, mergingValue) {
+                try {
+                    expect(key).to.equal('key10', null, 'val10', 'val10');
+                    done();
+                } catch (err) {
+                    done(err);
+                }
+            }
+        };
+        map.addEntryListener(listener).then(function() {
+            map.put('key10', 'val10');
+        })
+    });
+
+
     it('destroy', function() {
         var dmap = client.getMap('map-to-be-destroyed');
         return dmap.put('key', 'val').then(function() {

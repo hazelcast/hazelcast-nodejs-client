@@ -1,6 +1,7 @@
 import * as Q from 'q';
 import {DistributedObject} from './DistributedObject';
 import {EntryView} from './core/EntryView';
+import {IMapListener} from './core/IMapListener';
 export interface IMap<K, V> extends DistributedObject {
 
     /**
@@ -219,4 +220,8 @@ export interface IMap<K, V> extends DistributedObject {
     tryPut(key: K, value: V, timeout: number): Q.Promise<boolean>;
 
     tryRemove(key: K, timeout: number): Q.Promise<boolean>;
+
+    addEntryListener(listener: IMapListener<K, V>, key?: K, includeValue?: boolean): Q.Promise<string>;
+    
+    removeEntryListener(listenerId: string): Q.Promise<boolean>;
 }
