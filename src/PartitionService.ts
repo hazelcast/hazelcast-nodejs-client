@@ -55,7 +55,7 @@ class PartitionService {
      */
     getPartitionId(key: any) {
         var partitionHash: number;
-        if ('getPartitionHash' in key) {
+        if (typeof key === 'object' && 'getPartitionHash' in key) {
             partitionHash = key.getPartitionHash();
         } else {
             partitionHash = this.client.getSerializationService().toData(key).getPartitionHash();

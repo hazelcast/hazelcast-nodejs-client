@@ -47,6 +47,24 @@ describe("MapProxy Test", function() {
         return Q.all(promises);
     }
 
+    function _generateLockScript(mapName, keyName) {
+        return 'function lockByServer() {' +
+            '   var map = instance_0.getMap("' + mapName + '");' +
+            '   map.lock(' + keyName + ');' +
+            '   return map.isLocked(' + keyName + ');' +
+            '}' +
+            'result=""+lockByServer();';
+    }
+
+    function _generateUnlockScript(mapName, keyName) {
+        return 'function lockByServer() {' +
+            '   var map = instance_0.getMap("' + mapName + '");' +
+            '   map.unlock(' + keyName + ');' +
+            '   return map.isLocked(' + keyName + ');' +
+            '}' +
+            'result=""+lockByServer();';
+    }
+
     it('get_basic', function() {
         return map.get('key0').then(function(v) {
             return expect(v).to.equal('val0');
@@ -280,7 +298,14 @@ describe("MapProxy Test", function() {
     });
 
     it('forceUnlock', function() {
-        return map.lock('key0').then(function() {
+        var script =
+            'function lockByServer() {' +
+            '   var map = instance_0.getMap("' + map.getName() + '");' +
+            '   map.lock(\'"key0"\');' +
+            '   return map.isLocked(\'"key0"\')' +
+            '}' +
+            'result=""+lockByServer();';
+        return Controller.executeOnController(cluster.id, script, 1).then(function(s) {
             return map.forceUnlock('key0');
         }).then(function() {
             return map.isLocked('key0');
@@ -453,6 +478,66 @@ describe("MapProxy Test", function() {
         ]);
     });
 
+    it('tryLock_success', function() {
+        return map.tryLock('key0').then(function(success) {
+            return expect(success).to.be.true;
+        });
+    });
+
+    it('tryLock_fail', function() {
+        return Controller.executeOnController(cluster.id, _generateLockScript(map.getName(), '\'"key0"\''), 1).then(function(s) {
+            return map.tryLock('key0');
+        }).then(function(success) {
+            return expect(success).to.be.false;
+        });
+    });
+
+    it('tryLock_success with timeout', function() {
+        return Controller.executeOnController(cluster.id, _generateLockScript(map.getName(), '\'"key0"\''), 1).then(function() {
+            var promise = map.tryLock('key0', 1000);
+            Controller.executeOnController(cluster.id, _generateUnlockScript(map.getName(), '\'"key0"\''), 1);
+            return promise;
+        }).then(function(success) {
+            return expect(success).to.be.true;
+        });
+    });
+
+    it('tryLock_fail with timeout', function() {
+        return Controller.executeOnController(cluster.id, _generateLockScript(map.getName(), '\'"key0"\''), 1).then(function() {
+            return map.tryLock('key0', 1000);
+        }).then(function(success) {
+            return expect(success).to.be.false;
+        });
+    });
+
+    it('tryPut success', function() {
+        return map.tryPut('key0', 'val0', 1000).then(function(success) {
+            return expect(success).to.be.true;
+        })
+    });
+
+    it('tryPut fail', function() {
+        return Controller.executeOnController(cluster.id, _generateLockScript(map.getName(), '\'"key0"\''), 1).then(function() {
+            return map.tryPut('key0', 'val0', 200);
+        }).then(function(success) {
+            return expect(success).to.be.false;
+        })
+    });
+
+    it('tryRemove success', function() {
+        return map.tryRemove('key0', 1000).then(function(success) {
+            return expect(success).to.be.true;
+        })
+    });
+
+    it('tryRemove fail', function() {
+        return Controller.executeOnController(cluster.id, _generateLockScript(map.getName(), '\'"key0"\''), 1).then(function() {
+            return map.tryRemove('key0', 200);
+        }).then(function(success) {
+            return expect(success).to.be.false;
+        })
+    });
+
     it('destroy', function() {
         var dmap = client.getMap('map-to-be-destroyed');
         return dmap.put('key', 'val').then(function() {
@@ -465,5 +550,3 @@ describe("MapProxy Test", function() {
         })
     });
 });
-
-

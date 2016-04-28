@@ -212,5 +212,11 @@ export interface IMap<K, V> extends DistributedObject {
      * @param attribute
      * @param ordered index is kept ordered if {true}, unordered otherwise.
      */
-    addIndex(attribute: string, ordered: boolean): void;
+    addIndex(attribute: string, ordered: boolean): Q.Promise<void>;
+
+    tryLock(key: K, timeout?: number, lease?: number): Q.Promise<boolean>;
+
+    tryPut(key: K, value: V, timeout: number): Q.Promise<boolean>;
+
+    tryRemove(key: K, timeout: number): Q.Promise<boolean>;
 }

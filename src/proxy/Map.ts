@@ -37,6 +37,9 @@ import {MapGetAllCodec} from '../codec/MapGetAllCodec';
 import {MapGetEntryViewCodec} from '../codec/MapGetEntryViewCodec';
 import {EntryView} from '../core/EntryView';
 import {MapAddIndexCodec} from '../codec/MapAddIndexCodec';
+import {MapTryLockCodec} from '../codec/MapTryLockCodec';
+import {MapTryPutCodec} from '../codec/MapTryPutCodec';
+import {MapTryRemoveCodec} from '../codec/MapTryRemoveCodec';
 export class Map<K, V> extends BaseProxy implements IMap<K, V> {
     containsKey(key: K): Q.Promise<boolean> {
         var keyData = this.toData(key);
@@ -260,5 +263,21 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
 
     addIndex(attribute: string, ordered: boolean): Q.Promise<void> {
         return this.encodeInvokeOnRandomTarget<void>(MapAddIndexCodec, attribute, ordered);
+    }
+
+    tryLock(key: K, timeout: number = 0, lease: number = -1): Q.Promise<boolean> {
+        var keyData = this.toData(key);
+        return this.encodeInvokeOnKey<boolean>(MapTryLockCodec, keyData, keyData, 0, lease, timeout);
+    }
+
+    tryPut(key: K, value: V, timeout: number): Q.Promise<boolean> {
+        var keyData = this.toData(key);
+        var valueData = this.toData(value);
+        return this.encodeInvokeOnKey<boolean>(MapTryPutCodec, keyData, keyData, valueData, value, 0, timeout);
+    }
+
+    tryRemove(key: K, timeout: number): Q.Promise<boolean> {
+        var keyData = this.toData(key);
+        return this.encodeInvokeOnKey<boolean>(MapTryRemoveCodec, keyData, keyData, 0, timeout);
     }
 }
