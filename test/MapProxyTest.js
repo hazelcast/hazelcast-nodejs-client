@@ -538,22 +538,173 @@ describe("MapProxy Test", function() {
         })
     });
 
-    it.skip('addEntryListener on map entryAdded', function(done) {
+    it('addEntryListener on map entryAdded', function(done) {
         var listenerObject = {
             added: function(key, oldValue, value, mergingValue) {
                 try {
-                    expect(key).to.equal('key10', null, 'val10', 'val10');
+                    expect(key).to.equal('key10');
+                    expect(oldValue).to.be.null;
+                    expect(value).to.be.null;
+                    expect(mergingValue).to.be.null;
                     done();
                 } catch (err) {
                     done(err);
                 }
             }
         };
-        map.addEntryListener(listener).then(function() {
+        map.addEntryListener(listenerObject).then(function() {
             map.put('key10', 'val10');
-        })
+        });
     });
 
+    it('addEntryListener on map entryAdded', function(done) {
+        var listenerObject = {
+            added: function(key, oldValue, value, mergingValue) {
+                try {
+                    expect(key).to.equal('key10');
+                    expect(oldValue).to.be.null;
+                    expect(value).to.equal('val10');
+                    expect(mergingValue).to.be.null;
+                    done();
+                } catch (err) {
+                    done(err);
+                }
+            }
+        };
+        map.addEntryListener(listenerObject, undefined, true).then(function() {
+            map.put('key10', 'val10');
+        });
+    });
+
+    it('addEntryListener on map entryUpdated', function(done) {
+        var listenerObject = {
+            updated: function(key, oldValue, value, mergingValue) {
+                try {
+                    expect(key).to.equal('key0');
+                    expect(oldValue).to.be.null;
+                    expect(value).to.be.null;
+                    expect(mergingValue).to.be.null;
+                    done();
+                } catch (err) {
+                    done(err);
+                }
+            }
+        };
+        map.addEntryListener(listenerObject).then(function() {
+            map.put('key0', 'new-val');
+        });
+    });
+
+    it('addEntryListener on key entryRemoved', function(done) {
+        var listenerObject = {
+            removed: function(key, oldValue, value, mergingValue) {
+                try {
+                    expect(key).to.equal('key1');
+                    expect(oldValue).to.be.null;
+                    expect(value).to.be.null;
+                    expect(mergingValue).to.be.null;
+                    done();
+                } catch (err) {
+                    done(err);
+                }
+            }
+        };
+        map.addEntryListener(listenerObject, 'key1', false).then(function() {
+            map.remove('key1');
+        });
+    });
+
+    it('addEntryListener on key entryRemoved includeValue=yes', function(done) {
+        var listenerObject = {
+            removed: function(key, oldValue, value, mergingValue) {
+                try {
+                    expect(key).to.equal('key1');
+                    expect(oldValue).to.equal('val1');
+                    expect(value).to.be.null;
+                    expect(mergingValue).to.be.null;
+                    done();
+                } catch (err) {
+                    done(err);
+                }
+            }
+        };
+        map.addEntryListener(listenerObject, 'key1', true).then(function() {
+            map.remove('key1');
+        });
+    });
+
+    it('addEntryListener on key evicted includeValue=yes', function(done) {
+        var listenerObject = {
+            evicted: function(key, oldValue, value, mergingValue) {
+                try {
+                    expect(key).to.equal('key1');
+                    expect(oldValue).to.equal('val1');
+                    expect(value).to.be.null;
+                    expect(mergingValue).to.be.null;
+                    done();
+                } catch (err) {
+                    done(err);
+                }
+            }
+        };
+        map.addEntryListener(listenerObject, 'key1', true).then(function() {
+            map.evict('key1')
+        });
+    });
+
+    it('addEntryListener on map evictAll', function(done) {
+        var listenerObject = {
+            evictedAll: function(key, oldValue, value, mergingValue, numberOfAffectedEntries) {
+                try {
+                    expect(key).to.be.null;
+                    expect(oldValue).to.be.null;
+                    expect(value).to.be.null;
+                    expect(mergingValue).to.be.null;
+                    expect(numberOfAffectedEntries).to.equal(10);
+                    done();
+                } catch (err) {
+                    done(err);
+                }
+            }
+        };
+        map.addEntryListener(listenerObject).then(function() {
+            map.evictAll();
+        });
+    });
+
+    it('addEntryListener on map clearAll', function(done) {
+        var listenerObject = {
+            clearedAll: function(key, oldValue, value, mergingValue, numberOfAffectedEntries) {
+                try {
+                    expect(key).to.be.null;
+                    expect(oldValue).to.be.null;
+                    expect(value).to.be.null;
+                    expect(mergingValue).to.be.null;
+                    expect(numberOfAffectedEntries).to.equal(10);
+                    done();
+                } catch (err) {
+                    done(err);
+                }
+            }
+        };
+        map.addEntryListener(listenerObject).then(function() {
+            map.clear();
+        });
+    });
+
+    it('removeEntryListener with correct id', function() {
+        return map.addEntryListener({}).then(function(listenerId) {
+            return map.removeEntryListener(listenerId);
+        }).then(function(success) {
+            return expect(success).to.be.true;
+        });
+    });
+
+    it('removeEntryListener with wrong id', function() {
+        return map.removeEntryListener('aaa').then(function(success) {
+            return expect(success).to.be.false;
+        });
+    });
 
     it('destroy', function() {
         var dmap = client.getMap('map-to-be-destroyed');

@@ -78,8 +78,10 @@ class ProxyManager {
     }
 
     removeDistributedObjectListener(listenerId: string) {
-        return this.client.getListenerService()
-            .deregisterListener(ClientRemoveDistributedObjectListenerCodec, listenerId);
+        return this.client.getListenerService().deregisterListener(
+            ClientRemoveDistributedObjectListenerCodec.encodeRequest(listenerId),
+            ClientRemoveDistributedObjectListenerCodec.decodeResponse
+        );
     }
 }
 export = ProxyManager;

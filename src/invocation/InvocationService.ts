@@ -259,9 +259,9 @@ export class ListenerService {
         return deferred.promise;
     }
 
-    deregisterListener(codec: any, listenerId: string): Q.Promise<boolean> {
+    deregisterListener(request: ClientMessage, decoder: any): Q.Promise<boolean> {
         var deferred = Q.defer<boolean>();
-        var invocation = new Invocation(codec.encodeRequest(listenerId));
+        var invocation = new Invocation(request);
         var listenerIdToCorrelation = this.listenerIdToCorrelation;
         this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
             var correlationId = responseMessage.getCorrelationId().toString();
@@ -269,7 +269,7 @@ export class ListenerService {
                 this.client.getInvocationService().removeEventHandler(listenerIdToCorrelation[correlationId].low);
                 delete listenerIdToCorrelation[correlationId];
             }
-            var response = codec.decodeResponse(responseMessage);
+            var response = decoder(responseMessage);
             deferred.resolve(response.response);
         });
         return deferred.promise;

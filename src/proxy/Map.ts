@@ -40,8 +40,11 @@ import {MapAddIndexCodec} from '../codec/MapAddIndexCodec';
 import {MapTryLockCodec} from '../codec/MapTryLockCodec';
 import {MapTryPutCodec} from '../codec/MapTryPutCodec';
 import {MapTryRemoveCodec} from '../codec/MapTryRemoveCodec';
-import {IMapListener} from '../core/IMapListener';
+import {IMapListener} from '../core/MapListener';
 import {MapAddEntryListenerCodec} from '../codec/MapAddEntryListenerCodec';
+import {EntryEventType} from '../core/EntryEventType';
+import {MapAddEntryListenerToKeyCodec} from '../codec/MapAddEntryListenerToKeyCodec';
+import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
 export class Map<K, V> extends BaseProxy implements IMap<K, V> {
     containsKey(key: K): Q.Promise<boolean> {
         var keyData = this.toData(key);
@@ -283,17 +286,77 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
         return this.encodeInvokeOnKey<boolean>(MapTryRemoveCodec, keyData, keyData, 0, timeout);
     }
 
-    addEntryListener(
-        listener: IMapListener<K, V>, key: K = undefined, includeValue: boolean = false):
-    Q.Promise<string> {
+    addEntryListener(listener: IMapListener<K, V>, key: K = undefined, includeValue: boolean = false): Q.Promise<string> {
+        var flags: any = null;
+        var conversionTable: {[funcName: string]: EntryEventType} = {
+            'added': EntryEventType.ADDED,
+            'removed': EntryEventType.REMOVED,
+            'updated': EntryEventType.UPDATED,
+            'merged': EntryEventType.MERGED,
+            'evicted': EntryEventType.EVICTED,
+            'evictedAll': EntryEventType.EVICT_ALL,
+            'clearedAll': EntryEventType.CLEAR_ALL
+        };
+        for (var funcName in conversionTable) {
+            if (listener.hasOwnProperty(funcName)) {
+                /* tslint:disable:no-bitwise */
+                flags = flags | conversionTable[funcName];
+            }
+        }
+        var toObject = this.toObject.bind(this);
+        var entryEventHandler = function(
+            key: K, val: V, oldVal: V, mergingVal: V, event: number, uuid: string, numberOfAffectedEntries: number
+        ) {
+            var eventParams: any[] = [key, oldVal, val, mergingVal, numberOfAffectedEntries, uuid];
+            eventParams = eventParams.map((val) => {if (val === undefined) { return null; } else { return val; } });
+            switch (event) {
+                case EntryEventType.ADDED:
+                    listener.added.apply(null, eventParams);
+                    break;
+                case EntryEventType.REMOVED:
+                    listener.removed.apply(null, eventParams);
+                    break;
+                case EntryEventType.UPDATED:
+                    listener.updated.apply(null, eventParams);
+                    break;
+                case EntryEventType.EVICTED:
+                    listener.evicted.apply(null, eventParams);
+                    break;
+                case EntryEventType.EVICT_ALL:
+                    listener.evictedAll.apply(null, eventParams);
+                    break;
+                case EntryEventType.CLEAR_ALL:
+                    listener.clearedAll.apply(null, eventParams);
+                    break;
+                case EntryEventType.MERGED:
+                    listener.merged.apply(null, eventParams);
+                    break;
+            }
+        };
+        var request: ClientMessage;
         if (key !== undefined) {
-            return null;
+            var keyData = this.toData(key);
+            request = MapAddEntryListenerToKeyCodec.encodeRequest(this.name, keyData, includeValue, flags, false);
+            return this.client.getListenerService().registerListener(
+                request,
+                (m: ClientMessage) => {MapAddEntryListenerToKeyCodec.handle(m, entryEventHandler, toObject); },
+                MapAddEntryListenerToKeyCodec.decodeResponse,
+                keyData
+            );
         } else {
-            return null;
+            request = MapAddEntryListenerCodec.encodeRequest(this.name, includeValue, flags, false);
+            return this.client.getListenerService().registerListener(
+                request,
+                (m: ClientMessage) => {MapAddEntryListenerCodec.handle(m, entryEventHandler, toObject); },
+                MapAddEntryListenerCodec.decodeResponse
+            );
         }
     }
 
     removeEntryListener(listenerId: string): Q.Promise<boolean> {
-        return null;
+        return this.client.getListenerService().deregisterListener(
+            MapRemoveEntryListenerCodec.encodeRequest(this.name, listenerId),
+            MapRemoveEntryListenerCodec.decodeResponse
+        );
     }
 }
