@@ -7,14 +7,14 @@ export interface IMap<K, V> extends DistributedObject {
     /**
      * This method checks whether the map has an item asssociated with key
      * @param key
-     * @throws {Error} if key is undefined or null
+     * @throws {@link Error} if key is undefined or null
      * @return a promise to be resolved to true if the map contains the key, false otherwise.
      */
     containsKey(key: K) : Q.Promise<boolean>;
 
     /**
      * This method return true if this map has key(s) associated with given value
-     * @throws {Error} if value is undefined or null
+     * @throws {@link Error} if value is undefined or null
      * @param value
      * @return a promise to be resolved to true if the map has key or keys associated with given value.
      */
@@ -29,7 +29,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param ttl Time to live in seconds. 0 means infinite.
      * If ttl is not an integer, it is rounded up to the nearest integer value.
      * @throws {Error} if specified key or value is undefined or null or ttl is negative.
-     * @return a promise to be resolved to the old value if there was any, undefined otherwise.
+     * @return a promise to be resolved to the old value if there was any, `undefined` otherwise.
      */
     put(key: K, value: V, ttl?: number) : Q.Promise<V>;
 
@@ -60,7 +60,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param key
      * @param value
      * @throws {Error} if key is undefined or null
-     * @return a promise to be resolved to the value associated with key, undefined if the key did not exist before.
+     * @return a promise to be resolved to the value associated with key, `undefined` if the key did not exist before.
      */
     remove(key: K, value?: V) : Q.Promise<V>;
 
@@ -130,7 +130,7 @@ export interface IMap<K, V> extends DistributedObject {
      * When this client puts the non-existent key, it is allowed to do that.
      * Locks are re-entrant meaning that if lock is taken N times, it should be released N times.
      * @param key
-     * @param ttl lock is automatically unlocked after ttl milliseconds
+     * @param ttl lock is automatically unlocked after `ttl` milliseconds.
      */
     lock(key: K, ttl?: number): Q.Promise<void>;
 
@@ -142,7 +142,7 @@ export interface IMap<K, V> extends DistributedObject {
     /**
      * Loads keys to the store.
      * @param keys loads only given keys if set.
-     * @param replaceExistingValues if {true} existing keys will be replaced by newly loaded keys.
+     * @param replaceExistingValues if `true` existing keys will be replaced by newly loaded keys.
      */
     loadAll(keys?: K[], replaceExistingValues?: boolean): Q.Promise<void>;
 
@@ -150,13 +150,13 @@ export interface IMap<K, V> extends DistributedObject {
      * Puts specified key value association if it was not present before.
      * @param key
      * @param value
-     * @param ttl if set, key will be evicted automatically after ttl milliseconds.
+     * @param ttl if set, key will be evicted automatically after `ttl` milliseconds.
      * @return old value of the entry.
      */
     putIfAbsent(key: K, value: V, ttl?: number): Q.Promise<V>;
 
     /**
-     * Same as {@link #put} except it does not call underlying MapStore.
+     * Same as {@link put} except it does not call underlying MapStore.
      * @param key
      * @param value
      * @param ttl
@@ -164,7 +164,7 @@ export interface IMap<K, V> extends DistributedObject {
     putTransient(key: K, value: V, ttl?: number): Q.Promise<void>;
 
     /**
-     * Replaces value of the key if only it was associated to oldValue.
+     * Replaces value of the key if only it was associated to `oldValue`.
      * @param key
      * @param value
      * @param oldValue
@@ -173,7 +173,7 @@ export interface IMap<K, V> extends DistributedObject {
     replaceIfSame(key: K, oldValue: V,  newValue: V): Q.Promise<boolean>;
 
     /**
-     * Replaces value of given key with newValue.
+     * Replaces value of given key with `newValue`.
      * @param key
      * @param newValue
      * @return previous value
@@ -181,7 +181,7 @@ export interface IMap<K, V> extends DistributedObject {
     replace(key: K, newValue: V): Q.Promise<V>;
 
     /**
-     * Similar to {@link #put} except it does not return the old value.
+     * Similar to {@link put} except it does not return the old value.
      * @param key
      * @param value
      * @param ttl
@@ -215,13 +215,47 @@ export interface IMap<K, V> extends DistributedObject {
      */
     addIndex(attribute: string, ordered: boolean): Q.Promise<void>;
 
+    /**
+     * Tries to acquire the lock for the specified key.
+     * If lock is not available, server immediately responds with {false}
+     * @param key
+     * @param timeout Server waits for `timeout` seconds to acquire the lock before giving up.
+     * @param lease lock is automatically release after `lease` milliseconds.
+     */
     tryLock(key: K, timeout?: number, lease?: number): Q.Promise<boolean>;
 
+    /**
+     * Tries to put specified key value pair into map. If this method returns
+     * false, it indicates that caller thread was not able to acquire the lock for
+     * given key in `timeout` seconds.
+     * @param key
+     * @param value
+     * @param timeout
+     */
     tryPut(key: K, value: V, timeout: number): Q.Promise<boolean>;
 
+    /**
+     * Tries to remove specified key from map. If this method returns
+     * false, it indicates that caller thread was not able to acquire the lock for
+     * given key in `timeout` seconds.
+     * @param key
+     * @param timeout
+     */
     tryRemove(key: K, timeout: number): Q.Promise<boolean>;
 
+    /**
+     * Adds a {@link IMapListener} for this map.
+     * @param listener
+     * @param key Events are triggered for only this key if set.
+     * @param includeValue Event message contains new value of the key if set to {true}.
+     * @return Registration id of the listener.
+     */
     addEntryListener(listener: IMapListener<K, V>, key?: K, includeValue?: boolean): Q.Promise<string>;
 
+    /**
+     * Removes a {@link IMapListener} from this map.
+     * @param listenerId Registration Id of the listener.
+     * @return `true` if remove operation is successful, `false` if unsuccessful or this listener did not exist.
+     */
     removeEntryListener(listenerId: string): Q.Promise<boolean>;
 }
