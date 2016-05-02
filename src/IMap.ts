@@ -7,15 +7,15 @@ export interface IMap<K, V> extends DistributedObject {
     /**
      * This method checks whether the map has an item asssociated with key
      * @param key
-     * @throws {@link Error} if key is undefined or null
+     * @throws {RangeError} if key is undefined or null
      * @return a promise to be resolved to true if the map contains the key, false otherwise.
      */
     containsKey(key: K) : Q.Promise<boolean>;
 
     /**
      * This method return true if this map has key(s) associated with given value
-     * @throws {@link Error} if value is undefined or null
      * @param value
+     * @throws {RangeError} if value is undefined or null
      * @return a promise to be resolved to true if the map has key or keys associated with given value.
      */
     containsValue(value: V) : Q.Promise<boolean>;
@@ -28,7 +28,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param value
      * @param ttl Time to live in milliseconds. 0 means infinite.
      * If ttl is not an integer, it is rounded up to the nearest integer value.
-     * @throws {Error} if specified key or value is undefined or null or ttl is negative.
+     * @throws {RangeError} if specified key or value is undefined or null or ttl is negative.
      * @return a promise to be resolved to the old value if there was any, `undefined` otherwise.
      */
     put(key: K, value: V, ttl?: number) : Q.Promise<V>;
@@ -42,7 +42,7 @@ export interface IMap<K, V> extends DistributedObject {
     /**
      * Retrieves the value associated with given key.
      * @param key
-     * @throws {Error} if key is undefined or null
+     * @throws {RangeError} if key is undefined or null
      * @return a promise to be resolved to the value associated with key, undefined if the key does not exist.
      */
     get(key: K) : Q.Promise<V>;
@@ -59,7 +59,7 @@ export interface IMap<K, V> extends DistributedObject {
      * Note that serialized version of value is used in comparison.
      * @param key
      * @param value
-     * @throws {Error} if key is undefined or null
+     * @throws {RangeError} if key is undefined or null
      * @return a promise to be resolved to the value associated with key, `undefined` if the key did not exist before.
      */
     remove(key: K, value?: V) : Q.Promise<V>;
@@ -67,6 +67,7 @@ export interface IMap<K, V> extends DistributedObject {
     /**
      * Removes specified key from map. Unlike {@link remove} this method does not return deleted value.
      * Therefore it eliminates deserialization cost of returned value.
+     * @throws {RangeError} if key is null or undefined.
      * @param key
      */
     delete(key: K): Q.Promise<void>;
@@ -95,6 +96,7 @@ export interface IMap<K, V> extends DistributedObject {
 
     /**
      * Evicts the specified key from this map.
+     * @throws {RangeError} if key is null or undefined.
      * @param key
      */
     evict(key: K): Q.Promise<boolean>;
@@ -112,6 +114,7 @@ export interface IMap<K, V> extends DistributedObject {
     /**
      * Releases the lock for the specified key regardless of the owner.
      * It always unlocks the key.
+     * @throws {RangeError} if key is null or undefined.
      * @param key
      */
     forceUnlock(key: K): Q.Promise<void>;
@@ -119,6 +122,7 @@ export interface IMap<K, V> extends DistributedObject {
     /**
      * Checks whether given key is locked.
      * @param key
+     * @throws {RangeError} if key is null or undefined.
      * @return {true} if key is locked, {false} otherwise
      */
     isLocked(key: K): Q.Promise<boolean>;
@@ -131,6 +135,7 @@ export interface IMap<K, V> extends DistributedObject {
      * Locks are re-entrant meaning that if lock is taken N times, it should be released N times.
      * @param key
      * @param ttl lock is automatically unlocked after `ttl` milliseconds.
+     * @throws {RangeError} if key is null or undefined.
      */
     lock(key: K, ttl?: number): Q.Promise<void>;
 
@@ -151,6 +156,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param key
      * @param value
      * @param ttl if set, key will be evicted automatically after `ttl` milliseconds.
+     * @throws {RangeError} if key or value is null or undefined.
      * @return old value of the entry.
      */
     putIfAbsent(key: K, value: V, ttl?: number): Q.Promise<V>;
@@ -160,6 +166,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param key
      * @param value
      * @param ttl
+     * @throws {RangeError} if key or value is null or undefined.
      */
     putTransient(key: K, value: V, ttl?: number): Q.Promise<void>;
 
@@ -168,6 +175,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param key
      * @param value
      * @param oldValue
+     * @throws {RangeError} if key, oldValue or newValue is null or undefined.
      * @return {true} if the value was replaced.
      */
     replaceIfSame(key: K, oldValue: V,  newValue: V): Q.Promise<boolean>;
@@ -176,6 +184,7 @@ export interface IMap<K, V> extends DistributedObject {
      * Replaces value of given key with `newValue`.
      * @param key
      * @param newValue
+     * @throws {RangeError} if key or newValue is null or undefined.
      * @return previous value
      */
     replace(key: K, newValue: V): Q.Promise<V>;
@@ -185,6 +194,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param key
      * @param value
      * @param ttl
+     * @throws {RangeError} if key or value is null or undefined.
      */
     set(key: K, value: V, ttl?: number): Q.Promise<void>;
 
@@ -192,7 +202,7 @@ export interface IMap<K, V> extends DistributedObject {
      * Releases the lock for this key.
      * If this client holds the lock, hold count is decremented.
      * If hold count is zero, lock is released.
-     * @throws {Error} if this client is not the owner of the key.
+     * @throws {RangeError} if this client is not the owner of the key.
      * @param key
      */
     unlock(key: K): Q.Promise<void>;
@@ -205,6 +215,7 @@ export interface IMap<K, V> extends DistributedObject {
     /**
      * Returns a key-value pair representing the association of given key
      * @param key
+     * @throws {RangeError} if key is null or undefined.
      */
     getEntryView(key: K): Q.Promise<EntryView<K, V>>;
 
@@ -221,6 +232,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param key
      * @param timeout Server waits for `timeout` milliseconds to acquire the lock before giving up.
      * @param lease lock is automatically release after `lease` milliseconds.
+     * @throws {RangeError} if key is null or undefined.
      */
     tryLock(key: K, timeout?: number, lease?: number): Q.Promise<boolean>;
 
@@ -231,6 +243,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param key
      * @param value
      * @param timeout
+     * @throws {RangeError} if key or value is null or undefined.
      */
     tryPut(key: K, value: V, timeout: number): Q.Promise<boolean>;
 
@@ -240,6 +253,7 @@ export interface IMap<K, V> extends DistributedObject {
      * given key in `timeout` milliseconds.
      * @param key
      * @param timeout
+     * @throws {RangeError} if key is null or undefined.
      */
     tryRemove(key: K, timeout: number): Q.Promise<boolean>;
 

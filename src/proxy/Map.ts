@@ -45,18 +45,23 @@ import {MapAddEntryListenerCodec} from '../codec/MapAddEntryListenerCodec';
 import {EntryEventType} from '../core/EntryEventType';
 import {MapAddEntryListenerToKeyCodec} from '../codec/MapAddEntryListenerToKeyCodec';
 import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
+import {assertNotNull} from '../Util';
 export class Map<K, V> extends BaseProxy implements IMap<K, V> {
     containsKey(key: K): Q.Promise<boolean> {
+        assertNotNull(key);
         var keyData = this.toData(key);
         return this.encodeInvokeOnKey<boolean>(MapContainsKeyCodec, keyData, keyData, 0);
     }
 
     containsValue(value: V): Q.Promise<boolean> {
+        assertNotNull(value);
         var valueData = this.toData(value);
         return this.encodeInvokeOnRandomTarget<boolean>(MapContainsValueCodec, valueData);
     }
 
     put(key: K, value: V, ttl: number = -1): Q.Promise<V> {
+        assertNotNull(key);
+        assertNotNull(value);
         var keyData: Data = this.toData(key);
         var valueData: Data = this.toData(value);
         return this.encodeInvokeOnKey<V>(MapPutCodec, keyData, keyData, valueData, 0, ttl);
@@ -92,11 +97,13 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     get(key: K): Q.Promise<V> {
+        assertNotNull(key);
         var keyData = this.toData(key);
         return this.encodeInvokeOnKey<V>(MapGetCodec, keyData, keyData, 0);
     }
 
     remove(key: K, value: V = null): Q.Promise<V> {
+        assertNotNull(key);
         var keyData = this.toData(key);
         if (value == null) {
             return this.encodeInvokeOnKey<V>(MapRemoveCodec, keyData, keyData, 0);
@@ -150,6 +157,7 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     delete(key: K): Q.Promise<void> {
+        assertNotNull(key);
         var keyData = this.toData(key);
         return this.encodeInvokeOnKey<void>(MapDeleteCodec, keyData, keyData, 0);
     }
@@ -166,6 +174,7 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     evict(key: K) : Q.Promise<boolean> {
+        assertNotNull(key);
         var keyData = this.toData(key);
         return this.encodeInvokeOnKey<boolean>(MapEvictCodec, keyData, keyData, 0);
     }
@@ -179,21 +188,25 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     lock(key: K, ttl: number = -1): Q.Promise<void> {
+        assertNotNull(key);
         var keyData = this.toData(key);
         return this.encodeInvokeOnKey<void>(MapLockCodec, keyData, keyData, 0, ttl);
     }
 
     isLocked(key: K): Q.Promise<boolean> {
+        assertNotNull(key);
         var keyData = this.toData(key);
         return this.encodeInvokeOnKey<boolean>(MapIsLockedCodec, keyData, keyData);
     }
 
     unlock(key: K): Q.Promise<void> {
+        assertNotNull(key);
         var keyData = this.toData(key);
         return this.encodeInvokeOnKey<void>(MapUnlockCodec, keyData, keyData, 0);
     }
 
     forceUnlock(key: K): Q.Promise<void> {
+        assertNotNull(key);
         var keyData = this.toData(key);
         return this.encodeInvokeOnKey<void>(MapForceUnlockCodec, keyData, keyData);
     }
@@ -210,6 +223,7 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     loadAll(keys: K[] = null, replaceExistingValues: boolean = true): Q.Promise<void> {
+        assertNotNull(keys);
         if (keys == null) {
             return this.encodeInvokeOnRandomTarget<void>(MapLoadAllCodec, replaceExistingValues);
         } else {
@@ -220,24 +234,33 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     putIfAbsent(key: K, value: V, ttl: number = -1): Q.Promise<V> {
+        assertNotNull(key);
+        assertNotNull(value);
         var keyData = this.toData(key);
         var valueData = this.toData(value);
         return this.encodeInvokeOnKey<V>(MapPutIfAbsentCodec, keyData, keyData, valueData, 0, ttl);
     }
 
     putTransient(key: K, value: V, ttl: number = -1): Q.Promise<void> {
+        assertNotNull(key);
+        assertNotNull(value);
         var keyData = this.toData(key);
         var valueData = this.toData(value);
         return this.encodeInvokeOnKey<void>(MapPutTransientCodec, keyData, keyData, valueData, 0, ttl);
     }
 
     replace(key: K, newValue: V): Q.Promise<V> {
+        assertNotNull(key);
+        assertNotNull(newValue);
         var keyData = this.toData(key);
         var newValueData = this.toData(newValue);
         return this.encodeInvokeOnKey<V>(MapReplaceCodec, keyData, keyData, newValueData, 0);
     }
 
     replaceIfSame(key: K, oldValue: V, newValue: V): Q.Promise<boolean> {
+        assertNotNull(key);
+        assertNotNull(oldValue);
+        assertNotNull(newValue);
         var keyData = this.toData(key);
         var newValueData = this.toData(newValue);
         var oldValueData = this.toData(oldValue);
@@ -245,6 +268,8 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     set(key: K, value: V, ttl: number = -1): Q.Promise<void> {
+        assertNotNull(key);
+        assertNotNull(value);
         var keyData = this.toData(key);
         var valueData = this.toData(value);
         return this.encodeInvokeOnKey<void>(MapSetCodec, keyData, keyData, valueData, 0, ttl);
@@ -262,6 +287,7 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     getEntryView(key: K): Q.Promise<EntryView<K, V>> {
+        assertNotNull(key);
         var keyData = this.toData(key);
         return this.encodeInvokeOnKey<EntryView<K, V>>(MapGetEntryViewCodec, keyData, keyData, 0);
     }
@@ -271,17 +297,21 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     tryLock(key: K, timeout: number = 0, lease: number = -1): Q.Promise<boolean> {
+        assertNotNull(key);
         var keyData = this.toData(key);
         return this.encodeInvokeOnKey<boolean>(MapTryLockCodec, keyData, keyData, 0, lease, timeout);
     }
 
     tryPut(key: K, value: V, timeout: number): Q.Promise<boolean> {
+        assertNotNull(key);
+        assertNotNull(value);
         var keyData = this.toData(key);
         var valueData = this.toData(value);
         return this.encodeInvokeOnKey<boolean>(MapTryPutCodec, keyData, keyData, valueData, value, 0, timeout);
     }
 
     tryRemove(key: K, timeout: number): Q.Promise<boolean> {
+        assertNotNull(key);
         var keyData = this.toData(key);
         return this.encodeInvokeOnKey<boolean>(MapTryRemoveCodec, keyData, keyData, 0, timeout);
     }
