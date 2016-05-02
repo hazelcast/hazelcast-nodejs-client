@@ -26,7 +26,7 @@ export interface IMap<K, V> extends DistributedObject {
      * If specified, value is evicted after ttl seconds.
      * @param key
      * @param value
-     * @param ttl Time to live in seconds. 0 means infinite.
+     * @param ttl Time to live in milliseconds. 0 means infinite.
      * If ttl is not an integer, it is rounded up to the nearest integer value.
      * @throws {Error} if specified key or value is undefined or null or ttl is negative.
      * @return a promise to be resolved to the old value if there was any, `undefined` otherwise.
@@ -219,7 +219,7 @@ export interface IMap<K, V> extends DistributedObject {
      * Tries to acquire the lock for the specified key.
      * If lock is not available, server immediately responds with {false}
      * @param key
-     * @param timeout Server waits for `timeout` seconds to acquire the lock before giving up.
+     * @param timeout Server waits for `timeout` milliseconds to acquire the lock before giving up.
      * @param lease lock is automatically release after `lease` milliseconds.
      */
     tryLock(key: K, timeout?: number, lease?: number): Q.Promise<boolean>;
@@ -227,7 +227,7 @@ export interface IMap<K, V> extends DistributedObject {
     /**
      * Tries to put specified key value pair into map. If this method returns
      * false, it indicates that caller thread was not able to acquire the lock for
-     * given key in `timeout` seconds.
+     * given key in `timeout` milliseconds.
      * @param key
      * @param value
      * @param timeout
@@ -237,7 +237,7 @@ export interface IMap<K, V> extends DistributedObject {
     /**
      * Tries to remove specified key from map. If this method returns
      * false, it indicates that caller thread was not able to acquire the lock for
-     * given key in `timeout` seconds.
+     * given key in `timeout` milliseconds.
      * @param key
      * @param timeout
      */
