@@ -21,7 +21,8 @@ export class MapPutAllCodec {
         // Calculates the request payload size
         var dataSize:number = 0;
         dataSize += BitsUtil.calculateSizeString(name);
-        entries.foreach((entry:any) => {
+        dataSize += BitsUtil.INT_SIZE_IN_BYTES;
+        entries.forEach((entry:any) => {
             dataSize += BitsUtil.calculateSizeData(entry.key);
             dataSize += BitsUtil.calculateSizeData(entry.val);
         });
@@ -35,7 +36,7 @@ export class MapPutAllCodec {
         clientMessage.setRetryable(RETRYABLE);
         clientMessage.appendString(name);
         clientMessage.appendInt32(entries.length);
-        entries.foreach((entry:any) => {
+        entries.forEach((entry:any) => {
             clientMessage.appendData(entry.key);
             clientMessage.appendData(entry.val);
         });

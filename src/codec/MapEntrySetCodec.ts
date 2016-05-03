@@ -1,6 +1,5 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
-import ImmutableLazyDataList = require('./ImmutableLazyDataList');
 import {BitsUtil} from '../BitsUtil';
 import Address = require('../Address');
 import {AddressCodec} from './AddressCodec';
@@ -39,15 +38,16 @@ export class MapEntrySetCodec {
         var parameters:any = {'response': null};
         var responseSize = clientMessage.readInt32();
         var response:any = [];
-        for (var responseIndex = 0; responseIndex <= responseSize; responseIndex++) {
+        for (var responseIndex = 0; responseIndex < responseSize; responseIndex++) {
             var responseItem:any;
-            responseItem = clientMessage.readMapEntry();
+            var responseItemKey:Data;
+            var responseItemVal:any;
+            responseItemKey = clientMessage.readData();
+            responseItemVal = clientMessage.readData();
+            responseItem = [responseItemKey, responseItemVal];
             response.push(responseItem)
         }
-        parameters['response'] = new ImmutableLazyDataList(response, toObjectFunction);
+        parameters['response'] = response;
         return parameters;
-
     }
-
-
 }

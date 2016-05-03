@@ -70,12 +70,18 @@ class ProxyManager {
             };
             ClientAddDistributedObjectListenerCodec.handle(clientMessage, converterFunc, null);
         };
-        return this.client.getListenerService().registerListener(ClientAddDistributedObjectListenerCodec, handler);
+        return this.client.getListenerService().registerListener(
+            ClientAddDistributedObjectListenerCodec.encodeRequest(true),
+            handler,
+            ClientAddDistributedObjectListenerCodec.decodeResponse
+        );
     }
 
     removeDistributedObjectListener(listenerId: string) {
-        return this.client.getListenerService()
-            .deregisterListener(ClientRemoveDistributedObjectListenerCodec, listenerId);
+        return this.client.getListenerService().deregisterListener(
+            ClientRemoveDistributedObjectListenerCodec.encodeRequest(listenerId),
+            ClientRemoveDistributedObjectListenerCodec.decodeResponse
+        );
     }
 }
 export = ProxyManager;

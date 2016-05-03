@@ -1,12 +1,12 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
-import ImmutableLazyDataList = require('./ImmutableLazyDataList');
 import {BitsUtil} from '../BitsUtil';
 import Address = require('../Address');
 import {AddressCodec} from './AddressCodec';
 import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
 import {EntryViewCodec} from './EntryViewCodec';
+import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 import {MapMessageType} from './MapMessageType';
 
 var REQUEST_TYPE = MapMessageType.MAP_GETALL;
@@ -16,14 +16,13 @@ var RETRYABLE = false;
 
 export class MapGetAllCodec {
 
-
     static calculateSize(name:string, keys:any) {
         // Calculates the request payload size
         var dataSize:number = 0;
         dataSize += BitsUtil.calculateSizeString(name);
         dataSize += BitsUtil.INT_SIZE_IN_BYTES;
 
-        keys.foreach((keysItem:any) => {
+        keys.forEach((keysItem:any) => {
             dataSize += BitsUtil.calculateSizeData(keysItem);
         });
         return dataSize;
@@ -37,7 +36,7 @@ export class MapGetAllCodec {
         clientMessage.appendString(name);
         clientMessage.appendInt32(keys.length);
 
-        keys.foreach((keysItem:any) => {
+        keys.forEach((keysItem:any) => {
             clientMessage.appendData(keysItem);
         });
 
@@ -50,15 +49,18 @@ export class MapGetAllCodec {
         var parameters:any = {'response': null};
         var responseSize = clientMessage.readInt32();
         var response:any = [];
-        for (var responseIndex = 0; responseIndex <= responseSize; responseIndex++) {
+        for (var responseIndex = 0; responseIndex < responseSize; responseIndex++) {
             var responseItem:any;
-            responseItem = clientMessage.readMapEntry();
+            var responseItemKey:Data;
+            var responseItemVal:any;
+            responseItemKey = clientMessage.readData();
+            responseItemVal = clientMessage.readData();
+            responseItem = [responseItemKey, responseItemVal];
             response.push(responseItem)
         }
-        parameters['response'] = new ImmutableLazyDataList(response, toObjectFunction);
+        parameters['response'] = response;
         return parameters;
 
     }
-
 
 }
