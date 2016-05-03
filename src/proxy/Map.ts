@@ -76,7 +76,7 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
             pair = pairs[pairId];
             var keyData = this.toData(pair[0]);
             var pId: number = partitionService.getPartitionId(keyData);
-            if (partitionsToKeys.hasOwnProperty(pId) === false) {
+            if (!partitionsToKeys[pId]) {
                 partitionsToKeys[pId] = [];
             }
             partitionsToKeys[pId].push({key: keyData, val: this.toData(pair[1])});
@@ -133,7 +133,7 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
             key = keys[i];
             var keyData = this.toData(key);
             var pId: number = partitionService.getPartitionId(keyData);
-            if (partitionsToKeys.hasOwnProperty(pId) === false) {
+            if (!partitionsToKeys[pId]) {
                 partitionsToKeys[pId] = [];
             }
             partitionsToKeys[pId].push(keyData);
@@ -328,7 +328,7 @@ export class Map<K, V> extends BaseProxy implements IMap<K, V> {
             'clearedAll': EntryEventType.CLEAR_ALL
         };
         for (var funcName in conversionTable) {
-            if (listener.hasOwnProperty(funcName)) {
+            if (listener[funcName]) {
                 /* tslint:disable:no-bitwise */
                 flags = flags | conversionTable[funcName];
             }

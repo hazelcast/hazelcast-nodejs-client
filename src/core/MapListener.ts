@@ -6,6 +6,7 @@ export interface IMapListener<K, V> {
     evicted?: EntryEventListener<K, V>;
     evictedAll?: EntryEventListener<K, V>;
     clearedAll?: EntryEventListener<K, V>;
+    [event: string]: EntryEventListener<K, V>;
 }
 
 export interface EntryEventListener<K, V> {
