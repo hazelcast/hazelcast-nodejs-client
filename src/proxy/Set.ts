@@ -1,6 +1,7 @@
 import {BaseProxy} from '../proxy/BaseProxy';
 import {ISet} from '../ISet';
 import * as Q from 'q';
+import {ItemListener} from '../core/ItemListener';
 export class Set<E> extends BaseProxy implements ISet<E> {
     add(entry : E) : Q.Promise<boolean> {
         //TODO
@@ -10,6 +11,11 @@ export class Set<E> extends BaseProxy implements ISet<E> {
     addAll(items : E[]) : Q.Promise<boolean> {
         //TODO
         return Q.defer<boolean>().promise;
+    }
+
+    getAll(): E[] {
+        //TODO
+        return null;
     }
 
     clear() : Q.Promise<void> {
@@ -50,5 +56,15 @@ export class Set<E> extends BaseProxy implements ISet<E> {
     size() : Q.Promise<number> {
         //TODO
         return Q.defer<number>().promise;
+    }
+
+    addItemListener(listener: ItemListener<E>, includeValue?: boolean): string {
+        //TODO
+        return null;
+    }
+
+    removeItemListener(registrationId: string): boolean {
+        //TODO
+        return null;
     }
 }
