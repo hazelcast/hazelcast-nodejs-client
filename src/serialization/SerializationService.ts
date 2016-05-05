@@ -1,13 +1,17 @@
-import {Data} from './Data';
+import {Data, DataOutput, DataInput} from './Data';
 import {HeapData} from './HeapData';
 export interface SerializationService {
     toData(object: any) : Data;
 
     toObject(data: Data) : any;
+
+    writeObject(out: DataOutput, object: any): void;
+
+    readObject(inp: DataInput): any;
 }
 
 export class JsonSerializationService implements SerializationService {
-    public toData(object: any): Data {
+    toData(object: any): Data {
         var jsonString: string = JSON.stringify(object);
         var buffer = new Buffer(12 + Buffer.byteLength(jsonString, 'utf8'));
         buffer.writeInt32BE(0, 0); // partition hash
@@ -18,10 +22,18 @@ export class JsonSerializationService implements SerializationService {
         return new HeapData(buffer);
     }
 
-    public toObject(data: Data): any {
+    toObject(data: Data): any {
         if (data == null) {
             return null;
         }
         return JSON.parse(data.toBuffer().toString('utf8', 12));
+    }
+
+    writeObject(out: DataOutput, object: any): void {
+        //TODO
+    }
+
+    readObject(inp: DataInput): any {
+        return null;
     }
 }
