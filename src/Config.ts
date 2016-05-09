@@ -67,7 +67,8 @@ export class ClientNetworkConfig {
 }
 
 export class SerializationConfig {
-    //TO-DO when implementing serialization
+    defaultNumberType: string = 'int';
+    isBigEndian: boolean = true;
 }
 
 export class GlobalSerializerConfig {

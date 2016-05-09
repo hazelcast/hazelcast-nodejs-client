@@ -62,6 +62,7 @@ export interface DataOutput {
     writeFloat(float: number): void;
     writeFloatArray(floats: number[]): void;
     writeInt(int: number): void;
+    writeIntBE(int: number): void;
     writeIntArray(ints: number[]): void;
     writeLong(long: Long): void;
     writeLongArray(longs: Long[]): void;

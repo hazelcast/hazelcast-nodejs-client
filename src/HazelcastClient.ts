@@ -1,20 +1,19 @@
-import {SerializationService} from './serialization/SerializationService';
+import {SerializationService, SerializationServiceV1} from './serialization/SerializationService';
 import {InvocationService, ListenerService} from './invocation/InvocationService';
-import ClientConnectionManager = require('./invocation/ClientConnectionManager');
 import {ClientConfig} from './Config';
-import ProxyManager = require('./proxy/ProxyManager');
 import * as Q from 'q';
 import {IMap} from './IMap';
 import {ISet} from './ISet';
-import {JsonSerializationService} from './serialization/SerializationService';
-import PartitionService = require('./PartitionService');
-import ClusterService = require('./invocation/ClusterService');
-import Heartbeat = require('./Heartbeat');
 import {LoggingService} from './LoggingService';
 import {LifecycleService, LifecycleEvent} from './LifecycleService';
 import {ClientGetDistributedObjectsCodec} from './codec/ClientGetDistributedObjectsCodec';
 import {DistributedObject} from './DistributedObject';
 import {ClientInfo} from './ClientInfo';
+import ClientConnectionManager = require('./invocation/ClientConnectionManager');
+import ProxyManager = require('./proxy/ProxyManager');
+import PartitionService = require('./PartitionService');
+import ClusterService = require('./invocation/ClusterService');
+import Heartbeat = require('./Heartbeat');
 import ClientMessage = require('./ClientMessage');
 
 export default class HazelcastClient {
@@ -50,7 +49,7 @@ export default class HazelcastClient {
         this.loggingService = LoggingService.getLoggingService();
         this.invocationService = new InvocationService(this);
         this.listenerService = new ListenerService(this);
-        this.serializationService = new JsonSerializationService();
+        this.serializationService = new SerializationServiceV1(this.config.serializationConfig);
         this.proxyManager = new ProxyManager(this);
         this.partitionService = new PartitionService(this);
         this.connectionManager = new ClientConnectionManager(this);

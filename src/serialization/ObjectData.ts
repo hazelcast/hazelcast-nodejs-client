@@ -29,7 +29,7 @@ export class ObjectDataOutput implements DataOutput {
 
     private ensureAvailable(size: number): void {
         if (this.available() < size ) {
-            var newBuffer = new Buffer(this.buffer.length + size);
+            var newBuffer = new Buffer(this.pos + size);
             this.buffer.copy(newBuffer);
             this.buffer = newBuffer;
         }
@@ -151,6 +151,12 @@ export class ObjectDataOutput implements DataOutput {
     writeInt(int: number): void {
         this.ensureAvailable(BitsUtil.INT_SIZE_IN_BYTES);
         BitsUtil.writeInt32(this.buffer, this.pos, int, this.isBigEndian());
+        this.pos += BitsUtil.INT_SIZE_IN_BYTES;
+    }
+
+    writeIntBE(int: number): void {
+        this.ensureAvailable(BitsUtil.INT_SIZE_IN_BYTES);
+        BitsUtil.writeInt32(this.buffer, this.pos, int, true);
         this.pos += BitsUtil.INT_SIZE_IN_BYTES;
     }
 
