@@ -1,6 +1,7 @@
 import Promise = Q.Promise;
 import {DistributedObject} from './DistributedObject';
 import {ItemListener} from './core/ItemListener';
+
 export interface ISet<E> extends DistributedObject {
     /**
      * Adds the specified element to this set if not already present.
@@ -23,7 +24,7 @@ export interface ISet<E> extends DistributedObject {
      * Returns all item in this set.
      * @return An array of items.
      */
-    getAll(): E[];
+    getAll(): Promise<E[]>;
 
     /**
      * Removes all of the elements from this set.
@@ -89,12 +90,12 @@ export interface ISet<E> extends DistributedObject {
      * @param includeValue `true` if updated item should be included in the event.
      * @return Registration id of the listener.
      */
-    addItemListener(listener: ItemListener<E>, includeValue?: boolean): string;
+    addItemListener(listener: ItemListener<E>, includeValue: boolean): Promise<string>;
 
     /**
      * Removes an item listener for this set.
      * @param registrationId Registration id of the listener to be removed.
      * @return `true` if the item listener is removed, `false` otherwise.
      */
-    removeItemListener(registrationId: string): boolean;
+    removeItemListener(registrationId: string): Promise<boolean>;
 }

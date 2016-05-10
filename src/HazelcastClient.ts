@@ -5,6 +5,7 @@ import {ClientConfig} from './Config';
 import ProxyManager = require('./proxy/ProxyManager');
 import * as Q from 'q';
 import {IMap} from './IMap';
+import {ISet} from './ISet';
 import {JsonSerializationService} from './serialization/SerializationService';
 import PartitionService = require('./PartitionService');
 import ClusterService = require('./invocation/ClusterService');
@@ -116,6 +117,16 @@ export default class HazelcastClient {
     getMap<K, V>(name: string): IMap<K, V> {
         return <IMap<K, V>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.MAP_SERVICE);
     }
+
+    /**
+     * Returns the distributed set instance with given name.
+     * @param name
+     * @returns {ISet<K, V>}
+     */
+    getSet<E>(name: string): ISet<E> {
+        return <ISet<E>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.SET_SERVICE);
+    }
+
 
     /**
      * Return configuration that this instance started with.
