@@ -5,9 +5,11 @@ import {ObjectDataOutput, ObjectDataInput} from './ObjectData';
 import {
     StringSerializer, BooleanSerializer, DoubleSerializer, NullSerializer,
     ShortSerializer, IntegerSerializer, LongSerializer, FloatSerializer, BooleanArraySerializer, ShortArraySerializer,
-    IntegerArraySerializer, LongArraySerializer, DoubleArraySerializer, StringArraySerializer
+    IntegerArraySerializer, LongArraySerializer, DoubleArraySerializer, StringArraySerializer,
+    IdentifiedDataSerializableSerializer
 } from './DefaultSerializer';
 import * as Util from '../Util';
+import {IdentifiedDataSerializable} from './Serializable';
 export interface SerializationService {
     toData(object: any, paritioningStrategy?: any) : Data;
 
@@ -44,11 +46,11 @@ export class JsonSerializationService implements SerializationService {
     }
 
     writeObject(out: DataOutput, object: any): void {
-        //TODO
+        throw new Error('This method is not applicable in JSON serialization context');
     }
 
     readObject(inp: DataInput): any {
-        return null;
+        throw new Error('This method is not applicable in JSON serialization context');
     }
 }
 
@@ -64,33 +66,6 @@ export class SerializationServiceV1 implements SerializationService{
         this.registry = {};
         this.serializerNameToId = {};
         this.registerDefaultSerializers();
-    }
-
-    private defaultPartitionStrategy(obj: any): number {
-        /* tslint:disable:no-string-literal */
-        if (obj['getPartitionHash']) {
-            /* tslint:enable:no-string-literal */
-            return obj.getPartitionHash();
-        } else {
-            return 0;
-        }
-    }
-
-    protected registerDefaultSerializers() {
-        this.registerSerializer('string', new StringSerializer());
-        this.registerSerializer('number', new DoubleSerializer());
-        this.registerSerializer('boolean', new BooleanSerializer());
-        this.registerSerializer('null', new NullSerializer());
-        this.registerSerializer('short', new ShortSerializer());
-        this.registerSerializer('integer', new IntegerSerializer());
-        this.registerSerializer('long', new LongSerializer());
-        this.registerSerializer('float', new FloatSerializer());
-        this.registerSerializer('booleanArray', new BooleanArraySerializer());
-        this.registerSerializer('shortArray', new ShortArraySerializer());
-        this.registerSerializer('integerArray', new IntegerArraySerializer());
-        this.registerSerializer('longArray', new LongArraySerializer());
-        this.registerSerializer('numberArray', new DoubleArraySerializer());
-        this.registerSerializer('stringArray', new StringArraySerializer());
     }
 
     toData(object: any, partitioningStrategy: any = this.defaultPartitionStrategy): Data {
@@ -109,12 +84,15 @@ export class SerializationServiceV1 implements SerializationService{
     }
 
     writeObject(out: DataOutput, object: any): void {
-        //TODO
+        var serializer = this.findSerializerFor(object);
+        out.writeInt(serializer.getId());
+        serializer.write(out, object);
     }
 
     readObject(inp: DataInput): any {
-        //TODO
-        return null;
+        var serializerId = inp.readInt();
+        var serializer = this.findSerializerById(serializerId);
+        return serializer.read(inp);
     }
 
     registerSerializer(name: string, serializer: Serializer): void {
@@ -128,7 +106,29 @@ export class SerializationServiceV1 implements SerializationService{
         this.registry[serializer.getId()] = serializer;
     }
 
+    /**
+     * Serialization precedence
+     *  1. NULL
+     *  2. DataSerializable
+     *  3. Portable
+     *  4. Default Types
+     *      * Byte, Boolean, Character, Short, Integer, Long, Float, Double, String
+     *      * Array of [Byte, Boolean, Character, Short, Integer, Long, Float, Double, String]
+     *      * Java types [Date, BigInteger, BigDecimal, Class, Enum]
+     *  5. Custom types
+     *  6. Global Serializer
+     *  7. Fallback (JSON)
+     * @param obj
+     * @returns
+     */
     findSerializerFor(obj: any): Serializer {
+        if (obj === undefined) {
+            throw new RangeError('undefined cannot be serialized.');
+        }
+        if (this.isIdentifiedDataSerializable(obj)) {
+            return this.findSerializerByName('identified', false);
+        }
+        //Look up for Portable
         var objectType = Util.getType(obj);
         if (objectType === 'array') {
             if (obj.length === 0) {
@@ -139,6 +139,46 @@ export class SerializationServiceV1 implements SerializationService{
         } else {
             return this.findSerializerByName(objectType, false);
         }
+    }
+
+    private defaultPartitionStrategy(obj: any): number {
+        /* tslint:disable:no-string-literal */
+        if (obj == null || !obj['getPartitionHash']) {
+            /* tslint:enable:no-string-literal */
+            return 0;
+        } else {
+            return obj.getPartitionHash();
+        }
+    }
+
+    /* tslint:disable:no-string-literal */
+    protected isIdentifiedDataSerializable(obj: any): boolean {
+        if ( obj.readData && obj.writeData && obj.getClassId && obj.getFactoryId) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    /* tslint:enable:no-string-literal */
+
+    protected registerDefaultSerializers() {
+        this.registerSerializer('string', new StringSerializer());
+        this.registerSerializer('number', new DoubleSerializer());
+        this.registerSerializer('boolean', new BooleanSerializer());
+        this.registerSerializer('null', new NullSerializer());
+        this.registerSerializer('short', new ShortSerializer());
+        this.registerSerializer('integer', new IntegerSerializer());
+        this.registerSerializer('long', new LongSerializer());
+        this.registerSerializer('float', new FloatSerializer());
+        this.registerSerializer('booleanArray', new BooleanArraySerializer());
+        this.registerSerializer('shortArray', new ShortArraySerializer());
+        this.registerSerializer('integerArray', new IntegerArraySerializer());
+        this.registerSerializer('longArray', new LongArraySerializer());
+        this.registerSerializer('numberArray', new DoubleArraySerializer());
+        this.registerSerializer('stringArray', new StringArraySerializer());
+        this.registerSerializer(
+            'identified', new IdentifiedDataSerializableSerializer(this.serialiationConfig.dataSerializableFactories)
+        );
     }
 
     protected findSerializerByName(name: string, isArray: boolean): Serializer {

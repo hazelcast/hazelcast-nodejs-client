@@ -25,7 +25,8 @@ describe('Default serializers Test', function() {
         'client',
         [12, 56, 54, 12],
         [43546.6, 2343.4, 8988,4],
-        [23545798.6]
+        [23545798.6],
+        null
     ];
 
     parameters.forEach(function (obj) {

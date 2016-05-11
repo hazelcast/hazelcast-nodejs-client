@@ -1,6 +1,7 @@
 import {Serializer} from './SerializationService';
 import {DataInput, DataOutput} from './Data';
 import isPending = Q.isPending;
+import {IdentifiedDataSerializableFactory, IdentifiedDataSerializable} from './Serializable';
 export class StringSerializer implements Serializer {
 
     getId(): number {
@@ -208,5 +209,40 @@ export class StringArraySerializer implements Serializer {
 
     write(output: DataOutput, object: any): void {
         output.writeUTFArray(object);
+    }
+}
+
+export class IdentifiedDataSerializableSerializer implements Serializer {
+    private factories: {[id: number]: IdentifiedDataSerializableFactory};
+    constructor(factories: {[id: number]: IdentifiedDataSerializableFactory}) {
+        this.factories = factories;
+    }
+
+    getId(): number {
+        return -2;
+    }
+
+    read(input: DataInput): any {
+        var isIdentified = input.readBoolean();
+        if (!isIdentified) {
+            throw new RangeError('Native clients does not support Data Serializable. Please use Identified Data Serializable');
+        }
+        var factoryId = input.readInt();
+        var classId = input.readInt();
+        var factory: IdentifiedDataSerializableFactory;
+        factory = this.factories[factoryId];
+        if (!factory) {
+            throw new ReferenceError('There is no Identified Data Serializer factory with id ' + factoryId + '.');
+        }
+        var object = factory.create(classId);
+        object.readData(input);
+        return object;
+    }
+
+    write(output: DataOutput, object: IdentifiedDataSerializable): void {
+        output.writeBoolean(true);
+        output.writeInt(object.getFactoryId());
+        output.writeInt(object.getClassId());
+        object.writeData(output);
     }
 }
