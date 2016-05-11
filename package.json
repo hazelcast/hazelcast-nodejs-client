@@ -4,7 +4,7 @@
   "description": "Hazelcast - open source In-Memory Data Grid - client for NodeJS",
   "main": "lib/index.js",
   "dependencies": {
-    "long": "3.0.1",
+    "long": "3.1.0",
     "q": "1.4.1"
   },
   "devDependencies": {
