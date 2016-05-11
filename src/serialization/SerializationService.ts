@@ -7,6 +7,7 @@ import {
     ShortSerializer, IntegerSerializer, LongSerializer, FloatSerializer, BooleanArraySerializer, ShortArraySerializer,
     IntegerArraySerializer, LongArraySerializer, DoubleArraySerializer, StringArraySerializer
 } from './DefaultSerializer';
+import * as Util from '../Util';
 export interface SerializationService {
     toData(object: any, paritioningStrategy?: any) : Data;
 
@@ -128,14 +129,15 @@ export class SerializationServiceV1 implements SerializationService{
     }
 
     findSerializerFor(obj: any): Serializer {
-        if (Array.isArray(obj)) {
+        var objectType = Util.getType(obj);
+        if (objectType === 'array') {
             if (obj.length === 0) {
                 return this.findSerializerByName('number', true);
             } else {
-                return this.findSerializerByName(typeof obj[0], true);
+                return this.findSerializerByName(Util.getType(obj[0]), true);
             }
         } else {
-            return this.findSerializerByName(typeof obj, false);
+            return this.findSerializerByName(objectType, false);
         }
     }
 
