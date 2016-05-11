@@ -12,4 +12,4 @@ class Address {
     }
 }
 
-export = Address
+export = Address;

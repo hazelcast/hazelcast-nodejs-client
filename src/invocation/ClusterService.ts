@@ -221,4 +221,4 @@ class ClusterService extends EventEmitter {
     }
 }
 
-export = ClusterService
+export = ClusterService;

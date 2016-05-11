@@ -235,4 +235,4 @@ class ClientMessage {
         // TODO
     }
 }
-export = ClientMessage
+export = ClientMessage;

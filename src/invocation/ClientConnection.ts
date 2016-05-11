@@ -103,4 +103,4 @@ class ClientConnection {
     }
 }
 
-export = ClientConnection
+export = ClientConnection;

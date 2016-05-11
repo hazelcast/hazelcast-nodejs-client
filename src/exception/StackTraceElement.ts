@@ -5,4 +5,4 @@ class StackTraceElement {
     lineNumber: number = null;
 }
 
-export = StackTraceElement
+export = StackTraceElement;

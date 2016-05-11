@@ -21,4 +21,4 @@ class RemoteException {
 
 }
 
-export = RemoteException
+export = RemoteException;

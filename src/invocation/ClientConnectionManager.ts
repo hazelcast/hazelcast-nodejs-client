@@ -121,4 +121,4 @@ class ClientConnectionManager extends EventEmitter {
     }
 }
 
-export = ClientConnectionManager
+export = ClientConnectionManager;

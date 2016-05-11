@@ -32,4 +32,4 @@ class ImmutableLazyDataList {
     }
 
 }
-export = ImmutableLazyDataList
+export = ImmutableLazyDataList;

@@ -50,4 +50,4 @@ class ConnectionAuthenticator {
     }
 }
 
-export = ConnectionAuthenticator
+export = ConnectionAuthenticator;
