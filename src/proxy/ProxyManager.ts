@@ -1,6 +1,7 @@
 import * as Q from 'q';
 import {DistributedObject} from '../DistributedObject';
 import {Map} from './Map';
+import {Set} from './Set';
 import {BaseProxy} from './BaseProxy';
 import {ClientCreateProxyCodec} from '../codec/ClientCreateProxyCodec';
 import ClientConnection = require('../invocation/ClientConnection');
@@ -13,9 +14,11 @@ import HazelcastClient from '../HazelcastClient';
 
 class ProxyManager {
     public MAP_SERVICE: string = 'hz:impl:mapService';
+    public SET_SERVICE: string = 'hz:impl:setService';
 
     public service: any = {
-        'hz:impl:mapService': Map
+        'hz:impl:mapService': Map,
+        'hz:impl:setService': Set
     };
 
     private proxies: { [proxyName: string]: DistributedObject; } = {};
