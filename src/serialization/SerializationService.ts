@@ -125,6 +125,9 @@ export class SerializationServiceV1 implements SerializationService{
         if (obj === undefined) {
             throw new RangeError('undefined cannot be serialized.');
         }
+        if (obj === null) {
+            return this.findSerializerByName('null', false);
+        }
         if (this.isIdentifiedDataSerializable(obj)) {
             return this.findSerializerByName('identified', false);
         }
