@@ -38,7 +38,7 @@ describe('ObjectData Test', function() {
         ]);
     });
 
-    it('write', function() {
+    it('read', function() {
         var inp = new ODInp(out.toBuffer(), 0, null, true);
         expect(inp.read()).to.equal(15);
         expect(inp.read()).to.equal('t'.charCodeAt(0));
@@ -78,4 +78,24 @@ describe('ObjectData Test', function() {
         inp.reset();
         expect(inp.read()).to.equal(15);
     });
+
+    it('read from pos', function() {
+        var inp = new ODInp(out.toBuffer(), 0, null, true);
+        inp.read();
+        expect(inp.read(0)).to.equal(15);
+    });
+
+    it('position', function() {
+        var inp = new ODInp(out.toBuffer(), 0, null, true);
+        inp.read();
+        inp.position(0);
+        expect(inp.read()).to.equal(15);
+    });
+
+    it('non integer position does not affect', function() {
+        var inp = new ODInp(out.toBuffer(), 0, null, true);
+        inp.read();
+        inp.position(0.5);
+        expect(inp.read()).to.equal('t'.charCodeAt(0));
+    })
 });
