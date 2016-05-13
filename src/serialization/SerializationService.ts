@@ -54,7 +54,7 @@ export class JsonSerializationService implements SerializationService {
     }
 }
 
-export class SerializationServiceV1 implements SerializationService{
+export class SerializationServiceV1 implements SerializationService {
 
     private registry: {[id: number]: Serializer};
     private serializerNameToId: {[name: string]: number};
