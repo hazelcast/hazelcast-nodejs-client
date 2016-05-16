@@ -6,7 +6,7 @@ import {
     StringSerializer, BooleanSerializer, DoubleSerializer, NullSerializer,
     ShortSerializer, IntegerSerializer, LongSerializer, FloatSerializer, BooleanArraySerializer, ShortArraySerializer,
     IntegerArraySerializer, LongArraySerializer, DoubleArraySerializer, StringArraySerializer,
-    IdentifiedDataSerializableSerializer
+    IdentifiedDataSerializableSerializer, FloatArraySerializer
 } from './DefaultSerializer';
 import * as Util from '../Util';
 import {IdentifiedDataSerializable} from './Serializable';
@@ -179,6 +179,7 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('longArray', new LongArraySerializer());
         this.registerSerializer('doubleArray', new DoubleArraySerializer());
         this.registerSerializer('stringArray', new StringArraySerializer());
+        this.registerSerializer('floatArray', new FloatArraySerializer());
         this.registerSerializer(
             'identified', new IdentifiedDataSerializableSerializer(this.serialiationConfig.dataSerializableFactories)
         );

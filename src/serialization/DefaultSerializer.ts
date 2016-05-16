@@ -212,6 +212,20 @@ export class StringArraySerializer implements Serializer {
     }
 }
 
+export class FloatArraySerializer implements Serializer {
+    getId(): number {
+        return -18;
+    }
+
+    read(input: DataInput): any {
+        return input.readFloatArray();
+    }
+
+    write(output: DataOutput, object: any): void {
+        output.writeFloatArray(object);
+    }
+}
+
 export class IdentifiedDataSerializableSerializer implements Serializer {
     private factories: {[id: number]: IdentifiedDataSerializableFactory};
     constructor(factories: {[id: number]: IdentifiedDataSerializableFactory}) {

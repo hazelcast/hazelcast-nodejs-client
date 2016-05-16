@@ -46,7 +46,7 @@ describe('Default serializers Test', function() {
     ];
 
     defaultNumberTypes.forEach(function(type) {
-        it('default number type: ' + type, function() {
+        it('convert default number type: ' + type, function() {
             if (type === 'long') {
                 var num = Long.fromNumber(56);
             } else {
@@ -58,5 +58,20 @@ describe('Default serializers Test', function() {
             var serialized = serializationService.toData(num);
             expect(serializationService.toObject(serialized)).to.deep.equal(num);
         })
-    })
+    });
+
+    defaultNumberTypes.forEach(function(type) {
+        it('convert array of default number type: ' + type, function() {
+            if (type === 'long') {
+                var nums = [Long.fromNumber(56), Long.fromNumber(101)];
+            } else {
+                var nums = [56, 101];
+            }
+            var serializationConfig = new Config.ClientConfig().serializationConfig;
+            serializationConfig.defaultNumberType = type;
+            var serializationService = new SerializationService.SerializationServiceV1(serializationConfig);
+            var serialized = serializationService.toData(nums);
+            expect(serializationService.toObject(serialized)).to.deep.equal(nums);
+        })
+    });
 });
