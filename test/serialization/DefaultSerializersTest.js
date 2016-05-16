@@ -36,4 +36,27 @@ describe('Default serializers Test', function() {
             expect(serializationService.toObject(serialized)).to.deep.equal(obj);
         })
     });
+
+    var defaultNumberTypes = [
+        'double',
+        'short',
+        'integer',
+        'long',
+        'float'
+    ];
+
+    defaultNumberTypes.forEach(function(type) {
+        it('default number type: ' + type, function() {
+            if (type === 'long') {
+                var num = Long.fromNumber(56);
+            } else {
+                var num = 56;
+            }
+            var serializationConfig = new Config.ClientConfig().serializationConfig;
+            serializationConfig.defaultNumberType = type;
+            var serializationService = new SerializationService.SerializationServiceV1(serializationConfig);
+            var serialized = serializationService.toData(num);
+            expect(serializationService.toObject(serialized)).to.deep.equal(num);
+        })
+    })
 });

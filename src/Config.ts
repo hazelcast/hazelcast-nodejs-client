@@ -68,7 +68,7 @@ export class ClientNetworkConfig {
 }
 
 export class SerializationConfig {
-    defaultNumberType: string = 'int';
+    defaultNumberType: string = 'double';
     isBigEndian: boolean = true;
     dataSerializableFactories: {[id: number]: IdentifiedDataSerializableFactory} = {};
 }

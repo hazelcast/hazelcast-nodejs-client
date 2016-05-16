@@ -166,7 +166,7 @@ export class SerializationServiceV1 implements SerializationService {
 
     protected registerDefaultSerializers() {
         this.registerSerializer('string', new StringSerializer());
-        this.registerSerializer('number', new DoubleSerializer());
+        this.registerSerializer('double', new DoubleSerializer());
         this.registerSerializer('boolean', new BooleanSerializer());
         this.registerSerializer('null', new NullSerializer());
         this.registerSerializer('short', new ShortSerializer());
@@ -177,7 +177,7 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('shortArray', new ShortArraySerializer());
         this.registerSerializer('integerArray', new IntegerArraySerializer());
         this.registerSerializer('longArray', new LongArraySerializer());
-        this.registerSerializer('numberArray', new DoubleArraySerializer());
+        this.registerSerializer('doubleArray', new DoubleArraySerializer());
         this.registerSerializer('stringArray', new StringArraySerializer());
         this.registerSerializer(
             'identified', new IdentifiedDataSerializableSerializer(this.serialiationConfig.dataSerializableFactories)
@@ -185,7 +185,13 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     protected findSerializerByName(name: string, isArray: boolean): Serializer {
-        var serializerName = name + (isArray ? 'Array' : '');
+        var convertedName: string;
+        if (name === 'number') {
+            convertedName = this.serialiationConfig.defaultNumberType;
+        } else {
+            convertedName = name;
+        }
+        var serializerName = convertedName + (isArray ? 'Array' : '');
         var serializerId = this.serializerNameToId[serializerName];
         if (serializerId == null) {
             return null;
