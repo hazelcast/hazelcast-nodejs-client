@@ -1,6 +1,5 @@
 var expect = require('chai').expect;
 var Long = require('long');
-var Controller = require('../RC');
 var Config = require('../../.').Config;
 var SerializationService = require('../../lib/serialization/SerializationService');
 describe('Default serializers Test', function() {

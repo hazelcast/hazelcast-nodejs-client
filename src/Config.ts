@@ -71,6 +71,7 @@ export class SerializationConfig {
     defaultNumberType: string = 'double';
     isBigEndian: boolean = true;
     dataSerializableFactories: {[id: number]: IdentifiedDataSerializableFactory} = {};
+    customSerializers: any[] = [];
 }
 
 export class GlobalSerializerConfig {

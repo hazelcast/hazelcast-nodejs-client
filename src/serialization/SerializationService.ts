@@ -66,6 +66,7 @@ export class SerializationServiceV1 implements SerializationService {
         this.registry = {};
         this.serializerNameToId = {};
         this.registerDefaultSerializers();
+        this.registerCustomSerializers(serializationConfig.customSerializers);
     }
 
     toData(object: any, partitioningStrategy: any = this.defaultPartitionStrategy): Data {
@@ -115,7 +116,7 @@ export class SerializationServiceV1 implements SerializationService {
      *      * Byte, Boolean, Character, Short, Integer, Long, Float, Double, String
      *      * Array of [Byte, Boolean, Character, Short, Integer, Long, Float, Double, String]
      *      * Java types [Date, BigInteger, BigDecimal, Class, Enum]
-     *  5. Custom types
+     *  5. Custom serializers
      *  6. Global Serializer
      *  7. Fallback (JSON)
      * @param obj
@@ -125,23 +126,21 @@ export class SerializationServiceV1 implements SerializationService {
         if (obj === undefined) {
             throw new RangeError('undefined cannot be serialized.');
         }
+        var serializer: Serializer = null;
         if (obj === null) {
-            return this.findSerializerByName('null', false);
+            serializer = this.findSerializerByName('null', false);
         }
-        if (this.isIdentifiedDataSerializable(obj)) {
-            return this.findSerializerByName('identified', false);
+        if (serializer === null) {
+            serializer = this.lookupDefaultSerializer(obj);
         }
-        //Look up for Portable
-        var objectType = Util.getType(obj);
-        if (objectType === 'array') {
-            if (obj.length === 0) {
-                return this.findSerializerByName('number', true);
-            } else {
-                return this.findSerializerByName(Util.getType(obj[0]), true);
-            }
-        } else {
-            return this.findSerializerByName(objectType, false);
+        if (serializer === null) {
+            serializer = this.lookupCustomSerializer(obj);
         }
+        if (serializer === null) {
+            throw new RangeError('There is no suitable serializer for ' + obj + '.');
+        }
+        return serializer;
+
     }
 
     private defaultPartitionStrategy(obj: any): number {
@@ -154,15 +153,35 @@ export class SerializationServiceV1 implements SerializationService {
         }
     }
 
-    /* tslint:disable:no-string-literal */
-    protected isIdentifiedDataSerializable(obj: any): boolean {
-        if ( obj.readData && obj.writeData && obj.getClassId && obj.getFactoryId) {
-            return true;
-        } else {
-            return false;
+    protected lookupDefaultSerializer(obj: any): Serializer {
+        var serializer: Serializer = null;
+        if (this.isIdentifiedDataSerializable(obj)) {
+            return this.findSerializerByName('identified', false);
         }
+        //Look up for Portable
+        var objectType = Util.getType(obj);
+        if (objectType === 'array') {
+            if (obj.length === 0) {
+                serializer = this.findSerializerByName('number', true);
+            } else {
+                serializer = this.findSerializerByName(Util.getType(obj[0]), true);
+            }
+        } else {
+            serializer = this.findSerializerByName(objectType, false);
+        }
+        return serializer;
     }
-    /* tslint:enable:no-string-literal */
+
+    protected lookupCustomSerializer(obj: any): Serializer {
+        if (this.isCustomSerializable(obj)) {
+            return this.findSerializerById(obj.hzGetCustomId());
+        }
+        return null;
+    }
+
+    protected isIdentifiedDataSerializable(obj: any): boolean {
+        return ( obj.readData && obj.writeData && obj.getClassId && obj.getFactoryId);
+    }
 
     protected registerDefaultSerializers() {
         this.registerSerializer('string', new StringSerializer());
@@ -183,6 +202,36 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer(
             'identified', new IdentifiedDataSerializableSerializer(this.serialiationConfig.dataSerializableFactories)
         );
+    }
+
+    protected registerCustomSerializers(cutomSerializersArray: any[]) {
+        var self = this;
+        cutomSerializersArray.forEach(function(candidate) {
+            self.assertValidateCustomSerializer(candidate);
+            self.registerSerializer('!custom' + candidate.getId(), candidate);
+        });
+    }
+
+    protected assertValidateCustomSerializer(candidate: any) {
+        var fGetId = 'getId';
+        var fRead = 'read';
+        var fWrite = 'write';
+        if (
+            typeof candidate[fGetId] !== 'function' ||
+            typeof candidate[fRead] !== 'function' ||
+            typeof candidate[fWrite] !== 'function'
+        ) {
+            throw new TypeError('Custom serializer should have ' + fGetId + ', ' + fRead + ' and ' + fWrite + ' methods.');
+        }
+        var typeId = candidate[fGetId]();
+        if (!Number.isInteger(typeId) || typeId < 1) {
+            throw new TypeError('Custom serializer should have its typeId greater than or equal to 1.');
+        }
+    }
+
+    protected isCustomSerializable(object: any) {
+        var prop = 'hzGetCustomId';
+        return (object[prop] && typeof object[prop] === 'function' && object[prop]() >= 1);
     }
 
     protected findSerializerByName(name: string, isArray: boolean): Serializer {
