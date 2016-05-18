@@ -67,6 +67,7 @@ export class SerializationServiceV1 implements SerializationService {
         this.serializerNameToId = {};
         this.registerDefaultSerializers();
         this.registerCustomSerializers(serializationConfig.customSerializers);
+        this.registerGlobalSerializer(serializationConfig.globalSerializer);
     }
 
     toData(object: any, partitioningStrategy: any = this.defaultPartitionStrategy): Data {
@@ -137,6 +138,9 @@ export class SerializationServiceV1 implements SerializationService {
             serializer = this.lookupCustomSerializer(obj);
         }
         if (serializer === null) {
+            serializer = this.lookupGlobalSerializer();
+        }
+        if (serializer === null) {
             throw new RangeError('There is no suitable serializer for ' + obj + '.');
         }
         return serializer;
@@ -179,6 +183,10 @@ export class SerializationServiceV1 implements SerializationService {
         return null;
     }
 
+    protected lookupGlobalSerializer(): Serializer {
+        return this.findSerializerByName('!global', false);
+    }
+
     protected isIdentifiedDataSerializable(obj: any): boolean {
         return ( obj.readData && obj.writeData && obj.getClassId && obj.getFactoryId);
     }
@@ -207,12 +215,20 @@ export class SerializationServiceV1 implements SerializationService {
     protected registerCustomSerializers(cutomSerializersArray: any[]) {
         var self = this;
         cutomSerializersArray.forEach(function(candidate) {
-            self.assertValidateCustomSerializer(candidate);
+            self.assertValidCustomSerializer(candidate);
             self.registerSerializer('!custom' + candidate.getId(), candidate);
         });
     }
 
-    protected assertValidateCustomSerializer(candidate: any) {
+    protected registerGlobalSerializer(candidate: any) {
+        if (candidate == null) {
+            return;
+        }
+        this.assertValidCustomSerializer(candidate);
+        this.registerSerializer('!global', candidate);
+    }
+
+    protected assertValidCustomSerializer(candidate: any) {
         var fGetId = 'getId';
         var fRead = 'read';
         var fWrite = 'write';
