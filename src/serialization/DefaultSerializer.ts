@@ -263,7 +263,7 @@ export class IdentifiedDataSerializableSerializer implements Serializer {
 
 export class JsonSerializer implements Serializer {
     getId(): number {
-        return -180;
+        return -130;
     }
 
     read(input: DataInput): any {
