@@ -6,10 +6,9 @@ import {
     StringSerializer, BooleanSerializer, DoubleSerializer, NullSerializer,
     ShortSerializer, IntegerSerializer, LongSerializer, FloatSerializer, BooleanArraySerializer, ShortArraySerializer,
     IntegerArraySerializer, LongArraySerializer, DoubleArraySerializer, StringArraySerializer,
-    IdentifiedDataSerializableSerializer, FloatArraySerializer
+    IdentifiedDataSerializableSerializer, FloatArraySerializer, JsonSerializer
 } from './DefaultSerializer';
 import * as Util from '../Util';
-import {IdentifiedDataSerializable} from './Serializable';
 export interface SerializationService {
     toData(object: any, paritioningStrategy?: any) : Data;
 
@@ -24,34 +23,6 @@ export interface Serializer {
     getId(): number;
     read(input: DataInput): any;
     write(output: DataOutput, object: any): void;
-}
-
-export class JsonSerializationService implements SerializationService {
-    toData(object: any): Data {
-        var jsonString: string = JSON.stringify(object);
-        var buffer = new Buffer(12 + Buffer.byteLength(jsonString, 'utf8'));
-        buffer.writeInt32BE(0, 0); // partition hash
-        buffer.writeInt32BE(-11, 4); //string serializer
-        buffer.writeInt32BE(jsonString.length, 8);
-        buffer.write(jsonString, 12);
-
-        return new HeapData(buffer);
-    }
-
-    toObject(data: Data): any {
-        if (data == null) {
-            return null;
-        }
-        return JSON.parse(data.toBuffer().toString('utf8', 12));
-    }
-
-    writeObject(out: DataOutput, object: any): void {
-        throw new Error('This method is not applicable in JSON serialization context');
-    }
-
-    readObject(inp: DataInput): any {
-        throw new Error('This method is not applicable in JSON serialization context');
-    }
 }
 
 export class SerializationServiceV1 implements SerializationService {
@@ -141,6 +112,9 @@ export class SerializationServiceV1 implements SerializationService {
             serializer = this.lookupGlobalSerializer();
         }
         if (serializer === null) {
+            serializer = this.findSerializerByName('!json', false);
+        }
+        if (serializer === null) {
             throw new RangeError('There is no suitable serializer for ' + obj + '.');
         }
         return serializer;
@@ -210,6 +184,7 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer(
             'identified', new IdentifiedDataSerializableSerializer(this.serialiationConfig.dataSerializableFactories)
         );
+        this.registerSerializer('!json', new JsonSerializer());
     }
 
     protected registerCustomSerializers(cutomSerializersArray: any[]) {

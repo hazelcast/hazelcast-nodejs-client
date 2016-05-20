@@ -9,4 +9,3 @@ export interface IdentifiedDataSerializable {
 export interface IdentifiedDataSerializableFactory {
     create(type: number): IdentifiedDataSerializable;
 }
-

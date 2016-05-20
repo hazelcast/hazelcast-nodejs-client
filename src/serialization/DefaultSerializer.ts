@@ -260,3 +260,17 @@ export class IdentifiedDataSerializableSerializer implements Serializer {
         object.writeData(output);
     }
 }
+
+export class JsonSerializer implements Serializer {
+    getId(): number {
+        return -180;
+    }
+
+    read(input: DataInput): any {
+        return JSON.parse(input.readUTF());
+    }
+
+    write(output: DataOutput, object: any): void {
+        output.writeUTF(JSON.stringify(object));
+    }
+}

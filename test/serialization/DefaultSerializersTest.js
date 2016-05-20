@@ -25,7 +25,8 @@ describe('Default serializers Test', function() {
         [12, 56, 54, 12],
         [43546.6, 2343.4, 8988,4],
         [23545798.6],
-        null
+        null,
+        {abc: 'abc', 'five': 5}
     ];
 
     parameters.forEach(function (obj) {
