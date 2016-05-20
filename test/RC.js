@@ -61,6 +61,7 @@ function executeOnController(clusterId, script, lang) {
     var deferred = Q.defer();
     controller.executeOnController(clusterId, script, lang, function(err, res) {
         if (err) return deferred.reject(err);
+        if (res.success === false) return deferred.reject(res.message);
         return deferred.resolve(res);
     });
     return deferred.promise;

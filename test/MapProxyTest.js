@@ -301,8 +301,8 @@ describe("MapProxy Test", function() {
         var script =
             'function lockByServer() {' +
             '   var map = instance_0.getMap("' + map.getName() + '");' +
-            '   map.lock(\'"key0"\');' +
-            '   return map.isLocked(\'"key0"\')' +
+            '   map.lock("key0");' +
+            '   return map.isLocked("key0")' +
             '}' +
             'result=""+lockByServer();';
         return Controller.executeOnController(cluster.id, script, 1).then(function(s) {
@@ -485,7 +485,7 @@ describe("MapProxy Test", function() {
     });
 
     it('tryLock_fail', function() {
-        return Controller.executeOnController(cluster.id, _generateLockScript(map.getName(), '\'"key0"\''), 1).then(function(s) {
+        return Controller.executeOnController(cluster.id, _generateLockScript(map.getName(), '"key0"'), 1).then(function(s) {
             return map.tryLock('key0');
         }).then(function(success) {
             return expect(success).to.be.false;
@@ -493,9 +493,9 @@ describe("MapProxy Test", function() {
     });
 
     it('tryLock_success with timeout', function() {
-        return Controller.executeOnController(cluster.id, _generateLockScript(map.getName(), '\'"key0"\''), 1).then(function() {
+        return Controller.executeOnController(cluster.id, _generateLockScript(map.getName(), '"key0"'), 1).then(function() {
             var promise = map.tryLock('key0', 1000);
-            Controller.executeOnController(cluster.id, _generateUnlockScript(map.getName(), '\'"key0"\''), 1);
+            Controller.executeOnController(cluster.id, _generateUnlockScript(map.getName(), '"key0"'), 1);
             return promise;
         }).then(function(success) {
             return expect(success).to.be.true;
@@ -503,7 +503,7 @@ describe("MapProxy Test", function() {
     });
 
     it('tryLock_fail with timeout', function() {
-        return Controller.executeOnController(cluster.id, _generateLockScript(map.getName(), '\'"key0"\''), 1).then(function() {
+        return Controller.executeOnController(cluster.id, _generateLockScript(map.getName(), '"key0"'), 1).then(function() {
             return map.tryLock('key0', 1000);
         }).then(function(success) {
             return expect(success).to.be.false;
@@ -517,7 +517,7 @@ describe("MapProxy Test", function() {
     });
 
     it('tryPut fail', function() {
-        return Controller.executeOnController(cluster.id, _generateLockScript(map.getName(), '\'"key0"\''), 1).then(function() {
+        return Controller.executeOnController(cluster.id, _generateLockScript(map.getName(), '"key0"'), 1).then(function() {
             return map.tryPut('key0', 'val0', 200);
         }).then(function(success) {
             return expect(success).to.be.false;
@@ -531,7 +531,7 @@ describe("MapProxy Test", function() {
     });
 
     it('tryRemove fail', function() {
-        return Controller.executeOnController(cluster.id, _generateLockScript(map.getName(), '\'"key0"\''), 1).then(function() {
+        return Controller.executeOnController(cluster.id, _generateLockScript(map.getName(), '"key0"'), 1).then(function() {
             return map.tryRemove('key0', 200);
         }).then(function(success) {
             return expect(success).to.be.false;

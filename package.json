@@ -24,7 +24,7 @@
     "precompile": "typings install",
     "compile": "tsc",
     "test": "mocha --recursive",
-    "coverage": "rimraf coverage && istanbul cover --root lib/ --include-all-sources --report html --report cobertura _mocha -- --reporter spec",
+    "coverage": "rimraf coverage && istanbul cover --root lib/ --include-all-sources --report html --report cobertura _mocha -- --recursive --reporter spec",
     "generate-docs": "rimraf docs && typedoc --out docs/ --exclude src/codec/*.ts --module commonjs src typings/main",
     "lint": "tslint src/*.ts src/**/*.ts src/**/**/*.ts"
   },

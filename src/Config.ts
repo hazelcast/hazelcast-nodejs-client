@@ -1,4 +1,5 @@
 import Address = require('./Address');
+import {IdentifiedDataSerializableFactory} from './serialization/Serializable';
 const DEFAULT_GROUP_NAME = 'dev';
 const DEFAULT_GROUP_PASSWORD = 'dev-pass';
 
@@ -67,7 +68,11 @@ export class ClientNetworkConfig {
 }
 
 export class SerializationConfig {
-    //TO-DO when implementing serialization
+    defaultNumberType: string = 'double';
+    isBigEndian: boolean = true;
+    dataSerializableFactories: {[id: number]: IdentifiedDataSerializableFactory} = {};
+    customSerializers: any[] = [];
+    globalSerializer: any = null;
 }
 
 export class GlobalSerializerConfig {
