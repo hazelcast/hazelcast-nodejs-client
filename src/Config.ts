@@ -1,5 +1,6 @@
 import Address = require('./Address');
 import {IdentifiedDataSerializableFactory} from './serialization/Serializable';
+import {PortableFactory} from './serialization/Portable';
 const DEFAULT_GROUP_NAME = 'dev';
 const DEFAULT_GROUP_PASSWORD = 'dev-pass';
 
@@ -71,6 +72,7 @@ export class SerializationConfig {
     defaultNumberType: string = 'double';
     isBigEndian: boolean = true;
     dataSerializableFactories: {[id: number]: IdentifiedDataSerializableFactory} = {};
+    portableFactories: {[id: number]: PortableFactory} = {};
     customSerializers: any[] = [];
     globalSerializer: any = null;
 }

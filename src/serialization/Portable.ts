@@ -1,0 +1,626 @@
+import {Serializer, SerializationService} from './SerializationService';
+import {DataInput, DataOutput, PositionalDataOutput} from './Data';
+import {BitsUtil} from '../BitsUtil';
+import {ClassDefinition, FieldType, FieldDefinition} from './ClassDefinition';
+
+export interface Portable {
+    getFactoryId(): number;
+    getClassId(): number;
+    writePortable(writer: PortableWriter): void;
+    readPortable(reader: PortableReader): void;
+}
+
+export interface PortableFactory {
+    create(classId: number): Portable;
+}
+
+export class PortableSerializer implements Serializer {
+
+    private portableContext: PortableContext;
+    private factories: {[id: number]: PortableFactory};
+    private service: SerializationService;
+
+    constructor(service: SerializationService, portableFactories: {[id: number]: PortableFactory}) {
+        this.service = service;
+        this.portableContext = new PortableContext(this.service, -1);
+        this.factories = portableFactories;
+    }
+
+    getId(): number {
+        return -1;
+    }
+
+    read(input: DataInput): any {
+        var factoryId = input.readInt();
+        var classId = input.readInt();
+        var version = input.readInt();
+
+        var factory = this.factories[factoryId];
+        if (factory == null) {
+            throw new RangeError(`There is no suitable portable factory for ${factoryId}.`);
+        }
+
+        var portable: Portable = factory.create(classId);
+        var portableVersion: number; //find version
+        var classDefinition = this.portableContext.lookupClassDefinition(factoryId, classId, portableVersion);
+        var reader: PortableReader = new DefaultPortableReader(this, input, classDefinition); // create morphing or default reader
+        portable.readPortable(reader);
+        reader.end();
+        return portable;
+
+    }
+
+    write(output: PositionalDataOutput, object: Portable): void {
+        output.writeInt(object.getFactoryId());
+        output.writeInt(object.getClassId());
+
+        var cd: ClassDefinition = this.portableContext.lookupOrRegisterClassDefinition(object);
+
+        output.writeInt(cd.getVersion());
+        var writer = new DefaultPortableWriter(this, output, cd);
+        object.writePortable(writer);
+        writer.end();
+    }
+}
+
+export interface PortableWriter {
+    writeInt(fieldName: string, value: number): void;
+
+    writeLong(fieldName: string, long: Long): void;
+
+    writeUTF(fieldName: string, str: string): void;
+
+    writeBoolean(fieldName: string, value: boolean): void;
+
+    writeByte(fieldName: string, value: number): void;
+
+    writeChar(fieldName: string, char: string): void;
+
+    writeDouble(fieldName: string, double: number): void;
+
+    writeFloat(fieldName: string, float: number): void;
+
+    writeShort(fieldName: string, value: number): void;
+
+    writePortable(fieldName: string, portable: Portable): void;
+
+    writeNullPortable(fieldName: string, factoryId: number, classId: number): void;
+
+    writeByteArray(fieldName: string, bytes: number[]): void;
+
+    writeBooleanArray(fieldName: string, booleans: boolean[]): void;
+
+    writeCharArray(fieldName: string, chars: string[]): void;
+
+    writeIntArray(fieldName: string, ints: number[]): void;
+
+    writeLongArray(fieldName: string, longs: Long[]): void;
+
+    writeDoubleArray(fieldName: string, doubles: number[]): void;
+
+    writeFloatArray(fieldName: string, floats: number[]): void;
+
+    writeShortArray(fieldName: string, shorts: number[]): void;
+
+    writeUTFArray(fieldName: string, val: string[]): void;
+
+    writePortableArray(fieldName: string, portables: Portable[]): void;
+
+    end(): void;
+}
+
+class DefaultPortableWriter {
+    private serializer: Serializer;
+    private output: PositionalDataOutput;
+    private classDefinition: ClassDefinition;
+
+    private offset: number;
+    private begin: number;
+
+    constructor(serializer: PortableSerializer, output: PositionalDataOutput, classDefinition: ClassDefinition) {
+        this.serializer = serializer;
+        this.output = output;
+        this.classDefinition = classDefinition;
+        this.begin = this.output.position();
+
+        this.output.writeZeroBytes(4);
+        this.output.writeInt(this.classDefinition.getFieldCount());
+        this.offset = this.output.position();
+
+        var fieldIndexesLength: number = (this.classDefinition.getFieldCount() + 1) * BitsUtil.INT_SIZE_IN_BYTES;
+        this.output.writeZeroBytes(fieldIndexesLength);
+    }
+
+    writeInt(fieldName: string, value: number): void {
+        this.setPosition(fieldName, FieldType.INT);
+        this.output.writeInt(value);
+    }
+
+    writeLong(fieldName: string, long: Long): void {
+        this.setPosition(fieldName, FieldType.LONG);
+        this.output.writeLong(long);
+    }
+
+    writeUTF(fieldName: string, str: string): void {
+        this.setPosition(fieldName, FieldType.UTF);
+        this.output.writeUTF(str);
+    }
+
+    writeBoolean(fieldName: string, value: boolean): void {
+        this.setPosition(fieldName, FieldType.BOOLEAN);
+        this.output.writeBoolean(value);
+    }
+
+    writeByte(fieldName: string, value: number): void {
+        this.setPosition(fieldName, FieldType.BYTE);
+        this.output.writeByte(value);
+    }
+
+    writeChar(fieldName: string, char: string): void {
+        this.setPosition(fieldName, FieldType.CHAR);
+        this.output.writeChar(char);
+    }
+
+    writeDouble(fieldName: string, double: number): void {
+        this.setPosition(fieldName, FieldType.DOUBLE);
+        this.output.writeDouble(double);
+    }
+
+    writeFloat(fieldName: string, float: number): void {
+        this.setPosition(fieldName, FieldType.FLOAT);
+        this.output.writeFloat(float);
+    }
+
+    writeShort(fieldName: string, value: number): void {
+        this.setPosition(fieldName, FieldType.SHORT);
+        this.output.writeShort(value);
+    }
+
+    writePortable(fieldName: string, portable: Portable): void {
+        //TODO
+    }
+
+    writeNullPortable(fieldName: string, factoryId: number, classId: number): void {
+        this.setPosition(fieldName, FieldType.PORTABLE);
+        this.output.writeBoolean(true);
+        this.output.writeInt(factoryId);
+        this.output.writeInt(classId);
+    }
+
+    writeByteArray(fieldName: string, bytes: number[]): void {
+        this.setPosition(fieldName, FieldType.BYTE_ARRAY);
+        this.output.writeByteArray(bytes);
+    }
+
+    writeBooleanArray(fieldName: string, booleans: boolean[]): void {
+        this.setPosition(fieldName, FieldType.BOOLEAN_ARRAY);
+        this.output.writeBooleanArray(booleans);
+    }
+
+    writeCharArray(fieldName: string, chars: string[]): void {
+        this.setPosition(fieldName, FieldType.CHAR_ARRAY);
+        this.output.writeCharArray(chars);
+    }
+
+    writeIntArray(fieldName: string, ints: number[]): void {
+        this.setPosition(fieldName, FieldType.INT_ARRAY);
+        this.output.writeIntArray(ints);
+    }
+
+    writeLongArray(fieldName: string, longs: Long[]): void {
+        this.setPosition(fieldName, FieldType.LONG_ARRAY);
+        this.output.writeLongArray(longs);
+    }
+
+    writeDoubleArray(fieldName: string, doubles: number[]): void {
+        this.setPosition(fieldName, FieldType.DOUBLE_ARRAY);
+        this.output.writeDoubleArray(doubles);
+    }
+
+    writeFloatArray(fieldName: string, floats: number[]): void {
+        this.setPosition(fieldName, FieldType.FLOAT_ARRAY);
+        this.output.writeFloatArray(floats);
+    }
+
+    writeShortArray(fieldName: string, shorts: number[]): void {
+        this.setPosition(fieldName, FieldType.SHORT_ARRAY);
+        this.output.writeShortArray(shorts);
+    }
+
+    writeUTFArray(fieldName: string, val: string[]): void {
+        this.setPosition(fieldName, FieldType.UTF_ARRAY);
+        this.output.writeUTFArray(val);
+    }
+
+    writePortableArray(fieldName: string, portables: Portable[]): void {
+        //
+    }
+
+    end(): void {
+        var position = this.output.position();
+        this.output.pwriteInt(this.begin, position);
+    }
+
+    private setPosition(fieldName: string, fieldType: FieldType): FieldDefinition {
+        var field: FieldDefinition = this.classDefinition.getField(fieldName);
+        var pos: number = this.output.position();
+        var index: number = field.getIndex();
+        this.output.pwriteInt(this.offset + index * BitsUtil.INT_SIZE_IN_BYTES, pos);
+        this.output.writeShort(fieldName.length);
+        this.output.writeBytes(fieldName);
+        this.output.writeByte(fieldType);
+        return field;
+    }
+}
+
+export interface PortableReader {
+    getVersion(): number;
+    hasField(fieldName: string): boolean;
+    getFieldNames(): string[];
+    getFieldType(fieldName: string): FieldType;
+    readInt(fieldName: string): number;
+    readLong(fieldName: string): Long;
+    readUTF(fieldName: string): string;
+    readBoolean(fieldName: string): boolean;
+    readByte(fieldName: string): number;
+    readChar(fieldName: string): string;
+    readDouble(fieldName: string): number;
+    readFloat(fieldName: string): number;
+    readShort(fieldName: string): number;
+    readPortable(fieldName: string): Portable;
+    readByteArray(fieldName: string): number[];
+    readBooleanArray(fieldName: string): boolean[];
+    readCharArray(fieldName: string): string[];
+    readIntArray(fieldName: string): number[];
+    readLongArray(fieldName: string): Long[];
+    readDoubleArray(fieldName: string): number[];
+    readFloatArray(fieldName: string): number[];
+    readShortArray(fieldName: string): number[];
+    readUTFArray(fieldName: string): string[];
+    readPortableArray(fieldName: string): Portable[];
+    end(): void;
+}
+
+class DefaultPortableReader implements PortableReader {
+
+    private serializer: PortableSerializer;
+    private input: DataInput;
+    private classDefinition: ClassDefinition;
+
+    private offset: number;
+    private finalPos: number;
+
+    constructor(serializer: PortableSerializer, input: DataInput, classDefinition: ClassDefinition) {
+        this.serializer = serializer;
+        this.input = input;
+        this.classDefinition = classDefinition;
+
+        this.finalPos = this.input.readInt();
+        var fieldCount = this.input.readInt();
+        this.offset = this.input.position();
+    }
+
+    private positionByFieldDefinition(field: FieldDefinition): number {
+        var pos = this.input.readInt(this.offset + field.getIndex() * BitsUtil.INT_SIZE_IN_BYTES);
+        var len = this.input.readShort(pos);
+        return pos + BitsUtil.SHORT_SIZE_IN_BYTES + len + 1;
+    }
+
+    private positionByField(fieldName: string, fieldType: FieldType): number {
+        var definition = this.classDefinition.getField(fieldName);
+        return this.positionByFieldDefinition(definition);
+    }
+
+    getVersion(): number {
+        return this.classDefinition.getVersion();
+    }
+
+    hasField(fieldName: string): boolean {
+        return this.classDefinition.hasField(fieldName);
+    }
+
+    getFieldNames(): string[] {
+        throw new Error('Not implemented!');
+    }
+
+    getFieldType(fieldName: string): FieldType {
+        return this.classDefinition.getFieldType(fieldName);
+    }
+
+    readInt(fieldName: string): number {
+        var pos = this.positionByField(fieldName, FieldType.INT);
+        return this.input.readInt(pos);
+    }
+
+    readLong(fieldName: string): Long {
+        var pos = this.positionByField(fieldName, FieldType.LONG);
+        return this.input.readLong(pos);
+    }
+
+    readUTF(fieldName: string): string {
+        var pos = this.positionByField(fieldName, FieldType.UTF);
+        return this.input.readUTF(pos);
+    }
+
+    readBoolean(fieldName: string): boolean {
+        var pos = this.positionByField(fieldName, FieldType.BOOLEAN);
+        return this.input.readBoolean(pos);
+    }
+
+    readByte(fieldName: string): number {
+        var pos = this.positionByField(fieldName, FieldType.BYTE);
+        return this.input.readByte(pos);
+    }
+
+    readChar(fieldName: string): string {
+        var pos = this.positionByField(fieldName, FieldType.CHAR);
+        return this.input.readChar(pos);
+    }
+
+    readDouble(fieldName: string): number {
+        var pos = this.positionByField(fieldName, FieldType.DOUBLE);
+        return this.input.readDouble(pos);
+    }
+
+    readFloat(fieldName: string): number {
+        var pos = this.positionByField(fieldName, FieldType.FLOAT);
+        return this.input.readFloat(pos);
+    }
+
+    readShort(fieldName: string): number {
+        var pos = this.positionByField(fieldName, FieldType.SHORT);
+        return this.input.readShort(pos);
+    }
+
+    readPortable(fieldName: string): Portable {
+        //TODO
+        throw new Error('Not implemented!');
+    }
+
+    readByteArray(fieldName: string): number[] {
+        var pos = this.positionByField(fieldName, FieldType.BYTE_ARRAY);
+        return this.input.readByteArray(pos);
+    }
+
+    readBooleanArray(fieldName: string): boolean[] {
+        var pos = this.positionByField(fieldName, FieldType.BOOLEAN_ARRAY);
+        return this.input.readBooleanArray(pos);
+    }
+
+    readCharArray(fieldName: string): string[] {
+        var pos = this.positionByField(fieldName, FieldType.CHAR_ARRAY);
+        return this.input.readCharArray(pos);
+    }
+
+    readIntArray(fieldName: string): number[] {
+        var pos = this.positionByField(fieldName, FieldType.INT_ARRAY);
+        return this.input.readIntArray(pos);
+    }
+
+    readLongArray(fieldName: string): Long[] {
+        var pos = this.positionByField(fieldName, FieldType.LONG_ARRAY);
+        return this.input.readLongArray(pos);
+    }
+
+    readDoubleArray(fieldName: string): number[] {
+        var pos = this.positionByField(fieldName, FieldType.DOUBLE_ARRAY);
+        return this.input.readDoubleArray(pos);
+    }
+
+    readFloatArray(fieldName: string): number[] {
+        var pos = this.positionByField(fieldName, FieldType.FLOAT_ARRAY);
+        return this.input.readFloatArray(pos);
+    }
+
+    readShortArray(fieldName: string): number[] {
+        var pos = this.positionByField(fieldName, FieldType.SHORT_ARRAY);
+        return this.input.readShortArray(pos);
+    }
+
+    readUTFArray(fieldName: string): string[] {
+        var pos = this.positionByField(fieldName, FieldType.UTF_ARRAY);
+        return this.input.readUTFArray(pos);
+    }
+
+    readPortableArray(fieldName: string): Portable[] {
+        //TODO
+        throw new Error('Not implemented!');
+    }
+
+    end() {
+        //EMPTY METHOD
+    }
+}
+
+export class PortableContext {
+    private service: SerializationService;
+    private portableVersion: number;
+    private classDefContext: {[factoyId: number]: ClassDefinitionContext};
+
+    constructor(service: SerializationService, portableVersion: number) {
+        this.service = service;
+        this.portableVersion = portableVersion;
+        this.classDefContext = {};
+    }
+
+    lookupOrRegisterClassDefinition(portable: Portable): ClassDefinition {
+        var definition = this.lookupClassDefinition(portable.getFactoryId(), portable.getClassId(), -1);
+        if (definition === null) {
+            definition = this.generateClassDefinitionForPortable(portable);
+            this.registerClassDefinition(definition);
+        }
+        return definition;
+    }
+
+    lookupClassDefinition(factoryId: number, classId: number, version: number): ClassDefinition {
+        var factory = this.classDefContext[factoryId];
+        if (factory == null) {
+            return null;
+        } else {
+            return factory.lookup(classId, version);
+        }
+    }
+
+    generateClassDefinitionForPortable(portable: Portable): ClassDefinition {
+        var version: number; //TODO
+        var classDefinitionWriter = new ClassDefinitionWriter(this, portable.getFactoryId(), portable.getClassId(), version);
+        portable.writePortable(classDefinitionWriter);
+        classDefinitionWriter.end();
+        return classDefinitionWriter.registerAndGet();
+    }
+
+    registerClassDefinition(classDefinition: ClassDefinition): ClassDefinition {
+        var factoryId = classDefinition.getFactoryId();
+        var classId = classDefinition.getClassId();
+        var version = classDefinition.getVersion();
+        if (!this.classDefContext[factoryId]) {
+            this.classDefContext[factoryId] = new ClassDefinitionContext(factoryId, version);
+        }
+        return this.classDefContext[factoryId].register(classDefinition);
+    }
+
+}
+
+export class ClassDefinitionContext {
+    private factoryId: number;
+    private portableVersion: number;
+
+    private classDefs: {[classId: number]: ClassDefinition};
+
+    constructor(factoryId: number, portableVersion: number) {
+        this.factoryId = factoryId;
+        this.portableVersion = portableVersion;
+        this.classDefs = {};
+    }
+
+    lookup(classId: number, version: number) {
+        return this.classDefs[classId];
+    }
+
+    register(classDefinition: ClassDefinition): ClassDefinition {
+        if (classDefinition === null) {
+            return null;
+        }
+        if (classDefinition.getFactoryId() !== this.factoryId) {
+            throw new RangeError(`This factory's number is ${this.factoryId}. 
+            Intended factory id is ${classDefinition.getFactoryId()}`);
+        }
+        this.classDefs[classDefinition.getClassId()] = classDefinition;
+        return classDefinition;
+    }
+}
+
+class ClassDefinitionWriter implements PortableWriter {
+    private portableContext: PortableContext;
+    private buildingDefinition: ClassDefinition;
+
+    private index: number = 0;
+    private factoryId: number;
+    private classId: number;
+    private version: number;
+    private fieldDefinitions: {[fieldName: string]: FieldDefinition} = {};
+
+    constructor(portableContext: PortableContext, factoryId: number, classId: number, version: number) {
+        this.portableContext = portableContext;
+        this.buildingDefinition = new ClassDefinition(factoryId, classId, version);
+    }
+
+    private addFieldByType(fieldName: string, fieldType: FieldType) {
+        this.fieldDefinitions[fieldName] = new FieldDefinition(this.index, fieldName, fieldType, 0, 0);
+        this.index += 1;
+    }
+
+    writeInt(fieldName: string, value: number): void {
+        this.addFieldByType(fieldName, FieldType.INT);
+    }
+
+    writeLong(fieldName: string, long: Long): void {
+        this.addFieldByType(fieldName, FieldType.LONG);
+    }
+
+    writeUTF(fieldName: string, str: string): void {
+        this.addFieldByType(fieldName, FieldType.UTF);
+    }
+
+    writeBoolean(fieldName: string, value: boolean): void {
+        this.addFieldByType(fieldName, FieldType.BOOLEAN);
+    }
+
+    writeByte(fieldName: string, value: number): void {
+        this.addFieldByType(fieldName, FieldType.BYTE);
+    }
+
+    writeChar(fieldName: string, char: string): void {
+        this.addFieldByType(fieldName, FieldType.CHAR);
+    }
+
+    writeDouble(fieldName: string, double: number): void {
+        this.addFieldByType(fieldName, FieldType.DOUBLE);
+    }
+
+    writeFloat(fieldName: string, float: number): void {
+        this.addFieldByType(fieldName, FieldType.FLOAT);
+    }
+
+    writeShort(fieldName: string, value: number): void {
+        this.addFieldByType(fieldName, FieldType.SHORT);
+    }
+
+    writePortable(fieldName: string, portable: Portable): void {
+        //TODO
+    }
+
+    writeNullPortable(fieldName: string, factoryId: number, classId: number): void {
+        //TODO
+    }
+
+    writeByteArray(fieldName: string, bytes: number[]): void {
+        this.addFieldByType(fieldName, FieldType.BYTE_ARRAY);
+    }
+
+    writeBooleanArray(fieldName: string, booleans: boolean[]): void {
+        this.addFieldByType(fieldName, FieldType.BOOLEAN_ARRAY);
+    }
+
+    writeCharArray(fieldName: string, chars: string[]): void {
+        this.addFieldByType(fieldName, FieldType.CHAR_ARRAY);
+    }
+
+    writeIntArray(fieldName: string, ints: number[]): void {
+        this.addFieldByType(fieldName, FieldType.INT_ARRAY);
+    }
+
+    writeLongArray(fieldName: string, longs: Long[]): void {
+        this.addFieldByType(fieldName, FieldType.LONG_ARRAY);
+    }
+
+    writeDoubleArray(fieldName: string, doubles: number[]): void {
+        this.addFieldByType(fieldName, FieldType.DOUBLE_ARRAY);
+    }
+
+    writeFloatArray(fieldName: string, floats: number[]): void {
+        this.addFieldByType(fieldName, FieldType.FLOAT_ARRAY);
+    }
+
+    writeShortArray(fieldName: string, shorts: number[]): void {
+        this.addFieldByType(fieldName, FieldType.SHORT_ARRAY);
+    }
+
+    writeUTFArray(fieldName: string, val: string[]): void {
+        this.addFieldByType(fieldName, FieldType.UTF_ARRAY);
+    }
+
+    writePortableArray(fieldName: string, portables: Portable[]): void {
+        // TODO
+    }
+
+    end(): void {
+        for (var field in this.fieldDefinitions) {
+            this.buildingDefinition.addFieldDefinition(this.fieldDefinitions[field]);
+        }
+    }
+
+    registerAndGet(): ClassDefinition {
+        return this.portableContext.registerClassDefinition(this.buildingDefinition);
+    }
+}

@@ -2,6 +2,7 @@ var expect = require('chai').expect;
 var SerializationService = require('../../lib/serialization/SerializationService');
 var Config = require('../../.').Config;
 var Long = require('long');
+var Util = require('../Util');
 describe('Identified Data Serializable', function() {
     var IdentifiedDataClass = function(a_byte, a_boolean, a_character, a_short, an_integer, a_long, a_float, a_double, a_string, bytes, booleans, chars, shorts, integers, longs, floats, doubles, strings) {
         this.a_byte = a_byte;
@@ -97,18 +98,6 @@ describe('Identified Data Serializable', function() {
         var serialized = service.toData(dd);
         var deserialized = service.toObject(serialized);
 
-        expectAlmostEqual(deserialized, dd);
+        Util.expectAlmostEqual(deserialized, dd);
     });
-
-    function expectAlmostEqual(actual, expected) {
-        for (var prop in expected) {
-            if ( typeof expected[prop] === 'number' && !Number.isInteger(expected[prop])) {
-                expect(actual[prop]).to.be.closeTo(expected[prop], 0.0001);
-            } else if(typeof expected[prop] === 'object') {
-                expectAlmostEqual(actual[prop], expected[prop]);
-            } else {
-                expect(actual[prop]).to.deep.equal(expected[prop]);
-            }
-        }
-    }
 });
