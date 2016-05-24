@@ -94,8 +94,7 @@ export class ObjectDataOutput implements DataOutput {
     }
 
     writeBytes(bytes: string): void {
-        var len = (bytes != null) ? bytes.length : BitsUtil.NULL_ARRAY_LENGTH;
-        this.writeInt(len);
+        var len = (bytes != null) ? bytes.length : 0;
         for (var i = 0; i < len; i++) {
             this.write(bytes.charCodeAt(i));
         }

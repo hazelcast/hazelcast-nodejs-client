@@ -49,7 +49,13 @@ describe('ObjectData Test', function() {
         expect(inp.readBooleanArray()).to.deep.equal([true, false, false, true, true]);
         expect(inp.readByte()).to.equal(255);
         expect(inp.readByteArray()).to.deep.equal([0, 1, 255]);
-        expect(String.fromCharCode.apply(null, inp.readByteArray())).to.equal('bytes');
+        var readBytes = [];
+        readBytes.push(inp.readByte());
+        readBytes.push(inp.readByte());
+        readBytes.push(inp.readByte());
+        readBytes.push(inp.readByte());
+        readBytes.push(inp.readByte());
+        expect(String.fromCharCode.apply(null, readBytes)).to.equal('bytes');
         expect(inp.readChar()).to.equal('∂');
         expect(inp.readCharArray()).to.deep.equal(['h', 'a', 'z', 'e', 'l']);
         expect(inp.readCharArray().join('')).to.equal('cast');
