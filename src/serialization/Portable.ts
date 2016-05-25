@@ -2,6 +2,7 @@ import {Serializer, SerializationService} from './SerializationService';
 import {DataInput, DataOutput, PositionalDataOutput} from './Data';
 import {BitsUtil} from '../BitsUtil';
 import {ClassDefinition, FieldType, FieldDefinition} from './ClassDefinition';
+import * as Util from '../Util';
 
 export interface Portable {
     getFactoryId(): number;
@@ -33,6 +34,10 @@ export class PortableSerializer implements Serializer {
     read(input: DataInput): any {
         var factoryId = input.readInt();
         var classId = input.readInt();
+        return this.readObject(input, factoryId, classId);
+    }
+
+    readObject(input: DataInput, factoryId: number, classId: number): Portable {
         var version = input.readInt();
 
         var factory = this.factories[factoryId];
@@ -47,13 +52,16 @@ export class PortableSerializer implements Serializer {
         portable.readPortable(reader);
         reader.end();
         return portable;
-
     }
 
     write(output: PositionalDataOutput, object: Portable): void {
         output.writeInt(object.getFactoryId());
         output.writeInt(object.getClassId());
 
+        this.writeObject(output, object);
+    }
+
+    writeObject(output: PositionalDataOutput, object: Portable): void {
         var cd: ClassDefinition = this.portableContext.lookupOrRegisterClassDefinition(object);
 
         output.writeInt(cd.getVersion());
@@ -110,7 +118,7 @@ export interface PortableWriter {
 }
 
 class DefaultPortableWriter {
-    private serializer: Serializer;
+    private serializer: PortableSerializer;
     private output: PositionalDataOutput;
     private classDefinition: ClassDefinition;
 
@@ -177,7 +185,14 @@ class DefaultPortableWriter {
     }
 
     writePortable(fieldName: string, portable: Portable): void {
-        //TODO
+        var fieldDefinition = this.setPosition(fieldName, FieldType.PORTABLE);
+        var isNullPortable = (portable == null);
+        this.output.writeBoolean(isNullPortable);
+        this.output.writeInt(fieldDefinition.getFactoryId());
+        this.output.writeInt(fieldDefinition.getClassId());
+        if (!isNullPortable) {
+            this.serializer.writeObject(this.output, portable);
+        }
     }
 
     writeNullPortable(fieldName: string, factoryId: number, classId: number): void {
@@ -233,7 +248,24 @@ class DefaultPortableWriter {
     }
 
     writePortableArray(fieldName: string, portables: Portable[]): void {
-        //
+        var innerOffset: number;
+        var sample: Portable;
+        var i: number;
+        var fieldDefinition = this.setPosition(fieldName, FieldType.PORTABLE_ARRAY);
+        var len = (portables == null ) ? BitsUtil.NULL_ARRAY_LENGTH : portables.length;
+        this.output.writeInt(len);
+        this.output.writeInt(fieldDefinition.getFactoryId());
+        this.output.writeInt(fieldDefinition.getClassId());
+        if (len > 0) {
+            innerOffset = this.output.position();
+            this.output.writeZeroBytes(len * 4);
+            for (i = 0; i < len; i++) {
+                sample = portables[i];
+                var posVal = this.output.position();
+                this.output.pwriteInt(innerOffset + i * BitsUtil.INT_SIZE_IN_BYTES, posVal);
+                this.serializer.writeObject(this.output, sample);
+            }
+        }
     }
 
     end(): void {
@@ -373,8 +405,21 @@ class DefaultPortableReader implements PortableReader {
     }
 
     readPortable(fieldName: string): Portable {
-        //TODO
-        throw new Error('Not implemented!');
+        var backupPos = this.input.position();
+        try {
+            var pos = this.positionByField(fieldName, FieldType.PORTABLE);
+            this.input.position(pos);
+            var isNull = this.input.readBoolean();
+            var factoryId = this.input.readInt();
+            var classId = this.input.readInt();
+            if (isNull) {
+                return null;
+            } else {
+                return this.serializer.readObject(this.input, factoryId, classId);
+            }
+        } finally {
+            this.input.position(backupPos);
+        }
     }
 
     readByteArray(fieldName: string): number[] {
@@ -423,8 +468,30 @@ class DefaultPortableReader implements PortableReader {
     }
 
     readPortableArray(fieldName: string): Portable[] {
-        //TODO
-        throw new Error('Not implemented!');
+        var backupPos = this.input.position();
+        try {
+            var pos = this.positionByField(fieldName, FieldType.PORTABLE_ARRAY);
+            this.input.position(pos);
+            var len = this.input.readInt();
+            var factoryId = this.input.readInt();
+            var classId = this.input.readInt();
+            if (len === BitsUtil.NULL_ARRAY_LENGTH) {
+                return null;
+            } else {
+                var portables: Portable[] = [];
+                if (len > 0) {
+                    var offset = this.input.position();
+                    for (var i = 0; i < len; i++) {
+                        var start = this.input.readInt(offset + i * BitsUtil.INT_SIZE_IN_BYTES);
+                        this.input.position(start);
+                        portables[i] = this.serializer.readObject(this.input, factoryId, classId);
+                    }
+                }
+                return portables;
+            }
+        } finally {
+            this.input.position(backupPos);
+        }
     }
 
     end() {
@@ -525,8 +592,8 @@ class ClassDefinitionWriter implements PortableWriter {
         this.buildingDefinition = new ClassDefinition(factoryId, classId, version);
     }
 
-    private addFieldByType(fieldName: string, fieldType: FieldType) {
-        this.fieldDefinitions[fieldName] = new FieldDefinition(this.index, fieldName, fieldType, 0, 0);
+    private addFieldByType(fieldName: string, fieldType: FieldType, factoryId: number = 0, classId: number = 0) {
+        this.fieldDefinitions[fieldName] = new FieldDefinition(this.index, fieldName, fieldType, factoryId, classId);
         this.index += 1;
     }
 
@@ -567,11 +634,18 @@ class ClassDefinitionWriter implements PortableWriter {
     }
 
     writePortable(fieldName: string, portable: Portable): void {
-        //TODO
+        Util.assertNotNull(portable);
+        var nestedCD = this.portableContext.lookupOrRegisterClassDefinition(portable);
+        this.addFieldByType(fieldName, FieldType.PORTABLE, nestedCD.getFactoryId(), nestedCD.getClassId());
     }
 
     writeNullPortable(fieldName: string, factoryId: number, classId: number): void {
-        //TODO
+        var version: number = 0;
+        var nestedCD = this.portableContext.lookupClassDefinition(factoryId, classId, version);
+        if (nestedCD === null) {
+            throw new RangeError('Cannot write null portable without explicitly registering class definition!');
+        }
+        this.addFieldByType(fieldName, FieldType.PORTABLE, nestedCD.getFactoryId(), nestedCD.getClassId());
     }
 
     writeByteArray(fieldName: string, bytes: number[]): void {
@@ -611,7 +685,13 @@ class ClassDefinitionWriter implements PortableWriter {
     }
 
     writePortableArray(fieldName: string, portables: Portable[]): void {
-        // TODO
+        Util.assertNotNull(portables);
+        if (portables.length === 0) {
+            throw new RangeError('Cannot write empty array!');
+        }
+        var sample = portables[0];
+        var nestedCD = this.portableContext.lookupOrRegisterClassDefinition(sample);
+        this.addFieldByType(fieldName, FieldType.PORTABLE_ARRAY, nestedCD.getFactoryId(), nestedCD.getClassId());
     }
 
     end(): void {
