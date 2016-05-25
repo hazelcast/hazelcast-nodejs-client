@@ -1,6 +1,5 @@
 import Address = require('./Address');
-import {IdentifiedDataSerializableFactory} from './serialization/Serializable';
-import {PortableFactory} from './serialization/Portable';
+import {IdentifiedDataSerializableFactory, PortableFactory} from './serialization/Serializable';
 const DEFAULT_GROUP_NAME = 'dev';
 const DEFAULT_GROUP_PASSWORD = 'dev-pass';
 

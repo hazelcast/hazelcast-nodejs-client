@@ -1,19 +1,9 @@
 import {Serializer, SerializationService} from './SerializationService';
-import {DataInput, DataOutput, PositionalDataOutput} from './Data';
+import {DataInput, PositionalDataOutput} from './Data';
 import {BitsUtil} from '../BitsUtil';
 import {ClassDefinition, FieldType, FieldDefinition} from './ClassDefinition';
 import * as Util from '../Util';
-
-export interface Portable {
-    getFactoryId(): number;
-    getClassId(): number;
-    writePortable(writer: PortableWriter): void;
-    readPortable(reader: PortableReader): void;
-}
-
-export interface PortableFactory {
-    create(classId: number): Portable;
-}
+import {PortableFactory, Portable} from './Serializable';
 
 export class PortableSerializer implements Serializer {
 
