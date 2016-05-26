@@ -72,6 +72,7 @@ export class SerializationConfig {
     isBigEndian: boolean = true;
     dataSerializableFactories: {[id: number]: IdentifiedDataSerializableFactory} = {};
     portableFactories: {[id: number]: PortableFactory} = {};
+    portableVersion: number = 0;
     customSerializers: any[] = [];
     globalSerializer: any = null;
 }

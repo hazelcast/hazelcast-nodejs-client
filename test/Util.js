@@ -13,7 +13,7 @@ var expectAlmostEqual = function (actual, expected) {
         } else if(typeof expected[prop] === 'object') {
             expectAlmostEqual(actual[prop], expected[prop]);
         } else {
-            expect(actual[prop]).to.deep.equal(expected[prop]);
+            expect(actual[prop], prop).to.deep.equal(expected[prop]);
         }
     }
 };

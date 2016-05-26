@@ -1,7 +1,7 @@
 export class ClassDefinition {
     private factoryId: number;
     private classId: number;
-    private version: number = -1;
+    private version: number;
     private fields: {[name: string]: FieldDefinition} = {};
 
     constructor(factoryId: number, classId: number, version: number) {
@@ -45,10 +45,7 @@ export class ClassDefinition {
 
     getField(name: string): FieldDefinition {
         var field = this.fields[name];
-        if ( field == null) {
-            throw new RangeError(`Field ${name} does not exist.`);
-        }
-        return field;
+        return field || null;
     }
 
     getFieldById(index: number): FieldDefinition {
@@ -61,6 +58,17 @@ export class ClassDefinition {
             }
         }
         throw new RangeError(`There is no field with index ${index}`);
+    }
+
+
+    equals(o: ClassDefinition): boolean {
+        if (!(o instanceof ClassDefinition)) {
+            return false;
+        }
+        if (o.factoryId !== this.factoryId || o.classId !== this.classId || o.version !== this.version) {
+            return false;
+        }
+        return true;
     }
 }
 

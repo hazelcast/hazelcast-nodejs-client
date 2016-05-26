@@ -3,7 +3,7 @@ import {DataInput, PositionalDataOutput} from './Data';
 import {BitsUtil} from '../BitsUtil';
 import {ClassDefinition, FieldType, FieldDefinition} from './ClassDefinition';
 import * as Util from '../Util';
-import {PortableFactory, Portable} from './Serializable';
+import {PortableFactory, Portable, VersionedPortable} from './Serializable';
 
 export class PortableSerializer implements Serializer {
 
@@ -11,9 +11,9 @@ export class PortableSerializer implements Serializer {
     private factories: {[id: number]: PortableFactory};
     private service: SerializationService;
 
-    constructor(service: SerializationService, portableFactories: {[id: number]: PortableFactory}) {
+    constructor(service: SerializationService, portableFactories: {[id: number]: PortableFactory}, portableVersion: number) {
         this.service = service;
-        this.portableContext = new PortableContext(this.service, -1);
+        this.portableContext = new PortableContext(this.service, portableVersion);
         this.factories = portableFactories;
     }
 
@@ -36,9 +36,21 @@ export class PortableSerializer implements Serializer {
         }
 
         var portable: Portable = factory.create(classId);
-        var portableVersion: number; //find version
-        var classDefinition = this.portableContext.lookupClassDefinition(factoryId, classId, portableVersion);
-        var reader: PortableReader = new DefaultPortableReader(this, input, classDefinition); // create morphing or default reader
+        var classDefinition = this.portableContext.lookupClassDefinition(factoryId, classId, version);
+        if (classDefinition === null) {
+            var backupPos = input.position();
+            try {
+                classDefinition = this.portableContext.readClassDefinitionFromInput(input, factoryId, classId, version);
+            } finally {
+                input.position(backupPos);
+            }
+        }
+        var reader: PortableReader;
+        if (classDefinition.getVersion() === this.portableContext.getClassVersion(portable)) {
+            reader = new DefaultPortableReader(this, input, classDefinition);
+        } else {
+            reader = new MorphingPortableReader(this, input, classDefinition);
+        }
         portable.readPortable(reader);
         reader.end();
         return portable;
@@ -305,9 +317,9 @@ export interface PortableReader {
 
 class DefaultPortableReader implements PortableReader {
 
-    private serializer: PortableSerializer;
-    private input: DataInput;
-    private classDefinition: ClassDefinition;
+    protected serializer: PortableSerializer;
+    protected input: DataInput;
+    protected classDefinition: ClassDefinition;
 
     private offset: number;
     private finalPos: number;
@@ -489,9 +501,159 @@ class DefaultPortableReader implements PortableReader {
     }
 }
 
+class MorphingPortableReader extends DefaultPortableReader {
+    constructor(portableSerializer: PortableSerializer, input: DataInput, classDefinition: ClassDefinition) {
+        super(portableSerializer, input, classDefinition);
+    }
+
+    private validateCompatibleAndCall(fieldName: string, expectedType: FieldType, superFunc: Function) {
+        var fd = this.classDefinition.getField(fieldName);
+        if (fd === null) {
+            return undefined;
+        }
+        if (fd.getType() !== expectedType) {
+            throw this.createIncompatibleClassChangeError(fd, expectedType);
+        }
+        return superFunc.call(this, fieldName);
+    }
+
+    private createIncompatibleClassChangeError(fd: FieldDefinition, expectedType: FieldType) {
+        return new TypeError(`Incompatible to read ${expectedType} from ${fd.getType()} while reading field : ${fd.getName()}`);
+    }
+
+    readInt(fieldName: string): number {
+        var fieldDef = this.classDefinition.getField(fieldName);
+        if (fieldDef == null) {
+            return undefined;
+        }
+        switch (fieldDef.getType()) {
+            case FieldType.INT: return super.readInt(fieldName);
+            case FieldType.BYTE: return super.readByte(fieldName);
+            case FieldType.CHAR: return super.readChar(fieldName).charCodeAt(0);
+            case FieldType.SHORT: return super.readShort(fieldName);
+            default: throw this.createIncompatibleClassChangeError(fieldDef, FieldType.INT);
+        }
+    }
+
+    readLong(fieldName: string): Long {
+        var fieldDef = this.classDefinition.getField(fieldName);
+        if (fieldDef == null) {
+            return undefined;
+        }
+        switch (fieldDef.getType()) {
+            case FieldType.LONG: return super.readLong(fieldName);
+            case FieldType.INT: return Long.fromNumber(super.readInt(fieldName));
+            case FieldType.BYTE: return Long.fromNumber(super.readByte(fieldName));
+            case FieldType.CHAR: return Long.fromNumber(super.readChar(fieldName).charCodeAt(0));
+            case FieldType.SHORT: return Long.fromNumber(super.readShort(fieldName));
+            default: throw this.createIncompatibleClassChangeError(fieldDef, FieldType.LONG);
+        }
+    }
+
+    readDouble(fieldName: string): number {
+        var fieldDef = this.classDefinition.getField(fieldName);
+        if (fieldDef == null) {
+            return undefined;
+        }
+        switch (fieldDef.getType()) {
+            case FieldType.DOUBLE: return super.readDouble(fieldName);
+            case FieldType.LONG: return super.readLong(fieldName).toNumber();
+            case FieldType.FLOAT: return super.readFloat(fieldName);
+            case FieldType.INT: return super.readInt(fieldName);
+            case FieldType.BYTE: return super.readByte(fieldName);
+            case FieldType.CHAR: return super.readChar(fieldName).charCodeAt(0);
+            case FieldType.SHORT: return super.readShort(fieldName);
+            default: throw this.createIncompatibleClassChangeError(fieldDef, FieldType.DOUBLE);
+        }
+    }
+
+    readFloat(fieldName: string): number {
+        var fieldDef = this.classDefinition.getField(fieldName);
+        if (fieldDef == null) {
+            return undefined;
+        }
+        switch (fieldDef.getType()) {
+            case FieldType.FLOAT: return super.readFloat(fieldName);
+            case FieldType.INT: return super.readInt(fieldName);
+            case FieldType.BYTE: return super.readByte(fieldName);
+            case FieldType.CHAR: return super.readChar(fieldName).charCodeAt(0);
+            case FieldType.SHORT: return super.readShort(fieldName);
+            default: throw this.createIncompatibleClassChangeError(fieldDef, FieldType.FLOAT);
+        }
+    }
+
+    readShort(fieldName: string): number {
+        var fieldDef = this.classDefinition.getField(fieldName);
+        if (fieldDef == null) {
+            return undefined;
+        }
+        switch (fieldDef.getType()) {
+            case FieldType.BYTE: return super.readByte(fieldName);
+            case FieldType.SHORT: return super.readShort(fieldName);
+            default: throw this.createIncompatibleClassChangeError(fieldDef, FieldType.SHORT);
+        }
+    }
+
+    readPortableArray(fieldName: string): Portable[] {
+        return this.validateCompatibleAndCall(fieldName, FieldType.PORTABLE_ARRAY, super.readPortableArray);
+    }
+
+    readUTFArray(fieldName: string): string[] {
+        return this.validateCompatibleAndCall(fieldName, FieldType.UTF_ARRAY, super.readUTFArray);
+    }
+
+    readShortArray(fieldName: string): number[] {
+        return this.validateCompatibleAndCall(fieldName, FieldType.SHORT_ARRAY, super.readShortArray);
+    }
+
+    readFloatArray(fieldName: string): number[] {
+        return this.validateCompatibleAndCall(fieldName, FieldType.FLOAT_ARRAY, super.readFloatArray);
+    }
+
+    readDoubleArray(fieldName: string): number[] {
+        return this.validateCompatibleAndCall(fieldName, FieldType.DOUBLE_ARRAY, super.readDoubleArray);
+    }
+
+    readLongArray(fieldName: string): Long[] {
+        return this.validateCompatibleAndCall(fieldName, FieldType.LONG_ARRAY, super.readLongArray);
+    }
+
+    readIntArray(fieldName: string): number[] {
+        return this.validateCompatibleAndCall(fieldName, FieldType.INT_ARRAY, super.readIntArray);
+    }
+
+    readCharArray(fieldName: string): string[] {
+        return this.validateCompatibleAndCall(fieldName, FieldType.CHAR_ARRAY, super.readCharArray);
+    }
+
+    readBooleanArray(fieldName: string): boolean[] {
+        return this.validateCompatibleAndCall(fieldName, FieldType.BOOLEAN_ARRAY, super.readBooleanArray);
+    }
+
+    readByteArray(fieldName: string): number[] {
+        return this.validateCompatibleAndCall(fieldName, FieldType.BYTE_ARRAY, super.readByteArray);
+    }
+
+    readChar(fieldName: string): string {
+        return this.validateCompatibleAndCall(fieldName, FieldType.CHAR, super.readChar);
+    }
+
+    readByte(fieldName: string): number {
+        return this.validateCompatibleAndCall(fieldName, FieldType.BYTE, super.readByte);
+    }
+
+    readBoolean(fieldName: string): boolean {
+        return this.validateCompatibleAndCall(fieldName, FieldType.BOOLEAN, super.readBoolean);
+    }
+
+    readUTF(fieldName: string): string {
+        return this.validateCompatibleAndCall(fieldName, FieldType.UTF, super.readUTF);
+    }
+}
+
 export class PortableContext {
     private service: SerializationService;
-    private portableVersion: number;
+    private portableVersion: number = 0;
     private classDefContext: {[factoyId: number]: ClassDefinitionContext};
 
     constructor(service: SerializationService, portableVersion: number) {
@@ -500,8 +662,72 @@ export class PortableContext {
         this.classDefContext = {};
     }
 
+    getVersion(): number {
+        return this.portableVersion;
+    }
+
+    readClassDefinitionFromInput(input: DataInput, factoryId: number, classId: number, version: number): ClassDefinition {
+        var register = true;
+        var cdWriter = new ClassDefinitionWriter(this, factoryId, classId, version);
+        input.readInt();
+
+        var fieldCount = input.readInt();
+        var offset = input.position();
+        for (var i = 0; i < fieldCount; i++) {
+            var pos = input.readInt(offset + i * BitsUtil.INT_SIZE_IN_BYTES);
+            input.position(pos);
+
+            var len = input.readShort();
+            var chars = '';
+            for (var j = 0; j < len; j++) {
+                chars += String.fromCharCode(input.readUnsignedByte());
+            }
+
+            var type: FieldType = input.readByte();
+            var name = chars;
+            var fieldFactoryId = 0;
+            var fieldClassId = 0;
+            if (type === FieldType.PORTABLE) {
+                //is null
+                if (input.readBoolean()) {
+                    register = false;
+                }
+                fieldFactoryId = input.readInt();
+                fieldClassId = input.readInt();
+
+                // TODO: what there's a null inner Portable field
+                if (register) {
+                    var fieldVersion = input.readInt();
+                    this.readClassDefinitionFromInput(input, fieldFactoryId, fieldClassId, fieldVersion);
+                }
+            } else if (type === FieldType.PORTABLE_ARRAY) {
+                var k = input.readInt();
+                fieldFactoryId = input.readInt();
+                fieldClassId = input.readInt();
+
+                // TODO: what there's a null inner Portable field
+                if (k > 0) {
+                    var p = input.readInt();
+                    input.position(p);
+                    var fieldVersion = input.readInt();
+                    this.readClassDefinitionFromInput(input, fieldFactoryId, fieldClassId, fieldVersion);
+                } else {
+                    register = false;
+                }
+            }
+            cdWriter.addFieldByType(name, type, fieldFactoryId, fieldClassId);
+        }
+        cdWriter.end();
+        var classDefinition = cdWriter.getDefinition();
+        if (register) {
+            classDefinition = cdWriter.registerAndGet();
+        }
+        return classDefinition;
+    }
+
     lookupOrRegisterClassDefinition(portable: Portable): ClassDefinition {
-        var definition = this.lookupClassDefinition(portable.getFactoryId(), portable.getClassId(), -1);
+        var version = this.getClassVersion(portable);
+        var definition = this.lookupClassDefinition(portable.getFactoryId(), portable.getClassId(), version);
         if (definition === null) {
             definition = this.generateClassDefinitionForPortable(portable);
             this.registerClassDefinition(definition);
@@ -519,7 +745,7 @@ export class PortableContext {
     }
 
     generateClassDefinitionForPortable(portable: Portable): ClassDefinition {
-        var version: number; //TODO
+        var version: number = this.getClassVersion(portable);
         var classDefinitionWriter = new ClassDefinitionWriter(this, portable.getFactoryId(), portable.getClassId(), version);
         portable.writePortable(classDefinitionWriter);
         classDefinitionWriter.end();
@@ -531,27 +757,44 @@ export class PortableContext {
         var classId = classDefinition.getClassId();
         var version = classDefinition.getVersion();
         if (!this.classDefContext[factoryId]) {
-            this.classDefContext[factoryId] = new ClassDefinitionContext(factoryId, version);
+            this.classDefContext[factoryId] = new ClassDefinitionContext(factoryId, this.portableVersion);
         }
         return this.classDefContext[factoryId].register(classDefinition);
+    }
+
+    getClassVersion(portable: VersionedPortable | Portable): number {
+        if ((<VersionedPortable>portable).getVersion) {
+            return (<VersionedPortable>portable).getVersion();
+        } else {
+            return this.portableVersion;
+        }
     }
 
 }
 
 export class ClassDefinitionContext {
     private factoryId: number;
-    private portableVersion: number;
 
-    private classDefs: {[classId: number]: ClassDefinition};
+    private classDefs: {[classId: string]: ClassDefinition};
 
     constructor(factoryId: number, portableVersion: number) {
         this.factoryId = factoryId;
-        this.portableVersion = portableVersion;
         this.classDefs = {};
     }
 
+    private static encodeVersionedClassId(classId: number, version: number): string {
+        return classId + 'v' + version;
+    }
+
+    private static decodeVersionedClassId(encoded: string): [number, number] {
+        var re = /(\d+)v(\d+)/;
+        var extracted = re.exec(encoded);
+        return [Number.parseInt(extracted[1]), Number.parseInt(extracted[2])];
+    }
+
     lookup(classId: number, version: number) {
-        return this.classDefs[classId];
+        var encoded = ClassDefinitionContext.encodeVersionedClassId(classId, version);
+        return this.classDefs[encoded];
     }
 
     register(classDefinition: ClassDefinition): ClassDefinition {
@@ -562,7 +805,15 @@ export class ClassDefinitionContext {
             throw new RangeError(`This factory's number is ${this.factoryId}. 
             Intended factory id is ${classDefinition.getFactoryId()}`);
         }
-        this.classDefs[classDefinition.getClassId()] = classDefinition;
+        var cdKey = ClassDefinitionContext.encodeVersionedClassId(classDefinition.getClassId(), classDefinition.getVersion());
+        var current = this.classDefs[cdKey];
+        if (current == null) {
+            this.classDefs[cdKey] = classDefinition;
+            return classDefinition;
+        }
+        if (current instanceof ClassDefinition && !current.equals(classDefinition)) {
+            throw new RangeError(`Incompatible class definition with same class id: ${classDefinition.getClassId()}`);
+        }
         return classDefinition;
     }
 }
@@ -582,7 +833,7 @@ class ClassDefinitionWriter implements PortableWriter {
         this.buildingDefinition = new ClassDefinition(factoryId, classId, version);
     }
 
-    private addFieldByType(fieldName: string, fieldType: FieldType, factoryId: number = 0, classId: number = 0) {
+    addFieldByType(fieldName: string, fieldType: FieldType, factoryId: number = 0, classId: number = 0) {
         this.fieldDefinitions[fieldName] = new FieldDefinition(this.index, fieldName, fieldType, factoryId, classId);
         this.index += 1;
     }
@@ -688,6 +939,10 @@ class ClassDefinitionWriter implements PortableWriter {
         for (var field in this.fieldDefinitions) {
             this.buildingDefinition.addFieldDefinition(this.fieldDefinitions[field]);
         }
+    }
+
+    getDefinition(): ClassDefinition {
+        return this.buildingDefinition;
     }
 
     registerAndGet(): ClassDefinition {

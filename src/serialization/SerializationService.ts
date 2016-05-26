@@ -192,7 +192,10 @@ export class SerializationServiceV1 implements SerializationService {
             'identified', new IdentifiedDataSerializableSerializer(this.serialiationConfig.dataSerializableFactories)
         );
         this.registerSerializer('!json', new JsonSerializer());
-        this.registerSerializer('!portable', new PortableSerializer(this, this.serialiationConfig.portableFactories));
+        this.registerSerializer(
+            '!portable',
+            new PortableSerializer(this, this.serialiationConfig.portableFactories, this.serialiationConfig.portableVersion)
+        );
     }
 
     protected registerCustomSerializers(cutomSerializersArray: any[]) {

@@ -18,6 +18,10 @@ export interface Portable {
     readPortable(reader: PortableReader): void;
 }
 
+export interface VersionedPortable extends Portable {
+    getVersion(): number;
+}
+
 export interface PortableFactory {
     create(classId: number): Portable;
 }
