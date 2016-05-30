@@ -11,14 +11,17 @@ import defer = Q.defer;
 import {ClientAddDistributedObjectListenerCodec} from '../codec/ClientAddDistributedObjectListenerCodec';
 import {ClientRemoveDistributedObjectListenerCodec} from '../codec/ClientRemoveDistributedObjectListenerCodec';
 import HazelcastClient from '../HazelcastClient';
+import {Queue} from './Queue';
 
 class ProxyManager {
     public MAP_SERVICE: string = 'hz:impl:mapService';
     public SET_SERVICE: string = 'hz:impl:setService';
+    public QUEUE_SERVICE: string = 'hz:impl:queueService';
 
     public service: any = {
         'hz:impl:mapService': Map,
-        'hz:impl:setService': Set
+        'hz:impl:setService': Set,
+        'hz:impl:queueService': Queue
     };
 
     private proxies: { [proxyName: string]: DistributedObject; } = {};

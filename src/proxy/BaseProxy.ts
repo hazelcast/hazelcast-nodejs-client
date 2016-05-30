@@ -93,8 +93,7 @@ export class BaseProxy {
     }
 
     getPartitionKey() : string {
-        //TODO
-        return '';
+        return this.name;
     }
 
     /**
