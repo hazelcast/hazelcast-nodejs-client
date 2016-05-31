@@ -1,18 +1,23 @@
-var expect = require("chai").expect;
+var chai = require("chai");
+var expect = chai.expect;
+var chaiAsPromised = require("chai-as-promised");
+chai.use(chaiAsPromised);
 var HazelcastClient = require("../.").Client;
 var Controller = require('./RC');
 var Util = require('./Util');
 var Q = require('q');
+var fs = require('fs');
 
 describe("Queue Proxy", function () {
 
     var cluster;
     var client;
     var queue;
+    var serverConfig;
 
     before(function () {
         this.timeout(10000);
-        return Controller.createCluster().then(function (response) {
+        return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_test.xml', 'utf8')).then(function (response) {
             cluster = response;
             return Controller.startMember(cluster.id);
         }).then(function () {
@@ -23,7 +28,7 @@ describe("Queue Proxy", function () {
     });
 
     beforeEach(function () {
-        queue = client.getQueue('test');
+        queue = client.getQueue('ClientQueueTest');
         return _offerToQueue(10);
     });
 
@@ -31,10 +36,13 @@ describe("Queue Proxy", function () {
         return queue.destroy();
     });
 
-    function _offerToQueue(size) {
+    function _offerToQueue(size, prefix) {
+        if (prefix == null) {
+            prefix = '';
+        }
         var promises = [];
         for (var i = 0; i < size; i++) {
-            promises.push(queue.offer('item' + i));
+            promises.push(queue.offer(prefix + 'item' + i));
         }
         return Q.all(promises);
     }
@@ -67,6 +75,12 @@ describe("Queue Proxy", function () {
             return queue.size();
         }).then(function(s) {
             return expect(s).to.equal(11);
+        });
+    });
+
+    it('add throws if queue is full', function() {
+        return _offerToQueue(5, 'new').then(function () {
+            return expect(queue.add('excess_item')).to.eventually.rejected;
         });
     });
 
@@ -113,7 +127,7 @@ describe("Queue Proxy", function () {
 
     it('remaining capacity', function() {
         return queue.remainingCapacity().then(function(c) {
-            return expect(c).to.be.above(0);
+            return expect(c).to.equal(5);
         });
     });
 
