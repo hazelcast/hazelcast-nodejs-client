@@ -45,7 +45,7 @@ export interface IQueue<E> extends DistributedObject {
      * @param items
      * @return `true` if thi queue contains all items, `false` otherwise.
      */
-    containsAll(items: E): Promise<boolean>;
+    containsAll(items: E[]): Promise<boolean>;
 
     /**
      * Removes all items in this queue and add them to the end of given `arr`.

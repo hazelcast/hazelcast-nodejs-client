@@ -84,6 +84,33 @@ describe("Queue Proxy", function () {
         });
     });
 
+    it('poll returns null after timeout', function() {
+        return queue.clear().then(function() {
+            return queue.poll(1000);
+        }).then(function(ret) {
+            return expect(ret).to.be.null;
+        });
+    });
+
+    it('poll returns head after a new element added', function() {
+        return queue.clear().then(function() {
+            setTimeout(function() {
+                queue.offer('new_item');
+            }, 500);
+            return queue.poll(1000);
+        }).then(function(ret) {
+            return expect(ret).to.equal('new_item');
+        });
+    });
+
+    it('offer with timeout', function() {
+        return queue.offer('new_item', 1000).then(function() {
+            return queue.size();
+        }).then(function(s) {
+            return expect(s).to.equal(11);
+        });
+    });
+
     it('remaining capacity', function() {
         return queue.remainingCapacity().then(function(c) {
             return expect(c).to.be.above(0);
@@ -176,6 +203,134 @@ describe("Queue Proxy", function () {
     it('take immediately returns', function() {
         return queue.take().then(function(ret) {
             return expect(ret).to.equal('item0');
+        });
+    });
+
+    it('addAll', function() {
+        var values = ['a', 'b', 'c'];
+        return queue.addAll(values).then(function(retVal) {
+            expect(retVal).to.be.true;
+            return queue.toArray();
+        }).then(function(vals) {
+            return expect(vals).to.include.members(values);
+        })
+    });
+
+    it('containsAll true', function() {
+        var values = ['item0', 'item1'];
+        return queue.containsAll(values).then(function(ret) {
+            return expect(ret).to.be.true;
+        });
+    });
+
+    it('containsAll true', function() {
+        var values = ['item0', 'item_absent'];
+        return queue.containsAll(values).then(function(ret) {
+            return expect(ret).to.be.false;
+        });
+    });
+
+    it('containsAll true', function() {
+        var values = [];
+        return queue.containsAll(values).then(function(ret) {
+            return expect(ret).to.be.true;
+        });
+    });
+
+    it('put', function() {
+        return queue.put('item_new').then(function() {
+            return queue.size();
+        }).then(function(s) {
+            return expect(s).to.equal(11);
+        });
+    });
+
+    it('removeAll', function() {
+        var cand = ['item1', 'item2'];
+        return queue.removeAll(cand).then(function(retVal) {
+            return expect(retVal).to.be.true;
+        }).then(function() {
+            return queue.toArray();
+        }).then(function(arr) {
+            return expect(arr).to.not.include.members(cand);
+        });
+    });
+
+    it('retainAll changes queue', function() {
+        var retains = ['item1', 'item2'];
+        return queue.retainAll(retains).then(function(r) {
+            return expect(r).to.be.true;
+        }).then(function() {
+            return queue.toArray();
+        }).then(function(arr) {
+            return expect(arr).to.deep.equal(retains);
+        });
+    });
+
+
+    it('retainAll does not change queue', function() {
+        var retains;
+        return queue.toArray().then(function(r) {
+            retains = r;
+            return queue.retainAll(r);
+        }).then(function(r) {
+            return expect(r).to.be.false;
+        }).then(function() {
+            return queue.toArray();
+        }).then(function(arr) {
+            return expect(arr).to.deep.equal(retains);
+        });
+    });
+
+    it('addItemListener itemAdded', function(done) {
+        queue.addItemListener({
+            itemAdded: function(item) {
+                if (item === 'item_new') {
+                    done();
+                } else {
+                    done(new Error('Expected item_new, got ' + item));
+                }
+            }
+        }, true);
+        queue.add('item_new');
+    });
+
+    it('addItemListener itemAdded with includeValue=false', function(done) {
+        queue.addItemListener({
+            itemAdded: function(item) {
+                done();
+            }
+        }, false);
+        queue.add('item_new');
+    });
+
+
+    it('addItemListener itemRemoved', function(done) {
+        queue.addItemListener({
+            itemRemoved: function(item) {
+                if (item === 'item0') {
+                    done();
+                } else {
+                    done(new Error('Expected item_new, got ' + item));
+                }
+            }
+        }, true);
+        queue.remove('item0');
+    });
+
+    it('removeItemListener', function() {
+        return queue.addItemListener({}, false).then(function(regId) {
+            return queue.removeItemListener(regId);
+        }).then(function(ret) {
+            return expect(ret).to.be.true;
+        });
+    });
+
+    it('removeItemListener with wrong id returns null', function() {
+        return queue.addItemListener({}, false).then(function() {
+            return queue.removeItemListener('wrongId');
+        }).then(function(ret) {
+            return expect(ret).to.be.false;
         });
     });
 });
