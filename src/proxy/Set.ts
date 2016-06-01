@@ -1,4 +1,3 @@
-import {BaseProxy} from '../proxy/BaseProxy';
 import {ISet} from '../ISet';
 import * as Q from 'q';
 import {ItemListener} from '../core/ItemListener';
@@ -18,19 +17,20 @@ import {SetSizeCodec} from '../codec/SetSizeCodec';
 import {SetAddListenerCodec} from '../codec/SetAddListenerCodec';
 import {SetRemoveListenerCodec} from '../codec/SetRemoveListenerCodec';
 import ClientMessage = require('../ClientMessage');
+import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 
-export class Set<E> extends BaseProxy implements ISet<E> {
+export class Set<E> extends PartitionSpecificProxy implements ISet<E> {
 
     add(entry: E): Q.Promise<boolean> {
-        return this.encodeInvokeOnKey<boolean>(SetAddCodec, this.name, this.toData(entry));
+        return this.encodeInvoke<boolean>(SetAddCodec, this.toData(entry));
     }
 
     addAll(items: E[]): Q.Promise<boolean> {
-        return this.encodeInvokeOnKey<boolean>(SetAddAllCodec, this.name, this.serializeList(items));
+        return this.encodeInvoke<boolean>(SetAddAllCodec, this.serializeList(items));
     }
 
     getAll(): Q.Promise<E[]> {
-        return this.encodeInvokeOnKey(SetGetAllCodec, this.name)
+        return this.encodeInvoke(SetGetAllCodec)
             .then((items: Array<Data>) => {
                 return items.map((item) => {
                     return this.toObject(item);
@@ -39,35 +39,35 @@ export class Set<E> extends BaseProxy implements ISet<E> {
     }
 
     clear(): Q.Promise<void> {
-        return this.encodeInvokeOnKey<void>(SetClearCodec, this.name);
+        return this.encodeInvoke<void>(SetClearCodec);
     }
 
     contains(entry: E): Q.Promise<boolean> {
-        return this.encodeInvokeOnKey<boolean>(SetContainsCodec, this.name, this.toData(entry));
+        return this.encodeInvoke<boolean>(SetContainsCodec, this.toData(entry));
     }
 
     containsAll(items: E[]): Q.Promise<boolean> {
-        return this.encodeInvokeOnKey<boolean>(SetContainsAllCodec, this.name, this.serializeList(items));
+        return this.encodeInvoke<boolean>(SetContainsAllCodec, this.serializeList(items));
     }
 
     isEmpty(): Q.Promise<boolean> {
-        return this.encodeInvokeOnKey<boolean>(SetIsEmptyCodec, this.name);
+        return this.encodeInvoke<boolean>(SetIsEmptyCodec);
     }
 
     remove(entry: E): Q.Promise<boolean> {
-        return this.encodeInvokeOnKey<boolean>(SetRemoveCodec, this.name, this.toData(entry));
+        return this.encodeInvoke<boolean>(SetRemoveCodec, this.toData(entry));
     }
 
     removeAll(items: E[]): Q.Promise<boolean> {
-        return this.encodeInvokeOnKey<boolean>(SetCompareAndRemoveAllCodec, this.name, this.serializeList(items));
+        return this.encodeInvoke<boolean>(SetCompareAndRemoveAllCodec, this.serializeList(items));
     }
 
     retainAll(items: E[]): Q.Promise<boolean> {
-        return this.encodeInvokeOnKey<boolean>(SetCompareAndRetainAllCodec, this.name, this.serializeList(items));
+        return this.encodeInvoke<boolean>(SetCompareAndRetainAllCodec, this.serializeList(items));
     }
 
     size(): Q.Promise<number> {
-        return this.encodeInvokeOnKey<number>(SetSizeCodec, this.name);
+        return this.encodeInvoke<number>(SetSizeCodec);
     }
 
     addItemListener(listener: ItemListener<E>, includeValue: boolean = true): Q.Promise<string> {
