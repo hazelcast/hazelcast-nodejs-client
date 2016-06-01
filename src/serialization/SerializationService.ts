@@ -9,7 +9,8 @@ import {
     IdentifiedDataSerializableSerializer, FloatArraySerializer, JsonSerializer
 } from './DefaultSerializer';
 import * as Util from '../Util';
-import {PortableSerializer} from './Portable';
+import {PortableSerializer} from './portable/PortableSerializer';
+
 export interface SerializationService {
     toData(object: any, paritioningStrategy?: any) : Data;
 

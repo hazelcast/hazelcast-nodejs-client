@@ -1,5 +1,5 @@
 import {DataInput, DataOutput} from './Data';
-import {PortableWriter, PortableReader} from './Portable';
+import {PortableWriter, PortableReader} from './portable/PortableSerializer';
 export interface IdentifiedDataSerializable {
     readData(input: DataInput): any;
     writeData(output: DataOutput): void;
