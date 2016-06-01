@@ -1,6 +1,6 @@
 /* tslint:disable:no-bitwise */
 import Long = require('long');
-import {DataOutput, Data, DataInput} from './Data';
+import {DataOutput, Data, DataInput, PositionalDataOutput} from './Data';
 import {SerializationService} from './SerializationService';
 import {BitsUtil} from '../BitsUtil';
 import * as assert from 'assert';
@@ -11,9 +11,9 @@ const MASK_2BYTE = (1 << 16) - 1;
 const MASK_4BYTE = (1 << 32) - 1;
 
 export class ObjectDataOutput implements DataOutput {
-    private buffer: Buffer;
+    protected buffer: Buffer;
     private service: SerializationService;
-    private bigEndian: boolean;
+    protected bigEndian: boolean;
     private pos: number;
 
     constructor(length: number, service: SerializationService, isBigEndian: boolean) {
@@ -215,6 +215,58 @@ export class ObjectDataOutput implements DataOutput {
     }
 }
 
+export class PositionalObjectDataOutput extends ObjectDataOutput implements PositionalDataOutput {
+    pwrite(position: number, byte: number | Buffer): void {
+        if (Buffer.isBuffer(byte)) {
+            byte.copy(this.buffer, position);
+        } else {
+            this.buffer[position] = byte;
+        }
+    }
+
+    pwriteBoolean(position: number, val: boolean): void {
+        this.pwrite(position, val ? 1 : 0);
+    }
+
+    pwriteByte(position: number, byte: number): void {
+        this.pwrite(position, byte);
+    }
+
+    pwriteChar(position: number, char: string): void {
+        BitsUtil.writeUInt16(this.buffer, position, char.charCodeAt(0), this.isBigEndian());
+    }
+
+    pwriteDouble(position: number, double: number): void {
+        BitsUtil.writeDouble(this.buffer, position, double, this.isBigEndian());
+    }
+
+    pwriteFloat(position: number, float: number): void {
+        BitsUtil.writeFloat(this.buffer, position, float, this.isBigEndian());
+    }
+
+    pwriteInt(position: number, int: number): void {
+        BitsUtil.writeInt32(this.buffer, position, int, this.isBigEndian());
+    }
+
+    pwriteIntBE(position: number, int: number): void {
+        BitsUtil.writeInt32(this.buffer, position, int, true);
+    }
+
+    pwriteLong(position: number, long: Long): void {
+        if (this.isBigEndian()) {
+            BitsUtil.writeInt32(this.buffer, position, long.high, true);
+            BitsUtil.writeInt32(this.buffer, position + BitsUtil.INT_SIZE_IN_BYTES, long.low, true);
+        } else {
+            BitsUtil.writeInt32(this.buffer, position, long.low, false);
+            BitsUtil.writeInt32(this.buffer, position + BitsUtil.INT_SIZE_IN_BYTES, long.high, false);
+        }
+    }
+
+    pwriteShort(position: number, short: number): void {
+        BitsUtil.writeInt16(this.buffer, position, short, this.isBigEndian());
+    }
+}
+
 export class ObjectDataInput implements DataInput {
 
     private buffer: Buffer;
@@ -231,11 +283,18 @@ export class ObjectDataInput implements DataInput {
         this.pos = this.offset;
     }
 
-    private readArray<T>(func: Function) {
+    private readArray<T>(func: Function, pos?: number) {
+        var backupPos = this.pos;
+        if (pos !== undefined) {
+            this.pos = pos;
+        }
         var len = this.readInt();
         var arr: T[] = [];
         for (var i = 0; i < len; i++) {
             arr.push(func.call(this));
+        }
+        if (pos !== undefined) {
+            this.pos = backupPos;
         }
         return arr;
     }
@@ -270,16 +329,16 @@ export class ObjectDataInput implements DataInput {
         return this.read(pos) === 1;
     }
 
-    readBooleanArray(): boolean[] {
-        return this.readArray<boolean>(this.readBoolean);
+    readBooleanArray(pos?: number): boolean[] {
+        return this.readArray<boolean>(this.readBoolean, pos);
     }
 
     readByte(pos?: number): number {
         return this.read(pos);
     }
 
-    readByteArray(): number[] {
-        return this.readArray<number>(this.readByte);
+    readByteArray(pos?: number): number[] {
+        return this.readArray<number>(this.readByte, pos);
     }
 
     readChar(pos?: number): string {
@@ -294,8 +353,8 @@ export class ObjectDataInput implements DataInput {
         return String.fromCharCode(readBytes);
     }
 
-    readCharArray(): string[] {
-        return this.readArray<string>(this.readChar);
+    readCharArray(pos?: number): string[] {
+        return this.readArray<string>(this.readChar, pos);
     }
 
     readData(): Data {
@@ -316,8 +375,8 @@ export class ObjectDataInput implements DataInput {
         return ret;
     }
 
-    readDoubleArray(): number[] {
-        return this.readArray<number>(this.readDouble);
+    readDoubleArray(pos?: number): number[] {
+        return this.readArray<number>(this.readDouble, pos);
     }
 
     readFloat(pos?: number): number {
@@ -332,8 +391,8 @@ export class ObjectDataInput implements DataInput {
         return ret;
     }
 
-    readFloatArray(): number[] {
-        return this.readArray<number>(this.readFloat);
+    readFloatArray(pos?: number): number[] {
+        return this.readArray<number>(this.readFloat, pos);
     }
 
     readInt(pos?: number): number {
@@ -348,8 +407,8 @@ export class ObjectDataInput implements DataInput {
         return ret;
     }
 
-    readIntArray(): number[] {
-        return this.readArray<number>(this.readInt);
+    readIntArray(pos?: number): number[] {
+        return this.readArray<number>(this.readInt, pos);
     }
 
     readLong(pos?: number): Long {
@@ -372,8 +431,8 @@ export class ObjectDataInput implements DataInput {
         }
     }
 
-    readLongArray(): Long[] {
-        return this.readArray<Long>(this.readLong);
+    readLongArray(pos?: number): Long[] {
+        return this.readArray<Long>(this.readLong, pos);
     }
 
     readObject(): any {
@@ -392,8 +451,8 @@ export class ObjectDataInput implements DataInput {
         return ret;
     }
 
-    readShortArray(): number[] {
-        return this.readArray<number>(this.readShort);
+    readShortArray(pos?: number): number[] {
+        return this.readArray<number>(this.readShort, pos);
     }
 
     readUnsignedByte(pos?: number): number {
@@ -404,9 +463,17 @@ export class ObjectDataInput implements DataInput {
         return this.readChar(pos).charCodeAt(0);
     }
 
-    readUTF(): string {
-        this.assertAvailable(BitsUtil.INT_SIZE_IN_BYTES);
-        var len = this.readInt();
+    private addOrUndefined(base: number, adder: number): number {
+        if (base === undefined) {
+            return undefined;
+        } else {
+            return base + adder;
+        }
+    }
+
+    readUTF(pos?: number): string {
+        var len = this.readInt(pos);
+        var readingIndex = this.addOrUndefined(pos, 4);
         if (len === BitsUtil.NULL_ARRAY_LENGTH) {
             return null;
         } else {
@@ -414,11 +481,13 @@ export class ObjectDataInput implements DataInput {
             var leadingByte: number;
             var continuationByte: number;
             for (var i = 0; i < len; i++) {
-                leadingByte = this.readByte() & MASK_1BYTE;
+                leadingByte = this.readByte(readingIndex) & MASK_1BYTE;
+                readingIndex = this.addOrUndefined(readingIndex, 1);
                 result.push(leadingByte);
                 if (leadingByte >= 128) {
                     while (((leadingByte <<= 1) & MASK_1BYTE) >= 128) {
-                        continuationByte = this.readByte();
+                        continuationByte = this.readByte(readingIndex);
+                        readingIndex = this.addOrUndefined(readingIndex, 1);
                         if (((continuationByte >> 6) & MASK_1BYTE) !== 2) {
                             throw new Error('String is not properly UTF8 encoded');
                         }
@@ -430,8 +499,8 @@ export class ObjectDataInput implements DataInput {
         }
     }
 
-    readUTFArray(): string[] {
-        return this.readArray<string>(this.readUTF);
+    readUTFArray(pos?: number): string[] {
+        return this.readArray<string>(this.readUTF, pos);
     }
 
     reset(): void {

@@ -74,32 +74,45 @@ export interface DataOutput {
     writeZeroBytes(count: number): void;
 }
 
+export interface PositionalDataOutput extends DataOutput {
+    pwrite(position: number, byte: number | Buffer): void;
+    pwriteBoolean(position: number, val: boolean): void;
+    pwriteByte(position: number, byte: number): void;
+    pwriteChar(position: number, char: string): void;
+    pwriteDouble(position: number, double: number): void;
+    pwriteFloat(position: number, float: number): void;
+    pwriteInt(position: number, int: number): void;
+    pwriteIntBE(position: number, int: number): void;
+    pwriteLong(position: number, long: Long): void;
+    pwriteShort(position: number, short: number): void;
+}
+
 export interface DataInput {
     isBigEndian(): boolean;
     position(newPosition?: number): number;
     read(pos?: number): number;
     readBoolean(pos?: number): boolean;
-    readBooleanArray(): boolean[];
+    readBooleanArray(pos?: number): boolean[];
     readByte(pos?: number): number;
-    readByteArray(): number[];
+    readByteArray(pos?: number): number[];
     readChar(pos?: number): string;
-    readCharArray(): string[];
+    readCharArray(pos?: number): string[];
     readData(pos?: number): Data;
     readDouble(pos?: number): number;
-    readDoubleArray(): number[];
+    readDoubleArray(pos?: number): number[];
     readFloat(pos?: number): number;
-    readFloatArray(): number[];
+    readFloatArray(pos?: number): number[];
     readInt(pos?: number): number;
-    readIntArray(): number[];
+    readIntArray(pos?: number): number[];
     readLong(pos?: number): Long;
-    readLongArray(): Long[];
+    readLongArray(pos?: number): Long[];
     readObject(): any;
     readShort(pos?: number): number;
-    readShortArray(): number[];
+    readShortArray(pos?: number): number[];
     readUnsignedByte(pos?: number): number;
     readUnsignedShort(pos?: number): number;
     readUTF(pos?: number): string;
-    readUTFArray(): string[];
+    readUTFArray(pos?: number): string[];
     reset(): void;
     skipBytes(count: number): void;
 }

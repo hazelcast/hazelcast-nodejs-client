@@ -1,7 +1,7 @@
 import {Data, DataOutput, DataInput} from './Data';
 import {HeapData, DATA_OFFSET} from './HeapData';
 import {SerializationConfig} from '../Config';
-import {ObjectDataOutput, ObjectDataInput} from './ObjectData';
+import {ObjectDataOutput, ObjectDataInput, PositionalObjectDataOutput} from './ObjectData';
 import {
     StringSerializer, BooleanSerializer, DoubleSerializer, NullSerializer,
     ShortSerializer, IntegerSerializer, LongSerializer, FloatSerializer, BooleanArraySerializer, ShortArraySerializer,
@@ -9,6 +9,8 @@ import {
     IdentifiedDataSerializableSerializer, FloatArraySerializer, JsonSerializer
 } from './DefaultSerializer';
 import * as Util from '../Util';
+import {PortableSerializer} from './portable/PortableSerializer';
+
 export interface SerializationService {
     toData(object: any, paritioningStrategy?: any) : Data;
 
@@ -42,7 +44,7 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     toData(object: any, partitioningStrategy: any = this.defaultPartitionStrategy): Data {
-        var dataOutput: DataOutput = new ObjectDataOutput(1, this, this.serialiationConfig.isBigEndian);
+        var dataOutput: DataOutput = new PositionalObjectDataOutput(1, this, this.serialiationConfig.isBigEndian);
         var serializer = this.findSerializerFor(object);
         dataOutput.writeIntBE(this.calculatePartitionHash(object, partitioningStrategy));
         dataOutput.writeIntBE(serializer.getId());
@@ -136,7 +138,9 @@ export class SerializationServiceV1 implements SerializationService {
         if (this.isIdentifiedDataSerializable(obj)) {
             return this.findSerializerByName('identified', false);
         }
-        //Look up for Portable
+        if (this.isPortableSerializable(obj)) {
+            return this.findSerializerByName('!portable', false);
+        }
         var objectType = Util.getType(obj);
         if (objectType === 'array') {
             if (obj.length === 0) {
@@ -165,6 +169,10 @@ export class SerializationServiceV1 implements SerializationService {
         return ( obj.readData && obj.writeData && obj.getClassId && obj.getFactoryId);
     }
 
+    protected isPortableSerializable(obj: any): boolean {
+        return ( obj.readPortable && obj.writePortable && obj.getFactoryId && obj.getClassId);
+    }
+
     protected registerDefaultSerializers() {
         this.registerSerializer('string', new StringSerializer());
         this.registerSerializer('double', new DoubleSerializer());
@@ -185,6 +193,10 @@ export class SerializationServiceV1 implements SerializationService {
             'identified', new IdentifiedDataSerializableSerializer(this.serialiationConfig.dataSerializableFactories)
         );
         this.registerSerializer('!json', new JsonSerializer());
+        this.registerSerializer(
+            '!portable',
+            new PortableSerializer(this, this.serialiationConfig.portableFactories, this.serialiationConfig.portableVersion)
+        );
     }
 
     protected registerCustomSerializers(cutomSerializersArray: any[]) {
