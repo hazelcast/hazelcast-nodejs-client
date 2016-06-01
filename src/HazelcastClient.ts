@@ -15,6 +15,7 @@ import PartitionService = require('./PartitionService');
 import ClusterService = require('./invocation/ClusterService');
 import Heartbeat = require('./Heartbeat');
 import ClientMessage = require('./ClientMessage');
+import {IQueue} from './IQueue';
 
 export default class HazelcastClient {
 
@@ -124,6 +125,15 @@ export default class HazelcastClient {
      */
     getSet<E>(name: string): ISet<E> {
         return <ISet<E>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.SET_SERVICE);
+    }
+
+    /**
+     * Returns the distributed queue instance with given name.
+     * @param name
+     * @returns {IQueue<E>}
+     */
+    getQueue<E>(name: string): IQueue<E> {
+        return <IQueue<E>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.QUEUE_SERVICE);
     }
 
 
