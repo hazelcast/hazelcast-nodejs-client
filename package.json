@@ -12,6 +12,7 @@
     "chai-as-promised": "5.3.0",
     "istanbul": "0.4.3",
     "mocha": "2.4.5",
+    "remap-istanbul": "0.6.4",
     "rimraf": "2.5.2",
     "sinon": "1.17.3",
     "tslint": "3.10.1",
@@ -25,7 +26,8 @@
     "precompile": "typings install",
     "compile": "tsc",
     "test": "mocha --recursive",
-    "coverage": "rimraf coverage && istanbul cover --root lib/ --include-all-sources --report html --report cobertura _mocha -- --recursive --reporter spec",
+    "coverage": "rimraf coverage && istanbul cover --root lib/ --include-all-sources _mocha -- --recursive --reporter spec",
+    "postcoverage": "remap-istanbul -i coverage/coverage.json -o coverage/cobertura-coverage.xml -t cobertura && remap-istanbul -i coverage/coverage.json -o coverage -t html",
     "generate-docs": "rimraf docs && typedoc --out docs/ --exclude src/codec/*.ts --module commonjs src typings/main",
     "lint": "tslint src/*.ts src/**/*.ts src/**/**/*.ts"
   },
