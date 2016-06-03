@@ -8,7 +8,8 @@
         "outDir": "./lib",
         "preserveConstEnums": true,
         "noLib": true,
-        "removeComments": true
+        "removeComments": true,
+        "sourceMap": true
     },
     "filesGlob": [
         "src/**/*.ts"
