@@ -16,6 +16,7 @@ import ClusterService = require('./invocation/ClusterService');
 import Heartbeat = require('./Heartbeat');
 import ClientMessage = require('./ClientMessage');
 import {IQueue} from './IQueue';
+import {IList} from './IList';
 
 export default class HazelcastClient {
 
@@ -136,6 +137,16 @@ export default class HazelcastClient {
         return <IQueue<E>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.QUEUE_SERVICE);
     }
 
+    /**
+     * Returns the distributed list instance with given name.
+     * @param name
+     * @returns {IQueue<E>}
+     */
+    getList<E>(name: string): IList<E> {
+        return <IList<E>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.LIST_SERVICE);
+    }
+
+
 
     /**
      * Return configuration that this instance started with.
@@ -206,7 +217,7 @@ export default class HazelcastClient {
     }
 
     /**
-     * Shutsdown this client instance.
+     * Shuts down this client instance.
      */
     shutdown(): void {
         this.lifecycleService.emitLifecycleEvent(LifecycleEvent.shuttingDown);

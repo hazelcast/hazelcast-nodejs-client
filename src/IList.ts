@@ -1,43 +1,46 @@
+import Promise = Q.Promise;
 import {DistributedObject} from './DistributedObject';
 import {ItemListener} from './core/ItemListener';
+
 export interface IList<E> extends DistributedObject {
+
     /**
-     * Appends the specified element at the end of the list.
-     * @param element
-     * @return `true` if this list has changed.
+     * Appends the specified element to the end of the list.
+     * @param element - element to be added
+     * @return `true` if this list has changed as a result of this operation, 'false' otherwise.
      */
     add(element: E): Promise<boolean>;
 
     /**
-     * Inserts the specified element at specified index. Shifts the following
-     * elements by one position.
-     * @param index
-     * @param element
+     * Inserts the specified element at the specified index.
+     * Shifts the subsequent elements to the right.
+     * @param index position at which the element should be inserted
+     * @param element element to be inserted
      */
     addAt(index: number, element: E): Promise<void>;
 
     /**
-     * Appends all specified elements at the end of this list.
-     * @param elements
-     * @return `true` if thi list changed.
+     * Appends all elements in the specified array to the end of this list,
+     * @param elements array to be appended
+     * @return `true` if this list has changed as a result of this operation, 'false' otherwise.
      */
     addAll(elements: E[]): Promise<boolean>;
 
     /**
-     * Inserts all elements at specified index. Shifts the following
-     * elements by one position.
-     * @param index
-     * @param elements
-     * @return `true` if thi list changed.
+     * Inserts all elements in the specified array at specified index, keeping the order of the array.
+     * Shifts the subsequent elements to the right.
+     * @param index position at which the array's elements should be inserted
+     * @param elements array to be inserted
+     * @return `true` if this list has changed as a result of this operation, 'false' otherwise.
      */
     addAllAt(index: number, elements: E[]): Promise<boolean>;
 
     /**
      * Adds an item listener for this list.
-     * Listener will be invoked for any add/remove item event.
-     * @param listener
+     * Listener will be invoked whenever an item is added to or removed from this list.
+     * @param listener object with listener functions
      * @param includeValue `true` if updated item should be included in the event.
-     * @return registration id of the listener.
+     * @return registration ID of the listener.
      */
     addItemListener(listener: ItemListener<E>, includeValue: boolean): Promise<string>;
 
@@ -49,17 +52,16 @@ export interface IList<E> extends DistributedObject {
     /**
      * Checks if the list contains given element.
      * @param element
-     * @return `true` if this list contains an element that equals to given element, `false` otherwise.
+     * @return `true` if this list contains an element that is equal the to given element, `false` otherwise.
      */
     contains(element: E): Promise<boolean>;
 
     /**
-     * Checks if the list contains given elements.
-     * @param element
+     * Checks if the list contains all of the given elements.
+     * @param elements - elements to be checked for presence in this list.
      * @return `true` if this list contains all of the given elements, `false` otherwise.
-     * @param elements
      */
-    containsAll(elements: E): Promise<boolean>;
+    containsAll(elements: E[]): Promise<boolean>;
 
     /**
      * Retrieves the element at given location.
@@ -69,78 +71,78 @@ export interface IList<E> extends DistributedObject {
     get(index: number): Promise<E>;
 
     /**
-     * Returns the index of first occurence of given element in the list.
-     * @param element
-     * @return the index of first occurence of given element or `-1` if the list does not contain given element.
+     * Returns the position of first occurrence of the given element in this list.
+     * @param element element to search for
+     * @return the index of first occurrence of given element or `-1` if the list does not contain given element.
      */
     indexOf(element: E): Promise<number>;
 
     /**
      * Checks if this list is empty.
-     * @return `true` if this list contains no element, `false` otherwise.
+     * @return `true` if this list contains no elements, `false` otherwise.
      */
     isEmpty(): Promise<boolean>;
 
     /**
-     * Returns the index number of last occurence of this element in the list.
+     * Returns position of the last occurrence of the given element in this list.
      * @param element
      */
     lastIndexOf(element: E): Promise<number>;
 
     /**
      * Removes the given element from this list.
-     * @param element
-     * @return `true` if this list changed, `false` otherwise.
+     * @param element element to be removed
+     * @return `true` if this list has changed as a result of this operation, 'false' otherwise.
      */
     remove(element: E): Promise<boolean>;
 
     /**
-     * Removes the element at given index.
-     * @param index
+     * Removes the element at the given index.
+     * @param index index of the element to be removed.
      * @return the removed element.
      */
     removeAt(index: number): Promise<E>;
 
     /**
      * Removes given elements from the list.
-     * @param elements
-     * @return `true` if this list changed.
+     * @param elements elements to be removed
+     * @return `true` if this list has changed as a result of this operation, 'false' otherwise.
      */
     removeAll(elements: E[]): Promise<boolean>;
 
     /**
      * Removes an ItemListener from this list.
-     * @param listenerId registration id of the listener to be removed.
-     * @return `true` if the item listener is removed, `false` otherwise.
+     * @param listenerId registration ID of the listener to be removed.
+     * @return `true` if the item listener was successfully removed, `false` otherwise.
      */
     removeItemListener(listenerId: string): Promise<boolean>;
 
     /**
-     * Removes all elements from this list except specified in `elements`.
-     * @param elements
-     * @return `true` if this list changed, `false` otherwise.
+     * Removes all elements from this list except the ones contained in the given array.
+     * @param elements elements to retain
+     * @return `true` if this list has changed as a result of this operation, 'false' otherwise.
      */
     retainAll(elements: E[]): Promise<boolean>;
 
     /**
      * Replaces the element at the specified position in this list with the specified element.
-     * @param index
-     * @param element
-     * @return previous element at given index.
+     * @param index position of the element to be replaced
+     * @param element replacement element
+     * @return previous element at the given index.
      */
-    set(index: number, element: E): Promise<void>;
+    set(index: number, element: E): Promise<E>;
 
     /**
      * Returns the number of elements in this list.
      */
-    size(): number;
+    size(): Promise<number>;
 
     /**
-     * Return a view of this list that contain only elements between index numbers `from(inclusive)` to `to(exclusive)`
-     * @param from
-     * @param to
+     * Return a view of this list that contains elements between index numbers from 'start' (inclusive) to `end' (exclusive)
+     * @param start start of the view
+     * @param end end of the view
      */
-    subList(from: number, to: number): Promise<E[]>;
+    subList(start: number, end: number): Promise<E[]>;
 
     /**
      * Returns an array that contains all elements of this list in proper sequence.

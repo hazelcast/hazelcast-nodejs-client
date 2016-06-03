@@ -12,21 +12,23 @@ import {ClientAddDistributedObjectListenerCodec} from '../codec/ClientAddDistrib
 import {ClientRemoveDistributedObjectListenerCodec} from '../codec/ClientRemoveDistributedObjectListenerCodec';
 import HazelcastClient from '../HazelcastClient';
 import {Queue} from './Queue';
+import {List} from './List';
 
 class ProxyManager {
     public MAP_SERVICE: string = 'hz:impl:mapService';
     public SET_SERVICE: string = 'hz:impl:setService';
     public QUEUE_SERVICE: string = 'hz:impl:queueService';
+    public LIST_SERVICE: string = 'hz:impl:listService';
 
     public service: any = {
         'hz:impl:mapService': Map,
         'hz:impl:setService': Set,
-        'hz:impl:queueService': Queue
+        'hz:impl:queueService': Queue,
+        'hz:impl:listService': List
     };
 
     private proxies: { [proxyName: string]: DistributedObject; } = {};
     private client: HazelcastClient;
-
 
     constructor(client: HazelcastClient) {
         this.client = client;
@@ -59,15 +61,15 @@ class ProxyManager {
         delete this.proxies[name];
         var clientMessage = ClientDestroyProxyCodec.encodeRequest(name, serviceName);
         clientMessage.setPartitionId(-1);
-        this.client.getInvocationService().invokeOnRandomTarget(clientMessage).then(function() {
+        this.client.getInvocationService().invokeOnRandomTarget(clientMessage).then(function () {
             deferred.resolve();
         });
         return deferred.promise;
     }
 
     addDistributedObjectListener(listenerFunc: Function): Q.Promise<string> {
-        var handler = function(clientMessage: ClientMessage) {
-            var converterFunc = function(name: string, serviceName: string, eventType: string) {
+        var handler = function (clientMessage: ClientMessage) {
+            var converterFunc = function (name: string, serviceName: string, eventType: string) {
                 if (eventType === 'CREATED') {
                     listenerFunc(name, serviceName, 'created');
                 } else if (eventType === 'DESTROYED') {
