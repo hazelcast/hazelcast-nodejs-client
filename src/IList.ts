@@ -7,7 +7,7 @@ export interface IList<E> extends DistributedObject {
     /**
      * Appends the specified element to the end of the list.
      * @param element - element to be added
-     * @return `true` if this list has changed as a result of this operation, 'false' otherwise.
+     * @return `true` if this list has changed as a result of this operation, `false` otherwise.
      */
     add(element: E): Promise<boolean>;
 
@@ -22,7 +22,7 @@ export interface IList<E> extends DistributedObject {
     /**
      * Appends all elements in the specified array to the end of this list,
      * @param elements array to be appended
-     * @return `true` if this list has changed as a result of this operation, 'false' otherwise.
+     * @return `true` if this list has changed as a result of this operation, `false` otherwise.
      */
     addAll(elements: E[]): Promise<boolean>;
 
@@ -31,7 +31,7 @@ export interface IList<E> extends DistributedObject {
      * Shifts the subsequent elements to the right.
      * @param index position at which the array's elements should be inserted
      * @param elements array to be inserted
-     * @return `true` if this list has changed as a result of this operation, 'false' otherwise.
+     * @return `true` if this list has changed as a result of this operation, `false` otherwise.
      */
     addAllAt(index: number, elements: E[]): Promise<boolean>;
 
@@ -92,7 +92,7 @@ export interface IList<E> extends DistributedObject {
     /**
      * Removes the given element from this list.
      * @param element element to be removed
-     * @return `true` if this list has changed as a result of this operation, 'false' otherwise.
+     * @return `true` if this list has changed as a result of this operation, `false` otherwise.
      */
     remove(element: E): Promise<boolean>;
 
@@ -106,7 +106,7 @@ export interface IList<E> extends DistributedObject {
     /**
      * Removes given elements from the list.
      * @param elements elements to be removed
-     * @return `true` if this list has changed as a result of this operation, 'false' otherwise.
+     * @return `true` if this list has changed as a result of this operation, `false` otherwise.
      */
     removeAll(elements: E[]): Promise<boolean>;
 
@@ -120,7 +120,7 @@ export interface IList<E> extends DistributedObject {
     /**
      * Removes all elements from this list except the ones contained in the given array.
      * @param elements elements to retain
-     * @return `true` if this list has changed as a result of this operation, 'false' otherwise.
+     * @return `true` if this list has changed as a result of this operation, `false` otherwise.
      */
     retainAll(elements: E[]): Promise<boolean>;
 
@@ -138,7 +138,7 @@ export interface IList<E> extends DistributedObject {
     size(): Promise<number>;
 
     /**
-     * Return a view of this list that contains elements between index numbers from 'start' (inclusive) to `end' (exclusive)
+     * Return a view of this list that contains elements between index numbers from `start` (inclusive) to `end` (exclusive)
      * @param start start of the view
      * @param end end of the view
      */

@@ -140,7 +140,7 @@ export class List<E> extends PartitionSpecificProxy implements IList<E> {
         );
     }
 
-    private serializeList(input: Array<any>): Array<Data> {
+    private serializeList(input: Array<E>): Array<Data> {
         return input.map((each) => {
             return this.toData(each);
         });

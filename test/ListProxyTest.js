@@ -37,29 +37,29 @@ describe("List Proxy", function () {
 
     it("appends one item", function () {
         return listInstance.add(1).then(function () {
-            return listInstance.size().then(function (size) {
-                expect(size).to.equal(1);
-            });
-        })
+            return listInstance.size();
+        }).then(function (size) {
+            expect(size).to.equal(1);
+        });
     });
 
     it("inserts one item at index", function () {
         return listInstance.addAll([1, 2, 3]).then(function () {
-            return listInstance.addAt(1, 5).then(function (size) {
-                return listInstance.toArray();
-            }).then(function (all) {
-                expect(all).to.deep.equal([1, 5, 2, 3]);
-            });
-        })
+            return listInstance.addAt(1, 5);
+        }).then(function () {
+            return listInstance.toArray();
+        }).then(function (all) {
+            expect(all).to.deep.equal([1, 5, 2, 3]);
+        });
     });
 
     it("clears", function () {
         return listInstance.addAll([1, 2, 3]).then(function () {
             return listInstance.clear();
         }).then(function () {
-            return listInstance.size().then(function (size) {
-                expect(size).to.equal(0);
-            });
+            return listInstance.size();
+        }).then(function (size) {
+            expect(size).to.equal(0);
         });
     });
 
@@ -78,35 +78,33 @@ describe("List Proxy", function () {
     it("gets item at index", function () {
         var input = [1, 2, 3];
         return listInstance.addAll(input).then(function () {
-            return listInstance.get(1).then(function (result) {
-                expect(result).to.equal(2);
-            });
+            return listInstance.get(1);
+        }).then(function (result) {
+            expect(result).to.equal(2);
         });
     });
 
     it("removes item at index", function () {
         var input = [1, 2, 3];
         return listInstance.addAll(input).then(function () {
-            return listInstance.removeAt(1).then(function (replaced) {
-                expect(replaced).to.equal(2);
-            });
-        }).then(function () {
-            return listInstance.toArray().then(function (all) {
-                expect(all).to.deep.equal([1, 3]);
-            });
+            return listInstance.removeAt(1);
+        }).then(function (removed) {
+            expect(removed).to.equal(2);
+            return listInstance.toArray();
+        }).then(function (all) {
+            expect(all).to.deep.equal([1, 3]);
         });
     });
 
     it("replaces item at index", function () {
         var input = [1, 2, 3];
         return listInstance.addAll(input).then(function () {
-            return listInstance.set(1, 6).then(function (replaced) {
-                expect(replaced).to.equal(2);
-            });
-        }).then(function () {
-            return listInstance.toArray().then(function (all) {
-                expect(all).to.deep.equal([1, 6, 3]);
-            });
+            return listInstance.set(1, 6);
+        }).then(function (replaced) {
+            expect(replaced).to.equal(2);
+            return listInstance.toArray();
+        }).then(function (all) {
+            expect(all).to.deep.equal([1, 6, 3]);
         });
     });
 
@@ -114,47 +112,60 @@ describe("List Proxy", function () {
     it("contains", function () {
         var input = [1, 2, 3];
         return listInstance.addAll(input).then(function () {
-            return listInstance.contains(1).then(function (contains) {
-                expect(contains).to.be.true;
-            });
-        }).then(function () {
-            return listInstance.contains(5).then(function (contains) {
-                expect(contains).to.be.false;
-            });
+            return listInstance.contains(1);
+        }).then(function (contains) {
+            expect(contains).to.be.true;
+        });
+    });
+
+    it("does not contain", function () {
+        var input = [1, 2, 3];
+        return listInstance.addAll(input).then(function () {
+            return listInstance.contains(5);
+        }).then(function (contains) {
+            expect(contains).to.be.false;
         });
     });
 
     it("contains all", function () {
         return listInstance.addAll([1, 2, 3]).then(function () {
-            return listInstance.containsAll([1, 2]).then(function (contains) {
-                expect(contains).to.be.true;
-            });
-        }).then(function () {
-            return listInstance.containsAll([3, 4]).then(function (contains) {
-                expect(contains).to.be.false;
-            });
+            return listInstance.containsAll([1, 2]);
+        }).then(function (contains) {
+            expect(contains).to.be.true;
         });
     });
 
+    it("does not contain all", function () {
+        return listInstance.addAll([1, 2, 3]).then(function () {
+            return listInstance.containsAll([3, 4]);
+        }).then(function (contains) {
+            expect(contains).to.be.false;
+        });
+    });
 
     it("is empty", function () {
         return listInstance.isEmpty().then(function (empty) {
             expect(empty).to.be.true;
-            return listInstance.add(1);
-        }).then(function () {
-            return listInstance.isEmpty().then(function (empty) {
-                expect(empty).to.be.false;
-            })
-        })
+        });
     });
+
+
+    it("is not empty", function () {
+        return listInstance.add(1).then(function (empty) {
+            return listInstance.isEmpty();
+        }).then(function (empty) {
+            expect(empty).to.be.false;
+        });
+    });
+
 
     it("removes an entry", function () {
         return listInstance.addAll([1, 2, 3]).then(function () {
             return listInstance.remove(1)
         }).then(function () {
-            return listInstance.toArray().then(function (all) {
-                expect(all).to.deep.equal([2, 3]);
-            });
+            return listInstance.toArray();
+        }).then(function (all) {
+            expect(all).to.deep.equal([2, 3]);
         });
     });
 
@@ -162,9 +173,9 @@ describe("List Proxy", function () {
         return listInstance.addAll([1, 2, 3]).then(function () {
             return listInstance.removeAt(1)
         }).then(function () {
-            return listInstance.toArray().then(function (all) {
-                expect(all).to.deep.equal([1, 3]);
-            });
+            return listInstance.toArray();
+        }).then(function (all) {
+            expect(all).to.deep.equal([1, 3]);
         });
     });
 
@@ -172,9 +183,9 @@ describe("List Proxy", function () {
         return listInstance.addAll([1, 2, 3, 4]).then(function () {
             return listInstance.removeAll([1, 2]);
         }).then(function () {
-            return listInstance.toArray().then(function (all) {
-                expect(all).to.deep.equal([3, 4]);
-            });
+            return listInstance.toArray();
+        }).then(function (all) {
+            expect(all).to.deep.equal([3, 4]);
         });
     });
 
@@ -182,33 +193,33 @@ describe("List Proxy", function () {
         return listInstance.addAll([1, 2, 3, 4]).then(function () {
             return listInstance.retainAll([1, 2]);
         }).then(function () {
-            return listInstance.toArray().then(function (all) {
-                expect(all).to.deep.equal([1, 2]);
-            });
+            return listInstance.toArray();
+        }).then(function (all) {
+            expect(all).to.deep.equal([1, 2]);
         });
     });
 
     it("finds index of the element", function () {
         return listInstance.addAll([1, 2, 4, 4]).then(function () {
-            return listInstance.indexOf(4).then(function (index) {
-                expect(index).to.equal(2);
-            });
+            return listInstance.indexOf(4);
+        }).then(function (index) {
+            expect(index).to.equal(2);
         });
     });
 
     it("finds last index of the element", function () {
         return listInstance.addAll([1, 2, 4, 4]).then(function () {
-            return listInstance.lastIndexOf(4).then(function (index) {
-                expect(index).to.equal(3);
-            });
+            return listInstance.lastIndexOf(4);
+        }).then(function (index) {
+            expect(index).to.equal(3);
         });
     });
 
     it("returns a sub list", function () {
         return listInstance.addAll([1, 2, 3, 4, 5, 6]).then(function () {
-            return listInstance.subList(1, 5).then(function (subList) {
-                expect(subList).to.deep.equal([2, 3, 4, 5]);
-            });
+            return listInstance.subList(1, 5);
+        }).then(function (subList) {
+            expect(subList).to.deep.equal([2, 3, 4, 5]);
         });
     });
 
@@ -228,7 +239,7 @@ describe("List Proxy", function () {
         })
     });
 
-    it("listens for removed entry", function (done) {
+    it("listens for removed entry with value included", function (done) {
         this.timeout(5000);
         var listener = {
             "itemRemoved" : function (item) {
@@ -240,6 +251,24 @@ describe("List Proxy", function () {
             }
         };
         return listInstance.addItemListener(listener, true).then(function () {
+            return listInstance.add(1);
+        }).then(function () {
+            return listInstance.remove(1);
+        })
+    });
+
+    it("listens for removed entry with value not included", function (done) {
+        this.timeout(5000);
+        var listener = {
+            "itemRemoved" : function (item) {
+                if (item == null) {
+                    done()
+                } else {
+                    done(new Error("Expected 1, got " + item))
+                }
+            }
+        };
+        return listInstance.addItemListener(listener, false).then(function () {
             return listInstance.add(1);
         }).then(function () {
             return listInstance.remove(1);
