@@ -20,7 +20,7 @@ import {ListRemoveWithIndexCodec} from '../codec/ListRemoveWithIndexCodec';
 import {ListGetCodec} from '../codec/ListGetCodec';
 import {ListIndexOfCodec} from '../codec/ListIndexOfCodec';
 import {ListSubCodec} from '../codec/ListSubCodec';
-import {ListAddAllWithIndexCodec} from '../../lib/codec/ListAddAllWithIndexCodec';
+import {ListAddAllWithIndexCodec} from '../codec/ListAddAllWithIndexCodec';
 import {ListSetCodec} from '../codec/ListSetCodec';
 import {ListLastIndexOfCodec} from '../codec/ListLastIndexOfCodec';
 import ClientMessage = require('../ClientMessage');
