@@ -16,7 +16,7 @@
     "rimraf": "2.5.2",
     "sinon": "1.17.3",
     "tslint": "3.10.1",
-    "typedoc": "0.3.12",
+    "typedoc": "0.4.1",
     "typescript": "1.8.10",
     "typings": "0.8.1",
     "winston": "2.2.0"
@@ -28,7 +28,7 @@
     "test": "mocha --recursive",
     "coverage": "rimraf coverage && istanbul cover --root lib/ --include-all-sources _mocha -- --recursive --reporter spec",
     "postcoverage": "remap-istanbul -i coverage/coverage.json -o coverage/cobertura-coverage.xml -t cobertura && remap-istanbul -i coverage/coverage.json -o coverage -t html",
-    "generate-docs": "rimraf docs && typedoc --out docs/ --exclude src/codec/*.ts --module commonjs src typings/main",
+    "generate-docs": "rimraf docs && typedoc --out docs/ --exclude **/codec/**/* --module commonjs src lib.es6.d.ts typings/main.d.ts --excludeExternals",
     "lint": "tslint src/*.ts src/**/*.ts src/**/**/*.ts"
   },
   "repository": {
