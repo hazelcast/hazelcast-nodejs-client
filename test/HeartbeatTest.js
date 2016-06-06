@@ -83,6 +83,29 @@ describe('Hearbeat', function() {
         }).catch(done);
     });
 
+    it('emits shutdown when lost connection to cluster', function (done) {
+        var member;
+        RC.startMember(cluster.id).then(function(m) {
+            member = m;
+            var cfg = new Config.ClientConfig();
+            cfg.properties['hazelcast.client.heartbeat.interval'] = 500;
+            cfg.properties['hazelcast.client.heartbeat.timeout'] = 2000;
+            return HazelcastClient.newHazelcastClient(cfg);
+        }).then(function(client) {
+            var expected = 'shuttingDown';
+            client.lifecycleService.on('lifecycleEvent', function(state) {
+                if (state === 'shuttingDown' && expected === 'shuttingDown') {
+                    expected = 'shutdown';
+                } else if (state === 'shutdown' && expected === 'shutdown') {
+                    done();
+                } else {
+                    done('Expected ' + expected + '. Got ' + state);
+                }
+            });
+            RC.terminateMember(cluster.id, member.uuid);
+        });
+    });
+
     function simulateHeartbeatLost(client, address, timeout) {
         client.connectionManager.establishedConnections[address].lastRead = client.connectionManager.establishedConnections[address].lastRead - timeout;
     }
