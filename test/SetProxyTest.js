@@ -127,6 +127,16 @@ describe("Set Proxy", function () {
         });
     });
 
+    it('clear', function() {
+        return setInstance.addAll([1, 2, 3, 4]).then(function() {
+            return setInstance.clear();
+        }).then(function() {
+            return setInstance.size();
+        }).then(function(s) {
+            return expect(s).to.equal(0);
+        });
+    });
+
     it("listens for added entry", function (done) {
         this.timeout(5000);
         return setInstance.addItemListener({
