@@ -120,7 +120,7 @@ class ClusterService extends EventEmitter {
         this.logger.warn('ClusterService', 'Connection closed to ' + Address.encodeToString(connection.address));
         if (connection.address === this.getOwnerConnection().address) {
             this.ownerConnection = null;
-            this.connectToCluster();
+            this.connectToCluster().catch(this.client.shutdown.bind(this.client));
         }
     }
 
