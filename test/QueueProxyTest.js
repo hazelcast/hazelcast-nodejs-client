@@ -305,8 +305,9 @@ describe("Queue Proxy", function () {
                     done(new Error('Expected item_new, got ' + item));
                 }
             }
-        }, true);
-        queue.add('item_new');
+        }, true).then(function () {
+            queue.add('item_new');
+        })
     });
 
     it('addItemListener itemAdded with includeValue=false', function(done) {
@@ -314,8 +315,9 @@ describe("Queue Proxy", function () {
             itemAdded: function(item) {
                 done();
             }
-        }, false);
-        queue.add('item_new');
+        }, false).then(function() {
+            queue.add('item_new');
+        });
     });
 
 
@@ -328,8 +330,9 @@ describe("Queue Proxy", function () {
                     done(new Error('Expected item_new, got ' + item));
                 }
             }
-        }, true);
-        queue.remove('item0');
+        }, true).then(function() {
+            queue.remove('item0');
+        });
     });
 
     it('removeItemListener', function() {
