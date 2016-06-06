@@ -10,10 +10,11 @@ With its various distributed data structures, distributed caching capabilities, 
 [![Join the chat at https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## Implemented Features
-* Map
-    * Get
-    * Put
-    * Remove
+* Map (except Predicates, EntryProcessors)
+* Set
+* Queue
+* List
+* Hazelcast Native Serialization
 * Distributed Object Listener
 * Lifecycle Service
 * Smart Client
@@ -43,19 +44,12 @@ HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
     })
 });
 ```
-> NOTE: Typescript users should install some typings in order to compile the project.
-```
-npm install typings -g
-typings install q
-typings install long
-typings install node
-```
+See [code samples](code_samples/) for further information.
 
 ## Development
 
 ### Build And Install `hazelcast-client` From Sources
 - clone repo [https://github.com/hazelcast/hazelcast-nodejs-client.git](https://github.com/hazelcast/hazelcast-nodejs-client.git)
-- install global dependencies `npm install -g typescript typings`
 - install dependencies `npm install`
 - compile TypeScript `npm run compile`
 - link package locally `npm link`
