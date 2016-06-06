@@ -1,4 +1,5 @@
 /* tslint:disable */
+
 export class ListMessageType {
 static LIST_SIZE = 0x0501;
 static LIST_CONTAINS = 0x0502;
