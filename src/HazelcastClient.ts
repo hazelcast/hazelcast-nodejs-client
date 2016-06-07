@@ -4,7 +4,7 @@ import {ClientConfig} from './Config';
 import * as Q from 'q';
 import {IMap} from './proxy/IMap';
 import {ISet} from './proxy/ISet';
-import {LoggingService} from './LoggingService';
+import {LoggingService} from './logging/LoggingService';
 import {LifecycleService, LifecycleEvent} from './LifecycleService';
 import {ClientGetDistributedObjectsCodec} from './codec/ClientGetDistributedObjectsCodec';
 import {DistributedObject} from './DistributedObject';
@@ -13,7 +13,7 @@ import ClientConnectionManager = require('./invocation/ClientConnectionManager')
 import ProxyManager = require('./proxy/ProxyManager');
 import PartitionService = require('./PartitionService');
 import ClusterService = require('./invocation/ClusterService');
-import Heartbeat = require('./Heartbeat');
+import Heartbeat = require('./HeartbeatService');
 import ClientMessage = require('./ClientMessage');
 import {IQueue} from './proxy/IQueue';
 import {IList} from './proxy/IList';

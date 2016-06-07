@@ -1,9 +1,9 @@
 import {ClientPingCodec} from './codec/ClientPingCodec';
 import HazelcastClient from './HazelcastClient';
 import ClientConnection = require('./invocation/ClientConnection');
-import {ConnectionHeartbeatListener} from './ConnectionHeartbeatListener';
+import {ConnectionHeartbeatListener} from './core/ConnectionHeartbeatListener';
 import * as Q from 'q';
-import {LoggingService} from './LoggingService';
+import {LoggingService} from './logging/LoggingService';
 import Address = require('./Address');
 
 const PROPERTY_HEARTBEAT_INTERVAL: string = 'hazelcast.client.heartbeat.interval';

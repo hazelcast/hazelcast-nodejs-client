@@ -1,7 +1,7 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {Utils} from './Utils';
-import Address = require("./../Address");
+import Address = require("../Address");
 
 class DistributedObjectInfoCodec {
    static decode(clientMessage:ClientMessage):any {

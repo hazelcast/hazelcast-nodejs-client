@@ -6,7 +6,7 @@ import {Data} from '../serialization/Data';
 import Address = require('../Address');
 import ExceptionCodec = require('../codec/ExceptionCodec');
 import {BitsUtil} from '../BitsUtil';
-import {LoggingService} from '../LoggingService';
+import {LoggingService} from '../logging/LoggingService';
 import {EventEmitter} from 'events';
 import HazelcastClient from '../HazelcastClient';
 

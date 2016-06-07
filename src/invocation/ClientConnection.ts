@@ -2,7 +2,7 @@ import net = require('net');
 import * as Q from 'q';
 import Address = require('../Address');
 import {BitsUtil} from '../BitsUtil';
-import {LoggingService} from '../LoggingService';
+import {LoggingService} from '../logging/LoggingService';
 
 class ClientConnection {
     address: Address;

@@ -1,6 +1,6 @@
-import HazelcastClient = require('./HazelcastClient');
-import DefaultLogger = require('./DefaultLogger');
-import NoLogger = require('./NoLogger');
+import HazelcastClient = require('../HazelcastClient');
+import {NoLogger} from './NoLogger';
+import {DefaultLogger} from './DefaultLogger';
 export enum LogLevel {
     ERROR = 0,
     WARN = 1,

@@ -3,7 +3,7 @@ import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
 import Address = require('../Address');
 import {Data} from '../serialization/Data';
-import {Member} from '../Member';
+import {Member} from '../core/Member';
 import {AddressCodec} from './AddressCodec';
 
 export class MemberCodec {

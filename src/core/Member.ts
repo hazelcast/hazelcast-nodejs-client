@@ -1,4 +1,4 @@
-import Address = require('./Address');
+import Address = require('../Address');
 export class Member {
     /**
      * Network address of member.

@@ -8,7 +8,7 @@ import InvocationService = require('./InvocationService');
 import {GroupConfig, ClientNetworkConfig} from '../Config';
 
 import ConnectionAuthenticator = require('./ConnectionAuthenticator');
-import {LoggingService} from '../LoggingService';
+import {LoggingService} from '../logging/LoggingService';
 import {EventEmitter} from 'events';
 import HazelcastClient from '../HazelcastClient';
 
