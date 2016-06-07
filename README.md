@@ -46,6 +46,13 @@ HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
 ```
 See [code samples](code_samples/) for further information.
 
+## What's New in 0.3
+* Complete map Proxy excluding Predicates and Entry processors
+* Set Proxy
+* List Proxy
+* Queue Proxy
+* Interoperability with Java and other clients via Hazelcast Serialization.
+
 ## Development
 
 ### Build And Install `hazelcast-client` From Sources
