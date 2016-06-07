@@ -1,4 +1,4 @@
-import {IList} from '../IList';
+import {IList} from './IList';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {ListAddCodec} from '../codec/ListAddCodec';
 import {ListSizeCodec} from '../codec/ListSizeCodec';
@@ -25,7 +25,7 @@ import {ListSetCodec} from '../codec/ListSetCodec';
 import {ListLastIndexOfCodec} from '../codec/ListLastIndexOfCodec';
 import ClientMessage = require('../ClientMessage');
 
-export class List<E> extends PartitionSpecificProxy implements IList<E> {
+export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
 
     add(element: E): Q.Promise<boolean> {
         return this.encodeInvoke<boolean>(ListAddCodec, this.toData(element));

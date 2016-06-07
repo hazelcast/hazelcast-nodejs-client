@@ -1,7 +1,7 @@
 import * as Q from 'q';
 import {DistributedObject} from '../DistributedObject';
-import {Map} from './Map';
-import {Set} from './Set';
+import {MapProxy} from './MapProxy';
+import {SetProxy} from './SetProxy';
 import {BaseProxy} from './BaseProxy';
 import {ClientCreateProxyCodec} from '../codec/ClientCreateProxyCodec';
 import ClientConnection = require('../invocation/ClientConnection');
@@ -11,8 +11,8 @@ import defer = Q.defer;
 import {ClientAddDistributedObjectListenerCodec} from '../codec/ClientAddDistributedObjectListenerCodec';
 import {ClientRemoveDistributedObjectListenerCodec} from '../codec/ClientRemoveDistributedObjectListenerCodec';
 import HazelcastClient from '../HazelcastClient';
-import {Queue} from './Queue';
-import {List} from './List';
+import {QueueProxy} from './QueueProxy';
+import {ListProxy} from './ListProxy';
 
 class ProxyManager {
     public MAP_SERVICE: string = 'hz:impl:mapService';
@@ -21,10 +21,10 @@ class ProxyManager {
     public LIST_SERVICE: string = 'hz:impl:listService';
 
     public service: any = {
-        'hz:impl:mapService': Map,
-        'hz:impl:setService': Set,
-        'hz:impl:queueService': Queue,
-        'hz:impl:listService': List
+        'hz:impl:mapService': MapProxy,
+        'hz:impl:setService': SetProxy,
+        'hz:impl:queueService': QueueProxy,
+        'hz:impl:listService': ListProxy
     };
 
     private proxies: { [proxyName: string]: DistributedObject; } = {};

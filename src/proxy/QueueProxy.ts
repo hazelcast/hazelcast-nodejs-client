@@ -1,4 +1,4 @@
-import {IQueue} from '../IQueue';
+import {IQueue} from './IQueue';
 import {ItemListener, ItemEventType} from '../core/ItemListener';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {QueueSizeCodec} from '../codec/QueueSizeCodec';
@@ -24,7 +24,7 @@ import {QueueCompareAndRetainAllCodec} from '../codec/QueueCompareAndRetainAllCo
 import {QueueAddListenerCodec} from '../codec/QueueAddListenerCodec';
 import ClientMessage = require('../ClientMessage');
 import {QueueRemoveListenerCodec} from '../codec/QueueRemoveListenerCodec';
-export class Queue<E> extends PartitionSpecificProxy implements IQueue<E> {
+export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
 
     add(item: E): Q.Promise<boolean> {
         var deferred = Q.defer<boolean>();

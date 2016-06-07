@@ -1,6 +1,6 @@
 import Promise = Q.Promise;
-import {DistributedObject} from './DistributedObject';
-import {ItemListener} from './core/ItemListener';
+import {DistributedObject} from '../DistributedObject';
+import {ItemListener} from '../core/ItemListener';
 export interface IQueue<E> extends DistributedObject {
     /**
      * Adds given item to the end of the queue. Operation is successful only

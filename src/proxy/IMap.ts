@@ -1,7 +1,7 @@
 import * as Q from 'q';
-import {DistributedObject} from './DistributedObject';
-import {EntryView} from './core/EntryView';
-import {IMapListener} from './core/MapListener';
+import {DistributedObject} from '../DistributedObject';
+import {EntryView} from '../core/EntryView';
+import {IMapListener} from '../core/MapListener';
 export interface IMap<K, V> extends DistributedObject {
 
     /**

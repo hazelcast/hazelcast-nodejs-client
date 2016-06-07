@@ -1,5 +1,5 @@
 import {BaseProxy} from './BaseProxy';
-import {IMap} from '../IMap';
+import {IMap} from './IMap';
 import * as Q from 'q';
 import {Data} from '../serialization/Data';
 import {MapPutCodec} from '../codec/MapPutCodec';
@@ -46,7 +46,7 @@ import {EntryEventType} from '../core/EntryEventType';
 import {MapAddEntryListenerToKeyCodec} from '../codec/MapAddEntryListenerToKeyCodec';
 import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
 import {assertNotNull} from '../Util';
-export class Map<K, V> extends BaseProxy implements IMap<K, V> {
+export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     containsKey(key: K): Q.Promise<boolean> {
         assertNotNull(key);
         var keyData = this.toData(key);

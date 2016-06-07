@@ -1,6 +1,6 @@
 import Promise = Q.Promise;
-import {DistributedObject} from './DistributedObject';
-import {ItemListener} from './core/ItemListener';
+import {DistributedObject} from '../DistributedObject';
+import {ItemListener} from '../core/ItemListener';
 
 export interface ISet<E> extends DistributedObject {
     /**

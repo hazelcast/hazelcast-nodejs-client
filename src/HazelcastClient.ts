@@ -2,8 +2,8 @@ import {SerializationService, SerializationServiceV1} from './serialization/Seri
 import {InvocationService, ListenerService} from './invocation/InvocationService';
 import {ClientConfig} from './Config';
 import * as Q from 'q';
-import {IMap} from './IMap';
-import {ISet} from './ISet';
+import {IMap} from './proxy/IMap';
+import {ISet} from './proxy/ISet';
 import {LoggingService} from './LoggingService';
 import {LifecycleService, LifecycleEvent} from './LifecycleService';
 import {ClientGetDistributedObjectsCodec} from './codec/ClientGetDistributedObjectsCodec';
@@ -15,8 +15,8 @@ import PartitionService = require('./PartitionService');
 import ClusterService = require('./invocation/ClusterService');
 import Heartbeat = require('./Heartbeat');
 import ClientMessage = require('./ClientMessage');
-import {IQueue} from './IQueue';
-import {IList} from './IList';
+import {IQueue} from './proxy/IQueue';
+import {IList} from './proxy/IList';
 
 export default class HazelcastClient {
 

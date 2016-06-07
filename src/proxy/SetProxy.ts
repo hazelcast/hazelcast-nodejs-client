@@ -1,4 +1,4 @@
-import {ISet} from '../ISet';
+import {ISet} from './ISet';
 import * as Q from 'q';
 import {ItemListener} from '../core/ItemListener';
 import {Data} from '../serialization/Data';
@@ -19,7 +19,7 @@ import {SetRemoveListenerCodec} from '../codec/SetRemoveListenerCodec';
 import ClientMessage = require('../ClientMessage');
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 
-export class Set<E> extends PartitionSpecificProxy implements ISet<E> {
+export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
 
     add(entry: E): Q.Promise<boolean> {
         return this.encodeInvoke<boolean>(SetAddCodec, this.toData(entry));
