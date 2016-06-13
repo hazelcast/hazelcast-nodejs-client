@@ -1,22 +1,20 @@
-import * as Q from 'q';
-
 export interface Lock {
 
     /**
-     * Acquires the lock, waiting if necessary.
+     * Acquires the lock, waiting indefinitely if necessary.
      * The returned promise will be resolved as soon as the lock becomes available.
      * After this method is called the user must call `unlock` to release the lock.
      */
     lock(): Promise<void>;
 
     /**
-     * Leases the lock for a period of time, waiting if necessary.
+     * Leases the lock for a specified period of time, waiting indefinitely if necessary.
      * The returned promise will be resolved as soon as the lock becomes available.
      * The lock will be held for the specified amount of time and then released automatically.
      *
-     * @param leaseSeconds for how many seconds the lock should be held.
+     * @param leaseMillis period of time in milliseconds for which the lock should be held.
      */
-    lease(leaseSeconds: number): Promise<void>;
+    lease(leaseMillis: number): Promise<void>;
 
     /**
      * Tries to acquire the lock, but does not wait for it to become available.
@@ -26,18 +24,18 @@ export interface Lock {
 
     /**
      * Tries to acquire the lock, waiting for the specified amount of time.
-     * @param waitSeconds for how many seconds to wait for the lock to become available.
+     * @param waitMillis period of time in milliseconds to wait for the lock to become available.
      * @returns `true` if the lock was obtained within the specified period, `false` otherwise.
      */
-    waitLock(waitSeconds: number): Promise<boolean>;
+    waitLock(waitMillis: number): Promise<boolean>;
 
     /**
-     * Tries to lease the lock for `leaseSeconds`, waiting for the lock to become available for `waitSeconds`.
-     * @param waitSeconds for how many seconds to wait for the lock to become available.
-     * @param leaseSeconds for how many seconds the lock should be held.
+     * Tries to lease the lock for `leaseMillis`, waiting for the lock to become available for `waitMillis`.
+     * @param waitMillis period of time in milliseconds to wait for the lock to become available.
+     * @param leaseMillis period of time in milliseconds for which the lock should be held.
      * @returns `true` if the lock was obtained within the specified period, `false` otherwise.
      */
-    waitLease(waitSeconds: number, leaseSeconds: number): Promise<boolean>;
+    waitLease(waitMillis: number, leaseMillis: number): Promise<boolean>;
 
     /**
      * Unlocks the lock.
