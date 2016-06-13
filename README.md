@@ -96,3 +96,4 @@ Hazelcast is available under the Apache 2 License. Please see the [Licensing app
 Copyright (c) 2008-2016, Hazelcast, Inc. All Rights Reserved.
 
 Visit [www.hazelcast.com](http://www.hazelcast.com) for more info.
+
