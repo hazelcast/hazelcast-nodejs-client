@@ -1,41 +1,29 @@
-export interface Lock {
+import Promise = Q.Promise;
+import {DistributedObject} from '../DistributedObject';
+
+export interface ILock extends DistributedObject {
 
     /**
-     * Acquires the lock, waiting indefinitely if necessary.
-     * The returned promise will be resolved as soon as the lock becomes available.
-     * After this method is called the user must call `unlock` to release the lock.
+     * Acquires this lock, waiting indefinitely for it to become available.
+     * The returned promise will be resolved as soon as this lock is acquired.
+     * If lease time is specified then this lock will be held for
+     * the specified amount of time and then released automatically.
+     * Otherwise it will be held indefinitely up until the user invokes `unlock`.
+     * @param leaseMillis period of time in milliseconds for which this lock should be held.
      */
-    lock(): Promise<void>;
+    lock(leaseMillis?: number): Promise<void>;
 
     /**
-     * Leases the lock for a specified period of time, waiting indefinitely if necessary.
-     * The returned promise will be resolved as soon as the lock becomes available.
-     * The lock will be held for the specified amount of time and then released automatically.
-     *
-     * @param leaseMillis period of time in milliseconds for which the lock should be held.
+     * Tries to acquire this lock with a timeout specified in `waitMillis` parameter.
+     * The returned promise will be resolved either when this lock is acquired or when timeout is reached.
+     * If lease time is specified then this lock will be held for
+     * the specified amount of time and then released automatically.
+     * Otherwise it will be held indefinitely up until the user invokes `unlock`.
+     * @param waitMillis period of time in milliseconds to wait for this lock to become available.
+     * @param leaseMillis period of time in milliseconds for which this lock should be held.
+     * @returns `true` if this lock was obtained in the specified time period, `false` otherwise.
      */
-    lease(leaseMillis: number): Promise<void>;
-
-    /**
-     * Tries to acquire the lock, but does not wait for it to become available.
-     * @returns `true` if lock was obtained right away, `false` otherwise.
-     */
-    tryLock(): Promise<boolean>;
-
-    /**
-     * Tries to acquire the lock, waiting for the specified amount of time.
-     * @param waitMillis period of time in milliseconds to wait for the lock to become available.
-     * @returns `true` if the lock was obtained within the specified period, `false` otherwise.
-     */
-    waitLock(waitMillis: number): Promise<boolean>;
-
-    /**
-     * Tries to lease the lock for `leaseMillis`, waiting for the lock to become available for `waitMillis`.
-     * @param waitMillis period of time in milliseconds to wait for the lock to become available.
-     * @param leaseMillis period of time in milliseconds for which the lock should be held.
-     * @returns `true` if the lock was obtained within the specified period, `false` otherwise.
-     */
-    waitLease(waitMillis: number, leaseMillis: number): Promise<boolean>;
+    tryLock(waitMillis?: number, leaseMillis?: number): Promise<boolean>;
 
     /**
      * Unlocks the lock.
@@ -46,28 +34,28 @@ export interface Lock {
      * Forcefully unlocks the lock.
      * Usually, the same client has to call `unlock` the same amount of times
      * as the amount of times it has called `lock`, otherwise the lock will remain in locked state.
-     * This method will disregard the acquire count and release the lock immediately.
+     * This method will disregard the acquire count and release this lock immediately.
      */
     forceUnlock(): Promise<void>;
 
     /**
-     * Checks if this lock is in the locked state.
+     * @returns `true` if this lock is currently in the locked state, `false` otherwise.
      */
     isLocked(): Promise<boolean>;
 
     /**
-     * Checks if this lock was put into the locked state by this client.
+     * @returns `true` if this lock is currently held by this client, `false` otherwise.
      */
     isLockedByThisClient(): Promise<boolean>;
 
     /**
-     * Returns the number of times this lock was acquired by its owner,
+     * @returns the number of times this lock was acquired by its owner,
      * i.e. how many times the `unlock` method should be invoked for the lock to become free.
      */
     getLockCount(): Promise<number>;
 
     /**
-     * Returns the number of milliseconds in which the lease for this lock will expire.
+     * @returns the number of milliseconds in which the lease for this lock will expire.
      */
     getRemainingLeaseTime(): Promise<number>;
 }
