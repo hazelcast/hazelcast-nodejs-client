@@ -5,7 +5,7 @@ import {ILock} from './ILock';
 import {LockLockCodec} from '../codec/LockLockCodec';
 import {LockGetRemainingLeaseTimeCodec} from '../codec/LockGetRemainingLeaseTimeCodec';
 import {LockTryLockCodec} from '../codec/LockTryLockCodec';
-import {LockUnlockCodec} from '../../lib/codec/LockUnlockCodec';
+import {LockUnlockCodec} from '../codec/LockUnlockCodec';
 import {LockForceUnlockCodec} from '../codec/LockForceUnlockCodec';
 import {LockIsLockedCodec} from '../codec/LockIsLockedCodec';
 import {LockIsLockedByCurrentThreadCodec} from '../codec/LockIsLockedByCurrentThreadCodec';
