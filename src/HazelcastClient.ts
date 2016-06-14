@@ -17,6 +17,7 @@ import Heartbeat = require('./HeartbeatService');
 import ClientMessage = require('./ClientMessage');
 import {IQueue} from './proxy/IQueue';
 import {IList} from './proxy/IList';
+import {ILock} from './proxy/ILock';
 
 export default class HazelcastClient {
 
@@ -122,11 +123,21 @@ export default class HazelcastClient {
     /**
      * Returns the distributed set instance with given name.
      * @param name
-     * @returns {ISet<K, V>}
+     * @returns {ISet<E>}
      */
     getSet<E>(name: string): ISet<E> {
         return <ISet<E>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.SET_SERVICE);
     }
+
+    /**
+     * Returns the distributed lock instance with given name.
+     * @param name
+     * @returns {ILock}
+     */
+    getLock(name: string): ILock {
+        return <ILock>this.proxyManager.getOrCreateProxy(name, this.proxyManager.LOCK_SERVICE);
+    }
+
 
     /**
      * Returns the distributed queue instance with given name.

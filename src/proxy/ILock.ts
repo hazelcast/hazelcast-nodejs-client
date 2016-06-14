@@ -14,16 +14,17 @@ export interface ILock extends DistributedObject {
     lock(leaseMillis?: number): Promise<void>;
 
     /**
-     * Tries to acquire this lock with a timeout specified in `waitMillis` parameter.
+     * Tries to acquire this lock within a specified timeout.
      * The returned promise will be resolved either when this lock is acquired or when timeout is reached.
+     * Setting timeout to -1 will make this method wait for the lock availability indefinitely. 
      * If lease time is specified then this lock will be held for
      * the specified amount of time and then released automatically.
      * Otherwise it will be held indefinitely up until the user invokes `unlock`.
-     * @param waitMillis period of time in milliseconds to wait for this lock to become available.
+     * @param timeoutMillis period of time in milliseconds to wait for this lock to become available.
      * @param leaseMillis period of time in milliseconds for which this lock should be held.
      * @returns `true` if this lock was obtained in the specified time period, `false` otherwise.
      */
-    tryLock(waitMillis?: number, leaseMillis?: number): Promise<boolean>;
+    tryLock(timeoutMillis?: number, leaseMillis?: number): Promise<boolean>;
 
     /**
      * Unlocks the lock.
