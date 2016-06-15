@@ -41,6 +41,7 @@ describe("Lock Proxy", function () {
 
     after(function () {
         clientOne.shutdown();
+        clientTwo.shutdown();
         return Controller.shutdownCluster(cluster.id);
     });
 
@@ -125,10 +126,16 @@ describe("Lock Proxy", function () {
     });
 
     it("correctly reports remaining lease time", function () {
+        var firstLeaseTime;
+        var secondLeaseTime;
         return lockOne.lock(1000).then(function () {
             return lockOne.getRemainingLeaseTime();
         }).then(function (remaining) {
-            expect(remaining).to.be.greaterThan(900);
+            firstLeaseTime = remaining;
+            return lockOne.getRemainingLeaseTime();
+        }).then(function (remaining) {
+            secondLeaseTime = remaining;
+            expect(secondLeaseTime).to.be.lessThan(firstLeaseTime);
         })
     });
 
