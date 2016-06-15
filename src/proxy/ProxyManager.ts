@@ -13,10 +13,12 @@ import {ClientRemoveDistributedObjectListenerCodec} from '../codec/ClientRemoveD
 import HazelcastClient from '../HazelcastClient';
 import {QueueProxy} from './QueueProxy';
 import {ListProxy} from './ListProxy';
+import {LockProxy} from './LockProxy';
 
 class ProxyManager {
     public MAP_SERVICE: string = 'hz:impl:mapService';
     public SET_SERVICE: string = 'hz:impl:setService';
+    public LOCK_SERVICE: string = 'hz:impl:lockService';
     public QUEUE_SERVICE: string = 'hz:impl:queueService';
     public LIST_SERVICE: string = 'hz:impl:listService';
 
@@ -24,7 +26,8 @@ class ProxyManager {
         'hz:impl:mapService': MapProxy,
         'hz:impl:setService': SetProxy,
         'hz:impl:queueService': QueueProxy,
-        'hz:impl:listService': ListProxy
+        'hz:impl:listService': ListProxy,
+        'hz:impl:lockService': LockProxy
     };
 
     private proxies: { [proxyName: string]: DistributedObject; } = {};
