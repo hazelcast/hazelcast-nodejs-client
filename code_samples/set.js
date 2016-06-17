@@ -2,29 +2,29 @@ var Client = require('../.').Client;
 
 var insertPerson = function(myset, val){
     return myset.add(val).then(function(previousVal){
-       console.log('Added value: ' + JSON.stringify(val) + ' Insert operation: ' +JSON.stringify(previousVal));
+       console.log('Added value: ' + val + ' Insert operation: ' +JSON.stringify(previousVal));
     });
 };
 
 var removePerson = function(myset,val){
     return myset.remove(val).then(function(previousVal) {
-        console.log('Removed value: ' + JSON.stringify(val));
+        console.log('Removed value: ' + val);
     });
 };
 
 
 var containPerson = function(myset, val){
     return myset.contains(val).then(function(previousVal){
-        if(previousVal === true) 
-            console.log("Set contains the value " + JSON.stringify(val)) ;
+        if(previousVal === true)
+            console.log("Set contains the value " + val) ;
         else
-            console.log("Set does not contain the value " + JSON.stringify(val));
+            console.log("Set does not contain the value " + val);
     });
 };
 
 var totalPeople = function(myset){
     return myset.size().then(function(previousVal){
-       console.log("Set consists of " + JSON.stringify(previousVal) + " elements"); 
+       console.log("Set consists of " + JSON.stringify(previousVal) + " elements");
     });
 }
 

@@ -13,7 +13,7 @@ var removePerson = function (map, key) {
 
 var getPerson = function (map, key) {
     return map.get(key).then(function(val) {
-        console.log('Person with id ' + key + ': ' + JSON.stringify(val));
+        console.log('Person with id ' + JSON.stringify(key) + ': ' + JSON.stringify(val));
     });
 };
 

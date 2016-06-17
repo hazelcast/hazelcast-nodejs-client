@@ -2,7 +2,7 @@ var Client = require('../.').Client;
 
 var insertPerson = function (queue, val) {
     return queue.add(val).then(function(previousVal) {
-        console.log('Added value: ' + JSON.stringify(val) + ',  previous value: ' + JSON.stringify(previousVal));
+        console.log('Added value: ' + val + ',  previous value: ' + JSON.stringify(previousVal));
     });
 };
 
