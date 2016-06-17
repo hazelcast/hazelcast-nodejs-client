@@ -1,13 +1,13 @@
 var Client = require('../.').Client;
 var insertPerson = function (map, key, val, ttl) {
     return map.put(key, val, ttl).then(function(previousVal) {
-        console.log('Put key: ' + JSON.stringify(key) + ', value: ' + JSON.stringify(val) + ',  previous value: ' + JSON.stringify(previousVal));
+        console.log('Put key: ' + key + ', value: ' + JSON.stringify(val) + ',  previous value: ' + JSON.stringify(previousVal));
     });
 };
 
 var removePerson = function (map, key) {
     return map.remove(key).then(function() {
-        console.log('Removed ' + JSON.stringify(key));
+        console.log('Removed ' + key);
     });
 };
 
