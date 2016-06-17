@@ -2,12 +2,12 @@ var Client = require('../.').Client;
 
 var insertPerson = function(myset, val){
     return myset.add(val).then(function(previousVal){
-       console.log('Added value: ' + val + ' Insert operation: ' +JSON.stringify(previousVal));
+       console.log('Added value: ' + val + ' Insert operation: ' + previousVal);
     });
 };
 
 var removePerson = function(myset,val){
-    return myset.remove(val).then(function(previousVal) {
+    return myset.remove(val).then(function() {
         console.log('Removed value: ' + val);
     });
 };
@@ -24,7 +24,7 @@ var containPerson = function(myset, val){
 
 var totalPeople = function(myset){
     return myset.size().then(function(previousVal){
-       console.log("Set consists of " + JSON.stringify(previousVal) + " elements");
+       console.log("Set consists of " + previousVal + " elements");
     });
 }
 

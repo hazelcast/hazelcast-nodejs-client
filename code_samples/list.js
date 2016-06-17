@@ -7,8 +7,8 @@ var addPerson = function(list, val){
 };
 
 var addPersonTo = function(list, val, index){
-    return   list.add(val, index).then(function(previousVal){
-        console.log('Added value to the ' + JSON.stringify(index) + 'th index: ' + val);
+    return   list.add(val, index).then(function(){
+        console.log('Added value to the ' + index + 'th index: ' + val);
     });
 };
 

@@ -1,19 +1,19 @@
 var Client = require('../.').Client;
 var insertPerson = function (map, key, val, ttl) {
     return map.put(key, val, ttl).then(function(previousVal) {
-        console.log('Put key: ' + JSON.stringify(key) + ', value: ' + JSON.stringify(val) + ',  previous value: ' + JSON.stringify(previousVal));
+        console.log('Put key: ' + key + ', value: ' + JSON.stringify(val) + ',  previous value: ' + JSON.stringify(previousVal));
     });
 };
 
 var removePerson = function (map, key) {
     return map.remove(key).then(function() {
-        console.log('Removed ' + JSON.stringify(key));
+        console.log('Removed ' + key);
     });
 };
 
 var getPerson = function (map, key) {
     return map.get(key).then(function(val) {
-        console.log('Person with id ' + JSON.stringify(key) + ': ' + JSON.stringify(val));
+        console.log('Person with id ' + key + ': ' + JSON.stringify(val));
     });
 };
 
