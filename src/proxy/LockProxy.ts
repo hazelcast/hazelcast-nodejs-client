@@ -44,6 +44,8 @@ export class LockProxy extends PartitionSpecificProxy implements ILock {
     }
 
     getRemainingLeaseTime(): Q.Promise<number> {
-        return this.encodeInvoke<number>(LockGetRemainingLeaseTimeCodec);
+        return this.encodeInvoke<Long>(LockGetRemainingLeaseTimeCodec).then(function(long) {
+            return long.toNumber();
+        });
     }
 }
