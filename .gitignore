@@ -27,3 +27,6 @@ lib/*
 
 # TSDoc
 docs/
+
+*.jar
+*.log

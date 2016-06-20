@@ -9,3 +9,6 @@ test/
 docs/
 code_samples/
 benchmark/
+scripts/
+*.jar
+*.log
