@@ -38,7 +38,7 @@ class ProxyManager {
     }
 
     public getOrCreateProxy(name: string, serviceName: string, createAtServer = true): DistributedObject {
-        if (this.proxies.hasOwnProperty(name)) {
+        if (this.proxies[name]) {
             return this.proxies[name];
         } else {
             var newProxy: DistributedObject = new this.service[serviceName](this.client, serviceName, name);
