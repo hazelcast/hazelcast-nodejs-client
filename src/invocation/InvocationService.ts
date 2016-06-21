@@ -172,8 +172,13 @@ export class InvocationService {
             this.eventHandlers[correlationId] = invocation;
         }
         this.pending[correlationId] = invocation;
-        connection.write(invocation.request.getBuffer()).catch((e) => {
-            invocation.deferred.reject(e);
+        var logger = this.logger;
+        connection.write(invocation.request.getBuffer(), function(err: any) {
+            if (err) {
+                logger.warn('InvocationService',
+                    'Error sending message to ' + Address.encodeToString(connection.address) + ' ' + err);
+                invocation.deferred.reject(err);
+            }
         });
         return invocation.deferred.promise;
     }

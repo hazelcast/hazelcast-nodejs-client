@@ -60,18 +60,8 @@ class ClientConnection {
         return ready.promise;
     }
 
-    write(buffer: Buffer): Q.Promise<void> {
-        var deferred = Q.defer<void>();
-        this.socket.write(buffer, 'utf8', (e: any) => {
-            if (e === undefined) {
-                deferred.resolve();
-            } else {
-                this.logging.warn('ClientConnection',
-                    'Error sending message to ' + Address.encodeToString(this.address) + ' ' + e);
-                deferred.reject(e);
-            }
-        });
-        return deferred.promise;
+    write(buffer: Buffer, cb: (err: any) => void ): void {
+        this.socket.write(buffer, 'utf8', cb);
     }
 
     /**
