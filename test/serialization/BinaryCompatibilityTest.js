@@ -10,6 +10,7 @@ var AnIdentifiedDataSerializable = require('./AnIdentifiedDataSerializable');
 var APortable = require('./APortable');
 var CustomByteArraySerializable = require('./CustomSerializable').CustomByteArraySerializable;
 var CustomStreamSerializable = require('./CustomSerializable').CustomStreamSerializable;
+var expectAlmostEqual = require('../Util').expectAlmostEqual;
 describe('Binary serialization compatibility test', function() {
 
     var NULL_LENGTH = -1;
@@ -18,29 +19,6 @@ describe('Binary serialization compatibility test', function() {
     var isBigEndian = [true, false];
 
     var dataMap = {};
-
-    function expectAlmostEqual(actual, expected) {
-        if (expected === null) {
-            return expect(actual).to.equal(expected);
-        }
-        var typeExpected = typeof expected;
-        if (typeExpected === 'number') {
-            return expect(actual).to.be.closeTo(expected, 0.0001);
-        }
-        if (typeExpected === 'object') {
-            return (function() {
-                var membersEqual = true;
-                for (var i in expected) {
-                    if (expectAlmostEqual(actual[i], expected[i])) {
-                        membersEqual = false;
-                        break;
-                    }
-                }
-                return membersEqual;
-            })();
-        }
-        return expect(actual).to.equal(expected);
-    }
 
     function createFileName(version) {
         return version + '.serialization.compatibility.binary';
@@ -52,21 +30,21 @@ describe('Binary serialization compatibility test', function() {
         else
             return 'LITTLE_ENDIAN';
     }
-
-    function createObjectKey(varName, version, isBigEndian) {
-        function stripArticle(name) {
-            if (name.startsWith('an')) {
-                return name.slice(2);
-            } else if (name.startsWith('a')) {
-                return name.slice(1);
+    function stripArticle(name) {
+        if (name.startsWith('an')) {
+            return name.slice(2);
+        } else if (name.startsWith('a')) {
+            return name.slice(1);
+        } else {
+            if (name.endsWith('s')) {
+                return name.slice(0, -1) + '[]';
             } else {
-                if (name.endsWith('s')) {
-                    return name.slice(0, -1) + '[]';
-                } else {
-                    return name;
-                }
+                return name;
             }
         }
+    }
+    function createObjectKey(varName, version, isBigEndian) {
+
         return version + '-' + stripArticle(varName) + '-' + convertEndiannesToByteOrder(isBigEndian);
     }
 
@@ -155,6 +133,16 @@ describe('Binary serialization compatibility test', function() {
                             var deserialized = service.toObject(dataMap[key]);
                             expectAlmostEqual(deserialized, object);
                         });
+                        if ( !ReferenceObjects.skipOnSerialize[varName]) {
+                            it(varName + '-' + convertEndiannesToByteOrder(isBigEndian) + '-' + version + ' serialize deserialize', function () {
+                                this.timeout(10000);
+                                var key = createObjectKey(varName, version, isBigEndian);
+                                var service = createSerializationService(isBigEndian, stripArticle(varName).toLowerCase());
+                                var data = service.toData(object);
+                                var deserialized = service.toObject(data);
+                                expectAlmostEqual(deserialized, object);
+                            });
+                        }
                     })
                 })
             }
