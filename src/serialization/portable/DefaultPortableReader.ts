@@ -11,6 +11,7 @@ export class DefaultPortableReader implements PortableReader {
 
     private offset: number;
     private finalPos: number;
+    private raw: boolean = false;
 
     constructor(serializer: PortableSerializer, input: DataInput, classDefinition: ClassDefinition) {
         this.serializer = serializer;
@@ -23,6 +24,9 @@ export class DefaultPortableReader implements PortableReader {
     }
 
     private positionByFieldDefinition(field: FieldDefinition): number {
+        if (this.raw) {
+            throw new Error('Cannot read portable fields after getRawDataInput called!');
+        }
         var pos = this.input.readInt(this.offset + field.getIndex() * BitsUtil.INT_SIZE_IN_BYTES);
         var len = this.input.readShort(pos);
         return pos + BitsUtil.SHORT_SIZE_IN_BYTES + len + 1;
@@ -184,7 +188,17 @@ export class DefaultPortableReader implements PortableReader {
         }
     }
 
+    getRawDataInput(): DataInput {
+        var pos: number;
+        if (!this.raw) {
+            pos = this.input.readInt(this.offset + this.classDefinition.getFieldCount() * BitsUtil.INT_SIZE_IN_BYTES);
+            this.input.position(pos);
+            this.raw = true;
+        }
+        return this.input;
+    }
+
     end() {
-        //EMPTY METHOD
+        this.input.position(this.finalPos);
     }
 }
