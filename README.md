@@ -64,9 +64,11 @@ See [code samples](code_samples/) for further information.
 ### Test Prerequisites
 
 * [Java 6+](http://www.oracle.com/technetwork/java/javase/downloads/server-jre8-downloads-2133154.html)
-* [Hazelcast Remote Controller](https://github.com/hazelcast/hazelcast-remote-controller)
-    * [Follow README](https://github.com/hazelcast/hazelcast-remote-controller/blob/master/nodejs-controller/README.md)
-* run the tests
+* Maven
+    ```
+    Maven automatically downloads hazelcast-remote-controller and hazelcast from maven repository.
+    ```
+### Runnin the tests
     ```
     npm test
     ```
