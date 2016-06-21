@@ -54,7 +54,7 @@ class Heartbeat {
     private heartbeatFunction() {
         var estConnections = this.client.getConnectionManager().establishedConnections;
         for (var address in estConnections) {
-            if ( estConnections.hasOwnProperty(address)) {
+            if ( estConnections[address]) {
                 var conn = estConnections[address];
                 var timeSinceLastRead = new Date().getTime() - conn.lastRead;
                 if (timeSinceLastRead > this.heartbeatTimeout) {

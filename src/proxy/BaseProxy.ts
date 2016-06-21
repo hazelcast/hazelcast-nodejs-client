@@ -20,19 +20,12 @@ export class BaseProxy {
     }
 
     private createPromise<T>(codec: any, promise: Q.Promise<ClientMessage>): Q.Promise<T> {
-        var deferred: Q.Deferred<T> = Q.defer<T>();
         var toObject = this.toObject.bind(this);
-        promise.then(function(clientMessage: ClientMessage) {
-            if (codec.hasOwnProperty('decodeResponse')) {
-                var parameters: any = codec.decodeResponse(clientMessage, toObject);
-                deferred.resolve(parameters.response);
-            } else {
-                deferred.resolve();
+        return promise.then(function(clientMessage: ClientMessage) {
+            if (codec.decodeResponse) {
+                return codec.decodeResponse(clientMessage, toObject).response;
             }
-        }).catch(function (e) {
-            deferred.reject(e);
         });
-        return deferred.promise;
     }
 
     /**
