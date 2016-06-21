@@ -7,15 +7,26 @@ var promiseLater = function (time, func) {
         });
 };
 var expectAlmostEqual = function (actual, expected) {
-    for (var prop in expected) {
-        if ( typeof expected[prop] === 'number' && !Number.isInteger(expected[prop])) {
-            expect(actual[prop]).to.be.closeTo(expected[prop], 0.0001);
-        } else if(typeof expected[prop] === 'object') {
-            expectAlmostEqual(actual[prop], expected[prop]);
-        } else {
-            expect(actual[prop], prop).to.deep.equal(expected[prop]);
-        }
+    if (expected === null) {
+        return expect(actual).to.equal(expected);
     }
+    var typeExpected = typeof expected;
+    if (typeExpected === 'number') {
+        return expect(actual).to.be.closeTo(expected, 0.0001);
+    }
+    if (typeExpected === 'object') {
+        return (function() {
+            var membersEqual = true;
+            for (var i in expected) {
+                if (expectAlmostEqual(actual[i], expected[i])) {
+                    membersEqual = false;
+                    break;
+                }
+            }
+            return membersEqual;
+        })();
+    }
+    return expect(actual).to.equal(expected);
 };
 exports.promiseLater = promiseLater;
 exports.expectAlmostEqual = expectAlmostEqual;

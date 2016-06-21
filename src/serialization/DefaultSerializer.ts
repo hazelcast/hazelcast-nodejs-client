@@ -2,6 +2,7 @@ import {Serializer} from './SerializationService';
 import {DataInput, DataOutput} from './Data';
 import isPending = Q.isPending;
 import {IdentifiedDataSerializableFactory, IdentifiedDataSerializable} from './Serializable';
+import Long = require('long');
 export class StringSerializer implements Serializer {
 
     getId(): number {
