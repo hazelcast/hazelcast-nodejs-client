@@ -2,6 +2,8 @@ import {Serializer} from './SerializationService';
 import {DataInput, DataOutput} from './Data';
 import isPending = Q.isPending;
 import {IdentifiedDataSerializableFactory, IdentifiedDataSerializable} from './Serializable';
+import Long = require('long');
+import {BitsUtil} from '../BitsUtil';
 export class StringSerializer implements Serializer {
 
     getId(): number {
@@ -122,6 +124,21 @@ export class FloatSerializer implements Serializer {
     }
 }
 
+export class DateSerializer implements Serializer {
+
+    getId(): number {
+        return -22;
+    }
+
+    read(input: DataInput): any {
+        return new Date(input.readLong().toNumber());
+    }
+
+    write(output: DataOutput, object: any): void {
+        output.writeLong(Long.fromNumber(object.getMilliseconds()));
+    }
+}
+
 export class BooleanArraySerializer implements Serializer {
 
     getId(): number {
@@ -212,6 +229,66 @@ export class StringArraySerializer implements Serializer {
     }
 }
 
+export class ByteSerializer implements Serializer {
+
+    getId(): number {
+        return -3;
+    }
+
+    read(input: DataInput): any {
+        return input.readByte();
+    }
+
+    write(output: DataOutput, object: any): void {
+        output.writeByte(object);
+    }
+}
+
+export class ByteArraySerializer implements Serializer {
+
+    getId(): number {
+        return -12;
+    }
+
+    read(input: DataInput): any {
+        return input.readByteArray();
+    }
+
+    write(output: DataOutput, object: any): void {
+        output.writeByteArray(object);
+    }
+}
+
+export class CharSerializer implements Serializer {
+
+    getId(): number {
+        return -5;
+    }
+
+    read(input: DataInput): any {
+        return input.readChar();
+    }
+
+    write(output: DataOutput, object: any): void {
+        output.writeChar(object);
+    }
+}
+
+export class CharArraySerializer implements Serializer {
+
+    getId(): number {
+        return -14;
+    }
+
+    read(input: DataInput): any {
+        return input.readCharArray();
+    }
+
+    write(output: DataOutput, object: any): void {
+        output.writeCharArray(object);
+    }
+}
+
 export class FloatArraySerializer implements Serializer {
     getId(): number {
         return -18;
@@ -223,6 +300,50 @@ export class FloatArraySerializer implements Serializer {
 
     write(output: DataOutput, object: any): void {
         output.writeFloatArray(object);
+    }
+}
+
+export class JavaClassSerializer implements Serializer {
+
+    getId(): number {
+        return -21;
+    }
+
+    read(input: DataInput): any {
+        return input.readUTF();
+    }
+
+    write(output: DataOutput, object: any): void {
+        output.writeUTF(object);
+    }
+}
+
+export class LinkedListSerializer implements Serializer {
+
+    getId(): number {
+        return -27;
+    }
+
+    read(input: DataInput): any {
+        var size = input.readInt();
+        var result: any = null;
+        if (size > BitsUtil.NULL_ARRAY_LENGTH) {
+            result = [];
+            for (var i = 0; i < size; i++) {
+                result.push(input.readObject());
+            }
+        }
+        return result;
+    }
+
+    write(output: DataOutput, object: any): void {
+        //NULL method
+    }
+}
+
+export class ArrayListSerializer extends LinkedListSerializer {
+    getId(): number {
+        return -26;
     }
 }
 

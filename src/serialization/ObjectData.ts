@@ -510,4 +510,14 @@ export class ObjectDataInput implements DataInput {
     skipBytes(count: number): void {
         this.pos += count;
     }
+
+    readCopy(other: Buffer, numBytes: number): void {
+        this.assertAvailable(numBytes, this.pos);
+        this.buffer.copy(other, 0, this.pos, this.pos + numBytes);
+        this.pos += numBytes;
+    }
+
+    available(): number {
+        return this.buffer.length - this.pos;
+    }
 }

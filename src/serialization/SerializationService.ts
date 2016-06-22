@@ -6,7 +6,8 @@ import {
     StringSerializer, BooleanSerializer, DoubleSerializer, NullSerializer,
     ShortSerializer, IntegerSerializer, LongSerializer, FloatSerializer, BooleanArraySerializer, ShortArraySerializer,
     IntegerArraySerializer, LongArraySerializer, DoubleArraySerializer, StringArraySerializer,
-    IdentifiedDataSerializableSerializer, FloatArraySerializer, JsonSerializer
+    IdentifiedDataSerializableSerializer, FloatArraySerializer, JsonSerializer, ByteSerializer, CharSerializer,
+    ByteArraySerializer, CharArraySerializer, DateSerializer, JavaClassSerializer
 } from './DefaultSerializer';
 import * as Util from '../Util';
 import {PortableSerializer} from './portable/PortableSerializer';
@@ -176,18 +177,24 @@ export class SerializationServiceV1 implements SerializationService {
     protected registerDefaultSerializers() {
         this.registerSerializer('string', new StringSerializer());
         this.registerSerializer('double', new DoubleSerializer());
+        this.registerSerializer('byte', new ByteSerializer());
         this.registerSerializer('boolean', new BooleanSerializer());
         this.registerSerializer('null', new NullSerializer());
         this.registerSerializer('short', new ShortSerializer());
         this.registerSerializer('integer', new IntegerSerializer());
         this.registerSerializer('long', new LongSerializer());
         this.registerSerializer('float', new FloatSerializer());
+        this.registerSerializer('char', new CharSerializer());
+        this.registerSerializer('date', new DateSerializer());
+        this.registerSerializer('byteArray', new ByteArraySerializer());
+        this.registerSerializer('charArray', new CharArraySerializer());
         this.registerSerializer('booleanArray', new BooleanArraySerializer());
         this.registerSerializer('shortArray', new ShortArraySerializer());
         this.registerSerializer('integerArray', new IntegerArraySerializer());
         this.registerSerializer('longArray', new LongArraySerializer());
         this.registerSerializer('doubleArray', new DoubleArraySerializer());
         this.registerSerializer('stringArray', new StringArraySerializer());
+        this.registerSerializer('javaClass', new JavaClassSerializer());
         this.registerSerializer('floatArray', new FloatArraySerializer());
         this.registerSerializer(
             'identified', new IdentifiedDataSerializableSerializer(this.serialiationConfig.dataSerializableFactories)
