@@ -53,12 +53,14 @@ to.APortable = new APortable(to.aBoolean, to.aByte, to.aCharacter, to.aDouble, t
     to.Strings, exports.portables, to.AnIdentifiedDataSerializable, to.aCustomStreamSerializable, to.aCustomByteArraySerializable,
     exports.aData);
 to.aDate = new Date(Date.UTC(1990, 2, 1, 0, 0, 0, 0));
+to.aClass = 'java.math.BigDecimal';
 
 exports.portables = [to.AnInnerPortable, to.AnInnerPortable, to.AnInnerPortable];
 exports.testObjects = to;
 exports.skipOnSerialize = {
     'AnIdentifiedDataSerializable': true,
-    'APortable': true
+    'APortable': true,
+    'aClass': true
 };
 exports.PORTABLE_FACTORY_ID = 1;
 exports.PORTABLE_CLASS_ID = 1;
