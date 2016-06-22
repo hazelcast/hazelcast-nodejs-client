@@ -4,8 +4,8 @@
   "description": "Hazelcast - open source In-Memory Data Grid - client for NodeJS",
   "main": "lib/index.js",
   "dependencies": {
-    "long": "3.1.0",
-    "q": "1.4.1"
+    "bluebird": "3.4.1",
+    "long": "3.1.0"
   },
   "devDependencies": {
     "chai": "3.5.0",
@@ -27,9 +27,9 @@
     "clean": "rimraf lib typings *.jar *.log",
     "precompile": "typings install",
     "compile": "tsc",
-      "pretest": "./scripts/download-rc.sh",
+    "pretest": "./scripts/download-rc.sh",
     "test": "mocha --recursive",
-      "precoverage": "./scripts/download-rc.sh",
+    "precoverage": "./scripts/download-rc.sh",
     "coverage": "rimraf coverage && istanbul cover --root lib/ --include-all-sources _mocha -- --recursive --reporter spec",
     "postcoverage": "remap-istanbul -i coverage/coverage.json -o coverage/cobertura-coverage.xml -t cobertura && remap-istanbul -i coverage/coverage.json -o coverage -t html",
     "generate-docs": "rimraf docs && typedoc --out docs/ --exclude **/codec/**/* --module commonjs src lib.es6.d.ts typings/main.d.ts --excludeExternals",

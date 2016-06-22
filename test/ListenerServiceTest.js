@@ -1,4 +1,3 @@
-var Q = require('q');
 var RC = require('./RC');
 var HazelcastClient = require('../.').Client;
 var expect = require('chai').expect;
@@ -9,7 +8,7 @@ describe('DistributedObjectListener', function() {
     before(function() {
         return RC.createCluster(null, null).then(function(res) {
             cluster = res;
-            return Q(cluster.id);
+            return Promise.resolve(cluster.id);
         }).then(function(clusterId) {
             return RC.startMember(clusterId)
         }).then(function() {

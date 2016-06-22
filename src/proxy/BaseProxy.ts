@@ -1,7 +1,6 @@
-import {SerializationService} from '../serialization/SerializationService';
 import {Data} from '../serialization/Data';
 import ClientMessage = require('../ClientMessage');
-import * as Q from 'q';
+import * as Promise from 'bluebird';
 import HazelcastClient from '../HazelcastClient';
 
 /**
@@ -19,7 +18,7 @@ export class BaseProxy {
         this.serviceName = serviceName;
     }
 
-    private createPromise<T>(codec: any, promise: Q.Promise<ClientMessage>): Q.Promise<T> {
+    private createPromise<T>(codec: any, promise: Promise<ClientMessage>): Promise<T> {
         var toObject = this.toObject.bind(this);
         return promise.then(function(clientMessage: ClientMessage) {
             if (codec.decodeResponse) {
@@ -35,7 +34,7 @@ export class BaseProxy {
      * @param codecArguments
      * @returns
      */
-    protected encodeInvokeOnKey<T>(codec: any, partitionKey: any, ...codecArguments: any[]): Q.Promise<T> {
+    protected encodeInvokeOnKey<T>(codec: any, partitionKey: any, ...codecArguments: any[]): Promise<T> {
         var partitionId: number = this.client.getPartitionService().getPartitionId(partitionKey);
         return this.encodeInvokeOnPartition<T>(codec, partitionId, ...codecArguments);
     }
@@ -46,7 +45,7 @@ export class BaseProxy {
      * @param codecArguments
      * @returns
      */
-    protected encodeInvokeOnRandomTarget<T>(codec: any, ...codecArguments: any[]): Q.Promise<T> {
+    protected encodeInvokeOnRandomTarget<T>(codec: any, ...codecArguments: any[]): Promise<T> {
         var clientMessage = codec.encodeRequest(this.name, ...codecArguments);
         var invocationResponse = this.client.getInvocationService().invokeOnRandomTarget(clientMessage);
         return this.createPromise<T>(codec, invocationResponse);
@@ -59,9 +58,9 @@ export class BaseProxy {
      * @param codecArguments
      * @returns
      */
-    protected encodeInvokeOnPartition<T>(codec: any, partitionId: number, ...codecArguments: any[]): Q.Promise<T> {
+    protected encodeInvokeOnPartition<T>(codec: any, partitionId: number, ...codecArguments: any[]): Promise<T> {
         var clientMessage = codec.encodeRequest(this.name, ...codecArguments);
-        var invocationResponse: Q.Promise<ClientMessage> = this.client.getInvocationService()
+        var invocationResponse: Promise<ClientMessage> = this.client.getInvocationService()
             .invokeOnPartition(clientMessage, partitionId);
 
         return this.createPromise<T>(codec, invocationResponse);
@@ -110,7 +109,7 @@ export class BaseProxy {
      * Deletes the proxy object and frees allocated resources on cluster.
      * @returns
      */
-    destroy() : Q.Promise<void> {
+    destroy() : Promise<void> {
         return this.client.getProxyManager().destroyProxy(this.name, this.serviceName);
     }
 }

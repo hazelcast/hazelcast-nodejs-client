@@ -1,6 +1,6 @@
 import {BaseProxy} from './BaseProxy';
 import {IMap} from './IMap';
-import * as Q from 'q';
+import * as Promise from 'bluebird';
 import {Data} from '../serialization/Data';
 import {MapPutCodec} from '../codec/MapPutCodec';
 import ClientMessage = require('../ClientMessage');
@@ -14,7 +14,6 @@ import {MapContainsKeyCodec} from '../codec/MapContainsKeyCodec';
 import {MapContainsValueCodec} from '../codec/MapContainsValueCodec';
 import {MapIsEmptyCodec} from '../codec/MapIsEmptyCodec';
 import {MapPutAllCodec} from '../codec/MapPutAllCodec';
-import defer = Q.defer;
 import {MapDeleteCodec} from '../codec/MapDeleteCodec';
 import {MapEntrySetCodec} from '../codec/MapEntrySetCodec';
 import {MapEvictCodec} from '../codec/MapEvictCodec';
@@ -47,19 +46,19 @@ import {MapAddEntryListenerToKeyCodec} from '../codec/MapAddEntryListenerToKeyCo
 import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
 import {assertNotNull} from '../Util';
 export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
-    containsKey(key: K): Q.Promise<boolean> {
+    containsKey(key: K): Promise<boolean> {
         assertNotNull(key);
         var keyData = this.toData(key);
         return this.encodeInvokeOnKey<boolean>(MapContainsKeyCodec, keyData, keyData, 0);
     }
 
-    containsValue(value: V): Q.Promise<boolean> {
+    containsValue(value: V): Promise<boolean> {
         assertNotNull(value);
         var valueData = this.toData(value);
         return this.encodeInvokeOnRandomTarget<boolean>(MapContainsValueCodec, valueData);
     }
 
-    put(key: K, value: V, ttl: number = -1): Q.Promise<V> {
+    put(key: K, value: V, ttl: number = -1): Promise<V> {
         assertNotNull(key);
         assertNotNull(value);
         var keyData: Data = this.toData(key);
@@ -67,7 +66,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.encodeInvokeOnKey<V>(MapPutCodec, keyData, keyData, valueData, 0, ttl);
     }
 
-    putAll(pairs: [K, V][]): Q.Promise<void> {
+    putAll(pairs: [K, V][]): Promise<void> {
         var partitionService = this.client.getPartitionService();
         var partitionsToKeys: {[id: string]: any} = {};
         var pair: [K, V];
@@ -82,27 +81,22 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             partitionsToKeys[pId].push({key: keyData, val: this.toData(pair[1])});
         }
 
-        var partitionPromises: Q.Promise<void>[] = [];
+        var partitionPromises: Promise<void>[] = [];
         for (var partition in partitionsToKeys) {
             partitionPromises.push(
                 this.encodeInvokeOnPartition<void>(MapPutAllCodec, Number(partition), partitionsToKeys[partition])
             );
         }
-        var deferred = Q.defer<void>();
-        Q.all(partitionPromises)
-            .then(function() {
-                deferred.resolve();
-            });
-        return deferred.promise;
+        return Promise.all(partitionPromises).then(function() {return;});
     }
 
-    get(key: K): Q.Promise<V> {
+    get(key: K): Promise<V> {
         assertNotNull(key);
         var keyData = this.toData(key);
         return this.encodeInvokeOnKey<V>(MapGetCodec, keyData, keyData, 0);
     }
 
-    remove(key: K, value: V = null): Q.Promise<V> {
+    remove(key: K, value: V = null): Promise<V> {
         assertNotNull(key);
         var keyData = this.toData(key);
         if (value == null) {
@@ -113,19 +107,19 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         }
     }
 
-    size(): Q.Promise<number> {
+    size(): Promise<number> {
         return this.encodeInvokeOnRandomTarget<number>(MapSizeCodec);
     }
 
-    clear(): Q.Promise<void> {
+    clear(): Promise<void> {
         return this.encodeInvokeOnRandomTarget<void>(MapClearCodec);
     }
 
-    isEmpty(): Q.Promise<boolean> {
+    isEmpty(): Promise<boolean> {
         return this.encodeInvokeOnRandomTarget<boolean>(MapIsEmptyCodec);
     }
 
-    getAll(keys: K[]): Q.Promise<any[]> {
+    getAll(keys: K[]): Promise<any[]> {
         var partitionService = this.client.getPartitionService();
         var partitionsToKeys: {[id: string]: any} = {};
         var key: K;
@@ -139,7 +133,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             partitionsToKeys[pId].push(keyData);
         }
 
-        var partitionPromises: Q.Promise<[Data, Data][]>[] = [];
+        var partitionPromises: Promise<[Data, Data][]>[] = [];
         for (var partition in partitionsToKeys) {
             partitionPromises.push(this.encodeInvokeOnPartition<[Data, Data][]>(
                 MapGetAllCodec,
@@ -151,18 +145,18 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         var deserializeEntry = function(entry: [Data, Data]) {
             return [toObject(entry[0]), toObject(entry[1])];
         };
-        return Q.all(partitionPromises).then(function(serializedEntryArrayArray: [Data, Data][][]) {
+        return Promise.all(partitionPromises).then(function(serializedEntryArrayArray: [Data, Data][][]) {
             return Array.prototype.concat.apply([], serializedEntryArrayArray).map(deserializeEntry);
         });
     }
 
-    delete(key: K): Q.Promise<void> {
+    delete(key: K): Promise<void> {
         assertNotNull(key);
         var keyData = this.toData(key);
         return this.encodeInvokeOnKey<void>(MapDeleteCodec, keyData, keyData, 0);
     }
 
-    entrySet(): Q.Promise<any[]> {
+    entrySet(): Promise<any[]> {
         var deserializedSet: [K, V][] = [];
         var toObject = this.toObject.bind(this);
         return this.encodeInvokeOnRandomTarget(MapEntrySetCodec).then(function(entrySet: [Data, Data][]) {
@@ -173,45 +167,45 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         });
     }
 
-    evict(key: K) : Q.Promise<boolean> {
+    evict(key: K) : Promise<boolean> {
         assertNotNull(key);
         var keyData = this.toData(key);
         return this.encodeInvokeOnKey<boolean>(MapEvictCodec, keyData, keyData, 0);
     }
 
-    evictAll(): Q.Promise<void> {
+    evictAll(): Promise<void> {
         return this.encodeInvokeOnRandomTarget<void>(MapEvictAllCodec);
     }
 
-    flush(): Q.Promise<void> {
+    flush(): Promise<void> {
         return this.encodeInvokeOnRandomTarget<void>(MapFlushCodec);
     }
 
-    lock(key: K, ttl: number = -1): Q.Promise<void> {
+    lock(key: K, ttl: number = -1): Promise<void> {
         assertNotNull(key);
         var keyData = this.toData(key);
         return this.encodeInvokeOnKey<void>(MapLockCodec, keyData, keyData, 0, ttl);
     }
 
-    isLocked(key: K): Q.Promise<boolean> {
+    isLocked(key: K): Promise<boolean> {
         assertNotNull(key);
         var keyData = this.toData(key);
         return this.encodeInvokeOnKey<boolean>(MapIsLockedCodec, keyData, keyData);
     }
 
-    unlock(key: K): Q.Promise<void> {
+    unlock(key: K): Promise<void> {
         assertNotNull(key);
         var keyData = this.toData(key);
         return this.encodeInvokeOnKey<void>(MapUnlockCodec, keyData, keyData, 0);
     }
 
-    forceUnlock(key: K): Q.Promise<void> {
+    forceUnlock(key: K): Promise<void> {
         assertNotNull(key);
         var keyData = this.toData(key);
         return this.encodeInvokeOnKey<void>(MapForceUnlockCodec, keyData, keyData);
     }
 
-    keySet(): Q.Promise<K[]> {
+    keySet(): Promise<K[]> {
         var deserializedSet: K[] = [];
         var toObject = this.toObject.bind(this);
         return this.encodeInvokeOnRandomTarget<K[]>(MapKeySetCodec).then(function(entrySet) {
@@ -222,7 +216,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         });
     }
 
-    loadAll(keys: K[] = null, replaceExistingValues: boolean = true): Q.Promise<void> {
+    loadAll(keys: K[] = null, replaceExistingValues: boolean = true): Promise<void> {
         assertNotNull(keys);
         if (keys == null) {
             return this.encodeInvokeOnRandomTarget<void>(MapLoadAllCodec, replaceExistingValues);
@@ -233,7 +227,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         }
     }
 
-    putIfAbsent(key: K, value: V, ttl: number = -1): Q.Promise<V> {
+    putIfAbsent(key: K, value: V, ttl: number = -1): Promise<V> {
         assertNotNull(key);
         assertNotNull(value);
         var keyData = this.toData(key);
@@ -241,7 +235,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.encodeInvokeOnKey<V>(MapPutIfAbsentCodec, keyData, keyData, valueData, 0, ttl);
     }
 
-    putTransient(key: K, value: V, ttl: number = -1): Q.Promise<void> {
+    putTransient(key: K, value: V, ttl: number = -1): Promise<void> {
         assertNotNull(key);
         assertNotNull(value);
         var keyData = this.toData(key);
@@ -249,7 +243,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.encodeInvokeOnKey<void>(MapPutTransientCodec, keyData, keyData, valueData, 0, ttl);
     }
 
-    replace(key: K, newValue: V): Q.Promise<V> {
+    replace(key: K, newValue: V): Promise<V> {
         assertNotNull(key);
         assertNotNull(newValue);
         var keyData = this.toData(key);
@@ -257,7 +251,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.encodeInvokeOnKey<V>(MapReplaceCodec, keyData, keyData, newValueData, 0);
     }
 
-    replaceIfSame(key: K, oldValue: V, newValue: V): Q.Promise<boolean> {
+    replaceIfSame(key: K, oldValue: V, newValue: V): Promise<boolean> {
         assertNotNull(key);
         assertNotNull(oldValue);
         assertNotNull(newValue);
@@ -267,7 +261,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.encodeInvokeOnKey<boolean>(MapReplaceIfSameCodec, keyData, keyData, oldValueData, newValueData, 0);
     }
 
-    set(key: K, value: V, ttl: number = -1): Q.Promise<void> {
+    set(key: K, value: V, ttl: number = -1): Promise<void> {
         assertNotNull(key);
         assertNotNull(value);
         var keyData = this.toData(key);
@@ -275,7 +269,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.encodeInvokeOnKey<void>(MapSetCodec, keyData, keyData, valueData, 0, ttl);
     }
 
-    values(): Q.Promise<V[]> {
+    values(): Promise<V[]> {
         var values: V[] = [];
         var toObject = this.toObject.bind(this);
         return this.encodeInvokeOnRandomTarget<V[]>(MapValuesCodec).then(function(valuesData) {
@@ -286,23 +280,23 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         });
     }
 
-    getEntryView(key: K): Q.Promise<EntryView<K, V>> {
+    getEntryView(key: K): Promise<EntryView<K, V>> {
         assertNotNull(key);
         var keyData = this.toData(key);
         return this.encodeInvokeOnKey<EntryView<K, V>>(MapGetEntryViewCodec, keyData, keyData, 0);
     }
 
-    addIndex(attribute: string, ordered: boolean): Q.Promise<void> {
+    addIndex(attribute: string, ordered: boolean): Promise<void> {
         return this.encodeInvokeOnRandomTarget<void>(MapAddIndexCodec, attribute, ordered);
     }
 
-    tryLock(key: K, timeout: number = 0, lease: number = -1): Q.Promise<boolean> {
+    tryLock(key: K, timeout: number = 0, lease: number = -1): Promise<boolean> {
         assertNotNull(key);
         var keyData = this.toData(key);
         return this.encodeInvokeOnKey<boolean>(MapTryLockCodec, keyData, keyData, 0, lease, timeout);
     }
 
-    tryPut(key: K, value: V, timeout: number): Q.Promise<boolean> {
+    tryPut(key: K, value: V, timeout: number): Promise<boolean> {
         assertNotNull(key);
         assertNotNull(value);
         var keyData = this.toData(key);
@@ -310,13 +304,13 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.encodeInvokeOnKey<boolean>(MapTryPutCodec, keyData, keyData, valueData, value, 0, timeout);
     }
 
-    tryRemove(key: K, timeout: number): Q.Promise<boolean> {
+    tryRemove(key: K, timeout: number): Promise<boolean> {
         assertNotNull(key);
         var keyData = this.toData(key);
         return this.encodeInvokeOnKey<boolean>(MapTryRemoveCodec, keyData, keyData, 0, timeout);
     }
 
-    addEntryListener(listener: IMapListener<K, V>, key: K = undefined, includeValue: boolean = false): Q.Promise<string> {
+    addEntryListener(listener: IMapListener<K, V>, key: K = undefined, includeValue: boolean = false): Promise<string> {
         var flags: any = null;
         var conversionTable: {[funcName: string]: EntryEventType} = {
             'added': EntryEventType.ADDED,
@@ -383,7 +377,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         }
     }
 
-    removeEntryListener(listenerId: string): Q.Promise<boolean> {
+    removeEntryListener(listenerId: string): Promise<boolean> {
         return this.client.getListenerService().deregisterListener(
             MapRemoveEntryListenerCodec.encodeRequest(this.name, listenerId),
             MapRemoveEntryListenerCodec.decodeResponse

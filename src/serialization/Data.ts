@@ -1,4 +1,4 @@
-import Promise = Q.Promise;
+import * as Promise from 'bluebird';
 export interface Data {
     /**
      * Returns serialized representation in a buffer

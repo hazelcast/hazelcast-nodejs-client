@@ -1,4 +1,4 @@
-import * as Q from 'q';
+import * as Promise from 'bluebird';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {ILock} from './ILock';
 
@@ -14,36 +14,36 @@ import {LockGetLockCountCodec} from '../codec/LockGetLockCountCodec';
 export class LockProxy extends PartitionSpecificProxy implements ILock {
 
 
-    lock(leaseMillis: number = -1): Q.Promise<void> {
+    lock(leaseMillis: number = -1): Promise<void> {
         return this.encodeInvoke<void>(LockLockCodec, leaseMillis, 1);
     }
 
-    tryLock(timeoutMillis: number = 0, leaseMillis: number = -1): Q.Promise<boolean> {
+    tryLock(timeoutMillis: number = 0, leaseMillis: number = -1): Promise<boolean> {
         return this.encodeInvoke<boolean>(LockTryLockCodec, 1,
             leaseMillis, timeoutMillis);
     }
 
-    unlock(): Q.Promise<void> {
+    unlock(): Promise<void> {
         return this.encodeInvoke<void>(LockUnlockCodec, 1);
     }
 
-    forceUnlock(): Q.Promise<void> {
+    forceUnlock(): Promise<void> {
         return this.encodeInvoke<void>(LockForceUnlockCodec);
     }
 
-    isLocked(): Q.Promise<boolean> {
+    isLocked(): Promise<boolean> {
         return this.encodeInvoke<boolean>(LockIsLockedCodec);
     }
 
-    isLockedByThisClient(): Q.Promise<boolean> {
+    isLockedByThisClient(): Promise<boolean> {
         return this.encodeInvoke<boolean>(LockIsLockedByCurrentThreadCodec, 1);
     }
 
-    getLockCount(): Q.Promise<number> {
+    getLockCount(): Promise<number> {
         return this.encodeInvoke<number>(LockGetLockCountCodec);
     }
 
-    getRemainingLeaseTime(): Q.Promise<number> {
+    getRemainingLeaseTime(): Promise<number> {
         return this.encodeInvoke<Long>(LockGetRemainingLeaseTimeCodec).then(function(long) {
             return long.toNumber();
         });

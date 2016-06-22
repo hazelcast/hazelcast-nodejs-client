@@ -2,7 +2,7 @@ var expect = require('chai').expect;
 var Config = require('../.').ClientConfig;
 var Controller = require('./RC');
 var HazelcastClient = require('../.').Client;
-var Q = require('q');
+var Promise = require('bluebird');
 describe('HazelcastClient', function() {
     this.timeout(4000);
     var cluster;
@@ -26,7 +26,7 @@ describe('HazelcastClient', function() {
 
     it('getDistributedObject returns empty array when there is no distributed object', function() {
         return client.getDistributedObjects().then(function(distributedObjects) {
-            return Q.all([
+            return Promise.all([
                 expect(distributedObjects).to.be.an('array'),
                 expect(distributedObjects).to.be.empty
             ]);

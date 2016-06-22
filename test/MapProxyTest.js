@@ -1,6 +1,6 @@
 var expect = require("chai").expect;
 var HazelcastClient = require("../.").Client;
-var Q = require("q");
+var Promise = require("bluebird");
 var Controller = require('./RC');
 var Util = require('./Util');
 
@@ -44,7 +44,7 @@ describe("MapProxy Test", function() {
         for (var i = 0; i< size; i++) {
             promises.push(map.put('key' + i, 'val' + i));
         }
-        return Q.all(promises);
+        return Promise.all(promises);
     }
 
     function _generateLockScript(mapName, keyName) {
@@ -231,7 +231,7 @@ describe("MapProxy Test", function() {
             ['k2', 'v2'],
             ['k3', 'v3']
         ];
-        return Q.all([
+        return Promise.all([
             entryMap.put(samples[0][0], samples[0][1]),
             entryMap.put(samples[1][0], samples[1][1]),
             entryMap.put(samples[2][0], samples[2][1])
@@ -472,7 +472,7 @@ describe("MapProxy Test", function() {
     });
 
     it('addIndex', function() {
-        return Q.all([
+        return Promise.all([
             map.addIndex('length', false),
             map.addIndex('length', true)
         ]);

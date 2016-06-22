@@ -1,5 +1,6 @@
 import {BaseProxy} from './BaseProxy';
 import HazelcastClient from '../HazelcastClient';
+import * as Promise from 'bluebird';
 export class PartitionSpecificProxy extends BaseProxy {
 
     private partitionId: number;
@@ -9,7 +10,7 @@ export class PartitionSpecificProxy extends BaseProxy {
         this.partitionId = this.client.getPartitionService().getPartitionId(this.getPartitionKey());
     }
 
-    protected encodeInvoke<T>(codec: any, ...codecArguments: any[]): Q.Promise<T> {
+    protected encodeInvoke<T>(codec: any, ...codecArguments: any[]): Promise<T> {
         return this.encodeInvokeOnPartition<T>(codec, this.partitionId, ...codecArguments);
     }
 }

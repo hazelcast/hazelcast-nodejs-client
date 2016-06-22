@@ -1,4 +1,4 @@
-import Promise = Q.Promise;
+import * as Promise from 'bluebird';
 import {DistributedObject} from '../DistributedObject';
 import {ItemListener} from '../core/ItemListener';
 

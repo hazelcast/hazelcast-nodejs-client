@@ -1,4 +1,4 @@
-import * as Q from 'q';
+import * as Promise from 'bluebird';
 
 import Address = require('../Address');
 import ClientConnection = require('./ClientConnection');
@@ -20,7 +20,7 @@ const EMIT_CONNECTION_OPENED = 'connectionOpened';
  */
 class ClientConnectionManager extends EventEmitter {
     private client: HazelcastClient;
-    private pendingConnections: {[address: string]: Q.Deferred<ClientConnection>} = {};
+    private pendingConnections: {[address: string]: Promise.Resolver<ClientConnection>} = {};
     private logger = LoggingService.getLoggingService();
     establishedConnections: {[address: string]: ClientConnection} = {};
 
@@ -36,9 +36,9 @@ class ClientConnectionManager extends EventEmitter {
      * @param ownerConnection Sets the connected node as owner of this client if true.
      * @returns {Promise<ClientConnection>|Promise<T>}
      */
-    getOrConnect(address: Address, ownerConnection: boolean = false): Q.Promise<ClientConnection> {
+    getOrConnect(address: Address, ownerConnection: boolean = false): Promise<ClientConnection> {
         var addressIndex = Address.encodeToString(address);
-        var result: Q.Deferred<ClientConnection> = Q.defer<ClientConnection>();
+        var result: Promise.Resolver<ClientConnection> = Promise.defer<ClientConnection>();
 
         var establishedConnection = this.establishedConnections[addressIndex];
 
@@ -114,7 +114,7 @@ class ClientConnectionManager extends EventEmitter {
         this.emit(EMIT_CONNECTION_OPENED, connection);
     }
 
-    private authenticate(connection: ClientConnection, ownerConnection: boolean): Q.Promise<boolean> {
+    private authenticate(connection: ClientConnection, ownerConnection: boolean): Promise<boolean> {
         var authenticator = new ConnectionAuthenticator(connection, this.client);
 
         return authenticator.authenticate(ownerConnection);

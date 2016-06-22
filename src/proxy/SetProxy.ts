@@ -1,5 +1,5 @@
 import {ISet} from './ISet';
-import * as Q from 'q';
+import * as Promise from 'bluebird';
 import {ItemListener} from '../core/ItemListener';
 import {Data} from '../serialization/Data';
 
@@ -21,15 +21,15 @@ import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 
 export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
 
-    add(entry: E): Q.Promise<boolean> {
+    add(entry: E): Promise<boolean> {
         return this.encodeInvoke<boolean>(SetAddCodec, this.toData(entry));
     }
 
-    addAll(items: E[]): Q.Promise<boolean> {
+    addAll(items: E[]): Promise<boolean> {
         return this.encodeInvoke<boolean>(SetAddAllCodec, this.serializeList(items));
     }
 
-    getAll(): Q.Promise<E[]> {
+    getAll(): Promise<E[]> {
         return this.encodeInvoke(SetGetAllCodec)
             .then((items: Array<Data>) => {
                 return items.map((item) => {
@@ -38,39 +38,39 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
             });
     }
 
-    clear(): Q.Promise<void> {
+    clear(): Promise<void> {
         return this.encodeInvoke<void>(SetClearCodec);
     }
 
-    contains(entry: E): Q.Promise<boolean> {
+    contains(entry: E): Promise<boolean> {
         return this.encodeInvoke<boolean>(SetContainsCodec, this.toData(entry));
     }
 
-    containsAll(items: E[]): Q.Promise<boolean> {
+    containsAll(items: E[]): Promise<boolean> {
         return this.encodeInvoke<boolean>(SetContainsAllCodec, this.serializeList(items));
     }
 
-    isEmpty(): Q.Promise<boolean> {
+    isEmpty(): Promise<boolean> {
         return this.encodeInvoke<boolean>(SetIsEmptyCodec);
     }
 
-    remove(entry: E): Q.Promise<boolean> {
+    remove(entry: E): Promise<boolean> {
         return this.encodeInvoke<boolean>(SetRemoveCodec, this.toData(entry));
     }
 
-    removeAll(items: E[]): Q.Promise<boolean> {
+    removeAll(items: E[]): Promise<boolean> {
         return this.encodeInvoke<boolean>(SetCompareAndRemoveAllCodec, this.serializeList(items));
     }
 
-    retainAll(items: E[]): Q.Promise<boolean> {
+    retainAll(items: E[]): Promise<boolean> {
         return this.encodeInvoke<boolean>(SetCompareAndRetainAllCodec, this.serializeList(items));
     }
 
-    size(): Q.Promise<number> {
+    size(): Promise<number> {
         return this.encodeInvoke<number>(SetSizeCodec);
     }
 
-    addItemListener(listener: ItemListener<E>, includeValue: boolean = true): Q.Promise<string> {
+    addItemListener(listener: ItemListener<E>, includeValue: boolean = true): Promise<string> {
         var request = SetAddListenerCodec.encodeRequest(this.name, includeValue, false);
         var handler = (message: ClientMessage) => {
             SetAddListenerCodec.handle(message, (item: Data, uuid: string, eventType: number) => {
@@ -91,7 +91,7 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
             SetAddListenerCodec.decodeResponse, this.name);
     }
 
-    removeItemListener(registrationId: string): Q.Promise<boolean> {
+    removeItemListener(registrationId: string): Promise<boolean> {
         return this.client.getListenerService().deregisterListener(
             SetRemoveListenerCodec.encodeRequest(this.name, registrationId),
             SetRemoveListenerCodec.decodeResponse

@@ -1,4 +1,4 @@
-import * as Q from 'q';
+import * as Promise from 'bluebird';
 
 import ClientConnection = require('./ClientConnection');
 import {InvocationService} from './InvocationService';
@@ -16,7 +16,7 @@ class ConnectionAuthenticator {
         this.client = client;
     }
 
-    authenticate(ownerConnection: boolean): Q.Promise<boolean> {
+    authenticate(ownerConnection: boolean): Promise<boolean> {
         var groupConfig = this.client.getConfig().groupConfig;
         var clusterService = this.client.getClusterService();
         var uuid: string = clusterService.uuid;
@@ -28,7 +28,7 @@ class ConnectionAuthenticator {
                 uuid, ownerUuid, ownerConnection, 'NodeJS', 1);
 
 
-        var deferred = Q.defer<boolean>();
+        var deferred = Promise.defer<boolean>();
 
         this.client.getInvocationService()
             .invokeOnConnection(this.connection, clientMessage)

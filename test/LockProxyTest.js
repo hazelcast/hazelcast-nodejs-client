@@ -2,7 +2,7 @@ var expect = require("chai").expect;
 var HazelcastClient = require("../.").Client;
 var Controller = require('./RC');
 var Util = require('./Util');
-var Q = require('q');
+var Promise = require('bluebird');
 
 describe("Lock Proxy", function () {
 
@@ -19,7 +19,7 @@ describe("Lock Proxy", function () {
             cluster = response;
             return Controller.startMember(cluster.id);
         }).then(function () {
-            return Q.all([
+            return Promise.all([
                 HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
                     clientOne = hazelcastClient;
                 }),
@@ -36,7 +36,7 @@ describe("Lock Proxy", function () {
     });
 
     afterEach(function () {
-        return Q.all([lockOne.destroy(), lockTwo.destroy()]);
+        return Promise.all([lockOne.destroy(), lockTwo.destroy()]);
     });
 
     after(function () {

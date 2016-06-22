@@ -1,6 +1,6 @@
 import ClientConnection = require('./ClientConnection');
 import ClientMessage = require('../ClientMessage');
-import * as Q from 'q';
+import * as Promise from 'bluebird';
 import Long = require('long');
 import {Data} from '../serialization/Data';
 import Address = require('../Address');
@@ -47,7 +47,7 @@ export class Invocation {
     /**
      * Promise managing object.
      */
-    deferred: Q.Deferred<ClientMessage>;
+    deferred: Promise.Resolver<ClientMessage>;
 
     /**
      * If this is an event listener registration, handler should be set to the function to be called on events.
@@ -67,7 +67,7 @@ export class InvocationService {
     private smartRoutingEnabled: boolean;
     private logger = LoggingService.getLoggingService();
 
-    invoke: (invocation: Invocation) => Q.Promise<ClientMessage>;
+    invoke: (invocation: Invocation) => Promise<ClientMessage>;
 
     constructor(hazelcastClient: HazelcastClient) {
         this.client = hazelcastClient;
@@ -87,7 +87,7 @@ export class InvocationService {
      * @returns
      */
     invokeOnConnection(connection: ClientConnection, request: ClientMessage,
-                       handler?: (...args: any[]) => any): Q.Promise<ClientMessage> {
+                       handler?: (...args: any[]) => any): Promise<ClientMessage> {
         var invocation = new Invocation(request);
         invocation.connection = connection;
         if (handler) {
@@ -102,7 +102,7 @@ export class InvocationService {
      * @param partitionId
      * @returns
      */
-    invokeOnPartition(request: ClientMessage, partitionId: number): Q.Promise<ClientMessage> {
+    invokeOnPartition(request: ClientMessage, partitionId: number): Promise<ClientMessage> {
         var invocation = new Invocation(request);
         invocation.partitionId = partitionId;
         return this.invoke(invocation);
@@ -114,7 +114,7 @@ export class InvocationService {
      * @param target
      * @returns
      */
-    invokeOnTarget(request: ClientMessage, target: Address): Q.Promise<ClientMessage> {
+    invokeOnTarget(request: ClientMessage, target: Address): Promise<ClientMessage> {
         var invocation = new Invocation(request);
         invocation.address = target;
         return this.invoke(invocation);
@@ -126,7 +126,7 @@ export class InvocationService {
      * @param request
      * @returns
      */
-    invokeOnRandomTarget(request: ClientMessage): Q.Promise<ClientMessage> {
+    invokeOnRandomTarget(request: ClientMessage): Promise<ClientMessage> {
         return this.invoke(new Invocation(request));
     }
 
@@ -151,14 +151,14 @@ export class InvocationService {
         }
     }
 
-    private sendToAddress(invocation: Invocation, addres: Address): Q.Promise<ClientMessage> {
+    private sendToAddress(invocation: Invocation, addres: Address): Promise<ClientMessage> {
         return this.client.getConnectionManager().getOrConnect(addres)
             .then<ClientMessage>((connection: ClientConnection) => {
                 return this.send(invocation, connection);
             });
     }
 
-    private send(invocation: Invocation, connection: ClientConnection): Q.Promise<ClientMessage> {
+    private send(invocation: Invocation, connection: ClientConnection): Promise<ClientMessage> {
         var correlationId = this.correlationCounter++;
         var message = invocation.request;
         message.setCorrelationId(Long.fromNumber(correlationId));
@@ -167,7 +167,7 @@ export class InvocationService {
         } else {
             message.setPartitionId(-1);
         }
-        invocation.deferred = Q.defer<ClientMessage>();
+        invocation.deferred = Promise.defer<ClientMessage>();
         if (invocation.hasOwnProperty('handler')) {
             this.eventHandlers[correlationId] = invocation;
         }
@@ -251,8 +251,8 @@ export class ListenerService {
         this.internalEventEmitter.setMaxListeners(0);
     }
 
-    registerListener(request: ClientMessage, handler: any, decoder: any, key: any = undefined): Q.Promise<string> {
-        var deferred = Q.defer<string>();
+    registerListener(request: ClientMessage, handler: any, decoder: any, key: any = undefined): Promise<string> {
+        var deferred = Promise.defer<string>();
         var invocation = new Invocation(request);
         invocation.handler = handler;
         this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
@@ -264,8 +264,8 @@ export class ListenerService {
         return deferred.promise;
     }
 
-    deregisterListener(request: ClientMessage, decoder: any): Q.Promise<boolean> {
-        var deferred = Q.defer<boolean>();
+    deregisterListener(request: ClientMessage, decoder: any): Promise<boolean> {
+        var deferred = Promise.defer<boolean>();
         var invocation = new Invocation(request);
         var listenerIdToCorrelation = this.listenerIdToCorrelation;
         this.client.getInvocationService().invoke(invocation).then((responseMessage) => {

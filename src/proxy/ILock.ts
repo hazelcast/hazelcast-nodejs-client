@@ -1,4 +1,4 @@
-import Promise = Q.Promise;
+import * as Promise from 'bluebird';
 import {DistributedObject} from '../DistributedObject';
 
 export interface ILock extends DistributedObject {
@@ -16,7 +16,7 @@ export interface ILock extends DistributedObject {
     /**
      * Tries to acquire this lock within a specified timeout.
      * The returned promise will be resolved either when this lock is acquired or when timeout is reached.
-     * Setting timeout to -1 will make this method wait for the lock availability indefinitely. 
+     * Setting timeout to -1 will make this method wait for the lock availability indefinitely.
      * If lease time is specified then this lock will be held for
      * the specified amount of time and then released automatically.
      * Otherwise it will be held indefinitely up until the user invokes `unlock`.
