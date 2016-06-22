@@ -7,7 +7,7 @@ import {
     ShortSerializer, IntegerSerializer, LongSerializer, FloatSerializer, BooleanArraySerializer, ShortArraySerializer,
     IntegerArraySerializer, LongArraySerializer, DoubleArraySerializer, StringArraySerializer,
     IdentifiedDataSerializableSerializer, FloatArraySerializer, JsonSerializer, ByteSerializer, CharSerializer,
-    ByteArraySerializer, CharArraySerializer, DateSerializer
+    ByteArraySerializer, CharArraySerializer, DateSerializer, JavaClassSerializer
 } from './DefaultSerializer';
 import * as Util from '../Util';
 import {PortableSerializer} from './portable/PortableSerializer';
@@ -194,6 +194,7 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('longArray', new LongArraySerializer());
         this.registerSerializer('doubleArray', new DoubleArraySerializer());
         this.registerSerializer('stringArray', new StringArraySerializer());
+        this.registerSerializer('javaClass', new JavaClassSerializer());
         this.registerSerializer('floatArray', new FloatArraySerializer());
         this.registerSerializer(
             'identified', new IdentifiedDataSerializableSerializer(this.serialiationConfig.dataSerializableFactories)

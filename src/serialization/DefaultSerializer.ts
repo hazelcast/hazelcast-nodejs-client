@@ -3,6 +3,7 @@ import {DataInput, DataOutput} from './Data';
 import isPending = Q.isPending;
 import {IdentifiedDataSerializableFactory, IdentifiedDataSerializable} from './Serializable';
 import Long = require('long');
+import {BitsUtil} from '../BitsUtil';
 export class StringSerializer implements Serializer {
 
     getId(): number {
@@ -299,6 +300,50 @@ export class FloatArraySerializer implements Serializer {
 
     write(output: DataOutput, object: any): void {
         output.writeFloatArray(object);
+    }
+}
+
+export class JavaClassSerializer implements Serializer {
+
+    getId(): number {
+        return -21;
+    }
+
+    read(input: DataInput): any {
+        return input.readUTF();
+    }
+
+    write(output: DataOutput, object: any): void {
+        output.writeUTF(object);
+    }
+}
+
+export class LinkedListSerializer implements Serializer {
+
+    getId(): number {
+        return -27;
+    }
+
+    read(input: DataInput): any {
+        var size = input.readInt();
+        var result: any = null;
+        if (size > BitsUtil.NULL_ARRAY_LENGTH) {
+            result = [];
+            for (var i = 0; i < size; i++) {
+                result.push(input.readObject());
+            }
+        }
+        return result;
+    }
+
+    write(output: DataOutput, object: any): void {
+        //NULL method
+    }
+}
+
+export class ArrayListSerializer extends LinkedListSerializer {
+    getId(): number {
+        return -26;
     }
 }
 
