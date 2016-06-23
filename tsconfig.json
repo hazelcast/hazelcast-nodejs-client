@@ -15,7 +15,6 @@
         "src/**/*.ts"
     ],
     "exclude": [
-        "hazelcast-remote-controller",
         "node_modules",
         "lib",
         "typings/browser.d.ts",
