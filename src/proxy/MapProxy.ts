@@ -87,7 +87,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                 this.encodeInvokeOnPartition<void>(MapPutAllCodec, Number(partition), partitionsToKeys[partition])
             );
         }
-        return Promise.all(partitionPromises).then(function() {return;});
+        return Promise.all(partitionPromises).then(function() { return; });
     }
 
     get(key: K): Promise<V> {
