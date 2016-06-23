@@ -82,13 +82,13 @@ describe("Lock Proxy", function () {
     it("acquires lock before timeout is exceeded", function () {
         this.timeout(10000);
         var startTime = Date.now();
-        lockOne.lock(1000);
-
-        return lockTwo.tryLock(2000).then(function (acquired) {
+        return lockOne.lock(1000).then(function() {
+            return lockTwo.tryLock(2000);
+        }).then(function (acquired) {
             var elasped = Date.now() - startTime;
             expect(acquired).to.be.true;
             expect(elasped).to.be.greaterThan(1000);
-        });
+        })
     });
 
     it("acquires the lock before timeout and unlocks after lease expired", function () {
