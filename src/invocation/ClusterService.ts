@@ -170,7 +170,6 @@ class ClusterService extends EventEmitter {
     }
 
     initMemberShipListener(): Promise<void> {
-        var deferred = Promise.defer<void>();
         var request = ClientAddMembershipListenerCodec.encodeRequest(false);
 
         var handler = (m: ClientMessage) => {
@@ -179,13 +178,11 @@ class ClusterService extends EventEmitter {
             var handleAttributeChange = this.handleMemberAttributeChange.bind(this);
             ClientAddMembershipListenerCodec.handle(m, handleMember, handleMemberList, handleAttributeChange, null);
         };
-        this.client.getInvocationService().invokeOnConnection(this.getOwnerConnection(), request, handler)
+        return this.client.getInvocationService().invokeOnConnection(this.getOwnerConnection(), request, handler)
             .then((resp: ClientMessage) => {
                 this.logger.trace('ClusterService', 'Registered listener with id '
                     + ClientAddMembershipListenerCodec.decodeResponse(resp).response);
-                deferred.resolve();
             });
-        return deferred.promise;
     }
 
     private handleMember(member: Member, eventType: number) {

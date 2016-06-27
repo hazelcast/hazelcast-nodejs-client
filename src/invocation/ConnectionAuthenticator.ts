@@ -23,14 +23,9 @@ class ConnectionAuthenticator {
         var ownerUuid: string = clusterService.ownerUuid;
 
 
-        var clientMessage = ClientAuthenticationCodec
-            .encodeRequest(groupConfig.name, groupConfig.password,
-                uuid, ownerUuid, ownerConnection, 'NodeJS', 1);
-
-
-        var deferred = Promise.defer<boolean>();
-
-        this.client.getInvocationService()
+        var clientMessage = ClientAuthenticationCodec.encodeRequest(
+            groupConfig.name, groupConfig.password, uuid, ownerUuid, ownerConnection, 'NodeJS', 1);
+        return this.client.getInvocationService()
             .invokeOnConnection(this.connection, clientMessage)
             .then((msg: ClientMessage) => {
                 var authResponse = ClientAuthenticationCodec.decodeResponse(msg);
@@ -40,13 +35,11 @@ class ConnectionAuthenticator {
                         clusterService.uuid = authResponse.uuid;
                         clusterService.ownerUuid = authResponse.ownerUuid;
                     }
-                    deferred.resolve(true);
+                    return true;
                 } else {
-                    deferred.resolve(false);
+                    return false;
                 }
             });
-
-        return deferred.promise;
     }
 }
 

@@ -15,12 +15,9 @@ class PartitionService {
     }
 
     initialize(): Promise<PartitionService> {
-        var deferred = Promise.defer<PartitionService>();
-        this.refresh().then(() => {
-            deferred.resolve(this);
+        return this.refresh().then(() => {
+            return this;
         });
-
-        return deferred.promise;
     }
 
     /**

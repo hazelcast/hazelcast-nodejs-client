@@ -62,24 +62,18 @@ export default class HazelcastClient {
     }
 
     private init(): Promise<HazelcastClient> {
-        var deferred = Promise.defer<HazelcastClient>();
-        this.clusterService.start()
-            .then(() => {
-                return this.partitionService.initialize();
-            })
-            .then(() => {
-                return this.heartbeat.start();
-            })
-            .then(() => {
-                this.lifecycleService.emitLifecycleEvent(LifecycleEvent.started);
-                this.loggingService.info('HazelcastClient', 'Client started');
-                deferred.resolve(this);
-            }).catch((e) => {
+        return this.clusterService.start().then(() => {
+            return this.partitionService.initialize();
+        }).then(() => {
+            return this.heartbeat.start();
+        }).then(() => {
+            this.lifecycleService.emitLifecycleEvent(LifecycleEvent.started);
+            this.loggingService.info('HazelcastClient', 'Client started');
+            return this;
+        }).catch((e) => {
             this.loggingService.error('HazelcastClient', 'Client failed to start', e);
-            deferred.reject(e);
+            throw e;
         });
-
-        return deferred.promise;
     }
 
     /**
@@ -95,20 +89,18 @@ export default class HazelcastClient {
      * @returns {Promise<DistributedObject[]>|Promise<T>}
      */
     getDistributedObjects(): Promise<DistributedObject[]> {
-        var deferred = Promise.defer<DistributedObject[]>();
         var clientMessage = ClientGetDistributedObjectsCodec.encodeRequest();
         var toObjectFunc = this.serializationService.toObject.bind(this);
         var proxyManager = this.proxyManager;
-        this.invocationService.invokeOnRandomTarget(clientMessage).then(function(resp) {
+        return this.invocationService.invokeOnRandomTarget(clientMessage).then(function(resp) {
             var objectsInfoList = ClientGetDistributedObjectsCodec.decodeResponse(resp, toObjectFunc).response;
             var proxies: DistributedObject[] = [];
             for (var i = 0; i < objectsInfoList.size(); i++)  {
                 var objectInfo = objectsInfoList.get(i);
                 proxies.push(proxyManager.getOrCreateProxy(objectInfo[1], objectInfo[0], false));
             }
-            deferred.resolve(proxies);
-        }).catch(deferred.reject);
-        return deferred.promise;
+            return proxies;
+        });
     }
 
     /**
