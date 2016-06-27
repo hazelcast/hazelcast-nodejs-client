@@ -1,10 +1,10 @@
 var RemoteController = require('hazelcast-remote-controller');
-var Q = require('q');
+var Promise = require('bluebird');
 
 var controller = new RemoteController('localhost', 9701);
 
 function createCluster(hzVersion, config) {
-    var deferred = Q.defer();
+    var deferred = Promise.defer();
     controller.createCluster(hzVersion, config, function(err, cluster) {
         if (err) return deferred.reject(err);
         return deferred.resolve(cluster);
@@ -13,7 +13,7 @@ function createCluster(hzVersion, config) {
 }
 
 function startMember(clusterId) {
-    var deferred = Q.defer();
+    var deferred = Promise.defer();
     controller.startMember(clusterId, function(err, member) {
         if (err) return deferred.reject(err);
         return deferred.resolve(member);
@@ -22,7 +22,7 @@ function startMember(clusterId) {
 }
 
 function exit() {
-    var deferred = Q.defer();
+    var deferred = Promise.defer();
     controller.exit(function(err, res) {
         if (err) return deferred.reject(err);
         return deferred.resolve(res);
@@ -31,7 +31,7 @@ function exit() {
 }
 
 function shutdownMember(clusterId, memberUuid) {
-    var deferred = Q.defer();
+    var deferred = Promise.defer();
     controller.shutdownMember(clusterId, memberUuid, function(err, res) {
         if (err) return deferred.reject(err);
         return deferred.resolve(res);
@@ -40,7 +40,7 @@ function shutdownMember(clusterId, memberUuid) {
 }
 
 function shutdownCluster(clusterId) {
-    var deferrred = Q.defer();
+    var deferrred = Promise.defer();
     controller.shutdownCluster(clusterId, function (err, res) {
         if (err) return deferrred.reject(err);
         return deferrred.resolve(res);
@@ -49,7 +49,7 @@ function shutdownCluster(clusterId) {
 }
 
 function terminateMember(clusterId, memberUuid) {
-    var deferred = Q.defer();
+    var deferred = Promise.defer();
     controller.terminateMember(clusterId, memberUuid, function(err, res) {
         if (err) return deferred.reject(err);
         return deferred.resolve(res);
@@ -58,7 +58,7 @@ function terminateMember(clusterId, memberUuid) {
 }
 
 function executeOnController(clusterId, script, lang) {
-    var deferred = Q.defer();
+    var deferred = Promise.defer();
     controller.executeOnController(clusterId, script, lang, function(err, res) {
         if (err) return deferred.reject(err);
         if (res.success === false) return deferred.reject(res.message);

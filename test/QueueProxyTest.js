@@ -5,7 +5,7 @@ chai.use(chaiAsPromised);
 var HazelcastClient = require("../.").Client;
 var Controller = require('./RC');
 var Util = require('./Util');
-var Q = require('q');
+var Promise = require('bluebird');
 var fs = require('fs');
 
 describe("Queue Proxy", function () {
@@ -44,7 +44,7 @@ describe("Queue Proxy", function () {
         for (var i = 0; i < size; i++) {
             promises.push(queue.offer(prefix + 'item' + i));
         }
-        return Q.all(promises);
+        return Promise.all(promises);
     }
 
     after(function () {

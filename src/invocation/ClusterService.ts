@@ -1,6 +1,6 @@
 import ClientConnection = require('./ClientConnection');
 import Address = require('../Address');
-import * as Q from 'q';
+import * as Promise from 'bluebird';
 import {ClientAddMembershipListenerCodec} from '../codec/ClientAddMembershipListenerCodec';
 import ClientMessage = require('../ClientMessage');
 import {Member} from '../core/Member';
@@ -52,7 +52,7 @@ class ClusterService extends EventEmitter {
      * Starts cluster service.
      * @returns
      */
-    start(): Q.Promise<void> {
+    start(): Promise<void> {
         this.initHeartbeatListener();
         this.initConnectionListener();
         return this.connectToCluster();
@@ -62,7 +62,7 @@ class ClusterService extends EventEmitter {
      * Connects to cluster. It uses the addresses provided in the configuration.
      * @returns
      */
-    connectToCluster(): Q.Promise<void> {
+    connectToCluster(): Promise<void> {
         if (this.members.length > 0) {
             this.knownAddresses = new Array<Address>();
             this.members.forEach((member: Member) => {
@@ -71,7 +71,7 @@ class ClusterService extends EventEmitter {
         } else {
             this.knownAddresses = this.client.getConfig().networkConfig.addresses;
         }
-        var deferred = Q.defer<void>();
+        var deferred = Promise.defer<void>();
         var attemptLimit = this.client.getConfig().networkConfig.connectionAttemptLimit;
         var attemptPeriod = this.client.getConfig().networkConfig.connectionAttemptPeriod;
         this.tryAddressIndex(0, attemptLimit, attemptPeriod, deferred);
@@ -134,7 +134,7 @@ class ClusterService extends EventEmitter {
     private tryAddressIndex(index: number
         , attemptLimit: number
         , attemptPeriod: number
-        , deferred: Q.Deferred<void>) {
+        , deferred: Promise.Resolver<void>) {
         setImmediate(() => {
             if (this.knownAddresses.length <= index) {
                 attemptLimit = attemptLimit - 1;
@@ -169,8 +169,7 @@ class ClusterService extends EventEmitter {
         return this.ownerConnection;
     }
 
-    initMemberShipListener(): Q.Promise<void> {
-        var deferred = Q.defer<void>();
+    initMemberShipListener(): Promise<void> {
         var request = ClientAddMembershipListenerCodec.encodeRequest(false);
 
         var handler = (m: ClientMessage) => {
@@ -179,13 +178,11 @@ class ClusterService extends EventEmitter {
             var handleAttributeChange = this.handleMemberAttributeChange.bind(this);
             ClientAddMembershipListenerCodec.handle(m, handleMember, handleMemberList, handleAttributeChange, null);
         };
-        this.client.getInvocationService().invokeOnConnection(this.getOwnerConnection(), request, handler)
+        return this.client.getInvocationService().invokeOnConnection(this.getOwnerConnection(), request, handler)
             .then((resp: ClientMessage) => {
                 this.logger.trace('ClusterService', 'Registered listener with id '
                     + ClientAddMembershipListenerCodec.decodeResponse(resp).response);
-                deferred.resolve();
             });
-        return deferred.promise;
     }
 
     private handleMember(member: Member, eventType: number) {

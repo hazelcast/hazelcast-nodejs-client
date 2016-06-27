@@ -3,7 +3,9 @@
   "version": false,
   "ambientDependencies": {
     "long": "registry:dt/long#3.0.2+20151116141558",
-    "node": "registry:dt/node#4.0.0+20160412142033",
-    "q": "registry:dt/q#0.0.0+20160417152954"
+    "node": "registry:dt/node#4.0.0+20160412142033"
+  },
+  "dependencies": {
+    "bluebird": "registry:npm/bluebird#3.3.4+20160622205516"
   }
 }

@@ -1,4 +1,4 @@
-import * as Q from 'q';
+import * as Promise from 'bluebird';
 export interface DistributedObject {
     /**
      * Returns the key of the partition that this DistributedObject is assigned to.
@@ -20,5 +20,5 @@ export interface DistributedObject {
      * Destroys this object cluster-wide.
      * Clears all resources taken for this object.
      */
-    destroy() : Q.Promise<void>;
+    destroy() : Promise<void>;
 }

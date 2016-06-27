@@ -1,4 +1,4 @@
-import * as Q from 'q';
+import * as Promise from 'bluebird';
 import {DistributedObject} from '../DistributedObject';
 import {EntryView} from '../core/EntryView';
 import {IMapListener} from '../core/MapListener';
@@ -10,7 +10,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws {RangeError} if key is undefined or null
      * @return a promise to be resolved to true if the map contains the key, false otherwise.
      */
-    containsKey(key: K) : Q.Promise<boolean>;
+    containsKey(key: K) : Promise<boolean>;
 
     /**
      * This method return true if this map has key(s) associated with given value
@@ -18,7 +18,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws {RangeError} if value is undefined or null
      * @return a promise to be resolved to true if the map has key or keys associated with given value.
      */
-    containsValue(value: V) : Q.Promise<boolean>;
+    containsValue(value: V) : Promise<boolean>;
 
     /**
      * Associates the specified value with the specified key.
@@ -31,13 +31,13 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws {RangeError} if specified key or value is undefined or null or ttl is negative.
      * @return a promise to be resolved to the old value if there was any, `undefined` otherwise.
      */
-    put(key: K, value: V, ttl?: number) : Q.Promise<V>;
+    put(key: K, value: V, ttl?: number) : Promise<V>;
 
     /**
      * Puts all key value pairs from this array to the map as key -> value mappings.
      * @param pairs
      */
-    putAll(pairs: [K, V][]): Q.Promise<void>;
+    putAll(pairs: [K, V][]): Promise<void>;
 
     /**
      * Retrieves the value associated with given key.
@@ -45,13 +45,13 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws {RangeError} if key is undefined or null
      * @return a promise to be resolved to the value associated with key, undefined if the key does not exist.
      */
-    get(key: K) : Q.Promise<V>;
+    get(key: K) : Promise<V>;
 
     /**
      * Retrieves key value pairs of given keys.
      * @param keys the array of keys
      */
-    getAll(keys: K[]): Q.Promise<[K, V][]>;
+    getAll(keys: K[]): Promise<[K, V][]>;
 
     /**
      * Removes specified key from map. If optional value is specified, the key is removed only if currently mapped to
@@ -62,7 +62,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws {RangeError} if key is undefined or null
      * @return a promise to be resolved to the value associated with key, `undefined` if the key did not exist before.
      */
-    remove(key: K, value?: V) : Q.Promise<V>;
+    remove(key: K, value?: V) : Promise<V>;
 
     /**
      * Removes specified key from map. Unlike {@link remove} this method does not return deleted value.
@@ -70,46 +70,46 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws {RangeError} if key is null or undefined.
      * @param key
      */
-    delete(key: K): Q.Promise<void>;
+    delete(key: K): Promise<void>;
 
     /**
      * Retrieves the number of elements in map
      * @return a promise to be resolved to the number of elements in map
      */
-    size() : Q.Promise<number>;
+    size() : Promise<number>;
 
     /**
      * Removes all of the mappings
      * @return
      */
-    clear() : Q.Promise<void>;
+    clear() : Promise<void>;
 
     /**
      * Returns whether this map is empty or not
      */
-    isEmpty() : Q.Promise<boolean>;
+    isEmpty() : Promise<boolean>;
 
     /**
      * Returns entries as an array of key-value pairs.
      */
-    entrySet(): Q.Promise<[K, V][]>;
+    entrySet(): Promise<[K, V][]>;
 
     /**
      * Evicts the specified key from this map.
      * @throws {RangeError} if key is null or undefined.
      * @param key
      */
-    evict(key: K): Q.Promise<boolean>;
+    evict(key: K): Promise<boolean>;
 
     /**
      * Evicts all keys from this map.
      */
-    evictAll(): Q.Promise<void>;
+    evictAll(): Promise<void>;
 
     /**
      * If this map has a MapStore, this method flushes all local dirty entries.
      */
-    flush(): Q.Promise<void>;
+    flush(): Promise<void>;
 
     /**
      * Releases the lock for the specified key regardless of the owner.
@@ -117,7 +117,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws {RangeError} if key is null or undefined.
      * @param key
      */
-    forceUnlock(key: K): Q.Promise<void>;
+    forceUnlock(key: K): Promise<void>;
 
     /**
      * Checks whether given key is locked.
@@ -125,7 +125,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws {RangeError} if key is null or undefined.
      * @return {true} if key is locked, {false} otherwise
      */
-    isLocked(key: K): Q.Promise<boolean>;
+    isLocked(key: K): Promise<boolean>;
 
     /**
      * Locks the given key for this map. Promise is resolved when lock is successfully acquired.
@@ -137,19 +137,19 @@ export interface IMap<K, V> extends DistributedObject {
      * @param ttl lock is automatically unlocked after `ttl` milliseconds.
      * @throws {RangeError} if key is null or undefined.
      */
-    lock(key: K, ttl?: number): Q.Promise<void>;
+    lock(key: K, ttl?: number): Promise<void>;
 
     /**
      * Returns the keys of this map as an array.
      */
-    keySet(): Q.Promise<K[]>;
+    keySet(): Promise<K[]>;
 
     /**
      * Loads keys to the store.
      * @param keys loads only given keys if set.
      * @param replaceExistingValues if `true` existing keys will be replaced by newly loaded keys.
      */
-    loadAll(keys?: K[], replaceExistingValues?: boolean): Q.Promise<void>;
+    loadAll(keys?: K[], replaceExistingValues?: boolean): Promise<void>;
 
     /**
      * Puts specified key value association if it was not present before.
@@ -159,7 +159,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws {RangeError} if key or value is null or undefined.
      * @return old value of the entry.
      */
-    putIfAbsent(key: K, value: V, ttl?: number): Q.Promise<V>;
+    putIfAbsent(key: K, value: V, ttl?: number): Promise<V>;
 
     /**
      * Same as {@link put} except it does not call underlying MapStore.
@@ -168,7 +168,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param ttl
      * @throws {RangeError} if key or value is null or undefined.
      */
-    putTransient(key: K, value: V, ttl?: number): Q.Promise<void>;
+    putTransient(key: K, value: V, ttl?: number): Promise<void>;
 
     /**
      * Replaces value of the key if only it was associated to `oldValue`.
@@ -178,7 +178,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws {RangeError} if key, oldValue or newValue is null or undefined.
      * @return {true} if the value was replaced.
      */
-    replaceIfSame(key: K, oldValue: V,  newValue: V): Q.Promise<boolean>;
+    replaceIfSame(key: K, oldValue: V,  newValue: V): Promise<boolean>;
 
     /**
      * Replaces value of given key with `newValue`.
@@ -187,7 +187,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws {RangeError} if key or newValue is null or undefined.
      * @return previous value
      */
-    replace(key: K, newValue: V): Q.Promise<V>;
+    replace(key: K, newValue: V): Promise<V>;
 
     /**
      * Similar to {@link put} except it does not return the old value.
@@ -196,7 +196,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param ttl
      * @throws {RangeError} if key or value is null or undefined.
      */
-    set(key: K, value: V, ttl?: number): Q.Promise<void>;
+    set(key: K, value: V, ttl?: number): Promise<void>;
 
     /**
      * Releases the lock for this key.
@@ -205,26 +205,26 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws {RangeError} if this client is not the owner of the key.
      * @param key
      */
-    unlock(key: K): Q.Promise<void>;
+    unlock(key: K): Promise<void>;
 
     /**
      * Returns an array of values contained in this map.
      */
-    values(): Q.Promise<V[]>;
+    values(): Promise<V[]>;
 
     /**
      * Returns a key-value pair representing the association of given key
      * @param key
      * @throws {RangeError} if key is null or undefined.
      */
-    getEntryView(key: K): Q.Promise<EntryView<K, V>>;
+    getEntryView(key: K): Promise<EntryView<K, V>>;
 
     /**
      * Adds an index for attribute in this map.
      * @param attribute
      * @param ordered index is kept ordered if {true}, unordered otherwise.
      */
-    addIndex(attribute: string, ordered: boolean): Q.Promise<void>;
+    addIndex(attribute: string, ordered: boolean): Promise<void>;
 
     /**
      * Tries to acquire the lock for the specified key.
@@ -234,7 +234,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param lease lock is automatically release after `lease` milliseconds.
      * @throws {RangeError} if key is null or undefined.
      */
-    tryLock(key: K, timeout?: number, lease?: number): Q.Promise<boolean>;
+    tryLock(key: K, timeout?: number, lease?: number): Promise<boolean>;
 
     /**
      * Tries to put specified key value pair into map. If this method returns
@@ -245,7 +245,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param timeout
      * @throws {RangeError} if key or value is null or undefined.
      */
-    tryPut(key: K, value: V, timeout: number): Q.Promise<boolean>;
+    tryPut(key: K, value: V, timeout: number): Promise<boolean>;
 
     /**
      * Tries to remove specified key from map. If this method returns
@@ -255,7 +255,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param timeout
      * @throws {RangeError} if key is null or undefined.
      */
-    tryRemove(key: K, timeout: number): Q.Promise<boolean>;
+    tryRemove(key: K, timeout: number): Promise<boolean>;
 
     /**
      * Adds a {@link IMapListener} for this map.
@@ -264,12 +264,12 @@ export interface IMap<K, V> extends DistributedObject {
      * @param includeValue Event message contains new value of the key if set to {true}.
      * @return Registration id of the listener.
      */
-    addEntryListener(listener: IMapListener<K, V>, key?: K, includeValue?: boolean): Q.Promise<string>;
+    addEntryListener(listener: IMapListener<K, V>, key?: K, includeValue?: boolean): Promise<string>;
 
     /**
      * Removes a {@link IMapListener} from this map.
      * @param listenerId Registration Id of the listener.
      * @return `true` if remove operation is successful, `false` if unsuccessful or this listener did not exist.
      */
-    removeEntryListener(listenerId: string): Q.Promise<boolean>;
+    removeEntryListener(listenerId: string): Promise<boolean>;
 }

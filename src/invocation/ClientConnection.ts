@@ -1,5 +1,5 @@
 import net = require('net');
-import * as Q from 'q';
+import * as Promise from 'bluebird';
 import Address = require('../Address');
 import {BitsUtil} from '../BitsUtil';
 import {LoggingService} from '../logging/LoggingService';
@@ -39,8 +39,8 @@ class ClientConnection {
      * Connects to remote server and sets the hazelcast protocol.
      * @returns
      */
-    connect(): Q.Promise<ClientConnection> {
-        var ready = Q.defer<ClientConnection>();
+    connect(): Promise<ClientConnection> {
+        var ready = Promise.defer<ClientConnection>();
 
         this.socket = net.connect(this.address.port, this.address.host, () => {
 

@@ -1,4 +1,4 @@
-import * as Q from 'q';
+import * as Promise from 'bluebird';
 import GetPartitionsCodec = require('./codec/GetPartitionsCodec');
 import ClientMessage = require('./ClientMessage');
 import Address = require('./Address');
@@ -14,20 +14,16 @@ class PartitionService {
         this.client = client;
     }
 
-    initialize(): Q.Promise<PartitionService> {
-        var deferred = Q.defer<PartitionService>();
-        this.refresh().then(() => {
-            deferred.resolve(this);
+    initialize(): Promise<PartitionService> {
+        return this.refresh().then(() => {
+            return this;
         });
-
-        return deferred.promise;
     }
 
     /**
      * Refreshes the internal partition table.
-     * @returns {Q.Promise<U>}
      */
-    refresh(): Q.Promise<void> {
+    refresh(): Promise<void> {
         var ownerConnection = this.client.getClusterService().getOwnerConnection();
         var clientMessage: ClientMessage = GetPartitionsCodec.encodeRequest();
 

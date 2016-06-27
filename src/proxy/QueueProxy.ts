@@ -4,7 +4,7 @@ import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {QueueSizeCodec} from '../codec/QueueSizeCodec';
 import {QueueOfferCodec} from '../codec/QueueOfferCodec';
 import {QueuePeekCodec} from '../codec/QueuePeekCodec';
-import * as Q from 'q';
+import * as Promise from 'bluebird';
 import {QueuePollCodec} from '../codec/QueuePollCodec';
 import {QueueRemainingCapacityCodec} from '../codec/QueueRemainingCapacityCodec';
 import {QueueRemoveCodec} from '../codec/QueueRemoveCodec';
@@ -26,8 +26,7 @@ import ClientMessage = require('../ClientMessage');
 import {QueueRemoveListenerCodec} from '../codec/QueueRemoveListenerCodec';
 export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
 
-    add(item: E): Q.Promise<boolean> {
-        var deferred = Q.defer<boolean>();
+    add(item: E): Promise<boolean> {
         return this.offer(item).then(function(ret) {
             if (ret) {
                 return true;
@@ -37,7 +36,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
         });
     }
 
-    addAll(items: E[]): Q.Promise<boolean> {
+    addAll(items: E[]): Promise<boolean> {
         var rawList: Data[] = [];
         var toData = this.toData.bind(this);
         items.forEach(function(item) {
@@ -46,7 +45,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
         return this.encodeInvoke<boolean>(QueueAddAllCodec, rawList);
     }
 
-    addItemListener(listener: ItemListener<E>, includeValue: boolean): Q.Promise<string> {
+    addItemListener(listener: ItemListener<E>, includeValue: boolean): Promise<string> {
         var request = QueueAddListenerCodec.encodeRequest(this.name, includeValue, false);
         var handler = (message: ClientMessage) => {
             QueueAddListenerCodec.handle(message, (item: Data, uuid: string, eventType: number) => {
@@ -66,24 +65,24 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
         return this.client.getListenerService().registerListener(request, handler, QueueAddListenerCodec.decodeResponse);
     }
 
-    clear(): Q.Promise<void> {
+    clear(): Promise<void> {
         return this.encodeInvoke<void>(QueueClearCodec);
     }
 
-    contains(item: E): Q.Promise<boolean> {
+    contains(item: E): Promise<boolean> {
         var itemData = this.toData(item);
         return this.encodeInvoke<boolean>(QueueContainsCodec, itemData);
     }
 
-    containsAll(items: E[]): Q.Promise<boolean> {
+    containsAll(items: E[]): Promise<boolean> {
         var toData = this.toData.bind(this);
         var rawItems: Data[] = items.map<Data>(toData);
         return this.encodeInvoke<boolean>(QueueContainsAllCodec, rawItems);
     }
 
-    drainTo(arr: E[], maxElements: number = null): Q.Promise<number> {
+    drainTo(arr: E[], maxElements: number = null): Promise<number> {
         var toObject = this.toObject.bind(this);
-        var promise: Q.Promise<any>;
+        var promise: Promise<any>;
         if (maxElements === null) {
             promise = this.encodeInvoke<any>(QueueDrainToCodec);
         } else {
@@ -97,65 +96,65 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
         });
     }
 
-    isEmpty(): Q.Promise<boolean> {
+    isEmpty(): Promise<boolean> {
         return this.encodeInvoke<boolean>(QueueIsEmptyCodec);
     }
 
-    offer(item: E, time: number = 0): Q.Promise<boolean> {
+    offer(item: E, time: number = 0): Promise<boolean> {
         var itemData = this.toData(item);
         return this.encodeInvoke<boolean>(QueueOfferCodec, itemData, time);
     }
 
-    peek(): Q.Promise<E> {
+    peek(): Promise<E> {
         return this.encodeInvoke<E>(QueuePeekCodec);
     }
 
-    poll(time: number = 0): Q.Promise<E> {
+    poll(time: number = 0): Promise<E> {
         return this.encodeInvoke<E>(QueuePollCodec, time);
     }
 
-    put(item: E): Q.Promise<void> {
+    put(item: E): Promise<void> {
         var itemData = this.toData(item);
         return this.encodeInvoke<void>(QueuePutCodec, itemData);
     }
 
-    remainingCapacity(): Q.Promise<number> {
+    remainingCapacity(): Promise<number> {
         return this.encodeInvoke<number>(QueueRemainingCapacityCodec);
     }
 
-    remove(item: E): Q.Promise<boolean> {
+    remove(item: E): Promise<boolean> {
         var itemData = this.toData(item);
         return this.encodeInvoke<boolean>(QueueRemoveCodec, itemData);
     }
 
-    removeAll(items: E[]): Q.Promise<boolean> {
+    removeAll(items: E[]): Promise<boolean> {
         var toData = this.toData.bind(this);
         var rawItems = items.map<Data>(toData);
         return this.encodeInvoke<boolean>(QueueCompareAndRemoveAllCodec, rawItems);
     }
 
-    removeItemListener(registrationId: string): Q.Promise<boolean> {
+    removeItemListener(registrationId: string): Promise<boolean> {
         return this.client.getListenerService().deregisterListener(
             QueueRemoveListenerCodec.encodeRequest(this.name, registrationId),
             QueueRemoveListenerCodec.decodeResponse
         );
     }
 
-    retainAll(items: E[]): Q.Promise<boolean> {
+    retainAll(items: E[]): Promise<boolean> {
         var toData = this.toData.bind(this);
         var rawItems = items.map<Data>(toData);
         return this.encodeInvoke<boolean>(QueueCompareAndRetainAllCodec, rawItems);
     }
 
-    size(): Q.Promise<number> {
+    size(): Promise<number> {
         return this.encodeInvoke<number>(QueueSizeCodec);
     }
 
-    take(): Q.Promise<E> {
+    take(): Promise<E> {
         return this.encodeInvoke<E>(QueueTakeCodec);
     }
 
-    toArray(): Q.Promise<E[]> {
+    toArray(): Promise<E[]> {
         var arr: E[] = [];
         var toObject = this.toObject.bind(this);
         return this.encodeInvoke<Data[]>(QueueIteratorCodec).then(function(dataArray) {

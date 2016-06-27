@@ -1,13 +1,11 @@
-import * as Q from 'q';
+import * as Promise from 'bluebird';
 import {DistributedObject} from '../DistributedObject';
 import {MapProxy} from './MapProxy';
 import {SetProxy} from './SetProxy';
-import {BaseProxy} from './BaseProxy';
 import {ClientCreateProxyCodec} from '../codec/ClientCreateProxyCodec';
 import ClientConnection = require('../invocation/ClientConnection');
 import ClientMessage = require('../ClientMessage');
 import {ClientDestroyProxyCodec} from '../codec/ClientDestroyProxyCodec';
-import defer = Q.defer;
 import {ClientAddDistributedObjectListenerCodec} from '../codec/ClientAddDistributedObjectListenerCodec';
 import {ClientRemoveDistributedObjectListenerCodec} from '../codec/ClientRemoveDistributedObjectListenerCodec';
 import HazelcastClient from '../HazelcastClient';
@@ -50,27 +48,25 @@ class ProxyManager {
         }
     }
 
-    private createProxy(name: string, serviceName: string): Q.Promise<ClientMessage> {
+    private createProxy(name: string, serviceName: string): Promise<ClientMessage> {
         var connection: ClientConnection = this.client.getClusterService().getOwnerConnection();
         var request = ClientCreateProxyCodec.encodeRequest(name, serviceName, connection.getAddress());
 
-        var createProxyPromise: Q.Promise<ClientMessage> = this.client.getInvocationService()
+        var createProxyPromise: Promise<ClientMessage> = this.client.getInvocationService()
             .invokeOnConnection(connection, request);
         return createProxyPromise;
     }
 
-    destroyProxy(name: string, serviceName: string): Q.Promise<void> {
-        var deferred = Q.defer<void>();
+    destroyProxy(name: string, serviceName: string): Promise<void> {
         delete this.proxies[name];
         var clientMessage = ClientDestroyProxyCodec.encodeRequest(name, serviceName);
         clientMessage.setPartitionId(-1);
-        this.client.getInvocationService().invokeOnRandomTarget(clientMessage).then(function () {
-            deferred.resolve();
+        return this.client.getInvocationService().invokeOnRandomTarget(clientMessage).then(function () {
+            return;
         });
-        return deferred.promise;
     }
 
-    addDistributedObjectListener(listenerFunc: Function): Q.Promise<string> {
+    addDistributedObjectListener(listenerFunc: Function): Promise<string> {
         var handler = function (clientMessage: ClientMessage) {
             var converterFunc = function (name: string, serviceName: string, eventType: string) {
                 if (eventType === 'CREATED') {

@@ -1,7 +1,7 @@
 import {SerializationService, SerializationServiceV1} from './serialization/SerializationService';
 import {InvocationService, ListenerService} from './invocation/InvocationService';
 import {ClientConfig} from './Config';
-import * as Q from 'q';
+import * as Promise from 'bluebird';
 import {IMap} from './proxy/IMap';
 import {ISet} from './proxy/ISet';
 import {LoggingService} from './logging/LoggingService';
@@ -38,7 +38,7 @@ export default class HazelcastClient {
      * @param config Default {@link ClientConfig} is used when this parameter is absent.
      * @returns {Q.Promise<HazelcastClient>}
      */
-    public static newHazelcastClient(config?: ClientConfig): Q.Promise<HazelcastClient> {
+    public static newHazelcastClient(config?: ClientConfig): Promise<HazelcastClient> {
         var client: HazelcastClient = new HazelcastClient(config);
         return client.init();
     }
@@ -61,25 +61,19 @@ export default class HazelcastClient {
         this.heartbeat = new Heartbeat(this);
     }
 
-    private init(): Q.Promise<HazelcastClient> {
-        var deferred = Q.defer<HazelcastClient>();
-        this.clusterService.start()
-            .then(() => {
-                return this.partitionService.initialize();
-            })
-            .then(() => {
-                return this.heartbeat.start();
-            })
-            .then(() => {
-                this.lifecycleService.emitLifecycleEvent(LifecycleEvent.started);
-                this.loggingService.info('HazelcastClient', 'Client started');
-                deferred.resolve(this);
-            }).catch((e) => {
+    private init(): Promise<HazelcastClient> {
+        return this.clusterService.start().then(() => {
+            return this.partitionService.initialize();
+        }).then(() => {
+            return this.heartbeat.start();
+        }).then(() => {
+            this.lifecycleService.emitLifecycleEvent(LifecycleEvent.started);
+            this.loggingService.info('HazelcastClient', 'Client started');
+            return this;
+        }).catch((e) => {
             this.loggingService.error('HazelcastClient', 'Client failed to start', e);
-            deferred.reject(e);
+            throw e;
         });
-
-        return deferred.promise;
     }
 
     /**
@@ -94,21 +88,19 @@ export default class HazelcastClient {
      * Gives all known distributed objects in cluster.
      * @returns {Promise<DistributedObject[]>|Promise<T>}
      */
-    getDistributedObjects(): Q.Promise<DistributedObject[]> {
-        var deferred = Q.defer<DistributedObject[]>();
+    getDistributedObjects(): Promise<DistributedObject[]> {
         var clientMessage = ClientGetDistributedObjectsCodec.encodeRequest();
         var toObjectFunc = this.serializationService.toObject.bind(this);
         var proxyManager = this.proxyManager;
-        this.invocationService.invokeOnRandomTarget(clientMessage).then(function(resp) {
+        return this.invocationService.invokeOnRandomTarget(clientMessage).then(function(resp) {
             var objectsInfoList = ClientGetDistributedObjectsCodec.decodeResponse(resp, toObjectFunc).response;
             var proxies: DistributedObject[] = [];
             for (var i = 0; i < objectsInfoList.size(); i++)  {
                 var objectInfo = objectsInfoList.get(i);
                 proxies.push(proxyManager.getOrCreateProxy(objectInfo[1], objectInfo[0], false));
             }
-            deferred.resolve(proxies);
-        }).catch(deferred.reject);
-        return deferred.promise;
+            return proxies;
+        });
     }
 
     /**
@@ -214,7 +206,7 @@ export default class HazelcastClient {
      * </ul>
      * @returns {Q.Promise<string>} registration id of the listener.
      */
-    addDistributedObjectListener(listenerFunc: Function): Q.Promise<string> {
+    addDistributedObjectListener(listenerFunc: Function): Promise<string> {
         return this.proxyManager.addDistributedObjectListener(listenerFunc);
     }
 
@@ -223,7 +215,7 @@ export default class HazelcastClient {
      * @param listenerId id of the listener to be removed.
      * @returns {Q.Promise<boolean>} true if registration is removed, false otherwise.
      */
-    removeDistributedObjectListener(listenerId: string): Q.Promise<boolean> {
+    removeDistributedObjectListener(listenerId: string): Promise<boolean> {
         return this.proxyManager.removeDistributedObjectListener(listenerId);
     }
 

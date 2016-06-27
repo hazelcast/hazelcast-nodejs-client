@@ -24,78 +24,79 @@ import {ListAddAllWithIndexCodec} from '../codec/ListAddAllWithIndexCodec';
 import {ListSetCodec} from '../codec/ListSetCodec';
 import {ListLastIndexOfCodec} from '../codec/ListLastIndexOfCodec';
 import ClientMessage = require('../ClientMessage');
+import * as Promise from 'bluebird';
 
 export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
 
-    add(element: E): Q.Promise<boolean> {
+    add(element: E): Promise<boolean> {
         return this.encodeInvoke<boolean>(ListAddCodec, this.toData(element));
     }
 
-    addAll(elements: E[]): Q.Promise<boolean> {
+    addAll(elements: E[]): Promise<boolean> {
         return this.encodeInvoke<boolean>(ListAddAllCodec, this.serializeList(elements));
     }
 
-    addAllAt(index: number, elements: E[]): Q.Promise<boolean> {
+    addAllAt(index: number, elements: E[]): Promise<boolean> {
         return this.encodeInvoke<boolean>(ListAddAllWithIndexCodec, index, this.serializeList(elements));
     }
 
-    addAt(index: number, element: E): Q.Promise<void> {
+    addAt(index: number, element: E): Promise<void> {
         return this.encodeInvoke<void>(ListAddWithIndexCodec, index, this.toData(element));
     }
 
-    clear(): Q.Promise<void> {
+    clear(): Promise<void> {
         return this.encodeInvoke<void>(ListClearCodec);
     }
 
-    contains(entry: E): Q.Promise<boolean> {
+    contains(entry: E): Promise<boolean> {
         return this.encodeInvoke<boolean>(ListContainsCodec, this.toData(entry));
     }
 
-    containsAll(elements: E[]): Q.Promise<boolean> {
+    containsAll(elements: E[]): Promise<boolean> {
         return this.encodeInvoke<boolean>(ListContainsAllCodec, this.serializeList(elements));
     }
 
-    isEmpty(): Q.Promise<boolean> {
+    isEmpty(): Promise<boolean> {
         return this.encodeInvoke<boolean>(ListIsEmptyCodec);
     }
 
-    remove(entry: E): Q.Promise<boolean> {
+    remove(entry: E): Promise<boolean> {
         return this.encodeInvoke<boolean>(ListRemoveCodec, this.toData(entry));
     }
 
-    removeAll(elements: E[]): Q.Promise<boolean> {
+    removeAll(elements: E[]): Promise<boolean> {
         return this.encodeInvoke<boolean>(ListCompareAndRemoveAllCodec, this.serializeList(elements));
     }
 
-    retainAll(elements: E[]): Q.Promise<boolean> {
+    retainAll(elements: E[]): Promise<boolean> {
         return this.encodeInvoke<boolean>(ListCompareAndRetainAllCodec, this.serializeList(elements));
     }
 
-    removeAt(index: number): Q.Promise<E> {
+    removeAt(index: number): Promise<E> {
         return this.encodeInvoke<E>(ListRemoveWithIndexCodec, index);
     }
 
-    get(index: number): Q.Promise<E> {
+    get(index: number): Promise<E> {
         return this.encodeInvoke<E>(ListGetCodec, index);
     }
 
-    set(index: number, element: E): Q.Promise<E> {
+    set(index: number, element: E): Promise<E> {
         return this.encodeInvoke<E>(ListSetCodec, index, this.toData(element));
     }
 
-    indexOf(element: E): Q.Promise<number> {
+    indexOf(element: E): Promise<number> {
         return this.encodeInvoke<number>(ListIndexOfCodec, this.toData(element));
     }
 
-    lastIndexOf(element: E): Q.Promise<number> {
+    lastIndexOf(element: E): Promise<number> {
         return this.encodeInvoke<number>(ListLastIndexOfCodec, this.toData(element));
     }
 
-    size(): Q.Promise<number> {
+    size(): Promise<number> {
         return this.encodeInvoke<number>(ListSizeCodec);
     }
 
-    subList(start: number, end: number): Q.Promise<E[]> {
+    subList(start: number, end: number): Promise<E[]> {
         return this.encodeInvoke(ListSubCodec, start, end).then((encoded: Data[]) => {
             return encoded.map((item: Data) => {
                 return this.toObject(item);
@@ -103,7 +104,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
         });
     }
 
-    toArray(): Q.Promise<E[]> {
+    toArray(): Promise<E[]> {
         return this.encodeInvoke(ListGetAllCodec)
             .then((elements: Array<Data>) => {
                 return elements.map((element) => {
@@ -112,7 +113,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
             });
     }
 
-    addItemListener(listener: ItemListener<E>, includeValue: boolean): Q.Promise<string> {
+    addItemListener(listener: ItemListener<E>, includeValue: boolean): Promise<string> {
         var request = ListAddListenerCodec.encodeRequest(this.name, includeValue, false);
         var handler = (message: ClientMessage) => {
             ListAddListenerCodec.handle(message, (element: Data, uuid: string, eventType: number) => {
@@ -133,7 +134,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
             ListAddListenerCodec.decodeResponse, this.name);
     }
 
-    removeItemListener(registrationId: string): Q.Promise<boolean> {
+    removeItemListener(registrationId: string): Promise<boolean> {
         return this.client.getListenerService().deregisterListener(
             ListRemoveListenerCodec.encodeRequest(this.name, registrationId),
             ListRemoveListenerCodec.decodeResponse
