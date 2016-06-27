@@ -2,7 +2,15 @@ import * as Promise from 'bluebird';
 import {DistributedObject} from '../DistributedObject';
 import {EntryView} from '../core/EntryView';
 import {IMapListener} from '../core/MapListener';
+import {Predicate} from '../core/Predicate';
 export interface IMap<K, V> extends DistributedObject {
+
+    /**
+     * Adds an index to this map for the specified entries so that queries can run faster.
+     * @param attribute index attribute of value
+     * @param ordered `true` if index should be ordered, `false` otherwise.
+     */
+    addIndex(attribute: string, ordered: boolean): Promise<void>;
 
     /**
      * This method checks whether the map has an item asssociated with key
@@ -95,6 +103,14 @@ export interface IMap<K, V> extends DistributedObject {
     entrySet(): Promise<[K, V][]>;
 
     /**
+     * Queries the map based on the specified predicate and returns matching entries.
+     * Specified predicate runs on all members in parallel.
+     * @param predicate specified query criteria.
+     * @return result entry set of the query.
+     */
+    entrySetWithPredicate(predicate: Predicate<K, V>): Promise<[K, V][]>;
+
+    /**
      * Evicts the specified key from this map.
      * @throws {RangeError} if key is null or undefined.
      * @param key
@@ -143,6 +159,12 @@ export interface IMap<K, V> extends DistributedObject {
      * Returns the keys of this map as an array.
      */
     keySet(): Promise<K[]>;
+
+    /**
+     * Queries the map based on the specified predicate and returns the keys of matching entries.
+     * @param predicate
+     */
+    keySetWithPredicate(predicate: Predicate<K, V>): Promise<K[]>;
 
     /**
      * Loads keys to the store.
@@ -213,6 +235,13 @@ export interface IMap<K, V> extends DistributedObject {
     values(): Promise<V[]>;
 
     /**
+     * Queries the map based on the specified predicate and returns the values of matching entries.
+     * Specified predicate runs on all members in parallel.
+     * @param predicate
+     */
+    valuesWithPredicate(predicate: Predicate<K, V>): Promise<V[]>;
+
+    /**
      * Returns a key-value pair representing the association of given key
      * @param key
      * @throws {RangeError} if key is null or undefined.
@@ -265,6 +294,18 @@ export interface IMap<K, V> extends DistributedObject {
      * @return Registration id of the listener.
      */
     addEntryListener(listener: IMapListener<K, V>, key?: K, includeValue?: boolean): Promise<string>;
+
+    /**
+     * Adds a {@link IMapListener} for this map.
+     * Listener will get notified for map add/remove/update/evict events filtered by the given predicate.
+     * @param listener
+     * @param predicate
+     * @param key Events are triggered for only this key if set.
+     * @param includeValue Event message contains new value of the key if set to `true`.
+     * @return Registration id of the listener.
+     */
+    addEntryListenerWithPredicate(listener: IMapListener<K, V>, predicate: Predicate<K, V>,
+                                  key?: K, includeValue?: boolean): Promise<string>;
 
     /**
      * Removes a {@link IMapListener} from this map.
