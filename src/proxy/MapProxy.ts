@@ -45,7 +45,59 @@ import {EntryEventType} from '../core/EntryEventType';
 import {MapAddEntryListenerToKeyCodec} from '../codec/MapAddEntryListenerToKeyCodec';
 import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
 import {assertNotNull} from '../Util';
+import {Predicate} from '../core/Predicate';
+import {MapEntriesWithPredicateCodec} from '../codec/MapEntriesWithPredicateCodec';
+import {MapKeySetWithPredicateCodec} from '../codec/MapKeySetWithPredicateCodec';
+import {MapValuesWithPredicateCodec} from '../codec/MapValuesWithPredicateCodec';
+import {MapAddEntryListenerToKeyWithPredicateCodec} from '../codec/MapAddEntryListenerToKeyWithPredicateCodec';
+import {MapAddEntryListenerWithPredicateCodec} from '../codec/MapAddEntryListenerWithPredicateCodec';
 export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
+
+    entrySetWithPredicate(predicate: Predicate): Promise<any[]> {
+        assertNotNull(predicate);
+        var predicateData = this.toData(predicate);
+        var toObject = this.toObject.bind(this);
+        var deserializedSet: [K, V][] = [];
+        return this.encodeInvokeOnRandomTarget(MapEntriesWithPredicateCodec, predicateData)
+            .then(function(entrySet: [Data, Data][]) {
+            entrySet.forEach(function(entry) {
+                deserializedSet.push([toObject(entry[0]), toObject(entry[1])]);
+            });
+            return deserializedSet;
+        });
+    }
+
+    keySetWithPredicate(predicate: Predicate): Promise<K[]> {
+        assertNotNull(predicate);
+        var predicateData = this.toData(predicate);
+        var toObject = this.toObject.bind(this);
+        var deserializedSet: K[] = [];
+        return this.encodeInvokeOnRandomTarget(MapKeySetWithPredicateCodec, predicateData).then(function (entrySet: Data[]) {
+            entrySet.forEach(function (entryData) {
+                deserializedSet.push(toObject(entryData));
+            });
+            return deserializedSet;
+        });
+    }
+
+    valuesWithPredicate(predicate: Predicate): Promise<V[]> {
+        assertNotNull(predicate);
+        var predicateData = this.toData(predicate);
+        var toObject = this.toObject.bind(this);
+        var deserialized: V[] = [];
+        return this.encodeInvokeOnRandomTarget(MapValuesWithPredicateCodec, predicateData).then(function (rawValues: Data[]) {
+            rawValues.forEach(function (rawValue) {
+                deserialized.push(toObject(rawValue));
+            });
+            return deserialized;
+        });
+    }
+
+    addEntryListenerWithPredicate(listener: IMapListener<K, V>, predicate: Predicate,
+                                  key: K = undefined, includeValue: boolean = undefined
+    ): Promise<string> {
+        return this.addEntryListenerInternal(listener, predicate, key, includeValue);
+    }
     containsKey(key: K): Promise<boolean> {
         assertNotNull(key);
         var keyData = this.toData(key);
@@ -310,7 +362,9 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.encodeInvokeOnKey<boolean>(MapTryRemoveCodec, keyData, keyData, 0, timeout);
     }
 
-    addEntryListener(listener: IMapListener<K, V>, key: K = undefined, includeValue: boolean = false): Promise<string> {
+    private addEntryListenerInternal(
+        listener: IMapListener<K, V>, predicate: Predicate, key: K, includeValue: boolean
+    ): Promise<string> {
         var flags: any = null;
         var conversionTable: {[funcName: string]: EntryEventType} = {
             'added': EntryEventType.ADDED,
@@ -332,7 +386,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             key: K, val: V, oldVal: V, mergingVal: V, event: number, uuid: string, numberOfAffectedEntries: number
         ) {
             var eventParams: any[] = [key, oldVal, val, mergingVal, numberOfAffectedEntries, uuid];
-            eventParams = eventParams.map((val) => {if (val === undefined) { return null; } else { return val; } });
+            eventParams = eventParams.map(toObject);
             switch (event) {
                 case EntryEventType.ADDED:
                     listener.added.apply(null, eventParams);
@@ -358,23 +412,39 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             }
         };
         var request: ClientMessage;
-        if (key !== undefined) {
+        var handler: Function;
+        var responser: Function;
+        if (key && predicate) {
+            var keyData = this.toData(key);
+            var predicateData = this.toData(predicate);
+            request = MapAddEntryListenerToKeyWithPredicateCodec.encodeRequest(this.name, keyData,
+                predicateData, includeValue, flags, false);
+            handler = MapAddEntryListenerToKeyWithPredicateCodec.handle;
+            responser = MapAddEntryListenerToKeyWithPredicateCodec.decodeResponse;
+        } else if (key && !predicate) {
             var keyData = this.toData(key);
             request = MapAddEntryListenerToKeyCodec.encodeRequest(this.name, keyData, includeValue, flags, false);
-            return this.client.getListenerService().registerListener(
-                request,
-                (m: ClientMessage) => {MapAddEntryListenerToKeyCodec.handle(m, entryEventHandler, toObject); },
-                MapAddEntryListenerToKeyCodec.decodeResponse,
-                keyData
-            );
+            handler = MapAddEntryListenerToKeyCodec.handle;
+            responser = MapAddEntryListenerToKeyCodec.decodeResponse;
+        } else if (!key && predicate) {
+            var predicateData = this.toData(predicate);
+            request = MapAddEntryListenerWithPredicateCodec.encodeRequest(this.name, predicateData, includeValue, flags, false);
+            handler = MapAddEntryListenerWithPredicateCodec.handle;
+            responser = MapAddEntryListenerWithPredicateCodec.decodeResponse;
         } else {
             request = MapAddEntryListenerCodec.encodeRequest(this.name, includeValue, flags, false);
-            return this.client.getListenerService().registerListener(
-                request,
-                (m: ClientMessage) => {MapAddEntryListenerCodec.handle(m, entryEventHandler, toObject); },
-                MapAddEntryListenerCodec.decodeResponse
-            );
+            handler = MapAddEntryListenerCodec.handle;
+            responser = MapAddEntryListenerCodec.decodeResponse;
         }
+        return this.client.getListenerService().registerListener(
+            request,
+            (m: ClientMessage) => { handler(m, entryEventHandler, toObject); },
+            responser
+        );
+    }
+
+    addEntryListener(listener: IMapListener<K, V>, key: K = undefined, includeValue: boolean = false): Promise<string> {
+        return this.addEntryListenerInternal(listener, undefined, key, includeValue);
     }
 
     removeEntryListener(listenerId: string): Promise<boolean> {

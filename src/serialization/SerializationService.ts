@@ -11,6 +11,9 @@ import {
 } from './DefaultSerializer';
 import * as Util from '../Util';
 import {PortableSerializer} from './portable/PortableSerializer';
+import {IdentifiedDataSerializableFactory} from './Serializable';
+import * as DefaultPredicates from './DefaultPredicates';
+import {PredicateFactory, PREDICATE_FACTORY_ID} from './PredicateFactory';
 
 export interface SerializationService {
     toData(object: any, paritioningStrategy?: any) : Data;
@@ -54,6 +57,12 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     toObject(data: Data): any {
+        if (data == null) {
+            return data;
+        }
+        if (!data.getType) {
+            return data;
+        }
         var serializer = this.findSerializerById(data.getType());
         var dataInput = new ObjectDataInput(data.toBuffer(), DATA_OFFSET, this, this.serialiationConfig.isBigEndian);
         return serializer.read(dataInput);
@@ -196,14 +205,21 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('stringArray', new StringArraySerializer());
         this.registerSerializer('javaClass', new JavaClassSerializer());
         this.registerSerializer('floatArray', new FloatArraySerializer());
-        this.registerSerializer(
-            'identified', new IdentifiedDataSerializableSerializer(this.serialiationConfig.dataSerializableFactories)
-        );
+        this.registerIdentifiedFactories();
         this.registerSerializer('!json', new JsonSerializer());
         this.registerSerializer(
             '!portable',
             new PortableSerializer(this, this.serialiationConfig.portableFactories, this.serialiationConfig.portableVersion)
         );
+    }
+
+    protected registerIdentifiedFactories() {
+        var factories: {[id: number]: IdentifiedDataSerializableFactory} = {};
+        for (var id in this.serialiationConfig.dataSerializableFactories) {
+            factories[id] = this.serialiationConfig.dataSerializableFactories[id];
+        }
+        factories[PREDICATE_FACTORY_ID] = new PredicateFactory(DefaultPredicates);
+        this.registerSerializer('identified', new IdentifiedDataSerializableSerializer(factories));
     }
 
     protected registerCustomSerializers(cutomSerializersArray: any[]) {

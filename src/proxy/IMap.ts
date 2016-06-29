@@ -108,7 +108,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param predicate specified query criteria.
      * @return result entry set of the query.
      */
-    entrySetWithPredicate(predicate: Predicate<K, V>): Promise<[K, V][]>;
+    entrySetWithPredicate(predicate: Predicate): Promise<[K, V][]>;
 
     /**
      * Evicts the specified key from this map.
@@ -164,7 +164,7 @@ export interface IMap<K, V> extends DistributedObject {
      * Queries the map based on the specified predicate and returns the keys of matching entries.
      * @param predicate
      */
-    keySetWithPredicate(predicate: Predicate<K, V>): Promise<K[]>;
+    keySetWithPredicate(predicate: Predicate): Promise<K[]>;
 
     /**
      * Loads keys to the store.
@@ -239,7 +239,7 @@ export interface IMap<K, V> extends DistributedObject {
      * Specified predicate runs on all members in parallel.
      * @param predicate
      */
-    valuesWithPredicate(predicate: Predicate<K, V>): Promise<V[]>;
+    valuesWithPredicate(predicate: Predicate): Promise<V[]>;
 
     /**
      * Returns a key-value pair representing the association of given key
@@ -304,7 +304,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param includeValue Event message contains new value of the key if set to `true`.
      * @return Registration id of the listener.
      */
-    addEntryListenerWithPredicate(listener: IMapListener<K, V>, predicate: Predicate<K, V>,
+    addEntryListenerWithPredicate(listener: IMapListener<K, V>, predicate: Predicate,
                                   key?: K, includeValue?: boolean): Promise<string>;
 
     /**

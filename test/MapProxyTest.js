@@ -1,5 +1,6 @@
 var expect = require("chai").expect;
 var HazelcastClient = require("../.").Client;
+var Predicates = require("../.").Predicates;
 var Promise = require("bluebird");
 var Controller = require('./RC');
 var Util = require('./Util');
@@ -538,14 +539,71 @@ describe("MapProxy Test", function() {
         })
     });
 
+    it('addEntryListener on map, entryAdded fires because predicate returns true for that entry', function(done) {
+        var listenerObject = {
+            added: function(key, oldValue, value, mergingValue) {
+                try {
+                    expect(key).to.equal('key10');
+                    expect(oldValue).to.be.undefined;
+                    expect(value).to.be.undefined;
+                    expect(mergingValue).to.be.undefined;
+                    done();
+                } catch (err) {
+                    done(err);
+                }
+            }
+        };
+        map.addEntryListenerWithPredicate(listenerObject, Predicates.sql('this == val10')).then(function() {
+            map.put('key10', 'val10');
+        });
+    });
+
+    it('addEntryListener on key, entryAdded fires because predicate returns true for that entry', function(done) {
+        var listenerObject = {
+            added: function(key, oldValue, value, mergingValue) {
+                try {
+                    expect(key).to.equal('key10');
+                    expect(oldValue).to.be.undefined;
+                    expect(value).to.be.undefined;
+                    expect(mergingValue).to.be.undefined;
+                    done();
+                } catch (err) {
+                    done(err);
+                }
+            }
+        };
+        map.addEntryListenerWithPredicate(listenerObject, Predicates.sql('this == val10'), 'key10').then(function() {
+            map.put('key10', 'val10');
+        });
+    });
+
+    it('addEntryListener on key, entryAdded fires because predicate returns true for that entry, inlVal=yes', function(done) {
+        var listenerObject = {
+            added: function(key, oldValue, value, mergingValue) {
+                try {
+                    expect(key).to.equal('key10');
+                    expect(oldValue).to.be.undefined;
+                    expect(value).to.equal('val10');
+                    expect(mergingValue).to.be.undefined;
+                    done();
+                } catch (err) {
+                    done(err);
+                }
+            }
+        };
+        map.addEntryListenerWithPredicate(listenerObject, Predicates.sql('this == val10'), 'key10', true).then(function() {
+            map.put('key10', 'val10');
+        });
+    });
+
     it('addEntryListener on map entryAdded', function(done) {
         var listenerObject = {
             added: function(key, oldValue, value, mergingValue) {
                 try {
                     expect(key).to.equal('key10');
-                    expect(oldValue).to.be.null;
-                    expect(value).to.be.null;
-                    expect(mergingValue).to.be.null;
+                    expect(oldValue).to.be.undefined;
+                    expect(value).to.be.undefined;
+                    expect(mergingValue).to.be.undefined;
                     done();
                 } catch (err) {
                     done(err);
@@ -562,9 +620,9 @@ describe("MapProxy Test", function() {
             added: function(key, oldValue, value, mergingValue) {
                 try {
                     expect(key).to.equal('key10');
-                    expect(oldValue).to.be.null;
+                    expect(oldValue).to.be.undefined;
                     expect(value).to.equal('val10');
-                    expect(mergingValue).to.be.null;
+                    expect(mergingValue).to.be.undefined;
                     done();
                 } catch (err) {
                     done(err);
@@ -581,9 +639,9 @@ describe("MapProxy Test", function() {
             updated: function(key, oldValue, value, mergingValue) {
                 try {
                     expect(key).to.equal('key0');
-                    expect(oldValue).to.be.null;
-                    expect(value).to.be.null;
-                    expect(mergingValue).to.be.null;
+                    expect(oldValue).to.be.undefined;
+                    expect(value).to.be.undefined;
+                    expect(mergingValue).to.be.undefined;
                     done();
                 } catch (err) {
                     done(err);
@@ -600,9 +658,9 @@ describe("MapProxy Test", function() {
             removed: function(key, oldValue, value, mergingValue) {
                 try {
                     expect(key).to.equal('key1');
-                    expect(oldValue).to.be.null;
-                    expect(value).to.be.null;
-                    expect(mergingValue).to.be.null;
+                    expect(oldValue).to.be.undefined;
+                    expect(value).to.be.undefined;
+                    expect(mergingValue).to.be.undefined;
                     done();
                 } catch (err) {
                     done(err);
@@ -620,8 +678,8 @@ describe("MapProxy Test", function() {
                 try {
                     expect(key).to.equal('key1');
                     expect(oldValue).to.equal('val1');
-                    expect(value).to.be.null;
-                    expect(mergingValue).to.be.null;
+                    expect(value).to.be.undefined;
+                    expect(mergingValue).to.be.undefined;
                     done();
                 } catch (err) {
                     done(err);
@@ -639,8 +697,8 @@ describe("MapProxy Test", function() {
                 try {
                     expect(key).to.equal('key1');
                     expect(oldValue).to.equal('val1');
-                    expect(value).to.be.null;
-                    expect(mergingValue).to.be.null;
+                    expect(value).to.be.undefined;
+                    expect(mergingValue).to.be.undefined;
                     done();
                 } catch (err) {
                     done(err);
@@ -656,10 +714,10 @@ describe("MapProxy Test", function() {
         var listenerObject = {
             evictedAll: function(key, oldValue, value, mergingValue, numberOfAffectedEntries) {
                 try {
-                    expect(key).to.be.null;
-                    expect(oldValue).to.be.null;
-                    expect(value).to.be.null;
-                    expect(mergingValue).to.be.null;
+                    expect(key).to.be.undefined;
+                    expect(oldValue).to.be.undefined;
+                    expect(value).to.be.undefined;
+                    expect(mergingValue).to.be.undefined;
                     expect(numberOfAffectedEntries).to.equal(10);
                     done();
                 } catch (err) {
@@ -676,10 +734,10 @@ describe("MapProxy Test", function() {
         var listenerObject = {
             clearedAll: function(key, oldValue, value, mergingValue, numberOfAffectedEntries) {
                 try {
-                    expect(key).to.be.null;
-                    expect(oldValue).to.be.null;
-                    expect(value).to.be.null;
-                    expect(mergingValue).to.be.null;
+                    expect(key).to.be.undefined;
+                    expect(oldValue).to.be.undefined;
+                    expect(value).to.be.undefined;
+                    expect(mergingValue).to.be.undefined;
                     expect(numberOfAffectedEntries).to.equal(10);
                     done();
                 } catch (err) {
@@ -703,6 +761,34 @@ describe("MapProxy Test", function() {
     it('removeEntryListener with wrong id', function() {
         return map.removeEntryListener('aaa').then(function(success) {
             return expect(success).to.be.false;
+        });
+    });
+
+    it('entrySetWithPredicate', function() {
+        return map.entrySetWithPredicate(Predicates.sql('this == val3')).then(function(entrySet) {
+            expect(entrySet.length).to.equal(1);
+            expect(entrySet[0][0]).to.equal('key3');
+            expect(entrySet[0][1]).to.equal('val3');
+        });
+    });
+
+    it('keySetWithPredicate', function() {
+        return map.keySetWithPredicate(Predicates.sql('this == val3')).then(function(keySet) {
+            expect(keySet.length).to.equal(1);
+            expect(keySet[0]).to.equal('key3');
+        });
+    });
+
+    it('keySetWithPredicate null response', function() {
+        return map.keySetWithPredicate(Predicates.sql('this == nonexisting')).then(function(keySet) {
+            expect(keySet.length).to.equal(0);
+        });
+    });
+
+    it('valuesWithPredicate', function() {
+        return map.valuesWithPredicate(Predicates.sql('this == val3')).then(function(valueSet) {
+            expect(valueSet.length).to.equal(1);
+            expect(valueSet[0]).to.equal('val3');
         });
     });
 
