@@ -58,32 +58,32 @@ export interface MultiMap<K, V> extends DistributedObject {
     /**
      * Checks if this multi-map contains a specified key.
      * @param key key to search for.
-     * @returns `true` if this map contains the specified key, false otherwise.
+     * @returns `true` if this map contains the specified key, `false` otherwise.
      */
     containsKey(key: K): Promise<boolean>;
 
     /**
-     * @param value value to search for
+     * @param value value to search for.
      * @return `true` if the specified value is associated with at least one key in this multi-map,
-     * `false` otherwise
+     * `false` otherwise.
      */
     containsValue(value: V): Promise<boolean>;
 
     /**
-     * @param key key to match against
-     * @param value value to match against
+     * @param key key to match against.
+     * @param value value to match against.
      * @return `true` if this multi-map has an association between
-     * the specified key and the specified value, `false` otherwise
+     * the specified key and the specified value, `false` otherwise.
      */
     containsEntry(key: K, value: V): Promise<boolean>;
 
     /**
-     * @return the number of keys in this multi-map
+     * @return the total number of values in this multi-map. 
      */
     size(): Promise<number>;
 
     /**
-     * Removes all entries from this multi-map
+     * Removes all entries from this multi-map.
      */
     clear(): Promise<void>;
 
