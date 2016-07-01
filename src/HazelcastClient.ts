@@ -18,6 +18,7 @@ import ClientMessage = require('./ClientMessage');
 import {IQueue} from './proxy/IQueue';
 import {IList} from './proxy/IList';
 import {ILock} from './proxy/ILock';
+import {MultiMap} from './proxy/MultiMap';
 
 export default class HazelcastClient {
 
@@ -147,6 +148,15 @@ export default class HazelcastClient {
      */
     getList<E>(name: string): IList<E> {
         return <IList<E>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.LIST_SERVICE);
+    }
+
+    /**
+     * Returns the distributed multi-map instance with given name.
+     * @param name
+     * @returns {MultiMap<K, V>}
+     */
+    getMultiMap<K, V>(name: string): MultiMap<K, V> {
+        return <MultiMap<K, V>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.MULTIMAP_SERVICE);
     }
 
 
