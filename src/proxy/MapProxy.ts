@@ -71,12 +71,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         assertNotNull(predicate);
         var predicateData = this.toData(predicate);
         var toObject = this.toObject.bind(this);
-        var deserializedSet: K[] = [];
         return this.encodeInvokeOnRandomTarget(MapKeySetWithPredicateCodec, predicateData).then(function (entrySet: Data[]) {
-            entrySet.forEach(function (entryData) {
-                deserializedSet.push(toObject(entryData));
-            });
-            return deserializedSet;
+            return entrySet.map<K>(toObject);
         });
     }
 
@@ -84,12 +80,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         assertNotNull(predicate);
         var predicateData = this.toData(predicate);
         var toObject = this.toObject.bind(this);
-        var deserialized: V[] = [];
         return this.encodeInvokeOnRandomTarget(MapValuesWithPredicateCodec, predicateData).then(function (rawValues: Data[]) {
-            rawValues.forEach(function (rawValue) {
-                deserialized.push(toObject(rawValue));
-            });
-            return deserialized;
+            return rawValues.map<V>(toObject);
         });
     }
 
@@ -258,13 +250,9 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     keySet(): Promise<K[]> {
-        var deserializedSet: K[] = [];
         var toObject = this.toObject.bind(this);
         return this.encodeInvokeOnRandomTarget<K[]>(MapKeySetCodec).then(function(entrySet) {
-            entrySet.forEach(function(entry) {
-                deserializedSet.push(toObject(entry));
-            });
-            return deserializedSet;
+            return entrySet.map<K>(toObject);
         });
     }
 
@@ -322,13 +310,9 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     values(): Promise<V[]> {
-        var values: V[] = [];
         var toObject = this.toObject.bind(this);
         return this.encodeInvokeOnRandomTarget<V[]>(MapValuesCodec).then(function(valuesData) {
-            valuesData.forEach(function(valueData) {
-                values.push(toObject(valueData));
-            });
-            return values;
+            return valuesData.map<V>(toObject);
         });
     }
 
