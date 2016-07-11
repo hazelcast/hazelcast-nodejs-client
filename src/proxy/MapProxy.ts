@@ -55,11 +55,10 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 
     entrySetWithPredicate(predicate: Predicate): Promise<any[]> {
         assertNotNull(predicate);
-        var predicateData = this.toData(predicate);
+        var pData = this.toData(predicate);
         var toObject = this.toObject.bind(this);
         var deserializedSet: [K, V][] = [];
-        return this.encodeInvokeOnRandomTarget(MapEntriesWithPredicateCodec, predicateData)
-            .then(function(entrySet: [Data, Data][]) {
+        return this.encodeInvokeOnRandomTarget(MapEntriesWithPredicateCodec, pData).then(function(entrySet: [Data, Data][]) {
             entrySet.forEach(function(entry) {
                 deserializedSet.push([toObject(entry[0]), toObject(entry[1])]);
             });
