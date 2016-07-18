@@ -792,6 +792,27 @@ describe("MapProxy Test", function() {
         });
     });
 
+    it('entrySetWithPredicate paging', function() {
+        return map.entrySetWithPredicate(Predicates.paging(Predicates.greaterEqual('this', 'val3'), 1)).then(function(entrySet) {
+            expect(entrySet.length).to.equal(1);
+            expect(entrySet[0]).to.deep.equal(['key3', 'val3']);
+        });
+    });
+
+    it('keySetWithPredicate paging', function() {
+        return map.keySetWithPredicate(Predicates.paging(Predicates.greaterEqual('this', 'val3'), 1)).then(function(keySet) {
+            expect(keySet.length).to.equal(1);
+            expect(keySet[0]).to.equal('key3');
+        });
+    });
+
+    it('valuesWithPredicate paging', function() {
+        return map.valuesWithPredicate(Predicates.paging(Predicates.greaterEqual('this', 'val3'), 1)).then(function(values) {
+            expect(values.length).to.equal(1);
+            expect(values[0]).to.equal('val3');
+        });
+    });
+
     it('destroy', function() {
         var dmap = client.getMap('map-to-be-destroyed');
         return dmap.put('key', 'val').then(function() {

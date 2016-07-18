@@ -44,44 +44,84 @@ import {MapAddEntryListenerCodec} from '../codec/MapAddEntryListenerCodec';
 import {EntryEventType} from '../core/EntryEventType';
 import {MapAddEntryListenerToKeyCodec} from '../codec/MapAddEntryListenerToKeyCodec';
 import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
-import {assertNotNull} from '../Util';
-import {Predicate} from '../core/Predicate';
+import {assertNotNull, getSortedQueryResultSet} from '../Util';
+import {Predicate, IterationType} from '../core/Predicate';
 import {MapEntriesWithPredicateCodec} from '../codec/MapEntriesWithPredicateCodec';
 import {MapKeySetWithPredicateCodec} from '../codec/MapKeySetWithPredicateCodec';
 import {MapValuesWithPredicateCodec} from '../codec/MapValuesWithPredicateCodec';
 import {MapAddEntryListenerToKeyWithPredicateCodec} from '../codec/MapAddEntryListenerToKeyWithPredicateCodec';
 import {MapAddEntryListenerWithPredicateCodec} from '../codec/MapAddEntryListenerWithPredicateCodec';
+import {PagingPredicate} from '../serialization/DefaultPredicates';
+import {MapValuesWithPagingPredicateCodec} from '../codec/MapValuesWithPagingPredicateCodec';
+import {MapKeySetWithPagingPredicateCodec} from '../codec/MapKeySetWithPagingPredicateCodec';
 export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 
     entrySetWithPredicate(predicate: Predicate): Promise<any[]> {
         assertNotNull(predicate);
-        var pData = this.toData(predicate);
         var toObject = this.toObject.bind(this);
-        var deserializedSet: [K, V][] = [];
-        return this.encodeInvokeOnRandomTarget(MapEntriesWithPredicateCodec, pData).then(function(entrySet: [Data, Data][]) {
-            entrySet.forEach(function(entry) {
-                deserializedSet.push([toObject(entry[0]), toObject(entry[1])]);
+        if (predicate instanceof PagingPredicate) {
+            predicate.setIterationType(IterationType.ENTRY);
+            var pData = this.toData(predicate);
+            return this.encodeInvokeOnRandomTarget(
+                MapValuesWithPagingPredicateCodec, pData
+            ).then(function(rawValues: [Data, Data][]) {
+                var deserValues = rawValues.map<[K, V]>(function (ite: [Data, Data]) {
+                    return [toObject(ite[0]), toObject(ite[1])];
+                });
+                return getSortedQueryResultSet(deserValues, predicate);
             });
-            return deserializedSet;
-        });
+        } else {
+            var pData = this.toData(predicate);
+            var deserializedSet: [K, V][] = [];
+            return this.encodeInvokeOnRandomTarget(MapEntriesWithPredicateCodec, pData).then(function(entrySet: [Data, Data][]) {
+                entrySet.forEach(function(entry) {
+                    deserializedSet.push([toObject(entry[0]), toObject(entry[1])]);
+                });
+                return deserializedSet;
+            });
+        }
     }
 
     keySetWithPredicate(predicate: Predicate): Promise<K[]> {
         assertNotNull(predicate);
-        var predicateData = this.toData(predicate);
         var toObject = this.toObject.bind(this);
-        return this.encodeInvokeOnRandomTarget(MapKeySetWithPredicateCodec, predicateData).then(function (entrySet: Data[]) {
-            return entrySet.map<K>(toObject);
-        });
+        if (predicate instanceof PagingPredicate) {
+            predicate.setIterationType(IterationType.KEY);
+            var predData = this.toData(predicate);
+            return this.encodeInvokeOnRandomTarget(MapKeySetWithPagingPredicateCodec, predData).then(function(rawValues: Data[]) {
+                var deserValues = rawValues.map<[K, V]>(function (ite: Data) {
+                    return [toObject(ite), null];
+                });
+                return getSortedQueryResultSet(deserValues, predicate);
+            });
+        } else {
+            var predicateData = this.toData(predicate);
+            return this.encodeInvokeOnRandomTarget(MapKeySetWithPredicateCodec, predicateData).then(function (entrySet: Data[]) {
+                return entrySet.map<K>(toObject);
+            });
+        }
     }
 
     valuesWithPredicate(predicate: Predicate): Promise<V[]> {
         assertNotNull(predicate);
-        var predicateData = this.toData(predicate);
         var toObject = this.toObject.bind(this);
-        return this.encodeInvokeOnRandomTarget(MapValuesWithPredicateCodec, predicateData).then(function (rawValues: Data[]) {
-            return rawValues.map<V>(toObject);
-        });
+        if (predicate instanceof PagingPredicate) {
+            predicate.setIterationType(IterationType.VALUE);
+            var predData = this.toData(predicate);
+            return this.encodeInvokeOnRandomTarget(
+                MapValuesWithPagingPredicateCodec, predData
+            ).then(function(rawValues: [Data, Data][]) {
+                var deserValues = rawValues.map<[K, V]>(function (ite: [Data, Data]) {
+                    return [toObject(ite[0]), toObject(ite[1])];
+                });
+                return getSortedQueryResultSet(deserValues, predicate);
+            });
+        } else {
+            var predicateData = this.toData(predicate);
+            return this.encodeInvokeOnRandomTarget(MapValuesWithPredicateCodec, predicateData).then(function (rawValues: Data[]) {
+                return rawValues.map<V>(toObject);
+            });
+        }
     }
 
     addEntryListenerWithPredicate(listener: IMapListener<K, V>, predicate: Predicate,
