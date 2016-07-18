@@ -11,7 +11,7 @@ export class AddressCodec {
         clientMessage.appendInt32(target.port);
     }
 
-    static decode(clientMessage: ClientMessage) {
+    static decode(clientMessage: ClientMessage, toObjectFunction: Function) {
         var host = clientMessage.readString();
         var port = clientMessage.readInt32();
         return new Address(host, port);

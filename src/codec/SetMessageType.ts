@@ -1,4 +1,5 @@
 /* tslint:disable */
+
 export class SetMessageType {
 static SET_SIZE = 0x0601;
 static SET_CONTAINS = 0x0602;

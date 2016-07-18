@@ -15,20 +15,20 @@ export class LockProxy extends PartitionSpecificProxy implements ILock {
 
 
     lock(leaseMillis: number = -1): Promise<void> {
-        return this.encodeInvoke<void>(LockLockCodec, leaseMillis, 1);
+        return this.encodeInvoke<void>(LockLockCodec, leaseMillis, 1, 0);
     }
 
     tryLock(timeoutMillis: number = 0, leaseMillis: number = -1): Promise<boolean> {
         return this.encodeInvoke<boolean>(LockTryLockCodec, 1,
-            leaseMillis, timeoutMillis);
+            leaseMillis, timeoutMillis, 0);
     }
 
     unlock(): Promise<void> {
-        return this.encodeInvoke<void>(LockUnlockCodec, 1);
+        return this.encodeInvoke<void>(LockUnlockCodec, 1, 0);
     }
 
     forceUnlock(): Promise<void> {
-        return this.encodeInvoke<void>(LockForceUnlockCodec);
+        return this.encodeInvoke<void>(LockForceUnlockCodec, 0);
     }
 
     isLocked(): Promise<boolean> {

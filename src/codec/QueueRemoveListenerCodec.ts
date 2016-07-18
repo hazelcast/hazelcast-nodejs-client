@@ -13,33 +13,37 @@ var REQUEST_TYPE = QueueMessageType.QUEUE_REMOVELISTENER;
 var RESPONSE_TYPE = 101;
 var RETRYABLE = true;
 
-export class QueueRemoveListenerCodec {
 
-    static calculateSize(name: string, registrationId: string) {
+export class QueueRemoveListenerCodec{
+
+
+
+static calculateSize(name : string  , registrationId : string ){
 // Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.calculateSizeString(registrationId);
-        return dataSize;
-    }
+var dataSize : number = 0;
+            dataSize += BitsUtil.calculateSizeString(name);
+            dataSize += BitsUtil.calculateSizeString(registrationId);
+return dataSize;
+}
 
-    static encodeRequest(name: string, registrationId: string) {
+static encodeRequest(name : string, registrationId : string){
 // Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, registrationId));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendString(registrationId);
-        clientMessage.updateFrameLength();
-        return clientMessage;
-    }
+var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, registrationId));
+clientMessage.setMessageType(REQUEST_TYPE);
+clientMessage.setRetryable(RETRYABLE);
+    clientMessage.appendString(name);
+    clientMessage.appendString(registrationId);
+clientMessage.updateFrameLength();
+return clientMessage;
+}
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
+static decodeResponse(clientMessage : ClientMessage,  toObjectFunction: (data: Data) => any = null){
 // Decode response from client message
-        var parameters: any = {'response': null};
-        parameters['response'] = clientMessage.readBoolean();
-        return parameters;
+var parameters :any = { 'response' : null  };
+                    parameters['response'] = clientMessage.readBoolean();
+return parameters;
 
-    }
+}
+
 
 }

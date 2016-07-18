@@ -11,32 +11,34 @@ import {LockMessageType} from './LockMessageType';
 
 var REQUEST_TYPE = LockMessageType.LOCK_TRYLOCK;
 var RESPONSE_TYPE = 101;
-var RETRYABLE = false;
+var RETRYABLE = true;
 
 
 export class LockTryLockCodec{
 
 
 
-static calculateSize(name : string  , threadId : any  , lease : any  , timeout : any ){
+static calculateSize(name : string  , threadId : any  , lease : any  , timeout : any  , referenceId : any ){
 // Calculates the request payload size
 var dataSize : number = 0;
             dataSize += BitsUtil.calculateSizeString(name);
             dataSize += BitsUtil.LONG_SIZE_IN_BYTES;
             dataSize += BitsUtil.LONG_SIZE_IN_BYTES;
             dataSize += BitsUtil.LONG_SIZE_IN_BYTES;
+            dataSize += BitsUtil.LONG_SIZE_IN_BYTES;
 return dataSize;
 }
 
-static encodeRequest(name : string, threadId : any, lease : any, timeout : any){
+static encodeRequest(name : string, threadId : any, lease : any, timeout : any, referenceId : any){
 // Encode request into clientMessage
-var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, threadId, lease, timeout));
+var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, threadId, lease, timeout, referenceId));
 clientMessage.setMessageType(REQUEST_TYPE);
 clientMessage.setRetryable(RETRYABLE);
     clientMessage.appendString(name);
     clientMessage.appendLong(threadId);
     clientMessage.appendLong(lease);
     clientMessage.appendLong(timeout);
+    clientMessage.appendLong(referenceId);
 clientMessage.updateFrameLength();
 return clientMessage;
 }

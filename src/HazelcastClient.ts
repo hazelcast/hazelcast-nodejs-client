@@ -93,14 +93,11 @@ export default class HazelcastClient {
         var clientMessage = ClientGetDistributedObjectsCodec.encodeRequest();
         var toObjectFunc = this.serializationService.toObject.bind(this);
         var proxyManager = this.proxyManager;
-        return this.invocationService.invokeOnRandomTarget(clientMessage).then(function(resp) {
-            var objectsInfoList = ClientGetDistributedObjectsCodec.decodeResponse(resp, toObjectFunc).response;
-            var proxies: DistributedObject[] = [];
-            for (var i = 0; i < objectsInfoList.size(); i++)  {
-                var objectInfo = objectsInfoList.get(i);
-                proxies.push(proxyManager.getOrCreateProxy(objectInfo[1], objectInfo[0], false));
-            }
-            return proxies;
+        return this.invocationService.invokeOnRandomTarget(clientMessage).then(function (resp) {
+            var response = ClientGetDistributedObjectsCodec.decodeResponse(resp, toObjectFunc).response;
+            return response.map((objectInfo: {[key: string]: any}) => {
+                return proxyManager.getOrCreateProxy(objectInfo['value'], objectInfo['key'], false);
+            });
         });
     }
 
@@ -158,7 +155,6 @@ export default class HazelcastClient {
     getMultiMap<K, V>(name: string): MultiMap<K, V> {
         return <MultiMap<K, V>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.MULTIMAP_SERVICE);
     }
-
 
 
     /**

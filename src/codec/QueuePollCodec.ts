@@ -13,36 +13,40 @@ var REQUEST_TYPE = QueueMessageType.QUEUE_POLL;
 var RESPONSE_TYPE = 105;
 var RETRYABLE = false;
 
-export class QueuePollCodec {
 
-    static calculateSize(name: string, timeoutMillis: any) {
+export class QueuePollCodec{
+
+
+
+static calculateSize(name : string  , timeoutMillis : any ){
 // Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.LONG_SIZE_IN_BYTES;
-        return dataSize;
-    }
+var dataSize : number = 0;
+            dataSize += BitsUtil.calculateSizeString(name);
+            dataSize += BitsUtil.LONG_SIZE_IN_BYTES;
+return dataSize;
+}
 
-    static encodeRequest(name: string, timeoutMillis: any) {
+static encodeRequest(name : string, timeoutMillis : any){
 // Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, timeoutMillis));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendLong(timeoutMillis);
-        clientMessage.updateFrameLength();
-        return clientMessage;
-    }
+var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, timeoutMillis));
+clientMessage.setMessageType(REQUEST_TYPE);
+clientMessage.setRetryable(RETRYABLE);
+    clientMessage.appendString(name);
+    clientMessage.appendLong(timeoutMillis);
+clientMessage.updateFrameLength();
+return clientMessage;
+}
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
+static decodeResponse(clientMessage : ClientMessage,  toObjectFunction: (data: Data) => any = null){
 // Decode response from client message
-        var parameters: any = {'response': null};
+var parameters :any = { 'response' : null  };
 
-        if (clientMessage.readBoolean() !== true) {
-            parameters['response'] = toObjectFunction(clientMessage.readData());
-        }
-        return parameters;
-
+    if(clientMessage.readBoolean() !== true){
+                    parameters['response'] = toObjectFunction(clientMessage.readData());
     }
+return parameters;
+
+}
+
 
 }

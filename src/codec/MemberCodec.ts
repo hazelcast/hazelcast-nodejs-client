@@ -20,8 +20,8 @@ export class MemberCodec {
         }
     }
 
-    static decode(clientMessage: ClientMessage) {
-        var address: Address = AddressCodec.decode(clientMessage);
+    static decode(clientMessage: ClientMessage, toObject: Function) {
+        var address: Address = AddressCodec.decode(clientMessage, toObject);
         var uuid = clientMessage.readString();
         var liteMember = clientMessage.readBoolean();
         var attributeSize = clientMessage.readInt32();
