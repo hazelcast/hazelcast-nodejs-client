@@ -30,6 +30,10 @@ export function getSortedQueryResultSet(list: Array<any>, predicate: PagingPredi
     if (list.length === 0) {
         return list;
     }
+    var comparatorObject = predicate.getComparator();
+    if (comparatorObject != null) {
+        list.sort(comparatorObject.sort.bind(comparatorObject));
+    }
     var nearestAnchorEntry = (predicate == null) ? null : predicate.getNearestAnchorEntry();
     var nearestPage = nearestAnchorEntry[0];
     var page = predicate.getPage();

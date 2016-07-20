@@ -2,6 +2,7 @@ import {DataInput, DataOutput} from './Data';
 import {AbstractPredicate} from './PredicateFactory';
 import {Predicate, IterationType} from '../core/Predicate';
 import {enumFromString} from '../Util';
+import {Comparator} from '../core/Comparator';
 
 export class SqlPredicate extends AbstractPredicate {
 
@@ -359,20 +360,21 @@ export class PagingPredicate extends AbstractPredicate {
 
     private internalPredicate: Predicate;
     private pageSize: number;
-    private comparatorClass: any = null;
+    private comparatorObject: Comparator;
     private page: number = 0;
     private iterationType: IterationType = IterationType.ENTRY;
     private anchorList: [number, [any, any]][] = [];
 
-    constructor(internalPredicate: Predicate, pageSize: number) {
+    constructor(internalPredicate: Predicate, pageSize: number, comparator: Comparator) {
         super();
         this.internalPredicate = internalPredicate;
         this.pageSize = pageSize;
+        this.comparatorObject = comparator;
     }
 
     readData(input: DataInput): any {
         this.internalPredicate = input.readObject();
-        this.comparatorClass = input.readObject();
+        this.comparatorObject = input.readObject();
         this.page = input.readInt();
         this.pageSize = input.readInt();
         this.iterationType = enumFromString<IterationType>(IterationType, input.readUTF());
@@ -388,7 +390,7 @@ export class PagingPredicate extends AbstractPredicate {
 
     writeData(output: DataOutput): void {
         output.writeObject(this.internalPredicate);
-        output.writeObject(this.comparatorClass);
+        output.writeObject(this.comparatorObject);
         output.writeInt(this.page);
         output.writeInt(this.pageSize);
         output.writeUTF(IterationType[this.iterationType]);
@@ -459,6 +461,10 @@ export class PagingPredicate extends AbstractPredicate {
 
     getIterationType(): IterationType {
         return this.iterationType;
+    }
+
+    getComparator(): Comparator {
+        return this.comparatorObject;
     }
 }
 
