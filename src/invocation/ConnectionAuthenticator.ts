@@ -24,7 +24,7 @@ class ConnectionAuthenticator {
 
 
         var clientMessage = ClientAuthenticationCodec.encodeRequest(
-            groupConfig.name, groupConfig.password, uuid, ownerUuid, ownerConnection, 'NodeJS', 1);
+            groupConfig.name, groupConfig.password, uuid, ownerUuid, ownerConnection, 'NJS', 1);
         return this.client.getInvocationService()
             .invokeOnConnection(this.connection, clientMessage)
             .then((msg: ClientMessage) => {
