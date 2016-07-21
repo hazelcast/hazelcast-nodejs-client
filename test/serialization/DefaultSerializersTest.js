@@ -2,6 +2,7 @@ var expect = require('chai').expect;
 var Long = require('long');
 var Config = require('../../.').Config;
 var SerializationService = require('../../lib/serialization/SerializationService');
+var Predicates = require('../../.').Predicates;
 describe('Default serializers Test', function() {
 
     var serializationService;
@@ -26,7 +27,27 @@ describe('Default serializers Test', function() {
         [43546.6, 2343.4, 8988,4],
         [23545798.6],
         null,
-        {abc: 'abc', 'five': 5}
+        {abc: 'abc', 'five': 5},
+        Predicates.sql('test'),
+        Predicates.and(Predicates.truePredicate(), Predicates.truePredicate()),
+        Predicates.isBetween('this', 0, 1),
+        Predicates.isFalse(),
+        Predicates.isEqualTo('this', 10),
+        Predicates.greaterThan('this', 10),
+        Predicates.greaterEqual('this', 10),
+        Predicates.lessThan('this', 10),
+        Predicates.lessEqual('this', 10),
+        Predicates.like('this', '*'),
+        Predicates.ilike('this', '*'),
+        Predicates.inPredicate('this', 10, 11, 12),
+        Predicates.instanceOf('java.lang.Serializable'),
+        Predicates.notEqual('this', 10),
+        Predicates.not(Predicates.truePredicate()),
+        Predicates.or(Predicates.truePredicate(), Predicates.truePredicate()),
+        Predicates.regex('this', '/abc/'),
+        Predicates.truePredicate(),
+        Predicates.falsePredicate(),
+        Predicates.paging(Predicates.greaterEqual('this', 10), 10)
     ];
 
     parameters.forEach(function (obj) {

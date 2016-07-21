@@ -1,6 +1,8 @@
 import {DataInput, DataOutput} from './Data';
 import {AbstractPredicate} from './PredicateFactory';
-import {Predicate} from '../core/Predicate';
+import {Predicate, IterationType} from '../core/Predicate';
+import {enumFromString} from '../Util';
+import {Comparator} from '../core/Comparator';
 
 export class SqlPredicate extends AbstractPredicate {
 
@@ -351,3 +353,118 @@ export class TruePredicate extends AbstractPredicate {
         return 14;
     }
 }
+
+export class PagingPredicate extends AbstractPredicate {
+
+    private static NULL_ANCHOR: [number, [any, any]] = [-1, null];
+
+    private internalPredicate: Predicate;
+    private pageSize: number;
+    private comparatorObject: Comparator;
+    private page: number = 0;
+    private iterationType: IterationType = IterationType.ENTRY;
+    private anchorList: [number, [any, any]][] = [];
+
+    constructor(internalPredicate: Predicate, pageSize: number, comparator: Comparator) {
+        super();
+        this.internalPredicate = internalPredicate;
+        this.pageSize = pageSize;
+        this.comparatorObject = comparator;
+    }
+
+    readData(input: DataInput): any {
+        this.internalPredicate = input.readObject();
+        this.comparatorObject = input.readObject();
+        this.page = input.readInt();
+        this.pageSize = input.readInt();
+        this.iterationType = enumFromString<IterationType>(IterationType, input.readUTF());
+        this.anchorList = [];
+        var size = input.readInt();
+        for (var i = 0; i < size; i++) {
+            var p = input.readInt();
+            var k = input.readObject();
+            var v = input.readObject();
+            this.anchorList.push([p, [k, v]]);
+        }
+    }
+
+    writeData(output: DataOutput): void {
+        output.writeObject(this.internalPredicate);
+        output.writeObject(this.comparatorObject);
+        output.writeInt(this.page);
+        output.writeInt(this.pageSize);
+        output.writeUTF(IterationType[this.iterationType]);
+        output.writeInt(this.anchorList.length);
+        this.anchorList.forEach(function(anchorEntry: [number, [any, any]]) {
+            output.writeInt(anchorEntry[0]);
+            output.writeObject(anchorEntry[1][0]);
+            output.writeObject(anchorEntry[1][1]);
+        });
+    }
+
+    getClassId(): number {
+        return 15;
+    }
+
+    setIterationType(iterationType: IterationType) {
+        this.iterationType = iterationType;
+    }
+
+    nextPage(): PagingPredicate {
+        this.page++;
+        return this;
+    }
+
+    previousPage(): PagingPredicate {
+        this.page--;
+        return this;
+    }
+
+    setPage(page: number): PagingPredicate {
+        this.page = page;
+        return this;
+    }
+
+    setAnchor(page: number, anchor: [any, any]) {
+        var anchorEntry: [number, [any, any]] = [page, anchor];
+        var anchorCount = this.anchorList.length;
+        if (page < anchorCount) {
+            this.anchorList[page] = anchorEntry;
+        } else if (page === anchorCount) {
+            this.anchorList.push(anchorEntry);
+        } else {
+            throw new Error('Anchor index is not correct, expected: ' + page + 'found: ' + anchorCount);
+        }
+    }
+
+    getPage(): number {
+        return this.page;
+    }
+
+    getPageSize(): number {
+        return this.pageSize;
+    }
+
+    getNearestAnchorEntry(): [number, [any, any]] {
+        var anchorCount = this.anchorList.length;
+        if (this.page === 0 || anchorCount === 0) {
+            return PagingPredicate.NULL_ANCHOR;
+        }
+        var anchoredEntry: [number, [any, any]];
+        if (this.page < anchorCount) {
+            anchoredEntry = this.anchorList[this.page - 1];
+        } else {
+            anchoredEntry = this.anchorList[anchorCount - 1];
+        }
+        return anchoredEntry;
+    }
+
+    getIterationType(): IterationType {
+        return this.iterationType;
+    }
+
+    getComparator(): Comparator {
+        return this.comparatorObject;
+    }
+}
+

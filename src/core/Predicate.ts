@@ -2,8 +2,9 @@ import {IdentifiedDataSerializable} from '../serialization/Serializable';
 import {
     SqlPredicate, AndPredicate, FalsePredicate, BetweenPredicate, EqualPredicate,
     GreaterLessPredicate, LikePredicate, ILikePredicate, InPredicate, InstanceOfPredicate, NotEqualPredicate, NotPredicate,
-    OrPredicate, RegexPredicate, TruePredicate
+    OrPredicate, RegexPredicate, TruePredicate, PagingPredicate
 } from '../serialization/DefaultPredicates';
+import {Comparator} from './Comparator';
 export interface Predicate extends IdentifiedDataSerializable {
 }
 
@@ -81,4 +82,14 @@ export function truePredicate() {
 
 export function falsePredicate() {
     return FalsePredicate.INSTANCE;
+}
+
+export function paging(predicate: Predicate, pageSize: number, comparator: Comparator = null) {
+    return new PagingPredicate(predicate, pageSize, comparator);
+}
+
+export enum IterationType {
+    KEY,
+    VALUE,
+    ENTRY
 }

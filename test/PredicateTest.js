@@ -1,8 +1,6 @@
 var expect = require("chai").expect;
 var HazelcastClient = require("../.").Client;
 var Predicates = require("../.").Predicates;
-var FalsePredicate = require("../lib/serialization/DefaultPredicates").FalsePredicate;
-var TruePredicate = require("../lib/serialization/DefaultPredicates").TruePredicate;
 var Promise = require("bluebird");
 var Controller = require('./RC');
 var Util = require('./Util');
@@ -144,42 +142,73 @@ describe("Predicates", function() {
         return testPredicate(Predicates.truePredicate(), assertionList);
     });
 
-    it.skip('Paging first page should have first two items', function() {
+    it('Paging first page should have first two items', function() {
         var paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
-
         return testPredicate(paging, [40, 41]);
     });
 
-    it.skip('Paging nextPage should have 3rd and 4th items', function() {
+    it('Paging nextPage should have 3rd and 4th items', function() {
         var paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
         paging.nextPage();
 
         return testPredicate(paging, [42, 43]);
     });
 
-    it.skip('Paging fourth page should have 7th and 8th items', function() {
+    it('Paging fourth page should have 7th and 8th items', function() {
         var paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
         paging.setPage(4);
 
-        return testPredicate(paging, [46, 47]);
+        return testPredicate(paging, [48, 49]);
     });
 
-    it.skip('Paging #getPage should return approprate value', function() {
+    it('Paging #getPage should return approprate value', function() {
         var paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
         paging.setPage(4);
         return expect(paging.getPage()).to.equal(4);
     });
 
-    it.skip('Paging #getPageSize should return 2', function() {
-        var paging = PPredicates.paging(Predicates.greaterEqual('this', 40), 2);
+    it('Paging #getPageSize should return 2', function() {
+        var paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
         return expect(paging.getPageSize()).to.equal(2);
     });
 
-    it.skip('Paging previousPage', function () {
+    it('Paging previousPage', function () {
         var paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
         paging.setPage(4);
         paging.previousPage();
 
-        return testPredicate(paging, [44, 45]);
+        return testPredicate(paging, [46, 47]);
+    });
+
+    it('Get 4th page, then previous page', function() {
+        var paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
+        paging.setPage(4);
+        return map.valuesWithPredicate(paging).then(function() {
+            paging.previousPage();
+            return testPredicate(paging, [46, 47]);
+        });
+    });
+
+    it('Get 3rd page, then next page', function() {
+        var paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
+        paging.setPage(3);
+        return map.valuesWithPredicate(paging).then(function() {
+            paging.nextPage();
+            return testPredicate(paging, [48, 49]);
+        });
+    });
+
+    it('Get 10th page (which does not exist) should return empty list', function() {
+        var paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
+        paging.setPage(10);
+
+        return testPredicate(paging, []);
+    });
+
+    it('Last page has only one element although page size is 2', function() {
+        var paging = Predicates.paging(Predicates.greaterEqual('this', 41), 2);
+        paging.setPage(4);
+
+        return testPredicate(paging, [49]);
     });
 });
