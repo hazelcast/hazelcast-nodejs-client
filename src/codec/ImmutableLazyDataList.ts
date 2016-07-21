@@ -6,7 +6,7 @@ class ImmutableLazyDataList {
     private response: any;
     private toObjectFunction: any;
 
-    constructor(response: any, toObjectFunction: (data: Data) => any ) {
+    constructor(response: any, toObjectFunction: (data: Data) => any) {
         this.response = response;
         this.toObjectFunction = toObjectFunction;
     }
@@ -18,15 +18,17 @@ class ImmutableLazyDataList {
     public size(): number {
         return this.response.length;
     }
-    public get(index : number) : any {
+
+    public get(index: number): any {
         var element = this.response[index];
         return [element.key, element.value];
     }
-    public populate() : any {
+
+    public populate(): any {
         //TODO
     }
 
-    public equal() : boolean {
+    public equal(): boolean {
         //TODO
         return false;
     }

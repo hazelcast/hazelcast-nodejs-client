@@ -1,10 +1,7 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import ImmutableLazyDataList = require('./ImmutableLazyDataList');
-import {BitsUtil} from '../BitsUtil';
 import Address = require('../Address');
-import {Data} from '../serialization/Data';
-import {MapMessageType} from './MapMessageType';
 import RemoteException = require('../exception/Exception');
 import StackTraceElement = require('../exception/StackTraceElement');
 
