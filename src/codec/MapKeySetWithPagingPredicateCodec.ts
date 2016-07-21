@@ -1,22 +1,21 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
-import Address = require('../Address');
-import {AddressCodec} from './AddressCodec';
-import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
-import {EntryViewCodec} from './EntryViewCodec';
-import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 import {MapMessageType} from './MapMessageType';
+import Address = require('../Address');
+import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 
 var REQUEST_TYPE = MapMessageType.MAP_KEYSETWITHPAGINGPREDICATE;
 var RESPONSE_TYPE = 106;
 var RETRYABLE = false;
 
+
 export class MapKeySetWithPagingPredicateCodec {
 
+
     static calculateSize(name: string, predicate: Data) {
-        // Calculates the request payload size
+// Calculates the request payload size
         var dataSize: number = 0;
         dataSize += BitsUtil.calculateSizeString(name);
         dataSize += BitsUtil.calculateSizeData(predicate);
@@ -24,7 +23,7 @@ export class MapKeySetWithPagingPredicateCodec {
     }
 
     static encodeRequest(name: string, predicate: Data) {
-        // Encode request into clientMessage
+// Encode request into clientMessage
         var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, predicate));
         clientMessage.setMessageType(REQUEST_TYPE);
         clientMessage.setRetryable(RETRYABLE);
@@ -35,7 +34,7 @@ export class MapKeySetWithPagingPredicateCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        // Decode response from client message
+// Decode response from client message
         var parameters: any = {'response': null};
         var responseSize = clientMessage.readInt32();
         var response: any = [];
@@ -48,5 +47,6 @@ export class MapKeySetWithPagingPredicateCodec {
         return parameters;
 
     }
+
 
 }

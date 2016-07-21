@@ -19,7 +19,7 @@ export class EntryViewCodec {
         clientMessage.appendLong(entryView.ttl);
     }
 
-    static decode(clientMessage:ClientMessage, toObject: (data:Data) => any = null) {
+    static decode(clientMessage: ClientMessage, toObject: (data: Data) => any = null) {
         var entry = new EntryView<any, any>();
         entry.key = toObject(clientMessage.readData());
         entry.value = toObject(clientMessage.readData());

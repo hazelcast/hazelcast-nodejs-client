@@ -1,13 +1,10 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
-import ImmutableLazyDataList = require('./ImmutableLazyDataList');
 import {BitsUtil} from '../BitsUtil';
-import Address = require('../Address');
 import {AddressCodec} from './AddressCodec';
-import {MemberCodec} from './MemberCodec';
-import {Data} from '../serialization/Data';
-import {EntryViewCodec} from './EntryViewCodec';
 import {MapMessageType} from './MapMessageType';
+import Address = require('../Address');
+import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 
 var REQUEST_TYPE = MapMessageType.MAP_CLEARNEARCACHE;
 var RESPONSE_TYPE = 100;
@@ -17,16 +14,16 @@ var RETRYABLE = false;
 export class MapClearNearCacheCodec {
 
 
-    static calculateSize(name:string, target:Address) {
-        // Calculates the request payload size
-        var dataSize:number = 0;
+    static calculateSize(name: string, target: Address) {
+// Calculates the request payload size
+        var dataSize: number = 0;
         dataSize += BitsUtil.calculateSizeString(name);
         dataSize += BitsUtil.calculateSizeAddress(target);
         return dataSize;
     }
 
-    static encodeRequest(name:string, target:Address) {
-        // Encode request into clientMessage
+    static encodeRequest(name: string, target: Address) {
+// Encode request into clientMessage
         var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, target));
         clientMessage.setMessageType(REQUEST_TYPE);
         clientMessage.setRetryable(RETRYABLE);

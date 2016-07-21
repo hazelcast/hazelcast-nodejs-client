@@ -62,7 +62,7 @@ export class MultiMapAddEntryListenerCodec {
             if (clientMessage.readBoolean() !== true) {
                 oldValue = toObjectFunction(clientMessage.readData());
             }
-            
+
             var mergingValue: Data = null;
 
             if (clientMessage.readBoolean() !== true) {

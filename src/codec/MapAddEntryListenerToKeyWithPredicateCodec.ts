@@ -1,22 +1,21 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
-import Address = require('../Address');
-import {AddressCodec} from './AddressCodec';
-import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
-import {EntryViewCodec} from './EntryViewCodec';
-import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 import {MapMessageType} from './MapMessageType';
+import Address = require('../Address');
+import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 
 var REQUEST_TYPE = MapMessageType.MAP_ADDENTRYLISTENERTOKEYWITHPREDICATE;
 var RESPONSE_TYPE = 104;
 var RETRYABLE = false;
 
+
 export class MapAddEntryListenerToKeyWithPredicateCodec {
 
+
     static calculateSize(name: string, key: Data, predicate: Data, includeValue: boolean, listenerFlags: number, localOnly: boolean) {
-        // Calculates the request payload size
+// Calculates the request payload size
         var dataSize: number = 0;
         dataSize += BitsUtil.calculateSizeString(name);
         dataSize += BitsUtil.calculateSizeData(key);
@@ -28,7 +27,7 @@ export class MapAddEntryListenerToKeyWithPredicateCodec {
     }
 
     static encodeRequest(name: string, key: Data, predicate: Data, includeValue: boolean, listenerFlags: number, localOnly: boolean) {
-        // Encode request into clientMessage
+// Encode request into clientMessage
         var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, key, predicate, includeValue, listenerFlags, localOnly));
         clientMessage.setMessageType(REQUEST_TYPE);
         clientMessage.setRetryable(RETRYABLE);
@@ -43,7 +42,7 @@ export class MapAddEntryListenerToKeyWithPredicateCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        // Decode response from client message
+// Decode response from client message
         var parameters: any = {'response': null};
         parameters['response'] = clientMessage.readString();
         return parameters;

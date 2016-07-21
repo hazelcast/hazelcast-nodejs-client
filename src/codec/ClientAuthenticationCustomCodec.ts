@@ -1,13 +1,11 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
-import ImmutableLazyDataList = require('./ImmutableLazyDataList');
 import {BitsUtil} from '../BitsUtil';
-import Address = require('../Address');
 import {AddressCodec} from './AddressCodec';
-import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
-import {EntryViewCodec} from './EntryViewCodec';
 import {ClientMessageType} from './ClientMessageType';
+import Address = require('../Address');
+import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 
 var REQUEST_TYPE = ClientMessageType.CLIENT_AUTHENTICATIONCUSTOM;
 var RESPONSE_TYPE = 107;
@@ -17,9 +15,9 @@ var RETRYABLE = true;
 export class ClientAuthenticationCustomCodec {
 
 
-    static calculateSize(credentials:Data, uuid:string, ownerUuid:string, isOwnerConnection:boolean, clientType:string, serializationVersion:any) {
-        // Calculates the request payload size
-        var dataSize:number = 0;
+    static calculateSize(credentials: Data, uuid: string, ownerUuid: string, isOwnerConnection: boolean, clientType: string, serializationVersion: any) {
+// Calculates the request payload size
+        var dataSize: number = 0;
         dataSize += BitsUtil.calculateSizeData(credentials);
         dataSize += BitsUtil.BOOLEAN_SIZE_IN_BYTES;
         if (uuid !== null) {
@@ -35,8 +33,8 @@ export class ClientAuthenticationCustomCodec {
         return dataSize;
     }
 
-    static encodeRequest(credentials:Data, uuid:string, ownerUuid:string, isOwnerConnection:boolean, clientType:string, serializationVersion:any) {
-        // Encode request into clientMessage
+    static encodeRequest(credentials: Data, uuid: string, ownerUuid: string, isOwnerConnection: boolean, clientType: string, serializationVersion: any) {
+// Encode request into clientMessage
         var clientMessage = ClientMessage.newClientMessage(this.calculateSize(credentials, uuid, ownerUuid, isOwnerConnection, clientType, serializationVersion));
         clientMessage.setMessageType(REQUEST_TYPE);
         clientMessage.setRetryable(RETRYABLE);
@@ -56,9 +54,9 @@ export class ClientAuthenticationCustomCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage:ClientMessage, toObjectFunction:(data:Data) => any = null) {
-        // Decode response from client message
-        var parameters:any = {
+    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
+// Decode response from client message
+        var parameters: any = {
             'status': null,
             'address': null,
             'uuid': null,
@@ -68,7 +66,7 @@ export class ClientAuthenticationCustomCodec {
         parameters['status'] = clientMessage.readByte();
 
         if (clientMessage.readBoolean() !== true) {
-            parameters['address'] = AddressCodec.decode(clientMessage);
+            parameters['address'] = AddressCodec.decode(clientMessage, toObjectFunction);
         }
 
         if (clientMessage.readBoolean() !== true) {

@@ -1,19 +1,18 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
-import Address = require('../Address');
-import {AddressCodec} from './AddressCodec';
-import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
-import {EntryViewCodec} from './EntryViewCodec';
-import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 import {QueueMessageType} from './QueueMessageType';
+import Address = require('../Address');
+import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 
 var REQUEST_TYPE = QueueMessageType.QUEUE_CONTAINS;
 var RESPONSE_TYPE = 101;
 var RETRYABLE = false;
 
+
 export class QueueContainsCodec {
+
 
     static calculateSize(name: string, value: Data) {
 // Calculates the request payload size
@@ -41,5 +40,6 @@ export class QueueContainsCodec {
         return parameters;
 
     }
+
 
 }

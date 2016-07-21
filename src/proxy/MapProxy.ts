@@ -121,7 +121,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (!partitionsToKeys[pId]) {
                 partitionsToKeys[pId] = [];
             }
-            partitionsToKeys[pId].push({key: keyData, val: this.toData(pair[1])});
+            partitionsToKeys[pId].push([keyData, this.toData(pair[1])]);
         }
 
         var partitionPromises: Promise<void>[] = [];
@@ -227,7 +227,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     lock(key: K, ttl: number = -1): Promise<void> {
         assertNotNull(key);
         var keyData = this.toData(key);
-        return this.encodeInvokeOnKey<void>(MapLockCodec, keyData, keyData, 0, ttl);
+        return this.encodeInvokeOnKey<void>(MapLockCodec, keyData, keyData, 0, ttl, 0);
     }
 
     isLocked(key: K): Promise<boolean> {
@@ -239,13 +239,13 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     unlock(key: K): Promise<void> {
         assertNotNull(key);
         var keyData = this.toData(key);
-        return this.encodeInvokeOnKey<void>(MapUnlockCodec, keyData, keyData, 0);
+        return this.encodeInvokeOnKey<void>(MapUnlockCodec, keyData, keyData, 0, 0);
     }
 
     forceUnlock(key: K): Promise<void> {
         assertNotNull(key);
         var keyData = this.toData(key);
-        return this.encodeInvokeOnKey<void>(MapForceUnlockCodec, keyData, keyData);
+        return this.encodeInvokeOnKey<void>(MapForceUnlockCodec, keyData, keyData, 0);
     }
 
     keySet(): Promise<K[]> {
@@ -328,7 +328,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     tryLock(key: K, timeout: number = 0, lease: number = -1): Promise<boolean> {
         assertNotNull(key);
         var keyData = this.toData(key);
-        return this.encodeInvokeOnKey<boolean>(MapTryLockCodec, keyData, keyData, 0, lease, timeout);
+        return this.encodeInvokeOnKey<boolean>(MapTryLockCodec, keyData, keyData, 0, lease, timeout, 0);
     }
 
     tryPut(key: K, value: V, timeout: number): Promise<boolean> {

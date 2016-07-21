@@ -1,14 +1,12 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
-import {BitsUtil} from '../BitsUtil';
-import Address = require('../Address');
-import {Data} from '../serialization/Data';
 import {Member} from '../core/Member';
 import {AddressCodec} from './AddressCodec';
+import Address = require('../Address');
 
 export class MemberCodec {
 
-    static encode(clientMessage:ClientMessage, member: Member): void {
+    static encode(clientMessage: ClientMessage, member: Member): void {
         AddressCodec.encode(clientMessage, member.address);
         clientMessage.appendString(member.uuid);
         clientMessage.appendBoolean(member.isLiteMember);
@@ -20,13 +18,13 @@ export class MemberCodec {
         }
     }
 
-    static decode(clientMessage: ClientMessage) {
-        var address: Address = AddressCodec.decode(clientMessage);
+    static decode(clientMessage: ClientMessage, toObject: Function) {
+        var address: Address = AddressCodec.decode(clientMessage, toObject);
         var uuid = clientMessage.readString();
         var liteMember = clientMessage.readBoolean();
         var attributeSize = clientMessage.readInt32();
         var attributes: any = {};
-        for (var i = 0; i<attributeSize; i++) {
+        for (var i = 0; i < attributeSize; i++) {
             var key = clientMessage.readString();
             var val = clientMessage.readString();
             attributes[key] = val;

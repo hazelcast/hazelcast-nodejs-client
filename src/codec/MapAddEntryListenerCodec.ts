@@ -1,19 +1,18 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
-import Address = require('../Address');
-import {AddressCodec} from './AddressCodec';
-import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
-import {EntryViewCodec} from './EntryViewCodec';
-import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 import {MapMessageType} from './MapMessageType';
+import Address = require('../Address');
+import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 
 var REQUEST_TYPE = MapMessageType.MAP_ADDENTRYLISTENER;
 var RESPONSE_TYPE = 104;
 var RETRYABLE = false;
 
+
 export class MapAddEntryListenerCodec {
+
 
     static calculateSize(name: string, includeValue: boolean, listenerFlags: number, localOnly: boolean) {
 // Calculates the request payload size

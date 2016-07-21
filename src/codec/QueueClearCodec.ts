@@ -1,19 +1,17 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
-import Address = require('../Address');
-import {AddressCodec} from './AddressCodec';
-import {MemberCodec} from './MemberCodec';
-import {Data} from '../serialization/Data';
-import {EntryViewCodec} from './EntryViewCodec';
-import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 import {QueueMessageType} from './QueueMessageType';
+import Address = require('../Address');
+import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 
 var REQUEST_TYPE = QueueMessageType.QUEUE_CLEAR;
 var RESPONSE_TYPE = 100;
 var RETRYABLE = false;
 
+
 export class QueueClearCodec {
+
 
     static calculateSize(name: string) {
 // Calculates the request payload size
@@ -33,5 +31,6 @@ export class QueueClearCodec {
     }
 
 // Empty decodeResponse(ClientMessage), this message has no parameters to decode
+
 
 }

@@ -28,7 +28,6 @@
     "no-duplicate-variable": true,
     "no-empty": true,
     "no-eval": true,
-    "no-string-literal": true,
     "no-switch-case-fall-through": true,
     "trailing-comma": [
         true,
@@ -37,7 +36,6 @@
             "singleline": "never"
         }
     ],
-    "no-trailing-whitespace": true,
     "no-unused-expression": true,
     "no-unused-variable": false,
     "no-unreachable": true,

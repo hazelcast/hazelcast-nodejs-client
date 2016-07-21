@@ -1,4 +1,5 @@
-/* tslint:disable:no-bitwise */
+/* tslint:disable */
+
 export class MapMessageType {
     static MAP_PUT = 0x0101;
     static MAP_GET = 0x0102;
@@ -56,4 +57,6 @@ export class MapMessageType {
     static MAP_VALUESWITHPAGINGPREDICATE = 0x0139;
     static MAP_ENTRIESWITHPAGINGPREDICATE = 0x013a;
     static MAP_CLEARNEARCACHE = 0x013b;
+    static MAP_FETCHKEYS = 0x013c;
+    static MAP_FETCHENTRIES = 0x013d;
 }

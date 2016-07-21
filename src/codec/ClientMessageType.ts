@@ -1,4 +1,5 @@
-/* tslint:disable:no-bitwise */
+/* tslint:disable */
+
 export class ClientMessageType {
     static CLIENT_AUTHENTICATION = 0x0002;
     static CLIENT_AUTHENTICATIONCUSTOM = 0x0003;
