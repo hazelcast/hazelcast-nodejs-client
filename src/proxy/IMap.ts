@@ -16,7 +16,7 @@ export interface IMap<K, V> extends DistributedObject {
      * This method checks whether the map has an item asssociated with key
      * @param key
      * @throws {RangeError} if key is undefined or null
-     * @return a promise to be resolved to true if the map contains the key, false otherwise.
+     * @return `true` if the map contains the key, `false` otherwise.
      */
     containsKey(key: K) : Promise<boolean>;
 
@@ -24,7 +24,7 @@ export interface IMap<K, V> extends DistributedObject {
      * This method return true if this map has key(s) associated with given value
      * @param value
      * @throws {RangeError} if value is undefined or null
-     * @return a promise to be resolved to true if the map has key or keys associated with given value.
+     * @return `true` if the map has key or keys associated with given value.
      */
     containsValue(value: V) : Promise<boolean>;
 
@@ -37,7 +37,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param ttl Time to live in milliseconds. 0 means infinite.
      * If ttl is not an integer, it is rounded up to the nearest integer value.
      * @throws {RangeError} if specified key or value is undefined or null or ttl is negative.
-     * @return a promise to be resolved to the old value if there was any, `undefined` otherwise.
+     * @return old value if there was any, `undefined` otherwise.
      */
     put(key: K, value: V, ttl?: number) : Promise<V>;
 
@@ -51,7 +51,7 @@ export interface IMap<K, V> extends DistributedObject {
      * Retrieves the value associated with given key.
      * @param key
      * @throws {RangeError} if key is undefined or null
-     * @return a promise to be resolved to the value associated with key, undefined if the key does not exist.
+     * @return value associated with key, undefined if the key does not exist.
      */
     get(key: K) : Promise<V>;
 
@@ -68,7 +68,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param key
      * @param value
      * @throws {RangeError} if key is undefined or null
-     * @return a promise to be resolved to the value associated with key, `undefined` if the key did not exist before.
+     * @return value associated with key, `undefined` if the key did not exist before.
      */
     remove(key: K, value?: V) : Promise<V>;
 
@@ -82,7 +82,7 @@ export interface IMap<K, V> extends DistributedObject {
 
     /**
      * Retrieves the number of elements in map
-     * @return a promise to be resolved to the number of elements in map
+     * @return number of elements in map
      */
     size() : Promise<number>;
 
@@ -139,7 +139,7 @@ export interface IMap<K, V> extends DistributedObject {
      * Checks whether given key is locked.
      * @param key
      * @throws {RangeError} if key is null or undefined.
-     * @return {true} if key is locked, {false} otherwise
+     * @return `true` if key is locked, `false` otherwise
      */
     isLocked(key: K): Promise<boolean>;
 
@@ -198,7 +198,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param value
      * @param oldValue
      * @throws {RangeError} if key, oldValue or newValue is null or undefined.
-     * @return {true} if the value was replaced.
+     * @return `true` if the value was replaced.
      */
     replaceIfSame(key: K, oldValue: V,  newValue: V): Promise<boolean>;
 
@@ -247,13 +247,6 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws {RangeError} if key is null or undefined.
      */
     getEntryView(key: K): Promise<EntryView<K, V>>;
-
-    /**
-     * Adds an index for attribute in this map.
-     * @param attribute
-     * @param ordered index is kept ordered if {true}, unordered otherwise.
-     */
-    addIndex(attribute: string, ordered: boolean): Promise<void>;
 
     /**
      * Tries to acquire the lock for the specified key.
