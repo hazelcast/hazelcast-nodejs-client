@@ -49,7 +49,7 @@ HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
 
 Take a look at [code samples](https://github.com/hazelcast/hazelcast-nodejs-client/tree/master/code_samples) for further information.
 
-Or see [API Docs](http://hazelcast.github.io/hazelcast-nodejs-client/api/0.3/docs/)
+Or see [API Docs](http://hazelcast.github.io/hazelcast-nodejs-client/api/0.4/docs/)
 
 ## What's New in 0.4
 * Performance improvements
