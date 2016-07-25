@@ -37,7 +37,7 @@ export default class HazelcastClient {
     /**
      * Creates a new client object and automatically connects to cluster.
      * @param config Default {@link ClientConfig} is used when this parameter is absent.
-     * @returns {Q.Promise<HazelcastClient>}
+     * @returns a new client instance
      */
     public static newHazelcastClient(config?: ClientConfig): Promise<HazelcastClient> {
         var client: HazelcastClient = new HazelcastClient(config);
@@ -210,7 +210,7 @@ export default class HazelcastClient {
      *     <li>distributed object name</li>
      *     <li>name of the event that happened: either 'created' or 'destroyed'</li>
      * </ul>
-     * @returns {Q.Promise<string>} registration id of the listener.
+     * @returns registration id of the listener.
      */
     addDistributedObjectListener(listenerFunc: Function): Promise<string> {
         return this.proxyManager.addDistributedObjectListener(listenerFunc);
@@ -219,7 +219,7 @@ export default class HazelcastClient {
     /**
      * Removes a distributed object listener from cluster.
      * @param listenerId id of the listener to be removed.
-     * @returns {Q.Promise<boolean>} true if registration is removed, false otherwise.
+     * @returns `true` if registration is removed, `false` otherwise.
      */
     removeDistributedObjectListener(listenerId: string): Promise<boolean> {
         return this.proxyManager.removeDistributedObjectListener(listenerId);

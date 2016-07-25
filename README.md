@@ -10,10 +10,12 @@ With its various distributed data structures, distributed caching capabilities, 
 [![Join the chat at https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## Implemented Features
-* Map (except Predicates, EntryProcessors)
+* Map (except EntryProcessors)
 * Set
 * Queue
 * List
+* Lock
+* MultiMap
 * Hazelcast Native Serialization
 * Distributed Object Listener
 * Lifecycle Service
@@ -49,12 +51,12 @@ Take a look at [code samples](https://github.com/hazelcast/hazelcast-nodejs-clie
 
 Or see [API Docs](http://hazelcast.github.io/hazelcast-nodejs-client/api/0.3/docs/)
 
-## What's New in 0.3
-* Complete map Proxy excluding Predicates and Entry processors
-* Set Proxy
-* List Proxy
-* Queue Proxy
-* Interoperability with Java and other clients via Hazelcast Serialization.
+## What's New in 0.4
+* Performance improvements
+* Predicates for Map
+* Lock
+* MultiMap
+* Bugfixes in Hazelcast Serialization
 
 ## Development
 
@@ -75,13 +77,15 @@ Or see [API Docs](http://hazelcast.github.io/hazelcast-nodejs-client/api/0.3/doc
 
 * [Java 6+](http://www.oracle.com/technetwork/java/javase/downloads/server-jre8-downloads-2133154.html)
 * Maven
+
     ```
     Maven automatically downloads hazelcast-remote-controller and hazelcast from maven repository.
     ```
-### Runnin the tests
-    ```
-    npm test
-    ```
+
+### Running the tests
+```
+npm test
+```
 
 ### Mail Group
 
