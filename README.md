@@ -1,3 +1,21 @@
+# Table of Contents
+
+* [Hazelcast Node.js Client](#hazelcast-nodejs-client)
+* [Features](#features)
+* [Installing the Client](#installing-the-client)
+* [Using the Client](#using-the-client)
+* [Development](#development)
+  * [Building And Installing from Sources](#building-and-installing-from-sources)
+  * [Using Locally Installed Package](#using-locally-installed-package)
+* [Testing](#testing)
+  * [Testing Prerequisites](#testing-prerequisites)
+  * [Running the Tests](#running-the-tests)
+* [Release Notes](#release-notes)
+* [Mail Group](#mail-group)
+* [License](#license)
+* [Copyright](#copyright)
+
+
 # Hazelcast Node.js Client
 
 > **NOTE: This project is currently in active development.**
@@ -10,7 +28,7 @@ This document explains Node.js client for Hazelcast which uses Hazelcast's Open 
 **Hazelcast** is a clustering and highly scalable data distribution platform. With its various distributed data structures, distributed caching capabilities, elastic nature and more importantly with so many happy users, Hazelcast is a feature-rich, enterprise-ready and developer-friendly in-memory data grid solution.
 
 
-## Implemented Features
+# Features
 
 Hazelcast Node.js client supports the following data structures and features:
 
@@ -22,7 +40,7 @@ Hazelcast Node.js client supports the following data structures and features:
 * Distributed Object Listener
 * Lifecycle Service
 
-## Installing the Client
+# Installing the Client
 
 Following command installs Hazelcast Node.js client:
 
@@ -30,7 +48,7 @@ Following command installs Hazelcast Node.js client:
 npm install hazelcast-client --save
 ```
 
-## Using the Client
+# Using the Client
 
 Following script illustrates a basic example in which a map is created in Hazelcast Node.js client and an entry is added to that map:
 
@@ -58,17 +76,10 @@ Please see Hazelcast Node.js [code samples](https://github.com/hazelcast/hazelca
 
 You can also refer to Hazelcast Node.js [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/0.4/docs/).
 
-## What's New in 0.4
 
-* Performance improvements
-* Predicates for Map
-* Lock
-* MultiMap
-* Bugfixes in Hazelcast Serialization
+# Development
 
-## Development
-
-### Building And Installing from Sources
+## Building And Installing from Sources
 
 Follow the below steps to build and install Hazelcast Node.js client from its source:
 
@@ -77,15 +88,15 @@ Follow the below steps to build and install Hazelcast Node.js client from its so
 - Compile TypeScript using the command `npm run compile`.
 - Link the package locally using the command `npm link`.
 
-### Using Locally Installed Package
+## Using Locally Installed Package
 
 - Change directory to the project directory.
 - Use a locally linked module: `npm link hazelcast-client`.
 - Tryout the example shown in [Using the Client](#using-the-client) section.
 
-## Test
+# Testing
 
-### Test Prerequisites
+## Testing Prerequisites
 
 * [Java 6+](http://www.oracle.com/technetwork/java/javase/downloads/server-jre8-downloads-2133154.html)
 * Maven
@@ -94,7 +105,7 @@ Follow the below steps to build and install Hazelcast Node.js client from its so
     Maven automatically downloads hazelcast-remote-controller and hazelcast from maven repository.
     ```
 
-### Running the tests
+## Running the Tests
 
 Following command starts the tests:
 
@@ -102,17 +113,21 @@ Following command starts the tests:
 npm test
 ```
 
-### Mail Group
+# Release Notes
+
+You can see the release notes for each release on the [Releases](https://github.com/hazelcast/hazelcast-nodejs-client/releases) page.
+
+# Mail Group
 
 Please join the mail group if you are interested in using or developing Hazelcast.
 
 http://groups.google.com/group/hazelcast
 
-### License
+# License
 
 Hazelcast is available under the Apache 2 License. Please see the [Licensing appendix](http://docs.hazelcast.org/docs/latest/manual/html-single/hazelcast-documentation.html#license-questions) for more information.
 
-### Copyright
+# Copyright
 
 Copyright (c) 2008-2016, Hazelcast, Inc. All Rights Reserved.
 
