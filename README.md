@@ -1,32 +1,39 @@
 # Hazelcast Node.js Client
-Node.js Client for Hazelcast, using Hazelcast Open Client Protocol 1.0 for Hazelcast 3.6 and higher
-
-**Hazelcast** is a clustering and highly scalable data distribution platform.
-
-With its various distributed data structures, distributed caching capabilities, elastic nature and more importantly with so many happy users, Hazelcast is feature-rich, enterprise-ready and developer-friendly in-memory data grid solution.
 
 > **NOTE: This project is currently in active development.**
 
 [![Join the chat at https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+<br></br>
+
+This document explains Node.js client for Hazelcast which uses Hazelcast's Open Client Protocol 1.0. This client works with Hazelcast 3.6 and higher.  
+
+**Hazelcast** is a clustering and highly scalable data distribution platform. With its various distributed data structures, distributed caching capabilities, elastic nature and more importantly with so many happy users, Hazelcast is a feature-rich, enterprise-ready and developer-friendly in-memory data grid solution.
+
 
 ## Implemented Features
-* Map (except EntryProcessors)
-* Set
-* Queue
-* List
+
+Hazelcast Node.js client supports the following data structures and features:
+
+* Map (except entry processors) and MultiMap
+* Queue, Set, and List
 * Lock
-* MultiMap
+* Smart Client
 * Hazelcast Native Serialization
 * Distributed Object Listener
 * Lifecycle Service
-* Smart Client
 
-## Installation
+## Installing the Client
+
+Following command installs Hazelcast Node.js client:
+
 ```
 npm install hazelcast-client --save
 ```
 
-## Usage
+## Using the Client
+
+Following script illustrates a basic example in which a map is created in Hazelcast Node.js client and an entry is added to that map:
+
 ```javascript
 var HazelcastClient = require('hazelcast-client').Client;
 var person = {
@@ -47,11 +54,12 @@ HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
 });
 ```
 
-Take a look at [code samples](https://github.com/hazelcast/hazelcast-nodejs-client/tree/master/code_samples) for further information.
+Please see Hazelcast Node.js [code samples](https://github.com/hazelcast/hazelcast-nodejs-client/tree/master/code_samples) for more examples.
 
-Or see [API Docs](http://hazelcast.github.io/hazelcast-nodejs-client/api/0.4/docs/)
+You can also refer to Hazelcast Node.js [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/0.4/docs/).
 
 ## What's New in 0.4
+
 * Performance improvements
 * Predicates for Map
 * Lock
@@ -60,16 +68,20 @@ Or see [API Docs](http://hazelcast.github.io/hazelcast-nodejs-client/api/0.4/doc
 
 ## Development
 
-### Build And Install `hazelcast-client` From Sources
-- clone repo [https://github.com/hazelcast/hazelcast-nodejs-client.git](https://github.com/hazelcast/hazelcast-nodejs-client.git)
-- install dependencies `npm install`
-- compile TypeScript `npm run compile`
-- link package locally `npm link`
+### Building And Installing from Sources
 
-### Use Locally Installed Package
-- `cd` to project directory
-- use a locally linked module `npm link hazelcast-client`
-- follow [usage](#Usage) example
+Follow the below steps to build and install Hazelcast Node.js client from its source:
+
+- Clone the GitHub repository [https://github.com/hazelcast/hazelcast-nodejs-client.git](https://github.com/hazelcast/hazelcast-nodejs-client.git).
+- Install the dependencies using the command `npm install`.
+- Compile TypeScript using the command `npm run compile`.
+- Link the package locally using the command `npm link`.
+
+### Using Locally Installed Package
+
+- Change directory to the project directory.
+- Use a locally linked module: `npm link hazelcast-client`.
+- Tryout the example shown in [Using the Client](#using-the-client) section.
 
 ## Test
 
@@ -83,6 +95,9 @@ Or see [API Docs](http://hazelcast.github.io/hazelcast-nodejs-client/api/0.4/doc
     ```
 
 ### Running the tests
+
+Following command starts the tests:
+
 ```
 npm test
 ```
@@ -101,4 +116,4 @@ Hazelcast is available under the Apache 2 License. Please see the [Licensing app
 
 Copyright (c) 2008-2016, Hazelcast, Inc. All Rights Reserved.
 
-Visit [www.hazelcast.com](http://www.hazelcast.com) for more info.
+Visit [www.hazelcast.com](http://www.hazelcast.com) for more information.
