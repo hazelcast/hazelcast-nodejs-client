@@ -1,7 +1,7 @@
 {
   "name": "hazelcast-nodejs-client",
   "version": false,
-  "ambientDependencies": {
+  "globalDependencies": {
     "long": "registry:dt/long#3.0.2+20151116141558",
     "node": "registry:dt/node#4.0.0+20160412142033"
   },
