@@ -2,10 +2,10 @@
   "name": "hazelcast-nodejs-client",
   "version": false,
   "globalDependencies": {
-    "long": "registry:dt/long#3.0.2+20151116141558",
-    "node": "registry:dt/node#4.0.0+20160412142033"
+    "long": "registry:dt/long#3.0.2+20160602144319",
+    "node-4": "registry:dt/node-4#4.0.0+20160720000508"
   },
   "dependencies": {
-    "bluebird": "registry:npm/bluebird#3.3.4+20160622205516"
+    "bluebird": "registry:npm/bluebird#3.3.4+20160723033700"
   }
 }
