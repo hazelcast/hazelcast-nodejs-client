@@ -5,17 +5,15 @@
         "moduleResolution": "node",
         "noImplicitAny": true,
         "target": "es5",
-        "outDir": "./lib",
+        "outDir": "lib",
         "preserveConstEnums": true,
         "noLib": true,
         "removeComments": true,
         "sourceMap": true
     },
-    "filesGlob": [
-        "src/**/*.ts"
-    ],
-    "exclude": [
-        "node_modules",
-        "lib"
+    "include": [
+        "src/index.ts",
+        "typings/index.d.ts",
+        "lib.es6.d.ts"
     ]
 }

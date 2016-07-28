@@ -34,7 +34,7 @@
     "coverage-all": "rimraf coverage && istanbul cover --root lib/ --include-all-sources _mocha -- --recursive --reporter spec",
     "postcoverage": "remap-istanbul -i coverage/coverage.json -o coverage/cobertura-coverage.xml -t cobertura && remap-istanbul -i coverage/coverage.json -o coverage -t html",
     "generate-docs": "rimraf docs && typedoc --out docs/ --exclude **/codec/**/* --module commonjs src lib.es6.d.ts typings/index.d.ts --excludeExternals",
-    "lint": "tslint src/*.ts src/**/*.ts src/**/**/*.ts"
+    "lint": "tslint --project tsconfig.json -t stylish"
   },
   "repository": {
     "type": "git",
