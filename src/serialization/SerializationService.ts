@@ -14,6 +14,7 @@ import {PortableSerializer} from './portable/PortableSerializer';
 import {IdentifiedDataSerializableFactory} from './Serializable';
 import * as DefaultPredicates from './DefaultPredicates';
 import {PredicateFactory, PREDICATE_FACTORY_ID} from './PredicateFactory';
+import {PartitionAware} from '../core/PartitionAware';
 
 export interface SerializationService {
     toData(object: any, paritioningStrategy?: any) : Data;
@@ -50,7 +51,14 @@ export class SerializationServiceV1 implements SerializationService {
     toData(object: any, partitioningStrategy: any = this.defaultPartitionStrategy): Data {
         var dataOutput: DataOutput = new PositionalObjectDataOutput(1, this, this.serialiationConfig.isBigEndian);
         var serializer = this.findSerializerFor(object);
-        dataOutput.writeIntBE(this.calculatePartitionHash(object, partitioningStrategy));
+        //Check if object is partition aware
+        if (object != null && object.getPartitionKey) {
+            var partitionKey = object.getPartitionKey();
+            var serializedPartitionKey = this.toData(partitionKey);
+            dataOutput.writeIntBE(this.calculatePartitionHash(serializedPartitionKey, partitioningStrategy));
+        } else {
+            dataOutput.writeIntBE(this.calculatePartitionHash(object, partitioningStrategy));
+        }
         dataOutput.writeIntBE(serializer.getId());
         serializer.write(dataOutput, object);
         return new HeapData(dataOutput.toBuffer());
