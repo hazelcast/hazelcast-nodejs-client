@@ -3,14 +3,11 @@ import {PagingPredicate} from './serialization/DefaultPredicates';
 import {IterationType} from './core/Predicate';
 import * as assert from 'assert';
 export function assertNotNull(v: any) {
-    if (v == null) {
-        throw new RangeError('Null or undefined is not allowed here.');
-    }
+    assert.notEqual(v, null, 'Non null value expected');
 }
 export function getType(obj: any): string {
-    if (obj === null) {
-        return null;
-    } else if (Long.isLong(obj)) {
+    assertNotNull(obj);
+    if (Long.isLong(obj)) {
         return 'long';
     } else {
         var t = typeof obj;

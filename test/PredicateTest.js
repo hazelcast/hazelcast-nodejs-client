@@ -1,6 +1,7 @@
 var expect = require("chai").expect;
 var HazelcastClient = require("../.").Client;
 var Predicates = require("../.").Predicates;
+var assert = require('assert');
 var Promise = require("bluebird");
 var Controller = require('./RC');
 var Util = require('./Util');
@@ -122,6 +123,10 @@ describe("Predicates", function() {
         return testPredicate(Predicates.or(Predicates.greaterEqual('this', 49), Predicates.lessEqual('this', 0)), [0, 49]);
     });
 
+    it('Null predicate throws error', function() {
+        return expect(testPredicate.bind(null, null, [0, 49])).throw(assert.AssertionError);
+    });
+
     it('Regex', function() {
         var localMap = client.getMap('regexMap');
         return localMap.putAll([['06', 'ankara'], ['07', 'antalya']]).then(function() {
@@ -211,4 +216,14 @@ describe("Predicates", function() {
 
         return testPredicate(paging, [49]);
     });
+
+    it('There is no element satisfying paging predicate returns empty array', function() {
+        var paging = Predicates.paging(Predicates.lessThan('this', 0), 2);
+        return testPredicate(paging, []);
+    });
+
+    it('Null inner predicate in PagingPredicate does not filter out items, only does paging', function() {
+        var paging = Predicates.paging(null, 2);
+        return testPredicate(paging, [0, 1]);
+    })
 });
