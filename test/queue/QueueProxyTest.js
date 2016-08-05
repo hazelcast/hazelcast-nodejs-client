@@ -2,9 +2,9 @@ var chai = require("chai");
 var expect = chai.expect;
 var chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
-var HazelcastClient = require("../.").Client;
-var Controller = require('./RC');
-var Util = require('./Util');
+var HazelcastClient = require("../../lib/index.js").Client;
+var Controller = require('./../RC');
+var Util = require('./../Util');
 var Promise = require('bluebird');
 var fs = require('fs');
 
@@ -17,7 +17,7 @@ describe("Queue Proxy", function () {
 
     before(function () {
         this.timeout(10000);
-        return Controller.createCluster(null, fs.readFileSync(__dirname + '/xml/hazelcast_queue.xml', 'utf8')).then(function (response) {
+        return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_queue.xml', 'utf8')).then(function (response) {
             cluster = response;
             return Controller.startMember(cluster.id);
         }).then(function () {

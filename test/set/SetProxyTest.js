@@ -1,7 +1,7 @@
 var expect = require("chai").expect;
-var HazelcastClient = require("../.").Client;
-var Controller = require('./RC');
-var Util = require('./Util');
+var HazelcastClient = require("../../lib/index.js").Client;
+var Controller = require('./../RC');
+var Util = require('./../Util');
 
 describe("Set Proxy", function () {
 

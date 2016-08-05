@@ -1,9 +1,7 @@
 <hazelcast xsi:schemaLocation="http://www.hazelcast.com/schema/config hazelcast-config-3.2.xsd"
            xmlns="http://www.hazelcast.com/schema/config"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <map name="mapstore-test">
-        <map-store enabled="true">
-            <class-name>NodejsMapStore</class-name>
-        </map-store>
-    </map>
+    <queue name="ClientQueueTest*">
+        <max-size>15</max-size>
+    </queue>
 </hazelcast>
