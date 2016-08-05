@@ -17,7 +17,7 @@ describe("Queue Proxy", function () {
 
     before(function () {
         this.timeout(10000);
-        return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_test.xml', 'utf8')).then(function (response) {
+        return Controller.createCluster(null, fs.readFileSync(__dirname + '/xml/hazelcast_queue.xml', 'utf8')).then(function (response) {
             cluster = response;
             return Controller.startMember(cluster.id);
         }).then(function () {

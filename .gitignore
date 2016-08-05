@@ -5,6 +5,7 @@ node_modules/*
 
 ### Java ###
 *.class
+!test/javaclasses/*.class
 
 # Package Files #
 *.jar

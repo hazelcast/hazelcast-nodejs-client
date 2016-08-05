@@ -4,6 +4,7 @@ var Predicates = require("../.").Predicates;
 var Promise = require("bluebird");
 var Controller = require('./RC');
 var Util = require('./Util');
+var fs = require('fs');
 
 describe("MapProxy Test", function() {
 
@@ -13,7 +14,7 @@ describe("MapProxy Test", function() {
 
     before(function () {
         this.timeout(32000);
-        return Controller.createCluster(null, null).then(function(res) {
+        return Controller.createCluster(null, fs.readFileSync(__dirname + '/xml/hazelcast_mapproxy.xml', 'utf8')).then(function(res) {
             cluster = res;
             return Controller.startMember(cluster.id);
         }).then(function(member) {
@@ -324,7 +325,118 @@ describe("MapProxy Test", function() {
         });
     });
 
-    it('loadAll');
+    it('loadAll',function () {
+        map = client.getMap('mapstore-test');
+
+        return _fillMap().then(function () {
+            return map.evictAll();
+        }).then(function () {
+            return map.loadAll();
+        }).then(function () {
+            return map.getAll([
+                'key0', 'key1', 'key2', 'key3', 'key4',
+                'key5', 'key6', 'key7', 'key8', 'key9'
+            ]);
+        }).then(function (values) {
+            return expect(values).to.deep.have.members([
+                ['key0', 'val0'], ['key1', 'val1'],
+                ['key2', 'val2'], ['key3', 'val3'],
+                ['key4', 'val4'], ['key5', 'val5'],
+                ['key6', 'val6'], ['key7', 'val7'],
+                ['key8', 'val8'], ['key9', 'val9']
+            ]);
+        });
+    });
+
+    it('loadAll_emptyKeyset',function () {
+        map = client.getMap('mapstore-test');
+
+        return _fillMap().then(function () {
+            return map.evictAll();
+        }).then(function () {
+            return map.loadAll([]);
+        }).then(function () {
+            return map.size()
+        }).then(function (val) {
+            expect(val).to.equal(0);
+        })
+    });
+
+    it('loadAll_givenKeySet',function () {
+        map = client.getMap('mapstore-test');
+
+        return _fillMap().then(function () {
+            return map.evictAll();
+        }).then(function () {
+            return map.loadAll(['key0','key1']);
+        }).then(function () {
+            return map.getAll(['key0','key1']);
+        }).then(function (values) {
+            return expect(values).to.deep.have.members([
+                ['key0', 'val0'], ['key1', 'val1']
+            ]);
+        });
+    });
+
+    it('loadAll_defaultReplacing',function () {
+        map = client.getMap('mapstore-test');
+
+        return _fillMap().then(function () {
+            return map.evictAll();
+        }).then(function () {
+            return map.putTransient('key0', 'newval0');
+        }).then(function () {
+            return map.putTransient('key1', 'newval1');
+        }).then(function () {
+            return map.loadAll(['key0','key1']);
+        }).then(function () {
+            return map.getAll(['key0','key1']);
+        }).then(function (values) {
+            return expect(values).to.deep.have.members([
+                ['key0', 'val0'], ['key1', 'val1']
+            ]);
+        });
+    });
+
+    it('loadAll_replacingExisting',function () {
+        map = client.getMap('mapstore-test');
+
+        return _fillMap().then(function () {
+            return map.evictAll();
+        }).then(function () {
+            return map.putTransient('key0', 'newval0');
+        }).then(function () {
+            return map.putTransient('key1', 'newval1');
+        }).then(function () {
+            return map.loadAll(['key0','key1'],true);
+        }).then(function () {
+            return map.getAll(['key0','key1']);
+        }).then(function (values) {
+            return expect(values).to.deep.have.members([
+                ['key0', 'val0'], ['key1', 'val1']
+            ]);
+        });
+    });
+
+    it('loadAll_withoutReplacing',function () {
+        map = client.getMap('mapstore-test');
+
+        return _fillMap().then(function () {
+            return map.evictAll();
+        }).then(function () {
+            return map.putTransient('key0', 'newval0');
+        }).then(function () {
+            return map.putTransient('key1', 'newval1');
+        }).then(function () {
+            return map.loadAll(['key0','key1'],false);
+        }).then(function () {
+            return map.getAll(['key0','key1']);
+        }).then(function (values) {
+            return expect(values).to.deep.have.members([
+                ['key0', 'newval0'], ['key1', 'newval1']
+            ]);
+        });
+    });
 
     it('putIfAbsent_success', function() {
         return map.putIfAbsent('key10', 'new-val').then(function(oldVal) {
