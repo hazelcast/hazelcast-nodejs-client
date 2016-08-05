@@ -296,7 +296,6 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     loadAll(keys: K[] = null, replaceExistingValues: boolean = true): Promise<void> {
-        assertNotNull(keys);
         if (keys == null) {
             return this.encodeInvokeOnRandomTarget<void>(MapLoadAllCodec, replaceExistingValues);
         } else {
