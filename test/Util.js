@@ -28,5 +28,23 @@ var expectAlmostEqual = function (actual, expected) {
     }
     return expect(actual).to.equal(expected);
 };
+
+exports.fillMap = function (map, size, keyPrefix, valuePrefix) {
+    if (size == void 0) {
+        size = 10;
+    }
+    if (keyPrefix == void 0) {
+        keyPrefix = 'key';
+    }
+    if (valuePrefix == void 0) {
+        valuePrefix = 'val';
+    }
+    var entries = [];
+    for (var i = 0; i < size; i++) {
+        entries.push([keyPrefix + i, valuePrefix + i]);
+    }
+    return map.putAll(entries);
+};
+
 exports.promiseLater = promiseLater;
 exports.expectAlmostEqual = expectAlmostEqual;
