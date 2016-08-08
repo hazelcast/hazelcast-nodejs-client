@@ -3,6 +3,7 @@ import {DistributedObject} from '../DistributedObject';
 import {EntryView} from '../core/EntryView';
 import {IMapListener} from '../core/MapListener';
 import {Predicate} from '../core/Predicate';
+import {IdentifiedDataSerializable, Portable} from '../serialization/Serializable';
 export interface IMap<K, V> extends DistributedObject {
 
     /**
@@ -306,4 +307,31 @@ export interface IMap<K, V> extends DistributedObject {
      * @return `true` if remove operation is successful, `false` if unsuccessful or this listener did not exist.
      */
     removeEntryListener(listenerId: string): Promise<boolean>;
+
+    /**
+     * Applies the user defined EntryProcessor to the all entries in the map.
+     * Returns the results mapped by each key in the map
+     * Note that {entryProcessor} should be registered at server side too.
+     * @param entryProcessor
+     * @param predicate if specified, entry processor is applied to the entries that satisfis this predicate.
+     * @return entries after entryprocessor is applied.
+     */
+    executeOnEntries(entryProcessor: IdentifiedDataSerializable | Portable, predicate?: Predicate): Promise<[K, V][]>;
+
+    /**
+     * Applies the user defined EntryProcessor to the entry mapped by the key.
+     * @param key entry processor is applied only to the value that is mapped with this key.
+     * @param entryProcessor entry processor to be applied.
+     * @return result of entry process.
+     */
+    executeOnKey(key: K, entryProcessor: IdentifiedDataSerializable | Portable): Promise<V>;
+
+    /**
+     * Applies the user defined EntryProcessor to the entries mapped by the given keys.
+     *
+     * @param keys keys to be processed
+     * @param entryProcessor
+     * @return result of entry process
+     */
+    executeOnKeys(keys: K[], entryProcessor: IdentifiedDataSerializable | Portable): Promise<[K, V][]>;
 }

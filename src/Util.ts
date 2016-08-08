@@ -3,7 +3,11 @@ import {PagingPredicate} from './serialization/DefaultPredicates';
 import {IterationType} from './core/Predicate';
 import * as assert from 'assert';
 export function assertNotNull(v: any) {
-    assert.notEqual(v, null, 'Non null value expected');
+    assert.notEqual(v, null, 'Non null value expected.');
+}
+
+export function assertArray(x: any) {
+    assert(Array.isArray(x), 'Should be array.');
 }
 export function getType(obj: any): string {
     assertNotNull(obj);

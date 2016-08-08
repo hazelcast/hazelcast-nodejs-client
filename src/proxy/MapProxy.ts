@@ -44,7 +44,7 @@ import {MapAddEntryListenerCodec} from '../codec/MapAddEntryListenerCodec';
 import {EntryEventType} from '../core/EntryEventType';
 import {MapAddEntryListenerToKeyCodec} from '../codec/MapAddEntryListenerToKeyCodec';
 import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
-import {assertNotNull, getSortedQueryResultSet} from '../Util';
+import {assertNotNull, getSortedQueryResultSet, assertArray} from '../Util';
 import {Predicate, IterationType} from '../core/Predicate';
 import {MapEntriesWithPredicateCodec} from '../codec/MapEntriesWithPredicateCodec';
 import {MapKeySetWithPredicateCodec} from '../codec/MapKeySetWithPredicateCodec';
@@ -54,7 +54,52 @@ import {MapAddEntryListenerWithPredicateCodec} from '../codec/MapAddEntryListene
 import {PagingPredicate} from '../serialization/DefaultPredicates';
 import {MapValuesWithPagingPredicateCodec} from '../codec/MapValuesWithPagingPredicateCodec';
 import {MapKeySetWithPagingPredicateCodec} from '../codec/MapKeySetWithPagingPredicateCodec';
+import {IdentifiedDataSerializable, Portable} from '../serialization/Serializable';
+import {MapExecuteOnAllKeysCodec} from '../codec/MapExecuteOnAllKeysCodec';
+import {MapExecuteWithPredicateCodec} from '../codec/MapExecuteWithPredicateCodec';
+import {MapExecuteOnKeyCodec} from '../codec/MapExecuteOnKeyCodec';
+import {MapExecuteOnKeysCodec} from '../codec/MapExecuteOnKeysCodec';
+import * as SerializationUtil from '../serialization/SerializationUtil';
 export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
+
+    executeOnKeys(keys: K[], entryProcessor: IdentifiedDataSerializable|Portable): Promise<any[]> {
+        assertNotNull(keys);
+        assertArray(keys);
+        if (keys.length === 0) {
+            return Promise.resolve([]);
+        } else {
+            var toObject = this.toObject.bind(this);
+            var keysData = SerializationUtil.serializeList(this.toData.bind(this), keys);
+            var proData = this.toData(entryProcessor);
+            return this.encodeInvokeOnRandomTarget(MapExecuteOnKeysCodec, proData, keysData)
+                .then<[K, V][]>(SerializationUtil.deserializeEntryList.bind(this, toObject));
+        }
+    }
+
+    executeOnKey(key: K, entryProcessor: IdentifiedDataSerializable | Portable): Promise<V> {
+        assertNotNull(key);
+        assertNotNull(entryProcessor);
+        var keyData = this.toData(key);
+        var proData = this.toData(entryProcessor);
+
+        return this.encodeInvokeOnKey<V>(MapExecuteOnKeyCodec, keyData, proData, keyData, 1);
+    }
+
+    executeOnEntries(entryProcessor: IdentifiedDataSerializable | Portable, predicate: Predicate = null): Promise<[K, V][]> {
+        assertNotNull(entryProcessor);
+        var proData = this.toData(entryProcessor);
+        var toObject = this.toObject.bind(this);
+
+        if (predicate == null) {
+            return this.encodeInvokeOnRandomTarget<[Data, Data][]>(MapExecuteOnAllKeysCodec, proData)
+                .then<[K, V][]>(SerializationUtil.deserializeEntryList.bind(this, toObject));
+        } else {
+            var predData = this.toData(predicate);
+            return this.encodeInvokeOnRandomTarget(MapExecuteWithPredicateCodec, proData, predData)
+                .then<[K, V][]>(SerializationUtil.deserializeEntryList.bind(this, toObject));
+        }
+
+    }
 
     entrySetWithPredicate(predicate: Predicate): Promise<any[]> {
         assertNotNull(predicate);
@@ -203,6 +248,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     getAll(keys: K[]): Promise<any[]> {
+        assertNotNull(keys);
+        assertArray(keys);
         var partitionService = this.client.getPartitionService();
         var partitionsToKeys: {[id: string]: any} = {};
         var key: K;
