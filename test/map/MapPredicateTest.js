@@ -1,10 +1,14 @@
 var expect = require("chai").expect;
-var HazelcastClient = require("../.").Client;
-var Predicates = require("../.").Predicates;
+var HazelcastClient = require("../..").Client;
+var Config = require('../..').Config;
+var Predicates = require("../..").Predicates;
 var assert = require('assert');
 var Promise = require("bluebird");
-var Controller = require('./RC');
-var Util = require('./Util');
+var Controller = require('./../RC');
+var Util = require('./../Util');
+var ReverseValueComparator = require('./ComparatorFactory').ReverseValueComparator;
+var ComparatorFactory = require('./ComparatorFactory').ComparatorFactory;
+var fs = require('fs');
 
 describe("Predicates", function() {
 
@@ -12,13 +16,19 @@ describe("Predicates", function() {
     var client;
     var map;
 
+    function _createConfig() {
+        var cfg = new Config.ClientConfig();
+        cfg.serializationConfig.dataSerializableFactories[1] = ComparatorFactory;
+        return cfg;
+    }
+
     before(function () {
         this.timeout(32000);
-        return Controller.createCluster(null, null).then(function(res) {
+        return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_predicate.xml', 'utf8')).then(function(res) {
             cluster = res;
             return Controller.startMember(cluster.id);
         }).then(function(member) {
-            return HazelcastClient.newHazelcastClient().then(function(hazelcastClient) {
+            return HazelcastClient.newHazelcastClient(_createConfig()).then(function(hazelcastClient) {
                 client = hazelcastClient;
             });
         });
@@ -49,10 +59,14 @@ describe("Predicates", function() {
         return Promise.all(promises);
     }
 
-    function testPredicate(predicate, expecteds) {
+    function testPredicate(predicate, expecteds, orderMatters) {
         return map.valuesWithPredicate(predicate).then(function(values) {
-            return expect(values).to.have.members(expecteds);
-        })
+            if (orderMatters) {
+                return expect(values).to.deep.equal(expecteds);
+            } else {
+                return expect(values).to.have.members(expecteds);
+            }
+        });
     }
 
     it('Sql', function () {
@@ -147,6 +161,11 @@ describe("Predicates", function() {
         return testPredicate(Predicates.truePredicate(), assertionList);
     });
 
+    it('Paging with reverse comparator should have elements in reverse order', function() {
+        var paging = Predicates.paging(Predicates.lessThan('this', 40), 3, new ReverseValueComparator());
+        return testPredicate(paging, [39, 38, 37], true);
+    });
+
     it('Paging first page should have first two items', function() {
         var paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
         return testPredicate(paging, [40, 41]);
@@ -225,5 +244,5 @@ describe("Predicates", function() {
     it('Null inner predicate in PagingPredicate does not filter out items, only does paging', function() {
         var paging = Predicates.paging(null, 2);
         return testPredicate(paging, [0, 1]);
-    })
+    });
 });
