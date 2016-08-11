@@ -40,7 +40,7 @@ describe('Map Partition Aware', function() {
 
     before(function() {
         expect(memberCount, 'This test should have at least 2 members.').to.be.at.least(2);
-        this.timeout(20000);
+        this.timeout(30000);
         return Controller.createCluster(null, null).then(function(c) {
             cluster = c;
             for (var i = 0; i < memberCount; i++) {
@@ -56,7 +56,7 @@ describe('Map Partition Aware', function() {
     });
 
     after(function() {
-        this.timeout(20000);
+        this.timeout(30000);
         client.shutdown();
         return Controller.shutdownCluster(cluster.id);
     });
@@ -70,7 +70,7 @@ describe('Map Partition Aware', function() {
     });
 
     it('put', function() {
-        this.timeout(10000);
+        this.timeout(20000);
         return _fillMap(map, numOfEntries).then(function(newVal) {
             var promises = members.map(function(member, index) {
                 return Controller.executeOnController(cluster.id, getLocalMapStats(index), 1);
