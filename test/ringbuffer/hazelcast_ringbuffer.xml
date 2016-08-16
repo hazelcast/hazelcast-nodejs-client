@@ -1,0 +1,12 @@
+<hazelcast xsi:schemaLocation="http://www.hazelcast.com/schema/config hazelcast-config-3.6.xsd"
+           xmlns="http://www.hazelcast.com/schema/config"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <ringbuffer name="capacity">
+        <capacity>3</capacity>
+    </ringbuffer>
+
+    <ringbuffer name="ttl-cap">
+        <time-to-live-seconds>1</time-to-live-seconds>
+        <capacity>5</capacity>
+    </ringbuffer>
+</hazelcast>

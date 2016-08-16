@@ -62,11 +62,11 @@ export interface IRingbuffer<E> extends DistributedObject {
      * The returned value is the sequence number of the added item. You can read the added item using this number.
      *
      * @param item the item to add.
-     * @param overflowPolicy overflow policy to be used
-     * @return the sequence of the added item.
+     * @param overflowPolicy overflow policy to be used.
+     * @return the sequence of the added item or -1 if the insert did not succeed.
      */
 
-    add(item: E, overflowPolicy: OverflowPolicy): Promise<Long>;
+    add(item: E, overflowPolicy?: OverflowPolicy): Promise<Long>;
 
     /**
      * Adds all items in the specified array to the tail of this buffer. The behavior of this method is essentially
@@ -77,7 +77,7 @@ export interface IRingbuffer<E> extends DistributedObject {
      * @param overflowPolicy overflow policy to be used
      * @return the sequence number of the last written item from the specified array
      */
-    addAll(items: Array<E>, overflowPolicy: OverflowPolicy): Promise<Long>;
+    addAll(items: Array<E>, overflowPolicy?: OverflowPolicy): Promise<Long>;
 
 
     /**

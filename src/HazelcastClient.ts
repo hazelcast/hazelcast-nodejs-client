@@ -19,6 +19,7 @@ import {IQueue} from './proxy/IQueue';
 import {IList} from './proxy/IList';
 import {ILock} from './proxy/ILock';
 import {MultiMap} from './proxy/MultiMap';
+import {IRingbuffer} from './proxy/IRingbuffer';
 
 export default class HazelcastClient {
 
@@ -154,6 +155,15 @@ export default class HazelcastClient {
      */
     getMultiMap<K, V>(name: string): MultiMap<K, V> {
         return <MultiMap<K, V>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.MULTIMAP_SERVICE);
+    }
+
+    /**
+     * Returns a distributed ringbuffer instance with the given name.
+     * @param name
+     * @returns {IRingbuffer<E>}
+     */
+    getRingbuffer<E>(name: string): IRingbuffer<E> {
+        return <IRingbuffer<E>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.RINGBUFFER_SERVICE);
     }
 
 

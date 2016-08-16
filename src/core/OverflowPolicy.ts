@@ -1,4 +1,4 @@
 export enum OverflowPolicy {
-    OVERWRITE,
-    FAIL
+    OVERWRITE = 0,
+    FAIL = 1
 }
