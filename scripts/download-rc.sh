@@ -1,5 +1,5 @@
 #!/bin/sh
-HAZELCAST_VERSION="3.6.3"
+HAZELCAST_VERSION="3.6.5"
 HAZELCAST_RC_VERSION="0.1-SNAPSHOT"
 SNAPSHOT_REPO="https://oss.sonatype.org/content/repositories/snapshots"
 RELEASE_REPO="http://repo1.maven.apache.org/maven2"
