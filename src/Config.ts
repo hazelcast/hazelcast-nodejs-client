@@ -1,5 +1,6 @@
 import Address = require('./Address');
 import {IdentifiedDataSerializableFactory, PortableFactory} from './serialization/Serializable';
+import {TopicOverloadPolicy} from './proxy/topic/TopicOverloadPolicy';
 const DEFAULT_GROUP_NAME = 'dev';
 const DEFAULT_GROUP_PASSWORD = 'dev-pass';
 
@@ -77,6 +78,12 @@ export class SerializationConfig {
     globalSerializer: any = null;
 }
 
+export class ReliableTopicConfig {
+    readBatchSize: number = 25;
+    overloadPolicy: TopicOverloadPolicy = TopicOverloadPolicy.BLOCK;
+}
+
+
 export class GlobalSerializerConfig {
     //TO-DO when implementing serialization
 }
@@ -117,4 +124,7 @@ export class ClientConfig {
     customCredentials: any = null;
     listeners: ListenerConfig = new ListenerConfig();
     serializationConfig: SerializationConfig = new SerializationConfig();
+    reliableTopicConfigs: any = {
+        'default': new ReliableTopicConfig()
+    };
 }
