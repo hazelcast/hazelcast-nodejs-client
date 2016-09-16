@@ -114,6 +114,7 @@ export class ClientConfig {
     };
     groupConfig: GroupConfig = new GroupConfig();
     networkConfig: ClientNetworkConfig = new ClientNetworkConfig();
+    customCredentials: any = null;
     listeners: ListenerConfig = new ListenerConfig();
     serializationConfig: SerializationConfig = new SerializationConfig();
 }
