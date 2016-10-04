@@ -143,7 +143,8 @@ class ClusterService extends EventEmitter {
                     deferred.reject(error);
                     return;
                 } else {
-                    setTimeout(this.tryAddressIndex(0, attemptLimit, attemptPeriod, deferred), attemptPeriod);
+                    var self = this;
+                    setTimeout(function() {self.tryAddressIndex(0, attemptLimit, attemptPeriod, deferred)}, attemptPeriod);
                 }
             } else {
                 var currentAddress = this.knownAddresses[index];
