@@ -23,7 +23,7 @@
 [![Join the chat at https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 <br></br>
 
-This document explains Node.js client for Hazelcast which uses Hazelcast's Open Client Protocol 1.0. This client works with Hazelcast 3.6 and higher.  
+This document explains Node.js client for Hazelcast which uses Hazelcast's Open Client Protocol 1.0. This client works with Hazelcast 3.6 and higher.
 
 **Hazelcast** is a clustering and highly scalable data distribution platform. With its various distributed data structures, distributed caching capabilities, elastic nature and more importantly with so many happy users, Hazelcast is a feature-rich, enterprise-ready and developer-friendly in-memory data grid solution.
 
@@ -87,6 +87,7 @@ Follow the below steps to build and install Hazelcast Node.js client from its so
 - Install the dependencies using the command `npm install`.
 - Compile TypeScript using the command `npm run compile`.
 - Link the package locally using the command `npm link`.
+- Run static analysis tool using the command `npm run lint`
 
 ## Using Locally Installed Package
 
