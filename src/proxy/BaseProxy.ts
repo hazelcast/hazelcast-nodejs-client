@@ -22,7 +22,14 @@ export class BaseProxy {
         var toObject = this.toObject.bind(this);
         return promise.then(function(clientMessage: ClientMessage) {
             if (codec.decodeResponse) {
-                return codec.decodeResponse(clientMessage, toObject).response;
+                var raw = codec.decodeResponse(clientMessage, toObject);
+
+                var response = raw.response;
+                if (typeof response === 'undefined') {
+                    return raw;
+                } else {
+                    return response;
+                }
             }
         });
     }
