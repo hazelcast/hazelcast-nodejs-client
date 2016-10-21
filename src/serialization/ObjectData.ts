@@ -1,5 +1,5 @@
 /* tslint:disable:no-bitwise */
-import Long = require('long');
+import * as Long from 'long';
 import {DataOutput, Data, DataInput, PositionalDataOutput} from './Data';
 import {SerializationService} from './SerializationService';
 import {BitsUtil} from '../BitsUtil';

@@ -34,7 +34,6 @@ configParams.forEach(function (cfg) {
         var client;
 
         before(function () {
-
             markEnterprise(this);
 
             this.timeout(10000);
@@ -49,6 +48,8 @@ configParams.forEach(function (cfg) {
         });
 
         after(function () {
+            markEnterprise(this);
+
             client.shutdown();
             return Controller.shutdownCluster(cluster.id);
         });

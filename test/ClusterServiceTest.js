@@ -76,7 +76,7 @@ describe('ClusterService', function() {
     it('should throw with wrong group name', function(done) {
         var cfg = new Config.ClientConfig();
         cfg.groupConfig.name = 'wrong';
-        return HazelcastClient.newHazelcastClient(cfg).then(function(newClient) {
+        HazelcastClient.newHazelcastClient(cfg).then(function(newClient) {
             newClient.shutdown();
             done(new Error('Client falsely started with wrong group name'));
         }).catch(function (err) {
@@ -87,7 +87,7 @@ describe('ClusterService', function() {
     it('should throw with wrong group password', function(done) {
         var cfg = new Config.ClientConfig();
         cfg.groupConfig.password = 'wrong';
-        return HazelcastClient.newHazelcastClient(cfg).then(function(newClient) {
+        HazelcastClient.newHazelcastClient(cfg).then(function(newClient) {
             newClient.shutdown();
             done(new Error('Client falsely started with wrong group password'));
         }).catch(function (err) {

@@ -1,4 +1,4 @@
-import * as Promise from 'bluebird';
+import * as Long from 'long';
 export interface Data {
     /**
      * Returns serialized representation in a buffer

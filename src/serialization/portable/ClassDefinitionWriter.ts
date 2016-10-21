@@ -3,6 +3,7 @@ import {FieldDefinition, FieldType, ClassDefinition} from './ClassDefinition';
 import {PortableContext} from './PortableContext';
 import {Portable} from '../Serializable';
 import * as Util from '../../Util';
+import * as Long from 'long';
 
 export class ClassDefinitionWriter implements PortableWriter {
     private portableContext: PortableContext;

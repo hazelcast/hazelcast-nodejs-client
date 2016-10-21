@@ -3,6 +3,8 @@ import {PositionalDataOutput} from '../Data';
 import {ClassDefinition, FieldType, FieldDefinition} from './ClassDefinition';
 import {BitsUtil} from '../../BitsUtil';
 import {Portable} from '../Serializable';
+import * as Long from 'long';
+
 export class DefaultPortableWriter {
     private serializer: PortableSerializer;
     private output: PositionalDataOutput;
