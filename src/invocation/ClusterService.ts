@@ -139,7 +139,8 @@ class ClusterService extends EventEmitter {
             if (this.knownAddresses.length <= index) {
                 attemptLimit = attemptLimit - 1;
                 if (attemptLimit === 0) {
-                    var error = new Error('Unable to connect to any of the following addresses ' + this.knownAddresses);
+                    var error = new Error('Unable to connect to any of the following addresses: ' +
+                        this.knownAddresses.map(Address.encodeToString).join(', '));
                     deferred.reject(error);
                     return;
                 } else {
