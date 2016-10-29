@@ -51,14 +51,24 @@ describe('ClusterService', function() {
         });
     });
 
-    it('should throw with wrong host address in config', function(done) {
+    it('should throw with message containing wrong host addresses in config', function() {
+        var configuredAddresses = [
+            {host: '0.0.0.0', port: '5709'},
+            {host: '0.0.0.1', port: '5710'}
+        ];
+
         var cfg = new Config.ClientConfig();
-        cfg.networkConfig.addresses = [{host: '0.0.0.0', port: '5709'}];
+        cfg.networkConfig.addresses = configuredAddresses;
+
         return HazelcastClient.newHazelcastClient(cfg).then(function(newClient) {
             newClient.shutdown();
-            done(new Error('Client falsely started with 0.0.0.0 target host'));
+            throw new Error('Client falsely started with target hosts: ' +
+                configuredAddresses.map((address) => address.host).join(', '));
         }).catch(function (err) {
-            done();
+            var addressesInErrorMessage = err.message.match(/\b(\d+\.\d+\.\d+\.\d+):(\d+)\b/g) || [];
+            return expect(addressesInErrorMessage).to.have.members(
+                configuredAddresses.map((address) => address.host + ':' + address.port)
+            );
         });
     });
 
