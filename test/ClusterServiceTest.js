@@ -2,6 +2,8 @@ var Controller = require('./RC');
 var expect = require('chai').expect;
 var HazelcastClient = require('../.').Client;
 var Config = require('../.').Config;
+var Address = require('../lib/Address');
+
 describe('ClusterService', function() {
     this.timeout(15000);
     var cluster;
@@ -62,13 +64,12 @@ describe('ClusterService', function() {
 
         return HazelcastClient.newHazelcastClient(cfg).then(function(newClient) {
             newClient.shutdown();
-            throw new Error('Client falsely started with target hosts: ' +
-                configuredAddresses.map((address) => address.host).join(', '));
+            throw new Error('Client falsely started with target addresses: ' +
+                configuredAddresses.map(Address.encodeToString).join(', '));
         }).catch(function (err) {
-            var addressesInErrorMessage = err.message.match(/\b(\d+\.\d+\.\d+\.\d+):(\d+)\b/g) || [];
-            return expect(addressesInErrorMessage).to.have.members(
-                configuredAddresses.map((address) => address.host + ':' + address.port)
-            );
+            return Promise.all(configuredAddresses.map((address) => {
+                return expect(err.message).to.include(Address.encodeToString(address))
+            }));
         });
     });
 
