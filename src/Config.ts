@@ -22,6 +22,44 @@ export class SocketOptions {
     //TO-DO
 }
 
+export interface SSLOptions {
+    /**
+     * A string or Buffer containing the private key, certificate and CA certs of the client in PFX or PKCS12 format.
+     */
+    pfx?: any;   //string | Buffer
+
+    /**
+     * A string or Buffer containing the private key of the client in PEM format. (Could be an array of keys).
+     */
+    key?: any;   //string | Buffer
+
+    /**
+     * A string of passphrase for the private key or pfx.
+     */
+    passphrase?: string;
+
+    /**
+     *  A string or Buffer containing the certificate key of the client in PEM format. (Could be an array of certs).
+     */
+    cert?: any;  //string | Buffer
+
+    /**
+     * An array of strings or Buffers of trusted certificates in PEM format. If this is omitted several well known "root"
+     * CAs will be used, like VeriSign. These are used to authorize connections.
+     */
+    ca?: any;    //Array of string | Buffer
+
+    /**
+     * If true, the server certificate is verified against the list of supplied CAs. An 'error' event is emitted if verification
+     * fails; err.code contains the OpenSSL error code. Default: true.
+     */
+    rejectUnauthorized?: boolean;
+
+    /**
+     * Servername for SNI (Server Name Indication) TLS extension.
+     */
+    servername?: string;
+}
 /**
  * Network configuration
  */
@@ -59,6 +97,12 @@ export class ClientNetworkConfig {
      * Not implemented.
      */
     socketOptions: SocketOptions = new SocketOptions();
+
+    /**
+     * sslOptions is by default null which disables Ssl. A none null {@link SSLOptions} value enables Ssl.
+     * @type {SSLOptions}
+     */
+    sslOptions: SSLOptions = null;
 
     constructor() {
         this.addresses = [

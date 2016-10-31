@@ -19,7 +19,5 @@ else
     echo "Starting Remote Controller ... oss ..."
 fi
 
-nohup java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} -cp ${CLASSPATH}  com.hazelcast.remotecontroller.Main>rc_stdout.log 2>rc_stderr.log &
-
-sleep 10
+java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} -cp ${CLASSPATH} com.hazelcast.remotecontroller.Main
 

@@ -1,20 +1,26 @@
 import net = require('net');
+import tls = require('tls');
+import stream = require('stream');
 import * as Promise from 'bluebird';
-import Address = require('../Address');
 import {BitsUtil} from '../BitsUtil';
 import {LoggingService} from '../logging/LoggingService';
+import {ClientNetworkConfig} from '../Config';
+import Address = require('../Address');
 
 class ClientConnection {
     address: Address;
-    socket: net.Socket;
+    localAddress: Address;
+    socket: stream.Duplex;
     lastRead: number;
     heartbeating = true;
 
     private readBuffer: Buffer;
     private logging =  LoggingService.getLoggingService();
+    private clientNetworkConfig: ClientNetworkConfig;
 
-    constructor(address: Address) {
+    constructor(address: Address, clientNetworkConfig: ClientNetworkConfig) {
         this.address = address;
+        this.clientNetworkConfig = clientNetworkConfig;
         this.readBuffer = new Buffer(0);
         this.lastRead = 0;
     }
@@ -24,7 +30,7 @@ class ClientConnection {
      * @returns
      */
     getLocalAddress() {
-        return new Address(this.socket.localAddress, this.socket.localPort);
+        return this.localAddress;
     }
 
     /**
@@ -42,14 +48,23 @@ class ClientConnection {
     connect(): Promise<ClientConnection> {
         var ready = Promise.defer<ClientConnection>();
 
-        this.socket = net.connect(this.address.port, this.address.host, () => {
-
+        var conCallback = () => {
             // Send the protocol version
             var buffer = new Buffer(3);
             buffer.write('CB2');
             this.socket.write(buffer);
             ready.resolve(this);
-        });
+        };
+
+        if (this.clientNetworkConfig.sslOptions) {
+            var sslSocket = tls.connect(this.address.port, this.address.host, this.clientNetworkConfig.sslOptions, conCallback);
+            this.localAddress = new Address(sslSocket.address.address, sslSocket.address.port);
+            this.socket = sslSocket as stream.Duplex;
+        } else {
+            var netSocket = net.connect(this.address.port, this.address.host, conCallback);
+            this.localAddress = new Address(netSocket.localAddress, netSocket.localPort);
+            this.socket = netSocket as stream.Duplex;
+        }
 
         this.socket.on('error', (e: any) => {
             this.logging.warn('ClientConnection',

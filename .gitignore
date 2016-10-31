@@ -29,5 +29,7 @@ lib/*
 # TSDoc
 docs/
 
-*.jar
 *.log
+
+# Mac desktop service store files
+*.DS_Store
