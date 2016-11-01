@@ -48,8 +48,8 @@ configParams.forEach(function (cfg) {
 
         it('getLocalEndpoint returns correct info', function() {
             var info = client.getLocalEndpoint();
-            expect(info.localAddress.host).to.equal(client.clusterService.getOwnerConnection().socket.localAddress);
-            expect(info.localAddress.port).to.equal(client.clusterService.getOwnerConnection().socket.localPort);
+            expect(info.localAddress.host).to.equal(client.clusterService.getOwnerConnection().localAddress.host);
+            expect(info.localAddress.port).to.equal(client.clusterService.getOwnerConnection().localAddress.port);
             expect(info.uuid).to.equal(client.clusterService.uuid);
             expect(info.type).to.equal('NodeJS');
         });
