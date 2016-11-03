@@ -9,6 +9,7 @@ var Util = require('./../Util');
 var Promise = require('bluebird');
 var fs = require('fs');
 var _fillMap = require('../Util').fillMap;
+var markEnterprise = require('../Util').markEnterprise;
 
 
 var authorizedSslConfig = new Config.ClientConfig();
@@ -33,9 +34,9 @@ configParams.forEach(function (cfg) {
         var client;
 
         before(function () {
-            if(!process.env.HAZELCAST_ENTERPRISE_KEY){
-                this.skip();
-            }
+
+            markEnterprise(this);
+
             this.timeout(10000);
             return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast-ssl.xml', 'utf8')).then(function (response) {
                 cluster = response;

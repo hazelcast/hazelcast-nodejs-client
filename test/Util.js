@@ -46,5 +46,11 @@ exports.fillMap = function (map, size, keyPrefix, valuePrefix) {
     return map.putAll(entries);
 };
 
+exports.markEnterprise = function (_this) {
+    if(!process.env.HAZELCAST_ENTERPRISE_KEY){
+        _this.skip();
+    }
+};
+
 exports.promiseLater = promiseLater;
 exports.expectAlmostEqual = expectAlmostEqual;
