@@ -11,282 +11,179 @@
   </head>
   <body>
     <section class="page-header">
-      <h1 class="project-name">Hazelcast Node.js Client</h1>
-      <h2 class="project-tagline">Node.js Client for Hazelcast, using Hazelcast Open Client Protocol 1.0 for Hazelcast 3.6 and higher</h2>
+      <h1 class="project-name">Hazelcast-nodejs-client</h1>
+      <h2 class="project-tagline">NodeJS Client for Hazelcast, using Hazelcast Open Client Protocol 1.0 for Hazelcast 3.6 and higher</h2>
       <a href="https://github.com/hazelcast/hazelcast-nodejs-client" class="btn">View on GitHub</a>
       <a href="https://github.com/hazelcast/hazelcast-nodejs-client/zipball/master" class="btn">Download .zip</a>
       <a href="https://github.com/hazelcast/hazelcast-nodejs-client/tarball/master" class="btn">Download .tar.gz</a>
     </section>
 
     <section class="main-content">
-      <div id="toc">
-<div id="toctitle">Table of content</div>
+      <h1>
+<a id="table-of-contents" class="anchor" href="#table-of-contents" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Table of Contents</h1>
+
 <ul>
+<li><a href="#hazelcast-nodejs-client">Hazelcast Node.js Client</a></li>
+<li><a href="#features">Features</a></li>
+<li><a href="#installing-the-client">Installing the Client</a></li>
+<li><a href="#using-the-client">Using the Client</a></li>
 <li>
-<a href="#_development">Development</a>
+<a href="#development">Development</a>
+
 <ul>
-<li><a href="#_build_and_install_code_hazelcast_client_code_from_sources">Build And Install <code>hazelcast-client</code> From Sources</a></li>
+<li><a href="#building-and-installing-from-sources">Building And Installing from Sources</a></li>
+<li><a href="#using-locally-installed-package">Using Locally Installed Package</a></li>
 </ul>
 </li>
-<li><a href="#_use_locally_installed_package">Use Locally Installed Package</a></li>
 <li>
-<a href="#_test">Test</a>
+<a href="#testing">Testing</a>
+
 <ul>
-<li><a href="#_test_prerequisites">Test prerequisites</a></li>
+<li><a href="#testing-prerequisites">Testing Prerequisites</a></li>
+<li><a href="#running-the-tests">Running the Tests</a></li>
 </ul>
 </li>
-<li><a href="#_implemented_features">Implemented Features</a></li>
-<li><a href="#usage">Usage</a></li>
-<li>
-<a href="#_mail_group">Mail Group</a>
+<li><a href="#release-notes">Release Notes</a></li>
+<li><a href="#mail-group">Mail Group</a></li>
+<li><a href="#license">License</a></li>
+<li><a href="#copyright">Copyright</a></li>
+</ul>
+
+<h1>
+<a id="hazelcast-nodejs-client" class="anchor" href="#hazelcast-nodejs-client" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Hazelcast Node.js Client</h1>
+
+<blockquote>
+<p><strong>NOTE: This project is currently in active development.</strong></p>
+</blockquote>
+
+<p><a href="https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img src="https://badges.gitter.im/Join%20Chat.svg" alt="Join the chat at https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client"></a>
+<br></p>
+
+<p>This document explains Node.js client for Hazelcast which uses Hazelcast's Open Client Protocol 1.0. This client works with Hazelcast 3.6 and higher.  </p>
+
+<p><strong>Hazelcast</strong> is a clustering and highly scalable data distribution platform. With its various distributed data structures, distributed caching capabilities, elastic nature and more importantly with so many happy users, Hazelcast is a feature-rich, enterprise-ready and developer-friendly in-memory data grid solution.</p>
+
+<h1>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Features</h1>
+
+<p>Hazelcast Node.js client supports the following data structures and features:</p>
+
 <ul>
-<li><a href="#_license">License</a></li>
-<li><a href="#_copyright">Copyright</a></li>
+<li>Map (including entry processors and <code>PartitionAware</code> keys) and MultiMap</li>
+<li>Queue, Set, and List</li>
+<li>Lock</li>
+<li>Smart Client</li>
+<li>Hazelcast Native Serialization</li>
+<li>Distributed Object Listener</li>
+<li>Lifecycle Service</li>
 </ul>
-</li>
-</ul>
-</div>
 
-<div id="preamble">
-<div>
-<div>
-<p>Node.js Client for Hazelcast, using Hazelcast Open Client Protocol 1.0 for Hazelcast 3.6 and higher</p>
-</div>
+<h1>
+<a id="installing-the-client" class="anchor" href="#installing-the-client" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installing the Client</h1>
 
+<p>Following command installs Hazelcast Node.js client:</p>
 
+<pre><code>npm install hazelcast-client --save
+</code></pre>
 
-<div>
-<table>
-<tr>
-<td>
-<div>Note</div>
-</td>
-<td>
-This project currently in active development.
-</td>
-</tr>
-</table>
-</div>
+<h1>
+<a id="using-the-client" class="anchor" href="#using-the-client" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Using the Client</h1>
 
-<div>
-<p><a href="https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img src="https://badges.gitter.im/Join%20Chat.svg" alt="Join the chat at https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client"></a></p>
-</div>
+<p>Following script illustrates a basic example in which a map is created in Hazelcast Node.js client and an entry is added to that map:</p>
 
-<p></p>
-</div>
-</div>
-
-<div>
-<h2 id="_development">
-<a id="development" class="anchor" href="#development" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Development</h2>
-<div>
-<div>
-<h3 id="_build_and_install_code_hazelcast_client_code_from_sources">
-<a id="build-and-install-hazelcast-client-from-sources" class="anchor" href="#build-and-install-hazelcast-client-from-sources" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Build And Install <code>hazelcast-client</code> From Sources</h3>
-<div>
-<ol>
-<li>
-<p>clone repo <a href="https://github.com/hazelcast/hazelcast-nodejs-client.git">https://github.com/hazelcast/hazelcast-nodejs-client.git</a></p>
-</li>
-<li>
-<p>install global dependencies <code>npm install -g typescript typings</code></p>
-</li>
-<li>
-<p>install dependencies <code>npm install</code></p>
-</li>
-<li>
-<p>compile TypeScript <code>gulp compile</code></p>
-</li>
-<li>
-<p>link package locally <code>npm link</code></p>
-</li>
-</ol>
-</div>
-
-<p></p>
-</div>
-</div>
-</div>
-
-<div>
-<h2 id="_use_locally_installed_package">
-<a id="use-locally-installed-package" class="anchor" href="#use-locally-installed-package" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Use Locally Installed Package</h2>
-<div>
-<div>
-<ol>
-<li>
-<p><code>cd</code> to project directory</p>
-</li>
-<li>
-<p>use a locally linked module <code>npm link hazelcast-nodejs-client</code></p>
-</li>
-<li>
-<p>follow <a href="#usage">Usage</a> example</p>
-</li>
-</ol>
-</div>
-
-<p></p>
-</div>
-</div>
-
-<div>
-<h2 id="_test">
-<a id="test" class="anchor" href="#test" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Test</h2>
-<div>
-<div>
-<h3 id="_test_prerequisites">
-<a id="test-prerequisites" class="anchor" href="#test-prerequisites" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Test prerequisites</h3>
-<div>
-<ul>
-<li>
-<p><a href="http://www.oracle.com/technetwork/java/javase/downloads/server-jre8-downloads-2133154.html">Java 6+</a></p>
-</li>
-<li>
-<p><a href="https://github.com/hazelcast/hazelcast-remote-controller">Hazelcast Remote Controller</a></p>
-<div>
-<ul>
-<li>
-<p><a href="https://github.com/hazelcast/hazelcast-remote-controller/blob/master/nodejs-controller/README.md">Follow README</a></p>
-</li>
-</ul>
-</div>
-
-<p></p>
-</li>
-<li>
-
-<p>run the tests</p>
-
-<div>
-<div>
-<pre>npm test</pre>
-</div>
-
-<p></p>
-</div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-</div>
-
-<div>
-<h2 id="_implemented_features">
-<a id="implemented-features" class="anchor" href="#implemented-features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Implemented Features</h2>
-<div>
-<div>
-<ul>
-<li>
-<p>Map</p>
-<div>
-<ul>
-<li>
-<p>Get</p>
-</li>
-<li>
-<p>Put</p>
-</li>
-<li>
-<p>Remove</p>
-</li>
-</ul>
-</div>
-
-<p></p>
-</li>
-<li>
-
-<p>Distributed Object Listener</p>
-
-<p></p>
-</li>
-<li>
-
-<p>Lifecycle Service</p>
-
-<p></p>
-</li>
-<li>
-
-<p>Smart Client</p>
-
-<p></p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-
-<div>
-<h2 id="usage">
-<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
-<div>
-<div>
-<div>JavaScript Example</div>
-<div>
-<pre><code>var HazelcastClient = require('hazelcast-client').Client;
-var person = {
-    firstName: "Joe",
-    lastName: "Doe",
-    age: 42
+<div class="highlight highlight-source-js"><pre><span class="pl-k">var</span> HazelcastClient <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>hazelcast-client<span class="pl-pds">'</span></span>).<span class="pl-smi">Client</span>;
+<span class="pl-k">var</span> person <span class="pl-k">=</span> {
+    firstName<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Joe<span class="pl-pds">"</span></span>,
+    lastName<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Doe<span class="pl-pds">"</span></span>,
+    age<span class="pl-k">:</span> <span class="pl-c1">42</span>
 };
-var map;
-HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
-    map = hazelcastClient.getMap("personMap");
-    map.put(1, person).then(function (val) {
-        // prints previous value for key `1`
-        console.log(val);
+<span class="pl-k">var</span> map;
+<span class="pl-smi">HazelcastClient</span>.<span class="pl-en">newHazelcastClient</span>().<span class="pl-en">then</span>(<span class="pl-k">function</span> (<span class="pl-smi">hazelcastClient</span>) {
+    map <span class="pl-k">=</span> <span class="pl-smi">hazelcastClient</span>.<span class="pl-en">getMap</span>(<span class="pl-s"><span class="pl-pds">"</span>personMap<span class="pl-pds">"</span></span>);
+    <span class="pl-smi">map</span>.<span class="pl-en">put</span>(<span class="pl-c1">1</span>, person).<span class="pl-en">then</span>(<span class="pl-k">function</span> (<span class="pl-smi">val</span>) {
+        <span class="pl-c">// prints previous value for key `1`</span>
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(val);
     });
-    map.get(1).then(function (value) {
-        console.log(value);
+    <span class="pl-smi">map</span>.<span class="pl-c1">get</span>(<span class="pl-c1">1</span>).<span class="pl-en">then</span>(<span class="pl-k">function</span> (<span class="pl-smi">value</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(value);
     })
-});</code></pre>
-</div>
+});</pre></div>
 
-<p></p>
-</div>
-</div>
-</div>
+<p>Please see Hazelcast Node.js <a href="https://github.com/hazelcast/hazelcast-nodejs-client/tree/master/code_samples">code samples</a> for more examples.</p>
 
-<div>
-<h2 id="_mail_group">
-<a id="mail-group" class="anchor" href="#mail-group" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Mail Group</h2>
-<div>
-<div>
+<p>You can also refer to Hazelcast Node.js <a href="http://hazelcast.github.io/hazelcast-nodejs-client/api/0.4/docs/">API Documentation</a>.</p>
+
+<h1>
+<a id="development" class="anchor" href="#development" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Development</h1>
+
+<h2>
+<a id="building-and-installing-from-sources" class="anchor" href="#building-and-installing-from-sources" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Building And Installing from Sources</h2>
+
+<p>Follow the below steps to build and install Hazelcast Node.js client from its source:</p>
+
+<ul>
+<li>Clone the GitHub repository <a href="https://github.com/hazelcast/hazelcast-nodejs-client.git">https://github.com/hazelcast/hazelcast-nodejs-client.git</a>.</li>
+<li>Install the dependencies using the command <code>npm install</code>.</li>
+<li>Compile TypeScript using the command <code>npm run compile</code>.</li>
+<li>Link the package locally using the command <code>npm link</code>.</li>
+</ul>
+
+<h2>
+<a id="using-locally-installed-package" class="anchor" href="#using-locally-installed-package" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Using Locally Installed Package</h2>
+
+<ul>
+<li>Change directory to the project directory.</li>
+<li>Use a locally linked module: <code>npm link hazelcast-client</code>.</li>
+<li>Tryout the example shown in <a href="#using-the-client">Using the Client</a> section.</li>
+</ul>
+
+<h1>
+<a id="testing" class="anchor" href="#testing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Testing</h1>
+
+<h2>
+<a id="testing-prerequisites" class="anchor" href="#testing-prerequisites" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Testing Prerequisites</h2>
+
+<ul>
+<li><a href="http://www.oracle.com/technetwork/java/javase/downloads/server-jre8-downloads-2133154.html">Java 6+</a></li>
+<li>
+<p>Maven</p>
+
+<pre><code>Maven automatically downloads hazelcast-remote-controller and hazelcast from maven repository.
+</code></pre>
+</li>
+</ul>
+
+<h2>
+<a id="running-the-tests" class="anchor" href="#running-the-tests" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Running the Tests</h2>
+
+<p>Following command starts the tests:</p>
+
+<pre><code>npm test
+</code></pre>
+
+<h1>
+<a id="release-notes" class="anchor" href="#release-notes" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Release Notes</h1>
+
+<p>You can see the release notes for each release on the <a href="https://github.com/hazelcast/hazelcast-nodejs-client/releases">Releases</a> page.</p>
+
+<h1>
+<a id="mail-group" class="anchor" href="#mail-group" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Mail Group</h1>
+
 <p>Please join the mail group if you are interested in using or developing Hazelcast.</p>
-</div>
 
-<div>
 <p><a href="http://groups.google.com/group/hazelcast">http://groups.google.com/group/hazelcast</a></p>
-</div>
 
-<div>
-<h3 id="_license">
-<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h3>
-<div>
+<h1>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h1>
+
 <p>Hazelcast is available under the Apache 2 License. Please see the <a href="http://docs.hazelcast.org/docs/latest/manual/html-single/hazelcast-documentation.html#license-questions">Licensing appendix</a> for more information.</p>
-</div>
 
-<p></p>
-</div>
+<h1>
+<a id="copyright" class="anchor" href="#copyright" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Copyright</h1>
 
-<div>
-<h3 id="_copyright">
-<a id="copyright" class="anchor" href="#copyright" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Copyright</h3>
-<div>
 <p>Copyright (c) 2008-2016, Hazelcast, Inc. All Rights Reserved.</p>
-</div>
 
-<div>
-<p>Visit <a href="http://www.hazelcast.com">www.hazelcast.com</a> for more info.</p>
-</div>
-
-<p></p>
-</div>
-</div>
-</div>
+<p>Visit <a href="http://www.hazelcast.com">www.hazelcast.com</a> for more information.</p>
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/hazelcast/hazelcast-nodejs-client">Hazelcast-nodejs-client</a> is maintained by <a href="https://github.com/hazelcast">hazelcast</a>.</span>
@@ -296,6 +193,6 @@ HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
 
     </section>
 
-
+  
   </body>
 </html>
