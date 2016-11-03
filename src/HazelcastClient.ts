@@ -20,6 +20,8 @@ import {IList} from './proxy/IList';
 import {ILock} from './proxy/ILock';
 import {MultiMap} from './proxy/MultiMap';
 import {IRingbuffer} from './proxy/IRingbuffer';
+import {ITopic} from './proxy/topic/ITopic';
+import {ReliableTopicProxy} from './proxy/topic/ReliableTopicProxy';
 
 export default class HazelcastClient {
 
@@ -164,6 +166,15 @@ export default class HazelcastClient {
      */
     getRingbuffer<E>(name: string): IRingbuffer<E> {
         return <IRingbuffer<E>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.RINGBUFFER_SERVICE);
+    }
+
+    /**
+     * Returns a distributed reliable topic instance with the given name.
+     * @param name
+     * @returns {ITopic<E>}
+     */
+    getReliableTopic<E>(name: string): ITopic<E> {
+        return new ReliableTopicProxy(name, this);
     }
 
 
