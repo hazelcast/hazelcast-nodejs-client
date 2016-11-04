@@ -63,7 +63,10 @@ class Heartbeat {
                 }
                 if (timeSinceLastRead > this.heartbeatInterval) {
                     var req = ClientPingCodec.encodeRequest();
-                    this.client.getInvocationService().invokeOnConnection(conn, req);
+                    this.client.getInvocationService().invokeOnConnection(conn, req)
+                        .catch((error) => {
+                            this.logger.warn('HeartbeatService', error);
+                        });
                 } else {
                     if (!conn.heartbeating) {
                         setImmediate(this.onHeartbeatRestored.bind(this), conn);
