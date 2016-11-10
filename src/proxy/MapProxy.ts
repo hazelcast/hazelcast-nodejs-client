@@ -60,6 +60,10 @@ import {MapExecuteWithPredicateCodec} from '../codec/MapExecuteWithPredicateCode
 import {MapExecuteOnKeyCodec} from '../codec/MapExecuteOnKeyCodec';
 import {MapExecuteOnKeysCodec} from '../codec/MapExecuteOnKeysCodec';
 import * as SerializationUtil from '../serialization/SerializationUtil';
+
+//TODO this is a temprorary reference to get NearCache compiled
+import {NearCache, DataRecord} from '../NearCache';
+
 export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 
     executeOnKeys(keys: K[], entryProcessor: IdentifiedDataSerializable|Portable): Promise<any[]> {
