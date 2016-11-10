@@ -234,8 +234,10 @@ describe("List Proxy", function () {
                 }
             }
         };
-        return listInstance.addItemListener(listener, true).then(function () {
+        listInstance.addItemListener(listener, true).then(function () {
             listInstance.add(1);
+        }).catch(function (e) {
+            done(e);
         })
     });
 
@@ -250,10 +252,12 @@ describe("List Proxy", function () {
                 }
             }
         };
-        return listInstance.addItemListener(listener, true).then(function () {
+        listInstance.addItemListener(listener, true).then(function () {
             return listInstance.add(1);
         }).then(function () {
             return listInstance.remove(1);
+        }).catch(function (e) {
+            done(e);
         })
     });
 
@@ -268,10 +272,12 @@ describe("List Proxy", function () {
                 }
             }
         };
-        return listInstance.addItemListener(listener, false).then(function () {
+        listInstance.addItemListener(listener, false).then(function () {
             return listInstance.add(1);
         }).then(function () {
             return listInstance.remove(1);
+        }).catch(function (e) {
+            done(e);
         })
     });
 

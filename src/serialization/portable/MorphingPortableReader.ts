@@ -3,6 +3,7 @@ import {PortableSerializer} from './PortableSerializer';
 import {DataInput} from '../Data';
 import {ClassDefinition, FieldType, FieldDefinition} from './ClassDefinition';
 import {Portable} from '../Serializable';
+import * as Long from 'long';
 
 export class MorphingPortableReader extends DefaultPortableReader {
     constructor(portableSerializer: PortableSerializer, input: DataInput, classDefinition: ClassDefinition) {

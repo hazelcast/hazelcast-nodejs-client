@@ -7,13 +7,11 @@
         "target": "es5",
         "outDir": "lib",
         "preserveConstEnums": true,
-        "noLib": true,
+        "lib": ["es5", "es6"],
         "removeComments": true,
         "sourceMap": true
     },
     "include": [
-        "src/index.ts",
-        "typings/index.d.ts",
-        "lib.es6.d.ts"
+        "src/index.ts"
     ]
 }

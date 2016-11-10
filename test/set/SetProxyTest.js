@@ -139,7 +139,7 @@ describe("Set Proxy", function () {
 
     it("listens for added entry", function (done) {
         this.timeout(5000);
-        return setInstance.addItemListener({
+        setInstance.addItemListener({
             "itemAdded" : function (item) {
                 if (item == 1) {
                     done()
@@ -149,12 +149,14 @@ describe("Set Proxy", function () {
             }
         }).then(function () {
             setInstance.add(1);
-        })
+        }).catch(function (e) {
+            done(e);
+        });
     });
 
     it("listens for removed entry", function (done) {
         this.timeout(5000);
-        return setInstance.addItemListener({
+        setInstance.addItemListener({
             "itemRemoved" : function (item) {
                 if (item == 1) {
                     done()
@@ -166,7 +168,9 @@ describe("Set Proxy", function () {
             return setInstance.add(1);
         }).then(function () {
             return setInstance.remove(1);
-        })
+        }).catch(function (e) {
+            done(e);
+        });
     });
 
 

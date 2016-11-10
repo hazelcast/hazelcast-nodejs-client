@@ -1,3 +1,4 @@
+import * as Long from 'long';
 import * as Promise from 'bluebird';
 import {DistributedObject} from '../DistributedObject';
 import {OverflowPolicy} from '../core/OverflowPolicy';

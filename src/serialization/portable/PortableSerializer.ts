@@ -6,6 +6,7 @@ import {DefaultPortableReader} from './DefaultPortableReader';
 import {MorphingPortableReader} from './MorphingPortableReader';
 import {ClassDefinition, FieldType} from './ClassDefinition';
 import {DefaultPortableWriter} from './DefaultPortableWriter';
+import * as Long from 'long';
 
 export class PortableSerializer implements Serializer {
 

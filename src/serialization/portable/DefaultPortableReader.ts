@@ -3,6 +3,8 @@ import {DataInput} from '../Data';
 import {ClassDefinition, FieldDefinition, FieldType} from './ClassDefinition';
 import {BitsUtil} from '../../BitsUtil';
 import {Portable} from '../Serializable';
+import * as Long from 'long';
+
 export class DefaultPortableReader implements PortableReader {
 
     protected serializer: PortableSerializer;
