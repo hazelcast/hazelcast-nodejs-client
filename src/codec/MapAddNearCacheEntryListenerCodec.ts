@@ -1,18 +1,20 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
-import {Data} from '../serialization/Data';
-import {MapMessageType} from './MapMessageType';
 import Address = require('../Address');
+import {AddressCodec} from './AddressCodec';
+import {UUIDCodec} from './UUIDCodec';
+import {MemberCodec} from './MemberCodec';
+import {Data} from '../serialization/Data';
+import {EntryViewCodec} from './EntryViewCodec';
 import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
+import {MapMessageType} from './MapMessageType';
 
 var REQUEST_TYPE = MapMessageType.MAP_ADDNEARCACHEENTRYLISTENER;
 var RESPONSE_TYPE = 104;
 var RETRYABLE = false;
 
-
 export class MapAddNearCacheEntryListenerCodec {
-
 
     static calculateSize(name: string, listenerFlags: number, localOnly: boolean) {
 // Calculates the request payload size
@@ -47,23 +49,77 @@ export class MapAddNearCacheEntryListenerCodec {
 
         var messageType = clientMessage.getMessageType();
         if (messageType === BitsUtil.EVENT_IMAPINVALIDATION && handleEventImapinvalidation !== null) {
-            var key: Data;
+            var messageFinished = false;
+            var key: Data = undefined;
+            if (!messageFinished) {
 
-            if (clientMessage.readBoolean() !== true) {
-                key = clientMessage.readData();
+                if (clientMessage.readBoolean() !== true) {
+                    key = clientMessage.readData();
+                }
             }
-            handleEventImapinvalidation(key);
+            var sourceUuid: string = undefined;
+            if (!messageFinished) {
+                messageFinished = clientMessage.isComplete();
+            }
+            if (!messageFinished) {
+                sourceUuid = clientMessage.readString();
+            }
+            var partitionUuid: any = undefined;
+            if (!messageFinished) {
+                partitionUuid = UUIDCodec.decode(clientMessage, toObjectFunction);
+            }
+            var sequence: any = undefined;
+            if (!messageFinished) {
+                sequence = clientMessage.readLong();
+            }
+            handleEventImapinvalidation(key, sourceUuid, partitionUuid, sequence);
         }
         if (messageType === BitsUtil.EVENT_IMAPBATCHINVALIDATION && handleEventImapbatchinvalidation !== null) {
-            var keys: any;
-            var keysSize = clientMessage.readInt32();
-            keys = [];
-            for (var keysIndex = 0; keysIndex < keysSize; keysIndex++) {
-                var keysItem: Data;
-                keysItem = clientMessage.readData();
-                keys.push(keysItem)
+            var messageFinished = false;
+            var keys: any = undefined;
+            if (!messageFinished) {
+                var keysSize = clientMessage.readInt32();
+                keys = [];
+                for (var keysIndex = 0; keysIndex < keysSize; keysIndex++) {
+                    var keysItem: Data;
+                    keysItem = clientMessage.readData();
+                    keys.push(keysItem)
+                }
             }
-            handleEventImapbatchinvalidation(keys);
+            var sourceUuids: any = undefined;
+            if (!messageFinished) {
+                messageFinished = clientMessage.isComplete();
+            }
+            if (!messageFinished) {
+                var sourceUuidsSize = clientMessage.readInt32();
+                sourceUuids = [];
+                for (var sourceUuidsIndex = 0; sourceUuidsIndex < sourceUuidsSize; sourceUuidsIndex++) {
+                    var sourceUuidsItem: string;
+                    sourceUuidsItem = clientMessage.readString();
+                    sourceUuids.push(sourceUuidsItem)
+                }
+            }
+            var partitionUuids: any = undefined;
+            if (!messageFinished) {
+                var partitionUuidsSize = clientMessage.readInt32();
+                partitionUuids = [];
+                for (var partitionUuidsIndex = 0; partitionUuidsIndex < partitionUuidsSize; partitionUuidsIndex++) {
+                    var partitionUuidsItem: any;
+                    partitionUuidsItem = UUIDCodec.decode(clientMessage, toObjectFunction);
+                    partitionUuids.push(partitionUuidsItem)
+                }
+            }
+            var sequences: any = undefined;
+            if (!messageFinished) {
+                var sequencesSize = clientMessage.readInt32();
+                sequences = [];
+                for (var sequencesIndex = 0; sequencesIndex < sequencesSize; sequencesIndex++) {
+                    var sequencesItem: any;
+                    sequencesItem = clientMessage.readLong();
+                    sequences.push(sequencesItem)
+                }
+            }
+            handleEventImapbatchinvalidation(keys, sourceUuids, partitionUuids, sequences);
         }
     }
 

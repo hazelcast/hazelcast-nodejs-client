@@ -151,11 +151,6 @@ export enum InMemoryFormat {
     BINARY
 }
 
-export enum LocalUpdatePolicy {
-    INVALIDATE,
-    CACHE
-}
-
 export class NearCacheConfig {
     name: string = 'default';
     /**

@@ -61,9 +61,6 @@ import {MapExecuteOnKeyCodec} from '../codec/MapExecuteOnKeyCodec';
 import {MapExecuteOnKeysCodec} from '../codec/MapExecuteOnKeysCodec';
 import * as SerializationUtil from '../serialization/SerializationUtil';
 
-//TODO this is a temprorary reference to get NearCache compiled
-import {NearCache, DataRecord} from '../NearCache';
-
 export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 
     executeOnKeys(keys: K[], entryProcessor: IdentifiedDataSerializable|Portable): Promise<any[]> {
@@ -86,6 +83,10 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         var keyData = this.toData(key);
         var proData = this.toData(entryProcessor);
 
+        return this.executeOnKeyInternal(keyData, proData);
+    }
+
+    protected executeOnKeyInternal(keyData: Data, proData: Data): Promise<V> {
         return this.encodeInvokeOnKey<V>(MapExecuteOnKeyCodec, keyData, proData, keyData, 1);
     }
 
@@ -178,9 +179,14 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     ): Promise<string> {
         return this.addEntryListenerInternal(listener, predicate, key, includeValue);
     }
+
     containsKey(key: K): Promise<boolean> {
         assertNotNull(key);
         var keyData = this.toData(key);
+        return this.containsKeyInternal(keyData);
+    }
+
+    protected containsKeyInternal(keyData: Data): Promise<boolean> {
         return this.encodeInvokeOnKey<boolean>(MapContainsKeyCodec, keyData, keyData, 0);
     }
 
@@ -195,6 +201,10 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         assertNotNull(value);
         var keyData: Data = this.toData(key);
         var valueData: Data = this.toData(value);
+        return this.putInternal(keyData, valueData, ttl);
+    }
+
+    protected putInternal(keyData: Data, valueData: Data, ttl: number): Promise<V> {
         return this.encodeInvokeOnKey<V>(MapPutCodec, keyData, keyData, valueData, 0, ttl);
     }
 
@@ -212,25 +222,38 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             }
             partitionsToKeys[pId].push([keyData, this.toData(pair[1])]);
         }
+        return this.putAllInternal(partitionsToKeys);
+    }
 
+    protected putAllInternal(partitionsToKeysData: {[id: string]: [Data, Data][]}): Promise<void> {
         var partitionPromises: Promise<void>[] = [];
-        for (var partition in partitionsToKeys) {
+        for (var partition in partitionsToKeysData) {
             partitionPromises.push(
-                this.encodeInvokeOnPartition<void>(MapPutAllCodec, Number(partition), partitionsToKeys[partition])
+                this.encodeInvokeOnPartition<void>(MapPutAllCodec, Number(partition), partitionsToKeysData[partition])
             );
         }
-        return Promise.all(partitionPromises).then(function() { return; });
+        return Promise.all(partitionPromises).then(function () {
+            return;
+        });
     }
 
     get(key: K): Promise<V> {
         assertNotNull(key);
         var keyData = this.toData(key);
+        return this.getInternal(keyData);
+    }
+
+    protected getInternal(keyData: Data): Promise<V> {
         return this.encodeInvokeOnKey<V>(MapGetCodec, keyData, keyData, 0);
     }
 
     remove(key: K, value: V = null): Promise<V> {
         assertNotNull(key);
         var keyData = this.toData(key);
+        return this.removeInternal(keyData, value);
+    }
+
+    protected removeInternal(keyData: Data, value: V = null): Promise<V> {
         if (value == null) {
             return this.encodeInvokeOnKey<V>(MapRemoveCodec, keyData, keyData, 0);
         } else {
@@ -266,7 +289,13 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             }
             partitionsToKeys[pId].push(keyData);
         }
+        var result: [any, any][] = [];
+        return this.getAllInternal(partitionsToKeys, result).then(function () {
+            return result;
+        });
+    }
 
+    protected getAllInternal(partitionsToKeys: {[id: string]: any}, result: any[] = []): Promise<[Data, Data][]> {
         var partitionPromises: Promise<[Data, Data][]>[] = [];
         for (var partition in partitionsToKeys) {
             partitionPromises.push(this.encodeInvokeOnPartition<[Data, Data][]>(
@@ -280,13 +309,19 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             return [toObject(entry[0]), toObject(entry[1])];
         };
         return Promise.all(partitionPromises).then(function(serializedEntryArrayArray: [Data, Data][][]) {
-            return Array.prototype.concat.apply([], serializedEntryArrayArray).map(deserializeEntry);
+            var serializedEntryArray = Array.prototype.concat.apply([], serializedEntryArrayArray);
+            result.push(...(serializedEntryArray.map(deserializeEntry)));
+            return serializedEntryArray;
         });
     }
 
     delete(key: K): Promise<void> {
         assertNotNull(key);
         var keyData = this.toData(key);
+        return this.deleteInternal(keyData);
+    }
+
+    protected deleteInternal(keyData: Data): Promise<void> {
         return this.encodeInvokeOnKey<void>(MapDeleteCodec, keyData, keyData, 0);
     }
 
@@ -304,6 +339,10 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     evict(key: K) : Promise<boolean> {
         assertNotNull(key);
         var keyData = this.toData(key);
+        return this.evictInternal(keyData);
+    }
+
+    protected evictInternal(keyData: Data): Promise<boolean> {
         return this.encodeInvokeOnKey<boolean>(MapEvictCodec, keyData, keyData, 0);
     }
 
@@ -361,6 +400,10 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         assertNotNull(value);
         var keyData = this.toData(key);
         var valueData = this.toData(value);
+        return this.putIfAbsentInternal(keyData, valueData, ttl);
+    }
+
+    protected putIfAbsentInternal(keyData: Data, valueData: Data, ttl: number): Promise<V> {
         return this.encodeInvokeOnKey<V>(MapPutIfAbsentCodec, keyData, keyData, valueData, 0, ttl);
     }
 
@@ -369,6 +412,10 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         assertNotNull(value);
         var keyData = this.toData(key);
         var valueData = this.toData(value);
+        return this.putTransientInternal(keyData, valueData, ttl);
+    }
+
+    protected putTransientInternal(keyData: Data, valueData: Data, ttl: number): Promise<void> {
         return this.encodeInvokeOnKey<void>(MapPutTransientCodec, keyData, keyData, valueData, 0, ttl);
     }
 
@@ -377,6 +424,10 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         assertNotNull(newValue);
         var keyData = this.toData(key);
         var newValueData = this.toData(newValue);
+        return this.replaceInternal(keyData, newValueData);
+    }
+
+    protected replaceInternal(keyData: Data, newValueData: Data): Promise<V> {
         return this.encodeInvokeOnKey<V>(MapReplaceCodec, keyData, keyData, newValueData, 0);
     }
 
@@ -387,6 +438,10 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         var keyData = this.toData(key);
         var newValueData = this.toData(newValue);
         var oldValueData = this.toData(oldValue);
+        return this.replaceIfSameInternal(keyData, oldValueData, newValueData);
+    }
+
+    protected replaceIfSameInternal(keyData: Data, oldValueData: Data, newValueData: Data): Promise<boolean> {
         return this.encodeInvokeOnKey<boolean>(MapReplaceIfSameCodec, keyData, keyData, oldValueData, newValueData, 0);
     }
 
@@ -395,6 +450,10 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         assertNotNull(value);
         var keyData = this.toData(key);
         var valueData = this.toData(value);
+        return this.setInternal(keyData, valueData, ttl);
+    }
+
+    protected setInternal(keyData: Data, valueData: Data, ttl: number): Promise<void> {
         return this.encodeInvokeOnKey<void>(MapSetCodec, keyData, keyData, valueData, 0, ttl);
     }
 
@@ -426,12 +485,20 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         assertNotNull(value);
         var keyData = this.toData(key);
         var valueData = this.toData(value);
-        return this.encodeInvokeOnKey<boolean>(MapTryPutCodec, keyData, keyData, valueData, value, 0, timeout);
+        return this.tryPutInternal(keyData, valueData, timeout);
+    }
+
+    protected tryPutInternal(keyData: Data, valueData: Data, timeout: number): Promise<boolean> {
+        return this.encodeInvokeOnKey<boolean>(MapTryPutCodec, keyData, keyData, valueData, 0, timeout);
     }
 
     tryRemove(key: K, timeout: number): Promise<boolean> {
         assertNotNull(key);
         var keyData = this.toData(key);
+        return this.tryRemoveInternal(keyData, timeout);
+    }
+
+    protected tryRemoveInternal(keyData: Data, timeout: number): Promise<boolean> {
         return this.encodeInvokeOnKey<boolean>(MapTryRemoveCodec, keyData, keyData, 0, timeout);
     }
 

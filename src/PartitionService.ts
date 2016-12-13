@@ -58,6 +58,10 @@ class PartitionService {
         }
         return Math.abs(partitionHash) % this.partitionCount;
     }
+
+    getPartitionCount(): number {
+        return this.partitionCount;
+    }
 }
 
 export = PartitionService;

@@ -1,16 +1,18 @@
-import {Data} from './serialization/Data';
-import {EvictionPolicy, InMemoryFormat, NearCacheConfig} from './Config';
-import {shuffleArray} from './Util';
-import {SerializationService} from './serialization/SerializationService';
+import {Data} from '../serialization/Data';
+import {EvictionPolicy, InMemoryFormat, NearCacheConfig} from '../Config';
+import {shuffleArray} from '../Util';
+import {SerializationService} from '../serialization/SerializationService';
+import {DataKeyedHashMap} from '../DataStoreHashMap';
+
 export class DataRecord {
-    key: Data | any;
+    key: Data;
     value: Data | any;
     private creationTime: number;
     private expirationTime: number;
     private lastAccessTime: number;
     private accessHit: number;
 
-    constructor(key: Data | any, value: Data | any, creationTime?: number, ttl?: number) {
+    constructor(key: Data, value: Data | any, creationTime?: number, ttl?: number) {
         this.key = key;
         this.value = value;
         if (creationTime) {
@@ -66,7 +68,16 @@ export interface NearCacheStatistics {
     entryCount: number;
 }
 
-export class NearCache {
+export interface NearCache {
+    put(key: Data, value: any): void;
+    get(key: Data): Data | any;
+    invalidate(key: Data): void;
+    clear(): void;
+    getStatistics(): NearCacheStatistics;
+    isInvalidatedOnChange(): boolean;
+}
+
+export class NearCacheImpl implements NearCache {
 
     private serializationService: SerializationService;
     private name: string;
@@ -80,7 +91,7 @@ export class NearCache {
     private evictionSamplingPoolSize: number;
     private evictionCandidatePool: Array<DataRecord>;
 
-    internalStore: Map<any | Data, DataRecord>;
+    internalStore: DataKeyedHashMap<DataRecord>;
 
     private evictedCount: number = 0;
     private expiredCount: number = 0;
@@ -110,7 +121,7 @@ export class NearCache {
         }
 
         this.evictionCandidatePool = [];
-        this.internalStore = new Map();
+        this.internalStore = new DataKeyedHashMap<DataRecord>();
     }
 
     /**
@@ -120,7 +131,7 @@ export class NearCache {
      * @param key
      * @param value
      */
-    put(key: any, value: any): void {
+    put(key: Data, value: any): void {
         this.doEvictionIfRequired();
         if (this.inMemoryFormat === InMemoryFormat.OBJECT) {
             value = this.serializationService.toObject(value);
@@ -136,7 +147,7 @@ export class NearCache {
      * @param key
      * @returns the value if present in near cache, 'undefined' if not
      */
-    get(key: Data | any): Data | any {
+    get(key: Data): Data | any {
         var dr = this.internalStore.get(key);
         if (dr === undefined) {
             this.missCount++;
@@ -155,6 +166,14 @@ export class NearCache {
         } else {
             return dr.value;
         }
+    }
+
+    invalidate(key: Data): void {
+        this.internalStore.delete(key);
+    }
+
+    clear(): void {
+        this.internalStore.clear();
     }
 
     protected isEvictionRequired() {
@@ -178,7 +197,7 @@ export class NearCache {
      * @returns number of expired elements.
      */
     protected recomputeEvictionPool(): number {
-        var arr: Array<DataRecord> = Array.from(this.internalStore, (v: [any, DataRecord]) => { return v[1]; } );
+        var arr: Array<DataRecord> = Array.from(this.internalStore.values() );
 
         shuffleArray<DataRecord>(arr);
         var newCandidates = arr.slice(0, this.evictionSamplingCount);
@@ -215,6 +234,10 @@ export class NearCache {
         if (this.internalStore.delete(key)) {
             this.evictedCount++;
         }
+    }
+
+    isInvalidatedOnChange(): boolean {
+        return this.invalidateOnChange;
     }
 
     getStatistics(): NearCacheStatistics {
