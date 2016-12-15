@@ -4,6 +4,7 @@
 * [Features](#features)
 * [Installing the Client](#installing-the-client)
 * [Using the Client](#using-the-client)
+* [Serialization Considerations](#serialization-considerations)
 * [Development](#development)
   * [Building And Installing from Sources](#building-and-installing-from-sources)
   * [Using Locally Installed Package](#using-locally-installed-package)
@@ -78,6 +79,44 @@ HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
 Please see Hazelcast Node.js [code samples](https://github.com/hazelcast/hazelcast-nodejs-client/tree/master/code_samples) for more examples.
 
 You can also refer to Hazelcast Node.js [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/0.5/docs/).
+
+# Serialization Considerations
+
+Hazelcast needs to serialize objects in order to be able to keep them in the server memory. For primitive types, it uses Hazelcast native serialization. For other complex types (e.g. JS objects), it uses JSON serialization.
+
+For example, when you try to query your data using predicates, this querying is handled on the server side so Hazelcast does not have to bring all data to the client but only the relevant entries. Otherwise, there would be a lot of unneccessary data traffic between the client and the server and the performance would severely drop.
+Because predicates run on the server side, the server should be able to reason about your objects. That is why you need to implement serialization on the server side.
+
+The same applies to MapStore. The server should be able to deserialize your objects in order to store them in MapStore.
+
+Regarding arrays in a serializable object, you can use methods like `writeIntArray` if the array is of a primitive type.
+
+If you have nested objects, these nested objects also need to be serializable. Register the serializers for nested objects and the method `writeObject` will not have any problem with finding a suitable serializer for and writing/reading the nested object.
+
+If you have arrays of custom objects, you can serialize/deserialize them like the following:
+
+```
+writeData(dataOutput) {
+    ...
+    dataOutput.writeInt(this.arrayOfCustomObjects);
+    this.arrayOfCustomObjects.forEach(function(element) {
+        dataOutput.writeObject(element);
+    });
+    ...
+}
+
+readData(dataInput) {
+    ...
+    var arrayOfCustomObjects = [];
+    var lenOfArray = dataInput.readInt();
+    for (i=0;i<lenOfArray;i++) {
+        arrayOfCustomObjects.push(dataInput.readObject());
+    }
+    this.arrayOfCustomObjects = arrayOfCustomObjects;
+    ...
+}
+```
+
 
 
 # Development
