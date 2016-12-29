@@ -22,6 +22,7 @@ import {MultiMap} from './proxy/MultiMap';
 import {IRingbuffer} from './proxy/IRingbuffer';
 import {ITopic} from './proxy/topic/ITopic';
 import {ReliableTopicProxy} from './proxy/topic/ReliableTopicProxy';
+import {IReplicatedMap} from "./proxy/IReplicatedMap";
 
 export default class HazelcastClient {
 
@@ -177,6 +178,9 @@ export default class HazelcastClient {
         return new ReliableTopicProxy(name, this);
     }
 
+    getReplicatedMap<K, V>(name: string): IReplicatedMap<K, V> {
+        return <IReplicatedMap<K, V>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.REPLICATEDMAP_SERVICE);
+    }
 
     /**
      * Return configuration that this instance started with.
