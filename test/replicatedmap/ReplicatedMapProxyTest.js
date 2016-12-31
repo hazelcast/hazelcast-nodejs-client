@@ -41,8 +41,7 @@ describe('ReplicatedMap Proxy', function () {
 
     it('puts one entry and gets one entry', function () {
         return rm.put('key', 'value', ONE_HOUR)
-            .then(function (val) {
-                expect(val).to.equal('value');
+            .then(function () {
                 return rm.get('key').then(function (val) {
                     expect(val).to.equal('value');
                 });
@@ -52,7 +51,6 @@ describe('ReplicatedMap Proxy', function () {
     it('should contain the key', function () {
         return rm.put('key', 'value', ONE_HOUR)
             .then(function (val) {
-                expect(val).to.equal('value');
                 return rm.containsKey('key')
                     .then(function (res) {
                         expect(res).to.equal(true);
