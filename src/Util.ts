@@ -9,6 +9,11 @@ export function assertNotNull(v: any) {
 export function assertArray(x: any) {
     assert(Array.isArray(x), 'Should be array.');
 }
+
+export function assertNotNegative(v: number, message: string = 'The value cannot be negative.') {
+    assert(v >= 0, message);
+}
+
 export function getType(obj: any): string {
     assertNotNull(obj);
     if (Long.isLong(obj)) {
