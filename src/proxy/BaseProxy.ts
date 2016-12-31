@@ -74,6 +74,19 @@ export class BaseProxy {
     }
 
     /**
+     * Encodes a request from a codec and invokes it on owner node of random partition.
+     * @param codec
+     * @param codecArguments
+     * @returns
+     */
+    protected encodeInvokeOnRandomPartition<T>(codec: any, ...codecArguments: any[]): Promise<T> {
+        const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
+        const invocationResponse: Promise<ClientMessage> = this.client.getInvocationService()
+            .invokeOnPartition(clientMessage, this.client.getPartitionService().getRandomPartitionId());
+        return this.createPromise<T>(codec, invocationResponse);
+    }
+
+    /**
      * Serializes an object according to serialization settings of the client.
      * @param object
      * @returns

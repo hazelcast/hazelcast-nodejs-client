@@ -1,9 +1,9 @@
 import * as Promise from 'bluebird';
 import {DistributedObject} from '../DistributedObject';
-import {Predicate} from "../core/Predicate";
-import {IMapListener} from "../core/MapListener";
+import {Predicate} from '../core/Predicate';
+import {IMapListener} from '../core/MapListener';
 
-export interface IReplicatedMap<K,V> extends DistributedObject {
+export interface IReplicatedMap<K, V> extends DistributedObject {
     /**
      * Associates a given value to the specified key and replicates it to the
      * cluster. If there is an old value, it will be replaced by the specified

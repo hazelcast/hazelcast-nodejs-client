@@ -71,3 +71,19 @@ function setAnchor(list: Array<any>, predicate: PagingPredicate, nearestPage: nu
         predicate.setAnchor(nearestPage, anchor);
     }
 }
+
+/**
+ * Generates random number between lower and upper inclusive
+ *
+ * @param lower
+ * @param upper
+ * @returns {number}
+ */
+export function random(lower: number, upper: number) {
+    if (lower > upper) {
+        let tmp = lower;
+        lower = upper;
+        upper = tmp;
+    }
+    return lower + Math.floor(Math.random() * (upper - lower + 1));
+}

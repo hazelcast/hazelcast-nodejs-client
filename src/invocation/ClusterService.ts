@@ -8,6 +8,7 @@ import {LoggingService} from '../logging/LoggingService';
 import {EventEmitter} from 'events';
 import {ClientInfo} from '../ClientInfo';
 import HazelcastClient from '../HazelcastClient';
+import {random} from '../Util';
 
 const MEMBER_ADDED = 1;
 const MEMBER_REMOVED = 2;
@@ -171,6 +172,17 @@ class ClusterService extends EventEmitter {
      */
     getOwnerConnection(): ClientConnection {
         return this.ownerConnection;
+    }
+
+    /**
+     * Returns random connection
+     * @returns {Address}
+     */
+    getRandomAddress(): Address {
+        if (this.members.length <= 1) {
+            return this.ownerConnection.address;
+        }
+        return this.members[random(0, this.members.length - 1)].address;
     }
 
     initMemberShipListener(): Promise<void> {

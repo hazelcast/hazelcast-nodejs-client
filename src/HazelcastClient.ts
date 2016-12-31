@@ -22,7 +22,7 @@ import {MultiMap} from './proxy/MultiMap';
 import {IRingbuffer} from './proxy/IRingbuffer';
 import {ITopic} from './proxy/topic/ITopic';
 import {ReliableTopicProxy} from './proxy/topic/ReliableTopicProxy';
-import {IReplicatedMap} from "./proxy/IReplicatedMap";
+import {IReplicatedMap} from './proxy/IReplicatedMap';
 
 export default class HazelcastClient {
 

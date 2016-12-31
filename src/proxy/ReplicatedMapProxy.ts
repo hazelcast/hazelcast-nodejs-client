@@ -3,29 +3,32 @@ import {BaseProxy} from './BaseProxy';
 import {IReplicatedMap} from './IReplicatedMap';
 import {assertNotNull} from '../Util';
 import {Data} from '../serialization/Data';
-import {ReplicatedMapPutCodec} from "../codec/ReplicatedMapPutCodec";
-import {ReplicatedMapClearCodec} from "../codec/ReplicatedMapClearCodec";
-import {ReplicatedMapGetCodec} from "../codec/ReplicatedMapGetCodec";
-import {ReplicatedMapContainsKeyCodec} from "../codec/ReplicatedMapContainsKeyCodec";
-import {ReplicatedMapContainsValueCodec} from "../codec/ReplicatedMapContainsValueCodec";
-import {ReplicatedMapSizeCodec} from "../codec/ReplicatedMapSizeCodec";
-import {ReplicatedMapIsEmptyCodec} from "../codec/ReplicatedMapIsEmptyCodec";
-import {ReplicatedMapRemoveCodec} from "../codec/ReplicatedMapRemoveCodec";
-import {ReplicatedMapPutAllCodec} from "../codec/ReplicatedMapPutAllCodec";
-import {ReplicatedMapKeySetCodec} from "../codec/ReplicatedMapKeySetCodec";
-import {ReplicatedMapValuesCodec} from "../codec/ReplicatedMapValuesCodec";
-import {ReplicatedMapEntrySetCodec} from "../codec/ReplicatedMapEntrySetCodec";
-import {Predicate} from "../core/Predicate";
-import {IMapListener} from "../core/MapListener";
-import {ReplicatedMapRemoveEntryListenerCodec} from "../codec/ReplicatedMapRemoveEntryListenerCodec";
-import {EntryEventType} from "../core/EntryEventType";
-import ClientMessage = require("../ClientMessage");
-import {ReplicatedMapAddEntryListenerToKeyWithPredicateCodec} from "../codec/ReplicatedMapAddEntryListenerToKeyWithPredicateCodec";
-import {ReplicatedMapAddEntryListenerToKeyCodec} from "../codec/ReplicatedMapAddEntryListenerToKeyCodec";
-import {ReplicatedMapAddEntryListenerWithPredicateCodec} from "../codec/ReplicatedMapAddEntryListenerWithPredicateCodec";
-import {ReplicatedMapAddEntryListenerCodec} from "../codec/ReplicatedMapAddEntryListenerCodec";
+import {ReplicatedMapPutCodec} from '../codec/ReplicatedMapPutCodec';
+import {ReplicatedMapClearCodec} from '../codec/ReplicatedMapClearCodec';
+import {ReplicatedMapGetCodec} from '../codec/ReplicatedMapGetCodec';
+import {ReplicatedMapContainsKeyCodec} from '../codec/ReplicatedMapContainsKeyCodec';
+import {ReplicatedMapContainsValueCodec} from '../codec/ReplicatedMapContainsValueCodec';
+import {ReplicatedMapSizeCodec} from '../codec/ReplicatedMapSizeCodec';
+import {ReplicatedMapIsEmptyCodec} from '../codec/ReplicatedMapIsEmptyCodec';
+import {ReplicatedMapRemoveCodec} from '../codec/ReplicatedMapRemoveCodec';
+import {ReplicatedMapPutAllCodec} from '../codec/ReplicatedMapPutAllCodec';
+import {ReplicatedMapKeySetCodec} from '../codec/ReplicatedMapKeySetCodec';
+import {ReplicatedMapValuesCodec} from '../codec/ReplicatedMapValuesCodec';
+import {ReplicatedMapEntrySetCodec} from '../codec/ReplicatedMapEntrySetCodec';
+import {Predicate} from '../core/Predicate';
+import {IMapListener} from '../core/MapListener';
+import {ReplicatedMapRemoveEntryListenerCodec} from '../codec/ReplicatedMapRemoveEntryListenerCodec';
+import {EntryEventType} from '../core/EntryEventType';
+import ClientMessage = require('../ClientMessage');
+/* tslint:disable:max-line-length */
+import {ReplicatedMapAddEntryListenerToKeyWithPredicateCodec} from '../codec/ReplicatedMapAddEntryListenerToKeyWithPredicateCodec';
+import {ReplicatedMapAddEntryListenerToKeyCodec} from '../codec/ReplicatedMapAddEntryListenerToKeyCodec';
+import {ReplicatedMapAddEntryListenerWithPredicateCodec} from '../codec/ReplicatedMapAddEntryListenerWithPredicateCodec';
+import {ReplicatedMapAddEntryListenerCodec} from '../codec/ReplicatedMapAddEntryListenerCodec';
+/* tslint:enable:max-line-length */
 
-export class ReplicatedMapProxy<K,V> extends BaseProxy implements IReplicatedMap<K,V> {
+export class ReplicatedMapProxy<K, V> extends BaseProxy implements IReplicatedMap<K, V> {
+
     put(key: K, value: V, ttl: number): Promise<V> {
         assertNotNull(key);
         assertNotNull(value);
@@ -37,7 +40,7 @@ export class ReplicatedMapProxy<K,V> extends BaseProxy implements IReplicatedMap
     }
 
     clear(): Promise<void> {
-        return this.encodeInvokeOnPartition<void>(ReplicatedMapClearCodec, -1);
+        return this.encodeInvokeOnRandomTarget<void>(ReplicatedMapClearCodec);
     }
 
     get(key: K): Promise<V> {
@@ -58,16 +61,16 @@ export class ReplicatedMapProxy<K,V> extends BaseProxy implements IReplicatedMap
         assertNotNull(value);
 
         const valueData = this.toData(value);
-        return this.encodeInvokeOnRandomTarget<boolean>(ReplicatedMapContainsValueCodec, valueData);
+        return this.encodeInvokeOnRandomPartition<boolean>(ReplicatedMapContainsValueCodec, valueData);
     }
 
     size(): Promise<number> {
-        return this.encodeInvokeOnRandomTarget<number>(ReplicatedMapSizeCodec);
+        return this.encodeInvokeOnRandomPartition<number>(ReplicatedMapSizeCodec);
     }
 
 
     isEmpty(): Promise<boolean> {
-        return this.encodeInvokeOnRandomTarget<boolean>(ReplicatedMapIsEmptyCodec);
+        return this.encodeInvokeOnRandomPartition<boolean>(ReplicatedMapIsEmptyCodec);
     }
 
     remove(key: K): Promise<V> {
@@ -88,35 +91,37 @@ export class ReplicatedMapProxy<K,V> extends BaseProxy implements IReplicatedMap
             entries.push([keyData, valueData]);
         }
 
-        return this.encodeInvokeOnPartition<void>(ReplicatedMapPutAllCodec, -1, entries);
+        return this.encodeInvokeOnRandomTarget<void>(ReplicatedMapPutAllCodec, entries);
     }
 
     keySet(): Promise<K[]> {
         const toObject = this.toObject.bind(this);
-        return this.encodeInvokeOnRandomTarget<K[]>(ReplicatedMapKeySetCodec).then(function (keySet) {
+        return this.encodeInvokeOnRandomPartition<K[]>(ReplicatedMapKeySetCodec).then(function (keySet) {
             return keySet.map<K>(toObject);
         });
     }
 
     values(): Promise<V[]> {
         const toObject = this.toObject.bind(this);
-        return this.encodeInvokeOnRandomTarget<V[]>(ReplicatedMapValuesCodec).then(function (valuesData) {
+        return this.encodeInvokeOnRandomPartition<V[]>(ReplicatedMapValuesCodec).then(function (valuesData) {
             return valuesData.map<V>(toObject);
         });
     }
 
     entrySet(): Promise<[K, V][]> {
         const toObject = this.toObject.bind(this);
-        return this.encodeInvokeOnRandomTarget(ReplicatedMapEntrySetCodec).then(function (entrySet: [Data, Data][]) {
-            return entrySet.map<[K, V]>(entry => [toObject(entry[0]), toObject(entry[1])])
+        return this.encodeInvokeOnRandomPartition(ReplicatedMapEntrySetCodec).then(function (entrySet: [Data, Data][]) {
+            return entrySet.map<[K, V]>(entry => [toObject(entry[0]), toObject(entry[1])]);
         });
     }
 
-    addEntryListenerToKeyWithPredicate(listener: IMapListener<K, V>, key: K, predicate: Predicate, localOnly: boolean): Promise<string> {
+    addEntryListenerToKeyWithPredicate(listener: IMapListener<K, V>, key: K,
+                                       predicate: Predicate, localOnly: boolean): Promise<string> {
         return this.addEntryListenerInternal(listener, predicate, key, localOnly);
     }
 
-    addEntryListenerWithPredicate(listener: IMapListener<K, V>, predicate: Predicate, localOnly: boolean): Promise<string> {
+    addEntryListenerWithPredicate(listener: IMapListener<K, V>,
+                                  predicate: Predicate, localOnly: boolean): Promise<string> {
         return this.addEntryListenerInternal(listener, predicate, undefined, localOnly);
     }
 
@@ -135,9 +140,11 @@ export class ReplicatedMapProxy<K,V> extends BaseProxy implements IReplicatedMap
         );
     }
 
-    private addEntryListenerInternal(listener: IMapListener<K, V>, predicate: Predicate, key: K, localOnly: boolean = false): Promise<string> {
+    private addEntryListenerInternal(listener: IMapListener<K, V>, predicate: Predicate,
+                                     key: K, localOnly: boolean = false): Promise<string> {
         const toObject = this.toObject.bind(this);
-        const entryEventHandler = function (key: K, val: V, oldVal: V, mergingVal: V, event: number, uuid: string, numberOfAffectedEntries: number) {
+        const entryEventHandler = function (key: K, val: V, oldVal: V, mergingVal: V,
+                                            event: number, uuid: string, numberOfAffectedEntries: number) {
             let eventParams: any[] = [key, oldVal, val, mergingVal, numberOfAffectedEntries, uuid];
             eventParams = eventParams.map(toObject);
             switch (event) {
