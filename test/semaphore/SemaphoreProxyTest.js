@@ -39,9 +39,9 @@ describe("Semaphore Proxy", function () {
             .then(function (res) {
                 expect(res).to.equal(true);
                 return semaphore.availablePermits()
-                    .then(function (res) {
-                        expect(res).to.equal(10);
-                    });
+            })
+            .then(function (res) {
+                expect(res).to.equal(10);
             });
     });
 
@@ -49,13 +49,13 @@ describe("Semaphore Proxy", function () {
         return semaphore.init(10)
             .then(function (res) {
                 expect(res).to.equal(true);
-                return semaphore.acquire(10)
-                    .then(function () {
-                        return semaphore.availablePermits()
-                            .then(function (res) {
-                                expect(res).to.equal(0);
-                            });
-                    });
+                return semaphore.acquire(10);
+            })
+            .then(function () {
+                return semaphore.availablePermits();
+            })
+            .then(function (res) {
+                expect(res).to.equal(0);
             });
     });
 
@@ -63,14 +63,14 @@ describe("Semaphore Proxy", function () {
         return semaphore.init(10)
             .then(function (res) {
                 expect(res).to.equal(true);
-                return semaphore.drainPermits(10)
-                    .then(function (res) {
-                        expect(res).to.equal(10);
-                        return semaphore.availablePermits()
-                            .then(function (res) {
-                                expect(res).to.equal(0);
-                            });
-                    });
+                return semaphore.drainPermits(10);
+            })
+            .then(function (res) {
+                expect(res).to.equal(10);
+                return semaphore.availablePermits();
+            })
+            .then(function (res) {
+                expect(res).to.equal(0);
             });
     });
 
@@ -78,13 +78,13 @@ describe("Semaphore Proxy", function () {
         return semaphore.init(10)
             .then(function (res) {
                 expect(res).to.equal(true);
-                return semaphore.reducePermits(10)
-                    .then(function () {
-                        return semaphore.availablePermits()
-                            .then(function (res) {
-                                expect(res).to.equal(0);
-                            });
-                    });
+                return semaphore.reducePermits(10);
+            })
+            .then(function () {
+                return semaphore.availablePermits();
+            })
+            .then(function (res) {
+                expect(res).to.equal(0);
             });
     });
 
@@ -92,20 +92,20 @@ describe("Semaphore Proxy", function () {
         return semaphore.init(10)
             .then(function (res) {
                 expect(res).to.equal(true);
-                return semaphore.acquire(10)
-                    .then(function () {
-                        return semaphore.availablePermits()
-                            .then(function (res) {
-                                expect(res).to.equal(0);
-                                return semaphore.release(5)
-                                    .then(function () {
-                                        return semaphore.availablePermits()
-                                            .then(function (res) {
-                                                expect(res).to.equal(5);
-                                            });
-                                    });
-                            });
-                    });
+                return semaphore.acquire(10);
+            })
+            .then(function () {
+                return semaphore.availablePermits();
+            })
+            .then(function (res) {
+                expect(res).to.equal(0);
+                return semaphore.release(5)
+            })
+            .then(function () {
+                return semaphore.availablePermits();
+            })
+            .then(function (res) {
+                expect(res).to.equal(5);
             });
     });
 
@@ -113,14 +113,14 @@ describe("Semaphore Proxy", function () {
         return semaphore.init(10)
             .then(function (res) {
                 expect(res).to.equal(true);
-                return semaphore.tryAcquire(10)
-                    .then(function (res) {
-                        expect(res).to.equal(true);
-                        return semaphore.availablePermits()
-                            .then(function (res) {
-                                expect(res).to.equal(0);
-                            });
-                    });
+                return semaphore.tryAcquire(10);
+            })
+            .then(function (res) {
+                expect(res).to.equal(true);
+                return semaphore.availablePermits();
+            })
+            .then(function (res) {
+                expect(res).to.equal(0);
             });
     });
 });
