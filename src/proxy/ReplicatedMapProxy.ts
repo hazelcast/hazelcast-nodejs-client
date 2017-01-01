@@ -1,5 +1,4 @@
 import * as Promise from 'bluebird';
-import {BaseProxy} from './BaseProxy';
 import {IReplicatedMap} from './IReplicatedMap';
 import {assertNotNull} from '../Util';
 import {Data} from '../serialization/Data';
@@ -25,11 +24,13 @@ import {ReplicatedMapAddEntryListenerToKeyWithPredicateCodec} from '../codec/Rep
 import {ReplicatedMapAddEntryListenerToKeyCodec} from '../codec/ReplicatedMapAddEntryListenerToKeyCodec';
 import {ReplicatedMapAddEntryListenerWithPredicateCodec} from '../codec/ReplicatedMapAddEntryListenerWithPredicateCodec';
 import {ReplicatedMapAddEntryListenerCodec} from '../codec/ReplicatedMapAddEntryListenerCodec';
+import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 /* tslint:enable:max-line-length */
+import Long = require('long');
 
-export class ReplicatedMapProxy<K, V> extends BaseProxy implements IReplicatedMap<K, V> {
+export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements IReplicatedMap<K, V> {
 
-    put(key: K, value: V, ttl: number): Promise<V> {
+    put(key: K, value: V, ttl: Long|number|string = 0): Promise<V> {
         assertNotNull(key);
         assertNotNull(value);
 
@@ -61,16 +62,16 @@ export class ReplicatedMapProxy<K, V> extends BaseProxy implements IReplicatedMa
         assertNotNull(value);
 
         const valueData = this.toData(value);
-        return this.encodeInvokeOnRandomPartition<boolean>(ReplicatedMapContainsValueCodec, valueData);
+        return this.encodeInvoke<boolean>(ReplicatedMapContainsValueCodec, valueData);
     }
 
     size(): Promise<number> {
-        return this.encodeInvokeOnRandomPartition<number>(ReplicatedMapSizeCodec);
+        return this.encodeInvoke<number>(ReplicatedMapSizeCodec);
     }
 
 
     isEmpty(): Promise<boolean> {
-        return this.encodeInvokeOnRandomPartition<boolean>(ReplicatedMapIsEmptyCodec);
+        return this.encodeInvoke<boolean>(ReplicatedMapIsEmptyCodec);
     }
 
     remove(key: K): Promise<V> {
@@ -96,21 +97,21 @@ export class ReplicatedMapProxy<K, V> extends BaseProxy implements IReplicatedMa
 
     keySet(): Promise<K[]> {
         const toObject = this.toObject.bind(this);
-        return this.encodeInvokeOnRandomPartition<K[]>(ReplicatedMapKeySetCodec).then(function (keySet) {
+        return this.encodeInvoke<K[]>(ReplicatedMapKeySetCodec).then(function (keySet) {
             return keySet.map<K>(toObject);
         });
     }
 
     values(): Promise<V[]> {
         const toObject = this.toObject.bind(this);
-        return this.encodeInvokeOnRandomPartition<V[]>(ReplicatedMapValuesCodec).then(function (valuesData) {
+        return this.encodeInvoke<V[]>(ReplicatedMapValuesCodec).then(function (valuesData) {
             return valuesData.map<V>(toObject);
         });
     }
 
     entrySet(): Promise<[K, V][]> {
         const toObject = this.toObject.bind(this);
-        return this.encodeInvokeOnRandomPartition(ReplicatedMapEntrySetCodec).then(function (entrySet: [Data, Data][]) {
+        return this.encodeInvoke(ReplicatedMapEntrySetCodec).then(function (entrySet: [Data, Data][]) {
             return entrySet.map<[K, V]>(entry => [toObject(entry[0]), toObject(entry[1])]);
         });
     }

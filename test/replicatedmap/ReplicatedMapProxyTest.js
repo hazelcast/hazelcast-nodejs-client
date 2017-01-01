@@ -4,8 +4,6 @@ var Controller = require('./../RC');
 var Util = require('./../Util');
 var fs = require('fs');
 
-var Promise = require('bluebird');
-
 describe('ReplicatedMap Proxy', function () {
 
     var cluster;
@@ -42,9 +40,10 @@ describe('ReplicatedMap Proxy', function () {
     it('puts one entry and gets one entry', function () {
         return rm.put('key', 'value', ONE_HOUR)
             .then(function () {
-                return rm.get('key').then(function (val) {
-                    expect(val).to.equal('value');
-                });
+                return rm.get('key')
+            })
+            .then(function (val) {
+                expect(val).to.equal('value');
             });
     });
 
@@ -52,9 +51,9 @@ describe('ReplicatedMap Proxy', function () {
         return rm.put('key', 'value', ONE_HOUR)
             .then(function (val) {
                 return rm.containsKey('key')
-                    .then(function (res) {
-                        expect(res).to.equal(true);
-                    });
+            })
+            .then(function (res) {
+                expect(res).to.equal(true);
             });
     });
 
@@ -70,9 +69,9 @@ describe('ReplicatedMap Proxy', function () {
         return rm.put('key', 'value', ONE_HOUR)
             .then(function () {
                 return rm.containsValue('value')
-                    .then(function (res) {
-                        expect(res).to.equal(true);
-                    });
+            })
+            .then(function (res) {
+                expect(res).to.equal(true);
             });
     });
 
@@ -87,9 +86,9 @@ describe('ReplicatedMap Proxy', function () {
         return rm.put('key', 'value', ONE_HOUR)
             .then(function () {
                 return rm.size()
-                    .then(function (size) {
-                        expect(size).to.equal(1);
-                    });
+            })
+            .then(function (size) {
+                expect(size).to.equal(1);
             });
     });
 
@@ -104,9 +103,9 @@ describe('ReplicatedMap Proxy', function () {
         return rm.put('key', 'value', ONE_HOUR)
             .then(function () {
                 return rm.isEmpty()
-                    .then(function (res) {
-                        expect(res).to.equal(false);
-                    });
+            })
+            .then(function (res) {
+                expect(res).to.equal(false);
             });
     });
 
@@ -114,17 +113,16 @@ describe('ReplicatedMap Proxy', function () {
         return rm.put('key', 'value', ONE_HOUR)
             .then(function () {
                 return rm.containsKey('key')
-                    .then(function (contains) {
-                        expect(contains).to.equal(true);
-
-                        return rm.remove('key')
-                            .then(function () {
-                                return rm.containsKey('key')
-                                    .then(function (contains) {
-                                        expect(contains).to.equal(false);
-                                    });
-                            });
-                    });
+            })
+            .then(function (contains) {
+                expect(contains).to.equal(true);
+                return rm.remove('key')
+            })
+            .then(function () {
+                return rm.containsKey('key')
+            })
+            .then(function (contains) {
+                expect(contains).to.equal(false);
             });
     });
 });
