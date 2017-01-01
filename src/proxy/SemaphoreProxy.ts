@@ -41,7 +41,7 @@ export class SemaphoreProxy extends PartitionSpecificProxy implements ISemaphore
         return this.encodeInvoke<void>(SemaphoreReleaseCodec, permits);
     }
 
-    tryAcquire(permits: number, timeout: Long|number|string): Promise<boolean> {
+    tryAcquire(permits: number, timeout: Long|number|string = 0): Promise<boolean> {
         assertNotNegative(permits, 'Permits cannot be negative.');
         return this.encodeInvoke<boolean>(SemaphoreTryAcquireCodec, permits, timeout);
     }
