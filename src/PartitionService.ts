@@ -3,7 +3,6 @@ import GetPartitionsCodec = require('./codec/GetPartitionsCodec');
 import ClientMessage = require('./ClientMessage');
 import Address = require('./Address');
 import HazelcastClient from './HazelcastClient';
-import {random} from './Util';
 
 class PartitionService {
 
@@ -58,13 +57,6 @@ class PartitionService {
             partitionHash = this.client.getSerializationService().toData(key).getPartitionHash();
         }
         return Math.abs(partitionHash) % this.partitionCount;
-    }
-
-    /**
-     * @returns a random partition id from 0 to PARTITION_COUNT(PARTITION_COUNT exclusive)
-     */
-    getRandomPartitionId() {
-        return random(0, Object.keys(this.partitionMap).length - 1);
     }
 }
 

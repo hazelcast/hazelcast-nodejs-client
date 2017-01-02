@@ -146,7 +146,7 @@ export class InvocationService {
         } else if (invocation.hasOwnProperty('address')) {
             return this.sendToAddress(invocation, invocation.address);
         } else {
-            return this.sendToAddress(invocation, this.client.getClusterService().getRandomAddress());
+            return this.send(invocation, this.client.getClusterService().getOwnerConnection());
         }
     }
 

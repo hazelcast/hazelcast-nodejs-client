@@ -27,17 +27,19 @@ import {ReplicatedMapAddEntryListenerCodec} from '../codec/ReplicatedMapAddEntry
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 /* tslint:enable:max-line-length */
 import Long = require('long');
+import {TimeUnit, toMillis} from '../util/TimeUnit';
+import {ArrayComparator} from '../util/ArrayComparator';
 
 export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements IReplicatedMap<K, V> {
 
-    put(key: K, value: V, ttl: Long|number|string = 0): Promise<V> {
+    put(key: K, value: V, ttl: Long|number|string = 0, unit: TimeUnit = TimeUnit.MILLISECONDS): Promise<V> {
         assertNotNull(key);
         assertNotNull(value);
 
         let valueData: Data = this.toData(value);
         let keyData: Data = this.toData(key);
 
-        return this.encodeInvokeOnKey<V>(ReplicatedMapPutCodec, keyData, keyData, valueData, ttl);
+        return this.encodeInvokeOnKey<V>(ReplicatedMapPutCodec, keyData, keyData, valueData, toMillis(ttl, unit));
     }
 
     clear(): Promise<void> {
@@ -102,10 +104,14 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         });
     }
 
-    values(): Promise<V[]> {
+    values(comparator?: ArrayComparator<V>): Promise<V[]> {
         const toObject = this.toObject.bind(this);
         return this.encodeInvoke<V[]>(ReplicatedMapValuesCodec).then(function (valuesData) {
-            return valuesData.map<V>(toObject);
+            let results = valuesData.map<V>(toObject);
+            if (comparator) {
+                return results.sort(comparator);
+            }
+            return results;
         });
     }
 
