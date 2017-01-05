@@ -29,7 +29,7 @@
     "clean": "rimraf lib typings *.jar *.log",
     "compile": "tsc",
     "pretest": "./scripts/download-rc.sh",
-    "test": "mocha --recursive",
+    "test": "mocha --recursive --grep ReplicatedMap",
     "precoverage": "./scripts/download-rc.sh",
     "coverage": "rimraf coverage && istanbul cover -x **/codec/**/* --root lib/ --include-all-sources _mocha -- --recursive --reporter spec",
     "coverage-all": "rimraf coverage && istanbul cover --root lib/ --include-all-sources _mocha -- --recursive --reporter spec",

@@ -62,13 +62,12 @@ describe('ReplicatedMap Proxy', function () {
             });
     });
 
-    // TODO(zemd): need to be verified separately due to strange NullPointerException from the server
-    // it('should not contain the key', function () {
-    //     return rm.containsKey('key')
-    //         .then(function (res) {
-    //             expect(res).to.equal(false);
-    //         });
-    // });
+    it('should not contain the key', function () {
+        return rm.containsKey('key')
+            .then(function (res) {
+                expect(res).to.equal(false);
+            });
+    });
 
     it('should contain the value', function () {
         return rm.put('key', 'value', ONE_HOUR)
