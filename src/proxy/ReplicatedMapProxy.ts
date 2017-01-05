@@ -27,19 +27,18 @@ import {ReplicatedMapAddEntryListenerCodec} from '../codec/ReplicatedMapAddEntry
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 /* tslint:enable:max-line-length */
 import Long = require('long');
-import {TimeUnit, toMillis} from '../util/TimeUnit';
 import {ArrayComparator} from '../util/ArrayComparator';
 
 export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements IReplicatedMap<K, V> {
 
-    put(key: K, value: V, ttl: Long|number|string = 0, unit: TimeUnit = TimeUnit.MILLISECONDS): Promise<V> {
+    put(key: K, value: V, ttl: Long|number|string = 0): Promise<V> {
         assertNotNull(key);
         assertNotNull(value);
 
         let valueData: Data = this.toData(value);
         let keyData: Data = this.toData(key);
 
-        return this.encodeInvokeOnKey<V>(ReplicatedMapPutCodec, keyData, keyData, valueData, toMillis(ttl, unit));
+        return this.encodeInvokeOnKey<V>(ReplicatedMapPutCodec, keyData, keyData, valueData, ttl);
     }
 
     clear(): Promise<void> {
@@ -154,22 +153,17 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
                                             event: number, uuid: string, numberOfAffectedEntries: number) {
             let eventParams: any[] = [key, oldVal, val, mergingVal, numberOfAffectedEntries, uuid];
             eventParams = eventParams.map(toObject);
-            switch (event) {
-                case EntryEventType.ADDED:
-                    listener.added.apply(null, eventParams);
-                    break;
-                case EntryEventType.REMOVED:
-                    listener.removed.apply(null, eventParams);
-                    break;
-                case EntryEventType.UPDATED:
-                    listener.updated.apply(null, eventParams);
-                    break;
-                case EntryEventType.EVICTED:
-                    listener.evicted.apply(null, eventParams);
-                    break;
-                case EntryEventType.CLEAR_ALL:
-                    listener.clearedAll.apply(null, eventParams);
-                    break;
+            let eventToListenerMap: {[key: number]: string} = {
+                [EntryEventType.ADDED]: 'added',
+                [EntryEventType.REMOVED]: 'removed',
+                [EntryEventType.UPDATED]: 'updated',
+                [EntryEventType.EVICTED]: 'evicted',
+                [EntryEventType.CLEAR_ALL]: 'clearedAll'
+            };
+
+            let eventMethod = eventToListenerMap[event];
+            if (listener.hasOwnProperty(eventMethod)) {
+                listener[eventMethod].apply(null, eventParams);
             }
         };
         let request: ClientMessage;

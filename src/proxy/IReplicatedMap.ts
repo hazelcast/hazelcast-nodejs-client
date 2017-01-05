@@ -3,7 +3,6 @@ import {DistributedObject} from '../DistributedObject';
 import {Predicate} from '../core/Predicate';
 import {IMapListener} from '../core/MapListener';
 import Long = require('long');
-import {TimeUnit} from '../util/TimeUnit';
 import {ArrayComparator} from '../util/ArrayComparator';
 
 export interface IReplicatedMap<K, V> extends DistributedObject {
@@ -14,11 +13,10 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
      *
      * @param key key with which the specified value is to be associated.
      * @param value value to be associated with the specified key.
-     * @param ttl ttl to be associated with the specified key-value pair.
-     * @param unit
+     * @param ttl milliseconds to be associated with the specified key-value pair.
      * @return old value if there was any, `null` otherwise.
      */
-    put(key: K, value: V, ttl: Long|number|string, unit: TimeUnit): Promise<V>;
+    put(key: K, value: V, ttl: Long|number|string): Promise<V>;
 
     /**
      * The clear operation wipes data out of the replicated maps.

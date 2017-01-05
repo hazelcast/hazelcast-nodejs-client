@@ -52,6 +52,33 @@ describe('ReplicatedMap Proxy', function () {
             });
     });
 
+    it('puts entry with 0 ttl', function () {
+        return rm.put('zerottl', 'value')
+            .then(function () {
+                return rm.get('zerottl');
+            })
+            .then(function (val) {
+                expect(val).to.equal('value');
+            });
+    });
+
+    it('puts entry with 1000 ttl', function () {
+        return rm.put('1000ttl', 'value', 1000)
+            .then(function () {
+                return new Promise(function (resolve) {
+                    setTimeout(function () {
+                        resolve();
+                    }, 2000)
+                });
+            })
+            .then(function () {
+                return rm.get('1000ttl');
+            })
+            .then(function (val) {
+                expect(val).to.be.null;
+            });
+    }).timeout(5000);
+
     it('should contain the key', function () {
         return rm.put('key', 'value', ONE_HOUR)
             .then(function (val) {
@@ -259,6 +286,100 @@ describe('ReplicatedMap Proxy', function () {
                 return rm.put('new-key', 'value', ONE_HOUR);
             });
 
+    });
+
+    it('addEntryListener listens to remove event', function (done) {
+        var registrationId;
+        var listener = {
+            removed: function (key, value, oldValue, mergingValue, numberOfAffectedEntries) {
+                var error;
+                try {
+                    expect(key).to.equal('key-to-remove');
+                    expect(value).to.equal('value');
+                    expect(numberOfAffectedEntries).to.equal(1);
+                } catch (err) {
+                    error = err;
+                }
+
+                rm.removeEntryListener(registrationId)
+                    .then(function () {
+                        done(error);
+                    });
+            }
+        };
+        rm.addEntryListener(listener)
+            .then(function (listenerId) {
+                registrationId = listenerId;
+                return rm.put('key-to-remove', 'value', ONE_HOUR);
+            })
+            .then(function () {
+                return rm.remove('key-to-remove');
+            });
+    });
+
+    it('addEntryListener listens to updated event', function (done) {
+        var registrationId;
+        var listener = {
+            updated: function (key, oldValue, value, mergingValue, numberOfAffectedEntries) {
+                var error;
+                try {
+                    expect(key).to.equal('key-to-update');
+                    expect(value).to.equal('value2');
+                    expect(oldValue).to.equal('value1');
+                    expect(numberOfAffectedEntries).to.equal(1);
+                } catch (err) {
+                    error = err;
+                }
+
+                rm.removeEntryListener(registrationId)
+                    .then(function () {
+                        done(error);
+                    });
+            }
+        };
+        rm.addEntryListener(listener)
+            .then(function (listenerId) {
+                registrationId = listenerId;
+                return rm.put('key-to-update', 'value1', ONE_HOUR);
+            })
+            .then(function () {
+                return rm.put('key-to-update', 'value2', ONE_HOUR);
+            });
+    });
+
+    it('addEntryListener listens to clearedAll event', function (done) {
+        var registrationId;
+        var listener = {
+            clearedAll: function (key, oldValue, value, mergingValue, numberOfAffectedEntries) {
+                var error;
+                try {
+                    expect(key).to.be.undefined;
+                    expect(value).to.be.undefined;
+                    expect(oldValue).to.be.undefined;
+                    expect(numberOfAffectedEntries).to.equal(4);
+                } catch (err) {
+                    error = err;
+                }
+
+                rm.removeEntryListener(registrationId)
+                    .then(function () {
+                        done(error);
+                    });
+            }
+        };
+        rm.addEntryListener(listener)
+            .then(function (listenerId) {
+                registrationId = listenerId;
+                return Promise.all([
+                    rm.put('key-to-clear1', 'value1', ONE_HOUR),
+                    rm.put('key-to-clear2', 'value2', ONE_HOUR),
+                    rm.put('key-to-clear3', 'value2', ONE_HOUR),
+                    rm.put('key-to-clear4', 'value2', ONE_HOUR)
+                ])
+            })
+            .then(function () {
+                return rm.clear();
+            });
     });
 
     it('addEntryListenerToKey should be fired only for selected key', function (done) {
