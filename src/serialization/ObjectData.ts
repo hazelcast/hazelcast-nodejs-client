@@ -30,7 +30,7 @@ export class ObjectDataOutput implements DataOutput {
     private ensureAvailable(size: number): void {
         if (this.available() < size ) {
             var newBuffer = new Buffer(this.pos + size);
-            this.buffer.copy(newBuffer);
+            this.buffer.copy(newBuffer, 0, 0, this.pos);
             this.buffer = newBuffer;
         }
     }
@@ -62,7 +62,13 @@ export class ObjectDataOutput implements DataOutput {
     }
 
     toBuffer(): Buffer {
-        return this.buffer;
+        if (this.buffer == null || this.pos === 0) {
+            return new Buffer(0);
+        } else {
+            var snapBuffer = new Buffer(this.pos);
+            this.buffer.copy(snapBuffer, 0, 0, this.pos);
+            return snapBuffer;
+        }
     }
 
     write(byte: number|Buffer): void {
