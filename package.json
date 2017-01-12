@@ -21,7 +21,7 @@
     "rimraf": "2.5.4",
     "sinon": "1.17.5",
     "tslint": "3.14.0",
-    "typedoc": "0.5.1",
+    "typedoc": "0.5.0",
     "typescript": "2.0.3",
     "winston": "2.2.0"
   },
