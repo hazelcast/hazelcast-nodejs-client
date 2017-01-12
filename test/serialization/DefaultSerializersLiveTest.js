@@ -48,6 +48,38 @@ describe('Default serializers with live instance', function() {
         })
     });
 
+    it('emoji string', function () {
+        return map.put('key', '1⚐中💦2😭‍🙆😔5').then(function () {
+            return RC.executeOnController(cluster.id, _generateGet('key'), 1);
+        }).then(function (response) {
+            return expect(response.result.toString()).to.equal('1⚐中💦2😭‍🙆😔5');
+        });
+    });
+
+    it('utf8 characters test', function() {
+        return map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}').then(function () {
+            return RC.executeOnController(cluster.id, _generateGet('key'), 1);
+        }).then(function (response) {
+            return expect(response.result.toString()).to.equal('\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
+        });
+    });
+
+    it('utf8 characters test with surrogates', function() {
+        return map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\uD834\uDF06').then(function () {
+            return RC.executeOnController(cluster.id, _generateGet('key'), 1);
+        }).then(function (response) {
+            return expect(response.result.toString()).to.equal('\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
+        });
+    });
+
+    it('utf8 sample string test', function() {
+        return map.put('key', 'Iñtërnâtiônàlizætiøn').then(function () {
+            return RC.executeOnController(cluster.id, _generateGet('key'), 1);
+        }).then(function (response) {
+            return expect(response.result.toString()).to.equal('Iñtërnâtiônàlizætiøn');
+        });
+    });
+
     it('number', function () {
         return map.put('a', 23).then(function () {
             return RC.executeOnController(cluster.id, _generateGet('a'), 1);
