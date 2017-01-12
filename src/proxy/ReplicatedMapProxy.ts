@@ -31,7 +31,7 @@ import {ArrayComparator} from '../util/ArrayComparator';
 
 export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements IReplicatedMap<K, V> {
 
-    put(key: K, value: V, ttl: Long|number|string = 0): Promise<V> {
+    put(key: K, value: V, ttl: Long|number = 0): Promise<V> {
         assertNotNull(key);
         assertNotNull(value);
 
