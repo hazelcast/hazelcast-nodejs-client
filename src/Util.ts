@@ -9,6 +9,18 @@ export function assertNotNull(v: any) {
 export function assertArray(x: any) {
     assert(Array.isArray(x), 'Should be array.');
 }
+
+export function shuffleArray<T>(array: Array<T>): void {
+    var randomIndex: number;
+    var temp: T;
+    for (var i = array.length; i > 1; i--) {
+        randomIndex = Math.floor(Math.random() * i);
+        temp = array[i - 1];
+        array[i - 1] = array[randomIndex];
+        array[randomIndex] = temp;
+    }
+}
+
 export function getType(obj: any): string {
     assertNotNull(obj);
     if (Long.isLong(obj)) {

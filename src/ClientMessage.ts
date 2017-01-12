@@ -231,6 +231,10 @@ class ClientMessage {
         return result;
     }
 
+    isComplete(): boolean {
+        return (this.cursor >= BitsUtil.HEADER_SIZE) && (this.cursor === this.getFrameLength());
+    }
+
     readMapEntry(): any {
         // TODO
     }

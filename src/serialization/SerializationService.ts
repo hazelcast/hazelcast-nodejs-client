@@ -50,7 +50,18 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerGlobalSerializer(serializationConfig.globalSerializer);
     }
 
+    private isData(object: any): boolean {
+        if (object instanceof HeapData ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     toData(object: any, partitioningStrategy: any = this.defaultPartitionStrategy): Data {
+        if (this.isData(object)) {
+            return <Data>object;
+        }
         var dataOutput: DataOutput = new PositionalObjectDataOutput(1, this, this.serialiationConfig.isBigEndian);
         var serializer = this.findSerializerFor(object);
         //Check if object is partition aware

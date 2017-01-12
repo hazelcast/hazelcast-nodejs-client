@@ -69,8 +69,16 @@ export class HeapData implements Data {
         if (this.hasPartitionHash()) {
             return this.payload.readIntBE(PARTITION_HASH_OFFSET, 4);
         } else {
-            return murmur(this.payload.slice(DATA_OFFSET));
+            return this.hashCode();
         }
+    }
+
+    hashCode(): number {
+        return murmur(this.payload.slice(DATA_OFFSET));
+    }
+
+    equals(other: Data): boolean {
+        return this.payload.compare(other.toBuffer(), DATA_OFFSET, other.toBuffer().length, DATA_OFFSET) === 0;
     }
 
     /**

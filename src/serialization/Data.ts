@@ -36,6 +36,13 @@ export interface Data {
     hasPartitionHash() : boolean;
 
     /**
+     * Returns hashcode for this data
+     */
+    hashCode(): number;
+
+    equals(other: Data): boolean;
+
+    /**
      * Returns true if the object is a portable object
      */
     isPortable() : boolean;
