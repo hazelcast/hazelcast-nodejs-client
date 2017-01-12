@@ -54,6 +54,13 @@ export class Invocation {
      * Otherwise, should be set to null.
      */
     handler: (...args: any[]) => any;
+
+    /**
+     * @returns {boolean}
+     */
+    hasPartitionId(): boolean {
+        return this.hasOwnProperty('partitionId') && this.partitionId >= 0;
+    }
 }
 
 /**
@@ -133,8 +140,8 @@ export class InvocationService {
     private invokeSmart(invocation: Invocation) {
         if (invocation.hasOwnProperty('connection')) {
             return this.send(invocation, invocation.connection);
-        } else if (invocation.hasOwnProperty('partitionId')) {
-            var address = this.client.getPartitionService().getAddressForPartition(invocation.partitionId);
+        } else if (invocation.hasPartitionId()) {
+            const address = this.client.getPartitionService().getAddressForPartition(invocation.partitionId);
             return this.sendToAddress(invocation, address);
         } else if (invocation.hasOwnProperty('address')) {
             return this.sendToAddress(invocation, invocation.address);
@@ -151,8 +158,8 @@ export class InvocationService {
         }
     }
 
-    private sendToAddress(invocation: Invocation, addres: Address): Promise<ClientMessage> {
-        return this.client.getConnectionManager().getOrConnect(addres)
+    private sendToAddress(invocation: Invocation, address: Address): Promise<ClientMessage> {
+        return this.client.getConnectionManager().getOrConnect(address)
             .then<ClientMessage>((connection: ClientConnection) => {
                 return this.send(invocation, connection);
             });
@@ -162,7 +169,7 @@ export class InvocationService {
         var correlationId = this.correlationCounter++;
         var message = invocation.request;
         message.setCorrelationId(Long.fromNumber(correlationId));
-        if (invocation.hasOwnProperty('partitionId')) {
+        if (invocation.hasPartitionId()) {
             message.setPartitionId(invocation.partitionId);
         } else {
             message.setPartitionId(-1);
