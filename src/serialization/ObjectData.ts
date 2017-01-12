@@ -30,7 +30,7 @@ export class ObjectDataOutput implements DataOutput {
     private ensureAvailable(size: number): void {
         if (this.available() < size ) {
             var newBuffer = new Buffer(this.pos + size);
-            this.buffer.copy(newBuffer);
+            this.buffer.copy(newBuffer, 0, 0, this.pos);
             this.buffer = newBuffer;
         }
     }
@@ -62,7 +62,13 @@ export class ObjectDataOutput implements DataOutput {
     }
 
     toBuffer(): Buffer {
-        return this.buffer;
+        if (this.buffer == null || this.pos === 0) {
+            return new Buffer(0);
+        } else {
+            var snapBuffer = new Buffer(this.pos);
+            this.buffer.copy(snapBuffer, 0, 0, this.pos);
+            return snapBuffer;
+        }
     }
 
     write(byte: number|Buffer): void {
@@ -199,8 +205,19 @@ export class ObjectDataOutput implements DataOutput {
     writeUTF(val: string): void {
         var len = (val != null) ? val.length : BitsUtil.NULL_ARRAY_LENGTH;
         this.writeInt(len);
-        if (len > 0 ) {
-            this.write(new Buffer(val, 'utf8'));
+        this.ensureAvailable(len * 3);
+        for (let i = 0; i < len; i++) {
+            let ch = val.charCodeAt(i);
+            if (ch <= 0x007F) {
+                this.writeByte(ch);
+            } else if (ch <= 0x07FF) {
+                this.write(0xC0 | ch >> 6 & 0x1F);
+                this.write(0x80 | ch & 0x3F);
+            } else {
+                this.write(0xE0 | ch >> 12 & 0x0F);
+                this.write(0x80 | ch >> 6 & 0x3F);
+                this.write(0x80 | ch & 0x3F);
+            }
         }
     }
 
@@ -472,31 +489,52 @@ export class ObjectDataInput implements DataInput {
     }
 
     readUTF(pos?: number): string {
-        var len = this.readInt(pos);
-        var readingIndex = this.addOrUndefined(pos, 4);
+        let len = this.readInt(pos);
+        let readingIndex = this.addOrUndefined(pos, 4);
         if (len === BitsUtil.NULL_ARRAY_LENGTH) {
             return null;
-        } else {
-            var result: number[] = [];
-            var leadingByte: number;
-            var continuationByte: number;
-            for (var i = 0; i < len; i++) {
-                leadingByte = this.readByte(readingIndex) & MASK_1BYTE;
-                readingIndex = this.addOrUndefined(readingIndex, 1);
-                result.push(leadingByte);
-                if (leadingByte >= 128) {
-                    while (((leadingByte <<= 1) & MASK_1BYTE) >= 128) {
-                        continuationByte = this.readByte(readingIndex);
-                        readingIndex = this.addOrUndefined(readingIndex, 1);
-                        if (((continuationByte >> 6) & MASK_1BYTE) !== 2) {
-                            throw new Error('String is not properly UTF8 encoded');
-                        }
-                        result.push(continuationByte);
-                    }
-                }
-            }
-            return new Buffer(result).toString('utf8');
         }
+        let result: string = '';
+        let leadingByte: number;
+        for (let i = 0; i < len; i++) {
+            let charCode: number;
+            leadingByte = this.readByte(readingIndex) & MASK_1BYTE;
+            readingIndex = this.addOrUndefined(readingIndex, 1);
+
+            let b = leadingByte & 0xFF;
+            switch (b >> 4) {
+                /* tslint:disable:no-switch-case-fall-through */
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                    charCode = leadingByte;
+                    break;
+                case 12:
+                case 13:
+                    let first = (b & 0x1F) << 6;
+                    let second = this.readByte(readingIndex) & 0x3F;
+                    readingIndex = this.addOrUndefined(readingIndex, 1);
+                    charCode = first | second;
+                    break;
+                case 14:
+                    let first2 = (b & 0x0F) << 12;
+                    let second2 = (this.readByte(readingIndex) & 0x3F) << 6;
+                    readingIndex = this.addOrUndefined(readingIndex, 1);
+                    let third2 = this.readByte(readingIndex) & 0x3F;
+                    readingIndex = this.addOrUndefined(readingIndex, 1);
+                    charCode = (first2 | second2 | third2);
+                    break;
+                default:
+                    throw new Error('Malformed UTF8 string');
+            }
+            result += String.fromCharCode(charCode);
+        }
+        return result;
     }
 
     readUTFArray(pos?: number): string[] {
