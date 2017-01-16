@@ -34,6 +34,7 @@ This document explains Node.js client for Hazelcast which uses Hazelcast's Open 
 Hazelcast Node.js client supports the following data structures and features:
 
 * Map (including entry processors and `PartitionAware` keys) and MultiMap
+* Near Cache support for Map
 * Queue, Set, and List
 * Lock
 * Smart Client
@@ -78,7 +79,7 @@ HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
 
 Please see Hazelcast Node.js [code samples](https://github.com/hazelcast/hazelcast-nodejs-client/tree/master/code_samples) for more examples.
 
-You can also refer to Hazelcast Node.js [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/0.5/docs/).
+You can also refer to Hazelcast Node.js [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/0.6/docs/).
 
 # Serialization Considerations
 
