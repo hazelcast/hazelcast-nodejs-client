@@ -1,6 +1,6 @@
 {
   "name": "hazelcast-client",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Hazelcast - open source In-Memory Data Grid - client for NodeJS",
   "main": "lib/index.js",
   "dependencies": {
@@ -34,7 +34,7 @@
     "coverage": "rimraf coverage && istanbul cover -x **/codec/**/* --root lib/ --include-all-sources _mocha -- --recursive --reporter spec",
     "coverage-all": "rimraf coverage && istanbul cover --root lib/ --include-all-sources _mocha -- --recursive --reporter spec",
     "postcoverage": "remap-istanbul -i coverage/coverage.json -o coverage/cobertura-coverage.xml -t cobertura && remap-istanbul -i coverage/coverage.json -o coverage -t html",
-    "generate-docs": "rimraf docs && typedoc --out docs/ --exclude **/codec/**/* --module commonjs src lib.es6.d.ts --excludeExternals",
+    "generate-docs": "rimraf docs && typedoc --out docs/ --exclude **/codec/**/* --module commonjs src/ node_modules/@types/node/index.d.ts node_modules/typescript/lib/lib.es2015.d.ts --excludeExternals",
     "lint": "tslint --project tsconfig.json -t stylish"
   },
   "repository": {

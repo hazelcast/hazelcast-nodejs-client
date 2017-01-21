@@ -16,6 +16,7 @@ import {MultiMapProxy} from './MultiMapProxy';
 import {RingbufferProxy} from './RingbufferProxy';
 import {ReplicatedMapProxy} from './ReplicatedMapProxy';
 import {SemaphoreProxy} from './SemaphoreProxy';
+import {NearCachedMapProxy} from './NearCachedMapProxy';
 
 class ProxyManager {
     public MAP_SERVICE: string = 'hz:impl:mapService';
@@ -51,7 +52,12 @@ class ProxyManager {
         if (this.proxies[name]) {
             return this.proxies[name];
         } else {
-            var newProxy: DistributedObject = new this.service[serviceName](this.client, serviceName, name);
+            var newProxy: DistributedObject;
+            if (serviceName === this.MAP_SERVICE && this.client.getConfig().nearCacheConfigs[name]) {
+                newProxy = new NearCachedMapProxy(this.client, serviceName, name);
+            } else {
+                newProxy = new this.service[serviceName](this.client, serviceName, name);
+            }
             if (createAtServer) {
                 this.createProxy(name, serviceName);
             }

@@ -1,5 +1,4 @@
 import * as Promise from 'bluebird';
-import {BaseProxy} from './BaseProxy';
 import {IReplicatedMap} from './IReplicatedMap';
 import {assertNotNull} from '../Util';
 import {Data} from '../serialization/Data';
@@ -25,11 +24,14 @@ import {ReplicatedMapAddEntryListenerToKeyWithPredicateCodec} from '../codec/Rep
 import {ReplicatedMapAddEntryListenerToKeyCodec} from '../codec/ReplicatedMapAddEntryListenerToKeyCodec';
 import {ReplicatedMapAddEntryListenerWithPredicateCodec} from '../codec/ReplicatedMapAddEntryListenerWithPredicateCodec';
 import {ReplicatedMapAddEntryListenerCodec} from '../codec/ReplicatedMapAddEntryListenerCodec';
+import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 /* tslint:enable:max-line-length */
+import Long = require('long');
+import {ArrayComparator} from '../util/ArrayComparator';
 
-export class ReplicatedMapProxy<K, V> extends BaseProxy implements IReplicatedMap<K, V> {
+export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements IReplicatedMap<K, V> {
 
-    put(key: K, value: V, ttl: number): Promise<V> {
+    put(key: K, value: V, ttl: Long|number = 0): Promise<V> {
         assertNotNull(key);
         assertNotNull(value);
 
@@ -61,16 +63,16 @@ export class ReplicatedMapProxy<K, V> extends BaseProxy implements IReplicatedMa
         assertNotNull(value);
 
         const valueData = this.toData(value);
-        return this.encodeInvokeOnRandomPartition<boolean>(ReplicatedMapContainsValueCodec, valueData);
+        return this.encodeInvoke<boolean>(ReplicatedMapContainsValueCodec, valueData);
     }
 
     size(): Promise<number> {
-        return this.encodeInvokeOnRandomPartition<number>(ReplicatedMapSizeCodec);
+        return this.encodeInvoke<number>(ReplicatedMapSizeCodec);
     }
 
 
     isEmpty(): Promise<boolean> {
-        return this.encodeInvokeOnRandomPartition<boolean>(ReplicatedMapIsEmptyCodec);
+        return this.encodeInvoke<boolean>(ReplicatedMapIsEmptyCodec);
     }
 
     remove(key: K): Promise<V> {
@@ -96,21 +98,25 @@ export class ReplicatedMapProxy<K, V> extends BaseProxy implements IReplicatedMa
 
     keySet(): Promise<K[]> {
         const toObject = this.toObject.bind(this);
-        return this.encodeInvokeOnRandomPartition<K[]>(ReplicatedMapKeySetCodec).then(function (keySet) {
+        return this.encodeInvoke<K[]>(ReplicatedMapKeySetCodec).then(function (keySet) {
             return keySet.map<K>(toObject);
         });
     }
 
-    values(): Promise<V[]> {
+    values(comparator?: ArrayComparator<V>): Promise<V[]> {
         const toObject = this.toObject.bind(this);
-        return this.encodeInvokeOnRandomPartition<V[]>(ReplicatedMapValuesCodec).then(function (valuesData) {
-            return valuesData.map<V>(toObject);
+        return this.encodeInvoke<V[]>(ReplicatedMapValuesCodec).then(function (valuesData) {
+            let results = valuesData.map<V>(toObject);
+            if (comparator) {
+                return results.sort(comparator);
+            }
+            return results;
         });
     }
 
     entrySet(): Promise<[K, V][]> {
         const toObject = this.toObject.bind(this);
-        return this.encodeInvokeOnRandomPartition(ReplicatedMapEntrySetCodec).then(function (entrySet: [Data, Data][]) {
+        return this.encodeInvoke(ReplicatedMapEntrySetCodec).then(function (entrySet: [Data, Data][]) {
             return entrySet.map<[K, V]>(entry => [toObject(entry[0]), toObject(entry[1])]);
         });
     }
@@ -147,22 +153,17 @@ export class ReplicatedMapProxy<K, V> extends BaseProxy implements IReplicatedMa
                                             event: number, uuid: string, numberOfAffectedEntries: number) {
             let eventParams: any[] = [key, oldVal, val, mergingVal, numberOfAffectedEntries, uuid];
             eventParams = eventParams.map(toObject);
-            switch (event) {
-                case EntryEventType.ADDED:
-                    listener.added.apply(null, eventParams);
-                    break;
-                case EntryEventType.REMOVED:
-                    listener.removed.apply(null, eventParams);
-                    break;
-                case EntryEventType.UPDATED:
-                    listener.updated.apply(null, eventParams);
-                    break;
-                case EntryEventType.EVICTED:
-                    listener.evicted.apply(null, eventParams);
-                    break;
-                case EntryEventType.CLEAR_ALL:
-                    listener.clearedAll.apply(null, eventParams);
-                    break;
+            let eventToListenerMap: {[key: number]: string} = {
+                [EntryEventType.ADDED]: 'added',
+                [EntryEventType.REMOVED]: 'removed',
+                [EntryEventType.UPDATED]: 'updated',
+                [EntryEventType.EVICTED]: 'evicted',
+                [EntryEventType.CLEAR_ALL]: 'clearedAll'
+            };
+
+            let eventMethod = eventToListenerMap[event];
+            if (listener.hasOwnProperty(eventMethod)) {
+                listener[eventMethod].apply(null, eventParams);
             }
         };
         let request: ClientMessage;

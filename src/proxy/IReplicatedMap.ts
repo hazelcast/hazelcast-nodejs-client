@@ -2,6 +2,8 @@ import * as Promise from 'bluebird';
 import {DistributedObject} from '../DistributedObject';
 import {Predicate} from '../core/Predicate';
 import {IMapListener} from '../core/MapListener';
+import Long = require('long');
+import {ArrayComparator} from '../util/ArrayComparator';
 
 export interface IReplicatedMap<K, V> extends DistributedObject {
     /**
@@ -9,16 +11,18 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
      * cluster. If there is an old value, it will be replaced by the specified
      * one and returned from the call.
      *
-     * @param key      key with which the specified value is to be associated.
-     * @param value    value to be associated with the specified key.
-     * @param ttl      ttl to be associated with the specified key-value pair.
+     * @param key key with which the specified value is to be associated.
+     * @param value value to be associated with the specified key.
+     * @param ttl milliseconds to be associated with the specified key-value pair.
+     * @return old value if there was any, `null` otherwise.
      */
-    put(key: K, value: V, ttl: number): Promise<V>;
+    put(key: K, value: V, ttl: Long|number): Promise<V>;
 
     /**
      * The clear operation wipes data out of the replicated maps.
      * If some node fails on executing the operation, it is retried for at most
      * 5 times (on the failing nodes only).
+     * @return
      */
     clear(): Promise<void>;
 
@@ -42,7 +46,7 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
      * Returns true if this map contains a mapping for the specified key. This message is idempotent.
      *
      * @param key key to search for.
-     * @returns `true` if this map contains the specified key, `false` otherwise.
+     * @return `true` if this map contains the specified key, `false` otherwise.
      */
     containsKey(key: K): Promise<boolean>;
 
@@ -55,7 +59,8 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
     containsValue(value: V): Promise<boolean>;
 
     /**
-     * @return the total number of values.
+     * If the map contains more than Integer.MAX_VALUE elements, returns Integer.MAX_VALUE.
+     * @return Returns the number of key-value mappings in this map.
      */
     size(): Promise<number>;
 
@@ -73,17 +78,20 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
      * The map will not contain a mapping for the specified key once the call returns.
      *
      * @param key key to remove.
+     * @return value associated with key, `null` if the key did not exist before.
      */
     remove(key: K): Promise<V>;
 
     /**
-     * Copies all of the mappings from the specified map to this map (optional operation).
+     * Copies all of the mappings from the specified key-value pairs array to this map
+     * (optional operation).
      * The effect of this call is equivalent to that of calling put(Object,Object)
      * put(k, v) on this map once for each mapping from key k to value v in the specified
      * map. The behavior of this operation is undefined if the specified map is modified
      * while the operation is in progress
      *
      * @param pairs
+     * @return
      */
     putAll(pairs: [K, V][]): Promise<void>;
 
@@ -95,12 +103,12 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
     keySet(): Promise<K[]>;
 
     /**
-     * Returns an array of values contained in this map.
+     * @return Returns an array of values contained in this map.
      */
-    values(): Promise<V[]>;
+    values(comparator?: ArrayComparator<V>): Promise<V[]>;
 
     /**
-     * Returns entries as an array of key-value pairs.
+     * @return Returns entries as an array of key-value pairs.
      */
     entrySet(): Promise<[K, V][]>;
 
@@ -112,6 +120,7 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
      * @param key
      * @param predicate
      * @param localOnly
+     * @return Registration id of the listener.
      */
     addEntryListenerToKeyWithPredicate(listener: IMapListener<K, V>, key: K, predicate: Predicate,
                                        localOnly: boolean): Promise<string>;
@@ -123,6 +132,7 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
      * @param listener
      * @param predicate
      * @param localOnly
+     * @return Registration id of the listener.
      */
     addEntryListenerWithPredicate(listener: IMapListener<K, V>, predicate: Predicate,
                                   localOnly: boolean): Promise<string>;
@@ -134,6 +144,7 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
      * @param listener
      * @param key
      * @param localOnly
+     * @return Registration id of the listener.
      */
     addEntryListenerToKey(listener: IMapListener<K, V>, key: K, localOnly: boolean): Promise<string>;
 
@@ -143,6 +154,7 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
      *
      * @param listener
      * @param localOnly
+     * @return Registration id of the listener.
      */
     addEntryListener(listener: IMapListener<K, V>, localOnly: boolean): Promise<string>;
 
@@ -151,6 +163,7 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
      * listener added before. This message is idempotent.
      *
      * @param listenerId
+     * @return `true` if remove operation is successful, `false` if unsuccessful or this listener did not exist.
      */
     removeEntryListener(listenerId: string): Promise<boolean>;
 }

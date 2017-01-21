@@ -137,6 +137,61 @@ export interface LifecycleListener {
 }
 
 /**
+ * Represents the format that objects are kept in this client's memory.
+ */
+export enum InMemoryFormat {
+    /**
+     * Objects are in native JS objects
+     */
+    OBJECT,
+
+        /**
+         * Objects are in serialized form
+         */
+    BINARY
+}
+
+export class NearCacheConfig {
+    name: string = 'default';
+    /**
+     * 'true' to invalidate entries when they are changed in cluster,
+     * 'false' to invalidate entries only when they are accessed.
+     */
+    invalidateOnChange: boolean = true;
+    /**
+     * Max number of seconds that an entry can stay in the cache until it is acceessed
+     */
+    maxIdleSeconds: number = 0;
+    inMemoryFormat: InMemoryFormat = InMemoryFormat.BINARY;
+    /**
+     * Maximum number of seconds that an entry can stay in cache.
+     */
+    timeToLiveSeconds: number = 0;
+    evictionPolicy: EvictionPolicy = EvictionPolicy.NONE;
+    evictionMaxSize: number = Number.MAX_SAFE_INTEGER;
+    evictionSamplingCount: number = 8;
+    evictionSamplingPoolSize: number = 16;
+
+    toString(): string {
+        return 'NearCacheConfig[' +
+            'name: ' + this.name + ', ' +
+            'invalidateOnChange:' + this.invalidateOnChange + ', ' +
+            'inMemoryFormat: ' + this.inMemoryFormat + ', ' +
+            'ttl(sec): ' + this.timeToLiveSeconds + ', ' +
+            'evictionPolicy: ' + this.evictionPolicy + ', ' +
+            'evictionMaxSize: ' + this.evictionMaxSize + ', ' +
+            'maxIdleSeconds: ' + this.maxIdleSeconds + ']';
+    }
+}
+
+export enum EvictionPolicy {
+    NONE,
+    LRU,
+    LFU,
+    RANDOM
+}
+
+/**
  * Configurations for LifecycleListeners. These are registered as soon as client started.
  */
 export class ListenerConfig {
@@ -171,4 +226,5 @@ export class ClientConfig {
     reliableTopicConfigs: any = {
         'default': new ReliableTopicConfig()
     };
+    nearCacheConfigs: {[name: string]: NearCacheConfig} = {};
 }

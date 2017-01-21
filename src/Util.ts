@@ -14,6 +14,17 @@ export function assertNotNegative(v: number, message: string = 'The value cannot
     assert(v >= 0, message);
 }
 
+export function shuffleArray<T>(array: Array<T>): void {
+    var randomIndex: number;
+    var temp: T;
+    for (var i = array.length; i > 1; i--) {
+        randomIndex = Math.floor(Math.random() * i);
+        temp = array[i - 1];
+        array[i - 1] = array[randomIndex];
+        array[randomIndex] = temp;
+    }
+}
+
 export function getType(obj: any): string {
     assertNotNull(obj);
     if (Long.isLong(obj)) {
@@ -75,20 +86,4 @@ function setAnchor(list: Array<any>, predicate: PagingPredicate, nearestPage: nu
         nearestPage++;
         predicate.setAnchor(nearestPage, anchor);
     }
-}
-
-/**
- * Generates random number between lower and upper inclusive
- *
- * @param lower
- * @param upper
- * @returns {number}
- */
-export function random(lower: number, upper: number) {
-    if (lower > upper) {
-        let tmp = lower;
-        lower = upper;
-        upper = tmp;
-    }
-    return lower + Math.floor(Math.random() * (upper - lower + 1));
 }
