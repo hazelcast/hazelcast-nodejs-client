@@ -14,6 +14,7 @@ import {ListProxy} from './ListProxy';
 import {LockProxy} from './LockProxy';
 import {MultiMapProxy} from './MultiMapProxy';
 import {RingbufferProxy} from './RingbufferProxy';
+import {ReplicatedMapProxy} from './ReplicatedMapProxy';
 import {NearCachedMapProxy} from './NearCachedMapProxy';
 
 class ProxyManager {
@@ -24,6 +25,7 @@ class ProxyManager {
     public LIST_SERVICE: string = 'hz:impl:listService';
     public MULTIMAP_SERVICE: string = 'hz:impl:multiMapService';
     public RINGBUFFER_SERVICE: string = 'hz:impl:ringbufferService';
+    public REPLICATEDMAP_SERVICE: string = 'hz:impl:replicatedMapService';
 
     public service: any = {
         'hz:impl:mapService': MapProxy,
@@ -32,7 +34,8 @@ class ProxyManager {
         'hz:impl:listService': ListProxy,
         'hz:impl:lockService': LockProxy,
         'hz:impl:multiMapService': MultiMapProxy,
-        'hz:impl:ringbufferService': RingbufferProxy
+        'hz:impl:ringbufferService': RingbufferProxy,
+        'hz:impl:replicatedMapService': ReplicatedMapProxy
     };
 
     private proxies: { [proxyName: string]: DistributedObject; } = {};
