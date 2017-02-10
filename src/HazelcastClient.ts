@@ -23,6 +23,7 @@ import {IRingbuffer} from './proxy/IRingbuffer';
 import {ITopic} from './proxy/topic/ITopic';
 import {ReliableTopicProxy} from './proxy/topic/ReliableTopicProxy';
 import {IReplicatedMap} from './proxy/IReplicatedMap';
+import {ISemaphore} from './proxy/ISemaphore';
 
 export default class HazelcastClient {
 
@@ -180,6 +181,15 @@ export default class HazelcastClient {
 
     getReplicatedMap<K, V>(name: string): IReplicatedMap<K, V> {
         return <IReplicatedMap<K, V>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.REPLICATEDMAP_SERVICE);
+    }
+
+    /**
+     * Returns the distributed semaphore instance with given name.
+     * @param name
+     * @returns {ISemaphore}
+     */
+    getSemaphore(name: string): ISemaphore {
+        return <ISemaphore>this.proxyManager.getOrCreateProxy(name, this.proxyManager.SEMAPHORE_SERVICE);
     }
 
     /**

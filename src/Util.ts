@@ -10,6 +10,10 @@ export function assertArray(x: any) {
     assert(Array.isArray(x), 'Should be array.');
 }
 
+export function assertNotNegative(v: number, message: string = 'The value cannot be negative.') {
+    assert(v >= 0, message);
+}
+
 export function shuffleArray<T>(array: Array<T>): void {
     var randomIndex: number;
     var temp: T;
