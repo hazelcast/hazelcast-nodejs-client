@@ -5,7 +5,8 @@ var Controller = require('./../RC');
 describe("Semaphore Proxy", function () {
 
     var cluster;
-    var client;
+    var client1;
+    var client2;
 
     var semaphore;
 
@@ -15,14 +16,17 @@ describe("Semaphore Proxy", function () {
             cluster = response;
             return Controller.startMember(cluster.id);
         }).then(function () {
-            return HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
-                client = hazelcastClient;
-            });
+            return HazelcastClient.newHazelcastClient();
+        }).then(function (cli) {
+            client1 = cli;
+            return HazelcastClient.newHazelcastClient();
+        }).then(function (clie) {
+            client2 = clie;
         });
     });
 
     beforeEach(function () {
-        semaphore = client.getSemaphore('test');
+        semaphore = client1.getSemaphore('test');
     });
 
     afterEach(function () {
@@ -30,7 +34,7 @@ describe("Semaphore Proxy", function () {
     });
 
     after(function () {
-        client.shutdown();
+        client1.shutdown();
         return Controller.shutdownCluster(cluster.id);
     });
 
@@ -122,5 +126,40 @@ describe("Semaphore Proxy", function () {
             .then(function (res) {
                 expect(res).to.equal(0);
             });
+    });
+
+    it('only one client proceeds when two clients race for 1 permit', function (done) {
+        var sem1 = client1.getSemaphore("race");
+        var sem2 = client2.getSemaphore("race");
+
+        sem1.init(1).then(function () {
+            return sem2.acquire();
+        }).then(function () {
+            sem1.acquire().then(function () {
+                done(new Error("first client should not be able to acquire the semaphore"));
+            });
+            setTimeout(done, 1000);
+        });
+    });
+
+    it('client is able to proceed after sufficient number of permits is available', function (done) {
+        var sem1 = client1.getSemaphore("proceed");
+        var sem2 = client2.getSemaphore("proceed");
+        sem1.init(1).then(function () {
+            return sem1.acquire();
+        }).then(function () {
+            sem2.acquire().then(done);
+            sem1.release();
+        });
+    });
+
+    it('tryAcquire returns false after timeout', function () {
+        return semaphore.init(1).then(function () {
+            return semaphore.acquire(1);
+        }).then(function () {
+            return semaphore.tryAcquire(1, 1000);
+        }).then(function (res) {
+            return expect(res).to.be.false;
+        });
     });
 });

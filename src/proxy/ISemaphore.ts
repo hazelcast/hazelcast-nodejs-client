@@ -12,21 +12,15 @@ export interface ISemaphore extends DistributedObject {
     /**
      * Acquires the given number of permits if they are available, and returns
      * immediately, reducing the number of available permits by the given amount.
-     * If insufficient permits are available then the current thread becomes
-     * disabled for thread scheduling purposes and lies dormant until one of three
-     * things happens: some other thread invokes one of the methods for this semaphore,
-     * the current thread is next to be assigned permits and the number of available
-     * permits satisfies this request, this ISemaphore instance is destroyed, or
-     * some other thread the current thread. If the current thread has its interrupted
-     * status set on entry to this method, or is while waiting for a permit, then is
-     * thrown and the current thread's interrupted status is cleared.
+     * If insufficient permits are available returned promise is not resolved
+     * until until there are sufficient number of available permits or this
+     * {ISemaphore} is destroyed.
      * @param permits
      */
-    acquire(permits: number): Promise<void>;
+    acquire(permits?: number): Promise<void>;
 
     /**
      * Returns the current number of permits currently available in this semaphore.
-     * This method is typically used for debugging and testing purposes.
      * This message is idempotent.
      */
     availablePermits(): Promise<number>;
@@ -38,8 +32,6 @@ export interface ISemaphore extends DistributedObject {
 
     /**
      * Shrinks the number of available permits by the indicated reduction.
-     * This method differs from acquire in that it does not block waiting
-     * for permits to become available.
      * @param reduction
      */
     reducePermits(reduction: number): Promise<void>;
@@ -51,7 +43,7 @@ export interface ISemaphore extends DistributedObject {
      * methods. Correct usage of a semaphore is established by programming convention
      * in the application
      */
-    release(permits: number): Promise<void>;
+    release(permits?: number): Promise<void>;
 
     /**
      * Acquires the given number of permits, if they are available, and returns
@@ -62,5 +54,5 @@ export interface ISemaphore extends DistributedObject {
      * @param permits
      * @param timeout
      */
-    tryAcquire(permits: number, timeout: Long|number|string): Promise<boolean>;
+    tryAcquire(permits: number, timeout: Long | number): Promise<boolean>;
 }
