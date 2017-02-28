@@ -15,11 +15,40 @@ var configParams = [
     smartConfig
 ];
 
+function ManagedObjects() {
+    this.managedObjects = [];
+}
+
+ManagedObjects.prototype.getObject = function (func, name) {
+    var obj = func(name);
+    this.managedObjects.push(obj);
+    return obj;
+};
+
+ManagedObjects.prototype.destroyAll = function() {
+    this.managedObjects.forEach(function (obj) {
+        console.log(obj.getName());
+        obj.destroy();
+    });
+};
+
+ManagedObjects.prototype.destroy = function(name) {
+    this.managedObjects.filter((el) => {
+        if (el.getName() == name) {
+            el.destroy();
+            return false;
+        }
+        return true;
+    });
+};
+
+
 configParams.forEach(function (cfg) {
     describe('HazelcastClient', function() {
         this.timeout(4000);
         var cluster;
         var client;
+        var managed;
 
         before(function() {
             return Controller.createCluster(null, null).then(function(res) {
@@ -30,6 +59,14 @@ configParams.forEach(function (cfg) {
             }).then(function(res) {
                 client = res;
             });
+        });
+
+        beforeEach(function () {
+            managed = new ManagedObjects();
+        });
+
+        afterEach(function () {
+            managed.destroyAll();
         });
 
         after(function() {
@@ -54,33 +91,44 @@ configParams.forEach(function (cfg) {
             expect(info.type).to.equal('NodeJS');
         });
 
-        describe('create many maps', function() {
-            before(function(done) {
-                var map0 = client.getMap('map0');
-                var map1 = client.getMap('map1');
-                var map2 = client.getMap('map2');
-                var map3 = client.getMap('map3');
-                var map4 = client.getMap('map4');
-
-                done();
-            });
-
-            it('getDistributedObjects returns an array of distributed objects', function(done) {
-                setTimeout(function() {
-                    return client.getDistributedObjects().then(function(distributedObjects) {
-                        var objects = {};
-                        distributedObjects.forEach(function(distObject) {
-                            objects[distObject.getName()] = 'exist';
+        it('getDistributedObjects returns all dist objects', function (done) {
+            managed.getObject(client.getMap.bind(client, 'map'));
+            managed.getObject(client.getSet.bind(client, 'set'));
+            setTimeout(function () {
+                client.getDistributedObjects().then(function (distObjects) {
+                    try {
+                        names = distObjects.map((o) => {
+                            return o.getName();
                         });
-                        expect(objects).to.have.property('map0');
-                        expect(objects).to.have.property('map1');
-                        expect(objects).to.have.property('map2');
-                        expect(objects).to.have.property('map3');
-                        expect(objects).to.have.property('map4');
+                        expect(names).to.have.members(['map', 'set']);
                         done();
-                    });
-                }, 500);
-            });
+                    } catch (e) {
+                        done(e);
+                    }
+                })
+            }, 300);
+        });
+
+        it('getDistributedObjects does not return removed object', function(done) {
+            managed.getObject(client.getMap.bind(client, 'map1'));
+            managed.getObject(client.getMap.bind(client, 'map2'));
+            managed.getObject(client.getMap.bind(client, 'map3'));
+
+            managed.destroy('map1');
+
+            setTimeout(function () {
+                client.getDistributedObjects().then(function (distObjects) {
+                    try {
+                        names = distObjects.map((o) => {
+                            return o.getName();
+                        });
+                        expect(names).to.have.members(['map2', 'map3']);
+                        done();
+                    } catch (e) {
+                        done(e);
+                    }
+                })
+            }, 300);
         });
     });
 

@@ -24,6 +24,7 @@ import {ITopic} from './proxy/topic/ITopic';
 import {ReliableTopicProxy} from './proxy/topic/ReliableTopicProxy';
 import {IReplicatedMap} from './proxy/IReplicatedMap';
 import {ISemaphore} from './proxy/ISemaphore';
+import {IAtomicLong} from './proxy/IAtomicLong';
 
 export default class HazelcastClient {
 
@@ -181,6 +182,10 @@ export default class HazelcastClient {
 
     getReplicatedMap<K, V>(name: string): IReplicatedMap<K, V> {
         return <IReplicatedMap<K, V>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.REPLICATEDMAP_SERVICE);
+    }
+
+    getAtomicLong(name: string): IAtomicLong {
+        return <IAtomicLong>this.proxyManager.getOrCreateProxy(name, this.proxyManager.ATOMICLONG_SERVICE);
     }
 
     /**
