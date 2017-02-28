@@ -21,6 +21,10 @@ export function shuffleArray<T>(array: Array<T>): void {
     }
 }
 
+export function assertNotNegative(v: number, message: string = 'The value cannot be negative.') {
+    assert(v >= 0, message);
+}
+
 export function getType(obj: any): string {
     assertNotNull(obj);
     if (Long.isLong(obj)) {

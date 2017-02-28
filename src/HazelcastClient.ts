@@ -23,6 +23,7 @@ import {IRingbuffer} from './proxy/IRingbuffer';
 import {ITopic} from './proxy/topic/ITopic';
 import {ReliableTopicProxy} from './proxy/topic/ReliableTopicProxy';
 import {IReplicatedMap} from './proxy/IReplicatedMap';
+import {ISemaphore} from './proxy/ISemaphore';
 import {IAtomicLong} from './proxy/IAtomicLong';
 
 export default class HazelcastClient {
@@ -185,6 +186,15 @@ export default class HazelcastClient {
 
     getAtomicLong(name: string): IAtomicLong {
         return <IAtomicLong>this.proxyManager.getOrCreateProxy(name, this.proxyManager.ATOMICLONG_SERVICE);
+    }
+
+    /**
+     * Returns the distributed semaphore instance with given name.
+     * @param name
+     * @returns {ISemaphore}
+     */
+    getSemaphore(name: string): ISemaphore {
+        return <ISemaphore>this.proxyManager.getOrCreateProxy(name, this.proxyManager.SEMAPHORE_SERVICE);
     }
 
     /**
