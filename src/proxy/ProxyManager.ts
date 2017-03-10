@@ -40,7 +40,7 @@ class ProxyManager {
         'hz:impl:multiMapService': MultiMapProxy,
         'hz:impl:ringbufferService': RingbufferProxy,
         'hz:impl:replicatedMapService': ReplicatedMapProxy,
-        'hz:impl:semaphoreService': SemaphoreProxy
+        'hz:impl:semaphoreService': SemaphoreProxy,
         'hz:impl:atomicLongService': AtomicLongProxy
     };
 
