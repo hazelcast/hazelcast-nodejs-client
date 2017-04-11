@@ -46,6 +46,7 @@ Hazelcast Node.js client supports the following data structures and features:
 * Reliable Topic
 * SSL connection support (requires enterprise server)
 
+
 # Installing the Client
 
 Following command installs Hazelcast Node.js client:
@@ -81,6 +82,8 @@ HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
 Please see Hazelcast Node.js [code samples](https://github.com/hazelcast/hazelcast-nodejs-client/tree/master/code_samples) for more examples.
 
 You can also refer to Hazelcast Node.js [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/0.6/docs/).
+
+Hazelcast Node.js requires Hazelcast IMDG JAR files to be installed and run separately. [Hazelcast IMDG Downloads](https://hazelcast.org/download/)
 
 # Serialization Considerations
 
