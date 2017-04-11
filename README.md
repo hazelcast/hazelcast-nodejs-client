@@ -46,7 +46,6 @@ Hazelcast Node.js client supports the following data structures and features:
 * Reliable Topic
 * SSL connection support (requires enterprise server)
 
-
 # Installing the Client
 
 Following command installs Hazelcast Node.js client:
