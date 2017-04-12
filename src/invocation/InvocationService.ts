@@ -67,7 +67,7 @@ export class Invocation {
  * Sends requests to appropriate nodes. Resolves waiting promises with responses.
  */
 export class InvocationService {
-    private correlationCounter = 0;
+    private correlationCounter = 1;
     private eventHandlers: {[id: number]: Invocation} = {};
     private pending: {[id: number]: Invocation} = {};
     private client: HazelcastClient;
@@ -231,7 +231,7 @@ export class InvocationService {
                     this.invoke(pendingInvocation);
                 }, INVOCATION_RETRY_DELAY);
             } else {
-                this.logger.error('InvocationService', 'Received exception as response', remoteException);
+                this.logger.trace('InvocationService', 'Received exception as response', remoteException);
                 deferred.reject(remoteException);
             }
         } else {
