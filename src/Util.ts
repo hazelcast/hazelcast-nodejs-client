@@ -2,6 +2,7 @@ import Long = require('long');
 import {PagingPredicate} from './serialization/DefaultPredicates';
 import {IterationType} from './core/Predicate';
 import * as assert from 'assert';
+import {Comparator} from './core/Comparator';
 export function assertNotNull(v: any) {
     assert.notEqual(v, null, 'Non null value expected.');
 }
@@ -48,9 +49,10 @@ export function getSortedQueryResultSet(list: Array<any>, predicate: PagingPredi
         return list;
     }
     var comparatorObject = predicate.getComparator();
-    if (comparatorObject != null) {
-        list.sort(comparatorObject.sort.bind(comparatorObject));
+    if (comparatorObject == null) {
+        comparatorObject = createComparator(predicate.getIterationType());
     }
+    list.sort(comparatorObject.sort.bind(comparatorObject));
     var nearestAnchorEntry = (predicate == null) ? null : predicate.getNearestAnchorEntry();
     var nearestPage = nearestAnchorEntry[0];
     var page = predicate.getPage();
@@ -74,6 +76,23 @@ export function getSortedQueryResultSet(list: Array<any>, predicate: PagingPredi
             case IterationType.VALUE: return item[1];
         }
     });
+}
+
+function createComparator(iterationType: IterationType): Comparator  {
+    var object: Comparator = {
+        sort: function(a: [any, any], b: [any, any]): number {
+            return 0;
+        }
+    };
+    switch (iterationType) {
+        case IterationType.KEY:
+            object.sort = (e1: [any, any], e2: [any, any]) => {return e1[0] < e2[0] ? -1 : +(e1[0] > e2[0]); }; break;
+        case IterationType.ENTRY:
+            object.sort = (e1: [any, any], e2: [any, any]) => {return e1[1] < e2[1] ? -1 : +(e1[1] > e2[1]); }; break;
+        case IterationType.VALUE:
+            object.sort = (e1: [any, any], e2: [any, any]) => {return e1[1] < e2[1] ? -1 : +(e1[1] > e2[1]); }; break;
+    }
+    return object;
 }
 
 function setAnchor(list: Array<any>, predicate: PagingPredicate, nearestPage: number) {

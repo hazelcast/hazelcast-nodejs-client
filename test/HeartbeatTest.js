@@ -45,7 +45,7 @@ describe('Heartbeat', function() {
         }).then(function() {
             return RC.startMember(cluster.id);
         }).then(function(member2) {
-            RC.terminateMember(cluster.id, member2.uuid);
+            simulateHeartbeatLost(client, member2.host + ':' + member2.port, 2000);
         }).catch(done);
     });
 
