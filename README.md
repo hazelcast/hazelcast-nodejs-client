@@ -44,6 +44,9 @@ Hazelcast Node.js client supports the following data structures and features:
 * Lifecycle Service
 * Ringbuffer
 * Reliable Topic
+* Semaphore
+* Replicated Map
+* Atomic Long
 * SSL connection support (requires enterprise server)
 
 # Installing the Client
