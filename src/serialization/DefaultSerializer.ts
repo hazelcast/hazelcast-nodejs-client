@@ -357,12 +357,25 @@ export class IdentifiedDataSerializableSerializer implements Serializer {
     }
 
     read(input: DataInput): any {
-        var isIdentified = input.readBoolean();
-        if (!isIdentified) {
+        const IDS_FLAG = 1 << 0;
+        const EE_FLAG = 1 << 1;
+        const COMP_FLAG = 1 << 2;
+        var header = input.readByte();
+        if ((header & IDS_FLAG) === 0) {
             throw new RangeError('Native clients does not support Data Serializable. Please use Identified Data Serializable');
         }
-        var factoryId = input.readInt();
-        var classId = input.readInt();
+        var factoryId: number = 0;
+        var classId: number = 0;
+        if ((header & COMP_FLAG) !== 0) {
+            factoryId = input.readByte();
+            classId = input.readByte();
+        } else {
+            factoryId = input.readInt();
+            classId = input.readInt();
+        }
+        if ((header & EE_FLAG) !== 0) {
+            input.readByte();
+        }
         var factory: IdentifiedDataSerializableFactory;
         factory = this.factories[factoryId];
         if (!factory) {
