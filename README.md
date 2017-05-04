@@ -83,7 +83,7 @@ HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
 
 Please see Hazelcast Node.js [code samples](https://github.com/hazelcast/hazelcast-nodejs-client/tree/master/code_samples) for more examples.
 
-You can also refer to Hazelcast Node.js [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/0.6/docs/).
+You can also refer to Hazelcast Node.js [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/0.6.1/docs/).
 
 # Serialization Considerations
 
