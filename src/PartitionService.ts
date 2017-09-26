@@ -33,6 +33,7 @@ class PartitionService {
                 this.partitionMap = GetPartitionsCodec.decodeResponse(clientMessage);
                 this.partitionCount = Object.keys(this.partitionMap).length;
             });
+        // tslint:disable-next-line:semicolon
     };
 
     /**

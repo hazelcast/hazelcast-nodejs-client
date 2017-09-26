@@ -436,20 +436,21 @@ describe('MapProxy', function() {
             });
 
             it('getEntryView', function(done) {
-                map.getEntryView('key0').then(function(entry) {
+                map.get('key0').then(function() {
+                    return map.getEntryView('key0');
+                }).then(function(entry) {
                     try {
                         expect(entry.key).to.equal('key0');
                         expect(entry.value).to.equal('val0');
-                        expect(entry.cost).to.be.above(0);
-                        expect(entry.creationTime).to.not.equal(0);
-                        expect(entry.expirationTime).to.not.equal(0);
-                        expect(entry.hits).to.not.equal(0);
-                        expect(entry.lastAccessTime).to.not.equal(0);
-                        expect(entry.lastStoreTime).to.not.equal(0);
-                        expect(entry.lastUpdateTime).to.not.equal(0);
-                        expect(entry.version).to.not.equal(0);
-                        expect(entry.evictionCriteriaNumber).to.not.equal(0);
-                        expect(entry.ttl).to.not.equal(0);
+                        expect(entry.cost.greaterThan(0)).to.be.true;
+                        expect(entry.creationTime.isZero()).to.be.false;
+                        expect(entry.expirationTime.isZero()).to.be.false;
+                        expect(entry.hits.isZero()).to.be.false;
+                        expect(entry.lastAccessTime.isZero()).to.be.false;
+                        expect(entry.lastStoreTime.isZero()).to.be.true;
+                        expect(entry.lastUpdateTime.isZero()).to.be.false;
+                        expect(entry.version.isZero()).to.be.true;
+                        expect(entry.ttl.isZero()).to.be.false;
                         done();
                     } catch (e) {
                         done(e);

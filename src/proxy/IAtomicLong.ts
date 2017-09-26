@@ -1,6 +1,6 @@
 import {DistributedObject} from '../DistributedObject';
-import * as Promise from '@types/bluebird';
-import * as Long from '@types/long';
+import * as Promise from 'bluebird';
+import * as Long from 'long';
 
 
 export interface IAtomicLong extends DistributedObject {

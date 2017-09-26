@@ -151,6 +151,13 @@ export enum InMemoryFormat {
     BINARY
 }
 
+export enum EvictionPolicy {
+    NONE,
+    LRU,
+    LFU,
+    RANDOM
+}
+
 export class NearCacheConfig {
     name: string = 'default';
     /**
@@ -184,12 +191,6 @@ export class NearCacheConfig {
     }
 }
 
-export enum EvictionPolicy {
-    NONE,
-    LRU,
-    LFU,
-    RANDOM
-}
 
 /**
  * Configurations for LifecycleListeners. These are registered as soon as client started.

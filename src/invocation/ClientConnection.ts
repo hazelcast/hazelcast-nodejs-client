@@ -58,7 +58,7 @@ class ClientConnection {
 
         if (this.clientNetworkConfig.sslOptions) {
             var sslSocket = tls.connect(this.address.port, this.address.host, this.clientNetworkConfig.sslOptions, conCallback);
-            this.localAddress = new Address(sslSocket.address.address, sslSocket.address.port);
+            this.localAddress = new Address(sslSocket.address().address, sslSocket.address().port);
             this.socket = sslSocket as stream.Duplex;
         } else {
             var netSocket = net.connect(this.address.port, this.address.host, conCallback);

@@ -30,8 +30,10 @@ import {MultiMapForceUnlockCodec} from '../codec/MultiMapForceUnlockCodec';
 
 export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
 
+
     private deserializeList = <X>(items: Array<Data>): Array<X> => {
         return items.map<X>(this.toObject.bind(this));
+        // tslint:disable-next-line:semicolon
     };
 
     put(key: K, value: V): Promise<boolean> {
