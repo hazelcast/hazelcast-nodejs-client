@@ -14,4 +14,4 @@ export {
     Address,
     Predicates,
     TopicOverloadPolicy
-}
+};
