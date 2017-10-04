@@ -79,12 +79,37 @@ describe("Reliable Topic Proxy", function () {
 
         topicTwo.addMessageListener(function (msg) {
             if (msg.messageObject["value"] === "foo") {
-                done()
+                done();
             }
         });
 
         setTimeout(function () {
             topicOne.publish({"value": "foo"});
+        }, 500);
+    });
+
+    it('removed message listener does not receive items after removal', function (done) {
+        var topicOne = clientOne.getReliableTopic("t");
+        var topicTwo = clientTwo.getReliableTopic("t");
+
+        var receivedMessages = 0;
+
+        var id = topicTwo.addMessageListener(function (msg) {
+            receivedMessages++;
+            if (receivedMessages > 2) {
+                done(new Error('Keep receiving messages after removal.'));
+            }
+        });
+
+        topicOne.publish({"value0": "foo0"});
+        topicOne.publish({"value1": "foo1"});
+        setTimeout(function () {
+            topicTwo.removeMessageListener(id);
+            topicOne.publish({"value2": "foo2"});
+            topicOne.publish({"value3": "foo3"});
+            topicOne.publish({"value4": "foo4"});
+            topicOne.publish({"value5": "foo5"});
+            setTimeout(done, 500);
         }, 500);
     });
 
