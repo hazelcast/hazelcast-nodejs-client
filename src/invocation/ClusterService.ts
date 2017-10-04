@@ -158,7 +158,7 @@ class ClusterService extends EventEmitter {
                         deferred.resolve();
                     });
                 }).catch((e) => {
-                    this.logger.warn('ClusterService', e.className, e);
+                    this.logger.warn('ClusterService', e);
                     this.tryAddressIndex(index + 1, attemptLimit, attemptPeriod, deferred);
                 });
             }
