@@ -36,16 +36,18 @@ export class ReliableTopicListenerRunner<E> {
         }
 
         this.ringbuffer.readMany(this.sequenceNumber, 1, this.batchSize).then((result: Array<RawTopicMessage>) => {
-            result.forEach((raw: RawTopicMessage) => {
-                var msg = new TopicMessage<E>();
-                msg.messageObject = this.serializationService.toObject(raw.payload);
-                msg.publisher = raw.publisherAddress;
-                msg.publishingTime = raw.publishTime;
-                setImmediate(this.listener, msg);
-                this.sequenceNumber++;
-            });
+            if (!this.cancelled) {
+                result.forEach((raw: RawTopicMessage) => {
+                    var msg = new TopicMessage<E>();
+                    msg.messageObject = this.serializationService.toObject(raw.payload);
+                    msg.publisher = raw.publisherAddress;
+                    msg.publishingTime = raw.publishTime;
+                    setImmediate(this.listener, msg);
+                    this.sequenceNumber++;
+                });
 
-            setImmediate(this.next.bind(this));
+                setImmediate(this.next.bind(this));
+            }
         }).catch((e) => {
             if (e.className === 'com.hazelcast.ringbuffer.StaleSequenceException') {
                 this.ringbuffer.headSequence().then((seq: Long) => {
