@@ -48,6 +48,8 @@ export class Invocation {
      */
     deferred: Promise.Resolver<ClientMessage>;
 
+    invokeCount: number = 0;
+
     /**
      * If this is an event listener registration, handler should be set to the function to be called on events.
      * Otherwise, should be set to null.
@@ -73,16 +75,23 @@ export class InvocationService {
     private smartRoutingEnabled: boolean;
     private logger = LoggingService.getLoggingService();
 
-    invoke: (invocation: Invocation) => Promise<ClientMessage>;
+    doInvoke: (invocation: Invocation) => Promise<ClientMessage>;
 
     constructor(hazelcastClient: HazelcastClient) {
         this.client = hazelcastClient;
         this.smartRoutingEnabled = hazelcastClient.getConfig().networkConfig.smartRouting;
         if (hazelcastClient.getConfig().networkConfig.smartRouting) {
-            this.invoke = this.invokeSmart;
+            this.doInvoke = this.invokeSmart;
         } else {
-            this.invoke = this.invokeNonSmart;
+            this.doInvoke = this.invokeNonSmart;
         }
+    }
+
+    invoke(invocation: Invocation): Promise<ClientMessage> {
+        var newCorrelationId = Long.fromNumber(this.correlationCounter++);
+        invocation.request.setCorrelationId(newCorrelationId);
+        invocation.invokeCount++;
+        return this.doInvoke(invocation);
     }
 
     /**
@@ -136,7 +145,7 @@ export class InvocationService {
         return this.invoke(new Invocation(request));
     }
 
-    private invokeSmart(invocation: Invocation) {
+    private invokeSmart(invocation: Invocation): Promise<ClientMessage> {
         if (invocation.hasOwnProperty('connection')) {
             return this.send(invocation, invocation.connection);
         } else if (invocation.hasPartitionId()) {
@@ -149,7 +158,7 @@ export class InvocationService {
         }
     }
 
-    private invokeNonSmart(invocation: Invocation) {
+    private invokeNonSmart(invocation: Invocation): Promise<ClientMessage> {
         if (invocation.hasOwnProperty('connection')) {
             return this.send(invocation, invocation.connection);
         } else {
@@ -165,9 +174,8 @@ export class InvocationService {
     }
 
     private send(invocation: Invocation, connection: ClientConnection): Promise<ClientMessage> {
-        var correlationId = this.correlationCounter++;
         var message = invocation.request;
-        message.setCorrelationId(Long.fromNumber(correlationId));
+        var correlationId = message.getCorrelationId().toNumber();
         if (invocation.hasPartitionId()) {
             message.setPartitionId(invocation.partitionId);
         } else {
