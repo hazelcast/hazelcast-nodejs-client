@@ -12,6 +12,7 @@ import HazelcastClient from '../HazelcastClient';
 var EXCEPTION_MESSAGE_TYPE = 109;
 var INVOCATION_TIMEOUT = 120000;
 var INVOCATION_RETRY_DELAY = 1000;
+const MAX_FAST_INVOCATION_COUNT = 5;
 
 /**
  * A request to be sent to a hazelcast node.
@@ -75,7 +76,7 @@ export class InvocationService {
     private smartRoutingEnabled: boolean;
     private logger = LoggingService.getLoggingService();
 
-    doInvoke: (invocation: Invocation) => Promise<ClientMessage>;
+    doInvoke: (invocation: Invocation) => void;
 
     constructor(hazelcastClient: HazelcastClient) {
         this.client = hazelcastClient;
@@ -89,9 +90,10 @@ export class InvocationService {
 
     invoke(invocation: Invocation): Promise<ClientMessage> {
         var newCorrelationId = Long.fromNumber(this.correlationCounter++);
+        invocation.deferred = Promise.defer<ClientMessage>();
         invocation.request.setCorrelationId(newCorrelationId);
-        invocation.invokeCount++;
-        return this.doInvoke(invocation);
+        this.doInvoke(invocation);
+        return invocation.deferred.promise;
     }
 
     /**
@@ -145,35 +147,72 @@ export class InvocationService {
         return this.invoke(new Invocation(request));
     }
 
-    private invokeSmart(invocation: Invocation): Promise<ClientMessage> {
+    private invokeSmart(invocation: Invocation): void {
+        invocation.invokeCount++;
         if (invocation.hasOwnProperty('connection')) {
-            return this.send(invocation, invocation.connection);
+            this.send(invocation, invocation.connection);
         } else if (invocation.hasPartitionId()) {
             const address = this.client.getPartitionService().getAddressForPartition(invocation.partitionId);
-            return this.sendToAddress(invocation, address);
+            this.sendToAddress(invocation, address);
         } else if (invocation.hasOwnProperty('address')) {
-            return this.sendToAddress(invocation, invocation.address);
+            this.sendToAddress(invocation, invocation.address);
         } else {
-            return this.send(invocation, this.client.getClusterService().getOwnerConnection());
+            this.send(invocation, this.client.getClusterService().getOwnerConnection());
         }
     }
 
-    private invokeNonSmart(invocation: Invocation): Promise<ClientMessage> {
+    private invokeNonSmart(invocation: Invocation): void {
+        invocation.invokeCount++;
         if (invocation.hasOwnProperty('connection')) {
-            return this.send(invocation, invocation.connection);
+            this.send(invocation, invocation.connection);
         } else {
-            return this.send(invocation, this.client.getClusterService().getOwnerConnection());
+            this.send(invocation, this.client.getClusterService().getOwnerConnection());
         }
     }
 
-    private sendToAddress(invocation: Invocation, address: Address): Promise<ClientMessage> {
-        return this.client.getConnectionManager().getOrConnect(address)
-            .then<ClientMessage>((connection: ClientConnection) => {
-                return this.send(invocation, connection);
+    private sendToAddress(invocation: Invocation, address: Address): void {
+        this.client.getConnectionManager().getOrConnect(address)
+            .then((connection: ClientConnection) => {
+                this.send(invocation, connection);
             });
     }
 
-    private send(invocation: Invocation, connection: ClientConnection): Promise<ClientMessage> {
+    private send(invocation: Invocation, connection: ClientConnection): void {
+        this.registerInvocation(invocation);
+        this.write(invocation, connection);
+    }
+
+    private write(invocation: Invocation, connection: ClientConnection): void {
+        var logger = this.logger;
+        connection.write(invocation.request.getBuffer(), (err: any) => {
+            if (err) {
+                this.notifyError(invocation, err);
+            }
+        });
+    }
+
+    private notifyError(invocation: Invocation, error: Error) {
+        var correlationId = invocation.request.getCorrelationId().toNumber();
+        if (this.isRetryable(invocation)) {
+            this.logger.warn('InvocationService', 'Retrying(' + invocation.invokeCount + ') correlation-id=' + correlationId);
+            if (invocation.invokeCount < MAX_FAST_INVOCATION_COUNT) {
+                this.doInvoke(invocation);
+            } else {
+                //
+            }
+        } else {
+            this.logger.warn('InvocationService', 'Sending message ' + correlationId + 'failed');
+            delete this.pending[invocation.request.getCorrelationId().toNumber()];
+            invocation.deferred.reject(error);
+        }
+    }
+
+    private isRetryable(invocation: Invocation) {
+        //TODO
+        return false;
+    }
+
+    private registerInvocation(invocation: Invocation) {
         var message = invocation.request;
         var correlationId = message.getCorrelationId().toNumber();
         if (invocation.hasPartitionId()) {
@@ -181,20 +220,10 @@ export class InvocationService {
         } else {
             message.setPartitionId(-1);
         }
-        invocation.deferred = Promise.defer<ClientMessage>();
         if (invocation.hasOwnProperty('handler')) {
             this.eventHandlers[correlationId] = invocation;
         }
         this.pending[correlationId] = invocation;
-        var logger = this.logger;
-        connection.write(invocation.request.getBuffer(), function(err: any) {
-            if (err) {
-                logger.warn('InvocationService',
-                    'Error sending message to ' + Address.encodeToString(connection.address) + ' ' + err);
-                invocation.deferred.reject(err);
-            }
-        });
-        return invocation.deferred.promise;
     }
 
     /**
