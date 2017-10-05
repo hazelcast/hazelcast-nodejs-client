@@ -74,6 +74,7 @@ export class InvocationService {
     private pending: {[id: number]: Invocation} = {};
     private client: HazelcastClient;
     private smartRoutingEnabled: boolean;
+    private invocationRetryPauseMillis: number;
     private logger = LoggingService.getLoggingService();
 
     doInvoke: (invocation: Invocation) => void;
@@ -86,6 +87,7 @@ export class InvocationService {
         } else {
             this.doInvoke = this.invokeNonSmart;
         }
+        this.invocationRetryPauseMillis = 1000;
     }
 
     invoke(invocation: Invocation): Promise<ClientMessage> {
@@ -198,7 +200,7 @@ export class InvocationService {
             if (invocation.invokeCount < MAX_FAST_INVOCATION_COUNT) {
                 this.doInvoke(invocation);
             } else {
-                //
+                setTimeout(this.doInvoke.bind(this, invocation), this.invocationRetryPauseMillis);
             }
         } else {
             this.logger.warn('InvocationService', 'Sending message ' + correlationId + 'failed');
@@ -208,8 +210,15 @@ export class InvocationService {
     }
 
     private isRetryable(invocation: Invocation) {
-        //TODO
-        return false;
+        if (invocation.connection != null || invocation.address != null) {
+            return false;
+        }
+        if (invocation.deadline.getTime() < Date.now()) {
+            this.logger.debug('InvocationService', 'Invocation ' + invocation.request.getCorrelationId() + ')' +
+                ' reached its deadline.');
+            return false;
+        }
+        return true;
     }
 
     private registerInvocation(invocation: Invocation) {
