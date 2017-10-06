@@ -75,6 +75,8 @@ export default class HazelcastClient {
             return this.heartbeat.start();
         }).then(() => {
             this.lifecycleService.emitLifecycleEvent(LifecycleEvent.started);
+        }).then(() => {
+            this.listenerService.start();
             this.loggingService.info('HazelcastClient', 'Client started');
             return this;
         }).catch((e) => {
@@ -273,6 +275,8 @@ export default class HazelcastClient {
         this.lifecycleService.emitLifecycleEvent(LifecycleEvent.shuttingDown);
         this.heartbeat.cancel();
         this.connectionManager.shutdown();
+        this.listenerService.shutdown();
+        this.invocationService.shutdown();
         this.lifecycleService.emitLifecycleEvent(LifecycleEvent.shutdown);
     }
 }

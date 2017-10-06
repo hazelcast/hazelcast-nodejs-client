@@ -115,7 +115,7 @@ describe('MapProxy', function() {
                 }).then(function(val) {
                     return expect(val).to.equal('val10');
                 }).then(function() {
-                    return Util.promiseLater(1000, map.get.bind(map, 'key10'));
+                    return Util.promiseLater(1100, map.get.bind(map, 'key10'));
                 }).then(function(val) {
                     return expect(val).to.be.null;
                 });
@@ -341,7 +341,7 @@ describe('MapProxy', function() {
                 }).then(function(val) {
                     return expect(val).to.equal('new-val');
                 }).then(function() {
-                    return Util.promiseLater(1050, map.get.bind(map, 'key10'));
+                    return Util.promiseLater(1100, map.get.bind(map, 'key10'));
                 }).then(function(val) {
                     return expect(val).to.be.null;
                 });
@@ -362,7 +362,7 @@ describe('MapProxy', function() {
                 }).then(function(val) {
                     return expect(val).to.equal('val10');
                 }).then(function() {
-                    return Util.promiseLater(1050, map.get.bind(map, 'key10'))
+                    return Util.promiseLater(1100, map.get.bind(map, 'key10'));
                 }).then(function(val) {
                     return expect(val).to.be.null;
                 });
@@ -412,7 +412,7 @@ describe('MapProxy', function() {
                 }).then(function(val) {
                     return expect(val).to.equal('val10');
                 }).then(function() {
-                    return Util.promiseLater(1000, map.get.bind(map, 'key10'));
+                    return Util.promiseLater(1100, map.get.bind(map, 'key10'));
                 }).then(function(val) {
                     return expect(val).to.be.null;
                 })

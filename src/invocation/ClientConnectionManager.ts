@@ -17,11 +17,15 @@ class ClientConnectionManager extends EventEmitter {
     private client: HazelcastClient;
     private pendingConnections: {[address: string]: Promise.Resolver<ClientConnection>} = {};
     private logger = LoggingService.getLoggingService();
-    establishedConnections: {[address: string]: ClientConnection} = {};
+    establishedConnections: {[address: string]: ClientConnection} = {}; //TODO change this to a Map
 
     constructor(client: HazelcastClient) {
         super();
         this.client = client;
+    }
+
+    getActiveConnections(): {[address: string]: ClientConnection} {
+        return this.establishedConnections;
     }
 
     /**
