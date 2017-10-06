@@ -19,7 +19,7 @@ class ConnectionAuthenticator {
         this.clusterService = this.client.getClusterService();
     }
 
-    authenticate(ownerConnection: boolean): Promise<boolean> {
+    authenticate(ownerConnection: boolean): Promise<void> {
         var credentials: ClientMessage = this.createCredentials(ownerConnection);
 
         return this.client.getInvocationService()
@@ -32,9 +32,8 @@ class ConnectionAuthenticator {
                         this.clusterService.uuid = authResponse.uuid;
                         this.clusterService.ownerUuid = authResponse.ownerUuid;
                     }
-                    return true;
                 } else {
-                    return false;
+                    throw new Error('Authentication Error');
                 }
             });
     }
