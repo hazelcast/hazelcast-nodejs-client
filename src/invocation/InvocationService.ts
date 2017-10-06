@@ -154,10 +154,9 @@ export class InvocationService {
         if (invocation.hasOwnProperty('connection')) {
             this.send(invocation, invocation.connection);
         } else if (invocation.hasPartitionId()) {
-            const address = this.client.getPartitionService().getAddressForPartition(invocation.partitionId);
-            this.sendToAddress(invocation, address);
+            this.invokeOnPartitionOwner(invocation, invocation.partitionId);
         } else if (invocation.hasOwnProperty('address')) {
-            this.sendToAddress(invocation, invocation.address);
+            this.invokeOnAddress(invocation, invocation.address);
         } else {
             this.send(invocation, this.client.getClusterService().getOwnerConnection());
         }
@@ -172,11 +171,25 @@ export class InvocationService {
         }
     }
 
-    private sendToAddress(invocation: Invocation, address: Address): void {
-        this.client.getConnectionManager().getOrConnect(address)
-            .then((connection: ClientConnection) => {
-                this.send(invocation, connection);
-            });
+    private invokeOnAddress(invocation: Invocation, address: Address): void {
+        this.client.getConnectionManager().getOrConnect(address).then((connection: ClientConnection) => {
+            if (connection == null) {
+                this.notifyError(invocation, new Error('No connection'));
+                return;
+            }
+            this.send(invocation, connection);
+        });
+    }
+
+    private invokeOnPartitionOwner(invocation: Invocation, partitionId: number): void {
+        var ownerAddress = this.client.getPartitionService().getAddressForPartition(partitionId);
+        this.client.getConnectionManager().getOrConnect(ownerAddress).then((connection: ClientConnection) => {
+            if (connection == null) {
+                this.notifyError(invocation, new Error('No connection'));
+                return;
+            }
+            this.send(invocation, connection);
+        });
     }
 
     private send(invocation: Invocation, connection: ClientConnection): void {

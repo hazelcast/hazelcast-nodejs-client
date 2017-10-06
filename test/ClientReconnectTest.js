@@ -15,7 +15,7 @@ describe('Client reconnect', function () {
     });
 
     it('member restarts, while map.put in progress', function () {
-        this.timeout(4000);
+        this.timeout(9000);
         var member;
         var map;
         return Controller.createCluster(null, null).then(function(cl) {
@@ -45,7 +45,7 @@ describe('Client reconnect', function () {
     });
 
     it('member restarts, while map.put in progress 2', function () {
-        this.timeout(4000);
+        this.timeout(5000);
         var member;
         var map;
         return Controller.createCluster(null, null).then(function(cl) {
@@ -75,7 +75,7 @@ describe('Client reconnect', function () {
     });
 
     it('create proxy while member is down, member comes back', function () {
-        this.timeout(4000);
+        this.timeout(5000);
         var member;
         var map;
         return Controller.createCluster(null, null).then(function(cl) {
