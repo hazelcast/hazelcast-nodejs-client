@@ -56,5 +56,9 @@ describe('DistributedObjectListener', function() {
         }).then(function() {
             setTimeout(done, 1000);
         });
+    });
+
+    it('listener is registered to all servers', function () {
+
     })
 });

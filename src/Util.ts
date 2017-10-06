@@ -78,6 +78,22 @@ export function getSortedQueryResultSet(list: Array<any>, predicate: PagingPredi
     });
 }
 
+export function copyObjectShallow<T>(obj: T): T {
+    if (obj === undefined || obj === null) {
+        return obj;
+    }
+    if (typeof obj === 'object') {
+        var newObj: any = {};
+        for (var prop in obj) {
+            if (obj.hasOwnProperty(prop)) {
+                newObj[prop] = obj[prop];
+            }
+        }
+        return newObj;
+    }
+    assert(false, 'Object should be undefined or type of object.');
+}
+
 function createComparator(iterationType: IterationType): Comparator  {
     var object: Comparator = {
         sort: function(a: [any, any], b: [any, any]): number {

@@ -103,5 +103,4 @@ describe('Client reconnect', function () {
             return expect(val).to.equal('testvalue');
         })
     });
-
 });
