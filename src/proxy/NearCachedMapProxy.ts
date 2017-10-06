@@ -226,9 +226,11 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
             });
         };
 
-        var request = MapAddNearCacheEntryListenerCodec.encodeRequest(this.name, EntryEventType.INVALIDATION, false);
+        var encodeFunc = (localOnly: boolean) => {
+            return MapAddNearCacheEntryListenerCodec.encodeRequest(this.name, EntryEventType.INVALIDATION, localOnly);
+        };
         return this.client.getListenerService().registerListener(
-            request,
+            encodeFunc,
             (m: ClientMessage) => { MapAddNearCacheEntryListenerCodec.handle(m, invalidationHandler, invalidationBatchHandler); },
             (m: ClientMessage) => { return MapAddNearCacheEntryListenerCodec.decodeResponse(m)['response']; }
         );
