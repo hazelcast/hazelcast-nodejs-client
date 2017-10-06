@@ -18,6 +18,14 @@ import {ReplicatedMapProxy} from './ReplicatedMapProxy';
 import {NearCachedMapProxy} from './NearCachedMapProxy';
 import {SemaphoreProxy} from './SemaphoreProxy';
 import {AtomicLongProxy} from './AtomicLongProxy';
+import {LoggingService} from '../logging/LoggingService';
+import Address = require('../Address');
+import {Invocation} from '../invocation/InvocationService';
+import {Member} from '../core/Member';
+
+
+const CREATE_PROXY_RETRY_INTERVAL = 1000;
+const CREATE_PROXY_TIMEOUT = 5000;
 
 class ProxyManager {
     public MAP_SERVICE: string = 'hz:impl:mapService';
@@ -46,6 +54,7 @@ class ProxyManager {
 
     private proxies: { [proxyName: string]: DistributedObject; } = {};
     private client: HazelcastClient;
+    private logger = LoggingService.getLoggingService();
 
     constructor(client: HazelcastClient) {
         this.client = client;
@@ -62,20 +71,56 @@ class ProxyManager {
                 newProxy = new this.service[serviceName](this.client, serviceName, name);
             }
             if (createAtServer) {
-                this.createProxy(name, serviceName);
+                this.createProxy(newProxy);
             }
             this.proxies[name] = newProxy;
             return newProxy;
         }
     }
 
-    private createProxy(name: string, serviceName: string): Promise<ClientMessage> {
-        var connection: ClientConnection = this.client.getClusterService().getOwnerConnection();
-        var request = ClientCreateProxyCodec.encodeRequest(name, serviceName, connection.getAddress());
+    private createProxy(proxyObject: DistributedObject): Promise<ClientMessage> {
+        var promise = Promise.defer<ClientMessage>();
 
-        var createProxyPromise: Promise<ClientMessage> = this.client.getInvocationService()
-            .invokeOnConnection(connection, request);
-        return createProxyPromise;
+        this.initializeProxy(proxyObject, promise, Date.now() + CREATE_PROXY_TIMEOUT);
+
+        return promise.promise;
+    }
+
+    private findNextAddress(): Address {
+        var members = this.client.getClusterService().getMembers();
+        var liteMember: Member = null;
+        for (var i = 0; i < members.length; i++) {
+            var currentMember = members[i];
+            if (currentMember != null && currentMember.isLiteMember === false) {
+                return currentMember.address;
+            } else if (currentMember != null && currentMember.isLiteMember) {
+                liteMember = currentMember;
+            }
+        }
+
+        if (liteMember != null) {
+            return liteMember.address;
+        } else {
+            return null;
+        }
+    }
+
+    private initializeProxy(proxyObject: DistributedObject, promise: Promise.Resolver<ClientMessage>, deadline: number): void {
+        if (Date.now() <= deadline) {
+            var address: Address = this.findNextAddress();
+            var request = ClientCreateProxyCodec.encodeRequest(proxyObject.getName(), proxyObject.getServiceName(), address);
+            var invocation = new Invocation(request);
+            invocation.address = address;
+            this.client.getInvocationService().invoke(invocation).then((response) => {
+                promise.resolve(response);
+            }).catch((error) => {
+                this.logger.warn('ProxyManager', 'Create proxy request failed. Retrying in '
+                    + CREATE_PROXY_RETRY_INTERVAL + 'ms.');
+                setTimeout(this.initializeProxy.bind(this, proxyObject, promise, deadline), CREATE_PROXY_RETRY_INTERVAL);
+            });
+        } else {
+            promise.reject('Create proxy request timed-out');
+        }
     }
 
     destroyProxy(name: string, serviceName: string): Promise<void> {
