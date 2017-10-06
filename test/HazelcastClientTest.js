@@ -27,7 +27,6 @@ ManagedObjects.prototype.getObject = function (func, name) {
 
 ManagedObjects.prototype.destroyAll = function() {
     this.managedObjects.forEach(function (obj) {
-        console.log(obj.getName());
         obj.destroy();
     });
 };
@@ -114,9 +113,8 @@ configParams.forEach(function (cfg) {
             managed.getObject(client.getMap.bind(client, 'map2'));
             managed.getObject(client.getMap.bind(client, 'map3'));
 
-            managed.destroy('map1');
-
             setTimeout(function () {
+                managed.destroy('map1');
                 client.getDistributedObjects().then(function (distObjects) {
                     try {
                         names = distObjects.map((o) => {
