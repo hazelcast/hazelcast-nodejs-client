@@ -43,6 +43,10 @@ class Address implements IdentifiedDataSerializable {
     getClassId(): number {
         return ADDRESS_CLASS_ID;
     }
+
+    toString(): string {
+        return this.host + ':' + this.port;
+    }
 }
 
 export = Address;

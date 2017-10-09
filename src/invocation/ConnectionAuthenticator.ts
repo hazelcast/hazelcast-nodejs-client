@@ -33,7 +33,7 @@ class ConnectionAuthenticator {
                         this.clusterService.ownerUuid = authResponse.ownerUuid;
                     }
                 } else {
-                    throw new Error('Authentication Error');
+                    throw new Error('Could not authenticate connection to ' + this.connection.getAddress().toString());
                 }
             });
     }

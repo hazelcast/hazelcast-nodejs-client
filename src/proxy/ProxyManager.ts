@@ -23,10 +23,6 @@ import Address = require('../Address');
 import {Invocation} from '../invocation/InvocationService';
 import {Member} from '../core/Member';
 
-
-const CREATE_PROXY_RETRY_INTERVAL = 1000;
-const CREATE_PROXY_TIMEOUT = 5000;
-
 class ProxyManager {
     public MAP_SERVICE: string = 'hz:impl:mapService';
     public SET_SERVICE: string = 'hz:impl:setService';
@@ -55,9 +51,13 @@ class ProxyManager {
     private proxies: { [proxyName: string]: DistributedObject; } = {};
     private client: HazelcastClient;
     private logger = LoggingService.getLoggingService();
+    private readonly invocationTimeoutMillis: number;
+    private readonly invocationRetryPauseMillis: number;
 
     constructor(client: HazelcastClient) {
         this.client = client;
+        this.invocationTimeoutMillis = this.client.getInvocationService().getInvocationTimeoutMillis();
+        this.invocationRetryPauseMillis = this.client.getInvocationService().getInvocationRetryPauseMillis();
     }
 
     public getOrCreateProxy(name: string, serviceName: string, createAtServer = true): DistributedObject {
@@ -81,7 +81,7 @@ class ProxyManager {
     private createProxy(proxyObject: DistributedObject): Promise<ClientMessage> {
         var promise = Promise.defer<ClientMessage>();
 
-        this.initializeProxy(proxyObject, promise, Date.now() + CREATE_PROXY_TIMEOUT);
+        this.initializeProxy(proxyObject, promise, Date.now() + this.invocationTimeoutMillis);
 
         return promise.promise;
     }
@@ -109,17 +109,17 @@ class ProxyManager {
         if (Date.now() <= deadline) {
             var address: Address = this.findNextAddress();
             var request = ClientCreateProxyCodec.encodeRequest(proxyObject.getName(), proxyObject.getServiceName(), address);
-            var invocation = new Invocation(request);
+            var invocation = new Invocation(this.client, request);
             invocation.address = address;
             this.client.getInvocationService().invoke(invocation).then((response) => {
                 promise.resolve(response);
             }).catch((error) => {
-                this.logger.warn('ProxyManager', 'Create proxy request failed. Retrying in '
-                    + CREATE_PROXY_RETRY_INTERVAL + 'ms.');
-                setTimeout(this.initializeProxy.bind(this, proxyObject, promise, deadline), CREATE_PROXY_RETRY_INTERVAL);
+                this.logger.warn('ProxyManager', 'Create proxy request for ' + proxyObject.getName() +
+                    ' failed. Retrying in ' + this.invocationRetryPauseMillis + 'ms.');
+                setTimeout(this.initializeProxy.bind(this, proxyObject, promise, deadline), this.invocationRetryPauseMillis);
             });
         } else {
-            promise.reject('Create proxy request timed-out');
+            promise.reject('Create proxy request timed-out for ' + proxyObject.getName());
         }
     }
 

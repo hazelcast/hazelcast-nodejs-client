@@ -10,18 +10,25 @@ import {EventEmitter} from 'events';
 import HazelcastClient from '../HazelcastClient';
 
 var EXCEPTION_MESSAGE_TYPE = 109;
-var INVOCATION_TIMEOUT = 120000;
-var INVOCATION_RETRY_DELAY = 1000;
 const MAX_FAST_INVOCATION_COUNT = 5;
+const PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS = 'hazelcast.client.invocation.retry.pause.millis';
+const PROPERTY_INVOCATION_TIMEOUT_MILLIS = 'hazelcast.client.invocation.timeout.millis';
 
 /**
  * A request to be sent to a hazelcast node.
  */
 export class Invocation {
 
-    constructor(request: ClientMessage) {
+    constructor(client: HazelcastClient, request: ClientMessage) {
+        this.client = client;
+        this.invocationService = client.getInvocationService();
+        this.deadline = new Date(new Date().getTime() + this.invocationService.getInvocationTimeoutMillis());
         this.request = request;
     }
+
+    client: HazelcastClient;
+
+    invocationService: InvocationService;
 
     /**
      * Representatiton of the request in binary form.
@@ -38,7 +45,7 @@ export class Invocation {
     /**
      * Deadline of validity. Client will not try to send this request to server after the deadline passes.
      */
-    deadline: Date = new Date(new Date().getTime() + INVOCATION_TIMEOUT);
+    deadline: Date;
     /**
      * Connection of the request. If request is not bound to any specific address, should be set to null.
      */
@@ -74,7 +81,8 @@ export class InvocationService {
     private pending: {[id: number]: Invocation} = {};
     private client: HazelcastClient;
     private smartRoutingEnabled: boolean;
-    private invocationRetryPauseMillis: number;
+    private readonly invocationRetryPauseMillis: number;
+    private readonly invocationTimeoutMillis: number;
     private logger = LoggingService.getLoggingService();
 
     doInvoke: (invocation: Invocation) => void;
@@ -87,7 +95,8 @@ export class InvocationService {
         } else {
             this.doInvoke = this.invokeNonSmart;
         }
-        this.invocationRetryPauseMillis = 1000;
+        this.invocationRetryPauseMillis = this.client.getConfig().properties[PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS];
+        this.invocationTimeoutMillis = this.client.getConfig().properties[PROPERTY_INVOCATION_TIMEOUT_MILLIS];
     }
 
     invoke(invocation: Invocation): Promise<ClientMessage> {
@@ -107,7 +116,7 @@ export class InvocationService {
      */
     invokeOnConnection(connection: ClientConnection, request: ClientMessage,
                        handler?: (...args: any[]) => any): Promise<ClientMessage> {
-        var invocation = new Invocation(request);
+        var invocation = new Invocation(this.client, request);
         invocation.connection = connection;
         if (handler) {
             invocation.handler = handler;
@@ -122,7 +131,7 @@ export class InvocationService {
      * @returns
      */
     invokeOnPartition(request: ClientMessage, partitionId: number): Promise<ClientMessage> {
-        var invocation = new Invocation(request);
+        var invocation = new Invocation(this.client, request);
         invocation.partitionId = partitionId;
         return this.invoke(invocation);
     }
@@ -134,7 +143,7 @@ export class InvocationService {
      * @returns
      */
     invokeOnTarget(request: ClientMessage, target: Address): Promise<ClientMessage> {
-        var invocation = new Invocation(request);
+        var invocation = new Invocation(this.client, request);
         invocation.address = target;
         return this.invoke(invocation);
     }
@@ -146,7 +155,15 @@ export class InvocationService {
      * @returns
      */
     invokeOnRandomTarget(request: ClientMessage): Promise<ClientMessage> {
-        return this.invoke(new Invocation(request));
+        return this.invoke(new Invocation(this.client, request));
+    }
+
+    getInvocationTimeoutMillis(): number {
+        return this.invocationTimeoutMillis;
+    }
+
+    getInvocationRetryPauseMillis(): number {
+        return this.invocationRetryPauseMillis;
     }
 
     private invokeSmart(invocation: Invocation): void {
@@ -174,7 +191,7 @@ export class InvocationService {
     private invokeOnAddress(invocation: Invocation, address: Address): void {
         this.client.getConnectionManager().getOrConnect(address).then((connection: ClientConnection) => {
             if (connection == null) {
-                this.notifyError(invocation, new Error('No connection'));
+                this.notifyError(invocation, new Error(address.toString() + ' is not available.'));
                 return;
             }
             this.send(invocation, connection);
@@ -185,7 +202,7 @@ export class InvocationService {
         var ownerAddress = this.client.getPartitionService().getAddressForPartition(partitionId);
         this.client.getConnectionManager().getOrConnect(ownerAddress).then((connection: ClientConnection) => {
             if (connection == null) {
-                this.notifyError(invocation, new Error('No connection'));
+                this.notifyError(invocation, new Error(ownerAddress.toString() + '(partition owner) is not available.'));
                 return;
             }
             this.send(invocation, connection);
@@ -209,11 +226,11 @@ export class InvocationService {
     private notifyError(invocation: Invocation, error: Error) {
         var correlationId = invocation.request.getCorrelationId().toNumber();
         if (this.isRetryable(invocation)) {
-            this.logger.warn('InvocationService', 'Retrying(' + invocation.invokeCount + ') correlation-id=' + correlationId);
+            this.logger.debug('InvocationService', 'Retrying(' + invocation.invokeCount + ') correlation-id=' + correlationId);
             if (invocation.invokeCount < MAX_FAST_INVOCATION_COUNT) {
                 this.doInvoke(invocation);
             } else {
-                setTimeout(this.doInvoke.bind(this, invocation), this.invocationRetryPauseMillis);
+                setTimeout(this.doInvoke.bind(this, invocation), this.getInvocationRetryPauseMillis());
             }
         } else {
             this.logger.warn('InvocationService', 'Sending message ' + correlationId + 'failed');
@@ -287,7 +304,7 @@ export class InvocationService {
                 invocationFinished = false;
                 setTimeout(() => {
                     this.invoke(pendingInvocation);
-                }, INVOCATION_RETRY_DELAY);
+                }, this.getInvocationRetryPauseMillis());
             } else {
                 this.logger.trace('InvocationService', 'Received exception as response', remoteException);
                 deferred.reject(remoteException);
@@ -318,7 +335,7 @@ export class ListenerService {
 
     registerListener(request: ClientMessage, handler: any, decoder: any, key: any = undefined): Promise<string> {
         var deferred = Promise.defer<string>();
-        var invocation = new Invocation(request);
+        var invocation = new Invocation(this.client, request);
         invocation.handler = handler;
         this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
             var correlationId = responseMessage.getCorrelationId();
@@ -331,7 +348,7 @@ export class ListenerService {
 
     deregisterListener(request: ClientMessage, decoder: any): Promise<boolean> {
         var deferred = Promise.defer<boolean>();
-        var invocation = new Invocation(request);
+        var invocation = new Invocation(this.client, request);
         var listenerIdToCorrelation = this.listenerIdToCorrelation;
         this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
             var correlationId = responseMessage.getCorrelationId().toString();
