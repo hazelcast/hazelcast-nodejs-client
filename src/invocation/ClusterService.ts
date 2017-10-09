@@ -154,7 +154,7 @@ class ClusterService extends EventEmitter {
                 this.client.getConnectionManager().getOrConnect(currentAddress, true)
                     .then((connection: ClientConnection) => {
                     if (connection == null) {
-                        throw new Error('null error');
+                        throw new Error('Could not connect to ' + currentAddress.toString());
                     }
                     this.ownerConnection = connection;
                     this.initMemberShipListener().then(() => {
