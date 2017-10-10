@@ -50,7 +50,8 @@ class ClientConnectionManager extends EventEmitter {
 
         this.pendingConnections[addressIndex] = result;
 
-        var clientConnection = new ClientConnection(this.client, address, this.client.getConfig().networkConfig);
+        var clientConnection = new ClientConnection(this.client.getConnectionManager(), address,
+            this.client.getConfig().networkConfig);
 
         clientConnection.connect().then(() => {
             clientConnection.registerResponseCallback((data: Buffer) => {
