@@ -6,7 +6,7 @@ import {BitsUtil} from '../BitsUtil';
 import {LoggingService} from '../logging/LoggingService';
 import {ClientNetworkConfig} from '../Config';
 import Address = require('../Address');
-import HazelcastClient from '../HazelcastClient';
+import ClientConnectionManager = require('./ClientConnectionManager');
 
 class ClientConnection {
     address: Address;
@@ -18,14 +18,14 @@ class ClientConnection {
     private readBuffer: Buffer;
     private logging =  LoggingService.getLoggingService();
     private clientNetworkConfig: ClientNetworkConfig;
-    private client: HazelcastClient;
+    private connectionManager: ClientConnectionManager;
 
-    constructor(client: HazelcastClient, address: Address, clientNetworkConfig: ClientNetworkConfig) {
+    constructor(connectionManager: ClientConnectionManager, address: Address, clientNetworkConfig: ClientNetworkConfig) {
         this.address = address;
         this.clientNetworkConfig = clientNetworkConfig;
         this.readBuffer = new Buffer(0);
         this.lastRead = 0;
-        this.client = client;
+        this.connectionManager = connectionManager;
     }
 
     /**
@@ -74,7 +74,7 @@ class ClientConnection {
                 'Could not connect to address ' + Address.encodeToString(this.address), e);
             ready.reject(e);
             if (e.code === 'EPIPE' || e.code === 'ECONNRESET') {
-                this.client.getConnectionManager().destroyConnection(this.address);
+                this.connectionManager.destroyConnection(this.address);
             }
         });
 
