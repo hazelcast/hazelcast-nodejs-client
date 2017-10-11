@@ -4,6 +4,7 @@ import {ClassDefinition, FieldDefinition, FieldType} from './ClassDefinition';
 import {BitsUtil} from '../../BitsUtil';
 import {Portable} from '../Serializable';
 import * as Long from 'long';
+import {IllegalStateError} from '../../HazelcastError';
 
 export class DefaultPortableReader implements PortableReader {
 
@@ -27,7 +28,7 @@ export class DefaultPortableReader implements PortableReader {
 
     private positionByFieldDefinition(field: FieldDefinition): number {
         if (this.raw) {
-            throw new Error('Cannot read portable fields after getRawDataInput called!');
+            throw new IllegalStateError('Cannot read portable fields after getRawDataInput called!');
         }
         var pos = this.input.readInt(this.offset + field.getIndex() * BitsUtil.INT_SIZE_IN_BYTES);
         var len = this.input.readShort(pos);
@@ -48,7 +49,7 @@ export class DefaultPortableReader implements PortableReader {
     }
 
     getFieldNames(): string[] {
-        throw new Error('Not implemented!');
+        throw new ReferenceError('Not implemented!');
     }
 
     getFieldType(fieldName: string): FieldType {

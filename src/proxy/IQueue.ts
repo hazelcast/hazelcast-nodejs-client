@@ -1,12 +1,13 @@
 import * as Promise from 'bluebird';
 import {DistributedObject} from '../DistributedObject';
 import {ItemListener} from '../core/ItemListener';
+
 export interface IQueue<E> extends DistributedObject {
     /**
      * Adds given item to the end of the queue. Operation is successful only
      * if queue has required capacity.
      * @param item element to add.
-     * @throws `Error` if queue is full.
+     * @throws `IllegalStateError` if queue is full.
      * @return `true`.
      */
     add(item: E): Promise<boolean>;

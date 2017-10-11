@@ -1,5 +1,5 @@
 import {IQueue} from './IQueue';
-import {ItemListener, ItemEventType} from '../core/ItemListener';
+import {ItemEventType, ItemListener} from '../core/ItemListener';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {QueueSizeCodec} from '../codec/QueueSizeCodec';
 import {QueueOfferCodec} from '../codec/QueueOfferCodec';
@@ -22,8 +22,10 @@ import {QueuePutCodec} from '../codec/QueuePutCodec';
 import {QueueCompareAndRemoveAllCodec} from '../codec/QueueCompareAndRemoveAllCodec';
 import {QueueCompareAndRetainAllCodec} from '../codec/QueueCompareAndRetainAllCodec';
 import {QueueAddListenerCodec} from '../codec/QueueAddListenerCodec';
-import ClientMessage = require('../ClientMessage');
 import {QueueRemoveListenerCodec} from '../codec/QueueRemoveListenerCodec';
+import {IllegalStateError} from '../HazelcastError';
+import ClientMessage = require('../ClientMessage');
+
 export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
 
     add(item: E): Promise<boolean> {
@@ -31,7 +33,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
             if (ret) {
                 return true;
             } else {
-                throw new Error('Queue is full.');
+                throw new IllegalStateError('Queue is full.');
             }
         });
     }

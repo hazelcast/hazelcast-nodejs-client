@@ -530,7 +530,7 @@ export class ObjectDataInput implements DataInput {
                     charCode = (first2 | second2 | third2);
                     break;
                 default:
-                    throw new Error('Malformed UTF8 string');
+                    throw new RangeError('Malformed UTF8 string');
             }
             result += String.fromCharCode(charCode);
         }

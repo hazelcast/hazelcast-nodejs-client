@@ -1,8 +1,9 @@
 import {Serializer} from './SerializationService';
 import {DataInput, DataOutput} from './Data';
-import {IdentifiedDataSerializableFactory, IdentifiedDataSerializable} from './Serializable';
-import Long = require('long');
+import {IdentifiedDataSerializable, IdentifiedDataSerializableFactory} from './Serializable';
 import {BitsUtil} from '../BitsUtil';
+import Long = require('long');
+
 export class StringSerializer implements Serializer {
 
     getId(): number {
@@ -366,7 +367,7 @@ export class IdentifiedDataSerializableSerializer implements Serializer {
         var factory: IdentifiedDataSerializableFactory;
         factory = this.factories[factoryId];
         if (!factory) {
-            throw new ReferenceError('There is no Identified Data Serializer factory with id ' + factoryId + '.');
+            throw new RangeError('There is no Identified Data Serializer factory with id ' + factoryId + '.');
         }
         var object = factory.create(classId);
         object.readData(input);

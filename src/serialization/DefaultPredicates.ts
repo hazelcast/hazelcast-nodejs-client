@@ -1,6 +1,6 @@
 import {DataInput, DataOutput} from './Data';
 import {AbstractPredicate} from './PredicateFactory';
-import {Predicate, IterationType} from '../core/Predicate';
+import {IterationType, Predicate} from '../core/Predicate';
 import {enumFromString} from '../Util';
 import {Comparator} from '../core/Comparator';
 
@@ -433,7 +433,7 @@ export class PagingPredicate extends AbstractPredicate {
         } else if (page === anchorCount) {
             this.anchorList.push(anchorEntry);
         } else {
-            throw new Error('Anchor index is not correct, expected: ' + page + 'found: ' + anchorCount);
+            throw new RangeError('Anchor index is not correct, expected: ' + page + 'found: ' + anchorCount);
         }
     }
 

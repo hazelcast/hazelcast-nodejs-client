@@ -95,7 +95,7 @@ export interface IRingbuffer<E> extends DistributedObject {
      *
      * @param sequence the sequence number of the item to read.
      * @return the item that was read.
-     * @throws Error                if the sequence is:
+     * @throws `RangeError`         if the sequence is:
      *                              smaller then zero;
      *                              smaller than {@link #headSequence()};
      *                              more than {@link #tailSequence()} + 1
@@ -114,12 +114,12 @@ export interface IRingbuffer<E> extends DistributedObject {
      * @param sequence sequence number of the first item to be read.
      * @param minCount minimum number of items to be read.
      * @param maxCount maximum number of items to be read.
-     * @throws Error if startSequence is smaller than 0
-     *               or if startSequence larger than {@link #tailSequence()}
-     *               or if minCount smaller than 0
-     *               or if minCount larger than maxCount,
-     *               or if maxCount larger than the capacity of the ringbuffer
-     *               or if maxCount larger than 1000 (to prevent overload)
+     * @throws `RangeError` if startSequence is smaller than 0
+     *                      or if startSequence larger than {@link #tailSequence()}
+     *                      or if minCount smaller than 0
+     *                      or if minCount larger than maxCount,
+     *                      or if maxCount larger than the capacity of the ringbuffer
+     *                      or if maxCount larger than 1000 (to prevent overload)
      */
     readMany(sequence: number | Long, minCount: number, maxCount: number): Promise<Array<E>>;
 }

@@ -50,7 +50,7 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements IRingb
 
     readOne(sequence: number|Long): Promise<E> {
         if (Long.fromValue(sequence).lessThan(0)) {
-            throw new Error('Sequence number should not be less than zero, was: ' + sequence);
+            throw new RangeError('Sequence number should not be less than zero, was: ' + sequence);
         }
 
         return this.encodeInvoke<E>(RingbufferReadOneCodec, sequence);
@@ -59,15 +59,15 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements IRingb
     readMany(sequence: number|Long, minCount: number, maxCount: number): Promise<Array<E>> {
 
         if (Long.fromValue(sequence).lessThan(0)) {
-            throw new Error('Sequence number should not be less than zero, was: ' + sequence);
+            throw new RangeError('Sequence number should not be less than zero, was: ' + sequence);
         }
 
         if (minCount < 0) {
-            throw new Error('Min count should not be less than zero, was: ' + sequence);
+            throw new RangeError('Min count should not be less than zero, was: ' + sequence);
         }
 
         if (minCount > maxCount) {
-            throw new Error('Min count ' + minCount + 'was larger than max count ' + maxCount);
+            throw new RangeError('Min count ' + minCount + 'was larger than max count ' + maxCount);
         }
 
         return this
