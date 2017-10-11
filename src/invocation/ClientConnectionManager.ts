@@ -63,7 +63,7 @@ class ClientConnectionManager extends EventEmitter {
                 this.establishedConnections[Address.encodeToString(clientConnection.address)] = clientConnection;
             } else {
                 throw new AuthenticationError('Invalid credentials. Address: ' +
-                     + Address.encodeToString(clientConnection.getAddress()));
+                     Address.encodeToString(clientConnection.getAddress()));
             }
         }).then(() => {
             this.onConnectionOpened(clientConnection);

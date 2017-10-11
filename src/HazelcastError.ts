@@ -1,35 +1,38 @@
-export class HazelcastError extends Error {
+export class HazelcastError {
+
+    message: string;
+    stack: string;
+
     constructor(msg: string) {
-        super(msg);
+        this.message = msg;
         Error.captureStackTrace(this, HazelcastError);
-        Object.setPrototypeOf(this, HazelcastError);
+    }
+
+    toString(): string {
+        return this.message;
     }
 }
 
 export class AuthenticationError extends HazelcastError {
     constructor(msg: string) {
         super(msg);
-        Object.setPrototypeOf(this, AuthenticationError);
     }
 }
 
 export class ClientNotActiveError extends HazelcastError {
     constructor(msg: string) {
         super(msg);
-        Object.setPrototypeOf(this, ClientNotActiveError);
     }
 }
 
 export class IllegalStateError extends HazelcastError {
     constructor(msg: string) {
         super(msg);
-        Object.setPrototypeOf(this, IllegalStateError);
     }
 }
 
 export class TopicOverloadError extends HazelcastError {
     constructor(msg: string) {
         super(msg);
-        Object.setPrototypeOf(this, TopicOverloadError);
     }
 }
