@@ -1,16 +1,11 @@
 import * as Promise from 'bluebird';
-
-import Address = require('../Address');
-import ClientConnection = require('./ClientConnection');
-
-import InvocationService = require('./InvocationService');
-
-import {GroupConfig, ClientNetworkConfig} from '../Config';
-
-import ConnectionAuthenticator = require('./ConnectionAuthenticator');
 import {LoggingService} from '../logging/LoggingService';
 import {EventEmitter} from 'events';
 import HazelcastClient from '../HazelcastClient';
+import {AuthenticationError, ClientNotActiveError} from '../HazelcastError';
+import Address = require('../Address');
+import ClientConnection = require('./ClientConnection');
+import ConnectionAuthenticator = require('./ConnectionAuthenticator');
 
 const EMIT_CONNECTION_CLOSED = 'connectionClosed';
 const EMIT_CONNECTION_OPENED = 'connectionOpened';
@@ -67,7 +62,8 @@ class ClientConnectionManager extends EventEmitter {
             if (authenticated) {
                 this.establishedConnections[Address.encodeToString(clientConnection.address)] = clientConnection;
             } else {
-                throw new Error('Authentication failed');
+                throw new AuthenticationError('Invalid credentials. Address: ' +
+                     + Address.encodeToString(clientConnection.getAddress()));
             }
         }).then(() => {
             this.onConnectionOpened(clientConnection);
@@ -99,7 +95,7 @@ class ClientConnectionManager extends EventEmitter {
 
     shutdown() {
         for (var pending in this.pendingConnections) {
-            this.pendingConnections[pending].reject(new Error('Client is shutting down!'));
+            this.pendingConnections[pending].reject(new ClientNotActiveError('Client is shutting down!'));
         }
         for (var conn in this.establishedConnections) {
             this.establishedConnections[conn].close();

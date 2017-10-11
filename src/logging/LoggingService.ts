@@ -1,6 +1,7 @@
-import HazelcastClient = require('../HazelcastClient');
 import {NoLogger} from './NoLogger';
 import {DefaultLogger} from './DefaultLogger';
+import {IllegalStateError} from '../HazelcastError';
+
 export enum LogLevel {
     ERROR = 0,
     WARN = 1,
@@ -31,7 +32,7 @@ export class LoggingService {
         if (LoggingService.loggingService != null) {
             return LoggingService.loggingService;
         } else {
-            throw new Error('LoggingService was not initialized');
+            throw new IllegalStateError('LoggingService was not initialized');
         }
     }
 
@@ -42,7 +43,7 @@ export class LoggingService {
             } else if (loggerModule === 'default') {
                 LoggingService.loggingService = new LoggingService();
             } else {
-                throw new Error('Logging type unknown: ' + loggerModule);
+                throw new RangeError('Logging type unknown: ' + loggerModule);
             }
         } else {
             LoggingService.loggingService = new LoggingService(<ILogger>loggerModule);

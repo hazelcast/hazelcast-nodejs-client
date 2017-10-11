@@ -1,10 +1,9 @@
 import ClientConnection = require('./ClientConnection');
 import ClientMessage = require('../ClientMessage');
-import * as Promise from 'bluebird';
 import Long = require('long');
-import {Data} from '../serialization/Data';
 import Address = require('../Address');
 import ExceptionCodec = require('../codec/ExceptionCodec');
+import * as Promise from 'bluebird';
 import {BitsUtil} from '../BitsUtil';
 import {LoggingService} from '../logging/LoggingService';
 import {EventEmitter} from 'events';

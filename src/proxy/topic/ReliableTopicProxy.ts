@@ -11,6 +11,7 @@ import {RawTopicMessage} from './RawTopicMessage';
 import {SerializationService} from '../../serialization/SerializationService';
 import {OverflowPolicy} from '../../core/OverflowPolicy';
 import {TopicOverloadPolicy} from './TopicOverloadPolicy';
+import {TopicOverloadError} from '../../HazelcastError';
 import Long = require('long');
 
 export const RINGBUFFER_PREFIX = '_hz_rb_';
@@ -84,7 +85,7 @@ export class ReliableTopicProxy<E> implements ITopic<E> {
             case TopicOverloadPolicy.BLOCK:
                 return this.addWithBackoff(reliableTopicMessage);
             default:
-                throw new Error('Unknown overload policy');
+                throw new RangeError('Unknown overload policy');
         }
     }
 
@@ -97,7 +98,8 @@ export class ReliableTopicProxy<E> implements ITopic<E> {
     private addWithError(reliableTopicMessage: RawTopicMessage): Promise<void> {
         return this.ringbuffer.add(reliableTopicMessage, OverflowPolicy.FAIL).then<void>((seq: Long) => {
             if (seq.toNumber() === -1) {
-                throw new Error('Failed to add an item to the topic');
+                throw new TopicOverloadError('Failed to publish message: ' + reliableTopicMessage +
+                    ' on topic: ' + this.getName());
             }
 
             return null;

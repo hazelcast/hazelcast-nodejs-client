@@ -12,7 +12,7 @@ export class HeapData implements Data {
 
     constructor(buffer: Buffer) {
         if (buffer != null && buffer.length > 0 && buffer.length < HEAP_DATA_OVERHEAD) {
-            throw new Error('Data should be either empty or should contain more than ' + HEAP_DATA_OVERHEAD
+            throw new RangeError('Data should be either empty or should contain more than ' + HEAP_DATA_OVERHEAD
                 + ' bytes! -> '
                 + buffer);
         }
