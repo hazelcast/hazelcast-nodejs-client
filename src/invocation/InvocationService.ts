@@ -8,6 +8,7 @@ import {BitsUtil} from '../BitsUtil';
 import {LoggingService} from '../logging/LoggingService';
 import {EventEmitter} from 'events';
 import HazelcastClient from '../HazelcastClient';
+import {ClientEventRegistration} from './ClientEventRegistration';
 
 var EXCEPTION_MESSAGE_TYPE = 109;
 const MAX_FAST_INVOCATION_COUNT = 5;
@@ -324,41 +325,70 @@ export class InvocationService {
  */
 export class ListenerService {
     private client: HazelcastClient;
-    private listenerIdToCorrelation: { [id: string]: Long} = {};
     private internalEventEmitter: EventEmitter;
+
+    private activeRegistrations: Map<string, Map<string, ClientEventRegistration>>;
+    private failedRegistrations: Map<string, Map<string, ClientEventRegistration>>;
 
     constructor(client: HazelcastClient) {
         this.client = client;
         this.internalEventEmitter = new EventEmitter();
         this.internalEventEmitter.setMaxListeners(0);
+        this.activeRegistrations = new Map();
+        this.failedRegistrations = new Map();
     }
 
-    registerListener(request: ClientMessage, handler: any, decoder: any, key: any = undefined): Promise<string> {
+    registerListener(encodeFunc: any, handler: any, decoder: any): Promise<string> {
+        var activeConnections = this.client.getConnectionManager().getActiveConnections(); //TODO copy?
+        var userRegistrationKey: string = '' + Math.random(); //TODO replace this with uuid
+        var connectionsOnUserKey: Map<string, ClientEventRegistration>;
         var deferred = Promise.defer<string>();
-        var invocation = new Invocation(this.client, request);
-        invocation.handler = handler;
-        this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
-            var correlationId = responseMessage.getCorrelationId();
-            var response = decoder(responseMessage);
-            this.listenerIdToCorrelation[response.response] = correlationId;
-            deferred.resolve(response.response);
-        });
+        connectionsOnUserKey = this.activeRegistrations.get(userRegistrationKey);
+        if (connectionsOnUserKey === undefined) {
+            connectionsOnUserKey = new Map();
+            this.activeRegistrations.set(userRegistrationKey, connectionsOnUserKey);
+        }
+        for (var address in activeConnections) {
+            if (connectionsOnUserKey.has(address)) {
+                continue;
+            }
+            var invocation = new Invocation(this.client, encodeFunc(true));
+            invocation.handler = handler;
+            invocation.connection = activeConnections[address];
+            this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
+                var correlationId = responseMessage.getCorrelationId();
+                var response = decoder(responseMessage);
+                var clientEventRegistration = new ClientEventRegistration(response.response,
+                    correlationId, invocation.connection);
+                connectionsOnUserKey.set(address, clientEventRegistration);
+            }).then(() => {
+                deferred.resolve(userRegistrationKey);
+            });
+        }
         return deferred.promise;
     }
 
-    deregisterListener(request: ClientMessage, decoder: any): Promise<boolean> {
+    deregisterListener(encodeFunc: any, decodeFunc: any, userRegistrationKey: string): Promise<boolean> {
         var deferred = Promise.defer<boolean>();
-        var invocation = new Invocation(this.client, request);
-        var listenerIdToCorrelation = this.listenerIdToCorrelation;
-        this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
-            var correlationId = responseMessage.getCorrelationId().toString();
-            if (listenerIdToCorrelation.hasOwnProperty(correlationId)) {
-                this.client.getInvocationService().removeEventHandler(listenerIdToCorrelation[correlationId].low);
-                delete listenerIdToCorrelation[correlationId];
-            }
-            var response = decoder(responseMessage);
-            deferred.resolve(response.response);
+        var registrationsOnUserKey = this.activeRegistrations.get(userRegistrationKey);
+        if (registrationsOnUserKey === undefined) {
+            deferred.resolve(false);
+            return deferred.promise;
+        }
+        registrationsOnUserKey.forEach((eventRegistration: ClientEventRegistration, address: string) => {
+            var invocation = new Invocation(this.client, encodeFunc(eventRegistration.serverRegistrationId));
+            invocation.connection = eventRegistration.subscriber;
+            this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
+                registrationsOnUserKey.delete(address);
+                this.client.getInvocationService().removeEventHandler(eventRegistration.correlationId.low);
+
+                var response = decodeFunc(responseMessage);
+                deferred.resolve(response.response);
+            }).then(() => {
+                this.activeRegistrations.delete(userRegistrationKey);
+            });
         });
+
         return deferred.promise;
     }
 }
