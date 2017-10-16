@@ -2,7 +2,7 @@ import * as Promise from 'bluebird';
 import {LoggingService} from '../logging/LoggingService';
 import {EventEmitter} from 'events';
 import HazelcastClient from '../HazelcastClient';
-import {AuthenticationError, ClientNotActiveError} from '../HazelcastError';
+import {ClientNotActiveError} from '../HazelcastError';
 import Address = require('../Address');
 import ClientConnection = require('./ClientConnection');
 import ConnectionAuthenticator = require('./ConnectionAuthenticator');
