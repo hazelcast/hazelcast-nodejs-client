@@ -6,6 +6,7 @@ import {BitsUtil} from '../BitsUtil';
 import {LoggingService} from '../logging/LoggingService';
 import {ClientNetworkConfig} from '../Config';
 import Address = require('../Address');
+import ClientConnectionManager = require('./ClientConnectionManager');
 
 class ClientConnection {
     address: Address;
@@ -17,12 +18,14 @@ class ClientConnection {
     private readBuffer: Buffer;
     private logging =  LoggingService.getLoggingService();
     private clientNetworkConfig: ClientNetworkConfig;
+    private connectionManager: ClientConnectionManager;
 
-    constructor(address: Address, clientNetworkConfig: ClientNetworkConfig) {
+    constructor(connectionManager: ClientConnectionManager, address: Address, clientNetworkConfig: ClientNetworkConfig) {
         this.address = address;
         this.clientNetworkConfig = clientNetworkConfig;
         this.readBuffer = new Buffer(0);
         this.lastRead = 0;
+        this.connectionManager = connectionManager;
     }
 
     /**
@@ -70,6 +73,9 @@ class ClientConnection {
             this.logging.warn('ClientConnection',
                 'Could not connect to address ' + Address.encodeToString(this.address), e);
             ready.reject(e);
+            if (e.code === 'EPIPE' || e.code === 'ECONNRESET') {
+                this.connectionManager.destroyConnection(this.address);
+            }
         });
 
         return ready.promise;
@@ -85,6 +91,8 @@ class ClientConnection {
     close() {
         this.socket.end();
     }
+
+
 
     /**
      * Registers a function to pass received data on 'data' events on this connection.

@@ -18,6 +18,10 @@ import {ReplicatedMapProxy} from './ReplicatedMapProxy';
 import {NearCachedMapProxy} from './NearCachedMapProxy';
 import {SemaphoreProxy} from './SemaphoreProxy';
 import {AtomicLongProxy} from './AtomicLongProxy';
+import {LoggingService} from '../logging/LoggingService';
+import Address = require('../Address');
+import {Invocation} from '../invocation/InvocationService';
+import {Member} from '../core/Member';
 
 class ProxyManager {
     public MAP_SERVICE: string = 'hz:impl:mapService';
@@ -46,9 +50,14 @@ class ProxyManager {
 
     private proxies: { [proxyName: string]: DistributedObject; } = {};
     private client: HazelcastClient;
+    private logger = LoggingService.getLoggingService();
+    private readonly invocationTimeoutMillis: number;
+    private readonly invocationRetryPauseMillis: number;
 
     constructor(client: HazelcastClient) {
         this.client = client;
+        this.invocationTimeoutMillis = this.client.getInvocationService().getInvocationTimeoutMillis();
+        this.invocationRetryPauseMillis = this.client.getInvocationService().getInvocationRetryPauseMillis();
     }
 
     public getOrCreateProxy(name: string, serviceName: string, createAtServer = true): DistributedObject {
@@ -62,20 +71,56 @@ class ProxyManager {
                 newProxy = new this.service[serviceName](this.client, serviceName, name);
             }
             if (createAtServer) {
-                this.createProxy(name, serviceName);
+                this.createProxy(newProxy);
             }
             this.proxies[name] = newProxy;
             return newProxy;
         }
     }
 
-    private createProxy(name: string, serviceName: string): Promise<ClientMessage> {
-        var connection: ClientConnection = this.client.getClusterService().getOwnerConnection();
-        var request = ClientCreateProxyCodec.encodeRequest(name, serviceName, connection.getAddress());
+    private createProxy(proxyObject: DistributedObject): Promise<ClientMessage> {
+        var promise = Promise.defer<ClientMessage>();
 
-        var createProxyPromise: Promise<ClientMessage> = this.client.getInvocationService()
-            .invokeOnConnection(connection, request);
-        return createProxyPromise;
+        this.initializeProxy(proxyObject, promise, Date.now() + this.invocationTimeoutMillis);
+
+        return promise.promise;
+    }
+
+    private findNextAddress(): Address {
+        var members = this.client.getClusterService().getMembers();
+        var liteMember: Member = null;
+        for (var i = 0; i < members.length; i++) {
+            var currentMember = members[i];
+            if (currentMember != null && currentMember.isLiteMember === false) {
+                return currentMember.address;
+            } else if (currentMember != null && currentMember.isLiteMember) {
+                liteMember = currentMember;
+            }
+        }
+
+        if (liteMember != null) {
+            return liteMember.address;
+        } else {
+            return null;
+        }
+    }
+
+    private initializeProxy(proxyObject: DistributedObject, promise: Promise.Resolver<ClientMessage>, deadline: number): void {
+        if (Date.now() <= deadline) {
+            var address: Address = this.findNextAddress();
+            var request = ClientCreateProxyCodec.encodeRequest(proxyObject.getName(), proxyObject.getServiceName(), address);
+            var invocation = new Invocation(this.client, request);
+            invocation.address = address;
+            this.client.getInvocationService().invoke(invocation).then((response) => {
+                promise.resolve(response);
+            }).catch((error) => {
+                this.logger.warn('ProxyManager', 'Create proxy request for ' + proxyObject.getName() +
+                    ' failed. Retrying in ' + this.invocationRetryPauseMillis + 'ms.');
+                setTimeout(this.initializeProxy.bind(this, proxyObject, promise, deadline), this.invocationRetryPauseMillis);
+            });
+        } else {
+            promise.reject('Create proxy request timed-out for ' + proxyObject.getName());
+        }
     }
 
     destroyProxy(name: string, serviceName: string): Promise<void> {
@@ -98,17 +143,24 @@ class ProxyManager {
             };
             ClientAddDistributedObjectListenerCodec.handle(clientMessage, converterFunc, null);
         };
+        var encodeFunc = (localOnly: boolean) => {
+            return ClientAddDistributedObjectListenerCodec.encodeRequest(localOnly);
+        };
         return this.client.getListenerService().registerListener(
-            ClientAddDistributedObjectListenerCodec.encodeRequest(true),
+            encodeFunc,
             handler,
             ClientAddDistributedObjectListenerCodec.decodeResponse
         );
     }
 
     removeDistributedObjectListener(listenerId: string) {
+        var encodeFunc = (serverKey: string) => {
+            return ClientRemoveDistributedObjectListenerCodec.encodeRequest(serverKey);
+        };
         return this.client.getListenerService().deregisterListener(
-            ClientRemoveDistributedObjectListenerCodec.encodeRequest(listenerId),
-            ClientRemoveDistributedObjectListenerCodec.decodeResponse
+            encodeFunc,
+            ClientRemoveDistributedObjectListenerCodec.decodeResponse,
+            listenerId
         );
     }
 }

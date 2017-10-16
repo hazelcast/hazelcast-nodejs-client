@@ -2,7 +2,7 @@ import * as Promise from 'bluebird';
 import {LoggingService} from '../logging/LoggingService';
 import {EventEmitter} from 'events';
 import HazelcastClient from '../HazelcastClient';
-import {AuthenticationError, ClientNotActiveError} from '../HazelcastError';
+import {ClientNotActiveError} from '../HazelcastError';
 import Address = require('../Address');
 import ClientConnection = require('./ClientConnection');
 import ConnectionAuthenticator = require('./ConnectionAuthenticator');
@@ -22,6 +22,10 @@ class ClientConnectionManager extends EventEmitter {
     constructor(client: HazelcastClient) {
         super();
         this.client = client;
+    }
+
+    getActiveConnections(): {[address: string]: ClientConnection} {
+        return this.establishedConnections;
     }
 
     /**
@@ -50,7 +54,8 @@ class ClientConnectionManager extends EventEmitter {
 
         this.pendingConnections[addressIndex] = result;
 
-        var clientConnection = new ClientConnection(address, this.client.getConfig().networkConfig);
+        var clientConnection = new ClientConnection(this.client.getConnectionManager(), address,
+            this.client.getConfig().networkConfig);
 
         clientConnection.connect().then(() => {
             clientConnection.registerResponseCallback((data: Buffer) => {
@@ -58,18 +63,12 @@ class ClientConnectionManager extends EventEmitter {
             });
         }).then(() => {
             return this.authenticate(clientConnection, ownerConnection);
-        }).then((authenticated: boolean) => {
-            if (authenticated) {
-                this.establishedConnections[Address.encodeToString(clientConnection.address)] = clientConnection;
-            } else {
-                throw new AuthenticationError('Invalid credentials. Address: ' +
-                     Address.encodeToString(clientConnection.getAddress()));
-            }
         }).then(() => {
+            this.establishedConnections[Address.encodeToString(clientConnection.address)] = clientConnection;
             this.onConnectionOpened(clientConnection);
             result.resolve(clientConnection);
         }).catch((e: any) => {
-            result.reject(e);
+            result.resolve(null);
         }).finally(() => {
             delete this.pendingConnections[addressIndex];
         });
@@ -87,8 +86,8 @@ class ClientConnectionManager extends EventEmitter {
         }
         if (this.establishedConnections.hasOwnProperty(addressStr)) {
             var conn = this.establishedConnections[addressStr];
-            conn.close();
             delete this.establishedConnections[addressStr];
+            conn.close();
             this.onConnectionClosed(conn);
         }
     }
@@ -110,7 +109,7 @@ class ClientConnectionManager extends EventEmitter {
         this.emit(EMIT_CONNECTION_OPENED, connection);
     }
 
-    private authenticate(connection: ClientConnection, ownerConnection: boolean): Promise<boolean> {
+    private authenticate(connection: ClientConnection, ownerConnection: boolean): Promise<void> {
         var authenticator = new ConnectionAuthenticator(connection, this.client);
 
         return authenticator.authenticate(ownerConnection);

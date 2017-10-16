@@ -34,14 +34,17 @@ describe('DistributedObjectListener', function() {
     });
 
     it('listener is invoked when an object is removed', function(done) {
-        var map = client.getMap('mapToRemove');
+        var map;
         client.addDistributedObjectListener(function(name, serviceName, eventType) {
             if (eventType === 'destroyed' && name === 'mapToRemove' ) {
                 expect(serviceName).to.eq('hz:impl:mapService');
                 done();
+            } else if (eventType === 'created' && name === 'mapToRemove') {
+                map.destroy();
             }
+        }).then(function () {
+            map = client.getMap('mapToRemove');
         });
-        map.destroy();
     });
 
     it('listener is not invoked when listener was already removed by user', function(done) {
@@ -53,5 +56,9 @@ describe('DistributedObjectListener', function() {
         }).then(function() {
             setTimeout(done, 1000);
         });
+    });
+
+    it('listener is registered to all servers', function () {
+
     })
 });

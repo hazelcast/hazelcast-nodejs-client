@@ -135,35 +135,39 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
             }
         };
 
-        var request: ClientMessage;
-
         if (key) {
             var keyData = this.toData(key);
-            request = MultiMapAddEntryListenerToKeyCodec.encodeRequest(this.name, keyData, includeValue, false);
-
+            var encodeFunc = (localOnly: boolean) => {
+                return MultiMapAddEntryListenerToKeyCodec.encodeRequest(this.name, keyData, includeValue, localOnly);
+            };
             var handler = (m: ClientMessage) => {
                 MultiMapAddEntryListenerToKeyCodec.handle(m, entryEventHandler, toObject);
             };
 
-            return this.client.getListenerService().registerListener(request, handler,
-                MultiMapAddEntryListenerToKeyCodec.decodeResponse, keyData);
+            return this.client.getListenerService().registerListener(encodeFunc, handler,
+                MultiMapAddEntryListenerToKeyCodec.decodeResponse);
         } else {
-            request = MultiMapAddEntryListenerCodec.encodeRequest(this.name, includeValue, false);
-
+            var encodeFunc = (localOnly: boolean) => {
+                return MultiMapAddEntryListenerCodec.encodeRequest(this.name, includeValue, localOnly);
+            };
             var handler = (m: ClientMessage) => {
                 MultiMapAddEntryListenerCodec.handle(m, entryEventHandler, toObject);
             };
 
-            return this.client.getListenerService().registerListener(request, handler,
+            return this.client.getListenerService().registerListener(encodeFunc, handler,
                 MultiMapAddEntryListenerCodec.decodeResponse);
         }
 
     }
 
     removeEntryListener(listenerId: string): Promise<boolean> {
+        var encodeFunc = (serverKey: string) => {
+            return MultiMapRemoveEntryListenerCodec.encodeRequest(this.name, serverKey);
+        };
         return this.client.getListenerService().deregisterListener(
-            MultiMapRemoveEntryListenerCodec.encodeRequest(this.name, listenerId),
-            MultiMapRemoveEntryListenerCodec.decodeResponse
+            encodeFunc,
+            MultiMapRemoveEntryListenerCodec.decodeResponse,
+            listenerId
         );
     }
 
