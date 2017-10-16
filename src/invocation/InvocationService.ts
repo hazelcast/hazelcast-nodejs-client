@@ -379,7 +379,8 @@ export class ListenerService {
 
     removeRegistrationsOnConnection(connection: ClientConnection) {
         this.failedRegistrations.delete(connection);
-        this.activeRegistrations.forEach((registrationsOnUserKey: Map<ClientConnection, ClientEventRegistration>, userKey: string) => {
+        this.activeRegistrations.forEach((registrationsOnUserKey: Map<ClientConnection, ClientEventRegistration>,
+                                          userKey: string) => {
             var eventRegistration: ClientEventRegistration = registrationsOnUserKey.get(connection);
             if (eventRegistration !== undefined) {
                 this.client.getInvocationService().removeEventHandler(eventRegistration.correlationId.toNumber());
@@ -419,7 +420,8 @@ export class ListenerService {
         if (connectionsOnUserKey === undefined) {
             connectionsOnUserKey = new Map();
             this.activeRegistrations.set(userRegistrationKey, connectionsOnUserKey);
-            this.userRegistrationKeyInformation.set(userRegistrationKey, new RegistrationKey(userRegistrationKey, encodeFunc, decoder, handler));
+            this.userRegistrationKeyInformation.set(userRegistrationKey,
+                new RegistrationKey(userRegistrationKey, encodeFunc, decoder, handler));
         }
         for (var address in activeConnections) {
             if (connectionsOnUserKey.has(activeConnections[address])) {
