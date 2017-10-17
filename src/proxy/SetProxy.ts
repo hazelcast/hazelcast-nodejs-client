@@ -71,7 +71,9 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
     }
 
     addItemListener(listener: ItemListener<E>, includeValue: boolean = true): Promise<string> {
-        var request = SetAddListenerCodec.encodeRequest(this.name, includeValue, false);
+        let encodeFunc = (localOnly: boolean) => {
+            return SetAddListenerCodec.encodeRequest(this.name, includeValue, localOnly);
+        };
         var handler = (message: ClientMessage) => {
             SetAddListenerCodec.handle(message, (item: Data, uuid: string, eventType: number) => {
                 var responseObject = this.toObject(item);
@@ -87,14 +89,18 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
                 }
             });
         };
-        return this.client.getListenerService().registerListener(request, handler,
-            SetAddListenerCodec.decodeResponse, this.name);
+        return this.client.getListenerService().registerListener(encodeFunc, handler,
+            SetAddListenerCodec.decodeResponse);
     }
 
     removeItemListener(registrationId: string): Promise<boolean> {
+        let encodeFunc = (serverKey: string) => {
+            return SetRemoveListenerCodec.encodeRequest(this.name, serverKey);
+        };
         return this.client.getListenerService().deregisterListener(
-            SetRemoveListenerCodec.encodeRequest(this.name, registrationId),
-            SetRemoveListenerCodec.decodeResponse
+            encodeFunc,
+            SetRemoveListenerCodec.decodeResponse,
+            registrationId
         );
     }
 
