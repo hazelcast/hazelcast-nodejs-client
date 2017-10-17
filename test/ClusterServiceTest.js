@@ -65,10 +65,12 @@ describe('ClusterService', function() {
         return HazelcastClient.newHazelcastClient(cfg).then(function(newClient) {
             newClient.shutdown();
             throw new Error('Client falsely started with target addresses: ' +
-                configuredAddresses.map(Address.encodeToString).join(', '));
+                configuredAddresses.map(function(element) {
+                    return element.toString();
+                }).join(', '));
         }).catch(function (err) {
-            return Promise.all(configuredAddresses.map((address) => {
-                return expect(err.message).to.include(Address.encodeToString(address))
+            return Promise.all(configuredAddresses.map(function(address) {
+                return expect(err.message).to.include(address.toString());
             }));
         });
     });

@@ -79,7 +79,7 @@ class Heartbeat {
 
     private onHeartbeatStopped(connection: ClientConnection) {
         connection.heartbeating = false;
-        this.logger.warn('HeartbeatService', 'Heartbeat stopped on ' + Address.encodeToString(connection.address));
+        this.logger.warn('HeartbeatService', 'Heartbeat stopped on ' + connection.address.toString());
         this.listeners.forEach((listener) => {
             if (listener.hasOwnProperty('onHeartbeatStopped')) {
                 setImmediate(listener.onHeartbeatStopped.bind(this), connection);
@@ -89,7 +89,7 @@ class Heartbeat {
 
     private onHeartbeatRestored(connection: ClientConnection) {
         connection.heartbeating = true;
-        this.logger.warn('HeartbeatService', 'Heartbeat restored on ' + Address.encodeToString(connection.address));
+        this.logger.warn('HeartbeatService', 'Heartbeat restored on ' + connection.address.toString());
         this.listeners.forEach((listener) => {
             if (listener.hasOwnProperty('onHeartbeatRestored')) {
                 setImmediate(listener.onHeartbeatRestored.bind(this), connection);

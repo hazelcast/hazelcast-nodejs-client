@@ -32,7 +32,7 @@ class ClientConnectionManager extends EventEmitter {
      * @returns {Promise<ClientConnection>|Promise<T>}
      */
     getOrConnect(address: Address, ownerConnection: boolean = false): Promise<ClientConnection> {
-        var addressIndex = Address.encodeToString(address);
+        var addressIndex = address.toString();
         var result: Promise.Resolver<ClientConnection> = Promise.defer<ClientConnection>();
 
         var establishedConnection = this.establishedConnections[addressIndex];
@@ -60,7 +60,7 @@ class ClientConnectionManager extends EventEmitter {
         }).then(() => {
             return this.authenticate(clientConnection, ownerConnection);
         }).then(() => {
-            this.establishedConnections[Address.encodeToString(clientConnection.address)] = clientConnection;
+            this.establishedConnections[clientConnection.address.toString()] = clientConnection;
             this.onConnectionOpened(clientConnection);
             result.resolve(clientConnection);
         }).catch((e: any) => {
@@ -76,7 +76,7 @@ class ClientConnectionManager extends EventEmitter {
      * @param address
      */
     destroyConnection(address: Address): void {
-        var addressStr = Address.encodeToString(address);
+        var addressStr = address.toString();
         if (this.pendingConnections.hasOwnProperty(addressStr)) {
             this.pendingConnections[addressStr].reject(null);
         }

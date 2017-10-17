@@ -22,6 +22,6 @@ export class Member {
     }
 
     toString() {
-        return 'Member[ uuid: ' + this.uuid + ', address: ' + Address.encodeToString(this.address) + ']';
+        return 'Member[ uuid: ' + this.uuid + ', address: ' + this.address.toString() + ']';
     }
 }

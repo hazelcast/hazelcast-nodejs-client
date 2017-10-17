@@ -117,7 +117,7 @@ class ClusterService extends EventEmitter {
     }
 
     private onConnectionClosed(connection: ClientConnection) {
-        this.logger.warn('ClusterService', 'Connection closed to ' + Address.encodeToString(connection.address));
+        this.logger.warn('ClusterService', 'Connection closed to ' + connection.address.toString());
         if (connection.address === this.getOwnerConnection().address) {
             this.ownerConnection = null;
             this.connectToCluster().catch(this.client.shutdown.bind(this.client));
@@ -125,7 +125,7 @@ class ClusterService extends EventEmitter {
     }
 
     private onHeartbeatStopped(connection: ClientConnection): void {
-        this.logger.warn('ClusterService', Address.encodeToString(connection.address) + ' stopped heartbeating.');
+        this.logger.warn('ClusterService', connection.address.toString() + ' stopped heartbeating.');
         if (connection.getAddress() === this.ownerConnection.address) {
             this.client.getConnectionManager().destroyConnection(connection.address);
         }
@@ -140,7 +140,9 @@ class ClusterService extends EventEmitter {
                 attemptLimit = attemptLimit - 1;
                 if (attemptLimit === 0) {
                     var error = new RangeError('Unable to connect to any of the following addresses: ' +
-                        this.knownAddresses.map(Address.encodeToString).join(', '));
+                        this.knownAddresses.map((element: Address) => {
+                            return element.toString();
+                        }).join(', '));
                     deferred.reject(error);
                     return;
                 } else {
