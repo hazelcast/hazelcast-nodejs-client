@@ -312,7 +312,9 @@ export class InvocationService {
 
         if (clientMessage.hasFlags(BitsUtil.LISTENER_FLAG)) {
             setImmediate(() => {
-                this.eventHandlers[correlationId].handler(clientMessage);
+                if (this.eventHandlers[correlationId] !== undefined) {
+                    this.eventHandlers[correlationId].handler(clientMessage);
+                }
             });
             return;
         }
@@ -383,7 +385,7 @@ export class ListenerService implements ConnectionHeartbeatListener {
         if (this.isShutdown) {
             return;
         }
-        this.trySyncConnectToAllMembers().finally(() => {
+        this.trySyncConnectToAllConnections().finally(() => {
             this.connectionRefreshTask =
                 setTimeout(this.connectionRefreshHandler.bind(this), this.connectionRefreshTaskInterval);
         });
@@ -470,7 +472,7 @@ export class ListenerService implements ConnectionHeartbeatListener {
     }
 
     registerListener(encodeFunc: any, handler: any, decoder: any): Promise<string> {
-        return this.trySyncConnectToAllMembers().then(() => {
+        return this.trySyncConnectToAllConnections().then(() => {
             return this.registerListenerInternal(encodeFunc, handler, decoder);
         });
     }
@@ -502,6 +504,9 @@ export class ListenerService implements ConnectionHeartbeatListener {
                 connectionsOnUserKey.set(activeConnections[address], clientEventRegistration);
             }).then(() => {
                 deferred.resolve(userRegistrationKey);
+            }).catch((e) => {
+                let err = new HazelcastError('Listener registration failed on ' + address.toString());
+                this.logger.warn('ListenerService', err.toString());
             });
         }
         return deferred.promise;
@@ -532,13 +537,18 @@ export class ListenerService implements ConnectionHeartbeatListener {
         return deferred.promise;
     }
 
-    private trySyncConnectToAllMembers(): Promise<void> {
-        var members = this.client.getClusterService().getMembers();
-        var promises: Promise<ClientConnection>[] = [];
-        members.forEach((member: Member) => {
-            promises.push(this.client.getConnectionManager().getOrConnect(member.address));
-        });
-        return Promise.all(promises).thenReturn();
+    private trySyncConnectToAllConnections(): Promise<void> {
+        if (this.isSmart()) {
+            var members = this.client.getClusterService().getMembers();
+            var promises: Promise<ClientConnection>[] = [];
+            members.forEach((member: Member) => {
+                promises.push(this.client.getConnectionManager().getOrConnect(member.address));
+            });
+            return Promise.all(promises).thenReturn();
+        } else {
+            let owner = this.client.getClusterService().getOwnerConnection();
+            return this.client.getConnectionManager().getOrConnect(owner.address).thenReturn();
+        }
     }
 
     isSmart(): boolean {
