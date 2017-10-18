@@ -4,37 +4,52 @@ import ClientMessage = require('./ClientMessage');
 import Address = require('./Address');
 import HazelcastClient from './HazelcastClient';
 
+const PARTITION_REFRESH_INTERVAL = 10000;
+
 class PartitionService {
 
     private client: HazelcastClient;
-    private partitionMap: {[partitionId: number]: Address};
+    private partitionMap: {[partitionId: number]: Address} = {};
     private partitionCount: number;
+    private partitionRefreshTask: any;
+    private isShutdown: boolean;
 
     constructor(client: HazelcastClient) {
         this.client = client;
+        this.isShutdown = false;
     }
 
-    initialize(): Promise<PartitionService> {
-        return this.refresh().then(() => {
-            return this;
-        });
+    initialize(): Promise<void> {
+        return this.refresh();
+    }
+
+    shutdown(): void {
+        this.isShutdown = true;
+        clearTimeout(this.partitionRefreshTask);
     }
 
     /**
      * Refreshes the internal partition table.
      */
     refresh(): Promise<void> {
+        if (this.isShutdown) {
+            return Promise.resolve();
+        }
         var ownerConnection = this.client.getClusterService().getOwnerConnection();
         var clientMessage: ClientMessage = GetPartitionsCodec.encodeRequest();
 
         return this.client.getInvocationService()
             .invokeOnConnection(ownerConnection, clientMessage)
             .then((clientMessage: ClientMessage) => {
-                this.partitionMap = GetPartitionsCodec.decodeResponse(clientMessage);
+                var receivedPartitionMap = GetPartitionsCodec.decodeResponse(clientMessage);
+                for (var partitionId in receivedPartitionMap) {
+                    this.partitionMap[partitionId] = receivedPartitionMap[partitionId];
+                }
                 this.partitionCount = Object.keys(this.partitionMap).length;
+            }).finally(() => {
+                this.partitionRefreshTask = setTimeout(this.refresh.bind(this), PARTITION_REFRESH_INTERVAL);
             });
-        // tslint:disable-next-line:semicolon
-    };
+    }
 
     /**
      * Returns the {@link Address} of the node which owns given partition id.
