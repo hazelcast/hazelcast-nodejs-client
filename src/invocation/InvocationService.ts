@@ -312,7 +312,9 @@ export class InvocationService {
 
         if (clientMessage.hasFlags(BitsUtil.LISTENER_FLAG)) {
             setImmediate(() => {
-                this.eventHandlers[correlationId].handler(clientMessage);
+                if (this.eventHandlers[correlationId] !== undefined) {
+                    this.eventHandlers[correlationId].handler(clientMessage);
+                }
             });
             return;
         }
