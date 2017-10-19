@@ -93,6 +93,9 @@ class ClientConnection {
     }
 
 
+    toString(): string {
+        return this.address.toString();
+    }
 
     /**
      * Registers a function to pass received data on 'data' events on this connection.

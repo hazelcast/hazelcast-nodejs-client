@@ -1,6 +1,6 @@
 import {LogLevel, ILogger} from './LoggingService';
 export class DefaultLogger implements ILogger {
-    level = LogLevel.INFO;
+    level = LogLevel.DEBUG;
 
     log(level: LogLevel, className: string, message: string, furtherInfo: any) {
         if (level <= this.level) {
