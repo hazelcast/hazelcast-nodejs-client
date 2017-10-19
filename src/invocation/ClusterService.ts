@@ -159,6 +159,7 @@ class ClusterService extends EventEmitter {
                         throw new Error('Could not connect to ' + currentAddress.toString());
                     }
                     this.ownerConnection = connection;
+                    this.logger.debug('ClusterService', 'Owner set to ' + this.ownerConnection.toString());
                     this.initMemberShipListener().then(() => {
                         deferred.resolve();
                     });

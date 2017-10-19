@@ -1,7 +1,7 @@
 export class HazelcastError {
 
     message: string;
-    cause: Error;
+    cause: Error | HazelcastError;
     stack: string;
 
     constructor(msg: string, cause?: Error) {
@@ -11,7 +11,7 @@ export class HazelcastError {
     }
 
     toString(): string {
-        return this.message;
+        return this.message + '\n' + this.cause.toString();
     }
 }
 

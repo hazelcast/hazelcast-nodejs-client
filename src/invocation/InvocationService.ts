@@ -227,6 +227,7 @@ export class InvocationService {
 
     private invokeOnPartitionOwner(invocation: Invocation, partitionId: number): void {
         var ownerAddress = this.client.getPartitionService().getAddressForPartition(partitionId);
+        this.logger.debug('InvocationService', 'Invoking on partition owner: ' + ownerAddress.toString());
         this.client.getConnectionManager().getOrConnect(ownerAddress).then((connection: ClientConnection) => {
             if (connection == null) {
                 this.notifyError(invocation, new Error(ownerAddress.toString() + '(partition owner) is not available.'));
@@ -385,22 +386,25 @@ export class ListenerService implements ConnectionHeartbeatListener {
         if (this.isShutdown) {
             return;
         }
-        this.trySyncConnectToAllMembers().finally(() => {
+        this.trySyncConnectToAllEligibleMembers().finally(() => {
             this.connectionRefreshTask =
                 setTimeout(this.connectionRefreshHandler.bind(this), this.connectionRefreshTaskInterval);
         });
     }
 
     onConnectionAdded(connection: ClientConnection) {
+        this.logger.debug('ListenerService', 'onConnectionAdded called on ' + connection.toString());
         this.reregisterListenersOnConnection(connection);
 
     }
 
     onConnectionRemoved(connection: ClientConnection) {
+        this.logger.debug('ListenerService', 'onConnectionRemoved called on ' + connection.toString());
         this.removeRegistrationsOnConnection(connection);
     }
 
     onHeartbeatRestored(connection: ClientConnection): void {
+        this.logger.debug('ListenerService', 'onHeartbeatRestored called on ' + connection.toString());
         var failedRegistrationsOnConn: Set<string> = this.failedRegistrations.get(connection);
         failedRegistrationsOnConn.forEach((userKey: string, ignored: string) => {
             this.invokeRegistrationFromRecord(userKey, connection);
@@ -419,6 +423,7 @@ export class ListenerService implements ConnectionHeartbeatListener {
             if (registrationMap.has(connection)) {
                 return;
             }
+            this.logger.debug('ListenerService', 're-registering ' + userKey + ' on ' + connection);
             this.invokeRegistrationFromRecord(userKey, connection).then((eventRegistration: ClientEventRegistration) => {
                 registrationMap.set(connection, eventRegistration);
             }).catch((e) => {
@@ -472,7 +477,7 @@ export class ListenerService implements ConnectionHeartbeatListener {
     }
 
     registerListener(encodeFunc: any, handler: any, decoder: any): Promise<string> {
-        return this.trySyncConnectToAllMembers().then(() => {
+        return this.trySyncConnectToAllEligibleMembers().then(() => {
             return this.registerListenerInternal(encodeFunc, handler, decoder);
         });
     }
@@ -490,6 +495,7 @@ export class ListenerService implements ConnectionHeartbeatListener {
                 new RegistrationKey(userRegistrationKey, encodeFunc, decoder, handler));
         }
         for (var address in activeConnections) {
+            this.logger.debug('ListenerService', 'Registering ' + userRegistrationKey + ' on ' + address.toString());
             if (connectionsOnUserKey.has(activeConnections[address])) {
                 continue;
             }
@@ -504,6 +510,9 @@ export class ListenerService implements ConnectionHeartbeatListener {
                 connectionsOnUserKey.set(activeConnections[address], clientEventRegistration);
             }).then(() => {
                 deferred.resolve(userRegistrationKey);
+            }).catch((e) => {
+                let err = new HazelcastError('Listener registration failed on ' + address, e);
+                this.logger.warn('ListenerService', err.toString());
             });
         }
         return deferred.promise;
@@ -534,13 +543,18 @@ export class ListenerService implements ConnectionHeartbeatListener {
         return deferred.promise;
     }
 
-    private trySyncConnectToAllMembers(): Promise<void> {
-        var members = this.client.getClusterService().getMembers();
-        var promises: Promise<ClientConnection>[] = [];
-        members.forEach((member: Member) => {
-            promises.push(this.client.getConnectionManager().getOrConnect(member.address));
-        });
-        return Promise.all(promises).thenReturn();
+    private trySyncConnectToAllEligibleMembers(): Promise<void> {
+        if (this.isSmart()) {
+            var members = this.client.getClusterService().getMembers();
+            var promises: Promise<ClientConnection>[] = [];
+            members.forEach((member: Member) => {
+                promises.push(this.client.getConnectionManager().getOrConnect(member.address));
+            });
+            return Promise.all(promises).thenReturn();
+        } else {
+            return this.client.getConnectionManager()
+                .getOrConnect(this.client.getClusterService().getOwnerConnection().address).thenReturn();
+        }
     }
 
     isSmart(): boolean {

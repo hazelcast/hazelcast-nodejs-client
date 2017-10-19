@@ -7,6 +7,7 @@ var Promise = require('bluebird');
 
 describe('Listeners on reconnect', function () {
 
+    this.timeout(120000);
     var client;
     var members = [];
     var cluster;
@@ -23,7 +24,7 @@ describe('Listeners on reconnect', function () {
         return Controller.shutdownCluster(cluster.id);
     });
 
-    [true,  false].forEach(function (isSmart) {
+    [true, false].forEach(function (isSmart) {
 
 
         function closeTwoMembersOfThreeAndTestListener(done, membersToClose, turnoffMember) {
@@ -40,12 +41,13 @@ describe('Listeners on reconnect', function () {
                 cfg.properties['hazelcast.client.heartbeat.interval'] = 1000;
                 cfg.properties['hazelcast.client.heartbeat.timeout'] = 3000;
                 cfg.networkConfig.smartRouting = isSmart;
-                return HazelcastClient.newHazelcastClient();
+                return HazelcastClient.newHazelcastClient(cfg);
             }).then(function (cl) {
                 client = cl;
                 map = client.getMap('testmap');
                 var listenerObject = {
                     added: function(key, oldValue, value, mergingValue) {
+                        console.log('added received');
                         try {
                             expect(key).to.equal('keyx');
                             expect(oldValue).to.be.undefined;
@@ -76,32 +78,26 @@ describe('Listeners on reconnect', function () {
          */
 
         it('kill two members [1,2], listener still receives map.put event [smart=' + isSmart +']', function (done) {
-            this.timeout(50000);
             closeTwoMembersOfThreeAndTestListener(done, [1, 2], Controller.terminateMember);
         });
 
         it('kill two members [0,1], listener still receives map.put event [smart=' + isSmart +']', function (done) {
-            this.timeout(50000);
             closeTwoMembersOfThreeAndTestListener(done, [0, 1], Controller.terminateMember);
         });
 
         it('kill two members [0,2], listener still receives map.put event [smart=' + isSmart +']', function (done) {
-            this.timeout(50000);
             closeTwoMembersOfThreeAndTestListener(done, [0, 2], Controller.terminateMember);
         });
 
         it('shutdown two members [1,2], listener still receives map.put event [smart=' + isSmart +']', function (done) {
-            this.timeout(50000);
             closeTwoMembersOfThreeAndTestListener(done, [1, 2], Controller.shutdownMember);
         });
 
         it('shutdown two members [0,1], listener still receives map.put event [smart=' + isSmart +']', function (done) {
-            this.timeout(50000);
             closeTwoMembersOfThreeAndTestListener(done, [0, 1], Controller.shutdownMember);
         });
 
         it('shutdown two members [0,2], listener still receives map.put event [smart=' + isSmart +']', function (done) {
-            this.timeout(50000);
             closeTwoMembersOfThreeAndTestListener(done, [0, 2], Controller.shutdownMember);
         });
 
