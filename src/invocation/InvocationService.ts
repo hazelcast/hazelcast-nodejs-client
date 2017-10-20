@@ -252,7 +252,8 @@ export class InvocationService {
     private notifyError(invocation: Invocation, error: Error) {
         var correlationId = invocation.request.getCorrelationId().toNumber();
         if (this.isRetryable(invocation)) {
-            this.logger.debug('InvocationService', 'Retrying(' + invocation.invokeCount + ') correlation-id=' + correlationId);
+            this.logger.debug('InvocationService',
+                'Retrying(' + invocation.invokeCount + ') on correlation-id=' + correlationId, error);
             if (invocation.invokeCount < MAX_FAST_INVOCATION_COUNT) {
                 this.doInvoke(invocation);
             } else {
@@ -439,22 +440,25 @@ export class ListenerService implements ConnectionHeartbeatListener {
     }
 
     invokeRegistrationFromRecord(userRegistrationKey: string, connection: ClientConnection): Promise<ClientEventRegistration> {
-        var deferred = Promise.defer<ClientEventRegistration>();
-        var activeRegsOnUserKey = this.activeRegistrations.get(userRegistrationKey);
+        let deferred = Promise.defer<ClientEventRegistration>();
+        let activeRegsOnUserKey = this.activeRegistrations.get(userRegistrationKey);
         if (activeRegsOnUserKey !== undefined && activeRegsOnUserKey.has(connection)) {
             deferred.resolve(activeRegsOnUserKey.get(connection));
             return deferred.promise;
         }
-        var registrationKey = this.userRegistrationKeyInformation.get(userRegistrationKey);
-        var encoder = registrationKey.getEncoder();
-        var decoder = registrationKey.getDecoder();
-        var invocation = new Invocation(this.client, encoder(this.isSmart()));
+        let registrationKey = this.userRegistrationKeyInformation.get(userRegistrationKey);
+        let encoder = registrationKey.getEncoder();
+        let decoder = registrationKey.getDecoder();
+        let invocation = new Invocation(this.client, encoder(this.isSmart()));
         invocation.handler = <any>registrationKey.getHandler();
         invocation.connection = connection;
         this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
             var correlationId = responseMessage.getCorrelationId();
             var response = decoder(responseMessage);
             var eventRegistration = new ClientEventRegistration(response.response, correlationId, invocation.connection);
+            this.logger.debug('ListenerService',
+                'Listener ' + userRegistrationKey + ' re-registered on ' + connection.address.toString());
+
             deferred.resolve(eventRegistration);
         }).catch((e => {
             var failedRegsOnConnection = this.failedRegistrations.get(connection);
@@ -478,10 +482,10 @@ export class ListenerService implements ConnectionHeartbeatListener {
     }
 
     protected registerListenerInternal(encodeFunc: any, handler: any, decoder: any): Promise<string> {
-        var activeConnections = copyObjectShallow(this.client.getConnectionManager().getActiveConnections());
-        var userRegistrationKey: string = UuidUtil.generate();
-        var connectionsOnUserKey: Map<ClientConnection, ClientEventRegistration>;
-        var deferred = Promise.defer<string>();
+        let activeConnections = copyObjectShallow(this.client.getConnectionManager().getActiveConnections());
+        let userRegistrationKey: string = UuidUtil.generate();
+        let connectionsOnUserKey: Map<ClientConnection, ClientEventRegistration>;
+        let deferred = Promise.defer<string>();
         connectionsOnUserKey = this.activeRegistrations.get(userRegistrationKey);
         if (connectionsOnUserKey === undefined) {
             connectionsOnUserKey = new Map();
@@ -489,23 +493,26 @@ export class ListenerService implements ConnectionHeartbeatListener {
             this.userRegistrationKeyInformation.set(userRegistrationKey,
                 new RegistrationKey(userRegistrationKey, encodeFunc, decoder, handler));
         }
-        for (var address in activeConnections) {
+        for (let address in activeConnections) {
             if (connectionsOnUserKey.has(activeConnections[address])) {
                 continue;
             }
-            var invocation = new Invocation(this.client, encodeFunc(this.isSmart()));
+            let invocation = new Invocation(this.client, encodeFunc(this.isSmart()));
             invocation.handler = handler;
             invocation.connection = activeConnections[address];
             this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
-                var correlationId = responseMessage.getCorrelationId();
-                var response = decoder(responseMessage);
-                var clientEventRegistration = new ClientEventRegistration(response.response,
+                let correlationId = responseMessage.getCorrelationId();
+                let response = decoder(responseMessage);
+                let clientEventRegistration = new ClientEventRegistration(response.response,
                     correlationId, invocation.connection);
+                this.logger.debug('ListenerService',
+                    'Listener ' + userRegistrationKey + ' registered on ' + invocation.connection.address.toString());
                 connectionsOnUserKey.set(activeConnections[address], clientEventRegistration);
             }).then(() => {
                 deferred.resolve(userRegistrationKey);
             }).catch((e) => {
-                let err = new HazelcastError('Listener registration failed on ' + address.toString());
+                let err = new HazelcastError('Listener registration failed on ' + address.toString() + '\n' +
+                    e + e.stack);
                 this.logger.warn('ListenerService', err.toString());
             });
         }
@@ -513,18 +520,20 @@ export class ListenerService implements ConnectionHeartbeatListener {
     }
 
     deregisterListener(encodeFunc: any, decodeFunc: any, userRegistrationKey: string): Promise<boolean> {
-        var deferred = Promise.defer<boolean>();
-        var registrationsOnUserKey = this.activeRegistrations.get(userRegistrationKey);
+        let deferred = Promise.defer<boolean>();
+        let registrationsOnUserKey = this.activeRegistrations.get(userRegistrationKey);
         if (registrationsOnUserKey === undefined) {
             deferred.resolve(false);
             return deferred.promise;
         }
         registrationsOnUserKey.forEach((eventRegistration: ClientEventRegistration, connection: ClientConnection) => {
-            var invocation = new Invocation(this.client, encodeFunc(eventRegistration.serverRegistrationId));
+            let invocation = new Invocation(this.client, encodeFunc(eventRegistration.serverRegistrationId));
             invocation.connection = eventRegistration.subscriber;
             this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
                 registrationsOnUserKey.delete(connection);
                 this.client.getInvocationService().removeEventHandler(eventRegistration.correlationId.low);
+                this.logger.debug('ListenerService',
+                    'Listener ' + userRegistrationKey + ' unregistered from ' + invocation.connection.address.toString());
 
                 var response = decodeFunc(responseMessage);
                 deferred.resolve(response.response);
