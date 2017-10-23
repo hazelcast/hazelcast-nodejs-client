@@ -1,5 +1,6 @@
 import {SerializationService, SerializationServiceV1} from './serialization/SerializationService';
-import {InvocationService, ListenerService} from './invocation/InvocationService';
+import {InvocationService} from './invocation/InvocationService';
+import {ListenerService} from './ListenerService';
 import {ClientConfig} from './Config';
 import * as Promise from 'bluebird';
 import {IMap} from './proxy/IMap';
@@ -14,7 +15,6 @@ import ProxyManager = require('./proxy/ProxyManager');
 import PartitionService = require('./PartitionService');
 import ClusterService = require('./invocation/ClusterService');
 import Heartbeat = require('./HeartbeatService');
-import ClientMessage = require('./ClientMessage');
 import {IQueue} from './proxy/IQueue';
 import {IList} from './proxy/IList';
 import {ILock} from './proxy/ILock';
