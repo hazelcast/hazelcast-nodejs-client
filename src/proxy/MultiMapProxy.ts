@@ -135,26 +135,24 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
             }
         };
 
+        let localOnly = this.client.getListenerService().isLocalOnlyListener();
+        let listenerRequest: ClientMessage;
         if (key) {
             var keyData = this.toData(key);
-            var registerEncodeFunc = (localOnly: boolean) => {
-                return MultiMapAddEntryListenerToKeyCodec.encodeRequest(this.name, keyData, includeValue, localOnly);
-            };
+            listenerRequest = MultiMapAddEntryListenerToKeyCodec.encodeRequest(this.name, keyData, includeValue, localOnly);
             var handler = (m: ClientMessage) => {
                 MultiMapAddEntryListenerToKeyCodec.handle(m, entryEventHandler, toObject);
             };
 
-            return this.client.getListenerService().registerListener(registerEncodeFunc, handler,
+            return this.client.getListenerService().registerListener(listenerRequest, handler,
                 MultiMapAddEntryListenerToKeyCodec.decodeResponse);
         } else {
-            var registerEncodeFunc = (localOnly: boolean) => {
-                return MultiMapAddEntryListenerCodec.encodeRequest(this.name, includeValue, localOnly);
-            };
+            listenerRequest = MultiMapAddEntryListenerCodec.encodeRequest(this.name, includeValue, localOnly);
             var listenerHandler = (m: ClientMessage) => {
                 MultiMapAddEntryListenerCodec.handle(m, entryEventHandler, toObject);
             };
 
-            return this.client.getListenerService().registerListener(registerEncodeFunc, listenerHandler,
+            return this.client.getListenerService().registerListener(listenerRequest, listenerHandler,
                 MultiMapAddEntryListenerCodec.decodeResponse);
         }
 

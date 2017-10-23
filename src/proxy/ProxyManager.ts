@@ -143,18 +143,15 @@ class ProxyManager {
             };
             ClientAddDistributedObjectListenerCodec.handle(clientMessage, converterFunc, null);
         };
-        var encodeFunc = (localOnly: boolean) => {
-            return ClientAddDistributedObjectListenerCodec.encodeRequest(localOnly);
-        };
         return this.client.getListenerService().registerListener(
-            encodeFunc,
+            ClientAddDistributedObjectListenerCodec.encodeRequest(this.client.getListenerService().isLocalOnlyListener()),
             handler,
             ClientAddDistributedObjectListenerCodec.decodeResponse
         );
     }
 
     removeDistributedObjectListener(listenerId: string) {
-        var encodeFunc = (serverKey: string) => {
+        let encodeFunc = (serverKey: string) => {
             return ClientRemoveDistributedObjectListenerCodec.encodeRequest(serverKey);
         };
         return this.client.getListenerService().deregisterListener(

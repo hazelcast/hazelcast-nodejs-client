@@ -48,9 +48,8 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     addItemListener(listener: ItemListener<E>, includeValue: boolean): Promise<string> {
-        var encodeFunc = (localOnly: boolean) => {
-            return QueueAddListenerCodec.encodeRequest(this.name, includeValue, localOnly);
-        };
+        let localOnly = this.client.getListenerService().isLocalOnlyListener();
+        let listenerRequest = QueueAddListenerCodec.encodeRequest(this.name, includeValue, localOnly);
         var handler = (message: ClientMessage) => {
             QueueAddListenerCodec.handle(message, (item: Data, uuid: string, eventType: number) => {
                 var responseObject: E;
@@ -66,7 +65,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
                 }
             });
         };
-        return this.client.getListenerService().registerListener(encodeFunc, handler, QueueAddListenerCodec.decodeResponse);
+        return this.client.getListenerService().registerListener(listenerRequest, handler, QueueAddListenerCodec.decodeResponse);
     }
 
     clear(): Promise<void> {

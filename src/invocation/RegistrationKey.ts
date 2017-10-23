@@ -1,22 +1,24 @@
+import ClientMessage = require('../ClientMessage');
+
 export class RegistrationKey {
     private readonly userRegistrationId: string;
     private registerHandlerFunc: Function;
-    private registerEncodeFunc: Function;
+    private registerRequest: ClientMessage;
     private registerDecodeFunc: Function;
 
-    constructor(regId: string, registerEncodeFunc?: Function, registerDecodeFunc?: Function, registerHandlerFunc?: Function) {
+    constructor(regId: string, registerRequest?: ClientMessage, registerDecodeFunc?: Function, registerHandlerFunc?: Function) {
         this.userRegistrationId = regId;
         this.registerHandlerFunc = registerHandlerFunc;
-        this.registerEncodeFunc = registerEncodeFunc;
+        this.registerRequest = registerRequest;
         this.registerDecodeFunc = registerDecodeFunc;
     }
 
-    getEncoder(): Function {
-        return this.registerEncodeFunc;
+    getRegisterRequest(): ClientMessage {
+        return this.registerRequest;
     }
 
-    setEncoder(encoder: Function): void {
-        this.registerEncodeFunc = encoder;
+    setRegisterRequest(registerRequest: ClientMessage): void {
+        this.registerRequest = registerRequest;
     }
 
     getDecoder(): Function {

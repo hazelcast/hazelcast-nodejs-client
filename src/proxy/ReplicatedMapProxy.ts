@@ -121,22 +121,20 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         });
     }
 
-    addEntryListenerToKeyWithPredicate(listener: IMapListener<K, V>, key: K,
-                                       predicate: Predicate, localOnly: boolean): Promise<string> {
-        return this.addEntryListenerInternal(listener, predicate, key, localOnly);
+    addEntryListenerToKeyWithPredicate(listener: IMapListener<K, V>, key: K, predicate: Predicate): Promise<string> {
+        return this.addEntryListenerInternal(listener, predicate, key);
     }
 
-    addEntryListenerWithPredicate(listener: IMapListener<K, V>,
-                                  predicate: Predicate, localOnly: boolean): Promise<string> {
-        return this.addEntryListenerInternal(listener, predicate, undefined, localOnly);
+    addEntryListenerWithPredicate(listener: IMapListener<K, V>, predicate: Predicate): Promise<string> {
+        return this.addEntryListenerInternal(listener, predicate, undefined);
     }
 
-    addEntryListenerToKey(listener: IMapListener<K, V>, key: K, localOnly: boolean): Promise<string> {
-        return this.addEntryListenerInternal(listener, undefined, key, localOnly);
+    addEntryListenerToKey(listener: IMapListener<K, V>, key: K): Promise<string> {
+        return this.addEntryListenerInternal(listener, undefined, key);
     }
 
-    addEntryListener(listener: IMapListener<K, V>, localOnly: boolean): Promise<string> {
-        return this.addEntryListenerInternal(listener, undefined, undefined, localOnly);
+    addEntryListener(listener: IMapListener<K, V>): Promise<string> {
+        return this.addEntryListenerInternal(listener, undefined, undefined);
     }
 
     removeEntryListener(listenerId: string): Promise<boolean> {
@@ -151,7 +149,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
     }
 
     private addEntryListenerInternal(listener: IMapListener<K, V>, predicate: Predicate,
-                                     key: K, localOnly: boolean = false): Promise<string> {
+                                     key: K): Promise<string> {
         const toObject = this.toObject.bind(this);
         const entryEventHandler = function (key: K, val: V, oldVal: V, mergingVal: V,
                                             event: number, uuid: string, numberOfAffectedEntries: number) {
@@ -170,41 +168,35 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
                 listener[eventMethod].apply(null, eventParams);
             }
         };
-        let registerEncodeFunc: Function;
+        let registerListenerRequest: ClientMessage;
         let listenerHandler: Function;
         let registerDecodeFunc: Function;
+        let localOnly = this.client.getListenerService().isLocalOnlyListener();
         if (key && predicate) {
             let keyData = this.toData(key);
             let predicateData = this.toData(predicate);
-            registerEncodeFunc = (localOnly: boolean) => {
-                return ReplicatedMapAddEntryListenerToKeyWithPredicateCodec.encodeRequest(this.name, keyData,
+            registerListenerRequest = ReplicatedMapAddEntryListenerToKeyWithPredicateCodec.encodeRequest(this.name, keyData,
                     predicateData, localOnly);
-            };
             listenerHandler = ReplicatedMapAddEntryListenerToKeyWithPredicateCodec.handle;
             registerDecodeFunc = ReplicatedMapAddEntryListenerToKeyWithPredicateCodec.decodeResponse;
         } else if (key && !predicate) {
             let keyData = this.toData(key);
-            registerEncodeFunc = (localOnly: boolean) => {
-                return ReplicatedMapAddEntryListenerToKeyCodec.encodeRequest(this.name, keyData, localOnly);
-            };
+            registerListenerRequest = ReplicatedMapAddEntryListenerToKeyCodec.encodeRequest(this.name, keyData, localOnly);
             listenerHandler = ReplicatedMapAddEntryListenerToKeyCodec.handle;
             registerDecodeFunc = ReplicatedMapAddEntryListenerToKeyCodec.decodeResponse;
         } else if (!key && predicate) {
             let predicateData = this.toData(predicate);
-            registerEncodeFunc = (localOnly: boolean) => {
-                return ReplicatedMapAddEntryListenerWithPredicateCodec.encodeRequest(this.name, predicateData, localOnly);
-            };
+            registerListenerRequest = ReplicatedMapAddEntryListenerWithPredicateCodec.encodeRequest(this.name, predicateData,
+                localOnly);
             listenerHandler = ReplicatedMapAddEntryListenerWithPredicateCodec.handle;
             registerDecodeFunc = ReplicatedMapAddEntryListenerWithPredicateCodec.decodeResponse;
         } else {
-            registerEncodeFunc = (localOnly: boolean) => {
-                return ReplicatedMapAddEntryListenerCodec.encodeRequest(this.name, localOnly);
-            };
+            registerListenerRequest = ReplicatedMapAddEntryListenerCodec.encodeRequest(this.name, localOnly);
             listenerHandler = ReplicatedMapAddEntryListenerCodec.handle;
             registerDecodeFunc = ReplicatedMapAddEntryListenerCodec.decodeResponse;
         }
         return this.client.getListenerService().registerListener(
-            registerEncodeFunc,
+            registerListenerRequest,
             (m: ClientMessage) => {
                 listenerHandler(m, entryEventHandler, toObject);
             },

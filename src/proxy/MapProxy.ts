@@ -551,42 +551,35 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                     break;
             }
         };
-        var registerEncodeFunc: Function;
+        var registerRequest: ClientMessage;
         var listenerHandler: Function;
         var registerDecodeFunc: Function;
+        let localOnly = this.client.getListenerService().isLocalOnlyListener();
         if (key && predicate) {
             var keyData = this.toData(key);
             var predicateData = this.toData(predicate);
-            registerEncodeFunc = (localOnly: boolean) => {
-                return MapAddEntryListenerToKeyWithPredicateCodec.encodeRequest(this.name, keyData,
+            registerRequest = MapAddEntryListenerToKeyWithPredicateCodec.encodeRequest(this.name, keyData,
                     predicateData, includeValue, flags, localOnly);
-            };
             listenerHandler = MapAddEntryListenerToKeyWithPredicateCodec.handle;
             registerDecodeFunc = MapAddEntryListenerToKeyWithPredicateCodec.decodeResponse;
         } else if (key && !predicate) {
             var keyData = this.toData(key);
-            registerEncodeFunc = (localOnly: boolean) => {
-                return MapAddEntryListenerToKeyCodec.encodeRequest(this.name, keyData, includeValue, flags, localOnly);
-            };
+            registerRequest = MapAddEntryListenerToKeyCodec.encodeRequest(this.name, keyData, includeValue, flags, localOnly);
             listenerHandler = MapAddEntryListenerToKeyCodec.handle;
             registerDecodeFunc = MapAddEntryListenerToKeyCodec.decodeResponse;
         } else if (!key && predicate) {
             var predicateData = this.toData(predicate);
-            registerEncodeFunc = (localOnly: boolean) => {
-                return MapAddEntryListenerWithPredicateCodec.encodeRequest(this.name,
-                    predicateData, includeValue, flags, localOnly);
-            };
+            registerRequest = MapAddEntryListenerWithPredicateCodec.encodeRequest(this.name, predicateData, includeValue,
+                flags, localOnly);
             listenerHandler = MapAddEntryListenerWithPredicateCodec.handle;
             registerDecodeFunc = MapAddEntryListenerWithPredicateCodec.decodeResponse;
         } else {
-            registerEncodeFunc = (localOnly: boolean) => {
-                return MapAddEntryListenerCodec.encodeRequest(this.name, includeValue, flags, localOnly);
-            };
+            registerRequest = MapAddEntryListenerCodec.encodeRequest(this.name, includeValue, flags, localOnly);
             listenerHandler = MapAddEntryListenerCodec.handle;
             registerDecodeFunc = MapAddEntryListenerCodec.decodeResponse;
         }
         return this.client.getListenerService().registerListener(
-            registerEncodeFunc,
+            registerRequest,
             (m: ClientMessage) => { listenerHandler(m, entryEventHandler, toObject); },
             registerDecodeFunc
         );

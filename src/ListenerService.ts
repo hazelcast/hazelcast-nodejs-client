@@ -11,6 +11,7 @@ import {UuidUtil} from './util/UuidUtil';
 import * as Promise from 'bluebird';
 import {Invocation} from './invocation/InvocationService';
 import {Member} from './core/Member';
+import ClientMessage = require('./ClientMessage');
 
 export class ListenerService implements ConnectionHeartbeatListener {
     private client: HazelcastClient;
@@ -108,9 +109,9 @@ export class ListenerService implements ConnectionHeartbeatListener {
             return deferred.promise;
         }
         let registrationKey = this.userRegistrationKeyInformation.get(userRegistrationKey);
-        let registerEncodeFunc = registrationKey.getEncoder();
+        let registerRequest = registrationKey.getRegisterRequest();
         let registerDecodeFunc = registrationKey.getDecoder();
-        let invocation = new Invocation(this.client, registerEncodeFunc(this.isSmart()));
+        let invocation = new Invocation(this.client, registerRequest);
         invocation.handler = <any>registrationKey.getHandler();
         invocation.connection = connection;
         this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
@@ -136,13 +137,13 @@ export class ListenerService implements ConnectionHeartbeatListener {
         return deferred.promise;
     }
 
-    registerListener(registerEncodeFunc: Function, registerHandlerFunc: any, registerDecodeFunc: any): Promise<string> {
+    registerListener(registerRequest: ClientMessage, registerHandlerFunc: any, registerDecodeFunc: any): Promise<string> {
         return this.trySyncConnectToAllConnections().then(() => {
-            return this.registerListenerInternal(registerEncodeFunc, registerHandlerFunc, registerDecodeFunc);
+            return this.registerListenerInternal(registerRequest, registerHandlerFunc, registerDecodeFunc);
         });
     }
 
-    protected registerListenerInternal(registerEncodeFunc: Function,
+    protected registerListenerInternal(registerRequest: ClientMessage,
                                        listenerHandlerFunc: Function, registerDecodeFunc: Function): Promise<string> {
         let activeConnections = copyObjectShallow(this.client.getConnectionManager().getActiveConnections());
         let userRegistrationKey: string = UuidUtil.generate();
@@ -153,13 +154,13 @@ export class ListenerService implements ConnectionHeartbeatListener {
             connectionsOnUserKey = new Map();
             this.activeRegistrations.set(userRegistrationKey, connectionsOnUserKey);
             this.userRegistrationKeyInformation.set(userRegistrationKey,
-                new RegistrationKey(userRegistrationKey, registerEncodeFunc, registerDecodeFunc, listenerHandlerFunc));
+                new RegistrationKey(userRegistrationKey, registerRequest, registerDecodeFunc, listenerHandlerFunc));
         }
         for (let address in activeConnections) {
             if (connectionsOnUserKey.has(activeConnections[address])) {
                 continue;
             }
-            let invocation = new Invocation(this.client, registerEncodeFunc(this.isSmart()));
+            let invocation = new Invocation(this.client, registerRequest);
             invocation.handler = <any>listenerHandlerFunc;
             invocation.connection = activeConnections[address];
             this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
@@ -225,6 +226,10 @@ export class ListenerService implements ConnectionHeartbeatListener {
 
     isSmart(): boolean {
         return this.isSmartService;
+    }
+
+    isLocalOnlyListener(): boolean {
+        return this.isSmart();
     }
 
     shutdown(): void {

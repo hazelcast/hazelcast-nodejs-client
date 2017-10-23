@@ -122,8 +122,7 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
      * @param localOnly
      * @return Registration id of the listener.
      */
-    addEntryListenerToKeyWithPredicate(listener: IMapListener<K, V>, key: K, predicate: Predicate,
-                                       localOnly: boolean): Promise<string>;
+    addEntryListenerToKeyWithPredicate(listener: IMapListener<K, V>, key: K, predicate: Predicate): Promise<string>;
 
     /**
      * Adds an continuous entry listener for this map. The listener will be notified for
@@ -131,11 +130,9 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
      *
      * @param listener
      * @param predicate
-     * @param localOnly
      * @return Registration id of the listener.
      */
-    addEntryListenerWithPredicate(listener: IMapListener<K, V>, predicate: Predicate,
-                                  localOnly: boolean): Promise<string>;
+    addEntryListenerWithPredicate(listener: IMapListener<K, V>, predicate: Predicate): Promise<string>;
 
     /**
      * Adds the specified entry listener for the specified key. The listener will be
@@ -143,20 +140,18 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
      *
      * @param listener
      * @param key
-     * @param localOnly
      * @return Registration id of the listener.
      */
-    addEntryListenerToKey(listener: IMapListener<K, V>, key: K, localOnly: boolean): Promise<string>;
+    addEntryListenerToKey(listener: IMapListener<K, V>, key: K): Promise<string>;
 
     /**
      * Adds an entry listener for this map. The listener will be notified for all
      * map add/remove/update/evict events.
      *
      * @param listener
-     * @param localOnly
      * @return Registration id of the listener.
      */
-    addEntryListener(listener: IMapListener<K, V>, localOnly: boolean): Promise<string>;
+    addEntryListener(listener: IMapListener<K, V>): Promise<string>;
 
     /**
      * Removes the specified entry listener. Returns silently if there was no such
