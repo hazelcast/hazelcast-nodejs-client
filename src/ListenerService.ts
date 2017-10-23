@@ -136,9 +136,9 @@ export class ListenerService implements ConnectionHeartbeatListener {
         return deferred.promise;
     }
 
-    registerListener(registerEncodeFunc: Function, handler: any, decoder: any): Promise<string> {
+    registerListener(registerEncodeFunc: Function, registerHandlerFunc: any, registerDecodeFunc: any): Promise<string> {
         return this.trySyncConnectToAllConnections().then(() => {
-            return this.registerListenerInternal(registerEncodeFunc, handler, decoder);
+            return this.registerListenerInternal(registerEncodeFunc, registerHandlerFunc, registerDecodeFunc);
         });
     }
 

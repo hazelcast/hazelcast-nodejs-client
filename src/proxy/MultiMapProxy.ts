@@ -137,35 +137,35 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
 
         if (key) {
             var keyData = this.toData(key);
-            var encodeFunc = (localOnly: boolean) => {
+            var registerEncodeFunc = (localOnly: boolean) => {
                 return MultiMapAddEntryListenerToKeyCodec.encodeRequest(this.name, keyData, includeValue, localOnly);
             };
             var handler = (m: ClientMessage) => {
                 MultiMapAddEntryListenerToKeyCodec.handle(m, entryEventHandler, toObject);
             };
 
-            return this.client.getListenerService().registerListener(encodeFunc, handler,
+            return this.client.getListenerService().registerListener(registerEncodeFunc, handler,
                 MultiMapAddEntryListenerToKeyCodec.decodeResponse);
         } else {
-            var encodeFunc = (localOnly: boolean) => {
+            var registerEncodeFunc = (localOnly: boolean) => {
                 return MultiMapAddEntryListenerCodec.encodeRequest(this.name, includeValue, localOnly);
             };
-            var handler = (m: ClientMessage) => {
+            var listenerHandler = (m: ClientMessage) => {
                 MultiMapAddEntryListenerCodec.handle(m, entryEventHandler, toObject);
             };
 
-            return this.client.getListenerService().registerListener(encodeFunc, handler,
+            return this.client.getListenerService().registerListener(registerEncodeFunc, listenerHandler,
                 MultiMapAddEntryListenerCodec.decodeResponse);
         }
 
     }
 
     removeEntryListener(listenerId: string): Promise<boolean> {
-        var encodeFunc = (serverKey: string) => {
+        var deregisterEncodeFunc = (serverKey: string) => {
             return MultiMapRemoveEntryListenerCodec.encodeRequest(this.name, serverKey);
         };
         return this.client.getListenerService().deregisterListener(
-            encodeFunc,
+            deregisterEncodeFunc,
             MultiMapRemoveEntryListenerCodec.decodeResponse,
             listenerId
         );

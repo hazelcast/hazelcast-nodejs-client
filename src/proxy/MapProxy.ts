@@ -551,45 +551,44 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                     break;
             }
         };
-        var request: ClientMessage;
-        var encodeFunc: Function;
-        var handler: Function;
-        var responser: Function;
+        var registerEncodeFunc: Function;
+        var listenerHandler: Function;
+        var registerDecodeFunc: Function;
         if (key && predicate) {
             var keyData = this.toData(key);
             var predicateData = this.toData(predicate);
-            encodeFunc = (localOnly: boolean) => {
+            registerEncodeFunc = (localOnly: boolean) => {
                 return MapAddEntryListenerToKeyWithPredicateCodec.encodeRequest(this.name, keyData,
                     predicateData, includeValue, flags, localOnly);
             };
-            handler = MapAddEntryListenerToKeyWithPredicateCodec.handle;
-            responser = MapAddEntryListenerToKeyWithPredicateCodec.decodeResponse;
+            listenerHandler = MapAddEntryListenerToKeyWithPredicateCodec.handle;
+            registerDecodeFunc = MapAddEntryListenerToKeyWithPredicateCodec.decodeResponse;
         } else if (key && !predicate) {
             var keyData = this.toData(key);
-            encodeFunc = (localOnly: boolean) => {
+            registerEncodeFunc = (localOnly: boolean) => {
                 return MapAddEntryListenerToKeyCodec.encodeRequest(this.name, keyData, includeValue, flags, localOnly);
             };
-            handler = MapAddEntryListenerToKeyCodec.handle;
-            responser = MapAddEntryListenerToKeyCodec.decodeResponse;
+            listenerHandler = MapAddEntryListenerToKeyCodec.handle;
+            registerDecodeFunc = MapAddEntryListenerToKeyCodec.decodeResponse;
         } else if (!key && predicate) {
             var predicateData = this.toData(predicate);
-            encodeFunc = (localOnly: boolean) => {
+            registerEncodeFunc = (localOnly: boolean) => {
                 return MapAddEntryListenerWithPredicateCodec.encodeRequest(this.name,
                     predicateData, includeValue, flags, localOnly);
             };
-            handler = MapAddEntryListenerWithPredicateCodec.handle;
-            responser = MapAddEntryListenerWithPredicateCodec.decodeResponse;
+            listenerHandler = MapAddEntryListenerWithPredicateCodec.handle;
+            registerDecodeFunc = MapAddEntryListenerWithPredicateCodec.decodeResponse;
         } else {
-            encodeFunc = (localOnly: boolean) => {
+            registerEncodeFunc = (localOnly: boolean) => {
                 return MapAddEntryListenerCodec.encodeRequest(this.name, includeValue, flags, localOnly);
             };
-            handler = MapAddEntryListenerCodec.handle;
-            responser = MapAddEntryListenerCodec.decodeResponse;
+            listenerHandler = MapAddEntryListenerCodec.handle;
+            registerDecodeFunc = MapAddEntryListenerCodec.decodeResponse;
         }
         return this.client.getListenerService().registerListener(
-            encodeFunc,
-            (m: ClientMessage) => { handler(m, entryEventHandler, toObject); },
-            responser
+            registerEncodeFunc,
+            (m: ClientMessage) => { listenerHandler(m, entryEventHandler, toObject); },
+            registerDecodeFunc
         );
     }
 
@@ -598,11 +597,11 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     removeEntryListener(listenerId: string): Promise<boolean> {
-        var encodeFunc = (serverId: string) => {
+        var deregisterEncodeFunc = (serverId: string) => {
             return MapRemoveEntryListenerCodec.encodeRequest(this.name, serverId);
         };
         return this.client.getListenerService().deregisterListener(
-            encodeFunc,
+            deregisterEncodeFunc,
             MapRemoveEntryListenerCodec.decodeResponse,
             listenerId
         );

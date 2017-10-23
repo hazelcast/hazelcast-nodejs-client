@@ -1,38 +1,38 @@
 export class RegistrationKey {
     private readonly userRegistrationId: string;
-    private handler: Function;
-    private encoder: Function;
-    private decoder: Function;
+    private registerHandlerFunc: Function;
+    private registerEncodeFunc: Function;
+    private registerDecodeFunc: Function;
 
-    constructor(regId: string, encoder?: Function, decoder?: Function, handler?: Function) {
+    constructor(regId: string, registerEncodeFunc?: Function, registerDecodeFunc?: Function, registerHandlerFunc?: Function) {
         this.userRegistrationId = regId;
-        this.handler = handler;
-        this.encoder = encoder;
-        this.decoder = decoder;
+        this.registerHandlerFunc = registerHandlerFunc;
+        this.registerEncodeFunc = registerEncodeFunc;
+        this.registerDecodeFunc = registerDecodeFunc;
     }
 
     getEncoder(): Function {
-        return this.encoder;
+        return this.registerEncodeFunc;
     }
 
     setEncoder(encoder: Function): void {
-        this.encoder = encoder;
+        this.registerEncodeFunc = encoder;
     }
 
     getDecoder(): Function {
-        return this.decoder;
+        return this.registerDecodeFunc;
     }
 
     setDecoder(decoder: Function): void {
-        this.decoder = decoder;
+        this.registerDecodeFunc = decoder;
     }
 
     getHandler(): Function {
-        return this.handler;
+        return this.registerHandlerFunc;
     }
 
     setHandler(handler: Function): void {
-        this.handler = handler;
+        this.registerHandlerFunc = handler;
     }
 
     getUserRegistrationKey(): string {
