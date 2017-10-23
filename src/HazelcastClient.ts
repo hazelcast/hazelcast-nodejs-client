@@ -269,6 +269,7 @@ export default class HazelcastClient {
      * Shuts down this client instance.
      */
     shutdown(): void {
+        this.partitionService.shutdown();
         this.lifecycleService.emitLifecycleEvent(LifecycleEvent.shuttingDown);
         this.heartbeat.cancel();
         this.connectionManager.shutdown();
