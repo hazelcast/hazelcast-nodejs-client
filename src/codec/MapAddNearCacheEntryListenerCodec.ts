@@ -14,7 +14,9 @@ var REQUEST_TYPE = MapMessageType.MAP_ADDNEARCACHEENTRYLISTENER;
 var RESPONSE_TYPE = 104;
 var RETRYABLE = false;
 
+
 export class MapAddNearCacheEntryListenerCodec {
+
 
     static calculateSize(name: string, listenerFlags: number, localOnly: boolean) {
 // Calculates the request payload size
@@ -78,6 +80,7 @@ export class MapAddNearCacheEntryListenerCodec {
             var messageFinished = false;
             var keys: any = undefined;
             if (!messageFinished) {
+
                 var keysSize = clientMessage.readInt32();
                 keys = [];
                 for (var keysIndex = 0; keysIndex < keysSize; keysIndex++) {
@@ -91,6 +94,7 @@ export class MapAddNearCacheEntryListenerCodec {
                 messageFinished = clientMessage.isComplete();
             }
             if (!messageFinished) {
+
                 var sourceUuidsSize = clientMessage.readInt32();
                 sourceUuids = [];
                 for (var sourceUuidsIndex = 0; sourceUuidsIndex < sourceUuidsSize; sourceUuidsIndex++) {
@@ -101,6 +105,7 @@ export class MapAddNearCacheEntryListenerCodec {
             }
             var partitionUuids: any = undefined;
             if (!messageFinished) {
+
                 var partitionUuidsSize = clientMessage.readInt32();
                 partitionUuids = [];
                 for (var partitionUuidsIndex = 0; partitionUuidsIndex < partitionUuidsSize; partitionUuidsIndex++) {
@@ -111,6 +116,7 @@ export class MapAddNearCacheEntryListenerCodec {
             }
             var sequences: any = undefined;
             if (!messageFinished) {
+
                 var sequencesSize = clientMessage.readInt32();
                 sequences = [];
                 for (var sequencesIndex = 0; sequencesIndex < sequencesSize; sequencesIndex++) {

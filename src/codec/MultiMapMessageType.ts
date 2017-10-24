@@ -1,5 +1,4 @@
 /* tslint:disable */
-
 export class MultiMapMessageType {
     static MULTIMAP_PUT = 0x0201;
     static MULTIMAP_GET = 0x0202;

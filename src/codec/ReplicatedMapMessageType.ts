@@ -1,5 +1,4 @@
 /* tslint:disable */
-
 export class ReplicatedMapMessageType {
     static REPLICATEDMAP_PUT = 0x0e01;
     static REPLICATEDMAP_SIZE = 0x0e02;

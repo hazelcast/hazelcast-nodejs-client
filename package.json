@@ -27,6 +27,7 @@
   },
   "scripts": {
     "clean": "rimraf lib typings *.jar *.log",
+    "precompile": "node create-build-info.js",
     "compile": "tsc",
     "pretest": "./scripts/download-rc.sh",
     "test": "mocha --recursive",

@@ -1,9 +1,14 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
-import {Data} from '../serialization/Data';
-import {ClientMessageType} from './ClientMessageType';
+import {BitsUtil} from '../BitsUtil';
 import Address = require('../Address');
+import {AddressCodec} from './AddressCodec';
+import {UUIDCodec} from './UUIDCodec';
+import {MemberCodec} from './MemberCodec';
+import {Data} from '../serialization/Data';
+import {EntryViewCodec} from './EntryViewCodec';
 import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
+import {ClientMessageType} from './ClientMessageType';
 
 var REQUEST_TYPE = ClientMessageType.CLIENT_GETDISTRIBUTEDOBJECTS;
 var RESPONSE_TYPE = 110;
@@ -31,6 +36,7 @@ export class ClientGetDistributedObjectsCodec {
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
 // Decode response from client message
         var parameters: any = {'response': null};
+
         var responseSize = clientMessage.readInt32();
         var response: any = [];
         for (var responseIndex = 0; responseIndex < responseSize; responseIndex++) {

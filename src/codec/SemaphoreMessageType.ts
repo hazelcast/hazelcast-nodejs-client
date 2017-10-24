@@ -1,5 +1,4 @@
 /* tslint:disable */
-
 export class SemaphoreMessageType {
     static SEMAPHORE_INIT = 0x0d01;
     static SEMAPHORE_ACQUIRE = 0x0d02;

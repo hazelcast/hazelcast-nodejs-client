@@ -1,10 +1,14 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
-import {Data} from '../serialization/Data';
-import {ListMessageType} from './ListMessageType';
 import Address = require('../Address');
+import {AddressCodec} from './AddressCodec';
+import {UUIDCodec} from './UUIDCodec';
+import {MemberCodec} from './MemberCodec';
+import {Data} from '../serialization/Data';
+import {EntryViewCodec} from './EntryViewCodec';
 import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
+import {ListMessageType} from './ListMessageType';
 
 var REQUEST_TYPE = ListMessageType.LIST_ITERATOR;
 var RESPONSE_TYPE = 106;
@@ -34,6 +38,7 @@ export class ListIteratorCodec {
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
 // Decode response from client message
         var parameters: any = {'response': null};
+
         var responseSize = clientMessage.readInt32();
         var response: any = [];
         for (var responseIndex = 0; responseIndex < responseSize; responseIndex++) {

@@ -1,10 +1,14 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
-import {AddressCodec} from './AddressCodec';
-import {Data} from '../serialization/Data';
-import {ClientMessageType} from './ClientMessageType';
+import {BitsUtil} from '../BitsUtil';
 import Address = require('../Address');
+import {AddressCodec} from './AddressCodec';
+import {UUIDCodec} from './UUIDCodec';
+import {MemberCodec} from './MemberCodec';
+import {Data} from '../serialization/Data';
+import {EntryViewCodec} from './EntryViewCodec';
 import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
+import {ClientMessageType} from './ClientMessageType';
 
 var REQUEST_TYPE = ClientMessageType.CLIENT_GETPARTITIONS;
 var RESPONSE_TYPE = 108;
@@ -31,7 +35,8 @@ export class ClientGetPartitionsCodec {
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
 // Decode response from client message
-        var parameters: any = {'partitions': null};
+        var parameters: any = {'partitions': null, 'partitionStateVersion': null};
+
         var partitionsSize = clientMessage.readInt32();
         var partitions: any = [];
         for (var partitionsIndex = 0; partitionsIndex < partitionsSize; partitionsIndex++) {
@@ -39,6 +44,7 @@ export class ClientGetPartitionsCodec {
             var partitionsItemKey: Address;
             var partitionsItemVal: any;
             partitionsItemKey = AddressCodec.decode(clientMessage, toObjectFunction);
+
             var partitionsItemValSize = clientMessage.readInt32();
             var partitionsItemVal: any = [];
             for (var partitionsItemValIndex = 0; partitionsItemValIndex < partitionsItemValSize; partitionsItemValIndex++) {
@@ -50,6 +56,7 @@ export class ClientGetPartitionsCodec {
             partitions.push(partitionsItem)
         }
         parameters['partitions'] = partitions;
+        parameters['partitionStateVersion'] = clientMessage.readInt32();
         return parameters;
 
     }

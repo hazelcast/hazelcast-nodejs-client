@@ -9,8 +9,8 @@ class GetPartitionsCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): {[partitionId: number]: Address} {
-        var result: {[partitionId: number]: Address} = {};
+    static decodeResponse(clientMessage: ClientMessage): { [partitionId: number]: Address } {
+        var result: { [partitionId: number]: Address } = {};
         var size = clientMessage.readInt32();
 
         for (var i = 0; i < size; i++) {

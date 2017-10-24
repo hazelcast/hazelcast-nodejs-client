@@ -1,10 +1,14 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
-import {Data} from '../serialization/Data';
-import {MapMessageType} from './MapMessageType';
 import Address = require('../Address');
+import {AddressCodec} from './AddressCodec';
+import {UUIDCodec} from './UUIDCodec';
+import {MemberCodec} from './MemberCodec';
+import {Data} from '../serialization/Data';
+import {EntryViewCodec} from './EntryViewCodec';
 import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
+import {MapMessageType} from './MapMessageType';
 
 var REQUEST_TYPE = MapMessageType.MAP_ADDPARTITIONLOSTLISTENER;
 var RESPONSE_TYPE = 104;
@@ -45,10 +49,15 @@ export class MapAddPartitionLostListenerCodec {
 
         var messageType = clientMessage.getMessageType();
         if (messageType === BitsUtil.EVENT_MAPPARTITIONLOST && handleEventMappartitionlost !== null) {
-            var partitionId: number;
-            partitionId = clientMessage.readInt32();
-            var uuid: string;
-            uuid = clientMessage.readString();
+            var messageFinished = false;
+            var partitionId: number = undefined;
+            if (!messageFinished) {
+                partitionId = clientMessage.readInt32();
+            }
+            var uuid: string = undefined;
+            if (!messageFinished) {
+                uuid = clientMessage.readString();
+            }
             handleEventMappartitionlost(partitionId, uuid);
         }
     }

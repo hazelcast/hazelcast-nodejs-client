@@ -1,10 +1,14 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
-import {Data} from '../serialization/Data';
-import {ClientMessageType} from './ClientMessageType';
 import Address = require('../Address');
+import {AddressCodec} from './AddressCodec';
+import {UUIDCodec} from './UUIDCodec';
+import {MemberCodec} from './MemberCodec';
+import {Data} from '../serialization/Data';
+import {EntryViewCodec} from './EntryViewCodec';
 import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
+import {ClientMessageType} from './ClientMessageType';
 
 var REQUEST_TYPE = ClientMessageType.CLIENT_ADDDISTRIBUTEDOBJECTLISTENER;
 var RESPONSE_TYPE = 104;
@@ -43,12 +47,19 @@ export class ClientAddDistributedObjectListenerCodec {
 
         var messageType = clientMessage.getMessageType();
         if (messageType === BitsUtil.EVENT_DISTRIBUTEDOBJECT && handleEventDistributedobject !== null) {
-            var name: string;
-            name = clientMessage.readString();
-            var serviceName: string;
-            serviceName = clientMessage.readString();
-            var eventType: string;
-            eventType = clientMessage.readString();
+            var messageFinished = false;
+            var name: string = undefined;
+            if (!messageFinished) {
+                name = clientMessage.readString();
+            }
+            var serviceName: string = undefined;
+            if (!messageFinished) {
+                serviceName = clientMessage.readString();
+            }
+            var eventType: string = undefined;
+            if (!messageFinished) {
+                eventType = clientMessage.readString();
+            }
             handleEventDistributedobject(name, serviceName, eventType);
         }
     }

@@ -14,7 +14,9 @@ var REQUEST_TYPE = AtomicLongMessageType.ATOMICLONG_SET;
 var RESPONSE_TYPE = 100;
 var RETRYABLE = false;
 
+
 export class AtomicLongSetCodec {
+
 
     static calculateSize(name: string, newValue: any) {
 // Calculates the request payload size
@@ -36,5 +38,6 @@ export class AtomicLongSetCodec {
     }
 
 // Empty decodeResponse(ClientMessage), this message has no parameters to decode
+
 
 }

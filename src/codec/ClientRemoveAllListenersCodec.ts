@@ -1,8 +1,14 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
-import {ClientMessageType} from './ClientMessageType';
+import {BitsUtil} from '../BitsUtil';
 import Address = require('../Address');
+import {AddressCodec} from './AddressCodec';
+import {UUIDCodec} from './UUIDCodec';
+import {MemberCodec} from './MemberCodec';
+import {Data} from '../serialization/Data';
+import {EntryViewCodec} from './EntryViewCodec';
 import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
+import {ClientMessageType} from './ClientMessageType';
 
 var REQUEST_TYPE = ClientMessageType.CLIENT_REMOVEALLLISTENERS;
 var RESPONSE_TYPE = 100;

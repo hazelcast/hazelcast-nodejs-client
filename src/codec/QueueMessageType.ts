@@ -1,5 +1,4 @@
 /* tslint:disable */
-
 export class QueueMessageType {
     static QUEUE_OFFER = 0x0301;
     static QUEUE_PUT = 0x0302;

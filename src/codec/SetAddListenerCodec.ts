@@ -1,10 +1,14 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
-import {Data} from '../serialization/Data';
-import {SetMessageType} from './SetMessageType';
 import Address = require('../Address');
+import {AddressCodec} from './AddressCodec';
+import {UUIDCodec} from './UUIDCodec';
+import {MemberCodec} from './MemberCodec';
+import {Data} from '../serialization/Data';
+import {EntryViewCodec} from './EntryViewCodec';
 import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
+import {SetMessageType} from './SetMessageType';
 
 var REQUEST_TYPE = SetMessageType.SET_ADDLISTENER;
 var RESPONSE_TYPE = 104;
@@ -47,15 +51,22 @@ export class SetAddListenerCodec {
 
         var messageType = clientMessage.getMessageType();
         if (messageType === BitsUtil.EVENT_ITEM && handleEventItem !== null) {
-            var item: Data;
+            var messageFinished = false;
+            var item: Data = undefined;
+            if (!messageFinished) {
 
-            if (clientMessage.readBoolean() !== true) {
-                item = clientMessage.readData();
+                if (clientMessage.readBoolean() !== true) {
+                    item = clientMessage.readData();
+                }
             }
-            var uuid: string;
-            uuid = clientMessage.readString();
-            var eventType: number;
-            eventType = clientMessage.readInt32();
+            var uuid: string = undefined;
+            if (!messageFinished) {
+                uuid = clientMessage.readString();
+            }
+            var eventType: number = undefined;
+            if (!messageFinished) {
+                eventType = clientMessage.readInt32();
+            }
             handleEventItem(item, uuid, eventType);
         }
     }

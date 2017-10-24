@@ -6,6 +6,7 @@ import {ClientAuthenticationCustomCodec} from '../codec/ClientAuthenticationCust
 import ClientConnection = require('./ClientConnection');
 import ClientMessage = require('../ClientMessage');
 import ClusterService = require('./ClusterService');
+import {BuildInfoLoader} from '../BuildInfoLoader';
 
 class ConnectionAuthenticator {
 
@@ -48,14 +49,16 @@ class ConnectionAuthenticator {
 
         var clientMessage: ClientMessage;
 
+        const clientVersion = BuildInfoLoader.getClientVersion();
+
         if (customCredentials != null) {
             var credentialsPayload = this.client.getSerializationService().toData(customCredentials);
 
             clientMessage = ClientAuthenticationCustomCodec.encodeRequest(
-                credentialsPayload, uuid, ownerUuid, ownerConnection, 'NJS', 1);
+                credentialsPayload, uuid, ownerUuid, ownerConnection, 'NJS', 1, clientVersion);
         } else {
             clientMessage = ClientAuthenticationCodec.encodeRequest(
-                groupConfig.name, groupConfig.password, uuid, ownerUuid, ownerConnection, 'NJS', 1);
+                groupConfig.name, groupConfig.password, uuid, ownerUuid, ownerConnection, 'NJS', 1, clientVersion);
 
         }
 

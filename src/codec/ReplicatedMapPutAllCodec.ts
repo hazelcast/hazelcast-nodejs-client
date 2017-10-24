@@ -1,12 +1,18 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
+import Address = require('../Address');
+import {AddressCodec} from './AddressCodec';
+import {UUIDCodec} from './UUIDCodec';
+import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
+import {EntryViewCodec} from './EntryViewCodec';
+import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 import {ReplicatedMapMessageType} from './ReplicatedMapMessageType';
 
-const REQUEST_TYPE = ReplicatedMapMessageType.REPLICATEDMAP_PUTALL;
-const RESPONSE_TYPE = 100;
-const RETRYABLE = false;
+var REQUEST_TYPE = ReplicatedMapMessageType.REPLICATEDMAP_PUTALL;
+var RESPONSE_TYPE = 100;
+var RETRYABLE = false;
 
 
 export class ReplicatedMapPutAllCodec {
@@ -14,13 +20,13 @@ export class ReplicatedMapPutAllCodec {
 
     static calculateSize(name: string, entries: any) {
 // Calculates the request payload size
-        let dataSize: number = 0;
+        var dataSize: number = 0;
         dataSize += BitsUtil.calculateSizeString(name);
         dataSize += BitsUtil.INT_SIZE_IN_BYTES;
 
         entries.forEach((entriesItem: any) => {
-            let key: Data = entriesItem[0];
-            let val: Data = entriesItem[1];
+            var key: Data = entriesItem[0];
+            var val: Data = entriesItem[1];
             dataSize += BitsUtil.calculateSizeData(key);
             dataSize += BitsUtil.calculateSizeData(val);
         });
@@ -29,15 +35,15 @@ export class ReplicatedMapPutAllCodec {
 
     static encodeRequest(name: string, entries: any) {
 // Encode request into clientMessage
-        const clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, entries));
+        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, entries));
         clientMessage.setMessageType(REQUEST_TYPE);
         clientMessage.setRetryable(RETRYABLE);
         clientMessage.appendString(name);
         clientMessage.appendInt32(entries.length);
 
         entries.forEach((entriesItem: any) => {
-            let key: Data = entriesItem[0];
-            let val: Data = entriesItem[1];
+            var key: Data = entriesItem[0];
+            var val: Data = entriesItem[1];
             clientMessage.appendData(key);
             clientMessage.appendData(val);
         });

@@ -1,10 +1,14 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
-import {Data} from '../serialization/Data';
-import {MultiMapMessageType} from './MultiMapMessageType';
 import Address = require('../Address');
+import {AddressCodec} from './AddressCodec';
+import {UUIDCodec} from './UUIDCodec';
+import {MemberCodec} from './MemberCodec';
+import {Data} from '../serialization/Data';
+import {EntryViewCodec} from './EntryViewCodec';
 import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
+import {MultiMapMessageType} from './MultiMapMessageType';
 
 var REQUEST_TYPE = MultiMapMessageType.MULTIMAP_ADDENTRYLISTENER;
 var RESPONSE_TYPE = 104;
@@ -47,33 +51,47 @@ export class MultiMapAddEntryListenerCodec {
 
         var messageType = clientMessage.getMessageType();
         if (messageType === BitsUtil.EVENT_ENTRY && handleEventEntry !== null) {
-            var key: Data = null;
+            var messageFinished = false;
+            var key: Data = undefined;
+            if (!messageFinished) {
 
-            if (clientMessage.readBoolean() !== true) {
-                key = toObjectFunction(clientMessage.readData());
+                if (clientMessage.readBoolean() !== true) {
+                    key = clientMessage.readData();
+                }
             }
-            var value: Data = null;
+            var value: Data = undefined;
+            if (!messageFinished) {
 
-            if (clientMessage.readBoolean() !== true) {
-                value = toObjectFunction(clientMessage.readData());
+                if (clientMessage.readBoolean() !== true) {
+                    value = clientMessage.readData();
+                }
             }
-            var oldValue: Data = null;
+            var oldValue: Data = undefined;
+            if (!messageFinished) {
 
-            if (clientMessage.readBoolean() !== true) {
-                oldValue = toObjectFunction(clientMessage.readData());
+                if (clientMessage.readBoolean() !== true) {
+                    oldValue = clientMessage.readData();
+                }
             }
+            var mergingValue: Data = undefined;
+            if (!messageFinished) {
 
-            var mergingValue: Data = null;
-
-            if (clientMessage.readBoolean() !== true) {
-                mergingValue = toObjectFunction(clientMessage.readData());
+                if (clientMessage.readBoolean() !== true) {
+                    mergingValue = clientMessage.readData();
+                }
             }
-            var eventType: number;
-            eventType = clientMessage.readInt32();
-            var uuid: string;
-            uuid = clientMessage.readString();
-            var numberOfAffectedEntries: number;
-            numberOfAffectedEntries = clientMessage.readInt32();
+            var eventType: number = undefined;
+            if (!messageFinished) {
+                eventType = clientMessage.readInt32();
+            }
+            var uuid: string = undefined;
+            if (!messageFinished) {
+                uuid = clientMessage.readString();
+            }
+            var numberOfAffectedEntries: number = undefined;
+            if (!messageFinished) {
+                numberOfAffectedEntries = clientMessage.readInt32();
+            }
             handleEventEntry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
         }
     }

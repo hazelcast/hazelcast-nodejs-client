@@ -1,20 +1,26 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
+import Address = require('../Address');
+import {AddressCodec} from './AddressCodec';
+import {UUIDCodec} from './UUIDCodec';
+import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
+import {EntryViewCodec} from './EntryViewCodec';
+import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 import {ReplicatedMapMessageType} from './ReplicatedMapMessageType';
 
-const REQUEST_TYPE = ReplicatedMapMessageType.REPLICATEDMAP_PUT;
-const RESPONSE_TYPE = 105;
-const RETRYABLE = false;
+var REQUEST_TYPE = ReplicatedMapMessageType.REPLICATEDMAP_PUT;
+var RESPONSE_TYPE = 105;
+var RETRYABLE = false;
 
 
 export class ReplicatedMapPutCodec {
 
 
-    static calculateSize(name: string, key: Data, value: Data, ttl: number) {
+    static calculateSize(name: string, key: Data, value: Data, ttl: any) {
 // Calculates the request payload size
-        let dataSize: number = 0;
+        var dataSize: number = 0;
         dataSize += BitsUtil.calculateSizeString(name);
         dataSize += BitsUtil.calculateSizeData(key);
         dataSize += BitsUtil.calculateSizeData(value);
@@ -22,9 +28,9 @@ export class ReplicatedMapPutCodec {
         return dataSize;
     }
 
-    static encodeRequest(name: string, key: Data, value: Data, ttl: number) {
+    static encodeRequest(name: string, key: Data, value: Data, ttl: any) {
 // Encode request into clientMessage
-        const clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, key, value, ttl));
+        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, key, value, ttl));
         clientMessage.setMessageType(REQUEST_TYPE);
         clientMessage.setRetryable(RETRYABLE);
         clientMessage.appendString(name);
@@ -35,15 +41,16 @@ export class ReplicatedMapPutCodec {
         return clientMessage;
     }
 
-
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
 // Decode response from client message
-        const parameters: any = {'response': null};
+        var parameters: any = {'response': null};
 
         if (clientMessage.readBoolean() !== true) {
             parameters['response'] = toObjectFunction(clientMessage.readData());
         }
         return parameters;
+
     }
+
 
 }
