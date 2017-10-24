@@ -130,11 +130,11 @@ PortableObjectV2.prototype.getVersion = function() {
 
 PortableObjectV2.prototype.getFactoryId = function() {
     return 10;
-}
+};
 
 PortableObjectV2.prototype.getClassId = function() {
     return 111;
-}
+};
 
 PortableObjectV2.prototype.writePortable = function(writer) {
     writer.writeUTF('a_new_prop', this.a_new_prop);
@@ -185,7 +185,60 @@ PortableObjectV2.prototype.readPortable = function(reader) {
     this.portables = reader.readPortableArray('portables');
 };
 
+function TestObjectPortable(objectMetadata) {
+    this.innerPortable = objectMetadata;
+}
+
+TestObjectPortable.prototype.getFactoryId = function () {
+    return 10;
+};
+
+TestObjectPortable.prototype.getClassId = function () {
+    return 555;
+};
+
+TestObjectPortable.prototype.readPortable = function (reader) {
+    this.innerPortable = reader.readPortable('object_metadata_portable');
+};
+
+TestObjectPortable.prototype.writePortable = function (writer) {
+    writer.writePortable('object_metadata_portable', this.innerPortable);
+};
+
+TestObjectPortable.prototype.getVersion = function () {
+    return 3;
+};
+
+function TestObjectMetadataPortable(metadata, reference) {
+    this.m = metadata;
+    this.r = reference;
+}
+
+TestObjectMetadataPortable.prototype.getVersion = function () {
+    return 1;
+};
+
+TestObjectMetadataPortable.prototype.getClassId = function() {
+    return 999;
+};
+
+TestObjectMetadataPortable.prototype.getFactoryId = function () {
+    return 10;
+};
+
+TestObjectMetadataPortable.prototype.writePortable = function (writer) {
+    writer.writeUTF('metadata', this.m);
+    writer.writeUTF('r', this.r);
+};
+
+TestObjectMetadataPortable.prototype.readPortable = function (reader) {
+    this.m = reader.readUTF('metadata');
+    this.r = reader.readUTF('r');
+};
+
 
 exports.PortableObject = PortableObject;
 exports.PortableObjectV2 = PortableObjectV2;
 exports.InnerPortableObject = InnerPortableObject;
+exports.TestObjectPortable = TestObjectPortable;
+exports.TestObjectMetadataPortable = TestObjectMetadataPortable;
