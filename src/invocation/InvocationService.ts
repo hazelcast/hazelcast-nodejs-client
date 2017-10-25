@@ -6,7 +6,6 @@ import ExceptionCodec = require('../codec/ExceptionCodec');
 import * as Promise from 'bluebird';
 import {BitsUtil} from '../BitsUtil';
 import {LoggingService} from '../logging/LoggingService';
-import {EventEmitter} from 'events';
 import HazelcastClient from '../HazelcastClient';
 
 var EXCEPTION_MESSAGE_TYPE = 109;
@@ -84,6 +83,7 @@ export class InvocationService {
     private readonly invocationRetryPauseMillis: number;
     private readonly invocationTimeoutMillis: number;
     private logger = LoggingService.getLoggingService();
+    private isShutdown: boolean;
 
     doInvoke: (invocation: Invocation) => void;
 
@@ -97,6 +97,11 @@ export class InvocationService {
         }
         this.invocationRetryPauseMillis = this.client.getConfig().properties[PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS];
         this.invocationTimeoutMillis = this.client.getConfig().properties[PROPERTY_INVOCATION_TIMEOUT_MILLIS];
+        this.isShutdown = false;
+    }
+
+    shutdown(): void {
+        this.isShutdown = true;
     }
 
     invoke(invocation: Invocation): Promise<ClientMessage> {
@@ -167,24 +172,38 @@ export class InvocationService {
     }
 
     private invokeSmart(invocation: Invocation): void {
-        invocation.invokeCount++;
-        if (invocation.hasOwnProperty('connection')) {
-            this.send(invocation, invocation.connection);
-        } else if (invocation.hasPartitionId()) {
-            this.invokeOnPartitionOwner(invocation, invocation.partitionId);
-        } else if (invocation.hasOwnProperty('address')) {
-            this.invokeOnAddress(invocation, invocation.address);
-        } else {
-            this.send(invocation, this.client.getClusterService().getOwnerConnection());
+        if (this.isShutdown) {
+            return;
+        }
+        try {
+            invocation.invokeCount++;
+            if (invocation.hasOwnProperty('connection')) {
+                this.send(invocation, invocation.connection);
+            } else if (invocation.hasPartitionId()) {
+                this.invokeOnPartitionOwner(invocation, invocation.partitionId);
+            } else if (invocation.hasOwnProperty('address')) {
+                this.invokeOnAddress(invocation, invocation.address);
+            } else {
+                this.send(invocation, this.client.getClusterService().getOwnerConnection());
+            }
+        } catch (e) {
+            this.notifyError(invocation, e);
         }
     }
 
     private invokeNonSmart(invocation: Invocation): void {
-        invocation.invokeCount++;
-        if (invocation.hasOwnProperty('connection')) {
-            this.send(invocation, invocation.connection);
-        } else {
-            this.send(invocation, this.client.getClusterService().getOwnerConnection());
+        if (this.isShutdown) {
+            return;
+        }
+        try {
+            invocation.invokeCount++;
+            if (invocation.hasOwnProperty('connection')) {
+                this.send(invocation, invocation.connection);
+            } else {
+                this.send(invocation, this.client.getClusterService().getOwnerConnection());
+            }
+        } catch (e) {
+            this.notifyError(invocation, e);
         }
     }
 
@@ -215,7 +234,6 @@ export class InvocationService {
     }
 
     private write(invocation: Invocation, connection: ClientConnection): void {
-        var logger = this.logger;
         connection.write(invocation.request.getBuffer(), (err: any) => {
             if (err) {
                 this.notifyError(invocation, err);
@@ -226,7 +244,8 @@ export class InvocationService {
     private notifyError(invocation: Invocation, error: Error) {
         var correlationId = invocation.request.getCorrelationId().toNumber();
         if (this.isRetryable(invocation)) {
-            this.logger.debug('InvocationService', 'Retrying(' + invocation.invokeCount + ') correlation-id=' + correlationId);
+            this.logger.debug('InvocationService',
+                'Retrying(' + invocation.invokeCount + ') on correlation-id=' + correlationId, error);
             if (invocation.invokeCount < MAX_FAST_INVOCATION_COUNT) {
                 this.doInvoke(invocation);
             } else {
@@ -286,7 +305,9 @@ export class InvocationService {
 
         if (clientMessage.hasFlags(BitsUtil.LISTENER_FLAG)) {
             setImmediate(() => {
-                this.eventHandlers[correlationId].handler(clientMessage);
+                if (this.eventHandlers[correlationId] !== undefined) {
+                    this.eventHandlers[correlationId].handler(clientMessage);
+                }
             });
             return;
         }
@@ -316,49 +337,5 @@ export class InvocationService {
         if (invocationFinished) {
             delete this.pending[correlationId];
         }
-    }
-}
-
-/**
- * Handles registration and de-registration of cluster-wide events listeners.
- */
-export class ListenerService {
-    private client: HazelcastClient;
-    private listenerIdToCorrelation: { [id: string]: Long} = {};
-    private internalEventEmitter: EventEmitter;
-
-    constructor(client: HazelcastClient) {
-        this.client = client;
-        this.internalEventEmitter = new EventEmitter();
-        this.internalEventEmitter.setMaxListeners(0);
-    }
-
-    registerListener(request: ClientMessage, handler: any, decoder: any, key: any = undefined): Promise<string> {
-        var deferred = Promise.defer<string>();
-        var invocation = new Invocation(this.client, request);
-        invocation.handler = handler;
-        this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
-            var correlationId = responseMessage.getCorrelationId();
-            var response = decoder(responseMessage);
-            this.listenerIdToCorrelation[response.response] = correlationId;
-            deferred.resolve(response.response);
-        });
-        return deferred.promise;
-    }
-
-    deregisterListener(request: ClientMessage, decoder: any): Promise<boolean> {
-        var deferred = Promise.defer<boolean>();
-        var invocation = new Invocation(this.client, request);
-        var listenerIdToCorrelation = this.listenerIdToCorrelation;
-        this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
-            var correlationId = responseMessage.getCorrelationId().toString();
-            if (listenerIdToCorrelation.hasOwnProperty(correlationId)) {
-                this.client.getInvocationService().removeEventHandler(listenerIdToCorrelation[correlationId].low);
-                delete listenerIdToCorrelation[correlationId];
-            }
-            var response = decoder(responseMessage);
-            deferred.resolve(response.response);
-        });
-        return deferred.promise;
     }
 }

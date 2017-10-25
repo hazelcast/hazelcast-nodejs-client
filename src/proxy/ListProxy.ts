@@ -114,8 +114,9 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
     }
 
     addItemListener(listener: ItemListener<E>, includeValue: boolean): Promise<string> {
-        var request = ListAddListenerCodec.encodeRequest(this.name, includeValue, false);
-        var handler = (message: ClientMessage) => {
+        let localOnly = this.client.getListenerService().isLocalOnlyListener();
+        let listenerRequest = ListAddListenerCodec.encodeRequest(this.name, includeValue, localOnly);
+        var listenerHandler = (message: ClientMessage) => {
             ListAddListenerCodec.handle(message, (element: Data, uuid: string, eventType: number) => {
                 var responseObject = element ? this.toObject(element) : null;
                 var listenerFunction: Function;
@@ -130,14 +131,16 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
                 }
             });
         };
-        return this.client.getListenerService().registerListener(request, handler,
-            ListAddListenerCodec.decodeResponse, this.name);
+        return this.client.getListenerService().registerListener(listenerRequest, listenerHandler,
+            ListAddListenerCodec.decodeResponse);
     }
 
     removeItemListener(registrationId: string): Promise<boolean> {
-        return this.client.getListenerService().deregisterListener(
-            ListRemoveListenerCodec.encodeRequest(this.name, registrationId),
-            ListRemoveListenerCodec.decodeResponse
+        var deregisterEncodeFunc = (serverKey: string) => {
+            return ListRemoveListenerCodec.encodeRequest(this.name, serverKey);
+        };
+        return this.client.getListenerService().deregisterListener(deregisterEncodeFunc,
+            ListRemoveListenerCodec.decodeResponse, registrationId
         );
     }
 

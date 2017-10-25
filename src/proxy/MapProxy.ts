@@ -551,35 +551,37 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                     break;
             }
         };
-        var request: ClientMessage;
-        var handler: Function;
-        var responser: Function;
+        var registerRequest: ClientMessage;
+        var listenerHandler: Function;
+        var registerDecodeFunc: Function;
+        let localOnly = this.client.getListenerService().isLocalOnlyListener();
         if (key && predicate) {
             var keyData = this.toData(key);
             var predicateData = this.toData(predicate);
-            request = MapAddEntryListenerToKeyWithPredicateCodec.encodeRequest(this.name, keyData,
-                predicateData, includeValue, flags, false);
-            handler = MapAddEntryListenerToKeyWithPredicateCodec.handle;
-            responser = MapAddEntryListenerToKeyWithPredicateCodec.decodeResponse;
+            registerRequest = MapAddEntryListenerToKeyWithPredicateCodec.encodeRequest(this.name, keyData,
+                    predicateData, includeValue, flags, localOnly);
+            listenerHandler = MapAddEntryListenerToKeyWithPredicateCodec.handle;
+            registerDecodeFunc = MapAddEntryListenerToKeyWithPredicateCodec.decodeResponse;
         } else if (key && !predicate) {
             var keyData = this.toData(key);
-            request = MapAddEntryListenerToKeyCodec.encodeRequest(this.name, keyData, includeValue, flags, false);
-            handler = MapAddEntryListenerToKeyCodec.handle;
-            responser = MapAddEntryListenerToKeyCodec.decodeResponse;
+            registerRequest = MapAddEntryListenerToKeyCodec.encodeRequest(this.name, keyData, includeValue, flags, localOnly);
+            listenerHandler = MapAddEntryListenerToKeyCodec.handle;
+            registerDecodeFunc = MapAddEntryListenerToKeyCodec.decodeResponse;
         } else if (!key && predicate) {
             var predicateData = this.toData(predicate);
-            request = MapAddEntryListenerWithPredicateCodec.encodeRequest(this.name, predicateData, includeValue, flags, false);
-            handler = MapAddEntryListenerWithPredicateCodec.handle;
-            responser = MapAddEntryListenerWithPredicateCodec.decodeResponse;
+            registerRequest = MapAddEntryListenerWithPredicateCodec.encodeRequest(this.name, predicateData, includeValue,
+                flags, localOnly);
+            listenerHandler = MapAddEntryListenerWithPredicateCodec.handle;
+            registerDecodeFunc = MapAddEntryListenerWithPredicateCodec.decodeResponse;
         } else {
-            request = MapAddEntryListenerCodec.encodeRequest(this.name, includeValue, flags, false);
-            handler = MapAddEntryListenerCodec.handle;
-            responser = MapAddEntryListenerCodec.decodeResponse;
+            registerRequest = MapAddEntryListenerCodec.encodeRequest(this.name, includeValue, flags, localOnly);
+            listenerHandler = MapAddEntryListenerCodec.handle;
+            registerDecodeFunc = MapAddEntryListenerCodec.decodeResponse;
         }
         return this.client.getListenerService().registerListener(
-            request,
-            (m: ClientMessage) => { handler(m, entryEventHandler, toObject); },
-            responser
+            registerRequest,
+            (m: ClientMessage) => { listenerHandler(m, entryEventHandler, toObject); },
+            registerDecodeFunc
         );
     }
 
@@ -588,9 +590,13 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     removeEntryListener(listenerId: string): Promise<boolean> {
+        var deregisterEncodeFunc = (serverId: string) => {
+            return MapRemoveEntryListenerCodec.encodeRequest(this.name, serverId);
+        };
         return this.client.getListenerService().deregisterListener(
-            MapRemoveEntryListenerCodec.encodeRequest(this.name, listenerId),
-            MapRemoveEntryListenerCodec.decodeResponse
+            deregisterEncodeFunc,
+            MapRemoveEntryListenerCodec.decodeResponse,
+            listenerId
         );
     }
 }

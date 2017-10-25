@@ -24,6 +24,10 @@ class ClientConnectionManager extends EventEmitter {
         this.client = client;
     }
 
+    getActiveConnections(): {[address: string]: ClientConnection} {
+        return this.establishedConnections;
+    }
+
     /**
      * Returns the {@link ClientConnection} with given {@link Address}. If there is no such connection established,
      * it first connects to the address and then return the {@link ClientConnection}.

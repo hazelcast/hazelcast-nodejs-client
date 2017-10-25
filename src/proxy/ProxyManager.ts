@@ -144,16 +144,20 @@ class ProxyManager {
             ClientAddDistributedObjectListenerCodec.handle(clientMessage, converterFunc, null);
         };
         return this.client.getListenerService().registerListener(
-            ClientAddDistributedObjectListenerCodec.encodeRequest(true),
+            ClientAddDistributedObjectListenerCodec.encodeRequest(this.client.getListenerService().isLocalOnlyListener()),
             handler,
             ClientAddDistributedObjectListenerCodec.decodeResponse
         );
     }
 
     removeDistributedObjectListener(listenerId: string) {
+        let encodeFunc = (serverKey: string) => {
+            return ClientRemoveDistributedObjectListenerCodec.encodeRequest(serverKey);
+        };
         return this.client.getListenerService().deregisterListener(
-            ClientRemoveDistributedObjectListenerCodec.encodeRequest(listenerId),
-            ClientRemoveDistributedObjectListenerCodec.decodeResponse
+            encodeFunc,
+            ClientRemoveDistributedObjectListenerCodec.decodeResponse,
+            listenerId
         );
     }
 }
