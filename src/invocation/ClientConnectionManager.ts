@@ -2,7 +2,7 @@ import * as Promise from 'bluebird';
 import {LoggingService} from '../logging/LoggingService';
 import {EventEmitter} from 'events';
 import HazelcastClient from '../HazelcastClient';
-import {ClientNotActiveError} from '../HazelcastError';
+import {ClientNotActiveError, HazelcastError} from '../HazelcastError';
 import Address = require('../Address');
 import ClientConnection = require('./ClientConnection');
 import ConnectionAuthenticator = require('./ConnectionAuthenticator');
@@ -56,6 +56,11 @@ class ClientConnectionManager extends EventEmitter {
 
         var clientConnection = new ClientConnection(this.client.getConnectionManager(), address,
             this.client.getConfig().networkConfig);
+
+        let connectionTimeout = this.client.getConfig().networkConfig.connectionTimeout;
+        if (connectionTimeout !== 0) {
+            result.promise = result.promise.timeout(connectionTimeout, new HazelcastError('Connection timed-out'));
+        }
 
         clientConnection.connect().then(() => {
             clientConnection.registerResponseCallback((data: Buffer) => {
