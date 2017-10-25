@@ -63,6 +63,9 @@ export class RingbufferReadManyCodec {
         }
         parameters['items'] = items;
 
+        if (clientMessage.isComplete()) {
+            return parameters;
+        }
         if (clientMessage.readBoolean() !== true) {
 
             var itemSeqsSize = clientMessage.readInt32();

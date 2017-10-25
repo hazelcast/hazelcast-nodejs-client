@@ -27,9 +27,12 @@ import {MultiMapIsLockedCodec} from '../codec/MultiMapIsLockedCodec';
 import {MultiMapTryLockCodec} from '../codec/MultiMapTryLockCodec';
 import {MultiMapUnlockCodec} from '../codec/MultiMapUnlockCodec';
 import {MultiMapForceUnlockCodec} from '../codec/MultiMapForceUnlockCodec';
+import {LockReferenceIdGenerator} from '../LockReferenceIdGenerator';
+import * as Long from 'long';
 
 export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
 
+    private lockReferenceIdGenerator: LockReferenceIdGenerator = this.client.getLockReferenceIdGenerator();
 
     private deserializeList = <X>(items: Array<Data>): Array<X> => {
         return items.map<X>(this.toObject.bind(this));
@@ -114,6 +117,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
 
         var entryEventHandler = function (key: K, value: V, oldValue: V, mergingValue: V, event: number) {
             var parameters: any[] = [key, oldValue, value];
+            parameters = parameters.map(toObject);
             var name: string;
 
             // Multi map only supports these three event types
@@ -169,7 +173,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
 
     lock(key: K, leaseMillis: number = -1): Promise<void> {
         var keyData = this.toData(key);
-        return this.encodeInvokeOnKey<void>(MultiMapLockCodec, keyData, keyData, 1, leaseMillis);
+        return this.encodeInvokeOnKey<void>(MultiMapLockCodec, keyData, keyData, 1, leaseMillis, this.nextSequence());
     }
 
     isLocked(key: K): Promise<boolean> {
@@ -179,16 +183,21 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
 
     tryLock(key: K, timeoutMillis: number = 0, leaseMillis: number = -1): Promise<boolean> {
         var keyData = this.toData(key);
-        return this.encodeInvokeOnKey<boolean>(MultiMapTryLockCodec, keyData, keyData, 1, leaseMillis, timeoutMillis);
+        return this.encodeInvokeOnKey<boolean>(MultiMapTryLockCodec, keyData, keyData, 1, leaseMillis,
+            timeoutMillis, this.nextSequence());
     }
 
     unlock(key: K): Promise<void> {
         var keyData = this.toData(key);
-        return this.encodeInvokeOnKey<void>(MultiMapUnlockCodec, keyData, keyData, 1);
+        return this.encodeInvokeOnKey<void>(MultiMapUnlockCodec, keyData, keyData, 1, this.nextSequence());
     }
 
     forceUnlock(key: K): Promise<void> {
         var keyData = this.toData(key);
-        return this.encodeInvokeOnKey<void>(MultiMapForceUnlockCodec, keyData, keyData, 1);
+        return this.encodeInvokeOnKey<void>(MultiMapForceUnlockCodec, keyData, keyData, this.nextSequence());
+    }
+
+    private nextSequence(): Long {
+        return this.lockReferenceIdGenerator.getNextReferenceId();
     }
 }
