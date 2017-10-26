@@ -1,12 +1,18 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
+import Address = require('../Address');
+import {AddressCodec} from './AddressCodec';
+import {UUIDCodec} from './UUIDCodec';
+import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
+import {EntryViewCodec} from './EntryViewCodec';
+import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 import {ReplicatedMapMessageType} from './ReplicatedMapMessageType';
 
-const REQUEST_TYPE = ReplicatedMapMessageType.REPLICATEDMAP_CONTAINSVALUE;
-const RESPONSE_TYPE = 101;
-const RETRYABLE = true;
+var REQUEST_TYPE = ReplicatedMapMessageType.REPLICATEDMAP_CONTAINSVALUE;
+var RESPONSE_TYPE = 101;
+var RETRYABLE = true;
 
 
 export class ReplicatedMapContainsValueCodec {
@@ -14,7 +20,7 @@ export class ReplicatedMapContainsValueCodec {
 
     static calculateSize(name: string, value: Data) {
 // Calculates the request payload size
-        let dataSize: number = 0;
+        var dataSize: number = 0;
         dataSize += BitsUtil.calculateSizeString(name);
         dataSize += BitsUtil.calculateSizeData(value);
         return dataSize;
@@ -22,7 +28,7 @@ export class ReplicatedMapContainsValueCodec {
 
     static encodeRequest(name: string, value: Data) {
 // Encode request into clientMessage
-        const clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, value));
+        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, value));
         clientMessage.setMessageType(REQUEST_TYPE);
         clientMessage.setRetryable(RETRYABLE);
         clientMessage.appendString(name);
@@ -31,12 +37,13 @@ export class ReplicatedMapContainsValueCodec {
         return clientMessage;
     }
 
-
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
 // Decode response from client message
-        const parameters: any = {'response': null};
+        var parameters: any = {'response': null};
         parameters['response'] = clientMessage.readBoolean();
         return parameters;
+
     }
+
 
 }

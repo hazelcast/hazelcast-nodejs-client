@@ -1,10 +1,14 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
-import {Data} from '../serialization/Data';
-import {MapMessageType} from './MapMessageType';
 import Address = require('../Address');
+import {AddressCodec} from './AddressCodec';
+import {UUIDCodec} from './UUIDCodec';
+import {MemberCodec} from './MemberCodec';
+import {Data} from '../serialization/Data';
+import {EntryViewCodec} from './EntryViewCodec';
 import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
+import {MapMessageType} from './MapMessageType';
 
 var REQUEST_TYPE = MapMessageType.MAP_ADDENTRYLISTENERWITHPREDICATE;
 var RESPONSE_TYPE = 104;
@@ -51,32 +55,47 @@ export class MapAddEntryListenerWithPredicateCodec {
 
         var messageType = clientMessage.getMessageType();
         if (messageType === BitsUtil.EVENT_ENTRY && handleEventEntry !== null) {
-            var key: Data;
+            var messageFinished = false;
+            var key: Data = undefined;
+            if (!messageFinished) {
 
-            if (clientMessage.readBoolean() !== true) {
-                key = clientMessage.readData();
+                if (clientMessage.readBoolean() !== true) {
+                    key = clientMessage.readData();
+                }
             }
-            var value: Data;
+            var value: Data = undefined;
+            if (!messageFinished) {
 
-            if (clientMessage.readBoolean() !== true) {
-                value = clientMessage.readData();
+                if (clientMessage.readBoolean() !== true) {
+                    value = clientMessage.readData();
+                }
             }
-            var oldValue: Data;
+            var oldValue: Data = undefined;
+            if (!messageFinished) {
 
-            if (clientMessage.readBoolean() !== true) {
-                oldValue = clientMessage.readData();
+                if (clientMessage.readBoolean() !== true) {
+                    oldValue = clientMessage.readData();
+                }
             }
-            var mergingValue: Data;
+            var mergingValue: Data = undefined;
+            if (!messageFinished) {
 
-            if (clientMessage.readBoolean() !== true) {
-                mergingValue = clientMessage.readData();
+                if (clientMessage.readBoolean() !== true) {
+                    mergingValue = clientMessage.readData();
+                }
             }
-            var eventType: number;
-            eventType = clientMessage.readInt32();
-            var uuid: string;
-            uuid = clientMessage.readString();
-            var numberOfAffectedEntries: number;
-            numberOfAffectedEntries = clientMessage.readInt32();
+            var eventType: number = undefined;
+            if (!messageFinished) {
+                eventType = clientMessage.readInt32();
+            }
+            var uuid: string = undefined;
+            if (!messageFinished) {
+                uuid = clientMessage.readString();
+            }
+            var numberOfAffectedEntries: number = undefined;
+            if (!messageFinished) {
+                numberOfAffectedEntries = clientMessage.readInt32();
+            }
             handleEventEntry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
         }
     }

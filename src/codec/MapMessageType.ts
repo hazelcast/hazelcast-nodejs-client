@@ -1,5 +1,4 @@
 /* tslint:disable */
-
 export class MapMessageType {
     static MAP_PUT = 0x0101;
     static MAP_GET = 0x0102;
@@ -59,4 +58,15 @@ export class MapMessageType {
     static MAP_CLEARNEARCACHE = 0x013b;
     static MAP_FETCHKEYS = 0x013c;
     static MAP_FETCHENTRIES = 0x013d;
+    static MAP_AGGREGATE = 0x013e;
+    static MAP_AGGREGATEWITHPREDICATE = 0x013f;
+    static MAP_PROJECT = 0x0140;
+    static MAP_PROJECTWITHPREDICATE = 0x0141;
+    static MAP_FETCHNEARCACHEINVALIDATIONMETADATA = 0x0142;
+    static MAP_ASSIGNANDGETUUIDS = 0x0143;
+    static MAP_REMOVEALL = 0x0144;
+    static MAP_ADDNEARCACHEINVALIDATIONLISTENER = 0x0145;
+    static MAP_FETCHWITHQUERY = 0x0146;
+    static MAP_EVENTJOURNALSUBSCRIBE = 0x0147;
+    static MAP_EVENTJOURNALREAD = 0x0148;
 }

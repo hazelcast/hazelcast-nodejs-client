@@ -1,6 +1,7 @@
 /* tslint:disable:no-bitwise */
 
 import {Data} from '../serialization/Data';
+
 class ImmutableLazyDataList {
 
     private response: any;
@@ -34,4 +35,5 @@ class ImmutableLazyDataList {
     }
 
 }
+
 export = ImmutableLazyDataList;

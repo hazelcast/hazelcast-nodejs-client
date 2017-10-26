@@ -1,5 +1,4 @@
 /* tslint:disable */
-
 export class LockMessageType {
     static LOCK_ISLOCKED = 0x0701;
     static LOCK_ISLOCKEDBYCURRENTTHREAD = 0x0702;

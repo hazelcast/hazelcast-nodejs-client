@@ -14,7 +14,9 @@ var REQUEST_TYPE = AtomicLongMessageType.ATOMICLONG_COMPAREANDSET;
 var RESPONSE_TYPE = 101;
 var RETRYABLE = false;
 
+
 export class AtomicLongCompareAndSetCodec {
+
 
     static calculateSize(name: string, expected: any, updated: any) {
 // Calculates the request payload size
@@ -44,5 +46,6 @@ export class AtomicLongCompareAndSetCodec {
         return parameters;
 
     }
+
 
 }

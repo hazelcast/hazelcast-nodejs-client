@@ -1,11 +1,14 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
-import {AddressCodec} from './AddressCodec';
-import {Data} from '../serialization/Data';
-import {ClientMessageType} from './ClientMessageType';
 import Address = require('../Address');
+import {AddressCodec} from './AddressCodec';
+import {UUIDCodec} from './UUIDCodec';
+import {MemberCodec} from './MemberCodec';
+import {Data} from '../serialization/Data';
+import {EntryViewCodec} from './EntryViewCodec';
 import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
+import {ClientMessageType} from './ClientMessageType';
 
 var REQUEST_TYPE = ClientMessageType.CLIENT_AUTHENTICATIONCUSTOM;
 var RESPONSE_TYPE = 107;
@@ -15,7 +18,7 @@ var RETRYABLE = true;
 export class ClientAuthenticationCustomCodec {
 
 
-    static calculateSize(credentials: Data, uuid: string, ownerUuid: string, isOwnerConnection: boolean, clientType: string, serializationVersion: any) {
+    static calculateSize(credentials: Data, uuid: string, ownerUuid: string, isOwnerConnection: boolean, clientType: string, serializationVersion: any, clientHazelcastVersion: string) {
 // Calculates the request payload size
         var dataSize: number = 0;
         dataSize += BitsUtil.calculateSizeData(credentials);
@@ -30,12 +33,13 @@ export class ClientAuthenticationCustomCodec {
         dataSize += BitsUtil.BOOLEAN_SIZE_IN_BYTES;
         dataSize += BitsUtil.calculateSizeString(clientType);
         dataSize += BitsUtil.BYTE_SIZE_IN_BYTES;
+        dataSize += BitsUtil.calculateSizeString(clientHazelcastVersion);
         return dataSize;
     }
 
-    static encodeRequest(credentials: Data, uuid: string, ownerUuid: string, isOwnerConnection: boolean, clientType: string, serializationVersion: any) {
+    static encodeRequest(credentials: Data, uuid: string, ownerUuid: string, isOwnerConnection: boolean, clientType: string, serializationVersion: any, clientHazelcastVersion: string) {
 // Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(credentials, uuid, ownerUuid, isOwnerConnection, clientType, serializationVersion));
+        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(credentials, uuid, ownerUuid, isOwnerConnection, clientType, serializationVersion, clientHazelcastVersion));
         clientMessage.setMessageType(REQUEST_TYPE);
         clientMessage.setRetryable(RETRYABLE);
         clientMessage.appendData(credentials);
@@ -50,6 +54,7 @@ export class ClientAuthenticationCustomCodec {
         clientMessage.appendBoolean(isOwnerConnection);
         clientMessage.appendString(clientType);
         clientMessage.appendByte(serializationVersion);
+        clientMessage.appendString(clientHazelcastVersion);
         clientMessage.updateFrameLength();
         return clientMessage;
     }
@@ -61,7 +66,9 @@ export class ClientAuthenticationCustomCodec {
             'address': null,
             'uuid': null,
             'ownerUuid': null,
-            'serializationVersion': null
+            'serializationVersion': null,
+            'serverHazelcastVersion': null,
+            'clientUnregisteredMembers': null
         };
         parameters['status'] = clientMessage.readByte();
 
@@ -77,6 +84,19 @@ export class ClientAuthenticationCustomCodec {
             parameters['ownerUuid'] = clientMessage.readString();
         }
         parameters['serializationVersion'] = clientMessage.readByte();
+        parameters['serverHazelcastVersion'] = clientMessage.readString();
+
+        if (clientMessage.readBoolean() !== true) {
+
+            var clientUnregisteredMembersSize = clientMessage.readInt32();
+            var clientUnregisteredMembers: any = [];
+            for (var clientUnregisteredMembersIndex = 0; clientUnregisteredMembersIndex < clientUnregisteredMembersSize; clientUnregisteredMembersIndex++) {
+                var clientUnregisteredMembersItem: any;
+                clientUnregisteredMembersItem = MemberCodec.decode(clientMessage, toObjectFunction);
+                clientUnregisteredMembers.push(clientUnregisteredMembersItem)
+            }
+            parameters['clientUnregisteredMembers'] = clientUnregisteredMembers;
+        }
         return parameters;
 
     }

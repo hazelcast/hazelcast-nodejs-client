@@ -14,7 +14,9 @@ var REQUEST_TYPE = AtomicLongMessageType.ATOMICLONG_GETANDINCREMENT;
 var RESPONSE_TYPE = 103;
 var RETRYABLE = false;
 
+
 export class AtomicLongGetAndIncrementCodec {
+
 
     static calculateSize(name: string) {
 // Calculates the request payload size
@@ -40,5 +42,6 @@ export class AtomicLongGetAndIncrementCodec {
         return parameters;
 
     }
+
 
 }

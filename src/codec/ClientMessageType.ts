@@ -1,5 +1,4 @@
 /* tslint:disable */
-
 export class ClientMessageType {
     static CLIENT_AUTHENTICATION = 0x0002;
     static CLIENT_AUTHENTICATIONCUSTOM = 0x0003;
@@ -14,4 +13,7 @@ export class ClientMessageType {
     static CLIENT_ADDDISTRIBUTEDOBJECTLISTENER = 0x000d;
     static CLIENT_REMOVEDISTRIBUTEDOBJECTLISTENER = 0x000e;
     static CLIENT_PING = 0x000f;
+    static CLIENT_STATISTICS = 0x0010;
+    static CLIENT_DEPLOYCLASSES = 0x0011;
+    static CLIENT_ADDPARTITIONLISTENER = 0x0012;
 }

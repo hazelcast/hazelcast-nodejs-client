@@ -1,12 +1,18 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
+import Address = require('../Address');
+import {AddressCodec} from './AddressCodec';
+import {UUIDCodec} from './UUIDCodec';
+import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
+import {EntryViewCodec} from './EntryViewCodec';
+import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 import {ReplicatedMapMessageType} from './ReplicatedMapMessageType';
 
-const REQUEST_TYPE = ReplicatedMapMessageType.REPLICATEDMAP_GET;
-const RESPONSE_TYPE = 105;
-const RETRYABLE = true;
+var REQUEST_TYPE = ReplicatedMapMessageType.REPLICATEDMAP_GET;
+var RESPONSE_TYPE = 105;
+var RETRYABLE = true;
 
 
 export class ReplicatedMapGetCodec {
@@ -14,7 +20,7 @@ export class ReplicatedMapGetCodec {
 
     static calculateSize(name: string, key: Data) {
 // Calculates the request payload size
-        let dataSize: number = 0;
+        var dataSize: number = 0;
         dataSize += BitsUtil.calculateSizeString(name);
         dataSize += BitsUtil.calculateSizeData(key);
         return dataSize;
@@ -22,7 +28,7 @@ export class ReplicatedMapGetCodec {
 
     static encodeRequest(name: string, key: Data) {
 // Encode request into clientMessage
-        const clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, key));
+        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, key));
         clientMessage.setMessageType(REQUEST_TYPE);
         clientMessage.setRetryable(RETRYABLE);
         clientMessage.appendString(name);
@@ -31,15 +37,16 @@ export class ReplicatedMapGetCodec {
         return clientMessage;
     }
 
-
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
 // Decode response from client message
-        const parameters: any = {'response': null};
+        var parameters: any = {'response': null};
 
         if (clientMessage.readBoolean() !== true) {
             parameters['response'] = toObjectFunction(clientMessage.readData());
         }
         return parameters;
+
     }
+
 
 }

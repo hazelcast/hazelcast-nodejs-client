@@ -25,6 +25,7 @@ import {ReliableTopicProxy} from './proxy/topic/ReliableTopicProxy';
 import {IReplicatedMap} from './proxy/IReplicatedMap';
 import {ISemaphore} from './proxy/ISemaphore';
 import {IAtomicLong} from './proxy/IAtomicLong';
+import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
 
 export default class HazelcastClient {
 
@@ -39,6 +40,7 @@ export default class HazelcastClient {
     private lifecycleService: LifecycleService;
     private proxyManager: ProxyManager;
     private heartbeat: Heartbeat;
+    private lockReferenceIdGenerator: LockReferenceIdGenerator;
 
     /**
      * Creates a new client object and automatically connects to cluster.
@@ -66,6 +68,7 @@ export default class HazelcastClient {
         this.clusterService = new ClusterService(this);
         this.lifecycleService = new LifecycleService(this);
         this.heartbeat = new Heartbeat(this);
+        this.lockReferenceIdGenerator = new LockReferenceIdGenerator();
     }
 
     private init(): Promise<HazelcastClient> {
@@ -265,6 +268,10 @@ export default class HazelcastClient {
      */
     removeDistributedObjectListener(listenerId: string): Promise<boolean> {
         return this.proxyManager.removeDistributedObjectListener(listenerId);
+    }
+
+    getLockReferenceIdGenerator(): LockReferenceIdGenerator {
+        return this.lockReferenceIdGenerator;
     }
 
     /**

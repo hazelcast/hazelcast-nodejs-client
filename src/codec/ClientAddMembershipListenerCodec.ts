@@ -1,11 +1,14 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
+import Address = require('../Address');
+import {AddressCodec} from './AddressCodec';
+import {UUIDCodec} from './UUIDCodec';
 import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
-import {ClientMessageType} from './ClientMessageType';
-import Address = require('../Address');
+import {EntryViewCodec} from './EntryViewCodec';
 import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
+import {ClientMessageType} from './ClientMessageType';
 
 var REQUEST_TYPE = ClientMessageType.CLIENT_ADDMEMBERSHIPLISTENER;
 var RESPONSE_TYPE = 104;
@@ -44,34 +47,52 @@ export class ClientAddMembershipListenerCodec {
 
         var messageType = clientMessage.getMessageType();
         if (messageType === BitsUtil.EVENT_MEMBER && handleEventMember !== null) {
-            var member: any;
-            member = MemberCodec.decode(clientMessage, toObjectFunction);
-            var eventType: number;
-            eventType = clientMessage.readInt32();
+            var messageFinished = false;
+            var member: any = undefined;
+            if (!messageFinished) {
+                member = MemberCodec.decode(clientMessage, toObjectFunction);
+            }
+            var eventType: number = undefined;
+            if (!messageFinished) {
+                eventType = clientMessage.readInt32();
+            }
             handleEventMember(member, eventType);
         }
         if (messageType === BitsUtil.EVENT_MEMBERLIST && handleEventMemberlist !== null) {
-            var members: any;
-            var membersSize = clientMessage.readInt32();
-            members = [];
-            for (var membersIndex = 0; membersIndex < membersSize; membersIndex++) {
-                var membersItem: any;
-                membersItem = MemberCodec.decode(clientMessage, toObjectFunction);
-                members.push(membersItem)
+            var messageFinished = false;
+            var members: any = undefined;
+            if (!messageFinished) {
+
+                var membersSize = clientMessage.readInt32();
+                members = [];
+                for (var membersIndex = 0; membersIndex < membersSize; membersIndex++) {
+                    var membersItem: any;
+                    membersItem = MemberCodec.decode(clientMessage, toObjectFunction);
+                    members.push(membersItem)
+                }
             }
             handleEventMemberlist(members);
         }
         if (messageType === BitsUtil.EVENT_MEMBERATTRIBUTECHANGE && handleEventMemberattributechange !== null) {
-            var uuid: string;
-            uuid = clientMessage.readString();
-            var key: string;
-            key = clientMessage.readString();
-            var operationType: number;
-            operationType = clientMessage.readInt32();
-            var value: string;
+            var messageFinished = false;
+            var uuid: string = undefined;
+            if (!messageFinished) {
+                uuid = clientMessage.readString();
+            }
+            var key: string = undefined;
+            if (!messageFinished) {
+                key = clientMessage.readString();
+            }
+            var operationType: number = undefined;
+            if (!messageFinished) {
+                operationType = clientMessage.readInt32();
+            }
+            var value: string = undefined;
+            if (!messageFinished) {
 
-            if (clientMessage.readBoolean() !== true) {
-                value = clientMessage.readString();
+                if (clientMessage.readBoolean() !== true) {
+                    value = clientMessage.readString();
+                }
             }
             handleEventMemberattributechange(uuid, key, operationType, value);
         }
