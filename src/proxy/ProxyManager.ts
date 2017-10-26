@@ -22,6 +22,7 @@ import {LoggingService} from '../logging/LoggingService';
 import Address = require('../Address');
 import {Invocation} from '../invocation/InvocationService';
 import {Member} from '../core/Member';
+import {ListenerMessageCodec} from '../ListenerMessageCodec';
 
 class ProxyManager {
     public MAP_SERVICE: string = 'hz:impl:mapService';
@@ -143,18 +144,29 @@ class ProxyManager {
             };
             ClientAddDistributedObjectListenerCodec.handle(clientMessage, converterFunc, null);
         };
-        return this.client.getListenerService().registerListener(
-            ClientAddDistributedObjectListenerCodec.encodeRequest(this.client.getListenerService().isLocalOnlyListener()),
-            handler,
-            ClientAddDistributedObjectListenerCodec.decodeResponse
-        );
+        let codec = this.createDistributedObjectListener();
+        return this.client.getListenerService().registerListener(codec, handler);
     }
 
     removeDistributedObjectListener(listenerId: string) {
-        let encodeFunc = (serverKey: string) => {
-            return ClientRemoveDistributedObjectListenerCodec.encodeRequest(serverKey);
+        return this.client.getListenerService().deregisterListener(listenerId);
+    }
+
+    private createDistributedObjectListener(): ListenerMessageCodec {
+        return {
+            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+                return ClientAddDistributedObjectListenerCodec.encodeRequest(localOnly);
+            },
+            decodeAddResponse: function(msg: ClientMessage): string {
+                return ClientAddDistributedObjectListenerCodec.decodeResponse(msg).response;
+            },
+            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+                return ClientRemoveDistributedObjectListenerCodec.encodeRequest(listenerId);
+            },
+            decodeRemoveResponse: function(msg: ClientMessage): boolean {
+                return ClientRemoveDistributedObjectListenerCodec.decodeResponse(msg).response;
+            }
         };
-        return this.client.getListenerService().deregisterListener(encodeFunc, listenerId);
     }
 }
 export = ProxyManager;

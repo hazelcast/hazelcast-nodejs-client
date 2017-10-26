@@ -12,6 +12,7 @@ import * as Promise from 'bluebird';
 import {Invocation} from './invocation/InvocationService';
 import {Member} from './core/Member';
 import ClientMessage = require('./ClientMessage');
+import {ListenerMessageCodec} from './ListenerMessageCodec';
 
 export class ListenerService implements ConnectionHeartbeatListener {
     private client: HazelcastClient;
@@ -110,14 +111,14 @@ export class ListenerService implements ConnectionHeartbeatListener {
         }
         let registrationKey = this.userRegistrationKeyInformation.get(userRegistrationKey);
         let registerRequest = registrationKey.getRegisterRequest();
-        let registerDecodeFunc = registrationKey.getDecoder();
+        let codec = registrationKey.getCodec();
         let invocation = new Invocation(this.client, registerRequest);
         invocation.handler = <any>registrationKey.getHandler();
         invocation.connection = connection;
         this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
             var correlationId = responseMessage.getCorrelationId();
-            var response = registerDecodeFunc(responseMessage);
-            var eventRegistration = new ClientEventRegistration(response.response, correlationId, invocation.connection);
+            var response = codec.decodeAddResponse(responseMessage);
+            var eventRegistration = new ClientEventRegistration(response, correlationId, invocation.connection, codec);
             this.logger.debug('ListenerService',
                 'Listener ' + userRegistrationKey + ' re-registered on ' + connection.address.toString());
 
@@ -137,24 +138,24 @@ export class ListenerService implements ConnectionHeartbeatListener {
         return deferred.promise;
     }
 
-    registerListener(registerRequest: ClientMessage, registerHandlerFunc: any, registerDecodeFunc: any): Promise<string> {
+    registerListener(codec: ListenerMessageCodec, registerHandlerFunc: any): Promise<string> {
         return this.trySyncConnectToAllConnections().then(() => {
-            return this.registerListenerInternal(registerRequest, registerHandlerFunc, registerDecodeFunc);
+            return this.registerListenerInternal(codec, registerHandlerFunc);
         });
     }
 
-    protected registerListenerInternal(registerRequest: ClientMessage,
-                                       listenerHandlerFunc: Function, registerDecodeFunc: Function): Promise<string> {
+    protected registerListenerInternal(codec: ListenerMessageCodec, listenerHandlerFunc: Function): Promise<string> {
         let activeConnections = copyObjectShallow(this.client.getConnectionManager().getActiveConnections());
         let userRegistrationKey: string = UuidUtil.generate();
         let connectionsOnUserKey: Map<ClientConnection, ClientEventRegistration>;
         let deferred = Promise.defer<string>();
+        let registerRequest = codec.encodeAddRequest(this.isSmart());
         connectionsOnUserKey = this.activeRegistrations.get(userRegistrationKey);
         if (connectionsOnUserKey === undefined) {
             connectionsOnUserKey = new Map();
             this.activeRegistrations.set(userRegistrationKey, connectionsOnUserKey);
             this.userRegistrationKeyInformation.set(userRegistrationKey,
-                new RegistrationKey(userRegistrationKey, registerRequest, registerDecodeFunc, listenerHandlerFunc));
+                new RegistrationKey(userRegistrationKey, codec, registerRequest, listenerHandlerFunc));
         }
         for (let address in activeConnections) {
             if (connectionsOnUserKey.has(activeConnections[address])) {
@@ -165,9 +166,8 @@ export class ListenerService implements ConnectionHeartbeatListener {
             invocation.connection = activeConnections[address];
             this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
                 let correlationId = responseMessage.getCorrelationId();
-                let response = registerDecodeFunc(responseMessage);
-                let clientEventRegistration = new ClientEventRegistration(response.response,
-                    correlationId, invocation.connection);
+                let response = codec.decodeAddResponse(responseMessage);
+                let clientEventRegistration = new ClientEventRegistration(response, correlationId, invocation.connection, codec);
                 this.logger.debug('ListenerService',
                     'Listener ' + userRegistrationKey + ' registered on ' + invocation.connection.address.toString());
                 connectionsOnUserKey.set(activeConnections[address], clientEventRegistration);
@@ -175,16 +175,15 @@ export class ListenerService implements ConnectionHeartbeatListener {
                 deferred.resolve(userRegistrationKey);
             }).catch((e) => {
                 if (invocation.connection.isAlive()) {
-                    let err = new HazelcastError('Listener registration failed on ' + address.toString() + '\n' +
-                        e + e.stack);
-                    this.logger.warn('ListenerService', err.toString());
+                    this.deregisterListener(userRegistrationKey);
+                    deferred.reject(new HazelcastError('Listener cannot be added!', e));
                 }
             });
         }
         return deferred.promise;
     }
 
-    deregisterListener(deregisterEncodeFunc: Function, userRegistrationKey: string): Promise<boolean> {
+    deregisterListener(userRegistrationKey: string): Promise<boolean> {
         let deferred = Promise.defer<boolean>();
         let registrationsOnUserKey = this.activeRegistrations.get(userRegistrationKey);
         if (registrationsOnUserKey === undefined) {
@@ -192,7 +191,8 @@ export class ListenerService implements ConnectionHeartbeatListener {
             return deferred.promise;
         }
         registrationsOnUserKey.forEach((eventRegistration: ClientEventRegistration, connection: ClientConnection) => {
-            let invocation = new Invocation(this.client, deregisterEncodeFunc(eventRegistration.serverRegistrationId));
+            let clientMessage = eventRegistration.codec.encodeRemoveRequest(eventRegistration.serverRegistrationId);
+            let invocation = new Invocation(this.client, clientMessage);
             invocation.connection = eventRegistration.subscriber;
             this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
                 registrationsOnUserKey.delete(connection);
@@ -224,10 +224,6 @@ export class ListenerService implements ConnectionHeartbeatListener {
 
     isSmart(): boolean {
         return this.isSmartService;
-    }
-
-    isLocalOnlyListener(): boolean {
-        return this.isSmart();
     }
 
     shutdown(): void {

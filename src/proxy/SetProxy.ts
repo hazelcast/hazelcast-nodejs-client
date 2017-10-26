@@ -18,6 +18,7 @@ import {SetAddListenerCodec} from '../codec/SetAddListenerCodec';
 import {SetRemoveListenerCodec} from '../codec/SetRemoveListenerCodec';
 import ClientMessage = require('../ClientMessage');
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
+import {ListenerMessageCodec} from '../ListenerMessageCodec';
 
 export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
 
@@ -71,8 +72,6 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
     }
 
     addItemListener(listener: ItemListener<E>, includeValue: boolean = true): Promise<string> {
-        let localOnly = this.client.getListenerService().isLocalOnlyListener();
-        let listenerRequest = SetAddListenerCodec.encodeRequest(this.name, includeValue, localOnly);
         var handler = (message: ClientMessage) => {
             SetAddListenerCodec.handle(message, (item: Data, uuid: string, eventType: number) => {
                 var responseObject = this.toObject(item);
@@ -88,19 +87,34 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
                 }
             });
         };
-        return this.client.getListenerService().registerListener(listenerRequest, handler, SetAddListenerCodec.decodeResponse);
+        let codec = this.createEntryListener(this.name, includeValue);
+        return this.client.getListenerService().registerListener(codec, handler);
     }
 
     removeItemListener(registrationId: string): Promise<boolean> {
-        let encodeFunc = (serverKey: string) => {
-            return SetRemoveListenerCodec.encodeRequest(this.name, serverKey);
-        };
-        return this.client.getListenerService().deregisterListener(encodeFunc, registrationId);
+        return this.client.getListenerService().deregisterListener(registrationId);
     }
 
     private serializeList(input: Array<any>): Array<Data> {
         return input.map((each) => {
             return this.toData(each);
         });
+    }
+
+    private createEntryListener(name: string, includeValue: boolean): ListenerMessageCodec {
+        return {
+            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+                return SetAddListenerCodec.encodeRequest(name, includeValue, localOnly);
+            },
+            decodeAddResponse: function(msg: ClientMessage): string {
+                return SetAddListenerCodec.decodeResponse(msg).response;
+            },
+            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+                return SetRemoveListenerCodec.encodeRequest(name, listenerId);
+            },
+            decodeRemoveResponse: function(msg: ClientMessage): boolean {
+                return SetRemoveListenerCodec.decodeResponse(msg).response;
+            }
+        };
     }
 }

@@ -60,6 +60,7 @@ import {MapExecuteWithPredicateCodec} from '../codec/MapExecuteWithPredicateCode
 import {MapExecuteOnKeyCodec} from '../codec/MapExecuteOnKeyCodec';
 import {MapExecuteOnKeysCodec} from '../codec/MapExecuteOnKeysCodec';
 import * as SerializationUtil from '../serialization/SerializationUtil';
+import {ListenerMessageCodec} from '../ListenerMessageCodec';
 
 export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 
@@ -551,38 +552,27 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                     break;
             }
         };
-        var registerRequest: ClientMessage;
-        var listenerHandler: Function;
-        var registerDecodeFunc: Function;
-        let localOnly = this.client.getListenerService().isLocalOnlyListener();
+        let codec: ListenerMessageCodec;
+        let listenerHandler: Function;
         if (key && predicate) {
             var keyData = this.toData(key);
             var predicateData = this.toData(predicate);
-            registerRequest = MapAddEntryListenerToKeyWithPredicateCodec.encodeRequest(this.name, keyData,
-                    predicateData, includeValue, flags, localOnly);
+            codec = this.createEntryListenerToKeyWithPredicate(this.name, keyData, predicateData, includeValue, flags);
             listenerHandler = MapAddEntryListenerToKeyWithPredicateCodec.handle;
-            registerDecodeFunc = MapAddEntryListenerToKeyWithPredicateCodec.decodeResponse;
         } else if (key && !predicate) {
             var keyData = this.toData(key);
-            registerRequest = MapAddEntryListenerToKeyCodec.encodeRequest(this.name, keyData, includeValue, flags, localOnly);
+            codec = this.createEntryListenerToKey(this.name, keyData, includeValue, flags);
             listenerHandler = MapAddEntryListenerToKeyCodec.handle;
-            registerDecodeFunc = MapAddEntryListenerToKeyCodec.decodeResponse;
         } else if (!key && predicate) {
             var predicateData = this.toData(predicate);
-            registerRequest = MapAddEntryListenerWithPredicateCodec.encodeRequest(this.name, predicateData, includeValue,
-                flags, localOnly);
+            codec = this.createEntryListenerWithPredicate(this.name, predicateData, includeValue, flags);
             listenerHandler = MapAddEntryListenerWithPredicateCodec.handle;
-            registerDecodeFunc = MapAddEntryListenerWithPredicateCodec.decodeResponse;
         } else {
-            registerRequest = MapAddEntryListenerCodec.encodeRequest(this.name, includeValue, flags, localOnly);
+            codec = this.createEntryListener(this.name, includeValue, flags);
             listenerHandler = MapAddEntryListenerCodec.handle;
-            registerDecodeFunc = MapAddEntryListenerCodec.decodeResponse;
         }
-        return this.client.getListenerService().registerListener(
-            registerRequest,
-            (m: ClientMessage) => { listenerHandler(m, entryEventHandler, toObject); },
-            registerDecodeFunc
-        );
+        return this.client.getListenerService()
+            .registerListener(codec, (m: ClientMessage) => { listenerHandler(m, entryEventHandler, toObject); });
     }
 
     addEntryListener(listener: IMapListener<K, V>, key: K = undefined, includeValue: boolean = false): Promise<string> {
@@ -590,9 +580,82 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     removeEntryListener(listenerId: string): Promise<boolean> {
-        var deregisterEncodeFunc = (serverId: string) => {
-            return MapRemoveEntryListenerCodec.encodeRequest(this.name, serverId);
-        };
-        return this.client.getListenerService().deregisterListener(deregisterEncodeFunc, listenerId);
+        return this.client.getListenerService().deregisterListener(listenerId);
     }
+
+
+    private createEntryListenerToKey(name: string, keyData: Data, includeValue: boolean, flags: any): ListenerMessageCodec {
+        return {
+            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+                return MapAddEntryListenerToKeyCodec.encodeRequest(name, keyData, includeValue, flags, localOnly);
+            },
+            decodeAddResponse: function(msg: ClientMessage): string {
+                return MapAddEntryListenerToKeyCodec.decodeResponse(msg).response;
+            },
+            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+                return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
+            },
+            decodeRemoveResponse: function(msg: ClientMessage): boolean {
+                return MapRemoveEntryListenerCodec.decodeResponse(msg).response;
+            }
+        };
+    }
+
+    private createEntryListenerToKeyWithPredicate(name: string, keyData: Data, predicateData: Data, includeValue: boolean,
+                                                   flags: any): ListenerMessageCodec {
+        return {
+            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+                return MapAddEntryListenerToKeyWithPredicateCodec.encodeRequest(name, keyData, predicateData, includeValue,
+                    flags, localOnly);
+            },
+            decodeAddResponse: function(msg: ClientMessage): string {
+                return MapAddEntryListenerToKeyWithPredicateCodec.decodeResponse(msg).response;
+            },
+            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+                return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
+            },
+            decodeRemoveResponse: function(msg: ClientMessage): boolean {
+                return MapRemoveEntryListenerCodec.decodeResponse(msg).response;
+            }
+        };
+    }
+
+    private createEntryListenerWithPredicate(name: string, predicateData: Data, includeValue: boolean,
+                                              flags: any): ListenerMessageCodec {
+        return {
+            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+                return MapAddEntryListenerWithPredicateCodec.encodeRequest(name, predicateData, includeValue, flags, localOnly);
+            },
+            decodeAddResponse: function(msg: ClientMessage): string {
+                return MapAddEntryListenerWithPredicateCodec.decodeResponse(msg).response;
+            },
+            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+                return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
+            },
+            decodeRemoveResponse: function(msg: ClientMessage): boolean {
+                return MapRemoveEntryListenerCodec.decodeResponse(msg).response;
+            }
+        };
+    }
+
+    private createEntryListener(name: string, includeValue: boolean, flags: any): ListenerMessageCodec {
+        return {
+            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+                return MapAddEntryListenerCodec.encodeRequest(name, includeValue, flags, localOnly);
+            },
+            decodeAddResponse: function(msg: ClientMessage): string {
+                return MapAddEntryListenerCodec.decodeResponse(msg).response;
+            },
+            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+                return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
+            },
+            decodeRemoveResponse: function(msg: ClientMessage): boolean {
+                return MapRemoveEntryListenerCodec.decodeResponse(msg).response;
+            }
+        };
+    }
+
+
 }
+
+
