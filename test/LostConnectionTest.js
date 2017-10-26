@@ -2,7 +2,7 @@ var Controller = require('./RC');
 var expect = require('chai').expect;
 var HazelcastClient = require('../.').Client;
 var Config = require('../.').Config;
-describe('Lost connection', function() {
+describe.skip('Lost connection', function() {
     var cluster;
     var member1;
     var client;

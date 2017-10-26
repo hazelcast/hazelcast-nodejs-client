@@ -5,7 +5,7 @@ var Config = require('../.').Config;
 var Util = require('./Util');
 var Promise = require('bluebird');
 
-describe('Listeners on reconnect', function () {
+describe.skip('Listeners on reconnect', function () {
 
     this.timeout(120000);
     var client;
