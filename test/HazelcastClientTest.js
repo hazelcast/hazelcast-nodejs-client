@@ -117,7 +117,7 @@ configParams.forEach(function (cfg) {
                 managed.destroy('map1');
                 client.getDistributedObjects().then(function (distObjects) {
                     try {
-                        names = distObjects.map((o) => {
+                        names = distObjects.map(function(o) {
                             return o.getName();
                         });
                         expect(names).to.have.members(['map2', 'map3']);

@@ -5,6 +5,7 @@ import {IMap} from './proxy/IMap';
 import * as Predicates from './core/Predicate';
 import Address = require('./Address');
 import TopicOverloadPolicy = require('./proxy/topic/TopicOverloadPolicy');
+import * as HazelcastErrors from './HazelcastError';
 
 export {
     HazelcastClient as Client,
@@ -13,5 +14,6 @@ export {
     IMap,
     Address,
     Predicates,
-    TopicOverloadPolicy
+    TopicOverloadPolicy,
+    HazelcastErrors
 };
