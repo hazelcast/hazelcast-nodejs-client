@@ -69,8 +69,7 @@ describe('Map Partition Aware', function() {
         return map.destroy();
     });
 
-    it.only('put', function() {
-        this.timeout(15000);
+    it('put', function() {
         return _fillMap(map, numOfEntries).then(function(newVal) {
             var promises = members.map(function(member, index) {
                 return Controller.executeOnController(cluster.id, getLocalMapStats(index), 1);
