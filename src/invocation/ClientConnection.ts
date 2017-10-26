@@ -19,6 +19,7 @@ class ClientConnection {
     private logging =  LoggingService.getLoggingService();
     private clientNetworkConfig: ClientNetworkConfig;
     private connectionManager: ClientConnectionManager;
+    private closedTime: number;
 
     constructor(connectionManager: ClientConnectionManager, address: Address, clientNetworkConfig: ClientNetworkConfig) {
         this.address = address;
@@ -26,6 +27,7 @@ class ClientConnection {
         this.readBuffer = new Buffer(0);
         this.lastRead = 0;
         this.connectionManager = connectionManager;
+        this.closedTime = 0;
     }
 
     /**
@@ -88,10 +90,14 @@ class ClientConnection {
     /**
      * Closes this connection.
      */
-    close() {
+    close(): void {
         this.socket.end();
+        this.closedTime = Date.now();
     }
 
+    isAlive(): boolean {
+        return this.closedTime === 0;
+    }
 
     toString(): string {
         return this.address.toString();

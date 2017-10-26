@@ -593,10 +593,6 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         var deregisterEncodeFunc = (serverId: string) => {
             return MapRemoveEntryListenerCodec.encodeRequest(this.name, serverId);
         };
-        return this.client.getListenerService().deregisterListener(
-            deregisterEncodeFunc,
-            MapRemoveEntryListenerCodec.decodeResponse,
-            listenerId
-        );
+        return this.client.getListenerService().deregisterListener(deregisterEncodeFunc, listenerId);
     }
 }

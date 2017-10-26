@@ -95,11 +95,7 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
         let encodeFunc = (serverKey: string) => {
             return SetRemoveListenerCodec.encodeRequest(this.name, serverKey);
         };
-        return this.client.getListenerService().deregisterListener(
-            encodeFunc,
-            SetRemoveListenerCodec.decodeResponse,
-            registrationId
-        );
+        return this.client.getListenerService().deregisterListener(encodeFunc, registrationId);
     }
 
     private serializeList(input: Array<any>): Array<Data> {

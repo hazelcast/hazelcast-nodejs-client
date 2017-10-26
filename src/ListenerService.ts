@@ -174,16 +174,17 @@ export class ListenerService implements ConnectionHeartbeatListener {
             }).then(() => {
                 deferred.resolve(userRegistrationKey);
             }).catch((e) => {
-                let err = new HazelcastError('Listener registration failed on ' + address.toString() + '\n' +
-                    e + e.stack);
-                this.logger.warn('ListenerService', err.toString());
+                if (invocation.connection.isAlive()) {
+                    let err = new HazelcastError('Listener registration failed on ' + address.toString() + '\n' +
+                        e + e.stack);
+                    this.logger.warn('ListenerService', err.toString());
+                }
             });
         }
         return deferred.promise;
     }
 
-    deregisterListener(deregisterEncodeFunc: Function, deregisterDecodeFunc: Function,
-                       userRegistrationKey: string): Promise<boolean> {
+    deregisterListener(deregisterEncodeFunc: Function, userRegistrationKey: string): Promise<boolean> {
         let deferred = Promise.defer<boolean>();
         let registrationsOnUserKey = this.activeRegistrations.get(userRegistrationKey);
         if (registrationsOnUserKey === undefined) {
@@ -198,12 +199,9 @@ export class ListenerService implements ConnectionHeartbeatListener {
                 this.client.getInvocationService().removeEventHandler(eventRegistration.correlationId.low);
                 this.logger.debug('ListenerService',
                     'Listener ' + userRegistrationKey + ' unregistered from ' + invocation.connection.address.toString());
-
-                var response = deregisterDecodeFunc(responseMessage);
-                deferred.resolve(response.response);
-            }).then(() => {
                 this.activeRegistrations.delete(userRegistrationKey);
                 this.userRegistrationKeyInformation.delete(userRegistrationKey);
+                deferred.resolve(true);
             });
         });
 

@@ -166,11 +166,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
         var deregisterEncodeFunc = (serverKey: string) => {
             return MultiMapRemoveEntryListenerCodec.encodeRequest(this.name, serverKey);
         };
-        return this.client.getListenerService().deregisterListener(
-            deregisterEncodeFunc,
-            MultiMapRemoveEntryListenerCodec.decodeResponse,
-            listenerId
-        );
+        return this.client.getListenerService().deregisterListener(deregisterEncodeFunc, listenerId);
     }
 
     lock(key: K, leaseMillis: number = -1): Promise<void> {

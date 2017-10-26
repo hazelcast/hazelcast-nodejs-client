@@ -140,11 +140,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
         var encodeFunc = (serverKey: string) => {
             return QueueRemoveListenerCodec.encodeRequest(this.name, serverKey);
         };
-        return this.client.getListenerService().deregisterListener(
-            encodeFunc,
-            QueueRemoveListenerCodec.decodeResponse,
-            registrationId
-        );
+        return this.client.getListenerService().deregisterListener(encodeFunc, registrationId);
     }
 
     retainAll(items: E[]): Promise<boolean> {

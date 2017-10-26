@@ -141,11 +141,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         var deregisterEncodeFunc = (serverKey: string) => {
             return ReplicatedMapRemoveEntryListenerCodec.encodeRequest(this.name, serverKey);
         };
-        return this.client.getListenerService().deregisterListener(
-            deregisterEncodeFunc,
-            ReplicatedMapRemoveEntryListenerCodec.decodeResponse,
-            listenerId
-        );
+        return this.client.getListenerService().deregisterListener(deregisterEncodeFunc, listenerId);
     }
 
     private addEntryListenerInternal(listener: IMapListener<K, V>, predicate: Predicate,

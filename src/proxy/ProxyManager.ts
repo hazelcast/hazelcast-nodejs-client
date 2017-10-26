@@ -154,11 +154,7 @@ class ProxyManager {
         let encodeFunc = (serverKey: string) => {
             return ClientRemoveDistributedObjectListenerCodec.encodeRequest(serverKey);
         };
-        return this.client.getListenerService().deregisterListener(
-            encodeFunc,
-            ClientRemoveDistributedObjectListenerCodec.decodeResponse,
-            listenerId
-        );
+        return this.client.getListenerService().deregisterListener(encodeFunc, listenerId);
     }
 }
 export = ProxyManager;

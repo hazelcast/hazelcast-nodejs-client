@@ -139,9 +139,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
         var deregisterEncodeFunc = (serverKey: string) => {
             return ListRemoveListenerCodec.encodeRequest(this.name, serverKey);
         };
-        return this.client.getListenerService().deregisterListener(deregisterEncodeFunc,
-            ListRemoveListenerCodec.decodeResponse, registrationId
-        );
+        return this.client.getListenerService().deregisterListener(deregisterEncodeFunc, registrationId);
     }
 
     private serializeList(input: Array<E>): Array<Data> {
