@@ -69,6 +69,13 @@ class ClientConnection {
             this.socket = netSocket as stream.Duplex;
         }
 
+        netSocket.setTimeout(this.clientNetworkConfig.connectionTimeout)
+        this.socket.on('timeout', (e: any) => {
+            this.logging.warn('ClientConnection',
+                'Could not connect to address ' + Address.encodeToString(this.address) + '. Connection timed out.', e);
+            ready.reject(e);
+        });
+
         this.socket.on('error', (e: any) => {
             this.logging.warn('ClientConnection',
                 'Could not connect to address ' + this.address.toString(), e);
