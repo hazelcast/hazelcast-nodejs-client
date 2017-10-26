@@ -3,7 +3,7 @@ var HazelcastClient = require('../.').Client;
 var expect = require('chai').expect;
 var Config = require('../.').Config;
 
-describe.skip('Heartbeat', function() {
+describe('Heartbeat', function() {
     this.timeout(30000);
 
     var cluster;
