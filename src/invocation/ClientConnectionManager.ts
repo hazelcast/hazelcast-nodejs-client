@@ -57,11 +57,6 @@ class ClientConnectionManager extends EventEmitter {
         var clientConnection = new ClientConnection(this.client.getConnectionManager(), address,
             this.client.getConfig().networkConfig);
 
-        let connectionTimeout = this.client.getConfig().networkConfig.connectionTimeout;
-        if (connectionTimeout !== 0) {
-            result.promise = result.promise.timeout(connectionTimeout, new HazelcastError('Connection timed-out'));
-        }
-
         clientConnection.connect().then(() => {
             clientConnection.registerResponseCallback((data: Buffer) => {
                 this.client.getInvocationService().processResponse(data);
@@ -77,6 +72,11 @@ class ClientConnectionManager extends EventEmitter {
         }).finally(() => {
             delete this.pendingConnections[addressIndex];
         });
+
+        let connectionTimeout = this.client.getConfig().networkConfig.connectionTimeout;
+        if (connectionTimeout !== 0) {
+            return result.promise.timeout(connectionTimeout, new HazelcastError('Connection timed-out'));
+        }
         return result.promise;
     }
 
