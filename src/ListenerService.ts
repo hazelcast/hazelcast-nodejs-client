@@ -48,7 +48,7 @@ export class ListenerService implements ConnectionHeartbeatListener {
         if (this.isShutdown) {
             return;
         }
-        this.trySyncConnectToAllConnections().finally(() => {
+        this.trySyncConnectToAllConnections().catch().finally(() => {
             this.connectionRefreshTask =
                 setTimeout(this.connectionRefreshHandler.bind(this), this.connectionRefreshTaskInterval);
         });
