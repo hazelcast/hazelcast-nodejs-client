@@ -69,7 +69,7 @@ describe('Map Partition Aware', function() {
         return map.destroy();
     });
 
-    it('put', function() {
+    it.only('put', function() {
         this.timeout(25000);
         return _fillMap(map, numOfEntries).then(function(newVal) {
             var promises = members.map(function(member, index) {
