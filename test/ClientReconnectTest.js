@@ -4,7 +4,7 @@ var HazelcastClient = require('../.').Client;
 var Config = require('../.').Config;
 var Util = require('./Util');
 
-describe('Client reconnect', function () {
+describe.skip('Client reconnect', function () {
 
     var cluster;
     var client;
