@@ -6,9 +6,10 @@ var assert = require('assert');
 var Promise = require("bluebird");
 var Controller = require('./../RC');
 var Util = require('./../Util');
-var ReverseValueComparator = require('./ComparatorFactory').ReverseValueComparator;
-var ComparatorFactory = require('./ComparatorFactory').ComparatorFactory;
 var fs = require('fs');
+
+var IdentifiedFactory = require('../javaclasses/IdentifiedFactory');
+var CustomComparator = require('../javaclasses/CustomComparator');
 
 describe("Predicates", function() {
 
@@ -18,13 +19,17 @@ describe("Predicates", function() {
 
     function _createConfig() {
         var cfg = new Config.ClientConfig();
-        cfg.serializationConfig.dataSerializableFactories[1] = ComparatorFactory;
+        cfg.serializationConfig.dataSerializableFactories[66] = new IdentifiedFactory();
         return cfg;
+    }
+
+    function createReverseValueComparator() {
+        return new CustomComparator(1, Predicates.IterationType.ENTRY);
     }
 
     before(function () {
         this.timeout(32000);
-        return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_predicate.xml', 'utf8')).then(function(res) {
+        return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_identifiedfactory.xml', 'utf8')).then(function(res) {
             cluster = res;
             return Controller.startMember(cluster.id);
         }).then(function(member) {
@@ -166,7 +171,7 @@ describe("Predicates", function() {
     });
 
     it('Paging with reverse comparator should have elements in reverse order', function() {
-        var paging = Predicates.paging(Predicates.lessThan('this', 40), 3, new ReverseValueComparator());
+        var paging = Predicates.paging(Predicates.lessThan('this', 40), 3, createReverseValueComparator());
         return testPredicate(paging, [39, 38, 37], true);
     });
 

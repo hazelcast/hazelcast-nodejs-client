@@ -6,33 +6,8 @@ var Controller = require('../RC');
 var fs = require('fs');
 var _fillMap = require('../Util').fillMap;
 
-function SimpleEntryProcessor() {
-
-}
-
-SimpleEntryProcessor.prototype.readData = function () {
-    //Empty
-};
-
-SimpleEntryProcessor.prototype.writeData = function () {
-    //Empty
-};
-
-SimpleEntryProcessor.prototype.getFactoryId = function () {
-    return 1;
-};
-
-SimpleEntryProcessor.prototype.getClassId = function () {
-    return 1;
-};
-
-var entryProcessorFactory = {
-    create: function (type) {
-        if (type == 1) {
-            return new SimpleEntryProcessor();
-        }
-    }
-};
+var IdentifiedFactory = require('../javaclasses/IdentifiedFactory');
+var IdentifiedEntryProcessor = require('../javaclasses/IdentifiedEntryProcessor');
 
 describe('Entry Processor', function() {
     var MAP_SIZE = 1000;
@@ -42,12 +17,12 @@ describe('Entry Processor', function() {
 
     function _createConfig() {
         var cfg = new Config.ClientConfig();
-        cfg.serializationConfig.dataSerializableFactories[1] = entryProcessorFactory;
+        cfg.serializationConfig.dataSerializableFactories[66] = new IdentifiedFactory();
         return cfg;
     }
 
     before(function() {
-        return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_entryprocessor.xml', 'utf8')).then(function (res) {
+        return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_identifiedfactory.xml', 'utf8')).then(function (res) {
             cluster = res;
             return Controller.startMember(cluster.id);
         }).then(function(member) {
@@ -74,79 +49,79 @@ describe('Entry Processor', function() {
 
     it('executeOnEntries should modify entries', function () {
         this.timeout(4000);
-        return map.executeOnEntries(new SimpleEntryProcessor()).then(function() {
+        return map.executeOnEntries(new IdentifiedEntryProcessor('processed')).then(function() {
             return map.entrySet();
         }).then(function (entries) {
             expect(entries.every(function(entry) {
-                return entry[1] == entry[0] + 'processed';
+                return entry[1] == 'processed';
             })).to.be.true;
         });
     });
 
     it('executeOnEntries should return modified entries', function () {
         this.timeout(4000);
-        return map.executeOnEntries(new SimpleEntryProcessor()).then(function(entries) {
+        return map.executeOnEntries(new IdentifiedEntryProcessor('processed')).then(function(entries) {
             expect(entries).to.have.lengthOf(MAP_SIZE);
             expect(entries.every(function(entry) {
-                return entry[1] == entry[0] + 'processed';
+                return entry[1] == 'processed';
             })).to.be.true;
         });
     });
 
     it('executeOnEntries with predicate should modify entries', function () {
         this.timeout(4000);
-        return map.executeOnEntries(new SimpleEntryProcessor(), Predicates.regex('this', '^[01]$')).then(function() {
+        return map.executeOnEntries(new IdentifiedEntryProcessor('processed'), Predicates.regex('this', '^[01]$')).then(function() {
             return map.getAll(["0", "1", "2"]);
         }).then(function (entries) {
-            return expect(entries).to.deep.have.members([['0', '0processed'], ['1', '1processed'], ['2', '2']]);
+            return expect(entries).to.deep.have.members([['0', 'processed'], ['1', 'processed'], ['2', '2']]);
         });
     });
 
     it('executeOnEntries with predicate should return modified entries', function () {
         this.timeout(4000);
-        return map.executeOnEntries(new SimpleEntryProcessor(), Predicates.regex('this', '^[01]$')).then(function(entries) {
+        return map.executeOnEntries(new IdentifiedEntryProcessor('processed'), Predicates.regex('this', '^[01]$')).then(function(entries) {
             expect(entries).to.have.lengthOf(2);
             expect(entries.every(function(entry) {
-                return entry[1] == entry[0] + 'processed';
+                return entry[1] == 'processed';
             })).to.be.true;
         });
     });
 
     it('executeOnKey should return modified value', function() {
         this.timeout(4000);
-        return map.executeOnKey('4', new SimpleEntryProcessor()).then(function (retVal) {
-            return expect(retVal).to.equal('4processed');
+        return map.executeOnKey('4', new IdentifiedEntryProcessor('processed')).then(function (retVal) {
+            return expect(retVal).to.equal('processed');
         });
     });
 
     it('executeOnKey should modify the value', function() {
         this.timeout(4000);
-        return map.executeOnKey('4', new SimpleEntryProcessor()).then(function() {
+        return map.executeOnKey('4', new IdentifiedEntryProcessor('processed')).then(function() {
             return map.get('4');
         }).then(function (value) {
-            return expect(value).to.equal('4processed');
+            return expect(value).to.equal('processed');
         });
     });
 
     it('executeOnKeys should return modified entries', function() {
         this.timeout(4000);
-        return map.executeOnKeys(['4', '5'], new SimpleEntryProcessor()).then(function (entries) {
-            return expect(entries).to.deep.have.members([['4', '4processed'], ['5', '5processed']]);
+        return map.executeOnKeys(['4', '5'], new IdentifiedEntryProcessor('processed')).then(function (entries) {
+            return expect(entries).to.deep.have.members([['4', 'processed'], ['5', 'processed']]);
         });
     });
 
     it('executeOnKeys should modify the entries', function() {
         this.timeout(4000);
-        return map.executeOnKeys(['4', '5'], new SimpleEntryProcessor()).then(function() {
+        return map.executeOnKeys(['4', '5'], new IdentifiedEntryProcessor('processed')).then(function() {
             return map.getAll(['4', '5']);
         }).then(function (entries) {
-            return expect(entries).to.deep.have.members([['4', '4processed'], ['5', '5processed']]);
+            return expect(entries).to.deep.have.members([['4', 'processed'], ['5', 'processed']]);
         });
     });
 
     it('executeOnKeys with empty array should return empty array', function() {
         this.timeout(4000);
-        return map.executeOnKeys([], new SimpleEntryProcessor()).then(function (entries) {
+        return map.executeOnKeys([], new IdentifiedEntryProcessor('processed')).then(function (entries) {
             return expect(entries).to.have.lengthOf(0);
         });
     });
