@@ -18,7 +18,6 @@ import {MultiMapSizeCodec} from './../codec/MultiMapSizeCodec';
 import {MultiMapClearCodec} from './../codec/MultiMapClearCodec';
 import {MultiMapValueCountCodec} from './../codec/MultiMapValueCountCodec';
 import {EntryEventType} from '../core/EntryEventType';
-import ClientMessage = require('../ClientMessage');
 import {MultiMapAddEntryListenerToKeyCodec} from './../codec/MultiMapAddEntryListenerToKeyCodec';
 import {MultiMapAddEntryListenerCodec} from './../codec/MultiMapAddEntryListenerCodec';
 import {MultiMapRemoveEntryListenerCodec} from './../codec/MultiMapRemoveEntryListenerCodec';
@@ -29,6 +28,8 @@ import {MultiMapUnlockCodec} from '../codec/MultiMapUnlockCodec';
 import {MultiMapForceUnlockCodec} from '../codec/MultiMapForceUnlockCodec';
 import {LockReferenceIdGenerator} from '../LockReferenceIdGenerator';
 import * as Long from 'long';
+import {ListenerMessageCodec} from '../ListenerMessageCodec';
+import ClientMessage = require('../ClientMessage');
 
 export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
 
@@ -139,38 +140,27 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
             }
         };
 
-        let localOnly = this.client.getListenerService().isLocalOnlyListener();
         let listenerRequest: ClientMessage;
         if (key) {
-            var keyData = this.toData(key);
-            listenerRequest = MultiMapAddEntryListenerToKeyCodec.encodeRequest(this.name, keyData, includeValue, localOnly);
-            var handler = (m: ClientMessage) => {
+            let keyData = this.toData(key);
+            let handler = (m: ClientMessage) => {
                 MultiMapAddEntryListenerToKeyCodec.handle(m, entryEventHandler, toObject);
             };
+            let codec = this.createEntryListenerToKey(this.name, keyData, includeValue);
 
-            return this.client.getListenerService().registerListener(listenerRequest, handler,
-                MultiMapAddEntryListenerToKeyCodec.decodeResponse);
+            return this.client.getListenerService().registerListener(codec, handler);
         } else {
-            listenerRequest = MultiMapAddEntryListenerCodec.encodeRequest(this.name, includeValue, localOnly);
             var listenerHandler = (m: ClientMessage) => {
                 MultiMapAddEntryListenerCodec.handle(m, entryEventHandler, toObject);
             };
+            let codec = this.createEntryListener(this.name, includeValue);
 
-            return this.client.getListenerService().registerListener(listenerRequest, listenerHandler,
-                MultiMapAddEntryListenerCodec.decodeResponse);
+            return this.client.getListenerService().registerListener(codec, listenerHandler);
         }
-
     }
 
     removeEntryListener(listenerId: string): Promise<boolean> {
-        var deregisterEncodeFunc = (serverKey: string) => {
-            return MultiMapRemoveEntryListenerCodec.encodeRequest(this.name, serverKey);
-        };
-        return this.client.getListenerService().deregisterListener(
-            deregisterEncodeFunc,
-            MultiMapRemoveEntryListenerCodec.decodeResponse,
-            listenerId
-        );
+        return this.client.getListenerService().deregisterListener(listenerId);
     }
 
     lock(key: K, leaseMillis: number = -1): Promise<void> {
@@ -201,5 +191,33 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
 
     private nextSequence(): Long {
         return this.lockReferenceIdGenerator.getNextReferenceId();
+    }
+
+    private createEntryListenerToKey(name: string, keyData: Data, includeValue: boolean): ListenerMessageCodec {
+        return {
+            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+                return MultiMapAddEntryListenerToKeyCodec.encodeRequest(name, keyData, includeValue, localOnly);
+            },
+            decodeAddResponse: function(msg: ClientMessage): string {
+                return MultiMapAddEntryListenerToKeyCodec.decodeResponse(msg).response;
+            },
+            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+                return MultiMapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
+            }
+        };
+    }
+
+    private createEntryListener(name: string, includeValue: boolean): ListenerMessageCodec {
+        return {
+            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+                return MultiMapAddEntryListenerCodec.encodeRequest(name, includeValue, localOnly);
+            },
+            decodeAddResponse: function(msg: ClientMessage): string {
+                return MultiMapAddEntryListenerCodec.decodeResponse(msg).response;
+            },
+            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+                return MultiMapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
+            }
+        };
     }
 }

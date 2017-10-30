@@ -25,6 +25,7 @@ import {QueueAddListenerCodec} from '../codec/QueueAddListenerCodec';
 import {QueueRemoveListenerCodec} from '../codec/QueueRemoveListenerCodec';
 import {IllegalStateError} from '../HazelcastError';
 import ClientMessage = require('../ClientMessage');
+import {ListenerMessageCodec} from '../ListenerMessageCodec';
 
 export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
 
@@ -48,8 +49,6 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     addItemListener(listener: ItemListener<E>, includeValue: boolean): Promise<string> {
-        let localOnly = this.client.getListenerService().isLocalOnlyListener();
-        let listenerRequest = QueueAddListenerCodec.encodeRequest(this.name, includeValue, localOnly);
         var handler = (message: ClientMessage) => {
             QueueAddListenerCodec.handle(message, (item: Data, uuid: string, eventType: number) => {
                 var responseObject: E;
@@ -65,7 +64,8 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
                 }
             });
         };
-        return this.client.getListenerService().registerListener(listenerRequest, handler, QueueAddListenerCodec.decodeResponse);
+        let codec = this.createEntryListener(this.name, includeValue);
+        return this.client.getListenerService().registerListener(codec, handler);
     }
 
     clear(): Promise<void> {
@@ -137,14 +137,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     removeItemListener(registrationId: string): Promise<boolean> {
-        var encodeFunc = (serverKey: string) => {
-            return QueueRemoveListenerCodec.encodeRequest(this.name, serverKey);
-        };
-        return this.client.getListenerService().deregisterListener(
-            encodeFunc,
-            QueueRemoveListenerCodec.decodeResponse,
-            registrationId
-        );
+        return this.client.getListenerService().deregisterListener(registrationId);
     }
 
     retainAll(items: E[]): Promise<boolean> {
@@ -170,5 +163,19 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
             });
             return arr;
         });
+    }
+
+    private createEntryListener(name: string, includeValue: boolean): ListenerMessageCodec {
+        return {
+            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+                return QueueAddListenerCodec.encodeRequest(name, includeValue, localOnly);
+            },
+            decodeAddResponse: function(msg: ClientMessage): string {
+                return QueueAddListenerCodec.decodeResponse(msg).response;
+            },
+            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+                return QueueRemoveListenerCodec.encodeRequest(name, listenerId);
+            }
+        };
     }
 }

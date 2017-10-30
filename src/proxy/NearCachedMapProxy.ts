@@ -9,6 +9,8 @@ import ClientMessage = require('../ClientMessage');
 import {InvalidationAwareWrapper} from '../nearcache/InvalidationAwareWrapper';
 import {KeyStateMarker, TrueKeyStateMarker} from '../nearcache/KeyStateMarker';
 import {DataKeyedHashMap} from '../DataStoreHashMap';
+import {ListenerMessageCodec} from '../ListenerMessageCodec';
+import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
 
 export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
 
@@ -226,13 +228,24 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
             });
         };
 
-        let localOnly = this.client.getListenerService().isLocalOnlyListener();
-        let listenerRequest = MapAddNearCacheEntryListenerCodec.encodeRequest(this.name, EntryEventType.INVALIDATION, localOnly);
-        return this.client.getListenerService().registerListener(
-            listenerRequest,
-            (m: ClientMessage) => { MapAddNearCacheEntryListenerCodec.handle(m, invalidationHandler, invalidationBatchHandler); },
-            (m: ClientMessage) => { return MapAddNearCacheEntryListenerCodec.decodeResponse(m)['response']; }
-        );
+        let codec = this.createInvalidationListenerCodec(this.name, EntryEventType.INVALIDATION);
+        return this.client.getListenerService().registerListener(codec,
+            (m: ClientMessage) => { MapAddNearCacheEntryListenerCodec.handle(m, invalidationHandler, invalidationBatchHandler); }
+            );
+    }
+
+    private createInvalidationListenerCodec(name: string, flags: number): ListenerMessageCodec {
+        return {
+            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+                return MapAddNearCacheEntryListenerCodec.encodeRequest(name, flags, localOnly);
+            },
+            decodeAddResponse: function(msg: ClientMessage): string {
+                return MapAddNearCacheEntryListenerCodec.decodeResponse(msg).response;
+            },
+            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+                return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
+            }
+        };
     }
 
 }
