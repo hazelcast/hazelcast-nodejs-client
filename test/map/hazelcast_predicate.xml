@@ -30,5 +30,11 @@
                 ComparatorFactory
             </data-serializable-factory>
         </data-serializable-factories>
+        <portable-version>1</portable-version>
+        <portable-factories>
+            <portable-factory factory-id="10">
+                TestPortableFactory
+            </portable-factory>
+        </portable-factories>
     </serialization>
 </hazelcast>

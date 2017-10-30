@@ -5,9 +5,11 @@ var Predicates = require("../..").Predicates;
 var assert = require('assert');
 var Promise = require("bluebird");
 var Controller = require('./../RC');
-var Util = require('./../Util');
 var ReverseValueComparator = require('./ComparatorFactory').ReverseValueComparator;
 var ComparatorFactory = require('./ComparatorFactory').ComparatorFactory;
+var PortableFactory = require('./NestedVersionedPortables').PortableFactory;
+var OuterPortable = require('./NestedVersionedPortables').OuterPortable;
+var InnerPortable = require('./NestedVersionedPortables').InnerPortable;
 var fs = require('fs');
 
 describe("Predicates", function() {
@@ -19,6 +21,7 @@ describe("Predicates", function() {
     function _createConfig() {
         var cfg = new Config.ClientConfig();
         cfg.serializationConfig.dataSerializableFactories[1] = ComparatorFactory;
+        cfg.serializationConfig.portableFactories[10] = PortableFactory;
         return cfg;
     }
 
@@ -244,5 +247,21 @@ describe("Predicates", function() {
     it('Null inner predicate in PagingPredicate does not filter out items, only does paging', function() {
         var paging = Predicates.paging(null, 2);
         return testPredicate(paging, [0, 1]);
+    });
+
+    it('Nested portable', function () {
+        var map_portable = client.getMap('portable_map');
+        return map_portable.putAll([
+            ['one', new OuterPortable(new InnerPortable('x', 'y'))],
+            ['two', new OuterPortable(new InnerPortable('z', 'y'))],
+            ['three', new OuterPortable(new InnerPortable('a', 'b'))],
+        ]).then(function () {
+            return map_portable.valuesWithPredicate(Predicates.isEqualTo('inner_portable.r', 'y'));
+        }).then(function (s) {
+            return expect(s).to.have.deep.members([
+                new OuterPortable(new InnerPortable('x', 'y')),
+                new OuterPortable(new InnerPortable('z', 'y'))
+            ]);
+        });
     });
 });

@@ -6,6 +6,9 @@ var Util = require('../Util');
 var PortableObject = require('./PortableObjects').PortableObject;
 var PortableObjectV2 = require('./PortableObjects').PortableObjectV2;
 var InnerPortableObject = require('./PortableObjects').InnerPortableObject;
+var TestObjectPortable = require('./PortableObjects').TestObjectPortable;
+var TestObjectMetadataPortable = require('./PortableObjects').TestObjectMetadataPortable;
+
 describe('Portable Serialization', function() {
 
     function createSerializationService(constructorFunction) {
@@ -16,6 +19,10 @@ describe('Portable Serialization', function() {
                     return new constructorFunction();
                 } else if (classId === 222) {
                     return new InnerPortableObject();
+                } else if (classId === 555) {
+                    return new TestObjectPortable();
+                } else if (classId === 999) {
+                    return new TestObjectMetadataPortable();
                 } else {
                     return null;
                 }
@@ -72,4 +79,14 @@ describe('Portable Serialization', function() {
         var deserialized = newService.toObject(serialized);
         Util.expectAlmostEqual(deserialized, empv2);
     });
+
+    it('outer class has bigger version number than inner class', function () {
+        var service = createSerializationService(TestObjectPortable);
+
+        var testObject = new TestObjectPortable(new TestObjectMetadataPortable('met', 'r'));
+
+        var serialized = service.toData(testObject);
+        var deserialized = service.toObject(serialized);
+        Util.expectAlmostEqual(deserialized, testObject);
+    })
 });
