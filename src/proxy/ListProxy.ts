@@ -154,9 +154,6 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
             },
             encodeRemoveRequest: function(listenerId: string): ClientMessage {
                 return ListRemoveListenerCodec.encodeRequest(name, listenerId);
-            },
-            decodeRemoveResponse: function(msg: ClientMessage): boolean {
-                return ListRemoveListenerCodec.decodeResponse(msg).response;
             }
         };
     }

@@ -594,9 +594,6 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             },
             encodeRemoveRequest: function(listenerId: string): ClientMessage {
                 return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
-            },
-            decodeRemoveResponse: function(msg: ClientMessage): boolean {
-                return MapRemoveEntryListenerCodec.decodeResponse(msg).response;
             }
         };
     }
@@ -613,9 +610,6 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             },
             encodeRemoveRequest: function(listenerId: string): ClientMessage {
                 return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
-            },
-            decodeRemoveResponse: function(msg: ClientMessage): boolean {
-                return MapRemoveEntryListenerCodec.decodeResponse(msg).response;
             }
         };
     }
@@ -631,9 +625,6 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             },
             encodeRemoveRequest: function(listenerId: string): ClientMessage {
                 return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
-            },
-            decodeRemoveResponse: function(msg: ClientMessage): boolean {
-                return MapRemoveEntryListenerCodec.decodeResponse(msg).response;
             }
         };
     }
@@ -648,9 +639,6 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             },
             encodeRemoveRequest: function(listenerId: string): ClientMessage {
                 return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
-            },
-            decodeRemoveResponse: function(msg: ClientMessage): boolean {
-                return MapRemoveEntryListenerCodec.decodeResponse(msg).response;
             }
         };
     }

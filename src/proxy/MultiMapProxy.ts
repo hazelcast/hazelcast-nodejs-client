@@ -203,9 +203,6 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
             },
             encodeRemoveRequest: function(listenerId: string): ClientMessage {
                 return MultiMapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
-            },
-            decodeRemoveResponse: function(msg: ClientMessage): boolean {
-                return MultiMapRemoveEntryListenerCodec.decodeResponse(msg).response;
             }
         };
     }
@@ -220,9 +217,6 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
             },
             encodeRemoveRequest: function(listenerId: string): ClientMessage {
                 return MultiMapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
-            },
-            decodeRemoveResponse: function(msg: ClientMessage): boolean {
-                return MultiMapRemoveEntryListenerCodec.decodeResponse(msg).response;
             }
         };
     }

@@ -111,9 +111,6 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
             },
             encodeRemoveRequest: function(listenerId: string): ClientMessage {
                 return SetRemoveListenerCodec.encodeRequest(name, listenerId);
-            },
-            decodeRemoveResponse: function(msg: ClientMessage): boolean {
-                return SetRemoveListenerCodec.decodeResponse(msg).response;
             }
         };
     }

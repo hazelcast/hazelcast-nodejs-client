@@ -162,9 +162,6 @@ class ProxyManager {
             },
             encodeRemoveRequest: function(listenerId: string): ClientMessage {
                 return ClientRemoveDistributedObjectListenerCodec.encodeRequest(listenerId);
-            },
-            decodeRemoveResponse: function(msg: ClientMessage): boolean {
-                return ClientRemoveDistributedObjectListenerCodec.decodeResponse(msg).response;
             }
         };
     }

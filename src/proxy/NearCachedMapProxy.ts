@@ -244,9 +244,6 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
             },
             encodeRemoveRequest: function(listenerId: string): ClientMessage {
                 return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
-            },
-            decodeRemoveResponse: function(msg: ClientMessage): boolean {
-                return MapRemoveEntryListenerCodec.decodeResponse(msg).response;
             }
         };
     }

@@ -175,9 +175,6 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
             },
             encodeRemoveRequest: function(listenerId: string): ClientMessage {
                 return QueueRemoveListenerCodec.encodeRequest(name, listenerId);
-            },
-            decodeRemoveResponse: function(msg: ClientMessage): boolean {
-                return QueueRemoveListenerCodec.decodeResponse(msg).response;
             }
         };
     }

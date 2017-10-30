@@ -195,9 +195,6 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
             },
             encodeRemoveRequest: function(listenerId: string): ClientMessage {
                 return ReplicatedMapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
-            },
-            decodeRemoveResponse: function(msg: ClientMessage): boolean {
-                return ReplicatedMapRemoveEntryListenerCodec.decodeResponse(msg).response;
             }
         };
     }
@@ -212,9 +209,6 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
             },
             encodeRemoveRequest: function(listenerId: string): ClientMessage {
                 return ReplicatedMapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
-            },
-            decodeRemoveResponse: function(msg: ClientMessage): boolean {
-                return ReplicatedMapRemoveEntryListenerCodec.decodeResponse(msg).response;
             }
         };
     }
@@ -229,9 +223,6 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
             },
             encodeRemoveRequest: function(listenerId: string): ClientMessage {
                 return ReplicatedMapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
-            },
-            decodeRemoveResponse: function(msg: ClientMessage): boolean {
-                return ReplicatedMapRemoveEntryListenerCodec.decodeResponse(msg).response;
             }
         };
     }
@@ -248,9 +239,6 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
             },
             encodeRemoveRequest: function(listenerId: string): ClientMessage {
                 return ReplicatedMapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
-            },
-            decodeRemoveResponse: function(msg: ClientMessage): boolean {
-                return ReplicatedMapRemoveEntryListenerCodec.decodeResponse(msg).response;
             }
         };
     }
