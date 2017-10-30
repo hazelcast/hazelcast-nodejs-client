@@ -1,16 +1,17 @@
 import ClientMessage = require('../ClientMessage');
+import {ListenerMessageCodec} from '../ListenerMessageCodec';
 
 export class RegistrationKey {
     private readonly userRegistrationId: string;
     private registerHandlerFunc: Function;
     private registerRequest: ClientMessage;
-    private registerDecodeFunc: Function;
+    private codec: ListenerMessageCodec;
 
-    constructor(regId: string, registerRequest?: ClientMessage, registerDecodeFunc?: Function, registerHandlerFunc?: Function) {
+    constructor(regId: string, codec: ListenerMessageCodec, registerRequest?: ClientMessage, registerHandlerFunc?: Function) {
         this.userRegistrationId = regId;
         this.registerHandlerFunc = registerHandlerFunc;
         this.registerRequest = registerRequest;
-        this.registerDecodeFunc = registerDecodeFunc;
+        this.codec = codec;
     }
 
     getRegisterRequest(): ClientMessage {
@@ -21,12 +22,12 @@ export class RegistrationKey {
         this.registerRequest = registerRequest;
     }
 
-    getDecoder(): Function {
-        return this.registerDecodeFunc;
+    getCodec(): ListenerMessageCodec {
+        return this.codec;
     }
 
-    setDecoder(decoder: Function): void {
-        this.registerDecodeFunc = decoder;
+    setCodec(value: ListenerMessageCodec) {
+        this.codec = value;
     }
 
     getHandler(): Function {

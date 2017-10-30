@@ -25,6 +25,7 @@ import {ListSetCodec} from '../codec/ListSetCodec';
 import {ListLastIndexOfCodec} from '../codec/ListLastIndexOfCodec';
 import ClientMessage = require('../ClientMessage');
 import * as Promise from 'bluebird';
+import {ListenerMessageCodec} from '../ListenerMessageCodec';
 
 export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
 
@@ -114,8 +115,6 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
     }
 
     addItemListener(listener: ItemListener<E>, includeValue: boolean): Promise<string> {
-        let localOnly = this.client.getListenerService().isLocalOnlyListener();
-        let listenerRequest = ListAddListenerCodec.encodeRequest(this.name, includeValue, localOnly);
         var listenerHandler = (message: ClientMessage) => {
             ListAddListenerCodec.handle(message, (element: Data, uuid: string, eventType: number) => {
                 var responseObject = element ? this.toObject(element) : null;
@@ -131,22 +130,31 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
                 }
             });
         };
-        return this.client.getListenerService().registerListener(listenerRequest, listenerHandler,
-            ListAddListenerCodec.decodeResponse);
+        let codec = this.createItemListener(this.name, includeValue);
+        return this.client.getListenerService().registerListener(codec, listenerHandler);
     }
 
     removeItemListener(registrationId: string): Promise<boolean> {
-        var deregisterEncodeFunc = (serverKey: string) => {
-            return ListRemoveListenerCodec.encodeRequest(this.name, serverKey);
-        };
-        return this.client.getListenerService().deregisterListener(deregisterEncodeFunc,
-            ListRemoveListenerCodec.decodeResponse, registrationId
-        );
+        return this.client.getListenerService().deregisterListener(registrationId);
     }
 
     private serializeList(input: Array<E>): Array<Data> {
         return input.map((each) => {
             return this.toData(each);
         });
+    }
+
+    private createItemListener(name: string, includeValue: boolean): ListenerMessageCodec {
+        return {
+            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+                return ListAddListenerCodec.encodeRequest(name, includeValue, localOnly);
+            },
+            decodeAddResponse: function(msg: ClientMessage): string {
+                return ListAddListenerCodec.decodeResponse(msg).response;
+            },
+            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+                return ListRemoveListenerCodec.encodeRequest(name, listenerId);
+            }
+        };
     }
 }
