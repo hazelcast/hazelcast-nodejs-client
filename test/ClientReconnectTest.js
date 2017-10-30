@@ -44,11 +44,11 @@ describe('Client reconnect', function () {
         })
     });
 
-    it('member restarts, while map.put in progress 2', function () {
+    it('member restarts, while map.put in progress 2', function (done) {
         this.timeout(5000);
         var member;
         var map;
-        return Controller.createCluster(null, null).then(function(cl) {
+        Controller.createCluster(null, null).then(function(cl) {
             cluster = cl;
             clusterId = cluster.id;
             return Controller.startMember(cluster.id);
@@ -57,6 +57,7 @@ describe('Client reconnect', function () {
             var cfg = new Config.ClientConfig();
             cfg.properties['hazelcast.client.heartbeat.interval'] = 1000;
             cfg.properties['hazelcast.client.heartbeat.timeout'] = 3000;
+            cfg.networkConfig.connectionTimeout = 10000;
             return HazelcastClient.newHazelcastClient(cfg);
         }).then(function(cl) {
             client = cl;
@@ -64,14 +65,19 @@ describe('Client reconnect', function () {
         }).then(function() {
             return Controller.terminateMember(cluster.id, member.uuid);
         }).then(function() {
-            map.put('testkey', 'testvalue');
+            map.put('testkey', 'testvalue').then(function () {
+                return map.get('testkey');
+            }).then(function (val) {
+                try {
+                    expect(val).to.equal('testvalue');
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            });
         }).then(function() {
             return Controller.startMember(cluster.id);
-        }).then(function() {
-            return map.get('testkey');
-        }).then(function (val) {
-            return expect(val).to.equal('testvalue');
-        })
+        });
     });
 
     it('create proxy while member is down, member comes back', function () {
