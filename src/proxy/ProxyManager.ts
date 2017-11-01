@@ -3,7 +3,6 @@ import {DistributedObject} from '../DistributedObject';
 import {MapProxy} from './MapProxy';
 import {SetProxy} from './SetProxy';
 import {ClientCreateProxyCodec} from '../codec/ClientCreateProxyCodec';
-import ClientConnection = require('../invocation/ClientConnection');
 import ClientMessage = require('../ClientMessage');
 import {ClientDestroyProxyCodec} from '../codec/ClientDestroyProxyCodec';
 import {ClientAddDistributedObjectListenerCodec} from '../codec/ClientAddDistributedObjectListenerCodec';
@@ -24,34 +23,22 @@ import {Invocation} from '../invocation/InvocationService';
 import {Member} from '../core/Member';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 
-class ProxyManager {
-    public MAP_SERVICE: string = 'hz:impl:mapService';
-    public SET_SERVICE: string = 'hz:impl:setService';
-    public LOCK_SERVICE: string = 'hz:impl:lockService';
-    public QUEUE_SERVICE: string = 'hz:impl:queueService';
-    public LIST_SERVICE: string = 'hz:impl:listService';
-    public MULTIMAP_SERVICE: string = 'hz:impl:multiMapService';
-    public RINGBUFFER_SERVICE: string = 'hz:impl:ringbufferService';
-    public REPLICATEDMAP_SERVICE: string = 'hz:impl:replicatedMapService';
-    public SEMAPHORE_SERVICE: string = 'hz:impl:semaphoreService';
-    public ATOMICLONG_SERVICE: string = 'hz:impl:atomicLongService';
+export class ProxyManager {
+    public static readonly MAP_SERVICE: string = 'hz:impl:mapService';
+    public static readonly SET_SERVICE: string = 'hz:impl:setService';
+    public static readonly LOCK_SERVICE: string = 'hz:impl:lockService';
+    public static readonly QUEUE_SERVICE: string = 'hz:impl:queueService';
+    public static readonly LIST_SERVICE: string = 'hz:impl:listService';
+    public static readonly MULTIMAP_SERVICE: string = 'hz:impl:multiMapService';
+    public static readonly RINGBUFFER_SERVICE: string = 'hz:impl:ringbufferService';
+    public static readonly REPLICATEDMAP_SERVICE: string = 'hz:impl:replicatedMapService';
+    public static readonly SEMAPHORE_SERVICE: string = 'hz:impl:semaphoreService';
+    public static readonly ATOMICLONG_SERVICE: string = 'hz:impl:atomicLongService';
 
-    public service: any = {
-        'hz:impl:mapService': MapProxy,
-        'hz:impl:setService': SetProxy,
-        'hz:impl:queueService': QueueProxy,
-        'hz:impl:listService': ListProxy,
-        'hz:impl:lockService': LockProxy,
-        'hz:impl:multiMapService': MultiMapProxy,
-        'hz:impl:ringbufferService': RingbufferProxy,
-        'hz:impl:replicatedMapService': ReplicatedMapProxy,
-        'hz:impl:semaphoreService': SemaphoreProxy,
-        'hz:impl:atomicLongService': AtomicLongProxy
-    };
-
-    private proxies: { [proxyName: string]: DistributedObject; } = {};
-    private client: HazelcastClient;
-    private logger = LoggingService.getLoggingService();
+    public readonly service: {[serviceName: string]: any} = {};
+    private readonly proxies: { [proxyName: string]: DistributedObject; } = {};
+    private readonly client: HazelcastClient;
+    private readonly logger = LoggingService.getLoggingService();
     private readonly invocationTimeoutMillis: number;
     private readonly invocationRetryPauseMillis: number;
 
@@ -61,12 +48,25 @@ class ProxyManager {
         this.invocationRetryPauseMillis = this.client.getInvocationService().getInvocationRetryPauseMillis();
     }
 
+    public init(): void {
+        this.service[ProxyManager.MAP_SERVICE] = MapProxy;
+        this.service[ProxyManager.SET_SERVICE] = SetProxy;
+        this.service[ProxyManager.QUEUE_SERVICE] = QueueProxy;
+        this.service[ProxyManager.LIST_SERVICE] = ListProxy;
+        this.service[ProxyManager.LOCK_SERVICE] = LockProxy;
+        this.service[ProxyManager.MULTIMAP_SERVICE] = MultiMapProxy;
+        this.service[ProxyManager.RINGBUFFER_SERVICE] = RingbufferProxy;
+        this.service[ProxyManager.REPLICATEDMAP_SERVICE] = ReplicatedMapProxy;
+        this.service[ProxyManager.SEMAPHORE_SERVICE] = SemaphoreProxy;
+        this.service[ProxyManager.ATOMICLONG_SERVICE] = AtomicLongProxy;
+    }
+
     public getOrCreateProxy(name: string, serviceName: string, createAtServer = true): DistributedObject {
         if (this.proxies[name]) {
             return this.proxies[name];
         } else {
-            var newProxy: DistributedObject;
-            if (serviceName === this.MAP_SERVICE && this.client.getConfig().nearCacheConfigs[name]) {
+            let newProxy: DistributedObject;
+            if (serviceName === ProxyManager.MAP_SERVICE && this.client.getConfig().nearCacheConfigs[name]) {
                 newProxy = new NearCachedMapProxy(this.client, serviceName, name);
             } else {
                 newProxy = new this.service[serviceName](this.client, serviceName, name);
@@ -80,18 +80,16 @@ class ProxyManager {
     }
 
     private createProxy(proxyObject: DistributedObject): Promise<ClientMessage> {
-        var promise = Promise.defer<ClientMessage>();
-
+        let promise = Promise.defer<ClientMessage>();
         this.initializeProxy(proxyObject, promise, Date.now() + this.invocationTimeoutMillis);
-
         return promise.promise;
     }
 
     private findNextAddress(): Address {
-        var members = this.client.getClusterService().getMembers();
-        var liteMember: Member = null;
-        for (var i = 0; i < members.length; i++) {
-            var currentMember = members[i];
+        let members = this.client.getClusterService().getMembers();
+        let liteMember: Member = null;
+        for (let i = 0; i < members.length; i++) {
+            let currentMember = members[i];
             if (currentMember != null && currentMember.isLiteMember === false) {
                 return currentMember.address;
             } else if (currentMember != null && currentMember.isLiteMember) {
@@ -108,9 +106,9 @@ class ProxyManager {
 
     private initializeProxy(proxyObject: DistributedObject, promise: Promise.Resolver<ClientMessage>, deadline: number): void {
         if (Date.now() <= deadline) {
-            var address: Address = this.findNextAddress();
-            var request = ClientCreateProxyCodec.encodeRequest(proxyObject.getName(), proxyObject.getServiceName(), address);
-            var invocation = new Invocation(this.client, request);
+            let address: Address = this.findNextAddress();
+            let request = ClientCreateProxyCodec.encodeRequest(proxyObject.getName(), proxyObject.getServiceName(), address);
+            let invocation = new Invocation(this.client, request);
             invocation.address = address;
             this.client.getInvocationService().invoke(invocation).then((response) => {
                 promise.resolve(response);
@@ -126,16 +124,14 @@ class ProxyManager {
 
     destroyProxy(name: string, serviceName: string): Promise<void> {
         delete this.proxies[name];
-        var clientMessage = ClientDestroyProxyCodec.encodeRequest(name, serviceName);
+        let clientMessage = ClientDestroyProxyCodec.encodeRequest(name, serviceName);
         clientMessage.setPartitionId(-1);
-        return this.client.getInvocationService().invokeOnRandomTarget(clientMessage).then(function () {
-            return;
-        });
+        return this.client.getInvocationService().invokeOnRandomTarget(clientMessage).return();
     }
 
     addDistributedObjectListener(listenerFunc: Function): Promise<string> {
-        var handler = function (clientMessage: ClientMessage) {
-            var converterFunc = function (name: string, serviceName: string, eventType: string) {
+        let handler = function (clientMessage: ClientMessage) {
+            let converterFunc = function (name: string, serviceName: string, eventType: string) {
                 if (eventType === 'CREATED') {
                     listenerFunc(name, serviceName, 'created');
                 } else if (eventType === 'DESTROYED') {
@@ -166,4 +162,3 @@ class ProxyManager {
         };
     }
 }
-export = ProxyManager;
