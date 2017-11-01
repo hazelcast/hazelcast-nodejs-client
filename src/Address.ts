@@ -19,7 +19,6 @@ class Address implements IdentifiedDataSerializable {
         }
     }
 
-
     readData(input: DataInput): any {
         this.port = input.readInt();
         this.type = input.readByte();
