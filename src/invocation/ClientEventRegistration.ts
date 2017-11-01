@@ -1,6 +1,6 @@
 import * as Long from 'long';
-import ClientConnection = require('./ClientConnection');
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
+import {ClientConnection} from './ClientConnection';
 
 export class ClientEventRegistration {
     readonly serverRegistrationId: string;

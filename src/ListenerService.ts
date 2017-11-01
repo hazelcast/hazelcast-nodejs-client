@@ -2,7 +2,6 @@ import {ConnectionHeartbeatListener} from './core/ConnectionHeartbeatListener';
 import HazelcastClient from './HazelcastClient';
 import {EventEmitter} from 'events';
 import {LoggingService} from './logging/LoggingService';
-import ClientConnection = require('./invocation/ClientConnection');
 import {ClientEventRegistration} from './invocation/ClientEventRegistration';
 import {RegistrationKey} from './invocation/RegistrationKey';
 import {HazelcastError} from './HazelcastError';
@@ -13,6 +12,7 @@ import {Invocation} from './invocation/InvocationService';
 import {Member} from './core/Member';
 import * as assert from 'assert';
 import {ListenerMessageCodec} from './ListenerMessageCodec';
+import {ClientConnection} from './invocation/ClientConnection';
 
 export class ListenerService implements ConnectionHeartbeatListener {
     private client: HazelcastClient;

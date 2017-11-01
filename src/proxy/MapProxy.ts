@@ -3,8 +3,6 @@ import {IMap} from './IMap';
 import * as Promise from 'bluebird';
 import {Data} from '../serialization/Data';
 import {MapPutCodec} from '../codec/MapPutCodec';
-import ClientMessage = require('../ClientMessage');
-import murmur = require('../invocation/Murmur');
 import {MapGetCodec} from '../codec/MapGetCodec';
 import {MapClearCodec} from '../codec/MapClearCodec';
 import {MapSizeCodec} from '../codec/MapSizeCodec';
@@ -44,8 +42,8 @@ import {MapAddEntryListenerCodec} from '../codec/MapAddEntryListenerCodec';
 import {EntryEventType} from '../core/EntryEventType';
 import {MapAddEntryListenerToKeyCodec} from '../codec/MapAddEntryListenerToKeyCodec';
 import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
-import {assertNotNull, getSortedQueryResultSet, assertArray} from '../Util';
-import {Predicate, IterationType} from '../core/Predicate';
+import {assertArray, assertNotNull, getSortedQueryResultSet} from '../Util';
+import {IterationType, Predicate} from '../core/Predicate';
 import {MapEntriesWithPredicateCodec} from '../codec/MapEntriesWithPredicateCodec';
 import {MapKeySetWithPredicateCodec} from '../codec/MapKeySetWithPredicateCodec';
 import {MapValuesWithPredicateCodec} from '../codec/MapValuesWithPredicateCodec';
@@ -61,6 +59,7 @@ import {MapExecuteOnKeyCodec} from '../codec/MapExecuteOnKeyCodec';
 import {MapExecuteOnKeysCodec} from '../codec/MapExecuteOnKeysCodec';
 import * as SerializationUtil from '../serialization/SerializationUtil';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
+import ClientMessage = require('../ClientMessage');
 
 export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 

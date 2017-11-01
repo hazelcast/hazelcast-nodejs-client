@@ -2,13 +2,12 @@ import * as Promise from 'bluebird';
 import {ClientAuthenticationCodec} from '../codec/ClientAuthenticationCodec';
 import HazelcastClient from '../HazelcastClient';
 import {ClientAuthenticationCustomCodec} from '../codec/ClientAuthenticationCustomCodec';
-
-import ClientConnection = require('./ClientConnection');
-import ClientMessage = require('../ClientMessage');
-import ClusterService = require('./ClusterService');
+import {ClientConnection} from './ClientConnection';
+import {ClusterService} from './ClusterService';
 import {BuildInfoLoader} from '../BuildInfoLoader';
+import ClientMessage = require('../ClientMessage');
 
-class ConnectionAuthenticator {
+export class ConnectionAuthenticator {
 
     private connection: ClientConnection;
     private client: HazelcastClient;
@@ -65,5 +64,3 @@ class ConnectionAuthenticator {
         return clientMessage;
     }
 }
-
-export = ConnectionAuthenticator;
