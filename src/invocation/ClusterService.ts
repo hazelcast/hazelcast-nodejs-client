@@ -1,13 +1,13 @@
-import ClientConnection = require('./ClientConnection');
-import Address = require('../Address');
+import {ClientConnection} from './ClientConnection';
 import * as Promise from 'bluebird';
 import {ClientAddMembershipListenerCodec} from '../codec/ClientAddMembershipListenerCodec';
-import ClientMessage = require('../ClientMessage');
 import {Member} from '../core/Member';
 import {LoggingService} from '../logging/LoggingService';
 import {EventEmitter} from 'events';
 import {ClientInfo} from '../ClientInfo';
 import HazelcastClient from '../HazelcastClient';
+import Address = require('../Address');
+import ClientMessage = require('../ClientMessage');
 
 const MEMBER_ADDED = 1;
 const MEMBER_REMOVED = 2;
@@ -23,7 +23,7 @@ const ATTRIBUTE_CHANGE: {[key: string]: string} = {
 /**
  * Manages the relationship of this client with the cluster.
  */
-class ClusterService extends EventEmitter {
+export class ClusterService extends EventEmitter {
 
     /**
      * The unique identifier of the owner server node. This node is responsible for resource cleanup
@@ -226,5 +226,3 @@ class ClusterService extends EventEmitter {
         this.emit(EMIT_MEMBER_REMOVED, member);
     }
 }
-
-export = ClusterService;

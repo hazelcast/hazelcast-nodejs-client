@@ -1,9 +1,8 @@
 import {ClientPingCodec} from './codec/ClientPingCodec';
 import HazelcastClient from './HazelcastClient';
-import ClientConnection = require('./invocation/ClientConnection');
+import {ClientConnection} from './invocation/ClientConnection';
 import {ConnectionHeartbeatListener} from './core/ConnectionHeartbeatListener';
 import {LoggingService} from './logging/LoggingService';
-import Address = require('./Address');
 
 const PROPERTY_HEARTBEAT_INTERVAL: string = 'hazelcast.client.heartbeat.interval';
 const PROPERTY_HEARTBEAT_TIMEOUT: string = 'hazelcast.client.heartbeat.timeout';
@@ -11,7 +10,7 @@ const PROPERTY_HEARTBEAT_TIMEOUT: string = 'hazelcast.client.heartbeat.timeout';
 /**
  * Hearbeat Service
  */
-class Heartbeat {
+export class Heartbeat {
     private client: HazelcastClient;
     private heartbeatTimeout: number;
     private heartbeatInterval: number;
@@ -98,5 +97,3 @@ class Heartbeat {
     }
 
 }
-
-export = Heartbeat;

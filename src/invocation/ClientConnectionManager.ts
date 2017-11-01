@@ -3,9 +3,9 @@ import {LoggingService} from '../logging/LoggingService';
 import {EventEmitter} from 'events';
 import HazelcastClient from '../HazelcastClient';
 import {ClientNotActiveError, HazelcastError} from '../HazelcastError';
+import {ClientConnection} from './ClientConnection';
+import {ConnectionAuthenticator} from './ConnectionAuthenticator';
 import Address = require('../Address');
-import ClientConnection = require('./ClientConnection');
-import ConnectionAuthenticator = require('./ConnectionAuthenticator');
 
 const EMIT_CONNECTION_CLOSED = 'connectionClosed';
 const EMIT_CONNECTION_OPENED = 'connectionOpened';
@@ -13,7 +13,7 @@ const EMIT_CONNECTION_OPENED = 'connectionOpened';
 /**
  * Maintains connections between the client and members of the cluster.
  */
-class ClientConnectionManager extends EventEmitter {
+export class ClientConnectionManager extends EventEmitter {
     private client: HazelcastClient;
     private pendingConnections: {[address: string]: Promise.Resolver<ClientConnection>} = {};
     private logger = LoggingService.getLoggingService();
@@ -120,5 +120,3 @@ class ClientConnectionManager extends EventEmitter {
         return authenticator.authenticate(ownerConnection);
     }
 }
-
-export = ClientConnectionManager;
