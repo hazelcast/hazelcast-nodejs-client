@@ -128,7 +128,6 @@ describe('NearCacheImpl', function() {
             var nearCache;
 
             beforeEach(function () {
-                this.timeout(50);
                 nearCache = new NearCacheImpl(testConfig, createSerializationService());
             });
 
