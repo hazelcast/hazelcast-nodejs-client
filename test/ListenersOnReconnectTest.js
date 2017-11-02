@@ -19,7 +19,7 @@ describe('Listeners on reconnect', function () {
     });
 
     afterEach(function() {
-        this.timeout(20000);
+        this.timeout(30000);
         client.shutdown();
         return Controller.shutdownCluster(cluster.id);
     });
@@ -76,7 +76,7 @@ describe('Listeners on reconnect', function () {
          *  - the other unrelated connection
          */
 
-        it('kill two members [1,2], listener still receives map.put event [smart=' + isSmart +']', function (done) {
+        it.only('kill two members [1,2], listener still receives map.put event [smart=' + isSmart +']', function (done) {
             closeTwoMembersOfThreeAndTestListener(done, [1, 2], Controller.terminateMember);
         });
 
