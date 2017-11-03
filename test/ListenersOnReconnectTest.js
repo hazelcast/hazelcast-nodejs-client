@@ -76,7 +76,7 @@ describe('Listeners on reconnect', function () {
          *  - the other unrelated connection
          */
 
-        it.only('kill two members [1,2], listener still receives map.put event [smart=' + isSmart +']', function (done) {
+        it('kill two members [1,2], listener still receives map.put event [smart=' + isSmart +']', function (done) {
             closeTwoMembersOfThreeAndTestListener(done, [1, 2], Controller.terminateMember);
         });
 
