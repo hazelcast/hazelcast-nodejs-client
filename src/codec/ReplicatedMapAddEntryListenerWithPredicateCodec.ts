@@ -40,11 +40,14 @@ export class ReplicatedMapAddEntryListenerWithPredicateCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-// Decode response from client message
-        var parameters: any = {'response': null};
-        parameters['response'] = clientMessage.readString();
-        return parameters;
+        // Decode response from client message
+        var parameters: any = {
+            'response': null
+        };
 
+        parameters['response'] = clientMessage.readString();
+
+        return parameters;
     }
 
     static handle(clientMessage: ClientMessage, handleEventEntry: any, toObjectFunction: (data: Data) => any = null) {

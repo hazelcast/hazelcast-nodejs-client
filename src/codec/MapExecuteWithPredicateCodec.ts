@@ -40,8 +40,11 @@ export class MapExecuteWithPredicateCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-// Decode response from client message
-        var parameters: any = {'response': null};
+        // Decode response from client message
+        var parameters: any = {
+            'response': null
+        };
+
 
         var responseSize = clientMessage.readInt32();
         var response: any = [];
@@ -55,8 +58,8 @@ export class MapExecuteWithPredicateCodec {
             response.push(responseItem)
         }
         parameters['response'] = response;
-        return parameters;
 
+        return parameters;
     }
 
 

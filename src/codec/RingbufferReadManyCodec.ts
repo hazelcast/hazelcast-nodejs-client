@@ -50,9 +50,15 @@ export class RingbufferReadManyCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-// Decode response from client message
-        var parameters: any = {'readCount': null, 'items': null, 'itemSeqs': null};
+        // Decode response from client message
+        var parameters: any = {
+            'readCount': null,
+            'items': null,
+            'itemSeqs': null
+        };
+
         parameters['readCount'] = clientMessage.readInt32();
+
 
         var itemsSize = clientMessage.readInt32();
         var items: any = [];
@@ -66,6 +72,7 @@ export class RingbufferReadManyCodec {
         if (clientMessage.isComplete()) {
             return parameters;
         }
+
         if (clientMessage.readBoolean() !== true) {
 
             var itemSeqsSize = clientMessage.readInt32();
@@ -77,8 +84,8 @@ export class RingbufferReadManyCodec {
             }
             parameters['itemSeqs'] = itemSeqs;
         }
+        parameters.itemSeqsExist = true;
         return parameters;
-
     }
 
 

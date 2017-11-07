@@ -58,9 +58,18 @@ export class MapEventJournalReadCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-// Decode response from client message
-        var parameters: any = {'readCount': null, 'items': null, 'itemSeqs': null};
+        // Decode response from client message
+        var parameters: any = {
+            'readCount': null,
+            'items': null,
+            'itemSeqs': null
+        };
+
+        if (clientMessage.isComplete()) {
+            return parameters;
+        }
         parameters['readCount'] = clientMessage.readInt32();
+
 
         var itemsSize = clientMessage.readInt32();
         var items: any = [];
@@ -70,6 +79,7 @@ export class MapEventJournalReadCodec {
             items.push(itemsItem)
         }
         parameters['items'] = items;
+
 
         if (clientMessage.readBoolean() !== true) {
 
@@ -82,8 +92,8 @@ export class MapEventJournalReadCodec {
             }
             parameters['itemSeqs'] = itemSeqs;
         }
-        return parameters;
 
+        return parameters;
     }
 
 
