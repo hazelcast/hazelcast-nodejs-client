@@ -70,14 +70,14 @@ export class BetweenPredicate extends AbstractPredicate {
 
     readData(input: DataInput): any {
         this.field = input.readUTF();
-        this.from = input.readObject();
         this.to = input.readObject();
+        this.from = input.readObject();
     }
 
     writeData(output: DataOutput): void {
         output.writeUTF(this.field);
-        output.writeObject(this.from);
         output.writeObject(this.to);
+        output.writeObject(this.from);
     }
 
     getClassId(): number {
