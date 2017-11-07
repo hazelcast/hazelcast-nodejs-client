@@ -137,6 +137,10 @@ describe("Predicates", function() {
         return testPredicate(Predicates.or(Predicates.greaterEqual('this', 49), Predicates.lessEqual('this', 0)), [0, 49]);
     });
 
+    it('Between', function() {
+        return testPredicate(Predicates.isBetween('this', 47, 49), [47, 48, 49]);
+    });
+
     it('Null predicate throws error', function() {
         return expect(testPredicate.bind(null, null, [0, 49])).throw(assert.AssertionError);
     });
