@@ -31,7 +31,7 @@ describe("AtomicLong Proxy", function () {
     });
 
     afterEach(function () {
-        l.destroy();
+        return l.destroy();
     });
 
     after(function () {
