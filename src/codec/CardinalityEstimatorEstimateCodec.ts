@@ -36,11 +36,17 @@ export class CardinalityEstimatorEstimateCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-// Decode response from client message
-        var parameters: any = {'response': null};
-        parameters['response'] = clientMessage.readLong();
-        return parameters;
+        // Decode response from client message
+        var parameters: any = {
+            'response': null
+        };
 
+        if (clientMessage.isComplete()) {
+            return parameters;
+        }
+        parameters['response'] = clientMessage.readLong();
+
+        return parameters;
     }
 
 

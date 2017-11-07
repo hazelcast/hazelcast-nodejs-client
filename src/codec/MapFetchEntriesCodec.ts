@@ -42,9 +42,17 @@ export class MapFetchEntriesCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-// Decode response from client message
-        var parameters: any = {'tableIndex': null, 'entries': null};
+        // Decode response from client message
+        var parameters: any = {
+            'tableIndex': null,
+            'entries': null
+        };
+
+        if (clientMessage.isComplete()) {
+            return parameters;
+        }
         parameters['tableIndex'] = clientMessage.readInt32();
+
 
         var entriesSize = clientMessage.readInt32();
         var entries: any = [];
@@ -58,8 +66,8 @@ export class MapFetchEntriesCodec {
             entries.push(entriesItem)
         }
         parameters['entries'] = entries;
-        return parameters;
 
+        return parameters;
     }
 
 

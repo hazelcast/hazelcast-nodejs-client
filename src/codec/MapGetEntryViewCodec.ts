@@ -40,14 +40,17 @@ export class MapGetEntryViewCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-// Decode response from client message
-        var parameters: any = {'response': null};
+        // Decode response from client message
+        var parameters: any = {
+            'response': null
+        };
+
 
         if (clientMessage.readBoolean() !== true) {
             parameters['response'] = EntryViewCodec.decode(clientMessage, toObjectFunction);
         }
-        return parameters;
 
+        return parameters;
     }
 
 

@@ -34,8 +34,12 @@ export class ClientGetPartitionsCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-// Decode response from client message
-        var parameters: any = {'partitions': null, 'partitionStateVersion': null};
+        // Decode response from client message
+        var parameters: any = {
+            'partitions': null,
+            'partitionStateVersion': null
+        };
+
 
         var partitionsSize = clientMessage.readInt32();
         var partitions: any = [];
@@ -56,9 +60,13 @@ export class ClientGetPartitionsCodec {
             partitions.push(partitionsItem)
         }
         parameters['partitions'] = partitions;
-        parameters['partitionStateVersion'] = clientMessage.readInt32();
-        return parameters;
 
+        if (clientMessage.isComplete()) {
+            return parameters;
+        }
+        parameters['partitionStateVersion'] = clientMessage.readInt32();
+        parameters.partitionStateVersionExist = true;
+        return parameters;
     }
 
 

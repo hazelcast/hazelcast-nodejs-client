@@ -42,9 +42,14 @@ export class CacheIterateCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-// Decode response from client message
-        var parameters: any = {'tableIndex': null, 'keys': null};
+        // Decode response from client message
+        var parameters: any = {
+            'tableIndex': null,
+            'keys': null
+        };
+
         parameters['tableIndex'] = clientMessage.readInt32();
+
 
         var keysSize = clientMessage.readInt32();
         var keys: any = [];
@@ -54,8 +59,8 @@ export class CacheIterateCodec {
             keys.push(keysItem)
         }
         parameters['keys'] = keys;
-        return parameters;
 
+        return parameters;
     }
 
 

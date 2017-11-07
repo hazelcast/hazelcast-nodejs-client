@@ -48,11 +48,14 @@ export class CacheRemoveCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-// Decode response from client message
-        var parameters: any = {'response': null};
-        parameters['response'] = clientMessage.readBoolean();
-        return parameters;
+        // Decode response from client message
+        var parameters: any = {
+            'response': null
+        };
 
+        parameters['response'] = clientMessage.readBoolean();
+
+        return parameters;
     }
 
 

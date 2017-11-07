@@ -36,8 +36,14 @@ export class ScheduledExecutorGetAllScheduledFuturesCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-// Decode response from client message
-        var parameters: any = {'handlers': null};
+        // Decode response from client message
+        var parameters: any = {
+            'handlers': null
+        };
+
+        if (clientMessage.isComplete()) {
+            return parameters;
+        }
 
         var handlersSize = clientMessage.readInt32();
         var handlers: any = [];
@@ -58,8 +64,8 @@ export class ScheduledExecutorGetAllScheduledFuturesCodec {
             handlers.push(handlersItem)
         }
         parameters['handlers'] = handlers;
-        return parameters;
 
+        return parameters;
     }
 
 

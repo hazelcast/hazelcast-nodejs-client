@@ -40,19 +40,26 @@ export class ScheduledExecutorGetStatsFromAddressCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-// Decode response from client message
+        // Decode response from client message
         var parameters: any = {
             'lastIdleTimeNanos': null,
             'totalIdleTimeNanos': null,
             'totalRuns': null,
             'totalRunTimeNanos': null
         };
-        parameters['lastIdleTimeNanos'] = clientMessage.readLong();
-        parameters['totalIdleTimeNanos'] = clientMessage.readLong();
-        parameters['totalRuns'] = clientMessage.readLong();
-        parameters['totalRunTimeNanos'] = clientMessage.readLong();
-        return parameters;
 
+        if (clientMessage.isComplete()) {
+            return parameters;
+        }
+        parameters['lastIdleTimeNanos'] = clientMessage.readLong();
+
+        parameters['totalIdleTimeNanos'] = clientMessage.readLong();
+
+        parameters['totalRuns'] = clientMessage.readLong();
+
+        parameters['totalRunTimeNanos'] = clientMessage.readLong();
+
+        return parameters;
     }
 
 
