@@ -2,13 +2,14 @@ var Controller = require('./RC');
 var expect = require('chai').expect;
 var HazelcastClient = require('../.').Client;
 var Config = require('../.').Config;
-var Address = require('../lib/Address');
+var Promise = require('bluebird');
 
 describe('ClusterService', function() {
     this.timeout(15000);
     var cluster;
     var ownerMember;
-    before(function(done) {
+
+    beforeEach(function(done) {
         Controller.createCluster(null, null).then(function(res) {
             cluster = res;
             Controller.startMember(cluster.id).then(function(res) {
@@ -28,28 +29,35 @@ describe('ClusterService', function() {
         });
     });
 
-    after(function() {
+    afterEach(function() {
         client.shutdown();
         return Controller.shutdownCluster(cluster.id);
     });
 
-    it('should know when a new member joins to cluster', function() {
+    it('should know when a new member joins to cluster', function(done) {
         var member2;
-        return Controller.startMember(cluster.id).then(function(res) {
+
+        client.getClusterService().once('memberAdded', function () {
+            expect(client.clusterService.getSize()).to.be.eq(2);
+            done();
+        });
+
+        Controller.startMember(cluster.id).then(function(res) {
             member2 = res;
-            return expect(client.clusterService.getSize()).to.be.eq(2);
-        }).then(function() {
-            return Controller.shutdownMember(cluster.id, member2.uuid);
         });
     });
 
-    it('should know when a member leaves cluster', function() {
+    it('should know when a member leaves cluster', function(done) {
         var member2;
-        return Controller.startMember(cluster.id).then(function(res) {
+
+        client.getClusterService().once('memberRemoved', function () {
+            expect(client.getClusterService().getSize()).to.be.eq(1);
+            done();
+        });
+
+        Controller.startMember(cluster.id).then(function(res) {
             member2 = res;
-            return Controller.shutdownMember(cluster.id, member2.uuid);
-        }).then(function() {
-            return expect(client.clusterService.getSize()).to.be.eq(1);
+            Controller.shutdownMember(cluster.id, member2.uuid);
         });
     });
 
