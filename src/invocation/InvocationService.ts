@@ -1,12 +1,12 @@
-import ClientConnection = require('./ClientConnection');
 import ClientMessage = require('../ClientMessage');
-import Long = require('long');
+import * as Long from 'long';
 import Address = require('../Address');
 import ExceptionCodec = require('../codec/ExceptionCodec');
 import * as Promise from 'bluebird';
 import {BitsUtil} from '../BitsUtil';
 import {LoggingService} from '../logging/LoggingService';
 import HazelcastClient from '../HazelcastClient';
+import {ClientConnection} from './ClientConnection';
 
 var EXCEPTION_MESSAGE_TYPE = 109;
 const MAX_FAST_INVOCATION_COUNT = 5;
