@@ -34,8 +34,14 @@ export class CacheAssignAndGetUuidsCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-// Decode response from client message
-        var parameters: any = {'partitionUuidList': null};
+        // Decode response from client message
+        var parameters: any = {
+            'partitionUuidList': null
+        };
+
+        if (clientMessage.isComplete()) {
+            return parameters;
+        }
 
         var partitionUuidListSize = clientMessage.readInt32();
         var partitionUuidList: any = [];
@@ -49,8 +55,8 @@ export class CacheAssignAndGetUuidsCodec {
             partitionUuidList.push(partitionUuidListItem)
         }
         parameters['partitionUuidList'] = partitionUuidList;
-        return parameters;
 
+        return parameters;
     }
 
 

@@ -36,12 +36,20 @@ export class CacheEventJournalSubscribeCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-// Decode response from client message
-        var parameters: any = {'oldestSequence': null, 'newestSequence': null};
-        parameters['oldestSequence'] = clientMessage.readLong();
-        parameters['newestSequence'] = clientMessage.readLong();
-        return parameters;
+        // Decode response from client message
+        var parameters: any = {
+            'oldestSequence': null,
+            'newestSequence': null
+        };
 
+        if (clientMessage.isComplete()) {
+            return parameters;
+        }
+        parameters['oldestSequence'] = clientMessage.readLong();
+
+        parameters['newestSequence'] = clientMessage.readLong();
+
+        return parameters;
     }
 
 

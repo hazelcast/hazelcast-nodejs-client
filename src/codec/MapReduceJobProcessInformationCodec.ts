@@ -38,8 +38,12 @@ export class MapReduceJobProcessInformationCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-// Decode response from client message
-        var parameters: any = {'jobPartitionStates': null, 'processRecords': null};
+        // Decode response from client message
+        var parameters: any = {
+            'jobPartitionStates': null,
+            'processRecords': null
+        };
+
 
         var jobPartitionStatesSize = clientMessage.readInt32();
         var jobPartitionStates: any = [];
@@ -49,9 +53,10 @@ export class MapReduceJobProcessInformationCodec {
             jobPartitionStates.push(jobPartitionStatesItem)
         }
         parameters['jobPartitionStates'] = jobPartitionStates;
-        parameters['processRecords'] = clientMessage.readInt32();
-        return parameters;
 
+        parameters['processRecords'] = clientMessage.readInt32();
+
+        return parameters;
     }
 
 

@@ -44,8 +44,15 @@ export class MapFetchWithQueryCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-// Decode response from client message
-        var parameters: any = {'results': null, 'nextTableIndexToReadFrom': null};
+        // Decode response from client message
+        var parameters: any = {
+            'results': null,
+            'nextTableIndexToReadFrom': null
+        };
+
+        if (clientMessage.isComplete()) {
+            return parameters;
+        }
 
         var resultsSize = clientMessage.readInt32();
         var results: any = [];
@@ -55,9 +62,10 @@ export class MapFetchWithQueryCodec {
             results.push(resultsItem)
         }
         parameters['results'] = results;
-        parameters['nextTableIndexToReadFrom'] = clientMessage.readInt32();
-        return parameters;
 
+        parameters['nextTableIndexToReadFrom'] = clientMessage.readInt32();
+
+        return parameters;
     }
 
 

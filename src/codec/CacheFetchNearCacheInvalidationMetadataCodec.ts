@@ -47,8 +47,15 @@ export class CacheFetchNearCacheInvalidationMetadataCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-// Decode response from client message
-        var parameters: any = {'namePartitionSequenceList': null, 'partitionUuidList': null};
+        // Decode response from client message
+        var parameters: any = {
+            'namePartitionSequenceList': null,
+            'partitionUuidList': null
+        };
+
+        if (clientMessage.isComplete()) {
+            return parameters;
+        }
 
         var namePartitionSequenceListSize = clientMessage.readInt32();
         var namePartitionSequenceList: any = [];
@@ -74,6 +81,7 @@ export class CacheFetchNearCacheInvalidationMetadataCodec {
         }
         parameters['namePartitionSequenceList'] = namePartitionSequenceList;
 
+
         var partitionUuidListSize = clientMessage.readInt32();
         var partitionUuidList: any = [];
         for (var partitionUuidListIndex = 0; partitionUuidListIndex < partitionUuidListSize; partitionUuidListIndex++) {
@@ -86,8 +94,8 @@ export class CacheFetchNearCacheInvalidationMetadataCodec {
             partitionUuidList.push(partitionUuidListItem)
         }
         parameters['partitionUuidList'] = partitionUuidList;
-        return parameters;
 
+        return parameters;
     }
 
 
