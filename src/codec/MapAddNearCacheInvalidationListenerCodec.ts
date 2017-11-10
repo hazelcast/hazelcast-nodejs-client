@@ -40,11 +40,17 @@ export class MapAddNearCacheInvalidationListenerCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-// Decode response from client message
-        var parameters: any = {'response': null};
-        parameters['response'] = clientMessage.readString();
-        return parameters;
+        // Decode response from client message
+        var parameters: any = {
+            'response': null
+        };
 
+        if (clientMessage.isComplete()) {
+            return parameters;
+        }
+        parameters['response'] = clientMessage.readString();
+
+        return parameters;
     }
 
     static handle(clientMessage: ClientMessage, handleEventImapinvalidation: any, handleEventImapbatchinvalidation: any, toObjectFunction: (data: Data) => any = null) {

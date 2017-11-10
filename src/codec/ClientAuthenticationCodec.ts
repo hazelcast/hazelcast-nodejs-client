@@ -62,7 +62,7 @@ export class ClientAuthenticationCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-// Decode response from client message
+        // Decode response from client message
         var parameters: any = {
             'status': null,
             'address': null,
@@ -72,21 +72,31 @@ export class ClientAuthenticationCodec {
             'serverHazelcastVersion': null,
             'clientUnregisteredMembers': null
         };
+
         parameters['status'] = clientMessage.readByte();
+
 
         if (clientMessage.readBoolean() !== true) {
             parameters['address'] = AddressCodec.decode(clientMessage, toObjectFunction);
         }
 
+
         if (clientMessage.readBoolean() !== true) {
             parameters['uuid'] = clientMessage.readString();
         }
 
+
         if (clientMessage.readBoolean() !== true) {
             parameters['ownerUuid'] = clientMessage.readString();
         }
+
         parameters['serializationVersion'] = clientMessage.readByte();
+
+        if (clientMessage.isComplete()) {
+            return parameters;
+        }
         parameters['serverHazelcastVersion'] = clientMessage.readString();
+        parameters.serverHazelcastVersionExist = true;
 
         if (clientMessage.readBoolean() !== true) {
 
@@ -99,8 +109,8 @@ export class ClientAuthenticationCodec {
             }
             parameters['clientUnregisteredMembers'] = clientUnregisteredMembers;
         }
+        parameters.clientUnregisteredMembersExist = true;
         return parameters;
-
     }
 
 

@@ -42,14 +42,17 @@ export class TransactionalQueuePeekCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-// Decode response from client message
-        var parameters: any = {'response': null};
+        // Decode response from client message
+        var parameters: any = {
+            'response': null
+        };
+
 
         if (clientMessage.readBoolean() !== true) {
             parameters['response'] = toObjectFunction(clientMessage.readData());
         }
-        return parameters;
 
+        return parameters;
     }
 
 

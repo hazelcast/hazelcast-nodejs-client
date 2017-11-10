@@ -38,11 +38,17 @@ export class CacheAddNearCacheInvalidationListenerCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-// Decode response from client message
-        var parameters: any = {'response': null};
-        parameters['response'] = clientMessage.readString();
-        return parameters;
+        // Decode response from client message
+        var parameters: any = {
+            'response': null
+        };
 
+        if (clientMessage.isComplete()) {
+            return parameters;
+        }
+        parameters['response'] = clientMessage.readString();
+
+        return parameters;
     }
 
     static handle(clientMessage: ClientMessage, handleEventCacheinvalidation: any, handleEventCachebatchinvalidation: any, toObjectFunction: (data: Data) => any = null) {

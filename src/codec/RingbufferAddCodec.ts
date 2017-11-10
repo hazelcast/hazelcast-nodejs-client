@@ -40,11 +40,14 @@ export class RingbufferAddCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-// Decode response from client message
-        var parameters: any = {'response': null};
-        parameters['response'] = clientMessage.readLong();
-        return parameters;
+        // Decode response from client message
+        var parameters: any = {
+            'response': null
+        };
 
+        parameters['response'] = clientMessage.readLong();
+
+        return parameters;
     }
 
 
