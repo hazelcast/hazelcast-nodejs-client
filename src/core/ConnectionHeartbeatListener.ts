@@ -1,4 +1,5 @@
-import ClientConnection = require('../invocation/ClientConnection');
+import {ClientConnection} from '../invocation/ClientConnection';
+
 /**
  * Listener interface for heartbeat service.
  */

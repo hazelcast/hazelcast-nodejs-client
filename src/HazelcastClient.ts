@@ -10,11 +10,11 @@ import {LifecycleService, LifecycleEvent} from './LifecycleService';
 import {ClientGetDistributedObjectsCodec} from './codec/ClientGetDistributedObjectsCodec';
 import {DistributedObject} from './DistributedObject';
 import {ClientInfo} from './ClientInfo';
-import ClientConnectionManager = require('./invocation/ClientConnectionManager');
-import ProxyManager = require('./proxy/ProxyManager');
-import PartitionService = require('./PartitionService');
-import ClusterService = require('./invocation/ClusterService');
-import Heartbeat = require('./HeartbeatService');
+import {ClientConnectionManager} from './invocation/ClientConnectionManager';
+import {ProxyManager} from './proxy/ProxyManager';
+import {PartitionService} from './PartitionService';
+import {ClusterService} from './invocation/ClusterService';
+import {Heartbeat} from './HeartbeatService';
 import {IQueue} from './proxy/IQueue';
 import {IList} from './proxy/IList';
 import {ILock} from './proxy/ILock';
@@ -79,6 +79,7 @@ export default class HazelcastClient {
         }).then(() => {
             this.lifecycleService.emitLifecycleEvent(LifecycleEvent.started);
         }).then(() => {
+            this.proxyManager.init();
             this.listenerService.start();
             this.loggingService.info('HazelcastClient', 'Client started');
             return this;
@@ -118,7 +119,7 @@ export default class HazelcastClient {
      * @returns {IMap<K, V>}
      */
     getMap<K, V>(name: string): IMap<K, V> {
-        return <IMap<K, V>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.MAP_SERVICE);
+        return <IMap<K, V>>this.proxyManager.getOrCreateProxy(name, ProxyManager.MAP_SERVICE);
     }
 
     /**
@@ -127,7 +128,7 @@ export default class HazelcastClient {
      * @returns {ISet<E>}
      */
     getSet<E>(name: string): ISet<E> {
-        return <ISet<E>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.SET_SERVICE);
+        return <ISet<E>>this.proxyManager.getOrCreateProxy(name, ProxyManager.SET_SERVICE);
     }
 
     /**
@@ -136,7 +137,7 @@ export default class HazelcastClient {
      * @returns {ILock}
      */
     getLock(name: string): ILock {
-        return <ILock>this.proxyManager.getOrCreateProxy(name, this.proxyManager.LOCK_SERVICE);
+        return <ILock>this.proxyManager.getOrCreateProxy(name, ProxyManager.LOCK_SERVICE);
     }
 
 
@@ -146,7 +147,7 @@ export default class HazelcastClient {
      * @returns {IQueue<E>}
      */
     getQueue<E>(name: string): IQueue<E> {
-        return <IQueue<E>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.QUEUE_SERVICE);
+        return <IQueue<E>>this.proxyManager.getOrCreateProxy(name, ProxyManager.QUEUE_SERVICE);
     }
 
     /**
@@ -155,7 +156,7 @@ export default class HazelcastClient {
      * @returns {IQueue<E>}
      */
     getList<E>(name: string): IList<E> {
-        return <IList<E>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.LIST_SERVICE);
+        return <IList<E>>this.proxyManager.getOrCreateProxy(name, ProxyManager.LIST_SERVICE);
     }
 
     /**
@@ -164,7 +165,7 @@ export default class HazelcastClient {
      * @returns {MultiMap<K, V>}
      */
     getMultiMap<K, V>(name: string): MultiMap<K, V> {
-        return <MultiMap<K, V>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.MULTIMAP_SERVICE);
+        return <MultiMap<K, V>>this.proxyManager.getOrCreateProxy(name, ProxyManager.MULTIMAP_SERVICE);
     }
 
     /**
@@ -173,7 +174,7 @@ export default class HazelcastClient {
      * @returns {IRingbuffer<E>}
      */
     getRingbuffer<E>(name: string): IRingbuffer<E> {
-        return <IRingbuffer<E>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.RINGBUFFER_SERVICE);
+        return <IRingbuffer<E>>this.proxyManager.getOrCreateProxy(name, ProxyManager.RINGBUFFER_SERVICE);
     }
 
     /**
@@ -186,11 +187,11 @@ export default class HazelcastClient {
     }
 
     getReplicatedMap<K, V>(name: string): IReplicatedMap<K, V> {
-        return <IReplicatedMap<K, V>>this.proxyManager.getOrCreateProxy(name, this.proxyManager.REPLICATEDMAP_SERVICE);
+        return <IReplicatedMap<K, V>>this.proxyManager.getOrCreateProxy(name, ProxyManager.REPLICATEDMAP_SERVICE);
     }
 
     getAtomicLong(name: string): IAtomicLong {
-        return <IAtomicLong>this.proxyManager.getOrCreateProxy(name, this.proxyManager.ATOMICLONG_SERVICE);
+        return <IAtomicLong>this.proxyManager.getOrCreateProxy(name, ProxyManager.ATOMICLONG_SERVICE);
     }
 
     /**
@@ -199,7 +200,7 @@ export default class HazelcastClient {
      * @returns {ISemaphore}
      */
     getSemaphore(name: string): ISemaphore {
-        return <ISemaphore>this.proxyManager.getOrCreateProxy(name, this.proxyManager.SEMAPHORE_SERVICE);
+        return <ISemaphore>this.proxyManager.getOrCreateProxy(name, ProxyManager.SEMAPHORE_SERVICE);
     }
 
     /**

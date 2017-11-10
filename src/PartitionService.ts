@@ -1,12 +1,12 @@
 import * as Promise from 'bluebird';
-import GetPartitionsCodec = require('./codec/GetPartitionsCodec');
-import ClientMessage = require('./ClientMessage');
-import Address = require('./Address');
 import HazelcastClient from './HazelcastClient';
+import GetPartitionsCodec = require('./codec/GetPartitionsCodec');
+import Address = require('./Address');
+import ClientMessage = require('./ClientMessage');
 
 const PARTITION_REFRESH_INTERVAL = 10000;
 
-class PartitionService {
+export class PartitionService {
 
     private client: HazelcastClient;
     private partitionMap: {[partitionId: number]: Address} = {};
@@ -79,5 +79,3 @@ class PartitionService {
         return this.partitionCount;
     }
 }
-
-export = PartitionService;

@@ -1,14 +1,14 @@
 import net = require('net');
 import tls = require('tls');
 import stream = require('stream');
+import Address = require('../Address');
 import * as Promise from 'bluebird';
 import {BitsUtil} from '../BitsUtil';
 import {LoggingService} from '../logging/LoggingService';
 import {ClientNetworkConfig} from '../Config';
-import Address = require('../Address');
-import ClientConnectionManager = require('./ClientConnectionManager');
+import {ClientConnectionManager} from './ClientConnectionManager';
 
-class ClientConnection {
+export class ClientConnection {
     address: Address;
     localAddress: Address;
     socket: stream.Duplex;
@@ -124,5 +124,3 @@ class ClientConnection {
         });
     }
 }
-
-export = ClientConnection;

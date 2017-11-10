@@ -20,7 +20,7 @@
  |                                                              ...
  */
 
-import Long = require('long');
+import * as Long from 'long';
 import {BitsUtil} from './BitsUtil';
 import {Data} from './serialization/Data';
 import {HeapData} from './serialization/HeapData';
