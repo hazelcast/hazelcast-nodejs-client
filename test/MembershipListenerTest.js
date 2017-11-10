@@ -1,7 +1,7 @@
 var HazelcastClient = require('../.').Client;
 var Controller = require('./RC');
-var assert = require('chai').assert;
-var sinon = require('sinon');
+var expect = require('chai').expect;
+var Promise = require('bluebird');
 describe('MembershipListener', function() {
     this.timeout(10000);
     var cluster;
@@ -30,47 +30,60 @@ describe('MembershipListener', function() {
     });
 
     it('sees member added event', function(done) {
-        var memberAddedSpy = sinon.spy();
         var newMember;
-        client.clusterService.on('memberAdded', memberAddedSpy);
+        var err = undefined;
+        var listenerCalledResolver = Promise.defer();
+
+        client.clusterService.on('memberAdded', function (member) {
+            listenerCalledResolver.resolve(member);
+        });
+
         Controller.startMember(cluster.id).then(function(res) {
             newMember = res;
-            assert.isTrue(memberAddedSpy.calledOnce);
-            assert.equal(memberAddedSpy.getCall(0).args[0].address.host, newMember.host);
-            assert.equal(memberAddedSpy.getCall(0).args[0].address.port, newMember.port);
-        }).catch(function(err) {
-            done(err);
-        }).finally(function() {
+            return listenerCalledResolver.promise;
+        }).then(function (addedMember) {
+            expect(addedMember.address.host).to.equal(newMember.host);
+            expect(addedMember.address.port).to.equal(newMember.port);
+        }).catch(function (e) {
+            err = e;
+        }).finally(function(e) {
             Controller.shutdownMember(cluster.id, newMember.uuid).then(function() {
-                done();
+                done(err);
             });
         });
+
     });
 
     it('sees member removed event', function(done) {
-        var memberRemovedSpy = sinon.spy();
         var newMember;
-        client.clusterService.on('memberRemoved', memberRemovedSpy);
+        var listenerCalledResolver = Promise.defer();
+
+        client.clusterService.on('memberRemoved', function (member) {
+            listenerCalledResolver.resolve(member);
+        });
+
         Controller.startMember(cluster.id).then(function(res) {
             newMember = res;
             return Controller.shutdownMember(cluster.id, newMember.uuid);
         }).then(function() {
-            assert.isTrue(memberRemovedSpy.calledOnce);
-            assert.equal(memberRemovedSpy.getCall(0).args[0].address.host, newMember.host);
-            assert.equal(memberRemovedSpy.getCall(0).args[0].address.port, newMember.port);
-            done();
-        }).catch(function(err) {
-            done(err);
+            return listenerCalledResolver.promise;
+        }).then(function(removedMember) {
+            try {
+                expect(removedMember.address.host).to.equal(newMember.host);
+                expect(removedMember.address.port).to.equal(newMember.port);
+                done();
+            } catch (e) {
+                done(e);
+            }
         });
     });
 
     it('sees member attribute change put event', function(done) {
         client.clusterService.on('memberAttributeChange', function(uuid, key, op, value) {
             if(op === 'put') {
-                assert.equal(uuid, member.uuid);
-                assert.equal(key, 'test');
-                assert.equal(op, 'put');
-                assert.equal(value, '123');
+                expect(uuid).to.equal(member.uuid);
+                expect(key).to.equal('test');
+                expect(value).to.equal('123');
                 done();
             }
         });
@@ -82,9 +95,8 @@ describe('MembershipListener', function() {
     it('sees member attribute change remove event', function(done) {
         client.clusterService.on('memberAttributeChange', function(uuid, key, op, value) {
             if (op === 'remove') {
-                assert.equal(uuid, member.uuid);
-                assert.equal(key, 'test');
-                assert.equal(op, 'remove');
+                expect(uuid).to.equal(member.uuid);
+                expect(key, 'test');
                 done();
             }
         });
