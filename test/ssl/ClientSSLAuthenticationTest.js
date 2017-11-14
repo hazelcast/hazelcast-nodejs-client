@@ -6,29 +6,27 @@ chai.use(chaiAsPromised);
 var Client = require("../../.").Client;
 var Controller = require('./../RC');
 var Config = require('../..').Config;
+var HzErrors = require('../..').HazelcastErrors;
 var Promise = require('bluebird');
 var markEnterprise = require('../Util').markEnterprise;
-
-var serverKnowsClient = [true, false];
-var clientKnowsServer = [true, false];
-var mutualAuthRequired = [true, false];
 
 describe('SSL Client Authentication Test', function () {
     var cluster;
     var member;
-    var client;
 
     var maRequiredXML = __dirname + '/hazelcast-ma-required.xml';
     var maOptionalXML = __dirname + '/hazelcast-ma-optional.xml';
 
+    before(function () {
+        markEnterprise(this);
+    });
+
     afterEach(function () {
-        if (client)
-            client.shutdown();
         return Controller.shutdownCluster(cluster.id);
     });
 
     function createMemberWithXML(xmlFile) {
-        return Controller.createCluster(null, fs.readFileSync(xmlFile, 'utf8')).then(function(cl) {
+        return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast-ssl.xml', 'utf8')).then(function(cl) {
             cluster = cl;
             return Controller.startMember(cluster.id);
         }).then(function (m) {
@@ -46,20 +44,23 @@ describe('SSL Client Authentication Test', function () {
         };
         var cfg = new Config.ClientConfig();
         cfg.networkConfig.sslOptions = sslOpts;
+        cfg.networkConfig.connectionAttemptLimit = 1;
         return cfg;
     }
 
     it('ma:required, they both know each other should connect', function () {
         return createMemberWithXML(maRequiredXML).then(function () {
             return Client.newHazelcastClient(createClientConfigWithSSLOpts('/client1.pem', '/server1.pem'));
-        }).then(function(cl) {
-            client = cl;
-        })
+        }).then(function(client) {
+            client.shutdown();
+        });
     });
 
     it('ma:required, server knows client, client does not know server should fail', function () {
+        this.timeout(5000);
         return createMemberWithXML(maRequiredXML).then(function () {
-            return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('/client1.pem', '/server2.pem'))).to.throw;
+            return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('/client1.pem', '/server2.pem')))
+                .to.be.rejectedWith(HzErrors.IllegalStateError);
         });
     });
 
@@ -78,14 +79,15 @@ describe('SSL Client Authentication Test', function () {
     it('ma:optional, they both know each other should connect', function () {
         return createMemberWithXML(maOptionalXML).then(function () {
             return Client.newHazelcastClient(createClientConfigWithSSLOpts('/client1.pem', '/server1.pem'));
-        }).then(function(cl) {
-            client = cl;
+        }).then(function(client) {
+            client.shutdown();
         });
     });
 
     it('ma:optional, server knows client, client does not know server should fail', function () {
         return createMemberWithXML(maRequiredXML).then(function () {
-            return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('/client1.pem', '/server2.pem'))).to.throw;
+            return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('/client1.pem', '/server2.pem')))
+                .to.be.rejectedWith(HzErrors.IllegalStateError);
         });
     });
 
@@ -99,7 +101,8 @@ describe('SSL Client Authentication Test', function () {
 
     it('ma:optional, neither knows the otherr should fail', function () {
         return createMemberWithXML(maRequiredXML).then(function () {
-            return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('/client2.pem', '/server2.pem'))).to.throw;
+            return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('/client2.pem', '/server2.pem')))
+                .to.be.rejectedWith(HzErrors.IllegalStateError);
         });
     });
 });
