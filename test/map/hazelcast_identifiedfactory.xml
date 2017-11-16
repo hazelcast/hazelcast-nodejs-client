@@ -4,8 +4,8 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <serialization>
         <data-serializable-factories>
-            <data-serializable-factory factory-id="1">
-                EntryProcessorFactory
+            <data-serializable-factory factory-id="66">
+                com.hazelcast.client.test.IdentifiedFactory
             </data-serializable-factory>
         </data-serializable-factories>
     </serialization>
