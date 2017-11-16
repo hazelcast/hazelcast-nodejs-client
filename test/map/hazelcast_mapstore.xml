@@ -3,7 +3,7 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <map name="mapstore-test">
         <map-store enabled="true">
-            <class-name>NodejsMapStore</class-name>
+            <class-name>com.hazelcast.client.test.SampleMapStore</class-name>
         </map-store>
     </map>
 </hazelcast>
