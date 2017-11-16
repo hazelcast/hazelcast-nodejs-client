@@ -8,6 +8,7 @@ import {ClientInfo} from '../ClientInfo';
 import HazelcastClient from '../HazelcastClient';
 import Address = require('../Address');
 import ClientMessage = require('../ClientMessage');
+import {IllegalStateError} from '../HazelcastError';
 
 const MEMBER_ADDED = 1;
 const MEMBER_REMOVED = 2;
@@ -139,7 +140,7 @@ export class ClusterService extends EventEmitter {
             if (this.knownAddresses.length <= index) {
                 attemptLimit = attemptLimit - 1;
                 if (attemptLimit === 0) {
-                    var error = new RangeError('Unable to connect to any of the following addresses: ' +
+                    var error = new IllegalStateError('Unable to connect to any of the following addresses: ' +
                         this.knownAddresses.map((element: Address) => {
                             return element.toString();
                         }).join(', '));
