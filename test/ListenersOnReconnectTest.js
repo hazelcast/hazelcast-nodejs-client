@@ -26,7 +26,6 @@ describe('Listeners on reconnect', function () {
 
     [true,  false].forEach(function (isSmart) {
 
-
         function closeTwoMembersOfThreeAndTestListener(done, membersToClose, turnoffMember) {
             var map;
             Controller.startMember(cluster.id).then(function (m) {
