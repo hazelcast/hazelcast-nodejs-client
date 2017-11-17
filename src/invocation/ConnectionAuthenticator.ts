@@ -28,9 +28,11 @@ export class ConnectionAuthenticator {
                 var authResponse = ClientAuthenticationCodec.decodeResponse(msg);
                 if (authResponse.status === 0) {
                     this.connection.address = authResponse.address;
+                    this.connection.setConnectedServerVersion(authResponse.serverHazelcastVersion);
                     if (ownerConnection) {
                         this.clusterService.uuid = authResponse.uuid;
                         this.clusterService.ownerUuid = authResponse.ownerUuid;
+
                     }
                 } else {
                     throw new Error('Could not authenticate connection to ' + this.connection.getAddress().toString());
