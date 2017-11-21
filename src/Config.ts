@@ -219,7 +219,9 @@ export class ClientConfig {
         'hazelcast.client.heartbeat.interval': 5000,
         'hazelcast.client.heartbeat.timeout': 60000,
         'hazelcast.client.invocation.retry.pause.millis': 1000,
-        'hazelcast.client.invocation.timeout.millis': 120000
+        'hazelcast.client.invocation.timeout.millis': 120000,
+        'hazelcast.invalidation.reconciliation.interval.seconds': 60,
+        'hazelcast.invalidation.max.tolerated.miss.count': 10
     };
     groupConfig: GroupConfig = new GroupConfig();
     networkConfig: ClientNetworkConfig = new ClientNetworkConfig();
