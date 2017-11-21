@@ -3,6 +3,9 @@ import {EvictionPolicy, InMemoryFormat, NearCacheConfig} from '../Config';
 import {shuffleArray} from '../Util';
 import {SerializationService} from '../serialization/SerializationService';
 import {DataKeyedHashMap} from '../DataStoreHashMap';
+import {StaleReadDetector} from './StaleReadDetector';
+import * as AlwaysFreshStaleReadDetectorImpl from './AlwaysFreshStaleReadDetectorImpl';
+import * as Long from 'long';
 
 export class DataRecord {
     key: Data;
@@ -11,6 +14,8 @@ export class DataRecord {
     private expirationTime: number;
     private lastAccessTime: number;
     private accessHit: number;
+    private invalidationSequence: Long;
+    private uuid: string;
 
     constructor(key: Data, value: Data | any, creationTime?: number, ttl?: number) {
         this.key = key;
@@ -27,6 +32,8 @@ export class DataRecord {
         }
         this.lastAccessTime = this.creationTime;
         this.accessHit = 0;
+        this.invalidationSequence = Long.fromNumber(0);
+        this.uuid = null;
     }
 
     public static lruComp(x: DataRecord, y: DataRecord) {
@@ -58,6 +65,22 @@ export class DataRecord {
     hitRecord(): void {
         this.accessHit++;
     }
+
+    getInvalidationSequence(): Long {
+        return this.invalidationSequence;
+    }
+
+    setInvalidationSequence(sequence: Long): void {
+        this.invalidationSequence = sequence;
+    }
+
+    hasSameUuid(uuid: string): boolean {
+        return uuid != null && this.uuid != null && uuid === this.uuid;
+    }
+
+    setUuid(uuid: string): void {
+        this.uuid = uuid;
+    }
 }
 
 export interface NearCacheStatistics {
@@ -75,6 +98,7 @@ export interface NearCache {
     clear(): void;
     getStatistics(): NearCacheStatistics;
     isInvalidatedOnChange(): boolean;
+    setStaleReadDetector(detector: StaleReadDetector): void;
 }
 
 export class NearCacheImpl implements NearCache {
@@ -90,6 +114,7 @@ export class NearCacheImpl implements NearCache {
     private evictionSamplingCount: number;
     private evictionSamplingPoolSize: number;
     private evictionCandidatePool: Array<DataRecord>;
+    private staleReadDetector: StaleReadDetector = AlwaysFreshStaleReadDetectorImpl.INSTANCE;
 
     internalStore: DataKeyedHashMap<DataRecord>;
 
@@ -124,6 +149,10 @@ export class NearCacheImpl implements NearCache {
         this.internalStore = new DataKeyedHashMap<DataRecord>();
     }
 
+    setStaleReadDetector(staleReadDetector: StaleReadDetector): void {
+        this.staleReadDetector = staleReadDetector;
+    }
+
     /**
      * Creates a new {DataRecord} for given key and value. Then, puts the record in near cache.
      * If the number of records in near cache exceeds {evictionMaxSize}, it removes expired items first.
@@ -139,7 +168,18 @@ export class NearCacheImpl implements NearCache {
             value = this.serializationService.toData(value);
         }
         var dr = new DataRecord(key, value, undefined, this.timeToLiveSeconds);
+        this.initInvalidationMetadata(dr);
         this.internalStore.set(key, dr);
+    }
+
+    private initInvalidationMetadata(dr: DataRecord): void {
+        if (this.staleReadDetector === AlwaysFreshStaleReadDetectorImpl.INSTANCE) {
+            return;
+        }
+        let partitionId = this.staleReadDetector.getPartitionId(dr.key);
+        let metadataContainer = this.staleReadDetector.getMetadataContainer(partitionId);
+        dr.setInvalidationSequence(metadataContainer.getSequence());
+        dr.setUuid(metadataContainer.getUuid());
     }
 
     /**
@@ -150,6 +190,11 @@ export class NearCacheImpl implements NearCache {
     get(key: Data): Data | any {
         var dr = this.internalStore.get(key);
         if (dr === undefined) {
+            this.missCount++;
+            return undefined;
+        }
+        if (this.staleReadDetector.isStaleRead(key, dr)) {
+            this.internalStore.delete(key);
             this.missCount++;
             return undefined;
         }

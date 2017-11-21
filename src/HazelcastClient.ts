@@ -26,6 +26,7 @@ import {IReplicatedMap} from './proxy/IReplicatedMap';
 import {ISemaphore} from './proxy/ISemaphore';
 import {IAtomicLong} from './proxy/IAtomicLong';
 import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
+import {RepairingTask} from './nearcache/RepairingTask';
 
 export default class HazelcastClient {
 
@@ -41,6 +42,7 @@ export default class HazelcastClient {
     private proxyManager: ProxyManager;
     private heartbeat: Heartbeat;
     private lockReferenceIdGenerator: LockReferenceIdGenerator;
+    private mapRepairingTask: RepairingTask;
 
     /**
      * Creates a new client object and automatically connects to cluster.
@@ -246,6 +248,13 @@ export default class HazelcastClient {
 
     getLifecycleService(): LifecycleService {
         return this.lifecycleService;
+    }
+
+    getRepairingTask(): RepairingTask {
+        if (this.mapRepairingTask == null) {
+            this.mapRepairingTask = new RepairingTask(this);
+        }
+        return this.mapRepairingTask;
     }
 
     /**
