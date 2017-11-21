@@ -162,6 +162,9 @@ export class ClusterService extends EventEmitter {
                     this.ownerConnection = connection;
                     this.initMemberShipListener().then(() => {
                         deferred.resolve();
+                    }).catch((e) => {
+                        this.ownerConnection = null;
+                        deferred.reject(e);
                     });
                 }).catch((e) => {
                     this.logger.warn('ClusterService', e);
