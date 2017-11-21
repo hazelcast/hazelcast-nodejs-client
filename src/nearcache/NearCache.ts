@@ -11,6 +11,8 @@ export class DataRecord {
     private expirationTime: number;
     private lastAccessTime: number;
     private accessHit: number;
+    private invalidationSequence: number;
+    private uuid: string;
 
     constructor(key: Data, value: Data | any, creationTime?: number, ttl?: number) {
         this.key = key;
@@ -27,6 +29,8 @@ export class DataRecord {
         }
         this.lastAccessTime = this.creationTime;
         this.accessHit = 0;
+        this.invalidationSequence = 0;
+        this.uuid = null;
     }
 
     public static lruComp(x: DataRecord, y: DataRecord) {
@@ -57,6 +61,22 @@ export class DataRecord {
 
     hitRecord(): void {
         this.accessHit++;
+    }
+
+    getInvalidationSequence(): number {
+        return this.invalidationSequence;
+    }
+
+    setInvalidationSequence(sequence: number): void {
+        this.invalidationSequence = sequence;
+    }
+
+    hasSameUuid(uuid: string): boolean {
+        return uuid != null && this.uuid != null && uuid === this.uuid;
+    }
+
+    setUuid(uuid: string): void {
+        this.uuid = uuid;
     }
 }
 

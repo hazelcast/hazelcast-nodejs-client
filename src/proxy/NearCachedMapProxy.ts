@@ -11,6 +11,10 @@ import {KeyStateMarker, TrueKeyStateMarker} from '../nearcache/KeyStateMarker';
 import {DataKeyedHashMap} from '../DataStoreHashMap';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
+import {BuildMetadata} from '../BuildMetadata';
+import {MapAddNearCacheInvalidationListenerCodec} from '../codec/MapAddNearCacheInvalidationListenerCodec';
+
+const MIN_EVENTUALLY_CONSISTENT_NEARCACHE_VERSION = BuildMetadata.calculateVersion('3.8');
 
 export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
 
@@ -190,8 +194,6 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
             }
             return result;
         });
-
-
     }
 
     protected replaceIfSameInternal(keyData: Data, oldValueData: Data, newValueData: Data): Promise<boolean> {
@@ -214,38 +216,79 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
     }
 
     private addNearCacheInvalidationListener(): Promise<string> {
-        var nearCache = this.nearCache;
-        var invalidationHandler = function(keyData: Data) {
+        let codec = this.createInvalidationListenerCodec(this.name, EntryEventType.INVALIDATION);
+        if (this.supportsRepairableNearCache()) {
+            return this.client.getListenerService().registerListener(codec, this.createNearCacheEventHandler());
+        } else {
+            return this.client.getListenerService().registerListener(codec, this.createPre38NearCacheEventHandler());
+        }
+    }
+
+    private createInvalidationListenerCodec(name: string, flags: number): ListenerMessageCodec {
+        if (this.supportsRepairableNearCache()) {
+            return {
+                encodeAddRequest: function(localOnly: boolean): ClientMessage {
+                    return MapAddNearCacheInvalidationListenerCodec.encodeRequest(name, flags, localOnly);
+
+                },
+                decodeAddResponse: function(msg: ClientMessage): string {
+                    return MapAddNearCacheInvalidationListenerCodec.decodeResponse(msg).response;
+                },
+                encodeRemoveRequest: function(listenerId: string): ClientMessage {
+                    return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
+                }
+            };
+        } else {
+            return {
+                encodeAddRequest: function(localOnly: boolean): ClientMessage {
+                    return MapAddNearCacheEntryListenerCodec.encodeRequest(name, flags, localOnly);
+                },
+                decodeAddResponse: function(msg: ClientMessage): string {
+                    return MapAddNearCacheEntryListenerCodec.decodeResponse(msg).response;
+                },
+                encodeRemoveRequest: function(listenerId: string): ClientMessage {
+                    return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
+                }
+            };
+        }
+    }
+
+    private supportsRepairableNearCache(): boolean {
+        return this.getConnectedServerVersion() >= MIN_EVENTUALLY_CONSISTENT_NEARCACHE_VERSION;
+    }
+
+    private createPre38NearCacheEventHandler() {
+        let nearCache = this.nearCache;
+        let handle = function(keyData: Data) {
             if (keyData == null) {
                 nearCache.clear();
             } else {
                 nearCache.invalidate(keyData);
             }
         };
-        var invalidationBatchHandler = function (keys: Array<Data>) {
+        let handleBatch = function (keys: Array<Data>) {
             keys.forEach((key: Data) => {
                 nearCache.invalidate(key);
             });
         };
 
-        let codec = this.createInvalidationListenerCodec(this.name, EntryEventType.INVALIDATION);
-        return this.client.getListenerService().registerListener(codec,
-            (m: ClientMessage) => { MapAddNearCacheEntryListenerCodec.handle(m, invalidationHandler, invalidationBatchHandler); }
-            );
-    }
-
-    private createInvalidationListenerCodec(name: string, flags: number): ListenerMessageCodec {
-        return {
-            encodeAddRequest: function(localOnly: boolean): ClientMessage {
-                return MapAddNearCacheEntryListenerCodec.encodeRequest(name, flags, localOnly);
-            },
-            decodeAddResponse: function(msg: ClientMessage): string {
-                return MapAddNearCacheEntryListenerCodec.decodeResponse(msg).response;
-            },
-            encodeRemoveRequest: function(listenerId: string): ClientMessage {
-                return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
-            }
+        return function(m: ClientMessage) {
+            MapAddNearCacheEntryListenerCodec.handle(m, handle, handleBatch);
         };
     }
 
+    private createNearCacheEventHandler() {
+        let repairingTask = this.client.getRepairingTask();
+        let repairingHandler = repairingTask.registerAndGetHandler(this.getName(), this.nearCache);
+        let handle = function(key: Data, partitionUuid: string, sourceUuid: string, sequence: number) {
+            repairingHandler.handle(key, partitionUuid, sourceUuid, sequence);
+        };
+        let handleBatch = function (keys: Data[], partitionUuids: string[], sourceUuids: string[], sequences: number[]) {
+            repairingHandler.handleBatch(keys, partitionUuids, sourceUuids, sequences);
+        };
+
+        return function(m: ClientMessage) {
+            MapAddNearCacheInvalidationListenerCodec.handle(m, handle, handleBatch);
+        };
+    }
 }
