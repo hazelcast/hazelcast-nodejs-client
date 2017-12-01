@@ -32,8 +32,8 @@
     "pretest": "./scripts/download-rc.sh",
     "test": "mocha --recursive",
     "precoverage": "./scripts/download-rc.sh",
-    "coverage": "rimraf coverage && istanbul cover -x **/codec/**/* --root lib/ --include-all-sources _mocha -- --recursive --reporter spec",
-    "coverage-all": "rimraf coverage && istanbul cover --root lib/ --include-all-sources _mocha -- --recursive --reporter spec",
+    "coverage": "rimraf coverage && istanbul cover--root lib/ --include-all-sources _mocha -- --recursive --reporter spec",
+    "coverage-without-codecs": "rimraf coverage && istanbul cover -x **/codec/**/* --root lib/ --include-all-sources _mocha -- --recursive --reporter spec",
     "postcoverage": "remap-istanbul -i coverage/coverage.json -o coverage/cobertura-coverage.xml -t cobertura && remap-istanbul -i coverage/coverage.json -o coverage -t html",
     "generate-docs": "rimraf docs && typedoc --out docs/ --exclude **/codec/**/* --module commonjs src/ node_modules/@types/node/index.d.ts node_modules/typescript/lib/lib.es2015.d.ts --excludeExternals",
     "lint": "tslint --project tsconfig.json -t stylish"
