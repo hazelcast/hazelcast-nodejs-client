@@ -1,3 +1,24 @@
+/*
+ * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import * as Long from 'long';
+import {BitsUtil} from './BitsUtil';
+import {Data} from './serialization/Data';
+import {HeapData} from './serialization/HeapData';
+
 /* tslint:disable:no-bitwise */
 /*
  Client Message is the carrier framed data as defined below.
@@ -20,16 +41,11 @@
  |                                                              ...
  */
 
-import * as Long from 'long';
-import {BitsUtil} from './BitsUtil';
-import {Data} from './serialization/Data';
-import {HeapData} from './serialization/HeapData';
-
 class ClientMessage {
 
     private buffer: Buffer;
     private cursor: number = BitsUtil.HEADER_SIZE;
-    private isRetryable : boolean;
+    private isRetryable: boolean;
 
     public static newClientMessage(payloadSize: number): ClientMessage {
         var totalSize = BitsUtil.HEADER_SIZE + payloadSize;
@@ -132,7 +148,6 @@ class ClientMessage {
         this.cursor += BitsUtil.BYTE_SIZE_IN_BYTES;
     }
 
-
     private writeLongInternal(value: any, offset: number) {
         if (!Long.isLong(value)) {
             value = Long.fromValue(value);
@@ -141,7 +156,6 @@ class ClientMessage {
         this.buffer.writeInt32LE(value.low, offset);
         this.buffer.writeInt32LE(value.high, offset + 4);
     }
-
 
     appendLong(value: any) {
         this.writeLongInternal(value, this.cursor);
@@ -239,4 +253,5 @@ class ClientMessage {
         // TODO
     }
 }
+
 export = ClientMessage;
