@@ -1,4 +1,5 @@
 import Address = require('../Address');
+import {UUID} from './UUID';
 export class Member {
     /**
      * Network address of member.
@@ -22,6 +23,6 @@ export class Member {
     }
 
     toString() {
-        return 'Member[ uuid: ' + this.uuid + ', address: ' + this.address.toString() + ']';
+        return 'Member[ uuid: ' + this.uuid.toString() + ', address: ' + this.address.toString() + ']';
     }
 }

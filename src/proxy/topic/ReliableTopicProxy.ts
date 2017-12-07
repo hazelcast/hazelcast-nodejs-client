@@ -39,7 +39,7 @@ export class ReliableTopicProxy<E> implements ITopic<E> {
     }
 
     addMessageListener(listener: TopicMessageListener<E>): string {
-        var listenerId = UuidUtil.generate();
+        var listenerId = UuidUtil.generate().toString();
 
         var runner = new ReliableTopicListenerRunner(listenerId, listener, this.ringbuffer,
             this.batchSize, this.serializationService, this);
