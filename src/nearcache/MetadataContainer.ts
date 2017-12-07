@@ -1,10 +1,11 @@
 import * as Long from 'long';
+import {UUID} from '../core/UUID';
 
 export class MetadataContainer {
     private sequence: Long = Long.fromNumber(0);
     private staleSequence: Long = Long.fromNumber(0);
     private missedSequenceCount: Long = Long.fromNumber(0);
-    private uuid: string;
+    private uuid: UUID;
 
     reset(): void {
         this.sequence = Long.fromNumber(0);
@@ -36,11 +37,11 @@ export class MetadataContainer {
         return this.missedSequenceCount;
     }
 
-    setUuid(uuid: string) {
+    setUuid(uuid: UUID) {
         this.uuid = uuid;
     }
 
-    getUuid(): string {
+    getUuid(): UUID {
         return this.uuid;
     }
 }

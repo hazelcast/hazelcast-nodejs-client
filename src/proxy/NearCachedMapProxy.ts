@@ -14,6 +14,7 @@ import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec'
 import {BuildMetadata} from '../BuildMetadata';
 import {MapAddNearCacheInvalidationListenerCodec} from '../codec/MapAddNearCacheInvalidationListenerCodec';
 import {StaleReadDetectorImpl} from '../nearcache/StaleReadDetectorImpl';
+import {UUID} from '../core/UUID';
 
 const MIN_EVENTUALLY_CONSISTENT_NEARCACHE_VERSION = BuildMetadata.calculateVersion('3.8');
 
@@ -283,11 +284,11 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         let repairingHandler = repairingTask.registerAndGetHandler(this.getName(), this.nearCache);
         let staleReadDetector = new StaleReadDetectorImpl(repairingHandler, this.client.getPartitionService());
         this.nearCache.setStaleReadDetector(staleReadDetector);
-        let handle = function(key: Data, partitionUuid: string, sourceUuid: string, sequence: Long) {
-            repairingHandler.handle(key, partitionUuid, sourceUuid, sequence);
+        let handle = function(key: Data, sourceUuid: string, partitionUuid: UUID, sequence: Long) {
+            repairingHandler.handle(key, sourceUuid, partitionUuid, sequence);
         };
-        let handleBatch = function (keys: Data[], partitionUuids: string[], sourceUuids: string[], sequences: Long[]) {
-            repairingHandler.handleBatch(keys, partitionUuids, sourceUuids, sequences);
+        let handleBatch = function (keys: Data[], sourceUuids: string[], partititonUuids: UUID[], sequences: Long[]) {
+            repairingHandler.handleBatch(keys, sourceUuids, partititonUuids, sequences);
         };
 
         return function(m: ClientMessage) {

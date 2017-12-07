@@ -6,6 +6,7 @@ import {DataKeyedHashMap} from '../DataStoreHashMap';
 import {StaleReadDetector} from './StaleReadDetector';
 import * as AlwaysFreshStaleReadDetectorImpl from './AlwaysFreshStaleReadDetectorImpl';
 import * as Long from 'long';
+import {UUID} from '../core/UUID';
 
 export class DataRecord {
     key: Data;
@@ -15,7 +16,7 @@ export class DataRecord {
     private lastAccessTime: number;
     private accessHit: number;
     private invalidationSequence: Long;
-    private uuid: string;
+    private uuid: UUID;
 
     constructor(key: Data, value: Data | any, creationTime?: number, ttl?: number) {
         this.key = key;
@@ -74,11 +75,11 @@ export class DataRecord {
         this.invalidationSequence = sequence;
     }
 
-    hasSameUuid(uuid: string): boolean {
-        return uuid != null && this.uuid != null && uuid === this.uuid;
+    hasSameUuid(uuid: UUID): boolean {
+        return uuid.equals(this.uuid);
     }
 
-    setUuid(uuid: string): void {
+    setUuid(uuid: UUID): void {
         this.uuid = uuid;
     }
 }

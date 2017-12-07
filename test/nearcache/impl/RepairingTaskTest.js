@@ -25,6 +25,10 @@ describe('RepairingTask', function() {
         }
     });
 
+    after(function () {
+        return Controller.shutdownCluster(cluster.id);
+    });
+
     function startClientWithReconciliationInterval(reconciliationInterval) {
         var cfg = new Config.ClientConfig();
         var nccConfig = new Config.NearCacheConfig();

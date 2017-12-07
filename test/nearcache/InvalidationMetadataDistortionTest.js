@@ -7,7 +7,7 @@ var DistortInvalidationMetadataEntryProcessor = require('../javaclasses/DistortI
 var Promise = require('bluebird');
 var expect = require('chai').expect;
 
-describe('Invalidation metadata distortion', function () {
+describe.skip('Invalidation metadata distortion', function () {
 
     var cluster;
     var member;

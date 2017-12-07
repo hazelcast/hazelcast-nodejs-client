@@ -16,7 +16,7 @@ export class StaleReadDetectorImpl implements StaleReadDetector {
 
     isStaleRead(key: any, record: DataRecord): boolean {
         let metadata = this.getMetadataContainer(this.getPartitionId(record.key));
-        return !record.hasSameUuid(metadata.getUuid()) || record.getInvalidationSequence() < metadata.getStaleSequence();
+        return !record.hasSameUuid(metadata.getUuid()) || record.getInvalidationSequence().lessThan(metadata.getStaleSequence());
     }
 
     getMetadataContainer(partitionId: number): MetadataContainer {

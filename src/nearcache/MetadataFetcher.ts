@@ -6,6 +6,7 @@ import {Invocation} from '../invocation/InvocationService';
 import * as Promise from 'bluebird';
 import ClientMessage = require('../ClientMessage');
 import {LoggingService} from '../logging/LoggingService';
+import {UUID} from '../core/UUID';
 
 export class MetadataFetcher {
 
@@ -55,8 +56,8 @@ export class MetadataFetcher {
         });
     }
 
-    protected repairUuids(handler: RepairingHandler, partitionIdUuidList: [number, string][]): void {
-        partitionIdUuidList.forEach((entry: [number, string]) => {
+    protected repairUuids(handler: RepairingHandler, partitionIdUuidList: [number, UUID][]): void {
+        partitionIdUuidList.forEach((entry: [number, UUID]) => {
             handler.checkOrRepairUuid(entry[0], entry[1]);
         });
     }
@@ -65,7 +66,7 @@ export class MetadataFetcher {
         partitionIdSequenceList.forEach((partitionIdSeq: [string, [number, Long][]]) => {
             let pairs = partitionIdSeq[1];
             pairs.forEach((pair: [number, Long]) => {
-                handler.checkOrRepairSequence(pair[0], pair[1]);
+                handler.checkOrRepairSequence(pair[0], pair[1], true);
             });
         });
     }
