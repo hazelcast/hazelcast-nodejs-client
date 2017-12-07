@@ -221,7 +221,8 @@ export class ClientConfig {
         'hazelcast.client.invocation.retry.pause.millis': 1000,
         'hazelcast.client.invocation.timeout.millis': 120000,
         'hazelcast.invalidation.reconciliation.interval.seconds': 60,
-        'hazelcast.invalidation.max.tolerated.miss.count': 10
+        'hazelcast.invalidation.max.tolerated.miss.count': 10,
+        'hazelcast.invalidation.min.reconciliation.interval.seconds': 30
     };
     groupConfig: GroupConfig = new GroupConfig();
     networkConfig: ClientNetworkConfig = new ClientNetworkConfig();

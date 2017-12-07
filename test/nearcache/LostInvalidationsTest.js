@@ -23,6 +23,9 @@ describe('LostInvalidation', function() {
         var ncConfig = new Config.NearCacheConfig();
         ncConfig.name = mapName;
         cfg.nearCacheConfigs[mapName] = ncConfig;
+        cfg.properties['hazelcast.invalidation.reconciliation.interval.seconds'] = 1;
+        cfg.properties['hazelcast.invalidation.min.reconciliation.interval.seconds'] = 1;
+        cfg.properties['hazelcast.invalidation.max.tolerated.miss.count'] = 2;
         return cfg;
     }
 
@@ -53,7 +56,7 @@ describe('LostInvalidation', function() {
         return RC.shutdownCluster(cluster.id);
     });
 
-    it('client eventually receives an update that invalidation event for which was dropped', function() {
+    it('client eventually receives an update for which the invalidation event was dropped', function() {
         var map = client.getMap(mapName);
         var key = 'key';
         var value = 'val';
