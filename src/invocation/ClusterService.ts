@@ -9,6 +9,7 @@ import HazelcastClient from '../HazelcastClient';
 import Address = require('../Address');
 import ClientMessage = require('../ClientMessage');
 import {IllegalStateError} from '../HazelcastError';
+import {UUID} from '../core/UUID';
 
 const MEMBER_ADDED = 1;
 const MEMBER_REMOVED = 2;
