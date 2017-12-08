@@ -115,6 +115,18 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         });
     }
 
+    private removeNearCacheInvalidationListener() {
+        return this.client.getListenerService().deregisterListener(this.invalidationListenerId);
+    }
+
+    protected postDestroy(): Promise<void> {
+        return this.removeNearCacheInvalidationListener().then( () => {
+            this.client.getRepairingTask().deregisterHandler(this.name);
+        }).then(() => {
+            return super.postDestroy();
+        });
+    }
+
     protected putIfAbsentInternal(keyData: Data, valueData: Data, ttl: number): Promise<V> {
         return super.putIfAbsentInternal(keyData, valueData, ttl).then<V>(this.invalidatCacheEntryAndReturn.bind(this, keyData));
     }

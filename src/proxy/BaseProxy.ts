@@ -126,6 +126,12 @@ export class BaseProxy {
      * @returns
      */
     destroy() : Promise<void> {
-        return this.client.getProxyManager().destroyProxy(this.name, this.serviceName);
+        return this.client.getProxyManager().destroyProxy(this.name, this.serviceName).then(() => {
+            return this.postDestroy();
+        });
+    }
+
+    protected postDestroy(): Promise<void> {
+        return Promise.resolve();
     }
 }
