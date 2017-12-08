@@ -82,7 +82,7 @@ export class RepairingHandler {
     checkOrRepairUuid(partitionId: number, newuuid: UUID): void {
         let metadata = this.getMetadataContainer(partitionId);
         let currentUuid = metadata.getUuid();
-        if (currentUuid.equals(newuuid)) {
+        if (currentUuid != null && currentUuid.equals(newuuid)) {
             return;
         }
         metadata.setUuid(newuuid);
