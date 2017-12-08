@@ -155,7 +155,7 @@ export class ListenerService implements ConnectionHeartbeatListener {
 
     protected registerListenerInternal(codec: ListenerMessageCodec, listenerHandlerFunc: Function): Promise<string> {
         let activeConnections = copyObjectShallow(this.client.getConnectionManager().getActiveConnections());
-        let userRegistrationKey: string = UuidUtil.generate();
+        let userRegistrationKey: string = UuidUtil.generate().toString();
         let connectionsOnUserKey: Map<ClientConnection, ClientEventRegistration>;
         let deferred = Promise.defer<string>();
         let registerRequest = codec.encodeAddRequest(this.isSmart());
