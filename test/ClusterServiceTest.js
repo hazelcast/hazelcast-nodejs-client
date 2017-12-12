@@ -61,6 +61,30 @@ describe('ClusterService', function() {
         });
     });
 
+    it('getMembers returns correct list after a member is removed', function (done) {
+        this.timeout(20000);
+        var member2;
+        var member3;
+        client.getClusterService().once('memberRemoved', function () {
+            var remainingMemberList = client.getClusterService().getMembers();
+            try {
+                expect(remainingMemberList).to.have.length(2);
+                expect(remainingMemberList[0].address.port).to.equal(ownerMember.port);
+                expect(remainingMemberList[1].address.port).to.equal(member3.port);
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+        Controller.startMember(cluster.id).then(function (res) {
+            member2 = res;
+            return Controller.startMember(cluster.id);
+        }).then(function (res) {
+            member3 = res;
+            Controller.shutdownMember(cluster.id, member2.uuid);
+        });
+    });
+
     it('should throw with message containing wrong host addresses in config', function() {
         var configuredAddresses = [
             {host: '0.0.0.0', port: '5709'},
