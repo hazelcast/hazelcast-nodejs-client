@@ -1,6 +1,6 @@
 var expect = require("chai").expect;
-var HazelcastClient = require("../../lib/index.js").Client;
-var Predicates = require("../../lib/index.js").Predicates;
+var HazelcastClient = require("../../.").Client;
+var Predicates = require("../../.").Predicates;
 var Promise = require("bluebird");
 var Controller = require('./../RC');
 var Util = require('./../Util');
@@ -280,6 +280,32 @@ describe("NearCachedMap", function() {
                     return expectStats(map1, 0, 1, 0);
                 });
             });
+
+            it.only('client does not read removed entry', function (done) {
+                var removeReturned = false;
+                var largeObject = {};
+                for (var i = 0; i < 10000; i++) {
+                    largeObject[i] = 'uselessstring';
+                }
+                map1.put('largekey', largeObject).then(function () {
+                    map1.get('largekey').then(function (val) {
+                        try {
+                            if (!removeReturned) {
+                                throw new Error('Get returned earlier than remove! Test scenario is not valid!')
+                            }
+                            expect(val).to.be.null;
+                            done();
+                        } catch (e) {
+                            done(e);
+                        }
+                    });
+                    map1.remove('largekey').then(function () {
+                        removeReturned = true;
+                    });
+
+                });
+
+            })
         });
     });
 });
