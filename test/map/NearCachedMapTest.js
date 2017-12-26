@@ -281,7 +281,7 @@ describe("NearCachedMap", function() {
                 });
             });
 
-            it.only('client does not read removed entry', function (done) {
+            it('client does not read removed entry', function (done) {
                 var removeReturned = false;
                 var largeObject = {};
                 for (var i = 0; i < 10000; i++) {
