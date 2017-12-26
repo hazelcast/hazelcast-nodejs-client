@@ -9,7 +9,7 @@ import HazelcastClient from '../HazelcastClient';
 import Address = require('../Address');
 import ClientMessage = require('../ClientMessage');
 import {IllegalStateError} from '../HazelcastError';
-import {UUID} from '../core/UUID';
+import * as assert from 'assert';
 
 const MEMBER_ADDED = 1;
 const MEMBER_REMOVED = 2;
@@ -223,8 +223,11 @@ export class ClusterService extends EventEmitter {
     }
 
     private memberRemoved(member: Member) {
-        this.members.splice(this.members.indexOf(member), 1);
-        this.client.getConnectionManager().destroyConnection(member.address);
-        this.emit(EMIT_MEMBER_REMOVED, member);
+        let memberIndex = this.members.findIndex(member.equals, member);
+        let removedMemberList = this.members.splice(memberIndex, 1);
+        assert(removedMemberList.length === 1);
+        let removedMember = removedMemberList[0];
+        this.client.getConnectionManager().destroyConnection(removedMember.address);
+        this.emit(EMIT_MEMBER_REMOVED, removedMember);
     }
 }
