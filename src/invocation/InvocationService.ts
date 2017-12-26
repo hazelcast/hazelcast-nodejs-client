@@ -7,6 +7,8 @@ import {BitsUtil} from '../BitsUtil';
 import {LoggingService} from '../logging/LoggingService';
 import HazelcastClient from '../HazelcastClient';
 import {ClientConnection} from './ClientConnection';
+import {IllegalStateError, ClientNotActiveError} from '../HazelcastError';
+import * as assert from 'assert';
 
 var EXCEPTION_MESSAGE_TYPE = 109;
 const MAX_FAST_INVOCATION_COUNT = 5;
@@ -172,76 +174,76 @@ export class InvocationService {
     }
 
     private invokeSmart(invocation: Invocation): void {
-        if (this.isShutdown) {
-            return;
+        let invocationPromise: Promise<void>;
+        invocation.invokeCount++;
+        if (invocation.hasOwnProperty('connection')) {
+            invocationPromise = this.send(invocation, invocation.connection);
+        } else if (invocation.hasPartitionId()) {
+            invocationPromise = this.invokeOnPartitionOwner(invocation, invocation.partitionId);
+        } else if (invocation.hasOwnProperty('address')) {
+            invocationPromise = this.invokeOnAddress(invocation, invocation.address);
+        } else {
+            invocationPromise = this.invokeOnOwner(invocation);
         }
-        try {
-            invocation.invokeCount++;
-            if (invocation.hasOwnProperty('connection')) {
-                this.send(invocation, invocation.connection);
-            } else if (invocation.hasPartitionId()) {
-                this.invokeOnPartitionOwner(invocation, invocation.partitionId);
-            } else if (invocation.hasOwnProperty('address')) {
-                this.invokeOnAddress(invocation, invocation.address);
-            } else {
-                this.send(invocation, this.client.getClusterService().getOwnerConnection());
-            }
-        } catch (e) {
-            this.notifyError(invocation, e);
-        }
+        invocationPromise.catch((err) => {
+            this.notifyError(invocation, err);
+        });
     }
 
     private invokeNonSmart(invocation: Invocation): void {
-        if (this.isShutdown) {
-            return;
+        let invocationPromise: Promise<void>;
+        invocation.invokeCount++;
+        if (invocation.hasOwnProperty('connection')) {
+            invocationPromise = this.send(invocation, invocation.connection);
+        } else {
+            invocationPromise = this.invokeOnOwner(invocation);
         }
-        try {
-            invocation.invokeCount++;
-            if (invocation.hasOwnProperty('connection')) {
-                this.send(invocation, invocation.connection);
-            } else {
-                this.send(invocation, this.client.getClusterService().getOwnerConnection());
-            }
-        } catch (e) {
-            this.notifyError(invocation, e);
-        }
-    }
-
-    private invokeOnAddress(invocation: Invocation, address: Address): void {
-        this.client.getConnectionManager().getOrConnect(address).then((connection: ClientConnection) => {
-            if (connection == null) {
-                this.notifyError(invocation, new Error(address.toString() + ' is not available.'));
-                return;
-            }
-            this.send(invocation, connection);
+        invocationPromise.catch((err) => {
+            this.notifyError(invocation, err);
         });
     }
 
-    private invokeOnPartitionOwner(invocation: Invocation, partitionId: number): void {
+    private invokeOnOwner(invocation: Invocation): Promise<void> {
+        let owner = this.client.getClusterService().getOwnerConnection();
+        if (owner == null) {
+            return Promise.reject(new IllegalStateError('Unisocket client\'s owner connection is not available.'));
+        }
+        return this.send(invocation, owner);
+    }
+
+    private invokeOnAddress(invocation: Invocation, address: Address): Promise<void> {
+        return this.client.getConnectionManager().getOrConnect(address).then((connection: ClientConnection) => {
+            if (connection == null) {
+                throw new Error(address.toString() + ' is not available.');
+            }
+            return this.send(invocation, connection);
+        });
+    }
+
+    private invokeOnPartitionOwner(invocation: Invocation, partitionId: number): Promise<void> {
         var ownerAddress = this.client.getPartitionService().getAddressForPartition(partitionId);
-        this.client.getConnectionManager().getOrConnect(ownerAddress).then((connection: ClientConnection) => {
+        return this.client.getConnectionManager().getOrConnect(ownerAddress).then((connection: ClientConnection) => {
             if (connection == null) {
-                this.notifyError(invocation, new Error(ownerAddress.toString() + '(partition owner) is not available.'));
-                return;
+                throw new Error(ownerAddress.toString() + '(partition owner) is not available.');
             }
-            this.send(invocation, connection);
+            return this.send(invocation, connection);
         });
     }
 
-    private send(invocation: Invocation, connection: ClientConnection): void {
+    private send(invocation: Invocation, connection: ClientConnection): Promise<void> {
+        assert(connection != null);
+        if (this.isShutdown) {
+            return Promise.reject(new ClientNotActiveError('Client is shutdown.'));
+        }
         this.registerInvocation(invocation);
-        this.write(invocation, connection);
+        return this.write(invocation, connection);
     }
 
-    private write(invocation: Invocation, connection: ClientConnection): void {
-        connection.write(invocation.request.getBuffer(), (err: any) => {
-            if (err) {
-                this.notifyError(invocation, err);
-            }
-        });
+    private write(invocation: Invocation, connection: ClientConnection): Promise<void> {
+        return connection.write(invocation.request.getBuffer());
     }
 
-    private notifyError(invocation: Invocation, error: Error) {
+    private notifyError(invocation: Invocation, error: Error): void {
         var correlationId = invocation.request.getCorrelationId().toNumber();
         if (this.isRetryable(invocation)) {
             this.logger.debug('InvocationService',
@@ -252,7 +254,7 @@ export class InvocationService {
                 setTimeout(this.doInvoke.bind(this, invocation), this.getInvocationRetryPauseMillis());
             }
         } else {
-            this.logger.warn('InvocationService', 'Sending message ' + correlationId + 'failed');
+            this.logger.warn('InvocationService', 'Sending message ' + correlationId + ' failed');
             delete this.pending[invocation.request.getCorrelationId().toNumber()];
             invocation.deferred.reject(error);
         }

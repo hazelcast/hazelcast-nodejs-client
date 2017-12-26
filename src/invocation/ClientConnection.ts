@@ -83,8 +83,20 @@ export class ClientConnection {
         return ready.promise;
     }
 
-    write(buffer: Buffer, cb: (err: any) => void ): void {
-        this.socket.write(buffer, 'utf8', cb);
+    write(buffer: Buffer): Promise<void> {
+        let deferred = Promise.defer<void>();
+        try {
+            this.socket.write(buffer, (err: any) => {
+                if (err) {
+                    deferred.reject(err);
+                } else {
+                    deferred.resolve();
+                }
+            });
+        } catch (err) {
+            deferred.reject(err);
+        }
+        return deferred.promise;
     }
 
     /**
