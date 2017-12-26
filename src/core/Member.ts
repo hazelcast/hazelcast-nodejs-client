@@ -22,6 +22,19 @@ export class Member {
         this.attributes = attributes;
     }
 
+    equals(other: Member): boolean {
+        if (other === this) {
+            return true;
+        }
+        if (other == null) {
+            return false;
+        }
+        if (other.address.equals(this.address) && other.uuid === this.uuid && other.isLiteMember === this.isLiteMember) {
+            return true;
+        }
+        return false;
+    }
+
     toString() {
         return 'Member[ uuid: ' + this.uuid.toString() + ', address: ' + this.address.toString() + ']';
     }

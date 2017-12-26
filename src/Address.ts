@@ -39,6 +39,21 @@ class Address implements IdentifiedDataSerializable {
         return ADDRESS_CLASS_ID;
     }
 
+    equals(other: Address): boolean {
+        if (other === this) {
+            return true;
+        }
+        if (other == null) {
+            return false;
+        }
+        if (other.host === this.host &&
+            other.port === this.port &&
+            other.type === this.type) {
+            return true;
+        }
+        return false;
+    }
+
     toString(): string {
         return this.host + ':' + this.port;
     }
