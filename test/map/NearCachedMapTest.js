@@ -280,32 +280,6 @@ describe("NearCachedMap", function() {
                     return expectStats(map1, 0, 1, 0);
                 });
             });
-
-            it('client does not read removed entry', function (done) {
-                var removeReturned = false;
-                var largeObject = {};
-                for (var i = 0; i < 10000; i++) {
-                    largeObject[i] = 'uselessstring';
-                }
-                map1.put('largekey', largeObject).then(function () {
-                    map1.get('largekey').then(function (val) {
-                        try {
-                            if (!removeReturned) {
-                                throw new Error('Get returned earlier than remove! Test scenario is not valid!')
-                            }
-                            expect(val).to.be.null;
-                            done();
-                        } catch (e) {
-                            done(e);
-                        }
-                    });
-                    map1.remove('largekey').then(function () {
-                        removeReturned = true;
-                    });
-
-                });
-
-            })
         });
     });
 });

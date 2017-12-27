@@ -62,7 +62,11 @@ exports.promiseWaitMilliseconds = function (milliseconds) {
             resolve();
         }, milliseconds);
     });
-}
+};
+
+exports.getRandomInt = function(lowerLim, upperLim) {
+    return Math.floor(Math.random() * (upperLim - lowerLim)) + lowerLim;
+};
 
 exports.promiseLater = promiseLater;
 exports.expectAlmostEqual = expectAlmostEqual;
