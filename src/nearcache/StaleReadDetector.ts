@@ -1,4 +1,4 @@
-import {DataRecord} from './NearCache';
+import {DataRecord} from './DataRecord';
 import {MetadataContainer} from './MetadataContainer';
 
 export interface StaleReadDetector {

@@ -6,8 +6,6 @@ import * as Promise from 'bluebird';
 import {MapAddNearCacheEntryListenerCodec} from '../codec/MapAddNearCacheEntryListenerCodec';
 import {EntryEventType} from '../core/EntryEventType';
 import ClientMessage = require('../ClientMessage');
-import {InvalidationAwareWrapper} from '../nearcache/InvalidationAwareWrapper';
-import {KeyStateMarker, TrueKeyStateMarker} from '../nearcache/KeyStateMarker';
 import {DataKeyedHashMap} from '../DataStoreHashMap';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
@@ -22,46 +20,15 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
 
     private nearCache: NearCache;
     private invalidationListenerId: string;
-    private keyStateMarker: KeyStateMarker;
 
     constructor(client: HazelcastClient, servicename: string, name: string) {
         super(client, servicename, name);
         this.nearCache = new NearCacheImpl(this.client.getConfig().nearCacheConfigs[name], this.client.getSerializationService());
-        this.keyStateMarker = TrueKeyStateMarker.INSTANCE;
         if (this.nearCache.isInvalidatedOnChange()) {
-            let partitionCount = client.getPartitionService().getPartitionCount();
-            this.nearCache = InvalidationAwareWrapper.asInvalidationAware(this.nearCache, partitionCount);
-            this.keyStateMarker = this.getKeyStateMarker();
             this.addNearCacheInvalidationListener().then((id: string) => {
                 this.invalidationListenerId = id;
             });
         }
-    }
-
-    private tryToPutNearCache(key: Data, value: V | Data) {
-        try {
-            this.nearCache.put(key, value);
-        } finally {
-            this.resetToUnmarkedState(key);
-        }
-    }
-
-    private resetToUnmarkedState(key: Data): void {
-        if (this.keyStateMarker.unmarkIfMarked(key)) {
-            return;
-        }
-        this.nearCache.invalidate(key);
-        this.keyStateMarker.unmarkForcibly(key);
-    }
-
-    private unmarkRemainingMarkedKeys(markers: DataKeyedHashMap<boolean>): void {
-        let entries: Array<[Data, boolean]> = markers.entries();
-        entries.forEach((entry: [Data, any]) => {
-            let marked = entry[1];
-            if (marked) {
-                this.keyStateMarker.unmarkForcibly(entry[0]);
-            }
-        });
     }
 
     private invalidatCacheEntryAndReturn<T>(keyData: Data, retVal: T): T {
@@ -72,10 +39,6 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
     private invalidateCacheAndReturn<T>(retVal: T): T {
         this.nearCache.clear();
         return retVal;
-    }
-
-    getKeyStateMarker(): KeyStateMarker {
-        return (<InvalidationAwareWrapper>this.nearCache).getKeyStateMarker();
     }
 
     clear(): Promise<void> {
@@ -149,14 +112,11 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         if (cachedValue !== undefined) {
             return Promise.resolve(cachedValue);
         } else {
-            let marked = this.keyStateMarker.markIfUnmarked(keyData);
+            let reservation = this.nearCache.tryReserveForUpdate(keyData);
             return super.getInternal(keyData).then((val: V) => {
-                if (marked) {
-                    this.tryToPutNearCache(keyData, val);
-                }
+                this.nearCache.tryPublishReserved(keyData, val, reservation);
                 return val;
             }).catch((err: any) => {
-                this.resetToUnmarkedState(keyData);
                 throw err;
             });
         }
@@ -171,7 +131,6 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
     }
 
     protected getAllInternal(partitionsToKeys: {[id: string]: any}, result: any[] = []): Promise<any[]> {
-        let markers = new DataKeyedHashMap<boolean>();
         try {
             for (var partition in partitionsToKeys) {
                 var partitionArray = partitionsToKeys[partition];
@@ -181,31 +140,26 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
                     if (cachedResult !== undefined) {
                         result.push([this.toObject(partitionArray[i]), cachedResult]);
                         partitionArray = partitionArray.splice(i, 1);
-                    } else if (this.nearCache.isInvalidatedOnChange()) {
-                        markers.set(key, this.keyStateMarker.markIfUnmarked(key));
                     }
                 }
             }
         } catch (err) {
-            this.unmarkRemainingMarkedKeys(markers);
             return Promise.resolve([]);
         }
-        return super.getAllInternal(partitionsToKeys, result).then((serializedEntryArray: [Data, Data][]) => {
-            try {
-                serializedEntryArray.forEach((serializedEntry: [Data, Data]) => {
-                    let key = serializedEntry[0];
-                    let value = serializedEntry[1];
-                    let marked = markers.get(key);
-                    markers.delete(key);
-                    if (marked !== undefined && marked) {
-                        this.tryToPutNearCache(key, value);
-                    } else if (!this.nearCache.isInvalidatedOnChange()) {
-                        this.nearCache.put(key, value);
-                    }
-                });
-            } finally {
-                this.unmarkRemainingMarkedKeys(markers);
+        let reservations: Long[] = [];
+        for (var partition in partitionsToKeys) {
+            var partitionArray = partitionsToKeys[partition];
+            for (var i = 0; i < partitionArray.length; i++) {
+                let key = partitionArray[i];
+                reservations.push(this.nearCache.tryReserveForUpdate(key));
             }
+        }
+        return super.getAllInternal(partitionsToKeys, result).then((serializedEntryArray: [Data, Data][]) => {
+            serializedEntryArray.forEach((serializedEntry: [Data, Data], index: number) => {
+                let key = serializedEntry[0];
+                let value = serializedEntry[1];
+                this.nearCache.tryPublishReserved(key, value, reservations[index]);
+            });
             return result;
         });
     }

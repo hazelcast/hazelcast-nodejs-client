@@ -4,90 +4,105 @@ var Config = require('../../.').Config;
 var HazelcastClient = require('../../.').Client;
 var Controller = require('../RC');
 var fs = require('fs');
+var getRandomInt = require('../Util').getRandomInt;
 
 describe('NearCachedMapStress', function () {
 
     var cluster;
     var client1;
+    var validatingClient;
+    var numberOfEntries = 1000;
     var mapName = 'stressncmap';
+    var runningOperations = 0;
+    var completedOperations = 0;
+    var concurrencyLevel = 32;
+    var totalNumOperations = 100000;
+    var completedDeferred = Promise.defer();
+    var putPercent = 15;
+    var removePercent = 20;
+    var getPercent = 100 - putPercent - removePercent;
+    var totalGetOperations = 0;
 
     before(function () {
         var cfg = new Config.ClientConfig();
         var ncc = new Config.NearCacheConfig();
-        ncc.name = 'nc-map';
+        ncc.name = mapName;
         ncc.invalidateOnChange = true;
-        cfg.nearCacheConfigs['ncc-map'] = ncc;
+        cfg.nearCacheConfigs[mapName] = ncc;
         return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_nearcache_batchinvalidation_false.xml', 'utf8')).then(function (res) {
             cluster = res;
             return Controller.startMember(cluster.id);
         }).then(function (member) {
-            return HazelcastClient.newHazelcastClient(cfg).then(function (hazelcastClient) {
-                client1 = hazelcastClient;
-            });
+            return HazelcastClient.newHazelcastClient(cfg);
+        }).then(function (cl) {
+            client1 = cl;
+            return HazelcastClient.newHazelcastClient();
+        }).then(function (cl) {
+            validatingClient = cl;
         });
     });
 
     after(function () {
         client1.shutdown();
+        validatingClient.shutdown();
         return Controller.shutdownCluster(cluster.id);
     });
 
-    function getRandomInt(lowerLim, upperLim) {
-        return Math.floor(Math.random() * (upperLim - lowerLim)) + lowerLim;
-    }
-
-    function fireGet(numFires, lowerKeyLim, upperKeyLim) {
-        var promises = [];
-        for (var i = 0; i < numFires; i++) {
-            promises.push(client1.getMap(mapName).get(''+getRandomInt(lowerKeyLim, upperKeyLim)));
+    function completeOperation() {
+        runningOperations--;
+        completedOperations++;
+        if (completedOperations >= totalNumOperations && runningOperations === 0) {
+            completedDeferred.resolve();
         }
-        return Promise.all(promises);
     }
 
-    function fireRemoveAndGet(numFires, lowerKeyLim, upperKeyLim) {
-        var promises = [];
-        for (var i = 0; i < numFires; i++) {
-            (function () {
-                var key = '' + getRandomInt(lowerKeyLim, upperKeyLim);
-                var p = client1.getMap(mapName).remove(key).then(function () {
-                    return client1.getMap(mapName).get(key);
-                }).then(function (value) {
-                    return expect(value).to.be.null;
-                });
-                promises.push(p);
-            })();
-        }
-        return Promise.all(promises);
-    }
-
-    var totalNumKeys = 50000;
-
-    function step() {
-        var interval = 300;
-        var lowerKey = getRandomInt(0, totalNumKeys - interval);
-        var gets = fireGet(getRandomInt(0, 300), lowerKey, lowerKey + interval);
-        var removes = fireRemoveAndGet(getRandomInt(0, 300), lowerKey, lowerKey + interval);
-        return Promise.all([gets, removes]);
-    }
-
-    it('get does not read removed item', function (done) {
-        this.timeout(50000);
-        var rounds = 1000;
+    it('stress test with put, get and remove', function (done) {
+        this.timeout(20000);
         var map = client1.getMap(mapName);
-        var putPromises = [];
-        for (var i = 0; i < totalNumKeys; i++) {
-            putPromises.push(map.put('' + i, 'val'));
-        }
-        Promise.all(putPromises).then(function () {
-            var prevStep = Promise.resolve();
-            for (var i = 0; i < rounds; i++) {
-                prevStep = prevStep.then(step);
+        (function innerOperation() {
+            if (completedOperations >= totalNumOperations) {
+                return;
             }
-            prevStep.then(function () {
+            if (runningOperations >= concurrencyLevel) {
+                setTimeout(innerOperation, 1);
+            } else {
+                runningOperations++;
+                var op = getRandomInt(0, 100);
+                if (op < putPercent) {
+                    map.put(getRandomInt(0, numberOfEntries), getRandomInt(0, 10000)).then(completeOperation);
+                } else if(op < removePercent) {
+                    map.remove(getRandomInt(0, numberOfEntries)).then(completeOperation);
+                } else {
+                    totalGetOperations++;
+                    map.get(getRandomInt(0, numberOfEntries)).then(completeOperation);
+                }
+                process.nextTick(innerOperation);
+            }
+        })();
+
+        completedDeferred.promise.then(function () {
+            var p = [];
+            for (var i = 0; i < numberOfEntries; i++) {
+                (function () {
+                    var key = i;
+                    var promise = validatingClient.getMap(mapName).get(key).then(function (expected) {
+                        return client1.getMap(mapName).get(key).then(function (actual) {
+                            return expect(actual).to.be.equal(expected);
+                        })
+                    });
+                    p.push(promise);
+                })();
+            }
+            Promise.all(p).then(function () {
+                var stats = client1.getMap(mapName).nearCache.getStatistics();
+                expect(stats.hitCount + stats.missCount).to.equal(totalGetOperations + numberOfEntries);
+                expect(stats.entryCount).to.be.greaterThan(numberOfEntries / 100 * getPercent );
+                expect(stats.missCount).to.be.lessThan(totalNumOperations / 2);
+                expect(stats.hitCount).to.be.greaterThan(totalNumOperations / 2);
                 done();
-            }).catch(function (reason) {
-                done(reason);
+            }).catch(function (e) {
+                done(e);
             });
         });
-    });
+    })
 });

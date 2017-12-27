@@ -5,84 +5,8 @@ import {SerializationService} from '../serialization/SerializationService';
 import {DataKeyedHashMap} from '../DataStoreHashMap';
 import {StaleReadDetector} from './StaleReadDetector';
 import * as AlwaysFreshStaleReadDetectorImpl from './AlwaysFreshStaleReadDetectorImpl';
+import {DataRecord} from './DataRecord';
 import * as Long from 'long';
-import {UUID} from '../core/UUID';
-
-export class DataRecord {
-    key: Data;
-    value: Data | any;
-    private creationTime: number;
-    private expirationTime: number;
-    private lastAccessTime: number;
-    private accessHit: number;
-    private invalidationSequence: Long;
-    private uuid: UUID;
-
-    constructor(key: Data, value: Data | any, creationTime?: number, ttl?: number) {
-        this.key = key;
-        this.value = value;
-        if (creationTime) {
-            this.creationTime = creationTime;
-        } else {
-            this.creationTime = new Date().getTime();
-        }
-        if (ttl) {
-            this.expirationTime = this.creationTime + ttl * 1000;
-        } else {
-            this.expirationTime = undefined;
-        }
-        this.lastAccessTime = this.creationTime;
-        this.accessHit = 0;
-        this.invalidationSequence = Long.fromNumber(0);
-        this.uuid = null;
-    }
-
-    public static lruComp(x: DataRecord, y: DataRecord) {
-        return x.lastAccessTime - y.lastAccessTime;
-    }
-
-    public static lfuComp(x: DataRecord, y: DataRecord) {
-        return x.accessHit - y.accessHit;
-    }
-
-    public static randomComp(x: DataRecord, y: DataRecord) {
-        return Math.random() - 0.5;
-    }
-
-    isExpired(maxIdleSeconds: number) {
-        var now = new Date().getTime();
-        if ( (this.expirationTime > 0 && this.expirationTime < now) ||
-            (maxIdleSeconds > 0 && this.lastAccessTime + maxIdleSeconds * 1000 < now)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    setAccessTime(): void {
-        this.lastAccessTime = new Date().getTime();
-    }
-
-    hitRecord(): void {
-        this.accessHit++;
-    }
-
-    getInvalidationSequence(): Long {
-        return this.invalidationSequence;
-    }
-
-    setInvalidationSequence(sequence: Long): void {
-        this.invalidationSequence = sequence;
-    }
-
-    hasSameUuid(uuid: UUID): boolean {
-        return uuid.equals(this.uuid);
-    }
-
-    setUuid(uuid: UUID): void {
-        this.uuid = uuid;
-    }
-}
 
 export interface NearCacheStatistics {
     evictedCount: number;
@@ -100,6 +24,8 @@ export interface NearCache {
     getStatistics(): NearCacheStatistics;
     isInvalidatedOnChange(): boolean;
     setStaleReadDetector(detector: StaleReadDetector): void;
+    tryReserveForUpdate(key: Data): Long;
+    tryPublishReserved(key: Data, value: any, reservationId: Long): any;
 }
 
 export class NearCacheImpl implements NearCache {
@@ -116,6 +42,7 @@ export class NearCacheImpl implements NearCache {
     private evictionSamplingPoolSize: number;
     private evictionCandidatePool: Array<DataRecord>;
     private staleReadDetector: StaleReadDetector = AlwaysFreshStaleReadDetectorImpl.INSTANCE;
+    private reservationCounter: Long = Long.ZERO;
 
     internalStore: DataKeyedHashMap<DataRecord>;
 
@@ -148,6 +75,49 @@ export class NearCacheImpl implements NearCache {
 
         this.evictionCandidatePool = [];
         this.internalStore = new DataKeyedHashMap<DataRecord>();
+    }
+
+    nextReservationId(): Long {
+        let res = this.reservationCounter;
+        this.reservationCounter = this.reservationCounter.add(1);
+        return res;
+    }
+
+    tryReserveForUpdate(key: Data): Long {
+        let internalRecord = this.internalStore.get(key);
+        let resId = this.nextReservationId();
+        if (internalRecord === undefined) {
+            this.doEvictionIfRequired();
+            let dr = new DataRecord(key, undefined, undefined, this.timeToLiveSeconds);
+            dr.casStatus(DataRecord.READ_PERMITTED, resId);
+            this.internalStore.set(key, dr);
+            return resId;
+        }
+        if (internalRecord.casStatus(DataRecord.READ_PERMITTED, resId)) {
+            return resId;
+        }
+        return DataRecord.NOT_RESERVED;
+    }
+
+    tryPublishReserved(key: Data, value: any, reservationId: Long): any {
+        let internalRecord = this.internalStore.get(key);
+        if (internalRecord && internalRecord.casStatus(reservationId, DataRecord.READ_PERMITTED)) {
+            if (this.inMemoryFormat === InMemoryFormat.OBJECT) {
+                internalRecord.value = this.serializationService.toObject(value);
+            } else {
+                internalRecord.value = this.serializationService.toData(value);
+            }
+            internalRecord.setCreationTime();
+            this.initInvalidationMetadata(internalRecord);
+        } else if (internalRecord === undefined) {
+            return undefined;
+        } else {
+            if (this.inMemoryFormat === InMemoryFormat.BINARY) {
+                return this.serializationService.toObject(internalRecord.value);
+            } else {
+                return internalRecord.value;
+            }
+        }
     }
 
     setStaleReadDetector(staleReadDetector: StaleReadDetector): void {

@@ -1,6 +1,6 @@
 import {StaleReadDetector} from './StaleReadDetector';
 import {MetadataContainer} from './MetadataContainer';
-import {DataRecord} from './NearCache';
+import {DataRecord} from './DataRecord';
 
 export class AlwaysFreshStaleReadDetector implements StaleReadDetector {
     isStaleRead(key: any, record: DataRecord): boolean {
