@@ -7,6 +7,7 @@ import * as Promise from 'bluebird';
 import ClientMessage = require('../ClientMessage');
 import {LoggingService} from '../logging/LoggingService';
 import {UUID} from '../core/UUID';
+import {MemberSelectors} from '../core/MemberSelectors';
 
 export class MetadataFetcher {
 
@@ -72,7 +73,7 @@ export class MetadataFetcher {
     }
 
     protected scanMembers(objectNames: string[]): Promise<ClientMessage>[] {
-        let members = this.client.getClusterService().getMembers();
+        let members = this.client.getClusterService().getMembers(MemberSelectors.DATA_MEMBER_SELECTOR);
         let promises: Promise<any>[] = [];
         members.forEach((member) => {
             let request = MapFetchNearCacheInvalidationMetadataCodec.encodeRequest(objectNames, member.address);
