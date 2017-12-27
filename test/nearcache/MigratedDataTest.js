@@ -113,7 +113,7 @@ describe('MigratedData', function() {
             } else if (remainingTries > 0) {
                 setTimeout(resolveOrTimeout, 1000, remainingTries-1);
             } else {
-                deferred.reject('Partition ' + partitionId + ' was not moved to ' + address.toString());
+                deferred.reject(new Error('Partition ' + partitionId + ' was not moved to ' + address.toString()));
             }
         })(20);
         return deferred.promise;
