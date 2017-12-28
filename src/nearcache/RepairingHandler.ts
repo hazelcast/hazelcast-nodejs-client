@@ -60,7 +60,9 @@ export class RepairingHandler {
     }
 
     handleBatch(keys: any[], sourceUuids: string[], partitionUuids: UUID[], sequences: Long[]): void {
-        throw new Error('Not implemented');
+        for (var i = 0; i < keys.length; i++) {
+            this.handle(keys[i], sourceUuids[i], partitionUuids[i], sequences[i]);
+        }
     }
 
     checkOrRepairSequence(partitionId: number, nextSequence: Long, viaAntiEntropy: boolean = false): void {
