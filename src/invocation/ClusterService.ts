@@ -10,6 +10,7 @@ import Address = require('../Address');
 import ClientMessage = require('../ClientMessage');
 import {IllegalStateError} from '../HazelcastError';
 import * as assert from 'assert';
+import {MemberSelector} from '../core/MemberSelector';
 
 const MEMBER_ADDED = 1;
 const MEMBER_REMOVED = 2;
@@ -85,8 +86,18 @@ export class ClusterService extends EventEmitter {
      * Returns the list of members in the cluster.
      * @returns
      */
-    getMembers() {
-        return this.members;
+    getMembers(selector?: MemberSelector) {
+        if (selector === undefined) {
+            return this.members;
+        } else {
+            let members: Member[] = [];
+            this.members.forEach(function (member) {
+                if (selector.select(member)) {
+                    members.push(member);
+                }
+            });
+            return members;
+        }
     }
 
     /**
