@@ -1,11 +1,15 @@
 var expect = require('chai').expect;
 var promiseLater = function (time, func) {
-        return new Promise(function(resolve, reject) {
-            setTimeout(function() {
-                resolve(func());
-            }, time);
-        });
+    if (func === undefined) {
+        func = function(){};
+    }
+    return new Promise(function(resolve, reject) {
+        setTimeout(function() {
+            resolve(func());
+        }, time);
+    });
 };
+
 var expectAlmostEqual = function (actual, expected) {
     if (expected === null) {
         return expect(actual).to.equal(expected);
@@ -51,6 +55,14 @@ exports.markEnterprise = function (_this) {
         _this.skip();
     }
 };
+
+exports.promiseWaitMilliseconds = function (milliseconds) {
+    return new Promise(function(resolve, reject) {
+        setTimeout(function() {
+            resolve();
+        }, milliseconds);
+    });
+}
 
 exports.promiseLater = promiseLater;
 exports.expectAlmostEqual = expectAlmostEqual;

@@ -1,8 +1,8 @@
 import {NearCache, NearCacheStatistics} from './NearCache';
 import {Data} from '../serialization/Data';
 import {KeyStateMarker, KeyStateMarkerImpl} from './KeyStateMarker';
+import {StaleReadDetector} from './StaleReadDetector';
 export class InvalidationAwareWrapper implements NearCache {
-
     private nearCache: NearCache;
     private keyStateMarker: KeyStateMarker;
 
@@ -43,5 +43,9 @@ export class InvalidationAwareWrapper implements NearCache {
 
     getKeyStateMarker(): KeyStateMarker {
         return this.keyStateMarker;
+    }
+
+    setStaleReadDetector(detector: StaleReadDetector): void {
+        this.nearCache.setStaleReadDetector(detector);
     }
 }

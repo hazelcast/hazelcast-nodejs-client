@@ -2,6 +2,7 @@ import {Data} from '../serialization/Data';
 import ClientMessage = require('../ClientMessage');
 import * as Promise from 'bluebird';
 import HazelcastClient from '../HazelcastClient';
+import {BuildMetadata} from '../BuildMetadata';
 
 /**
  * Common super class for any proxy.
@@ -91,6 +92,14 @@ export class BaseProxy {
         return this.client.getSerializationService().toObject(data);
     }
 
+    protected getConnectedServerVersion(): number {
+        let activeConnections = this.client.getConnectionManager().getActiveConnections();
+        for (let address in activeConnections) {
+            return activeConnections[address].getConnectedServerVersion();
+        }
+        return BuildMetadata.UNKNOWN_VERSION_ID;
+    }
+
     getPartitionKey() : string {
         return this.name;
     }
@@ -117,6 +126,12 @@ export class BaseProxy {
      * @returns
      */
     destroy() : Promise<void> {
-        return this.client.getProxyManager().destroyProxy(this.name, this.serviceName);
+        return this.client.getProxyManager().destroyProxy(this.name, this.serviceName).then(() => {
+            return this.postDestroy();
+        });
+    }
+
+    protected postDestroy(): Promise<void> {
+        return Promise.resolve();
     }
 }

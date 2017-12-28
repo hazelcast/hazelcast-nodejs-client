@@ -7,6 +7,7 @@ import {BitsUtil} from '../BitsUtil';
 import {LoggingService} from '../logging/LoggingService';
 import {ClientNetworkConfig} from '../Config';
 import {ClientConnectionManager} from './ClientConnectionManager';
+import {BuildMetadata} from '../BuildMetadata';
 
 export class ClientConnection {
     address: Address;
@@ -20,6 +21,8 @@ export class ClientConnection {
     private clientNetworkConfig: ClientNetworkConfig;
     private connectionManager: ClientConnectionManager;
     private closedTime: number;
+    private connectedServerVersionString: string;
+    private connectedServerVersion: number;
 
     constructor(connectionManager: ClientConnectionManager, address: Address, clientNetworkConfig: ClientNetworkConfig) {
         this.address = address;
@@ -28,6 +31,8 @@ export class ClientConnection {
         this.lastRead = 0;
         this.connectionManager = connectionManager;
         this.closedTime = 0;
+        this.connectedServerVersionString = null;
+        this.connectedServerVersion = BuildMetadata.UNKNOWN_VERSION_ID;
     }
 
     /**
@@ -97,6 +102,15 @@ export class ClientConnection {
             deferred.reject(err);
         }
         return deferred.promise;
+    }
+
+    setConnectedServerVersion(versionString: string): void {
+        this.connectedServerVersionString = versionString;
+        this.connectedServerVersion =  BuildMetadata.calculateVersion(versionString);
+    }
+
+    getConnectedServerVersion(): number {
+        return this.connectedServerVersion;
     }
 
     /**
