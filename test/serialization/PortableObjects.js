@@ -130,11 +130,11 @@ PortableObjectV2.prototype.getVersion = function() {
 
 PortableObjectV2.prototype.getFactoryId = function() {
     return 10;
-}
+};
 
 PortableObjectV2.prototype.getClassId = function() {
     return 111;
-}
+};
 
 PortableObjectV2.prototype.writePortable = function(writer) {
     writer.writeUTF('a_new_prop', this.a_new_prop);
@@ -185,7 +185,31 @@ PortableObjectV2.prototype.readPortable = function(reader) {
     this.portables = reader.readPortableArray('portables');
 };
 
+function SimplePortable(str) {
+    this.aString = str;
+}
+
+SimplePortable.prototype.getFactoryId = function () {
+    return 10;
+};
+
+SimplePortable.prototype.getClassId = function () {
+    return 21;
+};
+
+SimplePortable.prototype.readPortable = function (reader) {
+    this.aString = reader.readUTF('aString');
+};
+
+SimplePortable.prototype.writePortable = function (writer) {
+    writer.writeUTF('aString', this.aString);
+};
+
+function SimplePortable2(str) {
+    this.aString = str;
+}
 
 exports.PortableObject = PortableObject;
 exports.PortableObjectV2 = PortableObjectV2;
 exports.InnerPortableObject = InnerPortableObject;
+exports.SimplePortable = SimplePortable;
