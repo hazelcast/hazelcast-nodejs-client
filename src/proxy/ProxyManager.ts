@@ -22,6 +22,7 @@ import Address = require('../Address');
 import {Invocation} from '../invocation/InvocationService';
 import {Member} from '../core/Member';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
+import {ClientNotActiveError, HazelcastError} from '../HazelcastError';
 
 export class ProxyManager {
     public static readonly MAP_SERVICE: string = 'hz:impl:mapService';
@@ -113,13 +114,24 @@ export class ProxyManager {
             this.client.getInvocationService().invoke(invocation).then((response) => {
                 promise.resolve(response);
             }).catch((error) => {
-                this.logger.warn('ProxyManager', 'Create proxy request for ' + proxyObject.getName() +
-                    ' failed. Retrying in ' + this.invocationRetryPauseMillis + 'ms.');
-                setTimeout(this.initializeProxy.bind(this, proxyObject, promise, deadline), this.invocationRetryPauseMillis);
+                if (this.isRetryable(error)) {
+                    this.logger.warn('ProxyManager', 'Create proxy request for ' + proxyObject.getName() +
+                        ' failed. Retrying in ' + this.invocationRetryPauseMillis + 'ms. ' + error);
+                    setTimeout(this.initializeProxy.bind(this, proxyObject, promise, deadline), this.invocationRetryPauseMillis);
+                } else {
+                    this.logger.warn('ProxyManager', 'Create proxy request for ' + proxyObject.getName() + ' failed ' + error);
+                }
             });
         } else {
             promise.reject('Create proxy request timed-out for ' + proxyObject.getName());
         }
+    }
+
+    protected isRetryable(error: HazelcastError): boolean {
+        if (error instanceof ClientNotActiveError) {
+            return false;
+        }
+        return true;
     }
 
     destroyProxy(name: string, serviceName: string): Promise<void> {

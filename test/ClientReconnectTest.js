@@ -20,7 +20,6 @@ describe('Client reconnect', function () {
         var map;
         return Controller.createCluster(null, null).then(function(cl) {
             cluster = cl;
-            clusterId = cluster.id;
             return Controller.startMember(cluster.id);
         }).then(function(m) {
             member = m;
@@ -50,7 +49,6 @@ describe('Client reconnect', function () {
         var map;
         Controller.createCluster(null, null).then(function(cl) {
             cluster = cl;
-            clusterId = cluster.id;
             return Controller.startMember(cluster.id);
         }).then(function(m) {
             member = m;
@@ -86,7 +84,6 @@ describe('Client reconnect', function () {
         var map;
         return Controller.createCluster(null, null).then(function(cl) {
             cluster = cl;
-            clusterId = cluster.id;
             return Controller.startMember(cluster.id);
         }).then(function(m) {
             member = m;
