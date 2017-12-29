@@ -70,7 +70,7 @@ describe('NearCachedMapStress', function () {
                 var op = getRandomInt(0, 100);
                 if (op < putPercent) {
                     map.put(getRandomInt(0, numberOfEntries), getRandomInt(0, 10000)).then(completeOperation);
-                } else if(op < removePercent) {
+                } else if(op < putPercent + removePercent) {
                     map.remove(getRandomInt(0, numberOfEntries)).then(completeOperation);
                 } else {
                     totalGetOperations++;
@@ -82,6 +82,7 @@ describe('NearCachedMapStress', function () {
 
         completedDeferred.promise.then(function () {
             var p = [];
+            //Value correctness check
             for (var i = 0; i < numberOfEntries; i++) {
                 (function () {
                     var key = i;
@@ -93,12 +94,13 @@ describe('NearCachedMapStress', function () {
                     p.push(promise);
                 })();
             }
+            //Near cache usage check
             Promise.all(p).then(function () {
                 var stats = client1.getMap(mapName).nearCache.getStatistics();
                 expect(stats.hitCount + stats.missCount).to.equal(totalGetOperations + numberOfEntries);
                 expect(stats.entryCount).to.be.greaterThan(numberOfEntries / 100 * getPercent );
-                expect(stats.missCount).to.be.lessThan(totalNumOperations / 2);
-                expect(stats.hitCount).to.be.greaterThan(totalNumOperations / 2);
+                expect(stats.missCount).to.be.greaterThan(100);
+                expect(stats.hitCount).to.be.greaterThan(100);
                 done();
             }).catch(function (e) {
                 done(e);
