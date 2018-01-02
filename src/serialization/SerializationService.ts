@@ -30,9 +30,9 @@ import {PortableSerializer} from './portable/PortableSerializer';
 import {IdentifiedDataSerializableFactory} from './Serializable';
 import * as DefaultPredicates from './DefaultPredicates';
 import {PredicateFactory, PREDICATE_FACTORY_ID} from './PredicateFactory';
-import {PartitionAware} from '../core/PartitionAware';
 import {RELIABLE_TOPIC_MESSAGE_FACTORY_ID, ReliableTopicMessageFactory} from '../proxy/topic/RawTopicMessage';
-import {CLUSTER_DATA_FACTORY_ID, ClusterDataFactory} from '../ClusterDataFactory';
+import {ClusterDataFactoryHelper} from '../ClusterDataFactoryHelper';
+import {ClusterDataFactory} from '../ClusterDataFactory';
 
 export interface SerializationService {
     toData(object: any, paritioningStrategy?: any) : Data;
@@ -257,7 +257,7 @@ export class SerializationServiceV1 implements SerializationService {
         }
         factories[PREDICATE_FACTORY_ID] = new PredicateFactory(DefaultPredicates);
         factories[RELIABLE_TOPIC_MESSAGE_FACTORY_ID] = new ReliableTopicMessageFactory();
-        factories[CLUSTER_DATA_FACTORY_ID] = new ClusterDataFactory();
+        factories[ClusterDataFactoryHelper.FACTORY_ID] = new ClusterDataFactory();
         this.registerSerializer('identified', new IdentifiedDataSerializableSerializer(factories));
     }
 

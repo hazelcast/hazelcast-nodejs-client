@@ -24,7 +24,6 @@ var Controller = require('./../RC');
 var RawTopicMessage = require('../../lib/proxy/topic/RawTopicMessage').RawTopicMessage;
 var fs = require('fs');
 var Long = require('long');
-
 var Promise = require('bluebird');
 
 var createConfig = function () {
@@ -53,7 +52,7 @@ var generateItems = function (client, howMany) {
     }
     return all;
 };
-describe.skip("Reliable Topic Proxy", function () {
+describe("Reliable Topic Proxy", function () {
 
     var cluster;
     var clientOne;
@@ -68,7 +67,6 @@ describe.skip("Reliable Topic Proxy", function () {
             cluster = response;
             return Controller.startMember(cluster.id);
         }).then(function () {
-
             var config = createConfig();
 
             return Promise.all([
@@ -90,8 +88,9 @@ describe.skip("Reliable Topic Proxy", function () {
     });
 
     it("writes and reads messages", function (done) {
-        var topicOne = clientOne.getReliableTopic("t");
-        var topicTwo = clientTwo.getReliableTopic("t");
+        var topicName = 't' + Math.random();
+        var topicOne = clientOne.getReliableTopic(topicName);
+        var topicTwo = clientTwo.getReliableTopic(topicName);
 
         topicTwo.addMessageListener(function (msg) {
             if (msg.messageObject["value"] === "foo") {
@@ -105,15 +104,16 @@ describe.skip("Reliable Topic Proxy", function () {
     });
 
     it('removed message listener does not receive items after removal', function (done) {
-        var topicOne = clientOne.getReliableTopic("t");
-        var topicTwo = clientTwo.getReliableTopic("t");
+        var topicName = 't' + Math.random();
+        var topicOne = clientOne.getReliableTopic(topicName);
+        var topicTwo = clientTwo.getReliableTopic(topicName);
 
         var receivedMessages = 0;
 
         var id = topicTwo.addMessageListener(function (msg) {
             receivedMessages++;
             if (receivedMessages > 2) {
-                done(new Error('Keep receiving messages after removal.'));
+                done(new Error('Kept receiving messages after message listener is removed.'));
             }
         });
 
@@ -129,11 +129,11 @@ describe.skip("Reliable Topic Proxy", function () {
         }, 500);
     });
 
-    it("blocks when there is no more space", function (done) {
+    it("blocks when there is no more space", function () {
         var topic = clientOne.getReliableTopic("blocking");
         var ringbuffer = topic.getRingbuffer();
 
-        ringbuffer.capacity().then(function (capacity) {
+        return ringbuffer.capacity().then(function (capacity) {
             var all = [];
 
             for (var i = 0; i < capacity.toNumber() + 1; i++) {
@@ -142,19 +142,19 @@ describe.skip("Reliable Topic Proxy", function () {
 
             return ringbuffer.addAll(all);
         }).then(function () {
-            var startTime = new Date().getTime();
-            topic.publish(-50).then(function () {
+            var startTime = Date.now();
+            return topic.publish(-50).then(function () {
                 /*
                  Here we check that the call was indeed blocking
                  until the TTL of the first inserted entry has passed
                  */
 
-                var elapsed = new Date().getTime() - startTime;
+                var elapsed = Date.now() - startTime;
 
                 if (elapsed > 2000) {
-                    done();
+                    return;
                 } else {
-                    done(new Error("Message was published too fast, expected at least a 2 second delay, got: " + elapsed));
+                    throw new Error("Message was published too fast, expected at least a 2 second delay, got: " + elapsed);
                 }
             });
         });
@@ -172,7 +172,6 @@ describe.skip("Reliable Topic Proxy", function () {
         });
 
         var all = generateItems(clientOne, 20);
-
 
         ringbuffer.addAll(all);
     });
@@ -194,7 +193,6 @@ describe.skip("Reliable Topic Proxy", function () {
             expect(obj).to.equal(10);
         });
     });
-
 
     it("overwrites the oldest item when there is no more space", function () {
         var topic = clientOne.getReliableTopic("overwrite");
