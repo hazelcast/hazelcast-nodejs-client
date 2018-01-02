@@ -54,7 +54,7 @@ export class ReliableTopicListenerRunner<E> {
         this.ringbuffer.readMany(this.sequenceNumber, 1, this.batchSize).then((result: Array<RawTopicMessage>) => {
             if (!this.cancelled) {
                 result.forEach((raw: RawTopicMessage) => {
-                    var msg = new TopicMessage<E>();
+                    let msg = new TopicMessage<E>();
                     msg.messageObject = this.serializationService.toObject(raw.payload);
                     msg.publisher = raw.publisherAddress;
                     msg.publishingTime = raw.publishTime;
@@ -80,7 +80,7 @@ export class ReliableTopicListenerRunner<E> {
                 return;
             }
 
-            var message = 'Listener of topic "' + this.proxy.getName() + '" caught an exception, terminating listener';
+            var message = 'Listener of topic "' + this.proxy.getName() + '" caught an exception, terminating listener. ' + e;
             this.loggingService.warn('ReliableTopicListenerRunner', message);
 
             this.proxy.removeMessageListener(this.listenerId);
