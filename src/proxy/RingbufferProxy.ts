@@ -91,7 +91,7 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements IRingb
             .then<Array<E>>((raw: any) => {
                 return raw['items'].map((r: Data) => {
                     return this.toObject(r);
-                });
+                }, this);
             });
     }
 }

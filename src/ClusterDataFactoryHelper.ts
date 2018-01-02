@@ -14,17 +14,7 @@
  * limitations under the License.
  */
 
-import {IdentifiedDataSerializableFactory, IdentifiedDataSerializable} from './serialization/Serializable';
-import Address = require('./Address');
-import {ClusterDataFactoryHelper} from './ClusterDataFactoryHelper';
-
-export class ClusterDataFactory implements IdentifiedDataSerializableFactory {
-
-    create(type: number): IdentifiedDataSerializable {
-        if (type === ClusterDataFactoryHelper.ADDRESS_ID) {
-            return new Address();
-        }
-
-        return null;
-    }
+export class ClusterDataFactoryHelper {
+    static readonly FACTORY_ID = 0;
+    static readonly ADDRESS_ID = 1;
 }

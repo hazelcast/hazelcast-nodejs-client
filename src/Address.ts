@@ -16,8 +16,8 @@
 
 import {IdentifiedDataSerializable} from './serialization/Serializable';
 import {DataInput, DataOutput} from './serialization/Data';
-import {ADDRESS_CLASS_ID, CLUSTER_DATA_FACTORY_ID} from './ClusterDataFactory';
 import * as net from 'net';
+import {ClusterDataFactoryHelper} from './ClusterDataFactoryHelper';
 
 class Address implements IdentifiedDataSerializable {
 
@@ -48,11 +48,11 @@ class Address implements IdentifiedDataSerializable {
     }
 
     getFactoryId(): number {
-        return CLUSTER_DATA_FACTORY_ID;
+        return ClusterDataFactoryHelper.FACTORY_ID;
     }
 
     getClassId(): number {
-        return ADDRESS_CLASS_ID;
+        return ClusterDataFactoryHelper.ADDRESS_ID;
     }
 
     equals(other: Address): boolean {
