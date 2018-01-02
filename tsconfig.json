@@ -8,7 +8,7 @@
         "outDir": "lib",
         "preserveConstEnums": true,
         "lib": ["es5", "es6"],
-        "removeComments": true,
+        "removeComments": false,
         "sourceMap": true
     },
     "include": [
