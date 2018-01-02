@@ -1,5 +1,5 @@
 import {StaleReadDetector} from './StaleReadDetector';
-import {DataRecord} from './NearCache';
+import {DataRecord} from './DataRecord';
 import {MetadataContainer} from './MetadataContainer';
 import {RepairingHandler} from './RepairingHandler';
 import {PartitionService} from '../PartitionService';
