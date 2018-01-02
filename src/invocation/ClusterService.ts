@@ -131,7 +131,7 @@ export class ClusterService extends EventEmitter {
 
     private onConnectionClosed(connection: ClientConnection) {
         this.logger.warn('ClusterService', 'Connection closed to ' + connection.address.toString());
-        if (connection.address === this.getOwnerConnection().address) {
+        if (connection.address.equals(this.getOwnerConnection().address)) {
             this.ownerConnection = null;
             this.connectToCluster().catch(this.client.shutdown.bind(this.client));
         }
@@ -139,7 +139,7 @@ export class ClusterService extends EventEmitter {
 
     private onHeartbeatStopped(connection: ClientConnection): void {
         this.logger.warn('ClusterService', connection.address.toString() + ' stopped heartbeating.');
-        if (connection.getAddress() === this.ownerConnection.address) {
+        if (connection.getAddress().equals(this.ownerConnection.address)) {
             this.client.getConnectionManager().destroyConnection(connection.address);
         }
     }
