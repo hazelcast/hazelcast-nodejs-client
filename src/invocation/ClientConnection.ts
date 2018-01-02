@@ -23,6 +23,7 @@ export class ClientConnection {
     private closedTime: number;
     private connectedServerVersionString: string;
     private connectedServerVersion: number;
+    private authenticatedAsOwner: boolean;
 
     constructor(connectionManager: ClientConnectionManager, address: Address, clientNetworkConfig: ClientNetworkConfig) {
         this.address = address;
@@ -123,6 +124,14 @@ export class ClientConnection {
 
     isAlive(): boolean {
         return this.closedTime === 0;
+    }
+
+    isAuthenticatedAsOwner(): boolean {
+        return this.authenticatedAsOwner;
+    }
+
+    setAuthneticatedAsOwner(asOwner: boolean): void {
+        this.authenticatedAsOwner = asOwner;
     }
 
     toString(): string {
