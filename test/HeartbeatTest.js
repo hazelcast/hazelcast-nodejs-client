@@ -1,7 +1,24 @@
+/*
+ * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 var RC = require('./RC');
 var HazelcastClient = require('../.').Client;
 var expect = require('chai').expect;
 var Config = require('../.').Config;
+var Util = require('./Util');
 
 describe('Heartbeat', function() {
     this.timeout(30000);
@@ -36,7 +53,7 @@ describe('Heartbeat', function() {
                         return member.address.host + ':' + member.address.port;
                     }
                 };
-                warmUpConnectionToAddress(client, address);
+                warmUpConnectionToAddressWithRetry(client, address);
             });
             client.heartbeat.addListener({onHeartbeatStopped: function(connection) {
                 client.shutdown();
@@ -62,16 +79,9 @@ describe('Heartbeat', function() {
         }).then(function(resp) {
             client = resp;
             client.clusterService.on('memberAdded', function(member) {
-                var address = {
-                    host: member.address.host,
-                    port: member.address.port,
-                    toString: function() {
-                        return member.address.host + ':' + member.address.port;
-                    }
-                };
-                warmUpConnectionToAddress(client, address).then(function() {
-                    simulateHeartbeatLost(client, address, 2000);
-                });
+                warmUpConnectionToAddressWithRetry(client, member.address, 3).then(function() {
+                    simulateHeartbeatLost(client, member.address, 2000);
+                }).catch(done);
             });
             client.heartbeat.addListener({onHeartbeatRestored: function(connection) {
                 client.shutdown();
@@ -110,7 +120,17 @@ describe('Heartbeat', function() {
         client.connectionManager.establishedConnections[address].lastRead = client.connectionManager.establishedConnections[address].lastRead - timeout;
     }
 
-    function warmUpConnectionToAddress(client, address) {
-        return client.connectionManager.getOrConnect(address);
+    function warmUpConnectionToAddressWithRetry(client, address, retryCount) {
+        return client.connectionManager.getOrConnect(address).then(function (conn) {
+            if (conn != null) {
+                return conn;
+            } else if (conn == null && retryCount > 0) {
+                return Util.promiseWaitMilliseconds(300).then(function () {
+                    return warmUpConnectionToAddressWithRetry(client, address, retryCount - 1);
+                });
+            } else {
+                throw new Error('Could not warm up connection to ' + address);
+            }
+        });
     }
 });
