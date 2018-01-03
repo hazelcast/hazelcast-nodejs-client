@@ -18,6 +18,7 @@ var RC = require('./RC');
 var HazelcastClient = require('../.').Client;
 var expect = require('chai').expect;
 var Config = require('../.').Config;
+var Util = require('./Util');
 
 describe('Heartbeat', function() {
     this.timeout(30000);
@@ -52,7 +53,7 @@ describe('Heartbeat', function() {
                         return member.address.host + ':' + member.address.port;
                     }
                 };
-                warmUpConnectionToAddress(client, address);
+                warmUpConnectionToAddressWithRetry(client, address);
             });
             client.heartbeat.addListener({onHeartbeatStopped: function(connection) {
                 client.shutdown();
@@ -78,16 +79,9 @@ describe('Heartbeat', function() {
         }).then(function(resp) {
             client = resp;
             client.clusterService.on('memberAdded', function(member) {
-                var address = {
-                    host: member.address.host,
-                    port: member.address.port,
-                    toString: function() {
-                        return member.address.host + ':' + member.address.port;
-                    }
-                };
-                warmUpConnectionToAddress(client, address).then(function() {
-                    simulateHeartbeatLost(client, address, 2000);
-                });
+                warmUpConnectionToAddressWithRetry(client, member.address, 3).then(function() {
+                    simulateHeartbeatLost(client, member.address, 2000);
+                }).catch(done);
             });
             client.heartbeat.addListener({onHeartbeatRestored: function(connection) {
                 client.shutdown();
@@ -126,7 +120,17 @@ describe('Heartbeat', function() {
         client.connectionManager.establishedConnections[address].lastRead = client.connectionManager.establishedConnections[address].lastRead - timeout;
     }
 
-    function warmUpConnectionToAddress(client, address) {
-        return client.connectionManager.getOrConnect(address);
+    function warmUpConnectionToAddressWithRetry(client, address, retryCount) {
+        return client.connectionManager.getOrConnect(address).then(function (conn) {
+            if (conn != null) {
+                return conn;
+            } else if (conn == null && retryCount > 0) {
+                return Util.promiseWaitMilliseconds(300).then(function () {
+                    return warmUpConnectionToAddressWithRetry(client, address, retryCount - 1);
+                });
+            } else {
+                throw new Error('Could not warm up connection to ' + address);
+            }
+        });
     }
 });
