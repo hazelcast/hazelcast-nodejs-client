@@ -57,7 +57,7 @@ describe('NearCachedMapStress', function () {
     }
 
     it('stress test with put, get and remove', function (done) {
-        this.timeout(20000);
+        this.timeout(120000);
         var map = client1.getMap(mapName);
         (function innerOperation() {
             if (completedOperations >= totalNumOperations) {
