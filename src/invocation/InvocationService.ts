@@ -245,7 +245,9 @@ export class InvocationService {
 
     private notifyError(invocation: Invocation, error: Error): void {
         var correlationId = invocation.request.getCorrelationId().toNumber();
-        if (this.isRetryable(invocation)) {
+        if (!this.client.getLifecycleService().isRunning()) {
+            invocation.deferred.reject(new ClientNotActiveError('Client is not active.', error));
+        } else if (this.isRetryable(invocation)) {
             this.logger.debug('InvocationService',
                 'Retrying(' + invocation.invokeCount + ') on correlation-id=' + correlationId, error);
             if (invocation.invokeCount < MAX_FAST_INVOCATION_COUNT) {
