@@ -24,7 +24,7 @@
 [![Join the chat at https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 <br></br>
 
-This document explains Node.js client for Hazelcast which uses Hazelcast's Open Client Protocol 1.0. This client works with Hazelcast 3.6 and higher.
+This document explains Node.js client for Hazelcast which uses Hazelcast's Open Client Protocol 1.6. This client works with Hazelcast 3.6 and higher.
 
 **Hazelcast** is a clustering and highly scalable data distribution platform. With its various distributed data structures, distributed caching capabilities, elastic nature and more importantly with so many happy users, Hazelcast is a feature-rich, enterprise-ready and developer-friendly in-memory data grid solution.
 
@@ -33,20 +33,25 @@ This document explains Node.js client for Hazelcast which uses Hazelcast's Open 
 
 Hazelcast Node.js client supports the following data structures and features:
 
-* Map (including entry processors and `PartitionAware` keys) and MultiMap
-* ReplicatedMap
-* Near Cache support for Map
-* Queue, Set, and List
-* Lock
-* Smart Client
-* Hazelcast Native Serialization
-* Distributed Object Listener
-* Lifecycle Service
+* Map
+* Queue
+* Set
+* List
+* Multi Map
+* Replicated Map
 * Ringbuffer
 * Reliable Topic
+* Near Cache support for Map
+* Lock
 * Semaphore
-* Replicated Map
 * Atomic Long
+* Event Listeners
+* Entry Processors
+* Predicates
+* Smart Client
+* Unisocket Client
+* Hazelcast Native Serialization
+* Lifecycle Service
 * SSL connection support (requires enterprise server)
 
 # Installing the Client
@@ -58,6 +63,8 @@ npm install hazelcast-client --save
 ```
 
 # Using the Client
+
+Hazelcast Node.js Client connects to a Hazelcast IMDG cluster. See [https://hazelcast.org/download/](https://hazelcast.org/download/).
 
 Following script illustrates a basic example in which a map is created in Hazelcast Node.js client and an entry is added to that map:
 
@@ -177,6 +184,6 @@ Hazelcast is available under the Apache 2 License. Please see the [Licensing app
 
 # Copyright
 
-Copyright (c) 2008-2016, Hazelcast, Inc. All Rights Reserved.
+Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
 
 Visit [www.hazelcast.com](http://www.hazelcast.com) for more information.
