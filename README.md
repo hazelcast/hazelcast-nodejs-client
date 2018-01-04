@@ -107,7 +107,7 @@ If you have nested objects, these nested objects also need to be serializable. R
 
 If you have arrays of custom objects, you can serialize/deserialize them like the following:
 
-```
+```javascript
 writeData(dataOutput) {
     ...
     dataOutput.writeInt(this.arrayOfCustomObjects);
