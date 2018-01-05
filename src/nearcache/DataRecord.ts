@@ -78,7 +78,7 @@ export class DataRecord {
     }
 
     hasSameUuid(uuid: UUID): boolean {
-        return uuid.equals(this.uuid);
+        return uuid != null && this.uuid != null && this.uuid.equals(uuid);
     }
 
     setUuid(uuid: UUID): void {
