@@ -83,7 +83,7 @@ export class PortableContext {
     lookupOrRegisterClassDefinition(portable: Portable): ClassDefinition {
         var version = this.getClassVersion(portable);
         var definition = this.lookupClassDefinition(portable.getFactoryId(), portable.getClassId(), version);
-        if (definition === null) {
+        if (definition == null) {
             definition = this.generateClassDefinitionForPortable(portable);
             this.registerClassDefinition(definition);
         }
