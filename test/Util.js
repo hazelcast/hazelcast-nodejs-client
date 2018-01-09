@@ -68,6 +68,9 @@ exports.fillMap = function (map, size, keyPrefix, valuePrefix) {
 };
 
 exports.markEnterprise = function (_this) {
+    if (process.env.SERVER_TYPE === 'oss' || process.env.HZ_TYPE === 'oss') {
+        _this.skip();
+    }
     if(!process.env.HAZELCAST_ENTERPRISE_KEY){
         _this.skip();
     }
@@ -76,7 +79,7 @@ exports.markEnterprise = function (_this) {
 exports.markServerVersionAtLeast = function (_this, client, expectedVersion) {
     var actNumber = client.getClusterService().getOwnerConnection().getConnectedServerVersion();
     var expNumber = BuildMetadata.calculateVersion(expectedVersion);
-    if (actNumber < expNumber) {
+    if (actNumber === BuildMetadata.UNKNOWN_VERSION_ID || actNumber < expNumber) {
         _this.skip();
     }
 };
