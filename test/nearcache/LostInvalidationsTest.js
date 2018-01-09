@@ -73,6 +73,8 @@ describe('LostInvalidation', function() {
     });
 
     it('client eventually receives an update for which the invalidation event was dropped', function() {
+        Util.markServerVersionAtLeast(this, client, '3.8');
+
         var map = client.getMap(mapName);
         var key = 'key';
         var value = 'val';
@@ -98,6 +100,8 @@ describe('LostInvalidation', function() {
     });
 
     it('lost invalidation stress test', function() {
+        Util.markServerVersionAtLeast(this, client, '3.8');
+
         var map = client.getMap(mapName);
         var invalidationHandlerStub;
         return Util.promiseWaitMilliseconds(100).then(function(resp) {

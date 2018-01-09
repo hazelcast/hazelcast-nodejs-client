@@ -15,6 +15,7 @@
  */
 
 var expect = require('chai').expect;
+var BuildMetadata = require('../lib/BuildMetadata').BuildMetadata;
 var promiseLater = function (time, func) {
     if (func === undefined) {
         func = function(){};
@@ -68,6 +69,14 @@ exports.fillMap = function (map, size, keyPrefix, valuePrefix) {
 
 exports.markEnterprise = function (_this) {
     if(!process.env.HAZELCAST_ENTERPRISE_KEY){
+        _this.skip();
+    }
+};
+
+exports.markServerVersionAtLeast = function (_this, client, expectedVersion) {
+    var actNumber = client.getClusterService().getOwnerConnection().getConnectedServerVersion();
+    var expNumber = BuildMetadata.calculateVersion(expectedVersion);
+    if (actNumber < expNumber) {
         _this.skip();
     }
 };
