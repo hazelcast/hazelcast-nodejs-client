@@ -71,6 +71,8 @@ describe('MigratedData', function() {
     });
 
     it('killing a server migrates data to the other node, migrated data has new uuid, near cache discards data with old uuid', function() {
+        Util.markServerVersionAtLeast(this, client, '3.8');
+
         var map = client.getMap(mapName);
         var survivingMember;
         var key = 1;

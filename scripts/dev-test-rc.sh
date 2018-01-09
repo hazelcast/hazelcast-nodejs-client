@@ -1,5 +1,5 @@
 #!/bin/sh
-HZ_VERSION="3.9"
+HZ_VERSION="3.9.1"
 HAZELCAST_TEST_VERSION="3.10-SNAPSHOT"
 HAZELCAST_VERSION=${HZ_VERSION}
 HAZELCAST_ENTERPRISE_VERSION=${HZ_VERSION}
@@ -51,7 +51,7 @@ if [ -n "${HAZELCAST_ENTERPRISE_KEY}" ]; then
             exit 1
         fi
     fi
-    CLASSPATH="hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar:hazelcast-enterprise-${HAZELCAST_VERSION}.jar:hazelcast-${HAZELCAST_VERSION}.jar:hazelcast-tests-${HAZELCAST_VERSION}.jar:test/javaclasses"
+    CLASSPATH="hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar:hazelcast-enterprise-${HAZELCAST_VERSION}.jar:hazelcast-${HAZELCAST_VERSION}.jar:hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar:test/javaclasses"
     echo "Starting Remote Controller ... enterprise ..."
 else
     if [ -f "hazelcast-${HAZELCAST_VERSION}.jar" ]; then
@@ -64,7 +64,7 @@ else
             exit 1
         fi
     fi
-    CLASSPATH="hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar:hazelcast-${HAZELCAST_VERSION}.jar:test/javaclasses"
+    CLASSPATH="hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar:hazelcast-${HAZELCAST_VERSION}.jar:hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar"
     echo "Starting Remote Controller ... oss ..."
 fi
 
