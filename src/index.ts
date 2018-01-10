@@ -22,6 +22,7 @@ import * as Predicates from './core/Predicate';
 import Address = require('./Address');
 import TopicOverloadPolicy = require('./proxy/topic/TopicOverloadPolicy');
 import * as HazelcastErrors from './HazelcastError';
+import {IterationType} from './core/Predicate';
 
 export {
     HazelcastClient as Client,
@@ -31,5 +32,6 @@ export {
     Address,
     Predicates,
     TopicOverloadPolicy,
-    HazelcastErrors
+    HazelcastErrors,
+    IterationType
 };
