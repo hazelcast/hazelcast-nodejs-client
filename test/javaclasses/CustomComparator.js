@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+var IterationType = require('../../lib/').IterationType;
+
 /**
  *
  * @param type
@@ -45,12 +47,35 @@ CustomComparator.prototype.readData = function (inp) {
     this.iterationType = inp.readInt();
 };
 
-CustomComparator.prototype.sort = function (o1, o2) {
-    if (this.type === 0) {
-        return o1[1] - o2[1];
-    } else {
-        return o2[1] - o1[1];
+CustomComparator.prototype.sort = function (e1, e2) {
+    var str1;
+    var str2;
+    switch (this.iterationType) {
+        case IterationType.KEY:
+            str1 = e1[0].toString();
+            str2 = e2[0].toString();
+            break;
+        case IterationType.VALUE:
+            str1 = e1[1].toString();
+            str2 = e2[1].toString();
+            break;
+        case IterationType.ENTRY:
+            str1 = e1[0].toString() + e1[1].toString();
+            str2 = e2[0].toString() + e2[1].toString();
+            break;
+        default:
+            str1 = e1[0].toString();
+            str2 = e2[0].toString();
     }
+    switch (this.type) {
+        case 0:
+            return str1.localeCompare(str2);
+        case 1:
+            return str2.localeCompare(str1);
+        case 2:
+            return str1.length - str2.length;
+    }
+    return 0;
 };
 
 module.exports = CustomComparator;
