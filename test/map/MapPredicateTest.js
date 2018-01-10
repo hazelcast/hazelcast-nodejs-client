@@ -187,8 +187,8 @@ describe("Predicates", function() {
     });
 
     it('Paging with reverse comparator should have elements in reverse order', function() {
-        var paging = Predicates.paging(Predicates.lessThan('this', 40), 3, createReverseValueComparator());
-        return testPredicate(paging, [39, 38, 37], true);
+        var paging = Predicates.paging(Predicates.lessThan('this', 10), 3, createReverseValueComparator());
+        return testPredicate(paging, [9, 8, 7], true);
     });
 
     it('Paging first page should have first two items', function() {
