@@ -21,7 +21,7 @@ var Config = require('../.').Config;
 var Promise = require('bluebird');
 
 describe('ClusterService', function() {
-    this.timeout(15000);
+    this.timeout(25000);
     var cluster;
     var ownerMember;
 
