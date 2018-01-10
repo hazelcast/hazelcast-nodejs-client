@@ -19,6 +19,7 @@ import HazelcastClient from './HazelcastClient';
 import GetPartitionsCodec = require('./codec/GetPartitionsCodec');
 import Address = require('./Address');
 import ClientMessage = require('./ClientMessage');
+import {LoggingService} from './logging/LoggingService';
 
 const PARTITION_REFRESH_INTERVAL = 10000;
 
@@ -29,6 +30,7 @@ export class PartitionService {
     private partitionCount: number;
     private partitionRefreshTask: any;
     private isShutdown: boolean;
+    private logger = LoggingService.getLoggingService();
 
     constructor(client: HazelcastClient) {
         this.client = client;
@@ -36,12 +38,13 @@ export class PartitionService {
     }
 
     initialize(): Promise<void> {
+        this.partitionRefreshTask = setInterval(this.refresh.bind(this), PARTITION_REFRESH_INTERVAL);
         return this.refresh();
     }
 
     shutdown(): void {
+        clearInterval(this.partitionRefreshTask);
         this.isShutdown = true;
-        clearTimeout(this.partitionRefreshTask);
     }
 
     /**
@@ -51,8 +54,11 @@ export class PartitionService {
         if (this.isShutdown) {
             return Promise.resolve();
         }
-        var ownerConnection = this.client.getClusterService().getOwnerConnection();
-        var clientMessage: ClientMessage = GetPartitionsCodec.encodeRequest();
+        let ownerConnection = this.client.getClusterService().getOwnerConnection();
+        if (ownerConnection == null) {
+            return Promise.resolve();
+        }
+        let clientMessage: ClientMessage = GetPartitionsCodec.encodeRequest();
 
         return this.client.getInvocationService()
             .invokeOnConnection(ownerConnection, clientMessage)
@@ -62,8 +68,10 @@ export class PartitionService {
                     this.partitionMap[partitionId] = receivedPartitionMap[partitionId];
                 }
                 this.partitionCount = Object.keys(this.partitionMap).length;
-            }).finally(() => {
-                this.partitionRefreshTask = setTimeout(this.refresh.bind(this), PARTITION_REFRESH_INTERVAL);
+            }).catch((e) => {
+                if (this.client.getLifecycleService().isRunning()) {
+                    this.logger.warn('PartitionService', 'Error while fetching cluster partition table!', e);
+                }
             });
     }
 
