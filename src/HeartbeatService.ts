@@ -66,25 +66,30 @@ export class Heartbeat {
     }
 
     private heartbeatFunction() {
-        var estConnections = this.client.getConnectionManager().establishedConnections;
-        for (var address in estConnections) {
+        let estConnections = this.client.getConnectionManager().establishedConnections;
+        for (let address in estConnections) {
             if ( estConnections[address]) {
-                var conn = estConnections[address];
-                var timeSinceLastRead = new Date().getTime() - conn.lastRead;
+                let conn = estConnections[address];
+                let timeSinceLastRead = new Date().getTime() - conn.lastRead;
                 if (timeSinceLastRead > this.heartbeatTimeout) {
                     if (conn.heartbeating) {
-                        setImmediate(this.onHeartbeatStopped.bind(this), conn);
+                        conn.heartbeating = false;
+                        this.onHeartbeatStopped(conn);
                     }
                 }
                 if (timeSinceLastRead > this.heartbeatInterval) {
-                    var req = ClientPingCodec.encodeRequest();
+                    let req = ClientPingCodec.encodeRequest();
                     this.client.getInvocationService().invokeOnConnection(conn, req)
                         .catch((error) => {
-                            this.logger.warn('HeartbeatService', error);
+                            if (conn.isAlive()) {
+                                this.logger.warn('HeartbeatService', 'Error receiving ping answer from the connection: '
+                                    + conn + ' ' + error);
+                            }
                         });
                 } else {
                     if (!conn.heartbeating) {
-                        setImmediate(this.onHeartbeatRestored.bind(this), conn);
+                        conn.heartbeating = true;
+                        this.onHeartbeatRestored(conn);
                     }
                 }
             }
@@ -93,7 +98,6 @@ export class Heartbeat {
     }
 
     private onHeartbeatStopped(connection: ClientConnection) {
-        connection.heartbeating = false;
         this.logger.warn('HeartbeatService', 'Heartbeat stopped on ' + connection.address.toString());
         this.listeners.forEach((listener) => {
             if (listener.hasOwnProperty('onHeartbeatStopped')) {
@@ -103,7 +107,6 @@ export class Heartbeat {
     }
 
     private onHeartbeatRestored(connection: ClientConnection) {
-        connection.heartbeating = true;
         this.logger.warn('HeartbeatService', 'Heartbeat restored on ' + connection.address.toString());
         this.listeners.forEach((listener) => {
             if (listener.hasOwnProperty('onHeartbeatRestored')) {
