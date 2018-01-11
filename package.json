@@ -21,7 +21,7 @@
     "rimraf": "2.6.2",
     "sinon": "4.0.0",
     "tslint": "5.7.0",
-    "typedoc": "0.5.0",
+    "typedoc": "0.9.0",
     "typescript": "2.5.2",
     "winston": "2.3.1"
   },
@@ -35,7 +35,8 @@
     "coverage": "rimraf coverage && istanbul cover --root lib/ --include-all-sources _mocha -- --recursive --reporter spec",
     "coverage-without-codecs": "rimraf coverage && istanbul cover -x **/codec/**/* --root lib/ --include-all-sources _mocha -- --recursive --reporter spec",
     "postcoverage": "remap-istanbul -i coverage/coverage.json -o coverage/cobertura-coverage.xml -t cobertura && remap-istanbul -i coverage/coverage.json -o coverage -t html",
-    "generate-docs": "rimraf docs && typedoc --out docs/ --exclude **/codec/**/* --module commonjs src/ node_modules/@types/node/index.d.ts node_modules/typescript/lib/lib.es2015.d.ts --excludeExternals",
+    "pregenerate-docs": "rimraf docs",
+    "generate-docs": "typedoc --out docs/ --exclude **/codec/**/* src/ --excludeExternals --ignoreCompilerErrors --excludePrivate",
     "lint": "tslint --project tsconfig.json -t stylish"
   },
   "repository": {
