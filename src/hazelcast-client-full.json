@@ -1,0 +1,99 @@
+{
+    "group": {
+        "name": "dev",
+        "password": "dev-pass"
+    },
+    "properties": {
+        "hazelcast.client.heartbeat.timeout": 60000,
+        "hazelcast.client.invocation.retry.pause.millis": 1000,
+        "hazelcast.client.invocation.timeout.millis": 120000,
+        "hazelcast.invalidation.reconciliation.interval.seconds": 60,
+        "hazelcast.invalidation.max.tolerated.miss.count": 10,
+        "hazelcast.invalidation.min.reconciliation.interval.seconds": 30
+    },
+    "network": {
+        "clusterMembers": [
+            "127.0.0.1",
+            "127.0.0.2"
+        ]
+    },
+    "smartRouting": true,
+    "connectionTimeout": 5000,
+    "connectionAttemptPeriod": 3000,
+    "connectionAttemptLimit": 2,
+    "ssl": {
+        "enabled": false,
+        "factory": {
+            "path": "path/to/file",
+            "exportedName": "exportedName"
+        }
+    },
+    "listeners": [
+        {
+            "type": "lifecycle",
+            "path": "path/to/file",
+            "exportedName": "exportedName"
+        },
+        {
+            "type": "distributedObject",
+            "path": "path/to/file",
+            "exportedName": "exportedName"
+        },
+        {
+            "type": "map",
+            "path": "path/to/file",
+            "exportedName": "exportedName"
+        },
+        {
+            "type": "multiMap",
+            "path": "path/to/file",
+            "exportedName": "exportedName"
+        }
+    ],
+    "serialization": {
+        "defaultNumberType": "double",
+        "isBigEndian": true,
+        "dataSerializableFactories": [
+            {
+                "path": "path/to/file",
+                "exportedName": "exportedName",
+                "factoryId": 0
+            }
+        ],
+        "portableFactories": [
+            {
+                "path": "path/to/file",
+                "exportedName": "exportedName",
+                "factoryId": 0
+            }
+        ],
+        "portableVersion": 0,
+        "serializers": {
+            "globalSerializer": {
+                "path": "path/to/file",
+                "exportedName": "exportedName"
+            }
+        }
+
+    },
+    "nearCaches": [
+        {
+            "name": "default",
+            "invalidateOnChange": true,
+            "maxIdleSeconds": 0,
+            "inMemoryFormat": "binary",
+            "timeToLiveSeconds": 0,
+            "evictionPolicy": "none",
+            "evictionMaxSize": 2000,
+            "evictionSamplingCount": 8,
+            "evictionSamplingPoolSize": 16
+        }
+    ],
+    "reliableTopics": [
+        {
+            "name": "default",
+            "readBatchSize": 25,
+            "overloadPolicy": "block"
+        }
+    ]
+}
