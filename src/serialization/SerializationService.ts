@@ -33,6 +33,7 @@ import {PredicateFactory, PREDICATE_FACTORY_ID} from './PredicateFactory';
 import {RELIABLE_TOPIC_MESSAGE_FACTORY_ID, ReliableTopicMessageFactory} from '../proxy/topic/RawTopicMessage';
 import {ClusterDataFactoryHelper} from '../ClusterDataFactoryHelper';
 import {ClusterDataFactory} from '../ClusterDataFactory';
+import {AggregatorFactory} from '../aggregation/AggregatorFactory';
 
 export interface SerializationService {
     toData(object: any, paritioningStrategy?: any) : Data;
@@ -258,6 +259,7 @@ export class SerializationServiceV1 implements SerializationService {
         factories[PREDICATE_FACTORY_ID] = new PredicateFactory(DefaultPredicates);
         factories[RELIABLE_TOPIC_MESSAGE_FACTORY_ID] = new ReliableTopicMessageFactory();
         factories[ClusterDataFactoryHelper.FACTORY_ID] = new ClusterDataFactory();
+        factories[AggregatorFactory.FACTORY_ID] = new AggregatorFactory();
         this.registerSerializer('identified', new IdentifiedDataSerializableSerializer(factories));
     }
 

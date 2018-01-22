@@ -76,8 +76,25 @@ import {MapExecuteOnKeysCodec} from '../codec/MapExecuteOnKeysCodec';
 import * as SerializationUtil from '../serialization/SerializationUtil';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import ClientMessage = require('../ClientMessage');
+import {Aggregator} from '../aggregation/Aggregator';
+import {MapAggregateCodec} from '../codec/MapAggregateCodec';
+import {MapAggregateWithPredicateCodec} from '../codec/MapAggregateWithPredicateCodec';
 
 export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
+    aggregate<R>(aggregator: Aggregator<R>): Promise<R> {
+        assertNotNull(aggregator);
+        let aggregatorData = this.toData(aggregator);
+        return this.encodeInvokeOnRandomTarget(MapAggregateCodec, aggregatorData);
+    }
+
+    aggregateWithPredicate<R>(aggregator: Aggregator<R>, predicate: Predicate): Promise<R> {
+        assertNotNull(aggregator);
+        assertNotNull(predicate);
+        this.checkNotPagingPredicate(predicate);
+        let aggregatorData = this.toData(aggregator);
+        let predicateData = this.toData(predicate);
+        return this.encodeInvokeOnRandomTarget(MapAggregateWithPredicateCodec, aggregatorData, predicateData);
+    }
 
     executeOnKeys(keys: K[], entryProcessor: IdentifiedDataSerializable|Portable): Promise<any[]> {
         assertNotNull(keys);
@@ -656,6 +673,12 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                 return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
             }
         };
+    }
+
+    private checkNotPagingPredicate(v: Predicate): void {
+        if (v instanceof PagingPredicate) {
+            throw new RangeError('Paging predicate is not supported.');
+        }
     }
 
 
