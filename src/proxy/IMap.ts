@@ -20,7 +20,39 @@ import {EntryView} from '../core/EntryView';
 import {IMapListener} from '../core/MapListener';
 import {Predicate} from '../core/Predicate';
 import {IdentifiedDataSerializable, Portable} from '../serialization/Serializable';
+import {Aggregator} from '../aggregation/Aggregator';
 export interface IMap<K, V> extends DistributedObject {
+
+    /**
+     * Applies the aggregation logic on all map entries and returns the result
+     * <p>
+     * Fast-Aggregations are the successor of the Map-Reduce Aggregators.
+     * They are equivalent to the Map-Reduce Aggregators in most of the use-cases, but instead of running on the Map-Reduce
+     * engine they run on the Query infrastructure. Their performance is tens to hundreds times better due to the fact
+     * that they run in parallel for each partition and are highly optimized for speed and low memory consumption.
+     *
+     * @requires Hazelcast 3.8
+     * @param aggregator aggregator to aggregate the entries with
+     * @param <R> type of the result
+     * @return the result of the given type
+     */
+    aggregate<R>(aggregator: Aggregator<R>): Promise<R>;
+
+    /**
+     * Applies the aggregation logic on map entries filtered with the Predicated and returns the result
+     * <p>
+     * Fast-Aggregations are the successor of the Map-Reduce Aggregators.
+     * They are equivalent to the Map-Reduce Aggregators in most of the use-cases, but instead of running on the Map-Reduce
+     * engine they run on the Query infrastructure. Their performance is tens to hundreds times better due to the fact
+     * that they run in parallel for each partition and are highly optimized for speed and low memory consumption.
+     *
+     * @requires Hazelcast 3.8
+     * @param aggregator aggregator to aggregate the entries with
+     * @param predicate predicate to filter the entries with
+     * @param <R> type of the result
+     * @return the result of the given type
+     */
+    aggregateWithPredicate<R>(aggregator: Aggregator<R>, predicate: Predicate): Promise<R>;
 
     /**
      * Adds an index to this map for the specified entries so that queries can run faster.
