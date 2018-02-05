@@ -146,5 +146,10 @@ export class ClientConnection {
                 callback(message);
             }
         });
+        this.socket.on('error', (e: any) => {
+            if (e.code === 'EPIPE' || e.code === 'ECONNRESET') {
+                this.client.getConnectionManager().destroyConnection(this.address);
+            }
+        });
     }
 }

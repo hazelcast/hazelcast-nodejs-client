@@ -28,11 +28,7 @@ class Address implements IdentifiedDataSerializable {
     constructor(host?: string, port?: number) {
         this.host = host;
         this.port = port;
-        if (net.isIPv6(host)) {
-            this.type = 6;
-        } else {
-            this.type = 4;
-        }
+        this.type = net.isIP(host);
     }
 
     readData(input: DataInput): any {

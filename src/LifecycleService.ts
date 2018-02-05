@@ -16,6 +16,8 @@
 
 import {EventEmitter} from 'events';
 import HazelcastClient from './HazelcastClient';
+import {ImportConfig} from './config/ImportConfig';
+import * as Util from './Util';
 
 /**
  * Lifecycle events.
@@ -54,15 +56,17 @@ export class LifecycleService extends EventEmitter {
         super();
         this.setMaxListeners(0);
         this.client = client;
-        var listeners: Function[] = [];
-        try {
-            listeners = client.getConfig().listeners.lifecycle;
-            listeners.forEach((listener) => {
-                this.on(LifecycleEvent.name, listener);
-            });
-        } catch (err) {
-            //There are no lifecyle listeners in config
-        }
+        let listeners = client.getConfig().listeners.lifecycle;
+        listeners.forEach((listener) => {
+            this.on(LifecycleEvent.name, listener);
+        });
+        let listenerConfgs = client.getConfig().listenerConfigs;
+        listenerConfgs.forEach((importConfig : ImportConfig) => {
+            let path = importConfig.path;
+            let exportedName = importConfig.exportedName;
+            let listener = Util.loadNameFromPath(path, exportedName);
+            this.on(LifecycleEvent.name, listener);
+        });
         this.emit(LifecycleEvent.name, LifecycleEvent.starting);
     }
 

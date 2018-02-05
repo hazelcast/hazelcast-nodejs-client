@@ -23,6 +23,8 @@ import {MorphingPortableReader} from './MorphingPortableReader';
 import {ClassDefinition, FieldType} from './ClassDefinition';
 import {DefaultPortableWriter} from './DefaultPortableWriter';
 import * as Long from 'long';
+import {SerializationConfig} from '../../config/SerializationConfig';
+import * as Path from 'path';
 
 export class PortableSerializer implements Serializer {
 
@@ -30,10 +32,17 @@ export class PortableSerializer implements Serializer {
     private factories: {[id: number]: PortableFactory};
     private service: SerializationService;
 
-    constructor(service: SerializationService, portableFactories: {[id: number]: PortableFactory}, portableVersion: number) {
+    constructor(service: SerializationService, serializationConfig: SerializationConfig) {
         this.service = service;
-        this.portableContext = new PortableContext(this.service, portableVersion);
-        this.factories = portableFactories;
+        this.portableContext = new PortableContext(this.service, serializationConfig.portableVersion);
+        this.factories = serializationConfig.portableFactories;
+        let factoryConfigs = serializationConfig.portableFactoryConfigs;
+        for (let id in factoryConfigs) {
+            let exportedName = factoryConfigs[id].exportedName;
+            let path = factoryConfigs[id].path;
+            let factoryConstructor = require(Path.resolve(require.main.filename, path))[exportedName];
+            this.factories[id] = new factoryConstructor();
+        }
     }
 
     getId(): number {

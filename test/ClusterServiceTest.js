@@ -18,6 +18,7 @@ var Controller = require('./RC');
 var expect = require('chai').expect;
 var HazelcastClient = require('../.').Client;
 var Config = require('../.').Config;
+var Address = require('../.').Address;
 var Promise = require('bluebird');
 var Address = require('../.').Address;
 
