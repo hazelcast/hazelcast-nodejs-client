@@ -1,0 +1,14 @@
+{
+    "network": {
+    "ssl": {
+        "enabled": true,
+            "factory": {
+                "exportedName": "BsicSSLOponsFary",
+                "properties": {
+                    "caPath": "ca.pem",
+                    "certPath": "cert.pem"
+                }
+            }
+        }
+    }
+}

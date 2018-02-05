@@ -24,6 +24,8 @@ import {ConnectionAuthenticator} from './ConnectionAuthenticator';
 import Address = require('../Address');
 import * as net from 'net';
 import * as tls from 'tls';
+import {loadNameFromPath} from '../Util';
+import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
 
 const EMIT_CONNECTION_CLOSED = 'connectionClosed';
 const EMIT_CONNECTION_OPENED = 'connectionOpened';
@@ -103,6 +105,18 @@ export class ClientConnectionManager extends EventEmitter {
         if (this.client.getConfig().networkConfig.sslOptions) {
             let opts = this.client.getConfig().networkConfig.sslOptions;
             return this.connectTLSSocket(address, opts);
+        } else if (this.client.getConfig().networkConfig.sslOptionsFactoryConfig) {
+            let factoryConfig = this.client.getConfig().networkConfig.sslOptionsFactoryConfig;
+            let factoryProperties = this.client.getConfig().networkConfig.sslOptionsFactoryProperties;
+            let factory: any;
+            if (factoryConfig.path) {
+                factory = new (loadNameFromPath(factoryConfig.path, factoryConfig.exportedName))();
+            } else {
+                factory = new BasicSSLOptionsFactory();
+            }
+            return factory.init(factoryProperties).then(() => {
+                return this.connectTLSSocket(address, factory.getSSLOptions());
+            });
         } else {
             return this.connectNetSocket(address);
         }

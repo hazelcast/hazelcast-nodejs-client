@@ -17,7 +17,7 @@
 import {SerializationService, SerializationServiceV1} from './serialization/SerializationService';
 import {InvocationService} from './invocation/InvocationService';
 import {ListenerService} from './ListenerService';
-import {ClientConfig} from './Config';
+import {ClientConfig} from './config/Config';
 import * as Promise from 'bluebird';
 import {IMap} from './proxy/IMap';
 import {ISet} from './proxy/ISet';
@@ -43,6 +43,7 @@ import {ISemaphore} from './proxy/ISemaphore';
 import {IAtomicLong} from './proxy/IAtomicLong';
 import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
 import {RepairingTask} from './nearcache/RepairingTask';
+import {ConfigBuilder} from './config/ConfigBuilder';
 
 export default class HazelcastClient {
 
@@ -66,8 +67,16 @@ export default class HazelcastClient {
      * @returns a new client instance
      */
     public static newHazelcastClient(config?: ClientConfig): Promise<HazelcastClient> {
-        var client: HazelcastClient = new HazelcastClient(config);
-        return client.init();
+        if (config == null) {
+            let configBuilder = new ConfigBuilder();
+            return configBuilder.loadConfig().then(() => {
+                let client = new HazelcastClient(configBuilder.build());
+                return client.init();
+            });
+        } else {
+            let client = new HazelcastClient(config);
+            return client.init();
+        }
     }
 
     constructor(config?: ClientConfig) {
@@ -75,7 +84,7 @@ export default class HazelcastClient {
             this.config = config;
         }
 
-        LoggingService.initialize(this.config.properties['hazelcast.logging']);
+        LoggingService.initialize(<string>this.config.properties['hazelcast.logging']);
         this.loggingService = LoggingService.getLoggingService();
         this.invocationService = new InvocationService(this);
         this.listenerService = new ListenerService(this);

@@ -45,11 +45,10 @@ export class LoggingService {
     }
 
     static getLoggingService(): LoggingService {
-        if (LoggingService.loggingService != null) {
-            return LoggingService.loggingService;
-        } else {
-            throw new IllegalStateError('LoggingService was not initialized');
+        if (LoggingService.loggingService == null) {
+            LoggingService.initialize(null);
         }
+        return LoggingService.loggingService;
     }
 
     static initialize(loggerModule: string | ILogger = null) {
