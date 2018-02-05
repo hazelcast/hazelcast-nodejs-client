@@ -15,7 +15,7 @@
  */
 
 import HazelcastClient from './HazelcastClient';
-import * as Config from './Config';
+import * as Config from './config/Config';
 import {ClientInfo} from './ClientInfo';
 import {IMap} from './proxy/IMap';
 import * as Predicates from './core/Predicate';
@@ -24,6 +24,7 @@ import TopicOverloadPolicy = require('./proxy/topic/TopicOverloadPolicy');
 import * as HazelcastErrors from './HazelcastError';
 import {IterationType} from './core/Predicate';
 import * as Aggregators from './aggregation/Aggregators';
+import {ImportConfig} from './config/ImportConfig';
 
 export {
     HazelcastClient as Client,
@@ -35,5 +36,6 @@ export {
     TopicOverloadPolicy,
     HazelcastErrors,
     IterationType,
-    Aggregators
+    Aggregators,
+    ImportConfig
 };

@@ -113,8 +113,8 @@ export class InvocationService {
         } else {
             this.doInvoke = this.invokeNonSmart;
         }
-        this.invocationRetryPauseMillis = this.client.getConfig().properties[PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS];
-        this.invocationTimeoutMillis = this.client.getConfig().properties[PROPERTY_INVOCATION_TIMEOUT_MILLIS];
+        this.invocationRetryPauseMillis = <number>this.client.getConfig().properties[PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS];
+        this.invocationTimeoutMillis = <number>this.client.getConfig().properties[PROPERTY_INVOCATION_TIMEOUT_MILLIS];
         this.isShutdown = false;
     }
 

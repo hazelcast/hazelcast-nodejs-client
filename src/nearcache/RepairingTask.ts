@@ -42,12 +42,12 @@ export class RepairingTask {
     constructor(client: HazelcastClient) {
         this.client = client;
         let config = this.client.getConfig();
-        this.minAllowedReconciliationSeconds = config.properties[PROPERTY_MIN_RECONCILIATION_INTERVAL_SECONDS];
-        let requestedReconciliationSeconds = config.properties[PROPERTY_MAX_RECONCILIATION_INTERVAL_SECONDS];
+        this.minAllowedReconciliationSeconds = <number>config.properties[PROPERTY_MIN_RECONCILIATION_INTERVAL_SECONDS];
+        let requestedReconciliationSeconds = <number>config.properties[PROPERTY_MAX_RECONCILIATION_INTERVAL_SECONDS];
         this.reconcilliationInterval = this.getReconciliationIntervalMillis(requestedReconciliationSeconds);
         this.handlers = new Map<string, RepairingHandler>();
         this.localUuid = this.client.getLocalEndpoint().uuid;
-        this.maxToleratedMissCount = config.properties[PROPERTY_MAX_TOLERATED_MISS_COUNT];
+        this.maxToleratedMissCount = <number>config.properties[PROPERTY_MAX_TOLERATED_MISS_COUNT];
         this.metadataFetcher = new MetadataFetcher(client);
         this.partitionCount = this.client.getPartitionService().getPartitionCount();
     }

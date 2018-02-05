@@ -90,7 +90,9 @@ export class ClusterService extends EventEmitter {
         } else {
             this.knownAddresses = this.client.getConfig().networkConfig.addresses;
         }
-
+        if (this.knownAddresses.length === 0) {
+            this.knownAddresses.push(new Address('127.0.0.1', 5701));
+        }
         var attemptLimit = this.client.getConfig().networkConfig.connectionAttemptLimit;
         var attemptPeriod = this.client.getConfig().networkConfig.connectionAttemptPeriod;
         return this.tryAddresses(0, attemptLimit, attemptPeriod);
