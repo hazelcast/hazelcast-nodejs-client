@@ -19,6 +19,8 @@ import {PagingPredicate} from './serialization/DefaultPredicates';
 import {IterationType} from './core/Predicate';
 import * as assert from 'assert';
 import {Comparator} from './core/Comparator';
+import * as Path from 'path';
+import {JsonConfigLocator} from './config/JsonConfigLocator';
 export function assertNotNull(v: any) {
     assert.notEqual(v, null, 'Non null value expected.');
 }
@@ -108,6 +110,84 @@ export function copyObjectShallow<T>(obj: T): T {
         return newObj;
     }
     assert(false, 'Object should be undefined or type of object.');
+}
+
+export function tryGetBoolean(val: any): boolean {
+    if (typeof val === 'boolean') {
+        return val;
+    } else {
+        throw new RangeError(val + ' is not a boolean.');
+    }
+}
+
+export function tryGetNumber(val: any): number {
+    if (typeof val === 'number') {
+        return val;
+    } else {
+        throw new RangeError(val + ' is not a number.');
+    }
+}
+
+export function tryGetArray(val: any): Array<any> {
+    if (Array.isArray(val)) {
+        return val;
+    } else {
+        throw new RangeError(val + ' is not an array.');
+    }
+}
+
+export function tryGetString(val: any): string {
+    if (typeof val === 'string') {
+        return val;
+    } else {
+        throw new RangeError(val + ' is not a string.');
+    }
+}
+
+export function getStringOrUndefined(val: any) {
+    try {
+        return tryGetString(val);
+    } catch (e) {
+        return undefined;
+    }
+}
+
+export function getBooleanOrUndefined(val: any) {
+    try {
+        return tryGetBoolean(val);
+    } catch (e) {
+        return undefined;
+    }
+}
+
+export function tryGetEnum<T>(enumClass: any | {[index: string]: number}, str: string): T {
+    return <any>enumClass[str.toUpperCase()];
+}
+
+export function resolvePath(path: string): string {
+    let basePath: string;
+    if (process.env[JsonConfigLocator.ENV_VARIABLE_NAME]) {
+        basePath = Path.dirname(process.env[JsonConfigLocator.ENV_VARIABLE_NAME]);
+    } else {
+        basePath = process.cwd();
+    }
+    return Path.resolve(basePath, path);
+}
+
+export function loadNameFromPath(path: string, exportedName: string): any {
+    return require(resolvePath(path))[exportedName];
+}
+
+export function mergeJson(base: any, other: any): void {
+    for (let key in other) {
+        if (Array.isArray(base[key]) && Array.isArray(other[key])) {
+            base[key] = base[key].concat(other[key]);
+        } else if (typeof base[key] === 'object' && typeof other[key] === 'object') {
+            mergeJson(base[key], other[key]);
+        } else {
+            base[key] = other[key];
+        }
+    }
 }
 
 function createComparator(iterationType: IterationType): Comparator  {

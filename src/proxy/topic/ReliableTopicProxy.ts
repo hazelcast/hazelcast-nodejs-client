@@ -22,7 +22,7 @@ import {IRingbuffer} from '../IRingbuffer';
 import {Address} from '../../index';
 import {UuidUtil} from '../../util/UuidUtil';
 import {ReliableTopicListenerRunner} from './ReliableTopicListenerRunner';
-import {ReliableTopicConfig} from '../../Config';
+import {ReliableTopicConfig} from '../../config/ReliableTopicConfig';
 import {RawTopicMessage} from './RawTopicMessage';
 import {SerializationService} from '../../serialization/SerializationService';
 import {OverflowPolicy} from '../../core/OverflowPolicy';

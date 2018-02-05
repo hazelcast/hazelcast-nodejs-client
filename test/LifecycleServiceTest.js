@@ -57,6 +57,28 @@ describe('LifecycleService', function() {
         });
     });
 
+    it('client should emit starting, started, shuttingDown and shutdown events in order (via import config)', function(done) {
+        var cfg = new Config.ClientConfig();
+        var expectedState = 'starting';
+        exports.lifecycleListener = function(state) {
+            if (state === 'starting' && expectedState === 'starting') {
+                expectedState = 'started'
+            } else if (state === 'started' && expectedState === 'started') {
+                expectedState = 'shuttingDown';
+            } else if (state === 'shuttingDown' && expectedState === 'shuttingDown') {
+                expectedState = 'shutdown';
+            } else if (state === 'shutdown' && expectedState === 'shutdown') {
+                done();
+            } else {
+                done('Got lifecycle event ' + state + ' instead of ' + expectedState);
+            }
+        };
+        cfg.listenerConfigs.push({path: __filename, exportedName: 'lifecycleListener'});
+        HazelcastClient.newHazelcastClient(cfg).then(function(client) {
+            client.shutdown();
+        });
+    });
+
     it('event listener should get shuttingDown and shutdown events when added after startup', function(done) {
         var expectedState = 'shuttingDown';
         HazelcastClient.newHazelcastClient().then(function(client) {

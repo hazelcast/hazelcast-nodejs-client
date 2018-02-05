@@ -1,0 +1,15 @@
+{
+    "nearCaches": [
+        {
+            "name": "nc-map2",
+            "invalidateOnChange": false,
+            "maxIdleSeconds": 2,
+            "inMemoryFormat": "object",
+            "timeToLiveSeconds": 3,
+            "evictionPolicy": "lru",
+            "evictionMaxSize": 3000,
+            "evictionSamplingCount": 4,
+            "evictionSamplingPoolSize": 8
+        }
+    ]
+}

@@ -25,6 +25,7 @@ var Config = require('../..').Config;
 var HzErrors = require('../..').HazelcastErrors;
 var Promise = require('bluebird');
 var markEnterprise = require('../Util').markEnterprise;
+var Path = require('path');
 
 describe('SSL Client Authentication Test', function () {
     var cluster;
@@ -37,12 +38,7 @@ describe('SSL Client Authentication Test', function () {
         markEnterprise(this);
     });
 
-    afterEach(function () {
-        this.timeout(4000);
-        return Controller.shutdownCluster(cluster.id);
-    });
-
-    function createMemberWithXML(xmlFile) {
+    function createMemberWithXML() {
         return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast-ssl.xml', 'utf8')).then(function(cl) {
             cluster = cl;
             return Controller.startMember(cluster.id);
@@ -52,12 +48,12 @@ describe('SSL Client Authentication Test', function () {
         });
     }
 
-    function createClientConfigWithSSLOpts(key, ca) {
+    function createClientConfigWithSSLOptsUsingProgrammaticConfiguration(key, ca) {
         var sslOpts = {
             servername: 'foo.bar.com',
             rejectUnauthorized: true,
-            cert: fs.readFileSync(__dirname + key),
-            ca: fs.readFileSync(__dirname + ca)
+            cert: fs.readFileSync(Path.join(__dirname, key)),
+            ca: fs.readFileSync(Path.join(__dirname, ca))
         };
         var cfg = new Config.ClientConfig();
         cfg.networkConfig.sslOptions = sslOpts;
@@ -65,61 +61,95 @@ describe('SSL Client Authentication Test', function () {
         return cfg;
     }
 
-    it('ma:required, they both know each other should connect', function () {
-        return createMemberWithXML(maRequiredXML).then(function () {
-            return Client.newHazelcastClient(createClientConfigWithSSLOpts('/client1.pem', '/server1.pem'));
-        }).then(function(client) {
-            client.shutdown();
+    function createClientConfigWithSSLOptsUsingBasicSSLOptionsFactory(key, ca) {
+        var cfg = new Config.ClientConfig();
+        cfg.networkConfig.sslOptionsFactoryConfig = {
+            exportedName: 'BasicSSLOptionsFactory'
+        };
+        cfg.networkConfig.sslOptionsFactoryProperties = {
+            caPath: Path.resolve(__dirname, ca),
+            certPath: Path.resolve(__dirname, key),
+            rejectUnauthorized: true,
+            servername: 'foo.bar.com'
+        };
+        cfg.networkConfig.connectionAttemptLimit = 1;
+        return cfg;
+    }
+
+    [false, true].forEach(function (value) {
+        if (value) {
+            var createClientConfigWithSSLOpts = createClientConfigWithSSLOptsUsingBasicSSLOptionsFactory;
+            var title = 'via BasicSSLOptionsFactory';
+        } else {
+            var createClientConfigWithSSLOpts = createClientConfigWithSSLOptsUsingProgrammaticConfiguration;
+            var title = 'via programmatic configuration';
+        }
+
+        describe(title, function () {
+
+            afterEach(function () {
+                this.timeout(4000);
+                return Controller.shutdownCluster(cluster.id);
+            });
+
+            it('ma:required, they both know each other should connect', function () {
+                return createMemberWithXML(maRequiredXML).then(function () {
+                    return Client.newHazelcastClient(createClientConfigWithSSLOpts('./client1.pem', './server1.pem'));
+                }).then(function(client) {
+                    client.shutdown();
+                });
+            });
+
+            it('ma:required, server knows client, client does not know server should fail', function () {
+                this.timeout(5000);
+                return createMemberWithXML(maRequiredXML).then(function () {
+                    return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('./client1.pem', './server2.pem')))
+                        .to.be.rejectedWith(HzErrors.IllegalStateError);
+                });
+            });
+
+            it('ma:required, server does not know client, client knows server should fail', function () {
+                return createMemberWithXML(maRequiredXML).then(function () {
+                    return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('./client2.pem', './server1.pem'))).to.throw;
+                });
+            });
+
+            it('ma:required, neither one knows the other should fail', function () {
+                return createMemberWithXML(maRequiredXML).then(function () {
+                    return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('./client2.pem', './server2.pem'))).to.throw;
+                });
+            });
+
+            it('ma:optional, they both know each other should connect', function () {
+                return createMemberWithXML(maOptionalXML).then(function () {
+                    return Client.newHazelcastClient(createClientConfigWithSSLOpts('./client1.pem', './server1.pem'));
+                }).then(function(client) {
+                    client.shutdown();
+                });
+            });
+
+            it('ma:optional, server knows client, client does not know server should fail', function () {
+                return createMemberWithXML(maRequiredXML).then(function () {
+                    return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('./client1.pem', './server2.pem')))
+                        .to.be.rejectedWith(HzErrors.IllegalStateError);
+                });
+            });
+
+            it('ma:optional, server does not know client, client knows server should connect', function () {
+                return createMemberWithXML(maOptionalXML).then(function () {
+                    return Client.newHazelcastClient(createClientConfigWithSSLOpts('./client2.pem', './server1.pem'));
+                }).then(function(cl) {
+                    client = cl;
+                })
+            });
+
+            it('ma:optional, neither knows the otherr should fail', function () {
+                return createMemberWithXML(maRequiredXML).then(function () {
+                    return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('./client2.pem', './server2.pem')))
+                        .to.be.rejectedWith(HzErrors.IllegalStateError);
+                });
+            });
         });
     });
 
-    it('ma:required, server knows client, client does not know server should fail', function () {
-        this.timeout(5000);
-        return createMemberWithXML(maRequiredXML).then(function () {
-            return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('/client1.pem', '/server2.pem')))
-                .to.be.rejectedWith(HzErrors.IllegalStateError);
-        });
-    });
-
-    it('ma:required, server does not know client, client knows server should fail', function () {
-        return createMemberWithXML(maRequiredXML).then(function () {
-            return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('/client2.pem', '/server1.pem'))).to.throw;
-        });
-    });
-
-    it('ma:required, neither one knows the other should fail', function () {
-        return createMemberWithXML(maRequiredXML).then(function () {
-            return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('/client2.pem', '/server2.pem'))).to.throw;
-        });
-    });
-
-    it('ma:optional, they both know each other should connect', function () {
-        return createMemberWithXML(maOptionalXML).then(function () {
-            return Client.newHazelcastClient(createClientConfigWithSSLOpts('/client1.pem', '/server1.pem'));
-        }).then(function(client) {
-            client.shutdown();
-        });
-    });
-
-    it('ma:optional, server knows client, client does not know server should fail', function () {
-        return createMemberWithXML(maRequiredXML).then(function () {
-            return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('/client1.pem', '/server2.pem')))
-                .to.be.rejectedWith(HzErrors.IllegalStateError);
-        });
-    });
-
-    it('ma:optional, server does not know client, client knows server should connect', function () {
-        return createMemberWithXML(maOptionalXML).then(function () {
-            return Client.newHazelcastClient(createClientConfigWithSSLOpts('/client2.pem', '/server1.pem'));
-        }).then(function(cl) {
-            client = cl;
-        })
-    });
-
-    it('ma:optional, neither knows the otherr should fail', function () {
-        return createMemberWithXML(maRequiredXML).then(function () {
-            return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('/client2.pem', '/server2.pem')))
-                .to.be.rejectedWith(HzErrors.IllegalStateError);
-        });
-    });
 });

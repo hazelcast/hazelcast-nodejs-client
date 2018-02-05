@@ -15,7 +15,7 @@
  */
 
 import {Data} from '../serialization/Data';
-import {EvictionPolicy, InMemoryFormat, NearCacheConfig} from '../Config';
+import {NearCacheConfig} from '../config/NearCacheConfig';
 import {shuffleArray} from '../Util';
 import {SerializationService} from '../serialization/SerializationService';
 import {DataKeyedHashMap} from '../DataStoreHashMap';
@@ -23,6 +23,8 @@ import {StaleReadDetector} from './StaleReadDetector';
 import * as AlwaysFreshStaleReadDetectorImpl from './AlwaysFreshStaleReadDetectorImpl';
 import {DataRecord} from './DataRecord';
 import * as Long from 'long';
+import {InMemoryFormat} from '../config/InMemoryFormat';
+import {EvictionPolicy} from '../config/EvictionPolicy';
 
 export interface NearCacheStatistics {
     evictedCount: number;

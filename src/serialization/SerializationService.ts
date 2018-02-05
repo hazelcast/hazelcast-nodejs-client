@@ -16,7 +16,7 @@
 
 import {Data, DataOutput, DataInput} from './Data';
 import {HeapData, DATA_OFFSET} from './HeapData';
-import {SerializationConfig} from '../Config';
+import {SerializationConfig} from '../config/SerializationConfig';
 import {ObjectDataOutput, ObjectDataInput, PositionalObjectDataOutput} from './ObjectData';
 import {
     StringSerializer, BooleanSerializer, DoubleSerializer, NullSerializer,
@@ -56,15 +56,15 @@ export class SerializationServiceV1 implements SerializationService {
     private registry: {[id: number]: Serializer};
     private serializerNameToId: {[name: string]: number};
     private numberType: string;
-    private serialiationConfig: SerializationConfig;
+    private serializationConfig: SerializationConfig;
 
     constructor(serializationConfig: SerializationConfig) {
-        this.serialiationConfig = serializationConfig;
+        this.serializationConfig = serializationConfig;
         this.registry = {};
         this.serializerNameToId = {};
         this.registerDefaultSerializers();
-        this.registerCustomSerializers(serializationConfig.customSerializers);
-        this.registerGlobalSerializer(serializationConfig.globalSerializer);
+        this.registerCustomSerializers();
+        this.registerGlobalSerializer();
     }
 
     private isData(object: any): boolean {
@@ -79,7 +79,7 @@ export class SerializationServiceV1 implements SerializationService {
         if (this.isData(object)) {
             return <Data>object;
         }
-        var dataOutput: DataOutput = new PositionalObjectDataOutput(1, this, this.serialiationConfig.isBigEndian);
+        var dataOutput: DataOutput = new PositionalObjectDataOutput(1, this, this.serializationConfig.isBigEndian);
         var serializer = this.findSerializerFor(object);
         //Check if object is partition aware
         if (object != null && object.getPartitionKey) {
@@ -102,7 +102,7 @@ export class SerializationServiceV1 implements SerializationService {
             return data;
         }
         var serializer = this.findSerializerById(data.getType());
-        var dataInput = new ObjectDataInput(data.toBuffer(), DATA_OFFSET, this, this.serialiationConfig.isBigEndian);
+        var dataInput = new ObjectDataInput(data.toBuffer(), DATA_OFFSET, this, this.serializationConfig.isBigEndian);
         return serializer.read(dataInput);
     }
 
@@ -247,14 +247,21 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('!json', new JsonSerializer());
         this.registerSerializer(
             '!portable',
-            new PortableSerializer(this, this.serialiationConfig.portableFactories, this.serialiationConfig.portableVersion)
+            new PortableSerializer(this, this.serializationConfig)
         );
     }
 
     protected registerIdentifiedFactories() {
         var factories: {[id: number]: IdentifiedDataSerializableFactory} = {};
-        for (var id in this.serialiationConfig.dataSerializableFactories) {
-            factories[id] = this.serialiationConfig.dataSerializableFactories[id];
+        for (var id in this.serializationConfig.dataSerializableFactories) {
+            factories[id] = this.serializationConfig.dataSerializableFactories[id];
+        }
+        let factoryConfigs = this.serializationConfig.dataSerializableFactoryConfigs;
+        for (let id in factoryConfigs) {
+            let path = factoryConfigs[id].path;
+            let exportedName = factoryConfigs[id].exportedName;
+            let factoryConstructor = Util.loadNameFromPath(path, exportedName);
+            factories[id] = new factoryConstructor();
         }
         factories[PREDICATE_FACTORY_ID] = new PredicateFactory(DefaultPredicates);
         factories[RELIABLE_TOPIC_MESSAGE_FACTORY_ID] = new ReliableTopicMessageFactory();
@@ -263,15 +270,32 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('identified', new IdentifiedDataSerializableSerializer(factories));
     }
 
-    protected registerCustomSerializers(cutomSerializersArray: any[]) {
+    protected registerCustomSerializers() {
+        let customSerializersArray: any[] = this.serializationConfig.customSerializers;
         var self = this;
-        cutomSerializersArray.forEach(function(candidate) {
+        customSerializersArray.forEach(function(candidate) {
             self.assertValidCustomSerializer(candidate);
             self.registerSerializer('!custom' + candidate.getId(), candidate);
         });
+        let customSerializerConfigs = this.serializationConfig.customSerializerConfigs;
+        for (let typeId in customSerializerConfigs) {
+            let serializerConfig = customSerializerConfigs[typeId];
+            let customSerializer = new (Util.loadNameFromPath(serializerConfig.path, serializerConfig.exportedName))();
+            this.registerSerializer('!custom' + typeId, customSerializer);
+        }
     }
 
-    protected registerGlobalSerializer(candidate: any) {
+    protected registerGlobalSerializer() {
+        let candidate: any = null;
+        if (this.serializationConfig.globalSerializerConfig != null) {
+            let exportedName = this.serializationConfig.globalSerializerConfig.exportedName;
+            let path = this.serializationConfig.globalSerializerConfig.path;
+            let serializerFactory = Util.loadNameFromPath(path, exportedName);
+            candidate = new serializerFactory();
+        }
+        if (candidate == null) {
+            candidate = this.serializationConfig.globalSerializer;
+        }
         if (candidate == null) {
             return;
         }
@@ -304,7 +328,7 @@ export class SerializationServiceV1 implements SerializationService {
     protected findSerializerByName(name: string, isArray: boolean): Serializer {
         var convertedName: string;
         if (name === 'number') {
-            convertedName = this.serialiationConfig.defaultNumberType;
+            convertedName = this.serializationConfig.defaultNumberType;
         } else {
             convertedName = name;
         }

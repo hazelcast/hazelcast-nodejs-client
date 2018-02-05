@@ -26,8 +26,16 @@ class Address implements IdentifiedDataSerializable {
     type: number;
 
     constructor(host?: string, port?: number) {
-        this.host = host;
-        this.port = port;
+        if (host != null && port == null) {
+            let parts = host.split(':');
+            this.host = parts[0];
+            if (parts.length > 1) {
+                this.port = Number(parts[1]);
+            }
+        } else {
+            this.host = host;
+            this.port = port;
+        }
         if (net.isIPv6(host)) {
             this.type = 6;
         } else {

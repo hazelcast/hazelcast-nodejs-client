@@ -21,14 +21,17 @@ import Address = require('../Address');
 import * as Promise from 'bluebird';
 import {BitsUtil} from '../BitsUtil';
 import {LoggingService} from '../logging/LoggingService';
-import {ClientNetworkConfig} from '../Config';
+import {ClientNetworkConfig} from '../config/ClientNetworkConfig';
 import {ClientConnectionManager} from './ClientConnectionManager';
 import {BuildMetadata} from '../BuildMetadata';
+import {loadNameFromPath} from '../Util';
+import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
+import {HazelcastError} from '../HazelcastError';
 
 export class ClientConnection {
     address: Address;
     localAddress: Address;
-    socket: stream.Duplex;
+    socket: net.Socket;
     lastRead: number;
     heartbeating = true;
 
@@ -68,6 +71,32 @@ export class ClientConnection {
         return this.address;
     }
 
+    protected createSocket(conCallback: () => void): Promise<void> {
+        if (this.clientNetworkConfig.sslOptions) {
+            var sslSocket = tls.connect(this.address.port, this.address.host, this.clientNetworkConfig.sslOptions, conCallback);
+            this.socket = sslSocket;
+            return Promise.resolve();
+        } else if (this.clientNetworkConfig.sslOptionsFactoryConfig) {
+            let factoryConfig = this.clientNetworkConfig.sslOptionsFactoryConfig;
+            let factoryProperties = this.clientNetworkConfig.sslOptionsFactoryProperties;
+            let factory: any;
+                if (factoryConfig.path) {
+                    factory = new (loadNameFromPath(factoryConfig.path, factoryConfig.exportedName))();
+                } else {
+                    factory = new BasicSSLOptionsFactory();
+                }
+            return factory.init(factoryProperties).then(() => {
+                let sslSocket = tls.connect(this.address.port, this.address.host, factory.getSSLOptions(), conCallback);
+                this.socket = sslSocket;
+                return;
+            });
+        } else {
+            var netSocket = net.connect(this.address.port, this.address.host, conCallback);
+            this.socket = netSocket;
+            return Promise.resolve();
+        }
+    }
+
     /**
      * Connects to remote server and sets the hazelcast protocol.
      * @returns
@@ -83,25 +112,19 @@ export class ClientConnection {
             ready.resolve(this);
         };
 
-        if (this.clientNetworkConfig.sslOptions) {
-            var sslSocket = tls.connect(this.address.port, this.address.host, this.clientNetworkConfig.sslOptions, conCallback);
-            this.localAddress = new Address(sslSocket.address().address, sslSocket.address().port);
-            this.socket = sslSocket as stream.Duplex;
-        } else {
-            var netSocket = net.connect(this.address.port, this.address.host, conCallback);
-            this.localAddress = new Address(netSocket.localAddress, netSocket.localPort);
-            this.socket = netSocket as stream.Duplex;
-        }
-
-        this.socket.on('error', (e: any) => {
-            this.logging.warn('ClientConnection',
-                'Could not connect to address ' + this.address.toString(), e);
+        this.createSocket(conCallback).then(() => {
+            this.localAddress = new Address(this.socket.localAddress, this.socket.localPort);
+            this.socket.on('error', (e: any) => {
+                this.logging.warn('ClientConnection',
+                    'Could not connect to address ' + this.address.toString(), e);
+                ready.reject(e);
+                if (e.code === 'EPIPE' || e.code === 'ECONNRESET') {
+                    this.connectionManager.destroyConnection(this.address);
+                }
+            });
+        }).catch((e) => {
             ready.reject(e);
-            if (e.code === 'EPIPE' || e.code === 'ECONNRESET') {
-                this.connectionManager.destroyConnection(this.address);
-            }
         });
-
         return ready.promise;
     }
 
