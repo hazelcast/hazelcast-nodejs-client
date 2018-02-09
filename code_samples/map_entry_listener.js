@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-var Client = require('../.').Client;
+var Client = require('hazelcast-client').Client;
 var listener = {
     added: function(key, oldVal, newVal) {
         console.log('added key: ' + key + ', old value: ' + oldVal + ', new value: ' + newVal);

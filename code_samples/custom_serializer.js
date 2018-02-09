@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-var Client = require('../.').Client;
-var Config = require('../.').Config;
+var Client = require('hazelcast-client').Client;
+var Config = require('hazelcast-client').Config;
 var cfg = new Config.ClientConfig();
 
 function TimeOfDay(hour, minute, second) {
