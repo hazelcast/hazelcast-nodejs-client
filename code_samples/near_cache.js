@@ -1,5 +1,5 @@
-var Client = require('../.').Client;
-var Config = require('../.').Config;
+var Client = require('hazelcast-client').Client;
+var Config = require('hazelcast-client').Config;
 
 var nearCachedMapName = 'nearCachedMap';
 var regularMapName = 'reqularMap';

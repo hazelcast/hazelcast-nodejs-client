@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-var Client = require('../.').Client;
+var Client = require('hazelcast-client').Client;
 Client.newHazelcastClient().then(function(hazelcastClient) {
     hazelcastClient.addDistributedObjectListener(function(serviceName, name, event) {
         console.log('Distributed object event >>> ' + JSON.stringify({serviceName: serviceName, name: name, event: event}));

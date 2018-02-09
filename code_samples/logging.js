@@ -15,8 +15,8 @@
  */
 
 var winston = require('winston');
-var Config = require('../.').Config;
-var HazelcastClient = require('../.').Client;
+var Config = require('hazelcast-client').Config;
+var HazelcastClient = require('hazelcast-client').Client;
 
 if(process.argv.length != 3){
     console.log('Run as node logging.js [logger]');
