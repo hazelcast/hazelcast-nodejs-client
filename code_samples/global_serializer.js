@@ -19,8 +19,8 @@
  * We will use Mousse serializer to serialize our self referring objects.
  */
 var mousse = require('mousse');
-var Client = require('../.').Client;
-var Config = require('../.').Config;
+var Client = require('hazelcast-client').Client;
+var Config = require('hazelcast-client').Config;
 var cfg = new Config.ClientConfig();
 cfg.serializationConfig.globalSerializer = {
     mousseSerialize: mousse.serialize,

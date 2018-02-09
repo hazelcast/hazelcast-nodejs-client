@@ -14,56 +14,30 @@
  * limitations under the License.
  */
 
-var Client = require('../.').Client;
-var insertPerson = function (map, key, val, ttl) {
-    return map.put(key, val, ttl).then(function(previousVal) {
-        console.log('Put key: ' + key + ', value: ' + JSON.stringify(val) + ',  previous value: ' + JSON.stringify(previousVal));
-    });
-};
-
-var removePerson = function (map, key) {
-    return map.remove(key).then(function() {
-        console.log('Removed ' + key);
-    });
-};
-
-var getPerson = function (map, key) {
-    return map.get(key).then(function(val) {
-        console.log('Person with id ' + key + ': ' + JSON.stringify(val));
-    });
-};
-
-var shutdownHz = function(client) {
-    return client.shutdown();
-};
+var Client = require('hazelcast-client').Client;
 
 Client.newHazelcastClient().then(function (hazelcastClient) {
-    var map = hazelcastClient.getMap('people');
-    var john = {firstname: 'John', lastname: 'Doe'};
-    var jane = {firstname: 'Jane', lastname: 'Doe'};
-    //insert
-    insertPerson(map, 1, john)
-        .then(function () {
-            //get
-            return getPerson(map, 1);
-        })
-        .then(function () {
-            //remove
-            return removePerson(map, 1);
-        })
-        .then(function () {
-            //insert with ttl
-            return insertPerson(map, 2, jane, 1000);
-        })
-        .then(function() {
-            return getPerson(map, 2);
-        })
-        .then(function() {
-            //Jane should be erased after 1000 milliseconds
-            setTimeout(function() {
-                getPerson(map, 2).then(function() {
-                    shutdownHz(hazelcastClient);
-                });
-            }, 1000)
-        });
+    var client = hazelcastClient;
+    var map = hazelcastClient.getMap('my-distributed-map');
+
+    map.put('key', 'value').then(function () {
+        return map.get('key');
+    }).then(function (val) {
+        console.log(val);
+
+        return map.remove('key');
+    }).then(function () {
+        return map.put('disappearing-key', 'this string will disappear after ttl', 1000);
+    }).then(function (value) {
+        return map.get('disappearing-key');
+    }).then(function (value) {
+        console.log(value);
+
+        setTimeout(function () {
+            map.get('disappearing-key').then(function (value) {
+                console.log(value);
+                return client.shutdown();
+            });
+        }, 1000)
+    });
 });

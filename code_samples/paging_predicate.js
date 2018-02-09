@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-var Client = require('../.').Client;
-var Config = require('../.').Config;
-var Predicates = require('../.').Predicates;
+var Client = require('hazelcast-client').Client;
+var Config = require('hazelcast-client').Config;
+var Predicates = require('hazelcast-client').Predicates;
 var cfg = new Config.ClientConfig();
 
 //This comparator is both a comparator and an IdentifiedDataSerializable.
