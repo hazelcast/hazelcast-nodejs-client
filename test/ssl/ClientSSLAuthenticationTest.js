@@ -62,6 +62,7 @@ describe('SSL Client Authentication Test', function () {
         var cfg = new Config.ClientConfig();
         cfg.networkConfig.sslOptions = sslOpts;
         cfg.networkConfig.connectionAttemptLimit = 1;
+        cfg.networkConfig.connectionTimeout = 1000;
         return cfg;
     }
 

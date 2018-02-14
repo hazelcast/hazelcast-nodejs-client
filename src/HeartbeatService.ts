@@ -70,10 +70,10 @@ export class Heartbeat {
         for (let address in estConnections) {
             if ( estConnections[address]) {
                 let conn = estConnections[address];
-                let timeSinceLastRead = new Date().getTime() - conn.lastRead;
+                let timeSinceLastRead = new Date().getTime() - conn.getLastRead();
                 if (timeSinceLastRead > this.heartbeatTimeout) {
-                    if (conn.heartbeating) {
-                        conn.heartbeating = false;
+                    if (conn.isHeartbeating()) {
+                        conn.setHeartbeating(false);
                         this.onHeartbeatStopped(conn);
                     }
                 }
@@ -87,8 +87,8 @@ export class Heartbeat {
                             }
                         });
                 } else {
-                    if (!conn.heartbeating) {
-                        conn.heartbeating = true;
+                    if (!conn.isHeartbeating()) {
+                        conn.setHeartbeating(true);
                         this.onHeartbeatRestored(conn);
                     }
                 }
@@ -98,7 +98,7 @@ export class Heartbeat {
     }
 
     private onHeartbeatStopped(connection: ClientConnection) {
-        this.logger.warn('HeartbeatService', 'Heartbeat stopped on ' + connection.address.toString());
+        this.logger.warn('HeartbeatService', 'Heartbeat stopped on ' + connection.toString());
         this.listeners.forEach((listener) => {
             if (listener.hasOwnProperty('onHeartbeatStopped')) {
                 setImmediate(listener.onHeartbeatStopped.bind(this), connection);
@@ -107,7 +107,7 @@ export class Heartbeat {
     }
 
     private onHeartbeatRestored(connection: ClientConnection) {
-        this.logger.warn('HeartbeatService', 'Heartbeat restored on ' + connection.address.toString());
+        this.logger.warn('HeartbeatService', 'Heartbeat restored on ' + connection.toString());
         this.listeners.forEach((listener) => {
             if (listener.hasOwnProperty('onHeartbeatRestored')) {
                 setImmediate(listener.onHeartbeatRestored.bind(this), connection);

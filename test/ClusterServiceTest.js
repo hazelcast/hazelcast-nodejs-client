@@ -19,11 +19,13 @@ var expect = require('chai').expect;
 var HazelcastClient = require('../.').Client;
 var Config = require('../.').Config;
 var Promise = require('bluebird');
+var Address = require('../.').Address;
 
 describe('ClusterService', function() {
     this.timeout(25000);
     var cluster;
     var ownerMember;
+    var client;
 
     beforeEach(function(done) {
         Controller.createCluster(null, null).then(function(res) {
@@ -102,24 +104,28 @@ describe('ClusterService', function() {
     });
 
     it('should throw with message containing wrong host addresses in config', function() {
-        var configuredAddresses = [
-            {host: '0.0.0.0', port: '5709'},
-            {host: '0.0.0.1', port: '5710'}
+        var cfg = new Config.ClientConfig();
+        cfg.networkConfig.addresses = [
+            new Address('0.0.0.0', 5709),
+            new Address('0.0.0.1', 5710)
         ];
 
-        var cfg = new Config.ClientConfig();
-        cfg.networkConfig.addresses = configuredAddresses;
-
-        return HazelcastClient.newHazelcastClient(cfg).then(function(newClient) {
-            newClient.shutdown();
-            throw new Error('Client falsely started with target addresses: ' +
-                configuredAddresses.map(function(element) {
-                    return element.toString();
-                }).join(', '));
-        }).catch(function (err) {
-            return Promise.all(configuredAddresses.map(function(address) {
+        var falseStart = false;
+        return HazelcastClient.newHazelcastClient(cfg).catch(function (err) {
+            Promise.all(cfg.networkConfig.addresses.map(function(address) {
                 return expect(err.message).to.include(address.toString());
             }));
+        }).then(function(client) {
+            if (client) {
+                falseStart = true;
+                return client.shutdown();
+            } else {
+                return;
+            }
+        }).then(function () {
+            if (falseStart) {
+                throw Error('Client falsely started with wrong addresses')
+            }
         });
     });
 
