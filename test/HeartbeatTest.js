@@ -19,6 +19,7 @@ var HazelcastClient = require('../.').Client;
 var expect = require('chai').expect;
 var Config = require('../.').Config;
 var Util = require('./Util');
+var Address = require('../.').Address;
 
 describe('Heartbeat', function() {
     this.timeout(30000);
@@ -46,13 +47,7 @@ describe('Heartbeat', function() {
             client = resp;
         }).then(function() {
             client.clusterService.on('memberAdded', function(member) {
-                var address = {
-                    host: member.address.host,
-                    port: member.address.port,
-                    toString: function() {
-                        return member.address.host + ':' + member.address.port;
-                    }
-                };
+                var address = new Address(member.address.host, member.address.port);
                 warmUpConnectionToAddressWithRetry(client, address);
             });
             client.heartbeat.addListener({onHeartbeatStopped: function(connection) {

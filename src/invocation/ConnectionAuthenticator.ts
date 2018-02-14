@@ -43,7 +43,7 @@ export class ConnectionAuthenticator {
             .then((msg: ClientMessage) => {
                 var authResponse = ClientAuthenticationCodec.decodeResponse(msg);
                 if (authResponse.status === 0) {
-                    this.connection.address = authResponse.address;
+                    this.connection.setAddress(authResponse.address);
                     this.connection.setConnectedServerVersion(authResponse.serverHazelcastVersion);
                     if (ownerConnection) {
                         this.clusterService.uuid = authResponse.uuid;

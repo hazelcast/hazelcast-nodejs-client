@@ -90,12 +90,10 @@ export class ClusterService extends EventEmitter {
         } else {
             this.knownAddresses = this.client.getConfig().networkConfig.addresses;
         }
-        var deferred = Promise.defer<void>();
+
         var attemptLimit = this.client.getConfig().networkConfig.connectionAttemptLimit;
         var attemptPeriod = this.client.getConfig().networkConfig.connectionAttemptPeriod;
-        this.tryAddressIndex(0, attemptLimit, attemptPeriod, deferred);
-
-        return deferred.promise;
+        return this.tryAddresses(0, attemptLimit, attemptPeriod);
     }
 
     /**
@@ -146,7 +144,7 @@ export class ClusterService extends EventEmitter {
     }
 
     private onConnectionClosed(connection: ClientConnection) {
-        this.logger.warn('ClusterService', 'Connection closed to ' + connection.address.toString());
+        this.logger.warn('ClusterService', 'Connection closed to ' + connection.toString());
         if (connection.isAuthenticatedAsOwner()) {
             this.ownerConnection = null;
             this.connectToCluster().catch(this.client.shutdown.bind(this.client));
@@ -154,50 +152,49 @@ export class ClusterService extends EventEmitter {
     }
 
     private onHeartbeatStopped(connection: ClientConnection): void {
-        this.logger.warn('ClusterService', connection.address.toString() + ' stopped heartbeating.');
+        this.logger.warn('ClusterService', connection.toString() + ' stopped heartbeating.');
         if (connection.isAuthenticatedAsOwner()) {
-            this.client.getConnectionManager().destroyConnection(connection.address);
+            this.client.getConnectionManager().destroyConnection(connection.getAddress());
         }
     }
 
-    private tryAddressIndex(index: number
-        , attemptLimit: number
-        , attemptPeriod: number
-        , deferred: Promise.Resolver<void>) {
-        setImmediate(() => {
-            if (this.knownAddresses.length <= index) {
-                attemptLimit = attemptLimit - 1;
-                if (attemptLimit === 0) {
-                    var error = new IllegalStateError('Unable to connect to any of the following addresses: ' +
-                        this.knownAddresses.map((element: Address) => {
-                            return element.toString();
-                        }).join(', '));
-                    deferred.reject(error);
-                    return;
-                } else {
-                    setTimeout(
-                        this.tryAddressIndex.bind(this, 0, attemptLimit, attemptPeriod, deferred),
-                        attemptPeriod
-                    );
-                }
+    private tryAddresses(index: number, attemptLimit: number, attemptPeriod: number): Promise<void> {
+        if (this.knownAddresses.length <= index) {
+            attemptLimit = attemptLimit - 1;
+            if (attemptLimit === 0) {
+                let error = new IllegalStateError('Unable to connect to any of the following addresses: ' +
+                    this.knownAddresses.map((element: Address) => {
+                        return element.toString();
+                    }).join(', '));
+                return Promise.reject(error);
             } else {
-                var currentAddress = this.knownAddresses[index];
-                this.client.getConnectionManager().getOrConnect(currentAddress, true)
-                    .then((connection: ClientConnection) => {
-                    if (connection == null) {
-                        throw new Error('Could not connect to ' + currentAddress.toString());
-                    }
-                    connection.setAuthneticatedAsOwner(true);
-                    this.ownerConnection = connection;
-                    this.initMemberShipListener().then(() => {
-                        deferred.resolve();
-                    });
-                }).catch((e) => {
-                    this.logger.warn('ClusterService', e);
-                    this.tryAddressIndex(index + 1, attemptLimit, attemptPeriod, deferred);
-                });
+                let deferred = Promise.defer<void>();
+                setTimeout(
+                    () => {
+                        this.tryAddresses(0, attemptLimit, attemptPeriod).then(() => {
+                            deferred.resolve();
+                        }).catch((e) => {
+                            deferred.reject(e);
+                        });
+                    },
+                    attemptPeriod
+                );
+                return deferred.promise;
             }
-        });
+        } else {
+            var currentAddress = this.knownAddresses[index];
+            return this.client.getConnectionManager().getOrConnect(currentAddress, true).then((connection: ClientConnection) => {
+                if (connection == null) {
+                    throw new Error('Could not connect to ' + currentAddress.toString());
+                }
+                connection.setAuthneticatedAsOwner(true);
+                this.ownerConnection = connection;
+                return this.initMemberShipListener();
+            }).catch((e) => {
+                this.logger.warn('ClusterService', e);
+                return this.tryAddresses(index + 1, attemptLimit, attemptPeriod);
+            });
+        }
     }
 
     /**

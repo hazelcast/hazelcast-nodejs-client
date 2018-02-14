@@ -138,7 +138,7 @@ export class ListenerService implements ConnectionHeartbeatListener {
             var response = codec.decodeAddResponse(responseMessage);
             var eventRegistration = new ClientEventRegistration(response, correlationId, invocation.connection, codec);
             this.logger.debug('ListenerService',
-                'Listener ' + userRegistrationKey + ' re-registered on ' + connection.address.toString());
+                'Listener ' + userRegistrationKey + ' re-registered on ' + connection.toString());
 
             deferred.resolve(eventRegistration);
         }).catch((e => {
@@ -194,7 +194,7 @@ export class ListenerService implements ConnectionHeartbeatListener {
                 let response = codec.decodeAddResponse(responseMessage);
                 let clientEventRegistration = new ClientEventRegistration(response, correlationId, invocation.connection, codec);
                 this.logger.debug('ListenerService',
-                    'Listener ' + userRegistrationKey + ' registered on ' + invocation.connection.address.toString());
+                    'Listener ' + userRegistrationKey + ' registered on ' + invocation.connection.toString());
                 connectionsOnUserKey.set(activeConnections[address], clientEventRegistration);
             }).then(() => {
                 deferred.resolve(userRegistrationKey);
@@ -223,7 +223,7 @@ export class ListenerService implements ConnectionHeartbeatListener {
                 registrationsOnUserKey.delete(connection);
                 this.client.getInvocationService().removeEventHandler(eventRegistration.correlationId.low);
                 this.logger.debug('ListenerService',
-                    'Listener ' + userRegistrationKey + ' unregistered from ' + invocation.connection.address.toString());
+                    'Listener ' + userRegistrationKey + ' unregistered from ' + invocation.connection.toString());
                 this.activeRegistrations.delete(userRegistrationKey);
                 this.userRegistrationKeyInformation.delete(userRegistrationKey);
                 deferred.resolve(true);

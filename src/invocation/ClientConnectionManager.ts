@@ -22,6 +22,8 @@ import {ClientNotActiveError, HazelcastError} from '../HazelcastError';
 import {ClientConnection} from './ClientConnection';
 import {ConnectionAuthenticator} from './ConnectionAuthenticator';
 import Address = require('../Address');
+import * as net from 'net';
+import * as tls from 'tls';
 
 const EMIT_CONNECTION_CLOSED = 'connectionClosed';
 const EMIT_CONNECTION_OPENED = 'connectionOpened';
@@ -52,48 +54,97 @@ export class ClientConnectionManager extends EventEmitter {
      * @returns {Promise<ClientConnection>|Promise<T>}
      */
     getOrConnect(address: Address, ownerConnection: boolean = false): Promise<ClientConnection> {
-        var addressIndex = address.toString();
-        var result: Promise.Resolver<ClientConnection> = Promise.defer<ClientConnection>();
+        let addressIndex = address.toString();
+        let connectionResolver: Promise.Resolver<ClientConnection> = Promise.defer<ClientConnection>();
 
-        var establishedConnection = this.establishedConnections[addressIndex];
-
+        let establishedConnection = this.establishedConnections[addressIndex];
         if (establishedConnection) {
-            result.resolve(establishedConnection);
-            return result.promise;
+            connectionResolver.resolve(establishedConnection);
+            return connectionResolver.promise;
         }
 
-        var pendingConnection = this.pendingConnections[addressIndex];
-
+        let pendingConnection = this.pendingConnections[addressIndex];
         if (pendingConnection) {
             return pendingConnection.promise;
         }
 
-        this.pendingConnections[addressIndex] = result;
+        this.pendingConnections[addressIndex] = connectionResolver;
 
-        var clientConnection = new ClientConnection(this.client.getConnectionManager(), address,
-            this.client.getConfig().networkConfig);
+        let processResponseCallback = (data: Buffer) => {
+            this.client.getInvocationService().processResponse(data);
+        };
 
-        clientConnection.connect().then(() => {
-            clientConnection.registerResponseCallback((data: Buffer) => {
-                this.client.getInvocationService().processResponse(data);
+        this.triggerConnect(address).then((socket: net.Socket) => {
+            let clientConnection = new ClientConnection(this.client, address, socket);
+
+            return this.initiateCommunication(clientConnection).then(() => {
+                return clientConnection.registerResponseCallback(processResponseCallback);
+            }).then(() => {
+                return this.authenticate(clientConnection, ownerConnection);
+            }).then(() => {
+                this.establishedConnections[clientConnection.getAddress().toString()] = clientConnection;
+                this.onConnectionOpened(clientConnection);
+                connectionResolver.resolve(clientConnection);
             });
-        }).then(() => {
-            return this.authenticate(clientConnection, ownerConnection);
-        }).then(() => {
-            this.establishedConnections[clientConnection.address.toString()] = clientConnection;
-            this.onConnectionOpened(clientConnection);
-            result.resolve(clientConnection);
         }).catch((e: any) => {
-            result.resolve(null);
+            connectionResolver.resolve(null);
         }).finally(() => {
             delete this.pendingConnections[addressIndex];
         });
 
         let connectionTimeout = this.client.getConfig().networkConfig.connectionTimeout;
         if (connectionTimeout !== 0) {
-            return result.promise.timeout(connectionTimeout, new HazelcastError('Connection timed-out'));
+            return connectionResolver.promise.timeout(connectionTimeout, new HazelcastError('Connection timed-out'));
         }
-        return result.promise;
+        return connectionResolver.promise;
+    }
+
+    private triggerConnect(address: Address): Promise<net.Socket> {
+        if (this.client.getConfig().networkConfig.sslOptions) {
+            let opts = this.client.getConfig().networkConfig.sslOptions;
+            return this.connectTLSSocket(address, opts);
+        } else {
+            return this.connectNetSocket(address);
+        }
+    }
+
+    private connectTLSSocket(address: Address, configOpts: any): Promise<tls.TLSSocket> {
+        let connectionResolver = Promise.defer<tls.TLSSocket>();
+        let socket = tls.connect(address.port, address.host, configOpts);
+        socket.once('secureConnect', () => {
+            connectionResolver.resolve(socket);
+        });
+        socket.on('error', (e: any) => {
+            this.logger.warn('ClientConnectionManager', 'Could not connect to address ' + address.toString(), e);
+            connectionResolver.reject(e);
+            if (e.code === 'EPIPE' || e.code === 'ECONNRESET') {
+                this.destroyConnection(address);
+            }
+        });
+        return connectionResolver.promise;
+    }
+
+    private connectNetSocket(address: Address): Promise<net.Socket> {
+        let connectionResolver = Promise.defer<net.Socket>();
+        let socket = net.connect(address.port, address.host);
+        socket.once('connect', () => {
+            connectionResolver.resolve(socket);
+        });
+        socket.on('error', (e: any) => {
+            this.logger.warn('ClientConnectionManager', 'Could not connect to address ' + address.toString(), e);
+            connectionResolver.reject(e);
+            if (e.code === 'EPIPE' || e.code === 'ECONNRESET') {
+                this.destroyConnection(address);
+            }
+        });
+        return connectionResolver.promise;
+    }
+
+    private initiateCommunication(connection: ClientConnection): Promise<void> {
+        // Send the protocol version
+        let buffer = new Buffer(3);
+        buffer.write('CB2');
+        return connection.write(buffer);
     }
 
     /**
@@ -132,7 +183,6 @@ export class ClientConnectionManager extends EventEmitter {
 
     private authenticate(connection: ClientConnection, ownerConnection: boolean): Promise<void> {
         var authenticator = new ConnectionAuthenticator(connection, this.client);
-
         return authenticator.authenticate(ownerConnection);
     }
 }
