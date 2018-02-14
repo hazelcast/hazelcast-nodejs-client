@@ -15,38 +15,32 @@
  */
 
 import net = require('net');
-import tls = require('tls');
-import stream = require('stream');
 import Address = require('../Address');
 import * as Promise from 'bluebird';
 import {BitsUtil} from '../BitsUtil';
-import {LoggingService} from '../logging/LoggingService';
-import {ClientNetworkConfig} from '../Config';
-import {ClientConnectionManager} from './ClientConnectionManager';
 import {BuildMetadata} from '../BuildMetadata';
+import HazelcastClient from '../HazelcastClient';
 
 export class ClientConnection {
-    address: Address;
-    localAddress: Address;
-    socket: stream.Duplex;
-    lastRead: number;
-    heartbeating = true;
-
+    private address: Address;
+    private localAddress: Address;
+    private lastRead: number;
+    private heartbeating = true;
+    private client: HazelcastClient;
     private readBuffer: Buffer;
-    private logging =  LoggingService.getLoggingService();
-    private clientNetworkConfig: ClientNetworkConfig;
-    private connectionManager: ClientConnectionManager;
     private closedTime: number;
     private connectedServerVersionString: string;
     private connectedServerVersion: number;
     private authenticatedAsOwner: boolean;
+    private socket: net.Socket;
 
-    constructor(connectionManager: ClientConnectionManager, address: Address, clientNetworkConfig: ClientNetworkConfig) {
+    constructor(client: HazelcastClient, address: Address, socket: net.Socket) {
+        this.client = client;
+        this.socket = socket;
         this.address = address;
-        this.clientNetworkConfig = clientNetworkConfig;
+        this.localAddress = new Address(socket.localAddress, socket.localPort);
         this.readBuffer = new Buffer(0);
         this.lastRead = 0;
-        this.connectionManager = connectionManager;
         this.closedTime = 0;
         this.connectedServerVersionString = null;
         this.connectedServerVersion = BuildMetadata.UNKNOWN_VERSION_ID;
@@ -68,41 +62,8 @@ export class ClientConnection {
         return this.address;
     }
 
-    /**
-     * Connects to remote server and sets the hazelcast protocol.
-     * @returns
-     */
-    connect(): Promise<ClientConnection> {
-        var ready = Promise.defer<ClientConnection>();
-
-        var conCallback = () => {
-            // Send the protocol version
-            var buffer = new Buffer(3);
-            buffer.write('CB2');
-            this.socket.write(buffer);
-            ready.resolve(this);
-        };
-
-        if (this.clientNetworkConfig.sslOptions) {
-            var sslSocket = tls.connect(this.address.port, this.address.host, this.clientNetworkConfig.sslOptions, conCallback);
-            this.localAddress = new Address(sslSocket.address().address, sslSocket.address().port);
-            this.socket = sslSocket as stream.Duplex;
-        } else {
-            var netSocket = net.connect(this.address.port, this.address.host, conCallback);
-            this.localAddress = new Address(netSocket.localAddress, netSocket.localPort);
-            this.socket = netSocket as stream.Duplex;
-        }
-
-        this.socket.on('error', (e: any) => {
-            this.logging.warn('ClientConnection',
-                'Could not connect to address ' + this.address.toString(), e);
-            ready.reject(e);
-            if (e.code === 'EPIPE' || e.code === 'ECONNRESET') {
-                this.connectionManager.destroyConnection(this.address);
-            }
-        });
-
-        return ready.promise;
+    setAddress(address: Address): void {
+        this.address = address;
     }
 
     write(buffer: Buffer): Promise<void> {
@@ -142,12 +103,24 @@ export class ClientConnection {
         return this.closedTime === 0;
     }
 
+    isHeartbeating(): boolean {
+        return this.heartbeating;
+    }
+
+    setHeartbeating(heartbeating: boolean): void {
+        this.heartbeating = heartbeating;
+    }
+
     isAuthenticatedAsOwner(): boolean {
         return this.authenticatedAsOwner;
     }
 
     setAuthneticatedAsOwner(asOwner: boolean): void {
         this.authenticatedAsOwner = asOwner;
+    }
+
+    getLastRead(): number {
+        return this.lastRead;
     }
 
     toString(): string {
