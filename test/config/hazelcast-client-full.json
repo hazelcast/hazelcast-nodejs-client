@@ -1,0 +1,109 @@
+{
+    "group": {
+        "name": "hazel",
+        "password": "cast"
+    },
+    "properties": {
+        "hazelcast.client.heartbeat.timeout": 10000,
+        "hazelcast.client.invocation.retry.pause.millis": 4000,
+        "hazelcast.client.invocation.timeout.millis": 180000,
+        "hazelcast.invalidation.reconciliation.interval.seconds": 50,
+        "hazelcast.invalidation.max.tolerated.miss.count": 15,
+        "hazelcast.invalidation.min.reconciliation.interval.seconds": 60
+    },
+    "network": {
+        "clusterMembers": [
+            "127.0.0.9",
+            "127.0.0.2:5702"
+        ],
+        "smartRouting": false,
+        "connectionTimeout": 6000,
+        "connectionAttemptPeriod": 4000,
+        "connectionAttemptLimit": 3,
+        "ssl": {
+            "enabled": false,
+            "factory": {
+                "path": "path/to/file",
+                "exportedName": "exportedName",
+                "properties": {
+                    "userDefinedProperty1": "userDefinedValue"
+                }
+            }
+        }
+    },
+    "listeners": [
+        {
+            "type": "lifecycle",
+            "path": "path/to/file",
+            "exportedName": "listener"
+        },
+        {
+            "type": "lifecycle",
+            "path": "path/to/file",
+            "exportedName": "listener2"
+        }
+    ],
+    "serialization": {
+        "defaultNumberType": "integer",
+        "isBigEndian": false,
+        "dataSerializableFactories": [
+            {
+                "path": "path/to/file",
+                "exportedName": "exportedName",
+                "factoryId": 0
+            }
+        ],
+        "portableFactories": [
+            {
+                "path": "path/to/file",
+                "exportedName": "exportedName",
+                "factoryId": 1
+            }
+        ],
+        "portableVersion": 1,
+        "globalSerializer": {
+            "path": "path/to/file",
+            "exportedName": "exportedName"
+        },
+        "serializers": [
+            {
+                "path": "path/to/custom",
+                "exportedName": "CustomSerializer1",
+                "typeId": 2
+            },
+            {
+                "path": "path/to/custom",
+                "exportedName": "CustomSerializer2",
+                "typeId": 3
+            }
+        ]
+    },
+    "nearCaches": [
+        {
+            "name": "nc-map",
+            "invalidateOnChange": false,
+            "maxIdleSeconds": 2,
+            "inMemoryFormat": "object",
+            "timeToLiveSeconds": 3,
+            "evictionPolicy": "lru",
+            "evictionMaxSize": 3000,
+            "evictionSamplingCount": 4,
+            "evictionSamplingPoolSize": 8
+        }
+    ],
+    "reliableTopics": [
+        {
+            "name": "rt1",
+            "readBatchSize": 35,
+            "overloadPolicy": "discard_newest"
+        },
+        {
+            "name": "rt2",
+            "readBatchSize": 15,
+            "overloadPolicy": "discard_newest"
+        }
+    ],
+    "import": [
+        "hazelcast-client-near-cache.json"
+    ]
+}

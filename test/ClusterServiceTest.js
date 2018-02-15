@@ -18,6 +18,7 @@ var Controller = require('./RC');
 var expect = require('chai').expect;
 var HazelcastClient = require('../.').Client;
 var Config = require('../.').Config;
+var Address = require('../.').Address;
 var Promise = require('bluebird');
 
 describe('ClusterService', function() {
@@ -102,13 +103,9 @@ describe('ClusterService', function() {
     });
 
     it('should throw with message containing wrong host addresses in config', function() {
-        var configuredAddresses = [
-            {host: '0.0.0.0', port: '5709'},
-            {host: '0.0.0.1', port: '5710'}
-        ];
-
         var cfg = new Config.ClientConfig();
-        cfg.networkConfig.addresses = configuredAddresses;
+        cfg.networkConfig.addresses.push(new Address('0.0.0.0', 5709));
+        cfg.networkConfig.addresses.push(new Address('0.0.0.1', 5710));
 
         return HazelcastClient.newHazelcastClient(cfg).then(function(newClient) {
             newClient.shutdown();

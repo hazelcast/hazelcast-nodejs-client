@@ -84,6 +84,7 @@ export class ClientConnectionManager extends EventEmitter {
             this.onConnectionOpened(clientConnection);
             result.resolve(clientConnection);
         }).catch((e: any) => {
+            this.logger.warn('ClientConnectionManager', 'Could not connect to ' + clientConnection.toString(), e);
             result.resolve(null);
         }).finally(() => {
             delete this.pendingConnections[addressIndex];

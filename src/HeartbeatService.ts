@@ -39,8 +39,8 @@ export class Heartbeat {
 
     constructor(client: HazelcastClient) {
         this.client = client;
-        this.heartbeatInterval = this.client.getConfig().properties[PROPERTY_HEARTBEAT_INTERVAL];
-        this.heartbeatTimeout = this.client.getConfig().properties[PROPERTY_HEARTBEAT_TIMEOUT];
+        this.heartbeatInterval = <number>this.client.getConfig().properties[PROPERTY_HEARTBEAT_INTERVAL];
+        this.heartbeatTimeout = <number>this.client.getConfig().properties[PROPERTY_HEARTBEAT_TIMEOUT];
     }
 
     /**
