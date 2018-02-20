@@ -16,7 +16,9 @@
 
 var expect = require('chai').expect;
 var SerializationService = require('../../lib/serialization/SerializationService').SerializationServiceV1;
+var IdentifiedEntryProcessor = require('../javaclasses/IdentifiedEntryProcessor');
 var Config = require('../../').Config;
+var Path = require('path');
 
 describe('SerializationServiceTest', function () {
 
@@ -39,6 +41,10 @@ describe('SerializationServiceTest', function () {
         path: __filename,
         exportedName: 'CustomSerializer'
     };
+
+    var identifiedDataSerializableFactoryDefaultExportConfig = {
+        path: Path.resolve(__filename, '../../javaclasses/IdentifiedFactory.js')
+    }
 
     it('adds data serializable factory by its name', function () {
         var serializationConfig = new Config.SerializationConfig();
@@ -89,6 +95,18 @@ describe('SerializationServiceTest', function () {
         expect(object.val).to.equal(3);
         expect(object.self).to.equal(object);
     });
+
+    it('adds identified factory without named export', function () {
+        var serializationConfig = new Config.SerializationConfig();
+        serializationConfig.dataSerializableFactoryConfigs[66] = identifiedDataSerializableFactoryDefaultExportConfig;
+
+        var serializationService = new SerializationService(serializationConfig);
+
+        var data = serializationService.toData(new IdentifiedEntryProcessor('x'));
+        var object = serializationService.toObject(data);
+
+        expect(object.value).to.equal('x');
+    })
 });
 
 function IDataSerializable(val) {
