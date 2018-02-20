@@ -65,7 +65,8 @@ export class BasicSSLOptionsFactory implements SSLOptionsFactory {
             servername: this.servername,
             rejectUnauthorized: this.rejectUnauthorized,
             cert: this.cert,
-            ca: this.ca
+            ca: this.ca,
+            ciphers: this.ciphers
         };
     }
 
