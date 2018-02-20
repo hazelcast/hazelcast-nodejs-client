@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-var IdentifiedEntryProcessor = require('./IdentifiedFactory');
+var IdentifiedEntryProcessor = require('./IdentifiedEntryProcessor');
 var DistortInvalidationMetadataEntryProcessor = require('./DistortInvalidationMetadataEntryProcessor');
 var CustomComparator = require('./CustomComparator');
 

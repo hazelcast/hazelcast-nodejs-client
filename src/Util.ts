@@ -176,7 +176,12 @@ export function resolvePath(path: string): string {
 }
 
 export function loadNameFromPath(path: string, exportedName: string): any {
-    return require(resolvePath(path))[exportedName];
+    let requirePath = require(resolvePath(path));
+    if (exportedName === undefined) {
+        return requirePath;
+    } else {
+        return require(resolvePath(path))[exportedName];
+    }
 }
 
 export function createAddressFromString(address: string, defaultPort?: number): Address {
