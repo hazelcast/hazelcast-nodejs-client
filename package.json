@@ -15,6 +15,7 @@
     "chai-as-promised": "7.1.1",
     "hazelcast-remote-controller": "^1.0.0",
     "istanbul": "0.4.5",
+    "jsonschema": "^1.2.2",
     "mocha": "3.5.3",
     "mousse": "0.3.1",
     "remap-istanbul": "0.9.6",

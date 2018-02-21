@@ -1,0 +1,299 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "id": "https://github.com/hazelcast/hazelcast-nodejs-client/blob/schema/config-schema.json",
+    "title": "Hazelcast Node.js Client Configuration",
+    "type": "object",
+    "definitions": {
+        "importPath": {
+            "type": "object",
+            "properties": {
+                "path": {
+                    "type": "string",
+                    "format": "uri-reference"
+                },
+                "exportedName": {
+                    "type": "string"
+                }
+            }
+        },
+        "propertiesObject": {
+            "type": "object",
+            "propertyNames": {
+                "pattern": "^[^ ]*$"
+            },
+            "additionalProperties": {
+                "type": [
+                    "number",
+                    "string"
+                ]
+            }
+        },
+        "positiveInteger": {
+            "type": "number",
+            "minimum": 0,
+            "multipleOf": 1
+        },
+        "listenerConfig": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/importPath"
+                },
+                {
+                    "properties": {
+                        "type": {
+                            "enum": [
+                                "lifecycle",
+                                "map"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "factoryConfig": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/importPath"
+                },
+                {
+                    "properties": {
+                        "factoryId": {
+                            "$ref": "#/definitions/positiveInteger"
+                        }
+                    }
+                }
+            ]
+        },
+        "factoryConfigArray": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/factoryConfig"
+            }
+        }
+    },
+    "properties": {
+        "group": {
+            "type": "object",
+            "required": [
+                "name",
+                "password"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "properties": {
+            "$ref": "#/definitions/propertiesObject"
+        },
+        "network": {
+            "type": "object",
+            "properties": {
+                "clusterMembers": {
+                    "type": "array",
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "smartRouting": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "connectionTimeout": {
+                    "type": "number",
+                    "minimum": 1000,
+                    "default": 5000
+                },
+                "connectionAttemptPeriod": {
+                    "type": "number",
+                    "minimum": 1,
+                    "default": 3000
+                },
+                "connectionAttemptLimit": {
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 2
+                },
+                "ssl": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "factory": {
+                            "anyOf": [
+                                {
+                                    "$ref": "#/definitions/importPath"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "properties": {
+                                            "$ref": "#/definitions/propertiesObject"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "listeners": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/listenerConfig"
+            }
+        },
+        "serialization": {
+            "type": "object",
+            "properties": {
+                "defaultNumberType": {
+                    "enum": [
+                        "integer",
+                        "float",
+                        "double"
+                    ],
+                    "default": "double"
+                },
+                "isBigEndian": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "portableVersion": {
+                    "$ref": "#/definitions/positiveInteger"
+                },
+                "dataSerializableFactories": {
+                    "$ref": "#/definitions/factoryConfigArray"
+                },
+                "portableFactories": {
+                    "$ref": "#/definitions/factoryConfigArray"
+                },
+                "globalSerializer": {
+                    "$ref": "#/definitions/importPath"
+                },
+                "serializers": {
+                    "type": "array",
+                    "items": {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/importPath"
+                            },
+                            {
+                                "required": [
+                                    "typeId"
+                                ],
+                                "properties": {
+                                    "typeId": {
+                                        "$ref": "#/definitions/positiveInteger"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "nearCaches": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "name"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "invalidateOnChange": {
+                        "type": "boolean",
+                        "default": true
+                    },
+                    "maxIdleSeconds": {
+                        "type": "number",
+                        "default": 0,
+                        "minimum": 0
+                    },
+                    "inMemoryFormat": {
+                        "enum": [
+                            "object",
+                            "binary"
+                        ],
+                        "default": "binary"
+                    },
+                    "timeToLiveSeconds": {
+                        "type": "number",
+                        "minimum": 0,
+                        "default": 0
+                    },
+                    "evictionPolicy": {
+                        "enum": [
+                            "none",
+                            "lru",
+                            "lfu",
+                            "random"
+                        ],
+                        "default": "none"
+                    },
+                    "evictionMaxSize": {
+                        "$ref": "#/definitions/positiveInteger",
+                        "default": "maximum safe integer"
+                    },
+                    "evictionSamplingCount": {
+                        "$ref": "#/definitions/positiveInteger",
+                        "default": 8
+                    },
+                    "evictionSamplingPoolSize": {
+                        "$ref": "#/definitions/positiveInteger",
+                        "default": 16
+                    }
+                }
+            }
+        },
+        "reliableTopics": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "name"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "readBatchSize": {
+                        "$ref": "#/definitions/positiveInteger",
+                        "default": 25
+                    },
+                    "overloadPolicy": {
+                        "enum": [
+                            "discard_oldest",
+                            "discard_newest",
+                            "block",
+                            "error"
+                        ],
+                        "default": "block"
+                    }
+                }
+            }
+        },
+        "import": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "type": "string"
+            }
+        }
+    }
+}
