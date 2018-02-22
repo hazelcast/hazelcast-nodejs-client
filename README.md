@@ -92,6 +92,13 @@ Please see Hazelcast Node.js [code samples](https://github.com/hazelcast/hazelca
 
 You can also refer to Hazelcast Node.js [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/).
 
+# Configuration
+
+You can configure Hazelcast Node.js Client declaratively (JSON) or programmatically (API).
+
+See [CONFIG.md](CONFIG.md) for details.
+
+
 # Serialization Considerations
 
 Hazelcast needs to serialize objects in order to be able to keep them in the server memory. For primitive types, it uses Hazelcast native serialization. For other complex types (e.g. JS objects), it uses JSON serialization.
