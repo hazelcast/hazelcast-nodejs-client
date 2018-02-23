@@ -95,7 +95,7 @@ describe('Listeners on reconnect', function () {
             closeTwoMembersOfThreeAndTestListener(done, [1, 2], Controller.terminateMember);
         });
 
-        it('kill two members [0,1], listener still receives map.put event [smart=' + isSmart +']', function (done) {
+        it.skip('kill two members [0,1], listener still receives map.put event [smart=' + isSmart +']', function (done) {
             closeTwoMembersOfThreeAndTestListener(done, [0, 1], Controller.terminateMember);
         });
 

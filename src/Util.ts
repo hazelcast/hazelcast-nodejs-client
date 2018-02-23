@@ -217,6 +217,16 @@ export function mergeJson(base: any, other: any): void {
     }
 }
 
+/**
+ * Returns a random integer between 0(inclusive) and `upperBound`(exclusive)
+ * Upper bound should be an integer.
+ * @param upperBound
+ * @returns A random integer between [0-upperBound)
+ */
+export function randomInt(upperBound: number): number {
+    return Math.floor(Math.random() * upperBound);
+}
+
 function createComparator(iterationType: IterationType): Comparator  {
     var object: Comparator = {
         sort: function(a: [any, any], b: [any, any]): number {

@@ -44,6 +44,7 @@ import {IAtomicLong} from './proxy/IAtomicLong';
 import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
 import {RepairingTask} from './nearcache/RepairingTask';
 import {ConfigBuilder} from './config/ConfigBuilder';
+import {PNCounter} from './proxy/PNCounter';
 
 export default class HazelcastClient {
 
@@ -219,6 +220,10 @@ export default class HazelcastClient {
 
     getAtomicLong(name: string): IAtomicLong {
         return <IAtomicLong>this.proxyManager.getOrCreateProxy(name, ProxyManager.ATOMICLONG_SERVICE);
+    }
+
+    getPNCounter(name: string): PNCounter {
+        return <PNCounter>this.proxyManager.getOrCreateProxy(name, ProxyManager.PNCOUNTER_SERVICE);
     }
 
     /**
