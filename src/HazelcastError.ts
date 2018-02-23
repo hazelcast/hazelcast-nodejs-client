@@ -235,10 +235,18 @@ export class TargetDisconnectedError extends HazelcastError {
     }
 }
 
+
 export class UnsupportedOperationError extends HazelcastError {
     constructor(msg: string, cause?: Error) {
         super(msg, cause);
         Object.setPrototypeOf(this, UnsupportedOperationError.prototype);
+    }
+}
+
+export class ConsistencyLostError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, ConsistencyLostError.prototype);
     }
 }
 

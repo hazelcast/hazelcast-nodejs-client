@@ -19,6 +19,7 @@ import ClientMessage = require('../ClientMessage');
 import * as Promise from 'bluebird';
 import HazelcastClient from '../HazelcastClient';
 import {BuildMetadata} from '../BuildMetadata';
+import Address = require('../Address');
 
 /**
  * Common super class for any proxy.
@@ -73,6 +74,12 @@ export class BaseProxy {
         var clientMessage = codec.encodeRequest(this.name, ...codecArguments);
         var invocationResponse = this.client.getInvocationService().invokeOnRandomTarget(clientMessage);
         return this.createPromise<T>(codec, invocationResponse);
+    }
+
+    protected encodeInvokeOnAddress<T>(codec: any, address: Address, ...codecArguments: any[]): Promise<T> {
+        let clientMessage = codec.encodeRequest(this.name, ...codecArguments);
+        let invocation: Promise<ClientMessage> = this.client.getInvocationService().invokeOnTarget(clientMessage, address);
+        return this.createPromise<T>(codec, invocation);
     }
 
     /**
