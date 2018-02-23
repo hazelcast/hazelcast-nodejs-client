@@ -40,6 +40,7 @@ import {Member} from '../core/Member';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {ClientNotActiveError, HazelcastError} from '../HazelcastError';
 import {FlakeIdGeneratorProxy} from './FlakeIdGeneratorProxy';
+import {PNCounterProxy} from './PNCounterProxy';
 
 export class ProxyManager {
     public static readonly MAP_SERVICE: string = 'hz:impl:mapService';
@@ -53,6 +54,7 @@ export class ProxyManager {
     public static readonly SEMAPHORE_SERVICE: string = 'hz:impl:semaphoreService';
     public static readonly ATOMICLONG_SERVICE: string = 'hz:impl:atomicLongService';
     public static readonly FLAKEID_SERVICE: string = 'hz:impl:flakeIdGeneratorService';
+    public static readonly PNCOUNTER_SERVICE: string = 'hz:impl:PNCounterService';
 
     public readonly service: {[serviceName: string]: any} = {};
     private readonly proxies: { [proxyName: string]: DistributedObject; } = {};
@@ -79,6 +81,7 @@ export class ProxyManager {
         this.service[ProxyManager.SEMAPHORE_SERVICE] = SemaphoreProxy;
         this.service[ProxyManager.ATOMICLONG_SERVICE] = AtomicLongProxy;
         this.service[ProxyManager.FLAKEID_SERVICE] = FlakeIdGeneratorProxy;
+        this.service[ProxyManager.PNCOUNTER_SERVICE] = PNCounterProxy;
     }
 
     public getOrCreateProxy(name: string, serviceName: string, createAtServer = true): DistributedObject {

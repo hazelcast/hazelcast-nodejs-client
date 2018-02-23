@@ -102,7 +102,7 @@ export class ClusterService extends EventEmitter {
      * Returns the list of members in the cluster.
      * @returns
      */
-    getMembers(selector?: MemberSelector) {
+    getMembers(selector?: MemberSelector): Member[] {
         if (selector === undefined) {
             return this.members;
         } else {

@@ -46,6 +46,7 @@ import {RepairingTask} from './nearcache/RepairingTask';
 import {ConfigBuilder} from './config/ConfigBuilder';
 import {ClientErrorFactory} from './protocol/ErrorFactory';
 import {FlakeIdGenerator} from './proxy/FlakeIdGenerator';
+import {PNCounter} from './proxy/PNCounter';
 
 export default class HazelcastClient {
 
@@ -227,6 +228,10 @@ export default class HazelcastClient {
 
     getFlakeIdGenerator(name: string): FlakeIdGenerator {
         return <FlakeIdGenerator>this.proxyManager.getOrCreateProxy(name, ProxyManager.FLAKEID_SERVICE);
+    }
+
+    getPNCounter(name: string): PNCounter {
+        return <PNCounter>this.proxyManager.getOrCreateProxy(name, ProxyManager.PNCOUNTER_SERVICE);
     }
 
     /**
