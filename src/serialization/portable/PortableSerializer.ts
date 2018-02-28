@@ -65,7 +65,7 @@ export class PortableSerializer implements Serializer {
 
         var portable: Portable = factory.create(classId);
         var classDefinition = this.portableContext.lookupClassDefinition(factoryId, classId, version);
-        if (classDefinition === null) {
+        if (classDefinition == null) {
             var backupPos = input.position();
             try {
                 classDefinition = this.portableContext.readClassDefinitionFromInput(input, factoryId, classId, version);

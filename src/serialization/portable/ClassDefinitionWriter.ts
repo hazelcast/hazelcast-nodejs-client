@@ -86,7 +86,7 @@ export class ClassDefinitionWriter implements PortableWriter {
     writeNullPortable(fieldName: string, factoryId: number, classId: number): void {
         var version: number = 0;
         var nestedCD = this.portableContext.lookupClassDefinition(factoryId, classId, version);
-        if (nestedCD === null) {
+        if (nestedCD == null) {
             throw new RangeError('Cannot write null portable without explicitly registering class definition!');
         }
         this.addFieldByType(fieldName, FieldType.PORTABLE, nestedCD.getFactoryId(), nestedCD.getClassId());
