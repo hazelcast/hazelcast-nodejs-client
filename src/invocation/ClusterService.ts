@@ -251,10 +251,11 @@ export class ClusterService extends EventEmitter {
 
     private memberRemoved(member: Member) {
         let memberIndex = this.members.findIndex(member.equals, member);
-        let removedMemberList = this.members.splice(memberIndex, 1);
-        assert(removedMemberList.length === 1);
-        let removedMember = removedMemberList[0];
-        this.client.getConnectionManager().destroyConnection(removedMember.address);
-        this.emit(EMIT_MEMBER_REMOVED, removedMember);
+        if (memberIndex !== -1) {
+            let removedMemberList = this.members.splice(memberIndex, 1);
+            assert(removedMemberList.length === 1);
+        }
+        this.client.getConnectionManager().destroyConnection(member.address);
+        this.emit(EMIT_MEMBER_REMOVED, member);
     }
 }
