@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import net = require('net');
+import * as net from 'net';
 import Address = require('../Address');
 import * as Promise from 'bluebird';
 import {BitsUtil} from '../BitsUtil';
 import {BuildMetadata} from '../BuildMetadata';
 import HazelcastClient from '../HazelcastClient';
+import {IOError} from '../HazelcastError';
 
 export class ClientConnection {
     private address: Address;
@@ -71,13 +72,13 @@ export class ClientConnection {
         try {
             this.socket.write(buffer, (err: any) => {
                 if (err) {
-                    deferred.reject(err);
+                    deferred.reject(new IOError(err));
                 } else {
                     deferred.resolve();
                 }
             });
         } catch (err) {
-            deferred.reject(err);
+            deferred.reject(new IOError(err));
         }
         return deferred.promise;
     }
