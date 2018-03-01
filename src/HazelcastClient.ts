@@ -44,6 +44,7 @@ import {IAtomicLong} from './proxy/IAtomicLong';
 import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
 import {RepairingTask} from './nearcache/RepairingTask';
 import {ConfigBuilder} from './config/ConfigBuilder';
+import {ClientErrorFactory} from './protocol/ErrorFactory';
 
 export default class HazelcastClient {
 
@@ -60,6 +61,7 @@ export default class HazelcastClient {
     private heartbeat: Heartbeat;
     private lockReferenceIdGenerator: LockReferenceIdGenerator;
     private mapRepairingTask: RepairingTask;
+    private errorFactory: ClientErrorFactory;
 
     /**
      * Creates a new client object and automatically connects to cluster.
@@ -96,6 +98,7 @@ export default class HazelcastClient {
         this.lifecycleService = new LifecycleService(this);
         this.heartbeat = new Heartbeat(this);
         this.lockReferenceIdGenerator = new LockReferenceIdGenerator();
+        this.errorFactory = new ClientErrorFactory();
     }
 
     private init(): Promise<HazelcastClient> {
@@ -307,6 +310,10 @@ export default class HazelcastClient {
 
     getLockReferenceIdGenerator(): LockReferenceIdGenerator {
         return this.lockReferenceIdGenerator;
+    }
+
+    getErrorFactory(): ClientErrorFactory {
+        return this.errorFactory;
     }
 
     /**

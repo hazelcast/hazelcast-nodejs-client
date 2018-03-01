@@ -17,16 +17,18 @@
 import ClientMessage = require('../ClientMessage');
 import * as Long from 'long';
 import Address = require('../Address');
-import ExceptionCodec = require('../codec/ExceptionCodec');
 import * as Promise from 'bluebird';
 import {BitsUtil} from '../BitsUtil';
 import {LoggingService} from '../logging/LoggingService';
 import HazelcastClient from '../HazelcastClient';
 import {ClientConnection} from './ClientConnection';
-import {IllegalStateError, ClientNotActiveError} from '../HazelcastError';
+import {
+    IllegalStateError, ClientNotActiveError, IOError, InvocationTimeoutError,
+    HazelcastInstanceNotActiveError, RetryableHazelcastError
+} from '../HazelcastError';
 import * as assert from 'assert';
 
-var EXCEPTION_MESSAGE_TYPE = 109;
+const EXCEPTION_MESSAGE_TYPE = 109;
 const MAX_FAST_INVOCATION_COUNT = 5;
 const PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS = 'hazelcast.client.invocation.retry.pause.millis';
 const PROPERTY_INVOCATION_TIMEOUT_MILLIS = 'hazelcast.client.invocation.timeout.millis';
@@ -86,6 +88,18 @@ export class Invocation {
      */
     hasPartitionId(): boolean {
         return this.hasOwnProperty('partitionId') && this.partitionId >= 0;
+    }
+
+    isAllowedToRetryOnSelection(err: Error): boolean {
+        if ((this.connection != null || this.address != null) && err instanceof IOError) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    static isRetrySafeError(err: Error): boolean {
+        return err instanceof IOError || err instanceof HazelcastInstanceNotActiveError || err instanceof RetryableHazelcastError;
     }
 }
 
@@ -222,7 +236,7 @@ export class InvocationService {
     private invokeOnOwner(invocation: Invocation): Promise<void> {
         let owner = this.client.getClusterService().getOwnerConnection();
         if (owner == null) {
-            return Promise.reject(new IllegalStateError('Unisocket client\'s owner connection is not available.'));
+            return Promise.reject(new IOError('Unisocket client\'s owner connection is not available.'));
         }
         return this.send(invocation, owner);
     }
@@ -237,10 +251,10 @@ export class InvocationService {
     }
 
     private invokeOnPartitionOwner(invocation: Invocation, partitionId: number): Promise<void> {
-        var ownerAddress = this.client.getPartitionService().getAddressForPartition(partitionId);
+        let ownerAddress = this.client.getPartitionService().getAddressForPartition(partitionId);
         return this.client.getConnectionManager().getOrConnect(ownerAddress).then((connection: ClientConnection) => {
             if (connection == null) {
-                throw new Error(ownerAddress.toString() + '(partition owner) is not available.');
+                throw new IOError(ownerAddress.toString() + '(partition owner) is not available.');
             }
             return this.send(invocation, connection);
         });
@@ -260,34 +274,45 @@ export class InvocationService {
     }
 
     private notifyError(invocation: Invocation, error: Error): void {
-        var correlationId = invocation.request.getCorrelationId().toNumber();
-        if (!this.client.getLifecycleService().isRunning()) {
-            invocation.deferred.reject(new ClientNotActiveError('Client is not active.', error));
-        } else if (this.isRetryable(invocation)) {
-            this.logger.debug('InvocationService',
-                'Retrying(' + invocation.invokeCount + ') on correlation-id=' + correlationId, error);
-            if (invocation.invokeCount < MAX_FAST_INVOCATION_COUNT) {
-                this.doInvoke(invocation);
-            } else {
-                setTimeout(this.doInvoke.bind(this, invocation), this.getInvocationRetryPauseMillis());
-            }
-        } else {
-            this.logger.warn('InvocationService', 'Sending message ' + correlationId + ' failed');
+        let correlationId = invocation.request.getCorrelationId().toNumber();
+        if (this.rejectIfNotRetryable(invocation, error)) {
             delete this.pending[invocation.request.getCorrelationId().toNumber()];
-            invocation.deferred.reject(error);
+            return;
+        }
+        this.logger.debug('InvocationService',
+            'Retrying(' + invocation.invokeCount + ') on correlation-id=' + correlationId, error);
+        if (invocation.invokeCount < MAX_FAST_INVOCATION_COUNT) {
+            this.doInvoke(invocation);
+        } else {
+            setTimeout(this.doInvoke.bind(this, invocation), this.getInvocationRetryPauseMillis());
         }
     }
 
-    private isRetryable(invocation: Invocation) {
-        if (invocation.connection != null || invocation.address != null) {
-            return false;
+    /**
+     * Determines if an error is retryable. The given invocation is rejected with approprate error if the error is not retryable.
+     * @param invocation
+     * @param error
+     * @returns `true` if invocation is rejected, `false` otherwise
+     */
+    private rejectIfNotRetryable(invocation: Invocation, error: Error): boolean {
+        if (!this.client.getLifecycleService().isRunning()) {
+            invocation.deferred.reject(new ClientNotActiveError('Client is not active.', error));
+            return true;
+        }
+        if (!invocation.isAllowedToRetryOnSelection(error)) {
+            invocation.deferred.reject(error);
+            return true;
+        }
+        if (!Invocation.isRetrySafeError(error)) {
+            invocation.deferred.reject(error);
+            return true;
         }
         if (invocation.deadline.getTime() < Date.now()) {
-            this.logger.debug('InvocationService', 'Invocation ' + invocation.request.getCorrelationId() + ')' +
-                ' reached its deadline.');
-            return false;
+            this.logger.trace('InvocationService', 'Error will not be retried because invocation timed out');
+            invocation.deferred.reject(new InvocationTimeoutError('Invocation ' + invocation.request.getCorrelationId() + ')'
+                + ' reached its deadline.', error));
+            return true;
         }
-        return true;
     }
 
     private registerInvocation(invocation: Invocation) {
@@ -332,30 +357,14 @@ export class InvocationService {
             return;
         }
 
-        var invocationFinished = true;
         var pendingInvocation = this.pending[correlationId];
         var deferred = pendingInvocation.deferred;
         if (messageType === EXCEPTION_MESSAGE_TYPE) {
-            var remoteException = ExceptionCodec.decodeResponse(clientMessage);
-            var boundToConnection = pendingInvocation.connection;
-            var deadlineExceeded = new Date().getTime() > pendingInvocation.deadline.getTime();
-            var shouldRetry = !boundToConnection && !deadlineExceeded && remoteException.isRetryable();
-
-            if (shouldRetry) {
-                invocationFinished = false;
-                setTimeout(() => {
-                    this.invoke(pendingInvocation);
-                }, this.getInvocationRetryPauseMillis());
-            } else {
-                this.logger.trace('InvocationService', 'Received exception as response', remoteException);
-                deferred.reject(remoteException);
-            }
+            let remoteError = this.client.getErrorFactory().createErrorFromClientMessage(clientMessage);
+            this.notifyError(pendingInvocation, remoteError);
         } else {
-            deferred.resolve(clientMessage);
-        }
-
-        if (invocationFinished) {
             delete this.pending[correlationId];
+            deferred.resolve(clientMessage);
         }
     }
 }
