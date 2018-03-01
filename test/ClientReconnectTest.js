@@ -120,6 +120,6 @@ describe('Client reconnect', function () {
             return map.get('testkey');
         }).then(function (val) {
             return expect(val).to.equal('testvalue');
-        })
+        });
     });
 });

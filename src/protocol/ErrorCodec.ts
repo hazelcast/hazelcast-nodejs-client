@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
 import ClientMessage = require('../ClientMessage');
-import ImmutableLazyDataList = require('./ImmutableLazyDataList');
-import Address = require('../Address');
-import RemoteException = require('../exception/Exception');
-import StackTraceElement = require('../exception/StackTraceElement');
+import {StackTraceElementCodec} from './StackTraceElementCodec';
 
+export class ErrorCodec {
+    errorCode: number = null;
+    className: string = null;
+    message: string = null;
+    stackTrace: StackTraceElementCodec[] = [];
+    causeErrorCode: number = null;
+    causeClassName: string = null;
 
-class ExceptionCodec {
-
-    static decodeResponse(clientMessage: ClientMessage): RemoteException {
-        var exception = new RemoteException();
+    static decode(clientMessage: ClientMessage): ErrorCodec {
+        let exception = new ErrorCodec();
 
         exception.errorCode = clientMessage.readInt32();
         exception.className = clientMessage.readString();
@@ -38,7 +39,7 @@ class ExceptionCodec {
         var stackTraceDepth = clientMessage.readInt32();
         exception.stackTrace = [];
         for (var i = 0; i < stackTraceDepth; i++) {
-            exception.stackTrace.push(this.decodeStackTraceElement(clientMessage))
+            exception.stackTrace.push(StackTraceElementCodec.decode(clientMessage));
         }
 
         exception.causeErrorCode = clientMessage.readInt32();
@@ -52,21 +53,6 @@ class ExceptionCodec {
         return exception;
     }
 
-    private static decodeStackTraceElement(payload: ClientMessage): StackTraceElement {
-        var stackTraceElement = new StackTraceElement();
 
-        stackTraceElement.declaringClass = payload.readString();
-        stackTraceElement.methodName = payload.readString();
 
-        var fileNameNull = payload.readBoolean();
-        if (!fileNameNull) {
-            stackTraceElement.fileName = payload.readString();
-        }
-
-        stackTraceElement.lineNumber = payload.readInt32();
-
-        return stackTraceElement;
-    }
 }
-
-export = ExceptionCodec
