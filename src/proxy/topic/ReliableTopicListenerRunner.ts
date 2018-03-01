@@ -21,6 +21,7 @@ import {SerializationService} from '../../serialization/SerializationService';
 import {ReliableTopicProxy} from './ReliableTopicProxy';
 import {LoggingService} from '../../logging/LoggingService';
 import {TopicMessage} from './TopicMessage';
+import {StaleSequenceError} from '../../HazelcastError';
 
 export class ReliableTopicListenerRunner<E> {
 
@@ -65,7 +66,7 @@ export class ReliableTopicListenerRunner<E> {
                 setImmediate(this.next.bind(this));
             }
         }).catch((e) => {
-            if (e.className === 'com.hazelcast.ringbuffer.StaleSequenceException') {
+            if (e instanceof StaleSequenceError) {
                 this.ringbuffer.headSequence().then((seq: Long) => {
                     var newSequence = seq.toNumber();
 

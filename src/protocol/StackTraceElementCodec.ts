@@ -14,11 +14,26 @@
  * limitations under the License.
  */
 
-class StackTraceElement {
+import ClientMessage = require('../ClientMessage');
+
+export class StackTraceElementCodec {
     declaringClass: string = null;
     methodName: string = null;
     fileName: string = null;
     lineNumber: number = null;
+
+    static decode(payload: ClientMessage): StackTraceElementCodec {
+        var stackTraceElement = new StackTraceElementCodec();
+
+        stackTraceElement.declaringClass = payload.readString();
+        stackTraceElement.methodName = payload.readString();
+
+        var fileNameNull = payload.readBoolean();
+        if (!fileNameNull) {
+            stackTraceElement.fileName = payload.readString();
+        }
+        stackTraceElement.lineNumber = payload.readInt32();
+        return stackTraceElement;
+    }
 }
 
-export = StackTraceElement;
