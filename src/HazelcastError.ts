@@ -54,3 +54,24 @@ export class TopicOverloadError extends HazelcastError {
         Object.setPrototypeOf(this, TopicOverloadError.prototype);
     }
 }
+
+export class TargetDisconnectedError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, TargetDisconnectedError.prototype);
+    }
+}
+
+export class ConsistencyLostError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, ConsistencyLostError.prototype);
+    }
+}
+
+export class NoDataMemberInClusterError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, NoDataMemberInClusterError.prototype);
+    }
+}
