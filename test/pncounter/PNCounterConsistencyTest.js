@@ -56,7 +56,6 @@ describe('PNCounterConsistencyTest', function () {
         return pncounter.getAndAdd(3).then(function () {
             var currentReplicaAddress = pncounter.currentTargetReplicaAddress;
             var currentReplicaMember = Util.findMemberByAddress(client, currentReplicaAddress);
-            console.log(currentReplicaMember);
             return RC.terminateMember(cluster.id, currentReplicaMember.uuid);
         }).then(function () {
             return expect(pncounter.addAndGet(10)).to.be.rejectedWith(Errors.ConsistencyLostError);
@@ -66,7 +65,9 @@ describe('PNCounterConsistencyTest', function () {
     it('target replica killed, no replica is sufficiently up-to-date, get operation may proceed after calling reset', function () {
         var pncounter = client.getPNCounter('pncounter');
         return pncounter.getAndAdd(3).then(function () {
-            return RC.terminateMember(cluster.id, member1.uuid);
+            var currentReplicaAddress = pncounter.currentTargetReplicaAddress;
+            var currentReplicaMember = Util.findMemberByAddress(client, currentReplicaAddress);
+            return RC.terminateMember(cluster.id, currentReplicaMember.uuid);
         }).then(function () {
             return pncounter.reset();
         }).then(function () {
