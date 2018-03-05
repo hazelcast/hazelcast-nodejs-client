@@ -22,6 +22,7 @@ var Client = require('../../').Client;
 var Errors = require('../..').HazelcastErrors;
 var fs = require('fs');
 var path = require('path');
+var Util = require('../Util');
 
 describe('PNCounterConsistencyTest', function () {
 
@@ -53,7 +54,10 @@ describe('PNCounterConsistencyTest', function () {
     it('target replica killed, no replica is sufficiently up-to-date, get operation throws ConsistencyLostError', function () {
         var pncounter = client.getPNCounter('pncounter');
         return pncounter.getAndAdd(3).then(function () {
-            return RC.terminateMember(cluster.id, member1.uuid);
+            var currentReplicaAddress = pncounter.currentTargetReplicaAddress;
+            var currentReplicaMember = Util.findMemberByAddress(client, currentReplicaAddress);
+            console.log(currentReplicaMember);
+            return RC.terminateMember(cluster.id, currentReplicaMember.uuid);
         }).then(function () {
             return expect(pncounter.addAndGet(10)).to.be.rejectedWith(Errors.ConsistencyLostError);
         });
