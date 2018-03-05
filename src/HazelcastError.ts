@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+export interface HazelcastErrorConstructor {
+    new(message: string, cause?: Error): HazelcastError;
+    readonly prototype: Error;
+}
+
 export class HazelcastError extends Error {
 
     cause: Error;
@@ -48,9 +53,212 @@ export class IllegalStateError extends HazelcastError {
     }
 }
 
+export class StaleSequenceError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, StaleSequenceError.prototype);
+    }
+}
+
 export class TopicOverloadError extends HazelcastError {
     constructor(msg: string, cause?: Error) {
         super(msg, cause);
         Object.setPrototypeOf(this, TopicOverloadError.prototype);
+    }
+}
+
+export class IOError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, IOError.prototype);
+    }
+}
+
+export class UndefinedErrorCodeError extends HazelcastError {
+    constructor(msg: string, className: string) {
+        super('Class name: ' + className + ' , Message: ' + msg);
+        Object.setPrototypeOf(this, UndefinedErrorCodeError.prototype);
+    }
+}
+
+export class InvocationTimeoutError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, InvocationTimeoutError.prototype);
+    }
+}
+
+export class RetryableHazelcastError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, RetryableHazelcastError.prototype);
+    }
+}
+
+export class TargetNotMemberError extends RetryableHazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, TargetNotMemberError.prototype);
+    }
+}
+
+export class CallerNotMemberError extends RetryableHazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, CallerNotMemberError.prototype);
+    }
+}
+
+export class CancellationError extends IllegalStateError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, CancellationError.prototype);
+    }
+}
+
+export class ClassCastError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, ClassCastError.prototype);
+    }
+}
+
+export class ClassNotFoundError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, ClassNotFoundError.prototype);
+    }
+}
+
+export class ConcurrentModificationError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, ConcurrentModificationError.prototype);
+    }
+}
+
+export class ConfigMismatchError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, ConfigMismatchError.prototype);
+    }
+}
+
+export class ConfigurationError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, ConfigurationError.prototype);
+    }
+}
+
+export class DistributedObjectDestroyedError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, DistributedObjectDestroyedError.prototype);
+    }
+}
+
+export class DuplicateInstanceNameError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, DuplicateInstanceNameError.prototype);
+    }
+}
+
+export class HazelcastInstanceNotActiveError extends IllegalStateError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, HazelcastInstanceNotActiveError.prototype);
+    }
+}
+
+export class MemberLeftError extends RetryableHazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, MemberLeftError.prototype);
+    }
+}
+
+export class OperationTimeoutError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, OperationTimeoutError.prototype);
+    }
+}
+
+export class PartitionMigratingError extends RetryableHazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, PartitionMigratingError.prototype);
+    }
+}
+
+export class QueryError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, QueryError.prototype);
+    }
+}
+
+export class TransactionError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, TransactionError.prototype);
+    }
+}
+
+export class TransactionNotActiveError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, TransactionNotActiveError.prototype);
+    }
+}
+
+export class TransactionTimedOutError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, TransactionTimedOutError.prototype);
+    }
+}
+
+export class QuorumError extends TransactionError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, QuorumError.prototype);
+    }
+}
+
+export class RetryableIOError extends RetryableHazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, RetryableIOError.prototype);
+    }
+}
+
+export class TargetDisconnectedError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, TargetDisconnectedError.prototype);
+    }
+}
+
+export class UnsupportedOperationError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, UnsupportedOperationError.prototype);
+    }
+}
+
+export class NoDataMemberInClusterError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, NoDataMemberInClusterError.prototype);
+    }
+}
+
+export class StaleTaskIdError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, StaleTaskIdError.prototype);
     }
 }
