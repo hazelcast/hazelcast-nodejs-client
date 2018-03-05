@@ -96,5 +96,11 @@ exports.getRandomInt = function(lowerLim, upperLim) {
     return Math.floor(Math.random() * (upperLim - lowerLim)) + lowerLim;
 };
 
+exports.findMemberByAddress = function (client, address) {
+    return client.getClusterService().getMembers().find(function (m) {
+        return m.address.equals(address);
+    });
+};
+
 exports.promiseLater = promiseLater;
 exports.expectAlmostEqual = expectAlmostEqual;

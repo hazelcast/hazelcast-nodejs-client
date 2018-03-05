@@ -16,7 +16,8 @@
 
 import {
     AuthenticationError, CallerNotMemberError, CancellationError, ClassCastError, ClassNotFoundError, ConcurrentModificationError,
-    ConfigMismatchError, ConfigurationError, DistributedObjectDestroyedError, DuplicateInstanceNameError, HazelcastError,
+    ConfigMismatchError, ConfigurationError, ConsistencyLostError, DistributedObjectDestroyedError, DuplicateInstanceNameError,
+    HazelcastError,
     HazelcastInstanceNotActiveError, IllegalStateError, InvocationTimeoutError, IOError, MemberLeftError,
     NoDataMemberInClusterError, NodeIdOutOfRangeError, PartitionMigratingError, QueryError, QuorumError, RetryableHazelcastError,
     RetryableIOError,
@@ -86,6 +87,7 @@ export class ClientErrorFactory {
         this.register(ClientProtocolErrorCodes.STALE_TASK_ID, (m, c) => new StaleTaskIdError(m, c));
         this.register(ClientProtocolErrorCodes.FLAKE_ID_NODE_ID_OUT_OF_RANGE_EXCEPTION,
             (m, c) => new NodeIdOutOfRangeError(m, c));
+        this.register(ClientProtocolErrorCodes.CONSISTENCY_LOST_EXCEPTION, (m, c) => new ConsistencyLostError(m, c));
     }
 
     private register(code: number, errorFactory: ErrorFactory): void {
