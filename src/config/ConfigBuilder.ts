@@ -18,7 +18,10 @@ import {ClientConfig} from './Config';
 import * as Promise from 'bluebird';
 import {HazelcastError} from '../HazelcastError';
 import * as path from 'path';
-import {createAddressFromString, mergeJson, tryGetArray, tryGetBoolean, tryGetEnum, tryGetNumber, tryGetString} from '../Util';
+import {
+    createAddressFromString, mergeJson, tryGetArray, tryGetBoolean, tryGetEnum, tryGetLong, tryGetNumber,
+    tryGetString
+} from '../Util';
 import {TopicOverloadPolicy} from '../proxy/topic/TopicOverloadPolicy';
 import {ReliableTopicConfig} from './ReliableTopicConfig';
 import {InMemoryFormat} from './InMemoryFormat';
@@ -29,6 +32,7 @@ import {Properties} from './Properties';
 import {JsonConfigLocator} from './JsonConfigLocator';
 import Address = require('../Address');
 import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
+import {FlakeIdGeneratorConfig} from './FlakeIdGeneratorConfig';
 
 export class ConfigBuilder {
     private clientConfig: ClientConfig = new ClientConfig();
@@ -81,6 +85,8 @@ export class ConfigBuilder {
                 this.handleNearCaches(jsonObject[key]);
             } else if (key === 'reliableTopics') {
                 this.handleReliableTopics(jsonObject[key]);
+            } else if (key === 'flakeIdGeneratorConfigs') {
+                this.handleFlakeIds(jsonObject[key]);
             }
         }
     }
@@ -249,6 +255,24 @@ export class ConfigBuilder {
                 }
             }
             this.clientConfig.reliableTopicConfigs[reliableTopicConfig.name] = reliableTopicConfig;
+        }
+    }
+
+    private handleFlakeIds(jsonObject: any): void {
+        let flakeIdsArray = tryGetArray(jsonObject);
+        for (let index in flakeIdsArray) {
+            let fidConfig = flakeIdsArray[index];
+            let flakeIdConfig = new FlakeIdGeneratorConfig();
+            for (let name in fidConfig) {
+                if (name === 'name') {
+                    flakeIdConfig.name = tryGetString(fidConfig[name]);
+                } else if (name === 'prefetchCount') {
+                    flakeIdConfig.prefetchCount = tryGetNumber(fidConfig[name]);
+                } else if (name === 'prefetchValidityMillis') {
+                    flakeIdConfig.prefetchValidityMillis = tryGetLong(fidConfig[name]);
+                }
+            }
+            this.clientConfig.flakeIdGeneratorConfigs[flakeIdConfig.name] = flakeIdConfig;
         }
     }
 
