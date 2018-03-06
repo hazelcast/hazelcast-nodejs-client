@@ -25,6 +25,7 @@ import {NearCacheConfig} from './NearCacheConfig';
 import {ListenerConfig} from './ListenerConfig';
 import {Properties} from './Properties';
 import {ImportConfig} from './ImportConfig';
+import {FlakeIdGeneratorConfig} from './FlakeIdGeneratorConfig';
 
 /**
  * Top level configuration object of Hazelcast client. Other configurations items are properties of this object.
@@ -53,6 +54,7 @@ export class ClientConfig {
         'default': new ReliableTopicConfig()
     };
     nearCacheConfigs: {[name: string]: NearCacheConfig} = {};
+    flakeIdGeneratorConfigs: {[name: string]: FlakeIdGeneratorConfig} = {};
 }
 
 export {ClientNetworkConfig};

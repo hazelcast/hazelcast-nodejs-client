@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Long = require('long');
+import * as Long from 'long';
 import {PagingPredicate} from './serialization/DefaultPredicates';
 import {IterationType} from './core/Predicate';
 import * as assert from 'assert';
@@ -111,6 +111,16 @@ export function copyObjectShallow<T>(obj: T): T {
         return newObj;
     }
     assert(false, 'Object should be undefined or type of object.');
+}
+
+export function tryGetLong(val: any): Long {
+    if (typeof val === 'number') {
+        return Long.fromNumber(val);
+    } else if (typeof val === 'string') {
+        return Long.fromString(val);
+    } else {
+        throw RangeError(val + ' is not a number or long string.');
+    }
 }
 
 export function tryGetBoolean(val: any): boolean {

@@ -18,6 +18,7 @@ var expect = require('chai').expect;
 var path = require('path');
 var ConfigBuilder = require('../../lib/config/ConfigBuilder').ConfigBuilder;
 var Config = require('../../lib/index').Config;
+var Long = require('long');
 
 describe('ConfigBuilder Test', function () {
     var configFull;
@@ -127,4 +128,14 @@ describe('ConfigBuilder Test', function () {
         expect(listenerConfig[1].exportedName).to.equal('listener2');
         expect(listenerConfig[1].path).to.equal('path/to/file');
     });
+
+    it('flakeIdGeneratorConfigs', function () {
+        var flakeIdConfigs = configFull.flakeIdGeneratorConfigs;
+        expect(flakeIdConfigs['flakeid'].name).to.equal('flakeid');
+        expect(flakeIdConfigs['flakeid'].prefetchCount).to.equal(123);
+        expect(Long.fromNumber(150000).equals(flakeIdConfigs['flakeid'].prefetchValidityMillis)).to.be.true;
+        expect(flakeIdConfigs['flakeid2'].name).to.equal('flakeid2');
+        expect(flakeIdConfigs['flakeid2'].prefetchCount).to.equal(1234);
+        expect(Long.fromString("99999999999999999").equals(flakeIdConfigs['flakeid2'].prefetchValidityMillis)).to.be.true;
+    })
 });
