@@ -103,6 +103,18 @@
             "overloadPolicy": "discard_newest"
         }
     ],
+    "flakeIdGeneratorConfigs": [
+        {
+            "name": "flakeid",
+            "prefetchCount": 123,
+            "prefetchValidityMillis": 150000
+        },
+        {
+            "name": "flakeid2",
+            "prefetchCount": 1234,
+            "prefetchValidityMillis": "99999999999999999"
+        }
+    ],
     "import": [
         "hazelcast-client-near-cache.json"
     ]
