@@ -41,6 +41,8 @@ import * as Long from 'long';
  *
  * @requires Hazelcast 3.10
  */
+import * as Promise from 'bluebird';
+
 export interface FlakeIdGenerator extends DistributedObject {
 
     /**
@@ -54,9 +56,9 @@ export interface FlakeIdGenerator extends DistributedObject {
      *
      * @return new cluster-wide unique ID
      *
-     * @throws NodeIdOutOfRangeError if node ID for all members in the cluster is out of valid range.
+     * @throws HazelcastError if node ID for all members in the cluster is out of valid range.
      *      See "Node ID overflow" note above
      * @throws UnsupportedOperationError if the cluster version is below 3.10
      */
-    newId(): Long;
+    newId(): Promise<Long>;
 }

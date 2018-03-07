@@ -74,3 +74,5 @@ export {InMemoryFormat};
 export {NearCacheConfig};
 
 export {ImportConfig};
+
+export {FlakeIdGeneratorConfig};
