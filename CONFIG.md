@@ -179,7 +179,7 @@ Default value is 3000.
 
 You can use TLS/SSL to secure the connection between the client and members. If you want TLS/SSL enabled
 for the client-cluster connection, you should set an SSL configuration. Once set, the connection (socket) is 
-established out of an `options`" object supplied by the user.
+established out of an `options` object supplied by the user.
 
 Hazelcast Node.js Client uses a user supplied SSL `options` object to pass to 
 [`tls.connect` of Node.js](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback). There are two ways
