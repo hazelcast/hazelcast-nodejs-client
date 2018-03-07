@@ -18,7 +18,8 @@ import {
     AuthenticationError, CallerNotMemberError, CancellationError, ClassCastError, ClassNotFoundError, ConcurrentModificationError,
     ConfigMismatchError, ConfigurationError, DistributedObjectDestroyedError, DuplicateInstanceNameError, HazelcastError,
     HazelcastInstanceNotActiveError, IllegalStateError, InvocationTimeoutError, IOError, MemberLeftError,
-    NoDataMemberInClusterError, PartitionMigratingError, QueryError, QuorumError, RetryableHazelcastError, RetryableIOError,
+    NoDataMemberInClusterError, NodeIdOutOfRangeError, PartitionMigratingError, QueryError, QuorumError, RetryableHazelcastError,
+    RetryableIOError,
     StaleSequenceError, StaleTaskIdError, TargetDisconnectedError, TargetNotMemberError, TopicOverloadError, TransactionError,
     TransactionNotActiveError, TransactionTimedOutError, UndefinedErrorCodeError, UnsupportedOperationError
 } from '../HazelcastError';
@@ -83,6 +84,8 @@ export class ClientErrorFactory {
         this.register(ClientProtocolErrorCodes.UNSUPPORTED_OPERATION, (m, c) => new UnsupportedOperationError(m, c));
         this.register(ClientProtocolErrorCodes.NO_DATA_MEMBER, (m, c) => new NoDataMemberInClusterError(m, c));
         this.register(ClientProtocolErrorCodes.STALE_TASK_ID, (m, c) => new StaleTaskIdError(m, c));
+        this.register(ClientProtocolErrorCodes.FLAKE_ID_NODE_ID_OUT_OF_RANGE_EXCEPTION,
+            (m, c) => new NodeIdOutOfRangeError(m, c));
     }
 
     private register(code: number, errorFactory: ErrorFactory): void {
