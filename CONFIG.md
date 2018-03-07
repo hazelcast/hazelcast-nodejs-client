@@ -1,4 +1,5 @@
 You can configure Hazelcast Node.js Client declaratively (JSON) or programmatically (API).
+
 * Programmatic configuration
 * Declarative configuration (JSON file)
 
@@ -22,10 +23,11 @@ For declarative configuration, the Hazelcast client looks at the following place
 1. Environment variable: The client first looks for the environment variable `HAZELCAST_CLIENT_CONFIG`. If it exists, 
 the client looks for the configuration file in the specified location.
 2. Current working directory: If there is no environment variable set, the client tries to load `hazelcast-client.json`
-from current working directory.
-3. Default configuration: If above methods fail, the client starts with default configuration.
+from the current working directory.
+3. Default configuration: If all of the above methods fail, the client starts with the default configuration.
 
 Following is a sample JSON configuration file:
+
 ```json
 {
     "group": {
@@ -53,8 +55,10 @@ Following is a sample JSON configuration file:
 ```
 
 ## Group Configuration
-Clients should provide a group name and password in order to connect to the cluster.
+
+The clients should provide a group name and password in order to connect to the cluster.
 You can configure them as shown below.
+
 ```json
 {
     "group": {
@@ -65,8 +69,10 @@ You can configure them as shown below.
 ```
 
 ## Client Network
+
 All network related configuration of Hazelcast Node.js Client is performed via the `network` element in the declarative
 configuration file. Let's first give an example for `network` configuration. Then we will look at its properties.
+
 ```json
 {
     "network": {
@@ -93,9 +99,11 @@ configuration file. Let's first give an example for `network` configuration. The
 ```
 
 ### Configuring Address List
+
 Address list is the initial list of cluster addresses to which the client will connect. The client uses this
 list to find an alive member. Although it may be enough to give only one address of a member in the cluster
 (since all members communicate with each other), it is recommended that you give the addresses for all the members.
+
 ```json
 {
     "network": {
@@ -111,7 +119,9 @@ If the port part is omitted, then 5701, 5702, and 5703 will be tried in random o
 Default address is 127.0.0.1.
 
 ### Setting Smart Routing
+
 Smart routing defines whether the client mode is smart or unisocket. The following is an example configuration.
+
 ```json
 {
     "network": {
@@ -119,10 +129,12 @@ Smart routing defines whether the client mode is smart or unisocket. The followi
     }
 }
 ```
+
 Default is smart routing mode.
 
 ### Setting Connection Timeout
-Connection timeout is the timeout value in milliseconds for members to accept client connection requests.
+
+Connection timeout is the timeout value in milliseconds for the members to accept client connection requests.
 ```json
 {
     "network": {
@@ -133,10 +145,12 @@ Connection timeout is the timeout value in milliseconds for members to accept cl
 Default value is 5000 milliseconds.
 
 ### Setting Connection Attempt Limit
+
 While the client is trying to connect initially to one of the members in the  address list, that member
 might not be available at that moment. Instead of giving up, throwing an error and stopping the client, 
 the client will retry as many as connection attempt limit times. This is also the case when the previously
 established connection between the client and that member goes down.
+
 ```json
 {
     "network": {
@@ -145,9 +159,12 @@ established connection between the client and that member goes down.
 }
 ```
 Default value is 2.
+
 ### Setting Connection Attempt Period
+
 Connection timeout period is the duration in milliseconds between the connection attempts defined by
 connection attempt limit.
+
 ```json
 {
     "network": {
@@ -155,21 +172,28 @@ connection attempt limit.
     }
 }
 ```
+
 Default value is 3000.
+
 ### Enabling Client TLS/SSL
+
 You can use TLS/SSL to secure the connection between the client and members. If you want TLS/SSL enabled
 for the client-cluster connection, you should set an SSL configuration. Once set, the connection (socket) is 
-established out of an options object supplied by the user.
+established out of an `options`" object supplied by the user.
 
-Hazelcast Node.js Client uses a user supplied SSL options object to pass to 
+Hazelcast Node.js Client uses a user supplied SSL `options` object to pass to 
 [`tls.connect` of Node.js](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback). There are two ways
-to provide this object to the client;
-1. Using builtin `BasicSSLOptionsFactory` bundled with the client.
+to provide this object to the client:
+
+1. Using the built-in `BasicSSLOptionsFactory` bundled with the client.
 2. Writing an SSLOptionsFactory.
 
-#### 1. Using Built-in BasicSSLOptionsFactory
-Hazelcast Node.js Client includes a utility factory class that creates the necessary options object out of supplied
-properties. All you need to do is specify your factory as `BasicSSLOptionsFactory` and provide the following options.
+Below subsections describe each way.
+
+#### Using Built-in BasicSSLOptionsFactory
+
+Hazelcast Node.js Client includes a utility factory class that creates the necessary `options` object out of the supplied
+properties. All you need to do is specifying your factory as `BasicSSLOptionsFactory` and provide the following options:
 
     certPath
     caPath
@@ -177,8 +201,8 @@ properties. All you need to do is specify your factory as `BasicSSLOptionsFactor
     rejectUnauthorized
     ciphers
 
-Refer to [`tls.connect` of Node.js](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) for meaning
-of each option.
+Please refer to [`tls.connect` of Node.js](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) for the descriptions of each option.
+
 > `certPath` and `caPath` define file path to respective file that stores such information.
 
 ```json
@@ -198,12 +222,17 @@ of each option.
     }
 }
 ```
+
 If these options are not enough for your application, you may write your own options factory and instruct the client
-to get the options from it.
+to get the options from it, as explained below.
 
 #### Writing an SSL Options Factory
+
 In order to use the full range of options provided to [`tls.connect` of Node.js](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback),
 you may write your own factory object.
+
+An example configuration:
+
 ```json
 {
     "network": {
@@ -224,7 +253,9 @@ you may write your own factory object.
 ```
 
 
-my_factory.js
+And your own factory, `My_Factory.js`:
+
+
 ```javascript
 function SSLFactory() {
 }
@@ -250,16 +281,15 @@ SSLFactory.prototype.getSSLOptions = function() {
 exports.SSLFactory = SSLFactory;
 ```
 
-The client loads MyFactory.js at runtime and creates an instance of SSLFactory. It then, calls `init` method with
-the properties section in JSON config. Lastly, the client calls `getSSLOptions` method of SSLFactory to create the
-options object.
+The client loads `MyFactory.js` at runtime and creates an instance of `SSLFactory`. It then calls the method `init` with
+the properties section in the JSON configuration file. Lastly, the client calls the method `getSSLOptions` of `SSLFactory` to create the `options` object.
 
-For information about path resolution, refer to [Path Resolution](#path-resolution-and-object-loading)
+For information about the path resolution, please refer to the [Path Resolution](#path-resolution-and-object-loading) section.
 
 ## Serialization Configuration
+
 This section shows how to configure Hazelcast serialization declaratively. Please refer to [Hazelcast IMDG Reference Manual](http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#serialization)
-and [Node.js client readme](https://github.com/hazelcast/hazelcast-nodejs-client/#serialization-considerations) for
-learning about serialization.
+and [Node.js client readme](https://github.com/hazelcast/hazelcast-nodejs-client/#serialization-considerations) for more information on serializations.
 
 Serialization configuration is as follows:
 
@@ -306,16 +336,17 @@ Serialization configuration is as follows:
 One important aspect of Node.js Client's serialization is `defaultNumberType`. Hazelcast servers use 4 different
 primitive numeric types; `int`, `long`, `float` and `double`. However, Javascript has only one numeric type which
 is `number`. Number is a floating point type. If you do not work with heterogenous clients (multiple languages),
-you do not need to worry about this setting. However, if your numeric data is accessed by clients in different 
-languages, you need to map `number` type to one of the numeric types recognized by Java servers. Hazelcast handles
+you do not need to worry about this setting. However, if your numeric data is accessed by the clients in different 
+languages, you need to map `number` type to one of the numeric types recognized by the Java servers. Hazelcast handles
 type conversions automatically. Accepted values for `defaultNumberType` are `integer`, `float` and `double`. You
 may use `long` module for working with longs. [long module](https://www.npmjs.com/package/long) is included
-in Hazelcast Node.js client.
+in Hazelcast Node.js Client.
 
 Related section: [Path Resolution](#path-resolution-and-object-loading)
 
 ## Configuring Near Cache
-You may configure near caches for your maps as the following:
+
+You may configure Near Caches for your maps as the following:
 
 ```json
 {
@@ -334,15 +365,19 @@ You may configure near caches for your maps as the following:
     ]
 }
 ```
-`nearCaches` is an array that includes one configuration object for each near cache in the client. For meanings
-of configuration options refer to [NearCacheConfig API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/0.7/docs/classes/_config_.nearcacheconfig.html)
+`nearCaches` is an array that includes one configuration object for each Near Cache in the client. For meanings
+of configuration options, please refer to [NearCacheConfig API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/0.7/docs/classes/_config_.nearcacheconfig.html).
 
 ## Composing Declarative Configuration
+
 You can compose the declarative configuration of your Hazelcast client from multiple declarative
 configuration snippets. In order to compose a declarative configuration, you can use the `import` element to load
 different declarative configuration files.
 
-group-config.json:
+Let's assume you have the following two configurations:
+
+`group-config.json`:
+
 ```json
 {
     "group": {
@@ -352,7 +387,8 @@ group-config.json:
 }
 ```
 
-network-config.json:
+`network-config.json`:
+
 ```json
 {
     "network": {
@@ -376,12 +412,14 @@ shown below.
 }
 ```
 
-> Note: Use `import` element on top level of json hierarchy. 
+> Note: Use `import` element on top level of JSON hierarchy. 
 
 
 ## Path Resolution and Object Loading
-For configuration elements that require you to specify a code piece, you will need to specify the path to
-code and the name of exported element that you want the client to use. This configuration is set by the following:
+
+For configuration elements that require you to specify a code piece, you will need to specify the path to the 
+code and name of the exported element that you want the client to use. This configuration is set as follows:
+
 ```json
 {
     "path": "path/to/file",
@@ -392,11 +430,10 @@ code and the name of exported element that you want the client to use. This conf
 In the above configuration, `path` shows the address to the file that you want the client to load. Unless this is an
 absolute path, it is relative to the location of `hazelcast-config.json` file.
 
-In Javascript you can define and export as many objects as you want in a single file. Above configuration element
-is designed to load only one specified object from a file. Therefore `exportedName` specifies the name of desired
-object.
+In Javascript, you can define and export as many objects as you want in a single file. Above configuration element
+is designed to load only one specified object from a file (`MyObject`). Therefore, `exportedName` specifies the name of desired object.
 
-Let's say your project directory structure is like the following:
+Let's say your project's directory structure is as follows:
 
     my_app/
     my_app/index.js
@@ -406,6 +443,7 @@ Let's say your project directory structure is like the following:
     my_app/node_modules/hazelcast-client
     
 In `factory_utils.js`, you have multiple exported functions.
+
 ```javascript
 exports.utilityFunction = function() {...}
 exports.MySSLFactory = function() {...}
