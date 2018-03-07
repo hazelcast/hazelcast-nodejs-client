@@ -44,7 +44,6 @@ describe('SSL Client Authentication Test', function () {
             return Controller.startMember(cluster.id);
         }).then(function (m) {
             member = m;
-            return Promise.resolve();
         });
     }
 
@@ -102,7 +101,6 @@ describe('SSL Client Authentication Test', function () {
             });
 
             it('ma:required, server knows client, client does not know server should fail', function () {
-                this.timeout(5000);
                 return createMemberWithXML(maRequiredXML).then(function () {
                     return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('./client1.pem', './server2.pem')))
                         .to.be.rejectedWith(HzErrors.IllegalStateError);

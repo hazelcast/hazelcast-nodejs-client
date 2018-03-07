@@ -255,3 +255,10 @@ export class StaleTaskIdError extends HazelcastError {
         Object.setPrototypeOf(this, StaleTaskIdError.prototype);
     }
 }
+
+export class NodeIdOutOfRangeError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, NodeIdOutOfRangeError.prototype);
+    }
+}

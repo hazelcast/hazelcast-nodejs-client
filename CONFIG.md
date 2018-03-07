@@ -368,8 +368,8 @@ You may configure Near Caches for your maps as the following:
 `nearCaches` is an array that includes one configuration object for each Near Cache in the client. For meanings
 of configuration options, please refer to [NearCacheConfig API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/0.7/docs/classes/_config_.nearcacheconfig.html).
 
-## Configuring Reliable Id Generator
-You may configure reliable id generators as the following:
+## Configuring Flake Id Generator
+You may configure flake id generators as the following:
 
 ```json
 {

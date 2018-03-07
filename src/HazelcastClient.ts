@@ -45,6 +45,7 @@ import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
 import {RepairingTask} from './nearcache/RepairingTask';
 import {ConfigBuilder} from './config/ConfigBuilder';
 import {ClientErrorFactory} from './protocol/ErrorFactory';
+import {FlakeIdGenerator} from './proxy/FlakeIdGenerator';
 
 export default class HazelcastClient {
 
@@ -222,6 +223,10 @@ export default class HazelcastClient {
 
     getAtomicLong(name: string): IAtomicLong {
         return <IAtomicLong>this.proxyManager.getOrCreateProxy(name, ProxyManager.ATOMICLONG_SERVICE);
+    }
+
+    getFlakeIdGenerator(name: string): FlakeIdGenerator {
+        return <FlakeIdGenerator>this.proxyManager.getOrCreateProxy(name, ProxyManager.FLAKEID_SERVICE);
     }
 
     /**
