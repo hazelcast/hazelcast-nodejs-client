@@ -15,11 +15,11 @@
  */
 
 var expect = require("chai").expect;
-var HazelcastClient = require("../../lib/index.js").Client;
+var HazelcastClient = require('../../').Client;
 var Controller = require('./../RC');
 var Util = require('./../Util');
 var fs = require('fs');
-
+var PrefixFilter = require('../javaclasses/PrefixFilter');
 var Promise = require('bluebird');
 
 describe("Ringbuffer Proxy", function () {
@@ -54,7 +54,6 @@ describe("Ringbuffer Proxy", function () {
         return Controller.shutdownCluster(cluster.id);
     });
 
-
     it("adds one item and reads back", function () {
         return rb.add(1).then(function (sequence) {
             return rb.readOne(sequence).then(function (item) {
@@ -73,11 +72,22 @@ describe("Ringbuffer Proxy", function () {
         })
     });
 
-
     it("reads all items at once", function () {
         return rb.addAll([1, 2, 3]).then(function () {
             return rb.readMany(0, 1, 3).then(function (items) {
-                expect(items).to.deep.equal([1, 2, 3]);
+                expect(items.get(0)).to.equal(1);
+                expect(items.get(1)).to.equal(2);
+                expect(items.get(2)).to.equal(3);
+                expect(items.getReadCount()).to.equal(3);
+            });
+        })
+    });
+
+    it("readMany with filter filters the results", function () {
+        return rb.addAll(['item1', 'prefixedItem2', 'prefixedItem3']).then(function () {
+            return rb.readMany(0, 1, 3, new PrefixFilter('prefixed')).then(function (items) {
+                expect(items.get(0)).to.equal('prefixedItem2');
+                expect(items.get(1)).to.equal('prefixedItem3');
             });
         })
     });
@@ -115,7 +125,6 @@ describe("Ringbuffer Proxy", function () {
         });
     });
 
-
     it("correctly reports size", function () {
         return rb.addAll([1, 2]).then(function () {
             return rb.size().then(function (size) {
@@ -123,7 +132,4 @@ describe("Ringbuffer Proxy", function () {
             });
         })
     });
-
-
-
 });

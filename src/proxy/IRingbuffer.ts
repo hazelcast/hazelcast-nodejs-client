@@ -18,6 +18,7 @@ import * as Long from 'long';
 import * as Promise from 'bluebird';
 import {DistributedObject} from '../DistributedObject';
 import {OverflowPolicy} from '../core/OverflowPolicy';
+import {ReadResultSet} from './ringbuffer/ReadResultSet';
 
 export interface IRingbuffer<E> extends DistributedObject {
 
@@ -137,5 +138,5 @@ export interface IRingbuffer<E> extends DistributedObject {
      *                      or if maxCount larger than the capacity of the ringbuffer
      *                      or if maxCount larger than 1000 (to prevent overload)
      */
-    readMany(sequence: number | Long, minCount: number, maxCount: number): Promise<Array<E>>;
+    readMany(sequence: number | Long, minCount: number, maxCount: number): Promise<ReadResultSet<E>>;
 }

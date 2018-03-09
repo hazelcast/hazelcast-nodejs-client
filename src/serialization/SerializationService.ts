@@ -67,7 +67,7 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerGlobalSerializer();
     }
 
-    private isData(object: any): boolean {
+    public isData(object: any): boolean {
         if (object instanceof HeapData ) {
             return true;
         } else {

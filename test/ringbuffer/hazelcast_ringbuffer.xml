@@ -25,4 +25,12 @@
         <time-to-live-seconds>1</time-to-live-seconds>
         <capacity>5</capacity>
     </ringbuffer>
+
+    <serialization>
+        <data-serializable-factories>
+            <data-serializable-factory factory-id="66">
+                com.hazelcast.client.test.IdentifiedFactory
+            </data-serializable-factory>
+        </data-serializable-factories>
+    </serialization>
 </hazelcast>
