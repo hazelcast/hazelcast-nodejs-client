@@ -22,6 +22,7 @@ import {ReliableTopicProxy} from './ReliableTopicProxy';
 import {LoggingService} from '../../logging/LoggingService';
 import {TopicMessage} from './TopicMessage';
 import {StaleSequenceError} from '../../HazelcastError';
+import {ReadResultSet} from '../../';
 
 export class ReliableTopicListenerRunner<E> {
 
@@ -52,17 +53,17 @@ export class ReliableTopicListenerRunner<E> {
             return;
         }
 
-        this.ringbuffer.readMany(this.sequenceNumber, 1, this.batchSize).then((result: Array<RawTopicMessage>) => {
+        this.ringbuffer.readMany(this.sequenceNumber, 1, this.batchSize).then((result: ReadResultSet<RawTopicMessage>) => {
             if (!this.cancelled) {
-                result.forEach((raw: RawTopicMessage) => {
+                for (let i = 0; i < result.size(); i++) {
                     let msg = new TopicMessage<E>();
-                    msg.messageObject = this.serializationService.toObject(raw.payload);
-                    msg.publisher = raw.publisherAddress;
-                    msg.publishingTime = raw.publishTime;
+                    let item = result.get(i);
+                    msg.messageObject = this.serializationService.toObject(item.payload);
+                    msg.publisher = item.publisherAddress;
+                    msg.publishingTime = item.publishTime;
                     setImmediate(this.listener, msg);
                     this.sequenceNumber++;
-                });
-
+                }
                 setImmediate(this.next.bind(this));
             }
         }).catch((e) => {
@@ -81,7 +82,7 @@ export class ReliableTopicListenerRunner<E> {
                 return;
             }
 
-            var message = 'Listener of topic "' + this.proxy.getName() + '" caught an exception, terminating listener. ' + e;
+            let message = 'Listener of topic "' + this.proxy.getName() + '" caught an exception, terminating listener. ' + e;
             this.loggingService.warn('ReliableTopicListenerRunner', message);
 
             this.proxy.removeMessageListener(this.listenerId);

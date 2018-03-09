@@ -28,7 +28,7 @@ import {QueueProxy} from './QueueProxy';
 import {ListProxy} from './ListProxy';
 import {LockProxy} from './LockProxy';
 import {MultiMapProxy} from './MultiMapProxy';
-import {RingbufferProxy} from './RingbufferProxy';
+import {RingbufferProxy} from './ringbuffer/RingbufferProxy';
 import {ReplicatedMapProxy} from './ReplicatedMapProxy';
 import {NearCachedMapProxy} from './NearCachedMapProxy';
 import {SemaphoreProxy} from './SemaphoreProxy';

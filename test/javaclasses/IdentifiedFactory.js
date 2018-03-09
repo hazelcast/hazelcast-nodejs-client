@@ -17,6 +17,7 @@
 var IdentifiedEntryProcessor = require('./IdentifiedEntryProcessor');
 var DistortInvalidationMetadataEntryProcessor = require('./DistortInvalidationMetadataEntryProcessor');
 var CustomComparator = require('./CustomComparator');
+var PrefixFilter = require('./PrefixFilter');
 
 function IdentifiedFactory() {
 }
@@ -28,6 +29,8 @@ IdentifiedFactory.prototype.create = function (type) {
         return new CustomComparator();
     } else if (type === 3) {
         return new DistortInvalidationMetadataEntryProcessor();
+    } else if (type === 4) {
+        return new PrefixFilter();
     }
 };
 

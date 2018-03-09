@@ -25,6 +25,7 @@ import * as HazelcastErrors from './HazelcastError';
 import {IterationType} from './core/Predicate';
 import * as Aggregators from './aggregation/Aggregators';
 import {ImportConfig} from './config/ImportConfig';
+import {ReadResultSet} from './proxy/ringbuffer/ReadResultSet';
 
 export {
     HazelcastClient as Client,
@@ -35,6 +36,7 @@ export {
     Predicates,
     TopicOverloadPolicy,
     HazelcastErrors,
+    ReadResultSet,
     IterationType,
     Aggregators,
     ImportConfig
