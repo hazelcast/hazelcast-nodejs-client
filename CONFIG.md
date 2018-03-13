@@ -382,7 +382,7 @@ You may configure flake id generators as the following:
     ]
 }
 ```
-For meanings of configuration options refer to [FlakeIdGenerator API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/0.7/docs/classes/_config_.flakeidgeneratorconfigs.html)
+For meanings of configuration options refer to FlakeIdGenerator's API documantation [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs)
 
 > Note: Since Javascript cannot represent numbers greater than 2^53, you need to put long numbers in quotes as a string. 
 
