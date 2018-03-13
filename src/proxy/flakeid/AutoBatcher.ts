@@ -19,20 +19,20 @@ import * as Long from 'long';
 import * as Promise from 'bluebird';
 
 export class Batch {
-    private base: Long;
+    private nextIdLong: Long;
     private increment: Long;
     private batchSize: number;
-    private invalidSince: Long;
-    private lastIndex: number = 0;
+    private invalidSince: number;
+    private firstInvalidId: Long;
 
-    constructor(validityMillis: Long, base: Long, increment: Long, batchSize: number) {
-        this.base = base;
+    constructor(validityMillis: number, base: Long, increment: Long, batchSize: number) {
+        this.nextIdLong = base;
         this.increment = increment;
-        this.batchSize = batchSize;
-        if (validityMillis.greaterThan(0)) {
-            this.invalidSince = validityMillis.add(Date.now());
+        this.firstInvalidId = base.add(this.increment.multiply(batchSize));
+        if (validityMillis > 0) {
+            this.invalidSince = validityMillis + Date.now();
         } else {
-            this.invalidSince = Long.MAX_VALUE;
+            this.invalidSince = Number.MAX_SAFE_INTEGER;
         }
     }
 
@@ -41,14 +41,14 @@ export class Batch {
      *          undefined if ids are exhausted or not valid anymore
      */
     nextId(): Long {
-        if (this.invalidSince.lessThanOrEqual(Date.now())) {
+        if (this.invalidSince <= Date.now()) {
             return undefined;
         }
-        if (this.lastIndex === this.batchSize) {
+        if (this.firstInvalidId.equals(this.nextIdLong)) {
             return undefined;
         }
-        let returnLong = this.base.add(this.increment.multiply(this.lastIndex));
-        this.lastIndex++;
+        let returnLong = this.nextIdLong;
+        this.nextIdLong = this.nextIdLong.add(this.increment);
         return returnLong;
     }
 }
@@ -57,15 +57,13 @@ export class AutoBatcher {
 
     private readonly NEW_BATCH_AVAILABLE = 'newBatch';
 
-    private quee: Array<Promise.Resolver<Long>> = [];
+    private queue: Array<Promise.Resolver<Long>> = [];
     private batch: Batch;
     private requestInFlight: boolean = false;
     private supplier: () => Promise<any>;
-    private validMilliseconds: Long;
     private emitter = new EventEmitter();
 
-    constructor(validMilliseconds: Long, supplier: () => Promise<any>) {
-        this.validMilliseconds = validMilliseconds;
+    constructor(supplier: () => Promise<any>) {
         this.supplier = supplier;
         this.emitter.on(this.NEW_BATCH_AVAILABLE, this.processIdRequests.bind(this));
         this.emitter.on('error', this.rejectAll.bind(this));
@@ -73,17 +71,17 @@ export class AutoBatcher {
 
     processIdRequests(): void {
         let ind = 0;
-        while (ind < this.quee.length) {
+        while (ind < this.queue.length) {
             let nextId: Long;
             if (this.batch != null && (nextId = this.batch.nextId()) != null) {
-                this.quee[ind].resolve(nextId);
+                this.queue[ind].resolve(nextId);
                 ind++;
             } else {
                 this.assignNewBatch();
                 break;
             }
         }
-        this.quee.splice(0, ind);
+        this.queue.splice(0, ind);
     }
 
     private assignNewBatch(): void {
@@ -102,15 +100,15 @@ export class AutoBatcher {
     }
 
     private rejectAll(e: Error): void {
-        this.quee.forEach((deferred: Promise.Resolver<Long>) => {
+        this.queue.forEach((deferred: Promise.Resolver<Long>) => {
             deferred.reject(e);
         });
-        this.quee = [];
+        this.queue = [];
     }
 
     nextId(): Promise<Long> {
         let deferred = Promise.defer<Long>();
-        this.quee.push(deferred);
+        this.queue.push(deferred);
         this.processIdRequests();
         return deferred.promise;
     }

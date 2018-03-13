@@ -19,7 +19,7 @@ import * as Promise from 'bluebird';
 import {HazelcastError} from '../HazelcastError';
 import * as path from 'path';
 import {
-    createAddressFromString, mergeJson, tryGetArray, tryGetBoolean, tryGetEnum, tryGetLong, tryGetNumber,
+    createAddressFromString, mergeJson, tryGetArray, tryGetBoolean, tryGetEnum, tryGetNumber,
     tryGetString
 } from '../Util';
 import {TopicOverloadPolicy} from '../proxy/topic/TopicOverloadPolicy';
@@ -30,7 +30,6 @@ import {NearCacheConfig} from './NearCacheConfig';
 import {ImportConfig} from './ImportConfig';
 import {Properties} from './Properties';
 import {JsonConfigLocator} from './JsonConfigLocator';
-import Address = require('../Address');
 import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
 import {FlakeIdGeneratorConfig} from './FlakeIdGeneratorConfig';
 
@@ -269,7 +268,7 @@ export class ConfigBuilder {
                 } else if (name === 'prefetchCount') {
                     flakeIdConfig.prefetchCount = tryGetNumber(fidConfig[name]);
                 } else if (name === 'prefetchValidityMillis') {
-                    flakeIdConfig.prefetchValidityMillis = tryGetLong(fidConfig[name]);
+                    flakeIdConfig.prefetchValidityMillis = tryGetNumber(fidConfig[name]);
                 }
             }
             this.clientConfig.flakeIdGeneratorConfigs[flakeIdConfig.name] = flakeIdConfig;

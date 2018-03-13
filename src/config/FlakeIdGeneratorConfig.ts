@@ -40,7 +40,7 @@ export class FlakeIdGeneratorConfig {
      *
      * Set to the desired ID validity or 0 for unlimited.
      */
-    prefetchValidityMillis: Long | number = 600000;
+    prefetchValidityMillis: number = 600000;
 
     toString(): string {
         return 'FlakeIdGeneratorConfig[' +
