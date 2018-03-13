@@ -41,6 +41,7 @@ import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {ClientNotActiveError, HazelcastError} from '../HazelcastError';
 import {FlakeIdGeneratorProxy} from './FlakeIdGeneratorProxy';
 import {PNCounterProxy} from './PNCounterProxy';
+import {ReliableTopicProxy} from './topic/ReliableTopicProxy';
 
 export class ProxyManager {
     public static readonly MAP_SERVICE: string = 'hz:impl:mapService';
@@ -55,6 +56,7 @@ export class ProxyManager {
     public static readonly ATOMICLONG_SERVICE: string = 'hz:impl:atomicLongService';
     public static readonly FLAKEID_SERVICE: string = 'hz:impl:flakeIdGeneratorService';
     public static readonly PNCOUNTER_SERVICE: string = 'hz:impl:PNCounterService';
+    public static readonly RELIABLETOPIC_SERVICE: string = 'hz:impl:reliableTopicService';
 
     public readonly service: {[serviceName: string]: any} = {};
     private readonly proxies: { [proxyName: string]: DistributedObject; } = {};
@@ -82,6 +84,7 @@ export class ProxyManager {
         this.service[ProxyManager.ATOMICLONG_SERVICE] = AtomicLongProxy;
         this.service[ProxyManager.FLAKEID_SERVICE] = FlakeIdGeneratorProxy;
         this.service[ProxyManager.PNCOUNTER_SERVICE] = PNCounterProxy;
+        this.service[ProxyManager.RELIABLETOPIC_SERVICE] = ReliableTopicProxy;
     }
 
     public getOrCreateProxy(name: string, serviceName: string, createAtServer = true): DistributedObject {
@@ -89,7 +92,7 @@ export class ProxyManager {
             return this.proxies[name];
         } else {
             let newProxy: DistributedObject;
-            if (serviceName === ProxyManager.MAP_SERVICE && this.client.getConfig().nearCacheConfigs[name]) {
+            if (serviceName === ProxyManager.MAP_SERVICE && this.client.getConfig().getNearCacheConfig(name)) {
                 newProxy = new NearCachedMapProxy(this.client, serviceName, name);
             } else {
                 newProxy = new this.service[serviceName](this.client, serviceName, name);

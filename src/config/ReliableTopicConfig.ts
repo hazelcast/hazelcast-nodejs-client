@@ -20,4 +20,17 @@ export class ReliableTopicConfig {
     name: string = 'default';
     readBatchSize: number = 25;
     overloadPolicy: TopicOverloadPolicy = TopicOverloadPolicy.BLOCK;
+
+    toString(): string {
+        return 'ReliableTopicConfig[' +
+            'name: ' + this.name + ', ' +
+            'readBatchSize: ' + this.readBatchSize + ', ' +
+            'overloadPolicy: ' + this.overloadPolicy + ']';
+    }
+
+    clone(): ReliableTopicConfig {
+        let other = new ReliableTopicConfig();
+        Object.assign(other, this);
+        return other;
+    }
 }
