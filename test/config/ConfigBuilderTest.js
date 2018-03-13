@@ -133,9 +133,9 @@ describe('ConfigBuilder Test', function () {
         var flakeIdConfigs = configFull.flakeIdGeneratorConfigs;
         expect(flakeIdConfigs['flakeid'].name).to.equal('flakeid');
         expect(flakeIdConfigs['flakeid'].prefetchCount).to.equal(123);
-        expect(Long.fromNumber(150000).equals(flakeIdConfigs['flakeid'].prefetchValidityMillis)).to.be.true;
+        expect(150000).to.be.equal(flakeIdConfigs['flakeid'].prefetchValidityMillis);
         expect(flakeIdConfigs['flakeid2'].name).to.equal('flakeid2');
         expect(flakeIdConfigs['flakeid2'].prefetchCount).to.equal(1234);
-        expect(Long.fromString("99999999999999999").equals(flakeIdConfigs['flakeid2'].prefetchValidityMillis)).to.be.true;
+        expect(1900000).to.be.equal(flakeIdConfigs['flakeid2'].prefetchValidityMillis);
     })
 });

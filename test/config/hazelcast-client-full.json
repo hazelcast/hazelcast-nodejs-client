@@ -112,7 +112,7 @@
         {
             "name": "flakeid2",
             "prefetchCount": 1234,
-            "prefetchValidityMillis": "99999999999999999"
+            "prefetchValidityMillis": 1900000
         }
     ],
     "import": [
