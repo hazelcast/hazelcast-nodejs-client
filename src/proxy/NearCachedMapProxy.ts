@@ -39,7 +39,8 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
 
     constructor(client: HazelcastClient, servicename: string, name: string) {
         super(client, servicename, name);
-        this.nearCache = new NearCacheImpl(this.client.getConfig().nearCacheConfigs[name], this.client.getSerializationService());
+        this.nearCache = new NearCacheImpl(this.client.getConfig().getNearCacheConfig(name),
+            this.client.getSerializationService());
         if (this.nearCache.isInvalidatedOnChange()) {
             this.addNearCacheInvalidationListener().then((id: string) => {
                 this.invalidationListenerId = id;

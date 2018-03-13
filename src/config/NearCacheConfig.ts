@@ -48,4 +48,10 @@ export class NearCacheConfig {
             'evictionMaxSize: ' + this.evictionMaxSize + ', ' +
             'maxIdleSeconds: ' + this.maxIdleSeconds + ']';
     }
+
+    clone(): NearCacheConfig {
+        let other = new NearCacheConfig();
+        Object.assign(other, this);
+        return other;
+    }
 }
