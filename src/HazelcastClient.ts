@@ -215,7 +215,7 @@ export default class HazelcastClient {
      * @returns {ITopic<E>}
      */
     getReliableTopic<E>(name: string): ITopic<E> {
-        return new ReliableTopicProxy(name, this);
+        return <ITopic<E>>this.proxyManager.getOrCreateProxy(name, ProxyManager.RELIABLETOPIC_SERVICE);
     }
 
     getReplicatedMap<K, V>(name: string): IReplicatedMap<K, V> {

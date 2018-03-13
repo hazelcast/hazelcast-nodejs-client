@@ -26,11 +26,14 @@ import {ListenerConfig} from './ListenerConfig';
 import {Properties} from './Properties';
 import {ImportConfig} from './ImportConfig';
 import {FlakeIdGeneratorConfig} from './FlakeIdGeneratorConfig';
+import {ConfigPatternMatcher} from './ConfigPatternMatcher';
 
 /**
  * Top level configuration object of Hazelcast client. Other configurations items are properties of this object.
  */
 export class ClientConfig {
+
+    private configPatternMatcher = new ConfigPatternMatcher();
     /**
      * Name of this client instance.
      */
@@ -50,11 +53,57 @@ export class ClientConfig {
     listeners: ListenerConfig = new ListenerConfig();
     listenerConfigs: ImportConfig[] = [];
     serializationConfig: SerializationConfig = new SerializationConfig();
-    reliableTopicConfigs: any = {
-        'default': new ReliableTopicConfig()
-    };
+    reliableTopicConfigs: {[name: string]: ReliableTopicConfig} = {};
     nearCacheConfigs: {[name: string]: NearCacheConfig} = {};
     flakeIdGeneratorConfigs: {[name: string]: FlakeIdGeneratorConfig} = {};
+
+    getReliableTopicConfig(name: string): ReliableTopicConfig {
+        let matching = this.lookupByPattern<ReliableTopicConfig>(this.reliableTopicConfigs, name);
+        let config: ReliableTopicConfig;
+        if (matching != null) {
+            config = matching.clone();
+        } else {
+            config = new ReliableTopicConfig();
+        }
+        config.name = name;
+        return config;
+    }
+
+    getNearCacheConfig(name: string): NearCacheConfig {
+        let matching = this.lookupByPattern<NearCacheConfig>(this.nearCacheConfigs, name);
+        if (matching == null) {
+            return null;
+        }
+        let config = matching.clone();
+        config.name = name;
+        return config;
+    }
+
+    getFlakeIdGeneratorConfig(name: string): FlakeIdGeneratorConfig {
+        let matching: FlakeIdGeneratorConfig = this.lookupByPattern<FlakeIdGeneratorConfig>(this.flakeIdGeneratorConfigs, name);
+        let config: FlakeIdGeneratorConfig;
+        if (matching != null) {
+            config = matching.clone();
+        } else {
+            config = new FlakeIdGeneratorConfig();
+        }
+        config.name = name;
+        return config;
+    }
+
+    private lookupByPattern<T>(config: {[pattern: string]: any}, name: string): T {
+        if (config[name] != null) {
+            return config[name];
+        }
+        let matchingPattern = this.configPatternMatcher.matches(Object.keys(config), name);
+        if (matchingPattern != null) {
+            return config[matchingPattern];
+        }
+        if (config['default'] != null) {
+            return config['default'];
+        }
+        return null;
+    }
 }
 
 export {ClientNetworkConfig};

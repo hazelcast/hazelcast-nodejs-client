@@ -31,10 +31,7 @@ export class FlakeIdGeneratorProxy extends BaseProxy implements FlakeIdGenerator
 
     constructor(client: HazelcastClient, serviceName: string, name: string) {
         super(client, serviceName, name);
-        this.config = client.getConfig().flakeIdGeneratorConfigs[name];
-        if (this.config == null) {
-            this.config = new FlakeIdGeneratorConfig();
-        }
+        this.config = client.getConfig().getFlakeIdGeneratorConfig(name);
         this.autoBatcher = new AutoBatcher(() => {
             return this.encodeInvokeOnRandomTarget(FlakeIdGeneratorNewIdBatchCodec, this.config.prefetchCount).then((re: any) => {
                 return new Batch(this.config.prefetchValidityMillis, re.base, re.increment, re.batchSize);

@@ -48,4 +48,10 @@ export class FlakeIdGeneratorConfig {
             'prefetchCount: ' + this.prefetchCount + ', ' +
             'prefetchValidityMillis: ' + this.prefetchValidityMillis + ']';
     }
+
+    clone(): FlakeIdGeneratorConfig {
+        let other = new FlakeIdGeneratorConfig();
+        Object.assign(other, this);
+        return other;
+    }
 }

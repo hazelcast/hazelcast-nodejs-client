@@ -88,7 +88,6 @@ describe('SSL Client Authentication Test', function () {
         describe(title, function () {
 
             afterEach(function () {
-                this.timeout(4000);
                 return Controller.shutdownCluster(cluster.id);
             });
 

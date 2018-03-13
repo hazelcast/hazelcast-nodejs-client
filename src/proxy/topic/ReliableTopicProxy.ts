@@ -29,25 +29,25 @@ import {OverflowPolicy} from '../../core/OverflowPolicy';
 import {TopicOverloadPolicy} from './TopicOverloadPolicy';
 import {TopicOverloadError} from '../../HazelcastError';
 import Long = require('long');
+import {BaseProxy} from '../BaseProxy';
 
 export const RINGBUFFER_PREFIX = '_hz_rb_';
 export const TOPIC_INITIAL_BACKOFF = 100;
 export const TOPIC_MAX_BACKOFF = 2000;
 
-export class ReliableTopicProxy<E> implements ITopic<E> {
+export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
     private ringbuffer: IRingbuffer<RawTopicMessage>;
     private localAddress: Address;
     private batchSize: number;
     private runners: {[key: string]: ReliableTopicListenerRunner<E>} = {};
     private serializationService: SerializationService;
     private overloadPolicy: TopicOverloadPolicy;
-    private name: string;
 
-    constructor(name: string, client: HazelcastClient) {
+    constructor(client: HazelcastClient, serviceName: string, name: string) {
+        super(client, serviceName, name);
         this.ringbuffer = client.getRingbuffer<RawTopicMessage>(RINGBUFFER_PREFIX + name);
         this.localAddress = client.getClusterService().getClientInfo().localAddress;
-        var configs = client.getConfig().reliableTopicConfigs;
-        var config: ReliableTopicConfig = configs[name] || configs['default'];
+        let config = client.getConfig().getReliableTopicConfig(name);
         this.batchSize = config.readBatchSize;
         this.overloadPolicy = config.overloadPolicy;
         this.serializationService = client.getSerializationService();
@@ -160,10 +160,6 @@ export class ReliableTopicProxy<E> implements ITopic<E> {
 
     public getRingbuffer(): IRingbuffer<RawTopicMessage> {
         return this.ringbuffer;
-    }
-
-    public getName(): String {
-        return this.name;
     }
 
     destroy(): Promise<void> {
