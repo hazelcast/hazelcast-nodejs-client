@@ -17,6 +17,7 @@
 import * as Promise from 'bluebird';
 import {DistributedObject} from '../DistributedObject';
 import {IMapListener} from '../core/MapListener';
+import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 
 export interface MultiMap<K, V> extends DistributedObject {
 
@@ -34,9 +35,9 @@ export interface MultiMap<K, V> extends DistributedObject {
     /**
      * Retrieves a list of values associated with the specified key.
      * @param key key to search for.
-     * @return array of values associated with the specified key.
+     * @return a list of values associated with the specified key.
      */
-    get(key: K): Promise<Array<V>>;
+    get(key: K): Promise<ReadOnlyLazyList<V>>;
 
     /**
      * Removes an association of the specified value with the specified key. Calling this method does not affect
@@ -50,9 +51,9 @@ export interface MultiMap<K, V> extends DistributedObject {
     /**
      * Detaches all values from the specified key.
      * @param key key from which all entries should be removed.
-     * @return an array of old values that were associated with this key prior to this method call.
+     * @return a list of old values that were associated with this key prior to this method call.
      */
-    removeAll(key: K): Promise<Array<V>>;
+    removeAll(key: K): Promise<ReadOnlyLazyList<V>>;
 
     /**
      * @return an array of all keys in this multi-map.
@@ -60,9 +61,9 @@ export interface MultiMap<K, V> extends DistributedObject {
     keySet(): Promise<Array<K>>;
 
     /**
-     * @return a flat array of all values stored in this multi-map.
+     * @return a flat list of all values stored in this multi-map.
      */
-    values(): Promise<Array<V>>;
+    values(): Promise<ReadOnlyLazyList<V>>;
 
     /**
      * Returns all entries in this multi-map. If a certain key has multiple values associated with it,

@@ -17,6 +17,7 @@
 import * as Promise from 'bluebird';
 import {DistributedObject} from '../DistributedObject';
 import {ItemListener} from '../core/ItemListener';
+import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 
 export interface IList<E> extends DistributedObject {
 
@@ -157,8 +158,9 @@ export interface IList<E> extends DistributedObject {
      * Return a view of this list that contains elements between index numbers from `start` (inclusive) to `end` (exclusive)
      * @param start start of the view
      * @param end end of the view
+     * @return a view of this list that contains elements between index numbers from `start` (inclusive) to `end` (exclusive)
      */
-    subList(start: number, end: number): Promise<E[]>;
+    subList(start: number, end: number): Promise<ReadOnlyLazyList<E>>;
 
     /**
      * Returns an array that contains all elements of this list in proper sequence.

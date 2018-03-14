@@ -79,6 +79,7 @@ import ClientMessage = require('../ClientMessage');
 import {Aggregator} from '../aggregation/Aggregator';
 import {MapAggregateCodec} from '../codec/MapAggregateCodec';
 import {MapAggregateWithPredicateCodec} from '../codec/MapAggregateWithPredicateCodec';
+import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 
 export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     aggregate<R>(aggregator: Aggregator<R>): Promise<R> {
@@ -185,24 +186,24 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         }
     }
 
-    valuesWithPredicate(predicate: Predicate): Promise<V[]> {
+    valuesWithPredicate(predicate: Predicate): Promise<ReadOnlyLazyList<V>> {
         assertNotNull(predicate);
         var toObject = this.toObject.bind(this);
         if (predicate instanceof PagingPredicate) {
             predicate.setIterationType(IterationType.VALUE);
-            var predData = this.toData(predicate);
+            let predData = this.toData(predicate);
             return this.encodeInvokeOnRandomTarget(
                 MapValuesWithPagingPredicateCodec, predData
-            ).then(function(rawValues: [Data, Data][]) {
-                var deserValues = rawValues.map<[K, V]>(function (ite: [Data, Data]) {
+            ).then((rawValues: [Data, Data][]) => {
+                let desValues = rawValues.map<[K, V]>(function (ite: [Data, Data]) {
                     return [toObject(ite[0]), toObject(ite[1])];
                 });
-                return getSortedQueryResultSet(deserValues, predicate);
+                return new ReadOnlyLazyList(getSortedQueryResultSet(desValues, predicate), this.client.getSerializationService());
             });
         } else {
             var predicateData = this.toData(predicate);
-            return this.encodeInvokeOnRandomTarget(MapValuesWithPredicateCodec, predicateData).then(function (rawValues: Data[]) {
-                return rawValues.map<V>(toObject);
+            return this.encodeInvokeOnRandomTarget(MapValuesWithPredicateCodec, predicateData).then( (rawValues: Data[]) => {
+                return new ReadOnlyLazyList(rawValues, this.client.getSerializationService());
             });
         }
     }
@@ -490,10 +491,9 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.encodeInvokeOnKey<void>(MapSetCodec, keyData, keyData, valueData, 0, ttl);
     }
 
-    values(): Promise<V[]> {
-        var toObject = this.toObject.bind(this);
-        return this.encodeInvokeOnRandomTarget<V[]>(MapValuesCodec).then(function(valuesData) {
-            return valuesData.map<V>(toObject);
+    values(): Promise<ReadOnlyLazyList<V>> {
+        return this.encodeInvokeOnRandomTarget<Data[]>(MapValuesCodec).then((valuesData) => {
+            return new ReadOnlyLazyList(valuesData, this.client.getSerializationService());
         });
     }
 

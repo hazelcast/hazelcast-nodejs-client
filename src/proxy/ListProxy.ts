@@ -42,6 +42,7 @@ import {ListLastIndexOfCodec} from '../codec/ListLastIndexOfCodec';
 import ClientMessage = require('../ClientMessage');
 import * as Promise from 'bluebird';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
+import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 
 export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
 
@@ -113,21 +114,18 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
         return this.encodeInvoke<number>(ListSizeCodec);
     }
 
-    subList(start: number, end: number): Promise<E[]> {
+    subList(start: number, end: number): Promise<ReadOnlyLazyList<E>> {
         return this.encodeInvoke(ListSubCodec, start, end).then((encoded: Data[]) => {
-            return encoded.map((item: Data) => {
-                return this.toObject(item);
-            });
+            return new ReadOnlyLazyList<E>(encoded, this.client.getSerializationService());
         });
     }
 
     toArray(): Promise<E[]> {
-        return this.encodeInvoke(ListGetAllCodec)
-            .then((elements: Array<Data>) => {
-                return elements.map((element) => {
-                    return this.toObject(element);
-                });
+        return this.encodeInvoke(ListGetAllCodec).then((elements: Array<Data>) => {
+            return elements.map((element) => {
+                return this.toObject(element);
             });
+        });
     }
 
     addItemListener(listener: ItemListener<E>, includeValue: boolean): Promise<string> {

@@ -46,13 +46,12 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
         return this.encodeInvoke<boolean>(SetAddAllCodec, this.serializeList(items));
     }
 
-    getAll(): Promise<E[]> {
-        return this.encodeInvoke(SetGetAllCodec)
-            .then((items: Array<Data>) => {
-                return items.map((item) => {
-                    return this.toObject(item);
-                });
+    toArray(): Promise<E[]> {
+        return this.encodeInvoke(SetGetAllCodec).then((items: Array<Data>) => {
+            return items.map((item) => {
+                return this.toObject(item);
             });
+        });
     }
 
     clear(): Promise<void> {
