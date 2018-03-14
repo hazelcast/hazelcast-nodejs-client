@@ -75,19 +75,24 @@ describe("FlakeIdGeneratorProxyTest", function () {
         var promise = Promise.resolve();
         var idList = [];
         for (var i = 0; i < 10; i++) {
-            promise = promise.then(Promise.all([
-                flakeIdGenerator.newId().then(addToListFunction(idList)),
-                flakeIdGenerator.newId().then(addToListFunction(idList)),
-                flakeIdGenerator.newId().then(addToListFunction(idList)),
-                flakeIdGenerator.newId().then(addToListFunction(idList)),
-                flakeIdGenerator.newId().then(addToListFunction(idList))
-            ]));
+            promise = promise.then(function () {
+                return Promise.all([
+                    flakeIdGenerator.newId().then(addToListFunction(idList)),
+                    flakeIdGenerator.newId().then(addToListFunction(idList)),
+                    flakeIdGenerator.newId().then(addToListFunction(idList)),
+                    flakeIdGenerator.newId().then(addToListFunction(idList)),
+                    flakeIdGenerator.newId().then(addToListFunction(idList))
+                ]);
+            });
         }
         return promise.then(function () {
-            idList.sort();
+            expect(idList.length).to.be.equal(50);
+            idList.sort(function (a, b) {
+                return (a.greaterThan(b) ? 1 : (a.lessThan(b) ? -1 : 0));
+            });
             for (var i = 1; i < idList.length; i++) {
                 expect(idList[i]).to.be.instanceOf(Long);
-                expect(idList[i-1].equals(idList[i])).to.be.false;
+                expect(idList[i-1].equals(idList[i]), 'Expected ' + idList[i-1] + ' ' + idList[i] + 'to be different.').to.be.false;
             }
         });
     });
@@ -107,7 +112,8 @@ describe("FlakeIdGeneratorProxyTest", function () {
             return Util.promiseWaitMilliseconds(SHORT_TERM_VALIDITY_MILLIS + 1000).then(function () {
                 return flakeIdGenerator.newId();
             }).then(function (secondId) {
-                expect(secondId.greaterThan(firstId.add(FLAKE_ID_STEP * SHORT_TERM_BATCH_SIZE))).to.be.true;
+                var borderId = firstId.add(FLAKE_ID_STEP * SHORT_TERM_BATCH_SIZE);
+                expect(secondId.greaterThan(borderId), 'Expected ' + secondId + ' to be greater than ' + borderId).to.be.true;
             });
         });
     });
@@ -118,10 +124,13 @@ describe("FlakeIdGeneratorProxyTest", function () {
             return flakeIdGenerator.newId().then(function () {
                 //after this we exhausted the batch at hand
                 return flakeIdGenerator.newId();
+            }).then(function () {
+                return Util.promiseWaitMilliseconds(100);
             }).then(function() {
                 return flakeIdGenerator.newId();
             }).then(function (secondId) {
-                return expect(secondId.greaterThan(firstId.add(FLAKE_ID_STEP * SHORT_TERM_BATCH_SIZE))).to.be.true;
+                var borderId = firstId.add(FLAKE_ID_STEP * SHORT_TERM_BATCH_SIZE);
+                return expect(secondId.greaterThan(borderId), 'Expected ' + secondId + ' to be greater than ' + borderId).to.be.true;
             });
         });
     });
