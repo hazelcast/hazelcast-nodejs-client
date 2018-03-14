@@ -67,10 +67,10 @@ describe("Set Proxy", function () {
         });
     });
 
-    it("gets all", function () {
+    it("toArray", function () {
         var input = [1, 2, 3];
         return setInstance.addAll(input).then(function () {
-            return setInstance.getAll().then(function (all) {
+            return setInstance.toArray().then(function (all) {
                 expect(all.sort()).to.deep.equal(input);
             });
         });
@@ -117,7 +117,7 @@ describe("Set Proxy", function () {
         return setInstance.addAll([1, 2, 3]).then(function () {
             return setInstance.remove(1)
         }).then(function () {
-            return setInstance.getAll().then(function (all) {
+            return setInstance.toArray().then(function (all) {
                 expect(all.sort()).to.deep.equal([2, 3]);
             });
         });
@@ -127,7 +127,7 @@ describe("Set Proxy", function () {
         return setInstance.addAll([1, 2, 3, 4]).then(function () {
             return setInstance.removeAll([1, 2]);
         }).then(function () {
-            return setInstance.getAll().then(function (all) {
+            return setInstance.toArray().then(function (all) {
                 expect(all.sort()).to.deep.equal([3, 4]);
             });
         });
@@ -137,7 +137,7 @@ describe("Set Proxy", function () {
         return setInstance.addAll([1, 2, 3, 4]).then(function () {
             return setInstance.retainAll([1, 2]);
         }).then(function () {
-            return setInstance.getAll().then(function (all) {
+            return setInstance.toArray().then(function (all) {
                 expect(all.sort()).to.deep.equal([1, 2]);
             });
         });

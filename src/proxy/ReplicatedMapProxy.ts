@@ -45,6 +45,7 @@ import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import Long = require('long');
 import {ArrayComparator} from '../util/ArrayComparator';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
+import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 
 export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements IReplicatedMap<K, V> {
 
@@ -120,14 +121,14 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         });
     }
 
-    values(comparator?: ArrayComparator<V>): Promise<V[]> {
+    values(comparator?: ArrayComparator<V>): Promise<ReadOnlyLazyList<V>> {
         const toObject = this.toObject.bind(this);
-        return this.encodeInvoke<V[]>(ReplicatedMapValuesCodec).then(function (valuesData) {
-            let results = valuesData.map<V>(toObject);
+        return this.encodeInvoke<Data[]>(ReplicatedMapValuesCodec).then((valuesData: Data[]) => {
             if (comparator) {
-                return results.sort(comparator);
+                let desValues = valuesData.map(toObject);
+                return new ReadOnlyLazyList(desValues.sort(comparator), this.client.getSerializationService());
             }
-            return results;
+            return new ReadOnlyLazyList(valuesData, this.client.getSerializationService());
         });
     }
 

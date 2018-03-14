@@ -20,6 +20,7 @@ import {Predicate} from '../core/Predicate';
 import {IMapListener} from '../core/MapListener';
 import Long = require('long');
 import {ArrayComparator} from '../util/ArrayComparator';
+import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 
 export interface IReplicatedMap<K, V> extends DistributedObject {
     /**
@@ -119,9 +120,9 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
     keySet(): Promise<K[]>;
 
     /**
-     * @return Returns an array of values contained in this map.
+     * @return a list of values contained in this map.
      */
-    values(comparator?: ArrayComparator<V>): Promise<V[]>;
+    values(comparator?: ArrayComparator<V>): Promise<ReadOnlyLazyList<V>>;
 
     /**
      * @return Returns entries as an array of key-value pairs.

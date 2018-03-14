@@ -37,10 +37,10 @@ export interface ISet<E> extends DistributedObject {
     addAll(items : E[]) : Promise<boolean>;
 
     /**
-     * Returns all item in this set.
+     * Returns an array containing all of the elements in the set.
      * @return An array of items.
      */
-    getAll(): Promise<E[]>;
+    toArray(): Promise<E[]>;
 
     /**
      * Removes all of the elements from this set.

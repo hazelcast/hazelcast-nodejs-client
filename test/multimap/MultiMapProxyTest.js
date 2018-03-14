@@ -56,7 +56,7 @@ describe("MultiMap Proxy", function () {
         return map.put(1, 1).then(function () {
             return map.get(1);
         }).then(function (values) {
-            expect(values).to.deep.equal([1]);
+            expect(values.toArray()).to.deep.equal([1]);
         });
     });
 
@@ -66,7 +66,7 @@ describe("MultiMap Proxy", function () {
         }).then(function () {
             return map.get(1);
         }).then(function (values) {
-            expect(values.sort()).to.deep.equal([1, 2]);
+            expect(values.toArray().sort()).to.deep.equal([1, 2]);
         });
     });
 
@@ -93,7 +93,7 @@ describe("MultiMap Proxy", function () {
         }).then(function () {
             return map.get(1)
         }).then(function (values) {
-            expect(values.sort()).to.deep.equal([1, 5])
+            expect(values.toArray().sort()).to.deep.equal([1, 5])
         });
     });
 
@@ -118,10 +118,10 @@ describe("MultiMap Proxy", function () {
         return Promise.all(puts).then(function () {
             return map.removeAll(1);
         }).then(function (oldValues) {
-            expect(oldValues.sort()).to.deep.equal([1, 3, 5]);
+            expect(oldValues.toArray().sort()).to.deep.equal([1, 3, 5]);
             return map.get(1)
         }).then(function (values) {
-            expect(values).to.be.empty;
+            expect(values.toArray()).to.be.empty;
         });
     });
 
@@ -139,7 +139,7 @@ describe("MultiMap Proxy", function () {
         return Promise.all(puts).then(function () {
             return map.values();
         }).then(function (values) {
-            expect(values.sort()).to.deep.equal([1, 3, 5]);
+            expect(values.toArray().sort()).to.deep.equal([1, 3, 5]);
         });
     });
 

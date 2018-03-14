@@ -436,7 +436,7 @@ describe('MapProxy', function() {
 
             it('values', function() {
                 return map.values().then(function(vals) {
-                    return expect(vals).to.deep.have.members([
+                    return expect(vals.toArray()).to.deep.have.members([
                         'val0', 'val1', 'val2', 'val3', 'val4',
                         'val5', 'val6', 'val7', 'val8', 'val9'
                     ]);
@@ -447,7 +447,7 @@ describe('MapProxy', function() {
                 return map.clear().then(function() {
                     return map.values();
                 }).then(function(vals) {
-                    return expect(vals).to.have.lengthOf(0);
+                    return expect(vals.toArray()).to.have.lengthOf(0);
                 })
             });
 
@@ -794,9 +794,9 @@ describe('MapProxy', function() {
             });
 
             it('valuesWithPredicate', function() {
-                return map.valuesWithPredicate(Predicates.sql('this == val3')).then(function(valueSet) {
-                    expect(valueSet.length).to.equal(1);
-                    expect(valueSet[0]).to.equal('val3');
+                return map.valuesWithPredicate(Predicates.sql('this == val3')).then(function(valueList) {
+                    expect(valueList.toArray().length).to.equal(1);
+                    expect(valueList.toArray()[0]).to.equal('val3');
                 });
             });
 
@@ -816,8 +816,8 @@ describe('MapProxy', function() {
 
             it('valuesWithPredicate paging', function() {
                 return map.valuesWithPredicate(Predicates.paging(Predicates.greaterEqual('this', 'val3'), 1)).then(function(values) {
-                    expect(values.length).to.equal(1);
-                    expect(values[0]).to.equal('val3');
+                    expect(values.toArray().length).to.equal(1);
+                    expect(values.toArray()[0]).to.equal('val3');
                 });
             });
 
