@@ -237,7 +237,7 @@ describe('ReplicatedMap Proxy', function () {
                 return rm.values();
             })
             .then(function (values) {
-                expect(values).to.eql(['value1', 'value2', 'value3']);
+                expect(values.toArray()).to.eql(['value1', 'value2', 'value3']);
             });
     });
 
@@ -247,17 +247,15 @@ describe('ReplicatedMap Proxy', function () {
             ['key2', 'value2'],
             ['key3', 'value3'],
             ['key1', 'value1']
-        ])
-            .then(function () {
-                return rm.values(function (a, b) {
-                    return b[b.length - 1] - a[a.length - 1];
-                });
-            })
-            .then(function (values) {
-                values.forEach(function (value, index) {
-                    expect(value).to.equal(expectedArray[index]);
-                });
+        ]).then(function () {
+            return rm.values(function (a, b) {
+                return b[b.length - 1] - a[a.length - 1];
             });
+        }).then(function (values) {
+            values.toArray().forEach(function (value, index) {
+                expect(value).to.equal(expectedArray[index]);
+            });
+        });
     });
 
     it('returns keySet', function () {

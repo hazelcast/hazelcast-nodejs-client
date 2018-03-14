@@ -235,7 +235,7 @@ describe("List Proxy", function () {
         return listInstance.addAll([1, 2, 3, 4, 5, 6]).then(function () {
             return listInstance.subList(1, 5);
         }).then(function (subList) {
-            expect(subList).to.deep.equal([2, 3, 4, 5]);
+            expect(subList.toArray()).to.deep.equal([2, 3, 4, 5]);
         });
     });
 

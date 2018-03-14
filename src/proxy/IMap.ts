@@ -21,6 +21,7 @@ import {IMapListener} from '../core/MapListener';
 import {Predicate} from '../core/Predicate';
 import {IdentifiedDataSerializable, Portable} from '../serialization/Serializable';
 import {Aggregator} from '../aggregation/Aggregator';
+import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 export interface IMap<K, V> extends DistributedObject {
 
     /**
@@ -279,16 +280,17 @@ export interface IMap<K, V> extends DistributedObject {
     unlock(key: K): Promise<void>;
 
     /**
-     * Returns an array of values contained in this map.
+     * Returns a list of values contained in this map.
      */
-    values(): Promise<V[]>;
+    values(): Promise<ReadOnlyLazyList<V>>;
 
     /**
      * Queries the map based on the specified predicate and returns the values of matching entries.
      * Specified predicate runs on all members in parallel.
      * @param predicate
+     * @return a list of values that satisfies the given predicate.
      */
-    valuesWithPredicate(predicate: Predicate): Promise<V[]>;
+    valuesWithPredicate(predicate: Predicate): Promise<ReadOnlyLazyList<V>>;
 
     /**
      * Returns a key-value pair representing the association of given key

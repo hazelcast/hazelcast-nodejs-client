@@ -83,9 +83,9 @@ describe("Predicates", function() {
     function testPredicate(predicate, expecteds, orderMatters) {
         return map.valuesWithPredicate(predicate).then(function(values) {
             if (orderMatters) {
-                return expect(values).to.deep.equal(expecteds);
+                return expect(values.toArray()).to.deep.equal(expecteds);
             } else {
-                return expect(values).to.have.members(expecteds);
+                return expect(values.toArray()).to.have.members(expecteds);
             }
         });
     }
@@ -119,7 +119,7 @@ describe("Predicates", function() {
         return localMap.put('temp', 'tempval').then(function() {
             return localMap.valuesWithPredicate(Predicates.like('this', 'tempv%'));
         }).then(function (values) {
-            return expect(values).to.have.members(['tempval']);
+            return expect(values.toArray()).to.have.members(['tempval']);
         }).then(function() {
             return localMap.destroy();
         });
@@ -130,7 +130,7 @@ describe("Predicates", function() {
         return localMap.putAll([['temp', 'tempval'], ['TEMP', 'TEMPVAL']]).then(function() {
             return localMap.valuesWithPredicate(Predicates.ilike('this', 'tempv%'));
         }).then(function (values) {
-            return expect(values).to.have.members(['tempval', 'TEMPVAL']);
+            return expect(values.toArray()).to.have.members(['tempval', 'TEMPVAL']);
         }).then(function() {
             return localMap.destroy();
         });
@@ -171,7 +171,7 @@ describe("Predicates", function() {
         return localMap.putAll([['06', 'ankara'], ['07', 'antalya']]).then(function() {
             return localMap.valuesWithPredicate(Predicates.regex('this', '^.*ya$'));
         }).then(function (values) {
-            return expect(values).to.have.members(['antalya']);
+            return expect(values.toArray()).to.have.members(['antalya']);
         }).then(function() {
             return localMap.destroy();
         });

@@ -46,6 +46,7 @@ import {LockReferenceIdGenerator} from '../LockReferenceIdGenerator';
 import * as Long from 'long';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import ClientMessage = require('../ClientMessage');
+import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 
 export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
 
@@ -62,11 +63,11 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
         return this.encodeInvokeOnKey<boolean>(MultiMapPutCodec, keyData, keyData, valueData, 1);
     }
 
-    get(key: K): Promise<Array<V>> {
+    get(key: K): Promise<ReadOnlyLazyList<V>> {
         var keyData = this.toData(key);
-
-        return this.encodeInvokeOnKey<Array<Data>>(MultiMapGetCodec, keyData, keyData, 1)
-            .then<Array<V>>(this.deserializeList);
+        return this.encodeInvokeOnKey<Array<Data>>(MultiMapGetCodec, keyData, keyData, 1).then((data: Data[]) => {
+            return new ReadOnlyLazyList<V>(data, this.client.getSerializationService());
+        });
     }
 
     remove(key: K, value: V): Promise<boolean> {
@@ -75,10 +76,11 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
         return this.encodeInvokeOnKey<boolean>(MultiMapRemoveEntryCodec, keyData, keyData, valueData, 1);
     }
 
-    removeAll(key: K): Promise<Array<V>> {
+    removeAll(key: K): Promise<ReadOnlyLazyList<V>> {
         var keyData = this.toData(key);
-        return this.encodeInvokeOnKey<Array<Data>>(MultiMapRemoveCodec, keyData, keyData, 1)
-            .then<Array<V>>(this.deserializeList);
+        return this.encodeInvokeOnKey<Array<Data>>(MultiMapRemoveCodec, keyData, keyData, 1).then((data: Data[]) => {
+            return new ReadOnlyLazyList<V>(data, this.client.getSerializationService());
+        });
     }
 
     keySet(): Promise<Array<K>> {
@@ -86,9 +88,10 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
             .then<Array<K>>(this.deserializeList);
     }
 
-    values(): Promise<Array<V>> {
-        return this.encodeInvokeOnRandomTarget<Array<Data>>(MultiMapValuesCodec)
-            .then<Array<V>>(this.deserializeList);
+    values(): Promise<ReadOnlyLazyList<V>> {
+        return this.encodeInvokeOnRandomTarget<Array<Data>>(MultiMapValuesCodec).then((data: Data[]) => {
+            return new ReadOnlyLazyList<V>(data, this.client.getSerializationService());
+        });
     }
 
     entrySet(): Promise<Array<[K, V]>> {
