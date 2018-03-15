@@ -22,6 +22,7 @@ var Util = require('../Util');
 var PortableObject = require('./PortableObjects').PortableObject;
 var PortableObjectV2 = require('./PortableObjects').PortableObjectV2;
 var InnerPortableObject = require('./PortableObjects').InnerPortableObject;
+var SimplePortableV3 = require('./PortableObjects').SimplePortableV3;
 describe('Portable Serialization', function() {
 
     function createSerializationService(constructorFunction) {
@@ -32,8 +33,8 @@ describe('Portable Serialization', function() {
                     return new constructorFunction();
                 } else if (classId === 222) {
                     return new InnerPortableObject();
-                } else {
-                    return null;
+                } else if (classId === 21) {
+                    return new SimplePortableV3();
                 }
             }
         };
@@ -88,4 +89,19 @@ describe('Portable Serialization', function() {
         var deserialized = newService.toObject(serialized);
         Util.expectAlmostEqual(deserialized, empv2);
     });
+
+    it('v3 portable containing a v2 inner portable', function () {
+        var service = createSerializationService(PortableObjectV2);
+
+        var innerPortableV2 = new PortableObjectV2('propstring', 99, true, 'a', 23, 54375456, Long.fromBits(243534, 43543654), 24.1, 32435.6533,
+            new InnerPortableObject('a', 'b'), [99, 100, 101], [true, false, false, true], ['a', 'b', 'v'], [12, 545, 23, 6], [325, 6547656, 345],
+            [Long.fromNumber(342534654), Long.fromNumber(-3215243654), Long.fromNumber(123123)], [233.2, 65.88, 657.345],
+            [43645.325, 887.56756], ['hazelcast', 'ankara', 'istanbul', 'london', 'palo alto'],
+            [new InnerPortableObject('elma', 'armut'), new InnerPortableObject('masa', 'sandalye')]);
+
+        var portableV3 = new SimplePortableV3(innerPortableV2);
+        var serialized = service.toData(portableV3);
+        var deserialized = service.toObject(serialized);
+        Util.expectAlmostEqual(deserialized, portableV3);
+    })
 });
