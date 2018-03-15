@@ -221,11 +221,33 @@ SimplePortable.prototype.writePortable = function (writer) {
     writer.writeUTF('aString', this.aString);
 };
 
-function SimplePortable2(str) {
-    this.aString = str;
+function SimplePortableV3(innerObject) {
+    this.innerObject = innerObject;
 }
+
+SimplePortableV3.prototype.getFactoryId = function () {
+    return 10;
+};
+
+SimplePortableV3.prototype.getClassId = function () {
+    return 21;
+};
+
+SimplePortableV3.prototype.readPortable = function (reader) {
+    this.innerObject = reader.readPortable('innerObject');
+};
+
+SimplePortableV3.prototype.writePortable = function (writer) {
+    writer.writePortable('innerObject', this.innerObject);
+};
+
+SimplePortableV3.prototype.getVersion = function () {
+    return 3;
+};
+
 
 exports.PortableObject = PortableObject;
 exports.PortableObjectV2 = PortableObjectV2;
 exports.InnerPortableObject = InnerPortableObject;
 exports.SimplePortable = SimplePortable;
+exports.SimplePortableV3 = SimplePortableV3;
