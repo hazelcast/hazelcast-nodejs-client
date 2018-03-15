@@ -20,7 +20,7 @@ var HazelcastClient = require('../../.').Client;
 var Controller = require('./../RC');
 var Config = require('../../.').Config;
 var Util = require('./../Util');
-var Promise = require('bluebird');
+var Promise = require('../../lib/PromiseWrapper');
 var Long = require('long');
 
 describe("FlakeIdGeneratorProxyTest", function () {

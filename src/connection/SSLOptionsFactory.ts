@@ -15,7 +15,7 @@
  */
 
 import {Properties} from '../config/Properties';
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 
 export interface SSLOptionsFactory {
     init(properties: Properties): Promise<void>;

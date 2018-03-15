@@ -24,7 +24,7 @@ var Controller = require('./../RC');
 var RawTopicMessage = require('../../lib/proxy/topic/RawTopicMessage').RawTopicMessage;
 var fs = require('fs');
 var Long = require('long');
-var Promise = require('bluebird');
+var Promise = require('../../lib/PromiseWrapper');
 
 var createConfig = function () {
     var config = new Config.ClientConfig();

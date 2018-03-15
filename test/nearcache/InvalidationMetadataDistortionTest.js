@@ -20,7 +20,7 @@ var Config = require('../..').Config;
 var fs = require('fs');
 var IdentifiedFactory = require('../javaclasses/IdentifiedFactory');
 var DistortInvalidationMetadataEntryProcessor = require('../javaclasses/DistortInvalidationMetadataEntryProcessor');
-var Promise = require('bluebird');
+var Promise = require('../../lib/PromiseWrapper');
 var expect = require('chai').expect;
 var Util = require('../Util');
 

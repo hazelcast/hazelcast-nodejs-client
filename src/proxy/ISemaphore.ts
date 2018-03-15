@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 import Long = require('long');
 import {DistributedObject} from '../DistributedObject';
 

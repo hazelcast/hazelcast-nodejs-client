@@ -15,7 +15,7 @@
  */
 
 import {DistributedObject} from '../DistributedObject';
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 import * as Long from 'long';
 
 

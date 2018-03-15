@@ -21,7 +21,7 @@ var Config = require('../../').Config;
 var fs = require('fs');
 var Long = require('long');
 var Util = require('../Util');
-var Promise = require('bluebird');
+var Promise = require('../../lib/PromiseWrapper');
 
 describe('LostInvalidation', function() {
     this.timeout(30000);

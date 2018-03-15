@@ -17,7 +17,7 @@
 var Client = require('../../.').Client;
 var Controller = require('../RC');
 var expect = require('chai').expect;
-var Promise = require('bluebird');
+var Promise = require('../../lib/PromiseWrapper');
 
 describe('Map Partition Aware', function() {
 

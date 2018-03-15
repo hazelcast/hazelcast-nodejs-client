@@ -15,7 +15,7 @@
  */
 
 import {ClientConfig} from './Config';
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 import {HazelcastError} from '../HazelcastError';
 import * as path from 'path';
 import {

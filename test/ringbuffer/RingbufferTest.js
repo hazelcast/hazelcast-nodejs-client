@@ -20,7 +20,7 @@ var Controller = require('./../RC');
 var Util = require('./../Util');
 var fs = require('fs');
 var PrefixFilter = require('../javaclasses/PrefixFilter');
-var Promise = require('bluebird');
+var Promise = require('../../lib/PromiseWrapper');
 
 describe("Ringbuffer Proxy", function () {
 

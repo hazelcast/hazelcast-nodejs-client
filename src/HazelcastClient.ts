@@ -18,7 +18,7 @@ import {SerializationService, SerializationServiceV1} from './serialization/Seri
 import {InvocationService} from './invocation/InvocationService';
 import {ListenerService} from './ListenerService';
 import {ClientConfig} from './config/Config';
-import * as Promise from 'bluebird';
+import * as Promise from './PromiseWrapper';
 import {IMap} from './proxy/IMap';
 import {ISet} from './proxy/ISet';
 import {LoggingService} from './logging/LoggingService';
@@ -114,7 +114,7 @@ export default class HazelcastClient {
             this.listenerService.start();
             this.loggingService.info('HazelcastClient', 'Client started');
             return this;
-        }).catch((e) => {
+        }).catch((e: any) => {
             this.loggingService.error('HazelcastClient', 'Client failed to start', e);
             throw e;
         });

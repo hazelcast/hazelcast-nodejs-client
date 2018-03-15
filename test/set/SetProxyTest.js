@@ -15,7 +15,7 @@
  */
 
 var expect = require("chai").expect;
-var HazelcastClient = require("../../lib/index.js").Client;
+var HazelcastClient = require("../../.").Client;
 var Controller = require('./../RC');
 var Util = require('./../Util');
 

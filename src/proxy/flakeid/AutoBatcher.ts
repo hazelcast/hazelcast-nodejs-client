@@ -16,7 +16,7 @@
 
 import {EventEmitter} from 'events';
 import * as Long from 'long';
-import * as Promise from 'bluebird';
+import * as Promise from '../../PromiseWrapper';
 
 export class Batch {
     private nextIdLong: Long;

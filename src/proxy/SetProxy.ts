@@ -15,7 +15,7 @@
  */
 
 import {ISet} from './ISet';
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 import {ItemListener} from '../core/ItemListener';
 import {Data} from '../serialization/Data';
 

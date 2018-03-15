@@ -22,7 +22,7 @@ var Controller = require('./../RC');
 var Util = require('./../Util');
 var fs = require('fs');
 var path = require('path');
-var Promise = require('bluebird');
+var Promise = require('../../lib/PromiseWrapper');
 var Predicates = require('../../lib/index.js').Predicates;
 
 describe('ReplicatedMap Proxy', function () {

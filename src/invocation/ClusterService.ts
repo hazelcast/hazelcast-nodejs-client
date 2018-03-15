@@ -15,7 +15,7 @@
  */
 
 import {ClientConnection} from './ClientConnection';
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 import {ClientAddMembershipListenerCodec} from '../codec/ClientAddMembershipListenerCodec';
 import {Member} from '../core/Member';
 import {LoggingService} from '../logging/LoggingService';

@@ -20,7 +20,7 @@ import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {QueueSizeCodec} from '../codec/QueueSizeCodec';
 import {QueueOfferCodec} from '../codec/QueueOfferCodec';
 import {QueuePeekCodec} from '../codec/QueuePeekCodec';
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 import {QueuePollCodec} from '../codec/QueuePollCodec';
 import {QueueRemainingCapacityCodec} from '../codec/QueueRemainingCapacityCodec';
 import {QueueRemoveCodec} from '../codec/QueueRemoveCodec';

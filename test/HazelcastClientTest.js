@@ -18,7 +18,7 @@ var expect = require('chai').expect;
 var Config = require('../.').Config;
 var Controller = require('./RC');
 var HazelcastClient = require('../.').Client;
-var Promise = require('bluebird');
+var Promise = require('../lib/PromiseWrapper');
 
 var dummyConfig = new Config.ClientConfig();
 dummyConfig.networkConfig.smartRouting = false;

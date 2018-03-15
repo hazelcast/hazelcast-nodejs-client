@@ -15,7 +15,7 @@
  */
 
 import * as Long from 'long';
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 import {DistributedObject} from '../DistributedObject';
 import {OverflowPolicy} from '../core/OverflowPolicy';
 import {ReadResultSet} from './ringbuffer/ReadResultSet';

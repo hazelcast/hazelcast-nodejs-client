@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 import {DistributedObject} from '../DistributedObject';
 
 export interface ILock extends DistributedObject {

@@ -15,7 +15,7 @@
  */
 
 var RemoteController = require('hazelcast-remote-controller');
-var Promise = require('bluebird');
+var Promise = require('../lib/PromiseWrapper');
 
 var controller = new RemoteController('localhost', 9701);
 

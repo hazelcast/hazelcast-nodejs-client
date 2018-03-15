@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as Promise from 'bluebird';
+import * as Promise from './PromiseWrapper';
 export interface DistributedObject {
     /**
      * Returns the key of the partition that this DistributedObject is assigned to.

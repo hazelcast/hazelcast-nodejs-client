@@ -17,7 +17,7 @@
 import ClientMessage = require('../ClientMessage');
 import * as Long from 'long';
 import Address = require('../Address');
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 import {BitsUtil} from '../BitsUtil';
 import {LoggingService} from '../logging/LoggingService';
 import HazelcastClient from '../HazelcastClient';

@@ -19,7 +19,7 @@ var expect = require('chai').expect;
 var HazelcastClient = require('../.').Client;
 var Config = require('../.').Config;
 var Address = require('../.').Address;
-var Promise = require('bluebird');
+var Promise = require('../lib/PromiseWrapper');
 var Address = require('../.').Address;
 
 describe('ClusterService', function() {

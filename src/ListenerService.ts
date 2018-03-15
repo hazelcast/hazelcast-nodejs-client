@@ -23,7 +23,7 @@ import {RegistrationKey} from './invocation/RegistrationKey';
 import {HazelcastError} from './HazelcastError';
 import {copyObjectShallow} from './Util';
 import {UuidUtil} from './util/UuidUtil';
-import * as Promise from 'bluebird';
+import * as Promise from './PromiseWrapper';
 import {Invocation} from './invocation/InvocationService';
 import {Member} from './core/Member';
 import * as assert from 'assert';

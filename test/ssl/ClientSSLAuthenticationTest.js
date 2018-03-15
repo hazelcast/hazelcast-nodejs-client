@@ -23,7 +23,7 @@ var Client = require("../../.").Client;
 var Controller = require('./../RC');
 var Config = require('../..').Config;
 var HzErrors = require('../..').HazelcastErrors;
-var Promise = require('bluebird');
+var Promise = require('../../lib/PromiseWrapper');
 var markEnterprise = require('../Util').markEnterprise;
 var Path = require('path');
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 import {IReplicatedMap} from './IReplicatedMap';
 import {assertNotNull} from '../Util';
 import {Data} from '../serialization/Data';

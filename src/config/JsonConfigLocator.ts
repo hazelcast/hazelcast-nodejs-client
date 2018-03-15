@@ -16,7 +16,7 @@
 
 import {ConfigBuilder} from './ConfigBuilder';
 import * as fs from 'fs';
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 import * as Path from 'path';
 import {LoggingService} from '../logging/LoggingService';
 

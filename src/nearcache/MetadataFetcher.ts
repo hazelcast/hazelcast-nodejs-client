@@ -19,7 +19,7 @@ import HazelcastClient from '../HazelcastClient';
 import {PartitionService} from '../PartitionService';
 import {MapFetchNearCacheInvalidationMetadataCodec} from '../codec/MapFetchNearCacheInvalidationMetadataCodec';
 import {Invocation} from '../invocation/InvocationService';
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 import ClientMessage = require('../ClientMessage');
 import {LoggingService} from '../logging/LoggingService';
 import {UUID} from '../core/UUID';

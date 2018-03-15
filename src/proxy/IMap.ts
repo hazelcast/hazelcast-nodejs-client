@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 import {DistributedObject} from '../DistributedObject';
 import {EntryView} from '../core/EntryView';
 import {IMapListener} from '../core/MapListener';

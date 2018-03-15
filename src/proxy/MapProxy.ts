@@ -16,7 +16,7 @@
 
 import {BaseProxy} from './BaseProxy';
 import {IMap} from './IMap';
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 import {Data} from '../serialization/Data';
 import {MapPutCodec} from '../codec/MapPutCodec';
 import {MapGetCodec} from '../codec/MapGetCodec';

@@ -16,7 +16,7 @@
 
 import {Data} from '../serialization/Data';
 import ClientMessage = require('../ClientMessage');
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 import HazelcastClient from '../HazelcastClient';
 import {BuildMetadata} from '../BuildMetadata';
 

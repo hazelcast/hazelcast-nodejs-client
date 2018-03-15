@@ -16,7 +16,7 @@
 
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {ISemaphore} from './ISemaphore';
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 import {assertNotNegative} from '../Util';
 import {SemaphoreInitCodec} from '../codec/SemaphoreInitCodec';
 import {SemaphoreAcquireCodec} from '../codec/SemaphoreAcquireCodec';

@@ -18,7 +18,7 @@ import {MapProxy} from './MapProxy';
 import HazelcastClient from '../HazelcastClient';
 import {NearCacheImpl, NearCache} from '../nearcache/NearCache';
 import {Data} from '../serialization/Data';
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 import {MapAddNearCacheEntryListenerCodec} from '../codec/MapAddNearCacheEntryListenerCodec';
 import {EntryEventType} from '../core/EntryEventType';
 import ClientMessage = require('../ClientMessage');

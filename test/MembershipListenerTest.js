@@ -17,7 +17,7 @@
 var HazelcastClient = require('../.').Client;
 var Controller = require('./RC');
 var expect = require('chai').expect;
-var Promise = require('bluebird');
+var Promise = require('../lib/PromiseWrapper');
 describe('MembershipListener', function() {
     this.timeout(10000);
     var cluster;

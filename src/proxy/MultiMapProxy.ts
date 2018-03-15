@@ -14,29 +14,29 @@
  * limitations under the License.
  */
 
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 
 import {MultiMap} from './MultiMap';
 import {BaseProxy} from './BaseProxy';
 import {IMapListener} from '../core/MapListener';
-import {MultiMapPutCodec} from './../codec/MultiMapPutCodec';
-import {MultiMapGetCodec} from './../codec/MultiMapGetCodec';
+import {MultiMapPutCodec} from '../codec/MultiMapPutCodec';
+import {MultiMapGetCodec} from '../codec/MultiMapGetCodec';
 import {Data} from '../serialization/Data';
-import {MultiMapRemoveCodec} from './../codec/MultiMapRemoveCodec';
-import {MultiMapRemoveEntryCodec} from './../codec/MultiMapRemoveEntryCodec';
-import {MultiMapKeySetCodec} from './../codec/MultiMapKeySetCodec';
-import {MultiMapValuesCodec} from './../codec/MultiMapValuesCodec';
-import {MultiMapEntrySetCodec} from './../codec/MultiMapEntrySetCodec';
-import {MultiMapContainsKeyCodec} from './../codec/MultiMapContainsKeyCodec';
-import {MultiMapContainsValueCodec} from './../codec/MultiMapContainsValueCodec';
-import {MultiMapContainsEntryCodec} from './../codec/MultiMapContainsEntryCodec';
-import {MultiMapSizeCodec} from './../codec/MultiMapSizeCodec';
-import {MultiMapClearCodec} from './../codec/MultiMapClearCodec';
-import {MultiMapValueCountCodec} from './../codec/MultiMapValueCountCodec';
+import {MultiMapRemoveCodec} from '../codec/MultiMapRemoveCodec';
+import {MultiMapRemoveEntryCodec} from '../codec/MultiMapRemoveEntryCodec';
+import {MultiMapKeySetCodec} from '../codec/MultiMapKeySetCodec';
+import {MultiMapValuesCodec} from '../codec/MultiMapValuesCodec';
+import {MultiMapEntrySetCodec} from '../codec/MultiMapEntrySetCodec';
+import {MultiMapContainsKeyCodec} from '../codec/MultiMapContainsKeyCodec';
+import {MultiMapContainsValueCodec} from '../codec/MultiMapContainsValueCodec';
+import {MultiMapContainsEntryCodec} from '../codec/MultiMapContainsEntryCodec';
+import {MultiMapSizeCodec} from '../codec/MultiMapSizeCodec';
+import {MultiMapClearCodec} from '../codec/MultiMapClearCodec';
+import {MultiMapValueCountCodec} from '../codec/MultiMapValueCountCodec';
 import {EntryEventType} from '../core/EntryEventType';
-import {MultiMapAddEntryListenerToKeyCodec} from './../codec/MultiMapAddEntryListenerToKeyCodec';
-import {MultiMapAddEntryListenerCodec} from './../codec/MultiMapAddEntryListenerCodec';
-import {MultiMapRemoveEntryListenerCodec} from './../codec/MultiMapRemoveEntryListenerCodec';
+import {MultiMapAddEntryListenerToKeyCodec} from '../codec/MultiMapAddEntryListenerToKeyCodec';
+import {MultiMapAddEntryListenerCodec} from '../codec/MultiMapAddEntryListenerCodec';
+import {MultiMapRemoveEntryListenerCodec} from '../codec/MultiMapRemoveEntryListenerCodec';
 import {MultiMapLockCodec} from '../codec/MultiMapLockCodec';
 import {MultiMapIsLockedCodec} from '../codec/MultiMapIsLockedCodec';
 import {MultiMapTryLockCodec} from '../codec/MultiMapTryLockCodec';
@@ -45,8 +45,8 @@ import {MultiMapForceUnlockCodec} from '../codec/MultiMapForceUnlockCodec';
 import {LockReferenceIdGenerator} from '../LockReferenceIdGenerator';
 import * as Long from 'long';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
-import ClientMessage = require('../ClientMessage');
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
+import ClientMessage = require('../ClientMessage');
 
 export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
 

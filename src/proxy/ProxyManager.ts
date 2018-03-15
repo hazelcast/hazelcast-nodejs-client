@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 import {DistributedObject} from '../DistributedObject';
 import {MapProxy} from './MapProxy';
 import {SetProxy} from './SetProxy';

@@ -15,7 +15,7 @@
  */
 
 var expect = require('chai').expect;
-var Promise = require('bluebird');
+var Promise = require('../../lib/PromiseWrapper');
 var Config = require('../../.').Config;
 var HazelcastClient = require('../../.').Client;
 var Controller = require('../RC');

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 import * as Long from 'long';
 import {IAtomicLong} from './IAtomicLong';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';

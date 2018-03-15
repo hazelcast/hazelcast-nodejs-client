@@ -16,6 +16,7 @@
 
 import {DistributedObject} from '../DistributedObject';
 import * as Long from 'long';
+import * as Promise from '../PromiseWrapper';
 
 /**
  * A cluster-wide unique ID generator. Generated IDs are `Long` primitive values
@@ -41,8 +42,6 @@ import * as Long from 'long';
  *
  * @requires Hazelcast 3.10
  */
-import * as Promise from 'bluebird';
-
 export interface FlakeIdGenerator extends DistributedObject {
 
     /**

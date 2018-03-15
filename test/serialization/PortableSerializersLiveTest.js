@@ -4,7 +4,7 @@ var RC = require('../RC');
 var expect = require('chai').expect;
 var SimplePortable = require('./PortableObjects').SimplePortable;
 var InnerPortable = require('./PortableObjects').InnerPortableObject;
-var Promise = require('bluebird');
+var Promise = require('../../lib/PromiseWrapper');
 
 describe('Default serializers with live instance', function() {
     var cluster;

@@ -15,7 +15,7 @@
  */
 
 import {TopicMessageListener} from './TopicMessageListener';
-import * as Promise from 'bluebird';
+import * as Promise from '../../PromiseWrapper';
 
 export interface ITopic<E> {
     addMessageListener(listener: TopicMessageListener<E>): string;

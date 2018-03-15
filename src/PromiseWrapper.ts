@@ -13,20 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import * as Bluebird from 'bluebird';
 
-import {BaseProxy} from './BaseProxy';
-import HazelcastClient from '../HazelcastClient';
-import * as Promise from '../PromiseWrapper';
-export class PartitionSpecificProxy extends BaseProxy {
-
-    private partitionId: number;
-
-    constructor(client: HazelcastClient, serviceName: string, name: string) {
-        super(client, serviceName, name);
-        this.partitionId = this.client.getPartitionService().getPartitionId(this.getPartitionKey());
-    }
-
-    protected encodeInvoke<T>(codec: any, ...codecArguments: any[]): Promise<T> {
-        return this.encodeInvokeOnPartition<T>(codec, this.partitionId, ...codecArguments);
-    }
+class PromiseWrapper<R> extends Bluebird<R> {
+    //all bluebird methods
 }
+
+module PromiseWrapper {
+    export function defer<T>(): Bluebird.Resolver<T> {
+        let resolve, reject;
+        let promise = new Bluebird<T>(function() {
+            resolve = arguments[0];
+            reject = arguments[1];
+        });
+        let resolver: Bluebird.Resolver<T> = <Bluebird.Resolver<T>>{};
+        resolver.resolve = resolve;
+        resolver.reject = reject;
+        resolver.promise = promise;
+        return resolver;
+    }
+
+    export import Resolver = Bluebird.Resolver;
+}
+
+export = PromiseWrapper;

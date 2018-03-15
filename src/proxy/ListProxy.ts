@@ -40,7 +40,7 @@ import {ListAddAllWithIndexCodec} from '../codec/ListAddAllWithIndexCodec';
 import {ListSetCodec} from '../codec/ListSetCodec';
 import {ListLastIndexOfCodec} from '../codec/ListLastIndexOfCodec';
 import ClientMessage = require('../ClientMessage');
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 

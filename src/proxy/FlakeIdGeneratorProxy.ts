@@ -16,7 +16,7 @@
 
 import {BaseProxy} from './BaseProxy';
 import {FlakeIdGenerator} from './FlakeIdGenerator';
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 import * as Long from 'long';
 import HazelcastClient from '../HazelcastClient';
 import {FlakeIdGeneratorNewIdBatchCodec} from '../codec/FlakeIdGeneratorNewIdBatchCodec';

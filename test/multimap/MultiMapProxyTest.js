@@ -18,7 +18,7 @@ var expect = require("chai").expect;
 var HazelcastClient = require("../../lib/index.js").Client;
 var Controller = require('./../RC');
 var Util = require('./../Util');
-var Promise = require('bluebird');
+var Promise = require('../../lib/PromiseWrapper');
 
 describe("MultiMap Proxy", function () {
 

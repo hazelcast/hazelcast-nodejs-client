@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as Promise from 'bluebird';
+import * as Promise from '../PromiseWrapper';
 import {ClientAuthenticationCodec} from '../codec/ClientAuthenticationCodec';
 import HazelcastClient from '../HazelcastClient';
 import {ClientAuthenticationCustomCodec} from '../codec/ClientAuthenticationCustomCodec';
