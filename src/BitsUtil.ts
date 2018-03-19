@@ -32,10 +32,11 @@ export class BitsUtil {
     static EVENT_CACHEBATCHINVALIDATION = 211;
     static EVENT_QUERYCACHESINGLE = 212;
     static EVENT_QUERYCACHEBATCH = 213;
-
     static EVENT_CACHEPARTITIONLOST = 214;
     static EVENT_IMAPINVALIDATION = 215;
     static EVENT_IMAPBATCHINVALIDATION = 216;
+    static EVENT_PARTITIONS = 217;
+
     static BYTE_SIZE_IN_BYTES: number = 1;
     static BOOLEAN_SIZE_IN_BYTES: number = 1;
     static SHORT_SIZE_IN_BYTES: number = 2;
