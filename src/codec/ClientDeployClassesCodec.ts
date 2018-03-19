@@ -43,7 +43,7 @@ export class ClientDeployClassesCodec {
             var key: string = classDefinitionsItem[0];
             var val: any = classDefinitionsItem[1];
             dataSize += BitsUtil.calculateSizeString(key);
-            data_size += BitsUtil.INT_SIZE_IN_BYTES
+            dataSize += BitsUtil.INT_SIZE_IN_BYTES
             val.forEach((valItem: any) => {
                 dataSize += BitsUtil.BYTE_SIZE_IN_BYTES;
             });
