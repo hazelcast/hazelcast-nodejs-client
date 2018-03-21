@@ -20,7 +20,7 @@ export class BuildMetadata {
     private static readonly MAJOR_VERSION_MULTIPLIER = 10000;
     private static readonly MINOR_VERSION_MULTIPLIER = 100;
 
-    private static readonly PATTERN = /^([\d]+)\.([\d]+)(?:\.([\d]+))?(-[\w]+)?(-SNAPSHOT)?$/;
+    private static readonly PATTERN = /^([\d]+)\.([\d]+)(?:\.([\d]+))?(-[\w]+)?(-SNAPSHOT)?(-BETA-.)?$/;
 
     public static calculateVersion(versionString: string): number {
         if (versionString == null) {

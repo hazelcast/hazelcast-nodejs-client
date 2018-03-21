@@ -21,6 +21,7 @@ var Aggregators = require('../../').Aggregators;
 var Predicates = require('../../').Predicates;
 var Long = require('long');
 var expect = require('chai').expect;
+var Util = require('../Util');
 
 describe('MapAggregatorsLongTest', function () {
     var cluster;
@@ -48,6 +49,7 @@ describe('MapAggregatorsLongTest', function () {
     });
 
     beforeEach(function () {
+        Util.markServerVersionAtLeast(this, client, '3.8');
         var entries = [];
         for (var i = 0; i < entryCount; i++) {
             entries.push(['key' + i, Long.fromNumber(i)]);

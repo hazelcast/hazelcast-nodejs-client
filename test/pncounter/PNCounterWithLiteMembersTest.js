@@ -22,6 +22,7 @@ var Client = require('../..').Client;
 var Errors = require('../..').HazelcastErrors;
 var fs = require('fs');
 var path = require('path');
+var Util = require('../Util');
 
 describe('PNCounterWithLiteMembersTest', function () {
 
@@ -46,6 +47,7 @@ describe('PNCounterWithLiteMembersTest', function () {
     });
 
     beforeEach(function () {
+        Util.markServerVersionAtLeast(this, client, '3.10');
         pncounter = client.getPNCounter('pncounter');
     });
 
