@@ -45,6 +45,9 @@ Hazelcast Node.js client supports the following data structures and features:
 * Lock
 * Semaphore
 * Atomic Long
+* Flake Id Generator
+* Fast Aggregations
+* CRDT Counter
 * Event Listeners
 * Entry Processors
 * Predicates
