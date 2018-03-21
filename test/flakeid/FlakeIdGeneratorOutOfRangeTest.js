@@ -30,6 +30,10 @@ describe("FlakeIdGeneratorOutOfRangeTest", function () {
     var client;
     var flakeIdGenerator;
 
+    before(function () {
+        Util.markServerVersionAtLeast(this, null, '3.10');
+    });
+
     afterEach(function () {
         return flakeIdGenerator.destroy().then(function () {
             client.shutdown();

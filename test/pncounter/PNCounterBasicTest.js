@@ -17,6 +17,7 @@
 var expect = require('chai').expect;
 var RC = require('../RC');
 var Client = require('../../').Client;
+var Util = require('../Util');
 
 describe('PNCounterBasicTest', function () {
 
@@ -41,6 +42,7 @@ describe('PNCounterBasicTest', function () {
     });
 
     beforeEach(function () {
+        Util.markServerVersionAtLeast(this, client, '3.10');
         pncounter = client.getPNCounter('pncounter')
     });
 

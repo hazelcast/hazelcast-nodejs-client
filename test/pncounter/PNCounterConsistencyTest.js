@@ -30,6 +30,10 @@ describe('PNCounterConsistencyTest', function () {
     var member1;
     var client;
 
+    before(function () {
+        Util.markServerVersionAtLeast(this, null, '3.10');
+    });
+
     beforeEach(function () {
         this.timeout(10000);
         return RC.createCluster(null, fs.readFileSync(path.resolve(__dirname, 'hazelcast_crdtreplication_delayed.xml'), 'utf8')).then(function (cl) {
@@ -52,6 +56,7 @@ describe('PNCounterConsistencyTest', function () {
     });
 
     it('target replica killed, no replica is sufficiently up-to-date, get operation throws ConsistencyLostError', function () {
+        Util.markServerVersionAtLeast(this, client, '3.10');
         var pncounter = client.getPNCounter('pncounter');
         return pncounter.getAndAdd(3).then(function () {
             var currentReplicaAddress = pncounter.currentTargetReplicaAddress;
@@ -63,6 +68,7 @@ describe('PNCounterConsistencyTest', function () {
     });
 
     it('target replica killed, no replica is sufficiently up-to-date, get operation may proceed after calling reset', function () {
+        Util.markServerVersionAtLeast(this, client, '3.10');
         var pncounter = client.getPNCounter('pncounter');
         return pncounter.getAndAdd(3).then(function () {
             var currentReplicaAddress = pncounter.currentTargetReplicaAddress;

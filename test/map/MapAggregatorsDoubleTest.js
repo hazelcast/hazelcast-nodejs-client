@@ -20,6 +20,7 @@ var Aggregators = require('../../').Aggregators;
 var Predicates = require('../../').Predicates;
 var _fillMap = require('../Util').fillMap;
 var expect = require('chai').expect;
+var Util = require('../Util');
 
 describe('MapAggregatorsDoubleTest', function () {
     var cluster;
@@ -44,6 +45,7 @@ describe('MapAggregatorsDoubleTest', function () {
     });
 
     beforeEach(function () {
+        Util.markServerVersionAtLeast(this, client, '3.8');
         return _fillMap(map, 50, 'key', 0);
     });
 
