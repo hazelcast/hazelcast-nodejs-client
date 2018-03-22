@@ -1,60 +1,70 @@
 var Client = require('hazelcast-client').Client;
 var Predicates = require('hazelcast-client').Predicates;
-// Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-Client.newHazelcastClient().then(function (hz) {
-    // Get a Distributed Map called "users"
-    var users = hz.getMap('users');
-    // Add some users to the Distributed Map
-    generateUsers(users).then(function () {
-        // Create a Predicate
-        var criteriaQuery = Predicates.and(
-            Predicates.isEqualTo('active', true),
-            Predicates.isBetween('age', 18, 21)
-        );
-        // Get result collections using the the Predicate
-        return users.valuesWithPredicate(criteriaQuery);
-    }).then(function (values) {
-        // Print out the results
-        console.log(values);
-        hz.shutdown();
-    })
-});
+var Config = require('hazelcast-client').Config;
 
-function generateUsers(users) {
-    return users.put('Rod', new User('Rod', 19, true)).then(function () {
-        return users.put('Jane', 20, true);
-    }).then(function () {
-        return users.put('Freddy', 23, true);
-    });
-}
-
-// You need to write the counterpart for this class on the cluster side.
-// The cluster should be able to deserialize User object in order to run
-// queries on them.
 function User(username, age, active) {
     this.username = username;
     this.age = age;
     this.active = active;
 }
 
-User.prototype.readData = function (inp) {
-    this.username = inp.readUTF();
-    this.age = inp.readInt();
-    this.active = inp.readBoolean();
+User.prototype.readPortable = function (reader) {
+    this.username = reader.readUTF('username');
+    this.age = reader.readInt('age');
+    this.active = reader.readBoolean('active');
 };
 
-User.prototype.writeData = function (outp) {
-    outp.writeUTF(this.username);
-    outp.writeInt(this.age);
-    outp.writeBoolean(this.active);
+User.prototype.writePortable = function (writer) {
+    writer.writeUTF('username', this.username);
+    writer.writeInt('age', this.age);
+    writer.writeBoolean('active', this.active);
 };
 
-// Factory id of this and its cluster side counterpart should match.
 User.prototype.getFactoryId = function () {
     return 1;
 };
 
-// Class id of this and its cluster side counterpart should match.
 User.prototype.getClassId = function () {
     return 1;
 };
+
+function PortableFactory() {
+
+}
+
+PortableFactory.prototype.create = function (classId) {
+    if (classId === 1) {
+        return new User();
+    }
+    throw new RangeError('Unknown class id ' + classId);
+};
+
+var cfg = new Config.ClientConfig();
+cfg.serializationConfig.portableFactories[1] = new PortableFactory();
+// Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
+Client.newHazelcastClient(cfg).then(function (hz) {
+    // Get a Distributed Map called "users"
+    var users = hz.getMap('users');
+    // Add some users to the Distributed Map
+    return generateUsers(users).then(function () {
+        // Create a Predicate
+        var criteriaQuery = Predicates.and(
+            Predicates.truePredicate('active', true),
+            Predicates.isBetween('age', 18, 21)
+        );
+        // Get result collections using the the Predicate
+        return users.valuesWithPredicate(criteriaQuery);
+    }).then(function (values) {
+        // Print out the results
+        console.log(values.toArray());
+        hz.shutdown();
+    })
+});
+
+function generateUsers(users) {
+    return users.put('Rod', new User('Rod', 19, true)).then(function () {
+        return users.put('Jane', new User('Jane', 20, true));
+    }).then(function () {
+        return users.put('Freddy', new User('Freddy', 23, true));
+    });
+}

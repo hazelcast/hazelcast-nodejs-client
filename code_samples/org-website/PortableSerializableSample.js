@@ -1,0 +1,50 @@
+var Client = require('hazelcast-client').Client;
+var Config = require('hazelcast-client').Config;
+var Long = require('long');
+
+function Customer(name, id, lastOrder) {
+    this.name = name;
+    this.id = id;
+    this.lastOrder = lastOrder;
+}
+
+Customer.prototype.readPortable = function (reader) {
+    this.name = reader.readUTF('name');
+    this.id = reader.readInt('id');
+    this.lastOrder = reader.readLong('lastOrder').toNumber();
+};
+
+Customer.prototype.writePortable = function(writer) {
+    writer.writeUTF('name', this.name);
+    writer.writeInt('id', this.id);
+    writer.writeLong('lastOrder', Long.fromNumber(this.lastOrder));
+};
+
+// Factory id of this and its cluster side counterpart should match.
+Customer.prototype.getFactoryId = function () {
+    return 1;
+};
+
+// Class id of this and its cluster side counterpart should match.
+Customer.prototype.getClassId = function() {
+    return 1;
+};
+
+function PortableFactory() {
+
+}
+
+PortableFactory.prototype.create = function (classId) {
+    if (classId === 1) {
+        return new Customer();
+    }
+    throw new RangeError('Unknown class id ' + classId);
+};
+
+var cfg = new Config.ClientConfig();
+cfg.serializationConfig.portableFactories[1] = new PortableFactory();
+// Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
+Client.newHazelcastClient(cfg).then(function (hz) {
+    hz.shutdown();
+});
+
