@@ -1,11 +1,6 @@
 var Client = require('hazelcast-client').Client;
 var Config = require('hazelcast-client').Config;
 
-// You need to write the counterpart for this class on the cluster side.
-// Node.js Client only conveys the message that an EntryProcessor with
-// factory id and class id of this `IdentifiedEntryProcessor` should be
-// run on specified keys. What is going to be done with those records is
-// implemented on the cluster side in Java code.
 function IdentifiedEntryProcessor(value) {
 }
 
@@ -15,14 +10,12 @@ IdentifiedEntryProcessor.prototype.readData = function (inp) {
 IdentifiedEntryProcessor.prototype.writeData = function(outp) {
 };
 
-// Factory id of this and its cluster side counterpart should match.
 IdentifiedEntryProcessor.prototype.getFactoryId = function () {
     return 1;
 };
 
-// Class id of this and its cluster side counterpart should match.
 IdentifiedEntryProcessor.prototype.getClassId = function() {
-    return 1;
+    return 9;
 };
 
 function EntryProcessorDataSerializableFactory() {

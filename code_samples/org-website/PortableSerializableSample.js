@@ -20,12 +20,10 @@ Customer.prototype.writePortable = function(writer) {
     writer.writeLong('lastOrder', Long.fromNumber(this.lastOrder));
 };
 
-// Factory id of this and its cluster side counterpart should match.
 Customer.prototype.getFactoryId = function () {
     return 1;
 };
 
-// Class id of this and its cluster side counterpart should match.
 Customer.prototype.getClassId = function() {
     return 1;
 };
@@ -38,7 +36,6 @@ PortableFactory.prototype.create = function (classId) {
     if (classId === 1) {
         return new Customer();
     }
-    throw new RangeError('Unknown class id ' + classId);
 };
 
 var cfg = new Config.ClientConfig();

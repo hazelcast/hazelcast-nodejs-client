@@ -11,15 +11,14 @@ GlobalSerializer.prototype.getId = function () {
 };
 
 GlobalSerializer.prototype.read = function (input) {
-    //generic deserialization
+    // return MyFavoriteSerializer.deserialize(input);
 };
 
 GlobalSerializer.prototype.write = function (output, obj) {
-    //generic serialization
+    // output.write(MyFavoriteSerializer.serialize(obj))
 };
 
 cfg.serializationConfig.globalSerializer = new GlobalSerializer();
-
 Client.newHazelcastClient(cfg).then(function (hz) {
     hz.shutdown();
 });
