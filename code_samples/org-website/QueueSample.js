@@ -17,7 +17,8 @@ Client.newHazelcastClient().then(function (hz) {
         return queue.put('yetanotheritem');
     }).then(function () {
         return queue.take();
-    }).then(function () {
+    }).then(function (value) {
+        console.log(value);
         // Shutdown this Hazelcast Client
         hz.shutdown();
     })
