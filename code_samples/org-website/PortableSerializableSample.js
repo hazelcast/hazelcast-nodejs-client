@@ -36,7 +36,7 @@ PortableFactory.prototype.create = function (classId) {
     if (classId === 1) {
         return new Customer();
     }
-    throw new RangeError('Unknown type id');
+    return null;
 };
 
 var cfg = new Config.ClientConfig();

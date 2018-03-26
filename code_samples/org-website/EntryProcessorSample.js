@@ -27,6 +27,7 @@ EntryProcessorDataSerializableFactory.prototype.create = function (type) {
     if (type === 1) {
         return new IdentifiedEntryProcessor();
     }
+    return null;
 };
 
 var cfg = new Config.ClientConfig();

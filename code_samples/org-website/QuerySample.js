@@ -36,7 +36,7 @@ PortableFactory.prototype.create = function (classId) {
     if (classId === 1) {
         return new User();
     }
-    throw new RangeError('Unknown type id');
+    return null;
 };
 
 function generateUsers(users) {

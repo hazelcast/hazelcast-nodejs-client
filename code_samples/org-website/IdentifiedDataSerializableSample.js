@@ -32,7 +32,7 @@ SampleDataSerializableFactory.prototype.create = function (type) {
     if (type === 100) {
         return new Employee();
     }
-    throw new RangeError('Unknown type id');
+    return null;
 };
 
 var cfg = new Config.ClientConfig();
