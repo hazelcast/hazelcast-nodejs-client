@@ -11,7 +11,7 @@ Client.newHazelcastClient().then(function (hz) {
     }).then(function (value) {
         // the value is retrieved from a random member in the cluster
         console.log('value for key = ' + value);
-        // Shutdown the Hazelcast Cluster Member
+        // Shutdown this Hazelcast Client
         hz.shutdown();
     });
 });

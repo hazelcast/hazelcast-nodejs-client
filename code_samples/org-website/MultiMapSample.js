@@ -18,6 +18,7 @@ Client.newHazelcastClient().then(function (hz) {
         // remove specific key/value pair
         return multiMap.remove('my-key', 'value2');
     }).then(function () {
+        // Shutdown this Hazelcast client
         hz.shutdown();
     });
 });

@@ -18,7 +18,7 @@ Client.newHazelcastClient().then(function (hz) {
     }).then(function () {
         return queue.take();
     }).then(function () {
-        // Shutdown the Hazelcast Cluster Member
+        // Shutdown this Hazelcast Client
         hz.shutdown();
     })
 });

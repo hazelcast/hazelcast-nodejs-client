@@ -6,6 +6,7 @@ Client.newHazelcastClient().then(function (hz) {
     // Add a Listener to the Topic
     topic.addMessageListener(function (message) {
         console.log(message);
+        // Shutdown this Hazelcast Client
         hz.shutdown();
     });
     // Publish a message to the Topic

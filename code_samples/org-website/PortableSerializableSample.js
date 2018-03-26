@@ -29,19 +29,21 @@ Customer.prototype.getClassId = function() {
 };
 
 function PortableFactory() {
-
+    // Constructor function
 }
 
 PortableFactory.prototype.create = function (classId) {
     if (classId === 1) {
         return new Customer();
     }
+    throw new RangeError('Unknown type id');
 };
 
 var cfg = new Config.ClientConfig();
 cfg.serializationConfig.portableFactories[1] = new PortableFactory();
 // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
 Client.newHazelcastClient(cfg).then(function (hz) {
+    //Customer can be used here
     hz.shutdown();
 });
 

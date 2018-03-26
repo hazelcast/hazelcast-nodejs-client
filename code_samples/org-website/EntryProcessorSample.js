@@ -2,6 +2,7 @@ var Client = require('hazelcast-client').Client;
 var Config = require('hazelcast-client').Config;
 
 function IdentifiedEntryProcessor(value) {
+    // Constructor function
 }
 
 IdentifiedEntryProcessor.prototype.readData = function (inp) {

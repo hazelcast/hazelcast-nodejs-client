@@ -1,7 +1,6 @@
 var Client = require('hazelcast-client').Client;
 var Config = require('hazelcast-client').Config;
 
-
 function CustomSerializable(value) {
     this.value = value;
 }
@@ -10,9 +9,8 @@ CustomSerializable.prototype.hzGetCustomId = function () {
     return 10;
 };
 
-
 function CustomSerializer() {
-    //NO_OP
+    //Constructor function
 }
 
 CustomSerializer.prototype.getId = function () {
@@ -40,13 +38,7 @@ cfg.serializationConfig.customSerializers.push(new CustomSerializer());
 
 // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
 Client.newHazelcastClient(cfg).then(function (hz) {
-    var map = hz.getMap('customMap');
-
-    return map.put(1, new CustomSerializable('fooooo')).then(function() {
-        return map.get(1);
-    }).then(function (value) {
-        console.log(value);
-        hz.shutdown();
-    });
+    //CustomSerializer will serialize/deserialize CustomSerializable objects
+    hz.shutdown();
 });
 

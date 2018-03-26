@@ -29,15 +29,23 @@ User.prototype.getClassId = function () {
 };
 
 function PortableFactory() {
-
+    // Constructor sample
 }
 
 PortableFactory.prototype.create = function (classId) {
     if (classId === 1) {
         return new User();
     }
-    throw new RangeError('Unknown class id ' + classId);
+    throw new RangeError('Unknown type id');
 };
+
+function generateUsers(users) {
+    return users.put('Rod', new User('Rod', 19, true)).then(function () {
+        return users.put('Jane', new User('Jane', 20, true));
+    }).then(function () {
+        return users.put('Freddy', new User('Freddy', 23, true));
+    });
+}
 
 var cfg = new Config.ClientConfig();
 cfg.serializationConfig.portableFactories[1] = new PortableFactory();
@@ -57,14 +65,7 @@ Client.newHazelcastClient(cfg).then(function (hz) {
     }).then(function (values) {
         // Print out the results
         console.log(values.toArray());
+        // Shutdown this Hazelcast Client
         hz.shutdown();
     })
 });
-
-function generateUsers(users) {
-    return users.put('Rod', new User('Rod', 19, true)).then(function () {
-        return users.put('Jane', new User('Jane', 20, true));
-    }).then(function () {
-        return users.put('Freddy', new User('Freddy', 23, true));
-    });
-}

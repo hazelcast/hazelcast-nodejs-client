@@ -25,7 +25,7 @@ Employee.prototype.getClassId = function() {
 };
 
 function SampleDataSerializableFactory() {
-
+    // Constructor function
 }
 
 SampleDataSerializableFactory.prototype.create = function (type) {
@@ -37,7 +37,9 @@ SampleDataSerializableFactory.prototype.create = function (type) {
 
 var cfg = new Config.ClientConfig();
 cfg.serializationConfig.dataSerializableFactories[1000] = new SampleDataSerializableFactory();
+// Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
 Client.newHazelcastClient(cfg).then(function (hz) {
+    // Employee can be used here
     hz.shutdown();
 });
 

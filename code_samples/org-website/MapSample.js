@@ -12,6 +12,7 @@ Client.newHazelcastClient().then(function (hz) {
     }).then(function () {
         return map.replace('key', 'value', 'newvalue');
     }).then(function (value) {
+        // Shutdown this Hazelcast client
         hz.shutdown();
     });
 });
