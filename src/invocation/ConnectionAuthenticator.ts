@@ -22,12 +22,20 @@ import {ClientConnection} from './ClientConnection';
 import {ClusterService} from './ClusterService';
 import {BuildInfoLoader} from '../BuildInfoLoader';
 import ClientMessage = require('../ClientMessage');
+import {LoggingService} from '../logging/LoggingService';
 
+
+const enum AuthenticationStatus {
+    AUTHENTICATED = 0,
+    CREDENTIALS_FAILED = 1,
+    SERIALIZATION_VERSION_MISMATCH = 2
+}
 export class ConnectionAuthenticator {
 
     private connection: ClientConnection;
     private client: HazelcastClient;
     private clusterService: ClusterService;
+    private logger = LoggingService.getLoggingService();
 
     constructor(connection: ClientConnection, client: HazelcastClient) {
         this.connection = connection;
@@ -42,17 +50,31 @@ export class ConnectionAuthenticator {
             .invokeOnConnection(this.connection, credentials)
             .then((msg: ClientMessage) => {
                 var authResponse = ClientAuthenticationCodec.decodeResponse(msg);
-                if (authResponse.status === 0) {
-                    this.connection.setAddress(authResponse.address);
-                    this.connection.setConnectedServerVersion(authResponse.serverHazelcastVersion);
-                    if (ownerConnection) {
-                        this.clusterService.uuid = authResponse.uuid;
-                        this.clusterService.ownerUuid = authResponse.ownerUuid;
+                switch (authResponse.status) {
+                    case AuthenticationStatus.AUTHENTICATED:
+                        this.connection.setAddress(authResponse.address);
+                        this.connection.setConnectedServerVersion(authResponse.serverHazelcastVersion);
+                        if (ownerConnection) {
+                            this.clusterService.uuid = authResponse.uuid;
+                            this.clusterService.ownerUuid = authResponse.ownerUuid;
 
-                    }
-                } else {
-                    throw new Error('Could not authenticate connection to ' + this.connection.getAddress().toString());
+                        }
+                        this.logger.debug('ConnectionAuthenticator',
+                            'Connection to ' +
+                            this.connection.getAddress().toString() + ' authenticated');
+                        break;
+                    case AuthenticationStatus.CREDENTIALS_FAILED:
+                        this.logger.error('ConnectionAuthenticator', 'Invalid Credentials' );
+                        throw new Error('Invalid Credentials, could not authenticate connection to ' +
+                            this.connection.getAddress().toString());
+                    case AuthenticationStatus.SERIALIZATION_VERSION_MISMATCH:
+                        this.logger.error('ConnectionAuthenticator', 'Serialization version mismatch' );
+                        throw new Error('Serialization version mismatch, could not authenticate connection to ' +
+                            this.connection.getAddress().toString());
                 }
+            }).catch((e) => {
+                this.logger.error('ConnectionAuthenticator', e);
+                throw(e);
             });
     }
 

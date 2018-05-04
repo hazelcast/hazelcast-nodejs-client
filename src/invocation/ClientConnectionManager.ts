@@ -89,7 +89,7 @@ export class ClientConnectionManager extends EventEmitter {
                 connectionResolver.resolve(clientConnection);
             });
         }).catch((e: any) => {
-            connectionResolver.resolve(null);
+            connectionResolver.reject(e);
         }).finally(() => {
             delete this.pendingConnections[addressIndex];
         });
