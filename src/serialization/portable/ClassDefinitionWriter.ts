@@ -14,141 +14,142 @@
  * limitations under the License.
  */
 
-import * as Long from 'long';
-import * as Util from '../../Util';
-import {Portable} from '../Serializable';
-import {ClassDefinition, FieldDefinition, FieldType} from './ClassDefinition';
-import {PortableContext} from './PortableContext';
 import {PortableWriter} from './PortableSerializer';
+import {ClassDefinition} from './ClassDefinition';
+import {PortableContext} from './PortableContext';
+import {Portable} from '../Serializable';
+import * as Long from 'long';
+import {ClassDefinitionBuilder} from './ClassDefinitionBuilder';
+import {HazelcastSerializationError} from '../../HazelcastError';
 
 export class ClassDefinitionWriter implements PortableWriter {
-    private portableContext: PortableContext;
-    private buildingDefinition: ClassDefinition;
+    private context: PortableContext;
+    private builder: ClassDefinitionBuilder;
 
-    private index: number = 0;
-    private factoryId: number;
-    private classId: number;
-    private version: number;
-    private fieldDefinitions: { [fieldName: string]: FieldDefinition } = {};
-
-    constructor(portableContext: PortableContext, factoryId: number, classId: number, version: number) {
-        this.portableContext = portableContext;
-        this.buildingDefinition = new ClassDefinition(factoryId, classId, version);
-    }
-
-    addFieldByType(fieldName: string, fieldType: FieldType, factoryId: number = 0, classId: number = 0) {
-        this.fieldDefinitions[fieldName] = new FieldDefinition(this.index, fieldName, fieldType, factoryId, classId);
-        this.index += 1;
+    constructor(context: PortableContext, builder: ClassDefinitionBuilder) {
+        this.context = context;
+        this.builder = builder;
     }
 
     writeInt(fieldName: string, value: number): void {
-        this.addFieldByType(fieldName, FieldType.INT);
+        this.builder.addIntField(fieldName);
     }
 
     writeLong(fieldName: string, long: Long): void {
-        this.addFieldByType(fieldName, FieldType.LONG);
+        this.builder.addLongField(fieldName);
     }
 
     writeUTF(fieldName: string, str: string): void {
-        this.addFieldByType(fieldName, FieldType.UTF);
+        this.builder.addUTFField(fieldName);
     }
 
     writeBoolean(fieldName: string, value: boolean): void {
-        this.addFieldByType(fieldName, FieldType.BOOLEAN);
+        this.builder.addBooleanField(fieldName);
     }
 
     writeByte(fieldName: string, value: number): void {
-        this.addFieldByType(fieldName, FieldType.BYTE);
+        this.builder.addByteField(fieldName);
     }
 
     writeChar(fieldName: string, char: string): void {
-        this.addFieldByType(fieldName, FieldType.CHAR);
+        this.builder.addCharField(fieldName);
     }
 
     writeDouble(fieldName: string, double: number): void {
-        this.addFieldByType(fieldName, FieldType.DOUBLE);
+        this.builder.addDoubleField(fieldName);
     }
 
     writeFloat(fieldName: string, float: number): void {
-        this.addFieldByType(fieldName, FieldType.FLOAT);
+        this.builder.addFloatField(fieldName);
     }
 
     writeShort(fieldName: string, value: number): void {
-        this.addFieldByType(fieldName, FieldType.SHORT);
+        this.builder.addShortField(fieldName);
     }
 
     writePortable(fieldName: string, portable: Portable): void {
-        Util.assertNotNull(portable);
-        const nestedCD = this.portableContext.lookupOrRegisterClassDefinition(portable);
-        this.addFieldByType(fieldName, FieldType.PORTABLE, nestedCD.getFactoryId(), nestedCD.getClassId());
+        if (portable == null) {
+            throw new HazelcastSerializationError('Cannot write null portable without explicitly '
+                + 'registering class definition!');
+        }
+        const version = this.context.getClassVersion(portable);
+        const nestedClassDef = this.createNestedClassDef(portable, new ClassDefinitionBuilder(portable.getFactoryId(),
+            portable.getClassId(), version));
+        this.builder.addPortableField(fieldName, nestedClassDef);
     }
 
     writeNullPortable(fieldName: string, factoryId: number, classId: number): void {
-        const version: number = 0;
-        const nestedCD = this.portableContext.lookupClassDefinition(factoryId, classId, version);
-        if (nestedCD == null) {
-            throw new RangeError('Cannot write null portable without explicitly registering class definition!');
+        const nestedClassDef = this.context.lookupClassDefinition(factoryId, classId, this.context.getVersion());
+        if (nestedClassDef == null) {
+            throw new HazelcastSerializationError('Cannot write null portable without explicitly '
+                + 'registering class definition!');
         }
-        this.addFieldByType(fieldName, FieldType.PORTABLE, nestedCD.getFactoryId(), nestedCD.getClassId());
+        this.builder.addPortableField(fieldName, nestedClassDef);
     }
 
     writeByteArray(fieldName: string, bytes: number[]): void {
-        this.addFieldByType(fieldName, FieldType.BYTE_ARRAY);
+        this.builder.addByteArrayField(fieldName);
     }
 
     writeBooleanArray(fieldName: string, booleans: boolean[]): void {
-        this.addFieldByType(fieldName, FieldType.BOOLEAN_ARRAY);
+        this.builder.addBooleanArrayField(fieldName);
     }
 
     writeCharArray(fieldName: string, chars: string[]): void {
-        this.addFieldByType(fieldName, FieldType.CHAR_ARRAY);
+        this.builder.addCharArrayField(fieldName);
     }
 
     writeIntArray(fieldName: string, ints: number[]): void {
-        this.addFieldByType(fieldName, FieldType.INT_ARRAY);
+        this.builder.addIntArrayField(fieldName);
     }
 
     writeLongArray(fieldName: string, longs: Long[]): void {
-        this.addFieldByType(fieldName, FieldType.LONG_ARRAY);
+        this.builder.addLongArrayField(fieldName);
     }
 
     writeDoubleArray(fieldName: string, doubles: number[]): void {
-        this.addFieldByType(fieldName, FieldType.DOUBLE_ARRAY);
+        this.builder.addDoubleArrayField(fieldName);
     }
 
     writeFloatArray(fieldName: string, floats: number[]): void {
-        this.addFieldByType(fieldName, FieldType.FLOAT_ARRAY);
+        this.builder.addFloatArrayField(fieldName);
     }
 
     writeShortArray(fieldName: string, shorts: number[]): void {
-        this.addFieldByType(fieldName, FieldType.SHORT_ARRAY);
+        this.builder.addShortArrayField(fieldName);
     }
 
     writeUTFArray(fieldName: string, val: string[]): void {
-        this.addFieldByType(fieldName, FieldType.UTF_ARRAY);
+        this.builder.addUTFArrayField(fieldName);
     }
 
     writePortableArray(fieldName: string, portables: Portable[]): void {
-        Util.assertNotNull(portables);
-        if (portables.length === 0) {
-            throw new RangeError('Cannot write empty array!');
+        if (portables == null || portables.length === 0) {
+            throw new HazelcastSerializationError('Cannot write null portable array without explicitly '
+                + 'registering class definition!');
         }
-        const sample = portables[0];
-        const nestedCD = this.portableContext.lookupOrRegisterClassDefinition(sample);
-        this.addFieldByType(fieldName, FieldType.PORTABLE_ARRAY, nestedCD.getFactoryId(), nestedCD.getClassId());
-    }
-
-    end(): void {
-        for (const field in this.fieldDefinitions) {
-            this.buildingDefinition.addFieldDefinition(this.fieldDefinitions[field]);
+        const p = portables[0];
+        const classId = p.getClassId();
+        for (let i = 1; i < portables.length; i++) {
+            if (portables[i].getClassId() !== classId) {
+                throw new RangeError('Detected different class-ids in portable array!');
+            }
         }
-    }
 
-    getDefinition(): ClassDefinition {
-        return this.buildingDefinition;
+        const version = this.context.getClassVersion(p);
+        const nestedClassDef = this.createNestedClassDef(p, new ClassDefinitionBuilder(p.getFactoryId(), p.getClassId(),
+            version));
+        this.builder.addPortableArrayField(fieldName, nestedClassDef);
     }
 
     registerAndGet(): ClassDefinition {
-        return this.portableContext.registerClassDefinition(this.buildingDefinition);
+        const cd = this.builder.build();
+        return this.context.registerClassDefinition(cd);
+    }
+
+    private createNestedClassDef(portable: Portable, nestedBuilder: ClassDefinitionBuilder): ClassDefinition {
+        const writer = new ClassDefinitionWriter(this.context, nestedBuilder);
+        portable.writePortable(writer);
+        return this.context.registerClassDefinition(nestedBuilder.build());
     }
 }

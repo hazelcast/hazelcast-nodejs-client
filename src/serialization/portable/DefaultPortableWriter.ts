@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import * as Long from 'long';
-import {BitsUtil} from '../../BitsUtil';
-import {PositionalDataOutput} from '../Data';
-import {Portable} from '../Serializable';
-import {ClassDefinition, FieldDefinition, FieldType} from './ClassDefinition';
 import {PortableSerializer} from './PortableSerializer';
+import {PositionalDataOutput} from '../Data';
+import {ClassDefinition, FieldDefinition, FieldType} from './ClassDefinition';
+import {BitsUtil} from '../../BitsUtil';
+import {Portable} from '../Serializable';
+import * as Long from 'long';
 
 export class DefaultPortableWriter {
     private serializer: PortableSerializer;

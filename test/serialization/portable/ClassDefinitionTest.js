@@ -16,9 +16,9 @@
 
 var expect = require('chai').expect;
 var assert = require('chai').assert;
-var CD = require('../../../lib/serialization/portable/ClassDefinition').ClassDefinition;
-var FD = require('../../../lib/serialization/portable/ClassDefinition').FieldDefinition;
-var FT = require('../../../lib/serialization/portable/ClassDefinition').FieldDefinition;
+var CD = require('../../../').ClassDefinition;
+var FD = require('../../../').FieldDefinition;
+var FT = require('../../../').FieldDefinition;
 
 describe('ClassDefinitionTest', function () {
     var a = new CD(1, 2, 3);

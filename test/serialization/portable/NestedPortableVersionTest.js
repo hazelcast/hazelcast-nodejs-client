@@ -20,13 +20,13 @@ var Parent = require('../PortableObjects').Parent;
 var Child = require('../PortableObjects').Child;
 var Util = require('../../Util');
 
-describe('Portable Version', function() {
+describe('Nested Portable Version', function () {
 
-    it('compatible versions', function() {
+    it('compatible versions', function () {
         var sc = new Config.SerializationConfig();
         sc.portableVersion = 6;
         sc.portableFactories[1] = {
-            create: function(classId) {
+            create: function (classId) {
                 if (classId === 1) {
                     return new Parent();
                 } else if (classId === 2) {

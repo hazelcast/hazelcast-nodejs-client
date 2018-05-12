@@ -15,12 +15,14 @@
  */
 
 import {ClassDefinition} from './ClassDefinition';
+import {HazelcastSerializationError} from '../../HazelcastError';
 
 export class ClassDefinitionContext {
     private factoryId: number;
+
     private classDefs: { [classId: string]: ClassDefinition };
 
-    constructor(factoryId: number, portableVersion: number) {
+    constructor(factoryId: number) {
         this.factoryId = factoryId;
         this.classDefs = {};
     }
@@ -39,7 +41,7 @@ export class ClassDefinitionContext {
             return null;
         }
         if (classDefinition.getFactoryId() !== this.factoryId) {
-            throw new RangeError(`This factory's number is ${this.factoryId}.
+            throw new HazelcastSerializationError(`This factory's number is ${this.factoryId}.
             Intended factory id is ${classDefinition.getFactoryId()}`);
         }
         const cdKey = ClassDefinitionContext.encodeVersionedClassId(classDefinition.getClassId(), classDefinition.getVersion());
@@ -48,9 +50,12 @@ export class ClassDefinitionContext {
             this.classDefs[cdKey] = classDefinition;
             return classDefinition;
         }
-        if (current instanceof ClassDefinition && !current.equals(classDefinition)) {
-            throw new RangeError(`Incompatible class definition with same class id: ${classDefinition.getClassId()}`);
+
+        if (!current.equals(classDefinition)) {
+            throw new HazelcastSerializationError(`Incompatible class definition with same class id:
+             ${classDefinition.getClassId()}`);
         }
+
         return classDefinition;
     }
 }
