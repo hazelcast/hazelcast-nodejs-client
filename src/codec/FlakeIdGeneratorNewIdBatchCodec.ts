@@ -17,15 +17,7 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
-import Address = require('../Address');
-import {AddressCodec} from './AddressCodec';
-import {UUIDCodec} from './UUIDCodec';
-import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
-import {EntryViewCodec} from './EntryViewCodec';
-import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
-import {Member} from '../core/Member';
-import {UUID} from '../core/UUID';
 import {FlakeIdGeneratorMessageType} from './FlakeIdGeneratorMessageType';
 
 var REQUEST_TYPE = FlakeIdGeneratorMessageType.FLAKEIDGENERATOR_NEWIDBATCH;
@@ -34,40 +26,40 @@ var RETRYABLE = true;
 
 
 export class FlakeIdGeneratorNewIdBatchCodec {
-    static calculateSize(name : string  , batchSize : number ){
-        var dataSize : number = 0;
+    static calculateSize(name: string, batchSize: number) {
+        var dataSize: number = 0;
         dataSize += BitsUtil.calculateSizeString(name);
         dataSize += BitsUtil.INT_SIZE_IN_BYTES;
         return dataSize;
     }
 
-    static encodeRequest(name : string, batchSize : number){
+    static encodeRequest(name: string, batchSize: number) {
         var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, batchSize));
         clientMessage.setMessageType(REQUEST_TYPE);
         clientMessage.setRetryable(RETRYABLE);
-                clientMessage.appendString(name);
-                clientMessage.appendInt32(batchSize);
+        clientMessage.appendString(name);
+        clientMessage.appendInt32(batchSize);
         clientMessage.updateFrameLength();
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage : ClientMessage,  toObjectFunction: (data: Data) => any = null){
-        var parameters :any = {
-            'base' : null , 
-            'increment' : null , 
-            'batchSize' : null 
+    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
+        var parameters: any = {
+            'base': null,
+            'increment': null,
+            'batchSize': null
         };
 
-        if (clientMessage.isComplete() ) {
+        if (clientMessage.isComplete()) {
             return parameters;
         }
-                    parameters['base'] = clientMessage.readLong();
-        
-                    parameters['increment'] = clientMessage.readLong();
-        
-                    parameters['batchSize'] = clientMessage.readInt32();
-        
-    return parameters;
+        parameters['base'] = clientMessage.readLong();
+
+        parameters['increment'] = clientMessage.readLong();
+
+        parameters['batchSize'] = clientMessage.readInt32();
+
+        return parameters;
     }
 
 }

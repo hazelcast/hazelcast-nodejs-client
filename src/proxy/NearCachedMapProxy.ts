@@ -16,19 +16,18 @@
 
 import {MapProxy} from './MapProxy';
 import HazelcastClient from '../HazelcastClient';
-import {NearCacheImpl, NearCache} from '../nearcache/NearCache';
+import {NearCache, NearCacheImpl} from '../nearcache/NearCache';
 import {Data} from '../serialization/Data';
 import * as Promise from 'bluebird';
 import {MapAddNearCacheEntryListenerCodec} from '../codec/MapAddNearCacheEntryListenerCodec';
 import {EntryEventType} from '../core/EntryEventType';
-import ClientMessage = require('../ClientMessage');
-import {DataKeyedHashMap} from '../DataStoreHashMap';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
 import {BuildMetadata} from '../BuildMetadata';
 import {MapAddNearCacheInvalidationListenerCodec} from '../codec/MapAddNearCacheInvalidationListenerCodec';
 import {StaleReadDetectorImpl} from '../nearcache/StaleReadDetectorImpl';
 import {UUID} from '../core/UUID';
+import ClientMessage = require('../ClientMessage');
 
 const MIN_EVENTUALLY_CONSISTENT_NEARCACHE_VERSION = BuildMetadata.calculateVersion('3.8');
 
@@ -48,18 +47,13 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         }
     }
 
-    private invalidatCacheEntryAndReturn<T>(keyData: Data, retVal: T): T {
-        this.nearCache.invalidate(keyData);
-        return retVal;
-    }
-
-    private invalidateCacheAndReturn<T>(retVal: T): T {
-        this.nearCache.clear();
-        return retVal;
-    }
-
     clear(): Promise<void> {
         return super.clear().then<void>(this.invalidateCacheAndReturn.bind(this));
+    }
+
+    evictAll(): Promise<void> {
+        this.nearCache.clear();
+        return super.evictAll().then<void>(this.invalidateCacheAndReturn.bind(this));
     }
 
     protected containsKeyInternal(keyData: Data): Promise<boolean> {
@@ -76,16 +70,11 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         return super.deleteInternal(keyData).then<void>(this.invalidatCacheEntryAndReturn.bind(this, keyData));
     }
 
-    evictAll(): Promise<void> {
-        this.nearCache.clear();
-        return super.evictAll().then<void>(this.invalidateCacheAndReturn.bind(this));
-    }
-
     protected evictInternal(key: Data): Promise<boolean> {
         return super.evictInternal(key).then<boolean>(this.invalidatCacheEntryAndReturn.bind(this, key));
     }
 
-    protected putAllInternal(partitionsToKeysData: {[id: string]: [Data, Data][]}): Promise<void> {
+    protected putAllInternal(partitionsToKeysData: { [id: string]: [Data, Data][] }): Promise<void> {
         return super.putAllInternal(partitionsToKeysData).then(() => {
             for (var partition in partitionsToKeysData) {
                 partitionsToKeysData[partition].forEach((entry: [Data, Data]) => {
@@ -95,12 +84,8 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         });
     }
 
-    private removeNearCacheInvalidationListener() {
-        return this.client.getListenerService().deregisterListener(this.invalidationListenerId);
-    }
-
     protected postDestroy(): Promise<void> {
-        return this.removeNearCacheInvalidationListener().then( () => {
+        return this.removeNearCacheInvalidationListener().then(() => {
             this.client.getRepairingTask().deregisterHandler(this.name);
         }).then(() => {
             return super.postDestroy();
@@ -147,7 +132,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         return super.removeInternal(keyData, value).then<V>(this.invalidatCacheEntryAndReturn.bind(this, keyData));
     }
 
-    protected getAllInternal(partitionsToKeys: {[id: string]: any}, result: any[] = []): Promise<any[]> {
+    protected getAllInternal(partitionsToKeys: { [id: string]: any }, result: any[] = []): Promise<any[]> {
         try {
             for (var partition in partitionsToKeys) {
                 var partitionArray = partitionsToKeys[partition];
@@ -194,10 +179,23 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         return super.setInternal(keyData, valueData, ttl).then<void>(this.invalidatCacheEntryAndReturn.bind(this, keyData));
     }
 
-
     protected tryPutInternal(keyData: Data, valueData: Data, timeout: number): Promise<boolean> {
         return super.tryPutInternal(keyData, valueData, timeout)
             .then<boolean>(this.invalidatCacheEntryAndReturn.bind(this, keyData));
+    }
+
+    private invalidatCacheEntryAndReturn<T>(keyData: Data, retVal: T): T {
+        this.nearCache.invalidate(keyData);
+        return retVal;
+    }
+
+    private invalidateCacheAndReturn<T>(retVal: T): T {
+        this.nearCache.clear();
+        return retVal;
+    }
+
+    private removeNearCacheInvalidationListener() {
+        return this.client.getListenerService().deregisterListener(this.invalidationListenerId);
     }
 
     private addNearCacheInvalidationListener(): Promise<string> {
@@ -212,26 +210,26 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
     private createInvalidationListenerCodec(name: string, flags: number): ListenerMessageCodec {
         if (this.supportsRepairableNearCache()) {
             return {
-                encodeAddRequest: function(localOnly: boolean): ClientMessage {
+                encodeAddRequest: function (localOnly: boolean): ClientMessage {
                     return MapAddNearCacheInvalidationListenerCodec.encodeRequest(name, flags, localOnly);
 
                 },
-                decodeAddResponse: function(msg: ClientMessage): string {
+                decodeAddResponse: function (msg: ClientMessage): string {
                     return MapAddNearCacheInvalidationListenerCodec.decodeResponse(msg).response;
                 },
-                encodeRemoveRequest: function(listenerId: string): ClientMessage {
+                encodeRemoveRequest: function (listenerId: string): ClientMessage {
                     return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
                 }
             };
         } else {
             return {
-                encodeAddRequest: function(localOnly: boolean): ClientMessage {
+                encodeAddRequest: function (localOnly: boolean): ClientMessage {
                     return MapAddNearCacheEntryListenerCodec.encodeRequest(name, flags, localOnly);
                 },
-                decodeAddResponse: function(msg: ClientMessage): string {
+                decodeAddResponse: function (msg: ClientMessage): string {
                     return MapAddNearCacheEntryListenerCodec.decodeResponse(msg).response;
                 },
-                encodeRemoveRequest: function(listenerId: string): ClientMessage {
+                encodeRemoveRequest: function (listenerId: string): ClientMessage {
                     return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
                 }
             };
@@ -244,7 +242,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
 
     private createPre38NearCacheEventHandler() {
         let nearCache = this.nearCache;
-        let handle = function(keyData: Data) {
+        let handle = function (keyData: Data) {
             if (keyData == null) {
                 nearCache.clear();
             } else {
@@ -257,7 +255,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
             });
         };
 
-        return function(m: ClientMessage) {
+        return function (m: ClientMessage) {
             MapAddNearCacheEntryListenerCodec.handle(m, handle, handleBatch);
         };
     }
@@ -267,14 +265,14 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         let repairingHandler = repairingTask.registerAndGetHandler(this.getName(), this.nearCache);
         let staleReadDetector = new StaleReadDetectorImpl(repairingHandler, this.client.getPartitionService());
         this.nearCache.setStaleReadDetector(staleReadDetector);
-        let handle = function(key: Data, sourceUuid: string, partitionUuid: UUID, sequence: Long) {
+        let handle = function (key: Data, sourceUuid: string, partitionUuid: UUID, sequence: Long) {
             repairingHandler.handle(key, sourceUuid, partitionUuid, sequence);
         };
         let handleBatch = function (keys: Data[], sourceUuids: string[], partititonUuids: UUID[], sequences: Long[]) {
             repairingHandler.handleBatch(keys, sourceUuids, partititonUuids, sequences);
         };
 
-        return function(m: ClientMessage) {
+        return function (m: ClientMessage) {
             MapAddNearCacheInvalidationListenerCodec.handle(m, handle, handleBatch);
         };
     }

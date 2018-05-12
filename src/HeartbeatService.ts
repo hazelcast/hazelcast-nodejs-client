@@ -68,7 +68,7 @@ export class Heartbeat {
     private heartbeatFunction() {
         let estConnections = this.client.getConnectionManager().establishedConnections;
         for (let address in estConnections) {
-            if ( estConnections[address]) {
+            if (estConnections[address]) {
                 let conn = estConnections[address];
                 let timeSinceLastRead = new Date().getTime() - conn.getLastRead();
                 if (timeSinceLastRead > this.heartbeatTimeout) {

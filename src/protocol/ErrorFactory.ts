@@ -15,14 +15,40 @@
  */
 
 import {
-    AuthenticationError, CallerNotMemberError, CancellationError, ClassCastError, ClassNotFoundError, ConcurrentModificationError,
-    ConfigMismatchError, ConfigurationError, ConsistencyLostError, DistributedObjectDestroyedError, DuplicateInstanceNameError,
+    AuthenticationError,
+    CallerNotMemberError,
+    CancellationError,
+    ClassCastError,
+    ClassNotFoundError,
+    ConcurrentModificationError,
+    ConfigMismatchError,
+    ConfigurationError,
+    ConsistencyLostError,
+    DistributedObjectDestroyedError,
+    DuplicateInstanceNameError,
     HazelcastError,
-    HazelcastInstanceNotActiveError, IllegalStateError, InvocationTimeoutError, IOError, MemberLeftError,
-    NoDataMemberInClusterError, NodeIdOutOfRangeError, PartitionMigratingError, QueryError, QuorumError, RetryableHazelcastError,
+    HazelcastInstanceNotActiveError,
+    IllegalStateError,
+    InvocationTimeoutError,
+    IOError,
+    MemberLeftError,
+    NoDataMemberInClusterError,
+    NodeIdOutOfRangeError,
+    PartitionMigratingError,
+    QueryError,
+    QuorumError,
+    RetryableHazelcastError,
     RetryableIOError,
-    StaleSequenceError, StaleTaskIdError, TargetDisconnectedError, TargetNotMemberError, TopicOverloadError, TransactionError,
-    TransactionNotActiveError, TransactionTimedOutError, UndefinedErrorCodeError, UnsupportedOperationError
+    StaleSequenceError,
+    StaleTaskIdError,
+    TargetDisconnectedError,
+    TargetNotMemberError,
+    TopicOverloadError,
+    TransactionError,
+    TransactionNotActiveError,
+    TransactionTimedOutError,
+    UndefinedErrorCodeError,
+    UnsupportedOperationError
 } from '../HazelcastError';
 import {ClientProtocolErrorCodes} from './ClientProtocolErrorCodes';
 import {ErrorCodec} from './ErrorCodec';
@@ -90,11 +116,7 @@ export class ClientErrorFactory {
         this.register(ClientProtocolErrorCodes.CONSISTENCY_LOST_EXCEPTION, (m, c) => new ConsistencyLostError(m, c));
     }
 
-    private register(code: number, errorFactory: ErrorFactory): void {
-        this.codeToErrorConstructor.set(code, errorFactory);
-    }
-
-    createErrorFromClientMessage(clientMessage: ClientMessage) : Error {
+    createErrorFromClientMessage(clientMessage: ClientMessage): Error {
         let errorCodec = ErrorCodec.decode(clientMessage);
         return this.createError(errorCodec.errorCode, errorCodec.className, errorCodec.message, null);
     }
@@ -106,5 +128,9 @@ export class ClientErrorFactory {
         } else {
             return new UndefinedErrorCodeError(message, className);
         }
+    }
+
+    private register(code: number, errorFactory: ErrorFactory): void {
+        this.codeToErrorConstructor.set(code, errorFactory);
     }
 }

@@ -15,11 +15,15 @@
  */
 
 import {DataInput, DataOutput} from './Data';
-import {PortableWriter, PortableReader} from './portable/PortableSerializer';
+import {PortableReader, PortableWriter} from './portable/PortableSerializer';
+
 export interface IdentifiedDataSerializable {
     readData(input: DataInput): any;
+
     writeData(output: DataOutput): void;
+
     getFactoryId(): number;
+
     getClassId(): number;
 }
 
@@ -29,8 +33,11 @@ export interface IdentifiedDataSerializableFactory {
 
 export interface Portable {
     getFactoryId(): number;
+
     getClassId(): number;
+
     writePortable(writer: PortableWriter): void;
+
     readPortable(reader: PortableReader): void;
 }
 

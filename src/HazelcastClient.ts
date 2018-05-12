@@ -22,7 +22,7 @@ import * as Promise from 'bluebird';
 import {IMap} from './proxy/IMap';
 import {ISet} from './proxy/ISet';
 import {LoggingService} from './logging/LoggingService';
-import {LifecycleService, LifecycleEvent} from './LifecycleService';
+import {LifecycleEvent, LifecycleService} from './LifecycleService';
 import {ClientGetDistributedObjectsCodec} from './codec/ClientGetDistributedObjectsCodec';
 import {DistributedObject} from './DistributedObject';
 import {ClientInfo} from './ClientInfo';
@@ -37,7 +37,6 @@ import {ILock} from './proxy/ILock';
 import {MultiMap} from './proxy/MultiMap';
 import {IRingbuffer} from './proxy/IRingbuffer';
 import {ITopic} from './proxy/topic/ITopic';
-import {ReliableTopicProxy} from './proxy/topic/ReliableTopicProxy';
 import {IReplicatedMap} from './proxy/IReplicatedMap';
 import {ISemaphore} from './proxy/ISemaphore';
 import {IAtomicLong} from './proxy/IAtomicLong';
@@ -65,24 +64,6 @@ export default class HazelcastClient {
     private mapRepairingTask: RepairingTask;
     private errorFactory: ClientErrorFactory;
 
-    /**
-     * Creates a new client object and automatically connects to cluster.
-     * @param config Default {@link ClientConfig} is used when this parameter is absent.
-     * @returns a new client instance
-     */
-    public static newHazelcastClient(config?: ClientConfig): Promise<HazelcastClient> {
-        if (config == null) {
-            let configBuilder = new ConfigBuilder();
-            return configBuilder.loadConfig().then(() => {
-                let client = new HazelcastClient(configBuilder.build());
-                return client.init();
-            });
-        } else {
-            let client = new HazelcastClient(config);
-            return client.init();
-        }
-    }
-
     constructor(config?: ClientConfig) {
         if (config) {
             this.config = config;
@@ -103,22 +84,22 @@ export default class HazelcastClient {
         this.errorFactory = new ClientErrorFactory();
     }
 
-    private init(): Promise<HazelcastClient> {
-        return this.clusterService.start().then(() => {
-            return this.partitionService.initialize();
-        }).then(() => {
-            return this.heartbeat.start();
-        }).then(() => {
-            this.lifecycleService.emitLifecycleEvent(LifecycleEvent.started);
-        }).then(() => {
-            this.proxyManager.init();
-            this.listenerService.start();
-            this.loggingService.info('HazelcastClient', 'Client started');
-            return this;
-        }).catch((e) => {
-            this.loggingService.error('HazelcastClient', 'Client failed to start', e);
-            throw e;
-        });
+    /**
+     * Creates a new client object and automatically connects to cluster.
+     * @param config Default {@link ClientConfig} is used when this parameter is absent.
+     * @returns a new client instance
+     */
+    public static newHazelcastClient(config?: ClientConfig): Promise<HazelcastClient> {
+        if (config == null) {
+            let configBuilder = new ConfigBuilder();
+            return configBuilder.loadConfig().then(() => {
+                let client = new HazelcastClient(configBuilder.build());
+                return client.init();
+            });
+        } else {
+            let client = new HazelcastClient(config);
+            return client.init();
+        }
     }
 
     /**
@@ -139,7 +120,7 @@ export default class HazelcastClient {
         var proxyManager = this.proxyManager;
         return this.invocationService.invokeOnRandomTarget(clientMessage).then(function (resp) {
             var response = ClientGetDistributedObjectsCodec.decodeResponse(resp, toObjectFunc).response;
-            return response.map((objectInfo: {[key: string]: any}) => {
+            return response.map((objectInfo: { [key: string]: any }) => {
                 return proxyManager.getOrCreateProxy(objectInfo['value'], objectInfo['key'], false);
             });
         });
@@ -171,7 +152,6 @@ export default class HazelcastClient {
     getLock(name: string): ILock {
         return <ILock>this.proxyManager.getOrCreateProxy(name, ProxyManager.LOCK_SERVICE);
     }
-
 
     /**
      * Returns the distributed queue instance with given name.
@@ -340,6 +320,24 @@ export default class HazelcastClient {
         this.listenerService.shutdown();
         this.invocationService.shutdown();
         this.lifecycleService.emitLifecycleEvent(LifecycleEvent.shutdown);
+    }
+
+    private init(): Promise<HazelcastClient> {
+        return this.clusterService.start().then(() => {
+            return this.partitionService.initialize();
+        }).then(() => {
+            return this.heartbeat.start();
+        }).then(() => {
+            this.lifecycleService.emitLifecycleEvent(LifecycleEvent.started);
+        }).then(() => {
+            this.proxyManager.init();
+            this.listenerService.start();
+            this.loggingService.info('HazelcastClient', 'Client started');
+            return this;
+        }).catch((e) => {
+            this.loggingService.error('HazelcastClient', 'Client failed to start', e);
+            throw e;
+        });
     }
 }
 

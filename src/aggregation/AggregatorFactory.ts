@@ -34,9 +34,7 @@ import {LoggingService} from '../logging/LoggingService';
 
 export class AggregatorFactory implements IdentifiedDataSerializableFactory {
 
-    private logger = LoggingService.getLoggingService();
     static readonly FACTORY_ID = -41;
-
     static readonly BIG_DECIMAL_AVG = 0; //not implemented in node.js
     static readonly BIG_DECIMAL_SUM = 1; //not implemented in node.js
     static readonly BIG_INT_AVG = 2; //not implemented in node.js
@@ -56,8 +54,8 @@ export class AggregatorFactory implements IdentifiedDataSerializableFactory {
     static readonly NUMBER_AVG = 16;
     static readonly MAX_BY = 17; //needs object to implement Java's Comparable interface
     static readonly MIN_BY = 18; //needs object to implement Java's Comparable interface
-
-    private idToConstructor: {[id: number]: Aggregator<any>} = {};
+    private logger = LoggingService.getLoggingService();
+    private idToConstructor: { [id: number]: Aggregator<any> } = {};
 
     constructor() {
         this.idToConstructor[AggregatorFactory.COUNT] = CountAggregator;
@@ -74,6 +72,7 @@ export class AggregatorFactory implements IdentifiedDataSerializableFactory {
         this.idToConstructor[AggregatorFactory.NUMBER_AVG] = NumberAverageAggregator;
 
     }
+
     create(type: number): IdentifiedDataSerializable {
         try {
             return <any>(new (<FunctionConstructor>this.idToConstructor[type])());

@@ -27,9 +27,9 @@ import {RingbufferRemainingCapacityCodec} from '../../codec/RingbufferRemainingC
 import {RingbufferSizeCodec} from '../../codec/RingbufferSizeCodec';
 import {RingbufferCapacityCodec} from '../../codec/RingbufferCapacityCodec';
 import {RingbufferReadManyCodec} from '../../codec/RingbufferReadManyCodec';
-import Long = require('long');
 import {ReadResultSet} from './ReadResultSet';
 import {LazyReadResultSet} from './LazyReadResultSet';
+import Long = require('long');
 
 export class RingbufferProxy<E> extends PartitionSpecificProxy implements IRingbuffer<E> {
 
@@ -65,7 +65,7 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements IRingb
         return this.encodeInvoke<Long>(RingbufferAddAllCodec, dataList, overflowPolicy);
     }
 
-    readOne(sequence: number|Long): Promise<E> {
+    readOne(sequence: number | Long): Promise<E> {
         if (Long.fromValue(sequence).lessThan(0)) {
             throw new RangeError('Sequence number should not be less than zero, was: ' + sequence);
         }
@@ -73,7 +73,7 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements IRingb
         return this.encodeInvoke<E>(RingbufferReadOneCodec, sequence);
     }
 
-    readMany(sequence: number|Long, minCount: number, maxCount: number, filter: any = null): Promise<ReadResultSet<E>> {
+    readMany(sequence: number | Long, minCount: number, maxCount: number, filter: any = null): Promise<ReadResultSet<E>> {
 
         if (Long.fromValue(sequence).lessThan(0)) {
             throw new RangeError('Sequence number should not be less than zero, was: ' + sequence);

@@ -1,60 +1,60 @@
 {
-  "name": "hazelcast-client",
-  "version": "0.8.0",
-  "description": "Hazelcast - open source In-Memory Data Grid - client for NodeJS",
-  "main": "lib/index.js",
-  "dependencies": {
-    "bluebird": "3.5.0",
-    "long": "3.2.0"
-  },
-  "devDependencies": {
-    "@types/bluebird": "3.5.12",
-    "@types/long": "3.0.32",
-    "@types/node": "6.0.87",
-    "chai": "4.1.2",
-    "chai-as-promised": "7.1.1",
-    "hazelcast-remote-controller": "^1.0.0",
-    "istanbul": "0.4.5",
-    "jsonschema": "^1.2.2",
-    "mocha": "3.5.3",
-    "mousse": "0.3.1",
-    "remap-istanbul": "0.9.6",
-    "rimraf": "2.6.2",
-    "sinon": "4.0.0",
-    "tslint": "5.7.0",
-    "typescript": "2.5.2",
-    "winston": "2.3.1"
-  },
-  "scripts": {
-    "clean": "rimraf lib typings *.jar *.log",
-    "precompile": "node create-build-info.js",
-    "compile": "tsc",
-    "pretest": "./scripts/download-rc.sh",
-    "test": "mocha --recursive",
-    "precoverage": "./scripts/download-rc.sh",
-    "coverage": "rimraf coverage && istanbul cover --root lib/ --include-all-sources _mocha -- --recursive --reporter spec",
-    "coverage-without-codecs": "rimraf coverage && istanbul cover -x **/codec/**/* --root lib/ --include-all-sources _mocha -- --recursive --reporter spec",
-    "postcoverage": "remap-istanbul -i coverage/coverage.json -o coverage/cobertura-coverage.xml -t cobertura && remap-istanbul -i coverage/coverage.json -o coverage -t html",
-    "pregenerate-docs": "rimraf docs",
-    "generate-docs": "typedoc --out docs/ --exclude **/codec/**/* src/ --excludeExternals --ignoreCompilerErrors --excludePrivate",
-    "lint": "tslint --project tsconfig.json -t stylish"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/hazelcast/hazelcast-nodejs-client.git"
-  },
-  "keywords": [
-    "hazelcast",
-    "nodejs",
-    "node",
-    "client",
-    "data",
-    "grid"
-  ],
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/hazelcast/hazelcast-nodejs-client/issues"
-  },
-  "homepage": "https://github.com/hazelcast/hazelcast-nodejs-client#readme",
-  "typings": "./lib/index"
+    "name": "hazelcast-client",
+    "version": "0.8.0",
+    "description": "Hazelcast - open source In-Memory Data Grid - client for NodeJS",
+    "main": "lib/index.js",
+    "dependencies": {
+        "bluebird": "3.5.0",
+        "long": "3.2.0"
+    },
+    "devDependencies": {
+        "@types/bluebird": "3.5.12",
+        "@types/long": "3.0.32",
+        "@types/node": "6.0.87",
+        "chai": "4.1.2",
+        "chai-as-promised": "7.1.1",
+        "hazelcast-remote-controller": "^1.0.0",
+        "istanbul": "0.4.5",
+        "jsonschema": "^1.2.2",
+        "mocha": "3.5.3",
+        "mousse": "0.3.1",
+        "remap-istanbul": "0.9.6",
+        "rimraf": "2.6.2",
+        "sinon": "4.0.0",
+        "tslint": "5.7.0",
+        "typescript": "2.5.2",
+        "winston": "2.3.1"
+    },
+    "scripts": {
+        "clean": "rimraf lib typings *.jar *.log",
+        "precompile": "node create-build-info.js",
+        "compile": "tsc",
+        "pretest": "./scripts/download-rc.sh",
+        "test": "mocha --recursive",
+        "precoverage": "./scripts/download-rc.sh",
+        "coverage": "rimraf coverage && istanbul cover --root lib/ --include-all-sources _mocha -- --recursive --reporter spec",
+        "coverage-without-codecs": "rimraf coverage && istanbul cover -x **/codec/**/* --root lib/ --include-all-sources _mocha -- --recursive --reporter spec",
+        "postcoverage": "remap-istanbul -i coverage/coverage.json -o coverage/cobertura-coverage.xml -t cobertura && remap-istanbul -i coverage/coverage.json -o coverage -t html",
+        "pregenerate-docs": "rimraf docs",
+        "generate-docs": "typedoc --out docs/ --exclude **/codec/**/* src/ --excludeExternals --ignoreCompilerErrors --excludePrivate",
+        "lint": "tslint --project tsconfig.json -t stylish"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hazelcast/hazelcast-nodejs-client.git"
+    },
+    "keywords": [
+        "hazelcast",
+        "nodejs",
+        "node",
+        "client",
+        "data",
+        "grid"
+    ],
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/hazelcast/hazelcast-nodejs-client/issues"
+    },
+    "homepage": "https://github.com/hazelcast/hazelcast-nodejs-client#readme",
+    "typings": "./lib/index"
 }

@@ -36,18 +36,27 @@ export interface NearCacheStatistics {
 
 export interface NearCache {
     put(key: Data, value: any): void;
+
     get(key: Data): Data | any;
+
     invalidate(key: Data): void;
+
     clear(): void;
+
     getStatistics(): NearCacheStatistics;
+
     isInvalidatedOnChange(): boolean;
+
     setStaleReadDetector(detector: StaleReadDetector): void;
+
     tryReserveForUpdate(key: Data): Long;
+
     tryPublishReserved(key: Data, value: any, reservationId: Long): any;
 }
 
 export class NearCacheImpl implements NearCache {
 
+    internalStore: DataKeyedHashMap<DataRecord>;
     private serializationService: SerializationService;
     private name: string;
     private invalidateOnChange: boolean;
@@ -61,9 +70,6 @@ export class NearCacheImpl implements NearCache {
     private evictionCandidatePool: Array<DataRecord>;
     private staleReadDetector: StaleReadDetector = AlwaysFreshStaleReadDetectorImpl.INSTANCE;
     private reservationCounter: Long = Long.ZERO;
-
-    internalStore: DataKeyedHashMap<DataRecord>;
-
     private evictedCount: number = 0;
     private expiredCount: number = 0;
     private missCount: number = 0;
@@ -161,16 +167,6 @@ export class NearCacheImpl implements NearCache {
         this.internalStore.set(key, dr);
     }
 
-    private initInvalidationMetadata(dr: DataRecord): void {
-        if (this.staleReadDetector === AlwaysFreshStaleReadDetectorImpl.INSTANCE) {
-            return;
-        }
-        let partitionId = this.staleReadDetector.getPartitionId(dr.key);
-        let metadataContainer = this.staleReadDetector.getMetadataContainer(partitionId);
-        dr.setInvalidationSequence(metadataContainer.getSequence());
-        dr.setUuid(metadataContainer.getUuid());
-    }
-
     /**
      *
      * @param key
@@ -210,6 +206,21 @@ export class NearCacheImpl implements NearCache {
         this.internalStore.clear();
     }
 
+    isInvalidatedOnChange(): boolean {
+        return this.invalidateOnChange;
+    }
+
+    getStatistics(): NearCacheStatistics {
+        var stats: NearCacheStatistics = {
+            evictedCount: this.evictedCount,
+            expiredCount: this.expiredCount,
+            missCount: this.missCount,
+            hitCount: this.hitCount,
+            entryCount: this.internalStore.size
+        };
+        return stats;
+    }
+
     protected isEvictionRequired() {
         return this.evictionPolicy !== EvictionPolicy.NONE && this.evictionMaxSize <= this.internalStore.size;
     }
@@ -231,7 +242,7 @@ export class NearCacheImpl implements NearCache {
      * @returns number of expired elements.
      */
     protected recomputeEvictionPool(): number {
-        var arr: Array<DataRecord> = Array.from(this.internalStore.values() );
+        var arr: Array<DataRecord> = Array.from(this.internalStore.values());
 
         shuffleArray<DataRecord>(arr);
         var newCandidates = arr.slice(0, this.evictionSamplingCount);
@@ -259,7 +270,7 @@ export class NearCacheImpl implements NearCache {
     }
 
     protected expireRecord(key: any | Data): void {
-        if (this.internalStore.delete(key) ) {
+        if (this.internalStore.delete(key)) {
             this.expiredCount++;
         }
     }
@@ -270,18 +281,13 @@ export class NearCacheImpl implements NearCache {
         }
     }
 
-    isInvalidatedOnChange(): boolean {
-        return this.invalidateOnChange;
-    }
-
-    getStatistics(): NearCacheStatistics {
-        var stats: NearCacheStatistics = {
-            evictedCount: this.evictedCount,
-            expiredCount: this.expiredCount,
-            missCount: this.missCount,
-            hitCount: this.hitCount,
-            entryCount: this.internalStore.size
-        };
-        return stats;
+    private initInvalidationMetadata(dr: DataRecord): void {
+        if (this.staleReadDetector === AlwaysFreshStaleReadDetectorImpl.INSTANCE) {
+            return;
+        }
+        let partitionId = this.staleReadDetector.getPartitionId(dr.key);
+        let metadataContainer = this.staleReadDetector.getMetadataContainer(partitionId);
+        dr.setInvalidationSequence(metadataContainer.getSequence());
+        dr.setUuid(metadataContainer.getUuid());
     }
 }

@@ -33,7 +33,6 @@ import {ConfigPatternMatcher} from './ConfigPatternMatcher';
  */
 export class ClientConfig {
 
-    private configPatternMatcher = new ConfigPatternMatcher();
     /**
      * Name of this client instance.
      */
@@ -53,9 +52,10 @@ export class ClientConfig {
     listeners: ListenerConfig = new ListenerConfig();
     listenerConfigs: ImportConfig[] = [];
     serializationConfig: SerializationConfig = new SerializationConfig();
-    reliableTopicConfigs: {[name: string]: ReliableTopicConfig} = {};
-    nearCacheConfigs: {[name: string]: NearCacheConfig} = {};
-    flakeIdGeneratorConfigs: {[name: string]: FlakeIdGeneratorConfig} = {};
+    reliableTopicConfigs: { [name: string]: ReliableTopicConfig } = {};
+    nearCacheConfigs: { [name: string]: NearCacheConfig } = {};
+    flakeIdGeneratorConfigs: { [name: string]: FlakeIdGeneratorConfig } = {};
+    private configPatternMatcher = new ConfigPatternMatcher();
 
     getReliableTopicConfig(name: string): ReliableTopicConfig {
         let matching = this.lookupByPattern<ReliableTopicConfig>(this.reliableTopicConfigs, name);
@@ -91,7 +91,7 @@ export class ClientConfig {
         return config;
     }
 
-    private lookupByPattern<T>(config: {[pattern: string]: any}, name: string): T {
+    private lookupByPattern<T>(config: { [pattern: string]: any }, name: string): T {
         if (config[name] != null) {
             return config[name];
         }

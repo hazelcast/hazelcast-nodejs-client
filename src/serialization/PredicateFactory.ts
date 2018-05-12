@@ -17,7 +17,9 @@
 import {IdentifiedDataSerializable, IdentifiedDataSerializableFactory} from './Serializable';
 import {DataInput, DataOutput} from './Data';
 import {Predicate} from '../core/Predicate';
+
 export const PREDICATE_FACTORY_ID = -32;
+
 export abstract class AbstractPredicate implements Predicate {
 
     abstract readData(input: DataInput): any;
@@ -33,7 +35,7 @@ export abstract class AbstractPredicate implements Predicate {
 
 export class PredicateFactory implements IdentifiedDataSerializableFactory {
 
-    private idToConstructorMap: {[id: number]: FunctionConstructor } = {};
+    private idToConstructorMap: { [id: number]: FunctionConstructor } = {};
 
     constructor(allPredicates: any) {
         for (var pred in allPredicates) {

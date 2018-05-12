@@ -15,8 +15,9 @@
  */
 
 export interface HazelcastErrorConstructor {
-    new(message: string, cause?: Error): HazelcastError;
     readonly prototype: Error;
+
+    new(message: string, cause?: Error): HazelcastError;
 }
 
 export class HazelcastError extends Error {

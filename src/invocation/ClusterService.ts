@@ -22,11 +22,11 @@ import {LoggingService} from '../logging/LoggingService';
 import {EventEmitter} from 'events';
 import {ClientInfo} from '../ClientInfo';
 import HazelcastClient from '../HazelcastClient';
-import Address = require('../Address');
-import ClientMessage = require('../ClientMessage');
 import {IllegalStateError} from '../HazelcastError';
 import * as assert from 'assert';
 import {MemberSelector} from '../core/MemberSelector';
+import Address = require('../Address');
+import ClientMessage = require('../ClientMessage');
 
 const MEMBER_ADDED = 1;
 const MEMBER_REMOVED = 2;
@@ -34,7 +34,7 @@ const MEMBER_REMOVED = 2;
 const EMIT_MEMBER_ADDED = 'memberAdded';
 const EMIT_MEMBER_REMOVED = 'memberRemoved';
 const EMIT_ATTRIBUTE_CHANGE = 'memberAttributeChange';
-const ATTRIBUTE_CHANGE: {[key: string]: string} = {
+const ATTRIBUTE_CHANGE: { [key: string]: string } = {
     1: 'put',
     2: 'remove'
 };
@@ -135,6 +135,30 @@ export class ClusterService extends EventEmitter {
         return info;
     }
 
+    /**
+     * Returns the connection associated with owner node of this client.
+     * @returns {ClientConnection}
+     */
+    getOwnerConnection(): ClientConnection {
+        return this.ownerConnection;
+    }
+
+    initMemberShipListener(): Promise<void> {
+        var request = ClientAddMembershipListenerCodec.encodeRequest(false);
+
+        var handler = (m: ClientMessage) => {
+            var handleMember = this.handleMember.bind(this);
+            var handleMemberList = this.handleMemberList.bind(this);
+            var handleAttributeChange = this.handleMemberAttributeChange.bind(this);
+            ClientAddMembershipListenerCodec.handle(m, handleMember, handleMemberList, handleAttributeChange, null);
+        };
+        return this.client.getInvocationService().invokeOnConnection(this.getOwnerConnection(), request, handler)
+            .then((resp: ClientMessage) => {
+                this.logger.trace('ClusterService', 'Registered listener with id '
+                    + ClientAddMembershipListenerCodec.decodeResponse(resp).response);
+            });
+    }
+
     private initHeartbeatListener() {
         this.client.getHeartbeat().addListener({
             onHeartbeatStopped: this.onHeartbeatStopped.bind(this)
@@ -197,30 +221,6 @@ export class ClusterService extends EventEmitter {
                 return this.tryAddresses(index + 1, attemptLimit, attemptPeriod);
             });
         }
-    }
-
-    /**
-     * Returns the connection associated with owner node of this client.
-     * @returns {ClientConnection}
-     */
-    getOwnerConnection(): ClientConnection {
-        return this.ownerConnection;
-    }
-
-    initMemberShipListener(): Promise<void> {
-        var request = ClientAddMembershipListenerCodec.encodeRequest(false);
-
-        var handler = (m: ClientMessage) => {
-            var handleMember = this.handleMember.bind(this);
-            var handleMemberList = this.handleMemberList.bind(this);
-            var handleAttributeChange = this.handleMemberAttributeChange.bind(this);
-            ClientAddMembershipListenerCodec.handle(m, handleMember, handleMemberList, handleAttributeChange, null);
-        };
-        return this.client.getInvocationService().invokeOnConnection(this.getOwnerConnection(), request, handler)
-            .then((resp: ClientMessage) => {
-                this.logger.trace('ClusterService', 'Registered listener with id '
-                    + ClientAddMembershipListenerCodec.decodeResponse(resp).response);
-            });
     }
 
     private handleMember(member: Member, eventType: number) {

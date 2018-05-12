@@ -18,7 +18,6 @@ import {BaseProxy} from './BaseProxy';
 import {PNCounter} from './PNCounter';
 import * as Promise from 'bluebird';
 import {VectorClock} from '../core/VectorClock';
-import Address = require('../Address');
 import {PNCounterGetConfiguredReplicaCountCodec} from '../codec/PNCounterGetConfiguredReplicaCountCodec';
 import {MemberSelectors} from '../core/MemberSelectors';
 import {randomInt} from '../Util';
@@ -26,12 +25,13 @@ import {PNCounterAddCodec} from '../codec/PNCounterAddCodec';
 import {NoDataMemberInClusterError} from '../HazelcastError';
 import {PNCounterGetCodec} from '../codec/PNCounterGetCodec';
 import * as Long from 'long';
+import Address = require('../Address');
 
 export class PNCounterProxy extends BaseProxy implements PNCounter {
+    private static readonly EMPTY_ARRAY: Address[] = [];
     private lastObservedVectorClock: VectorClock = new VectorClock();
     private maximumReplicaCount: number = 0;
     private currentTargetReplicaAddress: Address;
-    private static readonly EMPTY_ARRAY: Address[] = [];
 
     get(): Promise<Long> {
         return this.invokeInternal(PNCounterProxy.EMPTY_ARRAY, null, PNCounterGetCodec);

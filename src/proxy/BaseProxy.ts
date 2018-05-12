@@ -15,10 +15,10 @@
  */
 
 import {Data} from '../serialization/Data';
-import ClientMessage = require('../ClientMessage');
 import * as Promise from 'bluebird';
 import HazelcastClient from '../HazelcastClient';
 import {BuildMetadata} from '../BuildMetadata';
+import ClientMessage = require('../ClientMessage');
 import Address = require('../Address');
 
 /**
@@ -36,19 +36,34 @@ export class BaseProxy {
         this.serviceName = serviceName;
     }
 
-    private createPromise<T>(codec: any, promise: Promise<ClientMessage>): Promise<T> {
-        var toObject = this.toObject.bind(this);
-        return promise.then(function(clientMessage: ClientMessage) {
-            if (codec.decodeResponse) {
-                var raw = codec.decodeResponse(clientMessage, toObject);
+    getPartitionKey(): string {
+        return this.name;
+    }
 
-                var response = raw.response;
-                if (typeof response === 'undefined') {
-                    return raw;
-                } else {
-                    return response;
-                }
-            }
+    /**
+     * Returns name of the proxy.
+     * @returns
+     */
+    getName(): string {
+        return this.name;
+    }
+
+    /**
+     * Returns name of the service which this proxy belongs to.
+     * Refer to service field of {@link ProxyManager} for service names.
+     * @returns
+     */
+    getServiceName(): string {
+        return this.serviceName;
+    }
+
+    /**
+     * Deletes the proxy object and frees allocated resources on cluster.
+     * @returns
+     */
+    destroy(): Promise<void> {
+        return this.client.getProxyManager().destroyProxy(this.name, this.serviceName).then(() => {
+            return this.postDestroy();
         });
     }
 
@@ -123,38 +138,23 @@ export class BaseProxy {
         return BuildMetadata.UNKNOWN_VERSION_ID;
     }
 
-    getPartitionKey() : string {
-        return this.name;
-    }
-
-    /**
-     * Returns name of the proxy.
-     * @returns
-     */
-    getName() : string {
-        return this.name;
-    }
-
-    /**
-     * Returns name of the service which this proxy belongs to.
-     * Refer to service field of {@link ProxyManager} for service names.
-     * @returns
-     */
-    getServiceName() : string {
-        return this.serviceName;
-    }
-
-    /**
-     * Deletes the proxy object and frees allocated resources on cluster.
-     * @returns
-     */
-    destroy() : Promise<void> {
-        return this.client.getProxyManager().destroyProxy(this.name, this.serviceName).then(() => {
-            return this.postDestroy();
-        });
-    }
-
     protected postDestroy(): Promise<void> {
         return Promise.resolve();
+    }
+
+    private createPromise<T>(codec: any, promise: Promise<ClientMessage>): Promise<T> {
+        var toObject = this.toObject.bind(this);
+        return promise.then(function (clientMessage: ClientMessage) {
+            if (codec.decodeResponse) {
+                var raw = codec.decodeResponse(clientMessage, toObject);
+
+                var response = raw.response;
+                if (typeof response === 'undefined') {
+                    return raw;
+                } else {
+                    return response;
+                }
+            }
+        });
     }
 }

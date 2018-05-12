@@ -16,17 +16,17 @@
 
 import * as Promise from 'bluebird';
 import HazelcastClient from './HazelcastClient';
+import {LoggingService} from './logging/LoggingService';
 import GetPartitionsCodec = require('./codec/GetPartitionsCodec');
 import Address = require('./Address');
 import ClientMessage = require('./ClientMessage');
-import {LoggingService} from './logging/LoggingService';
 
 const PARTITION_REFRESH_INTERVAL = 10000;
 
 export class PartitionService {
 
     private client: HazelcastClient;
-    private partitionMap: {[partitionId: number]: Address} = {};
+    private partitionMap: { [partitionId: number]: Address } = {};
     private partitionCount: number;
     private partitionRefreshTask: any;
     private isShutdown: boolean;

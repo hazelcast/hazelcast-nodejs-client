@@ -37,13 +37,14 @@ function PortableObject(a_byte, a_boolean, a_character, a_short, an_integer, a_l
     this.strings = strings;
     this.portables = portables;
 }
-PortableObject.prototype.getFactoryId = function() {
+
+PortableObject.prototype.getFactoryId = function () {
     return 10;
 };
-PortableObject.prototype.getClassId = function() {
+PortableObject.prototype.getClassId = function () {
     return 111;
 };
-PortableObject.prototype.writePortable = function(writer) {
+PortableObject.prototype.writePortable = function (writer) {
     writer.writeByte('a_byte', this.a_byte);
     writer.writeBoolean('a_boolean', this.a_boolean);
     writer.writeChar('a_char', this.a_character);
@@ -67,7 +68,7 @@ PortableObject.prototype.writePortable = function(writer) {
     writer.writeUTFArray('strings', this.strings);
     writer.writePortableArray('portables', this.portables);
 };
-PortableObject.prototype.readPortable = function(reader) {
+PortableObject.prototype.readPortable = function (reader) {
     this.a_byte = reader.readByte('a_byte');
     this.a_boolean = reader.readBoolean('a_boolean');
     this.a_character = reader.readChar('a_char');
@@ -97,20 +98,20 @@ function InnerPortableObject(p1, p2) {
     this.p2 = p2;
 }
 
-InnerPortableObject.prototype.getFactoryId = function() {
+InnerPortableObject.prototype.getFactoryId = function () {
     return 10;
 };
 
-InnerPortableObject.prototype.getClassId = function() {
+InnerPortableObject.prototype.getClassId = function () {
     return 222;
 };
 
-InnerPortableObject.prototype.readPortable = function(reader) {
+InnerPortableObject.prototype.readPortable = function (reader) {
     this.p1 = reader.readUTF('p1');
     this.p2 = reader.readUTF('p2');
 };
 
-InnerPortableObject.prototype.writePortable = function(writer) {
+InnerPortableObject.prototype.writePortable = function (writer) {
     writer.writeUTF('p1', this.p1);
     writer.writeUTF('p2', this.p2);
 };
@@ -140,19 +141,19 @@ function PortableObjectV2(a_new_prop, a_byte, a_boolean, a_character, a_short, a
     this.portables = portables;
 }
 
-PortableObjectV2.prototype.getVersion = function() {
+PortableObjectV2.prototype.getVersion = function () {
     return 2;
 };
 
-PortableObjectV2.prototype.getFactoryId = function() {
+PortableObjectV2.prototype.getFactoryId = function () {
     return 10;
 };
 
-PortableObjectV2.prototype.getClassId = function() {
+PortableObjectV2.prototype.getClassId = function () {
     return 111;
 };
 
-PortableObjectV2.prototype.writePortable = function(writer) {
+PortableObjectV2.prototype.writePortable = function (writer) {
     writer.writeUTF('a_new_prop', this.a_new_prop);
     writer.writeByte('a_byte', this.a_byte);
     writer.writeBoolean('a_boolean', this.a_boolean);
@@ -176,7 +177,7 @@ PortableObjectV2.prototype.writePortable = function(writer) {
     writer.writeUTFArray('strings', this.strings);
     writer.writePortableArray('portables', this.portables);
 };
-PortableObjectV2.prototype.readPortable = function(reader) {
+PortableObjectV2.prototype.readPortable = function (reader) {
     this.a_new_prop = reader.readUTF('a_new_prop');
     this.a_byte = reader.readByte('a_byte');
     this.a_boolean = reader.readBoolean('a_boolean');

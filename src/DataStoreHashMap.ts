@@ -15,11 +15,11 @@
  */
 
 import {Data} from './serialization/Data';
+
 export class DataKeyedHashMap<T> {
 
-    private internalStore: Map<number, Array<InternalRecord<T>>>;
-
     size: number;
+    private internalStore: Map<number, Array<InternalRecord<T>>>;
 
     constructor() {
         this.internalStore = new Map();
@@ -71,7 +71,9 @@ export class DataKeyedHashMap<T> {
     values(): Array<T> {
         var snapshot: Array<T> = [];
         this.internalStore.forEach((bucket: Array<InternalRecord<T>>) => {
-            snapshot.push(...(bucket.map((item: InternalRecord<T>) => { return item.value; })));
+            snapshot.push(...(bucket.map((item: InternalRecord<T>) => {
+                return item.value;
+            })));
         });
         return snapshot;
     }
@@ -97,7 +99,7 @@ export class DataKeyedHashMap<T> {
         if (bucket === undefined) {
             return -1;
         } else {
-            return bucket.findIndex((item: InternalRecord<T> ) => {
+            return bucket.findIndex((item: InternalRecord<T>) => {
                 return item.key.equals(key);
             });
         }

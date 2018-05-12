@@ -22,38 +22,38 @@ var Address = require('../.').Address;
 var Promise = require('bluebird');
 var Address = require('../.').Address;
 
-describe('ClusterService', function() {
+describe('ClusterService', function () {
     this.timeout(25000);
     var cluster;
     var ownerMember;
     var client;
 
-    beforeEach(function(done) {
-        Controller.createCluster(null, null).then(function(res) {
+    beforeEach(function (done) {
+        Controller.createCluster(null, null).then(function (res) {
             cluster = res;
-            Controller.startMember(cluster.id).then(function(res) {
+            Controller.startMember(cluster.id).then(function (res) {
                 ownerMember = res;
                 var cfg = new Config.ClientConfig();
                 cfg.properties['hazelcast.client.heartbeat.interval'] = 1000;
                 cfg.properties['hazelcast.client.heartbeat.timeout'] = 5000;
                 return HazelcastClient.newHazelcastClient(cfg);
-            }).then(function(res) {
+            }).then(function (res) {
                 client = res;
                 done();
-            }).catch(function(err) {
+            }).catch(function (err) {
                 done(err);
             });
-        }).catch(function(err) {
+        }).catch(function (err) {
             done(err);
         });
     });
 
-    afterEach(function() {
+    afterEach(function () {
         client.shutdown();
         return Controller.shutdownCluster(cluster.id);
     });
 
-    it('should know when a new member joins to cluster', function(done) {
+    it('should know when a new member joins to cluster', function (done) {
         var member2;
 
         client.getClusterService().once('memberAdded', function () {
@@ -61,12 +61,12 @@ describe('ClusterService', function() {
             done();
         });
 
-        Controller.startMember(cluster.id).then(function(res) {
+        Controller.startMember(cluster.id).then(function (res) {
             member2 = res;
         });
     });
 
-    it('should know when a member leaves cluster', function(done) {
+    it('should know when a member leaves cluster', function (done) {
         var member2;
 
         client.getClusterService().once('memberRemoved', function () {
@@ -74,7 +74,7 @@ describe('ClusterService', function() {
             done();
         });
 
-        Controller.startMember(cluster.id).then(function(res) {
+        Controller.startMember(cluster.id).then(function (res) {
             member2 = res;
             Controller.shutdownMember(cluster.id, member2.uuid);
         });
@@ -104,7 +104,7 @@ describe('ClusterService', function() {
         });
     });
 
-    it('should throw with message containing wrong host addresses in config', function() {
+    it('should throw with message containing wrong host addresses in config', function () {
         var cfg = new Config.ClientConfig();
         cfg.networkConfig.addresses = [
             new Address('0.0.0.0', 5709),
@@ -113,10 +113,10 @@ describe('ClusterService', function() {
 
         var falseStart = false;
         return HazelcastClient.newHazelcastClient(cfg).catch(function (err) {
-            Promise.all(cfg.networkConfig.addresses.map(function(address) {
+            Promise.all(cfg.networkConfig.addresses.map(function (address) {
                 return expect(err.message).to.include(address.toString());
             }));
-        }).then(function(client) {
+        }).then(function (client) {
             if (client) {
                 falseStart = true;
                 return client.shutdown();
@@ -130,10 +130,10 @@ describe('ClusterService', function() {
         });
     });
 
-    it('should throw with wrong group name', function(done) {
+    it('should throw with wrong group name', function (done) {
         var cfg = new Config.ClientConfig();
         cfg.groupConfig.name = 'wrong';
-        HazelcastClient.newHazelcastClient(cfg).then(function(newClient) {
+        HazelcastClient.newHazelcastClient(cfg).then(function (newClient) {
             newClient.shutdown();
             done(new Error('Client falsely started with wrong group name'));
         }).catch(function (err) {
@@ -141,10 +141,10 @@ describe('ClusterService', function() {
         });
     });
 
-    it('should throw with wrong group password', function(done) {
+    it('should throw with wrong group password', function (done) {
         var cfg = new Config.ClientConfig();
         cfg.groupConfig.password = 'wrong';
-        HazelcastClient.newHazelcastClient(cfg).then(function(newClient) {
+        HazelcastClient.newHazelcastClient(cfg).then(function (newClient) {
             newClient.shutdown();
             done(new Error('Client falsely started with wrong group password'));
         }).catch(function (err) {

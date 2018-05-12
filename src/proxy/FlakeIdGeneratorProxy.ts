@@ -21,7 +21,6 @@ import * as Long from 'long';
 import HazelcastClient from '../HazelcastClient';
 import {FlakeIdGeneratorNewIdBatchCodec} from '../codec/FlakeIdGeneratorNewIdBatchCodec';
 import {FlakeIdGeneratorConfig} from '../config/FlakeIdGeneratorConfig';
-import {EventEmitter} from 'events';
 import {AutoBatcher, Batch} from './flakeid/AutoBatcher';
 
 export class FlakeIdGeneratorProxy extends BaseProxy implements FlakeIdGenerator {

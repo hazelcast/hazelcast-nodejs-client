@@ -143,12 +143,12 @@ describe("Set Proxy", function () {
         });
     });
 
-    it('clear', function() {
-        return setInstance.addAll([1, 2, 3, 4]).then(function() {
+    it('clear', function () {
+        return setInstance.addAll([1, 2, 3, 4]).then(function () {
             return setInstance.clear();
-        }).then(function() {
+        }).then(function () {
             return setInstance.size();
-        }).then(function(s) {
+        }).then(function (s) {
             return expect(s).to.equal(0);
         });
     });
@@ -156,7 +156,7 @@ describe("Set Proxy", function () {
     it("listens for added entry", function (done) {
         this.timeout(5000);
         setInstance.addItemListener({
-            "itemAdded" : function (item) {
+            "itemAdded": function (item) {
                 if (item == 1) {
                     done()
                 } else {
@@ -173,7 +173,7 @@ describe("Set Proxy", function () {
     it("listens for removed entry", function (done) {
         this.timeout(5000);
         setInstance.addItemListener({
-            "itemRemoved" : function (item) {
+            "itemRemoved": function (item) {
                 if (item == 1) {
                     done()
                 } else {
@@ -193,7 +193,7 @@ describe("Set Proxy", function () {
     it("remove entry listener", function () {
         this.timeout(5000);
         return setInstance.addItemListener({
-            "itemRemoved" : function (item) {
+            "itemRemoved": function (item) {
                 if (item == 1) {
                     done()
                 } else {

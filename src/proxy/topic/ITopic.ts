@@ -20,6 +20,8 @@ import {DistributedObject} from '../../DistributedObject';
 
 export interface ITopic<E> extends DistributedObject {
     addMessageListener(listener: TopicMessageListener<E>): string;
+
     removeMessageListener(id: string): boolean;
+
     publish(message: E): Promise<void>;
 }

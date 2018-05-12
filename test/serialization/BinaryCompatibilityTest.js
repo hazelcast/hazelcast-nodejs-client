@@ -27,7 +27,7 @@ var APortable = require('./APortable');
 var CustomByteArraySerializable = require('./CustomSerializable').CustomByteArraySerializable;
 var CustomStreamSerializable = require('./CustomSerializable').CustomStreamSerializable;
 var expectAlmostEqual = require('../Util').expectAlmostEqual;
-describe('Binary serialization compatibility test', function() {
+describe('Binary serialization compatibility test', function () {
 
     var NULL_LENGTH = -1;
     var versions = [1];
@@ -46,6 +46,7 @@ describe('Binary serialization compatibility test', function() {
         else
             return 'LITTLE_ENDIAN';
     }
+
     function stripArticle(name) {
         if (name.startsWith('an')) {
             return name.slice(2);
@@ -59,6 +60,7 @@ describe('Binary serialization compatibility test', function() {
             }
         }
     }
+
     function createObjectKey(varName, version, isBigEndian) {
 
         return version + '-' + stripArticle(varName) + '-' + convertEndiannesToByteOrder(isBigEndian);
@@ -67,7 +69,7 @@ describe('Binary serialization compatibility test', function() {
     function createSerializationService(isBigEndian, defaultNumberType) {
         var cfg = new Config.ClientConfig().serializationConfig;
         cfg.portableFactories[ReferenceObjects.PORTABLE_FACTORY_ID] = {
-            create: function(classId) {
+            create: function (classId) {
                 if (classId === ReferenceObjects.INNER_PORTABLE_CLASS_ID) {
                     return new AnInnerPortable();
                 } else if (classId == ReferenceObjects.PORTABLE_CLASS_ID) {
@@ -76,22 +78,22 @@ describe('Binary serialization compatibility test', function() {
             }
         };
         cfg.dataSerializableFactories[ReferenceObjects.IDENTIFIED_DATA_SERIALIZABLE_FACTORY_ID] = {
-            create: function(type) {
+            create: function (type) {
                 if (type === ReferenceObjects.IDENTIFIED_DATA_SERIALIZABLE_CLASS_ID) {
                     return new AnIdentifiedDataSerializable();
                 }
             }
         };
         cfg.customSerializers.push({
-            getId: function() {
+            getId: function () {
                 return ReferenceObjects.CUSTOM_BYTE_ARRAY_SERILAZABLE_ID;
             },
-            write: function(out, object) {
+            write: function (out, object) {
                 out.writeInt(8);
                 out.writeInt(object.i);
                 out.writeFloat(object.f);
             },
-            read: function(inp) {
+            read: function (inp) {
                 var len = inp.readInt();
                 var buf = new Buffer(len);
                 inp.readCopy(buf, len);
@@ -99,14 +101,14 @@ describe('Binary serialization compatibility test', function() {
             }
         });
         cfg.customSerializers.push({
-            getId: function() {
+            getId: function () {
                 return ReferenceObjects.CUSTOM_STREAM_SERILAZABLE_ID;
             },
             write: function (out, object) {
                 out.writeInt(object.int);
                 out.writeFloat(object.float);
             },
-            read: function(inp) {
+            read: function (inp) {
                 return new CustomStreamSerializable(inp.readInt(), inp.readFloat());
             }
         });
@@ -115,8 +117,8 @@ describe('Binary serialization compatibility test', function() {
         return new SerializationService(cfg)
     }
 
-    before(function() {
-        versions.forEach(function(version) {
+    before(function () {
+        versions.forEach(function (version) {
             var input = new ObjectDataInput(fs.readFileSync(__dirname + '/' + createFileName(version)), 0, null, true);
             while (input.available() > 0) {
                 var utflen = input.readUnsignedShort();
@@ -136,7 +138,7 @@ describe('Binary serialization compatibility test', function() {
     });
 
     for (var vn in objects) {
-        (function() {
+        (function () {
             var varName = vn;
             var object = objects[varName];
             if (objects.hasOwnProperty(varName)) {
@@ -149,7 +151,7 @@ describe('Binary serialization compatibility test', function() {
                             var deserialized = service.toObject(dataMap[key]);
                             expectAlmostEqual(deserialized, object);
                         });
-                        if ( !ReferenceObjects.skipOnSerialize[varName]) {
+                        if (!ReferenceObjects.skipOnSerialize[varName]) {
                             it(varName + '-' + convertEndiannesToByteOrder(isBigEndian) + '-' + version + ' serialize deserialize', function () {
                                 this.timeout(10000);
                                 var key = createObjectKey(varName, version, isBigEndian);

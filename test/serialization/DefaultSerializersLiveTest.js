@@ -17,16 +17,16 @@
 var Client = require('../../.').Client;
 var RC = require('../RC');
 var expect = require('chai').expect;
-describe('Default serializers with live instance', function() {
+describe('Default serializers with live instance', function () {
     var cluster;
     var member;
     var client;
     var map;
 
-    before(function() {
+    before(function () {
         return RC.createCluster(null, null).then(function (res) {
             cluster = res;
-        }).then(function() {
+        }).then(function () {
             return RC.startMember(cluster.id);
         }).then(function (m) {
             member = m;
@@ -37,7 +37,7 @@ describe('Default serializers with live instance', function() {
         });
     });
 
-    after(function() {
+    after(function () {
         client.shutdown();
         return RC.shutdownCluster(cluster.id);
     });
@@ -59,7 +59,7 @@ describe('Default serializers with live instance', function() {
     it('string', function () {
         return map.put('testStringKey', 'testStringValue').then(function () {
             return RC.executeOnController(cluster.id, _generateGet('testStringKey'), 1);
-        }).then(function(response) {
+        }).then(function (response) {
             return expect(response.result.toString()).to.equal('testStringValue');
         })
     });
@@ -72,7 +72,7 @@ describe('Default serializers with live instance', function() {
         });
     });
 
-    it('utf8 characters test', function() {
+    it('utf8 characters test', function () {
         return map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}').then(function () {
             return RC.executeOnController(cluster.id, _generateGet('key'), 1);
         }).then(function (response) {
@@ -80,7 +80,7 @@ describe('Default serializers with live instance', function() {
         });
     });
 
-    it('utf8 characters test with surrogates', function() {
+    it('utf8 characters test with surrogates', function () {
         return map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\uD834\uDF06').then(function () {
             return RC.executeOnController(cluster.id, _generateGet('key'), 1);
         }).then(function (response) {
@@ -88,7 +88,7 @@ describe('Default serializers with live instance', function() {
         });
     });
 
-    it('utf8 sample string test', function() {
+    it('utf8 sample string test', function () {
         return map.put('key', 'Iñtërnâtiônàlizætiøn').then(function () {
             return RC.executeOnController(cluster.id, _generateGet('key'), 1);
         }).then(function (response) {
@@ -99,15 +99,15 @@ describe('Default serializers with live instance', function() {
     it('number', function () {
         return map.put('a', 23).then(function () {
             return RC.executeOnController(cluster.id, _generateGet('a'), 1);
-        }).then(function(response) {
+        }).then(function (response) {
             return expect(Number.parseInt(response.result.toString())).to.equal(23);
         })
     });
 
-    it('array', function() {
+    it('array', function () {
         return map.put('a', ['a', 'v', 'vg']).then(function () {
             return RC.executeOnController(cluster.id, _generateGet('a'), 1);
-        }).then(function(response) {
+        }).then(function (response) {
             return expect(response.result.toString()).to.equal(['a', 'v', 'vg'].toString());
         })
     })

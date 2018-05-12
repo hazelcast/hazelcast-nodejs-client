@@ -20,10 +20,10 @@ import {PartitionService} from '../PartitionService';
 import {MapFetchNearCacheInvalidationMetadataCodec} from '../codec/MapFetchNearCacheInvalidationMetadataCodec';
 import {Invocation} from '../invocation/InvocationService';
 import * as Promise from 'bluebird';
-import ClientMessage = require('../ClientMessage');
 import {LoggingService} from '../logging/LoggingService';
 import {UUID} from '../core/UUID';
 import {MemberSelectors} from '../core/MemberSelectors';
+import ClientMessage = require('../ClientMessage');
 
 export class MetadataFetcher {
 
@@ -51,14 +51,6 @@ export class MetadataFetcher {
         return Promise.each(promises, (clientMessage: ClientMessage) => {
             this.processResponse(clientMessage, handlers);
         }).return();
-    }
-
-    private getObjectNames(handlers: Map<string, RepairingHandler>): string[] {
-        let names: string[] = [];
-        handlers.forEach((handler: RepairingHandler) => {
-            names.push(handler.getName());
-        });
-        return names;
     }
 
     protected processResponse(responseMessage: ClientMessage, handlers: Map<string, RepairingHandler>): void {
@@ -97,6 +89,14 @@ export class MetadataFetcher {
             promises.push(promise);
         });
         return promises;
+    }
+
+    private getObjectNames(handlers: Map<string, RepairingHandler>): string[] {
+        let names: string[] = [];
+        handlers.forEach((handler: RepairingHandler) => {
+            names.push(handler.getName());
+        });
+        return names;
     }
 
 }

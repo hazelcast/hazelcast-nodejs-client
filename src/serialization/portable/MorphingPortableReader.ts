@@ -17,7 +17,7 @@
 import {DefaultPortableReader} from './DefaultPortableReader';
 import {PortableSerializer} from './PortableSerializer';
 import {DataInput} from '../Data';
-import {ClassDefinition, FieldType, FieldDefinition} from './ClassDefinition';
+import {ClassDefinition, FieldDefinition, FieldType} from './ClassDefinition';
 import {Portable} from '../Serializable';
 import * as Long from 'long';
 
@@ -26,32 +26,22 @@ export class MorphingPortableReader extends DefaultPortableReader {
         super(portableSerializer, input, classDefinition);
     }
 
-    private validateCompatibleAndCall(fieldName: string, expectedType: FieldType, superFunc: Function) {
-        var fd = this.classDefinition.getField(fieldName);
-        if (fd === null) {
-            return undefined;
-        }
-        if (fd.getType() !== expectedType) {
-            throw this.createIncompatibleClassChangeError(fd, expectedType);
-        }
-        return superFunc.call(this, fieldName);
-    }
-
-    private createIncompatibleClassChangeError(fd: FieldDefinition, expectedType: FieldType) {
-        return new TypeError(`Incompatible to read ${expectedType} from ${fd.getType()} while reading field : ${fd.getName()}`);
-    }
-
     readInt(fieldName: string): number {
         var fieldDef = this.classDefinition.getField(fieldName);
         if (fieldDef == null) {
             return undefined;
         }
         switch (fieldDef.getType()) {
-            case FieldType.INT: return super.readInt(fieldName);
-            case FieldType.BYTE: return super.readByte(fieldName);
-            case FieldType.CHAR: return super.readChar(fieldName).charCodeAt(0);
-            case FieldType.SHORT: return super.readShort(fieldName);
-            default: throw this.createIncompatibleClassChangeError(fieldDef, FieldType.INT);
+            case FieldType.INT:
+                return super.readInt(fieldName);
+            case FieldType.BYTE:
+                return super.readByte(fieldName);
+            case FieldType.CHAR:
+                return super.readChar(fieldName).charCodeAt(0);
+            case FieldType.SHORT:
+                return super.readShort(fieldName);
+            default:
+                throw this.createIncompatibleClassChangeError(fieldDef, FieldType.INT);
         }
     }
 
@@ -61,12 +51,18 @@ export class MorphingPortableReader extends DefaultPortableReader {
             return undefined;
         }
         switch (fieldDef.getType()) {
-            case FieldType.LONG: return super.readLong(fieldName);
-            case FieldType.INT: return Long.fromNumber(super.readInt(fieldName));
-            case FieldType.BYTE: return Long.fromNumber(super.readByte(fieldName));
-            case FieldType.CHAR: return Long.fromNumber(super.readChar(fieldName).charCodeAt(0));
-            case FieldType.SHORT: return Long.fromNumber(super.readShort(fieldName));
-            default: throw this.createIncompatibleClassChangeError(fieldDef, FieldType.LONG);
+            case FieldType.LONG:
+                return super.readLong(fieldName);
+            case FieldType.INT:
+                return Long.fromNumber(super.readInt(fieldName));
+            case FieldType.BYTE:
+                return Long.fromNumber(super.readByte(fieldName));
+            case FieldType.CHAR:
+                return Long.fromNumber(super.readChar(fieldName).charCodeAt(0));
+            case FieldType.SHORT:
+                return Long.fromNumber(super.readShort(fieldName));
+            default:
+                throw this.createIncompatibleClassChangeError(fieldDef, FieldType.LONG);
         }
     }
 
@@ -76,14 +72,22 @@ export class MorphingPortableReader extends DefaultPortableReader {
             return undefined;
         }
         switch (fieldDef.getType()) {
-            case FieldType.DOUBLE: return super.readDouble(fieldName);
-            case FieldType.LONG: return super.readLong(fieldName).toNumber();
-            case FieldType.FLOAT: return super.readFloat(fieldName);
-            case FieldType.INT: return super.readInt(fieldName);
-            case FieldType.BYTE: return super.readByte(fieldName);
-            case FieldType.CHAR: return super.readChar(fieldName).charCodeAt(0);
-            case FieldType.SHORT: return super.readShort(fieldName);
-            default: throw this.createIncompatibleClassChangeError(fieldDef, FieldType.DOUBLE);
+            case FieldType.DOUBLE:
+                return super.readDouble(fieldName);
+            case FieldType.LONG:
+                return super.readLong(fieldName).toNumber();
+            case FieldType.FLOAT:
+                return super.readFloat(fieldName);
+            case FieldType.INT:
+                return super.readInt(fieldName);
+            case FieldType.BYTE:
+                return super.readByte(fieldName);
+            case FieldType.CHAR:
+                return super.readChar(fieldName).charCodeAt(0);
+            case FieldType.SHORT:
+                return super.readShort(fieldName);
+            default:
+                throw this.createIncompatibleClassChangeError(fieldDef, FieldType.DOUBLE);
         }
     }
 
@@ -93,12 +97,18 @@ export class MorphingPortableReader extends DefaultPortableReader {
             return undefined;
         }
         switch (fieldDef.getType()) {
-            case FieldType.FLOAT: return super.readFloat(fieldName);
-            case FieldType.INT: return super.readInt(fieldName);
-            case FieldType.BYTE: return super.readByte(fieldName);
-            case FieldType.CHAR: return super.readChar(fieldName).charCodeAt(0);
-            case FieldType.SHORT: return super.readShort(fieldName);
-            default: throw this.createIncompatibleClassChangeError(fieldDef, FieldType.FLOAT);
+            case FieldType.FLOAT:
+                return super.readFloat(fieldName);
+            case FieldType.INT:
+                return super.readInt(fieldName);
+            case FieldType.BYTE:
+                return super.readByte(fieldName);
+            case FieldType.CHAR:
+                return super.readChar(fieldName).charCodeAt(0);
+            case FieldType.SHORT:
+                return super.readShort(fieldName);
+            default:
+                throw this.createIncompatibleClassChangeError(fieldDef, FieldType.FLOAT);
         }
     }
 
@@ -108,9 +118,12 @@ export class MorphingPortableReader extends DefaultPortableReader {
             return undefined;
         }
         switch (fieldDef.getType()) {
-            case FieldType.BYTE: return super.readByte(fieldName);
-            case FieldType.SHORT: return super.readShort(fieldName);
-            default: throw this.createIncompatibleClassChangeError(fieldDef, FieldType.SHORT);
+            case FieldType.BYTE:
+                return super.readByte(fieldName);
+            case FieldType.SHORT:
+                return super.readShort(fieldName);
+            default:
+                throw this.createIncompatibleClassChangeError(fieldDef, FieldType.SHORT);
         }
     }
 
@@ -168,5 +181,20 @@ export class MorphingPortableReader extends DefaultPortableReader {
 
     readUTF(fieldName: string): string {
         return this.validateCompatibleAndCall(fieldName, FieldType.UTF, super.readUTF);
+    }
+
+    private validateCompatibleAndCall(fieldName: string, expectedType: FieldType, superFunc: Function) {
+        var fd = this.classDefinition.getField(fieldName);
+        if (fd === null) {
+            return undefined;
+        }
+        if (fd.getType() !== expectedType) {
+            throw this.createIncompatibleClassChangeError(fd, expectedType);
+        }
+        return superFunc.call(this, fieldName);
+    }
+
+    private createIncompatibleClassChangeError(fd: FieldDefinition, expectedType: FieldType) {
+        return new TypeError(`Incompatible to read ${expectedType} from ${fd.getType()} while reading field : ${fd.getName()}`);
     }
 }

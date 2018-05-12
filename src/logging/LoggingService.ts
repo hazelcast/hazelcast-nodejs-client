@@ -16,7 +16,6 @@
 
 import {NoLogger} from './NoLogger';
 import {DefaultLogger} from './DefaultLogger';
-import {IllegalStateError} from '../HazelcastError';
 
 export enum LogLevel {
     ERROR = 0,

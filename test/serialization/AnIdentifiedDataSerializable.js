@@ -42,7 +42,7 @@ function AnIdentifiedDataSerializable(bool, b, c, d, s, f, i, l, str, booleans, 
     this.bytesOffset = bytes.slice(1, 3);
     this.strChars = str.split('');
     this.strBytes = new Buffer(this.str.length);
-    for (var i = 0; i <  str.length; i++) {
+    for (var i = 0; i < str.length; i++) {
         this.strBytes[i] = this.strChars[i].charCodeAt(0);
     }
     this.unsignedByte = 137;
@@ -54,15 +54,15 @@ function AnIdentifiedDataSerializable(bool, b, c, d, s, f, i, l, str, booleans, 
     this.data = data;
 }
 
-AnIdentifiedDataSerializable.prototype.getFactoryId = function() {
+AnIdentifiedDataSerializable.prototype.getFactoryId = function () {
     return 1;
 };
 
-AnIdentifiedDataSerializable.prototype.getClassId = function() {
+AnIdentifiedDataSerializable.prototype.getClassId = function () {
     return 1;
 };
 
-AnIdentifiedDataSerializable.prototype.readData = function(dataInput) {
+AnIdentifiedDataSerializable.prototype.readData = function (dataInput) {
     this.bool = dataInput.readBoolean();
     this.b = dataInput.readByte();
     this.c = dataInput.readChar();
@@ -116,7 +116,7 @@ AnIdentifiedDataSerializable.prototype.readData = function(dataInput) {
     this.data = dataInput.readData();
 };
 
-AnIdentifiedDataSerializable.prototype.writeData = function(dataOutput) {
+AnIdentifiedDataSerializable.prototype.writeData = function (dataOutput) {
     dataOutput.writeBoolean(this.bool);
     dataOutput.writeByte(this.b);
     dataOutput.writeChar(this.c);

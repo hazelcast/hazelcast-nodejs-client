@@ -19,13 +19,13 @@ import * as Config from './config/Config';
 import {ClientInfo} from './ClientInfo';
 import {IMap} from './proxy/IMap';
 import * as Predicates from './core/Predicate';
-import Address = require('./Address');
-import TopicOverloadPolicy = require('./proxy/topic/TopicOverloadPolicy');
-import * as HazelcastErrors from './HazelcastError';
 import {IterationType} from './core/Predicate';
+import * as HazelcastErrors from './HazelcastError';
 import * as Aggregators from './aggregation/Aggregators';
 import {ImportConfig} from './config/ImportConfig';
 import {ReadResultSet} from './proxy/ringbuffer/ReadResultSet';
+import Address = require('./Address');
+import TopicOverloadPolicy = require('./proxy/topic/TopicOverloadPolicy');
 
 export {
     HazelcastClient as Client,

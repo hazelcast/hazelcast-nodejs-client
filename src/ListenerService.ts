@@ -58,19 +58,9 @@ export class ListenerService implements ConnectionHeartbeatListener {
     start() {
         this.client.getConnectionManager().on('connectionOpened', this.onConnectionAdded.bind(this));
         this.client.getConnectionManager().on('connectionClosed', this.onConnectionRemoved.bind(this));
-        if (this.isSmart() ) {
+        if (this.isSmart()) {
             this.connectionRefreshTask = this.connectionRefreshHandler();
         }
-    }
-
-    protected connectionRefreshHandler(): void {
-        if (this.isShutdown) {
-            return;
-        }
-        this.trySyncConnectToAllConnections().catch((e) => {/*no-op*/}).finally(() => {
-            this.connectionRefreshTask =
-                setTimeout(this.connectionRefreshHandler.bind(this), this.connectionRefreshTaskInterval);
-        });
     }
 
     onConnectionAdded(connection: ClientConnection) {
@@ -169,6 +159,51 @@ export class ListenerService implements ConnectionHeartbeatListener {
         });
     }
 
+    deregisterListener(userRegistrationKey: string): Promise<boolean> {
+        let deferred = Promise.defer<boolean>();
+        let registrationsOnUserKey = this.activeRegistrations.get(userRegistrationKey);
+        if (registrationsOnUserKey === undefined) {
+            deferred.resolve(false);
+            return deferred.promise;
+        }
+        registrationsOnUserKey.forEach((eventRegistration: ClientEventRegistration, connection: ClientConnection) => {
+            let clientMessage = eventRegistration.codec.encodeRemoveRequest(eventRegistration.serverRegistrationId);
+            let invocation = new Invocation(this.client, clientMessage);
+            invocation.connection = eventRegistration.subscriber;
+            this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
+                registrationsOnUserKey.delete(connection);
+                this.client.getInvocationService().removeEventHandler(eventRegistration.correlationId.low);
+                this.logger.debug('ListenerService',
+                    'Listener ' + userRegistrationKey + ' unregistered from ' + invocation.connection.toString());
+                this.activeRegistrations.delete(userRegistrationKey);
+                this.userRegistrationKeyInformation.delete(userRegistrationKey);
+                deferred.resolve(true);
+            });
+        });
+
+        return deferred.promise;
+    }
+
+    isSmart(): boolean {
+        return this.isSmartService;
+    }
+
+    shutdown(): void {
+        this.isShutdown = true;
+        clearTimeout(this.connectionRefreshTask);
+    }
+
+    protected connectionRefreshHandler(): void {
+        if (this.isShutdown) {
+            return;
+        }
+        this.trySyncConnectToAllConnections().catch((e) => {/*no-op*/
+        }).finally(() => {
+            this.connectionRefreshTask =
+                setTimeout(this.connectionRefreshHandler.bind(this), this.connectionRefreshTaskInterval);
+        });
+    }
+
     protected registerListenerInternal(codec: ListenerMessageCodec, listenerHandlerFunc: Function): Promise<string> {
         let activeConnections = copyObjectShallow(this.client.getConnectionManager().getActiveConnections());
         let userRegistrationKey: string = UuidUtil.generate().toString();
@@ -208,31 +243,6 @@ export class ListenerService implements ConnectionHeartbeatListener {
         return deferred.promise;
     }
 
-    deregisterListener(userRegistrationKey: string): Promise<boolean> {
-        let deferred = Promise.defer<boolean>();
-        let registrationsOnUserKey = this.activeRegistrations.get(userRegistrationKey);
-        if (registrationsOnUserKey === undefined) {
-            deferred.resolve(false);
-            return deferred.promise;
-        }
-        registrationsOnUserKey.forEach((eventRegistration: ClientEventRegistration, connection: ClientConnection) => {
-            let clientMessage = eventRegistration.codec.encodeRemoveRequest(eventRegistration.serverRegistrationId);
-            let invocation = new Invocation(this.client, clientMessage);
-            invocation.connection = eventRegistration.subscriber;
-            this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
-                registrationsOnUserKey.delete(connection);
-                this.client.getInvocationService().removeEventHandler(eventRegistration.correlationId.low);
-                this.logger.debug('ListenerService',
-                    'Listener ' + userRegistrationKey + ' unregistered from ' + invocation.connection.toString());
-                this.activeRegistrations.delete(userRegistrationKey);
-                this.userRegistrationKeyInformation.delete(userRegistrationKey);
-                deferred.resolve(true);
-            });
-        });
-
-        return deferred.promise;
-    }
-
     private trySyncConnectToAllConnections(): Promise<void> {
         assert(this.isSmart());
         var members = this.client.getClusterService().getMembers();
@@ -241,14 +251,5 @@ export class ListenerService implements ConnectionHeartbeatListener {
             promises.push(this.client.getConnectionManager().getOrConnect(member.address));
         });
         return Promise.all(promises).thenReturn();
-    }
-
-    isSmart(): boolean {
-        return this.isSmartService;
-    }
-
-    shutdown(): void {
-        this.isShutdown = true;
-        clearTimeout(this.connectionRefreshTask);
     }
 }

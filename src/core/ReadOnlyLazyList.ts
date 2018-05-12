@@ -27,9 +27,9 @@ class ReadOnlyLazyListIterator<T> implements Iterator<T> {
 
     next(): IteratorResult<T> {
         if (this.index < this.list.size()) {
-            return { done: false, value: this.list.get(this.index++) };
+            return {done: false, value: this.list.get(this.index++)};
         } else {
-            return { done: true, value: undefined};
+            return {done: true, value: undefined};
         }
     }
 

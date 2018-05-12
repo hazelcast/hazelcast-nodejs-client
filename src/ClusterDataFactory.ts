@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {IdentifiedDataSerializableFactory, IdentifiedDataSerializable} from './serialization/Serializable';
-import Address = require('./Address');
+import {IdentifiedDataSerializable, IdentifiedDataSerializableFactory} from './serialization/Serializable';
 import {ClusterDataFactoryHelper} from './ClusterDataFactoryHelper';
+import Address = require('./Address');
 
 export class ClusterDataFactory implements IdentifiedDataSerializableFactory {
 

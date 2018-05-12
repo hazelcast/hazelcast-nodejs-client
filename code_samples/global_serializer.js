@@ -25,15 +25,15 @@ var cfg = new Config.ClientConfig();
 cfg.serializationConfig.globalSerializer = {
     mousseSerialize: mousse.serialize,
     mousseDeserialize: mousse.deserialize,
-    getId: function() {
+    getId: function () {
         return 10;
     },
-    write: function(out, obj) {
+    write: function (out, obj) {
         out.writeUTF(this.mousseSerialize(obj))
     },
-    read: function(inp) {
+    read: function (inp) {
         var representation = inp.readUTF();
-        return this.mousseDeserialize(representation).then(function(obj) {
+        return this.mousseDeserialize(representation).then(function (obj) {
             return obj;
         });
     }

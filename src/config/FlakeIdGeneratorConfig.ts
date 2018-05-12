@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import * as Long from 'long';
-
 export class FlakeIdGeneratorConfig {
     /**
      * Sets the name for this config.

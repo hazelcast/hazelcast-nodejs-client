@@ -22,6 +22,7 @@ import {Comparator} from './core/Comparator';
 import * as Path from 'path';
 import {JsonConfigLocator} from './config/JsonConfigLocator';
 import Address = require('./Address');
+
 export function assertNotNull(v: any) {
     assert.notEqual(v, null, 'Non null value expected.');
 }
@@ -78,7 +79,7 @@ export function getSortedQueryResultSet(list: Array<any>, predicate: PagingPredi
     var pageSize = predicate.getPageSize();
     var begin = pageSize * (page - nearestPage - 1);
     var size = list.length;
-    if (begin > size ) {
+    if (begin > size) {
         return [];
     }
     var end = begin + pageSize;
@@ -88,11 +89,14 @@ export function getSortedQueryResultSet(list: Array<any>, predicate: PagingPredi
 
     setAnchor(list, predicate, nearestPage);
     var iterationType = predicate.getIterationType();
-    return list.slice(begin, end).map(function(item) {
+    return list.slice(begin, end).map(function (item) {
         switch (iterationType) {
-            case IterationType.ENTRY: return item;
-            case IterationType.KEY: return item[0];
-            case IterationType.VALUE: return item[1];
+            case IterationType.ENTRY:
+                return item;
+            case IterationType.KEY:
+                return item[0];
+            case IterationType.VALUE:
+                return item[1];
         }
     });
 }
@@ -161,7 +165,7 @@ export function getBooleanOrUndefined(val: any) {
     }
 }
 
-export function tryGetEnum<T>(enumClass: any | {[index: string]: number}, str: string): T {
+export function tryGetEnum<T>(enumClass: any | { [index: string]: number }, str: string): T {
     return <any>enumClass[str.toUpperCase()];
 }
 
@@ -232,19 +236,28 @@ export function randomInt(upperBound: number): number {
     return Math.floor(Math.random() * upperBound);
 }
 
-function createComparator(iterationType: IterationType): Comparator  {
+function createComparator(iterationType: IterationType): Comparator {
     var object: Comparator = {
-        sort: function(a: [any, any], b: [any, any]): number {
+        sort: function (a: [any, any], b: [any, any]): number {
             return 0;
         }
     };
     switch (iterationType) {
         case IterationType.KEY:
-            object.sort = (e1: [any, any], e2: [any, any]) => {return e1[0] < e2[0] ? -1 : +(e1[0] > e2[0]); }; break;
+            object.sort = (e1: [any, any], e2: [any, any]) => {
+                return e1[0] < e2[0] ? -1 : +(e1[0] > e2[0]);
+            };
+            break;
         case IterationType.ENTRY:
-            object.sort = (e1: [any, any], e2: [any, any]) => {return e1[1] < e2[1] ? -1 : +(e1[1] > e2[1]); }; break;
+            object.sort = (e1: [any, any], e2: [any, any]) => {
+                return e1[1] < e2[1] ? -1 : +(e1[1] > e2[1]);
+            };
+            break;
         case IterationType.VALUE:
-            object.sort = (e1: [any, any], e2: [any, any]) => {return e1[1] < e2[1] ? -1 : +(e1[1] > e2[1]); }; break;
+            object.sort = (e1: [any, any], e2: [any, any]) => {
+                return e1[1] < e2[1] ? -1 : +(e1[1] > e2[1]);
+            };
+            break;
     }
     return object;
 }
@@ -254,7 +267,7 @@ function setAnchor(list: Array<any>, predicate: PagingPredicate, nearestPage: nu
     var size = list.length;
     var pageSize = predicate.getPageSize();
     var page = predicate.getPage();
-    for (var i = pageSize; i <= size && nearestPage < page; i += pageSize ) {
+    for (var i = pageSize; i <= size && nearestPage < page; i += pageSize) {
         var anchor = list[i - 1];
         nearestPage++;
         predicate.setAnchor(nearestPage, anchor);

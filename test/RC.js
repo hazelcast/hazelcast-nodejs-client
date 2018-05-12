@@ -21,7 +21,7 @@ var controller = new RemoteController('localhost', 9701);
 
 function createCluster(hzVersion, config) {
     var deferred = Promise.defer();
-    controller.createCluster(hzVersion, config, function(err, cluster) {
+    controller.createCluster(hzVersion, config, function (err, cluster) {
         if (err) return deferred.reject(err);
         return deferred.resolve(cluster);
     });
@@ -30,7 +30,7 @@ function createCluster(hzVersion, config) {
 
 function startMember(clusterId) {
     var deferred = Promise.defer();
-    controller.startMember(clusterId, function(err, member) {
+    controller.startMember(clusterId, function (err, member) {
         if (err) return deferred.reject(err);
         return deferred.resolve(member);
     });
@@ -39,7 +39,7 @@ function startMember(clusterId) {
 
 function exit() {
     var deferred = Promise.defer();
-    controller.exit(function(err, res) {
+    controller.exit(function (err, res) {
         if (err) return deferred.reject(err);
         return deferred.resolve(res);
     });
@@ -48,7 +48,7 @@ function exit() {
 
 function shutdownMember(clusterId, memberUuid) {
     var deferred = Promise.defer();
-    controller.shutdownMember(clusterId, memberUuid, function(err, res) {
+    controller.shutdownMember(clusterId, memberUuid, function (err, res) {
         if (err) return deferred.reject(err);
         return deferred.resolve(res);
     });
@@ -66,7 +66,7 @@ function shutdownCluster(clusterId) {
 
 function terminateMember(clusterId, memberUuid) {
     var deferred = Promise.defer();
-    controller.terminateMember(clusterId, memberUuid, function(err, res) {
+    controller.terminateMember(clusterId, memberUuid, function (err, res) {
         if (err) return deferred.reject(err);
         return deferred.resolve(res);
     });
@@ -75,7 +75,7 @@ function terminateMember(clusterId, memberUuid) {
 
 function executeOnController(clusterId, script, lang) {
     var deferred = Promise.defer();
-    controller.executeOnController(clusterId, script, lang, function(err, res) {
+    controller.executeOnController(clusterId, script, lang, function (err, res) {
         if (err) return deferred.reject(err);
         if (res.success === false) return deferred.reject(res.message);
         return deferred.resolve(res);
