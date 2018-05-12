@@ -25,7 +25,7 @@ import {Portable, VersionedPortable} from '../Serializable';
 export class PortableContext {
     private service: SerializationService;
     private portableVersion: number = 0;
-    private classDefContext: {[factoyId: number]: ClassDefinitionContext};
+    private classDefContext: { [factoyId: number]: ClassDefinitionContext };
 
     constructor(service: SerializationService, portableVersion: number) {
         this.service = service;

@@ -61,7 +61,7 @@ export class LifecycleService extends EventEmitter {
             this.on(LifecycleEvent.name, listener);
         });
         let listenerConfgs = client.getConfig().listenerConfigs;
-        listenerConfgs.forEach((importConfig : ImportConfig) => {
+        listenerConfgs.forEach((importConfig: ImportConfig) => {
             let path = importConfig.path;
             let exportedName = importConfig.exportedName;
             let listener = Util.loadNameFromPath(path, exportedName);
@@ -75,7 +75,7 @@ export class LifecycleService extends EventEmitter {
      * @param state
      */
     emitLifecycleEvent(state: string): void {
-        if ( !LifecycleEvent.hasOwnProperty(state)) {
+        if (!LifecycleEvent.hasOwnProperty(state)) {
             throw new Error(state + ' is not a valid lifecycle event');
         }
         if (state === LifecycleEvent.started) {

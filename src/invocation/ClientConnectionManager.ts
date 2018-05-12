@@ -21,11 +21,11 @@ import HazelcastClient from '../HazelcastClient';
 import {ClientNotActiveError, HazelcastError} from '../HazelcastError';
 import {ClientConnection} from './ClientConnection';
 import {ConnectionAuthenticator} from './ConnectionAuthenticator';
-import Address = require('../Address');
 import * as net from 'net';
 import * as tls from 'tls';
 import {loadNameFromPath} from '../Util';
 import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
+import Address = require('../Address');
 
 const EMIT_CONNECTION_CLOSED = 'connectionClosed';
 const EMIT_CONNECTION_OPENED = 'connectionOpened';
@@ -34,17 +34,17 @@ const EMIT_CONNECTION_OPENED = 'connectionOpened';
  * Maintains connections between the client and members of the cluster.
  */
 export class ClientConnectionManager extends EventEmitter {
+    establishedConnections: { [address: string]: ClientConnection } = {};
     private client: HazelcastClient;
-    private pendingConnections: {[address: string]: Promise.Resolver<ClientConnection>} = {};
+    private pendingConnections: { [address: string]: Promise.Resolver<ClientConnection> } = {};
     private logger = LoggingService.getLoggingService();
-    establishedConnections: {[address: string]: ClientConnection} = {};
 
     constructor(client: HazelcastClient) {
         super();
         this.client = client;
     }
 
-    getActiveConnections(): {[address: string]: ClientConnection} {
+    getActiveConnections(): { [address: string]: ClientConnection } {
         return this.establishedConnections;
     }
 
@@ -99,6 +99,32 @@ export class ClientConnectionManager extends EventEmitter {
             return connectionResolver.promise.timeout(connectionTimeout, new HazelcastError('Connection timed-out'));
         }
         return connectionResolver.promise;
+    }
+
+    /**
+     * Destroys the connection with given node address.
+     * @param address
+     */
+    destroyConnection(address: Address): void {
+        var addressStr = address.toString();
+        if (this.pendingConnections.hasOwnProperty(addressStr)) {
+            this.pendingConnections[addressStr].reject(null);
+        }
+        if (this.establishedConnections.hasOwnProperty(addressStr)) {
+            var conn = this.establishedConnections[addressStr];
+            delete this.establishedConnections[addressStr];
+            conn.close();
+            this.onConnectionClosed(conn);
+        }
+    }
+
+    shutdown() {
+        for (var pending in this.pendingConnections) {
+            this.pendingConnections[pending].reject(new ClientNotActiveError('Client is shutting down!'));
+        }
+        for (var conn in this.establishedConnections) {
+            this.establishedConnections[conn].close();
+        }
     }
 
     private triggerConnect(address: Address): Promise<net.Socket> {
@@ -159,32 +185,6 @@ export class ClientConnectionManager extends EventEmitter {
         let buffer = new Buffer(3);
         buffer.write('CB2');
         return connection.write(buffer);
-    }
-
-    /**
-     * Destroys the connection with given node address.
-     * @param address
-     */
-    destroyConnection(address: Address): void {
-        var addressStr = address.toString();
-        if (this.pendingConnections.hasOwnProperty(addressStr)) {
-            this.pendingConnections[addressStr].reject(null);
-        }
-        if (this.establishedConnections.hasOwnProperty(addressStr)) {
-            var conn = this.establishedConnections[addressStr];
-            delete this.establishedConnections[addressStr];
-            conn.close();
-            this.onConnectionClosed(conn);
-        }
-    }
-
-    shutdown() {
-        for (var pending in this.pendingConnections) {
-            this.pendingConnections[pending].reject(new ClientNotActiveError('Client is shutting down!'));
-        }
-        for (var conn in this.establishedConnections) {
-            this.establishedConnections[conn].close();
-        }
     }
 
     private onConnectionClosed(connection: ClientConnection) {

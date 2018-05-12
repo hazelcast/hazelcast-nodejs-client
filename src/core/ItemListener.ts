@@ -15,6 +15,7 @@
  */
 
 import {Member} from './Member';
+
 export interface ItemListener<E> {
     itemAdded?: ItemEventListener<E>;
     itemRemoved?: ItemEventListener<E>;

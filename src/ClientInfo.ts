@@ -15,7 +15,7 @@
  */
 
 import Address = require('./Address');
-import {UUID} from './core/UUID';
+
 export class ClientInfo {
     /**
      * Unique id of this client instance. It is provided by owner server instance.

@@ -23,7 +23,7 @@ var Long = require('long');
 var Util = require('../Util');
 var Promise = require('bluebird');
 
-describe('LostInvalidation', function() {
+describe('LostInvalidation', function () {
     this.timeout(30000);
 
     var cluster;
@@ -45,8 +45,8 @@ describe('LostInvalidation', function() {
         return cfg;
     }
 
-    before(function() {
-        return RC.createCluster(null,  fs.readFileSync(__dirname + '/hazelcast_eventual_nearcache.xml', 'utf8')).then(function(resp) {
+    before(function () {
+        return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_eventual_nearcache.xml', 'utf8')).then(function (resp) {
             cluster = resp;
             return RC.startMember(cluster.id);
         }).then(function (m) {
@@ -68,11 +68,11 @@ describe('LostInvalidation', function() {
         modifyingClient.shutdown();
     });
 
-    after(function() {
+    after(function () {
         return RC.shutdownCluster(cluster.id);
     });
 
-    it('client eventually receives an update for which the invalidation event was dropped', function() {
+    it('client eventually receives an update for which the invalidation event was dropped', function () {
         Util.markServerVersionAtLeast(this, client, '3.8');
 
         var map = client.getMap(mapName);
@@ -80,45 +80,45 @@ describe('LostInvalidation', function() {
         var value = 'val';
         var updatedval = 'updatedval';
         var invalidationHandlerStub;
-        return Util.promiseWaitMilliseconds(100).then(function(resp) {
+        return Util.promiseWaitMilliseconds(100).then(function (resp) {
             invalidationHandlerStub = blockInvalidationEvents(client, map, 1);
             return modifyingClient.getMap(mapName).put(key, value);
-        }).then(function() {
+        }).then(function () {
             return map.get(key);
-        }).then(function() {
+        }).then(function () {
             return modifyingClient.getMap(mapName).put(key, updatedval);
         }).then(function () {
             return Util.promiseWaitMilliseconds(1000);
         }).then(function () {
             unblockInvalidationEvents(client, invalidationHandlerStub);
             return Util.promiseWaitMilliseconds(1000);
-        }).then(function() {
+        }).then(function () {
             return map.get(key);
         }).then(function (result) {
             return expect(result).to.equal(updatedval);
         });
     });
 
-    it('lost invalidation stress test', function() {
+    it('lost invalidation stress test', function () {
         Util.markServerVersionAtLeast(this, client, '3.8');
 
         var map = client.getMap(mapName);
         var invalidationHandlerStub;
-        return Util.promiseWaitMilliseconds(100).then(function(resp) {
+        return Util.promiseWaitMilliseconds(100).then(function (resp) {
             invalidationHandlerStub = blockInvalidationEvents(client, map);
             var entries = [];
-            for (var i = 0 ; i < entryCount; i++) {
+            for (var i = 0; i < entryCount; i++) {
                 entries.push([i, i]);
             }
             return modifyingClient.getMap(mapName).putAll(entries);
-        }).then(function() {
+        }).then(function () {
             var requestedKeys = [];
             for (var i = 0; i < entryCount; i++) {
                 requestedKeys.push(i);
             }
             //populate near cache
             return map.getAll(requestedKeys);
-        }).then(function() {
+        }).then(function () {
             var entries = [];
             for (var i = 0; i < entryCount; i++) {
                 entries.push([i, i + entryCount]);
@@ -127,7 +127,7 @@ describe('LostInvalidation', function() {
         }).then(function () {
             unblockInvalidationEvents(client, invalidationHandlerStub);
             return Util.promiseWaitMilliseconds(2000);
-        }).then(function() {
+        }).then(function () {
             var promises = [];
             for (var i = 0; i < entryCount; i++) {
                 var promise = (function (key) {
@@ -148,7 +148,7 @@ describe('LostInvalidation', function() {
         var handler = client.getInvocationService().eventHandlers[correlationId.toNumber()].handler;
         var numberOfBlockedInvalidations = 0;
         var deferred = Promise.defer();
-        client.getInvocationService().eventHandlers[correlationId.toNumber()].handler = function() {
+        client.getInvocationService().eventHandlers[correlationId.toNumber()].handler = function () {
             numberOfBlockedInvalidations++;
             if (notifyAfterNumberOfEvents !== undefined && notifyAfterNumberOfEvents === numberOfBlockedInvalidations) {
                 deferred.resolve();

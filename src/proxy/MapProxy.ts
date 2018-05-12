@@ -75,11 +75,11 @@ import {MapExecuteOnKeyCodec} from '../codec/MapExecuteOnKeyCodec';
 import {MapExecuteOnKeysCodec} from '../codec/MapExecuteOnKeysCodec';
 import * as SerializationUtil from '../serialization/SerializationUtil';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
-import ClientMessage = require('../ClientMessage');
 import {Aggregator} from '../aggregation/Aggregator';
 import {MapAggregateCodec} from '../codec/MapAggregateCodec';
 import {MapAggregateWithPredicateCodec} from '../codec/MapAggregateWithPredicateCodec';
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
+import ClientMessage = require('../ClientMessage');
 
 export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     aggregate<R>(aggregator: Aggregator<R>): Promise<R> {
@@ -97,7 +97,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.encodeInvokeOnRandomTarget(MapAggregateWithPredicateCodec, aggregatorData, predicateData);
     }
 
-    executeOnKeys(keys: K[], entryProcessor: IdentifiedDataSerializable|Portable): Promise<any[]> {
+    executeOnKeys(keys: K[], entryProcessor: IdentifiedDataSerializable | Portable): Promise<any[]> {
         assertNotNull(keys);
         assertArray(keys);
         if (keys.length === 0) {
@@ -118,10 +118,6 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         var proData = this.toData(entryProcessor);
 
         return this.executeOnKeyInternal(keyData, proData);
-    }
-
-    protected executeOnKeyInternal(keyData: Data, proData: Data): Promise<V> {
-        return this.encodeInvokeOnKey<V>(MapExecuteOnKeyCodec, keyData, proData, keyData, 1);
     }
 
     executeOnEntries(entryProcessor: IdentifiedDataSerializable | Portable, predicate: Predicate = null): Promise<[K, V][]> {
@@ -148,7 +144,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             var pData = this.toData(predicate);
             return this.encodeInvokeOnRandomTarget(
                 MapValuesWithPagingPredicateCodec, pData
-            ).then(function(rawValues: [Data, Data][]) {
+            ).then(function (rawValues: [Data, Data][]) {
                 var deserValues = rawValues.map<[K, V]>(function (ite: [Data, Data]) {
                     return [toObject(ite[0]), toObject(ite[1])];
                 });
@@ -157,8 +153,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         } else {
             var pData = this.toData(predicate);
             var deserializedSet: [K, V][] = [];
-            return this.encodeInvokeOnRandomTarget(MapEntriesWithPredicateCodec, pData).then(function(entrySet: [Data, Data][]) {
-                entrySet.forEach(function(entry) {
+            return this.encodeInvokeOnRandomTarget(MapEntriesWithPredicateCodec, pData).then(function (entrySet: [Data, Data][]) {
+                entrySet.forEach(function (entry) {
                     deserializedSet.push([toObject(entry[0]), toObject(entry[1])]);
                 });
                 return deserializedSet;
@@ -172,17 +168,19 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         if (predicate instanceof PagingPredicate) {
             predicate.setIterationType(IterationType.KEY);
             var predData = this.toData(predicate);
-            return this.encodeInvokeOnRandomTarget(MapKeySetWithPagingPredicateCodec, predData).then(function(rawValues: Data[]) {
-                var deserValues = rawValues.map<[K, V]>(function (ite: Data) {
-                    return [toObject(ite), null];
+            return this.encodeInvokeOnRandomTarget(MapKeySetWithPagingPredicateCodec, predData).then(
+                function (rawValues: Data[]) {
+                    var deserValues = rawValues.map<[K, V]>(function (ite: Data) {
+                        return [toObject(ite), null];
+                    });
+                    return getSortedQueryResultSet(deserValues, predicate);
                 });
-                return getSortedQueryResultSet(deserValues, predicate);
-            });
         } else {
             var predicateData = this.toData(predicate);
-            return this.encodeInvokeOnRandomTarget(MapKeySetWithPredicateCodec, predicateData).then(function (entrySet: Data[]) {
-                return entrySet.map<K>(toObject);
-            });
+            return this.encodeInvokeOnRandomTarget(MapKeySetWithPredicateCodec, predicateData).then(
+                function (entrySet: Data[]) {
+                    return entrySet.map<K>(toObject);
+                });
         }
     }
 
@@ -202,7 +200,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             });
         } else {
             var predicateData = this.toData(predicate);
-            return this.encodeInvokeOnRandomTarget(MapValuesWithPredicateCodec, predicateData).then( (rawValues: Data[]) => {
+            return this.encodeInvokeOnRandomTarget(MapValuesWithPredicateCodec, predicateData).then((rawValues: Data[]) => {
                 return new ReadOnlyLazyList(rawValues, this.client.getSerializationService());
             });
         }
@@ -220,10 +218,6 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.containsKeyInternal(keyData);
     }
 
-    protected containsKeyInternal(keyData: Data): Promise<boolean> {
-        return this.encodeInvokeOnKey<boolean>(MapContainsKeyCodec, keyData, keyData, 0);
-    }
-
     containsValue(value: V): Promise<boolean> {
         assertNotNull(value);
         var valueData = this.toData(value);
@@ -238,13 +232,9 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.putInternal(keyData, valueData, ttl);
     }
 
-    protected putInternal(keyData: Data, valueData: Data, ttl: number): Promise<V> {
-        return this.encodeInvokeOnKey<V>(MapPutCodec, keyData, keyData, valueData, 0, ttl);
-    }
-
     putAll(pairs: [K, V][]): Promise<void> {
         var partitionService = this.client.getPartitionService();
-        var partitionsToKeys: {[id: string]: any} = {};
+        var partitionsToKeys: { [id: string]: any } = {};
         var pair: [K, V];
         var pairId: string;
         for (pairId in pairs) {
@@ -259,41 +249,16 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.putAllInternal(partitionsToKeys);
     }
 
-    protected putAllInternal(partitionsToKeysData: {[id: string]: [Data, Data][]}): Promise<void> {
-        var partitionPromises: Promise<void>[] = [];
-        for (var partition in partitionsToKeysData) {
-            partitionPromises.push(
-                this.encodeInvokeOnPartition<void>(MapPutAllCodec, Number(partition), partitionsToKeysData[partition])
-            );
-        }
-        return Promise.all(partitionPromises).then(function () {
-            return;
-        });
-    }
-
     get(key: K): Promise<V> {
         assertNotNull(key);
         var keyData = this.toData(key);
         return this.getInternal(keyData);
     }
 
-    protected getInternal(keyData: Data): Promise<V> {
-        return this.encodeInvokeOnKey<V>(MapGetCodec, keyData, keyData, 0);
-    }
-
     remove(key: K, value: V = null): Promise<V> {
         assertNotNull(key);
         var keyData = this.toData(key);
         return this.removeInternal(keyData, value);
-    }
-
-    protected removeInternal(keyData: Data, value: V = null): Promise<V> {
-        if (value == null) {
-            return this.encodeInvokeOnKey<V>(MapRemoveCodec, keyData, keyData, 0);
-        } else {
-            var valueData = this.toData(value);
-            return this.encodeInvokeOnKey<V>(MapRemoveIfSameCodec, keyData, keyData, valueData, 0);
-        }
     }
 
     size(): Promise<number> {
@@ -312,7 +277,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         assertNotNull(keys);
         assertArray(keys);
         var partitionService = this.client.getPartitionService();
-        var partitionsToKeys: {[id: string]: any} = {};
+        var partitionsToKeys: { [id: string]: any } = {};
         var key: K;
         for (var i in keys) {
             key = keys[i];
@@ -329,55 +294,27 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         });
     }
 
-    protected getAllInternal(partitionsToKeys: {[id: string]: any}, result: any[] = []): Promise<[Data, Data][]> {
-        var partitionPromises: Promise<[Data, Data][]>[] = [];
-        for (var partition in partitionsToKeys) {
-            partitionPromises.push(this.encodeInvokeOnPartition<[Data, Data][]>(
-                MapGetAllCodec,
-                Number(partition),
-                partitionsToKeys[partition])
-            );
-        }
-        var toObject = this.toObject.bind(this);
-        var deserializeEntry = function(entry: [Data, Data]) {
-            return [toObject(entry[0]), toObject(entry[1])];
-        };
-        return Promise.all(partitionPromises).then(function(serializedEntryArrayArray: [Data, Data][][]) {
-            var serializedEntryArray = Array.prototype.concat.apply([], serializedEntryArrayArray);
-            result.push(...(serializedEntryArray.map(deserializeEntry)));
-            return serializedEntryArray;
-        });
-    }
-
     delete(key: K): Promise<void> {
         assertNotNull(key);
         var keyData = this.toData(key);
         return this.deleteInternal(keyData);
     }
 
-    protected deleteInternal(keyData: Data): Promise<void> {
-        return this.encodeInvokeOnKey<void>(MapDeleteCodec, keyData, keyData, 0);
-    }
-
     entrySet(): Promise<any[]> {
         var deserializedSet: [K, V][] = [];
         var toObject = this.toObject.bind(this);
-        return this.encodeInvokeOnRandomTarget(MapEntrySetCodec).then(function(entrySet: [Data, Data][]) {
-            entrySet.forEach(function(entry) {
+        return this.encodeInvokeOnRandomTarget(MapEntrySetCodec).then(function (entrySet: [Data, Data][]) {
+            entrySet.forEach(function (entry) {
                 deserializedSet.push([toObject(entry[0]), toObject(entry[1])]);
             });
             return deserializedSet;
         });
     }
 
-    evict(key: K) : Promise<boolean> {
+    evict(key: K): Promise<boolean> {
         assertNotNull(key);
         var keyData = this.toData(key);
         return this.evictInternal(keyData);
-    }
-
-    protected evictInternal(keyData: Data): Promise<boolean> {
-        return this.encodeInvokeOnKey<boolean>(MapEvictCodec, keyData, keyData, 0);
     }
 
     evictAll(): Promise<void> {
@@ -414,7 +351,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 
     keySet(): Promise<K[]> {
         var toObject = this.toObject.bind(this);
-        return this.encodeInvokeOnRandomTarget<K[]>(MapKeySetCodec).then(function(entrySet) {
+        return this.encodeInvokeOnRandomTarget<K[]>(MapKeySetCodec).then(function (entrySet) {
             return entrySet.map<K>(toObject);
         });
     }
@@ -437,10 +374,6 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.putIfAbsentInternal(keyData, valueData, ttl);
     }
 
-    protected putIfAbsentInternal(keyData: Data, valueData: Data, ttl: number): Promise<V> {
-        return this.encodeInvokeOnKey<V>(MapPutIfAbsentCodec, keyData, keyData, valueData, 0, ttl);
-    }
-
     putTransient(key: K, value: V, ttl: number = -1): Promise<void> {
         assertNotNull(key);
         assertNotNull(value);
@@ -449,20 +382,12 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.putTransientInternal(keyData, valueData, ttl);
     }
 
-    protected putTransientInternal(keyData: Data, valueData: Data, ttl: number): Promise<void> {
-        return this.encodeInvokeOnKey<void>(MapPutTransientCodec, keyData, keyData, valueData, 0, ttl);
-    }
-
     replace(key: K, newValue: V): Promise<V> {
         assertNotNull(key);
         assertNotNull(newValue);
         var keyData = this.toData(key);
         var newValueData = this.toData(newValue);
         return this.replaceInternal(keyData, newValueData);
-    }
-
-    protected replaceInternal(keyData: Data, newValueData: Data): Promise<V> {
-        return this.encodeInvokeOnKey<V>(MapReplaceCodec, keyData, keyData, newValueData, 0);
     }
 
     replaceIfSame(key: K, oldValue: V, newValue: V): Promise<boolean> {
@@ -475,20 +400,12 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.replaceIfSameInternal(keyData, oldValueData, newValueData);
     }
 
-    protected replaceIfSameInternal(keyData: Data, oldValueData: Data, newValueData: Data): Promise<boolean> {
-        return this.encodeInvokeOnKey<boolean>(MapReplaceIfSameCodec, keyData, keyData, oldValueData, newValueData, 0);
-    }
-
     set(key: K, value: V, ttl: number = -1): Promise<void> {
         assertNotNull(key);
         assertNotNull(value);
         var keyData = this.toData(key);
         var valueData = this.toData(value);
         return this.setInternal(keyData, valueData, ttl);
-    }
-
-    protected setInternal(keyData: Data, valueData: Data, ttl: number): Promise<void> {
-        return this.encodeInvokeOnKey<void>(MapSetCodec, keyData, keyData, valueData, 0, ttl);
     }
 
     values(): Promise<ReadOnlyLazyList<V>> {
@@ -521,14 +438,107 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.tryPutInternal(keyData, valueData, timeout);
     }
 
-    protected tryPutInternal(keyData: Data, valueData: Data, timeout: number): Promise<boolean> {
-        return this.encodeInvokeOnKey<boolean>(MapTryPutCodec, keyData, keyData, valueData, 0, timeout);
-    }
-
     tryRemove(key: K, timeout: number): Promise<boolean> {
         assertNotNull(key);
         var keyData = this.toData(key);
         return this.tryRemoveInternal(keyData, timeout);
+    }
+
+    addEntryListener(listener: IMapListener<K, V>, key: K = undefined, includeValue: boolean = false): Promise<string> {
+        return this.addEntryListenerInternal(listener, undefined, key, includeValue);
+    }
+
+    removeEntryListener(listenerId: string): Promise<boolean> {
+        return this.client.getListenerService().deregisterListener(listenerId);
+    }
+
+    protected executeOnKeyInternal(keyData: Data, proData: Data): Promise<V> {
+        return this.encodeInvokeOnKey<V>(MapExecuteOnKeyCodec, keyData, proData, keyData, 1);
+    }
+
+    protected containsKeyInternal(keyData: Data): Promise<boolean> {
+        return this.encodeInvokeOnKey<boolean>(MapContainsKeyCodec, keyData, keyData, 0);
+    }
+
+    protected putInternal(keyData: Data, valueData: Data, ttl: number): Promise<V> {
+        return this.encodeInvokeOnKey<V>(MapPutCodec, keyData, keyData, valueData, 0, ttl);
+    }
+
+    protected putAllInternal(partitionsToKeysData: { [id: string]: [Data, Data][] }): Promise<void> {
+        var partitionPromises: Promise<void>[] = [];
+        for (var partition in partitionsToKeysData) {
+            partitionPromises.push(
+                this.encodeInvokeOnPartition<void>(MapPutAllCodec, Number(partition), partitionsToKeysData[partition])
+            );
+        }
+        return Promise.all(partitionPromises).then(function () {
+            return;
+        });
+    }
+
+    protected getInternal(keyData: Data): Promise<V> {
+        return this.encodeInvokeOnKey<V>(MapGetCodec, keyData, keyData, 0);
+    }
+
+    protected removeInternal(keyData: Data, value: V = null): Promise<V> {
+        if (value == null) {
+            return this.encodeInvokeOnKey<V>(MapRemoveCodec, keyData, keyData, 0);
+        } else {
+            var valueData = this.toData(value);
+            return this.encodeInvokeOnKey<V>(MapRemoveIfSameCodec, keyData, keyData, valueData, 0);
+        }
+    }
+
+    protected getAllInternal(partitionsToKeys: { [id: string]: any }, result: any[] = []): Promise<[Data, Data][]> {
+        var partitionPromises: Promise<[Data, Data][]>[] = [];
+        for (var partition in partitionsToKeys) {
+            partitionPromises.push(this.encodeInvokeOnPartition<[Data, Data][]>(
+                MapGetAllCodec,
+                Number(partition),
+                partitionsToKeys[partition])
+            );
+        }
+        var toObject = this.toObject.bind(this);
+        var deserializeEntry = function (entry: [Data, Data]) {
+            return [toObject(entry[0]), toObject(entry[1])];
+        };
+        return Promise.all(partitionPromises).then(function (serializedEntryArrayArray: [Data, Data][][]) {
+            var serializedEntryArray = Array.prototype.concat.apply([], serializedEntryArrayArray);
+            result.push(...(serializedEntryArray.map(deserializeEntry)));
+            return serializedEntryArray;
+        });
+    }
+
+    protected deleteInternal(keyData: Data): Promise<void> {
+        return this.encodeInvokeOnKey<void>(MapDeleteCodec, keyData, keyData, 0);
+    }
+
+    protected evictInternal(keyData: Data): Promise<boolean> {
+        return this.encodeInvokeOnKey<boolean>(MapEvictCodec, keyData, keyData, 0);
+    }
+
+    protected putIfAbsentInternal(keyData: Data, valueData: Data, ttl: number): Promise<V> {
+        return this.encodeInvokeOnKey<V>(MapPutIfAbsentCodec, keyData, keyData, valueData, 0, ttl);
+    }
+
+    protected putTransientInternal(keyData: Data, valueData: Data, ttl: number): Promise<void> {
+        return this.encodeInvokeOnKey<void>(MapPutTransientCodec, keyData, keyData, valueData, 0, ttl);
+    }
+
+    protected replaceInternal(keyData: Data, newValueData: Data): Promise<V> {
+        return this.encodeInvokeOnKey<V>(MapReplaceCodec, keyData, keyData, newValueData, 0);
+    }
+
+    protected replaceIfSameInternal(keyData: Data, oldValueData: Data, newValueData: Data): Promise<boolean> {
+        return this.encodeInvokeOnKey<boolean>(MapReplaceIfSameCodec, keyData, keyData, oldValueData, newValueData, 0);
+    }
+
+    protected setInternal(keyData: Data, valueData: Data, ttl: number): Promise<void> {
+        return this.encodeInvokeOnKey<void>(MapSetCodec, keyData, keyData, valueData, 0, ttl);
+    }
+
+    protected tryPutInternal(keyData: Data, valueData: Data, timeout: number): Promise<boolean> {
+        return this.encodeInvokeOnKey<boolean>(MapTryPutCodec, keyData, keyData, valueData, 0, timeout);
     }
 
     protected tryRemoveInternal(keyData: Data, timeout: number): Promise<boolean> {
@@ -539,7 +549,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         listener: IMapListener<K, V>, predicate: Predicate, key: K, includeValue: boolean
     ): Promise<string> {
         var flags: any = null;
-        var conversionTable: {[funcName: string]: EntryEventType} = {
+        var conversionTable: { [funcName: string]: EntryEventType } = {
             'added': EntryEventType.ADDED,
             'removed': EntryEventType.REMOVED,
             'updated': EntryEventType.UPDATED,
@@ -555,7 +565,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             }
         }
         var toObject = this.toObject.bind(this);
-        var entryEventHandler = function(
+        var entryEventHandler = function (
             key: K, val: V, oldVal: V, mergingVal: V, event: number, uuid: string, numberOfAffectedEntries: number
         ) {
             var eventParams: any[] = [key, oldVal, val, mergingVal, numberOfAffectedEntries, uuid];
@@ -604,58 +614,51 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             listenerHandler = MapAddEntryListenerCodec.handle;
         }
         return this.client.getListenerService()
-            .registerListener(codec, (m: ClientMessage) => { listenerHandler(m, entryEventHandler, toObject); });
+            .registerListener(codec, (m: ClientMessage) => {
+                listenerHandler(m, entryEventHandler, toObject);
+            });
     }
-
-    addEntryListener(listener: IMapListener<K, V>, key: K = undefined, includeValue: boolean = false): Promise<string> {
-        return this.addEntryListenerInternal(listener, undefined, key, includeValue);
-    }
-
-    removeEntryListener(listenerId: string): Promise<boolean> {
-        return this.client.getListenerService().deregisterListener(listenerId);
-    }
-
 
     private createEntryListenerToKey(name: string, keyData: Data, includeValue: boolean, flags: any): ListenerMessageCodec {
         return {
-            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+            encodeAddRequest: function (localOnly: boolean): ClientMessage {
                 return MapAddEntryListenerToKeyCodec.encodeRequest(name, keyData, includeValue, flags, localOnly);
             },
-            decodeAddResponse: function(msg: ClientMessage): string {
+            decodeAddResponse: function (msg: ClientMessage): string {
                 return MapAddEntryListenerToKeyCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+            encodeRemoveRequest: function (listenerId: string): ClientMessage {
                 return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
             }
         };
     }
 
     private createEntryListenerToKeyWithPredicate(name: string, keyData: Data, predicateData: Data, includeValue: boolean,
-                                                   flags: any): ListenerMessageCodec {
+                                                  flags: any): ListenerMessageCodec {
         return {
-            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+            encodeAddRequest: function (localOnly: boolean): ClientMessage {
                 return MapAddEntryListenerToKeyWithPredicateCodec.encodeRequest(name, keyData, predicateData, includeValue,
                     flags, localOnly);
             },
-            decodeAddResponse: function(msg: ClientMessage): string {
+            decodeAddResponse: function (msg: ClientMessage): string {
                 return MapAddEntryListenerToKeyWithPredicateCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+            encodeRemoveRequest: function (listenerId: string): ClientMessage {
                 return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
             }
         };
     }
 
     private createEntryListenerWithPredicate(name: string, predicateData: Data, includeValue: boolean,
-                                              flags: any): ListenerMessageCodec {
+                                             flags: any): ListenerMessageCodec {
         return {
-            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+            encodeAddRequest: function (localOnly: boolean): ClientMessage {
                 return MapAddEntryListenerWithPredicateCodec.encodeRequest(name, predicateData, includeValue, flags, localOnly);
             },
-            decodeAddResponse: function(msg: ClientMessage): string {
+            decodeAddResponse: function (msg: ClientMessage): string {
                 return MapAddEntryListenerWithPredicateCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+            encodeRemoveRequest: function (listenerId: string): ClientMessage {
                 return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
             }
         };
@@ -663,13 +666,13 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 
     private createEntryListener(name: string, includeValue: boolean, flags: any): ListenerMessageCodec {
         return {
-            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+            encodeAddRequest: function (localOnly: boolean): ClientMessage {
                 return MapAddEntryListenerCodec.encodeRequest(name, includeValue, flags, localOnly);
             },
-            decodeAddResponse: function(msg: ClientMessage): string {
+            decodeAddResponse: function (msg: ClientMessage): string {
                 return MapAddEntryListenerCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+            encodeRemoveRequest: function (listenerId: string): ClientMessage {
                 return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
             }
         };

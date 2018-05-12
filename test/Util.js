@@ -18,10 +18,11 @@ var expect = require('chai').expect;
 var BuildMetadata = require('../lib/BuildMetadata').BuildMetadata;
 var promiseLater = function (time, func) {
     if (func === undefined) {
-        func = function(){};
+        func = function () {
+        };
     }
-    return new Promise(function(resolve, reject) {
-        setTimeout(function() {
+    return new Promise(function (resolve, reject) {
+        setTimeout(function () {
             resolve(func());
         }, time);
     });
@@ -36,7 +37,7 @@ var expectAlmostEqual = function (actual, expected) {
         return expect(actual).to.be.closeTo(expected, 0.0001);
     }
     if (typeExpected === 'object') {
-        return (function() {
+        return (function () {
             var membersEqual = true;
             for (var i in expected) {
                 if (expectAlmostEqual(actual[i], expected[i])) {
@@ -71,7 +72,7 @@ exports.markEnterprise = function (_this) {
     if (process.env.SERVER_TYPE === 'oss' || process.env.HZ_TYPE === 'oss') {
         _this.skip();
     }
-    if(!process.env.HAZELCAST_ENTERPRISE_KEY){
+    if (!process.env.HAZELCAST_ENTERPRISE_KEY) {
         _this.skip();
     }
 };
@@ -91,14 +92,14 @@ exports.markServerVersionAtLeast = function (_this, client, expectedVersion) {
 };
 
 exports.promiseWaitMilliseconds = function (milliseconds) {
-    return new Promise(function(resolve, reject) {
-        setTimeout(function() {
+    return new Promise(function (resolve, reject) {
+        setTimeout(function () {
             resolve();
         }, milliseconds);
     });
 };
 
-exports.getRandomInt = function(lowerLim, upperLim) {
+exports.getRandomInt = function (lowerLim, upperLim) {
     return Math.floor(Math.random() * (upperLim - lowerLim)) + lowerLim;
 };
 

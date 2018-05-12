@@ -364,8 +364,9 @@ export class ArrayListSerializer extends LinkedListSerializer {
 }
 
 export class IdentifiedDataSerializableSerializer implements Serializer {
-    private factories: {[id: number]: IdentifiedDataSerializableFactory};
-    constructor(factories: {[id: number]: IdentifiedDataSerializableFactory}) {
+    private factories: { [id: number]: IdentifiedDataSerializableFactory };
+
+    constructor(factories: { [id: number]: IdentifiedDataSerializableFactory }) {
         this.factories = factories;
     }
 

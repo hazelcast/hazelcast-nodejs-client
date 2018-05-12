@@ -18,10 +18,7 @@ import {ClientConfig} from './Config';
 import * as Promise from 'bluebird';
 import {HazelcastError} from '../HazelcastError';
 import * as path from 'path';
-import {
-    createAddressFromString, mergeJson, tryGetArray, tryGetBoolean, tryGetEnum, tryGetNumber,
-    tryGetString
-} from '../Util';
+import {createAddressFromString, mergeJson, tryGetArray, tryGetBoolean, tryGetEnum, tryGetNumber, tryGetString} from '../Util';
 import {TopicOverloadPolicy} from '../proxy/topic/TopicOverloadPolicy';
 import {ReliableTopicConfig} from './ReliableTopicConfig';
 import {InMemoryFormat} from './InMemoryFormat';
@@ -100,7 +97,7 @@ export class ConfigBuilder {
                 this.clientConfig.networkConfig.connectionTimeout = tryGetNumber(jsonObject[key]);
             } else if (key === 'connectionAttemptPeriod') {
                 this.clientConfig.networkConfig.connectionAttemptPeriod = tryGetNumber(jsonObject[key]);
-            } else  if (key === 'connectionAttemptLimit') {
+            } else if (key === 'connectionAttemptLimit') {
                 this.clientConfig.networkConfig.connectionAttemptLimit = tryGetNumber(jsonObject[key]);
             } else if (key === 'ssl') {
                 this.handleSsl(jsonObject[key]);

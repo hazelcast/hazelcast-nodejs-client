@@ -15,12 +15,12 @@
  */
 
 import * as net from 'net';
-import Address = require('../Address');
 import * as Promise from 'bluebird';
 import {BitsUtil} from '../BitsUtil';
 import {BuildMetadata} from '../BuildMetadata';
 import HazelcastClient from '../HazelcastClient';
 import {IOError} from '../HazelcastError';
+import Address = require('../Address');
 
 export class ClientConnection {
     private address: Address;
@@ -85,7 +85,7 @@ export class ClientConnection {
 
     setConnectedServerVersion(versionString: string): void {
         this.connectedServerVersionString = versionString;
-        this.connectedServerVersion =  BuildMetadata.calculateVersion(versionString);
+        this.connectedServerVersion = BuildMetadata.calculateVersion(versionString);
     }
 
     getConnectedServerVersion(): number {
@@ -136,7 +136,7 @@ export class ClientConnection {
         this.socket.on('data', (buffer: Buffer) => {
             this.lastRead = new Date().getTime();
             this.readBuffer = Buffer.concat([this.readBuffer, buffer], this.readBuffer.length + buffer.length);
-            while (this.readBuffer.length >= BitsUtil.INT_SIZE_IN_BYTES ) {
+            while (this.readBuffer.length >= BitsUtil.INT_SIZE_IN_BYTES) {
                 var frameSize = this.readBuffer.readInt32LE(0);
                 if (frameSize > this.readBuffer.length) {
                     return;

@@ -22,14 +22,13 @@ import {IRingbuffer} from '../IRingbuffer';
 import {Address} from '../../index';
 import {UuidUtil} from '../../util/UuidUtil';
 import {ReliableTopicListenerRunner} from './ReliableTopicListenerRunner';
-import {ReliableTopicConfig} from '../../config/ReliableTopicConfig';
 import {RawTopicMessage} from './RawTopicMessage';
 import {SerializationService} from '../../serialization/SerializationService';
 import {OverflowPolicy} from '../../core/OverflowPolicy';
 import {TopicOverloadPolicy} from './TopicOverloadPolicy';
 import {TopicOverloadError} from '../../HazelcastError';
-import Long = require('long');
 import {BaseProxy} from '../BaseProxy';
+import Long = require('long');
 
 export const RINGBUFFER_PREFIX = '_hz_rb_';
 export const TOPIC_INITIAL_BACKOFF = 100;
@@ -39,7 +38,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
     private ringbuffer: IRingbuffer<RawTopicMessage>;
     private localAddress: Address;
     private batchSize: number;
-    private runners: {[key: string]: ReliableTopicListenerRunner<E>} = {};
+    private runners: { [key: string]: ReliableTopicListenerRunner<E> } = {};
     private serializationService: SerializationService;
     private overloadPolicy: TopicOverloadPolicy;
 
@@ -105,6 +104,19 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         }
     }
 
+    public getRingbuffer(): IRingbuffer<RawTopicMessage> {
+        return this.ringbuffer;
+    }
+
+    destroy(): Promise<void> {
+        for (var k in this.runners) {
+            var runner = this.runners[k];
+            runner.cancel();
+        }
+
+        return this.ringbuffer.destroy();
+    }
+
     private addOrDiscard(reliableTopicMessage: RawTopicMessage): Promise<void> {
         return this.ringbuffer.add(reliableTopicMessage, OverflowPolicy.FAIL).then<void>(() => {
             return null;
@@ -156,19 +168,6 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
             }
 
         });
-    }
-
-    public getRingbuffer(): IRingbuffer<RawTopicMessage> {
-        return this.ringbuffer;
-    }
-
-    destroy(): Promise<void> {
-        for (var k in this.runners) {
-            var runner = this.runners[k];
-            runner.cancel();
-        }
-
-        return this.ringbuffer.destroy();
     }
 
 }

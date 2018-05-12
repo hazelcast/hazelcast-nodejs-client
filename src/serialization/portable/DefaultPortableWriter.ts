@@ -16,7 +16,7 @@
 
 import {PortableSerializer} from './PortableSerializer';
 import {PositionalDataOutput} from '../Data';
-import {ClassDefinition, FieldType, FieldDefinition} from './ClassDefinition';
+import {ClassDefinition, FieldDefinition, FieldType} from './ClassDefinition';
 import {BitsUtil} from '../../BitsUtil';
 import {Portable} from '../Serializable';
 import * as Long from 'long';
@@ -156,7 +156,7 @@ export class DefaultPortableWriter {
         var sample: Portable;
         var i: number;
         var fieldDefinition = this.setPosition(fieldName, FieldType.PORTABLE_ARRAY);
-        var len = (portables == null ) ? BitsUtil.NULL_ARRAY_LENGTH : portables.length;
+        var len = (portables == null) ? BitsUtil.NULL_ARRAY_LENGTH : portables.length;
         this.output.writeInt(len);
         this.output.writeInt(fieldDefinition.getFactoryId());
         this.output.writeInt(fieldDefinition.getClassId());

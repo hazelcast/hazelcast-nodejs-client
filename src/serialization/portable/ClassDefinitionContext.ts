@@ -19,7 +19,7 @@ import {ClassDefinition} from './ClassDefinition';
 export class ClassDefinitionContext {
     private factoryId: number;
 
-    private classDefs: {[classId: string]: ClassDefinition};
+    private classDefs: { [classId: string]: ClassDefinition };
 
     constructor(factoryId: number, portableVersion: number) {
         this.factoryId = factoryId;

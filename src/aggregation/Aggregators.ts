@@ -28,7 +28,6 @@ import {
     MinAggregator,
     NumberAverageAggregator
 } from './Aggregator';
-import * as Long from 'long';
 
 /**
  * @param attributePath extracts values from this path if given

@@ -134,7 +134,7 @@ export class GreaterLessPredicate extends AbstractPredicate {
     private equal: boolean;
     private less: boolean;
 
-    constructor (field: string, value: any, equal: boolean, less: boolean) {
+    constructor(field: string, value: any, equal: boolean, less: boolean) {
         super();
         this.field = field;
         this.value = value;
@@ -218,7 +218,7 @@ export class InPredicate extends AbstractPredicate {
     writeData(output: DataOutput): void {
         output.writeUTF(this.field);
         output.writeInt(this.values.length);
-        this.values.forEach(function(val) {
+        this.values.forEach(function (val) {
             output.writeObject(val);
         });
     }
@@ -411,7 +411,7 @@ export class PagingPredicate extends AbstractPredicate {
         output.writeInt(this.pageSize);
         output.writeUTF(IterationType[this.iterationType]);
         output.writeInt(this.anchorList.length);
-        this.anchorList.forEach(function(anchorEntry: [number, [any, any]]) {
+        this.anchorList.forEach(function (anchorEntry: [number, [any, any]]) {
             output.writeInt(anchorEntry[0]);
             output.writeObject(anchorEntry[1][0]);
             output.writeObject(anchorEntry[1][1]);

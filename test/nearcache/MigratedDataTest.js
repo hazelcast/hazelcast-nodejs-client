@@ -24,7 +24,7 @@ var Util = require('../Util');
 var Promise = require('bluebird');
 var Address = require('../../.').Address;
 
-describe('MigratedData', function() {
+describe('MigratedData', function () {
     this.timeout(20000);
 
     var cluster;
@@ -44,8 +44,8 @@ describe('MigratedData', function() {
         return cfg;
     }
 
-    before(function() {
-        return RC.createCluster(null,  fs.readFileSync(__dirname + '/hazelcast_eventual_nearcache.xml', 'utf8')).then(function(resp) {
+    before(function () {
+        return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_eventual_nearcache.xml', 'utf8')).then(function (resp) {
             cluster = resp;
             return RC.startMember(cluster.id);
         }).then(function (m) {
@@ -66,11 +66,11 @@ describe('MigratedData', function() {
         client.shutdown();
     });
 
-    after(function() {
+    after(function () {
         return RC.shutdownCluster(cluster.id);
     });
 
-    it('killing a server migrates data to the other node, migrated data has new uuid, near cache discards data with old uuid', function() {
+    it('killing a server migrates data to the other node, migrated data has new uuid, near cache discards data with old uuid', function () {
         Util.markServerVersionAtLeast(this, client, '3.8');
 
         var map = client.getMap(mapName);
@@ -80,7 +80,7 @@ describe('MigratedData', function() {
             return map.get(key);
         }).then(function () {
             return map.get(key);
-        }).then(function() {
+        }).then(function () {
             var partitionService = client.getPartitionService();
             var partitionIdForKey = partitionService.getPartitionId(key);
             var addressForKey = partitionService.getAddressForPartition(partitionIdForKey);
@@ -93,7 +93,7 @@ describe('MigratedData', function() {
             }
         }).then(function () {
             var partitionService = client.getPartitionService();
-            var partitionIdForKey= partitionService.getPartitionId(key);
+            var partitionIdForKey = partitionService.getPartitionId(key);
             return waitUntilPartitionMovesTo(partitionService, partitionIdForKey, new Address(survivingMember.host, survivingMember.port));
         }).then(function () {
             return Util.promiseWaitMilliseconds(1500);
@@ -113,7 +113,7 @@ describe('MigratedData', function() {
             if (partitionService.getAddressForPartition(partitionId).equals(address)) {
                 deferred.resolve();
             } else if (remainingTries > 0) {
-                setTimeout(resolveOrTimeout, 1000, remainingTries-1);
+                setTimeout(resolveOrTimeout, 1000, remainingTries - 1);
             } else {
                 deferred.reject(new Error('Partition ' + partitionId + ' was not moved to ' + address.toString()));
             }

@@ -18,9 +18,9 @@ import * as Promise from 'bluebird';
 import {DistributedObject} from '../DistributedObject';
 import {Predicate} from '../core/Predicate';
 import {IMapListener} from '../core/MapListener';
-import Long = require('long');
 import {ArrayComparator} from '../util/ArrayComparator';
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
+import Long = require('long');
 
 export interface IReplicatedMap<K, V> extends DistributedObject {
     /**
@@ -33,7 +33,7 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
      * @param ttl milliseconds to be associated with the specified key-value pair.
      * @return old value if there was any, `null` otherwise.
      */
-    put(key: K, value: V, ttl?: Long|number): Promise<V>;
+    put(key: K, value: V, ttl?: Long | number): Promise<V>;
 
     /**
      * The clear operation wipes data out of the replicated maps.

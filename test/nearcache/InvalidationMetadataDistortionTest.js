@@ -102,7 +102,7 @@ describe('Invalidation metadata distortion', function () {
                 for (var i = 0; i < mapSize; i++) {
                     promises.push(map.get(i));
                 }
-                Promise.all(promises).then(function() {
+                Promise.all(promises).then(function () {
                     setTimeout(populateNearCacheAndCompare, 0);
                 });
             } else {
@@ -110,7 +110,9 @@ describe('Invalidation metadata distortion', function () {
                 for (var i = 0; i < mapSize; i++) {
                     comparisonPromises.push(compareActualAndExpected(map, validationClient.getMap(mapName), i));
                 }
-                Promise.all(comparisonPromises).then(() => {done()}).catch(done);
+                Promise.all(comparisonPromises).then(() => {
+                    done()
+                }).catch(done);
             }
         }
 

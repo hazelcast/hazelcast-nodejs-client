@@ -45,7 +45,11 @@ class ClientMessage {
 
     private buffer: Buffer;
     private cursor: number = BitsUtil.HEADER_SIZE;
-    private isRetryable : boolean;
+    private isRetryable: boolean;
+
+    constructor(buffer: Buffer) {
+        this.buffer = buffer;
+    }
 
     public static newClientMessage(payloadSize: number): ClientMessage {
         var totalSize = BitsUtil.HEADER_SIZE + payloadSize;
@@ -58,10 +62,6 @@ class ClientMessage {
         message.setFlags(0xc0);
         message.setPartitionId(-1);
         return message;
-    }
-
-    constructor(buffer: Buffer) {
-        this.buffer = buffer;
     }
 
     getBuffer(): Buffer {
@@ -148,17 +148,6 @@ class ClientMessage {
         this.cursor += BitsUtil.BYTE_SIZE_IN_BYTES;
     }
 
-
-    private writeLongInternal(value: any, offset: number) {
-        if (!Long.isLong(value)) {
-            value = Long.fromValue(value);
-        }
-
-        this.buffer.writeInt32LE(value.low, offset);
-        this.buffer.writeInt32LE(value.high, offset + 4);
-    }
-
-
     appendLong(value: any) {
         this.writeLongInternal(value, this.cursor);
         this.cursor += BitsUtil.LONG_SIZE_IN_BYTES;
@@ -224,12 +213,6 @@ class ClientMessage {
         return value;
     }
 
-    private readLongInternal(offset: number) {
-        var low = this.buffer.readInt32LE(offset);
-        var high = this.buffer.readInt32LE(offset + 4);
-        return new Long(low, high);
-    }
-
     readString(): string {
         var length = this.buffer.readInt32LE(this.cursor);
         this.cursor += BitsUtil.INT_SIZE_IN_BYTES;
@@ -254,5 +237,21 @@ class ClientMessage {
     readMapEntry(): any {
         // TODO
     }
+
+    private writeLongInternal(value: any, offset: number) {
+        if (!Long.isLong(value)) {
+            value = Long.fromValue(value);
+        }
+
+        this.buffer.writeInt32LE(value.low, offset);
+        this.buffer.writeInt32LE(value.high, offset + 4);
+    }
+
+    private readLongInternal(offset: number) {
+        var low = this.buffer.readInt32LE(offset);
+        var high = this.buffer.readInt32LE(offset + 4);
+        return new Long(low, high);
+    }
 }
+
 export = ClientMessage;

@@ -39,10 +39,10 @@ import {ListSubCodec} from '../codec/ListSubCodec';
 import {ListAddAllWithIndexCodec} from '../codec/ListAddAllWithIndexCodec';
 import {ListSetCodec} from '../codec/ListSetCodec';
 import {ListLastIndexOfCodec} from '../codec/ListLastIndexOfCodec';
-import ClientMessage = require('../ClientMessage');
 import * as Promise from 'bluebird';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
+import ClientMessage = require('../ClientMessage');
 
 export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
 
@@ -160,13 +160,13 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
 
     private createItemListener(name: string, includeValue: boolean): ListenerMessageCodec {
         return {
-            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+            encodeAddRequest: function (localOnly: boolean): ClientMessage {
                 return ListAddListenerCodec.encodeRequest(name, includeValue, localOnly);
             },
-            decodeAddResponse: function(msg: ClientMessage): string {
+            decodeAddResponse: function (msg: ClientMessage): string {
                 return ListAddListenerCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+            encodeRemoveRequest: function (listenerId: string): ClientMessage {
                 return ListRemoveListenerCodec.encodeRequest(name, listenerId);
             }
         };

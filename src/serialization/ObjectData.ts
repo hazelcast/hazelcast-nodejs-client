@@ -16,7 +16,7 @@
 
 /* tslint:disable:no-bitwise */
 import * as Long from 'long';
-import {DataOutput, Data, DataInput, PositionalDataOutput} from './Data';
+import {Data, DataInput, DataOutput, PositionalDataOutput} from './Data';
 import {SerializationService} from './SerializationService';
 import {BitsUtil} from '../BitsUtil';
 import * as assert from 'assert';
@@ -28,8 +28,8 @@ const MASK_4BYTE = (1 << 32) - 1;
 
 export class ObjectDataOutput implements DataOutput {
     protected buffer: Buffer;
-    private service: SerializationService;
     protected bigEndian: boolean;
+    private service: SerializationService;
     private pos: number;
 
     constructor(length: number, service: SerializationService, isBigEndian: boolean) {
@@ -37,27 +37,6 @@ export class ObjectDataOutput implements DataOutput {
         this.service = service;
         this.bigEndian = isBigEndian;
         this.pos = 0;
-    }
-
-    private available(): number {
-        return this.buffer == null ? 0 : this.buffer.length - this.pos;
-    }
-
-    private ensureAvailable(size: number): void {
-        if (this.available() < size ) {
-            var newBuffer = new Buffer(this.pos + size);
-            this.buffer.copy(newBuffer, 0, 0, this.pos);
-            this.buffer = newBuffer;
-        }
-    }
-
-    private writeArray(func: Function, arr: Array<any>) {
-        var len = (arr != null) ? arr.length : BitsUtil.NULL_ARRAY_LENGTH;
-        this.writeInt(len);
-        if (len > 0) {
-            var boundFunc = func.bind(this);
-            arr.forEach(boundFunc);
-        }
     }
 
     clear(): void {
@@ -87,7 +66,7 @@ export class ObjectDataOutput implements DataOutput {
         }
     }
 
-    write(byte: number|Buffer): void {
+    write(byte: number | Buffer): void {
         if (Buffer.isBuffer(byte)) {
             this.ensureAvailable(byte.length);
             byte.copy(this.buffer, this.pos);
@@ -246,6 +225,27 @@ export class ObjectDataOutput implements DataOutput {
             this.write(0);
         }
     }
+
+    private available(): number {
+        return this.buffer == null ? 0 : this.buffer.length - this.pos;
+    }
+
+    private ensureAvailable(size: number): void {
+        if (this.available() < size) {
+            var newBuffer = new Buffer(this.pos + size);
+            this.buffer.copy(newBuffer, 0, 0, this.pos);
+            this.buffer = newBuffer;
+        }
+    }
+
+    private writeArray(func: Function, arr: Array<any>) {
+        var len = (arr != null) ? arr.length : BitsUtil.NULL_ARRAY_LENGTH;
+        this.writeInt(len);
+        if (len > 0) {
+            var boundFunc = func.bind(this);
+            arr.forEach(boundFunc);
+        }
+    }
 }
 
 export class PositionalObjectDataOutput extends ObjectDataOutput implements PositionalDataOutput {
@@ -314,27 +314,6 @@ export class ObjectDataInput implements DataInput {
         this.service = serializationService;
         this.bigEndian = isBigEndian;
         this.pos = this.offset;
-    }
-
-    private readArray<T>(func: Function, pos?: number) {
-        var backupPos = this.pos;
-        if (pos !== undefined) {
-            this.pos = pos;
-        }
-        var len = this.readInt();
-        var arr: T[] = [];
-        for (var i = 0; i < len; i++) {
-            arr.push(func.call(this));
-        }
-        if (pos !== undefined) {
-            this.pos = backupPos;
-        }
-        return arr;
-    }
-
-    private assertAvailable(numOfBytes: number, pos: number = this.pos): void {
-        assert(pos >= 0);
-        assert(pos + numOfBytes <= this.buffer.length);
     }
 
     isBigEndian(): boolean {
@@ -496,14 +475,6 @@ export class ObjectDataInput implements DataInput {
         return this.readChar(pos).charCodeAt(0);
     }
 
-    private addOrUndefined(base: number, adder: number): number {
-        if (base === undefined) {
-            return undefined;
-        } else {
-            return base + adder;
-        }
-    }
-
     readUTF(pos?: number): string {
         let len = this.readInt(pos);
         let readingIndex = this.addOrUndefined(pos, 4);
@@ -573,5 +544,34 @@ export class ObjectDataInput implements DataInput {
 
     available(): number {
         return this.buffer.length - this.pos;
+    }
+
+    private readArray<T>(func: Function, pos?: number) {
+        var backupPos = this.pos;
+        if (pos !== undefined) {
+            this.pos = pos;
+        }
+        var len = this.readInt();
+        var arr: T[] = [];
+        for (var i = 0; i < len; i++) {
+            arr.push(func.call(this));
+        }
+        if (pos !== undefined) {
+            this.pos = backupPos;
+        }
+        return arr;
+    }
+
+    private assertAvailable(numOfBytes: number, pos: number = this.pos): void {
+        assert(pos >= 0);
+        assert(pos + numOfBytes <= this.buffer.length);
+    }
+
+    private addOrUndefined(base: number, adder: number): number {
+        if (base === undefined) {
+            return undefined;
+        } else {
+            return base + adder;
+        }
     }
 }

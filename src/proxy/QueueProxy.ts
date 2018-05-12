@@ -40,13 +40,13 @@ import {QueueCompareAndRetainAllCodec} from '../codec/QueueCompareAndRetainAllCo
 import {QueueAddListenerCodec} from '../codec/QueueAddListenerCodec';
 import {QueueRemoveListenerCodec} from '../codec/QueueRemoveListenerCodec';
 import {IllegalStateError} from '../HazelcastError';
-import ClientMessage = require('../ClientMessage');
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
+import ClientMessage = require('../ClientMessage');
 
 export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
 
     add(item: E): Promise<boolean> {
-        return this.offer(item).then(function(ret) {
+        return this.offer(item).then(function (ret) {
             if (ret) {
                 return true;
             } else {
@@ -58,7 +58,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     addAll(items: E[]): Promise<boolean> {
         var rawList: Data[] = [];
         var toData = this.toData.bind(this);
-        items.forEach(function(item) {
+        items.forEach(function (item) {
             rawList.push(toData(item));
         });
         return this.encodeInvoke<boolean>(QueueAddAllCodec, rawList);
@@ -107,7 +107,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
         } else {
             promise = this.encodeInvoke<any>(QueueDrainToMaxSizeCodec, maxElements);
         }
-        return promise.then(function(rawArr: Data[]) {
+        return promise.then(function (rawArr: Data[]) {
             rawArr.forEach(function (rawItem) {
                 arr.push(toObject(rawItem));
             });
@@ -173,8 +173,8 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     toArray(): Promise<E[]> {
         var arr: E[] = [];
         var toObject = this.toObject.bind(this);
-        return this.encodeInvoke<Data[]>(QueueIteratorCodec).then(function(dataArray) {
-            dataArray.forEach(function(data) {
+        return this.encodeInvoke<Data[]>(QueueIteratorCodec).then(function (dataArray) {
+            dataArray.forEach(function (data) {
                 arr.push(toObject(data));
             });
             return arr;
@@ -183,13 +183,13 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
 
     private createEntryListener(name: string, includeValue: boolean): ListenerMessageCodec {
         return {
-            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+            encodeAddRequest: function (localOnly: boolean): ClientMessage {
                 return QueueAddListenerCodec.encodeRequest(name, includeValue, localOnly);
             },
-            decodeAddResponse: function(msg: ClientMessage): string {
+            decodeAddResponse: function (msg: ClientMessage): string {
                 return QueueAddListenerCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+            encodeRemoveRequest: function (listenerId: string): ClientMessage {
                 return QueueRemoveListenerCodec.encodeRequest(name, listenerId);
             }
         };

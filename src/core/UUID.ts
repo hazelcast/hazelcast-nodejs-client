@@ -15,6 +15,7 @@
  */
 
 import * as Long from 'long';
+
 export class UUID {
     readonly leastSignificant: Long;
     readonly mostSignificant: Long;

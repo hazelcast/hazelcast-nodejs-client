@@ -84,6 +84,13 @@ export class AutoBatcher {
         this.queue.splice(0, ind);
     }
 
+    nextId(): Promise<Long> {
+        let deferred = Promise.defer<Long>();
+        this.queue.push(deferred);
+        this.processIdRequests();
+        return deferred.promise;
+    }
+
     private assignNewBatch(): void {
         if (this.requestInFlight) {
             return;
@@ -104,12 +111,5 @@ export class AutoBatcher {
             deferred.reject(e);
         });
         this.queue = [];
-    }
-
-    nextId(): Promise<Long> {
-        let deferred = Promise.defer<Long>();
-        this.queue.push(deferred);
-        this.processIdRequests();
-        return deferred.promise;
     }
 }

@@ -34,10 +34,6 @@ export class LockProxy extends PartitionSpecificProxy implements ILock {
 
     private lockReferenceIdGenerator: LockReferenceIdGenerator = this.client.getLockReferenceIdGenerator();
 
-    private nextSequence(): Long {
-        return this.lockReferenceIdGenerator.getNextReferenceId();
-    }
-
     lock(leaseMillis: number = -1): Promise<void> {
         return this.encodeInvoke<void>(LockLockCodec, leaseMillis, 1, this.nextSequence());
     }
@@ -68,8 +64,12 @@ export class LockProxy extends PartitionSpecificProxy implements ILock {
     }
 
     getRemainingLeaseTime(): Promise<number> {
-        return this.encodeInvoke<Long>(LockGetRemainingLeaseTimeCodec).then(function(long) {
+        return this.encodeInvoke<Long>(LockGetRemainingLeaseTimeCodec).then(function (long) {
             return long.toNumber();
         });
+    }
+
+    private nextSequence(): Long {
+        return this.lockReferenceIdGenerator.getNextReferenceId();
     }
 }

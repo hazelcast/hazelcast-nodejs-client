@@ -14,31 +14,49 @@
  * limitations under the License.
  */
 
-import {Data, DataOutput, DataInput} from './Data';
-import {HeapData, DATA_OFFSET} from './HeapData';
+import {Data, DataInput, DataOutput} from './Data';
+import {DATA_OFFSET, HeapData} from './HeapData';
 import {SerializationConfig} from '../config/SerializationConfig';
-import {ObjectDataOutput, ObjectDataInput, PositionalObjectDataOutput} from './ObjectData';
+import {ObjectDataInput, PositionalObjectDataOutput} from './ObjectData';
 import {
-    StringSerializer, BooleanSerializer, DoubleSerializer, NullSerializer,
-    ShortSerializer, IntegerSerializer, LongSerializer, FloatSerializer, BooleanArraySerializer, ShortArraySerializer,
-    IntegerArraySerializer, LongArraySerializer, DoubleArraySerializer, StringArraySerializer,
-    IdentifiedDataSerializableSerializer, FloatArraySerializer, JsonSerializer, ByteSerializer, CharSerializer,
-    ByteArraySerializer, CharArraySerializer, DateSerializer, JavaClassSerializer
+    BooleanArraySerializer,
+    BooleanSerializer,
+    ByteArraySerializer,
+    ByteSerializer,
+    CharArraySerializer,
+    CharSerializer,
+    DateSerializer,
+    DoubleArraySerializer,
+    DoubleSerializer,
+    FloatArraySerializer,
+    FloatSerializer,
+    IdentifiedDataSerializableSerializer,
+    IntegerArraySerializer,
+    IntegerSerializer,
+    JavaClassSerializer,
+    JsonSerializer,
+    LongArraySerializer,
+    LongSerializer,
+    NullSerializer,
+    ShortArraySerializer,
+    ShortSerializer,
+    StringArraySerializer,
+    StringSerializer
 } from './DefaultSerializer';
 import * as Util from '../Util';
 import {PortableSerializer} from './portable/PortableSerializer';
 import {IdentifiedDataSerializableFactory} from './Serializable';
 import * as DefaultPredicates from './DefaultPredicates';
-import {PredicateFactory, PREDICATE_FACTORY_ID} from './PredicateFactory';
+import {PREDICATE_FACTORY_ID, PredicateFactory} from './PredicateFactory';
 import {RELIABLE_TOPIC_MESSAGE_FACTORY_ID, ReliableTopicMessageFactory} from '../proxy/topic/RawTopicMessage';
 import {ClusterDataFactoryHelper} from '../ClusterDataFactoryHelper';
 import {ClusterDataFactory} from '../ClusterDataFactory';
 import {AggregatorFactory} from '../aggregation/AggregatorFactory';
 
 export interface SerializationService {
-    toData(object: any, paritioningStrategy?: any) : Data;
+    toData(object: any, paritioningStrategy?: any): Data;
 
-    toObject(data: Data) : any;
+    toObject(data: Data): any;
 
     writeObject(out: DataOutput, object: any): void;
 
@@ -47,14 +65,16 @@ export interface SerializationService {
 
 export interface Serializer {
     getId(): number;
+
     read(input: DataInput): any;
+
     write(output: DataOutput, object: any): void;
 }
 
 export class SerializationServiceV1 implements SerializationService {
 
-    private registry: {[id: number]: Serializer};
-    private serializerNameToId: {[name: string]: number};
+    private registry: { [id: number]: Serializer };
+    private serializerNameToId: { [name: string]: number };
     private numberType: string;
     private serializationConfig: SerializationConfig;
 
@@ -68,7 +88,7 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     public isData(object: any): boolean {
-        if (object instanceof HeapData ) {
+        if (object instanceof HeapData) {
             return true;
         } else {
             return false;
@@ -119,7 +139,7 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     registerSerializer(name: string, serializer: Serializer): void {
-        if (this.serializerNameToId[name] ) {
+        if (this.serializerNameToId[name]) {
             throw new RangeError('Given serializer name is already in the registry.');
         }
         if (this.registry[serializer.getId()]) {
@@ -171,16 +191,6 @@ export class SerializationServiceV1 implements SerializationService {
 
     }
 
-    private defaultPartitionStrategy(obj: any): number {
-        /* tslint:disable:no-string-literal */
-        if (obj == null || !obj['getPartitionHash']) {
-            /* tslint:enable:no-string-literal */
-            return 0;
-        } else {
-            return obj.getPartitionHash();
-        }
-    }
-
     protected lookupDefaultSerializer(obj: any): Serializer {
         var serializer: Serializer = null;
         if (this.isIdentifiedDataSerializable(obj)) {
@@ -214,11 +224,11 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     protected isIdentifiedDataSerializable(obj: any): boolean {
-        return ( obj.readData && obj.writeData && obj.getClassId && obj.getFactoryId);
+        return (obj.readData && obj.writeData && obj.getClassId && obj.getFactoryId);
     }
 
     protected isPortableSerializable(obj: any): boolean {
-        return ( obj.readPortable && obj.writePortable && obj.getFactoryId && obj.getClassId);
+        return (obj.readPortable && obj.writePortable && obj.getFactoryId && obj.getClassId);
     }
 
     protected registerDefaultSerializers() {
@@ -252,7 +262,7 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     protected registerIdentifiedFactories() {
-        var factories: {[id: number]: IdentifiedDataSerializableFactory} = {};
+        var factories: { [id: number]: IdentifiedDataSerializableFactory } = {};
         for (var id in this.serializationConfig.dataSerializableFactories) {
             factories[id] = this.serializationConfig.dataSerializableFactories[id];
         }
@@ -273,7 +283,7 @@ export class SerializationServiceV1 implements SerializationService {
     protected registerCustomSerializers() {
         let customSerializersArray: any[] = this.serializationConfig.customSerializers;
         var self = this;
-        customSerializersArray.forEach(function(candidate) {
+        customSerializersArray.forEach(function (candidate) {
             self.assertValidCustomSerializer(candidate);
             self.registerSerializer('!custom' + candidate.getId(), candidate);
         });
@@ -347,5 +357,15 @@ export class SerializationServiceV1 implements SerializationService {
 
     protected calculatePartitionHash(object: any, strategy: Function): number {
         return strategy(object);
+    }
+
+    private defaultPartitionStrategy(obj: any): number {
+        /* tslint:disable:no-string-literal */
+        if (obj == null || !obj['getPartitionHash']) {
+            /* tslint:enable:no-string-literal */
+            return 0;
+        } else {
+            return obj.getPartitionHash();
+        }
     }
 }

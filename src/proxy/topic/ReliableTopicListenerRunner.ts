@@ -26,10 +26,10 @@ import {ReadResultSet} from '../../';
 
 export class ReliableTopicListenerRunner<E> {
 
+    public sequenceNumber: number = 0;
     private listener: TopicMessageListener<E>;
     private ringbuffer: IRingbuffer<RawTopicMessage>;
     private batchSize: number;
-    public sequenceNumber: number = 0;
     private serializationService: SerializationService;
     private cancelled: boolean = false;
     private loggingService = LoggingService.getLoggingService();
@@ -72,7 +72,7 @@ export class ReliableTopicListenerRunner<E> {
                     var newSequence = seq.toNumber();
 
                     var message = 'Topic "' + this.proxy.getName() + '" ran into a stale sequence. ' +
-                    ' Jumping from old sequence ' + this.sequenceNumber + ' to new sequence ' + newSequence;
+                        ' Jumping from old sequence ' + this.sequenceNumber + ' to new sequence ' + newSequence;
                     this.loggingService.warn('ReliableTopicListenerRunner', message);
 
                     this.sequenceNumber = newSequence;

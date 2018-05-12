@@ -15,7 +15,7 @@
  */
 
 import {PortableWriter} from './PortableSerializer';
-import {FieldDefinition, FieldType, ClassDefinition} from './ClassDefinition';
+import {ClassDefinition, FieldDefinition, FieldType} from './ClassDefinition';
 import {PortableContext} from './PortableContext';
 import {Portable} from '../Serializable';
 import * as Util from '../../Util';
@@ -29,7 +29,7 @@ export class ClassDefinitionWriter implements PortableWriter {
     private factoryId: number;
     private classId: number;
     private version: number;
-    private fieldDefinitions: {[fieldName: string]: FieldDefinition} = {};
+    private fieldDefinitions: { [fieldName: string]: FieldDefinition } = {};
 
     constructor(portableContext: PortableContext, factoryId: number, classId: number, version: number) {
         this.portableContext = portableContext;

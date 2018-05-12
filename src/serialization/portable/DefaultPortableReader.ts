@@ -42,20 +42,6 @@ export class DefaultPortableReader implements PortableReader {
         this.offset = this.input.position();
     }
 
-    private positionByFieldDefinition(field: FieldDefinition): number {
-        if (this.raw) {
-            throw new IllegalStateError('Cannot read portable fields after getRawDataInput called!');
-        }
-        var pos = this.input.readInt(this.offset + field.getIndex() * BitsUtil.INT_SIZE_IN_BYTES);
-        var len = this.input.readShort(pos);
-        return pos + BitsUtil.SHORT_SIZE_IN_BYTES + len + 1;
-    }
-
-    private positionByField(fieldName: string, fieldType: FieldType): number {
-        var definition = this.classDefinition.getField(fieldName);
-        return this.positionByFieldDefinition(definition);
-    }
-
     getVersion(): number {
         return this.classDefinition.getVersion();
     }
@@ -219,5 +205,19 @@ export class DefaultPortableReader implements PortableReader {
 
     end() {
         this.input.position(this.finalPos);
+    }
+
+    private positionByFieldDefinition(field: FieldDefinition): number {
+        if (this.raw) {
+            throw new IllegalStateError('Cannot read portable fields after getRawDataInput called!');
+        }
+        var pos = this.input.readInt(this.offset + field.getIndex() * BitsUtil.INT_SIZE_IN_BYTES);
+        var len = this.input.readShort(pos);
+        return pos + BitsUtil.SHORT_SIZE_IN_BYTES + len + 1;
+    }
+
+    private positionByField(fieldName: string, fieldType: FieldType): number {
+        var definition = this.classDefinition.getField(fieldName);
+        return this.positionByFieldDefinition(definition);
     }
 }

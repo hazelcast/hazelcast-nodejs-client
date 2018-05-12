@@ -17,7 +17,7 @@
 var Config = require('hazelcast-client').Config;
 var HazelcastClient = require('hazelcast-client').Client;
 
-if (process.argv.length < 5 ) {
+if (process.argv.length < 5) {
     console.log('Usage: \n' +
         'node ssl_authentication.js [servername] [certificate-file] [trusted-ca]');
     return

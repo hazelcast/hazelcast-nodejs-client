@@ -45,8 +45,8 @@ import {MultiMapForceUnlockCodec} from '../codec/MultiMapForceUnlockCodec';
 import {LockReferenceIdGenerator} from '../LockReferenceIdGenerator';
 import * as Long from 'long';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
-import ClientMessage = require('../ClientMessage');
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
+import ClientMessage = require('../ClientMessage');
 
 export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
 
@@ -214,13 +214,13 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
 
     private createEntryListenerToKey(name: string, keyData: Data, includeValue: boolean): ListenerMessageCodec {
         return {
-            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+            encodeAddRequest: function (localOnly: boolean): ClientMessage {
                 return MultiMapAddEntryListenerToKeyCodec.encodeRequest(name, keyData, includeValue, localOnly);
             },
-            decodeAddResponse: function(msg: ClientMessage): string {
+            decodeAddResponse: function (msg: ClientMessage): string {
                 return MultiMapAddEntryListenerToKeyCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+            encodeRemoveRequest: function (listenerId: string): ClientMessage {
                 return MultiMapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
             }
         };
@@ -228,13 +228,13 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
 
     private createEntryListener(name: string, includeValue: boolean): ListenerMessageCodec {
         return {
-            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+            encodeAddRequest: function (localOnly: boolean): ClientMessage {
                 return MultiMapAddEntryListenerCodec.encodeRequest(name, includeValue, localOnly);
             },
-            decodeAddResponse: function(msg: ClientMessage): string {
+            decodeAddResponse: function (msg: ClientMessage): string {
                 return MultiMapAddEntryListenerCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+            encodeRemoveRequest: function (listenerId: string): ClientMessage {
                 return MultiMapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
             }
         };

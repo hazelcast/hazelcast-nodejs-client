@@ -1,67 +1,67 @@
 {
-  "rules": {
-    "class-name": true,
-    "curly": true,
-    "eofline": true,
-    "indent": [
-      false
-    ],
-    "label-position": true,
-    "max-line-length": [
-      true,
-      130
-    ],
-    "no-arg": true,
-    "no-bitwise": true,
-    "no-console": [
-      true,
-      "debug",
-      "info",
-      "time",
-      "timeEnd",
-      "trace"
-    ],
-    "no-construct": true,
-    "no-debugger": true,
-    "no-duplicate-variable": false,
-    "no-empty": true,
-    "no-eval": true,
-    "no-switch-case-fall-through": true,
-    "trailing-comma": [
-        true,
-        {
-            "multiline": "never",
-            "singleline": "never"
-        }
-    ],
-    "no-unused-expression": true,
-    "no-unused-variable": false,
-    "no-use-before-declare": true,
-    "one-line": [
-      true,
-      "check-open-brace",
-      "check-catch",
-      "check-else",
-      "check-whitespace"
-    ],
-    "quotemark": [
-      true,
-      "single"
-    ],
-    "radix": true,
-    "semicolon": true,
-    "triple-equals": [
-      true,
-      "allow-null-check"
-    ],
-    "variable-name": false,
-    "whitespace": [
-      true,
-      "check-branch",
-      "check-decl",
-      "check-operator",
-      "check-separator",
-      "check-type"
-    ]
-  }
+    "rules": {
+        "class-name": true,
+        "curly": true,
+        "eofline": true,
+        "indent": [
+            false
+        ],
+        "label-position": true,
+        "max-line-length": [
+            true,
+            130
+        ],
+        "no-arg": true,
+        "no-bitwise": true,
+        "no-console": [
+            true,
+            "debug",
+            "info",
+            "time",
+            "timeEnd",
+            "trace"
+        ],
+        "no-construct": true,
+        "no-debugger": true,
+        "no-duplicate-variable": false,
+        "no-empty": true,
+        "no-eval": true,
+        "no-switch-case-fall-through": true,
+        "trailing-comma": [
+            true,
+            {
+                "multiline": "never",
+                "singleline": "never"
+            }
+        ],
+        "no-unused-expression": true,
+        "no-unused-variable": false,
+        "no-use-before-declare": true,
+        "one-line": [
+            true,
+            "check-open-brace",
+            "check-catch",
+            "check-else",
+            "check-whitespace"
+        ],
+        "quotemark": [
+            true,
+            "single"
+        ],
+        "radix": true,
+        "semicolon": true,
+        "triple-equals": [
+            true,
+            "allow-null-check"
+        ],
+        "variable-name": false,
+        "whitespace": [
+            true,
+            "check-branch",
+            "check-decl",
+            "check-operator",
+            "check-separator",
+            "check-type"
+        ]
+    }
 }

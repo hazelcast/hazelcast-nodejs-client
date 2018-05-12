@@ -22,6 +22,7 @@ import {Predicate} from '../core/Predicate';
 import {IdentifiedDataSerializable, Portable} from '../serialization/Serializable';
 import {Aggregator} from '../aggregation/Aggregator';
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
+
 export interface IMap<K, V> extends DistributedObject {
 
     /**
@@ -68,7 +69,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws {RangeError} if key is undefined or null
      * @return `true` if the map contains the key, `false` otherwise.
      */
-    containsKey(key: K) : Promise<boolean>;
+    containsKey(key: K): Promise<boolean>;
 
     /**
      * This method return true if this map has key(s) associated with given value
@@ -76,7 +77,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws {RangeError} if value is undefined or null
      * @return `true` if the map has key or keys associated with given value.
      */
-    containsValue(value: V) : Promise<boolean>;
+    containsValue(value: V): Promise<boolean>;
 
     /**
      * Associates the specified value with the specified key.
@@ -89,7 +90,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws {RangeError} if specified key or value is undefined or null or ttl is negative.
      * @return old value if there was any, `undefined` otherwise.
      */
-    put(key: K, value: V, ttl?: number) : Promise<V>;
+    put(key: K, value: V, ttl?: number): Promise<V>;
 
     /**
      * Puts all key value pairs from this array to the map as key -> value mappings.
@@ -103,7 +104,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws {RangeError} if key is undefined or null
      * @return value associated with key, undefined if the key does not exist.
      */
-    get(key: K) : Promise<V>;
+    get(key: K): Promise<V>;
 
     /**
      * Retrieves key value pairs of given keys.
@@ -120,7 +121,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws {RangeError} if key is undefined or null
      * @return value associated with key, `undefined` if the key did not exist before.
      */
-    remove(key: K, value?: V) : Promise<V>;
+    remove(key: K, value?: V): Promise<V>;
 
     /**
      * Removes specified key from map. Unlike {@link remove} this method does not return deleted value.
@@ -134,18 +135,18 @@ export interface IMap<K, V> extends DistributedObject {
      * Retrieves the number of elements in map
      * @return number of elements in map
      */
-    size() : Promise<number>;
+    size(): Promise<number>;
 
     /**
      * Removes all of the mappings
      * @return
      */
-    clear() : Promise<void>;
+    clear(): Promise<void>;
 
     /**
      * Returns whether this map is empty or not
      */
-    isEmpty() : Promise<boolean>;
+    isEmpty(): Promise<boolean>;
 
     /**
      * Returns entries as an array of key-value pairs.
@@ -250,7 +251,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws {RangeError} if key, oldValue or newValue is null or undefined.
      * @return `true` if the value was replaced.
      */
-    replaceIfSame(key: K, oldValue: V,  newValue: V): Promise<boolean>;
+    replaceIfSame(key: K, oldValue: V, newValue: V): Promise<boolean>;
 
     /**
      * Replaces value of given key with `newValue`.

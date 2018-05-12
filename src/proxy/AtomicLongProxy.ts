@@ -29,11 +29,11 @@ import {AtomicLongIncrementAndGetCodec} from '../codec/AtomicLongIncrementAndGet
 import {AtomicLongGetAndIncrementCodec} from '../codec/AtomicLongGetAndIncrementCodec';
 
 export class AtomicLongProxy extends PartitionSpecificProxy implements IAtomicLong {
-    addAndGet(delta: Long|number): Promise<Long> {
+    addAndGet(delta: Long | number): Promise<Long> {
         return this.encodeInvoke<Long>(AtomicLongAddAndGetCodec, delta);
     }
 
-    compareAndSet(expect: Long|number, update: Long|number): Promise<boolean> {
+    compareAndSet(expect: Long | number, update: Long | number): Promise<boolean> {
         return this.encodeInvoke<boolean>(AtomicLongCompareAndSetCodec, expect, update);
     }
 
@@ -45,11 +45,11 @@ export class AtomicLongProxy extends PartitionSpecificProxy implements IAtomicLo
         return this.encodeInvoke<Long>(AtomicLongGetCodec);
     }
 
-    getAndAdd(delta: Long|number): Promise<Long> {
+    getAndAdd(delta: Long | number): Promise<Long> {
         return this.encodeInvoke<Long>(AtomicLongGetAndAddCodec, delta);
     }
 
-    getAndSet(newValue: Long|number): Promise<Long> {
+    getAndSet(newValue: Long | number): Promise<Long> {
         return this.encodeInvoke<Long>(AtomicLongGetAndSetCodec, newValue);
     }
 
@@ -61,7 +61,7 @@ export class AtomicLongProxy extends PartitionSpecificProxy implements IAtomicLo
         return this.encodeInvoke<Long>(AtomicLongGetAndIncrementCodec);
     }
 
-    set(newValue: Long|number): Promise<void> {
+    set(newValue: Long | number): Promise<void> {
         return this.encodeInvoke<void>(AtomicLongSetCodec, newValue);
     }
 

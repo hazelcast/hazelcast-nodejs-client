@@ -38,14 +38,14 @@ export class HeapData implements Data {
     /**
      * Returns serialized representation in a buffer
      */
-    public toBuffer() : Buffer {
+    public toBuffer(): Buffer {
         return this.payload;
     }
 
     /**
      * Returns serialization type
      */
-    public getType() : number {
+    public getType(): number {
         if (this.totalSize() === 0) {
             //TODO serialization null type
             return 0;
@@ -67,7 +67,7 @@ export class HeapData implements Data {
     /**
      * Returns size of internal binary data in bytes
      */
-    public dataSize() : number {
+    public dataSize(): number {
         return Math.max(this.totalSize() - HEAP_DATA_OVERHEAD, 0);
     }
 
@@ -81,7 +81,7 @@ export class HeapData implements Data {
     /**
      * Returns partition hash of serialized object
      */
-    getPartitionHash() : number {
+    getPartitionHash(): number {
         if (this.hasPartitionHash()) {
             return this.payload.readIntBE(PARTITION_HASH_OFFSET, 4);
         } else {
@@ -100,7 +100,7 @@ export class HeapData implements Data {
     /**
      * Returns true if data has partition hash
      */
-    hasPartitionHash() : boolean {
+    hasPartitionHash(): boolean {
         return this.payload !== null
             && this.payload.length >= HEAP_DATA_OVERHEAD
             && this.payload.readIntBE(PARTITION_HASH_OFFSET, 4) !== 0;

@@ -32,9 +32,9 @@ import {SetCompareAndRetainAllCodec} from '../codec/SetCompareAndRetainAllCodec'
 import {SetSizeCodec} from '../codec/SetSizeCodec';
 import {SetAddListenerCodec} from '../codec/SetAddListenerCodec';
 import {SetRemoveListenerCodec} from '../codec/SetRemoveListenerCodec';
-import ClientMessage = require('../ClientMessage');
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
+import ClientMessage = require('../ClientMessage');
 
 export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
 
@@ -118,13 +118,13 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
 
     private createEntryListener(name: string, includeValue: boolean): ListenerMessageCodec {
         return {
-            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+            encodeAddRequest: function (localOnly: boolean): ClientMessage {
                 return SetAddListenerCodec.encodeRequest(name, includeValue, localOnly);
             },
-            decodeAddResponse: function(msg: ClientMessage): string {
+            decodeAddResponse: function (msg: ClientMessage): string {
                 return SetAddListenerCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+            encodeRemoveRequest: function (listenerId: string): ClientMessage {
                 return SetRemoveListenerCodec.encodeRequest(name, listenerId);
             }
         };

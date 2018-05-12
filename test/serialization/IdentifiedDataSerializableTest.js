@@ -19,8 +19,8 @@ var SerializationService = require('../../lib/serialization/SerializationService
 var Config = require('../../.').Config;
 var Long = require('long');
 var Util = require('../Util');
-describe('Identified Data Serializable', function() {
-    var IdentifiedDataClass = function(a_byte, a_boolean, a_character, a_short, an_integer, a_long, a_float, a_double, a_string, bytes, booleans, chars, shorts, integers, longs, floats, doubles, strings) {
+describe('Identified Data Serializable', function () {
+    var IdentifiedDataClass = function (a_byte, a_boolean, a_character, a_short, an_integer, a_long, a_float, a_double, a_string, bytes, booleans, chars, shorts, integers, longs, floats, doubles, strings) {
         this.a_byte = a_byte;
         this.a_boolean = a_boolean;
         this.a_character = a_character;
@@ -41,7 +41,7 @@ describe('Identified Data Serializable', function() {
         this.strings = strings;
     };
 
-    IdentifiedDataClass.prototype.readData = function(inp) {
+    IdentifiedDataClass.prototype.readData = function (inp) {
         this.a_byte = inp.readByte();
         this.a_boolean = inp.readBoolean();
         this.a_character = inp.readChar();
@@ -63,7 +63,7 @@ describe('Identified Data Serializable', function() {
         this.strings = inp.readUTFArray();
     };
 
-    IdentifiedDataClass.prototype.writeData = function(outp) {
+    IdentifiedDataClass.prototype.writeData = function (outp) {
         outp.writeByte(this.a_byte);
         outp.writeBoolean(this.a_boolean);
         outp.writeChar(this.a_character);
@@ -85,16 +85,16 @@ describe('Identified Data Serializable', function() {
         outp.writeUTFArray(this.strings);
     };
 
-    IdentifiedDataClass.prototype.getFactoryId = function() {
+    IdentifiedDataClass.prototype.getFactoryId = function () {
         return 1;
     };
 
-    IdentifiedDataClass.prototype.getClassId = function() {
+    IdentifiedDataClass.prototype.getClassId = function () {
         return 1;
     };
 
     var identifiedFactory = {
-        create: function(type) {
+        create: function (type) {
             if (type === 1) {
                 return new IdentifiedDataClass();
             }
@@ -103,7 +103,7 @@ describe('Identified Data Serializable', function() {
 
     var service;
 
-    it('serialize deserialize identified data serializable', function() {
+    it('serialize deserialize identified data serializable', function () {
         var cfg = new Config.ClientConfig();
         cfg.serializationConfig.dataSerializableFactories[1] = identifiedFactory;
         service = new SerializationService.SerializationServiceV1(cfg.serializationConfig);

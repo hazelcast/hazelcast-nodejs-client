@@ -20,38 +20,38 @@ var Controller = require('./../RC');
 var fs = require('fs');
 var _fillMap = require('../Util').fillMap;
 
-describe('MapStore', function() {
+describe('MapStore', function () {
     var cluster;
     var client;
     var map;
 
     before(function () {
         this.timeout(32000);
-        return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_mapstore.xml', 'utf8')).then(function(res) {
+        return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_mapstore.xml', 'utf8')).then(function (res) {
             cluster = res;
             return Controller.startMember(cluster.id);
-        }).then(function(member) {
-            return HazelcastClient.newHazelcastClient().then(function(hazelcastClient) {
+        }).then(function (member) {
+            return HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
                 client = hazelcastClient;
             });
         });
     });
 
-    beforeEach(function() {
+    beforeEach(function () {
         map = client.getMap('mapstore-test');
         return _fillMap(map);
     });
 
-    afterEach(function() {
+    afterEach(function () {
         return map.destroy();
     });
 
-    after(function() {
+    after(function () {
         client.shutdown();
         return Controller.shutdownCluster(cluster.id);
     });
 
-    it('loadAll with no arguments loads all keys',function () {
+    it('loadAll with no arguments loads all keys', function () {
         return _fillMap(map).then(function () {
             return map.evictAll();
         }).then(function () {
@@ -72,7 +72,7 @@ describe('MapStore', function() {
         });
     });
 
-    it('loadAll with empty keyset loads nothing',function () {
+    it('loadAll with empty keyset loads nothing', function () {
         return map.evictAll().then(function () {
             return map.loadAll([]);
         }).then(function () {
@@ -82,11 +82,11 @@ describe('MapStore', function() {
         })
     });
 
-    it('loadAll with keyset loads all keys',function () {
+    it('loadAll with keyset loads all keys', function () {
         return map.evictAll().then(function () {
-            return map.loadAll(['key0','key1']);
+            return map.loadAll(['key0', 'key1']);
         }).then(function () {
-            return map.getAll(['key0','key1']);
+            return map.getAll(['key0', 'key1']);
         }).then(function (values) {
             return expect(values).to.deep.have.members([
                 ['key0', 'val0'], ['key1', 'val1']
@@ -94,15 +94,15 @@ describe('MapStore', function() {
         });
     });
 
-    it('loadAll overrides entries in memory by default',function () {
+    it('loadAll overrides entries in memory by default', function () {
         return map.evictAll().then(function () {
             return map.putTransient('key0', 'newval0');
         }).then(function () {
             return map.putTransient('key1', 'newval1');
         }).then(function () {
-            return map.loadAll(['key0','key1']);
+            return map.loadAll(['key0', 'key1']);
         }).then(function () {
-            return map.getAll(['key0','key1']);
+            return map.getAll(['key0', 'key1']);
         }).then(function (values) {
             return expect(values).to.deep.have.members([
                 ['key0', 'val0'], ['key1', 'val1']
@@ -110,15 +110,15 @@ describe('MapStore', function() {
         });
     });
 
-    it('loadAll with replaceExisting=true overrides the entries',function () {
+    it('loadAll with replaceExisting=true overrides the entries', function () {
         return map.evictAll().then(function () {
             return map.putTransient('key0', 'newval0');
         }).then(function () {
             return map.putTransient('key1', 'newval1');
         }).then(function () {
-            return map.loadAll(['key0','key1'],true);
+            return map.loadAll(['key0', 'key1'], true);
         }).then(function () {
-            return map.getAll(['key0','key1']);
+            return map.getAll(['key0', 'key1']);
         }).then(function (values) {
             return expect(values).to.deep.have.members([
                 ['key0', 'val0'], ['key1', 'val1']
@@ -126,15 +126,15 @@ describe('MapStore', function() {
         });
     });
 
-    it('loadAll with replaceExisting=false does not override',function () {
+    it('loadAll with replaceExisting=false does not override', function () {
         return map.evictAll().then(function () {
             return map.putTransient('key0', 'newval0');
         }).then(function () {
             return map.putTransient('key1', 'newval1');
         }).then(function () {
-            return map.loadAll(['key0','key1'],false);
+            return map.loadAll(['key0', 'key1'], false);
         }).then(function () {
-            return map.getAll(['key0','key1']);
+            return map.getAll(['key0', 'key1']);
         }).then(function (values) {
             return expect(values).to.deep.have.members([
                 ['key0', 'newval0'], ['key1', 'newval1']
@@ -142,26 +142,26 @@ describe('MapStore', function() {
         });
     });
 
-    it('evict', function() {
-        return map.evict('key0').then(function() {
+    it('evict', function () {
+        return map.evict('key0').then(function () {
             return map.size();
-        }).then(function(s) {
+        }).then(function (s) {
             return expect(s).to.equal(9);
         });
     });
 
-    it('evict_nonexist_key', function() {
-        return map.evict('non-key').then(function() {
+    it('evict_nonexist_key', function () {
+        return map.evict('non-key').then(function () {
             return map.size();
-        }).then(function(s) {
+        }).then(function (s) {
             return expect(s).to.equal(10);
         });
     });
 
-    it('evictAll', function() {
-        return map.evictAll().then(function() {
+    it('evictAll', function () {
+        return map.evictAll().then(function () {
             return map.size();
-        }).then(function(s) {
+        }).then(function (s) {
             return expect(s).to.equal(0);
         });
     });
