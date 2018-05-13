@@ -241,8 +241,8 @@ export class InvocationService {
         return this.client.getConnectionManager().getOrConnect(address).then((connection: ClientConnection) => {
             return this.send(invocation, connection);
         }).catch((e) => {
-            this.logger.error('InvocationService', e);
-            throw new Error(address.toString() + ' is not available.');
+            this.logger.debug('InvocationService', e);
+            throw new IOError(address.toString() + ' is not available.', e);
         });
     }
 
@@ -251,8 +251,8 @@ export class InvocationService {
         return this.client.getConnectionManager().getOrConnect(ownerAddress).then((connection: ClientConnection) => {
             return this.send(invocation, connection);
         }).catch((e) => {
-            this.logger.error('InvocationService', e);
-            throw new IOError(ownerAddress.toString() + '(partition owner) is not available.');
+            this.logger.debug('InvocationService', e);
+            throw new IOError(ownerAddress.toString() + '(partition owner) is not available.', e);
         });
     }
 

@@ -23,6 +23,7 @@ import {ClusterService} from './ClusterService';
 import {BuildInfoLoader} from '../BuildInfoLoader';
 import ClientMessage = require('../ClientMessage');
 import {LoggingService} from '../logging/LoggingService';
+import {AuthenticationError} from '../HazelcastError';
 
 
 const enum AuthenticationStatus {
@@ -43,9 +44,8 @@ export class ConnectionAuthenticator {
         this.clusterService = this.client.getClusterService();
     }
 
-    authenticate(ownerConnection: boolean): Promise<void> {
-        var credentials: ClientMessage = this.createCredentials(ownerConnection);
-
+    authenticate(asOwner: boolean): Promise<void> {
+        var credentials: ClientMessage = this.createCredentials(asOwner);
         return this.client.getInvocationService()
             .invokeOnConnection(this.connection, credentials)
             .then((msg: ClientMessage) => {
@@ -54,12 +54,12 @@ export class ConnectionAuthenticator {
                     case AuthenticationStatus.AUTHENTICATED:
                         this.connection.setAddress(authResponse.address);
                         this.connection.setConnectedServerVersion(authResponse.serverHazelcastVersion);
-                        if (ownerConnection) {
+                        if (asOwner) {
                             this.clusterService.uuid = authResponse.uuid;
                             this.clusterService.ownerUuid = authResponse.ownerUuid;
 
                         }
-                        this.logger.debug('ConnectionAuthenticator',
+                        this.logger.info('ConnectionAuthenticator',
                             'Connection to ' +
                             this.connection.getAddress().toString() + ' authenticated');
                         break;
@@ -71,15 +71,18 @@ export class ConnectionAuthenticator {
                         this.logger.error('ConnectionAuthenticator', 'Serialization version mismatch' );
                         throw new Error('Serialization version mismatch, could not authenticate connection to ' +
                             this.connection.getAddress().toString());
+                    default:
+                        this.logger.error('ConnectionAuthenticator', 'Unknown authentication status: '
+                            + authResponse.status );
+                        throw new AuthenticationError('Unknown authentication status: ' + authResponse.status +
+                            ' , could not authenticate connection to ' +
+                            this.connection.getAddress().toString());
                 }
-            }).catch((e) => {
-                this.logger.error('ConnectionAuthenticator', e);
-                throw(e);
             });
     }
 
 
-    createCredentials(ownerConnection: boolean): ClientMessage {
+    createCredentials(asOwner: boolean): ClientMessage {
         var groupConfig = this.client.getConfig().groupConfig;
         var uuid: string = this.clusterService.uuid;
         var ownerUuid: string = this.clusterService.ownerUuid;
@@ -94,10 +97,10 @@ export class ConnectionAuthenticator {
             var credentialsPayload = this.client.getSerializationService().toData(customCredentials);
 
             clientMessage = ClientAuthenticationCustomCodec.encodeRequest(
-                credentialsPayload, uuid, ownerUuid, ownerConnection, 'NJS', 1, clientVersion);
+                credentialsPayload, uuid, ownerUuid, asOwner, 'NJS', 1, clientVersion);
         } else {
             clientMessage = ClientAuthenticationCodec.encodeRequest(
-                groupConfig.name, groupConfig.password, uuid, ownerUuid, ownerConnection, 'NJS', 1, clientVersion);
+                groupConfig.name, groupConfig.password, uuid, ownerUuid, asOwner, 'NJS', 1, clientVersion);
 
         }
 
