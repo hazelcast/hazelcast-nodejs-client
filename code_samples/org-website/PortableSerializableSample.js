@@ -14,7 +14,7 @@ Customer.prototype.readPortable = function (reader) {
     this.lastOrder = reader.readLong('lastOrder').toNumber();
 };
 
-Customer.prototype.writePortable = function(writer) {
+Customer.prototype.writePortable = function (writer) {
     writer.writeUTF('name', this.name);
     writer.writeInt('id', this.id);
     writer.writeLong('lastOrder', Long.fromNumber(this.lastOrder));
@@ -24,7 +24,7 @@ Customer.prototype.getFactoryId = function () {
     return 1;
 };
 
-Customer.prototype.getClassId = function() {
+Customer.prototype.getClassId = function () {
     return 1;
 };
 

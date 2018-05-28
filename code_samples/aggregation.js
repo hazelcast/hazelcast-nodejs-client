@@ -36,7 +36,7 @@ Client.newHazelcastClient().then(function (hazelcastClient) {
         console.log('There are ' + count + ' children.');
         return map.aggregate(Aggregators.numberAvg());
     }).then(function (avgAge) {
-        console.log('Average age is '+ avgAge);
+        console.log('Average age is ' + avgAge);
         return client.shutdown();
     });
 });

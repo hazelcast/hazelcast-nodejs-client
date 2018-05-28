@@ -36,7 +36,7 @@ DistortInvalidationMetadataEntryProcessor.prototype.getFactoryId = function () {
     return 66;
 };
 
-DistortInvalidationMetadataEntryProcessor.prototype.getClassId = function() {
+DistortInvalidationMetadataEntryProcessor.prototype.getClassId = function () {
     return 3;
 };
 

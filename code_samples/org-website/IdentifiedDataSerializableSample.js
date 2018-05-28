@@ -11,7 +11,7 @@ Employee.prototype.readData = function (input) {
     this.name = input.readUTF();
 };
 
-Employee.prototype.writeData = function(output) {
+Employee.prototype.writeData = function (output) {
     output.writeInt(this.id);
     output.writeUTF(this.name);
 };
@@ -20,7 +20,7 @@ Employee.prototype.getFactoryId = function () {
     return 1000;
 };
 
-Employee.prototype.getClassId = function() {
+Employee.prototype.getClassId = function () {
     return 100;
 };
 

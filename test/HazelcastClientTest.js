@@ -41,13 +41,13 @@ ManagedObjects.prototype.getObject = function (func, name) {
     return obj;
 };
 
-ManagedObjects.prototype.destroyAll = function() {
+ManagedObjects.prototype.destroyAll = function () {
     this.managedObjects.forEach(function (obj) {
         obj.destroy();
     });
 };
 
-ManagedObjects.prototype.destroy = function(name) {
+ManagedObjects.prototype.destroy = function (name) {
     this.managedObjects.filter((el) => {
         if (el.getName() == name) {
             el.destroy();
@@ -59,19 +59,19 @@ ManagedObjects.prototype.destroy = function(name) {
 
 
 configParams.forEach(function (cfg) {
-    describe('HazelcastClient', function() {
+    describe('HazelcastClient', function () {
         this.timeout(4000);
         var cluster;
         var client;
         var managed;
 
-        before(function() {
-            return Controller.createCluster(null, null).then(function(res) {
+        before(function () {
+            return Controller.createCluster(null, null).then(function (res) {
                 cluster = res;
                 return Controller.startMember(cluster.id);
             }).then(function (member) {
                 return HazelcastClient.newHazelcastClient(cfg);
-            }).then(function(res) {
+            }).then(function (res) {
                 client = res;
             });
         });
@@ -84,13 +84,13 @@ configParams.forEach(function (cfg) {
             managed.destroyAll();
         });
 
-        after(function() {
+        after(function () {
             client.shutdown();
             return Controller.shutdownCluster(cluster.id);
         });
 
-        it('getDistributedObject returns empty array when there is no distributed object', function() {
-            return client.getDistributedObjects().then(function(distributedObjects) {
+        it('getDistributedObject returns empty array when there is no distributed object', function () {
+            return client.getDistributedObjects().then(function (distributedObjects) {
                 return Promise.all([
                     expect(distributedObjects).to.be.an('array'),
                     expect(distributedObjects).to.be.empty
@@ -98,7 +98,7 @@ configParams.forEach(function (cfg) {
             });
         });
 
-        it('getLocalEndpoint returns correct info', function() {
+        it('getLocalEndpoint returns correct info', function () {
             var info = client.getLocalEndpoint();
             expect(info.localAddress.host).to.equal(client.clusterService.getOwnerConnection().localAddress.host);
             expect(info.localAddress.port).to.equal(client.clusterService.getOwnerConnection().localAddress.port);
@@ -124,7 +124,7 @@ configParams.forEach(function (cfg) {
             }, 300);
         });
 
-        it('getDistributedObjects does not return removed object', function(done) {
+        it('getDistributedObjects does not return removed object', function (done) {
             managed.getObject(client.getMap.bind(client, 'map1'));
             managed.getObject(client.getMap.bind(client, 'map2'));
             managed.getObject(client.getMap.bind(client, 'map3'));
@@ -133,7 +133,7 @@ configParams.forEach(function (cfg) {
                 managed.destroy('map1');
                 client.getDistributedObjects().then(function (distObjects) {
                     try {
-                        names = distObjects.map(function(o) {
+                        names = distObjects.map(function (o) {
                             return o.getName();
                         });
                         expect(names).to.have.members(['map2', 'map3']);

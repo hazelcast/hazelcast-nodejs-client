@@ -29,7 +29,7 @@ describe('SchemaValidationTest', function () {
 
     function validateCandidate(candidate) {
         var candidateJson = JSON.parse(candidate);
-        return validate(candidateJson, schema, { nestedErrors: true });
+        return validate(candidateJson, schema, {nestedErrors: true});
     }
 
     it('hazelcast-client-full.json passes validation', function () {

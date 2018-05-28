@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import {DataInput, DataOutput} from './Data';
-import {AbstractPredicate} from './PredicateFactory';
+import {Comparator} from '../core/Comparator';
 import {IterationType, Predicate} from '../core/Predicate';
 import {enumFromString} from '../Util';
-import {Comparator} from '../core/Comparator';
+import {DataInput, DataOutput} from './Data';
+import {AbstractPredicate} from './PredicateFactory';
 
 export class SqlPredicate extends AbstractPredicate {
 
@@ -52,9 +52,9 @@ export class AndPredicate extends AbstractPredicate {
     }
 
     readData(input: DataInput): any {
-        var s = input.readInt();
+        const s = input.readInt();
         this.predicates = [];
-        for (var i = 0; i < s; i++) {
+        for (let i = 0; i < s; i++) {
             this.predicates[i] = input.readObject();
         }
     }
@@ -134,7 +134,7 @@ export class GreaterLessPredicate extends AbstractPredicate {
     private equal: boolean;
     private less: boolean;
 
-    constructor (field: string, value: any, equal: boolean, less: boolean) {
+    constructor(field: string, value: any, equal: boolean, less: boolean) {
         super();
         this.field = field;
         this.value = value;
@@ -207,9 +207,9 @@ export class InPredicate extends AbstractPredicate {
 
     readData(input: DataInput): any {
         this.field = input.readUTF();
-        var s = input.readInt();
+        const s = input.readInt();
         this.values = [];
-        for (var i = 0; i < s; i++) {
+        for (let i = 0; i < s; i++) {
             this.values.push(input.readObject());
         }
         return this;
@@ -218,7 +218,7 @@ export class InPredicate extends AbstractPredicate {
     writeData(output: DataOutput): void {
         output.writeUTF(this.field);
         output.writeInt(this.values.length);
-        this.values.forEach(function(val) {
+        this.values.forEach(function (val) {
             output.writeObject(val);
         });
     }
@@ -289,9 +289,9 @@ export class OrPredicate extends AbstractPredicate {
     }
 
     readData(input: DataInput): any {
-        var s = input.readInt();
+        const s = input.readInt();
         this.preds = [];
-        for (var i = 0; i < s; i++) {
+        for (let i = 0; i < s; i++) {
             this.preds.push(input.readObject());
         }
         return this;
@@ -340,11 +340,11 @@ export class FalsePredicate extends AbstractPredicate {
     static INSTANCE: FalsePredicate = new FalsePredicate();
 
     readData(input: DataInput): any {
-        //Empty method
+        // Empty method
     }
 
     writeData(output: DataOutput): any {
-        //Empty method
+        // Empty method
     }
 
     getClassId(): number {
@@ -352,17 +352,16 @@ export class FalsePredicate extends AbstractPredicate {
     }
 }
 
-
 export class TruePredicate extends AbstractPredicate {
 
     static INSTANCE: TruePredicate = new TruePredicate();
 
     readData(input: DataInput): any {
-        //Empty method
+        // Empty method
     }
 
     writeData(output: DataOutput): any {
-        //Empty method
+        // Empty method
     }
 
     getClassId(): number {
@@ -379,7 +378,7 @@ export class PagingPredicate extends AbstractPredicate {
     private comparatorObject: Comparator;
     private page: number = 0;
     private iterationType: IterationType = IterationType.ENTRY;
-    private anchorList: [number, [any, any]][] = [];
+    private anchorList: Array<[number, [any, any]]> = [];
 
     constructor(internalPredicate: Predicate, pageSize: number, comparator: Comparator) {
         super();
@@ -395,11 +394,11 @@ export class PagingPredicate extends AbstractPredicate {
         this.pageSize = input.readInt();
         this.iterationType = enumFromString<IterationType>(IterationType, input.readUTF());
         this.anchorList = [];
-        var size = input.readInt();
-        for (var i = 0; i < size; i++) {
-            var p = input.readInt();
-            var k = input.readObject();
-            var v = input.readObject();
+        const size = input.readInt();
+        for (let i = 0; i < size; i++) {
+            const p = input.readInt();
+            const k = input.readObject();
+            const v = input.readObject();
             this.anchorList.push([p, [k, v]]);
         }
     }
@@ -411,7 +410,7 @@ export class PagingPredicate extends AbstractPredicate {
         output.writeInt(this.pageSize);
         output.writeUTF(IterationType[this.iterationType]);
         output.writeInt(this.anchorList.length);
-        this.anchorList.forEach(function(anchorEntry: [number, [any, any]]) {
+        this.anchorList.forEach(function (anchorEntry: [number, [any, any]]) {
             output.writeInt(anchorEntry[0]);
             output.writeObject(anchorEntry[1][0]);
             output.writeObject(anchorEntry[1][1]);
@@ -442,8 +441,8 @@ export class PagingPredicate extends AbstractPredicate {
     }
 
     setAnchor(page: number, anchor: [any, any]) {
-        var anchorEntry: [number, [any, any]] = [page, anchor];
-        var anchorCount = this.anchorList.length;
+        const anchorEntry: [number, [any, any]] = [page, anchor];
+        const anchorCount = this.anchorList.length;
         if (page < anchorCount) {
             this.anchorList[page] = anchorEntry;
         } else if (page === anchorCount) {
@@ -462,11 +461,11 @@ export class PagingPredicate extends AbstractPredicate {
     }
 
     getNearestAnchorEntry(): [number, [any, any]] {
-        var anchorCount = this.anchorList.length;
+        const anchorCount = this.anchorList.length;
         if (this.page === 0 || anchorCount === 0) {
             return PagingPredicate.NULL_ANCHOR;
         }
-        var anchoredEntry: [number, [any, any]];
+        let anchoredEntry: [number, [any, any]];
         if (this.page < anchorCount) {
             anchoredEntry = this.anchorList[this.page - 1];
         } else {
@@ -483,4 +482,3 @@ export class PagingPredicate extends AbstractPredicate {
         return this.comparatorObject;
     }
 }
-

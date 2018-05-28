@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {Properties} from '../config/Properties';
 import * as Promise from 'bluebird';
+import {Properties} from '../config/Properties';
 
 export interface SSLOptionsFactory {
     init(properties: Properties): Promise<void>;

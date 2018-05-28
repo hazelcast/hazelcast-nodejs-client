@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import {LogLevel, ILogger} from './LoggingService';
+import {ILogger, LogLevel} from './LoggingService';
+
 export class DefaultLogger implements ILogger {
     level = LogLevel.INFO;
 

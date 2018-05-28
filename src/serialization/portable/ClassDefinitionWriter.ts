@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import {PortableWriter} from './PortableSerializer';
-import {FieldDefinition, FieldType, ClassDefinition} from './ClassDefinition';
-import {PortableContext} from './PortableContext';
-import {Portable} from '../Serializable';
-import * as Util from '../../Util';
 import * as Long from 'long';
+import * as Util from '../../Util';
+import {Portable} from '../Serializable';
+import {ClassDefinition, FieldDefinition, FieldType} from './ClassDefinition';
+import {PortableContext} from './PortableContext';
+import {PortableWriter} from './PortableSerializer';
 
 export class ClassDefinitionWriter implements PortableWriter {
     private portableContext: PortableContext;
@@ -29,7 +29,7 @@ export class ClassDefinitionWriter implements PortableWriter {
     private factoryId: number;
     private classId: number;
     private version: number;
-    private fieldDefinitions: {[fieldName: string]: FieldDefinition} = {};
+    private fieldDefinitions: { [fieldName: string]: FieldDefinition } = {};
 
     constructor(portableContext: PortableContext, factoryId: number, classId: number, version: number) {
         this.portableContext = portableContext;
@@ -79,13 +79,13 @@ export class ClassDefinitionWriter implements PortableWriter {
 
     writePortable(fieldName: string, portable: Portable): void {
         Util.assertNotNull(portable);
-        var nestedCD = this.portableContext.lookupOrRegisterClassDefinition(portable);
+        const nestedCD = this.portableContext.lookupOrRegisterClassDefinition(portable);
         this.addFieldByType(fieldName, FieldType.PORTABLE, nestedCD.getFactoryId(), nestedCD.getClassId());
     }
 
     writeNullPortable(fieldName: string, factoryId: number, classId: number): void {
-        var version: number = 0;
-        var nestedCD = this.portableContext.lookupClassDefinition(factoryId, classId, version);
+        const version: number = 0;
+        const nestedCD = this.portableContext.lookupClassDefinition(factoryId, classId, version);
         if (nestedCD == null) {
             throw new RangeError('Cannot write null portable without explicitly registering class definition!');
         }
@@ -133,13 +133,13 @@ export class ClassDefinitionWriter implements PortableWriter {
         if (portables.length === 0) {
             throw new RangeError('Cannot write empty array!');
         }
-        var sample = portables[0];
-        var nestedCD = this.portableContext.lookupOrRegisterClassDefinition(sample);
+        const sample = portables[0];
+        const nestedCD = this.portableContext.lookupOrRegisterClassDefinition(sample);
         this.addFieldByType(fieldName, FieldType.PORTABLE_ARRAY, nestedCD.getFactoryId(), nestedCD.getClassId());
     }
 
     end(): void {
-        for (var field in this.fieldDefinitions) {
+        for (const field in this.fieldDefinitions) {
             this.buildingDefinition.addFieldDefinition(this.fieldDefinitions[field]);
         }
     }

@@ -17,13 +17,9 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
-import Address = require('../Address');
 import {AddressCodec} from './AddressCodec';
-import {UUIDCodec} from './UUIDCodec';
 import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
-import {EntryViewCodec} from './EntryViewCodec';
-import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 import {ClientMessageType} from './ClientMessageType';
 
 var REQUEST_TYPE = ClientMessageType.CLIENT_AUTHENTICATIONCUSTOM;
@@ -119,7 +115,7 @@ export class ClientAuthenticationCustomCodec {
             for (var clientUnregisteredMembersIndex = 0; clientUnregisteredMembersIndex < clientUnregisteredMembersSize; clientUnregisteredMembersIndex++) {
                 var clientUnregisteredMembersItem: any;
                 clientUnregisteredMembersItem = MemberCodec.decode(clientMessage, toObjectFunction);
-                clientUnregisteredMembers.push(clientUnregisteredMembersItem)
+                clientUnregisteredMembers.push(clientUnregisteredMembersItem);
             }
             parameters['clientUnregisteredMembers'] = clientUnregisteredMembers;
         }

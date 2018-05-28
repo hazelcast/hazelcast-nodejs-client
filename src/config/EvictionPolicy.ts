@@ -21,5 +21,5 @@ export enum EvictionPolicy {
     NONE,
     LRU,
     LFU,
-    RANDOM
+    RANDOM,
 }

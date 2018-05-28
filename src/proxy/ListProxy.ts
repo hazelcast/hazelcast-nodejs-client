@@ -14,35 +14,35 @@
  * limitations under the License.
  */
 
-import {IList} from './IList';
-import {PartitionSpecificProxy} from './PartitionSpecificProxy';
-import {ListAddCodec} from '../codec/ListAddCodec';
-import {ListSizeCodec} from '../codec/ListSizeCodec';
+import * as Promise from 'bluebird';
 import {ListAddAllCodec} from '../codec/ListAddAllCodec';
-import {ListGetAllCodec} from '../codec/ListGetAllCodec';
-import {ListClearCodec} from '../codec/ListClearCodec';
-import {Data} from '../serialization/Data';
-import {ListContainsAllCodec} from '../codec/ListContainsAllCodec';
-import {ListContainsCodec} from '../codec/ListContainsCodec';
-import {ListIsEmptyCodec} from '../codec/ListIsEmptyCodec';
-import {ListRemoveCodec} from '../codec/ListRemoveCodec';
-import {ListCompareAndRemoveAllCodec} from '../codec/ListCompareAndRemoveAllCodec';
-import {ListCompareAndRetainAllCodec} from '../codec/ListCompareAndRetainAllCodec';
+import {ListAddAllWithIndexCodec} from '../codec/ListAddAllWithIndexCodec';
+import {ListAddCodec} from '../codec/ListAddCodec';
 import {ListAddListenerCodec} from '../codec/ListAddListenerCodec';
 import {ListAddWithIndexCodec} from '../codec/ListAddWithIndexCodec';
-import {ListRemoveListenerCodec} from '../codec/ListRemoveListenerCodec';
-import {ItemListener} from '../core/ItemListener';
-import {ListRemoveWithIndexCodec} from '../codec/ListRemoveWithIndexCodec';
+import {ListClearCodec} from '../codec/ListClearCodec';
+import {ListCompareAndRemoveAllCodec} from '../codec/ListCompareAndRemoveAllCodec';
+import {ListCompareAndRetainAllCodec} from '../codec/ListCompareAndRetainAllCodec';
+import {ListContainsAllCodec} from '../codec/ListContainsAllCodec';
+import {ListContainsCodec} from '../codec/ListContainsCodec';
+import {ListGetAllCodec} from '../codec/ListGetAllCodec';
 import {ListGetCodec} from '../codec/ListGetCodec';
 import {ListIndexOfCodec} from '../codec/ListIndexOfCodec';
-import {ListSubCodec} from '../codec/ListSubCodec';
-import {ListAddAllWithIndexCodec} from '../codec/ListAddAllWithIndexCodec';
-import {ListSetCodec} from '../codec/ListSetCodec';
+import {ListIsEmptyCodec} from '../codec/ListIsEmptyCodec';
 import {ListLastIndexOfCodec} from '../codec/ListLastIndexOfCodec';
-import ClientMessage = require('../ClientMessage');
-import * as Promise from 'bluebird';
-import {ListenerMessageCodec} from '../ListenerMessageCodec';
+import {ListRemoveCodec} from '../codec/ListRemoveCodec';
+import {ListRemoveListenerCodec} from '../codec/ListRemoveListenerCodec';
+import {ListRemoveWithIndexCodec} from '../codec/ListRemoveWithIndexCodec';
+import {ListSetCodec} from '../codec/ListSetCodec';
+import {ListSizeCodec} from '../codec/ListSizeCodec';
+import {ListSubCodec} from '../codec/ListSubCodec';
+import {ItemListener} from '../core/ItemListener';
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
+import {ListenerMessageCodec} from '../ListenerMessageCodec';
+import {Data} from '../serialization/Data';
+import {IList} from './IList';
+import {PartitionSpecificProxy} from './PartitionSpecificProxy';
+import ClientMessage = require('../ClientMessage');
 
 export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
 
@@ -121,7 +121,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
     }
 
     toArray(): Promise<E[]> {
-        return this.encodeInvoke(ListGetAllCodec).then((elements: Array<Data>) => {
+        return this.encodeInvoke(ListGetAllCodec).then((elements: Data[]) => {
             return elements.map((element) => {
                 return this.toObject(element);
             });
@@ -129,10 +129,10 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
     }
 
     addItemListener(listener: ItemListener<E>, includeValue: boolean): Promise<string> {
-        var listenerHandler = (message: ClientMessage) => {
+        const listenerHandler = (message: ClientMessage) => {
             ListAddListenerCodec.handle(message, (element: Data, uuid: string, eventType: number) => {
-                var responseObject = element ? this.toObject(element) : null;
-                var listenerFunction: Function;
+                const responseObject = element ? this.toObject(element) : null;
+                let listenerFunction: Function;
                 if (eventType === 1) {
                     listenerFunction = listener.itemAdded;
                 } else if (eventType === 2) {
@@ -144,7 +144,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
                 }
             });
         };
-        let codec = this.createItemListener(this.name, includeValue);
+        const codec = this.createItemListener(this.name, includeValue);
         return this.client.getListenerService().registerListener(codec, listenerHandler);
     }
 
@@ -152,7 +152,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
         return this.client.getListenerService().deregisterListener(registrationId);
     }
 
-    private serializeList(input: Array<E>): Array<Data> {
+    private serializeList(input: E[]): Data[] {
         return input.map((each) => {
             return this.toData(each);
         });
@@ -160,15 +160,15 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
 
     private createItemListener(name: string, includeValue: boolean): ListenerMessageCodec {
         return {
-            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+            encodeAddRequest(localOnly: boolean): ClientMessage {
                 return ListAddListenerCodec.encodeRequest(name, includeValue, localOnly);
             },
-            decodeAddResponse: function(msg: ClientMessage): string {
+            decodeAddResponse(msg: ClientMessage): string {
                 return ListAddListenerCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+            encodeRemoveRequest(listenerId: string): ClientMessage {
                 return ListRemoveListenerCodec.encodeRequest(name, listenerId);
-            }
+            },
         };
     }
 }

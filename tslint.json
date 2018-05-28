@@ -1,67 +1,56 @@
 {
-  "rules": {
-    "class-name": true,
-    "curly": true,
-    "eofline": true,
-    "indent": [
-      false
-    ],
-    "label-position": true,
-    "max-line-length": [
-      true,
-      130
-    ],
-    "no-arg": true,
-    "no-bitwise": true,
-    "no-console": [
-      true,
-      "debug",
-      "info",
-      "time",
-      "timeEnd",
-      "trace"
-    ],
-    "no-construct": true,
-    "no-debugger": true,
-    "no-duplicate-variable": false,
-    "no-empty": true,
-    "no-eval": true,
-    "no-switch-case-fall-through": true,
-    "trailing-comma": [
-        true,
-        {
-            "multiline": "never",
-            "singleline": "never"
-        }
-    ],
-    "no-unused-expression": true,
-    "no-unused-variable": false,
-    "no-use-before-declare": true,
-    "one-line": [
-      true,
-      "check-open-brace",
-      "check-catch",
-      "check-else",
-      "check-whitespace"
-    ],
-    "quotemark": [
-      true,
-      "single"
-    ],
-    "radix": true,
-    "semicolon": true,
-    "triple-equals": [
-      true,
-      "allow-null-check"
-    ],
-    "variable-name": false,
-    "whitespace": [
-      true,
-      "check-branch",
-      "check-decl",
-      "check-operator",
-      "check-separator",
-      "check-type"
-    ]
-  }
+    "extends": "tslint:recommended",
+    "rules": {
+        "max-line-length": [
+            true,
+            130
+        ],
+        "quotemark": [
+            true,
+            "single"
+        ],
+        "member-access": false,
+        "only-arrow-functions": false,
+        "space-before-function-paren": [
+            true,
+            {
+                "anonymous": "always",
+                "named": "never",
+                "method": "never",
+                "asyncArrow": "always"
+            }
+        ],
+        "member-ordering": [
+            true,
+            {
+                "order": [
+                    "public-static-field",
+                    "protected-static-field",
+                    "private-static-field",
+                    "public-instance-field",
+                    "protected-instance-field",
+                    "private-instance-field",
+                    "public-constructor",
+                    "protected-constructor",
+                    "private-constructor",
+                    "public-static-method",
+                    "protected-static-method",
+                    "private-static-method",
+                    "public-instance-method",
+                    "protected-instance-method",
+                    "private-instance-method"
+                ]
+            }
+        ],
+        "forin": false,
+        "max-classes-per-file": false,
+        "interface-name": false,
+        "ban-types": false,
+        "object-literal-sort-keys": false,
+        "no-var-requires": false,
+        "no-console": false,
+        "no-empty-interface": false,
+        "ordered-imports": false,
+        "no-conditional-assignment": false
+    }
 }

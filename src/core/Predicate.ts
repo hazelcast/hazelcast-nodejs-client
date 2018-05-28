@@ -14,13 +14,27 @@
  * limitations under the License.
  */
 
-import {IdentifiedDataSerializable} from '../serialization/Serializable';
 import {
-    SqlPredicate, AndPredicate, FalsePredicate, BetweenPredicate, EqualPredicate,
-    GreaterLessPredicate, LikePredicate, ILikePredicate, InPredicate, InstanceOfPredicate, NotEqualPredicate, NotPredicate,
-    OrPredicate, RegexPredicate, TruePredicate, PagingPredicate
+    AndPredicate,
+    BetweenPredicate,
+    EqualPredicate,
+    FalsePredicate,
+    GreaterLessPredicate,
+    ILikePredicate,
+    InPredicate,
+    InstanceOfPredicate,
+    LikePredicate,
+    NotEqualPredicate,
+    NotPredicate,
+    OrPredicate,
+    PagingPredicate,
+    RegexPredicate,
+    SqlPredicate,
+    TruePredicate,
 } from '../serialization/DefaultPredicates';
+import {IdentifiedDataSerializable} from '../serialization/Serializable';
 import {Comparator} from './Comparator';
+
 export interface Predicate extends IdentifiedDataSerializable {
 }
 
@@ -107,5 +121,5 @@ export function paging(predicate: Predicate, pageSize: number, comparator: Compa
 export enum IterationType {
     KEY,
     VALUE,
-    ENTRY
+    ENTRY,
 }

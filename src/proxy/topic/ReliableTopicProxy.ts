@@ -15,21 +15,20 @@
  */
 
 import * as Promise from 'bluebird';
-import {ITopic} from './ITopic';
-import {TopicMessageListener} from './TopicMessageListener';
-import HazelcastClient from '../../HazelcastClient';
-import {IRingbuffer} from '../IRingbuffer';
-import {Address} from '../../index';
-import {UuidUtil} from '../../util/UuidUtil';
-import {ReliableTopicListenerRunner} from './ReliableTopicListenerRunner';
-import {ReliableTopicConfig} from '../../config/ReliableTopicConfig';
-import {RawTopicMessage} from './RawTopicMessage';
-import {SerializationService} from '../../serialization/SerializationService';
 import {OverflowPolicy} from '../../core/OverflowPolicy';
-import {TopicOverloadPolicy} from './TopicOverloadPolicy';
+import HazelcastClient from '../../HazelcastClient';
 import {TopicOverloadError} from '../../HazelcastError';
-import Long = require('long');
+import {Address} from '../../index';
+import {SerializationService} from '../../serialization/SerializationService';
+import {UuidUtil} from '../../util/UuidUtil';
 import {BaseProxy} from '../BaseProxy';
+import {IRingbuffer} from '../IRingbuffer';
+import {ITopic} from './ITopic';
+import {RawTopicMessage} from './RawTopicMessage';
+import {ReliableTopicListenerRunner} from './ReliableTopicListenerRunner';
+import {TopicMessageListener} from './TopicMessageListener';
+import {TopicOverloadPolicy} from './TopicOverloadPolicy';
+import Long = require('long');
 
 export const RINGBUFFER_PREFIX = '_hz_rb_';
 export const TOPIC_INITIAL_BACKOFF = 100;
@@ -39,7 +38,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
     private ringbuffer: IRingbuffer<RawTopicMessage>;
     private localAddress: Address;
     private batchSize: number;
-    private runners: {[key: string]: ReliableTopicListenerRunner<E>} = {};
+    private runners: { [key: string]: ReliableTopicListenerRunner<E> } = {};
     private serializationService: SerializationService;
     private overloadPolicy: TopicOverloadPolicy;
 
@@ -47,7 +46,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         super(client, serviceName, name);
         this.ringbuffer = client.getRingbuffer<RawTopicMessage>(RINGBUFFER_PREFIX + name);
         this.localAddress = client.getClusterService().getClientInfo().localAddress;
-        let config = client.getConfig().getReliableTopicConfig(name);
+        const config = client.getConfig().getReliableTopicConfig(name);
         this.batchSize = config.readBatchSize;
         this.overloadPolicy = config.overloadPolicy;
         this.serializationService = client.getSerializationService();
@@ -55,9 +54,9 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
     }
 
     addMessageListener(listener: TopicMessageListener<E>): string {
-        var listenerId = UuidUtil.generate().toString();
+        const listenerId = UuidUtil.generate().toString();
 
-        var runner = new ReliableTopicListenerRunner(listenerId, listener, this.ringbuffer,
+        const runner = new ReliableTopicListenerRunner(listenerId, listener, this.ringbuffer,
             this.batchSize, this.serializationService, this);
 
         this.runners[listenerId] = runner;
@@ -70,9 +69,8 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         return listenerId;
     }
 
-
     removeMessageListener(id: string): boolean {
-        var runner = this.runners[id];
+        const runner = this.runners[id];
 
         if (!runner) {
             return false;
@@ -86,7 +84,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
     }
 
     publish(message: E): Promise<void> {
-        var reliableTopicMessage = new RawTopicMessage();
+        const reliableTopicMessage = new RawTopicMessage();
         reliableTopicMessage.payload = this.serializationService.toData(message);
         reliableTopicMessage.publishTime = Long.fromNumber(new Date().getTime());
         reliableTopicMessage.publisherAddress = this.localAddress;
@@ -103,6 +101,19 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
             default:
                 throw new RangeError('Unknown overload policy');
         }
+    }
+
+    public getRingbuffer(): IRingbuffer<RawTopicMessage> {
+        return this.ringbuffer;
+    }
+
+    destroy(): Promise<void> {
+        for (const k in this.runners) {
+            const runner = this.runners[k];
+            runner.cancel();
+        }
+
+        return this.ringbuffer.destroy();
     }
 
     private addOrDiscard(reliableTopicMessage: RawTopicMessage): Promise<void> {
@@ -130,9 +141,9 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
 
     private addWithBackoff(reliableTopicMessage: RawTopicMessage): Promise<void> {
 
-        var resolve: Function;
+        let resolve: Function;
 
-        var promise = new Promise<void>(function () {
+        const promise = new Promise<void>(function () {
             resolve = arguments[0];
         });
 
@@ -144,7 +155,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
     private trySendMessage(message: RawTopicMessage, delay: number, resolve: Function) {
         this.ringbuffer.add(message, OverflowPolicy.FAIL).then((seq: Long) => {
             if (seq.toNumber() === -1) {
-                var newDelay = delay *= 2;
+                let newDelay = delay *= 2;
 
                 if (newDelay > TOPIC_MAX_BACKOFF) {
                     newDelay = TOPIC_MAX_BACKOFF;
@@ -156,19 +167,6 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
             }
 
         });
-    }
-
-    public getRingbuffer(): IRingbuffer<RawTopicMessage> {
-        return this.ringbuffer;
-    }
-
-    destroy(): Promise<void> {
-        for (var k in this.runners) {
-            var runner = this.runners[k];
-            runner.cancel();
-        }
-
-        return this.ringbuffer.destroy();
     }
 
 }

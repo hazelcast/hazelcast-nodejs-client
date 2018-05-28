@@ -1,7 +1,7 @@
 {
     "network": {
-    "ssl": {
-        "enabled": true,
+        "ssl": {
+            "enabled": true,
             "factory": {
                 "exportedName": "BsicSSLOponsFary",
                 "properties": {

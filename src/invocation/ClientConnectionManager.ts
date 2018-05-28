@@ -21,11 +21,11 @@ import HazelcastClient from '../HazelcastClient';
 import {ClientNotActiveError, HazelcastError, IllegalStateError} from '../HazelcastError';
 import {ClientConnection} from './ClientConnection';
 import {ConnectionAuthenticator} from './ConnectionAuthenticator';
-import Address = require('../Address');
 import * as net from 'net';
 import * as tls from 'tls';
 import {loadNameFromPath} from '../Util';
 import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
+import Address = require('../Address');
 
 const EMIT_CONNECTION_CLOSED = 'connectionClosed';
 const EMIT_CONNECTION_OPENED = 'connectionOpened';
@@ -34,17 +34,17 @@ const EMIT_CONNECTION_OPENED = 'connectionOpened';
  * Maintains connections between the client and members of the cluster.
  */
 export class ClientConnectionManager extends EventEmitter {
+    establishedConnections: { [address: string]: ClientConnection } = {};
     private client: HazelcastClient;
-    private pendingConnections: {[address: string]: Promise.Resolver<ClientConnection>} = {};
+    private pendingConnections: { [address: string]: Promise.Resolver<ClientConnection> } = {};
     private logger = LoggingService.getLoggingService();
-    establishedConnections: {[address: string]: ClientConnection} = {};
 
     constructor(client: HazelcastClient) {
         super();
         this.client = client;
     }
 
-    getActiveConnections(): {[address: string]: ClientConnection} {
+    getActiveConnections(): { [address: string]: ClientConnection } {
         return this.establishedConnections;
     }
 
@@ -56,28 +56,28 @@ export class ClientConnectionManager extends EventEmitter {
      * @returns {Promise<ClientConnection>|Promise<T>}
      */
     getOrConnect(address: Address, asOwner: boolean = false): Promise<ClientConnection> {
-        let addressIndex = address.toString();
-        let connectionResolver: Promise.Resolver<ClientConnection> = Promise.defer<ClientConnection>();
+        const addressIndex = address.toString();
+        const connectionResolver: Promise.Resolver<ClientConnection> = Promise.defer<ClientConnection>();
 
-        let establishedConnection = this.establishedConnections[addressIndex];
+        const establishedConnection = this.establishedConnections[addressIndex];
         if (establishedConnection) {
             connectionResolver.resolve(establishedConnection);
             return connectionResolver.promise;
         }
 
-        let pendingConnection = this.pendingConnections[addressIndex];
+        const pendingConnection = this.pendingConnections[addressIndex];
         if (pendingConnection) {
             return pendingConnection.promise;
         }
 
         this.pendingConnections[addressIndex] = connectionResolver;
 
-        let processResponseCallback = (data: Buffer) => {
+        const processResponseCallback = (data: Buffer) => {
             this.client.getInvocationService().processResponse(data);
         };
 
         this.triggerConnect(address, asOwner).then((socket: net.Socket) => {
-            let clientConnection = new ClientConnection(this.client, address, socket);
+            const clientConnection = new ClientConnection(this.client, address, socket);
 
             return this.initiateCommunication(clientConnection).then(() => {
                 return clientConnection.registerResponseCallback(processResponseCallback);
@@ -94,27 +94,52 @@ export class ClientConnectionManager extends EventEmitter {
             delete this.pendingConnections[addressIndex];
         });
 
-
-        let connectionTimeout = this.client.getConfig().networkConfig.connectionTimeout;
+        const connectionTimeout = this.client.getConfig().networkConfig.connectionTimeout;
         if (connectionTimeout !== 0) {
             return connectionResolver.promise.timeout(connectionTimeout, new HazelcastError('Connection timed-out'));
         }
         return connectionResolver.promise;
     }
 
+    /**
+     * Destroys the connection with given node address.
+     * @param address
+     */
+    destroyConnection(address: Address): void {
+        const addressStr = address.toString();
+        if (this.pendingConnections.hasOwnProperty(addressStr)) {
+            this.pendingConnections[addressStr].reject(null);
+        }
+        if (this.establishedConnections.hasOwnProperty(addressStr)) {
+            const conn = this.establishedConnections[addressStr];
+            delete this.establishedConnections[addressStr];
+            conn.close();
+            this.onConnectionClosed(conn);
+        }
+    }
+
+    shutdown() {
+        for (const pending in this.pendingConnections) {
+            this.pendingConnections[pending].reject(new ClientNotActiveError('Client is shutting down!'));
+        }
+        for (const conn in this.establishedConnections) {
+            this.establishedConnections[conn].close();
+        }
+    }
+
     private triggerConnect(address: Address, asOwner: boolean): Promise<net.Socket> {
         if (!asOwner) {
             if (this.client.getClusterService().getOwnerConnection() == null) {
-                let error = new IllegalStateError('Owner connection is not available!');
+                const error = new IllegalStateError('Owner connection is not available!');
                 return Promise.reject(error);
             }
         }
         if (this.client.getConfig().networkConfig.sslOptions) {
-            let opts = this.client.getConfig().networkConfig.sslOptions;
+            const opts = this.client.getConfig().networkConfig.sslOptions;
             return this.connectTLSSocket(address, opts);
         } else if (this.client.getConfig().networkConfig.sslOptionsFactoryConfig) {
-            let factoryConfig = this.client.getConfig().networkConfig.sslOptionsFactoryConfig;
-            let factoryProperties = this.client.getConfig().networkConfig.sslOptionsFactoryProperties;
+            const factoryConfig = this.client.getConfig().networkConfig.sslOptionsFactoryConfig;
+            const factoryProperties = this.client.getConfig().networkConfig.sslOptionsFactoryProperties;
             let factory: any;
             if (factoryConfig.path) {
                 factory = new (loadNameFromPath(factoryConfig.path, factoryConfig.exportedName))();
@@ -130,8 +155,8 @@ export class ClientConnectionManager extends EventEmitter {
     }
 
     private connectTLSSocket(address: Address, configOpts: any): Promise<tls.TLSSocket> {
-        let connectionResolver = Promise.defer<tls.TLSSocket>();
-        let socket = tls.connect(address.port, address.host, configOpts);
+        const connectionResolver = Promise.defer<tls.TLSSocket>();
+        const socket = tls.connect(address.port, address.host, configOpts);
         socket.once('secureConnect', () => {
             connectionResolver.resolve(socket);
         });
@@ -146,8 +171,8 @@ export class ClientConnectionManager extends EventEmitter {
     }
 
     private connectNetSocket(address: Address): Promise<net.Socket> {
-        let connectionResolver = Promise.defer<net.Socket>();
-        let socket = net.connect(address.port, address.host);
+        const connectionResolver = Promise.defer<net.Socket>();
+        const socket = net.connect(address.port, address.host);
         socket.once('connect', () => {
             connectionResolver.resolve(socket);
         });
@@ -163,35 +188,9 @@ export class ClientConnectionManager extends EventEmitter {
 
     private initiateCommunication(connection: ClientConnection): Promise<void> {
         // Send the protocol version
-        let buffer = new Buffer(3);
+        const buffer = new Buffer(3);
         buffer.write('CB2');
         return connection.write(buffer);
-    }
-
-    /**
-     * Destroys the connection with given node address.
-     * @param address
-     */
-    destroyConnection(address: Address): void {
-        var addressStr = address.toString();
-        if (this.pendingConnections.hasOwnProperty(addressStr)) {
-            this.pendingConnections[addressStr].reject(null);
-        }
-        if (this.establishedConnections.hasOwnProperty(addressStr)) {
-            var conn = this.establishedConnections[addressStr];
-            delete this.establishedConnections[addressStr];
-            conn.close();
-            this.onConnectionClosed(conn);
-        }
-    }
-
-    shutdown() {
-        for (var pending in this.pendingConnections) {
-            this.pendingConnections[pending].reject(new ClientNotActiveError('Client is shutting down!'));
-        }
-        for (var conn in this.establishedConnections) {
-            this.establishedConnections[conn].close();
-        }
     }
 
     private onConnectionClosed(connection: ClientConnection) {
@@ -203,7 +202,7 @@ export class ClientConnectionManager extends EventEmitter {
     }
 
     private authenticate(connection: ClientConnection, ownerConnection: boolean): Promise<void> {
-        var authenticator = new ConnectionAuthenticator(connection, this.client);
+        const authenticator = new ConnectionAuthenticator(connection, this.client);
         return authenticator.authenticate(ownerConnection);
     }
 }

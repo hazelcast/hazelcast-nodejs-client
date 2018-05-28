@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {IdentifiedDataSerializable} from '../serialization/Serializable';
-import {DataInput, DataOutput} from '../serialization/Data';
 import * as Long from 'long';
+import {DataInput, DataOutput} from '../serialization/Data';
+import {IdentifiedDataSerializable} from '../serialization/Serializable';
 import {AggregatorFactory} from './AggregatorFactory';
 
 export interface Aggregator<R> {
@@ -41,17 +41,16 @@ export abstract class AbstractAggregator<R> implements IdentifiedDataSerializabl
     abstract writeData(output: DataOutput): void;
 }
 
-
 export class CountAggregator extends AbstractAggregator<Long> {
     readData(input: DataInput) {
         this.attributePath = input.readUTF();
-        //member side field, not used in client
+        // member side field, not used in client
         input.readLong();
     }
 
     writeData(output: DataOutput): void {
         output.writeUTF(this.attributePath);
-        //member side field, not used in client
+        // member side field, not used in client
         output.writeLong(Long.ZERO);
     }
 

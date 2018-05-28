@@ -16,7 +16,7 @@
 
 var Client = require('hazelcast-client').Client;
 
-Client.newHazelcastClient().then(function(hazelcastClient){
+Client.newHazelcastClient().then(function (hazelcastClient) {
     var client = hazelcastClient;
     var list = hazelcastClient.getList('people');
 

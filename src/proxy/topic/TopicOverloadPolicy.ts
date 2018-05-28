@@ -38,6 +38,6 @@ export enum TopicOverloadPolicy {
     /**
      * The publish call immediately fails.
      */
-    ERROR
+    ERROR,
 
 }

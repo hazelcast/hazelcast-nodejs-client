@@ -15,6 +15,7 @@
  */
 
 import * as Long from 'long';
+
 export class EntryView<K, V> {
     key: K;
     value: V;
@@ -29,4 +30,3 @@ export class EntryView<K, V> {
     evictionCriteriaNumber: Long;
     ttl: Long;
 }
-

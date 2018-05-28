@@ -16,16 +16,10 @@
 
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
-import {BitsUtil} from '../BitsUtil';
 import Address = require('../Address');
+import {BitsUtil} from '../BitsUtil';
 import {AddressCodec} from './AddressCodec';
-import {UUIDCodec} from './UUIDCodec';
-import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
-import {EntryViewCodec} from './EntryViewCodec';
-import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
-import {Member} from '../core/Member';
-import {UUID} from '../core/UUID';
 import {PNCounterMessageType} from './PNCounterMessageType';
 
 var REQUEST_TYPE = PNCounterMessageType.PNCOUNTER_GET;
@@ -90,7 +84,7 @@ export class PNCounterGetCodec {
             replicaTimestampsItemKey = clientMessage.readString();
             replicaTimestampsItemVal = clientMessage.readLong();
             replicaTimestampsItem = [replicaTimestampsItemKey, replicaTimestampsItemVal];
-            replicaTimestamps.push(replicaTimestampsItem)
+            replicaTimestamps.push(replicaTimestampsItem);
         }
         parameters['replicaTimestamps'] = replicaTimestamps;
 

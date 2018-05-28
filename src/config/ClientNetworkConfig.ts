@@ -15,9 +15,9 @@
  */
 
 import Address = require('../Address');
-import {SSLOptions} from './SSLOptions';
 import {ImportConfig} from './ImportConfig';
 import {Properties} from './Properties';
+import {SSLOptions} from './SSLOptions';
 
 /**
  * Network configuration

@@ -14,24 +14,20 @@
  * limitations under the License.
  */
 
-import {ClientConfig} from './Config';
 import * as Promise from 'bluebird';
-import {HazelcastError} from '../HazelcastError';
-import * as path from 'path';
-import {
-    createAddressFromString, mergeJson, tryGetArray, tryGetBoolean, tryGetEnum, tryGetNumber,
-    tryGetString
-} from '../Util';
-import {TopicOverloadPolicy} from '../proxy/topic/TopicOverloadPolicy';
-import {ReliableTopicConfig} from './ReliableTopicConfig';
-import {InMemoryFormat} from './InMemoryFormat';
-import {EvictionPolicy} from './EvictionPolicy';
-import {NearCacheConfig} from './NearCacheConfig';
-import {ImportConfig} from './ImportConfig';
-import {Properties} from './Properties';
-import {JsonConfigLocator} from './JsonConfigLocator';
 import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
+import {HazelcastError} from '../HazelcastError';
+import {TopicOverloadPolicy} from '../proxy/topic/TopicOverloadPolicy';
+import {createAddressFromString, mergeJson, tryGetArray, tryGetBoolean, tryGetEnum, tryGetNumber, tryGetString} from '../Util';
+import {ClientConfig} from './Config';
+import {EvictionPolicy} from './EvictionPolicy';
 import {FlakeIdGeneratorConfig} from './FlakeIdGeneratorConfig';
+import {ImportConfig} from './ImportConfig';
+import {InMemoryFormat} from './InMemoryFormat';
+import {JsonConfigLocator} from './JsonConfigLocator';
+import {NearCacheConfig} from './NearCacheConfig';
+import {Properties} from './Properties';
+import {ReliableTopicConfig} from './ReliableTopicConfig';
 
 export class ConfigBuilder {
     private clientConfig: ClientConfig = new ClientConfig();
@@ -40,7 +36,7 @@ export class ConfigBuilder {
 
     loadConfig(): Promise<void> {
         return this.configLocator.load().then(() => {
-            let loadedBuffer = this.configLocator.getBuffer();
+            const loadedBuffer = this.configLocator.getBuffer();
             if (loadedBuffer) {
                 this.loadedJson = JSON.parse(loadedBuffer.toString());
                 return this.replaceImportsWithContent(this.loadedJson);
@@ -58,8 +54,8 @@ export class ConfigBuilder {
     }
 
     private replaceImportsWithContent(jsonObject: any): Promise<void> {
-        if (jsonObject['import']) {
-            let includes = tryGetArray(jsonObject['import']);
+        if (jsonObject.import) {
+            const includes = tryGetArray(jsonObject.import);
             return Promise.map(includes, (path: string) => {
                 return this.configLocator.loadImported(path);
             }).map((buffer: Buffer) => {
@@ -69,7 +65,7 @@ export class ConfigBuilder {
     }
 
     private handleConfig(jsonObject: any): void {
-        for (let key in jsonObject) {
+        for (const key in jsonObject) {
             if (key === 'network') {
                 this.handleNetwork(jsonObject[key]);
             } else if (key === 'group') {
@@ -91,7 +87,7 @@ export class ConfigBuilder {
     }
 
     private handleNetwork(jsonObject: any): void {
-        for (let key in jsonObject) {
+        for (const key in jsonObject) {
             if (key === 'clusterMembers') {
                 this.handleClusterMembers(jsonObject[key]);
             } else if (key === 'smartRouting') {
@@ -100,7 +96,7 @@ export class ConfigBuilder {
                 this.clientConfig.networkConfig.connectionTimeout = tryGetNumber(jsonObject[key]);
             } else if (key === 'connectionAttemptPeriod') {
                 this.clientConfig.networkConfig.connectionAttemptPeriod = tryGetNumber(jsonObject[key]);
-            } else  if (key === 'connectionAttemptLimit') {
+            } else if (key === 'connectionAttemptLimit') {
                 this.clientConfig.networkConfig.connectionAttemptLimit = tryGetNumber(jsonObject[key]);
             } else if (key === 'ssl') {
                 this.handleSsl(jsonObject[key]);
@@ -109,47 +105,47 @@ export class ConfigBuilder {
     }
 
     private parseProperties(jsonObject: any): Properties {
-        let props: Properties = <Properties>{};
-        for (let key in jsonObject) {
+        const props: Properties = {} as Properties;
+        for (const key in jsonObject) {
             props[key] = jsonObject[key];
         }
         return props;
     }
 
     private parseImportConfig(jsonObject: any): ImportConfig {
-        let importConfig: ImportConfig = <ImportConfig>{};
-        importConfig.path = jsonObject['path'];
-        importConfig.exportedName = jsonObject['exportedName'];
+        const importConfig: ImportConfig = {} as ImportConfig;
+        importConfig.path = jsonObject.path;
+        importConfig.exportedName = jsonObject.exportedName;
         return importConfig;
     }
 
     private handleSsl(jsonObject: any) {
-        let sslEnabled = tryGetBoolean(jsonObject['enabled']);
+        const sslEnabled = tryGetBoolean(jsonObject.enabled);
         if (sslEnabled) {
-            if (jsonObject['factory']) {
-                let factory = jsonObject['factory'];
-                let importConfig = this.parseImportConfig(factory);
+            if (jsonObject.factory) {
+                const factory = jsonObject.factory;
+                const importConfig = this.parseImportConfig(factory);
                 if (importConfig.path == null && importConfig.exportedName !== BasicSSLOptionsFactory.name) {
                     throw new RangeError('Invalid configuration. Either ssl factory path should be set or exportedName ' +
                         ' should be ' + BasicSSLOptionsFactory.name);
                 } else {
                     this.clientConfig.networkConfig.sslOptionsFactoryConfig = this.parseImportConfig(factory);
-                    this.clientConfig.networkConfig.sslOptionsFactoryProperties = this.parseProperties(factory['properties']);
+                    this.clientConfig.networkConfig.sslOptionsFactoryProperties = this.parseProperties(factory.properties);
                 }
             }
         }
     }
 
     private handleClusterMembers(jsonObject: any) {
-        var addressArray = tryGetArray(jsonObject);
-        for (let index in addressArray) {
-            let address = addressArray[index];
+        const addressArray = tryGetArray(jsonObject);
+        for (const index in addressArray) {
+            const address = addressArray[index];
             this.clientConfig.networkConfig.addresses.push(createAddressFromString(tryGetString(address)));
         }
     }
 
     private handleGroup(jsonObject: any): void {
-        for (let key in jsonObject) {
+        for (const key in jsonObject) {
             if (key === 'name') {
                 this.clientConfig.groupConfig.name = tryGetString(jsonObject[key]);
             } else if (key === 'password') {
@@ -159,21 +155,21 @@ export class ConfigBuilder {
     }
 
     private handleProperties(jsonObject: any): void {
-        for (let key in jsonObject) {
+        for (const key in jsonObject) {
             this.clientConfig.properties[key] = jsonObject[key];
         }
     }
 
     private handleListeners(jsonObject: any): void {
-        let listenersArray = tryGetArray(jsonObject);
-        for (let index in listenersArray) {
-            let listenerConfig = listenersArray[index];
+        const listenersArray = tryGetArray(jsonObject);
+        for (const index in listenersArray) {
+            const listenerConfig = listenersArray[index];
             this.clientConfig.listenerConfigs.push(this.parseImportConfig(listenerConfig));
         }
     }
 
     private handleSerialization(jsonObject: any): void {
-        for (let key in jsonObject) {
+        for (const key in jsonObject) {
             if (key === 'defaultNumberType') {
                 this.clientConfig.serializationConfig.defaultNumberType = tryGetString(jsonObject[key]);
             } else if (key === 'isBigEndian') {
@@ -181,19 +177,19 @@ export class ConfigBuilder {
             } else if (key === 'portableVersion') {
                 this.clientConfig.serializationConfig.portableVersion = tryGetNumber(jsonObject[key]);
             } else if (key === 'dataSerializableFactories') {
-                for (let index in jsonObject[key]) {
-                    let factory = jsonObject[key][index];
+                for (const index in jsonObject[key]) {
+                    const factory = jsonObject[key][index];
                     this.clientConfig.serializationConfig
                         .dataSerializableFactoryConfigs[factory.factoryId] = this.parseImportConfig(factory);
                 }
             } else if (key === 'portableFactories') {
-                for (let index in jsonObject[key]) {
-                    let factory = jsonObject[key][index];
+                for (const index in jsonObject[key]) {
+                    const factory = jsonObject[key][index];
                     this.clientConfig.serializationConfig
                         .portableFactoryConfigs[factory.factoryId] = this.parseImportConfig(factory);
                 }
             } else if (key === 'globalSerializer') {
-                let globalSerializer = jsonObject[key];
+                const globalSerializer = jsonObject[key];
                 this.clientConfig.serializationConfig.globalSerializerConfig = this.parseImportConfig(globalSerializer);
             } else if (key === 'serializers') {
                 this.handleSerializers(jsonObject[key]);
@@ -202,19 +198,19 @@ export class ConfigBuilder {
     }
 
     private handleSerializers(jsonObject: any): void {
-        let serializersArray = tryGetArray(jsonObject);
-        for (let index in serializersArray) {
-            let serializer = serializersArray[index];
+        const serializersArray = tryGetArray(jsonObject);
+        for (const index in serializersArray) {
+            const serializer = serializersArray[index];
             this.clientConfig.serializationConfig.customSerializerConfigs[serializer.typeId] = this.parseImportConfig(serializer);
         }
     }
 
     private handleNearCaches(jsonObject: any): void {
-        let nearCachesArray = tryGetArray(jsonObject);
-        for (let index in nearCachesArray) {
-            let ncConfig = nearCachesArray[index];
-            let nearCacheConfig = new NearCacheConfig();
-            for (let name in ncConfig) {
+        const nearCachesArray = tryGetArray(jsonObject);
+        for (const index in nearCachesArray) {
+            const ncConfig = nearCachesArray[index];
+            const nearCacheConfig = new NearCacheConfig();
+            for (const name in ncConfig) {
                 if (name === 'name') {
                     nearCacheConfig.name = tryGetString(ncConfig[name]);
                 } else if (name === 'invalidateOnChange') {
@@ -240,11 +236,11 @@ export class ConfigBuilder {
     }
 
     private handleReliableTopics(jsonObject: any): void {
-        let rtConfigsArray = tryGetArray(jsonObject);
-        for (let index in rtConfigsArray) {
-            let jsonRtCfg = rtConfigsArray[index];
-            let reliableTopicConfig = new ReliableTopicConfig();
-            for (let name in jsonRtCfg) {
+        const rtConfigsArray = tryGetArray(jsonObject);
+        for (const index in rtConfigsArray) {
+            const jsonRtCfg = rtConfigsArray[index];
+            const reliableTopicConfig = new ReliableTopicConfig();
+            for (const name in jsonRtCfg) {
                 if (name === 'name') {
                     reliableTopicConfig.name = jsonRtCfg[name];
                 } else if (name === 'readBatchSize') {
@@ -258,11 +254,11 @@ export class ConfigBuilder {
     }
 
     private handleFlakeIds(jsonObject: any): void {
-        let flakeIdsArray = tryGetArray(jsonObject);
-        for (let index in flakeIdsArray) {
-            let fidConfig = flakeIdsArray[index];
-            let flakeIdConfig = new FlakeIdGeneratorConfig();
-            for (let name in fidConfig) {
+        const flakeIdsArray = tryGetArray(jsonObject);
+        for (const index in flakeIdsArray) {
+            const fidConfig = flakeIdsArray[index];
+            const flakeIdConfig = new FlakeIdGeneratorConfig();
+            for (const name in fidConfig) {
                 if (name === 'name') {
                     flakeIdConfig.name = tryGetString(fidConfig[name]);
                 } else if (name === 'prefetchCount') {
@@ -274,6 +270,5 @@ export class ConfigBuilder {
             this.clientConfig.flakeIdGeneratorConfigs[flakeIdConfig.name] = flakeIdConfig;
         }
     }
-
 
 }

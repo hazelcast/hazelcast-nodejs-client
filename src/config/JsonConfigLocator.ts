@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import {ConfigBuilder} from './ConfigBuilder';
-import * as fs from 'fs';
 import * as Promise from 'bluebird';
+import * as fs from 'fs';
 import * as Path from 'path';
 import {LoggingService} from '../logging/LoggingService';
+import {ConfigBuilder} from './ConfigBuilder';
 
 export class JsonConfigLocator {
     static readonly ENV_VARIABLE_NAME = 'HAZELCAST_CLIENT_CONFIG';
@@ -33,6 +33,7 @@ export class JsonConfigLocator {
             if (loaded) {
                 return;
             }
+            // tslint:disable-next-line
             return this.loadFromWorkingDirectory().then((loaded: boolean) => {
                 if (loaded) {
                     return;
@@ -42,9 +43,9 @@ export class JsonConfigLocator {
     }
 
     loadFromEnvironment(): Promise<boolean> {
-        let envVariableLocation = process.env[JsonConfigLocator.ENV_VARIABLE_NAME];
+        const envVariableLocation = process.env[JsonConfigLocator.ENV_VARIABLE_NAME];
         if (envVariableLocation) {
-            let loadLocation = Path.resolve(envVariableLocation);
+            const loadLocation = Path.resolve(envVariableLocation);
             this.logger.trace('ConfigBuilder', 'Loading config from ' + envVariableLocation);
             return this.loadPath(envVariableLocation).then((buffer: Buffer) => {
                 this.configLocation = envVariableLocation;
@@ -57,9 +58,9 @@ export class JsonConfigLocator {
     }
 
     loadFromWorkingDirectory(): Promise<boolean> {
-        let cwd = process.cwd();
-        let jsonPath = Path.resolve(cwd, JsonConfigLocator.DEFAULT_FILE_NAME);
-        let deferred = Promise.defer<boolean>();
+        const cwd = process.cwd();
+        const jsonPath = Path.resolve(cwd, JsonConfigLocator.DEFAULT_FILE_NAME);
+        const deferred = Promise.defer<boolean>();
         fs.access(jsonPath, (err) => {
             if (err) {
                 deferred.resolve(false);
@@ -81,7 +82,7 @@ export class JsonConfigLocator {
     }
 
     loadPath(path: string): Promise<Buffer> {
-        let deferred = Promise.defer<Buffer>();
+        const deferred = Promise.defer<Buffer>();
         fs.readFile(path, (err, data: Buffer) => {
             if (err) {
                 this.logger.trace('JsonConfigLocator', 'Cannot read from ' + path.toString());

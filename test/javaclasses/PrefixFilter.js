@@ -22,7 +22,7 @@ PrefixFilter.prototype.readData = function (inp) {
     this.prefix = inp.readUTF();
 };
 
-PrefixFilter.prototype.writeData = function(outp) {
+PrefixFilter.prototype.writeData = function (outp) {
     outp.writeUTF(this.prefix);
 };
 
@@ -30,7 +30,7 @@ PrefixFilter.prototype.getFactoryId = function () {
     return 66;
 };
 
-PrefixFilter.prototype.getClassId = function() {
+PrefixFilter.prototype.getClassId = function () {
     return 4;
 };
 

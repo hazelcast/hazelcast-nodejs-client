@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-import {BaseProxy} from './BaseProxy';
-import {PNCounter} from './PNCounter';
 import * as Promise from 'bluebird';
-import {VectorClock} from '../core/VectorClock';
-import Address = require('../Address');
+import * as Long from 'long';
+import {PNCounterAddCodec} from '../codec/PNCounterAddCodec';
+import {PNCounterGetCodec} from '../codec/PNCounterGetCodec';
 import {PNCounterGetConfiguredReplicaCountCodec} from '../codec/PNCounterGetConfiguredReplicaCountCodec';
 import {MemberSelectors} from '../core/MemberSelectors';
-import {randomInt} from '../Util';
-import {PNCounterAddCodec} from '../codec/PNCounterAddCodec';
+import {VectorClock} from '../core/VectorClock';
 import {NoDataMemberInClusterError} from '../HazelcastError';
-import {PNCounterGetCodec} from '../codec/PNCounterGetCodec';
-import * as Long from 'long';
+import {randomInt} from '../Util';
+import {BaseProxy} from './BaseProxy';
+import {PNCounter} from './PNCounter';
+import Address = require('../Address');
 
 export class PNCounterProxy extends BaseProxy implements PNCounter {
+    private static readonly EMPTY_ARRAY: Address[] = [];
     private lastObservedVectorClock: VectorClock = new VectorClock();
     private maximumReplicaCount: number = 0;
     private currentTargetReplicaAddress: Address;
-    private static readonly EMPTY_ARRAY: Address[] = [];
 
     get(): Promise<Long> {
         return this.invokeInternal(PNCounterProxy.EMPTY_ARRAY, null, PNCounterGetCodec);
@@ -47,16 +47,16 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
 
     getAndSubtract(delta: Long | number): Promise<Long> {
         if (!Long.isLong(delta)) {
-            delta = Long.fromNumber(<number>delta);
+            delta = Long.fromNumber(delta as number);
         }
-        return this.invokeInternal(PNCounterProxy.EMPTY_ARRAY, null, PNCounterAddCodec, (<Long>delta).neg(), true);
+        return this.invokeInternal(PNCounterProxy.EMPTY_ARRAY, null, PNCounterAddCodec, (delta as Long).neg(), true);
     }
 
     subtractAndGet(delta: Long | number): Promise<Long> {
         if (!Long.isLong(delta)) {
-            delta = Long.fromNumber(<number>delta);
+            delta = Long.fromNumber(delta as number);
         }
-        return this.invokeInternal(PNCounterProxy.EMPTY_ARRAY, null, PNCounterAddCodec, (<Long>delta).neg(), false);
+        return this.invokeInternal(PNCounterProxy.EMPTY_ARRAY, null, PNCounterAddCodec, (delta as Long).neg(), false);
     }
 
     decrementAndGet(): Promise<Long> {
@@ -129,12 +129,12 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
     }
 
     private getReplicaAddresses(excludedAddresses: Address[]): Promise<Address[]> {
-        let dataMembers = this.client.getClusterService().getMembers(MemberSelectors.DATA_MEMBER_SELECTOR);
+        const dataMembers = this.client.getClusterService().getMembers(MemberSelectors.DATA_MEMBER_SELECTOR);
         return this.getMaxConfiguredReplicaCount().then((replicaCount: number) => {
-            let currentCount = Math.min(replicaCount, dataMembers.length);
-            let replicaAddresses: Address[] = [];
+            const currentCount = Math.min(replicaCount, dataMembers.length);
+            const replicaAddresses: Address[] = [];
             for (let i = 0; i < currentCount; i++) {
-                let memberAddress = dataMembers[i].address;
+                const memberAddress = dataMembers[i].address;
                 if (!excludedAddresses.some(memberAddress.equals.bind(memberAddress))) {
                     replicaAddresses.push(memberAddress);
                 }
@@ -155,14 +155,14 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
     }
 
     private updateObservedReplicaTimestamps(observedTimestamps: Array<[string, Long]>): void {
-        let observedClock = this.toVectorClock(observedTimestamps);
+        const observedClock = this.toVectorClock(observedTimestamps);
         if (observedClock.isAfter(this.lastObservedVectorClock)) {
             this.lastObservedVectorClock = observedClock;
         }
     }
 
     private toVectorClock(timestamps: Array<[string, Long]>): VectorClock {
-        let vectorClock = new VectorClock();
+        const vectorClock = new VectorClock();
         timestamps.forEach((entry: [string, Long]) => {
             vectorClock.setReplicaTimestamp(entry[0], entry[1]);
         });

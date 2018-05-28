@@ -23,12 +23,12 @@ export class StackTraceElementCodec {
     lineNumber: number = null;
 
     static decode(payload: ClientMessage): StackTraceElementCodec {
-        var stackTraceElement = new StackTraceElementCodec();
+        const stackTraceElement = new StackTraceElementCodec();
 
         stackTraceElement.declaringClass = payload.readString();
         stackTraceElement.methodName = payload.readString();
 
-        var fileNameNull = payload.readBoolean();
+        const fileNameNull = payload.readBoolean();
         if (!fileNameNull) {
             stackTraceElement.fileName = payload.readString();
         }
@@ -36,4 +36,3 @@ export class StackTraceElementCodec {
         return stackTraceElement;
     }
 }
-

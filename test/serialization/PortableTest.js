@@ -23,12 +23,12 @@ var PortableObject = require('./PortableObjects').PortableObject;
 var PortableObjectV2 = require('./PortableObjects').PortableObjectV2;
 var InnerPortableObject = require('./PortableObjects').InnerPortableObject;
 var SimplePortableV3 = require('./PortableObjects').SimplePortableV3;
-describe('Portable Serialization', function() {
+describe('Portable Serialization', function () {
 
     function createSerializationService(constructorFunction) {
         var cfg = new Config.ClientConfig();
         cfg.serializationConfig.portableFactories[10] = {
-            create: function(classId) {
+            create: function (classId) {
                 if (classId === 111) {
                     return new constructorFunction();
                 } else if (classId === 222) {
@@ -41,7 +41,7 @@ describe('Portable Serialization', function() {
         return new SerializationService.SerializationServiceV1(cfg.serializationConfig);
     }
 
-    it('write-read', function() {
+    it('write-read', function () {
         var service = createSerializationService(PortableObject);
 
         var emp = new PortableObject(99, true, 'a', 23, 54375456, Long.fromBits(243534, 43543654), 24.1, 32435.6533,
@@ -55,7 +55,7 @@ describe('Portable Serialization', function() {
         Util.expectAlmostEqual(deserialized, emp);
     });
 
-    it('write-read v2', function() {
+    it('write-read v2', function () {
         var service = createSerializationService(PortableObjectV2);
 
         var emp = new PortableObjectV2('a_new_value', 99, true, 'a', 23, 54375456, Long.fromBits(243534, 43543654), 24.1, 32435.6533,
@@ -69,7 +69,7 @@ describe('Portable Serialization', function() {
         Util.expectAlmostEqual(deserialized, emp);
     });
 
-    it('old write - new read cross versions', function() {
+    it('old write - new read cross versions', function () {
         var oldService = createSerializationService(PortableObject);
         var newService = createSerializationService(PortableObjectV2);
 

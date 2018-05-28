@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-import {BaseProxy} from './BaseProxy';
-import {FlakeIdGenerator} from './FlakeIdGenerator';
 import * as Promise from 'bluebird';
 import * as Long from 'long';
-import HazelcastClient from '../HazelcastClient';
 import {FlakeIdGeneratorNewIdBatchCodec} from '../codec/FlakeIdGeneratorNewIdBatchCodec';
 import {FlakeIdGeneratorConfig} from '../config/FlakeIdGeneratorConfig';
-import {EventEmitter} from 'events';
+import HazelcastClient from '../HazelcastClient';
+import {BaseProxy} from './BaseProxy';
 import {AutoBatcher, Batch} from './flakeid/AutoBatcher';
+import {FlakeIdGenerator} from './FlakeIdGenerator';
 
 export class FlakeIdGeneratorProxy extends BaseProxy implements FlakeIdGenerator {
 

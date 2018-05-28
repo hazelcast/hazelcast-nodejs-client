@@ -15,9 +15,9 @@
  */
 
 import * as Promise from 'bluebird';
-import {DistributedObject} from '../DistributedObject';
 import {IMapListener} from '../core/MapListener';
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
+import {DistributedObject} from '../DistributedObject';
 
 export interface MultiMap<K, V> extends DistributedObject {
 
@@ -58,7 +58,7 @@ export interface MultiMap<K, V> extends DistributedObject {
     /**
      * @return an array of all keys in this multi-map.
      */
-    keySet(): Promise<Array<K>>;
+    keySet(): Promise<K[]>;
 
     /**
      * @return a flat list of all values stored in this multi-map.

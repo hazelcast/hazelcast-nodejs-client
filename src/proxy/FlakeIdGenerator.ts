@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-import {DistributedObject} from '../DistributedObject';
-import * as Long from 'long';
-
 /**
  * A cluster-wide unique ID generator. Generated IDs are `Long` primitive values
  * and are k-ordered (roughly ordered). IDs are in the range from `0` to `Long.MAX_VALUE`.
@@ -42,6 +39,8 @@ import * as Long from 'long';
  * @requires Hazelcast 3.10
  */
 import * as Promise from 'bluebird';
+import * as Long from 'long';
+import {DistributedObject} from '../DistributedObject';
 
 export interface FlakeIdGenerator extends DistributedObject {
 

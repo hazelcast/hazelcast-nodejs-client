@@ -15,6 +15,4 @@
  */
 import {TopicMessage} from './TopicMessage';
 
-export interface TopicMessageListener<E> {
-    (message: TopicMessage<E>): void;
-}
+export type TopicMessageListener<E> = (message: TopicMessage<E>) => void;

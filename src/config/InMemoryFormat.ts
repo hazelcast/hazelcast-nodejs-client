@@ -23,5 +23,5 @@ export enum InMemoryFormat {
     /**
      * Objects are in serialized form
      */
-    BINARY
+    BINARY,
 }

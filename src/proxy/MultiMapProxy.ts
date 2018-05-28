@@ -16,106 +16,106 @@
 
 import * as Promise from 'bluebird';
 
-import {MultiMap} from './MultiMap';
-import {BaseProxy} from './BaseProxy';
-import {IMapListener} from '../core/MapListener';
-import {MultiMapPutCodec} from './../codec/MultiMapPutCodec';
-import {MultiMapGetCodec} from './../codec/MultiMapGetCodec';
-import {Data} from '../serialization/Data';
-import {MultiMapRemoveCodec} from './../codec/MultiMapRemoveCodec';
-import {MultiMapRemoveEntryCodec} from './../codec/MultiMapRemoveEntryCodec';
-import {MultiMapKeySetCodec} from './../codec/MultiMapKeySetCodec';
-import {MultiMapValuesCodec} from './../codec/MultiMapValuesCodec';
-import {MultiMapEntrySetCodec} from './../codec/MultiMapEntrySetCodec';
-import {MultiMapContainsKeyCodec} from './../codec/MultiMapContainsKeyCodec';
-import {MultiMapContainsValueCodec} from './../codec/MultiMapContainsValueCodec';
-import {MultiMapContainsEntryCodec} from './../codec/MultiMapContainsEntryCodec';
-import {MultiMapSizeCodec} from './../codec/MultiMapSizeCodec';
-import {MultiMapClearCodec} from './../codec/MultiMapClearCodec';
-import {MultiMapValueCountCodec} from './../codec/MultiMapValueCountCodec';
-import {EntryEventType} from '../core/EntryEventType';
-import {MultiMapAddEntryListenerToKeyCodec} from './../codec/MultiMapAddEntryListenerToKeyCodec';
-import {MultiMapAddEntryListenerCodec} from './../codec/MultiMapAddEntryListenerCodec';
-import {MultiMapRemoveEntryListenerCodec} from './../codec/MultiMapRemoveEntryListenerCodec';
-import {MultiMapLockCodec} from '../codec/MultiMapLockCodec';
+import * as Long from 'long';
+import {MultiMapForceUnlockCodec} from '../codec/MultiMapForceUnlockCodec';
 import {MultiMapIsLockedCodec} from '../codec/MultiMapIsLockedCodec';
+import {MultiMapLockCodec} from '../codec/MultiMapLockCodec';
 import {MultiMapTryLockCodec} from '../codec/MultiMapTryLockCodec';
 import {MultiMapUnlockCodec} from '../codec/MultiMapUnlockCodec';
-import {MultiMapForceUnlockCodec} from '../codec/MultiMapForceUnlockCodec';
-import {LockReferenceIdGenerator} from '../LockReferenceIdGenerator';
-import * as Long from 'long';
-import {ListenerMessageCodec} from '../ListenerMessageCodec';
-import ClientMessage = require('../ClientMessage');
+import {EntryEventType} from '../core/EntryEventType';
+import {IMapListener} from '../core/MapListener';
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
+import {ListenerMessageCodec} from '../ListenerMessageCodec';
+import {LockReferenceIdGenerator} from '../LockReferenceIdGenerator';
+import {Data} from '../serialization/Data';
+import {MultiMapAddEntryListenerCodec} from './../codec/MultiMapAddEntryListenerCodec';
+import {MultiMapAddEntryListenerToKeyCodec} from './../codec/MultiMapAddEntryListenerToKeyCodec';
+import {MultiMapClearCodec} from './../codec/MultiMapClearCodec';
+import {MultiMapContainsEntryCodec} from './../codec/MultiMapContainsEntryCodec';
+import {MultiMapContainsKeyCodec} from './../codec/MultiMapContainsKeyCodec';
+import {MultiMapContainsValueCodec} from './../codec/MultiMapContainsValueCodec';
+import {MultiMapEntrySetCodec} from './../codec/MultiMapEntrySetCodec';
+import {MultiMapGetCodec} from './../codec/MultiMapGetCodec';
+import {MultiMapKeySetCodec} from './../codec/MultiMapKeySetCodec';
+import {MultiMapPutCodec} from './../codec/MultiMapPutCodec';
+import {MultiMapRemoveCodec} from './../codec/MultiMapRemoveCodec';
+import {MultiMapRemoveEntryCodec} from './../codec/MultiMapRemoveEntryCodec';
+import {MultiMapRemoveEntryListenerCodec} from './../codec/MultiMapRemoveEntryListenerCodec';
+import {MultiMapSizeCodec} from './../codec/MultiMapSizeCodec';
+import {MultiMapValueCountCodec} from './../codec/MultiMapValueCountCodec';
+import {MultiMapValuesCodec} from './../codec/MultiMapValuesCodec';
+import {BaseProxy} from './BaseProxy';
+import {MultiMap} from './MultiMap';
+import ClientMessage = require('../ClientMessage');
 
 export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
 
     private lockReferenceIdGenerator: LockReferenceIdGenerator = this.client.getLockReferenceIdGenerator();
-
-    private deserializeList = <X>(items: Array<Data>): Array<X> => {
+    private deserializeList = <X>(items: Data[]): X[] => {
         return items.map<X>(this.toObject.bind(this));
         // tslint:disable-next-line:semicolon
     };
 
+    /*tslint:disable:member-ordering*/
     put(key: K, value: V): Promise<boolean> {
-        var keyData = this.toData(key);
-        var valueData = this.toData(value);
+        const keyData = this.toData(key);
+        const valueData = this.toData(value);
         return this.encodeInvokeOnKey<boolean>(MultiMapPutCodec, keyData, keyData, valueData, 1);
     }
 
     get(key: K): Promise<ReadOnlyLazyList<V>> {
-        var keyData = this.toData(key);
-        return this.encodeInvokeOnKey<Array<Data>>(MultiMapGetCodec, keyData, keyData, 1).then((data: Data[]) => {
+        const keyData = this.toData(key);
+        return this.encodeInvokeOnKey<Data[]>(MultiMapGetCodec, keyData, keyData, 1).then((data: Data[]) => {
             return new ReadOnlyLazyList<V>(data, this.client.getSerializationService());
         });
     }
 
     remove(key: K, value: V): Promise<boolean> {
-        var keyData = this.toData(key);
-        var valueData = this.toData(value);
+        const keyData = this.toData(key);
+        const valueData = this.toData(value);
         return this.encodeInvokeOnKey<boolean>(MultiMapRemoveEntryCodec, keyData, keyData, valueData, 1);
     }
 
     removeAll(key: K): Promise<ReadOnlyLazyList<V>> {
-        var keyData = this.toData(key);
-        return this.encodeInvokeOnKey<Array<Data>>(MultiMapRemoveCodec, keyData, keyData, 1).then((data: Data[]) => {
+        const keyData = this.toData(key);
+        return this.encodeInvokeOnKey<Data[]>(MultiMapRemoveCodec, keyData, keyData, 1).then((data: Data[]) => {
             return new ReadOnlyLazyList<V>(data, this.client.getSerializationService());
         });
     }
 
-    keySet(): Promise<Array<K>> {
-        return this.encodeInvokeOnRandomTarget<Array<Data>>(MultiMapKeySetCodec)
-            .then<Array<K>>(this.deserializeList);
+    keySet(): Promise<K[]> {
+        return this.encodeInvokeOnRandomTarget<Data[]>(MultiMapKeySetCodec)
+            .then<K[]>(this.deserializeList);
     }
 
     values(): Promise<ReadOnlyLazyList<V>> {
-        return this.encodeInvokeOnRandomTarget<Array<Data>>(MultiMapValuesCodec).then((data: Data[]) => {
+        return this.encodeInvokeOnRandomTarget<Data[]>(MultiMapValuesCodec).then((data: Data[]) => {
             return new ReadOnlyLazyList<V>(data, this.client.getSerializationService());
         });
     }
 
     entrySet(): Promise<Array<[K, V]>> {
         return this.encodeInvokeOnRandomTarget<Array<[Data, Data]>>(MultiMapEntrySetCodec)
-            .then<Array<[K, V]>>((entrySet: [Data, Data][]) => {
-                return entrySet.map((entry: Array<any>) => {
-                    return <[K, V]>[this.toObject(entry[0]), this.toObject(entry[1])];
+            .then<Array<[K, V]>>((entrySet: Array<[Data, Data]>) => {
+                return entrySet.map((entry: any[]) => {
+                    return [this.toObject(entry[0]), this.toObject(entry[1])] as [K, V];
                 });
             });
     }
 
     containsKey(key: K): Promise<boolean> {
-        var keyData = this.toData(key);
+        const keyData = this.toData(key);
         return this.encodeInvokeOnKey<boolean>(MultiMapContainsKeyCodec, keyData, keyData, 1);
     }
 
     containsValue(value: V): Promise<boolean> {
-        var valueData = this.toData(value);
+        const valueData = this.toData(value);
         return this.encodeInvokeOnRandomTarget<boolean>(MultiMapContainsValueCodec, valueData);
     }
 
     containsEntry(key: K, value: V): Promise<boolean> {
-        var keyData = this.toData(key);
-        var valueData = this.toData(value);
+        const keyData = this.toData(key);
+        const valueData = this.toData(value);
         return this.encodeInvokeOnKey<boolean>(MultiMapContainsEntryCodec, keyData, keyData, valueData, 1);
     }
 
@@ -128,17 +128,18 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     }
 
     valueCount(key: K): Promise<number> {
-        var keyData = this.toData(key);
+        const keyData = this.toData(key);
         return this.encodeInvokeOnKey<number>(MultiMapValueCountCodec, keyData, keyData, 1);
     }
 
     addEntryListener(listener: IMapListener<K, V>, key?: K, includeValue: boolean = true): Promise<string> {
-        var toObject = this.toObject.bind(this);
+        const toObject = this.toObject.bind(this);
 
-        var entryEventHandler = function (key: K, value: V, oldValue: V, mergingValue: V, event: number) {
-            var parameters: any[] = [key, oldValue, value];
+        /* tslint:disable: no-shadowed-variable */
+        const entryEventHandler = function (key: K, value: V, oldValue: V, mergingValue: V, event: number) {
+            let parameters: any[] = [key, oldValue, value];
             parameters = parameters.map(toObject);
-            var name: string;
+            let name: string;
 
             // Multi map only supports these three event types
             switch (event) {
@@ -153,26 +154,25 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
                     break;
             }
 
-            var handlerFunction = listener[name];
+            const handlerFunction = listener[name];
             if (handlerFunction) {
                 handlerFunction.apply(undefined, parameters);
             }
         };
 
-        let listenerRequest: ClientMessage;
         if (key) {
-            let keyData = this.toData(key);
-            let handler = (m: ClientMessage) => {
+            const keyData = this.toData(key);
+            const handler = (m: ClientMessage) => {
                 MultiMapAddEntryListenerToKeyCodec.handle(m, entryEventHandler, toObject);
             };
-            let codec = this.createEntryListenerToKey(this.name, keyData, includeValue);
+            const codec = this.createEntryListenerToKey(this.name, keyData, includeValue);
 
             return this.client.getListenerService().registerListener(codec, handler);
         } else {
-            var listenerHandler = (m: ClientMessage) => {
+            const listenerHandler = (m: ClientMessage) => {
                 MultiMapAddEntryListenerCodec.handle(m, entryEventHandler, toObject);
             };
-            let codec = this.createEntryListener(this.name, includeValue);
+            const codec = this.createEntryListener(this.name, includeValue);
 
             return this.client.getListenerService().registerListener(codec, listenerHandler);
         }
@@ -183,28 +183,28 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     }
 
     lock(key: K, leaseMillis: number = -1): Promise<void> {
-        var keyData = this.toData(key);
+        const keyData = this.toData(key);
         return this.encodeInvokeOnKey<void>(MultiMapLockCodec, keyData, keyData, 1, leaseMillis, this.nextSequence());
     }
 
     isLocked(key: K): Promise<boolean> {
-        var keyData = this.toData(key);
+        const keyData = this.toData(key);
         return this.encodeInvokeOnKey<boolean>(MultiMapIsLockedCodec, keyData, keyData);
     }
 
     tryLock(key: K, timeoutMillis: number = 0, leaseMillis: number = -1): Promise<boolean> {
-        var keyData = this.toData(key);
+        const keyData = this.toData(key);
         return this.encodeInvokeOnKey<boolean>(MultiMapTryLockCodec, keyData, keyData, 1, leaseMillis,
             timeoutMillis, this.nextSequence());
     }
 
     unlock(key: K): Promise<void> {
-        var keyData = this.toData(key);
+        const keyData = this.toData(key);
         return this.encodeInvokeOnKey<void>(MultiMapUnlockCodec, keyData, keyData, 1, this.nextSequence());
     }
 
     forceUnlock(key: K): Promise<void> {
-        var keyData = this.toData(key);
+        const keyData = this.toData(key);
         return this.encodeInvokeOnKey<void>(MultiMapForceUnlockCodec, keyData, keyData, this.nextSequence());
     }
 
@@ -214,29 +214,29 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
 
     private createEntryListenerToKey(name: string, keyData: Data, includeValue: boolean): ListenerMessageCodec {
         return {
-            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+            encodeAddRequest(localOnly: boolean): ClientMessage {
                 return MultiMapAddEntryListenerToKeyCodec.encodeRequest(name, keyData, includeValue, localOnly);
             },
-            decodeAddResponse: function(msg: ClientMessage): string {
+            decodeAddResponse(msg: ClientMessage): string {
                 return MultiMapAddEntryListenerToKeyCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+            encodeRemoveRequest(listenerId: string): ClientMessage {
                 return MultiMapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
-            }
+            },
         };
     }
 
     private createEntryListener(name: string, includeValue: boolean): ListenerMessageCodec {
         return {
-            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+            encodeAddRequest(localOnly: boolean): ClientMessage {
                 return MultiMapAddEntryListenerCodec.encodeRequest(name, includeValue, localOnly);
             },
-            decodeAddResponse: function(msg: ClientMessage): string {
+            decodeAddResponse(msg: ClientMessage): string {
                 return MultiMapAddEntryListenerCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+            encodeRemoveRequest(listenerId: string): ClientMessage {
                 return MultiMapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
-            }
+            },
         };
     }
 }

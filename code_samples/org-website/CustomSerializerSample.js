@@ -24,7 +24,7 @@ CustomSerializer.prototype.write = function (output, t) {
     }
 };
 
-CustomSerializer.prototype.read = function(reader) {
+CustomSerializer.prototype.read = function (reader) {
     var len = reader.readInt();
     var str = '';
     for (var i = 0; i < len; i++) {

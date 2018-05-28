@@ -15,33 +15,33 @@
  */
 
 import * as Promise from 'bluebird';
-import {DistributedObject} from '../DistributedObject';
-import {MapProxy} from './MapProxy';
-import {SetProxy} from './SetProxy';
-import {ClientCreateProxyCodec} from '../codec/ClientCreateProxyCodec';
-import ClientMessage = require('../ClientMessage');
-import {ClientDestroyProxyCodec} from '../codec/ClientDestroyProxyCodec';
 import {ClientAddDistributedObjectListenerCodec} from '../codec/ClientAddDistributedObjectListenerCodec';
+import {ClientCreateProxyCodec} from '../codec/ClientCreateProxyCodec';
+import {ClientDestroyProxyCodec} from '../codec/ClientDestroyProxyCodec';
 import {ClientRemoveDistributedObjectListenerCodec} from '../codec/ClientRemoveDistributedObjectListenerCodec';
+import {Member} from '../core/Member';
+import {DistributedObject} from '../DistributedObject';
 import HazelcastClient from '../HazelcastClient';
-import {QueueProxy} from './QueueProxy';
+import {ClientNotActiveError, HazelcastError} from '../HazelcastError';
+import {Invocation} from '../invocation/InvocationService';
+import {ListenerMessageCodec} from '../ListenerMessageCodec';
+import {LoggingService} from '../logging/LoggingService';
+import {AtomicLongProxy} from './AtomicLongProxy';
+import {FlakeIdGeneratorProxy} from './FlakeIdGeneratorProxy';
 import {ListProxy} from './ListProxy';
 import {LockProxy} from './LockProxy';
+import {MapProxy} from './MapProxy';
 import {MultiMapProxy} from './MultiMapProxy';
-import {RingbufferProxy} from './ringbuffer/RingbufferProxy';
-import {ReplicatedMapProxy} from './ReplicatedMapProxy';
 import {NearCachedMapProxy} from './NearCachedMapProxy';
-import {SemaphoreProxy} from './SemaphoreProxy';
-import {AtomicLongProxy} from './AtomicLongProxy';
-import {LoggingService} from '../logging/LoggingService';
-import Address = require('../Address');
-import {Invocation} from '../invocation/InvocationService';
-import {Member} from '../core/Member';
-import {ListenerMessageCodec} from '../ListenerMessageCodec';
-import {ClientNotActiveError, HazelcastError} from '../HazelcastError';
-import {FlakeIdGeneratorProxy} from './FlakeIdGeneratorProxy';
 import {PNCounterProxy} from './PNCounterProxy';
+import {QueueProxy} from './QueueProxy';
+import {ReplicatedMapProxy} from './ReplicatedMapProxy';
+import {RingbufferProxy} from './ringbuffer/RingbufferProxy';
+import {SemaphoreProxy} from './SemaphoreProxy';
+import {SetProxy} from './SetProxy';
 import {ReliableTopicProxy} from './topic/ReliableTopicProxy';
+import Address = require('../Address');
+import ClientMessage = require('../ClientMessage');
 
 export class ProxyManager {
     public static readonly MAP_SERVICE: string = 'hz:impl:mapService';
@@ -58,7 +58,7 @@ export class ProxyManager {
     public static readonly PNCOUNTER_SERVICE: string = 'hz:impl:PNCounterService';
     public static readonly RELIABLETOPIC_SERVICE: string = 'hz:impl:reliableTopicService';
 
-    public readonly service: {[serviceName: string]: any} = {};
+    public readonly service: { [serviceName: string]: any } = {};
     private readonly proxies: { [proxyName: string]: DistributedObject; } = {};
     private readonly client: HazelcastClient;
     private readonly logger = LoggingService.getLoggingService();
@@ -105,21 +105,53 @@ export class ProxyManager {
         }
     }
 
+    destroyProxy(name: string, serviceName: string): Promise<void> {
+        delete this.proxies[name];
+        const clientMessage = ClientDestroyProxyCodec.encodeRequest(name, serviceName);
+        clientMessage.setPartitionId(-1);
+        return this.client.getInvocationService().invokeOnRandomTarget(clientMessage).return();
+    }
+
+    addDistributedObjectListener(listenerFunc: Function): Promise<string> {
+        const handler = function (clientMessage: ClientMessage) {
+            const converterFunc = function (name: string, serviceName: string, eventType: string) {
+                if (eventType === 'CREATED') {
+                    listenerFunc(name, serviceName, 'created');
+                } else if (eventType === 'DESTROYED') {
+                    listenerFunc(name, serviceName, 'destroyed');
+                }
+            };
+            ClientAddDistributedObjectListenerCodec.handle(clientMessage, converterFunc, null);
+        };
+        const codec = this.createDistributedObjectListener();
+        return this.client.getListenerService().registerListener(codec, handler);
+    }
+
+    removeDistributedObjectListener(listenerId: string) {
+        return this.client.getListenerService().deregisterListener(listenerId);
+    }
+
+    protected isRetryable(error: HazelcastError): boolean {
+        if (error instanceof ClientNotActiveError) {
+            return false;
+        }
+        return true;
+    }
+
     private createProxy(proxyObject: DistributedObject): Promise<ClientMessage> {
-        let promise = Promise.defer<ClientMessage>();
+        const promise = Promise.defer<ClientMessage>();
         this.initializeProxy(proxyObject, promise, Date.now() + this.invocationTimeoutMillis);
         return promise.promise;
     }
 
     private findNextAddress(): Address {
-        let members = this.client.getClusterService().getMembers();
+        const members = this.client.getClusterService().getMembers();
         let liteMember: Member = null;
-        for (let i = 0; i < members.length; i++) {
-            let currentMember = members[i];
-            if (currentMember != null && currentMember.isLiteMember === false) {
-                return currentMember.address;
-            } else if (currentMember != null && currentMember.isLiteMember) {
-                liteMember = currentMember;
+        for (const member of members) {
+            if (member != null && member.isLiteMember === false) {
+                return member.address;
+            } else if (member != null && member.isLiteMember) {
+                liteMember = member;
             }
         }
 
@@ -132,9 +164,9 @@ export class ProxyManager {
 
     private initializeProxy(proxyObject: DistributedObject, promise: Promise.Resolver<ClientMessage>, deadline: number): void {
         if (Date.now() <= deadline) {
-            let address: Address = this.findNextAddress();
-            let request = ClientCreateProxyCodec.encodeRequest(proxyObject.getName(), proxyObject.getServiceName(), address);
-            let invocation = new Invocation(this.client, request);
+            const address: Address = this.findNextAddress();
+            const request = ClientCreateProxyCodec.encodeRequest(proxyObject.getName(), proxyObject.getServiceName(), address);
+            const invocation = new Invocation(this.client, request);
             invocation.address = address;
             this.client.getInvocationService().invoke(invocation).then((response) => {
                 promise.resolve(response);
@@ -152,50 +184,17 @@ export class ProxyManager {
         }
     }
 
-    protected isRetryable(error: HazelcastError): boolean {
-        if (error instanceof ClientNotActiveError) {
-            return false;
-        }
-        return true;
-    }
-
-    destroyProxy(name: string, serviceName: string): Promise<void> {
-        delete this.proxies[name];
-        let clientMessage = ClientDestroyProxyCodec.encodeRequest(name, serviceName);
-        clientMessage.setPartitionId(-1);
-        return this.client.getInvocationService().invokeOnRandomTarget(clientMessage).return();
-    }
-
-    addDistributedObjectListener(listenerFunc: Function): Promise<string> {
-        let handler = function (clientMessage: ClientMessage) {
-            let converterFunc = function (name: string, serviceName: string, eventType: string) {
-                if (eventType === 'CREATED') {
-                    listenerFunc(name, serviceName, 'created');
-                } else if (eventType === 'DESTROYED') {
-                    listenerFunc(name, serviceName, 'destroyed');
-                }
-            };
-            ClientAddDistributedObjectListenerCodec.handle(clientMessage, converterFunc, null);
-        };
-        let codec = this.createDistributedObjectListener();
-        return this.client.getListenerService().registerListener(codec, handler);
-    }
-
-    removeDistributedObjectListener(listenerId: string) {
-        return this.client.getListenerService().deregisterListener(listenerId);
-    }
-
     private createDistributedObjectListener(): ListenerMessageCodec {
         return {
-            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+            encodeAddRequest(localOnly: boolean): ClientMessage {
                 return ClientAddDistributedObjectListenerCodec.encodeRequest(localOnly);
             },
-            decodeAddResponse: function(msg: ClientMessage): string {
+            decodeAddResponse(msg: ClientMessage): string {
                 return ClientAddDistributedObjectListenerCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+            encodeRemoveRequest(listenerId: string): ClientMessage {
                 return ClientRemoveDistributedObjectListenerCodec.encodeRequest(listenerId);
-            }
+            },
         };
     }
 }

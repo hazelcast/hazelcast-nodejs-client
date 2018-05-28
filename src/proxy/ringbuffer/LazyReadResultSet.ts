@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-import {ReadResultSet} from './ReadResultSet';
-import {SerializationService, SerializationServiceV1} from '../../serialization/SerializationService';
-import {Data} from '../../serialization/Data';
 import * as Long from 'long';
 import {UnsupportedOperationError} from '../../HazelcastError';
+import {Data} from '../../serialization/Data';
+import {SerializationService, SerializationServiceV1} from '../../serialization/SerializationService';
+import {ReadResultSet} from './ReadResultSet';
 
 export class LazyReadResultSet<T> implements ReadResultSet<T> {
     private readCount: number;
-    private items: Array<any>;
-    private itemSeqs: Array<Long>;
+    private items: any[];
+    private itemSeqs: Long[];
     private serializationService: SerializationService;
 
-    constructor(serializationService: SerializationService, readCount: number, items: Array<Data>, itemSeqs: Array<Long>) {
+    constructor(serializationService: SerializationService, readCount: number, items: Data[], itemSeqs: Long[]) {
         this.serializationService = serializationService;
         this.readCount = readCount;
         this.items = items;
@@ -38,12 +38,12 @@ export class LazyReadResultSet<T> implements ReadResultSet<T> {
     }
 
     get(index: number): T {
-        let dataOrObject = this.items[index];
+        const dataOrObject = this.items[index];
         if (dataOrObject == null) {
             return undefined;
         }
-        if ((<SerializationServiceV1>this.serializationService).isData(dataOrObject)) {
-            let obj = this.serializationService.toObject(dataOrObject);
+        if ((this.serializationService as SerializationServiceV1).isData(dataOrObject)) {
+            const obj = this.serializationService.toObject(dataOrObject);
             this.items[index] = obj;
             return obj;
         } else {

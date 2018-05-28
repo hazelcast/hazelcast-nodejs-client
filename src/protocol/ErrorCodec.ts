@@ -18,6 +18,7 @@ import ClientMessage = require('../ClientMessage');
 import {StackTraceElementCodec} from './StackTraceElementCodec';
 
 export class ErrorCodec {
+
     errorCode: number = null;
     className: string = null;
     message: string = null;
@@ -26,25 +27,25 @@ export class ErrorCodec {
     causeClassName: string = null;
 
     static decode(clientMessage: ClientMessage): ErrorCodec {
-        let exception = new ErrorCodec();
+        const exception = new ErrorCodec();
 
         exception.errorCode = clientMessage.readInt32();
         exception.className = clientMessage.readString();
 
-        var isMessageNull = clientMessage.readBoolean();
+        const isMessageNull = clientMessage.readBoolean();
         if (!isMessageNull) {
             exception.message = clientMessage.readString();
         }
 
-        var stackTraceDepth = clientMessage.readInt32();
+        const stackTraceDepth = clientMessage.readInt32();
         exception.stackTrace = [];
-        for (var i = 0; i < stackTraceDepth; i++) {
+        for (let i = 0; i < stackTraceDepth; i++) {
             exception.stackTrace.push(StackTraceElementCodec.decode(clientMessage));
         }
 
         exception.causeErrorCode = clientMessage.readInt32();
 
-        var causeClassNameNull = clientMessage.readBoolean();
+        const causeClassNameNull = clientMessage.readBoolean();
 
         if (!causeClassNameNull) {
             exception.causeClassName = clientMessage.readString();
@@ -52,7 +53,5 @@ export class ErrorCodec {
 
         return exception;
     }
-
-
 
 }

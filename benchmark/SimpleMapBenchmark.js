@@ -11,23 +11,22 @@ var Test = {
     map: undefined,
     finishCallback: undefined,
     ops: 0,
-    increment: function() {
+    increment: function () {
         this.ops = this.ops + 1;
         if (this.ops === REQ_COUNT) {
             var date = new Date();
-            this.run = function() {};
+            this.run = function () {
+            };
             this.finishCallback(date);
         }
     },
-    run: function() {
+    run: function () {
         var key = Math.random() * ENTRY_COUNT;
         var opType = Math.floor(Math.random() * 100);
-        if (opType < GET_PERCENTAGE ) {
-            this.map.get(key).
-                then(this.increment.bind(this));
+        if (opType < GET_PERCENTAGE) {
+            this.map.get(key).then(this.increment.bind(this));
         } else if (opType < GET_PERCENTAGE + PUT_PERCENTAGE) {
-            this.map.put(key, value_string).
-                then(this.increment.bind(this));
+            this.map.put(key, value_string).then(this.increment.bind(this));
         } else {
             this.map.remove(key)
                 .then(this.increment.bind(this));
@@ -36,11 +35,11 @@ var Test = {
     }
 };
 var Client = require('../.').Client;
-Client.newHazelcastClient().then(function(hazelcastClient) {
+Client.newHazelcastClient().then(function (hazelcastClient) {
     Test.map = hazelcastClient.getMap('default');
     var start;
-    Test.finishCallback = function(finish) {
-        console.log('Took ' + (finish - start)/1000 + ' seconds for ' + REQ_COUNT + ' requests');
+    Test.finishCallback = function (finish) {
+        console.log('Took ' + (finish - start) / 1000 + ' seconds for ' + REQ_COUNT + ' requests');
         console.log('Ops/s: ' + REQ_COUNT / ((finish - start) / 1000));
         hazelcastClient.shutdown();
     };

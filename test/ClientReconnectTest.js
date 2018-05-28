@@ -34,25 +34,25 @@ describe('Client reconnect', function () {
         this.timeout(9000);
         var member;
         var map;
-        return Controller.createCluster(null, null).then(function(cl) {
+        return Controller.createCluster(null, null).then(function (cl) {
             cluster = cl;
             return Controller.startMember(cluster.id);
-        }).then(function(m) {
+        }).then(function (m) {
             member = m;
             var cfg = new Config.ClientConfig();
             cfg.properties['hazelcast.client.heartbeat.interval'] = 1000;
             cfg.properties['hazelcast.client.heartbeat.timeout'] = 3000;
             return HazelcastClient.newHazelcastClient(cfg);
-        }).then(function(cl) {
+        }).then(function (cl) {
             client = cl;
             map = client.getMap('test');
-        }).then(function() {
+        }).then(function () {
             return Controller.terminateMember(cluster.id, member.uuid);
-        }).then(function() {
+        }).then(function () {
             return Controller.startMember(cluster.id);
-        }).then(function() {
+        }).then(function () {
             return map.put('testkey', 'testvalue');
-        }).then(function() {
+        }).then(function () {
             return map.get('testkey');
         }).then(function (val) {
             return expect(val).to.equal('testvalue');
@@ -63,22 +63,22 @@ describe('Client reconnect', function () {
         this.timeout(5000);
         var member;
         var map;
-        Controller.createCluster(null, null).then(function(cl) {
+        Controller.createCluster(null, null).then(function (cl) {
             cluster = cl;
             return Controller.startMember(cluster.id);
-        }).then(function(m) {
+        }).then(function (m) {
             member = m;
             var cfg = new Config.ClientConfig();
             cfg.properties['hazelcast.client.heartbeat.interval'] = 1000;
             cfg.properties['hazelcast.client.heartbeat.timeout'] = 3000;
             cfg.networkConfig.connectionTimeout = 10000;
             return HazelcastClient.newHazelcastClient(cfg);
-        }).then(function(cl) {
+        }).then(function (cl) {
             client = cl;
             map = client.getMap('test');
-        }).then(function() {
+        }).then(function () {
             return Controller.terminateMember(cluster.id, member.uuid);
-        }).then(function() {
+        }).then(function () {
             map.put('testkey', 'testvalue').then(function () {
                 return map.get('testkey');
             }).then(function (val) {
@@ -89,7 +89,7 @@ describe('Client reconnect', function () {
                     done(e);
                 }
             });
-        }).then(function() {
+        }).then(function () {
             return Controller.startMember(cluster.id);
         });
     });
@@ -98,25 +98,25 @@ describe('Client reconnect', function () {
         this.timeout(5000);
         var member;
         var map;
-        return Controller.createCluster(null, null).then(function(cl) {
+        return Controller.createCluster(null, null).then(function (cl) {
             cluster = cl;
             return Controller.startMember(cluster.id);
-        }).then(function(m) {
+        }).then(function (m) {
             member = m;
             var cfg = new Config.ClientConfig();
             cfg.properties['hazelcast.client.heartbeat.interval'] = 1000;
             cfg.properties['hazelcast.client.heartbeat.timeout'] = 3000;
             return HazelcastClient.newHazelcastClient(cfg);
-        }).then(function(cl) {
+        }).then(function (cl) {
             client = cl;
             return Controller.terminateMember(cluster.id, member.uuid);
-        }).then(function() {
+        }).then(function () {
             map = client.getMap('test');
-        }).then(function() {
+        }).then(function () {
             return Controller.startMember(cluster.id);
-        }).then(function() {
+        }).then(function () {
             return map.put('testkey', 'testvalue');
-        }).then(function() {
+        }).then(function () {
             return map.get('testkey');
         }).then(function (val) {
             return expect(val).to.equal('testvalue');

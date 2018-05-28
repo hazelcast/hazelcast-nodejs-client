@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-import HazelcastClient from './HazelcastClient';
-import * as Config from './config/Config';
-import {ClientInfo} from './ClientInfo';
-import {IMap} from './proxy/IMap';
-import * as Predicates from './core/Predicate';
 import Address = require('./Address');
 import TopicOverloadPolicy = require('./proxy/topic/TopicOverloadPolicy');
-import * as HazelcastErrors from './HazelcastError';
-import {IterationType} from './core/Predicate';
 import * as Aggregators from './aggregation/Aggregators';
+import {ClientInfo} from './ClientInfo';
+import * as Config from './config/Config';
 import {ImportConfig} from './config/ImportConfig';
+import * as Predicates from './core/Predicate';
+import {IterationType} from './core/Predicate';
+import HazelcastClient from './HazelcastClient';
+import * as HazelcastErrors from './HazelcastError';
+import {IMap} from './proxy/IMap';
 import {ReadResultSet} from './proxy/ringbuffer/ReadResultSet';
 
 export {
@@ -39,5 +39,5 @@ export {
     ReadResultSet,
     IterationType,
     Aggregators,
-    ImportConfig
+    ImportConfig,
 };

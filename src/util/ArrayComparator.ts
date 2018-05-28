@@ -14,6 +14,4 @@
  * limitations under the License.
  */
 
-export interface ArrayComparator<T> {
-    (a: T, b: T): number;
-}
+export type ArrayComparator<T> = (a: T, b: T) => number;

@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-import {IdentifiedDataSerializable, IdentifiedDataSerializableFactory} from './Serializable';
-import {DataInput, DataOutput} from './Data';
 import {Predicate} from '../core/Predicate';
+import {DataInput, DataOutput} from './Data';
+import {IdentifiedDataSerializable, IdentifiedDataSerializableFactory} from './Serializable';
+
 export const PREDICATE_FACTORY_ID = -32;
+
 export abstract class AbstractPredicate implements Predicate {
 
     abstract readData(input: DataInput): any;
@@ -33,18 +35,18 @@ export abstract class AbstractPredicate implements Predicate {
 
 export class PredicateFactory implements IdentifiedDataSerializableFactory {
 
-    private idToConstructorMap: {[id: number]: FunctionConstructor } = {};
+    private idToConstructorMap: { [id: number]: FunctionConstructor } = {};
 
     constructor(allPredicates: any) {
-        for (var pred in allPredicates) {
-            //TODO accessing getClassId from prototype of uninitialized member function is not elegant.
-            this.idToConstructorMap[(<any>allPredicates[pred].prototype).getClassId()] = allPredicates[pred];
+        for (const pred in allPredicates) {
+            // TODO accessing getClassId from prototype of uninitialized member function is not elegant.
+            this.idToConstructorMap[(allPredicates[pred].prototype as any).getClassId()] = allPredicates[pred];
         }
     }
 
     create(type: number): IdentifiedDataSerializable {
         if (this.idToConstructorMap[type]) {
-            return <any>(new this.idToConstructorMap[type]());
+            return (new this.idToConstructorMap[type]()) as any;
         } else {
             throw new RangeError(`There is no default predicate with id ${type}.`);
         }

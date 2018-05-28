@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-import {PartitionSpecificProxy} from './PartitionSpecificProxy';
-import {ISemaphore} from './ISemaphore';
 import * as Promise from 'bluebird';
-import {assertNotNegative} from '../Util';
-import {SemaphoreInitCodec} from '../codec/SemaphoreInitCodec';
 import {SemaphoreAcquireCodec} from '../codec/SemaphoreAcquireCodec';
 import {SemaphoreAvailablePermitsCodec} from '../codec/SemaphoreAvailablePermitsCodec';
 import {SemaphoreDrainPermitsCodec} from '../codec/SemaphoreDrainPermitsCodec';
+import {SemaphoreInitCodec} from '../codec/SemaphoreInitCodec';
 import {SemaphoreReducePermitsCodec} from '../codec/SemaphoreReducePermitsCodec';
 import {SemaphoreReleaseCodec} from '../codec/SemaphoreReleaseCodec';
 import {SemaphoreTryAcquireCodec} from '../codec/SemaphoreTryAcquireCodec';
+import {assertNotNegative} from '../Util';
+import {ISemaphore} from './ISemaphore';
+import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import Long = require('long');
 
 export class SemaphoreProxy extends PartitionSpecificProxy implements ISemaphore {

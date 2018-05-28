@@ -15,9 +15,9 @@
   ~ limitations under the License.
   -->
 
-<hazelcast xsi:schemaLocation="http://www.hazelcast.com/schema/config hazelcast-config-3.9.xsd"
-           xmlns="http://www.hazelcast.com/schema/config"
-           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<hazelcast xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://www.hazelcast.com/schema/config hazelcast-config-3.9.xsd"
+           xmlns="http://www.hazelcast.com/schema/config">
     <group>
         <name>dev</name>
         <password>dev-pass</password>
@@ -49,7 +49,8 @@
             <properties>
                 <property name="keyStore">com/hazelcast/nio/ssl-mutual-auth/server1.keystore</property>
                 <property name="keyStorePassword">password</property>
-                <property name="trustStore">com/hazelcast/nio/ssl-mutual-auth/server1_knows_client1/server1.truststore</property>
+                <property name="trustStore">com/hazelcast/nio/ssl-mutual-auth/server1_knows_client1/server1.truststore
+                </property>
                 <property name="trustStorePassword">password</property>
                 <property name="trustManagerAlgorithm">SunX509</property>
                 <property name="javax.net.ssl.mutualAuthentication">OPTIONAL</property>
