@@ -110,13 +110,15 @@ describe('SSL Client Authentication Test', function () {
 
             it('ma:required, server does not know client, client knows server should fail', function () {
                 return createMemberWithXML(maRequiredXML).then(function () {
-                    return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('./client2-key.pem', './client2-cert.pem', './server1-cert.pem'))).to.throw;
+                    return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('./client2-key.pem', './client2-cert.pem',
+                        './server1-cert.pem'))).to.be.rejectedWith(HzErrors.IllegalStateError);
                 });
             });
 
             it('ma:required, neither one knows the other should fail', function () {
                 return createMemberWithXML(maRequiredXML).then(function () {
-                    return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('./client2-key.pem', './client2-cert.pem', './server2-cert.pem'))).to.throw;
+                    return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('./client2-key.pem', './client2-cert.pem',
+                        './server2-cert.pem'))).to.be.rejectedWith(HzErrors.IllegalStateError);
                 });
             });
 
