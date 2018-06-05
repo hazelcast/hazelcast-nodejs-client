@@ -95,7 +95,7 @@ export class ClusterService extends EventEmitter {
         }
         var attemptLimit = this.client.getConfig().networkConfig.connectionAttemptLimit;
         var attemptPeriod = this.client.getConfig().networkConfig.connectionAttemptPeriod;
-        return this.tryAddresses(0, attemptLimit, attemptPeriod);
+        return this.tryConnectingToAddresses(0, attemptLimit, attemptPeriod);
     }
 
     /**
@@ -160,20 +160,25 @@ export class ClusterService extends EventEmitter {
         }
     }
 
-    private tryAddresses(index: number, attemptLimit: number, attemptPeriod: number): Promise<void> {
+    private tryConnectingToAddresses(index: number, remainingAttemptLimit: number,
+                                     attemptPeriod: number, cause?: Error): Promise<void> {
+        this.logger.debug('ClusterService', 'Trying to connect to addresses, remaining attempt limit: ' + remainingAttemptLimit
+            + 'attempt period: ' + attemptPeriod);
         if (this.knownAddresses.length <= index) {
-            attemptLimit = attemptLimit - 1;
-            if (attemptLimit === 0) {
-                let error = new IllegalStateError('Unable to connect to any of the following addresses: ' +
+            remainingAttemptLimit = remainingAttemptLimit - 1;
+            if (remainingAttemptLimit === 0) {
+                let errorMessage =  'Unable to connect to any of the following addresses: ' +
                     this.knownAddresses.map((element: Address) => {
                         return element.toString();
-                    }).join(', '));
+                    }).join(', ');
+                this.logger.debug('ClusterService', errorMessage);
+                let error = new IllegalStateError(errorMessage, cause);
                 return Promise.reject(error);
             } else {
                 let deferred = Promise.defer<void>();
                 setTimeout(
                     () => {
-                        this.tryAddresses(0, attemptLimit, attemptPeriod).then(() => {
+                        this.tryConnectingToAddresses(0, remainingAttemptLimit, attemptPeriod).then(() => {
                             deferred.resolve();
                         }).catch((e) => {
                             deferred.reject(e);
@@ -186,15 +191,12 @@ export class ClusterService extends EventEmitter {
         } else {
             var currentAddress = this.knownAddresses[index];
             return this.client.getConnectionManager().getOrConnect(currentAddress, true).then((connection: ClientConnection) => {
-                if (connection == null) {
-                    throw new Error('Could not connect to ' + currentAddress.toString());
-                }
-                connection.setAuthneticatedAsOwner(true);
+                connection.setAuthenticatedAsOwner(true);
                 this.ownerConnection = connection;
                 return this.initMemberShipListener();
             }).catch((e) => {
                 this.logger.warn('ClusterService', e);
-                return this.tryAddresses(index + 1, attemptLimit, attemptPeriod);
+                return this.tryConnectingToAddresses(index + 1, remainingAttemptLimit, attemptPeriod, e);
             });
         }
     }

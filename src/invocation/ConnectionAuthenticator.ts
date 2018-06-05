@@ -22,12 +22,21 @@ import {ClientConnection} from './ClientConnection';
 import {ClusterService} from './ClusterService';
 import {BuildInfoLoader} from '../BuildInfoLoader';
 import ClientMessage = require('../ClientMessage');
+import {LoggingService} from '../logging/LoggingService';
+import {AuthenticationError} from '../HazelcastError';
 
+
+const enum AuthenticationStatus {
+    AUTHENTICATED = 0,
+    CREDENTIALS_FAILED = 1,
+    SERIALIZATION_VERSION_MISMATCH = 2
+}
 export class ConnectionAuthenticator {
 
     private connection: ClientConnection;
     private client: HazelcastClient;
     private clusterService: ClusterService;
+    private logger = LoggingService.getLoggingService();
 
     constructor(connection: ClientConnection, client: HazelcastClient) {
         this.connection = connection;
@@ -35,29 +44,45 @@ export class ConnectionAuthenticator {
         this.clusterService = this.client.getClusterService();
     }
 
-    authenticate(ownerConnection: boolean): Promise<void> {
-        var credentials: ClientMessage = this.createCredentials(ownerConnection);
-
+    authenticate(asOwner: boolean): Promise<void> {
+        var credentials: ClientMessage = this.createCredentials(asOwner);
         return this.client.getInvocationService()
             .invokeOnConnection(this.connection, credentials)
             .then((msg: ClientMessage) => {
                 var authResponse = ClientAuthenticationCodec.decodeResponse(msg);
-                if (authResponse.status === 0) {
-                    this.connection.setAddress(authResponse.address);
-                    this.connection.setConnectedServerVersion(authResponse.serverHazelcastVersion);
-                    if (ownerConnection) {
-                        this.clusterService.uuid = authResponse.uuid;
-                        this.clusterService.ownerUuid = authResponse.ownerUuid;
+                switch (authResponse.status) {
+                    case AuthenticationStatus.AUTHENTICATED:
+                        this.connection.setAddress(authResponse.address);
+                        this.connection.setConnectedServerVersion(authResponse.serverHazelcastVersion);
+                        if (asOwner) {
+                            this.clusterService.uuid = authResponse.uuid;
+                            this.clusterService.ownerUuid = authResponse.ownerUuid;
 
-                    }
-                } else {
-                    throw new Error('Could not authenticate connection to ' + this.connection.getAddress().toString());
+                        }
+                        this.logger.info('ConnectionAuthenticator',
+                            'Connection to ' +
+                            this.connection.getAddress().toString() + ' authenticated');
+                        break;
+                    case AuthenticationStatus.CREDENTIALS_FAILED:
+                        this.logger.error('ConnectionAuthenticator', 'Invalid Credentials' );
+                        throw new Error('Invalid Credentials, could not authenticate connection to ' +
+                            this.connection.getAddress().toString());
+                    case AuthenticationStatus.SERIALIZATION_VERSION_MISMATCH:
+                        this.logger.error('ConnectionAuthenticator', 'Serialization version mismatch' );
+                        throw new Error('Serialization version mismatch, could not authenticate connection to ' +
+                            this.connection.getAddress().toString());
+                    default:
+                        this.logger.error('ConnectionAuthenticator', 'Unknown authentication status: '
+                            + authResponse.status );
+                        throw new AuthenticationError('Unknown authentication status: ' + authResponse.status +
+                            ' , could not authenticate connection to ' +
+                            this.connection.getAddress().toString());
                 }
             });
     }
 
 
-    createCredentials(ownerConnection: boolean): ClientMessage {
+    createCredentials(asOwner: boolean): ClientMessage {
         var groupConfig = this.client.getConfig().groupConfig;
         var uuid: string = this.clusterService.uuid;
         var ownerUuid: string = this.clusterService.ownerUuid;
@@ -72,10 +97,10 @@ export class ConnectionAuthenticator {
             var credentialsPayload = this.client.getSerializationService().toData(customCredentials);
 
             clientMessage = ClientAuthenticationCustomCodec.encodeRequest(
-                credentialsPayload, uuid, ownerUuid, ownerConnection, 'NJS', 1, clientVersion);
+                credentialsPayload, uuid, ownerUuid, asOwner, 'NJS', 1, clientVersion);
         } else {
             clientMessage = ClientAuthenticationCodec.encodeRequest(
-                groupConfig.name, groupConfig.password, uuid, ownerUuid, ownerConnection, 'NJS', 1, clientVersion);
+                groupConfig.name, groupConfig.password, uuid, ownerUuid, asOwner, 'NJS', 1, clientVersion);
 
         }
 

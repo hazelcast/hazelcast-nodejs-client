@@ -239,20 +239,20 @@ export class InvocationService {
 
     private invokeOnAddress(invocation: Invocation, address: Address): Promise<void> {
         return this.client.getConnectionManager().getOrConnect(address).then((connection: ClientConnection) => {
-            if (connection == null) {
-                throw new Error(address.toString() + ' is not available.');
-            }
             return this.send(invocation, connection);
+        }).catch((e) => {
+            this.logger.debug('InvocationService', e);
+            throw new IOError(address.toString() + ' is not available.', e);
         });
     }
 
     private invokeOnPartitionOwner(invocation: Invocation, partitionId: number): Promise<void> {
         let ownerAddress = this.client.getPartitionService().getAddressForPartition(partitionId);
         return this.client.getConnectionManager().getOrConnect(ownerAddress).then((connection: ClientConnection) => {
-            if (connection == null) {
-                throw new IOError(ownerAddress.toString() + '(partition owner) is not available.');
-            }
             return this.send(invocation, connection);
+        }).catch((e) => {
+            this.logger.debug('InvocationService', e);
+            throw new IOError(ownerAddress.toString() + '(partition owner) is not available.', e);
         });
     }
 

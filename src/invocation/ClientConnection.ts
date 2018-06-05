@@ -116,7 +116,7 @@ export class ClientConnection {
         return this.authenticatedAsOwner;
     }
 
-    setAuthneticatedAsOwner(asOwner: boolean): void {
+    setAuthenticatedAsOwner(asOwner: boolean): void {
         this.authenticatedAsOwner = asOwner;
     }
 
