@@ -18,7 +18,7 @@ import * as Promise from 'bluebird';
 import {LoggingService} from '../logging/LoggingService';
 import {EventEmitter} from 'events';
 import HazelcastClient from '../HazelcastClient';
-import {ClientNotActiveError, HazelcastError} from '../HazelcastError';
+import {ClientNotActiveError, HazelcastError, IllegalStateError} from '../HazelcastError';
 import {ClientConnection} from './ClientConnection';
 import {ConnectionAuthenticator} from './ConnectionAuthenticator';
 import Address = require('../Address');
@@ -52,10 +52,10 @@ export class ClientConnectionManager extends EventEmitter {
      * Returns the {@link ClientConnection} with given {@link Address}. If there is no such connection established,
      * it first connects to the address and then return the {@link ClientConnection}.
      * @param address
-     * @param ownerConnection Sets the connected node as owner of this client if true.
+     * @param asOwner Sets the connected node as owner of this client if true.
      * @returns {Promise<ClientConnection>|Promise<T>}
      */
-    getOrConnect(address: Address, ownerConnection: boolean = false): Promise<ClientConnection> {
+    getOrConnect(address: Address, asOwner: boolean = false): Promise<ClientConnection> {
         let addressIndex = address.toString();
         let connectionResolver: Promise.Resolver<ClientConnection> = Promise.defer<ClientConnection>();
 
@@ -76,23 +76,24 @@ export class ClientConnectionManager extends EventEmitter {
             this.client.getInvocationService().processResponse(data);
         };
 
-        this.triggerConnect(address).then((socket: net.Socket) => {
+        this.triggerConnect(address, asOwner).then((socket: net.Socket) => {
             let clientConnection = new ClientConnection(this.client, address, socket);
 
             return this.initiateCommunication(clientConnection).then(() => {
                 return clientConnection.registerResponseCallback(processResponseCallback);
             }).then(() => {
-                return this.authenticate(clientConnection, ownerConnection);
+                return this.authenticate(clientConnection, asOwner);
             }).then(() => {
                 this.establishedConnections[clientConnection.getAddress().toString()] = clientConnection;
                 this.onConnectionOpened(clientConnection);
                 connectionResolver.resolve(clientConnection);
             });
         }).catch((e: any) => {
-            connectionResolver.resolve(null);
+            connectionResolver.reject(e);
         }).finally(() => {
             delete this.pendingConnections[addressIndex];
         });
+
 
         let connectionTimeout = this.client.getConfig().networkConfig.connectionTimeout;
         if (connectionTimeout !== 0) {
@@ -101,7 +102,13 @@ export class ClientConnectionManager extends EventEmitter {
         return connectionResolver.promise;
     }
 
-    private triggerConnect(address: Address): Promise<net.Socket> {
+    private triggerConnect(address: Address, asOwner: boolean): Promise<net.Socket> {
+        if (!asOwner) {
+            if (this.client.getClusterService().getOwnerConnection() == null) {
+                let error = new IllegalStateError('Owner connection is not available!');
+                return Promise.reject(error);
+            }
+        }
         if (this.client.getConfig().networkConfig.sslOptions) {
             let opts = this.client.getConfig().networkConfig.sslOptions;
             return this.connectTLSSocket(address, opts);
