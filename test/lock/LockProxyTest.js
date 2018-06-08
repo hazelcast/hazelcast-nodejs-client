@@ -98,7 +98,7 @@ describe("Lock Proxy", function () {
     it("acquires lock before timeout is exceeded", function () {
         this.timeout(10000);
         var startTime = Date.now();
-        return lockOne.lock(1000).then(function() {
+        return lockOne.lock(1000).then(function () {
             return lockTwo.tryLock(2000);
         }).then(function (acquired) {
             var elasped = Date.now() - startTime;

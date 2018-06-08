@@ -37,16 +37,16 @@ class ImmutableLazyDataList {
     }
 
     public get(index: number): any {
-        var element = this.response[index];
+        const element = this.response[index];
         return [element.key, element.value];
     }
 
     public populate(): any {
-        //TODO
+        // TODO
     }
 
     public equal(): boolean {
-        //TODO
+        // TODO
         return false;
     }
 

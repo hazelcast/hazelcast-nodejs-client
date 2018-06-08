@@ -22,13 +22,13 @@ var sinon = require('sinon');
 var assert = require('chai').assert;
 var sandbox = sinon.createSandbox();
 
-describe('Generic proxy test', function() {
+describe('Generic proxy test', function () {
 
-    afterEach(function() {
+    afterEach(function () {
         sandbox.restore();
     });
 
-    it('Client without active connection should return unknown version', function() {
+    it('Client without active connection should return unknown version', function () {
         var connectionManagerStub = sandbox.stub(ConnectionManager.prototype);
         connectionManagerStub.getActiveConnections.returns({});
         var clientStub = sandbox.stub(HazelcastClient.prototype);
@@ -38,7 +38,7 @@ describe('Generic proxy test', function() {
         assert.equal(mapProxy.getConnectedServerVersion(), -1);
     });
 
-    it('Client with a 3.7 server connection should return the version', function() {
+    it('Client with a 3.7 server connection should return the version', function () {
         var connectionStub = sandbox.stub(ClientConnection.prototype);
         connectionStub.getConnectedServerVersion.returns('30700');
         var connectionManagerStub = sandbox.stub(ConnectionManager.prototype);

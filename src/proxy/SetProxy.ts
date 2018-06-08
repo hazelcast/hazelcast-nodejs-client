@@ -14,27 +14,26 @@
  * limitations under the License.
  */
 
-import {ISet} from './ISet';
 import * as Promise from 'bluebird';
-import {ItemListener} from '../core/ItemListener';
-import {Data} from '../serialization/Data';
-
-import {SetAddCodec} from '../codec/SetAddCodec';
 import {SetAddAllCodec} from '../codec/SetAddAllCodec';
-import {SetGetAllCodec} from '../codec/SetGetAllCodec';
+import {SetAddCodec} from '../codec/SetAddCodec';
+import {SetAddListenerCodec} from '../codec/SetAddListenerCodec';
 import {SetClearCodec} from '../codec/SetClearCodec';
-import {SetContainsCodec} from '../codec/SetContainsCodec';
-import {SetContainsAllCodec} from '../codec/SetContainsAllCodec';
-import {SetIsEmptyCodec} from '../codec/SetIsEmptyCodec';
-import {SetRemoveCodec} from '../codec/SetRemoveCodec';
 import {SetCompareAndRemoveAllCodec} from '../codec/SetCompareAndRemoveAllCodec';
 import {SetCompareAndRetainAllCodec} from '../codec/SetCompareAndRetainAllCodec';
-import {SetSizeCodec} from '../codec/SetSizeCodec';
-import {SetAddListenerCodec} from '../codec/SetAddListenerCodec';
+import {SetContainsAllCodec} from '../codec/SetContainsAllCodec';
+import {SetContainsCodec} from '../codec/SetContainsCodec';
+import {SetGetAllCodec} from '../codec/SetGetAllCodec';
+import {SetIsEmptyCodec} from '../codec/SetIsEmptyCodec';
+import {SetRemoveCodec} from '../codec/SetRemoveCodec';
 import {SetRemoveListenerCodec} from '../codec/SetRemoveListenerCodec';
-import ClientMessage = require('../ClientMessage');
-import {PartitionSpecificProxy} from './PartitionSpecificProxy';
+import {SetSizeCodec} from '../codec/SetSizeCodec';
+import {ItemListener} from '../core/ItemListener';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
+import {Data} from '../serialization/Data';
+import {ISet} from './ISet';
+import {PartitionSpecificProxy} from './PartitionSpecificProxy';
+import ClientMessage = require('../ClientMessage');
 
 export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
 
@@ -47,7 +46,7 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
     }
 
     toArray(): Promise<E[]> {
-        return this.encodeInvoke(SetGetAllCodec).then((items: Array<Data>) => {
+        return this.encodeInvoke(SetGetAllCodec).then((items: Data[]) => {
             return items.map((item) => {
                 return this.toObject(item);
             });
@@ -87,10 +86,10 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
     }
 
     addItemListener(listener: ItemListener<E>, includeValue: boolean = true): Promise<string> {
-        var handler = (message: ClientMessage) => {
+        const handler = (message: ClientMessage) => {
             SetAddListenerCodec.handle(message, (item: Data, uuid: string, eventType: number) => {
-                var responseObject = this.toObject(item);
-                var listenerFunction: Function;
+                const responseObject = this.toObject(item);
+                let listenerFunction: Function;
                 if (eventType === 1) {
                     listenerFunction = listener.itemAdded;
                 } else if (eventType === 2) {
@@ -102,7 +101,7 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
                 }
             });
         };
-        let codec = this.createEntryListener(this.name, includeValue);
+        const codec = this.createEntryListener(this.name, includeValue);
         return this.client.getListenerService().registerListener(codec, handler);
     }
 
@@ -110,7 +109,7 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
         return this.client.getListenerService().deregisterListener(registrationId);
     }
 
-    private serializeList(input: Array<any>): Array<Data> {
+    private serializeList(input: any[]): Data[] {
         return input.map((each) => {
             return this.toData(each);
         });
@@ -118,15 +117,15 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
 
     private createEntryListener(name: string, includeValue: boolean): ListenerMessageCodec {
         return {
-            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+            encodeAddRequest(localOnly: boolean): ClientMessage {
                 return SetAddListenerCodec.encodeRequest(name, includeValue, localOnly);
             },
-            decodeAddResponse: function(msg: ClientMessage): string {
+            decodeAddResponse(msg: ClientMessage): string {
                 return SetAddListenerCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+            encodeRemoveRequest(listenerId: string): ClientMessage {
                 return SetRemoveListenerCodec.encodeRequest(name, listenerId);
-            }
+            },
         };
     }
 }

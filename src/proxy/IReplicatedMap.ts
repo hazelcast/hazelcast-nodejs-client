@@ -15,12 +15,12 @@
  */
 
 import * as Promise from 'bluebird';
-import {DistributedObject} from '../DistributedObject';
-import {Predicate} from '../core/Predicate';
 import {IMapListener} from '../core/MapListener';
-import Long = require('long');
-import {ArrayComparator} from '../util/ArrayComparator';
+import {Predicate} from '../core/Predicate';
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
+import {DistributedObject} from '../DistributedObject';
+import {ArrayComparator} from '../util/ArrayComparator';
+import Long = require('long');
 
 export interface IReplicatedMap<K, V> extends DistributedObject {
     /**
@@ -33,7 +33,7 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
      * @param ttl milliseconds to be associated with the specified key-value pair.
      * @return old value if there was any, `null` otherwise.
      */
-    put(key: K, value: V, ttl?: Long|number): Promise<V>;
+    put(key: K, value: V, ttl?: Long | number): Promise<V>;
 
     /**
      * The clear operation wipes data out of the replicated maps.
@@ -57,7 +57,6 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
      * @return value associated with the specified key.
      */
     get(key: K): Promise<V>;
-
 
     /**
      * Returns true if this map contains a mapping for the specified key. This message is idempotent.
@@ -110,7 +109,7 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
      * @param pairs
      * @return
      */
-    putAll(pairs: [K, V][]): Promise<void>;
+    putAll(pairs: Array<[K, V]>): Promise<void>;
 
     /**
      * Returns a view of the key contained in this map.
@@ -127,7 +126,7 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
     /**
      * @return Returns entries as an array of key-value pairs.
      */
-    entrySet(): Promise<[K, V][]>;
+    entrySet(): Promise<Array<[K, V]>>;
 
     /**
      * Adds an continuous entry listener for this map. The listener will be notified for

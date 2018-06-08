@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {IdentifiedDataSerializable, IdentifiedDataSerializableFactory} from '../../serialization/Serializable';
-import {DataInput, DataOutput, Data} from '../../serialization/Data';
-import Address = require('../../Address');
 import * as Long from 'long';
+import {Data, DataInput, DataOutput} from '../../serialization/Data';
+import {IdentifiedDataSerializable, IdentifiedDataSerializableFactory} from '../../serialization/Serializable';
+import Address = require('../../Address');
 
 export const RELIABLE_TOPIC_MESSAGE_FACTORY_ID = -18;
 export const RELIABLE_TOPIC_CLASS_ID = 2;

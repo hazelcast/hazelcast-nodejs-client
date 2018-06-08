@@ -17,8 +17,8 @@
 var BuildMetadata = require('../lib/BuildMetadata').BuildMetadata;
 var assert = require('chai').assert;
 
-describe('BuildMetadata', function() {
-    it('version calculation test', function() {
+describe('BuildMetadata', function () {
+    it('version calculation test', function () {
         assert.equal(-1, BuildMetadata.calculateVersion(null));
         assert.equal(-1, BuildMetadata.calculateVersion(""));
         assert.equal(-1, BuildMetadata.calculateVersion("a.3.7.5"));

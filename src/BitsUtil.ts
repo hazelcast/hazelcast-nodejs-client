@@ -15,8 +15,9 @@
  */
 
 /* tslint:disable:no-bitwise */
-import {Data} from './serialization/Data';
 import Address = require('./Address');
+import {Data} from './serialization/Data';
+
 export class BitsUtil {
     static EVENT_MEMBER = 200;
     static EVENT_MEMBERLIST = 201;
@@ -72,9 +73,10 @@ export class BitsUtil {
     static calculateSizeData(data: Data) {
         return BitsUtil.INT_SIZE_IN_BYTES + data.totalSize();
     }
+
     public static getStringSize(value: string, nullable: boolean = false): number {
         // int32 for string length
-        var size = 4;
+        let size = 4;
 
         if (nullable) {
             size += 1;
@@ -90,12 +92,13 @@ export class BitsUtil {
     }
 
     public static calculateSizeBuffer(value: Buffer) {
-        var size = 4;
+        let size = 4;
         size += value.length;
         return size;
     }
+
     public static calculateSizeAddress(value: Address) {
-        var size = 4;
+        let size = 4;
         size += this.calculateSizeString(value.host);
         return size;
     }

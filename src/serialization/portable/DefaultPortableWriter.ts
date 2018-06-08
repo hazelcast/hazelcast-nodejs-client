@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import {PortableSerializer} from './PortableSerializer';
-import {PositionalDataOutput} from '../Data';
-import {ClassDefinition, FieldType, FieldDefinition} from './ClassDefinition';
-import {BitsUtil} from '../../BitsUtil';
-import {Portable} from '../Serializable';
 import * as Long from 'long';
+import {BitsUtil} from '../../BitsUtil';
+import {PositionalDataOutput} from '../Data';
+import {Portable} from '../Serializable';
+import {ClassDefinition, FieldDefinition, FieldType} from './ClassDefinition';
+import {PortableSerializer} from './PortableSerializer';
 
 export class DefaultPortableWriter {
     private serializer: PortableSerializer;
@@ -39,7 +39,7 @@ export class DefaultPortableWriter {
         this.output.writeInt(this.classDefinition.getFieldCount());
         this.offset = this.output.position();
 
-        var fieldIndexesLength: number = (this.classDefinition.getFieldCount() + 1) * BitsUtil.INT_SIZE_IN_BYTES;
+        const fieldIndexesLength: number = (this.classDefinition.getFieldCount() + 1) * BitsUtil.INT_SIZE_IN_BYTES;
         this.output.writeZeroBytes(fieldIndexesLength);
     }
 
@@ -89,8 +89,8 @@ export class DefaultPortableWriter {
     }
 
     writePortable(fieldName: string, portable: Portable): void {
-        var fieldDefinition = this.setPosition(fieldName, FieldType.PORTABLE);
-        var isNullPortable = (portable == null);
+        const fieldDefinition = this.setPosition(fieldName, FieldType.PORTABLE);
+        const isNullPortable = (portable == null);
         this.output.writeBoolean(isNullPortable);
         this.output.writeInt(fieldDefinition.getFactoryId());
         this.output.writeInt(fieldDefinition.getClassId());
@@ -152,11 +152,11 @@ export class DefaultPortableWriter {
     }
 
     writePortableArray(fieldName: string, portables: Portable[]): void {
-        var innerOffset: number;
-        var sample: Portable;
-        var i: number;
-        var fieldDefinition = this.setPosition(fieldName, FieldType.PORTABLE_ARRAY);
-        var len = (portables == null ) ? BitsUtil.NULL_ARRAY_LENGTH : portables.length;
+        let innerOffset: number;
+        let sample: Portable;
+        let i: number;
+        const fieldDefinition = this.setPosition(fieldName, FieldType.PORTABLE_ARRAY);
+        const len = (portables == null) ? BitsUtil.NULL_ARRAY_LENGTH : portables.length;
         this.output.writeInt(len);
         this.output.writeInt(fieldDefinition.getFactoryId());
         this.output.writeInt(fieldDefinition.getClassId());
@@ -165,7 +165,7 @@ export class DefaultPortableWriter {
             this.output.writeZeroBytes(len * 4);
             for (i = 0; i < len; i++) {
                 sample = portables[i];
-                var posVal = this.output.position();
+                const posVal = this.output.position();
                 this.output.pwriteInt(innerOffset + i * BitsUtil.INT_SIZE_IN_BYTES, posVal);
                 this.serializer.writeObject(this.output, sample);
             }
@@ -173,14 +173,14 @@ export class DefaultPortableWriter {
     }
 
     end(): void {
-        var position = this.output.position();
+        const position = this.output.position();
         this.output.pwriteInt(this.begin, position);
     }
 
     private setPosition(fieldName: string, fieldType: FieldType): FieldDefinition {
-        var field: FieldDefinition = this.classDefinition.getField(fieldName);
-        var pos: number = this.output.position();
-        var index: number = field.getIndex();
+        const field: FieldDefinition = this.classDefinition.getField(fieldName);
+        const pos: number = this.output.position();
+        const index: number = field.getIndex();
         this.output.pwriteInt(this.offset + index * BitsUtil.INT_SIZE_IN_BYTES, pos);
         this.output.writeShort(fieldName.length);
         this.output.writeBytes(fieldName);

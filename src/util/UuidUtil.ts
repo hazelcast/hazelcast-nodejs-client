@@ -15,8 +15,8 @@
  */
 
 /* tslint:disable:no-bitwise */
-import {UUID} from '../core/UUID';
 import * as Long from 'long';
+import {UUID} from '../core/UUID';
 
 const INT_BOUND = 0xFFFFFFFF;
 
@@ -26,8 +26,8 @@ function randomUInt(): number {
 
 export class UuidUtil {
     static generate(): UUID {
-        let mostS = new Long(randomUInt(), randomUInt(), true);
-        let leastS = new Long(randomUInt(), randomUInt(), true);
+        const mostS = new Long(randomUInt(), randomUInt(), true);
+        const leastS = new Long(randomUInt(), randomUInt(), true);
         return new UUID(mostS, leastS);
     }
 }

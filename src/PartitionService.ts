@@ -16,17 +16,17 @@
 
 import * as Promise from 'bluebird';
 import HazelcastClient from './HazelcastClient';
-import GetPartitionsCodec = require('./codec/GetPartitionsCodec');
+import {LoggingService} from './logging/LoggingService';
 import Address = require('./Address');
 import ClientMessage = require('./ClientMessage');
-import {LoggingService} from './logging/LoggingService';
+import GetPartitionsCodec = require('./codec/GetPartitionsCodec');
 
 const PARTITION_REFRESH_INTERVAL = 10000;
 
 export class PartitionService {
 
     private client: HazelcastClient;
-    private partitionMap: {[partitionId: number]: Address} = {};
+    private partitionMap: { [partitionId: number]: Address } = {};
     private partitionCount: number;
     private partitionRefreshTask: any;
     private isShutdown: boolean;
@@ -54,17 +54,17 @@ export class PartitionService {
         if (this.isShutdown) {
             return Promise.resolve();
         }
-        let ownerConnection = this.client.getClusterService().getOwnerConnection();
+        const ownerConnection = this.client.getClusterService().getOwnerConnection();
         if (ownerConnection == null) {
             return Promise.resolve();
         }
-        let clientMessage: ClientMessage = GetPartitionsCodec.encodeRequest();
+        const clientMessage: ClientMessage = GetPartitionsCodec.encodeRequest();
 
         return this.client.getInvocationService()
             .invokeOnConnection(ownerConnection, clientMessage)
-            .then((clientMessage: ClientMessage) => {
-                var receivedPartitionMap = GetPartitionsCodec.decodeResponse(clientMessage);
-                for (var partitionId in receivedPartitionMap) {
+            .then((response: ClientMessage) => {
+                const receivedPartitionMap = GetPartitionsCodec.decodeResponse(response);
+                for (const partitionId in receivedPartitionMap) {
                     this.partitionMap[partitionId] = receivedPartitionMap[partitionId];
                 }
                 this.partitionCount = Object.keys(this.partitionMap).length;
@@ -90,7 +90,7 @@ export class PartitionService {
      * @returns the partition id.
      */
     getPartitionId(key: any) {
-        var partitionHash: number;
+        let partitionHash: number;
         if (typeof key === 'object' && 'getPartitionHash' in key) {
             partitionHash = key.getPartitionHash();
         } else {

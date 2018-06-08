@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-import {SerializationService} from '../SerializationService';
-import {ClassDefinitionContext} from './ClassDefinitionContext';
-import {DataInput} from '../Data';
-import {ClassDefinition, FieldType} from './ClassDefinition';
-import {ClassDefinitionWriter} from './ClassDefinitionWriter';
 import {BitsUtil} from '../../BitsUtil';
+import {DataInput} from '../Data';
 import {Portable, VersionedPortable} from '../Serializable';
+import {SerializationService} from '../SerializationService';
+import {ClassDefinition, FieldType} from './ClassDefinition';
+import {ClassDefinitionContext} from './ClassDefinitionContext';
+import {ClassDefinitionWriter} from './ClassDefinitionWriter';
 
 export class PortableContext {
     private service: SerializationService;
     private portableVersion: number = 0;
-    private classDefContext: {[factoyId: number]: ClassDefinitionContext};
+    private classDefContext: { [factoyId: number]: ClassDefinitionContext };
 
     constructor(service: SerializationService, portableVersion: number) {
         this.service = service;
@@ -38,28 +38,28 @@ export class PortableContext {
     }
 
     readClassDefinitionFromInput(input: DataInput, factoryId: number, classId: number, version: number): ClassDefinition {
-        var register = true;
-        var cdWriter = new ClassDefinitionWriter(this, factoryId, classId, version);
+        let register = true;
+        const cdWriter = new ClassDefinitionWriter(this, factoryId, classId, version);
         input.readInt();
 
-        var fieldCount = input.readInt();
-        var offset = input.position();
-        for (var i = 0; i < fieldCount; i++) {
-            var pos = input.readInt(offset + i * BitsUtil.INT_SIZE_IN_BYTES);
+        const fieldCount = input.readInt();
+        const offset = input.position();
+        for (let i = 0; i < fieldCount; i++) {
+            const pos = input.readInt(offset + i * BitsUtil.INT_SIZE_IN_BYTES);
             input.position(pos);
 
-            var len = input.readShort();
-            var chars = '';
-            for (var j = 0; j < len; j++) {
+            const len = input.readShort();
+            let chars = '';
+            for (let j = 0; j < len; j++) {
                 chars += String.fromCharCode(input.readUnsignedByte());
             }
 
-            var type: FieldType = input.readByte();
-            var name = chars;
-            var fieldFactoryId = 0;
-            var fieldClassId = 0;
+            const type: FieldType = input.readByte();
+            const name = chars;
+            let fieldFactoryId = 0;
+            let fieldClassId = 0;
             if (type === FieldType.PORTABLE) {
-                //is null
+                // is null
                 if (input.readBoolean()) {
                     register = false;
                 }
@@ -68,19 +68,19 @@ export class PortableContext {
 
                 // TODO: what there's a null inner Portable field
                 if (register) {
-                    var fieldVersion = input.readInt();
+                    const fieldVersion = input.readInt();
                     this.readClassDefinitionFromInput(input, fieldFactoryId, fieldClassId, fieldVersion);
                 }
             } else if (type === FieldType.PORTABLE_ARRAY) {
-                var k = input.readInt();
+                const k = input.readInt();
                 fieldFactoryId = input.readInt();
                 fieldClassId = input.readInt();
 
                 // TODO: what there's a null inner Portable field
                 if (k > 0) {
-                    var p = input.readInt();
+                    const p = input.readInt();
                     input.position(p);
-                    var fieldVersion = input.readInt();
+                    const fieldVersion = input.readInt();
                     this.readClassDefinitionFromInput(input, fieldFactoryId, fieldClassId, fieldVersion);
                 } else {
                     register = false;
@@ -89,7 +89,7 @@ export class PortableContext {
             cdWriter.addFieldByType(name, type, fieldFactoryId, fieldClassId);
         }
         cdWriter.end();
-        var classDefinition = cdWriter.getDefinition();
+        let classDefinition = cdWriter.getDefinition();
         if (register) {
             classDefinition = cdWriter.registerAndGet();
         }
@@ -97,8 +97,8 @@ export class PortableContext {
     }
 
     lookupOrRegisterClassDefinition(portable: Portable): ClassDefinition {
-        var version = this.getClassVersion(portable);
-        var definition = this.lookupClassDefinition(portable.getFactoryId(), portable.getClassId(), version);
+        const version = this.getClassVersion(portable);
+        let definition = this.lookupClassDefinition(portable.getFactoryId(), portable.getClassId(), version);
         if (definition == null) {
             definition = this.generateClassDefinitionForPortable(portable);
             this.registerClassDefinition(definition);
@@ -107,7 +107,7 @@ export class PortableContext {
     }
 
     lookupClassDefinition(factoryId: number, classId: number, version: number): ClassDefinition {
-        var factory = this.classDefContext[factoryId];
+        const factory = this.classDefContext[factoryId];
         if (factory == null) {
             return null;
         } else {
@@ -116,17 +116,17 @@ export class PortableContext {
     }
 
     generateClassDefinitionForPortable(portable: Portable): ClassDefinition {
-        var version: number = this.getClassVersion(portable);
-        var classDefinitionWriter = new ClassDefinitionWriter(this, portable.getFactoryId(), portable.getClassId(), version);
+        const version: number = this.getClassVersion(portable);
+        const classDefinitionWriter = new ClassDefinitionWriter(this, portable.getFactoryId(), portable.getClassId(), version);
         portable.writePortable(classDefinitionWriter);
         classDefinitionWriter.end();
         return classDefinitionWriter.registerAndGet();
     }
 
     registerClassDefinition(classDefinition: ClassDefinition): ClassDefinition {
-        var factoryId = classDefinition.getFactoryId();
-        var classId = classDefinition.getClassId();
-        var version = classDefinition.getVersion();
+        const factoryId = classDefinition.getFactoryId();
+        const classId = classDefinition.getClassId();
+        const version = classDefinition.getVersion();
         if (!this.classDefContext[factoryId]) {
             this.classDefContext[factoryId] = new ClassDefinitionContext(factoryId, this.portableVersion);
         }
@@ -134,8 +134,8 @@ export class PortableContext {
     }
 
     getClassVersion(portable: VersionedPortable | Portable): number {
-        if ((<VersionedPortable>portable).getVersion) {
-            return (<VersionedPortable>portable).getVersion();
+        if ((portable as VersionedPortable).getVersion) {
+            return (portable as VersionedPortable).getVersion();
         } else {
             return this.portableVersion;
         }

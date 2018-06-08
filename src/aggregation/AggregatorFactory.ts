@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {LoggingService} from '../logging/LoggingService';
 import {IdentifiedDataSerializable, IdentifiedDataSerializableFactory} from '../serialization/Serializable';
 import {
     Aggregator,
@@ -28,21 +29,19 @@ import {
     LongSumAggregator,
     MaxAggregator,
     MinAggregator,
-    NumberAverageAggregator
+    NumberAverageAggregator,
 } from './Aggregator';
-import {LoggingService} from '../logging/LoggingService';
 
 export class AggregatorFactory implements IdentifiedDataSerializableFactory {
 
-    private logger = LoggingService.getLoggingService();
     static readonly FACTORY_ID = -41;
 
-    static readonly BIG_DECIMAL_AVG = 0; //not implemented in node.js
-    static readonly BIG_DECIMAL_SUM = 1; //not implemented in node.js
-    static readonly BIG_INT_AVG = 2; //not implemented in node.js
-    static readonly BIG_INT_SUM = 3; //not implemented in node.js
+    static readonly BIG_DECIMAL_AVG = 0; // not implemented in node.js
+    static readonly BIG_DECIMAL_SUM = 1; // not implemented in node.js
+    static readonly BIG_INT_AVG = 2; // not implemented in node.js
+    static readonly BIG_INT_SUM = 3; // not implemented in node.js
     static readonly COUNT = 4;
-    static readonly DISTINCT = 5; //returns java serializable, not usable in node.js
+    static readonly DISTINCT = 5; // returns java serializable, not usable in node.js
     static readonly DOUBLE_AVG = 6;
     static readonly DOUBLE_SUM = 7;
     static readonly FIXED_SUM = 8;
@@ -54,10 +53,11 @@ export class AggregatorFactory implements IdentifiedDataSerializableFactory {
     static readonly MAX = 14;
     static readonly MIN = 15;
     static readonly NUMBER_AVG = 16;
-    static readonly MAX_BY = 17; //needs object to implement Java's Comparable interface
-    static readonly MIN_BY = 18; //needs object to implement Java's Comparable interface
+    static readonly MAX_BY = 17; // needs object to implement Java's Comparable interface
+    static readonly MIN_BY = 18; // needs object to implement Java's Comparable interface
 
-    private idToConstructor: {[id: number]: Aggregator<any>} = {};
+    private logger = LoggingService.getLoggingService();
+    private idToConstructor: { [id: number]: Aggregator<any> } = {};
 
     constructor() {
         this.idToConstructor[AggregatorFactory.COUNT] = CountAggregator;
@@ -74,14 +74,14 @@ export class AggregatorFactory implements IdentifiedDataSerializableFactory {
         this.idToConstructor[AggregatorFactory.NUMBER_AVG] = NumberAverageAggregator;
 
     }
+
     create(type: number): IdentifiedDataSerializable {
         try {
-            return <any>(new (<FunctionConstructor>this.idToConstructor[type])());
+            return (new (this.idToConstructor[type] as FunctionConstructor)()) as any;
         } catch (e) {
             this.logger.error('Aggregatorfactory', 'There is no known aggregator with type id ' + type, e);
             return null;
         }
     }
-
 
 }

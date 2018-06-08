@@ -21,16 +21,16 @@ import {ClientAuthenticationCustomCodec} from '../codec/ClientAuthenticationCust
 import {ClientConnection} from './ClientConnection';
 import {ClusterService} from './ClusterService';
 import {BuildInfoLoader} from '../BuildInfoLoader';
-import ClientMessage = require('../ClientMessage');
 import {LoggingService} from '../logging/LoggingService';
 import {AuthenticationError} from '../HazelcastError';
-
+import ClientMessage = require('../ClientMessage');
 
 const enum AuthenticationStatus {
     AUTHENTICATED = 0,
     CREDENTIALS_FAILED = 1,
-    SERIALIZATION_VERSION_MISMATCH = 2
+    SERIALIZATION_VERSION_MISMATCH = 2,
 }
+
 export class ConnectionAuthenticator {
 
     private connection: ClientConnection;
@@ -45,11 +45,11 @@ export class ConnectionAuthenticator {
     }
 
     authenticate(asOwner: boolean): Promise<void> {
-        var credentials: ClientMessage = this.createCredentials(asOwner);
+        const credentials: ClientMessage = this.createCredentials(asOwner);
         return this.client.getInvocationService()
             .invokeOnConnection(this.connection, credentials)
             .then((msg: ClientMessage) => {
-                var authResponse = ClientAuthenticationCodec.decodeResponse(msg);
+                const authResponse = ClientAuthenticationCodec.decodeResponse(msg);
                 switch (authResponse.status) {
                     case AuthenticationStatus.AUTHENTICATED:
                         this.connection.setAddress(authResponse.address);
@@ -64,16 +64,16 @@ export class ConnectionAuthenticator {
                             this.connection.getAddress().toString() + ' authenticated');
                         break;
                     case AuthenticationStatus.CREDENTIALS_FAILED:
-                        this.logger.error('ConnectionAuthenticator', 'Invalid Credentials' );
+                        this.logger.error('ConnectionAuthenticator', 'Invalid Credentials');
                         throw new Error('Invalid Credentials, could not authenticate connection to ' +
                             this.connection.getAddress().toString());
                     case AuthenticationStatus.SERIALIZATION_VERSION_MISMATCH:
-                        this.logger.error('ConnectionAuthenticator', 'Serialization version mismatch' );
+                        this.logger.error('ConnectionAuthenticator', 'Serialization version mismatch');
                         throw new Error('Serialization version mismatch, could not authenticate connection to ' +
                             this.connection.getAddress().toString());
                     default:
                         this.logger.error('ConnectionAuthenticator', 'Unknown authentication status: '
-                            + authResponse.status );
+                            + authResponse.status);
                         throw new AuthenticationError('Unknown authentication status: ' + authResponse.status +
                             ' , could not authenticate connection to ' +
                             this.connection.getAddress().toString());
@@ -81,20 +81,19 @@ export class ConnectionAuthenticator {
             });
     }
 
-
     createCredentials(asOwner: boolean): ClientMessage {
-        var groupConfig = this.client.getConfig().groupConfig;
-        var uuid: string = this.clusterService.uuid;
-        var ownerUuid: string = this.clusterService.ownerUuid;
+        const groupConfig = this.client.getConfig().groupConfig;
+        const uuid: string = this.clusterService.uuid;
+        const ownerUuid: string = this.clusterService.ownerUuid;
 
-        var customCredentials = this.client.getConfig().customCredentials;
+        const customCredentials = this.client.getConfig().customCredentials;
 
-        var clientMessage: ClientMessage;
+        let clientMessage: ClientMessage;
 
         const clientVersion = BuildInfoLoader.getClientVersion();
 
         if (customCredentials != null) {
-            var credentialsPayload = this.client.getSerializationService().toData(customCredentials);
+            const credentialsPayload = this.client.getSerializationService().toData(customCredentials);
 
             clientMessage = ClientAuthenticationCustomCodec.encodeRequest(
                 credentialsPayload, uuid, ownerUuid, asOwner, 'NJS', 1, clientVersion);

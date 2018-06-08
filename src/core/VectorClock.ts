@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {IdentifiedDataSerializable} from '../serialization/Serializable';
-import {DataInput, DataOutput} from '../serialization/Data';
 import {ClusterDataFactoryHelper} from '../ClusterDataFactoryHelper';
+import {DataInput, DataOutput} from '../serialization/Data';
+import {IdentifiedDataSerializable} from '../serialization/Serializable';
 
 export class VectorClock implements IdentifiedDataSerializable {
 
@@ -25,7 +25,7 @@ export class VectorClock implements IdentifiedDataSerializable {
     isAfter(other: VectorClock): boolean {
         let atLeastOneBigger = false;
         other.replicaTimestamps.forEach((otherTimestamp: Long, replicaId: string) => {
-            let thisTimetamp = this.replicaTimestamps.get(replicaId);
+            const thisTimetamp = this.replicaTimestamps.get(replicaId);
             if (thisTimetamp == null || otherTimestamp.greaterThan(thisTimetamp)) {
                 return false;
             } else if (otherTimestamp.lessThan(thisTimetamp)) {
@@ -40,7 +40,7 @@ export class VectorClock implements IdentifiedDataSerializable {
     }
 
     entrySet(): Array<[string, Long]> {
-        let entrySet: Array<[string, Long]> = [];
+        const entrySet: Array<[string, Long]> = [];
         this.replicaTimestamps.forEach((timestamp: Long, replicaId: string) => {
             entrySet.push([replicaId, timestamp]);
         });
@@ -48,10 +48,10 @@ export class VectorClock implements IdentifiedDataSerializable {
     }
 
     readData(input: DataInput): any {
-        let stateSize = input.readInt();
+        const stateSize = input.readInt();
         for (let i = 0; i < stateSize; i++) {
-            let replicaId = input.readUTF();
-            let timestamp = input.readLong();
+            const replicaId = input.readUTF();
+            const timestamp = input.readLong();
             this.replicaTimestamps.set(replicaId, timestamp);
         }
     }

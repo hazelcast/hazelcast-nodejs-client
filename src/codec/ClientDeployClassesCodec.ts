@@ -17,13 +17,6 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
-import Address = require('../Address');
-import {AddressCodec} from './AddressCodec';
-import {UUIDCodec} from './UUIDCodec';
-import {MemberCodec} from './MemberCodec';
-import {Data} from '../serialization/Data';
-import {EntryViewCodec} from './EntryViewCodec';
-import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 import {ClientMessageType} from './ClientMessageType';
 
 var REQUEST_TYPE = ClientMessageType.CLIENT_DEPLOYCLASSES;
@@ -43,7 +36,7 @@ export class ClientDeployClassesCodec {
             var key: string = classDefinitionsItem[0];
             var val: any = classDefinitionsItem[1];
             dataSize += BitsUtil.calculateSizeString(key);
-            dataSize += BitsUtil.INT_SIZE_IN_BYTES
+            dataSize += BitsUtil.INT_SIZE_IN_BYTES;
             val.forEach((valItem: any) => {
                 dataSize += BitsUtil.BYTE_SIZE_IN_BYTES;
             });

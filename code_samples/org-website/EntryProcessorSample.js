@@ -8,14 +8,14 @@ function IdentifiedEntryProcessor(value) {
 IdentifiedEntryProcessor.prototype.readData = function (inp) {
 };
 
-IdentifiedEntryProcessor.prototype.writeData = function(outp) {
+IdentifiedEntryProcessor.prototype.writeData = function (outp) {
 };
 
 IdentifiedEntryProcessor.prototype.getFactoryId = function () {
     return 1;
 };
 
-IdentifiedEntryProcessor.prototype.getClassId = function() {
+IdentifiedEntryProcessor.prototype.getClassId = function () {
     return 9;
 };
 

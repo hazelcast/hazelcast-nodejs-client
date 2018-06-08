@@ -23,7 +23,7 @@ var Config = require('../../.').Config;
 var Controller = require('../RC');
 var HazelcastClient = require('../../.').Client;
 
-describe('NearCacheSimpleInvalidation', function() {
+describe('NearCacheSimpleInvalidation', function () {
     var cluster;
     var client;
     var updaterClient;
@@ -39,13 +39,13 @@ describe('NearCacheSimpleInvalidation', function() {
 
     [false, true].forEach(function (batchInvalidationEnabled) {
         describe('batch invalidations enabled=' + batchInvalidationEnabled, function () {
-            before(function() {
+            before(function () {
                 if (batchInvalidationEnabled) {
-                    var clusterConfig =null;
+                    var clusterConfig = null;
                 } else {
                     var clusterConfig = fs.readFileSync(__dirname + '/hazelcast_nearcache_batchinvalidation_false.xml', 'utf8');
                 }
-                return Controller.createCluster(null, clusterConfig).then(function(res) {
+                return Controller.createCluster(null, clusterConfig).then(function (res) {
                     cluster = res;
                     return Controller.startMember(cluster.id);
                 }).then(function () {
@@ -58,7 +58,7 @@ describe('NearCacheSimpleInvalidation', function() {
                 });
             });
 
-            after(function() {
+            after(function () {
                 client.shutdown();
                 updaterClient.shutdown();
                 return Controller.shutdownCluster(cluster.id);

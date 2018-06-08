@@ -96,7 +96,7 @@ describe("FlakeIdGeneratorProxyTest", function () {
             });
             for (var i = 1; i < idList.length; i++) {
                 expect(idList[i]).to.be.instanceOf(Long);
-                expect(idList[i-1].equals(idList[i]), 'Expected ' + idList[i-1] + ' ' + idList[i] + 'to be different.').to.be.false;
+                expect(idList[i - 1].equals(idList[i]), 'Expected ' + idList[i - 1] + ' ' + idList[i] + 'to be different.').to.be.false;
             }
         });
     });
@@ -130,7 +130,7 @@ describe("FlakeIdGeneratorProxyTest", function () {
                 return flakeIdGenerator.newId();
             }).then(function () {
                 return Util.promiseWaitMilliseconds(100);
-            }).then(function() {
+            }).then(function () {
                 return flakeIdGenerator.newId();
             }).then(function (secondId) {
                 var borderId = firstId.add(FLAKE_ID_STEP * SHORT_TERM_BATCH_SIZE);

@@ -22,11 +22,11 @@ import {LoggingService} from '../logging/LoggingService';
 import {EventEmitter} from 'events';
 import {ClientInfo} from '../ClientInfo';
 import HazelcastClient from '../HazelcastClient';
-import Address = require('../Address');
-import ClientMessage = require('../ClientMessage');
 import {IllegalStateError} from '../HazelcastError';
 import * as assert from 'assert';
 import {MemberSelector} from '../core/MemberSelector';
+import Address = require('../Address');
+import ClientMessage = require('../ClientMessage');
 
 const MEMBER_ADDED = 1;
 const MEMBER_REMOVED = 2;
@@ -34,9 +34,9 @@ const MEMBER_REMOVED = 2;
 const EMIT_MEMBER_ADDED = 'memberAdded';
 const EMIT_MEMBER_REMOVED = 'memberRemoved';
 const EMIT_ATTRIBUTE_CHANGE = 'memberAttributeChange';
-const ATTRIBUTE_CHANGE: {[key: string]: string} = {
+const ATTRIBUTE_CHANGE: { [key: string]: string } = {
     1: 'put',
-    2: 'remove'
+    2: 'remove',
 };
 
 /**
@@ -93,8 +93,8 @@ export class ClusterService extends EventEmitter {
         if (this.knownAddresses.length === 0) {
             this.knownAddresses.push(new Address('127.0.0.1', 5701));
         }
-        var attemptLimit = this.client.getConfig().networkConfig.connectionAttemptLimit;
-        var attemptPeriod = this.client.getConfig().networkConfig.connectionAttemptPeriod;
+        const attemptLimit = this.client.getConfig().networkConfig.connectionAttemptLimit;
+        const attemptPeriod = this.client.getConfig().networkConfig.connectionAttemptPeriod;
         return this.tryConnectingToAddresses(0, attemptLimit, attemptPeriod);
     }
 
@@ -106,7 +106,7 @@ export class ClusterService extends EventEmitter {
         if (selector === undefined) {
             return this.members;
         } else {
-            let members: Member[] = [];
+            const members: Member[] = [];
             this.members.forEach(function (member) {
                 if (selector.select(member)) {
                     members.push(member);
@@ -129,15 +129,39 @@ export class ClusterService extends EventEmitter {
      * @returns {ClientInfo}
      */
     getClientInfo(): ClientInfo {
-        var info = new ClientInfo();
+        const info = new ClientInfo();
         info.uuid = this.uuid;
         info.localAddress = this.getOwnerConnection().getLocalAddress();
         return info;
     }
 
+    /**
+     * Returns the connection associated with owner node of this client.
+     * @returns {ClientConnection}
+     */
+    getOwnerConnection(): ClientConnection {
+        return this.ownerConnection;
+    }
+
+    initMemberShipListener(): Promise<void> {
+        const request = ClientAddMembershipListenerCodec.encodeRequest(false);
+
+        const handler = (m: ClientMessage) => {
+            const handleMember = this.handleMember.bind(this);
+            const handleMemberList = this.handleMemberList.bind(this);
+            const handleAttributeChange = this.handleMemberAttributeChange.bind(this);
+            ClientAddMembershipListenerCodec.handle(m, handleMember, handleMemberList, handleAttributeChange, null);
+        };
+        return this.client.getInvocationService().invokeOnConnection(this.getOwnerConnection(), request, handler)
+            .then((resp: ClientMessage) => {
+                this.logger.trace('ClusterService', 'Registered listener with id '
+                    + ClientAddMembershipListenerCodec.decodeResponse(resp).response);
+            });
+    }
+
     private initHeartbeatListener() {
         this.client.getHeartbeat().addListener({
-            onHeartbeatStopped: this.onHeartbeatStopped.bind(this)
+            onHeartbeatStopped: this.onHeartbeatStopped.bind(this),
         });
     }
 
@@ -167,15 +191,15 @@ export class ClusterService extends EventEmitter {
         if (this.knownAddresses.length <= index) {
             remainingAttemptLimit = remainingAttemptLimit - 1;
             if (remainingAttemptLimit === 0) {
-                let errorMessage =  'Unable to connect to any of the following addresses: ' +
+                const errorMessage = 'Unable to connect to any of the following addresses: ' +
                     this.knownAddresses.map((element: Address) => {
                         return element.toString();
                     }).join(', ');
                 this.logger.debug('ClusterService', errorMessage);
-                let error = new IllegalStateError(errorMessage, cause);
+                const error = new IllegalStateError(errorMessage, cause);
                 return Promise.reject(error);
             } else {
-                let deferred = Promise.defer<void>();
+                const deferred = Promise.defer<void>();
                 setTimeout(
                     () => {
                         this.tryConnectingToAddresses(0, remainingAttemptLimit, attemptPeriod).then(() => {
@@ -184,12 +208,12 @@ export class ClusterService extends EventEmitter {
                             deferred.reject(e);
                         });
                     },
-                    attemptPeriod
+                    attemptPeriod,
                 );
                 return deferred.promise;
             }
         } else {
-            var currentAddress = this.knownAddresses[index];
+            const currentAddress = this.knownAddresses[index];
             return this.client.getConnectionManager().getOrConnect(currentAddress, true).then((connection: ClientConnection) => {
                 connection.setAuthenticatedAsOwner(true);
                 this.ownerConnection = connection;
@@ -199,30 +223,6 @@ export class ClusterService extends EventEmitter {
                 return this.tryConnectingToAddresses(index + 1, remainingAttemptLimit, attemptPeriod, e);
             });
         }
-    }
-
-    /**
-     * Returns the connection associated with owner node of this client.
-     * @returns {ClientConnection}
-     */
-    getOwnerConnection(): ClientConnection {
-        return this.ownerConnection;
-    }
-
-    initMemberShipListener(): Promise<void> {
-        var request = ClientAddMembershipListenerCodec.encodeRequest(false);
-
-        var handler = (m: ClientMessage) => {
-            var handleMember = this.handleMember.bind(this);
-            var handleMemberList = this.handleMemberList.bind(this);
-            var handleAttributeChange = this.handleMemberAttributeChange.bind(this);
-            ClientAddMembershipListenerCodec.handle(m, handleMember, handleMemberList, handleAttributeChange, null);
-        };
-        return this.client.getInvocationService().invokeOnConnection(this.getOwnerConnection(), request, handler)
-            .then((resp: ClientMessage) => {
-                this.logger.trace('ClusterService', 'Registered listener with id '
-                    + ClientAddMembershipListenerCodec.decodeResponse(resp).response);
-            });
     }
 
     private handleMember(member: Member, eventType: number) {
@@ -252,9 +252,9 @@ export class ClusterService extends EventEmitter {
     }
 
     private memberRemoved(member: Member) {
-        let memberIndex = this.members.findIndex(member.equals, member);
+        const memberIndex = this.members.findIndex(member.equals, member);
         if (memberIndex !== -1) {
-            let removedMemberList = this.members.splice(memberIndex, 1);
+            const removedMemberList = this.members.splice(memberIndex, 1);
             assert(removedMemberList.length === 1);
         }
         this.client.getConnectionManager().destroyConnection(member.address);

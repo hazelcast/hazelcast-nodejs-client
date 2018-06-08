@@ -24,5 +24,5 @@ export enum EntryEventType {
     CLEAR_ALL = 1 << 5,
     MERGED = 1 << 6,
     EXPIRED = 1 << 7,
-    INVALIDATION = 1 << 8
+    INVALIDATION = 1 << 8,
 }

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {DistributedObject} from '../DistributedObject';
-import * as Long from 'long';
 import * as Promise from 'bluebird';
+import * as Long from 'long';
+import {DistributedObject} from '../DistributedObject';
 
 /**
  * PN (Positive-Negative) CRDT counter.

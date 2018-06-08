@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import {RepairingHandler} from './RepairingHandler';
-import {NearCache} from './NearCache';
-import HazelcastClient from '../HazelcastClient';
-import {MetadataFetcher} from './MetadataFetcher';
 import * as assert from 'assert';
 import * as Long from 'long';
+import HazelcastClient from '../HazelcastClient';
 import {LoggingService} from '../logging/LoggingService';
+import {MetadataFetcher} from './MetadataFetcher';
+import {NearCache} from './NearCache';
+import {RepairingHandler} from './RepairingHandler';
 
 const PROPERTY_MAX_RECONCILIATION_INTERVAL_SECONDS = 'hazelcast.invalidation.reconciliation.interval.seconds';
 const PROPERTY_MIN_RECONCILIATION_INTERVAL_SECONDS = 'hazelcast.invalidation.min.reconciliation.interval.seconds';
@@ -41,13 +41,13 @@ export class RepairingTask {
 
     constructor(client: HazelcastClient) {
         this.client = client;
-        let config = this.client.getConfig();
-        this.minAllowedReconciliationSeconds = <number>config.properties[PROPERTY_MIN_RECONCILIATION_INTERVAL_SECONDS];
-        let requestedReconciliationSeconds = <number>config.properties[PROPERTY_MAX_RECONCILIATION_INTERVAL_SECONDS];
+        const config = this.client.getConfig();
+        this.minAllowedReconciliationSeconds = config.properties[PROPERTY_MIN_RECONCILIATION_INTERVAL_SECONDS] as number;
+        const requestedReconciliationSeconds = config.properties[PROPERTY_MAX_RECONCILIATION_INTERVAL_SECONDS] as number;
         this.reconcilliationInterval = this.getReconciliationIntervalMillis(requestedReconciliationSeconds);
         this.handlers = new Map<string, RepairingHandler>();
         this.localUuid = this.client.getLocalEndpoint().uuid;
-        this.maxToleratedMissCount = <number>config.properties[PROPERTY_MAX_TOLERATED_MISS_COUNT];
+        this.maxToleratedMissCount = config.properties[PROPERTY_MAX_TOLERATED_MISS_COUNT] as number;
         this.metadataFetcher = new MetadataFetcher(client);
         this.partitionCount = this.client.getPartitionService().getPartitionCount();
     }
@@ -99,7 +99,7 @@ export class RepairingTask {
     private isAboveMaxToleratedMissCount(handler: RepairingHandler): boolean {
         let totalMissCount = Long.fromNumber(0);
         for (let i = 0; i < this.partitionCount; i++) {
-            let added = handler.getMetadataContainer(i).getMissedSequenceCount();
+            const added = handler.getMetadataContainer(i).getMissedSequenceCount();
             totalMissCount = totalMissCount.add(added);
             if (totalMissCount.greaterThanOrEqual(this.maxToleratedMissCount)) {
                 return true;
@@ -110,8 +110,8 @@ export class RepairingTask {
 
     private updateLastKnownStaleSequences(handler: RepairingHandler): void {
         for (let i = 0; i < this.partitionCount; i++) {
-            let container = handler.getMetadataContainer(i);
-            let missedCount = container.getMissedSequenceCount();
+            const container = handler.getMetadataContainer(i);
+            const missedCount = container.getMissedSequenceCount();
             if (missedCount.notEquals(0)) {
                 container.increaseMissedSequenceCount(missedCount.negate());
                 handler.updateLastKnownStaleSequence(container);
@@ -123,7 +123,7 @@ export class RepairingTask {
         if (seconds === 0 || seconds >= this.minAllowedReconciliationSeconds) {
             return seconds * 1000;
         } else {
-            let message = 'Reconciliation interval can be at least ' + this.minAllowedReconciliationSeconds + ' seconds ' +
+            const message = 'Reconciliation interval can be at least ' + this.minAllowedReconciliationSeconds + ' seconds ' +
                 'if not 0. Configured interval is ' + seconds + ' seconds. ' +
                 'Note: configuring a value of 0 seconds disables the reconciliation task.';
             throw new RangeError(message);

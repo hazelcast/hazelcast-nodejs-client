@@ -16,9 +16,9 @@
 
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
+import Address = require('../Address');
 import {Member} from '../core/Member';
 import {AddressCodec} from './AddressCodec';
-import Address = require('../Address');
 
 export class MemberCodec {
 

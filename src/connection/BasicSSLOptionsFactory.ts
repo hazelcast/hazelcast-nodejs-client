@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import {SSLOptionsFactory} from './SSLOptionsFactory';
-import {Properties} from '../config/Properties';
-import {HazelcastError} from '../HazelcastError';
 import * as Promise from 'bluebird';
 import * as fs from 'fs';
+import {Properties} from '../config/Properties';
+import {HazelcastError} from '../HazelcastError';
 import {getBooleanOrUndefined, getStringOrUndefined, resolvePath} from '../Util';
+import {SSLOptionsFactory} from './SSLOptionsFactory';
 
 export class BasicSSLOptionsFactory implements SSLOptionsFactory {
 
@@ -34,12 +34,12 @@ export class BasicSSLOptionsFactory implements SSLOptionsFactory {
             throw new HazelcastError('properties is not an object');
         }
 
-        let promises = [];
+        const promises = [];
 
-        let readFile = Promise.promisify(fs.readFile);
+        const readFile = Promise.promisify(fs.readFile);
 
-        let certPath = getStringOrUndefined(properties['certPath']);
-        let caPath = getStringOrUndefined(properties['caPath']);
+        const certPath = getStringOrUndefined(properties.certPath);
+        const caPath = getStringOrUndefined(properties.caPath);
 
         if (certPath !== undefined) {
             promises.push(readFile(resolvePath(certPath)).then((data: Buffer) => {
@@ -53,9 +53,9 @@ export class BasicSSLOptionsFactory implements SSLOptionsFactory {
             }));
         }
 
-        this.servername = getStringOrUndefined(properties['servername']);
-        this.rejectUnauthorized = getBooleanOrUndefined(properties['rejectUnauthorized']);
-        this.ciphers = getStringOrUndefined(properties['ciphers']);
+        this.servername = getStringOrUndefined(properties.servername);
+        this.rejectUnauthorized = getBooleanOrUndefined(properties.rejectUnauthorized);
+        this.ciphers = getStringOrUndefined(properties.ciphers);
 
         return Promise.all(promises).return();
     }
@@ -66,7 +66,7 @@ export class BasicSSLOptionsFactory implements SSLOptionsFactory {
             rejectUnauthorized: this.rejectUnauthorized,
             cert: this.cert,
             ca: this.ca,
-            ciphers: this.ciphers
+            ciphers: this.ciphers,
         };
     }
 

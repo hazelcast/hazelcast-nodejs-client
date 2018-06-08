@@ -27,30 +27,30 @@ class ReadOnlyLazyListIterator<T> implements Iterator<T> {
 
     next(): IteratorResult<T> {
         if (this.index < this.list.size()) {
-            return { done: false, value: this.list.get(this.index++) };
+            return {done: false, value: this.list.get(this.index++)};
         } else {
-            return { done: true, value: undefined};
+            return {done: true, value: undefined};
         }
     }
 
 }
 
 export class ReadOnlyLazyList<T> implements Iterable<T> {
-    private internalArray: Array<any>;
+    private internalArray: any[];
     private serializationService: SerializationService;
 
-    constructor(array: Array<any>, serializationService: SerializationService) {
+    constructor(array: any[], serializationService: SerializationService) {
         this.internalArray = array;
         this.serializationService = serializationService;
     }
 
     get(index: number): T {
-        let dataOrObject = this.internalArray[index];
+        const dataOrObject = this.internalArray[index];
         if (dataOrObject == null) {
             return undefined;
         }
-        if ((<SerializationServiceV1>this.serializationService).isData(dataOrObject)) {
-            let obj = this.serializationService.toObject(dataOrObject);
+        if ((this.serializationService as SerializationServiceV1).isData(dataOrObject)) {
+            const obj = this.serializationService.toObject(dataOrObject);
             this.internalArray[index] = obj;
             return obj;
         } else {
@@ -70,9 +70,9 @@ export class ReadOnlyLazyList<T> implements Iterable<T> {
         return new ReadOnlyLazyList<T>(this.internalArray.slice(start, end), this.serializationService);
     }
 
-    toArray(): Array<T> {
-        let arr: Array<T> = [];
-        let iterator = this.values();
+    toArray(): T[] {
+        const arr: T[] = [];
+        const iterator = this.values();
         for (let item = iterator.next(); !item.done; item = iterator.next()) {
             arr.push(item.value);
         }
@@ -83,4 +83,3 @@ export class ReadOnlyLazyList<T> implements Iterable<T> {
         return this.values();
     }
 }
-

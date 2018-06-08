@@ -18,12 +18,12 @@ export interface SSLOptions {
     /**
      * A string or Buffer containing the private key, certificate and CA certs of the client in PFX or PKCS12 format.
      */
-    pfx?: any;   //string | Buffer
+    pfx?: any;   // string | Buffer
 
     /**
      * A string or Buffer containing the private key of the client in PEM format. (Could be an array of keys).
      */
-    key?: any;   //string | Buffer
+    key?: any;   // string | Buffer
 
     /**
      * A string of passphrase for the private key or pfx.
@@ -33,13 +33,13 @@ export interface SSLOptions {
     /**
      *  A string or Buffer containing the certificate key of the client in PEM format. (Could be an array of certs).
      */
-    cert?: any;  //string | Buffer
+    cert?: any;  // string | Buffer
 
     /**
      * An array of strings or Buffers of trusted certificates in PEM format. If this is omitted several well known "root"
      * CAs will be used, like VeriSign. These are used to authorize connections.
      */
-    ca?: any;    //Array of string | Buffer
+    ca?: any;    // Array of string | Buffer
 
     /**
      * If true, the server certificate is verified against the list of supplied CAs. An 'error' event is emitted if verification

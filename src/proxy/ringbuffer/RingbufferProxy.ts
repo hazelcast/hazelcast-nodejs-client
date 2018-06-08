@@ -15,21 +15,21 @@
  */
 
 import * as Promise from 'bluebird';
-import {PartitionSpecificProxy} from '../PartitionSpecificProxy';
-import {IRingbuffer} from '../IRingbuffer';
-import {OverflowPolicy} from '../../core/OverflowPolicy';
-import {RingbufferAddCodec} from '../../codec/RingbufferAddCodec';
-import {RingbufferReadOneCodec} from '../../codec/RingbufferReadOneCodec';
 import {RingbufferAddAllCodec} from '../../codec/RingbufferAddAllCodec';
-import {RingbufferTailSequenceCodec} from '../../codec/RingbufferTailSequenceCodec';
+import {RingbufferAddCodec} from '../../codec/RingbufferAddCodec';
+import {RingbufferCapacityCodec} from '../../codec/RingbufferCapacityCodec';
 import {RingbufferHeadSequenceCodec} from '../../codec/RingbufferHeadSequenceCodec';
+import {RingbufferReadManyCodec} from '../../codec/RingbufferReadManyCodec';
+import {RingbufferReadOneCodec} from '../../codec/RingbufferReadOneCodec';
 import {RingbufferRemainingCapacityCodec} from '../../codec/RingbufferRemainingCapacityCodec';
 import {RingbufferSizeCodec} from '../../codec/RingbufferSizeCodec';
-import {RingbufferCapacityCodec} from '../../codec/RingbufferCapacityCodec';
-import {RingbufferReadManyCodec} from '../../codec/RingbufferReadManyCodec';
-import Long = require('long');
-import {ReadResultSet} from './ReadResultSet';
+import {RingbufferTailSequenceCodec} from '../../codec/RingbufferTailSequenceCodec';
+import {OverflowPolicy} from '../../core/OverflowPolicy';
+import {IRingbuffer} from '../IRingbuffer';
+import {PartitionSpecificProxy} from '../PartitionSpecificProxy';
 import {LazyReadResultSet} from './LazyReadResultSet';
+import {ReadResultSet} from './ReadResultSet';
+import Long = require('long');
 
 export class RingbufferProxy<E> extends PartitionSpecificProxy implements IRingbuffer<E> {
 
@@ -57,15 +57,15 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements IRingb
         return this.encodeInvoke<Long>(RingbufferAddCodec, overflowPolicy, this.toData(item));
     }
 
-    addAll(items: Array<E>, overflowPolicy: OverflowPolicy = OverflowPolicy.OVERWRITE): Promise<Long> {
-        let dataList = items.map((item) => {
+    addAll(items: E[], overflowPolicy: OverflowPolicy = OverflowPolicy.OVERWRITE): Promise<Long> {
+        const dataList = items.map((item) => {
             return this.toData(item);
         });
 
         return this.encodeInvoke<Long>(RingbufferAddAllCodec, dataList, overflowPolicy);
     }
 
-    readOne(sequence: number|Long): Promise<E> {
+    readOne(sequence: number | Long): Promise<E> {
         if (Long.fromValue(sequence).lessThan(0)) {
             throw new RangeError('Sequence number should not be less than zero, was: ' + sequence);
         }
@@ -73,7 +73,7 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements IRingb
         return this.encodeInvoke<E>(RingbufferReadOneCodec, sequence);
     }
 
-    readMany(sequence: number|Long, minCount: number, maxCount: number, filter: any = null): Promise<ReadResultSet<E>> {
+    readMany(sequence: number | Long, minCount: number, maxCount: number, filter: any = null): Promise<ReadResultSet<E>> {
 
         if (Long.fromValue(sequence).lessThan(0)) {
             throw new RangeError('Sequence number should not be less than zero, was: ' + sequence);

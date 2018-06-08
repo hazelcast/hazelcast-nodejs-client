@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import * as Long from 'long';
-
 export class FlakeIdGeneratorConfig {
     /**
      * Sets the name for this config.
@@ -50,7 +48,7 @@ export class FlakeIdGeneratorConfig {
     }
 
     clone(): FlakeIdGeneratorConfig {
-        let other = new FlakeIdGeneratorConfig();
+        const other = new FlakeIdGeneratorConfig();
         Object.assign(other, this);
         return other;
     }

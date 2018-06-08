@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import * as Long from 'long';
 import * as Promise from 'bluebird';
-import {DistributedObject} from '../DistributedObject';
+import * as Long from 'long';
 import {OverflowPolicy} from '../core/OverflowPolicy';
+import {DistributedObject} from '../DistributedObject';
 import {ReadResultSet} from './ringbuffer/ReadResultSet';
 
 export interface IRingbuffer<E> extends DistributedObject {
@@ -68,7 +68,6 @@ export interface IRingbuffer<E> extends DistributedObject {
      */
     remainingCapacity(): Promise<Long>;
 
-
     /**
      * Adds an item to the tail of this ringbuffer. Overflow policy determines what will happen
      * if there is no space left in this ringbuffer. If `OVERWRITE` was passed,
@@ -95,8 +94,7 @@ export interface IRingbuffer<E> extends DistributedObject {
      * @param overflowPolicy overflow policy to be used
      * @return the sequence number of the last written item from the specified array
      */
-    addAll(items: Array<E>, overflowPolicy?: OverflowPolicy): Promise<Long>;
-
+    addAll(items: E[], overflowPolicy?: OverflowPolicy): Promise<Long>;
 
     /**
      * Reads a single item from this ringbuffer.

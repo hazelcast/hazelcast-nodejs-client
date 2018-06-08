@@ -242,7 +242,7 @@ describe("List Proxy", function () {
     it("listens for added entry", function (done) {
         this.timeout(5000);
         var listener = {
-            "itemAdded" : function (item) {
+            "itemAdded": function (item) {
                 if (item == 1) {
                     done()
                 } else {
@@ -260,7 +260,7 @@ describe("List Proxy", function () {
     it("listens for removed entry with value included", function (done) {
         this.timeout(5000);
         var listener = {
-            "itemRemoved" : function (item) {
+            "itemRemoved": function (item) {
                 if (item == 1) {
                     done()
                 } else {
@@ -280,7 +280,7 @@ describe("List Proxy", function () {
     it("listens for removed entry with value not included", function (done) {
         this.timeout(5000);
         var listener = {
-            "itemRemoved" : function (item) {
+            "itemRemoved": function (item) {
                 if (item == null) {
                     done()
                 } else {
@@ -301,7 +301,7 @@ describe("List Proxy", function () {
     it("remove entry listener", function () {
         this.timeout(5000);
         return listInstance.addItemListener({
-            "itemRemoved" : function (item) {
+            "itemRemoved": function (item) {
                 if (item == 1) {
                     done()
                 } else {

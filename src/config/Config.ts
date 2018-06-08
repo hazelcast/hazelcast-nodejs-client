@@ -16,24 +16,23 @@
 
 import {TopicOverloadPolicy} from '../proxy/topic/TopicOverloadPolicy';
 import {ClientNetworkConfig} from './ClientNetworkConfig';
-import {SerializationConfig} from './SerializationConfig';
-import {GroupConfig} from './GroupConfig';
-import {ReliableTopicConfig} from './ReliableTopicConfig';
-import {InMemoryFormat} from './InMemoryFormat';
-import {EvictionPolicy} from './EvictionPolicy';
-import {NearCacheConfig} from './NearCacheConfig';
-import {ListenerConfig} from './ListenerConfig';
-import {Properties} from './Properties';
-import {ImportConfig} from './ImportConfig';
-import {FlakeIdGeneratorConfig} from './FlakeIdGeneratorConfig';
 import {ConfigPatternMatcher} from './ConfigPatternMatcher';
+import {EvictionPolicy} from './EvictionPolicy';
+import {FlakeIdGeneratorConfig} from './FlakeIdGeneratorConfig';
+import {GroupConfig} from './GroupConfig';
+import {ImportConfig} from './ImportConfig';
+import {InMemoryFormat} from './InMemoryFormat';
+import {ListenerConfig} from './ListenerConfig';
+import {NearCacheConfig} from './NearCacheConfig';
+import {Properties} from './Properties';
+import {ReliableTopicConfig} from './ReliableTopicConfig';
+import {SerializationConfig} from './SerializationConfig';
 
 /**
  * Top level configuration object of Hazelcast client. Other configurations items are properties of this object.
  */
 export class ClientConfig {
 
-    private configPatternMatcher = new ConfigPatternMatcher();
     /**
      * Name of this client instance.
      */
@@ -45,7 +44,7 @@ export class ClientConfig {
         'hazelcast.client.invocation.timeout.millis': 120000,
         'hazelcast.invalidation.reconciliation.interval.seconds': 60,
         'hazelcast.invalidation.max.tolerated.miss.count': 10,
-        'hazelcast.invalidation.min.reconciliation.interval.seconds': 30
+        'hazelcast.invalidation.min.reconciliation.interval.seconds': 30,
     };
     groupConfig: GroupConfig = new GroupConfig();
     networkConfig: ClientNetworkConfig = new ClientNetworkConfig();
@@ -53,12 +52,14 @@ export class ClientConfig {
     listeners: ListenerConfig = new ListenerConfig();
     listenerConfigs: ImportConfig[] = [];
     serializationConfig: SerializationConfig = new SerializationConfig();
-    reliableTopicConfigs: {[name: string]: ReliableTopicConfig} = {};
-    nearCacheConfigs: {[name: string]: NearCacheConfig} = {};
-    flakeIdGeneratorConfigs: {[name: string]: FlakeIdGeneratorConfig} = {};
+    reliableTopicConfigs: { [name: string]: ReliableTopicConfig } = {};
+    nearCacheConfigs: { [name: string]: NearCacheConfig } = {};
+    flakeIdGeneratorConfigs: { [name: string]: FlakeIdGeneratorConfig } = {};
+
+    private configPatternMatcher = new ConfigPatternMatcher();
 
     getReliableTopicConfig(name: string): ReliableTopicConfig {
-        let matching = this.lookupByPattern<ReliableTopicConfig>(this.reliableTopicConfigs, name);
+        const matching = this.lookupByPattern<ReliableTopicConfig>(this.reliableTopicConfigs, name);
         let config: ReliableTopicConfig;
         if (matching != null) {
             config = matching.clone();
@@ -70,17 +71,17 @@ export class ClientConfig {
     }
 
     getNearCacheConfig(name: string): NearCacheConfig {
-        let matching = this.lookupByPattern<NearCacheConfig>(this.nearCacheConfigs, name);
+        const matching = this.lookupByPattern<NearCacheConfig>(this.nearCacheConfigs, name);
         if (matching == null) {
             return null;
         }
-        let config = matching.clone();
+        const config = matching.clone();
         config.name = name;
         return config;
     }
 
     getFlakeIdGeneratorConfig(name: string): FlakeIdGeneratorConfig {
-        let matching: FlakeIdGeneratorConfig = this.lookupByPattern<FlakeIdGeneratorConfig>(this.flakeIdGeneratorConfigs, name);
+        const matching: FlakeIdGeneratorConfig = this.lookupByPattern<FlakeIdGeneratorConfig>(this.flakeIdGeneratorConfigs, name);
         let config: FlakeIdGeneratorConfig;
         if (matching != null) {
             config = matching.clone();
@@ -91,16 +92,16 @@ export class ClientConfig {
         return config;
     }
 
-    private lookupByPattern<T>(config: {[pattern: string]: any}, name: string): T {
+    private lookupByPattern<T>(config: { [pattern: string]: any }, name: string): T {
         if (config[name] != null) {
             return config[name];
         }
-        let matchingPattern = this.configPatternMatcher.matches(Object.keys(config), name);
+        const matchingPattern = this.configPatternMatcher.matches(Object.keys(config), name);
         if (matchingPattern != null) {
             return config[matchingPattern];
         }
-        if (config['default'] != null) {
-            return config['default'];
+        if (config.default != null) {
+            return config.default;
         }
         return null;
     }

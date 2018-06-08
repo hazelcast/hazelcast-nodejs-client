@@ -31,7 +31,7 @@ export class ConfigPatternMatcher {
         let matchingPattern: string = null;
         let duplicatePattern: string = null;
         configPatterns.forEach((pattern: string) => {
-            let currentPoint = this.getMatchingPoint(pattern, itemName);
+            const currentPoint = this.getMatchingPoint(pattern, itemName);
             if (currentPoint > bestMatchingPoint) {
                 bestMatchingPoint = currentPoint;
                 matchingPattern = pattern;
@@ -49,15 +49,15 @@ export class ConfigPatternMatcher {
     }
 
     getMatchingPoint(pattern: string, itemName: string): number {
-        let index = pattern.indexOf('*');
+        const index = pattern.indexOf('*');
         if (index === -1) {
             return -1;
         }
-        let firstPart = pattern.substring(0, index);
+        const firstPart = pattern.substring(0, index);
         if (!itemName.startsWith(firstPart)) {
             return -1;
         }
-        let secondPart = pattern.substring(index + 1);
+        const secondPart = pattern.substring(index + 1);
         if (!itemName.endsWith(secondPart)) {
             return -1;
         }

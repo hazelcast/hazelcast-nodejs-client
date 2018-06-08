@@ -21,84 +21,88 @@ var Config = require('../.').Config;
 var Util = require('./Util');
 var Address = require('../.').Address;
 
-describe('Heartbeat', function() {
+describe('Heartbeat', function () {
     this.timeout(30000);
 
     var cluster;
 
-    beforeEach(function() {
-        return RC.createCluster(null, null).then(function(resp) {
+    beforeEach(function () {
+        return RC.createCluster(null, null).then(function (resp) {
             cluster = resp;
         });
     });
 
-    afterEach(function() {
+    afterEach(function () {
         return RC.shutdownCluster(cluster.id);
     });
 
-    it('Heartbeat stopped fired when second member stops heartbeating', function(done) {
+    it('Heartbeat stopped fired when second member stops heartbeating', function (done) {
         var client;
-        RC.startMember(cluster.id).then(function() {
+        RC.startMember(cluster.id).then(function () {
             var cfg = new Config.ClientConfig();
             cfg.properties['hazelcast.client.heartbeat.interval'] = 500;
             cfg.properties['hazelcast.client.heartbeat.timeout'] = 2000;
             return HazelcastClient.newHazelcastClient(cfg);
-        }).then(function(resp) {
+        }).then(function (resp) {
             client = resp;
-        }).then(function() {
-            client.clusterService.on('memberAdded', function(member) {
+        }).then(function () {
+            client.clusterService.on('memberAdded', function (member) {
                 var address = new Address(member.address.host, member.address.port);
                 warmUpConnectionToAddressWithRetry(client, address);
             });
-            client.heartbeat.addListener({onHeartbeatStopped: function(connection) {
-                client.shutdown();
-                done();
-            }})
-        }).then(function() {
+            client.heartbeat.addListener({
+                onHeartbeatStopped: function (connection) {
+                    client.shutdown();
+                    done();
+                }
+            })
+        }).then(function () {
             return RC.startMember(cluster.id);
-        }).then(function(member2) {
+        }).then(function (member2) {
             simulateHeartbeatLost(client, member2.host + ':' + member2.port, 2000);
         }).catch(done);
     });
 
-    it('Heartbeat restored fired when second member comes back', function(done) {
+    it('Heartbeat restored fired when second member comes back', function (done) {
         var client;
         var member1;
         var member2;
-        RC.startMember(cluster.id).then(function(m) {
+        RC.startMember(cluster.id).then(function (m) {
             member1 = m;
             var cfg = new Config.ClientConfig();
             cfg.properties['hazelcast.client.heartbeat.interval'] = 500;
             cfg.properties['hazelcast.client.heartbeat.timeout'] = 2000;
             return HazelcastClient.newHazelcastClient(cfg);
-        }).then(function(resp) {
+        }).then(function (resp) {
             client = resp;
-            client.clusterService.on('memberAdded', function(member) {
-                warmUpConnectionToAddressWithRetry(client, member.address, 3).then(function() {
+            client.clusterService.on('memberAdded', function (member) {
+                warmUpConnectionToAddressWithRetry(client, member.address, 3).then(function () {
                     simulateHeartbeatLost(client, member.address, 2000);
                 }).catch(done);
             });
-            client.heartbeat.addListener({onHeartbeatRestored: function(connection) {
-                client.shutdown();
-                done();
-            }});
+            client.heartbeat.addListener({
+                onHeartbeatRestored: function (connection) {
+                    client.shutdown();
+                    done();
+                }
+            });
             return RC.startMember(cluster.id);
-        }).then(function(resp) {
+        }).then(function (resp) {
             member2 = resp;
         }).catch(done);
     });
 
     it('emits shutdown when lost connection to cluster', function (done) {
         var member;
-        RC.startMember(cluster.id).then(function(m) {
+        RC.startMember(cluster.id).then(function (m) {
             member = m;
             var cfg = new Config.ClientConfig();
             cfg.properties['hazelcast.client.heartbeat.interval'] = 500;
             cfg.properties['hazelcast.client.heartbeat.timeout'] = 2000;
             return HazelcastClient.newHazelcastClient(cfg);
-        }).then(function(client) {
+        }).then(function (client) {
             var expected = 'shuttingDown';
-            client.lifecycleService.on('lifecycleEvent', function(state) {
+            client.lifecycleService.on('lifecycleEvent', function (state) {
                 if (state === 'shuttingDown' && expected === 'shuttingDown') {
                     expected = 'shutdown';
                 } else if (state === 'shutdown' && expected === 'shutdown') {

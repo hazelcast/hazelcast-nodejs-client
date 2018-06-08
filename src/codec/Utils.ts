@@ -17,7 +17,7 @@
 export class Utils {
     public static getStringSize(value: string, nullable: boolean = false): number {
         // int32 for string length
-        var size = 4;
+        let size = 4;
 
         if (nullable) {
             size += 1;
@@ -33,7 +33,7 @@ export class Utils {
     }
 
     public static calculateSizeBuffer(value: Buffer) {
-        var size = 4;
+        let size = 4;
         size += value.length;
         return size;
     }

@@ -14,23 +14,47 @@
  * limitations under the License.
  */
 
+import ClientMessage = require('../ClientMessage');
 import {
-    AuthenticationError, CallerNotMemberError, CancellationError, ClassCastError, ClassNotFoundError, ConcurrentModificationError,
-    ConfigMismatchError, ConfigurationError, ConsistencyLostError, DistributedObjectDestroyedError, DuplicateInstanceNameError,
+    AuthenticationError,
+    CallerNotMemberError,
+    CancellationError,
+    ClassCastError,
+    ClassNotFoundError,
+    ConcurrentModificationError,
+    ConfigMismatchError,
+    ConfigurationError,
+    ConsistencyLostError,
+    DistributedObjectDestroyedError,
+    DuplicateInstanceNameError,
     HazelcastError,
-    HazelcastInstanceNotActiveError, IllegalStateError, InvocationTimeoutError, IOError, MemberLeftError,
-    NoDataMemberInClusterError, NodeIdOutOfRangeError, PartitionMigratingError, QueryError, QuorumError, RetryableHazelcastError,
+    HazelcastInstanceNotActiveError,
+    IllegalStateError,
+    InvocationTimeoutError,
+    IOError,
+    MemberLeftError,
+    NoDataMemberInClusterError,
+    NodeIdOutOfRangeError,
+    PartitionMigratingError,
+    QueryError,
+    QuorumError,
+    RetryableHazelcastError,
     RetryableIOError,
-    StaleSequenceError, StaleTaskIdError, TargetDisconnectedError, TargetNotMemberError, TopicOverloadError, TransactionError,
-    TransactionNotActiveError, TransactionTimedOutError, UndefinedErrorCodeError, UnsupportedOperationError
+    StaleSequenceError,
+    StaleTaskIdError,
+    TargetDisconnectedError,
+    TargetNotMemberError,
+    TopicOverloadError,
+    TransactionError,
+    TransactionNotActiveError,
+    TransactionTimedOutError,
+    UndefinedErrorCodeError,
+    UnsupportedOperationError,
 } from '../HazelcastError';
 import {ClientProtocolErrorCodes} from './ClientProtocolErrorCodes';
 import {ErrorCodec} from './ErrorCodec';
-import ClientMessage = require('../ClientMessage');
 
-interface ErrorFactory {
-    (msg: string, cause: Error): Error;
-}
+type ErrorFactory = (msg: string, cause: Error) => Error;
 
 export class ClientErrorFactory {
 
@@ -90,21 +114,21 @@ export class ClientErrorFactory {
         this.register(ClientProtocolErrorCodes.CONSISTENCY_LOST_EXCEPTION, (m, c) => new ConsistencyLostError(m, c));
     }
 
-    private register(code: number, errorFactory: ErrorFactory): void {
-        this.codeToErrorConstructor.set(code, errorFactory);
-    }
-
-    createErrorFromClientMessage(clientMessage: ClientMessage) : Error {
-        let errorCodec = ErrorCodec.decode(clientMessage);
+    createErrorFromClientMessage(clientMessage: ClientMessage): Error {
+        const errorCodec = ErrorCodec.decode(clientMessage);
         return this.createError(errorCodec.errorCode, errorCodec.className, errorCodec.message, null);
     }
 
     createError(errorCode: number, className: string, message: string, cause: Error): Error {
-        let factoryFunc = this.codeToErrorConstructor.get(errorCode);
+        const factoryFunc = this.codeToErrorConstructor.get(errorCode);
         if (factoryFunc != null) {
             return factoryFunc(message, cause);
         } else {
             return new UndefinedErrorCodeError(message, className);
         }
+    }
+
+    private register(code: number, errorFactory: ErrorFactory): void {
+        this.codeToErrorConstructor.set(code, errorFactory);
     }
 }

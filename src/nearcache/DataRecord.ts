@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import {Data} from '../serialization/Data';
 import * as Long from 'long';
 import {UUID} from '../core/UUID';
+import {Data} from '../serialization/Data';
 
 export class DataRecord {
+
     static readonly NOT_RESERVED = Long.NEG_ONE;
     static readonly RESERVED = Long.fromNumber(-2);
     static readonly READ_PERMITTED = Long.fromNumber(-3);
-
     key: Data;
     value: Data | any;
     private creationTime: number;
@@ -55,6 +55,7 @@ export class DataRecord {
         this.status = DataRecord.READ_PERMITTED;
     }
 
+    /*tslint:disable:member-ordering*/
     public static lruComp(x: DataRecord, y: DataRecord) {
         return x.lastAccessTime - y.lastAccessTime;
     }
@@ -68,7 +69,7 @@ export class DataRecord {
     }
 
     isExpired(maxIdleSeconds: number) {
-        var now = new Date().getTime();
+        const now = new Date().getTime();
         if ((this.expirationTime > 0 && this.expirationTime < now) ||
             (maxIdleSeconds > 0 && this.lastAccessTime + maxIdleSeconds * 1000 < now)) {
             return true;

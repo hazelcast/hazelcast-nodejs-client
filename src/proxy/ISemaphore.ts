@@ -15,8 +15,8 @@
  */
 
 import * as Promise from 'bluebird';
-import Long = require('long');
 import {DistributedObject} from '../DistributedObject';
+import Long = require('long');
 
 export interface ISemaphore extends DistributedObject {
     /**

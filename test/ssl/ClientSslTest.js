@@ -29,9 +29,10 @@ var markEnterprise = require('../Util').markEnterprise;
 
 
 var authorizedSslConfig = new Config.ClientConfig();
-authorizedSslConfig.networkConfig.sslOptions = {rejectUnauthorized: true,
-    ca: [ fs.readFileSync(__dirname + '/server1.pem') ],
-    servername:'foo.bar.com'
+authorizedSslConfig.networkConfig.sslOptions = {
+    rejectUnauthorized: true,
+    ca: [fs.readFileSync(__dirname + '/server1.pem')],
+    servername: 'foo.bar.com'
 };
 
 var unauthorizedSslConfig = new Config.ClientConfig();

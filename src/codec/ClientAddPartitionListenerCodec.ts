@@ -16,14 +16,10 @@
 
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
-import {BitsUtil} from '../BitsUtil';
 import Address = require('../Address');
+import {BitsUtil} from '../BitsUtil';
 import {AddressCodec} from './AddressCodec';
-import {UUIDCodec} from './UUIDCodec';
-import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
-import {EntryViewCodec} from './EntryViewCodec';
-import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 import {ClientMessageType} from './ClientMessageType';
 
 var REQUEST_TYPE = ClientMessageType.CLIENT_ADDPARTITIONLISTENER;
@@ -75,10 +71,10 @@ export class ClientAddPartitionListenerCodec {
                     for (var partitionsItemValIndex = 0; partitionsItemValIndex < partitionsItemValSize; partitionsItemValIndex++) {
                         var partitionsItemValItem: number;
                         partitionsItemValItem = clientMessage.readInt32();
-                        partitionsItemVal.push(partitionsItemValItem)
+                        partitionsItemVal.push(partitionsItemValItem);
                     }
                     partitionsItem = [partitionsItemKey, partitionsItemVal];
-                    partitions.push(partitionsItem)
+                    partitions.push(partitionsItem);
                 }
             }
             var partitionStateVersion: number = undefined;

@@ -15,8 +15,8 @@
  */
 
 import * as Promise from 'bluebird';
-import {DistributedObject} from '../DistributedObject';
 import {ItemListener} from '../core/ItemListener';
+import {DistributedObject} from '../DistributedObject';
 
 export interface IQueue<E> extends DistributedObject {
     /**

@@ -15,8 +15,7 @@
  */
 
 function APortable(bool, b, c, d, s, f, i, l, str, p, booleans, bytes, chars, doubles, shorts, floats, ints, longs, strings,
-                   portables, identifiedDataSerializable, customStreamSerializableObject, customByteArraySerializableObject, data)
-{
+                   portables, identifiedDataSerializable, customStreamSerializableObject, customByteArraySerializableObject, data) {
     if (arguments.length === 0) return;
     this.bool = bool;
     this.b = b;
@@ -45,7 +44,7 @@ function APortable(bool, b, c, d, s, f, i, l, str, p, booleans, bytes, chars, do
     this.bytesOffset = bytes.slice(1, 3);
     this.strChars = str.split('');
     this.strBytes = new Buffer(this.str.length);
-    for (var i = 0; i <  str.length; i++) {
+    for (var i = 0; i < str.length; i++) {
         this.strBytes[i] = this.strChars[i].charCodeAt(0);
     }
     unsignedByte = 137;
@@ -59,15 +58,15 @@ function APortable(bool, b, c, d, s, f, i, l, str, p, booleans, bytes, chars, do
     this.data = data;
 }
 
-APortable.prototype.getClassId = function() {
+APortable.prototype.getClassId = function () {
     return 1;
 };
 
-APortable.prototype.getFactoryId = function() {
+APortable.prototype.getFactoryId = function () {
     return 1;
 };
 
-APortable.prototype.readPortable = function(reader) {
+APortable.prototype.readPortable = function (reader) {
     this.bool = reader.readBoolean("bool");
     this.b = reader.readByte("b");
     this.c = reader.readChar("c");
@@ -155,7 +154,7 @@ APortable.prototype.readPortable = function(reader) {
     this.data = dataInput.readData();
 };
 
-APortable.prototype.writeData = function() {
+APortable.prototype.writeData = function () {
     //TODO
 };
 module.exports = APortable;

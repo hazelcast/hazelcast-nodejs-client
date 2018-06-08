@@ -15,8 +15,9 @@
  */
 
 export interface HazelcastErrorConstructor {
-    new(message: string, cause?: Error): HazelcastError;
     readonly prototype: Error;
+
+    new(message: string, cause?: Error): HazelcastError;
 }
 
 export class HazelcastError extends Error {
@@ -234,7 +235,6 @@ export class TargetDisconnectedError extends HazelcastError {
         Object.setPrototypeOf(this, TargetDisconnectedError.prototype);
     }
 }
-
 
 export class UnsupportedOperationError extends HazelcastError {
     constructor(msg: string, cause?: Error) {

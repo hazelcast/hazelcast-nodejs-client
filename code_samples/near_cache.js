@@ -21,7 +21,7 @@ function do50000Gets(client, mapName) {
     }).then(function () {
         timerStart = Date.now();
         var requests = [];
-        for(var i = 0; i < 50000; i++) {
+        for (var i = 0; i < 50000; i++) {
             requests.push(client.getMap(mapName).get('item'));
         }
         return Promise.all(requests);

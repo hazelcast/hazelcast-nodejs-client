@@ -21,12 +21,12 @@ export class SerializationConfig {
     defaultNumberType: string = 'double';
     isBigEndian: boolean = true;
     dataSerializableFactories: { [id: number]: IdentifiedDataSerializableFactory } = {};
-    dataSerializableFactoryConfigs: { [id: number]: ImportConfig} = {};
+    dataSerializableFactoryConfigs: { [id: number]: ImportConfig } = {};
     portableFactories: { [id: number]: PortableFactory } = {};
     portableFactoryConfigs: { [id: number]: ImportConfig } = {};
     portableVersion: number = 0;
     customSerializers: any[] = [];
-    customSerializerConfigs: {[id: number]: ImportConfig } = {};
+    customSerializerConfigs: { [id: number]: ImportConfig } = {};
     globalSerializer: any = null;
     globalSerializerConfig: ImportConfig = null;
 }
