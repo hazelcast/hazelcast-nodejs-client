@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import {Serializer} from './SerializationService';
+import Long = require('long');
+import {BitsUtil} from '../BitsUtil';
 import {DataInput, DataOutput} from './Data';
 import {IdentifiedDataSerializable, IdentifiedDataSerializableFactory} from './Serializable';
-import {BitsUtil} from '../BitsUtil';
-import Long = require('long');
+import {Serializer} from './SerializationService';
 
 export class StringSerializer implements Serializer {
 
@@ -76,7 +76,7 @@ export class NullSerializer implements Serializer {
     }
 
     write(output: DataOutput, object: any): void {
-        //Empty method
+        // Empty method
     }
 }
 
@@ -341,11 +341,11 @@ export class LinkedListSerializer implements Serializer {
     }
 
     read(input: DataInput): any {
-        var size = input.readInt();
-        var result: any = null;
+        const size = input.readInt();
+        let result: any = null;
         if (size > BitsUtil.NULL_ARRAY_LENGTH) {
             result = [];
-            for (var i = 0; i < size; i++) {
+            for (let i = 0; i < size; i++) {
                 result.push(input.readObject());
             }
         }
@@ -353,7 +353,7 @@ export class LinkedListSerializer implements Serializer {
     }
 
     write(output: DataOutput, object: any): void {
-        //NULL method
+        // NULL method
     }
 }
 
@@ -364,8 +364,9 @@ export class ArrayListSerializer extends LinkedListSerializer {
 }
 
 export class IdentifiedDataSerializableSerializer implements Serializer {
-    private factories: {[id: number]: IdentifiedDataSerializableFactory};
-    constructor(factories: {[id: number]: IdentifiedDataSerializableFactory}) {
+    private factories: { [id: number]: IdentifiedDataSerializableFactory };
+
+    constructor(factories: { [id: number]: IdentifiedDataSerializableFactory }) {
         this.factories = factories;
     }
 
@@ -374,18 +375,18 @@ export class IdentifiedDataSerializableSerializer implements Serializer {
     }
 
     read(input: DataInput): any {
-        var isIdentified = input.readBoolean();
+        const isIdentified = input.readBoolean();
         if (!isIdentified) {
             throw new RangeError('Native clients does not support Data Serializable. Please use Identified Data Serializable');
         }
-        var factoryId = input.readInt();
-        var classId = input.readInt();
-        var factory: IdentifiedDataSerializableFactory;
+        const factoryId = input.readInt();
+        const classId = input.readInt();
+        let factory: IdentifiedDataSerializableFactory;
         factory = this.factories[factoryId];
         if (!factory) {
             throw new RangeError('There is no Identified Data Serializer factory with id ' + factoryId + '.');
         }
-        var object = factory.create(classId);
+        const object = factory.create(classId);
         object.readData(input);
         return object;
     }

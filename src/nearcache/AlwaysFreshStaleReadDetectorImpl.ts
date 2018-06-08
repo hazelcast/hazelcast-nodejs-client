@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {StaleReadDetector} from './StaleReadDetector';
-import {MetadataContainer} from './MetadataContainer';
 import {DataRecord} from './DataRecord';
+import {MetadataContainer} from './MetadataContainer';
+import {StaleReadDetector} from './StaleReadDetector';
 
 export class AlwaysFreshStaleReadDetector implements StaleReadDetector {
     isStaleRead(key: any, record: DataRecord): boolean {

@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import {BaseProxy} from './BaseProxy';
-import HazelcastClient from '../HazelcastClient';
 import * as Promise from 'bluebird';
+import HazelcastClient from '../HazelcastClient';
+import {BaseProxy} from './BaseProxy';
+
 export class PartitionSpecificProxy extends BaseProxy {
 
     private partitionId: number;

@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-import {Data} from '../serialization/Data';
+import * as Long from 'long';
+import {EvictionPolicy} from '../config/EvictionPolicy';
+import {InMemoryFormat} from '../config/InMemoryFormat';
 import {NearCacheConfig} from '../config/NearCacheConfig';
-import {shuffleArray} from '../Util';
-import {SerializationService} from '../serialization/SerializationService';
 import {DataKeyedHashMap} from '../DataStoreHashMap';
-import {StaleReadDetector} from './StaleReadDetector';
+import {Data} from '../serialization/Data';
+import {SerializationService} from '../serialization/SerializationService';
+import {shuffleArray} from '../Util';
 import * as AlwaysFreshStaleReadDetectorImpl from './AlwaysFreshStaleReadDetectorImpl';
 import {DataRecord} from './DataRecord';
-import * as Long from 'long';
-import {InMemoryFormat} from '../config/InMemoryFormat';
-import {EvictionPolicy} from '../config/EvictionPolicy';
+import {StaleReadDetector} from './StaleReadDetector';
 
 export interface NearCacheStatistics {
     evictedCount: number;
@@ -36,18 +36,27 @@ export interface NearCacheStatistics {
 
 export interface NearCache {
     put(key: Data, value: any): void;
+
     get(key: Data): Data | any;
+
     invalidate(key: Data): void;
+
     clear(): void;
+
     getStatistics(): NearCacheStatistics;
+
     isInvalidatedOnChange(): boolean;
+
     setStaleReadDetector(detector: StaleReadDetector): void;
+
     tryReserveForUpdate(key: Data): Long;
+
     tryPublishReserved(key: Data, value: any, reservationId: Long): any;
 }
 
 export class NearCacheImpl implements NearCache {
 
+    internalStore: DataKeyedHashMap<DataRecord>;
     private serializationService: SerializationService;
     private name: string;
     private invalidateOnChange: boolean;
@@ -58,11 +67,9 @@ export class NearCacheImpl implements NearCache {
     private evictionMaxSize: number;
     private evictionSamplingCount: number;
     private evictionSamplingPoolSize: number;
-    private evictionCandidatePool: Array<DataRecord>;
+    private evictionCandidatePool: DataRecord[];
     private staleReadDetector: StaleReadDetector = AlwaysFreshStaleReadDetectorImpl.INSTANCE;
     private reservationCounter: Long = Long.ZERO;
-
-    internalStore: DataKeyedHashMap<DataRecord>;
 
     private evictedCount: number = 0;
     private expiredCount: number = 0;
@@ -96,17 +103,17 @@ export class NearCacheImpl implements NearCache {
     }
 
     nextReservationId(): Long {
-        let res = this.reservationCounter;
+        const res = this.reservationCounter;
         this.reservationCounter = this.reservationCounter.add(1);
         return res;
     }
 
     tryReserveForUpdate(key: Data): Long {
-        let internalRecord = this.internalStore.get(key);
-        let resId = this.nextReservationId();
+        const internalRecord = this.internalStore.get(key);
+        const resId = this.nextReservationId();
         if (internalRecord === undefined) {
             this.doEvictionIfRequired();
-            let dr = new DataRecord(key, undefined, undefined, this.timeToLiveSeconds);
+            const dr = new DataRecord(key, undefined, undefined, this.timeToLiveSeconds);
             dr.casStatus(DataRecord.READ_PERMITTED, resId);
             this.internalStore.set(key, dr);
             return resId;
@@ -118,7 +125,7 @@ export class NearCacheImpl implements NearCache {
     }
 
     tryPublishReserved(key: Data, value: any, reservationId: Long): any {
-        let internalRecord = this.internalStore.get(key);
+        const internalRecord = this.internalStore.get(key);
         if (internalRecord && internalRecord.casStatus(reservationId, DataRecord.READ_PERMITTED)) {
             if (this.inMemoryFormat === InMemoryFormat.OBJECT) {
                 internalRecord.value = this.serializationService.toObject(value);
@@ -156,19 +163,9 @@ export class NearCacheImpl implements NearCache {
         } else {
             value = this.serializationService.toData(value);
         }
-        var dr = new DataRecord(key, value, undefined, this.timeToLiveSeconds);
+        const dr = new DataRecord(key, value, undefined, this.timeToLiveSeconds);
         this.initInvalidationMetadata(dr);
         this.internalStore.set(key, dr);
-    }
-
-    private initInvalidationMetadata(dr: DataRecord): void {
-        if (this.staleReadDetector === AlwaysFreshStaleReadDetectorImpl.INSTANCE) {
-            return;
-        }
-        let partitionId = this.staleReadDetector.getPartitionId(dr.key);
-        let metadataContainer = this.staleReadDetector.getMetadataContainer(partitionId);
-        dr.setInvalidationSequence(metadataContainer.getSequence());
-        dr.setUuid(metadataContainer.getUuid());
     }
 
     /**
@@ -177,7 +174,7 @@ export class NearCacheImpl implements NearCache {
      * @returns the value if present in near cache, 'undefined' if not
      */
     get(key: Data): Data | any {
-        var dr = this.internalStore.get(key);
+        const dr = this.internalStore.get(key);
         if (dr === undefined) {
             this.missCount++;
             return undefined;
@@ -210,6 +207,21 @@ export class NearCacheImpl implements NearCache {
         this.internalStore.clear();
     }
 
+    isInvalidatedOnChange(): boolean {
+        return this.invalidateOnChange;
+    }
+
+    getStatistics(): NearCacheStatistics {
+        const stats: NearCacheStatistics = {
+            evictedCount: this.evictedCount,
+            expiredCount: this.expiredCount,
+            missCount: this.missCount,
+            hitCount: this.hitCount,
+            entryCount: this.internalStore.size,
+        };
+        return stats;
+    }
+
     protected isEvictionRequired() {
         return this.evictionPolicy !== EvictionPolicy.NONE && this.evictionMaxSize <= this.internalStore.size;
     }
@@ -218,7 +230,7 @@ export class NearCacheImpl implements NearCache {
         if (!this.isEvictionRequired()) {
             return;
         }
-        var internalSize = this.internalStore.size;
+        const internalSize = this.internalStore.size;
         if (this.recomputeEvictionPool() > 0) {
             return;
         } else {
@@ -231,12 +243,12 @@ export class NearCacheImpl implements NearCache {
      * @returns number of expired elements.
      */
     protected recomputeEvictionPool(): number {
-        var arr: Array<DataRecord> = Array.from(this.internalStore.values() );
+        const arr: DataRecord[] = Array.from(this.internalStore.values());
 
         shuffleArray<DataRecord>(arr);
-        var newCandidates = arr.slice(0, this.evictionSamplingCount);
-        var cleanedNewCandidates = newCandidates.filter(this.filterExpiredRecord, this);
-        var expiredCount = newCandidates.length - cleanedNewCandidates.length;
+        const newCandidates = arr.slice(0, this.evictionSamplingCount);
+        const cleanedNewCandidates = newCandidates.filter(this.filterExpiredRecord, this);
+        const expiredCount = newCandidates.length - cleanedNewCandidates.length;
         if (expiredCount > 0) {
             return expiredCount;
         }
@@ -259,7 +271,7 @@ export class NearCacheImpl implements NearCache {
     }
 
     protected expireRecord(key: any | Data): void {
-        if (this.internalStore.delete(key) ) {
+        if (this.internalStore.delete(key)) {
             this.expiredCount++;
         }
     }
@@ -270,18 +282,13 @@ export class NearCacheImpl implements NearCache {
         }
     }
 
-    isInvalidatedOnChange(): boolean {
-        return this.invalidateOnChange;
-    }
-
-    getStatistics(): NearCacheStatistics {
-        var stats: NearCacheStatistics = {
-            evictedCount: this.evictedCount,
-            expiredCount: this.expiredCount,
-            missCount: this.missCount,
-            hitCount: this.hitCount,
-            entryCount: this.internalStore.size
-        };
-        return stats;
+    private initInvalidationMetadata(dr: DataRecord): void {
+        if (this.staleReadDetector === AlwaysFreshStaleReadDetectorImpl.INSTANCE) {
+            return;
+        }
+        const partitionId = this.staleReadDetector.getPartitionId(dr.key);
+        const metadataContainer = this.staleReadDetector.getMetadataContainer(partitionId);
+        dr.setInvalidationSequence(metadataContainer.getSequence());
+        dr.setUuid(metadataContainer.getUuid());
     }
 }

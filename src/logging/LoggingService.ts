@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-import {NoLogger} from './NoLogger';
 import {DefaultLogger} from './DefaultLogger';
-import {IllegalStateError} from '../HazelcastError';
+import {NoLogger} from './NoLogger';
 
 export enum LogLevel {
     ERROR = 0,
     WARN = 1,
     INFO = 2,
     DEBUG = 3,
-    TRACE = 4
+    TRACE = 4,
 }
 
 export interface ILogger {
@@ -61,7 +60,7 @@ export class LoggingService {
                 throw new RangeError('Logging type unknown: ' + loggerModule);
             }
         } else {
-            LoggingService.loggingService = new LoggingService(<ILogger>loggerModule);
+            LoggingService.loggingService = new LoggingService(loggerModule as ILogger);
         }
     }
 

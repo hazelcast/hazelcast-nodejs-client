@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {IdentifiedDataSerializable} from './serialization/Serializable';
-import {DataInput, DataOutput} from './serialization/Data';
 import * as net from 'net';
 import {ClusterDataFactoryHelper} from './ClusterDataFactoryHelper';
+import {DataInput, DataOutput} from './serialization/Data';
+import {IdentifiedDataSerializable} from './serialization/Serializable';
 
 class Address implements IdentifiedDataSerializable {
 

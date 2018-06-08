@@ -18,8 +18,7 @@ import {ClassDefinition} from './ClassDefinition';
 
 export class ClassDefinitionContext {
     private factoryId: number;
-
-    private classDefs: {[classId: string]: ClassDefinition};
+    private classDefs: { [classId: string]: ClassDefinition };
 
     constructor(factoryId: number, portableVersion: number) {
         this.factoryId = factoryId;
@@ -30,14 +29,8 @@ export class ClassDefinitionContext {
         return classId + 'v' + version;
     }
 
-    private static decodeVersionedClassId(encoded: string): [number, number] {
-        var re = /(\d+)v(\d+)/;
-        var extracted = re.exec(encoded);
-        return [Number.parseInt(extracted[1]), Number.parseInt(extracted[2])];
-    }
-
     lookup(classId: number, version: number) {
-        var encoded = ClassDefinitionContext.encodeVersionedClassId(classId, version);
+        const encoded = ClassDefinitionContext.encodeVersionedClassId(classId, version);
         return this.classDefs[encoded];
     }
 
@@ -46,11 +39,11 @@ export class ClassDefinitionContext {
             return null;
         }
         if (classDefinition.getFactoryId() !== this.factoryId) {
-            throw new RangeError(`This factory's number is ${this.factoryId}. 
+            throw new RangeError(`This factory's number is ${this.factoryId}.
             Intended factory id is ${classDefinition.getFactoryId()}`);
         }
-        var cdKey = ClassDefinitionContext.encodeVersionedClassId(classDefinition.getClassId(), classDefinition.getVersion());
-        var current = this.classDefs[cdKey];
+        const cdKey = ClassDefinitionContext.encodeVersionedClassId(classDefinition.getClassId(), classDefinition.getVersion());
+        const current = this.classDefs[cdKey];
         if (current == null) {
             this.classDefs[cdKey] = classDefinition;
             return classDefinition;

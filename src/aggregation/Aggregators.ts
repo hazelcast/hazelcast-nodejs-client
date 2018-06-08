@@ -26,9 +26,8 @@ import {
     LongSumAggregator,
     MaxAggregator,
     MinAggregator,
-    NumberAverageAggregator
+    NumberAverageAggregator,
 } from './Aggregator';
-import * as Long from 'long';
 
 /**
  * @param attributePath extracts values from this path if given
@@ -116,7 +115,6 @@ export function max<R>(attributePath?: string): MaxAggregator<R> {
 export function min<R>(attributePath?: string): MinAggregator<R> {
     return new MinAggregator<R>(attributePath);
 }
-
 
 /**
  * @param attributePath extracts values from this path if given

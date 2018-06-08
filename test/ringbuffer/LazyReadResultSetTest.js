@@ -22,7 +22,7 @@ describe('LazyReadResultSetTest', function () {
 
     var mockSerializationService = {
         'toObject': function (x) {
-            return x+100;
+            return x + 100;
         },
 
         'isData': function (x) {
@@ -31,7 +31,7 @@ describe('LazyReadResultSetTest', function () {
     };
 
     it('get', function () {
-        var set = new LazyReadResultSet(mockSerializationService, 4, [1,2,3,4], [11,12,13,14]);
+        var set = new LazyReadResultSet(mockSerializationService, 4, [1, 2, 3, 4], [11, 12, 13, 14]);
         expect(set.get(0)).to.equal(101);
         expect(set.get(1)).to.equal(102);
         expect(set.get(2)).to.equal(3);
@@ -44,12 +44,12 @@ describe('LazyReadResultSetTest', function () {
     });
 
     it('getSequence throws UnsupportedOperationError when there is no info', function () {
-        var set = new LazyReadResultSet(mockSerializationService, 4, [1,2,3,4]);
+        var set = new LazyReadResultSet(mockSerializationService, 4, [1, 2, 3, 4]);
         expect(set.getSequence.bind(set, 2)).to.throw(HzErrors.UnsupportedOperationError);
     });
 
     it('get returns undefined for out of range index', function () {
-        var set = new LazyReadResultSet(mockSerializationService, 4, [1,2,3,4], [11,12,13,14]);
+        var set = new LazyReadResultSet(mockSerializationService, 4, [1, 2, 3, 4], [11, 12, 13, 14]);
         expect(set.get(4)).to.be.undefined;
     });
 });

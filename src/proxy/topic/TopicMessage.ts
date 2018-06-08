@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import Address = require('../../Address');
 import Long = require('long');
+import Address = require('../../Address');
 
 export class TopicMessage<T> {
     messageObject: T;

@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-import * as Long from 'long';
-import {PagingPredicate} from './serialization/DefaultPredicates';
-import {IterationType} from './core/Predicate';
 import * as assert from 'assert';
-import {Comparator} from './core/Comparator';
+import * as Long from 'long';
 import * as Path from 'path';
 import {JsonConfigLocator} from './config/JsonConfigLocator';
+import {Comparator} from './core/Comparator';
+import {IterationType} from './core/Predicate';
+import {PagingPredicate} from './serialization/DefaultPredicates';
 import Address = require('./Address');
+
 export function assertNotNull(v: any) {
     assert.notEqual(v, null, 'Non null value expected.');
 }
@@ -30,10 +31,10 @@ export function assertArray(x: any) {
     assert(Array.isArray(x), 'Should be array.');
 }
 
-export function shuffleArray<T>(array: Array<T>): void {
-    var randomIndex: number;
-    var temp: T;
-    for (var i = array.length; i > 1; i--) {
+export function shuffleArray<T>(array: T[]): void {
+    let randomIndex: number;
+    let temp: T;
+    for (let i = array.length; i > 1; i--) {
         randomIndex = Math.floor(Math.random() * i);
         temp = array[i - 1];
         array[i - 1] = array[randomIndex];
@@ -50,7 +51,7 @@ export function getType(obj: any): string {
     if (Long.isLong(obj)) {
         return 'long';
     } else {
-        var t = typeof obj;
+        const t = typeof obj;
         if (t !== 'object') {
             return t;
         } else {
@@ -63,36 +64,39 @@ export function enumFromString<T>(enumType: any, value: string): T {
     return enumType[value];
 }
 
-export function getSortedQueryResultSet(list: Array<any>, predicate: PagingPredicate) {
+export function getSortedQueryResultSet(list: any[], predicate: PagingPredicate) {
     if (list.length === 0) {
         return list;
     }
-    var comparatorObject = predicate.getComparator();
+    let comparatorObject = predicate.getComparator();
     if (comparatorObject == null) {
         comparatorObject = createComparator(predicate.getIterationType());
     }
     list.sort(comparatorObject.sort.bind(comparatorObject));
-    var nearestAnchorEntry = (predicate == null) ? null : predicate.getNearestAnchorEntry();
-    var nearestPage = nearestAnchorEntry[0];
-    var page = predicate.getPage();
-    var pageSize = predicate.getPageSize();
-    var begin = pageSize * (page - nearestPage - 1);
-    var size = list.length;
-    if (begin > size ) {
+    const nearestAnchorEntry = (predicate == null) ? null : predicate.getNearestAnchorEntry();
+    const nearestPage = nearestAnchorEntry[0];
+    const page = predicate.getPage();
+    const pageSize = predicate.getPageSize();
+    const begin = pageSize * (page - nearestPage - 1);
+    const size = list.length;
+    if (begin > size) {
         return [];
     }
-    var end = begin + pageSize;
+    let end = begin + pageSize;
     if (end > size) {
         end = size;
     }
 
     setAnchor(list, predicate, nearestPage);
-    var iterationType = predicate.getIterationType();
-    return list.slice(begin, end).map(function(item) {
+    const iterationType = predicate.getIterationType();
+    return list.slice(begin, end).map(function (item) {
         switch (iterationType) {
-            case IterationType.ENTRY: return item;
-            case IterationType.KEY: return item[0];
-            case IterationType.VALUE: return item[1];
+            case IterationType.ENTRY:
+                return item;
+            case IterationType.KEY:
+                return item[0];
+            case IterationType.VALUE:
+                return item[1];
         }
     });
 }
@@ -102,8 +106,8 @@ export function copyObjectShallow<T>(obj: T): T {
         return obj;
     }
     if (typeof obj === 'object') {
-        var newObj: any = {};
-        for (var prop in obj) {
+        const newObj: any = {};
+        for (const prop in obj) {
             if (obj.hasOwnProperty(prop)) {
                 newObj[prop] = obj[prop];
             }
@@ -129,7 +133,7 @@ export function tryGetNumber(val: any): number {
     }
 }
 
-export function tryGetArray(val: any): Array<any> {
+export function tryGetArray(val: any): any[] {
     if (Array.isArray(val)) {
         return val;
     } else {
@@ -161,8 +165,8 @@ export function getBooleanOrUndefined(val: any) {
     }
 }
 
-export function tryGetEnum<T>(enumClass: any | {[index: string]: number}, str: string): T {
-    return <any>enumClass[str.toUpperCase()];
+export function tryGetEnum<T>(enumClass: any | { [index: string]: number }, str: string): T {
+    return enumClass[str.toUpperCase()] as any;
 }
 
 export function resolvePath(path: string): string {
@@ -176,7 +180,7 @@ export function resolvePath(path: string): string {
 }
 
 export function loadNameFromPath(path: string, exportedName: string): any {
-    let requirePath = require(resolvePath(path));
+    const requirePath = require(resolvePath(path));
     if (exportedName === undefined) {
         return requirePath;
     } else {
@@ -185,10 +189,10 @@ export function loadNameFromPath(path: string, exportedName: string): any {
 }
 
 export function createAddressFromString(address: string, defaultPort?: number): Address {
-    let indexBracketStart = address.indexOf('[');
-    let indexBracketEnd = address.indexOf(']', indexBracketStart);
-    let indexColon = address.indexOf(':');
-    let lastIndexColon = address.lastIndexOf(':');
+    const indexBracketStart = address.indexOf('[');
+    const indexBracketEnd = address.indexOf(']', indexBracketStart);
+    const indexColon = address.indexOf(':');
+    const lastIndexColon = address.lastIndexOf(':');
     let host: string;
     let port = defaultPort;
     if (indexColon > -1 && lastIndexColon > indexColon) {
@@ -211,7 +215,7 @@ export function createAddressFromString(address: string, defaultPort?: number): 
 }
 
 export function mergeJson(base: any, other: any): void {
-    for (let key in other) {
+    for (const key in other) {
         if (Array.isArray(base[key]) && Array.isArray(other[key])) {
             base[key] = base[key].concat(other[key]);
         } else if (typeof base[key] === 'object' && typeof other[key] === 'object') {
@@ -232,30 +236,33 @@ export function randomInt(upperBound: number): number {
     return Math.floor(Math.random() * upperBound);
 }
 
-function createComparator(iterationType: IterationType): Comparator  {
-    var object: Comparator = {
-        sort: function(a: [any, any], b: [any, any]): number {
+function createComparator(iterationType: IterationType): Comparator {
+    const object: Comparator = {
+        sort(a: [any, any], b: [any, any]): number {
             return 0;
-        }
+        },
     };
     switch (iterationType) {
         case IterationType.KEY:
-            object.sort = (e1: [any, any], e2: [any, any]) => {return e1[0] < e2[0] ? -1 : +(e1[0] > e2[0]); }; break;
+            object.sort = (e1: [any, any], e2: [any, any]) => e1[0] < e2[0] ? -1 : +(e1[0] > e2[0]);
+            break;
         case IterationType.ENTRY:
-            object.sort = (e1: [any, any], e2: [any, any]) => {return e1[1] < e2[1] ? -1 : +(e1[1] > e2[1]); }; break;
+            object.sort = (e1: [any, any], e2: [any, any]) => e1[1] < e2[1] ? -1 : +(e1[1] > e2[1]);
+            break;
         case IterationType.VALUE:
-            object.sort = (e1: [any, any], e2: [any, any]) => {return e1[1] < e2[1] ? -1 : +(e1[1] > e2[1]); }; break;
+            object.sort = (e1: [any, any], e2: [any, any]) => e1[1] < e2[1] ? -1 : +(e1[1] > e2[1]);
+            break;
     }
     return object;
 }
 
-function setAnchor(list: Array<any>, predicate: PagingPredicate, nearestPage: number) {
+function setAnchor(list: any[], predicate: PagingPredicate, nearestPage: number) {
     assert(list.length > 0);
-    var size = list.length;
-    var pageSize = predicate.getPageSize();
-    var page = predicate.getPage();
-    for (var i = pageSize; i <= size && nearestPage < page; i += pageSize ) {
-        var anchor = list[i - 1];
+    const size = list.length;
+    const pageSize = predicate.getPageSize();
+    const page = predicate.getPage();
+    for (let i = pageSize; i <= size && nearestPage < page; i += pageSize) {
+        const anchor = list[i - 1];
         nearestPage++;
         predicate.setAnchor(nearestPage, anchor);
     }

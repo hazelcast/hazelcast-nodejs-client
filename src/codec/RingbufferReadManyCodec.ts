@@ -17,13 +17,7 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
-import Address = require('../Address');
-import {AddressCodec} from './AddressCodec';
-import {UUIDCodec} from './UUIDCodec';
-import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
-import {EntryViewCodec} from './EntryViewCodec';
-import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 import {RingbufferMessageType} from './RingbufferMessageType';
 
 var REQUEST_TYPE = RingbufferMessageType.RINGBUFFER_READMANY;
@@ -81,7 +75,7 @@ export class RingbufferReadManyCodec {
         for (var itemsIndex = 0; itemsIndex < itemsSize; itemsIndex++) {
             var itemsItem: Data;
             itemsItem = clientMessage.readData();
-            items.push(itemsItem)
+            items.push(itemsItem);
         }
         parameters['items'] = items;
 
@@ -96,7 +90,7 @@ export class RingbufferReadManyCodec {
             for (var itemSeqsIndex = 0; itemSeqsIndex < itemSeqsSize; itemSeqsIndex++) {
                 var itemSeqsItem: any;
                 itemSeqsItem = clientMessage.readLong();
-                itemSeqs.push(itemSeqsItem)
+                itemSeqs.push(itemSeqsItem);
             }
             parameters['itemSeqs'] = itemSeqs;
         }

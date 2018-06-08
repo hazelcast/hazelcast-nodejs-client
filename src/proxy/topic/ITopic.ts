@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-import {TopicMessageListener} from './TopicMessageListener';
 import * as Promise from 'bluebird';
 import {DistributedObject} from '../../DistributedObject';
+import {TopicMessageListener} from './TopicMessageListener';
 
 export interface ITopic<E> extends DistributedObject {
     addMessageListener(listener: TopicMessageListener<E>): string;
+
     removeMessageListener(id: string): boolean;
+
     publish(message: E): Promise<void>;
 }

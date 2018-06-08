@@ -18,7 +18,7 @@ var winston = require('winston');
 var Config = require('hazelcast-client').Config;
 var HazelcastClient = require('hazelcast-client').Client;
 
-if(process.argv.length != 3){
+if (process.argv.length != 3) {
     console.log('Run as node logging.js [logger]');
     console.log('[logger]: winston/default/off');
 } else {
@@ -40,7 +40,7 @@ if(process.argv.length != 3){
                 'silly'
             ],
 
-            log: function(level, className, message, furtherInfo) {
+            log: function (level, className, message, furtherInfo) {
                 this.logger.log(this.levels[level], className + ' ' + message);
             }
         };
@@ -49,7 +49,7 @@ if(process.argv.length != 3){
         cfg.properties['hazelcast.logging'] = process.argv[2];
 
     }
-    HazelcastClient.newHazelcastClient(cfg).then(function(client){
+    HazelcastClient.newHazelcastClient(cfg).then(function (client) {
         client.shutdown();
     });
 }

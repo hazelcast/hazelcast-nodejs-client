@@ -6,7 +6,7 @@ var SimplePortable = require('./PortableObjects').SimplePortable;
 var InnerPortable = require('./PortableObjects').InnerPortableObject;
 var Promise = require('bluebird');
 
-describe('Default serializers with live instance', function() {
+describe('Default serializers with live instance', function () {
     var cluster;
     var member;
     var client;
@@ -15,7 +15,7 @@ describe('Default serializers with live instance', function() {
     function getClientConfig() {
         var cfg = new Config.ClientConfig();
         cfg.serializationConfig.portableFactories[10] = {
-            create: function(classId) {
+            create: function (classId) {
                 if (classId === 222) {
                     return new InnerPortable();
                 } else if (classId === 21) {
@@ -28,10 +28,10 @@ describe('Default serializers with live instance', function() {
         return cfg;
     }
 
-    before(function() {
+    before(function () {
         return RC.createCluster(null, null).then(function (res) {
             cluster = res;
-        }).then(function() {
+        }).then(function () {
             return RC.startMember(cluster.id);
         }).then(function (m) {
             member = m;
@@ -42,7 +42,7 @@ describe('Default serializers with live instance', function() {
         });
     });
 
-    after(function() {
+    after(function () {
         client.shutdown();
         return RC.shutdownCluster(cluster.id);
     });
@@ -52,7 +52,7 @@ describe('Default serializers with live instance', function() {
         var innerPortable = new InnerPortable('str1', 'str2');
         return map.put('simpleportable', simplePortable).then(function () {
             return map.put('innerportable', innerPortable);
-        }).then(function() {
+        }).then(function () {
             return map.get('simpleportable');
         }).then(function (sp) {
             return map.get('innerportable').then(function (ip) {
@@ -68,7 +68,7 @@ describe('Default serializers with live instance', function() {
         var innerPortable = new InnerPortable('str1', 'str2');
         return map.putAll([['simpleportable', simplePortable], ['innerportable', innerPortable]]).then(function () {
             client.shutdown();
-        }).then(function() {
+        }).then(function () {
             return Client.newHazelcastClient(getClientConfig());
         }).then(function (cl) {
             client = cl;

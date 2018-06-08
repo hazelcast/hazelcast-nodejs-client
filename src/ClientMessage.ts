@@ -45,13 +45,17 @@ class ClientMessage {
 
     private buffer: Buffer;
     private cursor: number = BitsUtil.HEADER_SIZE;
-    private isRetryable : boolean;
+    private isRetryable: boolean;
+
+    constructor(buffer: Buffer) {
+        this.buffer = buffer;
+    }
 
     public static newClientMessage(payloadSize: number): ClientMessage {
-        var totalSize = BitsUtil.HEADER_SIZE + payloadSize;
-        var buffer = new Buffer(totalSize);
+        const totalSize = BitsUtil.HEADER_SIZE + payloadSize;
+        const buffer = new Buffer(totalSize);
         buffer.fill(0, 0, totalSize);
-        var message = new ClientMessage(buffer);
+        const message = new ClientMessage(buffer);
         message.setDataOffset(BitsUtil.HEADER_SIZE);
         message.setVersion(BitsUtil.VERSION);
         message.setFrameLength(totalSize);
@@ -60,16 +64,12 @@ class ClientMessage {
         return message;
     }
 
-    constructor(buffer: Buffer) {
-        this.buffer = buffer;
-    }
-
     getBuffer(): Buffer {
         return this.buffer;
     }
 
     getCorrelationId(): Long {
-        var offset = BitsUtil.CORRELATION_ID_FIELD_OFFSET;
+        const offset = BitsUtil.CORRELATION_ID_FIELD_OFFSET;
         return this.readLongInternal(offset);
     }
 
@@ -148,24 +148,13 @@ class ClientMessage {
         this.cursor += BitsUtil.BYTE_SIZE_IN_BYTES;
     }
 
-
-    private writeLongInternal(value: any, offset: number) {
-        if (!Long.isLong(value)) {
-            value = Long.fromValue(value);
-        }
-
-        this.buffer.writeInt32LE(value.low, offset);
-        this.buffer.writeInt32LE(value.high, offset + 4);
-    }
-
-
     appendLong(value: any) {
         this.writeLongInternal(value, this.cursor);
         this.cursor += BitsUtil.LONG_SIZE_IN_BYTES;
     }
 
     appendString(value: string) {
-        var length = value.length;
+        const length = value.length;
         this.buffer.writeInt32LE(length, this.cursor);
         this.cursor += 4;
         this.buffer.write(value, this.cursor);
@@ -173,7 +162,7 @@ class ClientMessage {
     }
 
     appendBuffer(buffer: Buffer) {
-        var length = buffer.length;
+        const length = buffer.length;
         this.appendInt32(length);
         buffer.copy(this.buffer, this.cursor);
         this.cursor += length;
@@ -192,12 +181,12 @@ class ClientMessage {
     }
 
     readData(): Data {
-        var dataPayload: Buffer = this.readBuffer();
+        const dataPayload: Buffer = this.readBuffer();
         return new HeapData(dataPayload);
     }
 
     readByte(): number {
-        var value = this.buffer.readUInt8(this.cursor);
+        const value = this.buffer.readUInt8(this.cursor);
         this.cursor += BitsUtil.BYTE_SIZE_IN_BYTES;
         return value;
     }
@@ -207,41 +196,35 @@ class ClientMessage {
     }
 
     readUInt8(): number {
-        var value = this.buffer.readUInt8(this.cursor);
+        const value = this.buffer.readUInt8(this.cursor);
         this.cursor += BitsUtil.BYTE_SIZE_IN_BYTES;
         return value;
     }
 
     readInt32(): number {
-        var value = this.buffer.readInt32LE(this.cursor);
+        const value = this.buffer.readInt32LE(this.cursor);
         this.cursor += BitsUtil.INT_SIZE_IN_BYTES;
         return value;
     }
 
     readLong(): Long {
-        var value = this.readLongInternal(this.cursor);
+        const value = this.readLongInternal(this.cursor);
         this.cursor += BitsUtil.LONG_SIZE_IN_BYTES;
         return value;
     }
 
-    private readLongInternal(offset: number) {
-        var low = this.buffer.readInt32LE(offset);
-        var high = this.buffer.readInt32LE(offset + 4);
-        return new Long(low, high);
-    }
-
     readString(): string {
-        var length = this.buffer.readInt32LE(this.cursor);
+        const length = this.buffer.readInt32LE(this.cursor);
         this.cursor += BitsUtil.INT_SIZE_IN_BYTES;
-        var value = this.buffer.toString('utf8', this.cursor, this.cursor + length);
+        const value = this.buffer.toString('utf8', this.cursor, this.cursor + length);
         this.cursor += length;
         return value;
     }
 
     readBuffer(): Buffer {
-        var size = this.buffer.readUInt32LE(this.cursor);
+        const size = this.buffer.readUInt32LE(this.cursor);
         this.cursor += BitsUtil.INT_SIZE_IN_BYTES;
-        var result = new Buffer(size);
+        const result = new Buffer(size);
         this.buffer.copy(result, 0, this.cursor, this.cursor + size);
         this.cursor += size;
         return result;
@@ -254,5 +237,21 @@ class ClientMessage {
     readMapEntry(): any {
         // TODO
     }
+
+    private writeLongInternal(value: any, offset: number) {
+        if (!Long.isLong(value)) {
+            value = Long.fromValue(value);
+        }
+
+        this.buffer.writeInt32LE(value.low, offset);
+        this.buffer.writeInt32LE(value.high, offset + 4);
+    }
+
+    private readLongInternal(offset: number) {
+        const low = this.buffer.readInt32LE(offset);
+        const high = this.buffer.readInt32LE(offset + 4);
+        return new Long(low, high);
+    }
 }
+
 export = ClientMessage;

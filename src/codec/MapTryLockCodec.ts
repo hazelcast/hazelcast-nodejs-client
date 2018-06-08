@@ -17,13 +17,7 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
-import Address = require('../Address');
-import {AddressCodec} from './AddressCodec';
-import {UUIDCodec} from './UUIDCodec';
-import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
-import {EntryViewCodec} from './EntryViewCodec';
-import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 import {MapMessageType} from './MapMessageType';
 
 var REQUEST_TYPE = MapMessageType.MAP_TRYLOCK;

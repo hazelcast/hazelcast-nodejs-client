@@ -19,7 +19,7 @@ var Long = require('long');
 var Config = require('../../.').Config;
 var SerializationService = require('../../lib/serialization/SerializationService');
 var Predicates = require('../../.').Predicates;
-describe('Default serializers Test', function() {
+describe('Default serializers Test', function () {
 
     var serializationService;
 
@@ -31,7 +31,7 @@ describe('Default serializers Test', function() {
     var parameters = [
         14,
         545.3,
-        1<<63,
+        1 << 63,
         true,
         [true, false, false, true],
         [],
@@ -43,7 +43,7 @@ describe('Default serializers Test', function() {
         'Iñtërnâtiônàlizætiøn',
         '\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}',
         [12, 56, 54, 12],
-        [43546.6, 2343.4, 8988,4],
+        [43546.6, 2343.4, 8988, 4],
         [23545798.6],
         null,
         {abc: 'abc', 'five': 5},
@@ -70,7 +70,7 @@ describe('Default serializers Test', function() {
     ];
 
     parameters.forEach(function (obj) {
-        it('type: ' + typeof obj + ', isArray: ' + Array.isArray(obj) + ', value: ' + JSON.stringify(obj), function() {
+        it('type: ' + typeof obj + ', isArray: ' + Array.isArray(obj) + ', value: ' + JSON.stringify(obj), function () {
             var serializationService = new SerializationService.SerializationServiceV1(new Config.ClientConfig().serializationConfig);
             var serialized = serializationService.toData(obj);
             expect(serializationService.toObject(serialized)).to.deep.equal(obj);
@@ -85,8 +85,8 @@ describe('Default serializers Test', function() {
         'float'
     ];
 
-    defaultNumberTypes.forEach(function(type) {
-        it('convert default number type: ' + type, function() {
+    defaultNumberTypes.forEach(function (type) {
+        it('convert default number type: ' + type, function () {
             if (type === 'long') {
                 var num = Long.fromNumber(56);
             } else {
@@ -100,8 +100,8 @@ describe('Default serializers Test', function() {
         })
     });
 
-    defaultNumberTypes.forEach(function(type) {
-        it('convert array of default number type: ' + type, function() {
+    defaultNumberTypes.forEach(function (type) {
+        it('convert array of default number type: ' + type, function () {
             if (type === 'long') {
                 var nums = [Long.fromNumber(56), Long.fromNumber(101)];
             } else {

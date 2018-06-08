@@ -34,11 +34,11 @@ to.aLong = Long.fromNumber(-50992225);
 to.aString = ''; //TODO
 
 for (var ci = 0; ci < 65535; ci++) {
-    if (!(ci>= 55296 && ci < 57344)) {
+    if (!(ci >= 55296 && ci < 57344)) {
         to.aString += String.fromCharCode(ci);
     }
 }
-for (var ci = 65535 - to.aString.length; ci > 0; ci-- ) {
+for (var ci = 65535 - to.aString.length; ci > 0; ci--) {
     to.aString += String.fromCharCode(0);
 }
 

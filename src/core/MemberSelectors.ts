@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {MemberSelector} from './MemberSelector';
 import {Member} from './Member';
+import {MemberSelector} from './MemberSelector';
 
 export class DataMemberSelector implements MemberSelector {
     select(member: Member): boolean {

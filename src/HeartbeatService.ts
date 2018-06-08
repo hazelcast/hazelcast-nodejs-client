@@ -15,9 +15,9 @@
  */
 
 import {ClientPingCodec} from './codec/ClientPingCodec';
+import {ConnectionHeartbeatListener} from './core/ConnectionHeartbeatListener';
 import HazelcastClient from './HazelcastClient';
 import {ClientConnection} from './invocation/ClientConnection';
-import {ConnectionHeartbeatListener} from './core/ConnectionHeartbeatListener';
 import {LoggingService} from './logging/LoggingService';
 
 const PROPERTY_HEARTBEAT_INTERVAL: string = 'hazelcast.client.heartbeat.interval';
@@ -33,14 +33,14 @@ export class Heartbeat {
     private listeners: ConnectionHeartbeatListener[] = [];
     private logger = LoggingService.getLoggingService();
 
-    //Actually it is a NodeJS.Timer. Another typing file that comes with a module we use causes TSD to see
-    //return type of setTimeout as number. Because of this we defined timer property as `any` type.
+    // Actually it is a NodeJS.Timer. Another typing file that comes with a module we use causes TSD to see
+    // return type of setTimeout as number. Because of this we defined timer property as `any` type.
     private timer: any;
 
     constructor(client: HazelcastClient) {
         this.client = client;
-        this.heartbeatInterval = <number>this.client.getConfig().properties[PROPERTY_HEARTBEAT_INTERVAL];
-        this.heartbeatTimeout = <number>this.client.getConfig().properties[PROPERTY_HEARTBEAT_TIMEOUT];
+        this.heartbeatInterval = this.client.getConfig().properties[PROPERTY_HEARTBEAT_INTERVAL] as number;
+        this.heartbeatTimeout = this.client.getConfig().properties[PROPERTY_HEARTBEAT_TIMEOUT] as number;
     }
 
     /**
@@ -66,11 +66,11 @@ export class Heartbeat {
     }
 
     private heartbeatFunction() {
-        let estConnections = this.client.getConnectionManager().establishedConnections;
-        for (let address in estConnections) {
-            if ( estConnections[address]) {
-                let conn = estConnections[address];
-                let timeSinceLastRead = new Date().getTime() - conn.getLastRead();
+        const estConnections = this.client.getConnectionManager().establishedConnections;
+        for (const address in estConnections) {
+            if (estConnections[address]) {
+                const conn = estConnections[address];
+                const timeSinceLastRead = new Date().getTime() - conn.getLastRead();
                 if (timeSinceLastRead > this.heartbeatTimeout) {
                     if (conn.isHeartbeating()) {
                         conn.setHeartbeating(false);
@@ -78,7 +78,7 @@ export class Heartbeat {
                     }
                 }
                 if (timeSinceLastRead > this.heartbeatInterval) {
-                    let req = ClientPingCodec.encodeRequest();
+                    const req = ClientPingCodec.encodeRequest();
                     this.client.getInvocationService().invokeOnConnection(conn, req)
                         .catch((error) => {
                             if (conn.isAlive()) {

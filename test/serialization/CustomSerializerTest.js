@@ -17,25 +17,26 @@
 var Config = require('../../.').Config;
 var SerializationService = require('../../lib/serialization/SerializationService');
 var expect = require('chai').expect;
-describe('Custom Serializer', function() {
+describe('Custom Serializer', function () {
     var service;
 
     function CustomObject(surname) {
         this.surname = surname;
     }
-    CustomObject.prototype.hzGetCustomId = function() {
+
+    CustomObject.prototype.hzGetCustomId = function () {
         return 10;
     };
-    before(function() {
+    before(function () {
         var cfg = new Config.ClientConfig();
         cfg.serializationConfig.customSerializers.push({
-            getId: function() {
+            getId: function () {
                 return 10;
             },
-            write: function(out, emp) {
+            write: function (out, emp) {
                 out.writeUTF(emp.surname);
             },
-            read: function(inp) {
+            read: function (inp) {
                 var obj = new CustomObject();
                 obj.surname = inp.readUTF();
                 return obj;
@@ -44,7 +45,7 @@ describe('Custom Serializer', function() {
         service = new SerializationService.SerializationServiceV1(cfg.serializationConfig);
     });
 
-    it('write-read', function() {
+    it('write-read', function () {
         var emp = new CustomObject('iman');
         var serialized = service.toData(emp);
         var deserialized = service.toObject(serialized);

@@ -15,28 +15,23 @@
  */
 
 import * as Promise from 'bluebird';
-import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {ILock} from './ILock';
+import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 
-import {LockLockCodec} from '../codec/LockLockCodec';
+import * as Long from 'long';
+import {LockForceUnlockCodec} from '../codec/LockForceUnlockCodec';
+import {LockGetLockCountCodec} from '../codec/LockGetLockCountCodec';
 import {LockGetRemainingLeaseTimeCodec} from '../codec/LockGetRemainingLeaseTimeCodec';
+import {LockIsLockedByCurrentThreadCodec} from '../codec/LockIsLockedByCurrentThreadCodec';
+import {LockIsLockedCodec} from '../codec/LockIsLockedCodec';
+import {LockLockCodec} from '../codec/LockLockCodec';
 import {LockTryLockCodec} from '../codec/LockTryLockCodec';
 import {LockUnlockCodec} from '../codec/LockUnlockCodec';
-import {LockForceUnlockCodec} from '../codec/LockForceUnlockCodec';
-import {LockIsLockedCodec} from '../codec/LockIsLockedCodec';
-import {LockIsLockedByCurrentThreadCodec} from '../codec/LockIsLockedByCurrentThreadCodec';
-import {LockGetLockCountCodec} from '../codec/LockGetLockCountCodec';
-import * as Long from 'long';
 import {LockReferenceIdGenerator} from '../LockReferenceIdGenerator';
 
 export class LockProxy extends PartitionSpecificProxy implements ILock {
 
-
     private lockReferenceIdGenerator: LockReferenceIdGenerator = this.client.getLockReferenceIdGenerator();
-
-    private nextSequence(): Long {
-        return this.lockReferenceIdGenerator.getNextReferenceId();
-    }
 
     lock(leaseMillis: number = -1): Promise<void> {
         return this.encodeInvoke<void>(LockLockCodec, leaseMillis, 1, this.nextSequence());
@@ -68,8 +63,12 @@ export class LockProxy extends PartitionSpecificProxy implements ILock {
     }
 
     getRemainingLeaseTime(): Promise<number> {
-        return this.encodeInvoke<Long>(LockGetRemainingLeaseTimeCodec).then(function(long) {
+        return this.encodeInvoke<Long>(LockGetRemainingLeaseTimeCodec).then(function (long) {
             return long.toNumber();
         });
+    }
+
+    private nextSequence(): Long {
+        return this.lockReferenceIdGenerator.getNextReferenceId();
     }
 }

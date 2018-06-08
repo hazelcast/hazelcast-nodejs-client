@@ -34,13 +34,13 @@ describe('Listeners on reconnect', function () {
         });
     });
 
-    afterEach(function() {
+    afterEach(function () {
         this.timeout(30000);
         client.shutdown();
         return Controller.shutdownCluster(cluster.id);
     });
 
-    [true,  false].forEach(function (isSmart) {
+    [true, false].forEach(function (isSmart) {
 
         function closeTwoMembersOfThreeAndTestListener(done, membersToClose, turnoffMember) {
             var map;
@@ -61,7 +61,7 @@ describe('Listeners on reconnect', function () {
                 client = cl;
                 map = client.getMap('testmap');
                 var listenerObject = {
-                    added: function(key, oldValue, value, mergingValue) {
+                    added: function (key, oldValue, value, mergingValue) {
                         try {
                             expect(key).to.equal('keyx');
                             expect(oldValue).to.be.undefined;
@@ -91,27 +91,27 @@ describe('Listeners on reconnect', function () {
          *  - the other unrelated connection
          */
 
-        it('kill two members [1,2], listener still receives map.put event [smart=' + isSmart +']', function (done) {
+        it('kill two members [1,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
             closeTwoMembersOfThreeAndTestListener(done, [1, 2], Controller.terminateMember);
         });
 
-        it('kill two members [0,1], listener still receives map.put event [smart=' + isSmart +']', function (done) {
+        it('kill two members [0,1], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
             closeTwoMembersOfThreeAndTestListener(done, [0, 1], Controller.terminateMember);
         });
 
-        it('kill two members [0,2], listener still receives map.put event [smart=' + isSmart +']', function (done) {
+        it('kill two members [0,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
             closeTwoMembersOfThreeAndTestListener(done, [0, 2], Controller.terminateMember);
         });
 
-        it('shutdown two members [1,2], listener still receives map.put event [smart=' + isSmart +']', function (done) {
+        it('shutdown two members [1,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
             closeTwoMembersOfThreeAndTestListener(done, [1, 2], Controller.shutdownMember);
         });
 
-        it('shutdown two members [0,1], listener still receives map.put event [smart=' + isSmart +']', function (done) {
+        it('shutdown two members [0,1], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
             closeTwoMembersOfThreeAndTestListener(done, [0, 1], Controller.shutdownMember);
         });
 
-        it('shutdown two members [0,2], listener still receives map.put event [smart=' + isSmart +']', function (done) {
+        it('shutdown two members [0,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
             closeTwoMembersOfThreeAndTestListener(done, [0, 2], Controller.shutdownMember);
         });
 
@@ -129,7 +129,7 @@ describe('Listeners on reconnect', function () {
                 client = cl;
                 map = client.getMap('testmap');
                 var listenerObject = {
-                    added: function(key, oldValue, value, mergingValue) {
+                    added: function (key, oldValue, value, mergingValue) {
                         try {
                             expect(key).to.equal('keyx');
                             expect(oldValue).to.be.undefined;
@@ -151,7 +151,6 @@ describe('Listeners on reconnect', function () {
             });
         });
     });
-
 
 
 });

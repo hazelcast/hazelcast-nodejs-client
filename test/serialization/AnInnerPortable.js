@@ -19,22 +19,22 @@ function AnInnerPortable(anInt, aFloat) {
     this.aFloat = aFloat;
 }
 
-AnInnerPortable.prototype.getFactoryId = function() {
+AnInnerPortable.prototype.getFactoryId = function () {
     return 1;
 };
 
-AnInnerPortable.prototype.getClassId = function() {
+AnInnerPortable.prototype.getClassId = function () {
     return 2;
 };
-AnInnerPortable.prototype.writePortable = function(writer) {
+AnInnerPortable.prototype.writePortable = function (writer) {
     writer.writeInt('i', this.anInt);
     writer.writeFloat('f', this.aFloat);
 };
-AnInnerPortable.prototype.readPortable = function(reader) {
+AnInnerPortable.prototype.readPortable = function (reader) {
     this.anInt = reader.readInt('i');
     this.aFloat = reader.readFloat('f');
 };
-AnInnerPortable.prototype.equals = function(other) {
+AnInnerPortable.prototype.equals = function (other) {
     if (other === this)
         return true;
     if (this.anInt !== other.anInt)

@@ -15,14 +15,14 @@
  */
 
 import {EventEmitter} from 'events';
-import HazelcastClient from './HazelcastClient';
 import {ImportConfig} from './config/ImportConfig';
+import HazelcastClient from './HazelcastClient';
 import * as Util from './Util';
 
 /**
  * Lifecycle events.
  */
-export var LifecycleEvent = {
+export let LifecycleEvent = {
     /**
      * events are emitted with this name.
      */
@@ -42,7 +42,7 @@ export var LifecycleEvent = {
     /**
      * Disconnect completed gracefully.
      */
-    shutdown: 'shutdown'
+    shutdown: 'shutdown',
 };
 
 /**
@@ -56,15 +56,15 @@ export class LifecycleService extends EventEmitter {
         super();
         this.setMaxListeners(0);
         this.client = client;
-        let listeners = client.getConfig().listeners.lifecycle;
+        const listeners = client.getConfig().listeners.lifecycle;
         listeners.forEach((listener) => {
             this.on(LifecycleEvent.name, listener);
         });
-        let listenerConfgs = client.getConfig().listenerConfigs;
-        listenerConfgs.forEach((importConfig : ImportConfig) => {
-            let path = importConfig.path;
-            let exportedName = importConfig.exportedName;
-            let listener = Util.loadNameFromPath(path, exportedName);
+        const listenerConfgs = client.getConfig().listenerConfigs;
+        listenerConfgs.forEach((importConfig: ImportConfig) => {
+            const path = importConfig.path;
+            const exportedName = importConfig.exportedName;
+            const listener = Util.loadNameFromPath(path, exportedName);
             this.on(LifecycleEvent.name, listener);
         });
         this.emit(LifecycleEvent.name, LifecycleEvent.starting);
@@ -75,7 +75,7 @@ export class LifecycleService extends EventEmitter {
      * @param state
      */
     emitLifecycleEvent(state: string): void {
-        if ( !LifecycleEvent.hasOwnProperty(state)) {
+        if (!LifecycleEvent.hasOwnProperty(state)) {
             throw new Error(state + ' is not a valid lifecycle event');
         }
         if (state === LifecycleEvent.started) {

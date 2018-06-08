@@ -14,39 +14,38 @@
  * limitations under the License.
  */
 
-import {SerializationService, SerializationServiceV1} from './serialization/SerializationService';
-import {InvocationService} from './invocation/InvocationService';
-import {ListenerService} from './ListenerService';
-import {ClientConfig} from './config/Config';
 import * as Promise from 'bluebird';
-import {IMap} from './proxy/IMap';
-import {ISet} from './proxy/ISet';
-import {LoggingService} from './logging/LoggingService';
-import {LifecycleService, LifecycleEvent} from './LifecycleService';
-import {ClientGetDistributedObjectsCodec} from './codec/ClientGetDistributedObjectsCodec';
-import {DistributedObject} from './DistributedObject';
 import {ClientInfo} from './ClientInfo';
-import {ClientConnectionManager} from './invocation/ClientConnectionManager';
-import {ProxyManager} from './proxy/ProxyManager';
-import {PartitionService} from './PartitionService';
-import {ClusterService} from './invocation/ClusterService';
-import {Heartbeat} from './HeartbeatService';
-import {IQueue} from './proxy/IQueue';
-import {IList} from './proxy/IList';
-import {ILock} from './proxy/ILock';
-import {MultiMap} from './proxy/MultiMap';
-import {IRingbuffer} from './proxy/IRingbuffer';
-import {ITopic} from './proxy/topic/ITopic';
-import {ReliableTopicProxy} from './proxy/topic/ReliableTopicProxy';
-import {IReplicatedMap} from './proxy/IReplicatedMap';
-import {ISemaphore} from './proxy/ISemaphore';
-import {IAtomicLong} from './proxy/IAtomicLong';
-import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
-import {RepairingTask} from './nearcache/RepairingTask';
+import {ClientGetDistributedObjectsCodec} from './codec/ClientGetDistributedObjectsCodec';
+import {ClientConfig} from './config/Config';
 import {ConfigBuilder} from './config/ConfigBuilder';
+import {DistributedObject} from './DistributedObject';
+import {Heartbeat} from './HeartbeatService';
+import {ClientConnectionManager} from './invocation/ClientConnectionManager';
+import {ClusterService} from './invocation/ClusterService';
+import {InvocationService} from './invocation/InvocationService';
+import {LifecycleEvent, LifecycleService} from './LifecycleService';
+import {ListenerService} from './ListenerService';
+import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
+import {LoggingService} from './logging/LoggingService';
+import {RepairingTask} from './nearcache/RepairingTask';
+import {PartitionService} from './PartitionService';
 import {ClientErrorFactory} from './protocol/ErrorFactory';
 import {FlakeIdGenerator} from './proxy/FlakeIdGenerator';
+import {IAtomicLong} from './proxy/IAtomicLong';
+import {IList} from './proxy/IList';
+import {ILock} from './proxy/ILock';
+import {IMap} from './proxy/IMap';
+import {IQueue} from './proxy/IQueue';
+import {IReplicatedMap} from './proxy/IReplicatedMap';
+import {IRingbuffer} from './proxy/IRingbuffer';
+import {ISemaphore} from './proxy/ISemaphore';
+import {ISet} from './proxy/ISet';
+import {MultiMap} from './proxy/MultiMap';
 import {PNCounter} from './proxy/PNCounter';
+import {ProxyManager} from './proxy/ProxyManager';
+import {ITopic} from './proxy/topic/ITopic';
+import {SerializationService, SerializationServiceV1} from './serialization/SerializationService';
 
 export default class HazelcastClient {
 
@@ -65,30 +64,12 @@ export default class HazelcastClient {
     private mapRepairingTask: RepairingTask;
     private errorFactory: ClientErrorFactory;
 
-    /**
-     * Creates a new client object and automatically connects to cluster.
-     * @param config Default {@link ClientConfig} is used when this parameter is absent.
-     * @returns a new client instance
-     */
-    public static newHazelcastClient(config?: ClientConfig): Promise<HazelcastClient> {
-        if (config == null) {
-            let configBuilder = new ConfigBuilder();
-            return configBuilder.loadConfig().then(() => {
-                let client = new HazelcastClient(configBuilder.build());
-                return client.init();
-            });
-        } else {
-            let client = new HazelcastClient(config);
-            return client.init();
-        }
-    }
-
     constructor(config?: ClientConfig) {
         if (config) {
             this.config = config;
         }
 
-        LoggingService.initialize(<string>this.config.properties['hazelcast.logging']);
+        LoggingService.initialize(this.config.properties['hazelcast.logging'] as string);
         this.loggingService = LoggingService.getLoggingService();
         this.invocationService = new InvocationService(this);
         this.listenerService = new ListenerService(this);
@@ -103,22 +84,22 @@ export default class HazelcastClient {
         this.errorFactory = new ClientErrorFactory();
     }
 
-    private init(): Promise<HazelcastClient> {
-        return this.clusterService.start().then(() => {
-            return this.partitionService.initialize();
-        }).then(() => {
-            return this.heartbeat.start();
-        }).then(() => {
-            this.lifecycleService.emitLifecycleEvent(LifecycleEvent.started);
-        }).then(() => {
-            this.proxyManager.init();
-            this.listenerService.start();
-            this.loggingService.info('HazelcastClient', 'Client started');
-            return this;
-        }).catch((e) => {
-            this.loggingService.error('HazelcastClient', 'Client failed to start', e);
-            throw e;
-        });
+    /**
+     * Creates a new client object and automatically connects to cluster.
+     * @param config Default {@link ClientConfig} is used when this parameter is absent.
+     * @returns a new client instance
+     */
+    public static newHazelcastClient(config?: ClientConfig): Promise<HazelcastClient> {
+        if (config == null) {
+            const configBuilder = new ConfigBuilder();
+            return configBuilder.loadConfig().then(() => {
+                const client = new HazelcastClient(configBuilder.build());
+                return client.init();
+            });
+        } else {
+            const client = new HazelcastClient(config);
+            return client.init();
+        }
     }
 
     /**
@@ -134,13 +115,13 @@ export default class HazelcastClient {
      * @returns {Promise<DistributedObject[]>|Promise<T>}
      */
     getDistributedObjects(): Promise<DistributedObject[]> {
-        var clientMessage = ClientGetDistributedObjectsCodec.encodeRequest();
-        var toObjectFunc = this.serializationService.toObject.bind(this);
-        var proxyManager = this.proxyManager;
+        const clientMessage = ClientGetDistributedObjectsCodec.encodeRequest();
+        const toObjectFunc = this.serializationService.toObject.bind(this);
+        const proxyManager = this.proxyManager;
         return this.invocationService.invokeOnRandomTarget(clientMessage).then(function (resp) {
-            var response = ClientGetDistributedObjectsCodec.decodeResponse(resp, toObjectFunc).response;
-            return response.map((objectInfo: {[key: string]: any}) => {
-                return proxyManager.getOrCreateProxy(objectInfo['value'], objectInfo['key'], false);
+            const response = ClientGetDistributedObjectsCodec.decodeResponse(resp, toObjectFunc).response;
+            return response.map((objectInfo: { [key: string]: any }) => {
+                return proxyManager.getOrCreateProxy(objectInfo.value, objectInfo.key, false);
             });
         });
     }
@@ -151,7 +132,7 @@ export default class HazelcastClient {
      * @returns {IMap<K, V>}
      */
     getMap<K, V>(name: string): IMap<K, V> {
-        return <IMap<K, V>>this.proxyManager.getOrCreateProxy(name, ProxyManager.MAP_SERVICE);
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.MAP_SERVICE) as IMap<K, V>;
     }
 
     /**
@@ -160,7 +141,7 @@ export default class HazelcastClient {
      * @returns {ISet<E>}
      */
     getSet<E>(name: string): ISet<E> {
-        return <ISet<E>>this.proxyManager.getOrCreateProxy(name, ProxyManager.SET_SERVICE);
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.SET_SERVICE) as ISet<E>;
     }
 
     /**
@@ -169,9 +150,8 @@ export default class HazelcastClient {
      * @returns {ILock}
      */
     getLock(name: string): ILock {
-        return <ILock>this.proxyManager.getOrCreateProxy(name, ProxyManager.LOCK_SERVICE);
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.LOCK_SERVICE) as ILock;
     }
-
 
     /**
      * Returns the distributed queue instance with given name.
@@ -179,7 +159,7 @@ export default class HazelcastClient {
      * @returns {IQueue<E>}
      */
     getQueue<E>(name: string): IQueue<E> {
-        return <IQueue<E>>this.proxyManager.getOrCreateProxy(name, ProxyManager.QUEUE_SERVICE);
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.QUEUE_SERVICE) as IQueue<E>;
     }
 
     /**
@@ -188,7 +168,7 @@ export default class HazelcastClient {
      * @returns {IQueue<E>}
      */
     getList<E>(name: string): IList<E> {
-        return <IList<E>>this.proxyManager.getOrCreateProxy(name, ProxyManager.LIST_SERVICE);
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.LIST_SERVICE) as IList<E>;
     }
 
     /**
@@ -197,7 +177,7 @@ export default class HazelcastClient {
      * @returns {MultiMap<K, V>}
      */
     getMultiMap<K, V>(name: string): MultiMap<K, V> {
-        return <MultiMap<K, V>>this.proxyManager.getOrCreateProxy(name, ProxyManager.MULTIMAP_SERVICE);
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.MULTIMAP_SERVICE) as MultiMap<K, V>;
     }
 
     /**
@@ -206,7 +186,7 @@ export default class HazelcastClient {
      * @returns {IRingbuffer<E>}
      */
     getRingbuffer<E>(name: string): IRingbuffer<E> {
-        return <IRingbuffer<E>>this.proxyManager.getOrCreateProxy(name, ProxyManager.RINGBUFFER_SERVICE);
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.RINGBUFFER_SERVICE) as IRingbuffer<E>;
     }
 
     /**
@@ -215,23 +195,23 @@ export default class HazelcastClient {
      * @returns {ITopic<E>}
      */
     getReliableTopic<E>(name: string): ITopic<E> {
-        return <ITopic<E>>this.proxyManager.getOrCreateProxy(name, ProxyManager.RELIABLETOPIC_SERVICE);
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.RELIABLETOPIC_SERVICE) as ITopic<E>;
     }
 
     getReplicatedMap<K, V>(name: string): IReplicatedMap<K, V> {
-        return <IReplicatedMap<K, V>>this.proxyManager.getOrCreateProxy(name, ProxyManager.REPLICATEDMAP_SERVICE);
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.REPLICATEDMAP_SERVICE) as IReplicatedMap<K, V>;
     }
 
     getAtomicLong(name: string): IAtomicLong {
-        return <IAtomicLong>this.proxyManager.getOrCreateProxy(name, ProxyManager.ATOMICLONG_SERVICE);
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.ATOMICLONG_SERVICE) as IAtomicLong;
     }
 
     getFlakeIdGenerator(name: string): FlakeIdGenerator {
-        return <FlakeIdGenerator>this.proxyManager.getOrCreateProxy(name, ProxyManager.FLAKEID_SERVICE);
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.FLAKEID_SERVICE) as FlakeIdGenerator;
     }
 
     getPNCounter(name: string): PNCounter {
-        return <PNCounter>this.proxyManager.getOrCreateProxy(name, ProxyManager.PNCOUNTER_SERVICE);
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.PNCOUNTER_SERVICE) as PNCounter;
     }
 
     /**
@@ -240,7 +220,7 @@ export default class HazelcastClient {
      * @returns {ISemaphore}
      */
     getSemaphore(name: string): ISemaphore {
-        return <ISemaphore>this.proxyManager.getOrCreateProxy(name, ProxyManager.SEMAPHORE_SERVICE);
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.SEMAPHORE_SERVICE) as ISemaphore;
     }
 
     /**
@@ -341,5 +321,22 @@ export default class HazelcastClient {
         this.invocationService.shutdown();
         this.lifecycleService.emitLifecycleEvent(LifecycleEvent.shutdown);
     }
-}
 
+    private init(): Promise<HazelcastClient> {
+        return this.clusterService.start().then(() => {
+            return this.partitionService.initialize();
+        }).then(() => {
+            return this.heartbeat.start();
+        }).then(() => {
+            this.lifecycleService.emitLifecycleEvent(LifecycleEvent.started);
+        }).then(() => {
+            this.proxyManager.init();
+            this.listenerService.start();
+            this.loggingService.info('HazelcastClient', 'Client started');
+            return this;
+        }).catch((e) => {
+            this.loggingService.error('HazelcastClient', 'Client failed to start', e);
+            throw e;
+        });
+    }
+}

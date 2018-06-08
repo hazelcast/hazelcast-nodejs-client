@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import {StaleReadDetector} from './StaleReadDetector';
+import {PartitionService} from '../PartitionService';
 import {DataRecord} from './DataRecord';
 import {MetadataContainer} from './MetadataContainer';
 import {RepairingHandler} from './RepairingHandler';
-import {PartitionService} from '../PartitionService';
+import {StaleReadDetector} from './StaleReadDetector';
 
 export class StaleReadDetectorImpl implements StaleReadDetector {
 
@@ -31,7 +31,7 @@ export class StaleReadDetectorImpl implements StaleReadDetector {
     }
 
     isStaleRead(key: any, record: DataRecord): boolean {
-        let metadata = this.getMetadataContainer(this.getPartitionId(record.key));
+        const metadata = this.getMetadataContainer(this.getPartitionId(record.key));
         return !record.hasSameUuid(metadata.getUuid()) || record.getInvalidationSequence().lessThan(metadata.getStaleSequence());
     }
 

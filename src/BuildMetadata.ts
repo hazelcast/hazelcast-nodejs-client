@@ -15,11 +15,10 @@
  */
 
 export class BuildMetadata {
-    public static readonly UNKNOWN_VERSION_ID = -1;
 
+    public static readonly UNKNOWN_VERSION_ID = -1;
     private static readonly MAJOR_VERSION_MULTIPLIER = 10000;
     private static readonly MINOR_VERSION_MULTIPLIER = 100;
-
     private static readonly PATTERN = /^([\d]+)\.([\d]+)(?:\.([\d]+))?(-[\w]+)?(-SNAPSHOT)?(-BETA-.)?$/;
 
     public static calculateVersion(versionString: string): number {
@@ -42,4 +41,3 @@ export class BuildMetadata {
     }
 
 }
-

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {InMemoryFormat} from './InMemoryFormat';
 import {EvictionPolicy} from './EvictionPolicy';
+import {InMemoryFormat} from './InMemoryFormat';
 
 export class NearCacheConfig {
     name: string = 'default';
@@ -50,7 +50,7 @@ export class NearCacheConfig {
     }
 
     clone(): NearCacheConfig {
-        let other = new NearCacheConfig();
+        const other = new NearCacheConfig();
         Object.assign(other, this);
         return other;
     }

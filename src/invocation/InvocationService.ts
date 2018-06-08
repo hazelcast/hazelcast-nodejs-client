@@ -14,19 +14,22 @@
  * limitations under the License.
  */
 
-import ClientMessage = require('../ClientMessage');
-import * as Long from 'long';
-import Address = require('../Address');
-import * as Promise from 'bluebird';
-import {BitsUtil} from '../BitsUtil';
-import {LoggingService} from '../logging/LoggingService';
-import HazelcastClient from '../HazelcastClient';
-import {ClientConnection} from './ClientConnection';
-import {
-    IllegalStateError, ClientNotActiveError, IOError, InvocationTimeoutError,
-    HazelcastInstanceNotActiveError, RetryableHazelcastError
-} from '../HazelcastError';
 import * as assert from 'assert';
+import * as Promise from 'bluebird';
+import * as Long from 'long';
+import {BitsUtil} from '../BitsUtil';
+import HazelcastClient from '../HazelcastClient';
+import {
+    ClientNotActiveError,
+    HazelcastInstanceNotActiveError,
+    InvocationTimeoutError,
+    IOError,
+    RetryableHazelcastError,
+} from '../HazelcastError';
+import {LoggingService} from '../logging/LoggingService';
+import {ClientConnection} from './ClientConnection';
+import Address = require('../Address');
+import ClientMessage = require('../ClientMessage');
 
 const EXCEPTION_MESSAGE_TYPE = 109;
 const MAX_FAST_INVOCATION_COUNT = 5;
@@ -38,17 +41,8 @@ const PROPERTY_INVOCATION_TIMEOUT_MILLIS = 'hazelcast.client.invocation.timeout.
  */
 export class Invocation {
 
-    constructor(client: HazelcastClient, request: ClientMessage) {
-        this.client = client;
-        this.invocationService = client.getInvocationService();
-        this.deadline = new Date(new Date().getTime() + this.invocationService.getInvocationTimeoutMillis());
-        this.request = request;
-    }
-
     client: HazelcastClient;
-
     invocationService: InvocationService;
-
     /**
      * Representatiton of the request in binary form.
      */
@@ -69,19 +63,27 @@ export class Invocation {
      * Connection of the request. If request is not bound to any specific address, should be set to null.
      */
     connection: ClientConnection;
-
     /**
      * Promise managing object.
      */
     deferred: Promise.Resolver<ClientMessage>;
-
     invokeCount: number = 0;
-
     /**
      * If this is an event listener registration, handler should be set to the function to be called on events.
      * Otherwise, should be set to null.
      */
     handler: (...args: any[]) => any;
+
+    constructor(client: HazelcastClient, request: ClientMessage) {
+        this.client = client;
+        this.invocationService = client.getInvocationService();
+        this.deadline = new Date(new Date().getTime() + this.invocationService.getInvocationTimeoutMillis());
+        this.request = request;
+    }
+
+    static isRetrySafeError(err: Error): boolean {
+        return err instanceof IOError || err instanceof HazelcastInstanceNotActiveError || err instanceof RetryableHazelcastError;
+    }
 
     /**
      * @returns {boolean}
@@ -93,27 +95,22 @@ export class Invocation {
     isAllowedToRetryOnSelection(err: Error): boolean {
         return (this.connection == null && this.address == null) || !(err instanceof IOError);
     }
-
-    static isRetrySafeError(err: Error): boolean {
-        return err instanceof IOError || err instanceof HazelcastInstanceNotActiveError || err instanceof RetryableHazelcastError;
-    }
 }
 
 /**
  * Sends requests to appropriate nodes. Resolves waiting promises with responses.
  */
 export class InvocationService {
+    doInvoke: (invocation: Invocation) => void;
     private correlationCounter = 1;
-    private eventHandlers: {[id: number]: Invocation} = {};
-    private pending: {[id: number]: Invocation} = {};
+    private eventHandlers: { [id: number]: Invocation } = {};
+    private pending: { [id: number]: Invocation } = {};
     private client: HazelcastClient;
     private smartRoutingEnabled: boolean;
     private readonly invocationRetryPauseMillis: number;
     private readonly invocationTimeoutMillis: number;
     private logger = LoggingService.getLoggingService();
     private isShutdown: boolean;
-
-    doInvoke: (invocation: Invocation) => void;
 
     constructor(hazelcastClient: HazelcastClient) {
         this.client = hazelcastClient;
@@ -123,8 +120,8 @@ export class InvocationService {
         } else {
             this.doInvoke = this.invokeNonSmart;
         }
-        this.invocationRetryPauseMillis = <number>this.client.getConfig().properties[PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS];
-        this.invocationTimeoutMillis = <number>this.client.getConfig().properties[PROPERTY_INVOCATION_TIMEOUT_MILLIS];
+        this.invocationRetryPauseMillis = this.client.getConfig().properties[PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS] as number;
+        this.invocationTimeoutMillis = this.client.getConfig().properties[PROPERTY_INVOCATION_TIMEOUT_MILLIS] as number;
         this.isShutdown = false;
     }
 
@@ -133,7 +130,7 @@ export class InvocationService {
     }
 
     invoke(invocation: Invocation): Promise<ClientMessage> {
-        var newCorrelationId = Long.fromNumber(this.correlationCounter++);
+        const newCorrelationId = Long.fromNumber(this.correlationCounter++);
         invocation.deferred = Promise.defer<ClientMessage>();
         invocation.request.setCorrelationId(newCorrelationId);
         this.doInvoke(invocation);
@@ -149,7 +146,7 @@ export class InvocationService {
      */
     invokeOnConnection(connection: ClientConnection, request: ClientMessage,
                        handler?: (...args: any[]) => any): Promise<ClientMessage> {
-        var invocation = new Invocation(this.client, request);
+        const invocation = new Invocation(this.client, request);
         invocation.connection = connection;
         if (handler) {
             invocation.handler = handler;
@@ -164,7 +161,7 @@ export class InvocationService {
      * @returns
      */
     invokeOnPartition(request: ClientMessage, partitionId: number): Promise<ClientMessage> {
-        var invocation = new Invocation(this.client, request);
+        const invocation = new Invocation(this.client, request);
         invocation.partitionId = partitionId;
         return this.invoke(invocation);
     }
@@ -176,7 +173,7 @@ export class InvocationService {
      * @returns
      */
     invokeOnTarget(request: ClientMessage, target: Address): Promise<ClientMessage> {
-        var invocation = new Invocation(this.client, request);
+        const invocation = new Invocation(this.client, request);
         invocation.address = target;
         return this.invoke(invocation);
     }
@@ -197,6 +194,45 @@ export class InvocationService {
 
     getInvocationRetryPauseMillis(): number {
         return this.invocationRetryPauseMillis;
+    }
+
+    /**
+     * Removes the handler for all event handlers with a specific correlation id.
+     * @param id correlation id
+     */
+    removeEventHandler(id: number): void {
+        if (this.eventHandlers.hasOwnProperty('' + id)) {
+            delete this.eventHandlers[id];
+        }
+    }
+
+    /**
+     * Extract codec specific properties in a protocol message and resolves waiting promise.
+     * @param buffer
+     */
+    processResponse(buffer: Buffer): void {
+        const clientMessage = new ClientMessage(buffer);
+        const correlationId = clientMessage.getCorrelationId().toNumber();
+        const messageType = clientMessage.getMessageType();
+
+        if (clientMessage.hasFlags(BitsUtil.LISTENER_FLAG)) {
+            setImmediate(() => {
+                if (this.eventHandlers[correlationId] !== undefined) {
+                    this.eventHandlers[correlationId].handler(clientMessage);
+                }
+            });
+            return;
+        }
+
+        const pendingInvocation = this.pending[correlationId];
+        const deferred = pendingInvocation.deferred;
+        if (messageType === EXCEPTION_MESSAGE_TYPE) {
+            const remoteError = this.client.getErrorFactory().createErrorFromClientMessage(clientMessage);
+            this.notifyError(pendingInvocation, remoteError);
+        } else {
+            delete this.pending[correlationId];
+            deferred.resolve(clientMessage);
+        }
     }
 
     private invokeSmart(invocation: Invocation): void {
@@ -230,7 +266,7 @@ export class InvocationService {
     }
 
     private invokeOnOwner(invocation: Invocation): Promise<void> {
-        let owner = this.client.getClusterService().getOwnerConnection();
+        const owner = this.client.getClusterService().getOwnerConnection();
         if (owner == null) {
             return Promise.reject(new IOError('Unisocket client\'s owner connection is not available.'));
         }
@@ -247,7 +283,7 @@ export class InvocationService {
     }
 
     private invokeOnPartitionOwner(invocation: Invocation, partitionId: number): Promise<void> {
-        let ownerAddress = this.client.getPartitionService().getAddressForPartition(partitionId);
+        const ownerAddress = this.client.getPartitionService().getAddressForPartition(partitionId);
         return this.client.getConnectionManager().getOrConnect(ownerAddress).then((connection: ClientConnection) => {
             return this.send(invocation, connection);
         }).catch((e) => {
@@ -270,7 +306,7 @@ export class InvocationService {
     }
 
     private notifyError(invocation: Invocation, error: Error): void {
-        let correlationId = invocation.request.getCorrelationId().toNumber();
+        const correlationId = invocation.request.getCorrelationId().toNumber();
         if (this.rejectIfNotRetryable(invocation, error)) {
             delete this.pending[invocation.request.getCorrelationId().toNumber()];
             return;
@@ -312,8 +348,8 @@ export class InvocationService {
     }
 
     private registerInvocation(invocation: Invocation) {
-        var message = invocation.request;
-        var correlationId = message.getCorrelationId().toNumber();
+        const message = invocation.request;
+        const correlationId = message.getCorrelationId().toNumber();
         if (invocation.hasPartitionId()) {
             message.setPartitionId(invocation.partitionId);
         } else {
@@ -323,44 +359,5 @@ export class InvocationService {
             this.eventHandlers[correlationId] = invocation;
         }
         this.pending[correlationId] = invocation;
-    }
-
-    /**
-     * Removes the handler for all event handlers with a specific correlation id.
-     * @param id correlation id
-     */
-    removeEventHandler(id: number): void {
-        if (this.eventHandlers.hasOwnProperty('' + id)) {
-            delete this.eventHandlers[id];
-        }
-    }
-
-    /**
-     * Extract codec specific properties in a protocol message and resolves waiting promise.
-     * @param buffer
-     */
-    processResponse(buffer: Buffer): void {
-        var clientMessage = new ClientMessage(buffer);
-        var correlationId = clientMessage.getCorrelationId().toNumber();
-        var messageType = clientMessage.getMessageType();
-
-        if (clientMessage.hasFlags(BitsUtil.LISTENER_FLAG)) {
-            setImmediate(() => {
-                if (this.eventHandlers[correlationId] !== undefined) {
-                    this.eventHandlers[correlationId].handler(clientMessage);
-                }
-            });
-            return;
-        }
-
-        var pendingInvocation = this.pending[correlationId];
-        var deferred = pendingInvocation.deferred;
-        if (messageType === EXCEPTION_MESSAGE_TYPE) {
-            let remoteError = this.client.getErrorFactory().createErrorFromClientMessage(clientMessage);
-            this.notifyError(pendingInvocation, remoteError);
-        } else {
-            delete this.pending[correlationId];
-            deferred.resolve(clientMessage);
-        }
     }
 }

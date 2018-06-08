@@ -29,7 +29,7 @@ export class ReliableTopicConfig {
     }
 
     clone(): ReliableTopicConfig {
-        let other = new ReliableTopicConfig();
+        const other = new ReliableTopicConfig();
         Object.assign(other, this);
         return other;
     }

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
+import * as Promise from 'bluebird';
 import {EventEmitter} from 'events';
 import * as Long from 'long';
-import * as Promise from 'bluebird';
 
 export class Batch {
     private nextIdLong: Long;
@@ -47,7 +47,7 @@ export class Batch {
         if (this.firstInvalidId.equals(this.nextIdLong)) {
             return undefined;
         }
-        let returnLong = this.nextIdLong;
+        const returnLong = this.nextIdLong;
         this.nextIdLong = this.nextIdLong.add(this.increment);
         return returnLong;
     }
@@ -84,6 +84,13 @@ export class AutoBatcher {
         this.queue.splice(0, ind);
     }
 
+    nextId(): Promise<Long> {
+        const deferred = Promise.defer<Long>();
+        this.queue.push(deferred);
+        this.processIdRequests();
+        return deferred.promise;
+    }
+
     private assignNewBatch(): void {
         if (this.requestInFlight) {
             return;
@@ -104,12 +111,5 @@ export class AutoBatcher {
             deferred.reject(e);
         });
         this.queue = [];
-    }
-
-    nextId(): Promise<Long> {
-        let deferred = Promise.defer<Long>();
-        this.queue.push(deferred);
-        this.processIdRequests();
-        return deferred.promise;
     }
 }

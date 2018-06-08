@@ -15,46 +15,46 @@
  */
 
 import * as Promise from 'bluebird';
-import {IReplicatedMap} from './IReplicatedMap';
-import {assertNotNull} from '../Util';
-import {Data} from '../serialization/Data';
-import {ReplicatedMapPutCodec} from '../codec/ReplicatedMapPutCodec';
-import {ReplicatedMapClearCodec} from '../codec/ReplicatedMapClearCodec';
-import {ReplicatedMapGetCodec} from '../codec/ReplicatedMapGetCodec';
-import {ReplicatedMapContainsKeyCodec} from '../codec/ReplicatedMapContainsKeyCodec';
-import {ReplicatedMapContainsValueCodec} from '../codec/ReplicatedMapContainsValueCodec';
-import {ReplicatedMapSizeCodec} from '../codec/ReplicatedMapSizeCodec';
-import {ReplicatedMapIsEmptyCodec} from '../codec/ReplicatedMapIsEmptyCodec';
-import {ReplicatedMapRemoveCodec} from '../codec/ReplicatedMapRemoveCodec';
-import {ReplicatedMapPutAllCodec} from '../codec/ReplicatedMapPutAllCodec';
-import {ReplicatedMapKeySetCodec} from '../codec/ReplicatedMapKeySetCodec';
-import {ReplicatedMapValuesCodec} from '../codec/ReplicatedMapValuesCodec';
-import {ReplicatedMapEntrySetCodec} from '../codec/ReplicatedMapEntrySetCodec';
-import {Predicate} from '../core/Predicate';
-import {IMapListener} from '../core/MapListener';
-import {ReplicatedMapRemoveEntryListenerCodec} from '../codec/ReplicatedMapRemoveEntryListenerCodec';
-import {EntryEventType} from '../core/EntryEventType';
-import ClientMessage = require('../ClientMessage');
+import {ReplicatedMapAddEntryListenerCodec} from '../codec/ReplicatedMapAddEntryListenerCodec';
+import {ReplicatedMapAddEntryListenerToKeyCodec} from '../codec/ReplicatedMapAddEntryListenerToKeyCodec';
 /* tslint:disable:max-line-length */
 import {ReplicatedMapAddEntryListenerToKeyWithPredicateCodec} from '../codec/ReplicatedMapAddEntryListenerToKeyWithPredicateCodec';
-import {ReplicatedMapAddEntryListenerToKeyCodec} from '../codec/ReplicatedMapAddEntryListenerToKeyCodec';
 import {ReplicatedMapAddEntryListenerWithPredicateCodec} from '../codec/ReplicatedMapAddEntryListenerWithPredicateCodec';
-import {ReplicatedMapAddEntryListenerCodec} from '../codec/ReplicatedMapAddEntryListenerCodec';
+import {ReplicatedMapClearCodec} from '../codec/ReplicatedMapClearCodec';
+import {ReplicatedMapContainsKeyCodec} from '../codec/ReplicatedMapContainsKeyCodec';
+import {ReplicatedMapContainsValueCodec} from '../codec/ReplicatedMapContainsValueCodec';
+import {ReplicatedMapEntrySetCodec} from '../codec/ReplicatedMapEntrySetCodec';
+import {ReplicatedMapGetCodec} from '../codec/ReplicatedMapGetCodec';
+import {ReplicatedMapIsEmptyCodec} from '../codec/ReplicatedMapIsEmptyCodec';
+import {ReplicatedMapKeySetCodec} from '../codec/ReplicatedMapKeySetCodec';
+import {ReplicatedMapPutAllCodec} from '../codec/ReplicatedMapPutAllCodec';
+import {ReplicatedMapPutCodec} from '../codec/ReplicatedMapPutCodec';
+import {ReplicatedMapRemoveCodec} from '../codec/ReplicatedMapRemoveCodec';
+import {ReplicatedMapRemoveEntryListenerCodec} from '../codec/ReplicatedMapRemoveEntryListenerCodec';
+import {ReplicatedMapSizeCodec} from '../codec/ReplicatedMapSizeCodec';
+import {ReplicatedMapValuesCodec} from '../codec/ReplicatedMapValuesCodec';
+import {EntryEventType} from '../core/EntryEventType';
+import {IMapListener} from '../core/MapListener';
+import {Predicate} from '../core/Predicate';
+import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
+import {ListenerMessageCodec} from '../ListenerMessageCodec';
+import {Data} from '../serialization/Data';
+import {assertNotNull} from '../Util';
+import {ArrayComparator} from '../util/ArrayComparator';
+import {IReplicatedMap} from './IReplicatedMap';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 /* tslint:enable:max-line-length */
 import Long = require('long');
-import {ArrayComparator} from '../util/ArrayComparator';
-import {ListenerMessageCodec} from '../ListenerMessageCodec';
-import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
+import ClientMessage = require('../ClientMessage');
 
 export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements IReplicatedMap<K, V> {
 
-    put(key: K, value: V, ttl: Long|number = 0): Promise<V> {
+    put(key: K, value: V, ttl: Long | number = 0): Promise<V> {
         assertNotNull(key);
         assertNotNull(value);
 
-        let valueData: Data = this.toData(value);
-        let keyData: Data = this.toData(key);
+        const valueData: Data = this.toData(value);
+        const keyData: Data = this.toData(key);
 
         return this.encodeInvokeOnKey<V>(ReplicatedMapPutCodec, keyData, keyData, valueData, ttl);
     }
@@ -88,7 +88,6 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         return this.encodeInvoke<number>(ReplicatedMapSizeCodec);
     }
 
-
     isEmpty(): Promise<boolean> {
         return this.encodeInvoke<boolean>(ReplicatedMapIsEmptyCodec);
     }
@@ -100,14 +99,14 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         return this.encodeInvokeOnKey<V>(ReplicatedMapRemoveCodec, keyData, keyData);
     }
 
-    putAll(pairs: [K, V][]): Promise<void> {
+    putAll(pairs: Array<[K, V]>): Promise<void> {
         let pair: [K, V];
         let pairId: string;
-        const entries: [Data, Data][] = [];
+        const entries: Array<[Data, Data]> = [];
         for (pairId in pairs) {
             pair = pairs[pairId];
-            let keyData = this.toData(pair[0]);
-            let valueData = this.toData(pair[1]);
+            const keyData = this.toData(pair[0]);
+            const valueData = this.toData(pair[1]);
             entries.push([keyData, valueData]);
         }
 
@@ -125,17 +124,17 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         const toObject = this.toObject.bind(this);
         return this.encodeInvoke<Data[]>(ReplicatedMapValuesCodec).then((valuesData: Data[]) => {
             if (comparator) {
-                let desValues = valuesData.map(toObject);
+                const desValues = valuesData.map(toObject);
                 return new ReadOnlyLazyList(desValues.sort(comparator), this.client.getSerializationService());
             }
             return new ReadOnlyLazyList(valuesData, this.client.getSerializationService());
         });
     }
 
-    entrySet(): Promise<[K, V][]> {
+    entrySet(): Promise<Array<[K, V]>> {
         const toObject = this.toObject.bind(this);
-        return this.encodeInvoke(ReplicatedMapEntrySetCodec).then(function (entrySet: [Data, Data][]) {
-            return entrySet.map<[K, V]>(entry => [toObject(entry[0]), toObject(entry[1])]);
+        return this.encodeInvoke(ReplicatedMapEntrySetCodec).then(function (entrySet: Array<[Data, Data]>) {
+            return entrySet.map<[K, V]>((entry) => [toObject(entry[0]), toObject(entry[1])]);
         });
     }
 
@@ -162,19 +161,20 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
     private addEntryListenerInternal(listener: IMapListener<K, V>, predicate: Predicate,
                                      key: K): Promise<string> {
         const toObject = this.toObject.bind(this);
+        /* tslint:disable-next-line:no-shadowed-variable */
         const entryEventHandler = function (key: K, val: V, oldVal: V, mergingVal: V,
                                             event: number, uuid: string, numberOfAffectedEntries: number) {
             let eventParams: any[] = [key, oldVal, val, mergingVal, numberOfAffectedEntries, uuid];
             eventParams = eventParams.map(toObject);
-            let eventToListenerMap: {[key: number]: string} = {
+            const eventToListenerMap: { [key: number]: string } = {
                 [EntryEventType.ADDED]: 'added',
                 [EntryEventType.REMOVED]: 'removed',
                 [EntryEventType.UPDATED]: 'updated',
                 [EntryEventType.EVICTED]: 'evicted',
-                [EntryEventType.CLEAR_ALL]: 'clearedAll'
+                [EntryEventType.CLEAR_ALL]: 'clearedAll',
             };
 
-            let eventMethod = eventToListenerMap[event];
+            const eventMethod = eventToListenerMap[event];
             if (listener.hasOwnProperty(eventMethod)) {
                 listener[eventMethod].apply(null, eventParams);
             }
@@ -182,16 +182,16 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         let listenerHandler: Function;
         let codec: ListenerMessageCodec;
         if (key && predicate) {
-            let keyData = this.toData(key);
-            let predicateData = this.toData(predicate);
+            const keyData = this.toData(key);
+            const predicateData = this.toData(predicate);
             codec = this.createEntryListenerToKeyWithPredicate(this.name, keyData, predicateData);
             listenerHandler = ReplicatedMapAddEntryListenerToKeyWithPredicateCodec.handle;
         } else if (key && !predicate) {
-            let keyData = this.toData(key);
+            const keyData = this.toData(key);
             codec = this.createEntryListenerToKey(this.name, keyData);
             listenerHandler = ReplicatedMapAddEntryListenerToKeyCodec.handle;
         } else if (!key && predicate) {
-            let predicateData = this.toData(predicate);
+            const predicateData = this.toData(predicate);
             codec = this.createEntryListenerWithPredicate(this.name, predicateData);
             listenerHandler = ReplicatedMapAddEntryListenerWithPredicateCodec.handle;
         } else {
@@ -199,64 +199,65 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
             listenerHandler = ReplicatedMapAddEntryListenerCodec.handle;
         }
         return this.client.getListenerService().registerListener(codec,
-            (m: ClientMessage) => {listenerHandler(m, entryEventHandler, toObject); });
+            (m: ClientMessage) => {
+                listenerHandler(m, entryEventHandler, toObject);
+            });
     }
 
     private createEntryListener(name: string): ListenerMessageCodec {
         return {
-            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+            encodeAddRequest(localOnly: boolean): ClientMessage {
                 return ReplicatedMapAddEntryListenerCodec.encodeRequest(name, localOnly);
             },
-            decodeAddResponse: function(msg: ClientMessage): string {
+            decodeAddResponse(msg: ClientMessage): string {
                 return ReplicatedMapAddEntryListenerCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+            encodeRemoveRequest(listenerId: string): ClientMessage {
                 return ReplicatedMapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
-            }
+            },
         };
     }
 
     private createEntryListenerToKey(name: string, keyData: Data): ListenerMessageCodec {
         return {
-            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+            encodeAddRequest(localOnly: boolean): ClientMessage {
                 return ReplicatedMapAddEntryListenerToKeyCodec.encodeRequest(name, keyData, localOnly);
             },
-            decodeAddResponse: function(msg: ClientMessage): string {
+            decodeAddResponse(msg: ClientMessage): string {
                 return ReplicatedMapAddEntryListenerToKeyCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+            encodeRemoveRequest(listenerId: string): ClientMessage {
                 return ReplicatedMapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
-            }
+            },
         };
     }
 
     private createEntryListenerWithPredicate(name: string, predicateData: Data): ListenerMessageCodec {
         return {
-            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+            encodeAddRequest(localOnly: boolean): ClientMessage {
                 return ReplicatedMapAddEntryListenerWithPredicateCodec.encodeRequest(name, predicateData, localOnly);
             },
-            decodeAddResponse: function(msg: ClientMessage): string {
+            decodeAddResponse(msg: ClientMessage): string {
                 return ReplicatedMapAddEntryListenerWithPredicateCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+            encodeRemoveRequest(listenerId: string): ClientMessage {
                 return ReplicatedMapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
-            }
+            },
         };
     }
 
-
     private createEntryListenerToKeyWithPredicate(name: string, keyData: Data, predicateData: Data): ListenerMessageCodec {
         return {
-            encodeAddRequest: function(localOnly: boolean): ClientMessage {
+            encodeAddRequest(localOnly: boolean): ClientMessage {
                 return ReplicatedMapAddEntryListenerToKeyWithPredicateCodec.encodeRequest(name, keyData, predicateData,
                     localOnly);
             },
-            decodeAddResponse: function(msg: ClientMessage): string {
+            decodeAddResponse(msg: ClientMessage): string {
                 return ReplicatedMapAddEntryListenerToKeyWithPredicateCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest: function(listenerId: string): ClientMessage {
+            encodeRemoveRequest(listenerId: string): ClientMessage {
                 return ReplicatedMapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
-            }
+            },
         };
     }
 }

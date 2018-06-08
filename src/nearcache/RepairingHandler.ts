@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import {NearCache} from './NearCache';
-import {MetadataContainer} from './MetadataContainer';
-import {PartitionService} from '../PartitionService';
-import {Data} from '../serialization/Data';
 import * as Long from 'long';
 import {UUID} from '../core/UUID';
+import {PartitionService} from '../PartitionService';
+import {Data} from '../serialization/Data';
+import {MetadataContainer} from './MetadataContainer';
+import {NearCache} from './NearCache';
 
 export class RepairingHandler {
 
@@ -42,22 +42,20 @@ export class RepairingHandler {
         }
     }
 
-    initUuid(partitionIdUuidPairsList: [number, UUID][]): void {
-        for (let i = 0; i < partitionIdUuidPairsList.length; i++) {
-            let item = partitionIdUuidPairsList[i];
-            let partitionId = item[0];
-            let partitionUuid = item[1];
+    initUuid(partitionIdUuidPairsList: Array<[number, UUID]>): void {
+        for (const item of partitionIdUuidPairsList) {
+            const partitionId = item[0];
+            const partitionUuid = item[1];
             this.getMetadataContainer(partitionId).setUuid(partitionUuid);
         }
 
     }
 
-    initSequence(partitionIdSequencePairsList: [string, [number, Long][]]): void {
-        let list = partitionIdSequencePairsList[1];
-        for (let i = 0; i < list.length; i++) {
-            let item = list[i];
-            let partitionId = item[0];
-            let partitionSequence = item[1];
+    initSequence(partitionIdSequencePairsList: [string, Array<[number, Long]>]): void {
+        const list = partitionIdSequencePairsList[1];
+        for (const item of list) {
+            const partitionId = item[0];
+            const partitionSequence = item[1];
             this.getMetadataContainer(partitionId).setSequence(partitionSequence);
         }
     }
@@ -70,20 +68,20 @@ export class RepairingHandler {
                 this.nearCache.invalidate(key);
             }
         }
-        let partitionId = this.getPartitionIdOrDefault(key);
+        const partitionId = this.getPartitionIdOrDefault(key);
         this.checkOrRepairSequence(partitionId, sequence);
         this.checkOrRepairUuid(partitionId, partitionUuid);
     }
 
     handleBatch(keys: any[], sourceUuids: string[], partitionUuids: UUID[], sequences: Long[]): void {
-        for (var i = 0; i < keys.length; i++) {
+        for (let i = 0; i < keys.length; i++) {
             this.handle(keys[i], sourceUuids[i], partitionUuids[i], sequences[i]);
         }
     }
 
     checkOrRepairSequence(partitionId: number, nextSequence: Long, viaAntiEntropy: boolean = false): void {
-        let metadata = this.getMetadataContainer(partitionId);
-        let current = metadata.getSequence();
+        const metadata = this.getMetadataContainer(partitionId);
+        const current = metadata.getSequence();
         if (current.greaterThanOrEqual(nextSequence)) {
             return;
         }
@@ -98,8 +96,8 @@ export class RepairingHandler {
     }
 
     checkOrRepairUuid(partitionId: number, newuuid: UUID): void {
-        let metadata = this.getMetadataContainer(partitionId);
-        let currentUuid = metadata.getUuid();
+        const metadata = this.getMetadataContainer(partitionId);
+        const currentUuid = metadata.getUuid();
         if (currentUuid != null && currentUuid.equals(newuuid)) {
             return;
         }
@@ -108,8 +106,8 @@ export class RepairingHandler {
     }
 
     updateLastKnownStaleSequence(metadataContainer: MetadataContainer): void {
-        let lastStaleSequence = metadataContainer.getStaleSequence();
-        let lastSequence = metadataContainer.getSequence();
+        const lastStaleSequence = metadataContainer.getStaleSequence();
+        const lastSequence = metadataContainer.getSequence();
         if (lastStaleSequence.lessThan(lastSequence)) {
             metadataContainer.setStaleSequence(lastSequence);
         }

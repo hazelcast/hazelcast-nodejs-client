@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import {DistributedObject} from '../DistributedObject';
 import * as Promise from 'bluebird';
 import * as Long from 'long';
-
+import {DistributedObject} from '../DistributedObject';
 
 export interface IAtomicLong extends DistributedObject {
     addAndGet(delta: Long | number): Promise<Long>;

@@ -17,13 +17,8 @@
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
 import {BitsUtil} from '../BitsUtil';
-import Address = require('../Address');
-import {AddressCodec} from './AddressCodec';
 import {UUIDCodec} from './UUIDCodec';
-import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
-import {EntryViewCodec} from './EntryViewCodec';
-import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 import {MapMessageType} from './MapMessageType';
 
 var REQUEST_TYPE = MapMessageType.MAP_ADDNEARCACHEINVALIDATIONLISTENER;
@@ -111,7 +106,7 @@ export class MapAddNearCacheInvalidationListenerCodec {
                 for (var keysIndex = 0; keysIndex < keysSize; keysIndex++) {
                     var keysItem: Data;
                     keysItem = clientMessage.readData();
-                    keys.push(keysItem)
+                    keys.push(keysItem);
                 }
             }
             var sourceUuids: any = undefined;
@@ -122,7 +117,7 @@ export class MapAddNearCacheInvalidationListenerCodec {
                 for (var sourceUuidsIndex = 0; sourceUuidsIndex < sourceUuidsSize; sourceUuidsIndex++) {
                     var sourceUuidsItem: string;
                     sourceUuidsItem = clientMessage.readString();
-                    sourceUuids.push(sourceUuidsItem)
+                    sourceUuids.push(sourceUuidsItem);
                 }
             }
             var partitionUuids: any = undefined;
@@ -133,7 +128,7 @@ export class MapAddNearCacheInvalidationListenerCodec {
                 for (var partitionUuidsIndex = 0; partitionUuidsIndex < partitionUuidsSize; partitionUuidsIndex++) {
                     var partitionUuidsItem: any;
                     partitionUuidsItem = UUIDCodec.decode(clientMessage, toObjectFunction);
-                    partitionUuids.push(partitionUuidsItem)
+                    partitionUuids.push(partitionUuidsItem);
                 }
             }
             var sequences: any = undefined;
@@ -144,7 +139,7 @@ export class MapAddNearCacheInvalidationListenerCodec {
                 for (var sequencesIndex = 0; sequencesIndex < sequencesSize; sequencesIndex++) {
                     var sequencesItem: any;
                     sequencesItem = clientMessage.readLong();
-                    sequences.push(sequencesItem)
+                    sequences.push(sequencesItem);
                 }
             }
             handleEventImapbatchinvalidation(keys, sourceUuids, partitionUuids, sequences);

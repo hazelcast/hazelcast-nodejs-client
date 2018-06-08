@@ -39,7 +39,7 @@ describe('MapAggregatorsDoubleTest', function () {
         });
     });
 
-    after(function() {
+    after(function () {
         client.shutdown();
         return Controller.shutdownCluster(cluster.id);
     });

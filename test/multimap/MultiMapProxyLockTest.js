@@ -101,7 +101,7 @@ describe("MultiMap Proxy Lock", function () {
     it("acquires lock before timeout is exceeded", function () {
         this.timeout(10000);
         var startTime = Date.now();
-        return mapOne.lock(1, 1000).then(function() {
+        return mapOne.lock(1, 1000).then(function () {
             return mapTwo.tryLock(1, 2000);
         }).then(function (acquired) {
             var elapsed = Date.now() - startTime;

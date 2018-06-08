@@ -16,14 +16,11 @@
 
 /* tslint:disable */
 import ClientMessage = require('../ClientMessage');
-import {BitsUtil} from '../BitsUtil';
 import Address = require('../Address');
+import {BitsUtil} from '../BitsUtil';
 import {AddressCodec} from './AddressCodec';
 import {UUIDCodec} from './UUIDCodec';
-import {MemberCodec} from './MemberCodec';
 import {Data} from '../serialization/Data';
-import {EntryViewCodec} from './EntryViewCodec';
-import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
 import {MapMessageType} from './MapMessageType';
 
 var REQUEST_TYPE = MapMessageType.MAP_FETCHNEARCACHEINVALIDATIONMETADATA;
@@ -90,10 +87,10 @@ export class MapFetchNearCacheInvalidationMetadataCodec {
                 namePartitionSequenceListItemValItemKey = clientMessage.readInt32();
                 namePartitionSequenceListItemValItemVal = clientMessage.readLong();
                 namePartitionSequenceListItemValItem = [namePartitionSequenceListItemValItemKey, namePartitionSequenceListItemValItemVal];
-                namePartitionSequenceListItemVal.push(namePartitionSequenceListItemValItem)
+                namePartitionSequenceListItemVal.push(namePartitionSequenceListItemValItem);
             }
             namePartitionSequenceListItem = [namePartitionSequenceListItemKey, namePartitionSequenceListItemVal];
-            namePartitionSequenceList.push(namePartitionSequenceListItem)
+            namePartitionSequenceList.push(namePartitionSequenceListItem);
         }
         parameters['namePartitionSequenceList'] = namePartitionSequenceList;
 
@@ -107,7 +104,7 @@ export class MapFetchNearCacheInvalidationMetadataCodec {
             partitionUuidListItemKey = clientMessage.readInt32();
             partitionUuidListItemVal = UUIDCodec.decode(clientMessage, toObjectFunction);
             partitionUuidListItem = [partitionUuidListItemKey, partitionUuidListItemVal];
-            partitionUuidList.push(partitionUuidListItem)
+            partitionUuidList.push(partitionUuidListItem);
         }
         parameters['partitionUuidList'] = partitionUuidList;
 

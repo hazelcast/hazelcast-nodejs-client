@@ -39,7 +39,7 @@ describe('SSL Client Authentication Test', function () {
     });
 
     function createMemberWithXML() {
-        return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast-ssl.xml', 'utf8')).then(function(cl) {
+        return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast-ssl.xml', 'utf8')).then(function (cl) {
             cluster = cl;
             return Controller.startMember(cluster.id);
         }).then(function (m) {
@@ -94,7 +94,7 @@ describe('SSL Client Authentication Test', function () {
             it('ma:required, they both know each other should connect', function () {
                 return createMemberWithXML(maRequiredXML).then(function () {
                     return Client.newHazelcastClient(createClientConfigWithSSLOpts('./client1.pem', './server1.pem'));
-                }).then(function(client) {
+                }).then(function (client) {
                     client.shutdown();
                 });
             });
@@ -121,7 +121,7 @@ describe('SSL Client Authentication Test', function () {
             it('ma:optional, they both know each other should connect', function () {
                 return createMemberWithXML(maOptionalXML).then(function () {
                     return Client.newHazelcastClient(createClientConfigWithSSLOpts('./client1.pem', './server1.pem'));
-                }).then(function(client) {
+                }).then(function (client) {
                     client.shutdown();
                 });
             });
@@ -136,7 +136,7 @@ describe('SSL Client Authentication Test', function () {
             it('ma:optional, server does not know client, client knows server should connect', function () {
                 return createMemberWithXML(maOptionalXML).then(function () {
                     return Client.newHazelcastClient(createClientConfigWithSSLOpts('./client2.pem', './server1.pem'));
-                }).then(function(cl) {
+                }).then(function (cl) {
                     client = cl;
                 })
             });

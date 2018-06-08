@@ -25,8 +25,8 @@ var fs = require('fs');
 var _fillMap = require('../Util').fillMap;
 
 
-describe("NearCachedMap", function() {
-    [true, false].forEach(function(invalidateOnChange) {
+describe("NearCachedMap", function () {
+    [true, false].forEach(function (invalidateOnChange) {
         describe('invalidate on change=' + invalidateOnChange, function () {
             var cluster;
             var client1;

@@ -18,7 +18,7 @@ export class ClassDefinition {
     private factoryId: number;
     private classId: number;
     private version: number;
-    private fields: {[name: string]: FieldDefinition} = {};
+    private fields: { [name: string]: FieldDefinition } = {};
 
     constructor(factoryId: number, classId: number, version: number) {
         this.factoryId = factoryId;
@@ -47,8 +47,8 @@ export class ClassDefinition {
     }
 
     getFieldType(name: string): FieldType {
-        var field = this.fields[name];
-        if ( field != null) {
+        const field = this.fields[name];
+        if (field != null) {
             return field.getType();
         } else {
             throw new RangeError(`Field ${field} does not exist.`);
@@ -60,7 +60,7 @@ export class ClassDefinition {
     }
 
     getField(name: string): FieldDefinition {
-        var field = this.fields[name];
+        const field = this.fields[name];
         return field || null;
     }
 
@@ -68,14 +68,13 @@ export class ClassDefinition {
         if (!Number.isInteger(index) || index < 0 || index >= this.getFieldCount()) {
             throw new RangeError(`Index: ${index}, fields count: ${this.getFieldCount()}.`);
         }
-        for (var fieldName in this.fields) {
+        for (const fieldName in this.fields) {
             if (this.fields[fieldName].getIndex() === index) {
                 return this.fields[fieldName];
             }
         }
         throw new RangeError(`There is no field with index ${index}`);
     }
-
 
     equals(o: ClassDefinition): boolean {
         if (!(o instanceof ClassDefinition)) {
@@ -94,6 +93,7 @@ export class FieldDefinition {
     private type: FieldType;
     private factoryId: number;
     private classId: number;
+
     constructor(index: number, fieldName: string, type: FieldType, factoryId: number, classId: number) {
         this.index = index;
         this.fieldName = fieldName;
@@ -143,5 +143,5 @@ export enum FieldType {
     LONG_ARRAY = 16,
     FLOAT_ARRAY = 17,
     DOUBLE_ARRAY = 18,
-    UTF_ARRAY = 19
+    UTF_ARRAY = 19,
 }

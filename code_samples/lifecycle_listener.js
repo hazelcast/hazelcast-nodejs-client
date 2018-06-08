@@ -17,9 +17,9 @@
 var HazelcastClient = require('hazelcast-client').Client;
 var Config = require('hazelcast-client').Config;
 var cfg = new Config.ClientConfig();
-cfg.listeners.addLifecycleListener(function(state) {
+cfg.listeners.addLifecycleListener(function (state) {
     console.log('Lifecycle Event >>> ' + state);
 });
-HazelcastClient.newHazelcastClient(cfg).then(function(hazelcastClient) {
+HazelcastClient.newHazelcastClient(cfg).then(function (hazelcastClient) {
     hazelcastClient.shutdown();
 });
