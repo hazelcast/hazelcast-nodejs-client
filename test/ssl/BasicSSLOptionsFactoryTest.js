@@ -25,8 +25,9 @@ describe('BasicSSLOptionsFactoryTest', function () {
         var options = {
             servername: 'foo.bar.com',
             rejectUnauthorized: true,
-            certPath: Path.join(__dirname, './client1.pem'),
-            caPath: Path.join(__dirname, './server1.pem'),
+            caPath: Path.join(__dirname, './server1-cert.pem'),
+            keyPath: Path.join(__dirname, './client1-key.pem'),
+            certPath: Path.join(__dirname, './client1-cert.pem'),
             ciphers: 'cipherliststring'
         };
         var factory = new BasicSSLOptionsFactory();
@@ -34,8 +35,9 @@ describe('BasicSSLOptionsFactoryTest', function () {
             var optsObject = factory.getSSLOptions();
             expect(optsObject.servername).to.equal('foo.bar.com');
             expect(optsObject.rejectUnauthorized).to.be.true;
-            expect(optsObject.cert).to.be.instanceOf(Buffer);
             expect(optsObject.ca).to.be.instanceOf(Buffer);
+            expect(optsObject.key).to.be.instanceOf(Buffer);
+            expect(optsObject.cert).to.be.instanceOf(Buffer);
             expect(optsObject.ciphers).to.equal('cipherliststring');
         });
     });
