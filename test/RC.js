@@ -56,17 +56,26 @@ function shutdownMember(clusterId, memberUuid) {
 }
 
 function shutdownCluster(clusterId) {
-    var deferrred = Promise.defer();
+    var deferred = Promise.defer();
     controller.shutdownCluster(clusterId, function (err, res) {
-        if (err) return deferrred.reject(err);
-        return deferrred.resolve(res);
+        if (err) return deferred.reject(err);
+        return deferred.resolve(res);
     });
-    return deferrred.promise;
+    return deferred.promise;
 }
 
 function terminateMember(clusterId, memberUuid) {
     var deferred = Promise.defer();
     controller.terminateMember(clusterId, memberUuid, function (err, res) {
+        if (err) return deferred.reject(err);
+        return deferred.resolve(res);
+    });
+    return deferred.promise;
+}
+
+function terminateCluster(clusterId) {
+    var deferred = Promise.defer();
+    controller.terminateCluster(clusterId, function (err, res) {
         if (err) return deferred.reject(err);
         return deferred.resolve(res);
     });
@@ -90,3 +99,4 @@ exports.shutdownMember = shutdownMember;
 exports.shutdownCluster = shutdownCluster;
 exports.executeOnController = executeOnController;
 exports.terminateMember = terminateMember;
+exports.terminateCluster = terminateCluster;

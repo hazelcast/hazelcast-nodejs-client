@@ -25,8 +25,9 @@ export class BasicSSLOptionsFactory implements SSLOptionsFactory {
 
     private servername: string;
     private rejectUnauthorized: boolean;
-    private cert: Buffer;
     private ca: Buffer;
+    private key: Buffer;
+    private cert: Buffer;
     private ciphers: string;
 
     init(properties: Properties): Promise<void> {
@@ -38,18 +39,25 @@ export class BasicSSLOptionsFactory implements SSLOptionsFactory {
 
         const readFile = Promise.promisify(fs.readFile);
 
-        const certPath = getStringOrUndefined(properties.certPath);
         const caPath = getStringOrUndefined(properties.caPath);
-
-        if (certPath !== undefined) {
-            promises.push(readFile(resolvePath(certPath)).then((data: Buffer) => {
-                this.cert = data;
-            }));
-        }
+        const keyPath = getStringOrUndefined(properties.keyPath);
+        const certPath = getStringOrUndefined(properties.certPath);
 
         if (caPath !== undefined) {
             promises.push(readFile(resolvePath(caPath)).then((data: Buffer) => {
                 this.ca = data;
+            }));
+        }
+
+        if (keyPath !== undefined) {
+            promises.push(readFile(resolvePath(keyPath)).then((data: Buffer) => {
+                this.key = data;
+            }));
+        }
+
+        if (certPath !== undefined) {
+            promises.push(readFile(resolvePath(certPath)).then((data: Buffer) => {
+                this.cert = data;
             }));
         }
 
@@ -64,8 +72,9 @@ export class BasicSSLOptionsFactory implements SSLOptionsFactory {
         return {
             servername: this.servername,
             rejectUnauthorized: this.rejectUnauthorized,
-            cert: this.cert,
             ca: this.ca,
+            key: this.key,
+            cert: this.cert,
             ciphers: this.ciphers,
         };
     }
