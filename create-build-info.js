@@ -1,4 +1,5 @@
 var fs = require('fs');
+var path = require('path');
 var pjson = require('./package.json');
 var tsjon = require('./tsconfig.json');
 
@@ -16,4 +17,4 @@ var infoExport = 'module.exports = ' + JSON.stringify(buildInfo) + ';';
 if (!fs.existsSync(libDir)) {
     fs.mkdirSync(libDir);
 }
-fs.writeFileSync(libDir + '/BuildInfo.js', infoExport);
+fs.writeFileSync(path.join(libDir, 'BuildInfo.js'), infoExport);

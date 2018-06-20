@@ -12,3 +12,4 @@ benchmark/
 scripts/
 *.jar
 *.log
+download-remote-controller.js
