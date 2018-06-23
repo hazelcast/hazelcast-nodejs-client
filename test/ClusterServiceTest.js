@@ -107,8 +107,8 @@ describe('ClusterService', function () {
     it('should throw with message containing wrong host addresses in config', function () {
         var cfg = new Config.ClientConfig();
         cfg.networkConfig.addresses = [
-            new Address('0.0.0.0', 5709),
-            new Address('0.0.0.1', 5710)
+            '0.0.0.0:5709',
+            '0.0.0.1:5710'
         ];
 
         var falseStart = false;

@@ -29,6 +29,10 @@
                     "userDefinedProperty1": "userDefinedValue"
                 }
             }
+        },
+        "hazelcastCloud": {
+            "discoveryToken": "EXAMPLE_TOKEN",
+            "enabled": false
         }
     },
     "listeners": [

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import Address = require('../Address');
 import {ImportConfig} from './ImportConfig';
 import {Properties} from './Properties';
 import {SSLOptions} from './SSLOptions';
+import {ClientCloudConfig} from './ClientCloudConfig';
 
 /**
  * Network configuration
@@ -26,7 +26,12 @@ export class ClientNetworkConfig {
     /**
      * Client tries to connect the members at these addresses.
      */
-    addresses: Address[] = [];
+    addresses: string[] = [];
+
+    /**
+     * hazelcast.cloud configuration to let the client connect the cluster via hazelcast.cloud
+     */
+    cloudConfig: ClientCloudConfig = new ClientCloudConfig();
 
     /**
      * While client is trying to connect initially to one of the members in the {@link addresses},
