@@ -46,10 +46,10 @@ describe('Map Partition Aware', function () {
             'result=""+getLocalMapStats();';
     }
 
-    function _fillMap(map, ssize) {
+    function _fillMap(map, size) {
         var entryList = [];
-        for (var i = 0; i < ssize; i++) {
-            entryList.push([new PartitionAwareKey('' + Math.random(), 'specificKey'), '' + Math.random()]);
+        for (var i = 0; i < size; i++) {
+            entryList.push([new PartitionAwareKey('' + i, 'specificKey'), '' + Math.random()]);
         }
         return map.putAll(entryList);
     }
