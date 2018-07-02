@@ -195,8 +195,9 @@ Below subsections describe each way.
 Hazelcast Node.js Client includes a utility factory class that creates the necessary `options` object out of the supplied
 properties. All you need to do is specifying your factory as `BasicSSLOptionsFactory` and provide the following options:
 
-    certPath
     caPath
+    keyPath
+    certPath
     servername
     rejectUnauthorized
     ciphers
@@ -214,6 +215,7 @@ Please refer to [`tls.connect` of Node.js](https://nodejs.org/api/tls.html#tls_t
                 "exportedName": "BasicSSLOptionsFactory",
                 "properties": {
                     "caPath": "ca.pem",
+                    "keyPath": "key.pem",
                     "certPath": "cert.pem",
                     "rejectUnauthorized": false
                 }
@@ -243,6 +245,7 @@ An example configuration:
                 "exportedName": "SSLFactory",
                 "properties": {
                     "caPath": "ca.pem",
+                    "keyPath": "key.pem",                    
                     "certPath": "cert.pem",
                     "keepOrder": true
                 }
@@ -261,8 +264,9 @@ function SSLFactory() {
 }
  
 SSLFactory.prototype.init = function(props) {
-    this.keyPath = props.keyPath;
     this.caPath = props.caPath;
+    this.keyPath = props.keyPath;
+    this.certPath = props.certPath;
     this.keepOrder = props.userDefinedProperty1;
 };
  
@@ -270,8 +274,9 @@ SSLFactory.prototype.getSSLOptions = function() {
     var sslOpts = {
         servername: 'foo.bar.com',
         rejectUnauthorized: true,
-        cert: fs.readFileSync(this.keyPath),
         ca: fs.readFileSync(this.caPath)
+        key: fs.readFileSync(this.keyPath),
+        cert: fs.readFileSync(this.certPath),
     };
     if (this.keepOrder) {
         sslOpts.honorCipherOrder = true;
