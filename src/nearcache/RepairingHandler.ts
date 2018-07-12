@@ -101,6 +101,7 @@ export class RepairingHandler {
         if (currentUuid != null && currentUuid.equals(newuuid)) {
             return;
         }
+
         metadata.setUuid(newuuid);
         metadata.reset();
     }

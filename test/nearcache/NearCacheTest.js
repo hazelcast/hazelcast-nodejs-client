@@ -145,18 +145,22 @@ describe('NearCacheImpl', function () {
 
             beforeEach(function () {
                 nearCache = new NearCacheImpl(testConfig, createSerializationService());
+                nearCache.setReady();
             });
 
 
             it('simple put/get', function () {
                 nearCache.put(ds('key'), 'val');
-                return expect(nearCache.get(ds('key'))).to.equal('val');
+                return nearCache.get(ds('key')).then((res) => {
+                    return expect(res).to.equal('val');
+                });
             });
 
 
             it('returns undefined for non existing value', function () {
-                nearCache.get(ds('random'));
-                return expect(nearCache.getStatistics().missCount).to.equal(1);
+                return nearCache.get(ds('random')).then(() => {
+                    return expect(nearCache.getStatistics().missCount).to.equal(1);
+                });
             });
 
             it('record does not expire if ttl is 0', function () {

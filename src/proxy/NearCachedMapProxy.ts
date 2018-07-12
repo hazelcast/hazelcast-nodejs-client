@@ -43,7 +43,10 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         if (this.nearCache.isInvalidatedOnChange()) {
             this.addNearCacheInvalidationListener().then((id: string) => {
                 this.invalidationListenerId = id;
+                this.nearCache.setReady();
             });
+        } else {
+            this.nearCache.setReady();
         }
     }
 
@@ -57,12 +60,13 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
     }
 
     protected containsKeyInternal(keyData: Data): Promise<boolean> {
-        const cachedValue = this.nearCache.get(keyData);
-        if (cachedValue !== undefined) {
-            return Promise.resolve(cachedValue != null);
-        } else {
-            return super.containsKeyInternal(keyData);
-        }
+        return this.nearCache.get(keyData).then((cachedValue) => {
+            if (cachedValue !== undefined) {
+                return Promise.resolve(cachedValue != null);
+            } else {
+                return super.containsKeyInternal(keyData);
+            }
+        });
     }
 
     protected deleteInternal(keyData: Data): Promise<void> {
@@ -110,18 +114,20 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
     }
 
     protected getInternal(keyData: Data): Promise<V> {
-        const cachedValue = this.nearCache.get(keyData);
-        if (cachedValue !== undefined) {
-            return Promise.resolve(cachedValue);
-        } else {
-            const reservation = this.nearCache.tryReserveForUpdate(keyData);
-            return super.getInternal(keyData).then((val: V) => {
-                this.nearCache.tryPublishReserved(keyData, val, reservation);
-                return val;
-            }).catch((err: any) => {
-                throw err;
-            });
-        }
+        return this.nearCache.get(keyData).then((cachedValue) => {
+            if (cachedValue !== undefined) {
+                return Promise.resolve(cachedValue);
+            } else {
+                const reservation = this.nearCache.tryReserveForUpdate(keyData);
+                return super.getInternal(keyData).then((val: V) => {
+
+                    this.nearCache.tryPublishReserved(keyData, val, reservation);
+                    return val;
+                }).catch((err: any) => {
+                    throw err;
+                });
+            }
+        });
     }
 
     protected tryRemoveInternal(keyData: Data, timeout: number): Promise<boolean> {
@@ -133,35 +139,39 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
     }
 
     protected getAllInternal(partitionsToKeys: { [id: string]: any }, result: any[] = []): Promise<any[]> {
+        const promises = [];
         try {
             for (const partition in partitionsToKeys) {
                 let partitionArray = partitionsToKeys[partition];
                 for (let i = partitionArray.length - 1; i >= 0; i--) {
                     const key = partitionArray[i];
-                    const cachedResult = this.nearCache.get(key);
-                    if (cachedResult !== undefined) {
-                        result.push([this.toObject(partitionArray[i]), cachedResult]);
-                        partitionArray = partitionArray.splice(i, 1);
-                    }
+                    promises.push(this.nearCache.get(key).then((cachedResult) => {
+                        if (cachedResult !== undefined) {
+                            result.push([this.toObject(partitionArray[i]), cachedResult]);
+                            partitionArray = partitionArray.splice(i, 1);
+                        }
+                    }));
                 }
             }
         } catch (err) {
             return Promise.resolve([]);
         }
-        const reservations: Long[] = [];
-        for (const partition in partitionsToKeys) {
-            const partitionArray = partitionsToKeys[partition];
-            for (const key of partitionArray) {
-                reservations.push(this.nearCache.tryReserveForUpdate(key));
+        return Promise.all(promises).then(() => {
+            const reservations: Long[] = [];
+            for (const partition in partitionsToKeys) {
+                const partitionArray = partitionsToKeys[partition];
+                for (const key of partitionArray) {
+                    reservations.push(this.nearCache.tryReserveForUpdate(key));
+                }
             }
-        }
-        return super.getAllInternal(partitionsToKeys, result).then((serializedEntryArray: Array<[Data, Data]>) => {
-            serializedEntryArray.forEach((serializedEntry: [Data, Data], index: number) => {
-                const key = serializedEntry[0];
-                const value = serializedEntry[1];
-                this.nearCache.tryPublishReserved(key, value, reservations[index]);
+            return super.getAllInternal(partitionsToKeys, result).then((serializedEntryArray: Array<[Data, Data]>) => {
+                serializedEntryArray.forEach((serializedEntry: [Data, Data], index: number) => {
+                    const key = serializedEntry[0];
+                    const value = serializedEntry[1];
+                    this.nearCache.tryPublishReserved(key, value, reservations[index]);
+                });
+                return result;
             });
-            return result;
         });
     }
 
@@ -200,7 +210,9 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
     private addNearCacheInvalidationListener(): Promise<string> {
         const codec = this.createInvalidationListenerCodec(this.name, EntryEventType.INVALIDATION);
         if (this.supportsRepairableNearCache()) {
-            return this.client.getListenerService().registerListener(codec, this.createNearCacheEventHandler());
+            return this.createNearCacheEventHandler().then((handler) => {
+                return this.client.getListenerService().registerListener(codec, handler);
+            });
         } else {
             return this.client.getListenerService().registerListener(codec, this.createPre38NearCacheEventHandler());
         }
@@ -259,20 +271,21 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         };
     }
 
-    private createNearCacheEventHandler() {
+    private createNearCacheEventHandler(): Promise<Function> {
         const repairingTask = this.client.getRepairingTask();
-        const repairingHandler = repairingTask.registerAndGetHandler(this.getName(), this.nearCache);
-        const staleReadDetector = new StaleReadDetectorImpl(repairingHandler, this.client.getPartitionService());
-        this.nearCache.setStaleReadDetector(staleReadDetector);
-        const handle = function (key: Data, sourceUuid: string, partitionUuid: UUID, sequence: Long) {
-            repairingHandler.handle(key, sourceUuid, partitionUuid, sequence);
-        };
-        const handleBatch = function (keys: Data[], sourceUuids: string[], partititonUuids: UUID[], sequences: Long[]) {
-            repairingHandler.handleBatch(keys, sourceUuids, partititonUuids, sequences);
-        };
+        return repairingTask.registerAndGetHandler(this.getName(), this.nearCache).then((repairingHandler) => {
+            const staleReadDetector = new StaleReadDetectorImpl(repairingHandler, this.client.getPartitionService());
+            this.nearCache.setStaleReadDetector(staleReadDetector);
+            const handle = function (key: Data, sourceUuid: string, partitionUuid: UUID, sequence: Long) {
+                repairingHandler.handle(key, sourceUuid, partitionUuid, sequence);
+            };
+            const handleBatch = function (keys: Data[], sourceUuids: string[], partititonUuids: UUID[], sequences: Long[]) {
+                repairingHandler.handleBatch(keys, sourceUuids, partititonUuids, sequences);
+            };
 
-        return function (m: ClientMessage) {
-            MapAddNearCacheInvalidationListenerCodec.handle(m, handle, handleBatch);
-        };
+            return function (m: ClientMessage) {
+                MapAddNearCacheInvalidationListenerCodec.handle(m, handle, handleBatch);
+            };
+        });
     }
 }

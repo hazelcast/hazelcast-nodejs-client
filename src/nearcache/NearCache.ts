@@ -25,6 +25,7 @@ import {shuffleArray} from '../Util';
 import * as AlwaysFreshStaleReadDetectorImpl from './AlwaysFreshStaleReadDetectorImpl';
 import {DataRecord} from './DataRecord';
 import {StaleReadDetector} from './StaleReadDetector';
+import * as Promise from 'bluebird';
 
 export interface NearCacheStatistics {
     evictedCount: number;
@@ -37,7 +38,7 @@ export interface NearCacheStatistics {
 export interface NearCache {
     put(key: Data, value: any): void;
 
-    get(key: Data): Data | any;
+    get(key: Data): Promise<Data | any>;
 
     invalidate(key: Data): void;
 
@@ -52,6 +53,8 @@ export interface NearCache {
     tryReserveForUpdate(key: Data): Long;
 
     tryPublishReserved(key: Data, value: any, reservationId: Long): any;
+
+    setReady(): void;
 }
 
 export class NearCacheImpl implements NearCache {
@@ -76,6 +79,7 @@ export class NearCacheImpl implements NearCache {
     private missCount: number = 0;
     private hitCount: number = 0;
     private compareFunc: (x: DataRecord, y: DataRecord) => number;
+    private ready: Promise.Resolver<void>;
 
     constructor(nearCacheConfig: NearCacheConfig, serializationService: SerializationService) {
         this.serializationService = serializationService;
@@ -100,6 +104,11 @@ export class NearCacheImpl implements NearCache {
 
         this.evictionCandidatePool = [];
         this.internalStore = new DataKeyedHashMap<DataRecord>();
+        this.ready = Promise.defer();
+    }
+
+    setReady(): void {
+        this.ready.resolve();
     }
 
     nextReservationId(): Long {
@@ -173,30 +182,32 @@ export class NearCacheImpl implements NearCache {
      * @param key
      * @returns the value if present in near cache, 'undefined' if not
      */
-    get(key: Data): Data | any {
-        const dr = this.internalStore.get(key);
-        if (dr === undefined) {
-            this.missCount++;
-            return undefined;
-        }
-        if (this.staleReadDetector.isStaleRead(key, dr)) {
-            this.internalStore.delete(key);
-            this.missCount++;
-            return undefined;
-        }
-        if (dr.isExpired(this.maxIdleSeconds)) {
-            this.expireRecord(key);
-            this.missCount++;
-            return undefined;
-        }
-        dr.setAccessTime();
-        dr.hitRecord();
-        this.hitCount++;
-        if (this.inMemoryFormat === InMemoryFormat.BINARY) {
-            return this.serializationService.toObject(dr.value);
-        } else {
-            return dr.value;
-        }
+    get(key: Data): Promise<Data | any> {
+        return this.ready.promise.then(() => {
+            const dr = this.internalStore.get(key);
+            if (dr === undefined) {
+                this.missCount++;
+                return undefined;
+            }
+            if (this.staleReadDetector.isStaleRead(key, dr)) {
+                this.internalStore.delete(key);
+                this.missCount++;
+                return undefined;
+            }
+            if (dr.isExpired(this.maxIdleSeconds)) {
+                this.expireRecord(key);
+                this.missCount++;
+                return undefined;
+            }
+            dr.setAccessTime();
+            dr.hitRecord();
+            this.hitCount++;
+            if (this.inMemoryFormat === InMemoryFormat.BINARY) {
+                return this.serializationService.toObject(dr.value);
+            } else {
+                return dr.value;
+            }
+        });
     }
 
     invalidate(key: Data): void {
