@@ -37,11 +37,13 @@ export class MetadataFetcher {
     }
 
     initHandler(handler: RepairingHandler): Promise<void> {
-        const scanPromise = this.scanMembers([handler.getName()])[0];
-        return scanPromise.then((response: ClientMessage) => {
-            const metadata = MapFetchNearCacheInvalidationMetadataCodec.decodeResponse(response);
-            handler.initUuid(metadata.partitionUuidList);
-            handler.initSequence(metadata.namePartitionSequenceList[0]);
+        const scanPromises = this.scanMembers([handler.getName()]);
+        return Promise.all(scanPromises).then((responses: ClientMessage[]) => {
+            responses.forEach((response) => {
+                const metadata = MapFetchNearCacheInvalidationMetadataCodec.decodeResponse(response);
+                handler.initUuid(metadata.partitionUuidList);
+                handler.initSequence(metadata.namePartitionSequenceList[0]);
+            });
         });
     }
 

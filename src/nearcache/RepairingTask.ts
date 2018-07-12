@@ -21,6 +21,7 @@ import {LoggingService} from '../logging/LoggingService';
 import {MetadataFetcher} from './MetadataFetcher';
 import {NearCache} from './NearCache';
 import {RepairingHandler} from './RepairingHandler';
+import * as Promise from 'bluebird';
 
 const PROPERTY_MAX_RECONCILIATION_INTERVAL_SECONDS = 'hazelcast.invalidation.reconciliation.interval.seconds';
 const PROPERTY_MIN_RECONCILIATION_INTERVAL_SECONDS = 'hazelcast.invalidation.min.reconciliation.interval.seconds';
@@ -52,18 +53,20 @@ export class RepairingTask {
         this.partitionCount = this.client.getPartitionService().getPartitionCount();
     }
 
-    registerAndGetHandler(objectName: string, nearCache: NearCache): RepairingHandler {
+    registerAndGetHandler(objectName: string, nearCache: NearCache): Promise<RepairingHandler> {
         let handler = this.handlers.get(objectName);
         if (handler !== undefined) {
-            return handler;
+            return Promise.resolve(handler);
         }
+
         handler = new RepairingHandler(objectName, this.client.getPartitionService(), nearCache, this.localUuid);
-        this.metadataFetcher.initHandler(handler);
-        this.handlers.set(objectName, handler);
-        if (this.antientropyTaskHandle === undefined) {
-            this.start();
-        }
-        return handler;
+        return this.metadataFetcher.initHandler(handler).then(() => {
+            this.handlers.set(objectName, handler);
+            if (this.antientropyTaskHandle === undefined) {
+                this.start();
+            }
+            return handler;
+        });
     }
 
     deregisterHandler(objectName: string): void {
