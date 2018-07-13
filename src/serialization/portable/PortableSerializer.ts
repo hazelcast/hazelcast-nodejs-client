@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-import * as Long from 'long';
-import * as Path from 'path';
-import {SerializationConfig} from '../../config/SerializationConfig';
-import {DataInput, PositionalDataOutput} from '../Data';
-import {Portable, PortableFactory} from '../Serializable';
 import {SerializationService, Serializer} from '../SerializationService';
-import {ClassDefinition, FieldType} from './ClassDefinition';
-import {DefaultPortableReader} from './DefaultPortableReader';
-import {DefaultPortableWriter} from './DefaultPortableWriter';
-import {MorphingPortableReader} from './MorphingPortableReader';
 import {PortableContext} from './PortableContext';
+import {Portable, PortableFactory} from '../Serializable';
+import {DataInput, PositionalDataOutput} from '../Data';
+import {DefaultPortableReader} from './DefaultPortableReader';
+import {MorphingPortableReader} from './MorphingPortableReader';
+import {ClassDefinition, FieldType} from './ClassDefinition';
+import {DefaultPortableWriter} from './DefaultPortableWriter';
+import * as Long from 'long';
+import {SerializationConfig} from '../../config/SerializationConfig';
+import * as Path from 'path';
+import {HazelcastSerializationError} from '../../HazelcastError';
 
 export class PortableSerializer implements Serializer {
 
@@ -58,12 +59,7 @@ export class PortableSerializer implements Serializer {
     readObject(input: DataInput, factoryId: number, classId: number): Portable {
         const version = input.readInt();
 
-        const factory = this.factories[factoryId];
-        if (factory == null) {
-            throw new RangeError(`There is no suitable portable factory for ${factoryId}.`);
-        }
-
-        const portable: Portable = factory.create(classId);
+        const portable = this.createNewPortableInstance(factoryId, classId);
         let classDefinition = this.portableContext.lookupClassDefinition(factoryId, classId, version);
         if (classDefinition == null) {
             const backupPos = input.position();
@@ -73,7 +69,7 @@ export class PortableSerializer implements Serializer {
                 input.position(backupPos);
             }
         }
-        let reader: PortableReader;
+        let reader: DefaultPortableReader;
         if (classDefinition.getVersion() === this.portableContext.getClassVersion(portable)) {
             reader = new DefaultPortableReader(this, input, classDefinition);
         } else {
@@ -98,6 +94,18 @@ export class PortableSerializer implements Serializer {
         const writer = new DefaultPortableWriter(this, output, cd);
         object.writePortable(writer);
         writer.end();
+    }
+
+    private createNewPortableInstance(factoryId: number, classId: number): Portable {
+        const factory = this.factories[factoryId];
+        if (factory == null) {
+            throw new HazelcastSerializationError(`There is no suitable portable factory for ${factoryId}.`);
+        }
+        const portable: Portable = factory.create(classId);
+        if (portable == null) {
+            throw new HazelcastSerializationError(`Could not create Portable for class-id: ${classId}`);
+        }
+        return portable;
     }
 }
 
@@ -143,8 +151,6 @@ export interface PortableWriter {
     writeUTFArray(fieldName: string, val: string[]): void;
 
     writePortableArray(fieldName: string, portables: Portable[]): void;
-
-    end(): void;
 }
 
 export interface PortableReader {
@@ -195,6 +201,4 @@ export interface PortableReader {
     readUTFArray(fieldName: string): string[];
 
     readPortableArray(fieldName: string): Portable[];
-
-    end(): void;
 }

@@ -14,32 +14,33 @@
  * limitations under the License.
  */
 
-import {BitsUtil} from '../../BitsUtil';
-import {DataInput} from '../Data';
-import {Portable, VersionedPortable} from '../Serializable';
 import {SerializationService} from '../SerializationService';
-import {ClassDefinition, FieldType} from './ClassDefinition';
 import {ClassDefinitionContext} from './ClassDefinitionContext';
+import {DataInput} from '../Data';
+import {ClassDefinition, FieldDefinition, FieldType} from './ClassDefinition';
 import {ClassDefinitionWriter} from './ClassDefinitionWriter';
+import {BitsUtil} from '../../BitsUtil';
+import {Portable, VersionedPortable} from '../Serializable';
+import {ClassDefinitionBuilder} from './ClassDefinitionBuilder';
 
 export class PortableContext {
     private service: SerializationService;
-    private portableVersion: number = 0;
+    private version: number;
     private classDefContext: { [factoyId: number]: ClassDefinitionContext };
 
     constructor(service: SerializationService, portableVersion: number) {
         this.service = service;
-        this.portableVersion = portableVersion;
+        this.version = portableVersion;
         this.classDefContext = {};
     }
 
     getVersion(): number {
-        return this.portableVersion;
+        return this.version;
     }
 
     readClassDefinitionFromInput(input: DataInput, factoryId: number, classId: number, version: number): ClassDefinition {
         let register = true;
-        const cdWriter = new ClassDefinitionWriter(this, factoryId, classId, version);
+        const builder = new ClassDefinitionBuilder(factoryId, classId, version);
         input.readInt();
 
         const fieldCount = input.readInt();
@@ -58,6 +59,7 @@ export class PortableContext {
             const name = chars;
             let fieldFactoryId = 0;
             let fieldClassId = 0;
+            let fieldVersion = this.version;
             if (type === FieldType.PORTABLE) {
                 // is null
                 if (input.readBoolean()) {
@@ -68,7 +70,7 @@ export class PortableContext {
 
                 // TODO: what there's a null inner Portable field
                 if (register) {
-                    const fieldVersion = input.readInt();
+                    fieldVersion = input.readInt();
                     this.readClassDefinitionFromInput(input, fieldFactoryId, fieldClassId, fieldVersion);
                 }
             } else if (type === FieldType.PORTABLE_ARRAY) {
@@ -80,30 +82,31 @@ export class PortableContext {
                 if (k > 0) {
                     const p = input.readInt();
                     input.position(p);
-                    const fieldVersion = input.readInt();
+                    fieldVersion = input.readInt();
                     this.readClassDefinitionFromInput(input, fieldFactoryId, fieldClassId, fieldVersion);
                 } else {
                     register = false;
                 }
             }
-            cdWriter.addFieldByType(name, type, fieldFactoryId, fieldClassId);
+            builder.addField(new FieldDefinition(i, name, type, fieldVersion, fieldFactoryId, fieldClassId));
         }
-        cdWriter.end();
-        let classDefinition = cdWriter.getDefinition();
+        let classDefinition = builder.build();
         if (register) {
-            classDefinition = cdWriter.registerAndGet();
+            classDefinition = this.registerClassDefinition(classDefinition);
         }
         return classDefinition;
     }
 
-    lookupOrRegisterClassDefinition(portable: Portable): ClassDefinition {
-        const version = this.getClassVersion(portable);
-        let definition = this.lookupClassDefinition(portable.getFactoryId(), portable.getClassId(), version);
-        if (definition == null) {
-            definition = this.generateClassDefinitionForPortable(portable);
-            this.registerClassDefinition(definition);
+    lookupOrRegisterClassDefinition(p: Portable): ClassDefinition {
+        const portableVersion = this.getClassVersion(p);
+        let cd = this.lookupClassDefinition(p.getFactoryId(), p.getClassId(), portableVersion);
+        if (cd == null) {
+            const writer = new ClassDefinitionWriter(this, new ClassDefinitionBuilder(p.getFactoryId(), p.getClassId(),
+                portableVersion));
+            p.writePortable(writer);
+            cd = writer.registerAndGet();
         }
-        return definition;
+        return cd;
     }
 
     lookupClassDefinition(factoryId: number, classId: number, version: number): ClassDefinition {
@@ -115,29 +118,22 @@ export class PortableContext {
         }
     }
 
-    generateClassDefinitionForPortable(portable: Portable): ClassDefinition {
-        const version: number = this.getClassVersion(portable);
-        const classDefinitionWriter = new ClassDefinitionWriter(this, portable.getFactoryId(), portable.getClassId(), version);
-        portable.writePortable(classDefinitionWriter);
-        classDefinitionWriter.end();
-        return classDefinitionWriter.registerAndGet();
-    }
-
     registerClassDefinition(classDefinition: ClassDefinition): ClassDefinition {
         const factoryId = classDefinition.getFactoryId();
-        const classId = classDefinition.getClassId();
-        const version = classDefinition.getVersion();
         if (!this.classDefContext[factoryId]) {
-            this.classDefContext[factoryId] = new ClassDefinitionContext(factoryId, this.portableVersion);
+            this.classDefContext[factoryId] = new ClassDefinitionContext(factoryId);
         }
         return this.classDefContext[factoryId].register(classDefinition);
     }
 
     getClassVersion(portable: VersionedPortable | Portable): number {
         if ((portable as VersionedPortable).getVersion) {
+            if ((portable as VersionedPortable).getVersion() < 0) {
+                throw new RangeError('Version cannot be negative!');
+            }
             return (portable as VersionedPortable).getVersion();
         } else {
-            return this.portableVersion;
+            return this.version;
         }
     }
 

@@ -50,6 +50,7 @@ import {
     TransactionTimedOutError,
     UndefinedErrorCodeError,
     UnsupportedOperationError,
+    HazelcastSerializationError,
 } from '../HazelcastError';
 import {ClientProtocolErrorCodes} from './ClientProtocolErrorCodes';
 import {ErrorCodec} from './ErrorCodec';
@@ -78,7 +79,7 @@ export class ClientErrorFactory {
         this.register(ClientProtocolErrorCodes.HAZELCAST_INSTANCE_NOT_ACTIVE,
             (m, c) => new HazelcastInstanceNotActiveError(m, c));
         this.register(ClientProtocolErrorCodes.HAZELCAST_OVERLOAD, (m, c) => new HazelcastError(m, c));
-        this.register(ClientProtocolErrorCodes.HAZELCAST_SERIALIZATION, (m, c) => new HazelcastError(m, c));
+        this.register(ClientProtocolErrorCodes.HAZELCAST_SERIALIZATION, (m, c) => new HazelcastSerializationError(m, c));
         this.register(ClientProtocolErrorCodes.IO, (m, c) => new IOError(m, c));
         this.register(ClientProtocolErrorCodes.ILLEGAL_ARGUMENT, (m, c) => new TypeError(m));
         this.register(ClientProtocolErrorCodes.ILLEGAL_STATE, (m, c) => new IllegalStateError(m, c));

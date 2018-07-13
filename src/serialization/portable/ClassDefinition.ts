@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {deepEqual} from 'assert';
+
 export class ClassDefinition {
     private factoryId: number;
     private classId: number;
@@ -83,23 +85,30 @@ export class ClassDefinition {
         if (o.factoryId !== this.factoryId || o.classId !== this.classId || o.version !== this.version) {
             return false;
         }
+        try {
+            deepEqual(o.fields, this.fields);
+        } catch (e) {
+            return false;
+        }
         return true;
     }
 }
 
 export class FieldDefinition {
-    private index: number;
-    private fieldName: string;
-    private type: FieldType;
-    private factoryId: number;
-    private classId: number;
+    private readonly index: number;
+    private readonly fieldName: string;
+    private readonly type: FieldType;
+    private readonly factoryId: number;
+    private readonly classId: number;
+    private readonly version: number;
 
-    constructor(index: number, fieldName: string, type: FieldType, factoryId: number, classId: number) {
+    constructor(index: number, fieldName: string, type: FieldType, version: number, factoryId = 0, classId = 0) {
         this.index = index;
         this.fieldName = fieldName;
         this.type = type;
         this.factoryId = factoryId;
         this.classId = classId;
+        this.version = version;
     }
 
     getType(): FieldType {
@@ -120,6 +129,10 @@ export class FieldDefinition {
 
     getFactoryId(): number {
         return this.factoryId;
+    }
+
+    getVersion(): number {
+        return this.version;
     }
 }
 

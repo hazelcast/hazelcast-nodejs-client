@@ -33,6 +33,13 @@ export class HazelcastError extends Error {
     }
 }
 
+export class HazelcastSerializationError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, HazelcastSerializationError.prototype);
+    }
+}
+
 export class AuthenticationError extends HazelcastError {
     constructor(msg: string, cause?: Error) {
         super(msg, cause);

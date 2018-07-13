@@ -246,9 +246,52 @@ SimplePortableV3.prototype.getVersion = function () {
     return 3;
 };
 
+function Parent(child) {
+    this.child = child;
+}
+
+Parent.prototype.getFactoryId = function () {
+    return 1;
+};
+
+Parent.prototype.getClassId = function () {
+    return 1;
+};
+
+Parent.prototype.writePortable = function (writer) {
+    writer.writePortable('child', this.child);
+};
+
+Parent.prototype.readPortable = function (reader) {
+    this.child = reader.readPortable('child');
+};
+
+function Child(name) {
+    this.name = name;
+}
+
+Child.prototype.getFactoryId = function () {
+    return 1;
+};
+
+Child.prototype.getClassId = function () {
+    return 2;
+};
+
+Child.prototype.writePortable = function (writer) {
+    writer.writeUTF('name', this.name);
+};
+
+Child.prototype.readPortable = function (reader) {
+    this.name = reader.readUTF('name');
+};
+
 
 exports.PortableObject = PortableObject;
 exports.PortableObjectV2 = PortableObjectV2;
 exports.InnerPortableObject = InnerPortableObject;
 exports.SimplePortable = SimplePortable;
 exports.SimplePortableV3 = SimplePortableV3;
+exports.Parent = Parent;
+exports.Child = Child;
+
