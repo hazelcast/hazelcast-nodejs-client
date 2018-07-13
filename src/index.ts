@@ -26,6 +26,9 @@ import HazelcastClient from './HazelcastClient';
 import * as HazelcastErrors from './HazelcastError';
 import {IMap} from './proxy/IMap';
 import {ReadResultSet} from './proxy/ringbuffer/ReadResultSet';
+import {ClassDefinitionBuilder} from './serialization/portable/ClassDefinitionBuilder';
+import {ClassDefinition} from './serialization/portable/ClassDefinition';
+import {FieldDefinition} from './serialization/portable/ClassDefinition';
 
 export {
     HazelcastClient as Client,
@@ -40,4 +43,7 @@ export {
     IterationType,
     Aggregators,
     ImportConfig,
+    FieldDefinition,
+    ClassDefinition,
+    ClassDefinitionBuilder,
 };

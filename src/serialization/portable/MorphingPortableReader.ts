@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import * as Long from 'long';
-import {DataInput} from '../Data';
-import {Portable} from '../Serializable';
-import {ClassDefinition, FieldDefinition, FieldType} from './ClassDefinition';
 import {DefaultPortableReader} from './DefaultPortableReader';
 import {PortableSerializer} from './PortableSerializer';
+import {DataInput} from '../Data';
+import {ClassDefinition, FieldDefinition, FieldType} from './ClassDefinition';
+import {Portable} from '../Serializable';
+import * as Long from 'long';
 
 export class MorphingPortableReader extends DefaultPortableReader {
     constructor(portableSerializer: PortableSerializer, input: DataInput, classDefinition: ClassDefinition) {
