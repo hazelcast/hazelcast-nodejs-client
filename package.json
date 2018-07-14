@@ -4,8 +4,8 @@
     "description": "Hazelcast - open source In-Memory Data Grid - client for NodeJS",
     "main": "lib/index.js",
     "dependencies": {
-        "bluebird": "3.5.0",
-        "long": "3.2.0"
+        "bluebird": "3.5.1",
+        "long": "4.0.0"
     },
     "devDependencies": {
         "@types/bluebird": "3.5.12",
@@ -16,13 +16,13 @@
         "hazelcast-remote-controller": "^1.0.0",
         "istanbul": "0.4.5",
         "jsonschema": "^1.2.2",
-        "mocha": "3.5.3",
+        "mocha": "5.2.0",
         "mousse": "0.3.1",
         "remap-istanbul": "0.9.6",
         "rimraf": "2.6.2",
         "sinon": "4.0.0",
-        "tslint": "5.7.0",
-        "typescript": "2.5.2",
+        "tslint": "5.10.0",
+        "typescript": "2.9.2",
         "winston": "2.3.1"
     },
     "scripts": {
