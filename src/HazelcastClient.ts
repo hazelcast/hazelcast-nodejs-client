@@ -46,6 +46,12 @@ import {PNCounter} from './proxy/PNCounter';
 import {ProxyManager} from './proxy/ProxyManager';
 import {ITopic} from './proxy/topic/ITopic';
 import {SerializationService, SerializationServiceV1} from './serialization/SerializationService';
+import {AddressProvider} from './connection/AddressProvider';
+import {HazelcastCloudAddressProvider} from './discovery/HazelcastCloudAddressProvider';
+import {HazelcastCloudAddressTranslator} from './discovery/HazelcastCloudAddressTranslator';
+import {AddressTranslator} from './connection/AddressTranslator';
+import {DefaultAddressTranslator} from './connection/DefaultAddressTranslator';
+import {DefaultAddressProvider} from './connection/DefaultAddressProvider';
 
 export default class HazelcastClient {
 
@@ -76,7 +82,9 @@ export default class HazelcastClient {
         this.serializationService = new SerializationServiceV1(this.config.serializationConfig);
         this.proxyManager = new ProxyManager(this);
         this.partitionService = new PartitionService(this);
-        this.connectionManager = new ClientConnectionManager(this);
+        const addressProviders = this.createAddressProviders();
+        const addressTranslator = this.createAddressTranslator();
+        this.connectionManager = new ClientConnectionManager(this, addressTranslator, addressProviders);
         this.clusterService = new ClusterService(this);
         this.lifecycleService = new LifecycleService(this);
         this.heartbeat = new Heartbeat(this);
@@ -338,5 +346,43 @@ export default class HazelcastClient {
             this.loggingService.error('HazelcastClient', 'Client failed to start', e);
             throw e;
         });
+    }
+
+    private createAddressTranslator(): AddressTranslator {
+        const cloudConfig = this.getConfig().networkConfig.cloudConfig;
+        if (cloudConfig.enabled) {
+            return new HazelcastCloudAddressTranslator(cloudConfig.discoveryToken, this.getConnectionTimeoutMillis(),
+                this.loggingService);
+        }
+        return new DefaultAddressTranslator();
+
+    }
+
+    private createAddressProviders(): AddressProvider[] {
+        const networkConfig = this.getConfig().networkConfig;
+        const addressProviders: AddressProvider[] = [];
+
+        const cloudAddressProvider = this.initCloudAddressProvider();
+        if (cloudAddressProvider != null) {
+            addressProviders.push(cloudAddressProvider);
+        }
+
+        addressProviders.push(new DefaultAddressProvider(networkConfig, addressProviders.length === 0));
+        return addressProviders;
+    }
+
+    private initCloudAddressProvider(): HazelcastCloudAddressProvider {
+        const cloudConfig = this.getConfig().networkConfig.cloudConfig;
+        if (cloudConfig.enabled) {
+            return new HazelcastCloudAddressProvider(cloudConfig.discoveryToken, this.getConnectionTimeoutMillis(),
+                this.loggingService);
+        }
+        return null;
+    }
+
+    private getConnectionTimeoutMillis(): number {
+        const networkConfig = this.getConfig().networkConfig;
+        const connTimeout = networkConfig.connectionTimeout;
+        return connTimeout === 0 ? Number.MAX_VALUE : connTimeout;
     }
 }
