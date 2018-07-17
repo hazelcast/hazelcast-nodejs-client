@@ -18,7 +18,7 @@ import * as Promise from 'bluebird';
 import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
 import {HazelcastError} from '../HazelcastError';
 import {TopicOverloadPolicy} from '../proxy/topic/TopicOverloadPolicy';
-import {createAddressFromString, mergeJson, tryGetArray, tryGetBoolean, tryGetEnum, tryGetNumber, tryGetString} from '../Util';
+import {mergeJson, tryGetArray, tryGetBoolean, tryGetEnum, tryGetNumber, tryGetString} from '../Util';
 import {ClientConfig} from './Config';
 import {EvictionPolicy} from './EvictionPolicy';
 import {FlakeIdGeneratorConfig} from './FlakeIdGeneratorConfig';
@@ -100,6 +100,20 @@ export class ConfigBuilder {
                 this.clientConfig.networkConfig.connectionAttemptLimit = tryGetNumber(jsonObject[key]);
             } else if (key === 'ssl') {
                 this.handleSsl(jsonObject[key]);
+            } else if (key === 'hazelcastCloud') {
+                this.handleHazelcastCloud(jsonObject[key]);
+            }
+        }
+    }
+
+    private handleHazelcastCloud(jsonObject: any): void {
+        const cloudConfigEnabled = tryGetBoolean(jsonObject.enabled);
+        if (cloudConfigEnabled) {
+            this.clientConfig.networkConfig.cloudConfig.enabled = cloudConfigEnabled;
+        }
+        for (const key in jsonObject) {
+            if (key === 'discoveryToken') {
+                this.clientConfig.networkConfig.cloudConfig.discoveryToken = tryGetString(jsonObject[key]);
             }
         }
     }
@@ -140,7 +154,7 @@ export class ConfigBuilder {
         const addressArray = tryGetArray(jsonObject);
         for (const index in addressArray) {
             const address = addressArray[index];
-            this.clientConfig.networkConfig.addresses.push(createAddressFromString(tryGetString(address)));
+            this.clientConfig.networkConfig.addresses.push(tryGetString(address));
         }
     }
 

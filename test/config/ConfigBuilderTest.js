@@ -19,6 +19,7 @@ var path = require('path');
 var ConfigBuilder = require('../../lib/config/ConfigBuilder').ConfigBuilder;
 var Config = require('../../lib/index').Config;
 var Long = require('long');
+var createAddressFromString = require("../../lib/Util").createAddressFromString;
 
 describe('ConfigBuilder Test', function () {
     var configFull;
@@ -37,10 +38,12 @@ describe('ConfigBuilder Test', function () {
 
     it('networkConfig', function () {
         var networkCfg = configFull.networkConfig;
-        expect(networkCfg.addresses[0].host).to.equal('127.0.0.9');
-        expect(networkCfg.addresses[0].port).to.be.undefined;
-        expect(networkCfg.addresses[1].host).to.equal('127.0.0.2');
-        expect(networkCfg.addresses[1].port).to.equal(5702);
+        var address0 = createAddressFromString(networkCfg.addresses[0]);
+        var address1 = createAddressFromString(networkCfg.addresses[1]);
+        expect(address0.host).to.equal('127.0.0.9');
+        expect(address0.port).to.be.undefined;
+        expect(address1.host).to.equal('127.0.0.2');
+        expect(address1.port).to.equal(5702);
         expect(networkCfg.smartRouting).to.be.false;
         expect(networkCfg.connectionTimeout).to.equal(6000);
         expect(networkCfg.connectionAttemptPeriod).to.equal(4000);

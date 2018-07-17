@@ -25,6 +25,8 @@ import * as net from 'net';
 import * as tls from 'tls';
 import {loadNameFromPath} from '../Util';
 import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
+import {AddressTranslator} from '../connection/AddressTranslator';
+import {AddressProvider} from '../connection/AddressProvider';
 import Address = require('../Address');
 
 const EMIT_CONNECTION_CLOSED = 'connectionClosed';
@@ -35,13 +37,17 @@ const EMIT_CONNECTION_OPENED = 'connectionOpened';
  */
 export class ClientConnectionManager extends EventEmitter {
     establishedConnections: { [address: string]: ClientConnection } = {};
-    private client: HazelcastClient;
+    readonly addressProviders: AddressProvider[];
+    private readonly client: HazelcastClient;
     private pendingConnections: { [address: string]: Promise.Resolver<ClientConnection> } = {};
     private logger = LoggingService.getLoggingService();
+    private readonly addressTranslator: AddressTranslator;
 
-    constructor(client: HazelcastClient) {
+    constructor(client: HazelcastClient, addressTranslator: AddressTranslator, addressProviders: AddressProvider[]) {
         super();
         this.client = client;
+        this.addressTranslator = addressTranslator;
+        this.addressProviders = addressProviders;
     }
 
     getActiveConnections(): { [address: string]: ClientConnection } {
@@ -76,22 +82,28 @@ export class ClientConnectionManager extends EventEmitter {
             this.client.getInvocationService().processResponse(data);
         };
 
-        this.triggerConnect(address, asOwner).then((socket: net.Socket) => {
-            const clientConnection = new ClientConnection(this.client, address, socket);
+        this.addressTranslator.translate(address).then((addr) => {
+            if (addr == null) {
+                throw new RangeError('Address Translator could not translate address ' + addr.toString());
+            }
 
-            return this.initiateCommunication(clientConnection).then(() => {
-                return clientConnection.registerResponseCallback(processResponseCallback);
-            }).then(() => {
-                return this.authenticate(clientConnection, asOwner);
-            }).then(() => {
-                this.establishedConnections[clientConnection.getAddress().toString()] = clientConnection;
-                this.onConnectionOpened(clientConnection);
-                connectionResolver.resolve(clientConnection);
+            this.triggerConnect(addr, asOwner).then((socket: net.Socket) => {
+                const clientConnection = new ClientConnection(this.client, addr, socket);
+
+                return this.initiateCommunication(clientConnection).then(() => {
+                    return clientConnection.registerResponseCallback(processResponseCallback);
+                }).then(() => {
+                    return this.authenticate(clientConnection, asOwner);
+                }).then(() => {
+                    this.establishedConnections[clientConnection.getAddress().toString()] = clientConnection;
+                    this.onConnectionOpened(clientConnection);
+                    connectionResolver.resolve(clientConnection);
+                });
+            }).catch((e: any) => {
+                connectionResolver.reject(e);
+            }).finally(() => {
+                delete this.pendingConnections[addressIndex];
             });
-        }).catch((e: any) => {
-            connectionResolver.reject(e);
-        }).finally(() => {
-            delete this.pendingConnections[addressIndex];
         });
 
         const connectionTimeout = this.client.getConfig().networkConfig.connectionTimeout;

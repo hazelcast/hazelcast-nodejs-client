@@ -25,6 +25,7 @@ import HazelcastClient from '../HazelcastClient';
 import {IllegalStateError} from '../HazelcastError';
 import * as assert from 'assert';
 import {MemberSelector} from '../core/MemberSelector';
+import {createAddressFromString} from '../Util';
 import Address = require('../Address');
 import ClientMessage = require('../ClientMessage');
 
@@ -82,20 +83,37 @@ export class ClusterService extends EventEmitter {
      * @returns
      */
     connectToCluster(): Promise<void> {
-        if (this.members.length > 0) {
-            this.knownAddresses = new Array<Address>();
-            this.members.forEach((member: Member) => {
-                this.knownAddresses.push(member.address);
+        return this.getPossibleMemberAddresses().then((res) => {
+            this.knownAddresses = [];
+            res.forEach((value) => {
+                this.knownAddresses.push(createAddressFromString(value));
             });
-        } else {
-            this.knownAddresses = this.client.getConfig().networkConfig.addresses;
-        }
-        if (this.knownAddresses.length === 0) {
-            this.knownAddresses.push(new Address('127.0.0.1', 5701));
-        }
-        const attemptLimit = this.client.getConfig().networkConfig.connectionAttemptLimit;
-        const attemptPeriod = this.client.getConfig().networkConfig.connectionAttemptPeriod;
-        return this.tryConnectingToAddresses(0, attemptLimit, attemptPeriod);
+
+            const attemptLimit = this.client.getConfig().networkConfig.connectionAttemptLimit;
+            const attemptPeriod = this.client.getConfig().networkConfig.connectionAttemptPeriod;
+            return this.tryConnectingToAddresses(0, attemptLimit, attemptPeriod);
+        });
+    }
+
+    getPossibleMemberAddresses(): Promise<string[]> {
+        const addresses: Set<string> = new Set();
+
+        this.getMembers().forEach(function (member) {
+            addresses.add(member.address.toString());
+        });
+
+        let providerAddresses: Set<string> = new Set();
+        const promises: Array<Promise<void>> = [];
+        this.client.getConnectionManager().addressProviders.forEach(function (addressProvider) {
+            promises.push(addressProvider.loadAddresses().then((res) => {
+                providerAddresses = new Set([...Array.from(providerAddresses), ...res]);
+            }).catch((err) => {
+                this.logger.warning('Error from AddressProvider: ' + addressProvider, err);
+            }));
+        });
+        return Promise.all(promises).then(() => {
+            return Array.from(new Set([...Array.from(addresses), ...Array.from(providerAddresses)]));
+        });
     }
 
     /**
