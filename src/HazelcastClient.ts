@@ -52,6 +52,7 @@ import {HazelcastCloudAddressTranslator} from './discovery/HazelcastCloudAddress
 import {AddressTranslator} from './connection/AddressTranslator';
 import {DefaultAddressTranslator} from './connection/DefaultAddressTranslator';
 import {DefaultAddressProvider} from './connection/DefaultAddressProvider';
+import {HazelcastCloudDiscovery} from './discovery/HazelcastCloudDiscovery';
 
 export default class HazelcastClient {
 
@@ -351,7 +352,9 @@ export default class HazelcastClient {
     private createAddressTranslator(): AddressTranslator {
         const cloudConfig = this.getConfig().networkConfig.cloudConfig;
         if (cloudConfig.enabled) {
-            return new HazelcastCloudAddressTranslator(cloudConfig.discoveryToken, this.getConnectionTimeoutMillis(),
+            const urlEndpoint = HazelcastCloudDiscovery.createUrlEndpoint(this.getConfig().properties,
+                cloudConfig.discoveryToken);
+            return new HazelcastCloudAddressTranslator(urlEndpoint, this.getConnectionTimeoutMillis(),
                 this.loggingService);
         }
         return new DefaultAddressTranslator();
@@ -374,8 +377,9 @@ export default class HazelcastClient {
     private initCloudAddressProvider(): HazelcastCloudAddressProvider {
         const cloudConfig = this.getConfig().networkConfig.cloudConfig;
         if (cloudConfig.enabled) {
-            return new HazelcastCloudAddressProvider(cloudConfig.discoveryToken, this.getConnectionTimeoutMillis(),
-                this.loggingService);
+            const discoveryToken = cloudConfig.discoveryToken;
+            const urlEndpoint = HazelcastCloudDiscovery.createUrlEndpoint(this.getConfig().properties, discoveryToken);
+            return new HazelcastCloudAddressProvider(urlEndpoint, this.getConnectionTimeoutMillis(), this.loggingService);
         }
         return null;
     }
