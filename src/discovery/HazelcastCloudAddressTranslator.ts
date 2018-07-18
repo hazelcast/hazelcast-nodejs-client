@@ -26,8 +26,8 @@ export class HazelcastCloudAddressTranslator implements AddressTranslator {
 
     private privateToPublic: Map<string, Address> = new Map<string, Address>();
 
-    constructor(token: string, connectionTimeoutMillis: number, loggingService: LoggingService) {
-        this.hazelcastCloudDiscovery = new HazelcastCloudDiscovery(token, connectionTimeoutMillis);
+    constructor(endpointUrl: string, connectionTimeoutMillis: number, loggingService: LoggingService) {
+        this.hazelcastCloudDiscovery = new HazelcastCloudDiscovery(endpointUrl, connectionTimeoutMillis);
         this.loggingService = loggingService;
     }
 

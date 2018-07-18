@@ -23,8 +23,8 @@ export class HazelcastCloudAddressProvider implements AddressProvider {
     private readonly loggingService: LoggingService;
     private readonly cloudDiscovery: HazelcastCloudDiscovery;
 
-    constructor(token: string, connectionTimeoutMillis: number, loggingService: LoggingService) {
-        this.cloudDiscovery = new HazelcastCloudDiscovery(token, connectionTimeoutMillis);
+    constructor(endpointUrl: string, connectionTimeoutMillis: number, loggingService: LoggingService) {
+        this.cloudDiscovery = new HazelcastCloudDiscovery(endpointUrl, connectionTimeoutMillis);
         this.loggingService = loggingService;
     }
 
