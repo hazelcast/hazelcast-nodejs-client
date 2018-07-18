@@ -18,7 +18,7 @@ import {ClusterDataFactoryHelper} from '../ClusterDataFactoryHelper';
 import {DataInput, DataOutput} from '../serialization/Data';
 import {IdentifiedDataSerializable} from '../serialization/Serializable';
 
-export class VectorClock implements IdentifiedDataSerializable {
+export class VectorClock  {
 
     private replicaTimestamps = new Map<string, Long>();
 
@@ -45,30 +45,5 @@ export class VectorClock implements IdentifiedDataSerializable {
             entrySet.push([replicaId, timestamp]);
         });
         return entrySet;
-    }
-
-    readData(input: DataInput): any {
-        const stateSize = input.readInt();
-        for (let i = 0; i < stateSize; i++) {
-            const replicaId = input.readUTF();
-            const timestamp = input.readLong();
-            this.replicaTimestamps.set(replicaId, timestamp);
-        }
-    }
-
-    writeData(output: DataOutput): void {
-        output.writeInt(this.replicaTimestamps.size);
-        this.replicaTimestamps.forEach((timestamp: Long, replicaId: string) => {
-            output.writeUTF(replicaId);
-            output.writeLong(timestamp);
-        });
-    }
-
-    getFactoryId(): number {
-        return ClusterDataFactoryHelper.FACTORY_ID;
-    }
-
-    getClassId(): number {
-        return ClusterDataFactoryHelper.VECTOR_CLOCK;
     }
 }
