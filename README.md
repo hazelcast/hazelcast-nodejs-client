@@ -4,6 +4,7 @@
 * [Features](#features)
 * [Installing the Client](#installing-the-client)
 * [Using the Client](#using-the-client)
+* [Code Samples](#code-samples)
 * [Serialization Considerations](#serialization-considerations)
 * [Development](#development)
   * [Building And Installing from Sources](#building-and-installing-from-sources)
@@ -101,6 +102,10 @@ You can configure Hazelcast Node.js Client declaratively (JSON) or programmatica
 
 See [CONFIG.md](CONFIG.md) for details.
 
+# Code Samples
+
+See [Code Samples](https://github.com/hazelcast/hazelcast-nodejs-client/tree/master/code_samples)
+
 
 # Serialization Considerations
 
@@ -138,7 +143,6 @@ readData(dataInput) {
     ...
 }
 ```
-
 
 
 # Development
