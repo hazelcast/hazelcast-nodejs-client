@@ -57,6 +57,7 @@ Hazelcast Node.js client supports the following data structures and features:
 * Hazelcast Native Serialization
 * Lifecycle Service
 * SSL connection support (requires enterprise server)
+* Hazelcast Cloud Discovery
 
 # Installing the Client
 

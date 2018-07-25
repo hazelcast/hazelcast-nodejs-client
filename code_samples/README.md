@@ -14,6 +14,8 @@ This folder contains an extensive collection of Hazelcast Node.js Client code sa
 
 **global_serializer.js** — Creating and adding global serializer to serialization configuration.
 
+**hazelcast-cloud-discovery.js** — Usage of cloud discovery.
+
 **lifecycle_listener.js** — Listening to lifecycle events of the Hazelcast instance.
 
 **list.js** — Usage of distributed list.
