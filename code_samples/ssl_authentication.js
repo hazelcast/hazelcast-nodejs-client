@@ -19,15 +19,17 @@ var HazelcastClient = require('hazelcast-client').Client;
 
 if (process.argv.length < 5) {
     console.log('Usage: \n' +
-        'node ssl_authentication.js [servername] [certificate-file] [trusted-ca]');
+        'node ssl_authentication.js [servername] [trusted-ca] [private-key] [certificate-file] ');
     return
 }
 
 var cfg = new Config.ClientConfig();
 cfg.networkConfig.sslOptions = {
     servername: process.argv[2],
-    cert: process.argv[3],
-    ca: process.argv[4]
+    ca: process.argv[3],
+    key: process.argv[4],
+    cert: process.argv[5],
+
 };
 
 HazelcastClient.newHazelcastClient(cfg).then(function (client) {
