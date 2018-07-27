@@ -23,9 +23,9 @@ var Client = require("../../.").Client;
 var Controller = require('./../RC');
 var Config = require('../..').Config;
 var HzErrors = require('../..').HazelcastErrors;
-var Promise = require('bluebird');
 var markEnterprise = require('../Util').markEnterprise;
 var Path = require('path');
+var Util = require('../Util');
 
 describe('SSL Client Authentication Test', function () {
     var cluster;
@@ -88,6 +88,10 @@ describe('SSL Client Authentication Test', function () {
         }
 
         describe(title, function () {
+
+            before(function () {
+                Util.markServerVersionAtLeast(this, null, '3.8.1');
+            });
 
             afterEach(function () {
                 return Controller.terminateCluster(cluster.id);
