@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {ILogger} from '../logging/LoggingService';
+
 export interface Properties {
-    [prop: string]: string | number | boolean;
+    [prop: string]: string | number | boolean | ILogger;
 }

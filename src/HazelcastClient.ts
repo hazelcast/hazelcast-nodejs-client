@@ -27,7 +27,7 @@ import {InvocationService} from './invocation/InvocationService';
 import {LifecycleEvent, LifecycleService} from './LifecycleService';
 import {ListenerService} from './ListenerService';
 import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
-import {LoggingService} from './logging/LoggingService';
+import {LoggingService, ILogger} from './logging/LoggingService';
 import {RepairingTask} from './nearcache/RepairingTask';
 import {PartitionService} from './PartitionService';
 import {ClientErrorFactory} from './protocol/ErrorFactory';
@@ -76,7 +76,7 @@ export default class HazelcastClient {
             this.config = config;
         }
 
-        LoggingService.initialize(this.config.properties['hazelcast.logging'] as string);
+        LoggingService.initialize(this.config.properties['hazelcast.logging'] as string | ILogger);
         this.loggingService = LoggingService.getLoggingService();
         this.invocationService = new InvocationService(this);
         this.listenerService = new ListenerService(this);
