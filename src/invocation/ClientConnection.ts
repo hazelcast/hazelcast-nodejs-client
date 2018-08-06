@@ -24,11 +24,12 @@ import Address = require('../Address');
 
 export class ClientConnection {
     private address: Address;
-    private localAddress: Address;
+    private readonly localAddress: Address;
     private lastRead: number;
     private heartbeating = true;
     private client: HazelcastClient;
     private readBuffer: Buffer;
+    private readonly startTime: number = Date.now();
     private closedTime: number;
     private connectedServerVersionString: string;
     private connectedServerVersion: number;
@@ -85,7 +86,7 @@ export class ClientConnection {
 
     setConnectedServerVersion(versionString: string): void {
         this.connectedServerVersionString = versionString;
-        this.connectedServerVersion = BuildMetadata.calculateVersion(versionString);
+        this.connectedServerVersion = BuildMetadata.calculateVersionFromString(versionString);
     }
 
     getConnectedServerVersion(): number {
@@ -118,6 +119,10 @@ export class ClientConnection {
 
     setAuthenticatedAsOwner(asOwner: boolean): void {
         this.authenticatedAsOwner = asOwner;
+    }
+
+    getStartTime(): number {
+        return this.startTime;
     }
 
     getLastRead(): number {

@@ -53,35 +53,50 @@ import {AddressTranslator} from './connection/AddressTranslator';
 import {DefaultAddressTranslator} from './connection/DefaultAddressTranslator';
 import {DefaultAddressProvider} from './connection/DefaultAddressProvider';
 import {HazelcastCloudDiscovery} from './discovery/HazelcastCloudDiscovery';
+import {Statistics} from './statistics/Statistics';
+import {NearCacheManager} from './nearcache/NearCacheManager';
 
 export default class HazelcastClient {
+    private static CLIENT_ID = 0;
 
-    private config: ClientConfig = new ClientConfig();
-    private loggingService: LoggingService;
-    private serializationService: SerializationService;
-    private invocationService: InvocationService;
-    private listenerService: ListenerService;
-    private connectionManager: ClientConnectionManager;
-    private partitionService: PartitionService;
-    private clusterService: ClusterService;
-    private lifecycleService: LifecycleService;
-    private proxyManager: ProxyManager;
-    private heartbeat: Heartbeat;
-    private lockReferenceIdGenerator: LockReferenceIdGenerator;
+    private readonly instanceName: string;
+    private readonly id: number = HazelcastClient.CLIENT_ID++;
+    private readonly config: ClientConfig = new ClientConfig();
+    private readonly loggingService: LoggingService;
+    private readonly serializationService: SerializationService;
+    private readonly invocationService: InvocationService;
+    private readonly listenerService: ListenerService;
+    private readonly connectionManager: ClientConnectionManager;
+    private readonly partitionService: PartitionService;
+    private readonly clusterService: ClusterService;
+    private readonly lifecycleService: LifecycleService;
+    private readonly proxyManager: ProxyManager;
+    private readonly nearCacheManager: NearCacheManager;
+    private readonly heartbeat: Heartbeat;
+    private readonly lockReferenceIdGenerator: LockReferenceIdGenerator;
+    private readonly errorFactory: ClientErrorFactory;
+    private readonly statistics: Statistics;
+
     private mapRepairingTask: RepairingTask;
-    private errorFactory: ClientErrorFactory;
 
     constructor(config?: ClientConfig) {
         if (config) {
             this.config = config;
         }
 
-        LoggingService.initialize(this.config.properties['hazelcast.logging'] as string | ILogger);
+        if (config.getInstanceName() != null) {
+            this.instanceName = config.getInstanceName();
+        } else {
+            this.instanceName = 'hz.client_' + this.id;
+        }
+
+        LoggingService.initialize(this.config.properties['hazelcast.logging'] as string);
         this.loggingService = LoggingService.getLoggingService();
         this.invocationService = new InvocationService(this);
         this.listenerService = new ListenerService(this);
         this.serializationService = new SerializationServiceV1(this.config.serializationConfig);
         this.proxyManager = new ProxyManager(this);
+        this.nearCacheManager = new NearCacheManager(this);
         this.partitionService = new PartitionService(this);
         const addressProviders = this.createAddressProviders();
         const addressTranslator = this.createAddressTranslator();
@@ -91,6 +106,7 @@ export default class HazelcastClient {
         this.heartbeat = new Heartbeat(this);
         this.lockReferenceIdGenerator = new LockReferenceIdGenerator();
         this.errorFactory = new ClientErrorFactory();
+        this.statistics = new Statistics(this);
     }
 
     /**
@@ -112,6 +128,15 @@ export default class HazelcastClient {
     }
 
     /**
+     * Returns the name of this Hazelcast instance.
+     *
+     * @return name of this Hazelcast instance
+     */
+    getName(): string {
+        return this.instanceName;
+    }
+
+    /**
      * Gathers information of this local client.
      * @returns {ClientInfo}
      */
@@ -125,7 +150,7 @@ export default class HazelcastClient {
      */
     getDistributedObjects(): Promise<DistributedObject[]> {
         const clientMessage = ClientGetDistributedObjectsCodec.encodeRequest();
-        const toObjectFunc = this.serializationService.toObject.bind(this);
+        const toObjectFunc = this.getSerializationService().toObject.bind(this);
         const proxyManager = this.proxyManager;
         return this.invocationService.invokeOnRandomTarget(clientMessage).then(function (resp): any {
             const response = ClientGetDistributedObjectsCodec.decodeResponse(resp, toObjectFunc).response;
@@ -265,6 +290,10 @@ export default class HazelcastClient {
         return this.proxyManager;
     }
 
+    getNearCacheManager(): NearCacheManager {
+        return this.nearCacheManager;
+    }
+
     getClusterService(): ClusterService {
         return this.clusterService;
     }
@@ -282,6 +311,10 @@ export default class HazelcastClient {
             this.mapRepairingTask = new RepairingTask(this);
         }
         return this.mapRepairingTask;
+    }
+
+    getLoggingService(): LoggingService {
+        return this.loggingService;
     }
 
     /**
@@ -322,6 +355,8 @@ export default class HazelcastClient {
         if (this.mapRepairingTask !== undefined) {
             this.mapRepairingTask.shutdown();
         }
+        this.nearCacheManager.destroyAllNearCaches();
+        this.statistics.stop();
         this.partitionService.shutdown();
         this.lifecycleService.emitLifecycleEvent(LifecycleEvent.shuttingDown);
         this.heartbeat.cancel();
@@ -341,6 +376,7 @@ export default class HazelcastClient {
         }).then(() => {
             this.proxyManager.init();
             this.listenerService.start();
+            this.statistics.start();
             this.loggingService.info('HazelcastClient', 'Client started');
             return this;
         }).catch((e) => {
