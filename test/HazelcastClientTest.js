@@ -42,19 +42,24 @@ ManagedObjects.prototype.getObject = function (func, name) {
 };
 
 ManagedObjects.prototype.destroyAll = function () {
+    var promises = [];
     this.managedObjects.forEach(function (obj) {
-        obj.destroy();
+        promises.push(obj.destroy());
     });
+
+    return Promise.all(promises);
 };
 
 ManagedObjects.prototype.destroy = function (name) {
+    var deferred = Promise.defer();
     this.managedObjects.filter((el) => {
-        if (el.getName() == name) {
-            el.destroy();
-            return false;
+        if (el.getName() === name) {
+            el.destroy().then(function () {
+                deferred.resolve();
+            });
         }
-        return true;
     });
+    return deferred.promise;
 };
 
 
@@ -130,18 +135,19 @@ configParams.forEach(function (cfg) {
             managed.getObject(client.getMap.bind(client, 'map3'));
 
             setTimeout(function () {
-                managed.destroy('map1');
-                client.getDistributedObjects().then(function (distObjects) {
-                    try {
-                        names = distObjects.map(function (o) {
-                            return o.getName();
-                        });
-                        expect(names).to.have.members(['map2', 'map3']);
-                        done();
-                    } catch (e) {
-                        done(e);
-                    }
-                })
+                managed.destroy('map1').then(function () {
+                    client.getDistributedObjects().then(function (distObjects) {
+                        try {
+                            var names = distObjects.map(function (o) {
+                                return o.getName();
+                            });
+                            expect(names).to.have.members(['map2', 'map3']);
+                            done();
+                        } catch (e) {
+                            done(e);
+                        }
+                    });
+                });
             }, 300);
         });
     });
