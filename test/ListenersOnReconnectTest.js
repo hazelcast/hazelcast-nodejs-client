@@ -27,6 +27,7 @@ describe('Listeners on reconnect', function () {
     var client;
     var members = [];
     var cluster;
+    var map;
 
     beforeEach(function () {
         return Controller.createCluster(null, null).then(function (cl) {
@@ -35,7 +36,7 @@ describe('Listeners on reconnect', function () {
     });
 
     afterEach(function () {
-        this.timeout(30000);
+        map.destroy();
         client.shutdown();
         return Controller.shutdownCluster(cluster.id);
     });
@@ -43,7 +44,6 @@ describe('Listeners on reconnect', function () {
     [true, false].forEach(function (isSmart) {
 
         function closeTwoMembersOfThreeAndTestListener(done, membersToClose, turnoffMember) {
-            var map;
             Controller.startMember(cluster.id).then(function (m) {
                 members[0] = m;
                 return Controller.startMember(cluster.id);
@@ -116,8 +116,6 @@ describe('Listeners on reconnect', function () {
         });
 
         it('restart member, listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            this.timeout(7000);
-            var map;
             var member;
             Controller.startMember(cluster.id).then(function (m) {
                 member = m;
