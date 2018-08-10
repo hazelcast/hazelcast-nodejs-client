@@ -130,7 +130,7 @@ export class ClientConnectionManager extends EventEmitter {
         }
     }
 
-    shutdown() {
+    shutdown(): void {
         for (const pending in this.pendingConnections) {
             this.pendingConnections[pending].reject(new ClientNotActiveError('Client is shutting down!'));
         }
@@ -205,11 +205,11 @@ export class ClientConnectionManager extends EventEmitter {
         return connection.write(buffer);
     }
 
-    private onConnectionClosed(connection: ClientConnection) {
+    private onConnectionClosed(connection: ClientConnection): void {
         this.emit(EMIT_CONNECTION_CLOSED, connection);
     }
 
-    private onConnectionOpened(connection: ClientConnection) {
+    private onConnectionOpened(connection: ClientConnection): void {
         this.emit(EMIT_CONNECTION_OPENED, connection);
     }
 

@@ -115,7 +115,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
 
     keySet(): Promise<K[]> {
         const toObject = this.toObject.bind(this);
-        return this.encodeInvoke<K[]>(ReplicatedMapKeySetCodec).then(function (keySet) {
+        return this.encodeInvoke<K[]>(ReplicatedMapKeySetCodec).then(function (keySet): K[] {
             return keySet.map<K>(toObject);
         });
     }
@@ -133,7 +133,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
 
     entrySet(): Promise<Array<[K, V]>> {
         const toObject = this.toObject.bind(this);
-        return this.encodeInvoke(ReplicatedMapEntrySetCodec).then(function (entrySet: Array<[Data, Data]>) {
+        return this.encodeInvoke(ReplicatedMapEntrySetCodec).then(function (entrySet: Array<[Data, Data]>): Array<[K, V]> {
             return entrySet.map<[K, V]>((entry) => [toObject(entry[0]), toObject(entry[1])]);
         });
     }
@@ -163,7 +163,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         const toObject = this.toObject.bind(this);
         /* tslint:disable-next-line:no-shadowed-variable */
         const entryEventHandler = function (key: K, val: V, oldVal: V, mergingVal: V,
-                                            event: number, uuid: string, numberOfAffectedEntries: number) {
+                                            event: number, uuid: string, numberOfAffectedEntries: number): void {
             let eventParams: any[] = [key, oldVal, val, mergingVal, numberOfAffectedEntries, uuid];
             eventParams = eventParams.map(toObject);
             const eventToListenerMap: { [key: number]: string } = {

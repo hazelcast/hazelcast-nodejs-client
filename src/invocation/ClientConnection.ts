@@ -51,7 +51,7 @@ export class ClientConnection {
      * Returns the address of local port that is associated with this connection.
      * @returns
      */
-    getLocalAddress() {
+    getLocalAddress(): Address {
         return this.localAddress;
     }
 
@@ -132,7 +132,7 @@ export class ClientConnection {
      * Registers a function to pass received data on 'data' events on this connection.
      * @param callback
      */
-    registerResponseCallback(callback: Function) {
+    registerResponseCallback(callback: Function): void {
         this.socket.on('data', (buffer: Buffer) => {
             this.lastRead = new Date().getTime();
             this.readBuffer = Buffer.concat([this.readBuffer, buffer], this.readBuffer.length + buffer.length);

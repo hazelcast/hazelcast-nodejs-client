@@ -31,7 +31,7 @@ export class ClassDefinitionContext {
         return classId + 'v' + version;
     }
 
-    lookup(classId: number, version: number) {
+    lookup(classId: number, version: number): ClassDefinition {
         const encoded = ClassDefinitionContext.encodeVersionedClassId(classId, version);
         return this.classDefs[encoded];
     }

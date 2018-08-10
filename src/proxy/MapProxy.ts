@@ -144,8 +144,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             const pData = this.toData(predicate);
             return this.encodeInvokeOnRandomTarget(
                 MapValuesWithPagingPredicateCodec, pData,
-            ).then(function (rawValues: Array<[Data, Data]>) {
-                const deserValues = rawValues.map<[K, V]>(function (ite: [Data, Data]) {
+            ).then(function (rawValues: Array<[Data, Data]>): any[] {
+                const deserValues = rawValues.map<[K, V]>(function (ite: [Data, Data]): [K, V] {
                     return [toObject(ite[0]), toObject(ite[1])];
                 });
                 return getSortedQueryResultSet(deserValues, predicate);
@@ -154,8 +154,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             const pData = this.toData(predicate);
             const deserializedSet: Array<[K, V]> = [];
             return this.encodeInvokeOnRandomTarget(MapEntriesWithPredicateCodec, pData).then(
-                function (entrySet: Array<[Data, Data]>) {
-                    entrySet.forEach(function (entry) {
+                function (entrySet: Array<[Data, Data]>): Array<[K, V]> {
+                    entrySet.forEach(function (entry): void {
                         deserializedSet.push([toObject(entry[0]), toObject(entry[1])]);
                     });
                     return deserializedSet;
@@ -170,17 +170,18 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             predicate.setIterationType(IterationType.KEY);
             const predData = this.toData(predicate);
             return this.encodeInvokeOnRandomTarget(MapKeySetWithPagingPredicateCodec, predData).then(
-                function (rawValues: Data[]) {
-                    const deserValues = rawValues.map<[K, V]>(function (ite: Data) {
+                function (rawValues: Data[]): any[] {
+                    const deserValues = rawValues.map<[K, V]>(function (ite: Data): [K, V] {
                         return [toObject(ite), null];
                     });
                     return getSortedQueryResultSet(deserValues, predicate);
                 });
         } else {
             const predicateData = this.toData(predicate);
-            return this.encodeInvokeOnRandomTarget(MapKeySetWithPredicateCodec, predicateData).then(function (entrySet: Data[]) {
-                return entrySet.map<K>(toObject);
-            });
+            return this.encodeInvokeOnRandomTarget(MapKeySetWithPredicateCodec, predicateData).then(
+                function (entrySet: Data[]): K[] {
+                    return entrySet.map<K>(toObject);
+                });
         }
     }
 
@@ -193,7 +194,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             return this.encodeInvokeOnRandomTarget(
                 MapValuesWithPagingPredicateCodec, predData,
             ).then((rawValues: Array<[Data, Data]>) => {
-                const desValues = rawValues.map<[K, V]>(function (ite: [Data, Data]) {
+                const desValues = rawValues.map<[K, V]>(function (ite: [Data, Data]): [K, V] {
                     return [toObject(ite[0]), toObject(ite[1])];
                 });
                 return new ReadOnlyLazyList(getSortedQueryResultSet(desValues, predicate), this.client.getSerializationService());
@@ -288,7 +289,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             partitionsToKeys[pId].push(keyData);
         }
         const result: Array<[any, any]> = [];
-        return this.getAllInternal(partitionsToKeys, result).then(function () {
+        return this.getAllInternal(partitionsToKeys, result).then(function (): Array<[any, any]> {
 
             return result;
         });
@@ -303,8 +304,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     entrySet(): Promise<any[]> {
         const deserializedSet: Array<[K, V]> = [];
         const toObject = this.toObject.bind(this);
-        return this.encodeInvokeOnRandomTarget(MapEntrySetCodec).then(function (entrySet: Array<[Data, Data]>) {
-            entrySet.forEach(function (entry) {
+        return this.encodeInvokeOnRandomTarget(MapEntrySetCodec).then(function (entrySet: Array<[Data, Data]>): Array<[K, V]> {
+            entrySet.forEach(function (entry): void {
                 deserializedSet.push([toObject(entry[0]), toObject(entry[1])]);
             });
             return deserializedSet;
@@ -351,7 +352,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 
     keySet(): Promise<K[]> {
         const toObject = this.toObject.bind(this);
-        return this.encodeInvokeOnRandomTarget<K[]>(MapKeySetCodec).then(function (entrySet) {
+        return this.encodeInvokeOnRandomTarget<K[]>(MapKeySetCodec).then(function (entrySet): K[] {
             return entrySet.map<K>(toObject);
         });
     }
@@ -471,7 +472,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                 this.encodeInvokeOnPartition<void>(MapPutAllCodec, Number(partition), partitionsToKeysData[partition]),
             );
         }
-        return Promise.all(partitionPromises).then(function () {
+        return Promise.all(partitionPromises).then(function (): any {
             return;
         });
     }
@@ -499,10 +500,10 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             );
         }
         const toObject = this.toObject.bind(this);
-        const deserializeEntry = function (entry: [Data, Data]) {
+        const deserializeEntry = function (entry: [Data, Data]): any[] {
             return [toObject(entry[0]), toObject(entry[1])];
         };
-        return Promise.all(partitionPromises).then(function (serializedEntryArrayArray: Array<Array<[Data, Data]>>) {
+        return Promise.all(partitionPromises).then(function (serializedEntryArrayArray: Array<Array<[Data, Data]>>): any[] {
             const serializedEntryArray = Array.prototype.concat.apply([], serializedEntryArrayArray);
             result.push(...(serializedEntryArray.map(deserializeEntry)));
             return serializedEntryArray;
@@ -568,7 +569,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         const entryEventHandler = function (
             /* tslint:disable-next-line:no-shadowed-variable */
             key: K, val: V, oldVal: V, mergingVal: V, event: number, uuid: string, numberOfAffectedEntries: number,
-        ) {
+        ): void {
             let eventParams: any[] = [key, oldVal, val, mergingVal, numberOfAffectedEntries, uuid];
             eventParams = eventParams.map(toObject);
             switch (event) {

@@ -46,7 +46,7 @@ import ClientMessage = require('../ClientMessage');
 export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
 
     add(item: E): Promise<boolean> {
-        return this.offer(item).then(function (ret) {
+        return this.offer(item).then(function (ret): boolean {
             if (ret) {
                 return true;
             } else {
@@ -58,7 +58,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     addAll(items: E[]): Promise<boolean> {
         const rawList: Data[] = [];
         const toData = this.toData.bind(this);
-        items.forEach(function (item) {
+        items.forEach(function (item): void {
             rawList.push(toData(item));
         });
         return this.encodeInvoke<boolean>(QueueAddAllCodec, rawList);
@@ -107,8 +107,8 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
         } else {
             promise = this.encodeInvoke<any>(QueueDrainToMaxSizeCodec, maxElements);
         }
-        return promise.then(function (rawArr: Data[]) {
-            rawArr.forEach(function (rawItem) {
+        return promise.then(function (rawArr: Data[]): number {
+            rawArr.forEach(function (rawItem): void {
                 arr.push(toObject(rawItem));
             });
             return rawArr.length;
@@ -173,8 +173,8 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     toArray(): Promise<E[]> {
         const arr: E[] = [];
         const toObject = this.toObject.bind(this);
-        return this.encodeInvoke<Data[]>(QueueIteratorCodec).then(function (dataArray) {
-            dataArray.forEach(function (data) {
+        return this.encodeInvoke<Data[]>(QueueIteratorCodec).then(function (dataArray): E[] {
+            dataArray.forEach(function (data): void {
                 arr.push(toObject(data));
             });
             return arr;

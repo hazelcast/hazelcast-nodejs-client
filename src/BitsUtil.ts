@@ -70,7 +70,7 @@ export class BitsUtil {
 
     static HEADER_SIZE: number = BitsUtil.DATA_OFFSET_FIELD_OFFSET + BitsUtil.SHORT_SIZE_IN_BYTES;
 
-    static calculateSizeData(data: Data) {
+    static calculateSizeData(data: Data): number {
         return BitsUtil.INT_SIZE_IN_BYTES + data.totalSize();
     }
 
@@ -87,17 +87,17 @@ export class BitsUtil {
         return size;
     }
 
-    public static calculateSizeString(value: string) {
+    public static calculateSizeString(value: string): number {
         return this.getStringSize(value);
     }
 
-    public static calculateSizeBuffer(value: Buffer) {
+    public static calculateSizeBuffer(value: Buffer): number {
         let size = 4;
         size += value.length;
         return size;
     }
 
-    public static calculateSizeAddress(value: Address) {
+    public static calculateSizeAddress(value: Address): number {
         let size = 4;
         size += this.calculateSizeString(value.host);
         return size;

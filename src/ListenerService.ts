@@ -55,7 +55,7 @@ export class ListenerService implements ConnectionHeartbeatListener {
         this.connectionRefreshTaskInterval = 2000;
     }
 
-    start() {
+    start(): void {
         this.client.getConnectionManager().on('connectionOpened', this.onConnectionAdded.bind(this));
         this.client.getConnectionManager().on('connectionClosed', this.onConnectionRemoved.bind(this));
         if (this.isSmart()) {
@@ -63,12 +63,11 @@ export class ListenerService implements ConnectionHeartbeatListener {
         }
     }
 
-    onConnectionAdded(connection: ClientConnection) {
+    onConnectionAdded(connection: ClientConnection): void {
         this.reregisterListenersOnConnection(connection);
-
     }
 
-    onConnectionRemoved(connection: ClientConnection) {
+    onConnectionRemoved(connection: ClientConnection): void {
         this.removeRegistrationsOnConnection(connection);
     }
 
@@ -79,14 +78,14 @@ export class ListenerService implements ConnectionHeartbeatListener {
         });
     }
 
-    reregisterListeners() {
+    reregisterListeners(): void {
         const connections = this.client.getConnectionManager().getActiveConnections();
         for (const connAddress in connections) {
             this.reregisterListenersOnConnection(connections[connAddress]);
         }
     }
 
-    reregisterListenersOnConnection(connection: ClientConnection) {
+    reregisterListenersOnConnection(connection: ClientConnection): void {
         this.activeRegistrations.forEach((registrationMap: Map<ClientConnection, ClientEventRegistration>, userKey: string) => {
             if (registrationMap.has(connection)) {
                 return;
@@ -99,7 +98,7 @@ export class ListenerService implements ConnectionHeartbeatListener {
         }, this);
     }
 
-    removeRegistrationsOnConnection(connection: ClientConnection) {
+    removeRegistrationsOnConnection(connection: ClientConnection): void {
         this.failedRegistrations.delete(connection);
         this.activeRegistrations.forEach((registrationsOnUserKey: Map<ClientConnection, ClientEventRegistration>,
                                           userKey: string) => {

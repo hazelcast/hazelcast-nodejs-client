@@ -203,7 +203,7 @@ export class DefaultPortableReader implements PortableReader {
         return this.input;
     }
 
-    end() {
+    end(): void {
         this.input.position(this.finalPos);
     }
 

@@ -56,19 +56,19 @@ export class DataRecord {
     }
 
     /*tslint:disable:member-ordering*/
-    public static lruComp(x: DataRecord, y: DataRecord) {
+    public static lruComp(x: DataRecord, y: DataRecord): number {
         return x.lastAccessTime - y.lastAccessTime;
     }
 
-    public static lfuComp(x: DataRecord, y: DataRecord) {
+    public static lfuComp(x: DataRecord, y: DataRecord): number {
         return x.accessHit - y.accessHit;
     }
 
-    public static randomComp(x: DataRecord, y: DataRecord) {
+    public static randomComp(x: DataRecord, y: DataRecord): number {
         return Math.random() - 0.5;
     }
 
-    isExpired(maxIdleSeconds: number) {
+    isExpired(maxIdleSeconds: number): boolean {
         const now = new Date().getTime();
         if ((this.expirationTime > 0 && this.expirationTime < now) ||
             (maxIdleSeconds > 0 && this.lastAccessTime + maxIdleSeconds * 1000 < now)) {

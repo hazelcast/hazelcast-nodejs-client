@@ -238,7 +238,7 @@ export class ObjectDataOutput implements DataOutput {
         }
     }
 
-    private writeArray(func: Function, arr: any[]) {
+    private writeArray(func: Function, arr: any[]): void {
         const len = (arr != null) ? arr.length : BitsUtil.NULL_ARRAY_LENGTH;
         this.writeInt(len);
         if (len > 0) {
@@ -546,7 +546,7 @@ export class ObjectDataInput implements DataInput {
         return this.buffer.length - this.pos;
     }
 
-    private readArray<T>(func: Function, pos?: number) {
+    private readArray<T>(func: Function, pos?: number): T[] {
         const backupPos = this.pos;
         if (pos !== undefined) {
             this.pos = pos;

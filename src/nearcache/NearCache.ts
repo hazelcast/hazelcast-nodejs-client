@@ -233,7 +233,7 @@ export class NearCacheImpl implements NearCache {
         return stats;
     }
 
-    protected isEvictionRequired() {
+    protected isEvictionRequired(): boolean {
         return this.evictionPolicy !== EvictionPolicy.NONE && this.evictionMaxSize <= this.internalStore.size;
     }
 
