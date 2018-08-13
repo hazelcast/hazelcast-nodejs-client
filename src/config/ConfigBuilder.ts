@@ -133,7 +133,7 @@ export class ConfigBuilder {
         return importConfig;
     }
 
-    private handleSsl(jsonObject: any) {
+    private handleSsl(jsonObject: any): void {
         const sslEnabled = tryGetBoolean(jsonObject.enabled);
         if (sslEnabled) {
             if (jsonObject.factory) {
@@ -150,7 +150,7 @@ export class ConfigBuilder {
         }
     }
 
-    private handleClusterMembers(jsonObject: any) {
+    private handleClusterMembers(jsonObject: any): void {
         const addressArray = tryGetArray(jsonObject);
         for (const index in addressArray) {
             const address = addressArray[index];

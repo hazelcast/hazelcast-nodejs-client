@@ -42,79 +42,79 @@ export function sql(str: string): Predicate {
     return new SqlPredicate(str);
 }
 
-export function and(...predicates: Predicate[]) {
+export function and(...predicates: Predicate[]): Predicate {
     return new AndPredicate(...predicates);
 }
 
-export function isBetween(field: string, from: any, to: any) {
+export function isBetween(field: string, from: any, to: any): Predicate {
     return new BetweenPredicate(field, from, to);
 }
 
-export function isFalse() {
+export function isFalse(): Predicate {
     return FalsePredicate.INSTANCE;
 }
 
-export function isEqualTo(field: string, value: any) {
+export function isEqualTo(field: string, value: any): Predicate {
     return new EqualPredicate(field, value);
 }
 
-export function greaterThan(field: string, value: any) {
+export function greaterThan(field: string, value: any): Predicate {
     return new GreaterLessPredicate(field, value, false, false);
 }
 
-export function greaterEqual(field: string, value: any) {
+export function greaterEqual(field: string, value: any): Predicate {
     return new GreaterLessPredicate(field, value, true, false);
 }
 
-export function lessThan(field: string, value: any) {
+export function lessThan(field: string, value: any): Predicate {
     return new GreaterLessPredicate(field, value, false, true);
 }
 
-export function lessEqual(field: string, value: any) {
+export function lessEqual(field: string, value: any): Predicate {
     return new GreaterLessPredicate(field, value, true, true);
 }
 
-export function like(field: string, expr: string) {
+export function like(field: string, expr: string): Predicate {
     return new LikePredicate(field, expr);
 }
 
-export function ilike(field: string, expr: string) {
+export function ilike(field: string, expr: string): Predicate {
     return new ILikePredicate(field, expr);
 }
 
-export function inPredicate(field: string, ...values: any[]) {
+export function inPredicate(field: string, ...values: any[]): Predicate {
     return new InPredicate(field, ...values);
 }
 
-export function instanceOf(className: string) {
+export function instanceOf(className: string): Predicate {
     return new InstanceOfPredicate(className);
 }
 
-export function notEqual(field: string, value: any) {
+export function notEqual(field: string, value: any): Predicate {
     return new NotEqualPredicate(field, value);
 }
 
-export function not(predic: Predicate) {
+export function not(predic: Predicate): Predicate {
     return new NotPredicate(predic);
 }
 
-export function or(...predicates: Predicate[]) {
+export function or(...predicates: Predicate[]): Predicate {
     return new OrPredicate(...predicates);
 }
 
-export function regex(field: string, reg: string) {
+export function regex(field: string, reg: string): Predicate {
     return new RegexPredicate(field, reg);
 }
 
-export function truePredicate() {
+export function truePredicate(): Predicate {
     return TruePredicate.INSTANCE;
 }
 
-export function falsePredicate() {
+export function falsePredicate(): Predicate {
     return FalsePredicate.INSTANCE;
 }
 
-export function paging(predicate: Predicate, pageSize: number, comparator: Comparator = null) {
+export function paging(predicate: Predicate, pageSize: number, comparator: Comparator = null): Predicate {
     return new PagingPredicate(predicate, pageSize, comparator);
 }
 

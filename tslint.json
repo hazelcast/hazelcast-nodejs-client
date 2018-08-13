@@ -51,6 +51,11 @@
         "no-console": false,
         "no-empty-interface": false,
         "ordered-imports": false,
-        "no-conditional-assignment": false
+        "no-conditional-assignment": false,
+        "typedef": [
+            true,
+            "call-signature",
+            "property-declaration"
+        ]
     }
 }

@@ -23,11 +23,11 @@ import {IterationType} from './core/Predicate';
 import {PagingPredicate} from './serialization/DefaultPredicates';
 import Address = require('./Address');
 
-export function assertNotNull(v: any) {
+export function assertNotNull(v: any): void {
     assert.notEqual(v, null, 'Non null value expected.');
 }
 
-export function assertArray(x: any) {
+export function assertArray(x: any): void {
     assert(Array.isArray(x), 'Should be array.');
 }
 
@@ -42,7 +42,7 @@ export function shuffleArray<T>(array: T[]): void {
     }
 }
 
-export function assertNotNegative(v: number, message: string = 'The value cannot be negative.') {
+export function assertNotNegative(v: number, message: string = 'The value cannot be negative.'): void {
     assert(v >= 0, message);
 }
 
@@ -64,7 +64,7 @@ export function enumFromString<T>(enumType: any, value: string): T {
     return enumType[value];
 }
 
-export function getSortedQueryResultSet(list: any[], predicate: PagingPredicate) {
+export function getSortedQueryResultSet(list: any[], predicate: PagingPredicate): any[] {
     if (list.length === 0) {
         return list;
     }
@@ -89,7 +89,7 @@ export function getSortedQueryResultSet(list: any[], predicate: PagingPredicate)
 
     setAnchor(list, predicate, nearestPage);
     const iterationType = predicate.getIterationType();
-    return list.slice(begin, end).map(function (item) {
+    return list.slice(begin, end).map(function (item): any {
         switch (iterationType) {
             case IterationType.ENTRY:
                 return item;
@@ -149,7 +149,7 @@ export function tryGetString(val: any): string {
     }
 }
 
-export function getStringOrUndefined(val: any) {
+export function getStringOrUndefined(val: any): string {
     try {
         return tryGetString(val);
     } catch (e) {
@@ -157,7 +157,7 @@ export function getStringOrUndefined(val: any) {
     }
 }
 
-export function getBooleanOrUndefined(val: any) {
+export function getBooleanOrUndefined(val: any): boolean {
     try {
         return tryGetBoolean(val);
     } catch (e) {
@@ -256,7 +256,7 @@ function createComparator(iterationType: IterationType): Comparator {
     return object;
 }
 
-function setAnchor(list: any[], predicate: PagingPredicate, nearestPage: number) {
+function setAnchor(list: any[], predicate: PagingPredicate, nearestPage: number): void {
     assert(list.length > 0);
     const size = list.length;
     const pageSize = predicate.getPageSize();

@@ -231,7 +231,7 @@ export class SerializationServiceV1 implements SerializationService {
         return (obj.readPortable && obj.writePortable && obj.getFactoryId && obj.getClassId);
     }
 
-    protected registerDefaultSerializers() {
+    protected registerDefaultSerializers(): void {
         this.registerSerializer('string', new StringSerializer());
         this.registerSerializer('double', new DoubleSerializer());
         this.registerSerializer('byte', new ByteSerializer());
@@ -261,7 +261,7 @@ export class SerializationServiceV1 implements SerializationService {
         );
     }
 
-    protected registerIdentifiedFactories() {
+    protected registerIdentifiedFactories(): void {
         const factories: { [id: number]: IdentifiedDataSerializableFactory } = {};
         for (const id in this.serializationConfig.dataSerializableFactories) {
             factories[id] = this.serializationConfig.dataSerializableFactories[id];
@@ -280,10 +280,10 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('identified', new IdentifiedDataSerializableSerializer(factories));
     }
 
-    protected registerCustomSerializers() {
+    protected registerCustomSerializers(): void {
         const customSerializersArray: any[] = this.serializationConfig.customSerializers;
         const self = this;
-        customSerializersArray.forEach(function (candidate) {
+        customSerializersArray.forEach(function (candidate): void {
             self.assertValidCustomSerializer(candidate);
             self.registerSerializer('!custom' + candidate.getId(), candidate);
         });
@@ -295,7 +295,7 @@ export class SerializationServiceV1 implements SerializationService {
         }
     }
 
-    protected registerGlobalSerializer() {
+    protected registerGlobalSerializer(): void {
         let candidate: any = null;
         if (this.serializationConfig.globalSerializerConfig != null) {
             const exportedName = this.serializationConfig.globalSerializerConfig.exportedName;
@@ -313,7 +313,7 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('!global', candidate);
     }
 
-    protected assertValidCustomSerializer(candidate: any) {
+    protected assertValidCustomSerializer(candidate: any): void {
         const fGetId = 'getId';
         const fRead = 'read';
         const fWrite = 'write';
@@ -330,7 +330,7 @@ export class SerializationServiceV1 implements SerializationService {
         }
     }
 
-    protected isCustomSerializable(object: any) {
+    protected isCustomSerializable(object: any): boolean {
         const prop = 'hzGetCustomId';
         return (object[prop] && typeof object[prop] === 'function' && object[prop]() >= 1);
     }

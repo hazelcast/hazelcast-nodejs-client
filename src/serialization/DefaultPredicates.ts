@@ -59,9 +59,9 @@ export class AndPredicate extends AbstractPredicate {
         }
     }
 
-    writeData(output: DataOutput) {
+    writeData(output: DataOutput): void {
         output.writeInt(this.predicates.length);
-        this.predicates.forEach(function (pred: Predicate) {
+        this.predicates.forEach(function (pred: Predicate): void {
             output.writeObject(pred);
         });
     }
@@ -218,7 +218,7 @@ export class InPredicate extends AbstractPredicate {
     writeData(output: DataOutput): void {
         output.writeUTF(this.field);
         output.writeInt(this.values.length);
-        this.values.forEach(function (val) {
+        this.values.forEach(function (val): void {
             output.writeObject(val);
         });
     }
@@ -299,7 +299,7 @@ export class OrPredicate extends AbstractPredicate {
 
     writeData(output: DataOutput): void {
         output.writeInt(this.preds.length);
-        this.preds.forEach(function (pred: Predicate) {
+        this.preds.forEach(function (pred: Predicate): void {
             output.writeObject(pred);
         });
     }
@@ -410,7 +410,7 @@ export class PagingPredicate extends AbstractPredicate {
         output.writeInt(this.pageSize);
         output.writeUTF(IterationType[this.iterationType]);
         output.writeInt(this.anchorList.length);
-        this.anchorList.forEach(function (anchorEntry: [number, [any, any]]) {
+        this.anchorList.forEach(function (anchorEntry: [number, [any, any]]): void {
             output.writeInt(anchorEntry[0]);
             output.writeObject(anchorEntry[1][0]);
             output.writeObject(anchorEntry[1][1]);
@@ -421,7 +421,7 @@ export class PagingPredicate extends AbstractPredicate {
         return 15;
     }
 
-    setIterationType(iterationType: IterationType) {
+    setIterationType(iterationType: IterationType): void {
         this.iterationType = iterationType;
     }
 
@@ -440,7 +440,7 @@ export class PagingPredicate extends AbstractPredicate {
         return this;
     }
 
-    setAnchor(page: number, anchor: [any, any]) {
+    setAnchor(page: number, anchor: [any, any]): void {
         const anchorEntry: [number, [any, any]] = [page, anchor];
         const anchorCount = this.anchorList.length;
         if (page < anchorCount) {

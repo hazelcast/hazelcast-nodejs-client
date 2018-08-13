@@ -50,7 +50,7 @@ export class LoggingService {
         return LoggingService.loggingService;
     }
 
-    static initialize(loggerModule: string | ILogger = null) {
+    static initialize(loggerModule: string | ILogger = null): void {
         if (typeof loggerModule === 'string') {
             if (loggerModule === 'off') {
                 LoggingService.loggingService = new LoggingService(new NoLogger());
@@ -64,27 +64,27 @@ export class LoggingService {
         }
     }
 
-    log(level: LogLevel, className: string, message: string, furtherInfo: any) {
+    log(level: LogLevel, className: string, message: string, furtherInfo: any): void {
         this.logger.log(level, className, message, furtherInfo);
     }
 
-    error(className: string, message: string, furtherInfo: any = null) {
+    error(className: string, message: string, furtherInfo: any = null): void {
         this.log(LogLevel.ERROR, className, message, furtherInfo);
     }
 
-    warn(className: string, message: string, furtherInfo: any = null) {
+    warn(className: string, message: string, furtherInfo: any = null): void {
         this.log(LogLevel.WARN, className, message, furtherInfo);
     }
 
-    info(className: string, message: string, furtherInfo: any = null) {
+    info(className: string, message: string, furtherInfo: any = null): void {
         this.log(LogLevel.INFO, className, message, furtherInfo);
     }
 
-    debug(className: string, message: string, furtherInfo: any = null) {
+    debug(className: string, message: string, furtherInfo: any = null): void {
         this.log(LogLevel.DEBUG, className, message, furtherInfo);
     }
 
-    trace(className: string, message: string, furtherInfo: any = null) {
+    trace(className: string, message: string, furtherInfo: any = null): void {
         this.log(LogLevel.TRACE, className, message, furtherInfo);
     }
 }

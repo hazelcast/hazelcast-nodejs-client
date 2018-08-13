@@ -28,7 +28,7 @@ export class ClassDefinition {
         this.version = version;
     }
 
-    addFieldDefinition(definition: FieldDefinition) {
+    addFieldDefinition(definition: FieldDefinition): void {
         this.fields[definition.getName()] = definition;
     }
 

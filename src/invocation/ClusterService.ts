@@ -98,13 +98,13 @@ export class ClusterService extends EventEmitter {
     getPossibleMemberAddresses(): Promise<string[]> {
         const addresses: Set<string> = new Set();
 
-        this.getMembers().forEach(function (member) {
+        this.getMembers().forEach(function (member): void {
             addresses.add(member.address.toString());
         });
 
         let providerAddresses: Set<string> = new Set();
         const promises: Array<Promise<void>> = [];
-        this.client.getConnectionManager().addressProviders.forEach(function (addressProvider) {
+        this.client.getConnectionManager().addressProviders.forEach(function (addressProvider): void {
             promises.push(addressProvider.loadAddresses().then((res) => {
                 providerAddresses = new Set([...Array.from(providerAddresses), ...res]);
             }).catch((err) => {
@@ -125,7 +125,7 @@ export class ClusterService extends EventEmitter {
             return this.members;
         } else {
             const members: Member[] = [];
-            this.members.forEach(function (member) {
+            this.members.forEach(function (member): void {
                 if (selector.select(member)) {
                     members.push(member);
                 }
@@ -138,7 +138,7 @@ export class ClusterService extends EventEmitter {
      * Returns the number of nodes in cluster.
      * @returns {number}
      */
-    getSize() {
+    getSize(): number {
         return this.members.length;
     }
 
@@ -177,17 +177,17 @@ export class ClusterService extends EventEmitter {
             });
     }
 
-    private initHeartbeatListener() {
+    private initHeartbeatListener(): void {
         this.client.getHeartbeat().addListener({
             onHeartbeatStopped: this.onHeartbeatStopped.bind(this),
         });
     }
 
-    private initConnectionListener() {
+    private initConnectionListener(): void {
         this.client.getConnectionManager().on('connectionClosed', this.onConnectionClosed.bind(this));
     }
 
-    private onConnectionClosed(connection: ClientConnection) {
+    private onConnectionClosed(connection: ClientConnection): void {
         this.logger.warn('ClusterService', 'Connection closed to ' + connection.toString());
         if (connection.isAuthenticatedAsOwner()) {
             this.ownerConnection = null;
@@ -243,7 +243,7 @@ export class ClusterService extends EventEmitter {
         }
     }
 
-    private handleMember(member: Member, eventType: number) {
+    private handleMember(member: Member, eventType: number): void {
         if (eventType === MEMBER_ADDED) {
             this.logger.info('ClusterService', member.toString() + ' added to cluster');
             this.memberAdded(member);
@@ -254,22 +254,22 @@ export class ClusterService extends EventEmitter {
         this.client.getPartitionService().refresh();
     }
 
-    private handleMemberList(members: Member[]) {
+    private handleMemberList(members: Member[]): void {
         this.members = members;
         this.client.getPartitionService().refresh();
         this.logger.info('ClusterService', 'Members received.', this.members);
     }
 
-    private handleMemberAttributeChange(uuid: string, key: string, operationType: number, value: string) {
+    private handleMemberAttributeChange(uuid: string, key: string, operationType: number, value: string): void {
         this.emit(EMIT_ATTRIBUTE_CHANGE, uuid, key, ATTRIBUTE_CHANGE[operationType], value);
     }
 
-    private memberAdded(member: Member) {
+    private memberAdded(member: Member): void {
         this.members.push(member);
         this.emit(EMIT_MEMBER_ADDED, member);
     }
 
-    private memberRemoved(member: Member) {
+    private memberRemoved(member: Member): void {
         const memberIndex = this.members.findIndex(member.equals, member);
         if (memberIndex !== -1) {
             const removedMemberList = this.members.splice(memberIndex, 1);

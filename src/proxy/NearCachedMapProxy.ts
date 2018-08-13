@@ -193,7 +193,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
             .then<boolean>(this.invalidatCacheEntryAndReturn.bind(this, keyData));
     }
 
-    private removeNearCacheInvalidationListener() {
+    private removeNearCacheInvalidationListener(): Promise<boolean> {
         return this.client.getListenerService().deregisterListener(this.invalidationListenerId);
     }
 
@@ -251,22 +251,22 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         return this.getConnectedServerVersion() >= MIN_EVENTUALLY_CONSISTENT_NEARCACHE_VERSION;
     }
 
-    private createPre38NearCacheEventHandler() {
+    private createPre38NearCacheEventHandler(): Function {
         const nearCache = this.nearCache;
-        const handle = function (keyData: Data) {
+        const handle = function (keyData: Data): void {
             if (keyData == null) {
                 nearCache.clear();
             } else {
                 nearCache.invalidate(keyData);
             }
         };
-        const handleBatch = function (keys: Data[]) {
+        const handleBatch = function (keys: Data[]): void {
             keys.forEach((key: Data) => {
                 nearCache.invalidate(key);
             });
         };
 
-        return function (m: ClientMessage) {
+        return function (m: ClientMessage): void {
             MapAddNearCacheEntryListenerCodec.handle(m, handle, handleBatch);
         };
     }
@@ -276,14 +276,14 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         return repairingTask.registerAndGetHandler(this.getName(), this.nearCache).then((repairingHandler) => {
             const staleReadDetector = new StaleReadDetectorImpl(repairingHandler, this.client.getPartitionService());
             this.nearCache.setStaleReadDetector(staleReadDetector);
-            const handle = function (key: Data, sourceUuid: string, partitionUuid: UUID, sequence: Long) {
+            const handle = function (key: Data, sourceUuid: string, partitionUuid: UUID, sequence: Long): void {
                 repairingHandler.handle(key, sourceUuid, partitionUuid, sequence);
             };
-            const handleBatch = function (keys: Data[], sourceUuids: string[], partititonUuids: UUID[], sequences: Long[]) {
+            const handleBatch = function (keys: Data[], sourceUuids: string[], partititonUuids: UUID[], sequences: Long[]): void {
                 repairingHandler.handleBatch(keys, sourceUuids, partititonUuids, sequences);
             };
 
-            return function (m: ClientMessage) {
+            return function (m: ClientMessage): void {
                 MapAddNearCacheInvalidationListenerCodec.handle(m, handle, handleBatch);
             };
         });

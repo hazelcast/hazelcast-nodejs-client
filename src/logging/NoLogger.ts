@@ -17,7 +17,7 @@
 import {ILogger, LogLevel} from './LoggingService';
 
 export class NoLogger implements ILogger {
-    log(level: LogLevel, className: string, message: string, furtherInfo: any) {
+    log(level: LogLevel, className: string, message: string, furtherInfo: any): void {
         /* tslint:disable */
     }
 }

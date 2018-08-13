@@ -183,7 +183,7 @@ export class MorphingPortableReader extends DefaultPortableReader {
         return this.validateCompatibleAndCall(fieldName, FieldType.UTF, super.readUTF);
     }
 
-    private validateCompatibleAndCall(fieldName: string, expectedType: FieldType, superFunc: Function) {
+    private validateCompatibleAndCall(fieldName: string, expectedType: FieldType, superFunc: Function): any {
         const fd = this.classDefinition.getField(fieldName);
         if (fd === null) {
             return undefined;
@@ -194,7 +194,7 @@ export class MorphingPortableReader extends DefaultPortableReader {
         return superFunc.call(this, fieldName);
     }
 
-    private createIncompatibleClassChangeError(fd: FieldDefinition, expectedType: FieldType) {
+    private createIncompatibleClassChangeError(fd: FieldDefinition, expectedType: FieldType): Error {
         return new TypeError(`Incompatible to read ${expectedType} from ${fd.getType()} while reading field : ${fd.getName()}`);
     }
 }
