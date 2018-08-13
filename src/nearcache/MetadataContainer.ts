@@ -53,7 +53,7 @@ export class MetadataContainer {
         return this.missedSequenceCount;
     }
 
-    setUuid(uuid: UUID) {
+    setUuid(uuid: UUID): void {
         this.uuid = uuid;
     }
 

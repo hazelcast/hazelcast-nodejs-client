@@ -143,7 +143,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
 
         let resolve: Function;
 
-        const promise = new Promise<void>(function () {
+        const promise = new Promise<void>(function (): void {
             resolve = arguments[0];
         });
 
@@ -152,7 +152,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         return promise;
     }
 
-    private trySendMessage(message: RawTopicMessage, delay: number, resolve: Function) {
+    private trySendMessage(message: RawTopicMessage, delay: number, resolve: Function): void {
         this.ringbuffer.add(message, OverflowPolicy.FAIL).then((seq: Long) => {
             if (seq.toNumber() === -1) {
                 let newDelay = delay *= 2;

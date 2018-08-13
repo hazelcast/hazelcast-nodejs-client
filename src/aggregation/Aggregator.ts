@@ -42,7 +42,7 @@ export abstract class AbstractAggregator<R> implements IdentifiedDataSerializabl
 }
 
 export class CountAggregator extends AbstractAggregator<Long> {
-    readData(input: DataInput) {
+    readData(input: DataInput): any {
         this.attributePath = input.readUTF();
         // member side field, not used in client
         input.readLong();

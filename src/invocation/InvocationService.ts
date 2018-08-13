@@ -347,7 +347,7 @@ export class InvocationService {
         }
     }
 
-    private registerInvocation(invocation: Invocation) {
+    private registerInvocation(invocation: Invocation): void {
         const message = invocation.request;
         const correlationId = message.getCorrelationId().toNumber();
         if (invocation.hasPartitionId()) {

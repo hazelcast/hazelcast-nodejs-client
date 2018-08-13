@@ -144,7 +144,7 @@ export class BaseProxy {
 
     private createPromise<T>(codec: any, promise: Promise<ClientMessage>): Promise<T> {
         const toObject = this.toObject.bind(this);
-        return promise.then(function (clientMessage: ClientMessage) {
+        return promise.then(function (clientMessage: ClientMessage): any {
             if (codec.decodeResponse) {
                 const raw = codec.decodeResponse(clientMessage, toObject);
 

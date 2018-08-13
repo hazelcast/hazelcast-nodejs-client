@@ -25,7 +25,7 @@ export class UUID {
         this.leastSignificant = leastSig;
     }
 
-    equals(other: UUID) {
+    equals(other: UUID): boolean {
         if (other == null) {
             return false;
         }

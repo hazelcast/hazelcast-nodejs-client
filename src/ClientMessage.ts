@@ -73,7 +73,7 @@ class ClientMessage {
         return this.readLongInternal(offset);
     }
 
-    setCorrelationId(value: Long) {
+    setCorrelationId(value: Long): void {
         this.writeLongInternal(value, BitsUtil.CORRELATION_ID_FIELD_OFFSET);
     }
 
@@ -81,11 +81,11 @@ class ClientMessage {
         return this.buffer.readInt32LE(BitsUtil.PARTITION_ID_FIELD_OFFSET);
     }
 
-    setPartitionId(value: number) {
+    setPartitionId(value: number): void {
         this.buffer.writeInt32LE(value, BitsUtil.PARTITION_ID_FIELD_OFFSET);
     }
 
-    setVersion(value: number) {
+    setVersion(value: number): void {
         this.buffer.writeUInt8(value, BitsUtil.VERSION_FIELD_OFFSET);
     }
 
@@ -93,7 +93,7 @@ class ClientMessage {
         return this.buffer.readUInt16LE(BitsUtil.TYPE_FIELD_OFFSET);
     }
 
-    setMessageType(value: number) {
+    setMessageType(value: number): void {
         this.buffer.writeUInt16LE(value, BitsUtil.TYPE_FIELD_OFFSET);
     }
 
@@ -101,7 +101,7 @@ class ClientMessage {
         return this.buffer.readUInt8(BitsUtil.FLAGS_FIELD_OFFSET);
     }
 
-    setFlags(value: number) {
+    setFlags(value: number): void {
         this.buffer.writeUInt8(value, BitsUtil.FLAGS_FIELD_OFFSET);
     }
 
@@ -113,7 +113,7 @@ class ClientMessage {
         return this.buffer.readInt32LE(BitsUtil.FRAME_LENGTH_FIELD_OFFSET);
     }
 
-    setFrameLength(value: number) {
+    setFrameLength(value: number): void {
         this.buffer.writeInt32LE(value, BitsUtil.FRAME_LENGTH_FIELD_OFFSET);
     }
 
@@ -121,39 +121,39 @@ class ClientMessage {
         return this.buffer.readInt16LE(BitsUtil.DATA_OFFSET_FIELD_OFFSET);
     }
 
-    setDataOffset(value: number) {
+    setDataOffset(value: number): void {
         this.buffer.writeInt16LE(value, BitsUtil.DATA_OFFSET_FIELD_OFFSET);
     }
 
-    setRetryable(value: boolean) {
+    setRetryable(value: boolean): void {
         this.isRetryable = value;
     }
 
-    appendByte(value: number) {
+    appendByte(value: number): void {
         this.buffer.writeUInt8(value, this.cursor);
         this.cursor += BitsUtil.BYTE_SIZE_IN_BYTES;
     }
 
-    appendBoolean(value: boolean) {
+    appendBoolean(value: boolean): void {
         return this.appendByte(value ? 1 : 0);
     }
 
-    appendInt32(value: number) {
+    appendInt32(value: number): void {
         this.buffer.writeInt32LE(value, this.cursor);
         this.cursor += BitsUtil.INT_SIZE_IN_BYTES;
     }
 
-    appendUint8(value: number) {
+    appendUint8(value: number): void {
         this.buffer.writeUInt8(value, this.cursor);
         this.cursor += BitsUtil.BYTE_SIZE_IN_BYTES;
     }
 
-    appendLong(value: any) {
+    appendLong(value: any): void {
         this.writeLongInternal(value, this.cursor);
         this.cursor += BitsUtil.LONG_SIZE_IN_BYTES;
     }
 
-    appendString(value: string) {
+    appendString(value: string): void {
         const length = value.length;
         this.buffer.writeInt32LE(length, this.cursor);
         this.cursor += 4;
@@ -161,22 +161,22 @@ class ClientMessage {
         this.cursor += length;
     }
 
-    appendBuffer(buffer: Buffer) {
+    appendBuffer(buffer: Buffer): void {
         const length = buffer.length;
         this.appendInt32(length);
         buffer.copy(this.buffer, this.cursor);
         this.cursor += length;
     }
 
-    appendData(data: Data) {
+    appendData(data: Data): void {
         this.appendBuffer(data.toBuffer());
     }
 
-    addFlag(value: number) {
+    addFlag(value: number): void {
         this.buffer.writeUInt8(value | this.getFlags(), BitsUtil.FLAGS_FIELD_OFFSET);
     }
 
-    updateFrameLength() {
+    updateFrameLength(): void {
         this.setFrameLength(this.cursor);
     }
 
@@ -238,7 +238,7 @@ class ClientMessage {
         // TODO
     }
 
-    private writeLongInternal(value: any, offset: number) {
+    private writeLongInternal(value: any, offset: number): void {
         if (!Long.isLong(value)) {
             value = Long.fromValue(value);
         }
@@ -247,7 +247,7 @@ class ClientMessage {
         this.buffer.writeInt32LE(value.high, offset + 4);
     }
 
-    private readLongInternal(offset: number) {
+    private readLongInternal(offset: number): Long {
         const low = this.buffer.readInt32LE(offset);
         const high = this.buffer.readInt32LE(offset + 4);
         return new Long(low, high);

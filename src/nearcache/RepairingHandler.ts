@@ -122,7 +122,7 @@ export class RepairingHandler {
         return this.name;
     }
 
-    private getPartitionIdOrDefault(key: Data) {
+    private getPartitionIdOrDefault(key: Data): number {
         if (key != null) {
             return this.partitionService.getPartitionId(key);
         } else {

@@ -136,7 +136,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
         const toObject = this.toObject.bind(this);
 
         /* tslint:disable: no-shadowed-variable */
-        const entryEventHandler = function (key: K, value: V, oldValue: V, mergingValue: V, event: number) {
+        const entryEventHandler = function (key: K, value: V, oldValue: V, mergingValue: V, event: number): void {
             let parameters: any[] = [key, oldValue, value];
             parameters = parameters.map(toObject);
             let name: string;

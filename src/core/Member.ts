@@ -51,7 +51,7 @@ export class Member {
         return false;
     }
 
-    toString() {
+    toString(): string {
         return 'Member[ uuid: ' + this.uuid.toString() + ', address: ' + this.address.toString() + ']';
     }
 }

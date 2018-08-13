@@ -89,7 +89,7 @@ export class PartitionService {
      * @param key
      * @returns the partition id.
      */
-    getPartitionId(key: any) {
+    getPartitionId(key: any): number {
         let partitionHash: number;
         if (typeof key === 'object' && 'getPartitionHash' in key) {
             partitionHash = key.getPartitionHash();

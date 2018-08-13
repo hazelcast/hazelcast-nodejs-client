@@ -46,14 +46,14 @@ export class Heartbeat {
     /**
      * Starts sending periodic heartbeat operations.
      */
-    start() {
+    start(): void {
         this.timer = setTimeout(this.heartbeatFunction.bind(this), this.heartbeatInterval);
     }
 
     /**
      * Cancels scheduled heartbeat operations.
      */
-    cancel() {
+    cancel(): void {
         clearTimeout(this.timer);
     }
 
@@ -61,11 +61,11 @@ export class Heartbeat {
      * Registers a heartbeat listener. Listener is invoked when a heartbeat related event occurs.
      * @param heartbeatListener
      */
-    addListener(heartbeatListener: ConnectionHeartbeatListener) {
+    addListener(heartbeatListener: ConnectionHeartbeatListener): void {
         this.listeners.push(heartbeatListener);
     }
 
-    private heartbeatFunction() {
+    private heartbeatFunction(): void {
         const estConnections = this.client.getConnectionManager().establishedConnections;
         for (const address in estConnections) {
             if (estConnections[address]) {
@@ -97,7 +97,7 @@ export class Heartbeat {
         this.timer = setTimeout(this.heartbeatFunction.bind(this), this.heartbeatInterval);
     }
 
-    private onHeartbeatStopped(connection: ClientConnection) {
+    private onHeartbeatStopped(connection: ClientConnection): void {
         this.logger.warn('HeartbeatService', 'Heartbeat stopped on ' + connection.toString());
         this.listeners.forEach((listener) => {
             if (listener.hasOwnProperty('onHeartbeatStopped')) {
@@ -106,7 +106,7 @@ export class Heartbeat {
         });
     }
 
-    private onHeartbeatRestored(connection: ClientConnection) {
+    private onHeartbeatRestored(connection: ClientConnection): void {
         this.logger.warn('HeartbeatService', 'Heartbeat restored on ' + connection.toString());
         this.listeners.forEach((listener) => {
             if (listener.hasOwnProperty('onHeartbeatRestored')) {

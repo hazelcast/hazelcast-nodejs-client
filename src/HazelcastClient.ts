@@ -27,7 +27,7 @@ import {InvocationService} from './invocation/InvocationService';
 import {LifecycleEvent, LifecycleService} from './LifecycleService';
 import {ListenerService} from './ListenerService';
 import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
-import {LoggingService, ILogger} from './logging/LoggingService';
+import {ILogger, LoggingService} from './logging/LoggingService';
 import {RepairingTask} from './nearcache/RepairingTask';
 import {PartitionService} from './PartitionService';
 import {ClientErrorFactory} from './protocol/ErrorFactory';
@@ -127,7 +127,7 @@ export default class HazelcastClient {
         const clientMessage = ClientGetDistributedObjectsCodec.encodeRequest();
         const toObjectFunc = this.serializationService.toObject.bind(this);
         const proxyManager = this.proxyManager;
-        return this.invocationService.invokeOnRandomTarget(clientMessage).then(function (resp) {
+        return this.invocationService.invokeOnRandomTarget(clientMessage).then(function (resp): any {
             const response = ClientGetDistributedObjectsCodec.decodeResponse(resp, toObjectFunc).response;
             return response.map((objectInfo: { [key: string]: any }) => {
                 return proxyManager.getOrCreateProxy(objectInfo.value, objectInfo.key, false);

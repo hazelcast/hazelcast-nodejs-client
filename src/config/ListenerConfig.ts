@@ -20,11 +20,11 @@
 export class ListenerConfig {
     lifecycle: Function[] = [];
 
-    addLifecycleListener(listener: Function) {
+    addLifecycleListener(listener: Function): void {
         this.lifecycle.push(listener);
     }
 
-    getLifecycleListeners() {
+    getLifecycleListeners(): Function[] {
         return this.lifecycle;
     }
 }

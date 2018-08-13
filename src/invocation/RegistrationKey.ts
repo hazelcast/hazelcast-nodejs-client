@@ -42,7 +42,7 @@ export class RegistrationKey {
         return this.codec;
     }
 
-    setCodec(value: ListenerMessageCodec) {
+    setCodec(value: ListenerMessageCodec): void {
         this.codec = value;
     }
 

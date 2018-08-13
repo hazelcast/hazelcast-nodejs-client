@@ -113,8 +113,8 @@ export class ProxyManager {
     }
 
     addDistributedObjectListener(listenerFunc: Function): Promise<string> {
-        const handler = function (clientMessage: ClientMessage) {
-            const converterFunc = function (name: string, serviceName: string, eventType: string) {
+        const handler = function (clientMessage: ClientMessage): void {
+            const converterFunc = function (name: string, serviceName: string, eventType: string): void {
                 if (eventType === 'CREATED') {
                     listenerFunc(name, serviceName, 'created');
                 } else if (eventType === 'DESTROYED') {
@@ -127,7 +127,7 @@ export class ProxyManager {
         return this.client.getListenerService().registerListener(codec, handler);
     }
 
-    removeDistributedObjectListener(listenerId: string) {
+    removeDistributedObjectListener(listenerId: string): Promise<boolean> {
         return this.client.getListenerService().deregisterListener(listenerId);
     }
 
