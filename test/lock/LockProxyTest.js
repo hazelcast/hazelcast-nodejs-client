@@ -143,11 +143,11 @@ describe("Lock Proxy", function () {
 
     it("correctly reports remaining lease time", function () {
         return lockOne.lock(1000).then(function () {
-            return lockOne.getRemainingLeaseTime();
+            return Util.promiseWaitMilliseconds(30)
         }).then(function (remaining) {
             return lockOne.getRemainingLeaseTime();
         }).then(function (remaining) {
-            expect(remaining).to.be.lessThan(1000);
+            expect(remaining).to.be.lessThan(971);
         })
     });
 
