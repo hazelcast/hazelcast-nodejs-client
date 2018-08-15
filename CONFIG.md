@@ -11,7 +11,7 @@ desired aspects. An example is shown below.
 var Config = require('hazelcast-client').Config;
 var Address = require('hazelcast-client').Address;
 var cfg = new Config.ClientConfig();
-cfg.networkConfig.addresses.push(new Address('127.0.0.11', 5701));
+cfg.networkConfig.addresses.push('127.0.0.1:5701');
 return HazelcastClient.newHazelcastClient(cfg);
 ```
 
