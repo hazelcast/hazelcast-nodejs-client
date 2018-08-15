@@ -36,53 +36,54 @@ describe('Listeners on reconnect', function () {
     });
 
     afterEach(function () {
-        map.destroy();
-        client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return map.destroy().then(function () {
+            client.shutdown();
+            return Controller.shutdownCluster(cluster.id);
+        });
     });
 
-    [true, false].forEach(function (isSmart) {
-
-        function closeTwoMembersOfThreeAndTestListener(done, membersToClose, turnoffMember) {
-            Controller.startMember(cluster.id).then(function (m) {
-                members[0] = m;
-                return Controller.startMember(cluster.id);
-            }).then(function (m) {
-                members[1] = m;
-                return Controller.startMember(cluster.id);
-            }).then(function (m) {
-                members[2] = m;
-                var cfg = new Config.ClientConfig();
-                cfg.properties['hazelcast.client.heartbeat.interval'] = 1000;
-                cfg.properties['hazelcast.client.heartbeat.timeout'] = 3000;
-                cfg.networkConfig.smartRouting = isSmart;
-                return HazelcastClient.newHazelcastClient(cfg);
-            }).then(function (cl) {
-                client = cl;
-                map = client.getMap('testmap');
-                var listenerObject = {
-                    added: function (key, oldValue, value, mergingValue) {
-                        try {
-                            expect(key).to.equal('keyx');
-                            expect(oldValue).to.be.undefined;
-                            expect(value).to.equal('valx');
-                            expect(mergingValue).to.be.undefined;
-                            done();
-                        } catch (err) {
-                            done(err);
-                        }
+    function closeTwoMembersOfThreeAndTestListener(done, isSmart, membersToClose, turnoffMember) {
+        Controller.startMember(cluster.id).then(function (m) {
+            members[0] = m;
+            return Controller.startMember(cluster.id);
+        }).then(function (m) {
+            members[1] = m;
+            return Controller.startMember(cluster.id);
+        }).then(function (m) {
+            members[2] = m;
+            var cfg = new Config.ClientConfig();
+            cfg.properties['hazelcast.client.heartbeat.interval'] = 1000;
+            cfg.properties['hazelcast.client.heartbeat.timeout'] = 3000;
+            cfg.networkConfig.smartRouting = isSmart;
+            return HazelcastClient.newHazelcastClient(cfg);
+        }).then(function (cl) {
+            client = cl;
+            map = client.getMap('testmap');
+            var listenerObject = {
+                added: function (key, oldValue, value, mergingValue) {
+                    try {
+                        expect(key).to.equal('keyx');
+                        expect(oldValue).to.be.undefined;
+                        expect(value).to.equal('valx');
+                        expect(mergingValue).to.be.undefined;
+                        done();
+                    } catch (err) {
+                        done(err);
                     }
-                };
-                return map.addEntryListener(listenerObject, 'keyx', true);
-            }).then(function () {
-                return Promise.all([
-                    turnoffMember(cluster.id, members[membersToClose[0]].uuid),
-                    turnoffMember(cluster.id, members[membersToClose[1]].uuid)
-                ]);
-            }).then(function () {
-                map.put('keyx', 'valx');
-            });
-        }
+                }
+            };
+            return map.addEntryListener(listenerObject, 'keyx', true);
+        }).then(function () {
+            return Promise.all([
+                turnoffMember(cluster.id, members[membersToClose[0]].uuid),
+                turnoffMember(cluster.id, members[membersToClose[1]].uuid)
+            ]);
+        }).then(function () {
+            return map.put('keyx', 'valx');
+        });
+    }
+
+    [true, false].forEach(function (isSmart) {
 
         /**
          * We use three members to simulate all configurations where connection is closed to;
@@ -92,27 +93,27 @@ describe('Listeners on reconnect', function () {
          */
 
         it('kill two members [1,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOfThreeAndTestListener(done, [1, 2], Controller.terminateMember);
+            closeTwoMembersOfThreeAndTestListener(done, isSmart, [1, 2], Controller.terminateMember);
         });
 
         it('kill two members [0,1], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOfThreeAndTestListener(done, [0, 1], Controller.terminateMember);
+            closeTwoMembersOfThreeAndTestListener(done, isSmart, [0, 1], Controller.terminateMember);
         });
 
         it('kill two members [0,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOfThreeAndTestListener(done, [0, 2], Controller.terminateMember);
+            closeTwoMembersOfThreeAndTestListener(done, isSmart, [0, 2], Controller.terminateMember);
         });
 
         it('shutdown two members [1,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOfThreeAndTestListener(done, [1, 2], Controller.shutdownMember);
+            closeTwoMembersOfThreeAndTestListener(done, isSmart, [1, 2], Controller.shutdownMember);
         });
 
         it('shutdown two members [0,1], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOfThreeAndTestListener(done, [0, 1], Controller.shutdownMember);
+            closeTwoMembersOfThreeAndTestListener(done, isSmart, [0, 1], Controller.shutdownMember);
         });
 
         it('shutdown two members [0,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOfThreeAndTestListener(done, [0, 2], Controller.shutdownMember);
+            closeTwoMembersOfThreeAndTestListener(done, isSmart, [0, 2], Controller.shutdownMember);
         });
 
         it('restart member, listener still receives map.put event [smart=' + isSmart + ']', function (done) {
@@ -145,10 +146,10 @@ describe('Listeners on reconnect', function () {
             }).then(function () {
                 return Controller.startMember(cluster.id);
             }).then(function () {
+                return Util.promiseWaitMilliseconds(5000);
+            }).then(function () {
                 return map.put('keyx', 'valx');
             });
         });
     });
-
-
 });
