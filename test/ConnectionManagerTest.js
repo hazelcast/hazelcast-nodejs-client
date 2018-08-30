@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-var Controller = require('./RC');
 var chai = require('chai');
 chai.should();
 chai.use(require('chai-as-promised'));
+var expect = chai.expect;
+
+var net = require('net');
+
 var Config = require('../.').Config;
 var Hazelcast = require('../.').Client;
-var net = require('net');
+var Controller = require('./RC');
+var Errors = require('../').HazelcastErrors;
 
 describe('ConnectionManager', function () {
 
@@ -36,7 +40,7 @@ describe('ConnectionManager', function () {
             return Controller.startMember(cluster.id);
         }).then(function (m) {
             member = m;
-        })
+        });
     });
 
     beforeEach(function () {
@@ -46,7 +50,9 @@ describe('ConnectionManager', function () {
     afterEach(function () {
         testend = true;
         stopUnresponsiveServer();
-        return client.shutdown();
+        if (client != null) {
+            return client.shutdown();
+        }
     });
 
     after(function () {
@@ -100,5 +106,16 @@ describe('ConnectionManager', function () {
                 done(new Error('Client should be retrying!\n' + e));
             }
         });
-    })
+    });
+
+    it('should throw IllegalStateError if there is an incompatible server', function () {
+        client = null;
+        var timeoutTime = 100;
+        var cfg = new Config.ClientConfig();
+        cfg.networkConfig.connectionTimeout = timeoutTime;
+        cfg.networkConfig.addresses = ['127.0.0.1:9999'];
+        startUnresponsiveServer(9999);
+        return expect(Hazelcast.newHazelcastClient(cfg)).to.be.rejectedWith(Errors.IllegalStateError);
+    });
+
 });
