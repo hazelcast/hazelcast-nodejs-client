@@ -108,7 +108,10 @@ export class ClientConnectionManager extends EventEmitter {
 
         const connectionTimeout = this.client.getConfig().networkConfig.connectionTimeout;
         if (connectionTimeout !== 0) {
-            return connectionResolver.promise.timeout(connectionTimeout, new HazelcastError('Connection timed-out'));
+            return connectionResolver.promise.timeout(connectionTimeout, new HazelcastError(
+                'Connection timed-out')).finally(() => {
+                delete this.pendingConnections[addressIndex];
+            });
         }
         return connectionResolver.promise;
     }
