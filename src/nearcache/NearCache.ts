@@ -28,6 +28,7 @@ import {StaleReadDetector} from './StaleReadDetector';
 import * as Promise from 'bluebird';
 
 export interface NearCacheStatistics {
+    creationTime: number;
     evictedCount: number;
     expiredCount: number;
     missCount: number;
@@ -39,6 +40,8 @@ export interface NearCache {
     put(key: Data, value: any): void;
 
     get(key: Data): Promise<Data | any>;
+
+    getName(): string;
 
     invalidate(key: Data): void;
 
@@ -78,6 +81,7 @@ export class NearCacheImpl implements NearCache {
     private expiredCount: number = 0;
     private missCount: number = 0;
     private hitCount: number = 0;
+    private creationTime = new Date().getTime();
     private compareFunc: (x: DataRecord, y: DataRecord) => number;
     private ready: Promise.Resolver<void>;
 
@@ -109,6 +113,10 @@ export class NearCacheImpl implements NearCache {
 
     setReady(): void {
         this.ready.resolve();
+    }
+
+    getName(): string {
+        return this.name;
     }
 
     nextReservationId(): Long {
@@ -224,6 +232,7 @@ export class NearCacheImpl implements NearCache {
 
     getStatistics(): NearCacheStatistics {
         const stats: NearCacheStatistics = {
+            creationTime: this.creationTime,
             evictedCount: this.evictedCount,
             expiredCount: this.expiredCount,
             missCount: this.missCount,

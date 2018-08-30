@@ -267,3 +267,27 @@ function setAnchor(list: any[], predicate: PagingPredicate, nearestPage: number)
         predicate.setAnchor(nearestPage, anchor);
     }
 }
+
+export class Task {
+    intervalId: NodeJS.Timer;
+    timeoutId: NodeJS.Timer;
+}
+
+export function scheduleWithRepetition(callback: (...args: any[]) => void, initialDelay: number,
+                                       periodMillis: number): Task {
+    const task = new Task();
+    task.timeoutId = setTimeout(function (): void {
+        callback();
+        task.intervalId = setInterval(callback, periodMillis);
+    }, initialDelay);
+
+    return task;
+}
+
+export function cancelRepetitionTask(task: Task): void {
+    if (task.intervalId != null) {
+        clearInterval(task.intervalId);
+    } else if (task.timeoutId != null) {
+        clearTimeout(task.timeoutId);
+    }
+}

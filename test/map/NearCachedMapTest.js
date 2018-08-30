@@ -16,8 +16,6 @@
 
 var expect = require("chai").expect;
 var HazelcastClient = require("../../.").Client;
-var Predicates = require("../../.").Predicates;
-var Promise = require("bluebird");
 var Controller = require('./../RC');
 var Util = require('./../Util');
 var Config = require('../../.').Config;
@@ -102,7 +100,7 @@ describe("NearCachedMap", function () {
                     return map1.get('key1');
                 }).then(function (val) {
                     var stats = getNearCacheStats(map1);
-                    expect(val).to.be.be.null;
+                    expect(val).to.be.null;
                     expect(stats.hitCount).to.equal(0);
                     expect(stats.missCount).to.equal(2);
                     expect(stats.entryCount).to.equal(1);

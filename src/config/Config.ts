@@ -27,6 +27,7 @@ import {NearCacheConfig} from './NearCacheConfig';
 import {Properties} from './Properties';
 import {ReliableTopicConfig} from './ReliableTopicConfig';
 import {SerializationConfig} from './SerializationConfig';
+import {Statistics} from '../statistics/Statistics';
 
 /**
  * Top level configuration object of Hazelcast client. Other configurations items are properties of this object.
@@ -39,6 +40,8 @@ export class ClientConfig {
         'hazelcast.client.invocation.retry.pause.millis': 1000,
         'hazelcast.client.invocation.timeout.millis': 120000,
         'hazelcast.client.cloud.url': 'https://coordinator.hazelcast.cloud',
+        'hazelcast.client.statistics.enabled': false,
+        'hazelcast.client.statistics.period.seconds': Statistics.PERIOD_SECONDS_DEFAULT_VALUE,
         'hazelcast.invalidation.reconciliation.interval.seconds': 60,
         'hazelcast.invalidation.max.tolerated.miss.count': 10,
         'hazelcast.invalidation.min.reconciliation.interval.seconds': 30,
@@ -59,6 +62,10 @@ export class ClientConfig {
     flakeIdGeneratorConfigs: { [name: string]: FlakeIdGeneratorConfig } = {};
 
     private configPatternMatcher = new ConfigPatternMatcher();
+
+    getInstanceName(): string {
+        return this.instanceName;
+    }
 
     getReliableTopicConfig(name: string): ReliableTopicConfig {
         const matching = this.lookupByPattern<ReliableTopicConfig>(this.reliableTopicConfigs, name);
