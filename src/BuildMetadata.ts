@@ -21,7 +21,7 @@ export class BuildMetadata {
     private static readonly MINOR_VERSION_MULTIPLIER = 100;
     private static readonly PATTERN = /^([\d]+)\.([\d]+)(?:\.([\d]+))?(-[\w]+)?(-SNAPSHOT)?(-BETA-.)?$/;
 
-    public static calculateVersion(versionString: string): number {
+    public static calculateVersionFromString(versionString: string): number {
         if (versionString == null) {
             return BuildMetadata.UNKNOWN_VERSION_ID;
         }
@@ -37,6 +37,10 @@ export class BuildMetadata {
         } else {
             patch = Number.parseInt(info[3]);
         }
+        return this.calculateVersion(major, minor, patch);
+    }
+
+    public static calculateVersion(major: number, minor: number, patch: number): number {
         return BuildMetadata.MAJOR_VERSION_MULTIPLIER * major + BuildMetadata.MINOR_VERSION_MULTIPLIER * minor + patch;
     }
 

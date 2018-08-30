@@ -26,6 +26,7 @@ import {IllegalStateError} from '../HazelcastError';
 import * as assert from 'assert';
 import {MemberSelector} from '../core/MemberSelector';
 import {createAddressFromString} from '../Util';
+import {BuildMetadata} from '../BuildMetadata';
 import Address = require('../Address');
 import ClientMessage = require('../ClientMessage');
 
@@ -205,7 +206,7 @@ export class ClusterService extends EventEmitter {
     private tryConnectingToAddresses(index: number, remainingAttemptLimit: number,
                                      attemptPeriod: number, cause?: Error): Promise<void> {
         this.logger.debug('ClusterService', 'Trying to connect to addresses, remaining attempt limit: ' + remainingAttemptLimit
-            + 'attempt period: ' + attemptPeriod);
+            + ', attempt period: ' + attemptPeriod);
         if (this.knownAddresses.length <= index) {
             remainingAttemptLimit = remainingAttemptLimit - 1;
             if (remainingAttemptLimit === 0) {
