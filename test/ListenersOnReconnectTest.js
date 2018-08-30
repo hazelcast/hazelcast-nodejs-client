@@ -23,7 +23,7 @@ var Promise = require('bluebird');
 
 describe('Listeners on reconnect', function () {
 
-    this.timeout(120000);
+    this.timeout(30000);
     var client;
     var members = [];
     var cluster;
@@ -38,7 +38,7 @@ describe('Listeners on reconnect', function () {
     afterEach(function () {
         return map.destroy().then(function () {
             client.shutdown();
-            return Controller.shutdownCluster(cluster.id);
+            return Controller.terminateCluster(cluster.id);
         });
     });
 
@@ -78,6 +78,8 @@ describe('Listeners on reconnect', function () {
                 turnoffMember(cluster.id, members[membersToClose[0]].uuid),
                 turnoffMember(cluster.id, members[membersToClose[1]].uuid)
             ]);
+        }).then(function () {
+            return Util.promiseWaitMilliseconds(5000);
         }).then(function () {
             return map.put('keyx', 'valx');
         });
