@@ -6,6 +6,13 @@
 * [Using the Client](#using-the-client)
 * [Code Samples](#code-samples)
 * [Serialization Considerations](#serialization-considerations)
+* [Using Node.js Client with Hazelcast IMDG](#using-nodejs-client-with-hazelcast-imdg)
+  * [1. Node.js Client API Overview](#1-nodejs-client-api-overview)
+  * [2. Using Distributed Data Structures](#2-using-distributed-data-structures)
+    * [2.1. Using Map](#21-using-map)
+    * [2.2. Using MultiMap](#22-using-multimap)
+    * [2.3. Using ReplicatedMap](#23-using-replicatedmap)
+    * [2.4. Using Queue](#24-using-queue)
 * [Development](#development)
   * [Building And Installing from Sources](#building-and-installing-from-sources)
   * [Using Locally Installed Package](#using-locally-installed-package)
@@ -145,6 +152,123 @@ readData(dataInput) {
 }
 ```
 
+# Using Node.js Client with Hazelcast IMDG
+
+## 1. Node.js Client API Overview
+
+Most of the functions in the API return `Promise`. Therefore, you need to be familiar with the concept of promises to use the Node.js client. If not, you can learn about them using various online resources.
+
+Promises provide a better way of working with callbacks. You can chain asynchronous functions by `then()` function of promise. Also, you can use `async/await`, if you use Node.js 8 and higher versions.
+
+If you are ready to go, let's start to use Hazelcast Node.js client!
+
+The first step is configuration. You can configure the Node.js client declaratively or programmatically. We will use the programmatic approach throughout this chapter. Please refer to the [Node.js Client Declarative Configuration section](#declarative-configuration) for details.
+
+```javascript
+var clientConfig = new Config.ClientConfig();
+clientConfig.groupConfig.name = 'dev';
+clientConfig.networkConfig.addresses.push('10.90.0.1', '10.90.0.2:5702');
+```
+
+The second step is to initialize the `HazelcastClient` to be connected to the cluster.
+
+```javascript
+Client.newHazelcastClient(clientConfig).then(function (client) {
+    // some operation
+});
+```
+
+**This client object is your gateway to access all Hazelcast distributed objects.**
+
+Let’s create a map and populate it with some data.
+
+```javascript
+var client;
+var mapCustomers;
+Client.newHazelcastClient(clientConfig).then(function (res) {
+    client = res;
+    mapCustomers = client.getMap('customers'); // creates the map proxy
+    return mapCustomers.put('1', new Customer('Furkan', 'Senharputlu'));
+}).then(function () {
+    return mapCustomers.put('2', new Customer("Joe", "Smith"));
+}).then(function () {
+    return mapCustomers.put('3', new Customer("Muhammet", "Ali"));
+});
+```
+
+As a final step, if you are done with your client, you can shut it down as shown below. This will release all the used resources and will close connections to the cluster.
+
+```javascript
+...
+.then(function () {
+    client.shutdown();
+});
+```
+
+## 2. Using Distributed Data Structures
+
+Most of the Distributed Data Structures are supported by the Node.js client. In this chapter, you will learn how to use these distributed data structures.
+
+## 2.1. Using Map
+
+A Map usage example is shown below.
+
+```javascript
+var map = client.getMap('myMap');
+
+map.put(1, 'Furkan').then(function (oldValue) {
+    return map.get(1);
+}).then(function (value) {
+    console.log(value); // Furkan
+    return map.remove(1);
+});
+```
+
+## 2.2. Using MultiMap
+
+A MultiMap usage example is shown below.
+
+```javascript
+var multiMap = client.getMultiMap('myMultiMap');
+        
+multiMap.put(1, 'Furkan').then(function () {
+    return multiMap.put(1, 'Mustafa');
+}).then(function () {
+    return multiMap.get(1);
+}).then(function (values) {
+    console.log(values.get(0), values.get(1)); // Furkan Mustafa
+});
+```
+
+## 2.3. Using ReplicatedMap
+
+A ReplicatedMap usage example is shown below.
+
+```javascript
+var replicatedMap = client.getReplicatedMap('myReplicatedMap');
+
+replicatedMap.put(1, 'Furkan').then(function () {
+    return replicatedMap.put(2, 'Ahmet');
+}).then(function () {
+    return replicatedMap.get(2);
+}).then(function (value) {
+    console.log(value); // Ahmet
+});
+```
+
+## 2.4. Using Queue
+
+A Queue usage example is shown below.
+
+```javascript
+var queue = client.getQueue('myQueue');
+
+queue.offer('Furkan').then(function () {
+    return queue.peek();
+}).then(function (head) {
+    console.log(head); // Furkan
+});
+```
 
 # Development
 
