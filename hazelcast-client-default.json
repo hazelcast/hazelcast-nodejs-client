@@ -1,0 +1,47 @@
+{
+    "group": {
+        "name": "dev",
+        "password": "dev-pass"
+    },
+    "properties": {
+        "hazelcast.client.heartbeat.interval": 5000,
+        "hazelcast.client.heartbeat.timeout": 60000,
+        "hazelcast.client.invocation.retry.pause.millis": 1000,
+        "hazelcast.client.invocation.timeout.millis": 120000,
+        "hazelcast.client.cloud.url": "https://coordinator.hazelcast.cloud",
+        "hazelcast.client.statistics.enabled": false,
+        "hazelcast.client.statistics.period.seconds": 3,
+        "hazelcast.invalidation.reconciliation.interval.seconds": 60,
+        "hazelcast.invalidation.max.tolerated.miss.count": 10,
+        "hazelcast.invalidation.min.reconciliation.interval.seconds": 30
+    },
+    "network": {
+        "clusterMembers": [
+            "127.0.0.1:5701"
+        ],
+        "smartRouting": true,
+        "redoOperation": false,
+        "connectionTimeout": 5000,
+        "connectionAttemptPeriod": 3000,
+        "connectionAttemptLimit": 2,
+        "ssl": null,
+        "hazelcastCloud": {
+            "discoveryToken": null,
+            "enabled": false
+        }
+    },
+    "listeners": [],
+    "serialization": {
+        "defaultNumberType": "double",
+        "isBigEndian": true,
+        "dataSerializableFactories": [],
+        "portableFactories": [],
+        "portableVersion": 0,
+        "globalSerializer": {},
+        "serializers": []
+    },
+    "nearCaches": [],
+    "reliableTopics": [],
+    "flakeIdGeneratorConfigs": [],
+    "import": []
+}

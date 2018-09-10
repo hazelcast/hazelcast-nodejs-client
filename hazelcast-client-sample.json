@@ -1,0 +1,130 @@
+{
+    "group": {
+        "name": "hazel",
+        "password": "cast"
+    },
+    "properties": {
+        "hazelcast.client.heartbeat.interval": 5000,
+        "hazelcast.client.heartbeat.timeout": 60000,
+        "hazelcast.client.invocation.retry.pause.millis": 1000,
+        "hazelcast.client.invocation.timeout.millis": 120000,
+        "hazelcast.client.cloud.url": "https://coordinator.hazelcast.cloud",
+        "hazelcast.client.statistics.enabled": false,
+        "hazelcast.client.statistics.period.seconds": 3,
+        "hazelcast.invalidation.reconciliation.interval.seconds": 60,
+        "hazelcast.invalidation.max.tolerated.miss.count": 10,
+        "hazelcast.invalidation.min.reconciliation.interval.seconds": 30,
+    },
+    "network": {
+        "clusterMembers": [
+            "127.0.0.1:5701",
+            "127.0.0.2:5703"
+        ],
+        "smartRouting": true,
+        "redoOperation": false,
+        "connectionTimeout": 5000,
+        "connectionAttemptPeriod": 3000,
+        "connectionAttemptLimit": 2,
+        "ssl": {
+            "enabled": false,
+            "factory": {
+                "path": "path/to/file",
+                "exportedName": "exportedName",
+                "properties": {
+                    "userDefinedProperty1": "userDefinedValue"
+                }
+            }
+        },
+        "hazelcastCloud": {
+            "discoveryToken": "EXAMPLE_TOKEN",
+            "enabled": false
+        }
+    },
+    "listeners": [
+        {
+            "type": "lifecycle",
+            "path": "path/to/file",
+            "exportedName": "listener"
+        },
+        {
+            "type": "lifecycle",
+            "path": "path/to/file",
+            "exportedName": "listener2"
+        }
+    ],
+    "serialization": {
+        "defaultNumberType": "double",
+        "isBigEndian": true,
+        "dataSerializableFactories": [
+            {
+                "path": "path/to/file",
+                "exportedName": "exportedName",
+                "factoryId": 0
+            }
+        ],
+        "portableFactories": [
+            {
+                "path": "path/to/file",
+                "exportedName": "exportedName",
+                "factoryId": 1
+            }
+        ],
+        "portableVersion": 0,
+        "globalSerializer": {
+            "path": "path/to/file",
+            "exportedName": "exportedName"
+        },
+        "serializers": [
+            {
+                "path": "path/to/custom",
+                "exportedName": "CustomSerializer1",
+                "typeId": 2
+            },
+            {
+                "path": "path/to/custom",
+                "exportedName": "CustomSerializer2",
+                "typeId": 3
+            }
+        ]
+    },
+    "nearCaches": [
+        {
+            "name": "nc-map",
+            "invalidateOnChange": false,
+            "maxIdleSeconds": 2,
+            "inMemoryFormat": "object",
+            "timeToLiveSeconds": 3,
+            "evictionPolicy": "lru",
+            "evictionMaxSize": 3000,
+            "evictionSamplingCount": 4,
+            "evictionSamplingPoolSize": 8
+        }
+    ],
+    "reliableTopics": [
+        {
+            "name": "rt1",
+            "readBatchSize": 35,
+            "overloadPolicy": "discard_newest"
+        },
+        {
+            "name": "rt2",
+            "readBatchSize": 15,
+            "overloadPolicy": "discard_newest"
+        }
+    ],
+    "flakeIdGeneratorConfigs": [
+        {
+            "name": "flakeid",
+            "prefetchCount": 123,
+            "prefetchValidityMillis": 150000
+        },
+        {
+            "name": "flakeid2",
+            "prefetchCount": 1234,
+            "prefetchValidityMillis": 1900000
+        }
+    ],
+    "import": [
+        "hazelcast-client-near-cache.json"
+    ]
+}
