@@ -67,20 +67,20 @@ Hazelcast Node.js client supports the following data structures and features:
 
 # Getting Started
 
-This part explains all the neccessary things to start using Hazelcast Node.js Client including basic Hazelcast IMDG, IMDG and client
+This chapter explains all the neccessary things to start using Hazelcast Node.js Client including basic Hazelcast IMDG, IMDG and client
 configuration and how to use distributed maps with Hazelcast.
 
 ## Requirements
 
-1. Windows, Linux or MacOS
-1. Node.js >= 4
-2. Java >= 6
-3. Hazelcast IMDG >= 3.6
-4. Latest Hazelcast Node.js Client
+- Windows, Linux or MacOS
+- Node.js 4 or newer
+- Java 6 or newer
+- Hazelcast IMDG 3.6 or newer
+- Latest Hazelcast Node.js Client
 
 ## Working with Hazelcast Clusters
 
-Hazelcast Node.js Client requires a working Hazelcast IMDG cluster to run. IMDG cluster handles storage and manipulation of user data.
+Hazelcast Node.js Client requires a working Hazelcast IMDG cluster to run. IMDG cluster handles storage and manipulation of the user data.
 Clients are a way to connect to IMDG cluster and access such data.
 
 IMDG cluster consists of one or more Hazelcast IMDG members. These members generally run on multiple virtual or physical machines
@@ -92,14 +92,14 @@ distributed data structures that live on the cluster.
 
 In order to use Hazelcast Node.js Client, we first need to setup an IMDG cluster.
 
-### Setting up an IMDG cluster
+### Setting Up an IMDG Cluster
 There are multiple ways of starting an IMDG cluster easily. You can run standalone IMDG members by downloading and running jar files
 from the website. You can embed IMDG members to your Java projects. The easiest way is to use [hazelcast-member tool](https://github.com/hazelcast/hazelcast-member-tool)
 if you have brew installed in your computer. We are going to download jars from the website and run a standalone member for this guide.
 
-#### Running standalone jars
-Go to https://hazelcast.org/download/ and download `.zip` or `.tar` distribution. Decompress the contents into any directory that you
-want to run IMDG members from. Change into the directory that you decompressed hazelcast content. Go into `bin` directory. Use either
+#### Running Standalone Jars
+Go to https://hazelcast.org/download/ and download `.zip` or `.tar` distribution of Hazelcast IMDG. Decompress the contents into any directory that you
+want to run IMDG members from. Change into the directory that you decompressed the Hazelcast content. Go into `bin` directory. Use either
 `start.sh` or `start.bat` depending on your operating system. Once you run the start script, you should see IMDG logs on the terminal.
 Once you see some log similar to the following, your 1-member cluster is ready to use:
 ```
@@ -114,59 +114,90 @@ INFO: [192.168.0.3]:5701 [dev] [3.10.4] [192.168.0.3]:5701 is STARTED
 ```
 
 
-#### Using hazelcast-member tool
-hazelcast-member is a tool to make downloading and running IMDG members as easy as it could be. If you have brew installed, just run
+#### Using hazelcast-member Tool
+`hazelcast-member` is a tool to make downloading and running IMDG members as easy as it could be. If you have brew installed, run the following commands:
 ```
 brew tap hazelcast/homebrew-hazelcast
 brew install hazelcast-member
 hazelcast-member start
 ```
-In order to stop the member later, just type
+In order to stop the member, run the following command:
 ```
 hazelcast-member stop
 ```
-Find more information about hazelcast-member tool at https://github.com/hazelcast/hazelcast-member-tool
+Find more information about `hazelcast-member` tool at https://github.com/hazelcast/hazelcast-member-tool
 
-Please refer to official [hazelcast documentation](http://docs.hazelcast.org/docs/3.10.4/manual/html-single/index.html#getting-started) for more information regarding starting clusters.
+Refer to the official [Hazelcast IMDG Reference Manual](http://docs.hazelcast.org/docs/3.10.4/manual/html-single/index.html#getting-started) for more information regarding starting clusters.
 
-# Downloading and Installing
+## Downloading and Installing
 Hazelcast Node.js Client is on NPM. Just add `hazelcast-client` as a dependency to your Node.js project and you are good to go.
 ```
 npm install hazelcast-client --save
 ```
 
-# Basic Configuration
+## Basic Configuration
 If you are using Hazelcast IMDG and Node.js Client on the same computer, generally default configuration just works. This is great for
-trying out the client and experimenting. However, if you run the client on a different computer than any of the cluster members, you may
-need to do some simple configuration such as member addresses.
+trying out the client. However, if you run the client on a different computer than any of the cluster members, you may
+need to do some simple configuration such as specifying the member addresses.
 
-IMDG members and the clients has their own configuration options. You may need to reflect some configuration options that you made on member
-side to client side in order to connect to the cluster. This section describes the most common configuration elements to get you started in no time.
+The IMDG members and clients have their own configuration options. You may need to reflect some of the member side configurations on the client side to properly connect to the cluster.
+This section describes the most common configuration elements to get you started in no time.
 It discusses some member side configuration options to ease understanding Hazelcast's ecosystem. Then, client side configuration options
 regarding cluster connection are discussed. Configuration material regarding data structures are discussed in the following sections.
-You can refer to [IMDG Documentation](https://hazelcast.org/documentation/) and [CONFIG.md](CONFIG.MD) for more information.
+You can refer to [IMDG Documentation](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html) and [Configuration Overview](#configuration-overview) for more information.
 
 ## IMDG Configuration
+Hazelcast IMDG aims to run out of the box for most common scenarios. However if you have limitations on your network such as multicast being disabled,
+you may have to configure your Hazelcast IMDG instances so that they can find each other on the network. Also most data structures are configurable.
+Therefore, you may want to configure your Hazelcast IMDG. We will show you the basics about network configuration here.
+
 There are two ways to configure Hazelcast IMDG. One is to use a `hazelcast.xml` file and the other is to programmatically configure the
 instance before starting it from Java code. Since we use standalone servers, we will use `hazelcast.xml` to configure our cluster members.
 
-When you download and unzip hazelcast-<version>.zip, you see the `hazelcast.xml` in /bin folder. When a Hazelcast member starts, it looks for
-`hazelcast.xml` file to load configuration from. In `hazelcast.xml` file, you will see the default configuration. We will go over some important
-elements here:
+When you download and unzip `hazelcast-<version>.zip`, you see the `hazelcast.xml` in `bin` folder. When a Hazelcast member starts, it looks for
+`hazelcast.xml` file to load configuration from. A sample `hazelcast.xml` is below. We will go over some important elements in the rest of this section.
+```xml
+<hazelcast>
+    <group>
+        <name>dev</name>
+        <password>dev-pass</password>
+    </group>
+    <network>
+        <port auto-increment="true" port-count="100">5701</port>
+        <join>
+            <multicast enabled="true">
+                <multicast-group>224.2.2.3</multicast-group>
+                <multicast-port>54327</multicast-port>
+            </multicast>
+            <tcp-ip enabled="false">
+                <interface>127.0.0.1</interface>
+                <member-list>
+                    <member>127.0.0.1</member>
+                </member-list>
+            </tcp-ip>
+        </join>
+        <ssl enabled="false"/>
+    </network>
+    <partition-group enabled="false"/>
+    <map name="default">
+        <backup-count>1</backup-count>
+    </map>
+</hazelcast>
+```
 
-- `<group>`: This tag specifies to which cluster this member belongs to. A member only connects to other members that are in the same group as
-itself. You will see `<name>` and `<password>` tags with some preconfigured values. You may give your clusters different names so that they can
+- `<group>`: Specifies which cluster this member belongs to. A member connects only to other members that are in the same group as
+itself. You will see `<name>` and `<password>` tags with some pre-configured values. You may give your clusters different names so that they can
 live in the same network without disturbing each other. Note that the cluster name should be the same across all members and clients that belong
  to the same cluster. `<password>` tag is not in use since Hazelcast 3.9. It is there for backward compatibility
 purposes. You can remove or leave it as it is if you use Hazelcast 3.9 or later.
 - `<network>`
-    - `<port>`: This specifies the port number that the member will use when it starts. You can specify a port number. If you set `auto-increment`
-    to `true`, than Hazelcast will try subsequent ports until it finds an available port or `port-count` is reached.
-    - `<join>`: This tag specifies the strategies that member uses to find other members of the cluster. Choose which strategy you want to
+    - `<port>`: Specifies the port number to be used by the member when it starts. Its default value is 5701 You can specify another port number, and if
+     you set `auto-increment` to `true`, than Hazelcast will try subsequent ports until it finds an available port or `port-count` is reached.
+    - `<join>`: Specifies the strategies to be used by the member to find other cluster members. Choose which strategy you want to
     use by setting its `enabled` attribute to `true` and the others to `false`.
-        - `<multicast>`: Members find each other by sending multicast requests to the specified address and port. It is very useful if ip addresses
+        - `<multicast>`: Members find each other by sending multicast requests to the specified address and port. It is very useful if IP addresses
         of the members are not static.
-        - `<tcp>`: This strategy uses a pre-configured list of known members to find and already existing cluster. It is enough for a member to
+        - `<tcp>`: This strategy uses a pre-configured list of known members to find an already existing cluster. It is enough for a member to
         find only one cluster member to connect to the cluster. The rest of the member list is automatically retrieved from that member. We recommend
         putting multiple known member addresses there to avoid disconnectivity should one of the members in the list is unavailable at the time
         of connection.
@@ -178,22 +209,21 @@ There are two ways to configure a Hazelcast Node.js Client:
 - Programmatically
 - Declaratively (JSON)
 
-This section describes some network configuration settings to cover common use cases in connecting the client to a cluster. Refer to (CONFIG.md)
+This section describes some network configuration settings to cover common use cases in connecting the client to a cluster. Refer to [Configuration Overview](#configuration-overview)
 and the following sections for information about detailed network configuration and/or additional features of Hazelcast Node.js Client
 configuration.
 
 An easy way to configure your Hazelcast Node.js Client is to create a `Config` object and set the appropriate options. Then you can
 supply this object to your client at the startup. Another way to configure your client is to provide a `hazelcast-client.json` file. This approach is similar to `hazelcast.xml` approach
 in configuring the member. Note that `hazelcast-client.json` is a JSON file whereas member configuration is XML based. Although these
-two formats are different, you will realize that the names of the configuration parameters are the same for both client and the member.
-It is done this way to make it easier to transfer Hazelcast skills to multiple platforms easily.
+two formats are different, you will realize that the names of the configuration parameters are the same for both the client and member.
+It is done this way to make it easier to transfer Hazelcast skills to multiple platforms.
 
-Once you embedded hazelcast-client to your Node.js project. You may follow any of programmatic or declarative configuration approaches.
+Once you embedded `hazelcast-client` to your Node.js project, you may follow any of programmatic or declarative configuration approaches.
 We will provide both ways for each configuration option in this section. Pick one way and stick to it.
 
----
-
 **Programmatic configuration**
+
 You need to create a `ClientConfig` object and adjust its properties. Then you can pass this object to the client when starting it.
 
 ```javascript
@@ -204,6 +234,7 @@ Client.newHazelcastClient(cfg)
 ```
 
 **Declarative configuration**
+
 Hazelcast Node.js Client looks for a `hazelcast-client.json` in the current working directory unless you provide a configuration object
 at the startup. If you intend to configure your client using a configuration file, then place a `hazelcast-client.json` in the directory
 of your application's entry point.
@@ -218,18 +249,18 @@ part that you do not explicitly set in `hazelcast-client.json`.
 ---
 
 If you run Hazelcast IMDG members in a different server than the client, you most probably have configured the members' ports and cluster
-names as explained in the previous section. If you did, then you need to make certain changes to network settings of your client.
+names as explained in the previous section. If you did, then you need to make certain changes to the network settings of your client.
 
 ### Group Settings
 
-- Programmatic
-```
+**Programmatic:**
+```javascript
 let cfg = new Config.ClientConfig();
 cfg.group.name = //group name of you cluster
 ```
 
-- Declarative
-```
+**Declarative:**
+```json
 {
     "group": {
         "name": "group name of you cluster"
@@ -239,13 +270,15 @@ cfg.group.name = //group name of you cluster
 
 ### Network Settings
 You need to provide the ip address and port of at least one member in your cluster so the client finds it.
-- Programmatic
-```
+
+**Programmatic:**
+```javascript
 let cfg = new Config.ClientConfig();
 cfg.network.addresses.push('some-ip-address:port');
 ```
-- Declarative
-```
+
+**Declarative:**
+```json
 {
     "network": {
         "clusterMembers": [
@@ -253,10 +286,11 @@ cfg.network.addresses.push('some-ip-address:port');
         ],
     }
 }
+```
 
 ## Basic Usage
 Now that we have a working cluster and we know how to configure both our cluster and client, we can run a simple program to use a
-distributed map in Node.js
+distributed map in Node.js client.
 
 The following example first creates a programmatic configuration object. Then, it starts a client.
 
@@ -287,11 +321,12 @@ ClientInfo {
 ```
 Congratulations, you just started a Hazelcast Node.js Client.
 
-**Using a map**
+**Using a Map**
 
 Let us manipulate a distributed map on a cluster using the client.
 
 Save the following file as `IT.js` and run it using `node IT.js`
+
 **IT.js**
 ```javascript
 let Client = require('hazelcast-client').Client;
@@ -327,6 +362,7 @@ Bob is in IT department
 You see this example puts all IT personnel into a cluster-wide `personnelMap` and then prints all known personnel.
 
 Now create `Sales.js` and run it using `node Sales.js`
+
 **Sales.js**
 ```javascript
 let Client = require('hazelcast-client').Client;
@@ -372,6 +408,7 @@ This chapter describes the options to configure your Node.js client and explains
 and how you should set paths and exported names for the client to load objects.
 
 ## 1. Configuration Options
+You can configure Hazelcast Node.js Client declaratively (JSON) or programmatically (API).
 
 * Programmatic configuration
 * Declarative configuration (JSON file)
