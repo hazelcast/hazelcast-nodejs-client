@@ -18,7 +18,7 @@ import * as Promise from 'bluebird';
 import {MapAddNearCacheEntryListenerCodec} from '../codec/MapAddNearCacheEntryListenerCodec';
 import {MapAddNearCacheInvalidationListenerCodec} from '../codec/MapAddNearCacheInvalidationListenerCodec';
 import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
-import {EntryEventType} from '../core/EntryEventType';
+import {EventType} from '../core/EventType';
 import {UUID} from '../core/UUID';
 import HazelcastClient from '../HazelcastClient';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
@@ -207,7 +207,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
     }
 
     private addNearCacheInvalidationListener(): Promise<string> {
-        const codec = this.createInvalidationListenerCodec(this.name, EntryEventType.INVALIDATION);
+        const codec = this.createInvalidationListenerCodec(this.name, EventType.INVALIDATION);
         if (this.supportsRepairableNearCache()) {
             return this.createNearCacheEventHandler().then((handler) => {
                 return this.client.getListenerService().registerListener(codec, handler);

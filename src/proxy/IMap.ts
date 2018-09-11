@@ -17,7 +17,7 @@
 import * as Promise from 'bluebird';
 import {Aggregator} from '../aggregation/Aggregator';
 import {EntryView} from '../core/EntryView';
-import {IMapListener} from '../core/MapListener';
+import {MapListener} from '../core/MapListener';
 import {Predicate} from '../core/Predicate';
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 import {DistributedObject} from '../DistributedObject';
@@ -332,16 +332,16 @@ export interface IMap<K, V> extends DistributedObject {
     tryRemove(key: K, timeout: number): Promise<boolean>;
 
     /**
-     * Adds a {@link IMapListener} for this map.
+     * Adds a {@link MapListener} for this map.
      * @param listener
      * @param key Events are triggered for only this key if set.
      * @param includeValue Event message contains new value of the key if set to {true}.
      * @return Registration id of the listener.
      */
-    addEntryListener(listener: IMapListener<K, V>, key?: K, includeValue?: boolean): Promise<string>;
+    addEntryListener(listener: MapListener<K, V>, key?: K, includeValue?: boolean): Promise<string>;
 
     /**
-     * Adds a {@link IMapListener} for this map.
+     * Adds a {@link MapListener} for this map.
      * Listener will get notified for map add/remove/update/evict events filtered by the given predicate.
      * @param listener
      * @param predicate
@@ -349,11 +349,11 @@ export interface IMap<K, V> extends DistributedObject {
      * @param includeValue Event message contains new value of the key if set to `true`.
      * @return Registration id of the listener.
      */
-    addEntryListenerWithPredicate(listener: IMapListener<K, V>, predicate: Predicate,
+    addEntryListenerWithPredicate(listener: MapListener<K, V>, predicate: Predicate,
                                   key?: K, includeValue?: boolean): Promise<string>;
 
     /**
-     * Removes a {@link IMapListener} from this map.
+     * Removes a {@link MapListener} from this map.
      * @param listenerId Registration Id of the listener.
      * @return `true` if remove operation is successful, `false` if unsuccessful or this listener did not exist.
      */

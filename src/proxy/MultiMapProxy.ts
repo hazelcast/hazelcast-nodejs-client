@@ -22,8 +22,8 @@ import {MultiMapIsLockedCodec} from '../codec/MultiMapIsLockedCodec';
 import {MultiMapLockCodec} from '../codec/MultiMapLockCodec';
 import {MultiMapTryLockCodec} from '../codec/MultiMapTryLockCodec';
 import {MultiMapUnlockCodec} from '../codec/MultiMapUnlockCodec';
-import {EntryEventType} from '../core/EntryEventType';
-import {IMapListener} from '../core/MapListener';
+import {EventType} from '../core/EventType';
+import {EntryEvent, EntryListener} from '../core/EntryListener';
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {LockReferenceIdGenerator} from '../LockReferenceIdGenerator';
@@ -47,6 +47,7 @@ import {MultiMapValuesCodec} from './../codec/MultiMapValuesCodec';
 import {BaseProxy} from './BaseProxy';
 import {MultiMap} from './MultiMap';
 import ClientMessage = require('../ClientMessage');
+import {MapEvent} from '../core/MapListener';
 
 export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
 
@@ -132,31 +133,41 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
         return this.encodeInvokeOnKey<number>(MultiMapValueCountCodec, keyData, keyData, 1);
     }
 
-    addEntryListener(listener: IMapListener<K, V>, key?: K, includeValue: boolean = true): Promise<string> {
+    addEntryListener(listener: EntryListener<K, V>, key?: K, includeValue: boolean = true): Promise<string> {
         const toObject = this.toObject.bind(this);
 
         /* tslint:disable: no-shadowed-variable */
-        const entryEventHandler = function (key: K, value: V, oldValue: V, mergingValue: V, event: number): void {
-            let parameters: any[] = [key, oldValue, value];
-            parameters = parameters.map(toObject);
-            let name: string;
+        const entryEventHandler = (key: K, value: V, oldValue: V, mergingValue: V, eventType: number, uuid: string,
+                                   numberOfAffectedEntries: number) => {
+            const member = this.client.getClusterService().getMember(uuid);
+            const name = this.name;
+
+            key = toObject(key);
+            value = toObject(value);
+            oldValue = toObject(oldValue);
+            mergingValue = toObject(mergingValue);
+
+            const entryEvent = new EntryEvent(name, key, value, oldValue, mergingValue, member);
+
+            const mapEvent = new MapEvent(name, numberOfAffectedEntries, member);
 
             // Multi map only supports these three event types
-            switch (event) {
-                case EntryEventType.ADDED:
-                    name = 'added';
+            switch (eventType) {
+                case EventType.ADDED:
+                    if (listener.added) {
+                        listener.added.apply(null, [entryEvent]);
+                    }
                     break;
-                case EntryEventType.REMOVED:
-                    name = 'removed';
+                case EventType.REMOVED:
+                    if (listener.removed) {
+                        listener.removed.apply(null, [entryEvent]);
+                    }
                     break;
-                case EntryEventType.CLEAR_ALL:
-                    name = 'clearedAll';
+                case EventType.CLEAR_ALL:
+                    if (listener.mapCleared) {
+                        listener.mapCleared.apply(null, [mapEvent]);
+                    }
                     break;
-            }
-
-            const handlerFunction = listener[name];
-            if (handlerFunction) {
-                handlerFunction.apply(undefined, parameters);
             }
         };
 

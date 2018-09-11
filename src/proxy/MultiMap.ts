@@ -15,7 +15,7 @@
  */
 
 import * as Promise from 'bluebird';
-import {IMapListener} from '../core/MapListener';
+import {EntryListener} from '../core/EntryListener';
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 import {DistributedObject} from '../DistributedObject';
 
@@ -117,7 +117,7 @@ export interface MultiMap<K, V> extends DistributedObject {
      * @param includeValue if `true`, then the event will include the modified value.
      * @return registration ID for this entry listener
      */
-    addEntryListener(listener: IMapListener<K, V>, key?: K, includeValue?: boolean): Promise<string>;
+    addEntryListener(listener: EntryListener<K, V>, key?: K, includeValue?: boolean): Promise<string>;
 
     /**
      * Removes the entry listener by the registration ID.

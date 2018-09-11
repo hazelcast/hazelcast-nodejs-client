@@ -66,9 +66,9 @@ import {MapUnlockCodec} from '../codec/MapUnlockCodec';
 import {MapValuesCodec} from '../codec/MapValuesCodec';
 import {MapValuesWithPagingPredicateCodec} from '../codec/MapValuesWithPagingPredicateCodec';
 import {MapValuesWithPredicateCodec} from '../codec/MapValuesWithPredicateCodec';
-import {EntryEventType} from '../core/EntryEventType';
+import {EventType} from '../core/EventType';
 import {EntryView} from '../core/EntryView';
-import {IMapListener} from '../core/MapListener';
+import {MapEvent, MapListener} from '../core/MapListener';
 import {IterationType, Predicate} from '../core/Predicate';
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
@@ -79,6 +79,7 @@ import * as SerializationUtil from '../serialization/SerializationUtil';
 import {assertArray, assertNotNull, getSortedQueryResultSet} from '../Util';
 import {BaseProxy} from './BaseProxy';
 import {IMap} from './IMap';
+import {EntryEvent} from '../core/EntryListener';
 import ClientMessage = require('../ClientMessage');
 
 export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
@@ -207,7 +208,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         }
     }
 
-    addEntryListenerWithPredicate(listener: IMapListener<K, V>, predicate: Predicate, key: K,
+    addEntryListenerWithPredicate(listener: MapListener<K, V>, predicate: Predicate, key: K,
                                   includeValue: boolean): Promise<string> {
         return this.addEntryListenerInternal(listener, predicate, key, includeValue);
     }
@@ -445,7 +446,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.tryRemoveInternal(keyData, timeout);
     }
 
-    addEntryListener(listener: IMapListener<K, V>, key: K, includeValue: boolean = false): Promise<string> {
+    addEntryListener(listener: MapListener<K, V>, key: K, includeValue: boolean = false): Promise<string> {
         return this.addEntryListenerInternal(listener, undefined, key, includeValue);
     }
 
@@ -547,17 +548,17 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     private addEntryListenerInternal(
-        listener: IMapListener<K, V>, predicate: Predicate, key: K, includeValue: boolean,
+        listener: MapListener<K, V>, predicate: Predicate, key: K, includeValue: boolean,
     ): Promise<string> {
         let flags: any = null;
-        const conversionTable: { [funcName: string]: EntryEventType } = {
-            added: EntryEventType.ADDED,
-            clearedAll: EntryEventType.CLEAR_ALL,
-            evicted: EntryEventType.EVICTED,
-            evictedAll: EntryEventType.EVICT_ALL,
-            merged: EntryEventType.MERGED,
-            removed: EntryEventType.REMOVED,
-            updated: EntryEventType.UPDATED,
+        const conversionTable: { [funcName: string]: EventType } = {
+            added: EventType.ADDED,
+            mapCleared: EventType.CLEAR_ALL,
+            evicted: EventType.EVICTED,
+            mapEvicted: EventType.EVICT_ALL,
+            merged: EventType.MERGED,
+            removed: EventType.REMOVED,
+            updated: EventType.UPDATED,
         };
         for (const funcName in conversionTable) {
             if (listener[funcName]) {
@@ -566,33 +567,42 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             }
         }
         const toObject = this.toObject.bind(this);
-        const entryEventHandler = function (
+        const entryEventHandler = (
             /* tslint:disable-next-line:no-shadowed-variable */
-            key: K, val: V, oldVal: V, mergingVal: V, event: number, uuid: string, numberOfAffectedEntries: number,
-        ): void {
-            let eventParams: any[] = [key, oldVal, val, mergingVal, numberOfAffectedEntries, uuid];
-            eventParams = eventParams.map(toObject);
-            switch (event) {
-                case EntryEventType.ADDED:
-                    listener.added.apply(null, eventParams);
+            key: K, value: V, oldValue: V, mergingValue: V, eventType: number, uuid: string, numberOfAffectedEntries: number) => {
+            const member = this.client.getClusterService().getMember(uuid);
+            const name = this.name;
+
+            key = toObject(key);
+            value = toObject(value);
+            oldValue = toObject(oldValue);
+            mergingValue = toObject(mergingValue);
+
+            const entryEvent = new EntryEvent(name, key, value, oldValue, mergingValue, member);
+
+            const mapEvent = new MapEvent(name, numberOfAffectedEntries, member);
+
+            switch (eventType) {
+                case EventType.ADDED:
+                    listener.added.apply(null, [entryEvent]);
                     break;
-                case EntryEventType.REMOVED:
-                    listener.removed.apply(null, eventParams);
+                case EventType.REMOVED:
+                    listener.removed.apply(null, [entryEvent]);
                     break;
-                case EntryEventType.UPDATED:
-                    listener.updated.apply(null, eventParams);
+                case EventType.UPDATED:
+                    listener.updated.apply(null, [entryEvent]);
                     break;
-                case EntryEventType.EVICTED:
-                    listener.evicted.apply(null, eventParams);
+                case EventType.EVICTED:
+                    listener.evicted.apply(null, [entryEvent]);
                     break;
-                case EntryEventType.EVICT_ALL:
-                    listener.evictedAll.apply(null, eventParams);
+                case EventType.EVICT_ALL:
+                    listener.mapEvicted.apply(null, [mapEvent]);
                     break;
-                case EntryEventType.CLEAR_ALL:
-                    listener.clearedAll.apply(null, eventParams);
+                case EventType.CLEAR_ALL:
+                    listener.mapCleared.apply(null, [mapEvent]);
                     break;
-                case EntryEventType.MERGED:
-                    listener.merged.apply(null, eventParams);
+                case EventType.MERGED:
+                    listener.merged.apply(null, [entryEvent]);
                     break;
             }
         };
