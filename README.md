@@ -19,6 +19,13 @@
     * [2.2. Using MultiMap](#22-using-multimap)
     * [2.3. Using ReplicatedMap](#23-using-replicatedmap)
     * [2.4. Using Queue](#24-using-queue)
+  * [4. Distributed Events](#4-distributed-events)
+    * [4.1. Cluster Events](#41-cluster-events)
+      * [4.1.1. Listening for Member Events](#411-listening-for-member-events)
+      * [4.1.2. Listening for Distributed Object Events](#412-listening-for-distributed-object-events)
+      * [4.1.3. Listening for Lifecycle Events](#413-listening-for-lifecycle-events)
+    * [4.2. Distributed Data Structure Events](#42-distributed-data-structure-events)
+      * [4.2.1. Listening for Map Events](#421-listening-for-map-events)
 * [Development](#development)
   * [Building And Installing from Sources](#building-and-installing-from-sources)
   * [Using Locally Installed Package](#using-locally-installed-package)
@@ -423,6 +430,165 @@ queue.offer('Furkan').then(function () {
     return queue.peek();
 }).then(function (head) {
     console.log(head); // Furkan
+});
+```
+
+## 4. Distributed Events
+
+
+This chapter explains when various events are fired and describes how you can add event listeners on a Hazelcast Node.js client. These events can be categorized as cluster and distributed data structure events.
+
+### 4.1. Cluster Events
+
+You can add event listeners to a Hazelcast Node.js client. You can configure the following listeners to listen to the events on the client side.
+
+`Membership Listener`: Notifies when a member joins to/leaves the cluster, or when an attribute is changed in a member.
+
+`Distributed Object Listener`: Notifies when a distributed object is created or destroyed throughout the cluster.
+
+`Lifecycle Listener`: Notifies when the client is starting, started, shutting down, and shutdown.
+
+#### 4.1.1. Listening for Member Events
+
+You can add the following types of member events to the `ClusterService`.
+
+- `memberAdded`: A new member is added to the cluster.
+- `memberRemoved`: An existing member leaves the cluster.
+- `memberAttributeChanged`: An attribute of a member is changed. Please refer to [Defining Member Attributes](https://docs.hazelcast.org/docs/3.10.5/manual/html-single/index.html#defining-member-attributes) section in the Hazelcast IMDG Reference Manual to learn about member attributes.
+
+The `ClusterService` object exposes an `ClusterService.on()` function that allows one or more functions to be attached to member events emitted by the object.
+
+The following is a membership listener registration by using `ClusterService.on()` function.
+
+```javascript
+client.clusterService.on('memberAdded', function (member) {
+    console.log('Member Added: The address is', member.address.toString());
+});
+```
+
+The `memberAttributeChanged` has its own type of event named `MemberAttributeEvent`. When there is an attribute change on the member, this event is fired.
+
+Let’s take a look at the following example.
+
+```javascript
+client.clusterService.on('memberAttributeChanged', function (memberAttributeEvent) {
+    console.log('Member Attribute Changed: The address is', memberAttributeEvent.member.address.toString());
+});
+```
+
+####  4.1.2. Listening for Distributed Object Events
+
+The events for distributed objects are invoked when they are created and destroyed in the cluster. After the events, a listener callback function is called. The type of the callback function should be `DistributedObjectListener`. The parameter of the function is `DistributedObjectEvent` including following fields:
+
+`serviceName`: Service name of the distributed object.
+
+`objectName`: Name of the distributed object.
+
+`eventType`: Type of the invoked event. It can be `created` or `destroyed`.
+
+The following is an example of adding a Distributed Object Listener.
+
+```javascript
+client.addDistributedObjectListener(function (distributedObjectEvent) {
+    console.log('Distributed object event >>> ',
+        distributedObjectEvent.serviceName,
+        distributedObjectEvent.objectName,
+        distributedObjectEvent.eventType
+    );
+}).then(function () {
+    var mapname = 'test';
+    //this causes a created event
+    client.getMap(mapname);
+    //this causes no event because map was already created
+    client.getMap(mapname);
+});
+```
+
+#### 4.1.3. Listening for Lifecycle Events
+
+The Lifecycle Listener notifies for the following events:
+- `starting`: A client is starting.
+- `started`: A client has started.
+- `shuttingDown`: A client is shutting down.
+- `shutdown`: A client’s shutdown has completed.
+
+The following is an example of Lifecycle Listener that is added to config and its output.
+
+```javascript
+var clientConfig = new Config.ClientConfig();
+clientConfig.listeners.addLifecycleListener(function (state) {
+    console.log('Lifecycle Event >>> ' + state);
+});
+
+Client.newHazelcastClient(clientConfig).then(function (hazelcastClient) {
+    hazelcastClient.shutdown();
+});
+```
+
+**Output:**
+
+```
+Lifecycle Event >>> starting
+[DefaultLogger] INFO at ConnectionAuthenticator: Connection to 10.216.1.62:5701 authenticated
+[DefaultLogger] INFO at ClusterService: Members received.
+[ Member {
+    address: Address { host: '10.216.1.62', port: 5701, type: 4 },
+    uuid: 'dc001432-7868-4ced-9161-5649ff6f31fc',
+    isLiteMember: false,
+    attributes: {} } ]
+Lifecycle Event >>> started
+[DefaultLogger] INFO at HazelcastClient: Client started
+Lifecycle Event >>> shuttingDown
+Lifecycle Event >>> shutdown
+
+Process finished with exit code 0
+```
+
+### 4.2. Distributed Data Structure Events
+
+You can add event listeners to the Distributed Data Structures.
+
+> **NOTE: Hazelcast Node.js Client is a TypeScript-based project but JavaScript does not have interfaces. Therefore, 
+  some interfaces are given to user by using the TypeScript files that have `.ts` extension. In the documentation, implementing an interface means an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as `an instance of the interface`. You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or Github repository for a required interface.**
+
+#### 4.2.1. Listening for Map Events
+
+You can listen to map-wide or entry-based events by using the functions in the `MapListener` interface. Every function type in this interface is one of the `EntryEventListener` and `MapEventListener` types. To listen to these events, you need to implement the relevant `EntryEventListener` and `MapEventListener` functions in the `MapListener` interface. 
+
+- An entry-based  event is fired after the operations that affect a specific entry. For example, `IMap.put()`, `IMap.remove()` or `IMap.evict()`. You should use the `EntryEventListener` type to listen these events. An `EntryEvent` object is passed to the listener function.
+
+Let’s take a look at the following example.
+
+```javascript
+var entryEventListener = {
+    added: function (entryEvent) {
+        console.log('Entry Added:', entryEvent.key, entryEvent.value); // Entry Added: 1 Furkan
+    }
+};
+map.addEntryListener(entryEventListener, undefined, true).then(function () {
+    return map.put('1', 'Furkan');
+});
+```
+
+
+- A map-wide event is fired as a result of a map-wide operation. For example, `IMap.clear()` or `IMap.evictAll()`. You should use the `MapEventListener` type to listen these events. A `MapEvent` object is passed to the listener function.
+
+Let’s take a look at the following example.
+
+```javascript
+var mapEventListener = {
+    mapCleared: function (mapEvent) {
+        console.log('Map Cleared:', mapEvent.numberOfAffectedEntries); // Map Cleared: 3
+    }
+};
+map.addEntryListener(mapEventListener).then(function () {
+    return map.put('1', 'Mali');
+}).then(function () {
+    return map.put('2', 'Ahmet');
+}).then(function () {
+    return map.put('3', 'Furkan');
+}).then(function () {
+    return map.clear();
 });
 ```
 
