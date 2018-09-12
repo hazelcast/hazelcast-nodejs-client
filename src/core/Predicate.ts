@@ -46,15 +46,11 @@ export function and(...predicates: Predicate[]): Predicate {
     return new AndPredicate(...predicates);
 }
 
-export function isBetween(field: string, from: any, to: any): Predicate {
+export function between(field: string, from: any, to: any): Predicate {
     return new BetweenPredicate(field, from, to);
 }
 
-export function isFalse(): Predicate {
-    return FalsePredicate.INSTANCE;
-}
-
-export function isEqualTo(field: string, value: any): Predicate {
+export function equal(field: string, value: any): Predicate {
     return new EqualPredicate(field, value);
 }
 
@@ -106,11 +102,11 @@ export function regex(field: string, reg: string): Predicate {
     return new RegexPredicate(field, reg);
 }
 
-export function truePredicate(): Predicate {
+export function alwaysTrue(): Predicate {
     return TruePredicate.INSTANCE;
 }
 
-export function falsePredicate(): Predicate {
+export function alwaysFalse(): Predicate {
     return FalsePredicate.INSTANCE;
 }
 
