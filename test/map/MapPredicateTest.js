@@ -95,7 +95,7 @@ describe("Predicates", function () {
     });
 
     it('And', function () {
-        return testPredicate(Predicates.and(Predicates.isEqualTo('this', 10), Predicates.isEqualTo('this', 11)), []);
+        return testPredicate(Predicates.and(Predicates.equal('this', 10), Predicates.equal('this', 11)), []);
     });
 
     it('GreaterThan', function () {
@@ -159,7 +159,7 @@ describe("Predicates", function () {
     });
 
     it('Between', function () {
-        return testPredicate(Predicates.isBetween('this', 47, 49), [47, 48, 49]);
+        return testPredicate(Predicates.between('this', 47, 49), [47, 48, 49]);
     });
 
     it('Null predicate throws error', function () {
@@ -178,12 +178,12 @@ describe("Predicates", function () {
     });
 
     it('False', function () {
-        return testPredicate(Predicates.falsePredicate(), []);
+        return testPredicate(Predicates.alwaysFalse(), []);
     });
 
     it('True', function () {
         var assertionList = Array.apply(null, {length: 50}).map(Number.call, Number);
-        return testPredicate(Predicates.truePredicate(), assertionList);
+        return testPredicate(Predicates.alwaysTrue(), assertionList);
     });
 
     it('Paging with reverse comparator should have elements in reverse order', function () {
