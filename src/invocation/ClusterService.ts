@@ -26,7 +26,6 @@ import {IllegalStateError} from '../HazelcastError';
 import * as assert from 'assert';
 import {MemberSelector} from '../core/MemberSelector';
 import {createAddressFromString} from '../Util';
-import {BuildMetadata} from '../BuildMetadata';
 import Address = require('../Address');
 import ClientMessage = require('../ClientMessage');
 
@@ -133,6 +132,15 @@ export class ClusterService extends EventEmitter {
             });
             return members;
         }
+    }
+
+    getMember(uuid: string): Member {
+        for (const member of this.members) {
+            if (member.uuid === uuid) {
+                return member;
+            }
+        }
+        return null;
     }
 
     /**

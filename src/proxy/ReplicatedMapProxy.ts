@@ -33,8 +33,8 @@ import {ReplicatedMapRemoveCodec} from '../codec/ReplicatedMapRemoveCodec';
 import {ReplicatedMapRemoveEntryListenerCodec} from '../codec/ReplicatedMapRemoveEntryListenerCodec';
 import {ReplicatedMapSizeCodec} from '../codec/ReplicatedMapSizeCodec';
 import {ReplicatedMapValuesCodec} from '../codec/ReplicatedMapValuesCodec';
-import {EntryEventType} from '../core/EntryEventType';
-import {IMapListener} from '../core/MapListener';
+import {EventType} from '../core/EventType';
+import {EntryEvent, EntryListener} from '../core/EntryListener';
 import {Predicate} from '../core/Predicate';
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
@@ -43,6 +43,7 @@ import {assertNotNull} from '../Util';
 import {ArrayComparator} from '../util/ArrayComparator';
 import {IReplicatedMap} from './IReplicatedMap';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
+import {MapEvent} from '../core/MapListener';
 /* tslint:enable:max-line-length */
 import Long = require('long');
 import ClientMessage = require('../ClientMessage');
@@ -138,19 +139,19 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         });
     }
 
-    addEntryListenerToKeyWithPredicate(listener: IMapListener<K, V>, key: K, predicate: Predicate): Promise<string> {
+    addEntryListenerToKeyWithPredicate(listener: EntryListener<K, V>, key: K, predicate: Predicate): Promise<string> {
         return this.addEntryListenerInternal(listener, predicate, key);
     }
 
-    addEntryListenerWithPredicate(listener: IMapListener<K, V>, predicate: Predicate): Promise<string> {
+    addEntryListenerWithPredicate(listener: EntryListener<K, V>, predicate: Predicate): Promise<string> {
         return this.addEntryListenerInternal(listener, predicate, undefined);
     }
 
-    addEntryListenerToKey(listener: IMapListener<K, V>, key: K): Promise<string> {
+    addEntryListenerToKey(listener: EntryListener<K, V>, key: K): Promise<string> {
         return this.addEntryListenerInternal(listener, undefined, key);
     }
 
-    addEntryListener(listener: IMapListener<K, V>): Promise<string> {
+    addEntryListener(listener: EntryListener<K, V>): Promise<string> {
         return this.addEntryListenerInternal(listener, undefined, undefined);
     }
 
@@ -158,25 +159,41 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         return this.client.getListenerService().deregisterListener(listenerId);
     }
 
-    private addEntryListenerInternal(listener: IMapListener<K, V>, predicate: Predicate,
+    private addEntryListenerInternal(listener: EntryListener<K, V>, predicate: Predicate,
                                      key: K): Promise<string> {
         const toObject = this.toObject.bind(this);
         /* tslint:disable-next-line:no-shadowed-variable */
-        const entryEventHandler = function (key: K, val: V, oldVal: V, mergingVal: V,
-                                            event: number, uuid: string, numberOfAffectedEntries: number): void {
-            let eventParams: any[] = [key, oldVal, val, mergingVal, numberOfAffectedEntries, uuid];
-            eventParams = eventParams.map(toObject);
-            const eventToListenerMap: { [key: number]: string } = {
-                [EntryEventType.ADDED]: 'added',
-                [EntryEventType.REMOVED]: 'removed',
-                [EntryEventType.UPDATED]: 'updated',
-                [EntryEventType.EVICTED]: 'evicted',
-                [EntryEventType.CLEAR_ALL]: 'clearedAll',
+        const entryEventHandler = (key: K, value: V, oldValue: V, mergingValue: V,
+                                   event: number, uuid: string, numberOfAffectedEntries: number) => {
+            const member = this.client.getClusterService().getMember(uuid);
+            const name = this.name;
+
+            key = toObject(key);
+            value = toObject(value);
+            oldValue = toObject(oldValue);
+            mergingValue = toObject(mergingValue);
+
+            const entryEvent = new EntryEvent(name, key, value, oldValue, mergingValue, member);
+
+            const mapEvent = new MapEvent(name, numberOfAffectedEntries, member);
+
+            const entryEventToListenerMap: { [key: number]: string } = {
+                [EventType.ADDED]: 'added',
+                [EventType.REMOVED]: 'removed',
+                [EventType.UPDATED]: 'updated',
+                [EventType.EVICTED]: 'evicted',
             };
 
-            const eventMethod = eventToListenerMap[event];
-            if (listener.hasOwnProperty(eventMethod)) {
-                listener[eventMethod].apply(null, eventParams);
+            const mapEventToListenerMap: { [key: number]: string } = {
+                [EventType.CLEAR_ALL]: 'mapCleared',
+            };
+
+            const entryEventMethod = entryEventToListenerMap[event];
+            const mapEventMethod = mapEventToListenerMap[event];
+            if (listener.hasOwnProperty(entryEventMethod)) {
+                listener[entryEventMethod].apply(null, [entryEvent]);
+            } else if (listener.hasOwnProperty(mapEventMethod)) {
+                listener[mapEventMethod].apply(null, [mapEvent]);
             }
         };
         let listenerHandler: Function;

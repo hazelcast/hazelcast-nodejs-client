@@ -15,7 +15,7 @@
  */
 
 import * as Promise from 'bluebird';
-import {IMapListener} from '../core/MapListener';
+import {EntryListener} from '../core/EntryListener';
 import {Predicate} from '../core/Predicate';
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 import {DistributedObject} from '../DistributedObject';
@@ -138,7 +138,7 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
      * @param localOnly
      * @return Registration id of the listener.
      */
-    addEntryListenerToKeyWithPredicate(listener: IMapListener<K, V>, key: K, predicate: Predicate): Promise<string>;
+    addEntryListenerToKeyWithPredicate(listener: EntryListener<K, V>, key: K, predicate: Predicate): Promise<string>;
 
     /**
      * Adds an continuous entry listener for this map. The listener will be notified for
@@ -148,7 +148,7 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
      * @param predicate
      * @return Registration id of the listener.
      */
-    addEntryListenerWithPredicate(listener: IMapListener<K, V>, predicate: Predicate): Promise<string>;
+    addEntryListenerWithPredicate(listener: EntryListener<K, V>, predicate: Predicate): Promise<string>;
 
     /**
      * Adds the specified entry listener for the specified key. The listener will be
@@ -158,7 +158,7 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
      * @param key
      * @return Registration id of the listener.
      */
-    addEntryListenerToKey(listener: IMapListener<K, V>, key: K): Promise<string>;
+    addEntryListenerToKey(listener: EntryListener<K, V>, key: K): Promise<string>;
 
     /**
      * Adds an entry listener for this map. The listener will be notified for all
@@ -167,7 +167,7 @@ export interface IReplicatedMap<K, V> extends DistributedObject {
      * @param listener
      * @return Registration id of the listener.
      */
-    addEntryListener(listener: IMapListener<K, V>): Promise<string>;
+    addEntryListener(listener: EntryListener<K, V>): Promise<string>;
 
     /**
      * Removes the specified entry listener. Returns silently if there was no such

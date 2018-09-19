@@ -15,7 +15,7 @@
  */
 
 /* tslint:disable:no-bitwise */
-export enum EntryEventType {
+export enum EventType {
     ADDED = 1 << 0,
     REMOVED = 1 << 1,
     UPDATED = 1 << 2,

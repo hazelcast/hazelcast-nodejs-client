@@ -53,14 +53,18 @@ describe("MultiMap Proxy Listener", function () {
         return Controller.shutdownCluster(cluster.id);
     });
 
-    function Listener(eventName, doneCallback, expectedKey, expectedOldValue, expectedValue) {
+    function Listener(eventName, doneCallback, expectedName, expectedKey, expectedValue, expectedOldValue,
+                      expectedMergingValue) {
 
-        this[eventName] = function (key, oldValue, value) {
+        this[eventName] = function (entryEvent) {
             try {
-                expect(key).to.equal(expectedKey);
-                expect(oldValue).to.equal(expectedOldValue);
-                expect(value).to.equal(expectedValue);
-                doneCallback()
+                expect(entryEvent.name).to.equal(expectedName);
+                expect(entryEvent.key).to.equal(expectedKey);
+                expect(entryEvent.value).to.equal(expectedValue);
+                expect(entryEvent.oldValue).to.equal(expectedOldValue);
+                expect(entryEvent.mergingValue).to.equal(expectedMergingValue);
+                expect(entryEvent.member).to.not.be.equal(null);
+                doneCallback();
             } catch (err) {
                 doneCallback(err);
             }
@@ -70,7 +74,7 @@ describe("MultiMap Proxy Listener", function () {
     // Add tests
 
     it("listens for add with value excluded", function (done) {
-        var listener = new Listener("added", done, "foo", undefined, undefined);
+        var listener = new Listener("added", done, "test", "foo", undefined, undefined, undefined);
 
         map.addEntryListener(listener, null, false).then(function () {
             map.put("foo", "bar");
@@ -79,7 +83,7 @@ describe("MultiMap Proxy Listener", function () {
 
 
     it("listens for add with value included", function (done) {
-        var listener = new Listener("added", done, "foo", undefined, "bar");
+        var listener = new Listener("added", done, "test", "foo", "bar", undefined, undefined);
 
         map.addEntryListener(listener, null, true).then(function () {
             map.put("foo", "bar");
@@ -87,7 +91,7 @@ describe("MultiMap Proxy Listener", function () {
     });
 
     it("listens for add to specific key", function (done) {
-        var listener = new Listener("added", done, "foo", undefined, undefined);
+        var listener = new Listener("added", done, "test", "foo", undefined, undefined, undefined);
 
         map.addEntryListener(listener, "foo", false).then(function () {
             map.put("foo", "bar");
@@ -113,7 +117,7 @@ describe("MultiMap Proxy Listener", function () {
     // Remove tests
 
     it("listens for remove with value excluded", function (done) {
-        var listener = new Listener("removed", done, "foo", undefined, undefined);
+        var listener = new Listener("removed", done, "test", "foo", undefined, undefined, undefined);
 
         map.addEntryListener(listener, null, false).then(function () {
             return map.put("foo", "bar");
@@ -123,7 +127,7 @@ describe("MultiMap Proxy Listener", function () {
     });
 
     it("listens for remove with value included", function (done) {
-        var listener = new Listener("removed", done, "foo", "bar", undefined);
+        var listener = new Listener("removed", done, "test", "foo", undefined, "bar", undefined);
 
         map.addEntryListener(listener, null, true).then(function () {
             return map.put("foo", "bar");
@@ -133,7 +137,7 @@ describe("MultiMap Proxy Listener", function () {
     });
 
     it("listens for remove on specific key", function (done) {
-        var listener = new Listener("added", done, "foo", undefined, undefined);
+        var listener = new Listener("added", done, "test", "foo", undefined, undefined, undefined);
 
         map.addEntryListener(listener, "foo", false).then(function () {
             return map.put("foo", "bar");
@@ -165,11 +169,11 @@ describe("MultiMap Proxy Listener", function () {
     it("listens for clear", function (done) {
         this.timeout(10000);
         var listener = {
-            clearedAll: function (key, oldValue, value) {
+            mapCleared: function (mapEvent) {
                 try {
-                    expect(key).to.be.undefined;
-                    expect(oldValue).to.be.undefined;
-                    expect(value).to.be.undefined;
+                    expect(mapEvent.name).to.be.equal("test");
+                    expect(mapEvent.numberOfAffectedEntries).to.be.equal(1);
+                    expect(mapEvent.member).to.not.be.equal(null);
                     done();
                 } catch (err) {
                     done(err);
