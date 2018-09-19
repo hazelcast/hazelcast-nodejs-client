@@ -60,12 +60,14 @@ describe('Listeners on reconnect', function () {
             client = cl;
             map = client.getMap('testmap');
             var listenerObject = {
-                added: function (key, oldValue, value, mergingValue) {
+                added: function (entryEvent) {
                     try {
-                        expect(key).to.equal('keyx');
-                        expect(oldValue).to.be.undefined;
-                        expect(value).to.equal('valx');
-                        expect(mergingValue).to.be.undefined;
+                        expect(entryEvent.name).to.equal('testmap');
+                        expect(entryEvent.key).to.equal('keyx');
+                        expect(entryEvent.value).to.equal('valx');
+                        expect(entryEvent.oldValue).to.be.undefined;
+                        expect(entryEvent.mergingValue).to.be.undefined;
+                        expect(entryEvent.member).to.not.be.equal(null);
                         done();
                     } catch (err) {
                         done(err);
@@ -130,12 +132,14 @@ describe('Listeners on reconnect', function () {
                 client = cl;
                 map = client.getMap('testmap');
                 var listenerObject = {
-                    added: function (key, oldValue, value, mergingValue) {
+                    added: function (entryEvent) {
                         try {
-                            expect(key).to.equal('keyx');
-                            expect(oldValue).to.be.undefined;
-                            expect(value).to.equal('valx');
-                            expect(mergingValue).to.be.undefined;
+                            expect(entryEvent.name).to.equal('testmap');
+                            expect(entryEvent.key).to.equal('keyx');
+                            expect(entryEvent.value).to.equal('valx');
+                            expect(entryEvent.oldValue).to.be.undefined;
+                            expect(entryEvent.mergingValue).to.be.undefined;
+                            expect(entryEvent.member).to.not.be.equal(null);
                             done();
                         } catch (err) {
                             done(err);

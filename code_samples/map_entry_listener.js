@@ -16,11 +16,13 @@
 
 var Client = require('hazelcast-client').Client;
 var listener = {
-    added: function (key, oldVal, newVal) {
-        console.log('added key: ' + key + ', old value: ' + oldVal + ', new value: ' + newVal);
+    added: function (entryEvent) {
+        console.log('added key: ' + entryEvent.key + ', new value: ' + entryEvent.value
+            + ', old value: ' + entryEvent.oldValue);
     },
-    removed: function (key, oldVal, newVal) {
-        console.log('removed key: ' + key + ', old value: ' + oldVal + ', new value: ' + newVal);
+    removed: function (entryEvent) {
+        console.log('removed key: ' + entryEvent.key + ', new value: ' + entryEvent.value
+            + ', old value: ' + entryEvent.oldValue);
     }
 };
 
