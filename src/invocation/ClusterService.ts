@@ -26,6 +26,7 @@ import {IllegalStateError} from '../HazelcastError';
 import * as assert from 'assert';
 import {MemberSelector} from '../core/MemberSelector';
 import {AddressHelper} from '../Util';
+import {MemberAttributeEvent, MemberAttributeOperationType} from '../core/MemberAttributeEvent';
 import Address = require('../Address');
 import ClientMessage = require('../ClientMessage');
 
@@ -35,10 +36,6 @@ const MEMBER_REMOVED = 2;
 const EMIT_MEMBER_ADDED = 'memberAdded';
 const EMIT_MEMBER_REMOVED = 'memberRemoved';
 const EMIT_ATTRIBUTE_CHANGE = 'memberAttributeChange';
-const ATTRIBUTE_CHANGE: { [key: string]: string } = {
-    1: 'put',
-    2: 'remove',
-};
 
 /**
  * Manages the relationship of this client with the cluster.
@@ -269,8 +266,11 @@ export class ClusterService extends EventEmitter {
         this.logger.info('ClusterService', 'Members received.', this.members);
     }
 
-    private handleMemberAttributeChange(uuid: string, key: string, operationType: number, value: string): void {
-        this.emit(EMIT_ATTRIBUTE_CHANGE, uuid, key, ATTRIBUTE_CHANGE[operationType], value);
+    private handleMemberAttributeChange(
+        uuid: string, key: string, operationType: MemberAttributeOperationType, value: string): void {
+        const member = this.getMember(uuid);
+        const memberAttributeEvent = new MemberAttributeEvent(member, key, operationType, value);
+        this.emit(EMIT_ATTRIBUTE_CHANGE, memberAttributeEvent);
     }
 
     private memberAdded(member: Member): void {
