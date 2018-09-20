@@ -4,6 +4,12 @@
 * [Features](#features)
 * [Installing the Client](#installing-the-client)
 * [Using the Client](#using-the-client)
+* [Configuration Overview](#configuration-overview)
+  * [1. Configuration Options](#1-configuration-options)
+    * [1.1. Programmatic Configuration](#11-programmatic-configuration)
+    * [1.2. Declarative Configuration (JSON)](#12-declarative-configuration-json)
+  * [2. Importing Multiple Configurations](#2-importing-multiple-configurations)
+  * [3. Loading Objects and Path Resolution](#3-loading-objects-and-path-resolution)
 * [Code Samples](#code-samples)
 * [Serialization Considerations](#serialization-considerations)
 * [Development](#development)
@@ -97,11 +103,161 @@ Please see Hazelcast Node.js [code samples](https://github.com/hazelcast/hazelca
 
 You can also refer to Hazelcast Node.js [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/).
 
-# Configuration
+# Configuration Overview
+
+This chapter describes the options to configure your Node.js client and explains how you can import multiple configurations
+and how you should set paths and exported names for the client to load objects.
+
+## 1. Configuration Options
 
 You can configure Hazelcast Node.js Client declaratively (JSON) or programmatically (API).
 
-See [CONFIG.md](CONFIG.md) for details.
+* Programmatic configuration
+* Declarative configuration (JSON file)
+
+### 1.1. Programmatic Configuration
+
+For programmatic configuration of the Hazelcast Node.js Client, just instantiate a `ClientConfig` object and configure the
+desired aspects. An example is shown below.
+
+```javascript
+var Config = require('hazelcast-client').Config;
+var Address = require('hazelcast-client').Address;
+var cfg = new Config.ClientConfig();
+cfg.networkConfig.addresses.push('127.0.0.1:5701');
+return HazelcastClient.newHazelcastClient(cfg);
+```
+
+Refer to `ClientConfig` class documentation at [Hazelcast Node.js Client API Docs](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs) for details.
+
+### 1.2. Declarative Configuration (JSON)
+
+If the client is not supplied with a programmatic configuration at the time of initialization, it will look for a configuration file named `hazelcast-client.json`. If this file exists, then the configuration is loaded from it. Otherwise, the client will start with the default configuration. The following are the places that the client looks for a `hazelcast-client.json` in order:
+
+1. Environment variable: The client first looks for the environment variable `HAZELCAST_CLIENT_CONFIG`. If it exists,
+the client looks for the configuration file in the specified location.
+2. Current working directory: If there is no environment variable set, the client tries to load `hazelcast-client.json`
+from the current working directory.
+3. Default configuration: If all of the above methods fail, the client starts with the default configuration.
+The default configuration is programmatic. If you want to override the default configuration declaratively, you need to create
+a `hazelcast-client.json` file in your working directory. If you want to have an example for this file, you can find `hazelcast-client-default.json` and `hazelcast-client-sample.json` files in the Github repository.
+
+Following is a sample JSON configuration file:
+
+```json
+{
+    "group": {
+        "name": "hazel",
+        "password": "cast"
+    },
+    "properties": {
+        "hazelcast.client.heartbeat.timeout": 10000,
+        "hazelcast.client.invocation.retry.pause.millis": 4000,
+        "hazelcast.client.invocation.timeout.millis": 180000,
+        "hazelcast.invalidation.reconciliation.interval.seconds": 50,
+        "hazelcast.invalidation.max.tolerated.miss.count": 15,
+        "hazelcast.invalidation.min.reconciliation.interval.seconds": 60
+    },
+    "network": {
+        "clusterMembers": [
+            "127.0.0.1:5701"
+        ],
+        "smartRouting": true,
+        "connectionTimeout": 6000,
+        "connectionAttemptPeriod": 4000,
+        "connectionAttemptLimit": 3
+    }
+}
+```
+
+In the following chapters you will learn the description of all elements included in a JSON configuration file used to configure Hazelcast Node.js client.
+
+## 2. Importing Multiple Configurations
+
+You can compose the declarative configuration of your Node.js client from multiple declarative
+configuration snippets. In order to compose a declarative configuration, you can use the `import` element to load
+different declarative configuration files.
+
+Let's assume you have the following two configurations:
+
+`group-config.json`:
+
+```json
+{
+    "group": {
+        "name": "hazel",
+        "password": "cast"
+    }
+}
+```
+
+`network-config.json`:
+
+```json
+{
+    "network": {
+        "clusterMembers": [
+            "127.0.0.10:4001",
+            "127.0.0.11:4001"
+        ]
+    }
+}
+```
+
+To get your example client configuration out of the above two, use the `import` element as
+shown below.
+
+```json
+{
+    "import": [
+        "group-config.json",
+        "network-config.json"
+    ]
+}
+```
+
+> Note: Use `import` element on top level of JSON hierarchy.
+
+## 3. Loading Objects and Path Resolution
+
+For configuration elements that require you to specify a code piece, you will need to specify the path to the
+code and name of the exported element that you want the client to use. This configuration is set as follows:
+
+```json
+{
+    "path": "path/to/file",
+    "exportedName": "MyObject"
+}
+```
+
+In the above configuration, `path` shows the address to the file that you want the client to load. Unless this is an
+absolute path, it is relative to the location of `hazelcast-config.json` file.
+
+In Javascript, you can define and export as many objects as you want in a single file. Above configuration element
+is designed to load only one specified object from a file (`MyObject`). Therefore, `exportedName` specifies the name of desired object.
+
+Let's say your project's directory structure is as follows:
+
+    my_app/
+    my_app/index.js
+    my_app/factory_utils.js
+    my_app/hazelcast-client.json
+    my_app/node_modules/
+    my_app/node_modules/hazelcast-client
+
+In `factory_utils.js`, you have multiple exported functions.
+
+```javascript
+exports.utilityFunction = function() {...}
+exports.MySSLFactory = function() {...}
+```
+
+In order to load `MySSLFactory` in your SSL configuration, you should set `path` and `exportedName` as `factory_utils.js`
+and `MySSLFactory` respectively.
+
+If you have only one export as the default export from `factory_utils.js`, just skip `exportedName` property and
+the client will load the default export from the file.
+
 
 # Code Samples
 
