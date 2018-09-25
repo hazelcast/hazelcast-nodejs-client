@@ -48,7 +48,7 @@ export class ClientNetworkConfig {
      */
     connectionTimeout: number = 5000;
     /**
-     * true if redo operations are enabled (not implemented yet)
+     * true if redo operations are enabled
      */
     redoOperation: boolean = false;
     /**

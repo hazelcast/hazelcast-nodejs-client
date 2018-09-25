@@ -47,6 +47,7 @@ Following is a sample JSON configuration file:
             "127.0.0.1:5701"
         ],
         "smartRouting": true,
+        "redoOperation": false,
         "connectionTimeout": 6000,
         "connectionAttemptPeriod": 4000,
         "connectionAttemptLimit": 3
@@ -81,6 +82,7 @@ configuration file. Let's first give an example for `network` configuration. The
             "127.0.0.2:5702"
         ],
         "smartRouting": false,
+        "redoOperation": true,
         "connectionTimeout": 6000,
         "connectionAttemptPeriod": 4000,
         "connectionAttemptLimit": 3,
@@ -131,6 +133,20 @@ Smart routing defines whether the client mode is smart or unisocket. The followi
 ```
 
 Default is smart routing mode.
+
+### Enabling Redo Operation
+
+Specifies whether the redo operations are enabled or not.
+
+```json
+{
+    "network": {
+        "redoOperation": true
+    }
+}
+```
+
+Default is disabled.
 
 ### Setting Connection Timeout
 

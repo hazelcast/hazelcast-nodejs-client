@@ -163,6 +163,7 @@ Following is a sample JSON configuration file:
             "127.0.0.1:5701"
         ],
         "smartRouting": true,
+        "redoOperation": false,
         "connectionTimeout": 6000,
         "connectionAttemptPeriod": 4000,
         "connectionAttemptLimit": 3

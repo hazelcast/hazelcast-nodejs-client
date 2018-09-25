@@ -106,6 +106,10 @@
                     "type": "boolean",
                     "default": true
                 },
+                "redoOperation": {
+                    "type": "boolean",
+                    "default": false
+                },
                 "connectionTimeout": {
                     "type": "number",
                     "minimum": 1000,

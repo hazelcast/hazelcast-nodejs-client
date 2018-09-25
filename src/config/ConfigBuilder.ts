@@ -92,6 +92,8 @@ export class ConfigBuilder {
                 this.handleClusterMembers(jsonObject[key]);
             } else if (key === 'smartRouting') {
                 this.clientConfig.networkConfig.smartRouting = tryGetBoolean(jsonObject[key]);
+            } else if (key === 'redoOperation') {
+                this.clientConfig.networkConfig.redoOperation = tryGetBoolean(jsonObject[key]);
             } else if (key === 'connectionTimeout') {
                 this.clientConfig.networkConfig.connectionTimeout = tryGetNumber(jsonObject[key]);
             } else if (key === 'connectionAttemptPeriod') {

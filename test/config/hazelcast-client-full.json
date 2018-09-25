@@ -17,6 +17,7 @@
             "127.0.0.2:5702"
         ],
         "smartRouting": false,
+        "redoOperation":  false,
         "connectionTimeout": 6000,
         "connectionAttemptPeriod": 4000,
         "connectionAttemptLimit": 3,

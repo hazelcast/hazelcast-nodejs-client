@@ -129,6 +129,10 @@ class ClientMessage {
         this.isRetryable = value;
     }
 
+    getRetryable(): boolean{
+        return this.isRetryable;
+    }
+
     appendByte(value: number): void {
         this.buffer.writeUInt8(value, this.cursor);
         this.cursor += BitsUtil.BYTE_SIZE_IN_BYTES;
