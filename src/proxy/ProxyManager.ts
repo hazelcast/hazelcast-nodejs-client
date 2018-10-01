@@ -88,8 +88,8 @@ export class ProxyManager {
     }
 
     public getOrCreateProxy(name: string, serviceName: string, createAtServer = true): DistributedObject {
-        if (this.proxies[name]) {
-            return this.proxies[name];
+        if (this.proxies[serviceName + name]) {
+            return this.proxies[serviceName + name];
         } else {
             let newProxy: DistributedObject;
             if (serviceName === ProxyManager.MAP_SERVICE && this.client.getConfig().getNearCacheConfig(name)) {
@@ -100,13 +100,13 @@ export class ProxyManager {
             if (createAtServer) {
                 this.createProxy(newProxy);
             }
-            this.proxies[name] = newProxy;
+            this.proxies[serviceName + name] = newProxy;
             return newProxy;
         }
     }
 
     destroyProxy(name: string, serviceName: string): Promise<void> {
-        delete this.proxies[name];
+        delete this.proxies[serviceName + name];
         const clientMessage = ClientDestroyProxyCodec.encodeRequest(name, serviceName);
         clientMessage.setPartitionId(-1);
         return this.client.getInvocationService().invokeOnRandomTarget(clientMessage).return();
