@@ -19,7 +19,7 @@ var path = require('path');
 var ConfigBuilder = require('../../lib/config/ConfigBuilder').ConfigBuilder;
 var Config = require('../../lib/index').Config;
 var Long = require('long');
-var createAddressFromString = require("../../lib/Util").createAddressFromString;
+var AddressHelper = require("../../lib/Util").AddressHelper;
 
 describe('ConfigBuilder Test', function () {
     var configFull;
@@ -38,8 +38,24 @@ describe('ConfigBuilder Test', function () {
 
     it('networkConfig', function () {
         var networkCfg = configFull.networkConfig;
-        var address0 = createAddressFromString(networkCfg.addresses[0]);
-        var address1 = createAddressFromString(networkCfg.addresses[1]);
+
+        var addresses0 = AddressHelper.getSocketAddresses(networkCfg.addresses[0]);
+        expect(addresses0[0].host).to.equal('127.0.0.9');
+        expect(addresses0[0].port).to.equal(5701);
+        expect(addresses0[1].host).to.equal('127.0.0.9');
+        expect(addresses0[1].port).to.equal(5702);
+        expect(addresses0[2].host).to.equal('127.0.0.9');
+        expect(addresses0[2].port).to.equal(5703);
+        expect(addresses0.length).to.equal(3);
+
+        var addresses1 = AddressHelper.getSocketAddresses(networkCfg.addresses[1]);
+        expect(addresses1[0].host).to.equal('127.0.0.2');
+        expect(addresses1[0].port).to.equal(5702);
+        expect(addresses1.length).to.equal(1);
+
+
+        var address0 = AddressHelper.createAddressFromString(networkCfg.addresses[0]);
+        var address1 = AddressHelper.createAddressFromString(networkCfg.addresses[1]);
         expect(address0.host).to.equal('127.0.0.9');
         expect(address0.port).to.be.undefined;
         expect(address1.host).to.equal('127.0.0.2');

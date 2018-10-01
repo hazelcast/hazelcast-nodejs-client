@@ -188,30 +188,54 @@ export function loadNameFromPath(path: string, exportedName: string): any {
     }
 }
 
-export function createAddressFromString(address: string, defaultPort?: number): Address {
-    const indexBracketStart = address.indexOf('[');
-    const indexBracketEnd = address.indexOf(']', indexBracketStart);
-    const indexColon = address.indexOf(':');
-    const lastIndexColon = address.lastIndexOf(':');
-    let host: string;
-    let port = defaultPort;
-    if (indexColon > -1 && lastIndexColon > indexColon) {
-        // IPv6
-        if (indexBracketStart === 0 && indexBracketEnd > indexBracketStart) {
-            host = address.substring(indexBracketStart + 1, indexBracketEnd);
-            if (lastIndexColon === indexBracketEnd + 1) {
-                port = Number.parseInt(address.substring(lastIndexColon + 1));
+export class AddressHelper {
+    private static readonly MAX_PORT_TRIES: number = 3;
+    private static readonly INITIAL_FIRST_PORT: number = 5701;
+
+    static getSocketAddresses(address: string): Address[] {
+        const addressHolder = this.createAddressFromString(address, -1);
+        let possiblePort = addressHolder.port;
+        let maxPortTryCount = 1;
+        if (possiblePort === -1) {
+            maxPortTryCount = AddressHelper.MAX_PORT_TRIES;
+            possiblePort = AddressHelper.INITIAL_FIRST_PORT;
+        }
+
+        const addresses: Address[] = [];
+
+        for (let i = 0; i < maxPortTryCount; i++) {
+            addresses.push(new Address(addressHolder.host, possiblePort + i));
+        }
+
+        return addresses;
+    }
+
+    static createAddressFromString(address: string, defaultPort?: number): Address {
+        const indexBracketStart = address.indexOf('[');
+        const indexBracketEnd = address.indexOf(']', indexBracketStart);
+        const indexColon = address.indexOf(':');
+        const lastIndexColon = address.lastIndexOf(':');
+        let host: string;
+        let port = defaultPort;
+        if (indexColon > -1 && lastIndexColon > indexColon) {
+            // IPv6
+            if (indexBracketStart === 0 && indexBracketEnd > indexBracketStart) {
+                host = address.substring(indexBracketStart + 1, indexBracketEnd);
+                if (lastIndexColon === indexBracketEnd + 1) {
+                    port = Number.parseInt(address.substring(lastIndexColon + 1));
+                }
+            } else {
+                host = address;
             }
+        } else if (indexColon > 0 && indexColon === lastIndexColon) {
+            host = address.substring(0, indexColon);
+            port = Number.parseInt(address.substring(indexColon + 1));
         } else {
             host = address;
         }
-    } else if (indexColon > 0 && indexColon === lastIndexColon) {
-        host = address.substring(0, indexColon);
-        port = Number.parseInt(address.substring(indexColon + 1));
-    } else {
-        host = address;
+        return new Address(host, port);
     }
-    return new Address(host, port);
+
 }
 
 export function mergeJson(base: any, other: any): void {
