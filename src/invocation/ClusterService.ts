@@ -25,7 +25,7 @@ import HazelcastClient from '../HazelcastClient';
 import {IllegalStateError} from '../HazelcastError';
 import * as assert from 'assert';
 import {MemberSelector} from '../core/MemberSelector';
-import {createAddressFromString} from '../Util';
+import {AddressHelper} from '../Util';
 import Address = require('../Address');
 import ClientMessage = require('../ClientMessage');
 
@@ -86,7 +86,7 @@ export class ClusterService extends EventEmitter {
         return this.getPossibleMemberAddresses().then((res) => {
             this.knownAddresses = [];
             res.forEach((value) => {
-                this.knownAddresses.push(createAddressFromString(value));
+                this.knownAddresses = this.knownAddresses.concat(AddressHelper.getSocketAddresses(value));
             });
 
             const attemptLimit = this.client.getConfig().networkConfig.connectionAttemptLimit;
