@@ -47,8 +47,12 @@ describe("MultiMap Proxy Lock", function () {
     });
 
     beforeEach(function () {
-        mapOne = clientOne.getMultiMap('test');
-        mapTwo = clientTwo.getMultiMap('test');
+        return clientOne.getMultiMap('test').then(function (mp) {
+            mapOne = mp;
+            return clientTwo.getMultiMap('test')
+        }).then(function (mp) {
+            mapTwo = mp;
+        });
     });
 
     afterEach(function () {
@@ -74,7 +78,7 @@ describe("MultiMap Proxy Lock", function () {
             return mapTwo.lock(1)
         }).then(function () {
             var elapsed = Date.now() - startTime;
-            expect(elapsed).to.be.greaterThan(1000);
+            expect(elapsed).to.be.greaterThan(995);
         });
     });
 
@@ -85,7 +89,7 @@ describe("MultiMap Proxy Lock", function () {
             return mapTwo.lock(1);
         }).then(function () {
             var elapsed = Date.now() - startTime;
-            expect(elapsed).to.be.greaterThan(1000);
+            expect(elapsed).to.be.greaterThan(995);
         });
     });
 
@@ -106,7 +110,7 @@ describe("MultiMap Proxy Lock", function () {
         }).then(function (acquired) {
             var elapsed = Date.now() - startTime;
             expect(acquired).to.be.true;
-            expect(elapsed).to.be.greaterThan(1000);
+            expect(elapsed).to.be.greaterThan(995);
         })
     });
 
@@ -117,11 +121,11 @@ describe("MultiMap Proxy Lock", function () {
             return mapTwo.tryLock(1, 2000, 1000);
         }).then(function () {
             var elapsed = Date.now() - startTime;
-            expect(elapsed).to.be.greaterThan(1000);
+            expect(elapsed).to.be.greaterThan(995);
             return mapOne.lock(1, 2000);
         }).then(function () {
             var elapsed = Date.now() - startTime;
-            expect(elapsed).to.be.greaterThan(1000);
+            expect(elapsed).to.be.greaterThan(995);
         });
 
     });

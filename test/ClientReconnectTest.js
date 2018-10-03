@@ -45,8 +45,9 @@ describe('Client reconnect', function () {
             return HazelcastClient.newHazelcastClient(cfg);
         }).then(function (cl) {
             client = cl;
-            map = client.getMap('test');
-        }).then(function () {
+            return client.getMap('test');
+        }).then(function (mp) {
+            map = mp;
             return Controller.terminateMember(cluster.id, member.uuid);
         }).then(function () {
             return Controller.startMember(cluster.id);
@@ -75,8 +76,9 @@ describe('Client reconnect', function () {
             return HazelcastClient.newHazelcastClient(cfg);
         }).then(function (cl) {
             client = cl;
-            map = client.getMap('test');
-        }).then(function () {
+            return client.getMap('test');
+        }).then(function (mp) {
+            map = mp;
             return Controller.terminateMember(cluster.id, member.uuid);
         }).then(function () {
             map.put('testkey', 'testvalue').then(function () {
@@ -94,11 +96,11 @@ describe('Client reconnect', function () {
         });
     });
 
-    it('create proxy while member is down, member comes back', function () {
-        this.timeout(5000);
+    it('create proxy while member is down, member comes back', function (done) {
+        this.timeout(10000);
         var member;
         var map;
-        return Controller.createCluster(null, null).then(function (cl) {
+        Controller.createCluster(null, null).then(function (cl) {
             cluster = cl;
             return Controller.startMember(cluster.id);
         }).then(function (m) {
@@ -111,15 +113,17 @@ describe('Client reconnect', function () {
             client = cl;
             return Controller.terminateMember(cluster.id, member.uuid);
         }).then(function () {
-            map = client.getMap('test');
-        }).then(function () {
-            return Controller.startMember(cluster.id);
-        }).then(function () {
-            return map.put('testkey', 'testvalue');
-        }).then(function () {
-            return map.get('testkey');
-        }).then(function (val) {
-            return expect(val).to.equal('testvalue');
-        });
+            client.getMap('test').then(function (mp) {
+                map = mp;
+            }).then(function () {
+                return map.put('testkey', 'testvalue');
+            }).then(function () {
+                return map.get('testkey');
+            }).then(function (val) {
+                expect(val).to.equal('testvalue');
+                done();
+            });
+            Controller.startMember(cluster.id);
+        })
     });
 });

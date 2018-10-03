@@ -36,21 +36,26 @@ export const TOPIC_MAX_BACKOFF = 2000;
 
 export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
     private ringbuffer: IRingbuffer<RawTopicMessage>;
-    private localAddress: Address;
-    private batchSize: number;
-    private runners: { [key: string]: ReliableTopicListenerRunner<E> } = {};
-    private serializationService: SerializationService;
-    private overloadPolicy: TopicOverloadPolicy;
+    private readonly localAddress: Address;
+    private readonly batchSize: number;
+    private readonly runners: { [key: string]: ReliableTopicListenerRunner<E> } = {};
+    private readonly serializationService: SerializationService;
+    private readonly overloadPolicy: TopicOverloadPolicy;
 
     constructor(client: HazelcastClient, serviceName: string, name: string) {
         super(client, serviceName, name);
-        this.ringbuffer = client.getRingbuffer<RawTopicMessage>(RINGBUFFER_PREFIX + name);
         this.localAddress = client.getClusterService().getClientInfo().localAddress;
         const config = client.getConfig().getReliableTopicConfig(name);
         this.batchSize = config.readBatchSize;
         this.overloadPolicy = config.overloadPolicy;
         this.serializationService = client.getSerializationService();
         this.name = name;
+    }
+
+    setRingbuffer(): Promise<void> {
+        return this.client.getRingbuffer<RawTopicMessage>(RINGBUFFER_PREFIX + this.name).then((buffer) => {
+            this.ringbuffer = buffer;
+        });
     }
 
     addMessageListener(listener: TopicMessageListener<E>): string {

@@ -67,12 +67,15 @@ describe('NearCacheSimpleInvalidation', function () {
             it('client observes outside invalidations', function () {
                 this.timeout(4000);
                 var entryCount = 1000;
-                var map = client.getMap(mapName);
-                var getPromise = Promise.resolve();
-                for (var i = 0; i < entryCount; i++) {
-                    getPromise = getPromise.then(map.get.bind(map, '' + i));
-                }
-                return getPromise.then(function () {
+                var map;
+                return client.getMap(mapName).then(function (mp) {
+                    map = mp;
+                    var getPromise = Promise.resolve();
+                    for (var i = 0; i < entryCount; i++) {
+                        getPromise = getPromise.then(map.get.bind(map, '' + i));
+                    }
+                    return getPromise;
+                }).then(function () {
                     var stats = map.nearCache.getStatistics();
                     expect(stats.missCount).to.equal(entryCount);
                     expect(stats.entryCount).to.equal(entryCount);

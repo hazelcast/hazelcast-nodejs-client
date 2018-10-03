@@ -38,7 +38,9 @@ describe("Set Proxy", function () {
     });
 
     beforeEach(function () {
-        setInstance = client.getSet('test')
+        return client.getSet('test').then(function (s) {
+            setInstance = s;
+        })
     });
 
     afterEach(function () {

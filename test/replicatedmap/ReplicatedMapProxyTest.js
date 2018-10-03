@@ -46,7 +46,9 @@ describe('ReplicatedMap Proxy', function () {
     });
 
     beforeEach(function () {
-        rm = client.getReplicatedMap('test');
+        return client.getReplicatedMap('test').then(function (mp) {
+            rm = mp;
+        });
     });
 
     afterEach(function () {

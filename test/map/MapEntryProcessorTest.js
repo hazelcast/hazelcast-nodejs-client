@@ -55,8 +55,11 @@ describe('Entry Processor', function () {
     });
 
     beforeEach(function () {
-        map = client.getMap('map-to-be-processed');
-        return _fillMap(map, MAP_SIZE, '', '');
+        return client.getMap('map-to-be-processed').then(function (mp) {
+            map = mp;
+            return _fillMap(map, MAP_SIZE, '', '');
+        });
+
     });
 
     afterEach(function () {

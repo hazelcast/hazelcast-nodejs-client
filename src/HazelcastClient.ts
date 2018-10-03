@@ -27,7 +27,7 @@ import {InvocationService} from './invocation/InvocationService';
 import {LifecycleEvent, LifecycleService} from './LifecycleService';
 import {ListenerService} from './ListenerService';
 import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
-import {ILogger, LoggingService} from './logging/LoggingService';
+import {LoggingService} from './logging/LoggingService';
 import {RepairingTask} from './nearcache/RepairingTask';
 import {PartitionService} from './PartitionService';
 import {ClientErrorFactory} from './protocol/ErrorFactory';
@@ -156,7 +156,7 @@ export default class HazelcastClient {
         return this.invocationService.invokeOnRandomTarget(clientMessage).then(function (resp): any {
             const response = ClientGetDistributedObjectsCodec.decodeResponse(resp, toObjectFunc).response;
             return response.map((objectInfo: { [key: string]: any }) => {
-                return proxyManager.getOrCreateProxy(objectInfo.value, objectInfo.key, false);
+                return proxyManager.getOrCreateProxy(objectInfo.value, objectInfo.key, false).value();
             });
         });
     }
@@ -164,98 +164,118 @@ export default class HazelcastClient {
     /**
      * Returns the distributed map instance with given name.
      * @param name
-     * @returns {IMap<K, V>}
+     * @returns {Promise<IMap<K, V>>}
      */
-    getMap<K, V>(name: string): IMap<K, V> {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.MAP_SERVICE) as IMap<K, V>;
+    getMap<K, V>(name: string): Promise<IMap<K, V>> {
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.MAP_SERVICE) as Promise<IMap<K, V>>;
     }
 
     /**
      * Returns the distributed set instance with given name.
      * @param name
-     * @returns {ISet<E>}
+     * @returns {Promise<ISet<E>>}
      */
-    getSet<E>(name: string): ISet<E> {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.SET_SERVICE) as ISet<E>;
+    getSet<E>(name: string): Promise<ISet<E>> {
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.SET_SERVICE) as Promise<ISet<E>>;
     }
 
     /**
      * Returns the distributed lock instance with given name.
      * @param name
-     * @returns {ILock}
+     * @returns {Promise<ILock>}
      */
-    getLock(name: string): ILock {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.LOCK_SERVICE) as ILock;
+    getLock(name: string): Promise<ILock> {
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.LOCK_SERVICE) as Promise<ILock>;
     }
 
     /**
      * Returns the distributed queue instance with given name.
      * @param name
-     * @returns {IQueue<E>}
+     * @returns {Promise<IQueue<E>>}
      */
-    getQueue<E>(name: string): IQueue<E> {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.QUEUE_SERVICE) as IQueue<E>;
+    getQueue<E>(name: string): Promise<IQueue<E>> {
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.QUEUE_SERVICE) as Promise<IQueue<E>>;
     }
 
     /**
      * Returns the distributed list instance with given name.
      * @param name
-     * @returns {IQueue<E>}
+     * @returns {Promise<IList<E>>}
      */
-    getList<E>(name: string): IList<E> {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.LIST_SERVICE) as IList<E>;
+    getList<E>(name: string): Promise<IList<E>> {
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.LIST_SERVICE) as Promise<IList<E>>;
     }
 
     /**
      * Returns the distributed multi-map instance with given name.
      * @param name
-     * @returns {MultiMap<K, V>}
+     * @returns {Promise<MultiMap<K, V>>}
      */
-    getMultiMap<K, V>(name: string): MultiMap<K, V> {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.MULTIMAP_SERVICE) as MultiMap<K, V>;
+    getMultiMap<K, V>(name: string): Promise<MultiMap<K, V>> {
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.MULTIMAP_SERVICE) as Promise<MultiMap<K, V>>;
     }
 
     /**
      * Returns a distributed ringbuffer instance with the given name.
      * @param name
-     * @returns {IRingbuffer<E>}
+     * @returns {Promise<IRingbuffer<E>>}
      */
-    getRingbuffer<E>(name: string): IRingbuffer<E> {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.RINGBUFFER_SERVICE) as IRingbuffer<E>;
+    getRingbuffer<E>(name: string): Promise<IRingbuffer<E>> {
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.RINGBUFFER_SERVICE) as Promise<IRingbuffer<E>>;
     }
 
     /**
      * Returns a distributed reliable topic instance with the given name.
      * @param name
-     * @returns {ITopic<E>}
+     * @returns {Promise<ITopic<E>>}
      */
-    getReliableTopic<E>(name: string): ITopic<E> {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.RELIABLETOPIC_SERVICE) as ITopic<E>;
+    getReliableTopic<E>(name: string): Promise<ITopic<E>> {
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.RELIABLETOPIC_SERVICE) as Promise<ITopic<E>>;
     }
 
-    getReplicatedMap<K, V>(name: string): IReplicatedMap<K, V> {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.REPLICATEDMAP_SERVICE) as IReplicatedMap<K, V>;
+    /**
+     * Returns the distributed replicated-map instance with given name.
+     * @param name
+     * @returns {Promise<IReplicatedMap<K, V>>}
+     */
+    getReplicatedMap<K, V>(name: string): Promise<IReplicatedMap<K, V>> {
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.REPLICATEDMAP_SERVICE) as Promise<IReplicatedMap<K, V>>;
     }
 
-    getAtomicLong(name: string): IAtomicLong {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.ATOMICLONG_SERVICE) as IAtomicLong;
+    /**
+     * Returns the distributed atomic long instance with given name.
+     * @param name
+     * @returns {Promise<IAtomicLong>}
+     */
+    getAtomicLong(name: string): Promise<IAtomicLong> {
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.ATOMICLONG_SERVICE) as Promise<IAtomicLong>;
     }
 
-    getFlakeIdGenerator(name: string): FlakeIdGenerator {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.FLAKEID_SERVICE) as FlakeIdGenerator;
+    /**
+     * Returns the distributed flake ID generator instance with given name.
+     * @param name
+     * @returns {Promise<FlakeIdGenerator>}
+     */
+    getFlakeIdGenerator(name: string): Promise<FlakeIdGenerator> {
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.FLAKEID_SERVICE) as Promise<FlakeIdGenerator>;
     }
 
-    getPNCounter(name: string): PNCounter {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.PNCOUNTER_SERVICE) as PNCounter;
+    /**
+     * Returns the distributed PN Counter instance with given name.
+     * @param name
+     * @returns {Promise<PNCounter>}
+     */
+    getPNCounter(name: string): Promise<PNCounter> {
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.PNCOUNTER_SERVICE) as Promise<PNCounter>;
     }
 
     /**
      * Returns the distributed semaphore instance with given name.
      * @param name
-     * @returns {ISemaphore}
+     * @returns {Promise<ISemaphore>}
      */
-    getSemaphore(name: string): ISemaphore {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.SEMAPHORE_SERVICE) as ISemaphore;
+    getSemaphore(name: string): Promise<ISemaphore> {
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.SEMAPHORE_SERVICE) as Promise<ISemaphore>;
     }
 
     /**

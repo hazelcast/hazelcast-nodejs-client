@@ -40,7 +40,9 @@ describe("MultiMap Proxy", function () {
     });
 
     beforeEach(function () {
-        map = client.getMultiMap('test');
+        return client.getMultiMap('test').then(function (mp) {
+            map = mp;
+        });
     });
 
     afterEach(function () {

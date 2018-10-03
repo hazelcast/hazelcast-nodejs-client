@@ -89,51 +89,66 @@ describe("Reliable Topic Proxy", function () {
 
     it("writes and reads messages", function (done) {
         var topicName = 't' + Math.random();
-        var topicOne = clientOne.getReliableTopic(topicName);
-        var topicTwo = clientTwo.getReliableTopic(topicName);
-
-        topicTwo.addMessageListener(function (msg) {
-            if (msg.messageObject["value"] === "foo") {
-                done();
-            }
+        var topicOne;
+        var topicTwo;
+        clientOne.getReliableTopic(topicName).then(function (t) {
+            topicOne = t;
+            return clientTwo.getReliableTopic(topicName);
+        }).then(function (t) {
+            topicTwo = t;
+            topicTwo.addMessageListener(function (msg) {
+                if (msg.messageObject["value"] === "foo") {
+                    done();
+                }
+            });
+            setTimeout(function () {
+                topicOne.publish({"value": "foo"});
+            }, 500);
         });
-
-        setTimeout(function () {
-            topicOne.publish({"value": "foo"});
-        }, 500);
     });
 
     it('removed message listener does not receive items after removal', function (done) {
         var topicName = 't' + Math.random();
-        var topicOne = clientOne.getReliableTopic(topicName);
-        var topicTwo = clientTwo.getReliableTopic(topicName);
+        var topicOne;
+        var topicTwo;
+        clientOne.getReliableTopic(topicName).then(function (topic) {
+            topicOne = topic;
+            return clientTwo.getReliableTopic(topicName);
+        }).then(function (topic) {
+            topicTwo = topic;
+            var receivedMessages = 0;
 
-        var receivedMessages = 0;
+            var id = topicTwo.addMessageListener(function (msg) {
+                receivedMessages++;
+                if (receivedMessages > 2) {
+                    done(new Error('Kept receiving messages after message listener is removed.'));
+                }
+            });
 
-        var id = topicTwo.addMessageListener(function (msg) {
-            receivedMessages++;
-            if (receivedMessages > 2) {
-                done(new Error('Kept receiving messages after message listener is removed.'));
-            }
+            topicOne.publish({"value0": "foo0"});
+            topicOne.publish({"value1": "foo1"});
+            setTimeout(function () {
+                topicTwo.removeMessageListener(id);
+                topicOne.publish({"value2": "foo2"});
+                topicOne.publish({"value3": "foo3"});
+                topicOne.publish({"value4": "foo4"});
+                topicOne.publish({"value5": "foo5"});
+                setTimeout(done, 500);
+            }, 500);
         });
 
-        topicOne.publish({"value0": "foo0"});
-        topicOne.publish({"value1": "foo1"});
-        setTimeout(function () {
-            topicTwo.removeMessageListener(id);
-            topicOne.publish({"value2": "foo2"});
-            topicOne.publish({"value3": "foo3"});
-            topicOne.publish({"value4": "foo4"});
-            topicOne.publish({"value5": "foo5"});
-            setTimeout(done, 500);
-        }, 500);
     });
 
     it("blocks when there is no more space", function () {
-        var topic = clientOne.getReliableTopic("blocking");
-        var ringbuffer = topic.getRingbuffer();
-
-        return ringbuffer.capacity().then(function (capacity) {
+        var topic;
+        var ringbuffer;
+        return clientOne.getReliableTopic("blocking").then(function (t) {
+            topic = t;
+            return topic.getRingbuffer();
+        }).then(function (rb) {
+            ringbuffer = rb;
+            return ringbuffer.capacity();
+        }).then(function (capacity) {
             var all = [];
 
             for (var i = 0; i < capacity.toNumber() + 1; i++) {
@@ -162,29 +177,37 @@ describe("Reliable Topic Proxy", function () {
     });
 
     it("continues operating when stale sequence is reached", function (done) {
-        var topic = clientOne.getReliableTopic("stale");
-        var ringbuffer = topic.getRingbuffer();
+        var topic;
+        var ringbuffer;
+        clientOne.getReliableTopic("stale").then(function (t) {
+            topic = t;
+            return topic.getRingbuffer();
+        }).then(function (rb) {
+            ringbuffer = rb;
+            topic.addMessageListener(function (e) {
+                if (e.messageObject === 20) {
+                    done();
+                }
+            });
 
-        topic.addMessageListener(function (e) {
-            if (e.messageObject === 20) {
-                done();
-            }
+            var all = generateItems(clientOne, 20);
+            ringbuffer.addAll(all);
         });
-
-        var all = generateItems(clientOne, 20);
-
-        ringbuffer.addAll(all);
     });
 
     it("discards the item when there is no more space", function () {
-        var topic = clientOne.getReliableTopic("discard");
-        var ringbuffer = topic.getRingbuffer();
+        var topic;
+        return clientOne.getReliableTopic("discard").then(function (t) {
+            topic = t;
+            return topic.getRingbuffer();
+        }).then(function (rb) {
+            ringbuffer = rb;
+            var all = generateItems(clientOne, 10);
 
-        var all = generateItems(clientOne, 10);
+            ringbuffer.addAll(all);
 
-        ringbuffer.addAll(all);
-
-        return topic.publish(11).then(function () {
+            return topic.publish(11);
+        }).then(function () {
             return ringbuffer.tailSequence();
         }).then(function (seq) {
             return ringbuffer.readOne(seq);
@@ -195,14 +218,18 @@ describe("Reliable Topic Proxy", function () {
     });
 
     it("overwrites the oldest item when there is no more space", function () {
-        var topic = clientOne.getReliableTopic("overwrite");
-        var ringbuffer = topic.getRingbuffer();
+        var topic;
+        var ringbuffer;
+        return clientOne.getReliableTopic("overwrite").then(function (t) {
+            topic = t;
+            return topic.getRingbuffer();
+        }).then(function (rb) {
+            ringbuffer = rb;
+            var all = generateItems(clientOne, 10);
 
-        var all = generateItems(clientOne, 10);
-
-        ringbuffer.addAll(all);
-
-        return topic.publish(11).then(function () {
+            ringbuffer.addAll(all);
+            return topic.publish(11);
+        }).then(function () {
             return ringbuffer.tailSequence();
         }).then(function (seq) {
             return ringbuffer.readOne(seq);

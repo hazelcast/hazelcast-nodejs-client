@@ -74,27 +74,31 @@ describe('NearCachedMapStress', function () {
 
     it('stress test with put, get and remove', function (done) {
         this.timeout(120000);
-        var map = client1.getMap(mapName);
-        (function innerOperation() {
-            if (completedOperations >= totalNumOperations) {
-                return;
-            }
-            if (runningOperations >= concurrencyLevel) {
-                setTimeout(innerOperation, 1);
-            } else {
-                runningOperations++;
-                var op = getRandomInt(0, 100);
-                if (op < putPercent) {
-                    map.put(getRandomInt(0, numberOfEntries), getRandomInt(0, 10000)).then(completeOperation);
-                } else if (op < putPercent + removePercent) {
-                    map.remove(getRandomInt(0, numberOfEntries)).then(completeOperation);
-                } else {
-                    totalGetOperations++;
-                    map.get(getRandomInt(0, numberOfEntries)).then(completeOperation);
+        var map;
+        client1.getMap(mapName).then(function (mp) {
+            map = mp;
+            (function innerOperation() {
+                if (completedOperations >= totalNumOperations) {
+                    return;
                 }
-                process.nextTick(innerOperation);
-            }
-        })();
+                if (runningOperations >= concurrencyLevel) {
+                    setTimeout(innerOperation, 1);
+                } else {
+                    runningOperations++;
+                    var op = getRandomInt(0, 100);
+                    if (op < putPercent) {
+                        map.put(getRandomInt(0, numberOfEntries), getRandomInt(0, 10000)).then(completeOperation);
+                    } else if (op < putPercent + removePercent) {
+                        map.remove(getRandomInt(0, numberOfEntries)).then(completeOperation);
+                    } else {
+                        totalGetOperations++;
+                        map.get(getRandomInt(0, numberOfEntries)).then(completeOperation);
+                    }
+                    process.nextTick(innerOperation);
+                }
+            })();
+        });
+
 
         completedDeferred.promise.then(function () {
             var p = [];
@@ -102,8 +106,12 @@ describe('NearCachedMapStress', function () {
             for (var i = 0; i < numberOfEntries; i++) {
                 (function () {
                     var key = i;
-                    var promise = validatingClient.getMap(mapName).get(key).then(function (expected) {
-                        return client1.getMap(mapName).get(key).then(function (actual) {
+                    var promise = validatingClient.getMap(mapName).then(function (mp) {
+                        return mp.get(key);
+                    }).then(function (expected) {
+                        return client1.getMap(mapName).then(function (mp) {
+                            return mp.get(key);
+                        }).then(function (actual) {
                             return expect(actual).to.be.equal(expected);
                         })
                     });
@@ -112,12 +120,15 @@ describe('NearCachedMapStress', function () {
             }
             //Near cache usage check
             Promise.all(p).then(function () {
-                var stats = client1.getMap(mapName).nearCache.getStatistics();
-                expect(stats.hitCount + stats.missCount).to.equal(totalGetOperations + numberOfEntries);
-                expect(stats.entryCount).to.be.greaterThan(numberOfEntries / 100 * getPercent);
-                expect(stats.missCount).to.be.greaterThan(100);
-                expect(stats.hitCount).to.be.greaterThan(100);
-                done();
+                var stats;
+                client1.getMap(mapName).then(function (mp) {
+                    stats = mp.nearCache.getStatistics();
+                    expect(stats.hitCount + stats.missCount).to.equal(totalGetOperations + numberOfEntries);
+                    expect(stats.entryCount).to.be.greaterThan(numberOfEntries / 100 * getPercent);
+                    expect(stats.missCount).to.be.greaterThan(100);
+                    expect(stats.hitCount).to.be.greaterThan(100);
+                    done();
+                });
             }).catch(function (e) {
                 done(e);
             });

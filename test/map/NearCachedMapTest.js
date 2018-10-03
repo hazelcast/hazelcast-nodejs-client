@@ -55,9 +55,13 @@ describe("NearCachedMap", function () {
 
             beforeEach(function () {
                 this.timeout(10000);
-                map1 = client1.getMap('ncc-map');
-                map2 = client2.getMap('ncc-map');
-                return _fillMap(map1);
+                return client1.getMap('ncc-map').then(function (mp) {
+                    map1 = mp
+                    return client2.getMap('ncc-map');
+                }).then(function (mp) {
+                    map2 = mp;
+                    return _fillMap(map1);
+                });
             });
 
             afterEach(function () {

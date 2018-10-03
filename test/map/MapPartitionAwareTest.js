@@ -78,7 +78,9 @@ describe('Map Partition Aware', function () {
     });
 
     beforeEach(function () {
-        map = client.getMap(mapName);
+        return client.getMap(mapName).then(function (mp) {
+            map = mp;
+        });
     });
 
     afterEach(function () {

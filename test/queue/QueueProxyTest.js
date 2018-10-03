@@ -44,8 +44,10 @@ describe("Queue Proxy", function () {
     });
 
     beforeEach(function () {
-        queue = client.getQueue('ClientQueueTest');
-        return _offerToQueue(10);
+        return client.getQueue('ClientQueueTest').then(function (q) {
+            queue = q;
+            return _offerToQueue(10);
+        });
     });
 
     afterEach(function () {

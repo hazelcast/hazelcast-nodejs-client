@@ -38,7 +38,9 @@ describe('MapAggregatorsIntTest', function () {
             return Client.newHazelcastClient(cfg);
         }).then(function (cl) {
             client = cl;
-            map = client.getMap('aggregatorsMap');
+            return client.getMap('aggregatorsMap');
+        }).then(function (mp) {
+            map = mp;
         });
     });
 
