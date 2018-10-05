@@ -12,6 +12,14 @@
   * [3. Loading Objects and Path Resolution](#3-loading-objects-and-path-resolution)
 * [Code Samples](#code-samples)
 * [Serialization Considerations](#serialization-considerations)
+* [Setting Up Client Network](#setting-up-client-network)
+  * [1. Providing the Member Addresses](#1-providing-the-member-addresses)
+  * [2. Setting Smart Routing](#2-setting-smart-routing)
+  * [3. Setting Redo Operation](#3-enabling-redo-operation)
+  * [4. Setting Connection Timeout](#4-setting-connection-timeout)
+  * [5. Setting Connection Attempt Limit](#5-setting-connection-attempt-limit)
+  * [6. Setting Connection Attempt Period](#6-setting-connection-attempt-period)
+  * [7. Enabling Hazelcast Cloud Discovery](#7-enabling-hazelcast-cloud-discovery)
 * [Using Node.js Client with Hazelcast IMDG](#using-nodejs-client-with-hazelcast-imdg)
   * [1. Node.js Client API Overview](#1-nodejs-client-api-overview)
   * [2. Using Distributed Data Structures](#2-using-distributed-data-structures)
@@ -307,6 +315,239 @@ readData(dataInput) {
     ...
 }
 ```
+
+# Setting Up Client Network
+
+All network related configuration of Hazelcast Node.js Client is performed via the `network` element in the declarative configuration file, or in the object `ClientNetworkConfig` when using programmatic configuration. Let’s first give the examples for these two approaches. Then we will look at its sub-elements and attributes.
+
+### Declarative Client Network Configuration
+
+Here is an example of configuring network for Node.js Client declaratively.
+
+```json
+{
+    "network": {
+        "clusterMembers": [
+            "10.1.1.21",
+            "10.1.1.22:5703"
+        ],
+        "smartRouting": true,
+        "redoOperation": true,
+        "connectionTimeout": 6000,
+        "connectionAttemptPeriod": 5000,
+        "connectionAttemptLimit": 5
+    }
+}
+```
+
+### Programmatic Client Network Configuration
+
+Here is an example of configuring network for Node.js Client programmatically.
+
+```javascript
+var clientConfig = new Config.ClientConfig();
+clientConfig.networkConfig.addresses.push('10.1.1.21', '10.1.1.22:5703');
+clientConfig.networkConfig.smartRouting = true;
+clientConfig.networkConfig.redoOperation = true;
+clientConfig.networkConfig.connectionTimeout = 6000;
+clientConfig.networkConfig.connectionAttemptPeriod = 5000;
+clientConfig.networkConfig.connectionAttemptLimit = 5;
+```
+
+## 1. Providing the Member Addresses
+
+Address list is the initial list of cluster addresses to which the client will connect. The client uses this
+list to find an alive member. Although it may be enough to give only one address of a member in the cluster
+(since all members communicate with each other), it is recommended that you give the addresses for all the members.
+
+**Declarative:**
+
+```json
+{
+    "network": {
+        "clusterMembers": [
+            "10.1.1.21",
+            "10.1.1.22:5703"
+        ]
+    }
+}
+```
+
+**Programmatic:**
+
+```javascript
+var clientConfig = new Config.ClientConfig();
+clientConfig.networkConfig.addresses.push('10.1.1.21', '10.1.1.22:5703');
+```
+
+If the port part is omitted, then 5701, 5702 and 5703 will be tried in random order.
+
+You can specify multiple addresses with or without port information as seen above. The provided list is shuffled and tried in random order. Its default value is `localhost`.
+
+## 2. Setting Smart Routing
+
+Smart routing defines whether the client mode is smart or unisocket. See [Node.js Client Operation Modes section](#nodejs-client-operation-modes)
+for the description of smart and unisocket modes.
+ 
+The following are example configurations.
+
+**Declarative:**
+
+```json
+{
+    "network": {
+        "smartRouting": true
+    }
+}
+```
+
+**Programmatic:**
+
+```javascript
+var clientConfig = new Config.ClientConfig();
+clientConfig.networkConfig.smartRouting = true;
+```
+
+Its default value is `true` (smart client mode).
+
+## 3. Enabling Redo Operation
+
+It enables/disables redo-able operations. While sending the requests to related members, operations can fail due to various reasons. Read-only operations are retried by default. If you want to enable retry for the other operations, you can set the `redoOperation` to `true`.
+
+**Declarative:**
+
+```json
+{
+    "network": {
+        "redoOperation": true
+    }
+}
+```
+
+**Programmatic:**
+
+```javascript
+var clientConfig = new Config.ClientConfig();
+clientConfig.networkConfig.redoOperation = true;
+```
+
+Its default value is `false` (disabled).
+
+## 4. Setting Connection Timeout
+
+Connection timeout is the timeout value in milliseconds for members to accept client connection requests.
+If server does not respond within the timeout, the client will retry to connect as many as `ClientNetworkConfig.connectionAttemptLimit` times.
+ 
+The following are the example configurations.
+
+
+**Declarative:**
+
+```json
+{
+    "network": {
+        "connectionTimeout": 6000
+    }
+}
+```
+
+**Programmatic:**
+
+```javascript
+var clientConfig = new Config.ClientConfig();
+clientConfig.networkConfig.connectionTimeout = 6000;
+```
+
+Its default value is `5000` milliseconds.
+
+## 5. Setting Connection Attempt Limit
+
+While the client is trying to connect initially to one of the members in the `ClientNetworkConfig.addresses`, that member might not be available at that moment. Instead of giving up, throwing an error and stopping the client, the client will retry as many as `ClientNetworkConfig.connectionAttemptLimit` times. This is also the case when the previously established connection between the client and that member goes down.
+
+The following are example configurations.
+
+**Declarative:**
+
+```json
+{
+    "network": {
+        "connectionAttemptLimit": 5
+    }
+}
+```
+
+**Programmatic:**
+
+```javascript
+var clientConfig = new Config.ClientConfig();
+clientConfig.networkConfig.connectionAttemptLimit = 5;
+```
+
+Its default value is `2`.
+
+## 6. Setting Connection Attempt Period
+
+Connection timeout period is the duration in milliseconds between the connection attempts defined by `ClientNetworkConfig.connectionAttemptLimit`.
+ 
+The following are example configurations.
+
+**Declarative:**
+
+```json
+{
+    "network": {
+        "connectionAttemptPeriod": 5000
+    }
+}
+```
+
+**Programmatic:**
+
+```javascript
+var clientConfig = new Config.ClientConfig();
+clientConfig.networkConfig.connectionAttemptPeriod = 5000;
+```
+
+Its default value is `3000` milliseconds.
+
+## 7. Enabling Hazelcast Cloud Discovery
+
+The purpose of Hazelcast Cloud Discovery is to provide clients to use IP addresses provided by `hazelcast orchestrator`. To enable Hazelcast Cloud Discovery, specify a token for the `discoveryToken` field and set the `enabled` field to `true`.
+ 
+The following are example configurations.
+
+**Declarative:**
+
+```json
+{
+ "group": {
+        "name": "hazel",
+        "password": "cast"
+    },
+
+    "network": {
+        "hazelcastCloud": {
+            "discoveryToken": "EXAMPLE_TOKEN",
+            "enabled": true
+        }
+    }
+}
+
+```
+
+**Programmatic:**
+
+```javascript
+var clientConfig = new Config.ClientConfig();
+clientConfig.groupConfig.name = 'hazel';
+clientConfig.groupConfig.password = 'cast';
+
+clientConfig.networkConfig.cloudConfig.enabled = true;
+clientConfig.networkConfig.cloudConfig.discoveryToken = 'EXAMPLE_TOKEN';
+```
+
+To be able to connect to the provided IP addresses, you should use secure TLS/SSL connection between the client and members. Therefore, you should set an SSL configuration as described in the previous section.
+
 
 # Using Node.js Client with Hazelcast IMDG
 
