@@ -55,10 +55,13 @@ cfg.serializationConfig.dataSerializableFactories[1] = {
     }
 };
 
-var predicate = Predicates.paging(Predicates.truePredicate(), 2, comparator);
+var predicate = Predicates.paging(Predicates.alwaysTrue(), 2, comparator);
 Client.newHazelcastClient(cfg).then(function (client) {
-    var map = client.getMap('test');
-    map.putAll([['a', 1], ['b', 2], ['c', 3], ['d', 4], ['e', 5], ['f', 6], ['g', 7]]).then(function () {
+    var map;
+    client.getMap('test').then(function (mp) {
+        map = mp;
+        return map.putAll([['a', 1], ['b', 2], ['c', 3], ['d', 4], ['e', 5], ['f', 6], ['g', 7]]);
+    }).then(function () {
         return map.size();
     }).then(function (mapSize) {
         console.log('Added ' + mapSize + ' elements.');

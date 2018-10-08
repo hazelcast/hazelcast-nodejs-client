@@ -45,8 +45,11 @@ var selfReferringObject = {
 selfReferringObject.self = selfReferringObject;
 
 Client.newHazelcastClient(cfg).then(function (client) {
-    var map = client.getMap('objects');
-    map.put(1, selfReferringObject).then(function () {
+    var map;
+    client.getMap('objects').then(function (mp) {
+        map = mp;
+        return map.put(1, selfReferringObject);
+    }).then(function () {
         return map.get(1);
     }).then(function (obj) {
         console.log(obj);
