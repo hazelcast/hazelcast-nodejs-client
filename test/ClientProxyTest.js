@@ -74,9 +74,13 @@ describe('Generic proxy test', function () {
             return HazelcastClient.newHazelcastClient();
         }).then(function (res) {
             client = res;
-            map = client.getMap('Furkan');
-            list = client.getList('Furkan');
-            expect(list.getServiceName()).to.be.equal('hz:impl:listService');
+            return client.getMap('Furkan').then(function (m) {
+                map = m;
+                return client.getList('Furkan');
+            }).then(function (l) {
+                list = l;
+                expect(list.getServiceName()).to.be.equal('hz:impl:listService');
+            });
         });
     });
 })

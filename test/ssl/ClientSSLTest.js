@@ -76,8 +76,11 @@ configParams.forEach(function (cfg) {
         });
 
         it('basic map size', function () {
-            map = client.getMap('test');
-            return _fillMap(map).then(function () {
+            var map;
+            return client.getMap('test').then(function (mp) {
+                map = mp;
+                return _fillMap(map);
+            }).then(function () {
                 return map.size().then(function (size) {
                     expect(size).to.equal(10);
                 });

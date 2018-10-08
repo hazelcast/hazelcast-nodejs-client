@@ -56,8 +56,10 @@ describe("Predicates", function () {
     });
 
     beforeEach(function () {
-        map = client.getMap('test');
-        return _fillMap();
+        return client.getMap('test').then(function (mp) {
+            map = mp;
+            return _fillMap();
+        });
     });
 
     afterEach(function () {
@@ -115,8 +117,10 @@ describe("Predicates", function () {
     });
 
     it('Like', function () {
-        var localMap = client.getMap('likePredMap');
-        return localMap.put('temp', 'tempval').then(function () {
+        return client.getMap('likePredMap').then(function (mp) {
+            localMap = mp;
+            return localMap.put('temp', 'tempval');
+        }).then(function () {
             return localMap.valuesWithPredicate(Predicates.like('this', 'tempv%'));
         }).then(function (values) {
             return expect(values.toArray()).to.have.members(['tempval']);
@@ -126,8 +130,11 @@ describe("Predicates", function () {
     });
 
     it('ILike', function () {
-        var localMap = client.getMap('likePredMap');
-        return localMap.putAll([['temp', 'tempval'], ['TEMP', 'TEMPVAL']]).then(function () {
+        var localMap;
+        return client.getMap('likePredMap').then(function (mp) {
+            localMap = mp;
+            return localMap.putAll([['temp', 'tempval'], ['TEMP', 'TEMPVAL']]);
+        }).then(function () {
             return localMap.valuesWithPredicate(Predicates.ilike('this', 'tempv%'));
         }).then(function (values) {
             return expect(values.toArray()).to.have.members(['tempval', 'TEMPVAL']);
@@ -167,8 +174,10 @@ describe("Predicates", function () {
     });
 
     it('Regex', function () {
-        var localMap = client.getMap('regexMap');
-        return localMap.putAll([['06', 'ankara'], ['07', 'antalya']]).then(function () {
+        return client.getMap('regexMap').then(function (mp) {
+            localMap = mp;
+            return localMap.putAll([['06', 'ankara'], ['07', 'antalya']])
+        }).then(function () {
             return localMap.valuesWithPredicate(Predicates.regex('this', '^.*ya$'));
         }).then(function (values) {
             return expect(values.toArray()).to.have.members(['antalya']);

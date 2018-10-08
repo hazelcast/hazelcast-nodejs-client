@@ -67,7 +67,9 @@ describe("FlakeIdGeneratorOutOfRangeTest", function () {
                 return HazelcastClient.newHazelcastClient(cfg);
             }).then(function (value) {
                 client = value;
-                flakeIdGenerator = client.getFlakeIdGenerator('test');
+                return client.getFlakeIdGenerator('test');
+            }).then(function (idGenerator) {
+                flakeIdGenerator = idGenerator;
                 var promise = Promise.resolve();
                 for (var i = 0; i < 100; i++) {
                     promise = promise.then(function () {
@@ -94,7 +96,9 @@ describe("FlakeIdGeneratorOutOfRangeTest", function () {
             return HazelcastClient.newHazelcastClient();
         }).then(function (cl) {
             client = cl;
-            flakeIdGenerator = client.getFlakeIdGenerator('test');
+            return client.getFlakeIdGenerator('test');
+        }).then(function (idGenerator) {
+            flakeIdGenerator = idGenerator;
             return expect(flakeIdGenerator.newId(flakeIdGenerator)).to.be.rejectedWith(Err.HazelcastError);
         });
     });

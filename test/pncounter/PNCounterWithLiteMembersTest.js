@@ -48,7 +48,9 @@ describe('PNCounterWithLiteMembersTest', function () {
 
     beforeEach(function () {
         Util.markServerVersionAtLeast(this, client, '3.10');
-        pncounter = client.getPNCounter('pncounter');
+        return client.getPNCounter('pncounter').then(function (counter) {
+            pncounter = counter;
+        });
     });
 
     afterEach(function () {

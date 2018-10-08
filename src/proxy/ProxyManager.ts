@@ -60,7 +60,7 @@ export class ProxyManager {
     public static readonly RELIABLETOPIC_SERVICE: string = 'hz:impl:reliableTopicService';
 
     public readonly service: { [serviceName: string]: any } = {};
-    private readonly proxies: { [proxyName: string]: DistributedObject; } = {};
+    private readonly proxies: { [namespace: string]: DistributedObject; } = {};
     private readonly client: HazelcastClient;
     private readonly logger = LoggingService.getLoggingService();
     private readonly invocationTimeoutMillis: number;
@@ -88,21 +88,37 @@ export class ProxyManager {
         this.service[ProxyManager.RELIABLETOPIC_SERVICE] = ReliableTopicProxy;
     }
 
-    public getOrCreateProxy(name: string, serviceName: string, createAtServer = true): DistributedObject {
+    public getOrCreateProxy(name: string, serviceName: string, createAtServer = true): Promise<DistributedObject> {
         if (this.proxies[serviceName + name]) {
-            return this.proxies[serviceName + name];
+            return Promise.resolve(this.proxies[serviceName + name]);
         } else {
+            const deferred = Promise.defer <DistributedObject>();
             let newProxy: DistributedObject;
             if (serviceName === ProxyManager.MAP_SERVICE && this.client.getConfig().getNearCacheConfig(name)) {
                 newProxy = new NearCachedMapProxy(this.client, serviceName, name);
+            } else if (serviceName === ProxyManager.RELIABLETOPIC_SERVICE) {
+                newProxy = new ReliableTopicProxy(this.client, serviceName, name);
+                if (createAtServer) {
+                    (newProxy as ReliableTopicProxy<any>).setRingbuffer().then(() => {
+                        return this.createProxy(newProxy);
+                    }).then(function (): void {
+                        deferred.resolve(newProxy);
+                    });
+                }
+                this.proxies[serviceName + name] = newProxy;
+                return deferred.promise;
             } else {
                 newProxy = new this.service[serviceName](this.client, serviceName, name);
             }
             if (createAtServer) {
-                this.createProxy(newProxy);
+                this.createProxy(newProxy).then(function (): void {
+                    deferred.resolve(newProxy);
+                });
             }
+
             this.proxies[serviceName + name] = newProxy;
-            return newProxy;
+            return deferred.promise;
+
         }
     }
 

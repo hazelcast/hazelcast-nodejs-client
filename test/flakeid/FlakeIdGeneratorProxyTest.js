@@ -70,72 +70,88 @@ describe("FlakeIdGeneratorProxyTest", function () {
     }
 
     it('newId succeeds', function () {
-        flakeIdGenerator = client.getFlakeIdGenerator('test');
-        return flakeIdGenerator.newId();
+        return client.getFlakeIdGenerator('test').then(function (idGenerator) {
+            flakeIdGenerator = idGenerator;
+            return flakeIdGenerator.newId();
+        });
     });
 
     it('newId returns a unique long', function () {
-        flakeIdGenerator = client.getFlakeIdGenerator('test');
-        var promise = Promise.resolve();
-        var idList = [];
-        for (var i = 0; i < 10; i++) {
-            promise = promise.then(function () {
-                return Promise.all([
-                    flakeIdGenerator.newId().then(addToListFunction(idList)),
-                    flakeIdGenerator.newId().then(addToListFunction(idList)),
-                    flakeIdGenerator.newId().then(addToListFunction(idList)),
-                    flakeIdGenerator.newId().then(addToListFunction(idList)),
-                    flakeIdGenerator.newId().then(addToListFunction(idList))
-                ]);
-            });
-        }
-        return promise.then(function () {
-            expect(idList.length).to.be.equal(50);
-            idList.sort(function (a, b) {
-                return (a.greaterThan(b) ? 1 : (a.lessThan(b) ? -1 : 0));
-            });
-            for (var i = 1; i < idList.length; i++) {
-                expect(idList[i]).to.be.instanceOf(Long);
-                expect(idList[i - 1].equals(idList[i]), 'Expected ' + idList[i - 1] + ' ' + idList[i] + 'to be different.').to.be.false;
+        return client.getFlakeIdGenerator('test').then(function (idGenerator) {
+            flakeIdGenerator = idGenerator;
+            var promise = Promise.resolve();
+            var idList = [];
+            for (var i = 0; i < 10; i++) {
+                promise = promise.then(function () {
+                    return Promise.all([
+                        flakeIdGenerator.newId().then(addToListFunction(idList)),
+                        flakeIdGenerator.newId().then(addToListFunction(idList)),
+                        flakeIdGenerator.newId().then(addToListFunction(idList)),
+                        flakeIdGenerator.newId().then(addToListFunction(idList)),
+                        flakeIdGenerator.newId().then(addToListFunction(idList))
+                    ]);
+                });
             }
+            return promise.then(function () {
+                expect(idList.length).to.be.equal(50);
+                idList.sort(function (a, b) {
+                    return (a.greaterThan(b) ? 1 : (a.lessThan(b) ? -1 : 0));
+                });
+                for (var i = 1; i < idList.length; i++) {
+                    expect(idList[i]).to.be.instanceOf(Long);
+                    expect(idList[i - 1].equals(idList[i]), 'Expected ' + idList[i - 1] + ' ' + idList[i] + 'to be different.').to.be.false;
+                }
+            });
         });
     });
 
     it('subsequent ids are from the same batch', function () {
-        flakeIdGenerator = client.getFlakeIdGenerator('test');
-        return flakeIdGenerator.newId().then(function (firstId) {
-            return flakeIdGenerator.newId().then(function (secondId) {
-                return expect(secondId.equals(firstId.add(FLAKE_ID_STEP))).to.be.true;
-            });
+        var firstId;
+        return client.getFlakeIdGenerator('test').then(function (idGenerator) {
+            flakeIdGenerator = idGenerator;
+            return flakeIdGenerator.newId()
+        }).then(function (id) {
+            firstId=id;
+            return flakeIdGenerator.newId();
+        }).then(function (secondId) {
+            return expect(secondId.equals(firstId.add(FLAKE_ID_STEP))).to.be.true;
         });
     });
 
     it('ids are from new batch after validity period', function () {
-        flakeIdGenerator = client.getFlakeIdGenerator('shortterm');
-        return flakeIdGenerator.newId().then(function (firstId) {
-            return Util.promiseWaitMilliseconds(SHORT_TERM_VALIDITY_MILLIS + 1000).then(function () {
-                return flakeIdGenerator.newId();
-            }).then(function (secondId) {
-                var borderId = firstId.add(FLAKE_ID_STEP * SHORT_TERM_BATCH_SIZE);
-                expect(secondId.greaterThan(borderId), 'Expected ' + secondId + ' to be greater than ' + borderId).to.be.true;
-            });
+        var firstId;
+        return client.getFlakeIdGenerator('shortterm').then(function (idGenerator) {
+            flakeIdGenerator = idGenerator;
+            return flakeIdGenerator.newId()
+        }).then(function (id) {
+            firstId=id;
+            return Util.promiseWaitMilliseconds(SHORT_TERM_VALIDITY_MILLIS + 1000);
+        }).then(function () {
+            return flakeIdGenerator.newId();
+        }).then(function (secondId) {
+            var borderId = firstId.add(FLAKE_ID_STEP * SHORT_TERM_BATCH_SIZE);
+            return expect(secondId.greaterThan(borderId), 'Expected ' + secondId + ' to be greater than ' + borderId).to.be.true;
         });
     });
 
     it('ids are from new batch after prefetched ones are exhausted', function () {
-        flakeIdGenerator = client.getFlakeIdGenerator('shortterm');
-        return flakeIdGenerator.newId().then(function (firstId) {
-            return flakeIdGenerator.newId().then(function () {
-                //after this we exhausted the batch at hand
-                return flakeIdGenerator.newId();
-            }).then(function () {
-                return Util.promiseWaitMilliseconds(100);
-            }).then(function () {
-                return flakeIdGenerator.newId();
-            }).then(function (secondId) {
-                var borderId = firstId.add(FLAKE_ID_STEP * SHORT_TERM_BATCH_SIZE);
-                return expect(secondId.greaterThan(borderId), 'Expected ' + secondId + ' to be greater than ' + borderId).to.be.true;
-            });
-        });
+        var firstId;
+        return client.getFlakeIdGenerator('shortterm').then(function (idGenerator) {
+            flakeIdGenerator = idGenerator;
+            return flakeIdGenerator.newId()
+        }).then(function (id) {
+            firstId=id;
+            return flakeIdGenerator.newId();
+        }).then(function () {
+            //after this we exhausted the batch at hand
+            return flakeIdGenerator.newId();
+        }).then(function () {
+            return Util.promiseWaitMilliseconds(100);
+        }).then(function () {
+            return flakeIdGenerator.newId();
+        }).then(function (secondId) {
+            var borderId = firstId.add(FLAKE_ID_STEP * SHORT_TERM_BATCH_SIZE);
+            return expect(secondId.greaterThan(borderId), 'Expected ' + secondId + ' to be greater than ' + borderId).to.be.true;
+        });;
     });
 });

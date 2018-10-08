@@ -38,8 +38,11 @@ describe('MapStore', function () {
     });
 
     beforeEach(function () {
-        map = client.getMap('mapstore-test');
-        return _fillMap(map);
+        return client.getMap('mapstore-test').then(function (mp) {
+            map = mp;
+            return _fillMap(map);
+        });
+
     });
 
     afterEach(function () {

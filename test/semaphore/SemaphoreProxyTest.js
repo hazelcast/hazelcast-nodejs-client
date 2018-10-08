@@ -42,7 +42,9 @@ describe("Semaphore Proxy", function () {
     });
 
     beforeEach(function () {
-        semaphore = client1.getSemaphore('test');
+        return client1.getSemaphore('test').then(function (s) {
+            semaphore = s;
+        });
     });
 
     afterEach(function () {
@@ -145,10 +147,15 @@ describe("Semaphore Proxy", function () {
     });
 
     it('only one client proceeds when two clients race for 1 permit', function (done) {
-        var sem1 = client1.getSemaphore("race");
-        var sem2 = client2.getSemaphore("race");
-
-        sem1.init(1).then(function () {
+        var sem1;
+        var sem2;
+        client1.getSemaphore("race").then(function (s) {
+            sem1 = s;
+            return client2.getSemaphore("race");
+        }).then(function (s) {
+            sem2 = s;
+            return sem1.init(1);
+        }).then(function () {
             return sem2.acquire();
         }).then(function () {
             sem1.acquire().then(function () {
@@ -159,9 +166,15 @@ describe("Semaphore Proxy", function () {
     });
 
     it('client is able to proceed after sufficient number of permits is available', function (done) {
-        var sem1 = client1.getSemaphore("proceed");
-        var sem2 = client2.getSemaphore("proceed");
-        sem1.init(1).then(function () {
+        var sem1;
+        var sem2;
+        client1.getSemaphore("proceed").then(function (s) {
+            sem1 = s;
+            return client2.getSemaphore("proceed");
+        }).then(function (s) {
+            sem2 = s;
+            return sem1.init(1);
+        }).then(function () {
             return sem1.acquire();
         }).then(function () {
             sem2.acquire().then(done);

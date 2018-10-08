@@ -58,7 +58,9 @@ describe('Listeners on reconnect', function () {
             return HazelcastClient.newHazelcastClient(cfg);
         }).then(function (cl) {
             client = cl;
-            map = client.getMap('testmap');
+            return client.getMap('testmap');
+        }).then(function (mp) {
+            map = mp;
             var listenerObject = {
                 added: function (entryEvent) {
                     try {
@@ -130,7 +132,9 @@ describe('Listeners on reconnect', function () {
                 return HazelcastClient.newHazelcastClient(cfg);
             }).then(function (cl) {
                 client = cl;
-                map = client.getMap('testmap');
+                return client.getMap('testmap');
+            }).then(function (mp) {
+                map = mp;
                 var listenerObject = {
                     added: function (entryEvent) {
                         try {
