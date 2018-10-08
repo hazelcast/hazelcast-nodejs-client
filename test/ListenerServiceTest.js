@@ -18,6 +18,7 @@ var RC = require('./RC');
 var HazelcastClient = require('../.').Client;
 var Config = require('../.').Config;
 var expect = require('chai').expect;
+var Util = require('./Util');
 
 
 [true, false].forEach(function (isSmartService) {
@@ -56,8 +57,10 @@ var expect = require('chai').expect;
                 done();
             }).then(function (id) {
                 listenerId = id;
-                map = client.getMap('mapToListen');
-                map.destroy();
+                client.getMap('mapToListen').then(function (mp) {
+                    map = mp;
+                    map.destroy();
+                });
             });
         });
 
@@ -72,11 +75,15 @@ var expect = require('chai').expect;
                     client.removeDistributedObjectListener(listenerId);
                     done();
                 } else if (distributedObjectEvent.eventType === 'created' && distributedObjectEvent.objectName === 'mapToRemove') {
-                    map.destroy();
+                    Util.promiseWaitMilliseconds(1000).then(function () {
+                        map.destroy();
+                    });
                 }
             }).then(function (id) {
                 listenerId = id;
-                map = client.getMap('mapToRemove');
+                client.getMap('mapToRemove').then(function (mp) {
+                    map = mp;
+                });
             });
         });
 

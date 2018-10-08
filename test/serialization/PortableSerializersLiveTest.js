@@ -38,7 +38,9 @@ describe('Default serializers with live instance', function () {
             return Client.newHazelcastClient(getClientConfig());
         }).then(function (cl) {
             client = cl;
-            map = client.getMap('test');
+            return client.getMap('test');
+        }).then(function (mp) {
+            map = mp;
         });
     });
 
@@ -72,7 +74,9 @@ describe('Default serializers with live instance', function () {
             return Client.newHazelcastClient(getClientConfig());
         }).then(function (cl) {
             client = cl;
-            map = client.getMap('test');
+            return client.getMap('test');
+        }).then(function (mp) {
+            map = mp;
             return map.get('simpleportable');
         }).then(function (sp) {
             return map.get('innerportable').then(function (ip) {

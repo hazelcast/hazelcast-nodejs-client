@@ -47,8 +47,12 @@ describe("Lock Proxy", function () {
     });
 
     beforeEach(function () {
-        lockOne = clientOne.getLock('test');
-        lockTwo = clientTwo.getLock('test');
+        return clientOne.getLock('test').then(function (lock) {
+            lockOne = lock;
+            return clientTwo.getLock('test');
+        }).then(function (lock) {
+            lockTwo = lock;
+        });
     });
 
     afterEach(function () {
@@ -103,7 +107,7 @@ describe("Lock Proxy", function () {
         }).then(function (acquired) {
             var elasped = Date.now() - startTime;
             expect(acquired).to.be.true;
-            expect(elasped).to.be.greaterThan(1000);
+            expect(elasped).to.be.greaterThan(995);
         })
     });
 

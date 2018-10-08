@@ -68,8 +68,10 @@ describe('MapProxy', function () {
             });
 
             beforeEach(function () {
-                map = client.getMap('test');
-                return _fillMap(map);
+                return client.getMap('test').then(function (mp) {
+                    map = mp;
+                    return _fillMap(map);
+                });
             });
 
             afterEach(function () {
@@ -259,17 +261,22 @@ describe('MapProxy', function () {
             });
 
             it('entrySet_notNull', function () {
-                var entryMap = client.getMap('entry-map');
+                var entryMap;
+
                 var samples = [
                     ['k1', 'v1'],
                     ['k2', 'v2'],
                     ['k3', 'v3']
                 ];
-                return Promise.all([
-                    entryMap.put(samples[0][0], samples[0][1]),
-                    entryMap.put(samples[1][0], samples[1][1]),
-                    entryMap.put(samples[2][0], samples[2][1])
-                ]).then(function () {
+
+                return client.getMap('entry-map').then(function (mp) {
+                    entryMap = mp;
+                    return Promise.all([
+                        entryMap.put(samples[0][0], samples[0][1]),
+                        entryMap.put(samples[1][0], samples[1][1]),
+                        entryMap.put(samples[2][0], samples[2][1])
+                    ]);
+                }).then(function () {
                     return entryMap.entrySet();
                 }).then(function (entrySet) {
                     return expect(entrySet).to.deep.have.members(samples);
@@ -277,8 +284,11 @@ describe('MapProxy', function () {
             });
 
             it('entrySet_null', function () {
-                var entryMap = client.getMap('null-entry-map');
-                return entryMap.entrySet().then(function (entrySet) {
+                var entryMap;
+                return client.getMap('null-entry-map').then(function (mp) {
+                    entryMap = mp;
+                    return entryMap.entrySet();
+                }).then(function (entrySet) {
                     return expect(entrySet).to.be.empty;
                 });
             });
@@ -835,15 +845,21 @@ describe('MapProxy', function () {
             });
 
             it('destroy', function () {
-                var dmap = client.getMap('map-to-be-destroyed');
-                return dmap.put('key', 'val').then(function () {
+                var dmap;
+                var newMap;
+                return client.getMap('map-to-be-destroyed').then(function (mp) {
+                    dmap = mp;
+                    return dmap.put('key', 'val');
+                }).then(function () {
                     return dmap.destroy();
                 }).then(function () {
-                    var newMap = client.getMap('map-to-be-destroyed');
+                    return client.getMap('map-to-be-destroyed');
+                }).then(function (mp) {
+                    newMap = mp;
                     return newMap.size();
                 }).then(function (s) {
                     expect(s).to.equal(0);
-                })
+                });
             });
         });
     });

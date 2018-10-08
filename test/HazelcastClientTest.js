@@ -36,9 +36,10 @@ function ManagedObjects() {
 }
 
 ManagedObjects.prototype.getObject = function (func, name) {
-    var obj = func(name);
-    this.managedObjects.push(obj);
-    return obj;
+    return func(name).then((obj) => {
+        this.managedObjects.push(obj);
+        return obj;
+    });
 };
 
 ManagedObjects.prototype.destroyAll = function () {
@@ -61,7 +62,6 @@ ManagedObjects.prototype.destroy = function (name) {
     });
     return deferred.promise;
 };
-
 
 configParams.forEach(function (cfg) {
     describe('HazelcastClient', function () {
@@ -86,7 +86,7 @@ configParams.forEach(function (cfg) {
         });
 
         afterEach(function () {
-            managed.destroyAll();
+            return managed.destroyAll();
         });
 
         after(function () {
@@ -151,5 +151,4 @@ configParams.forEach(function (cfg) {
             }, 300);
         });
     });
-
 });

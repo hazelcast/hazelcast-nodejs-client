@@ -16,17 +16,24 @@
 
 var Client = require('hazelcast-client').Client;
 Client.newHazelcastClient().then(function (client) {
-    client.addDistributedObjectListener(function (distributedObjectEvent) {
-        console.log('Distributed object event >>> ',
-            distributedObjectEvent.serviceName,
-            distributedObjectEvent.objectName,
-            distributedObjectEvent.eventType
-        );
+    return client.addDistributedObjectListener(function (serviceName, name, event) {
+        console.log('Distributed object event >>> ' + JSON.stringify({
+            serviceName: serviceName,
+            name: name,
+            event: event
+        }));
     }).then(function () {
+        var map;
         var mapname = 'test';
-        //this causes a created event
-        client.getMap(mapname);
-        //this causes no event because map was already created
-        client.getMap(mapname);
+
+        // this causes a created event
+        return client.getMap(mapname).then(function (mp) {
+            map = mp;
+            // this causes no event because map was already created
+            return client.getMap(mapname);
+        }).then(function () {
+            // this causes a destroyed event
+            return map.destroy();
+        });
     });
 });

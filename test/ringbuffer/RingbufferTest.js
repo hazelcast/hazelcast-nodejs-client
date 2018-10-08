@@ -42,7 +42,9 @@ describe("Ringbuffer Proxy", function () {
     });
 
     beforeEach(function () {
-        rb = client.getRingbuffer('test')
+        return client.getRingbuffer('test').then(function (buffer) {
+            rb = buffer;
+        })
     });
 
     afterEach(function () {
@@ -101,8 +103,11 @@ describe("Ringbuffer Proxy", function () {
     });
 
     it("correctly reports head sequence", function () {
-        var limitedCapacity = client.getRingbuffer("capacity");
-        return limitedCapacity.addAll([1, 2, 3, 4, 5]).then(function () {
+        var limitedCapacity;
+        return client.getRingbuffer("capacity").then(function (buffer) {
+            limitedCapacity = buffer;
+            return limitedCapacity.addAll([1, 2, 3, 4, 5]);
+        }).then(function () {
             return limitedCapacity.headSequence().then(function (sequence) {
                 expect(sequence.toNumber()).to.equal(2);
             });
@@ -110,8 +115,10 @@ describe("Ringbuffer Proxy", function () {
     });
 
     it("correctly reports remaining capacity", function () {
-        var ttl = client.getRingbuffer("ttl-cap");
-        return ttl.addAll([1, 2]).then(function () {
+        var ttl = client.getRingbuffer("ttl-cap").then(function (buffer) {
+            ttl = buffer;
+            return ttl.addAll([1, 2]);
+        }).then(function () {
             return ttl.remainingCapacity().then(function (rc) {
                 expect(rc.toNumber()).to.equal(3);
             });
@@ -119,8 +126,10 @@ describe("Ringbuffer Proxy", function () {
     });
 
     it("correctly reports total capacity", function () {
-        var ttl = client.getRingbuffer("ttl-cap");
-        return ttl.capacity().then(function (capacity) {
+        return client.getRingbuffer("ttl-cap").then(function (buffer) {
+            ttl = buffer;
+            return ttl.capacity();
+        }).then(function (capacity) {
             expect(capacity.toNumber()).to.equal(5);
         });
     });

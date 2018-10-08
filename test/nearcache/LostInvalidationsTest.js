@@ -75,18 +75,24 @@ describe('LostInvalidation', function () {
     it('client eventually receives an update for which the invalidation event was dropped', function () {
         Util.markServerVersionAtLeast(this, client, '3.8');
 
-        var map = client.getMap(mapName);
         var key = 'key';
         var value = 'val';
         var updatedval = 'updatedval';
         var invalidationHandlerStub;
-        return Util.promiseWaitMilliseconds(100).then(function (resp) {
+        return client.getMap(mapName).then(function (mp) {
+            map = mp;
+            return Util.promiseWaitMilliseconds(100)
+        }).then(function (resp) {
             invalidationHandlerStub = blockInvalidationEvents(client, map, 1);
-            return modifyingClient.getMap(mapName).put(key, value);
+            return modifyingClient.getMap(mapName);
+        }).then(function (mp) {
+            return mp.put(key, value);
         }).then(function () {
             return map.get(key);
         }).then(function () {
-            return modifyingClient.getMap(mapName).put(key, updatedval);
+            return modifyingClient.getMap(mapName);
+        }).then(function (mp) {
+            return mp.put(key, updatedval);
         }).then(function () {
             return Util.promiseWaitMilliseconds(1000);
         }).then(function () {
@@ -101,16 +107,20 @@ describe('LostInvalidation', function () {
 
     it('lost invalidation stress test', function () {
         Util.markServerVersionAtLeast(this, client, '3.8');
-
-        var map = client.getMap(mapName);
         var invalidationHandlerStub;
-        return Util.promiseWaitMilliseconds(100).then(function (resp) {
+        var map;
+        var entries = [];
+        return client.getMap(mapName).then(function (mp) {
+            map = mp;
+            return Util.promiseWaitMilliseconds(100);
+        }).then(function (resp) {
             invalidationHandlerStub = blockInvalidationEvents(client, map);
-            var entries = [];
             for (var i = 0; i < entryCount; i++) {
                 entries.push([i, i]);
             }
-            return modifyingClient.getMap(mapName).putAll(entries);
+            return modifyingClient.getMap(mapName);
+        }).then(function (mp) {
+            return mp.putAll(entries);
         }).then(function () {
             var requestedKeys = [];
             for (var i = 0; i < entryCount; i++) {
@@ -119,11 +129,13 @@ describe('LostInvalidation', function () {
             //populate near cache
             return map.getAll(requestedKeys);
         }).then(function () {
-            var entries = [];
+            entries = [];
             for (var i = 0; i < entryCount; i++) {
                 entries.push([i, i + entryCount]);
             }
-            return modifyingClient.getMap(mapName).putAll(entries);
+            return modifyingClient.getMap(mapName);
+        }).then(function (mp) {
+            return mp.putAll(entries);
         }).then(function () {
             unblockInvalidationEvents(client, invalidationHandlerStub);
             return Util.promiseWaitMilliseconds(2000);

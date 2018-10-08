@@ -38,7 +38,9 @@ describe("List Proxy", function () {
     });
 
     beforeEach(function () {
-        listInstance = client.getList('test')
+        return client.getList('test').then(function (list) {
+            listInstance = list;
+        })
     });
 
     afterEach(function () {
