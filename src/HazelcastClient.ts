@@ -55,6 +55,7 @@ import {DefaultAddressProvider} from './connection/DefaultAddressProvider';
 import {HazelcastCloudDiscovery} from './discovery/HazelcastCloudDiscovery';
 import {Statistics} from './statistics/Statistics';
 import {NearCacheManager} from './nearcache/NearCacheManager';
+import {DistributedObjectListener} from './core/DistributedObjectListener';
 
 export default class HazelcastClient {
     private static CLIENT_ID = 0;
@@ -327,8 +328,8 @@ export default class HazelcastClient {
      * </ul>
      * @returns registration id of the listener.
      */
-    addDistributedObjectListener(listenerFunc: Function): Promise<string> {
-        return this.proxyManager.addDistributedObjectListener(listenerFunc);
+    addDistributedObjectListener(distributedObjectListener: DistributedObjectListener): Promise<string> {
+        return this.proxyManager.addDistributedObjectListener(distributedObjectListener);
     }
 
     /**

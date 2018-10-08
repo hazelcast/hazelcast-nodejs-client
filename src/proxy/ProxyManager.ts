@@ -40,6 +40,7 @@ import {RingbufferProxy} from './ringbuffer/RingbufferProxy';
 import {SemaphoreProxy} from './SemaphoreProxy';
 import {SetProxy} from './SetProxy';
 import {ReliableTopicProxy} from './topic/ReliableTopicProxy';
+import {DistributedObjectEvent, DistributedObjectListener} from '../core/DistributedObjectListener';
 import Address = require('../Address');
 import ClientMessage = require('../ClientMessage');
 
@@ -112,14 +113,12 @@ export class ProxyManager {
         return this.client.getInvocationService().invokeOnRandomTarget(clientMessage).return();
     }
 
-    addDistributedObjectListener(listenerFunc: Function): Promise<string> {
+    addDistributedObjectListener(distributedObjectListener: DistributedObjectListener): Promise<string> {
         const handler = function (clientMessage: ClientMessage): void {
-            const converterFunc = function (name: string, serviceName: string, eventType: string): void {
-                if (eventType === 'CREATED') {
-                    listenerFunc(name, serviceName, 'created');
-                } else if (eventType === 'DESTROYED') {
-                    listenerFunc(name, serviceName, 'destroyed');
-                }
+            const converterFunc = (objectName: string, serviceName: string, eventType: string) => {
+                eventType = eventType.toLowerCase();
+                const distributedObjectEvent = new DistributedObjectEvent(eventType, serviceName, objectName);
+                distributedObjectListener(distributedObjectEvent);
             };
             ClientAddDistributedObjectListenerCodec.handle(clientMessage, converterFunc, null);
         };
