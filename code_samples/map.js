@@ -18,9 +18,11 @@ var Client = require('hazelcast-client').Client;
 
 Client.newHazelcastClient().then(function (hazelcastClient) {
     var client = hazelcastClient;
-    var map = hazelcastClient.getMap('my-distributed-map');
-
-    map.put('key', 'value').then(function () {
+    var map;
+    hazelcastClient.getMap('my-distributed-map').then(function (mp) {
+        map = mp;
+        return map.put('key', 'value');
+    }).then(function () {
         return map.get('key');
     }).then(function (val) {
         console.log(val);
