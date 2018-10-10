@@ -51,14 +51,17 @@ var cfg = new Config.ClientConfig();
 cfg.serializationConfig.portableFactories[1] = new PortableFactory();
 // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
 Client.newHazelcastClient(cfg).then(function (hz) {
+    var users;
     // Get a Distributed Map called "users"
-    var users = hz.getMap('users');
-    // Add some users to the Distributed Map
-    return generateUsers(users).then(function () {
+    hz.getMap('users').then(function (mp) {
+        users = mp;
+        // Add some users to the Distributed Map
+        return generateUsers(users)
+    }).then(function () {
         // Create a Predicate
         var criteriaQuery = Predicates.and(
-            Predicates.truePredicate('active', true),
-            Predicates.isBetween('age', 18, 21)
+            Predicates.equal('active', true),
+            Predicates.between('age', 18, 21)
         );
         // Get result collections using the the Predicate
         return users.valuesWithPredicate(criteriaQuery);

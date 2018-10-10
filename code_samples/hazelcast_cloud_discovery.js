@@ -43,13 +43,16 @@ function createClientConfigWithSSLOpts(key, cert, ca) {
 
 var cfg = createClientConfigWithSSLOpts('./key.pem', './cert.pem', './ca.pem');
 
-Client.newHazelcastClient(cfg).then(function (hazelcastClient) {
-    var mp = hazelcastClient.getMap("testMap");
-
-    mp.put('key', 'value').then(function () {
-        return mp.get('key');
+Client.newHazelcastClient(cfg).then(function (client) {
+    var map;
+    client.getMap("testMap").then(function (mp) {
+        map = mp;
+        return map.put('key', 'value');
+    }).then(function () {
+        return map.get('key');
     }).then((res) => {
         console.log(res);
+        client.shutdown();
     });
 });
 

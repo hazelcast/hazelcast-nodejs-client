@@ -60,10 +60,13 @@ var giveInformation = function (timeofday) {
 
 cfg.serializationConfig.customSerializers.push(CustomSerializer);
 Client.newHazelcastClient(cfg).then(function (client) {
-    var map = client.getMap('time');
+    var map;
     var t = new TimeOfDay(5, 32, 59);
     giveInformation(t);
-    map.put(1, t).then(function () {
+    client.getMap('time').then(function (mp) {
+        map = mp;
+        return map.put(1, t)
+    }).then(function () {
         return map.get(1);
     }).then(function (deserialized) {
         giveInformation(deserialized);

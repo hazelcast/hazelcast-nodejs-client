@@ -18,9 +18,11 @@ var Client = require('hazelcast-client').Client;
 
 Client.newHazelcastClient().then(function (hazelcastClient) {
     var client = hazelcastClient;
-    var pnCounter = hazelcastClient.getPNCounter('counter');
-
-    pnCounter.addAndGet(5).then(function (val) {
+    var pnCounter;
+    hazelcastClient.getPNCounter('counter').then(function (counter) {
+        pnCounter = counter;
+        return pnCounter.addAndGet(5);
+    }).then(function (val) {
         console.log('Added 5 to `counter`. Current value is ' + val);
         return pnCounter.decrementAndGet();
     }).then(function (val) {

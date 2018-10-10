@@ -18,9 +18,11 @@ var Client = require('hazelcast-client').Client;
 
 Client.newHazelcastClient().then(function (hazelcastClient) {
     var client = hazelcastClient;
-    var flakeIdGenerator = hazelcastClient.getFlakeIdGenerator('generator');
-
-    return flakeIdGenerator.newId().then(function (value) {
+    var flakeIdGenerator;
+    hazelcastClient.getFlakeIdGenerator('generator').then(function (gen) {
+        flakeIdGenerator = gen;
+        return flakeIdGenerator.newId();
+    }).then(function (value) {
         console.log('New id: ' + value.toString());
         return client.shutdown();
     });

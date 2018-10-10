@@ -18,9 +18,11 @@ var Client = require('hazelcast-client').Client;
 
 Client.newHazelcastClient().then(function (hazelcastClient) {
     var client = hazelcastClient;
-    var queue = hazelcastClient.getQueue('people');
-
-    queue.put('Item1').then(function () {
+    var queue;
+    hazelcastClient.getQueue('people').then(function (q) {
+        queue = q;
+        return queue.put('Item1');
+    }).then(function () {
         return queue.put('Item2');
     }).then(function () {
         return queue.peek();

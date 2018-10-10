@@ -1,10 +1,13 @@
 var Client = require('hazelcast-client').Client;
 // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
 Client.newHazelcastClient().then(function (hz) {
+    var list;
     // Get the Distributed List from Cluster.
-    var list = hz.getList('my-distributed-list');
-    // Add elements to the list
-    return list.add('item1').then(function () {
+    hz.getList('my-distributed-list').then(function (l) {
+        list = l;
+        // Add elements to the list
+        return list.add('item1');
+    }).then(function () {
         return list.add('item2');
     }).then(function () {
         //Remove the first element
