@@ -18,7 +18,7 @@ require('chai').use(require('chai-as-promised'));
 var expect = require('chai').expect;
 
 var path = require('path');
-var ConfigBuilder = require('../../lib/config/ConfigBuilder').ConfigBuilder;
+var ConfigBuilder = require('../../').ConfigBuilder;
 var Config = require('../../lib/index').Config;
 
 describe('ConfigBuilderSSLTest', function () {
