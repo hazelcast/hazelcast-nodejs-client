@@ -2,8 +2,6 @@
 
 * [Hazelcast Node.js Client](#hazelcast-nodejs-client)
 * [Features](#features)
-* [Installing the Client](#installing-the-client)
-* [Using the Client](#using-the-client)
 * [Configuration Overview](#configuration-overview)
   * [1. Configuration Options](#1-configuration-options)
     * [1.1. Programmatic Configuration](#11-programmatic-configuration)
@@ -11,7 +9,7 @@
   * [2. Importing Multiple Configurations](#2-importing-multiple-configurations)
   * [3. Loading Objects and Path Resolution](#3-loading-objects-and-path-resolution)
 * [Code Samples](#code-samples)
-* [Serialization Considerations](#serialization-considerations)
+* [Serialization](#serialization)
 * [Setting Up Client Network](#setting-up-client-network)
   * [1. Providing the Member Addresses](#1-providing-the-member-addresses)
   * [2. Setting Smart Routing](#2-setting-smart-routing)
@@ -590,42 +588,95 @@ Please see Hazelcast Node.js [code samples](https://github.com/hazelcast/hazelca
 
 You can also refer to Hazelcast Node.js [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/).
 
-# Serialization Considerations
+# Serialization
 
-Hazelcast needs to serialize objects in order to be able to keep them in the server memory. For primitive types, it uses Hazelcast native serialization. For other complex types (e.g. JS objects), it uses JSON serialization.
+Serialization is the process of converting an object into a stream of bytes to store the object in memory, a file or database, or transmit it through network. Its main purpose is to save the state of an object in order to be able to recreate it when needed. The reverse process is called deserialization. Hazelcast offers you its own native serialization methods. You will see these methods throughout the chapter.
 
-For example, when you try to query your data using predicates, this querying is handled on the server side so Hazelcast does not have to bring all data to the client but only the relevant entries. Otherwise, there would be a lot of unneccessary data traffic between the client and the server and the performance would severely drop.
-Because predicates run on the server side, the server should be able to reason about your objects. That is why you need to implement serialization on the server side.
+Hazelcast serializes all your objects before sending them to the server. The `boolean`, `number`,`string` and `Long` types are serialized natively and you cannot override this behavior. The following table is the conversion of types for Java server side.
 
-The same applies to MapStore. The server should be able to deserialize your objects in order to store them in MapStore.
+| Node.js | Java                                |
+|---------|-------------------------------------|
+| boolean | Boolean                             |
+| number  | Byte, Short, Integer, Float, Double |
+| string  | String                              |
+| Long    | Long                                |
 
-Regarding arrays in a serializable object, you can use methods like `writeIntArray` if the array is of a primitive type.
+> Note: A `number`type is serialized as `Double` by default. You can configure this behaviour from `SerializationConfig.defaultNumberType`.
 
-If you have nested objects, these nested objects also need to be serializable. Register the serializers for nested objects and the method `writeObject` will not have any problem with finding a suitable serializer for and writing/reading the nested object.
+Arrays of the above types can be serialized as `boolean[]`, `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `long[]` and `string[]` for Java server side respectively. 
 
-If you have arrays of custom objects, you can serialize/deserialize them like the following:
+Note that if the object is not one of the above-mentioned types, the Node.js client uses `JSON Serialization` by default.
+
+However, `JSON Serialization` is not the best way of serialization in terms of performance and interoperability between the clients in different languages. If you want the serialization to work faster or you use the clients in different languages, Hazelcast offers its own native serialization types, such as [IdentifiedDataSerializable Serialization](#1-identifieddataserializable-serialization) and [Portable Serialization](#2-portable-serialization).
+
+On top of all, if you want to use your own serialization type, you can use a [Custom Serialization](#3-custom-serialization).
+
+> **NOTE: Hazelcast Node.js Client is a TypeScript-based project but JavaScript does not have interfaces. Therefore, 
+ some interfaces are given to user by using the TypeScript files that have `.ts` extension. In the documentation, implementing an interface means an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as `an instance of the interface`. You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or Github repository for a required interface.**
+
+## 1. IdentifiedDataSerializable Serialization
+For a faster serialization of objects, Hazelcast recommends to implement IdentifiedDataSerializable interface.
+
+Here is an example of an object implementing IdentifiedDataSerializable interface:
 
 ```javascript
-writeData(dataOutput) {
-    ...
-    dataOutput.writeInt(this.arrayOfCustomObjects);
-    this.arrayOfCustomObjects.forEach(function(element) {
-        dataOutput.writeObject(element);
-    });
-    ...
+function Address(street, zipCode, city, state) {
+    this.street = street;
+    this.zipCode = zipCode;
+    this.city = city;
+    this.state = state;
 }
 
-readData(dataInput) {
-    ...
-    var arrayOfCustomObjects = [];
-    var lenOfArray = dataInput.readInt();
-    for (i=0;i<lenOfArray;i++) {
-        arrayOfCustomObjects.push(dataInput.readObject());
-    }
-    this.arrayOfCustomObjects = arrayOfCustomObjects;
-    ...
-}
+Address.prototype.getClassId = function () {
+    return 1;
+};
+
+Address.prototype.getFactoryId = function () {
+    return 1;
+};
+
+Address.prototype.writeData = function (objectDataOutput) {
+    objectDataOutput.writeUTF(this.street);
+    objectDataOutput.writeInt(this.zipCode);
+    objectDataOutput.writeUTF(this.city);
+    objectDataOutput.writeUTF(this.state);
+};
+
+Address.prototype.readData = function (objectDataInput) {
+    this.street = objectDataInput.readUTF();
+    this.zipCode = objectDataInput.readInt();
+    this.city = objectDataInput.readUTF();
+    this.state = objectDataInput.readUTF();
+};
 ```
+
+IdentifiedDataSerializable uses `getClassId()` and `getFactoryId()` to reconstitute the object. To complete the implementation `IdentifiedDataSerializableFactory` should also be implemented and registered into `SerializationConfig` which can be accessed from `Config.serializationConfig`. The factory's responsibility is to return an instance of the right `IdentifiedDataSerializable` object, given the class id. 
+
+A sample `IdentifiedDataSerializableFactory` could be implemented as following:
+
+```javascript
+var myIdentifiedFactory = {
+    create: function (type) {
+        if (type === 1) {
+            return new Address();
+        }
+    }
+};
+```
+
+The last step is to register the `IdentifiedDataSerializableFactory` to the `SerializationConfig`.
+
+```javascript
+var config = new Config.ClientConfig();
+config.serializationConfig.dataSerializableFactories[1] = myIdentifiedFactory;
+```
+
+## 2. Portable Serialization
+
+## 3. Custom Serialization
+
+## 4. Global Serialization
+
 
 # Setting Up Client Network
 
