@@ -655,21 +655,41 @@ IdentifiedDataSerializable uses `getClassId()` and `getFactoryId()` to reconstit
 A sample `IdentifiedDataSerializableFactory` could be implemented as following:
 
 ```javascript
-var myIdentifiedFactory = {
-    create: function (type) {
-        if (type === 1) {
-            return new Address();
-        }
+function MyIdentifiedFactory() {
+
+}
+
+MyIdentifiedFactory.prototype.create = function (type) {
+    if (type === 1) {
+        return new Address();
     }
 };
 ```
 
 The last step is to register the `IdentifiedDataSerializableFactory` to the `SerializationConfig`.
 
+**Programmatic Configuration:**
 ```javascript
 var config = new Config.ClientConfig();
-config.serializationConfig.dataSerializableFactories[1] = myIdentifiedFactory;
+config.serializationConfig.dataSerializableFactories[1] = new MyIdentifiedFactory();
 ```
+
+**Declarative Configuration:**
+```json
+{
+    "serialization": {
+        "dataSerializableFactories": [
+            {
+                "path": "address.js",
+                "exportedName": "MyIdentifiedFactory",
+                "factoryId": 1
+            }
+        ]
+    }
+}
+```
+
+Note that the id that is passed to the `SerializationConfig` is same as the `factoryId` that `Address` object returns.
 
 ## 2. Portable Serialization
 
@@ -694,19 +714,19 @@ function Foo(foo) {
 
 Foo.prototype.getClassId = function () {
     return 1;
-}
+};
 
 Foo.prototype.getFactoryId = function () {
     return 1;
-}
+};
 
 Foo.prototype.writePortable = function (portableWriter) {
     portableWriter.writeUTF('foo', this.foo);
-}
+};
 
 Foo.prototype.readPortable = function (portableReader) {
     this.foo = portableReader.readUTF('foo');
-}
+};
 ```
 
 Similar to `IdentifiedDataSerializable`, a Portable object must provide `classId` and `factoryId`. The factory object will be used to create the Portable object given the classId.
@@ -714,21 +734,41 @@ Similar to `IdentifiedDataSerializable`, a Portable object must provide `classId
 A sample `PortableFactory` could be implemented as following:
 
 ```javascript
-var myPortableFactory = {
-    create: function (type) {
-        if (type === 1) {
-            return new Foo();
-        }
+function MyPortableFactory() {
+
+}
+
+MyPortableFactory.prototype.create = function (type) {
+    if (type === 1) {
+        return new Foo();
     }
 };
 ```
 
 The last step is to register the `PortableFactory` to the `SerializationConfig`.
 
+**Programmatic Configuration:**
 ```javascript
 var config = new Config.ClientConfig();
-config.serializationConfig.portableFactories[1] = myPortableFactory;
+config.serializationConfig.portableFactories[1] = new MyPortableFactory();
 ```
+
+**Declarative Configuration:**
+```json
+{
+    "serialization": {
+        "portableFactories": [
+            {
+                "path": "foo.js",
+                "exportedName": "MyPortableFactory",
+                "factoryId": 1
+            }
+        ]
+    }
+}
+```
+
+Note that the id that is passed to the `SerializationConfig` is same as the `factoryId` that `Foo` object returns.
 
 ## 3. Custom Serialization
 
