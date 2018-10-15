@@ -1,0 +1,20 @@
+{
+    "serialization": {
+        "defaultNumberType": "integer",
+        "isBigEndian": false,
+        "dataSerializableFactories": [
+            {
+                "path": "Address.js",
+                "exportedName": "MyIdentifiedFactory",
+                "factoryId": 1
+            }
+        ],
+        "portableFactories": [
+            {
+                "path": "Foo.js",
+                "exportedName": "MyPortableFactory",
+                "factoryId": 1
+            }
+        ]
+    }
+}
