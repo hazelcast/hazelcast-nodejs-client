@@ -655,23 +655,120 @@ IdentifiedDataSerializable uses `getClassId()` and `getFactoryId()` to reconstit
 A sample `IdentifiedDataSerializableFactory` could be implemented as following:
 
 ```javascript
-var myIdentifiedFactory = {
-    create: function (type) {
-        if (type === 1) {
-            return new Address();
-        }
+function MyIdentifiedFactory() {
+
+}
+
+MyIdentifiedFactory.prototype.create = function (type) {
+    if (type === 1) {
+        return new Address();
     }
 };
 ```
 
 The last step is to register the `IdentifiedDataSerializableFactory` to the `SerializationConfig`.
 
+**Programmatic Configuration:**
 ```javascript
 var config = new Config.ClientConfig();
-config.serializationConfig.dataSerializableFactories[1] = myIdentifiedFactory;
+config.serializationConfig.dataSerializableFactories[1] = new MyIdentifiedFactory();
 ```
 
+**Declarative Configuration:**
+```json
+{
+    "serialization": {
+        "dataSerializableFactories": [
+            {
+                "path": "address.js",
+                "exportedName": "MyIdentifiedFactory",
+                "factoryId": 1
+            }
+        ]
+    }
+}
+```
+
+Note that the id that is passed to the `SerializationConfig` is same as the `factoryId` that `Address` object returns.
+
 ## 2. Portable Serialization
+
+As an alternative to the existing serialization methods, Hazelcast offers Portable serialization. To use it, you need to implement `Portable` interface. Portable serialization has the following advantages:
+
+- Supporting multiversion of the same object type
+- Fetching individual fields without having to rely on reflection
+- Querying and indexing support without de-serialization and/or reflection
+
+In order to support these features, a serialized Portable object contains meta information like the version and the concrete location of the each field in the binary data. This way Hazelcast is able to navigate in the binary data and de-serialize only the required field without actually de-serializing the whole object which improves the Query performance.
+
+With multiversion support, you can have two nodes where each of them having different versions of the same object and Hazelcast will store both meta information and use the correct one to serialize and de-serialize Portable objects depending on the node. This is very helpful when you are doing a rolling upgrade without shutting down the cluster.
+
+Also note that Portable serialization is totally language independent and is used as the binary protocol between Hazelcast server and clients.
+
+A sample Portable implementation of a `Foo` class will look like the following:
+
+```javascript
+function Foo(foo) {
+    this.foo = foo;
+}
+
+Foo.prototype.getClassId = function () {
+    return 1;
+};
+
+Foo.prototype.getFactoryId = function () {
+    return 1;
+};
+
+Foo.prototype.writePortable = function (portableWriter) {
+    portableWriter.writeUTF('foo', this.foo);
+};
+
+Foo.prototype.readPortable = function (portableReader) {
+    this.foo = portableReader.readUTF('foo');
+};
+```
+
+Similar to `IdentifiedDataSerializable`, a Portable object must provide `classId` and `factoryId`. The factory object will be used to create the Portable object given the classId.
+
+A sample `PortableFactory` could be implemented as following:
+
+```javascript
+function MyPortableFactory() {
+
+}
+
+MyPortableFactory.prototype.create = function (type) {
+    if (type === 1) {
+        return new Foo();
+    }
+};
+```
+
+The last step is to register the `PortableFactory` to the `SerializationConfig`.
+
+**Programmatic Configuration:**
+```javascript
+var config = new Config.ClientConfig();
+config.serializationConfig.portableFactories[1] = new MyPortableFactory();
+```
+
+**Declarative Configuration:**
+```json
+{
+    "serialization": {
+        "portableFactories": [
+            {
+                "path": "foo.js",
+                "exportedName": "MyPortableFactory",
+                "factoryId": 1
+            }
+        ]
+    }
+}
+```
+
+Note that the id that is passed to the `SerializationConfig` is same as the `factoryId` that `Foo` object returns.
 
 ## 3. Custom Serialization
 
