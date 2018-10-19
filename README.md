@@ -846,6 +846,58 @@ From now on, Hazelcast will use `MusicianSerializer` to serialize `Musician` obj
 
 ## 4. Global Serialization
 
+The global serializer is identical to custom serializers from the implementation perspective. The global serializer is registered as a fallback serializer to handle all other objects if a serializer cannot be located for them.
+
+By default, JSON serialization is used if the object is not `IdentifiedDataSerializable` and `Portable` or there is no custom serializer for it. When you configure a global serializer, it is used instead of JSON serialization.
+
+**Use cases**
+
+- Third party serialization frameworks can be integrated using the global serializer.
+
+- For your custom objects, you can implement a single serializer to handle all of them.
+
+A sample global serializer that integrates with a third party serializer is shown below.
+
+```javascript
+function GlobalSerializer() {
+
+}
+
+GlobalSerializer.prototype.getId = function () {
+    return 20;
+};
+
+GlobalSerializer.prototype.write = function (objectDataOutput, object) {
+    objectDataOutput.write(SomeThirdPartySerializer.serialize(object))
+};
+
+GlobalSerializer.prototype.read = function (objectDataInput) {
+    return SomeThirdPartySerializer.deserialize(objectDataInput);
+};
+```
+
+You should register the global serializer in the configuration.
+
+**Programmatic Configuration:**
+
+```javascript
+config.serializationConfig.globalSerializer = new GlobalSerializer();
+```
+
+**Declarative Configuration:**
+
+```json
+{
+    "serialization": {
+        "defaultNumberType": "integer",
+        "isBigEndian": false,
+        "globalSerializer": {
+            "path": "SomeThirdPartySerializer.js",
+            "exportedName": "SomeThirdPartySerializer"
+        },
+    }
+}
+```
 
 # Setting Up Client Network
 
