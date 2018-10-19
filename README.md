@@ -26,6 +26,9 @@
     * [1.3. Mutual Authentication](#13-mutual-authentication)
 * [Using Node.js Client with Hazelcast IMDG](#using-nodejs-client-with-hazelcast-imdg)
   * [1. Node.js Client API Overview](#1-nodejs-client-api-overview)
+  * [Handling Failures](#handling-failures)
+    * [1. Handling Client Connection Failure](#1-handling-client-connection-failure)
+    * [2. Handling Retry-able Operation Failure](#2-handling-retry-able-operation-failure)
   * [2. Using Distributed Data Structures](#2-using-distributed-data-structures)
     * [2.1. Using Map](#21-using-map)
     * [2.2. Using MultiMap](#22-using-multimap)
@@ -1234,6 +1237,33 @@ As a final step, if you are done with your client, you can shut it down as shown
 });
 ```
 
+## Handling Failures
+
+There are two main failure cases you should be aware of, and configurations you can perform to achieve proper behavior.
+
+### 1. Handling Client Connection Failure
+
+While the client is trying to connect initially to one of the members in the `ClientNetworkConfig.addressList`, all the members might be not available. Instead of giving up, throwing an error and stopping the client, the client will retry as many as `connectionAttemptLimit` times. 
+
+You can configure `connectionAttemptLimit` for the number of times you want the client to retry connecting. Please see [Setting Connection Attempt Limit](#5-setting-connection-attempt-limit).
+
+The client executes each operation through the already established connection to the cluster. If this connection(s) disconnects or drops, the client will try to reconnect as configured.
+
+### 2. Handling Retry-able Operation Failure
+
+While sending the requests to related members, operations can fail due to various reasons. Read-only operations are retried by default. If you want to enable retry for the other operations, you can set the `redoOperation` to `true`. Please see [Enabling Redo Operation](#3-enabling-redo-operation).
+
+You can set a timeout for retrying the operations sent to a member. This can be provided by using the property `hazelcast.client.invocation.timeout.seconds` in `ClientConfig.properties`. The client will retry an operation within this given period, of course, if it is a read-only operation or you enabled the `redoOperation` as stated in the above paragraph. This timeout value is important when there is a failure resulted by either of the following causes:
+
+- Member throws an exception.
+
+- Connection between the client and member is closed.
+
+- Client’s heartbeat requests are timed out.
+
+When a connection problem occurs, an operation is retried if it is certain that it has not run on the member yet or if it is idempotent such as a read-only operation, i.e., retrying does not have a side effect. If it is not certain whether the operation has run on the member, then the non-idempotent operations are not retried. However, as explained in the first paragraph of this section, you can force all client operations to be retried (`redoOperation`) when there is a connection failure between the client and member. But in this case, you should know that some operations may run multiple times causing conflicts. For example, assume that your client sent a `queue.offer` operation to the member, and then the connection is lost. Since there will be no response for this operation, you will not now whether it has run on the member or not. If you enabled `redoOperation`, it means this operation may run again, which may cause two instances of the same object in the queue.
+
+
 ## 2. Using Distributed Data Structures
 
 Most of the Distributed Data Structures are supported by the Node.js client. In this chapter, you will learn how to use these distributed data structures.
@@ -1493,6 +1523,7 @@ npm test
 ```
 
 Test script automatically downloads `hazelcast-remote-controller` and Hazelcast IMDG. The script uses Maven to download those.
+
 # Release Notes
 
 You can see the release notes for each release on the [Releases](https://github.com/hazelcast/hazelcast-nodejs-client/releases) page.
