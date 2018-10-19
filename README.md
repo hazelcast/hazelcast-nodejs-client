@@ -10,6 +10,10 @@
   * [3. Loading Objects and Path Resolution](#3-loading-objects-and-path-resolution)
 * [Code Samples](#code-samples)
 * [Serialization](#serialization)
+  * [1. IdentifiedDataSerializable Serialization](#1-identifieddataserializable-serialization)
+  * [2. Portable Serialization](#2-portable-serialization)
+  * [3. Custom Serialization](#3-custom-serialization)
+  * [4. Global Serialization](#4-global-serialization)
 * [Setting Up Client Network](#setting-up-client-network)
   * [1. Providing the Member Addresses](#1-providing-the-member-addresses)
   * [2. Setting Smart Routing](#2-setting-smart-routing)
@@ -771,6 +775,74 @@ config.serializationConfig.portableFactories[1] = new MyPortableFactory();
 Note that the id that is passed to the `SerializationConfig` is same as the `factoryId` that `Foo` object returns.
 
 ## 3. Custom Serialization
+
+Hazelcast lets you to plug a custom serializer to be used for serialization of objects.
+
+Let's say you have an object `Musician` and you would like to customize the serialization. The reason could be you are not happy with the default serialization.
+
+```javascript
+function Musician(name) {
+    this.name = name;
+}
+```
+
+Let's say your custom `MusicianSerializer` will serialize `Musician`.
+
+```javascript
+function MusicianSerializer() {
+
+}
+
+MusicianSerializer.prototype.getId = function () {
+    return 10;
+}
+
+
+MusicianSerializer.prototype.write = function (objectDataOutput, object) {
+    objectDataOutput.writeInt(object.value.length);
+    for (var i = 0; i < object.value.length; i++) {
+        objectDataOutput.writeInt(t.value.charCodeAt(i));
+    }
+}
+
+MusicianSerializer.prototype.read = function (objectDataInput) {
+    var len = objectDataInput.readInt();
+    var name = '';
+    for (var i = 0; i < len; i++) {
+        name = name + String.fromCharCode(objectDataInput.readInt());
+    }
+    return new Musician(name);
+}
+```
+
+Note that the serializer id must be unique as Hazelcast will use it to lookup the `MusicianSerializer` while it deserializes the object. Now the last required step is to register the `MusicianSerializer` to the configuration.
+
+**Programmatic Configuration:**
+
+```javascript
+var config = new Config.ClientConfig();
+config.serializationConfig.customSerializers.push(new MusicianSerializer());
+```
+
+**Declarative Configuration:**
+
+```json
+{
+    "serialization": {
+        "defaultNumberType": "integer",
+        "isBigEndian": false,
+        "serializers": [
+            {
+                "path": "Musician.js",
+                "exportedName": "MusicianSerializer",
+                "typeId": 10
+            }
+        ]
+    }
+}
+```
+
+From now on, Hazelcast will use `MusicianSerializer` to serialize `Musician` objects.
 
 ## 4. Global Serialization
 
