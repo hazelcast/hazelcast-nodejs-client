@@ -19,7 +19,7 @@ var expect = require('chai').expect;
 var ClientConfig = require('../../').Config.ClientConfig;
 require('chai').use(require('chai-as-promised'));
 var path = require('path');
-var ConfigBuilder = require('../../lib/config/ConfigBuilder').ConfigBuilder;
+var ConfigBuilder = require('../../').ConfigBuilder;
 
 describe('ConfigBuilderHazelcastCloud Test', function () {
     var configFull;

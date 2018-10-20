@@ -1,8 +1,12 @@
 var Client = require('hazelcast-client').Client;
 // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
 Client.newHazelcastClient().then(function (hz) {
-    var rb = hz.getRingbuffer('rb');
-    return rb.add(100).then(function () {
+    var rb;
+    // Get a Ringbuffer called "rb"
+    hz.getRingbuffer('rb').then(function (buffer) {
+        rb = buffer;
+        return rb.add(100);
+    }).then(function () {
         return rb.add(200);
     }).then(function (value) {
         // we start from the oldest item.

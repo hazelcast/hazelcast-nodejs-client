@@ -78,19 +78,32 @@ describe('Invalidation metadata distortion', function () {
 
         this.timeout(13000);
         var stopTest = false;
-
-        var map = client.getMap(mapName);
-        var ignoredKey = mapSize;
-
+        var map;
         var populatePromises = [];
-        for (var i = 0; i < mapSize; i++) {
-            populatePromises.push(map.put(i, i));
-        }
-        populatePromises.push(map.put(ignoredKey, ignoredKey));
+        var ignoredKey = mapSize;
+        client.getMap(mapName).then(function (mp) {
+            map = mp;
+            for (var i = 0; i < mapSize; i++) {
+                populatePromises.push(map.put(i, i));
+            }
+            populatePromises.push(map.put(ignoredKey, ignoredKey));
+        }).then(function () {
+            return Promise.all(populatePromises).then(function () {
+                map.executeOnKey(ignoredKey, new DistortInvalidationMetadataEntryProcessor(mapName, mapSize, 5)).then(function () {
+                    stopTest = true;
+                }).catch(function (err) {
+                    done(err);
+                });
+                setTimeout(populateNearCacheAndCompare, 100);
+            })
+        });
+
 
         function compareActualAndExpected(actualMap, verificationMap, index) {
             return actualMap.get(index).then(function (actual) {
-                return verificationMap.get(index).then(function (expected) {
+                return verificationMap.then(function (mp) {
+                    return mp.get(index);
+                }).then(function (expected) {
                     return expect(actual).to.equal(expected);
                 });
             });
@@ -115,15 +128,6 @@ describe('Invalidation metadata distortion', function () {
                 }).catch(done);
             }
         }
-
-        Promise.all(populatePromises).then(function () {
-            map.executeOnKey(ignoredKey, new DistortInvalidationMetadataEntryProcessor(mapName, mapSize, 5)).then(function () {
-                stopTest = true;
-            }).catch(function (err) {
-                done(err);
-            });
-            setTimeout(populateNearCacheAndCompare, 100);
-        })
 
     });
 });

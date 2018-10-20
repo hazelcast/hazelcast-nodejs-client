@@ -26,6 +26,7 @@ import * as Long from 'long';
 import {SerializationConfig} from '../../config/SerializationConfig';
 import * as Path from 'path';
 import {HazelcastSerializationError} from '../../HazelcastError';
+import * as Util from '../../Util';
 
 export class PortableSerializer implements Serializer {
 
@@ -41,7 +42,7 @@ export class PortableSerializer implements Serializer {
         for (const id in factoryConfigs) {
             const exportedName = factoryConfigs[id].exportedName;
             const path = factoryConfigs[id].path;
-            const factoryConstructor = require(Path.resolve(require.main.filename, path))[exportedName];
+            const factoryConstructor = Util.loadNameFromPath(path, exportedName);
             this.factories[id] = new factoryConstructor();
         }
     }

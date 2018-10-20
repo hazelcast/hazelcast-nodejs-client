@@ -18,9 +18,11 @@ var Client = require('hazelcast-client').Client;
 
 Client.newHazelcastClient().then(function (hazelcastClient) {
     var client = hazelcastClient;
-    var set = hazelcastClient.getSet('my-distributed-set');
-
-    set.add('key').then(function () {
+    var set;
+    hazelcastClient.getSet('my-distributed-set').then(function (s) {
+        set = s;
+        return set.add('key');
+    }).then(function () {
         console.log('"key" is added to the set.');
         return set.contains('key');
     }).then(function (contains) {

@@ -33,7 +33,9 @@ describe('Default serializers with live instance', function () {
             return Client.newHazelcastClient();
         }).then(function (cl) {
             client = cl;
-            map = client.getMap('test');
+            return client.getMap('test').then(function (mp) {
+                map = mp;
+            });
         });
     });
 

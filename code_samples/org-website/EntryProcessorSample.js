@@ -34,10 +34,13 @@ var cfg = new Config.ClientConfig();
 cfg.serializationConfig.dataSerializableFactories[1] = new EntryProcessorDataSerializableFactory();
 // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
 Client.newHazelcastClient(cfg).then(function (hz) {
+    var map;
     // Get the Distributed Map from Cluster.
-    var map = hz.getMap('my-distributed-map');
-    // Put the double value of 0 into the Distributed Map
-    return map.put('key', 0).then(function () {
+    hz.getMap('my-distributed-map').then(function (mp) {
+        map = mp;
+        // Put the double value of 0 into the Distributed Map
+        return map.put('key', 0);
+    }).then(function () {
         // Run the IdentifiedEntryProcessor class on the Hazelcast Cluster Member holding the key called "key"
         return map.executeOnKey('key', new IdentifiedEntryProcessor());
     }).then(function () {

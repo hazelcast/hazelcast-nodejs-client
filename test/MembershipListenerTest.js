@@ -18,6 +18,7 @@ var HazelcastClient = require('../.').Client;
 var Controller = require('./RC');
 var expect = require('chai').expect;
 var Promise = require('bluebird');
+var MemberAttributeOperationType = require('../.').MemberAttributeOperationType
 describe('MembershipListener', function () {
     this.timeout(10000);
     var cluster;
@@ -95,11 +96,11 @@ describe('MembershipListener', function () {
     });
 
     it('sees member attribute change put event', function (done) {
-        client.clusterService.on('memberAttributeChange', function (uuid, key, op, value) {
-            if (op === 'put') {
-                expect(uuid).to.equal(member.uuid);
-                expect(key).to.equal('test');
-                expect(value).to.equal('123');
+        client.clusterService.on('memberAttributeChange', function (memberAttributeEvent) {
+            if (memberAttributeEvent.operationType === MemberAttributeOperationType.PUT) {
+                expect(memberAttributeEvent.member.uuid).to.equal(member.uuid);
+                expect(memberAttributeEvent.key).to.equal('test');
+                expect(memberAttributeEvent.value).to.equal('123');
                 done();
             }
         });
@@ -109,10 +110,10 @@ describe('MembershipListener', function () {
     });
 
     it('sees member attribute change remove event', function (done) {
-        client.clusterService.on('memberAttributeChange', function (uuid, key, op, value) {
-            if (op === 'remove') {
-                expect(uuid).to.equal(member.uuid);
-                expect(key, 'test');
+        client.clusterService.on('memberAttributeChange', function (memberAttributeEvent) {
+            if (memberAttributeEvent.operationType === MemberAttributeOperationType.REMOVE) {
+                expect(memberAttributeEvent.member.uuid).to.equal(member.uuid);
+                expect(memberAttributeEvent.key, 'test');
                 done();
             }
         });

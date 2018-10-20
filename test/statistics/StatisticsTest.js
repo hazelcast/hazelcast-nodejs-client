@@ -47,7 +47,9 @@ describe('Statistics with default period', function () {
             return Client.newHazelcastClient(cfg);
         }).then(function (cl) {
             client = cl;
-            map = client.getMap('nearCachedMap1');
+            return client.getMap('nearCachedMap1').then(function (mp) {
+                map = mp;
+            });
         });
     });
 

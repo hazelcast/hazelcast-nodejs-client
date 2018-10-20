@@ -19,6 +19,7 @@ import TopicOverloadPolicy = require('./proxy/topic/TopicOverloadPolicy');
 import * as Aggregators from './aggregation/Aggregators';
 import {ClientInfo} from './ClientInfo';
 import * as Config from './config/Config';
+import {ConfigBuilder} from './config/ConfigBuilder';
 import {ImportConfig} from './config/ImportConfig';
 import * as Predicates from './core/Predicate';
 import {IterationType} from './core/Predicate';
@@ -27,12 +28,13 @@ import * as HazelcastErrors from './HazelcastError';
 import {IMap} from './proxy/IMap';
 import {ReadResultSet} from './proxy/ringbuffer/ReadResultSet';
 import {ClassDefinitionBuilder} from './serialization/portable/ClassDefinitionBuilder';
-import {ClassDefinition} from './serialization/portable/ClassDefinition';
-import {FieldDefinition} from './serialization/portable/ClassDefinition';
+import {ClassDefinition, FieldDefinition} from './serialization/portable/ClassDefinition';
+import {MemberAttributeEvent, MemberAttributeOperationType} from './core/MemberAttributeEvent';
 
 export {
     HazelcastClient as Client,
     Config,
+    ConfigBuilder,
     ClientInfo,
     IMap,
     Address,
@@ -46,4 +48,6 @@ export {
     FieldDefinition,
     ClassDefinition,
     ClassDefinitionBuilder,
+    MemberAttributeEvent,
+    MemberAttributeOperationType,
 };

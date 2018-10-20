@@ -18,6 +18,7 @@ var RC = require('./RC');
 var HazelcastClient = require('../.').Client;
 var Config = require('../.').Config;
 var expect = require('chai').expect;
+var Util = require('./Util');
 
 
 [true, false].forEach(function (isSmartService) {
@@ -46,33 +47,49 @@ var expect = require('chai').expect;
         });
 
         it('listener is invoked when a new object is created', function (done) {
-            client.addDistributedObjectListener(function (name, serviceName, eventType) {
-                if (eventType === 'created' && name === 'mapToListen') {
-                    expect(serviceName).to.eq('hz:impl:mapService');
-                    done();
-                }
-            }).then(function () {
-                client.getMap('mapToListen');
+            var map;
+            var listenerId;
+            client.addDistributedObjectListener(function (distributedObjectEvent) {
+                expect(distributedObjectEvent.objectName).to.eq('mapToListen');
+                expect(distributedObjectEvent.serviceName).to.eq('hz:impl:mapService');
+                expect(distributedObjectEvent.eventType).to.eq('created');
+                client.removeDistributedObjectListener(listenerId);
+                done();
+            }).then(function (id) {
+                listenerId = id;
+                client.getMap('mapToListen').then(function (mp) {
+                    map = mp;
+                    map.destroy();
+                });
             });
         });
 
         it('listener is invoked when an object is removed[smart=' + isSmartService + ']', function (done) {
             var map;
-            client.addDistributedObjectListener(function (name, serviceName, eventType) {
-                if (eventType === 'destroyed' && name === 'mapToRemove') {
-                    expect(serviceName).to.eq('hz:impl:mapService');
+            var listenerId;
+            client.addDistributedObjectListener(function (distributedObjectEvent) {
+                if (distributedObjectEvent.eventType === 'destroyed' && distributedObjectEvent.objectName === 'mapToRemove') {
+                    expect(distributedObjectEvent.objectName).to.eq('mapToRemove');
+                    expect(distributedObjectEvent.serviceName).to.eq('hz:impl:mapService');
+                    expect(distributedObjectEvent.eventType).to.eq('destroyed');
+                    client.removeDistributedObjectListener(listenerId);
                     done();
-                } else if (eventType === 'created' && name === 'mapToRemove') {
-                    map.destroy();
+                } else if (distributedObjectEvent.eventType === 'created' && distributedObjectEvent.objectName === 'mapToRemove') {
+                    Util.promiseWaitMilliseconds(1000).then(function () {
+                        map.destroy();
+                    });
                 }
-            }).then(function () {
-                map = client.getMap('mapToRemove');
+            }).then(function (id) {
+                listenerId = id;
+                client.getMap('mapToRemove').then(function (mp) {
+                    map = mp;
+                });
             });
         });
 
         it('listener is not invoked when listener was already removed by user', function (done) {
             this.timeout(3000);
-            client.addDistributedObjectListener(function (name, serviceName, eventType) {
+            client.addDistributedObjectListener(function (distributedObjectEvent) {
                 done('Should not have run!');
             }).then(function (listenerId) {
                 return client.removeDistributedObjectListener(listenerId)

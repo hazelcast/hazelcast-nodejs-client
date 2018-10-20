@@ -43,7 +43,9 @@ describe("AtomicLong Proxy", function () {
     });
 
     beforeEach(function () {
-        l = client.getAtomicLong('along');
+        return client.getAtomicLong('along').then(function (al) {
+            l = al;
+        });
     });
 
     afterEach(function () {

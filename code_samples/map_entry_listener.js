@@ -35,8 +35,11 @@ var removeNotification = function (map, key) {
 };
 
 Client.newHazelcastClient().then(function (client) {
-    var map = client.getMap('notifications');
-    map.addEntryListener(listener, undefined, true).then(function () {
+    var map;
+    client.getMap('notifications').then(function (mp) {
+        map = mp;
+        return map.addEntryListener(listener, undefined, true);
+    }).then(function () {
         return pushNotification(map, 1, 'new-value');
     }).then(function () {
         return removeNotification(map, 1);

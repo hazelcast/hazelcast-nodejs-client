@@ -40,6 +40,7 @@ import {RingbufferProxy} from './ringbuffer/RingbufferProxy';
 import {SemaphoreProxy} from './SemaphoreProxy';
 import {SetProxy} from './SetProxy';
 import {ReliableTopicProxy} from './topic/ReliableTopicProxy';
+import {DistributedObjectEvent, DistributedObjectListener} from '../core/DistributedObjectListener';
 import Address = require('../Address');
 import ClientMessage = require('../ClientMessage');
 
@@ -59,7 +60,7 @@ export class ProxyManager {
     public static readonly RELIABLETOPIC_SERVICE: string = 'hz:impl:reliableTopicService';
 
     public readonly service: { [serviceName: string]: any } = {};
-    private readonly proxies: { [proxyName: string]: DistributedObject; } = {};
+    private readonly proxies: { [namespace: string]: DistributedObject; } = {};
     private readonly client: HazelcastClient;
     private readonly logger = LoggingService.getLoggingService();
     private readonly invocationTimeoutMillis: number;
@@ -87,39 +88,53 @@ export class ProxyManager {
         this.service[ProxyManager.RELIABLETOPIC_SERVICE] = ReliableTopicProxy;
     }
 
-    public getOrCreateProxy(name: string, serviceName: string, createAtServer = true): DistributedObject {
-        if (this.proxies[name]) {
-            return this.proxies[name];
+    public getOrCreateProxy(name: string, serviceName: string, createAtServer = true): Promise<DistributedObject> {
+        if (this.proxies[serviceName + name]) {
+            return Promise.resolve(this.proxies[serviceName + name]);
         } else {
+            const deferred = Promise.defer <DistributedObject>();
             let newProxy: DistributedObject;
             if (serviceName === ProxyManager.MAP_SERVICE && this.client.getConfig().getNearCacheConfig(name)) {
                 newProxy = new NearCachedMapProxy(this.client, serviceName, name);
+            } else if (serviceName === ProxyManager.RELIABLETOPIC_SERVICE) {
+                newProxy = new ReliableTopicProxy(this.client, serviceName, name);
+                if (createAtServer) {
+                    (newProxy as ReliableTopicProxy<any>).setRingbuffer().then(() => {
+                        return this.createProxy(newProxy);
+                    }).then(function (): void {
+                        deferred.resolve(newProxy);
+                    });
+                }
+                this.proxies[serviceName + name] = newProxy;
+                return deferred.promise;
             } else {
                 newProxy = new this.service[serviceName](this.client, serviceName, name);
             }
             if (createAtServer) {
-                this.createProxy(newProxy);
+                this.createProxy(newProxy).then(function (): void {
+                    deferred.resolve(newProxy);
+                });
             }
-            this.proxies[name] = newProxy;
-            return newProxy;
+
+            this.proxies[serviceName + name] = newProxy;
+            return deferred.promise;
+
         }
     }
 
     destroyProxy(name: string, serviceName: string): Promise<void> {
-        delete this.proxies[name];
+        delete this.proxies[serviceName + name];
         const clientMessage = ClientDestroyProxyCodec.encodeRequest(name, serviceName);
         clientMessage.setPartitionId(-1);
         return this.client.getInvocationService().invokeOnRandomTarget(clientMessage).return();
     }
 
-    addDistributedObjectListener(listenerFunc: Function): Promise<string> {
+    addDistributedObjectListener(distributedObjectListener: DistributedObjectListener): Promise<string> {
         const handler = function (clientMessage: ClientMessage): void {
-            const converterFunc = function (name: string, serviceName: string, eventType: string): void {
-                if (eventType === 'CREATED') {
-                    listenerFunc(name, serviceName, 'created');
-                } else if (eventType === 'DESTROYED') {
-                    listenerFunc(name, serviceName, 'destroyed');
-                }
+            const converterFunc = (objectName: string, serviceName: string, eventType: string) => {
+                eventType = eventType.toLowerCase();
+                const distributedObjectEvent = new DistributedObjectEvent(eventType, serviceName, objectName);
+                distributedObjectListener(distributedObjectEvent);
             };
             ClientAddDistributedObjectListenerCodec.handle(clientMessage, converterFunc, null);
         };
