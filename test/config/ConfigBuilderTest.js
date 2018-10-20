@@ -45,6 +45,7 @@ describe('ConfigBuilder Test', function () {
         expect(address1.host).to.equal('127.0.0.2');
         expect(address1.port).to.equal(5702);
         expect(networkCfg.smartRouting).to.be.false;
+        expect(networkCfg.redoOperation).to.be.true;
         expect(networkCfg.connectionTimeout).to.equal(6000);
         expect(networkCfg.connectionAttemptPeriod).to.equal(4000);
         expect(networkCfg.connectionAttemptLimit).to.equal(3);

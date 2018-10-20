@@ -45,7 +45,8 @@ class ClientMessage {
 
     private buffer: Buffer;
     private cursor: number = BitsUtil.HEADER_SIZE;
-    private isRetryable: boolean;
+
+    private _isRetryable: boolean;
 
     constructor(buffer: Buffer) {
         this.buffer = buffer;
@@ -126,11 +127,11 @@ class ClientMessage {
     }
 
     setRetryable(value: boolean): void {
-        this.isRetryable = value;
+        this._isRetryable = value;
     }
 
-    getRetryable(): boolean{
-        return this.isRetryable;
+    isRetryable(): boolean{
+        return this._isRetryable;
     }
 
     appendByte(value: number): void {

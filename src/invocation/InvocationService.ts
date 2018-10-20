@@ -345,7 +345,7 @@ export class InvocationService {
                 + ' reached its deadline.', error));
             return true;
         }
-        if (!this.client.getConfig().networkConfig.redoOperation && !invocation.request.getRetryable) {
+        if (!this.client.getConfig().networkConfig.redoOperation && !invocation.request.isRetryable()) {
             invocation.deferred.reject(error);
             return true;
         }
