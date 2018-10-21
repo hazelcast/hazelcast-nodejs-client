@@ -52,7 +52,9 @@ describe('Redo Operation Test: ', function () {
             return HazelcastClient.newHazelcastClient(config);
         }).then(function (cl) {
             client = cl;
-            map = client.getMap('m');
+            return client.getMap('m');
+        }).then(function (mp) {
+            map = mp;
         });
 
         let expected = 1000;
@@ -89,7 +91,9 @@ describe('Redo Operation Test: ', function () {
             return HazelcastClient.newHazelcastClient(config);
         }).then(function (cl) {
             client = cl;
-            map = client.getMap('m');
+            return client.getMap('m');
+        }).then(function (mp) {
+            map = mp;
         });
         
         let expected = 1000;

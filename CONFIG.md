@@ -136,7 +136,10 @@ Default is smart routing mode.
 
 ### Enabling Redo Operation
 
-Specifies whether the redo operations are enabled or not.
+If true, client will redo the operations that were executing on the server and client lost the connection.
+This can be because of network, or simply because the member died. However it is not clear whether the
+application is performed or not. For idempotent operations this is harmless, but for non idempotent ones
+retrying can cause to undesirable effects. Note that the redo can perform on any member.
 
 ```json
 {
