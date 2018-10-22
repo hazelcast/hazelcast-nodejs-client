@@ -37,11 +37,13 @@ describe('CustomSerializer', function () {
     })
 
     it('should be configured declaratively', function () {
+        var m = new Musician('Furkan');
         return Client.newHazelcastClient().then(function (client) {
+            expect(client.getSerializationService().findSerializerFor(m).getId()).to.be.equal(10);
             var map;
             return client.getMap('musicians').then(function (mp) {
                 map = mp;
-                return map.put('neyzen', new Musician('Furkan'));
+                return map.put('neyzen',m);
             }).then(function () {
                 return map.get('neyzen');
             }).then(function (res) {
