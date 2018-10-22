@@ -18,6 +18,10 @@ function Musician(name) {
     this.name = name;
 }
 
+Musician.prototype.hzGetCustomId = function () {
+    return 10;
+};
+
 function MusicianSerializer() {
 
 }
@@ -28,9 +32,9 @@ MusicianSerializer.prototype.getId = function () {
 
 
 MusicianSerializer.prototype.write = function (objectDataOutput, object) {
-    objectDataOutput.writeInt(object.value.length);
-    for (var i = 0; i < object.value.length; i++) {
-        objectDataOutput.writeInt(t.value.charCodeAt(i));
+    objectDataOutput.writeInt(object.name.length);
+    for (var i = 0; i < object.name.length; i++) {
+        objectDataOutput.writeInt(object.name.charCodeAt(i));
     }
 }
 
