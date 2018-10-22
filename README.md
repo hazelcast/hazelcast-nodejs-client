@@ -776,14 +776,18 @@ Note that the id that is passed to the `SerializationConfig` is same as the `fac
 
 ## 3. Custom Serialization
 
-Hazelcast lets you to plug a custom serializer to be used for serialization of objects.
+Hazelcast lets you plug a custom serializer to be used for serialization of objects.
 
-Let's say you have an object `Musician` and you would like to customize the serialization. The reason could be you are not happy with the default serialization.
+Let's say you have an object `Musician` and you would like to customize the serialization. The reason may be you want to use an external serializer for only one object.
 
 ```javascript
 function Musician(name) {
     this.name = name;
 }
+
+Musician.prototype.hzGetCustomId = function () {
+    return 10;
+};
 ```
 
 Let's say your custom `MusicianSerializer` will serialize `Musician`.
@@ -799,9 +803,9 @@ MusicianSerializer.prototype.getId = function () {
 
 
 MusicianSerializer.prototype.write = function (objectDataOutput, object) {
-    objectDataOutput.writeInt(object.value.length);
-    for (var i = 0; i < object.value.length; i++) {
-        objectDataOutput.writeInt(t.value.charCodeAt(i));
+    objectDataOutput.writeInt(object.name.length);
+    for (var i = 0; i < object.name.length; i++) {
+        objectDataOutput.writeInt(object.name.charCodeAt(i));
     }
 }
 
@@ -815,7 +819,7 @@ MusicianSerializer.prototype.read = function (objectDataInput) {
 }
 ```
 
-Note that the serializer id must be unique as Hazelcast will use it to lookup the `MusicianSerializer` while it deserializes the object. Now the last required step is to register the `MusicianSerializer` to the configuration.
+Note that the serializer `id` must be unique as Hazelcast will use it to lookup the `MusicianSerializer` while it deserializes the object. Now the last required step is to register the `MusicianSerializer` to the configuration.
 
 **Programmatic Configuration:**
 
