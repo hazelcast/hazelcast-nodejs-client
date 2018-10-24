@@ -217,7 +217,7 @@ live in the same network without disturbing each other. Note that the cluster na
 purposes. You can remove or leave it as it is if you use Hazelcast 3.9 or later.
 - `<network>`
     - `<port>`: Specifies the port number to be used by the member when it starts. Its default value is 5701 You can specify another port number, and if
-     you set `auto-increment` to `true`, than Hazelcast will try subsequent ports until it finds an available port or `port-count` is reached.
+     you set `auto-increment` to `true`, then Hazelcast will try subsequent ports until it finds an available port or `port-count` is reached.
     - `<join>`: Specifies the strategies to be used by the member to find other cluster members. Choose which strategy you want to
     use by setting its `enabled` attribute to `true` and the others to `false`.
         - `<multicast>`: Members find each other by sending multicast requests to the specified address and port. It is very useful if IP addresses
@@ -635,7 +635,7 @@ Hazelcast serializes all your objects before sending them to the server. The `bo
 | string  | String                              |
 | Long    | Long                                |
 
-> Note: A `number`type is serialized as `Double` by default. You can configure this behaviour from `SerializationConfig.defaultNumberType`.
+> Note: A `number` type is serialized as `Double` by default. You can configure this behavior from `SerializationConfig.defaultNumberType`.
 
 Arrays of the above types can be serialized as `boolean[]`, `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `long[]` and `string[]` for Java server side respectively. 
 
@@ -1358,7 +1358,7 @@ clientConfig.groupConfig.name = 'dev';
 clientConfig.networkConfig.addresses.push('10.90.0.1', '10.90.0.2:5702');
 ```
 
-The second step is to initialize the `HazelcastClient` to be connected to the cluster.
+The second step is initializing the `HazelcastClient` to be connected to the cluster.
 
 ```javascript
 Client.newHazelcastClient(clientConfig).then(function (client) {
@@ -1703,7 +1703,7 @@ You can use the following channels for your questions and development/usage issu
 * Hazelcast Node.js client channel on Gitter: 
 [![Join the chat at https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 * Our Google Groups directory: https://groups.google.com/forum/#!forum/hazelcast
-* Stackoverflow: https://stackoverflow.com/questions/tagged/hazelcast
+* Stack Overflow: https://stackoverflow.com/questions/tagged/hazelcast
 
 # 10. Contributing
 
