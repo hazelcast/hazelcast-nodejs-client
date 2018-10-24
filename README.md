@@ -1730,7 +1730,7 @@ Employee.prototype.readData = function (objectDataInput) {
     this.age = objectDataInput.readInt();
     this.active = objectDataInput.readBoolean();
     this.salary = objectDataInput.readDouble();
-};
+}
 
 Employee.prototype.writeData = function (objectDataOutput) {
     objectDataOutput.writeUTF(this.name);
@@ -1740,7 +1740,7 @@ Employee.prototype.writeData = function (objectDataOutput) {
 }
 ```
 
-Note that `Employee` is an `IdentifiedDataSerializable` object. If you just want to save the `Employee` objects as byte arrays on the map, you don't need to implement its equivalent on the server-side. However, if you want to query on the `employee` map, server needs the `Employee` objects rather than byte array formats. Therefore, you need to implement its Java equivalent and its data serializable factory on server side for server to reconstitute the objects from binary formats. After implementing the Java class and its factory, you need to add the factory to the data serializable factories or the portable factories by giving a factory id. Here is the example XML configuration of the server.
+Note that `Employee` is an `IdentifiedDataSerializable` object. If you just want to save the `Employee` objects as byte arrays on the map, you don't need to implement its equivalent on the server-side. However, if you want to query on the `employee` map, server needs the `Employee` objects rather than byte array formats. Therefore, you need to implement its Java equivalent and its data serializable factory on server side for server to reconstitute the objects from binary formats. After implementing the Java class and its factory, you need to add the factory to the data serializable factories or the portable factories by giving a factory `id`. Here is the example XML configuration of the server.
 
 ```xml
 <hazelcast>
@@ -1756,13 +1756,13 @@ Note that `Employee` is an `IdentifiedDataSerializable` object. If you just want
 </hazelcast>
 ```
 
-Note that before starting the server, you need to compile `Employee` and `MyIdentifiedFactory` classes with server's `CLASSPATH` and add them to `user-lib` folder in the extracted `hazelcast-<version>.zip`. See [Adding User Library to CLASSPATH section](#adding-user-library-to-classpath).
+Note that before starting the server, you need to compile the `Employee` and `MyIdentifiedFactory` classes with server's `CLASSPATH` and add them to the `user-lib` folder in the extracted `hazelcast-<version>.zip`. See [Adding User Library to CLASSPATH section](#adding-user-library-to-classpath).
 
-> **NOTE: You can also make this object `Portable` and implement its Java equivalent and its portable factory on server side. Note that querying with `Portable` object is faster than `IdentifiedDataSerializable`.**
+> **NOTE: You can also make this object `Portable` and implement its Java equivalent and its portable factory on the server side. Note that querying with `Portable` object is faster as compared to `IdentifiedDataSerializable`.**
 
 #### 7.7.1.2. Querying by Combining Predicates with AND, OR, NOT
 
-You can combine predicates by using the and, or, and not operators, as shown in the below example.
+You can combine predicates by using the `and`, `or`, and `not` operators, as shown in the below example.
 
 ```javascript
 var map;
@@ -1915,7 +1915,7 @@ hazelcastClient.getMap('students').then(function (mp) {
 });
 ```
 
-If you want to sort the result before paging, you need to specify a comparator object that implements `Comparator` interface. Also, this comparator object should be one of `IdentifiedDataSerializable` or `Portable`. After implementing the Node.js version, you need to implement the Java equivalent of the comparator and its factory. The Java equivalent of the comparator should implement `java.util.Comparator`. Note that `comprare` function of `Comparator` on the Java side is the equivalent of the `sort` function of `Comparator` on the Node.js side. When you implement `Comparator` and its factory, you can add them to the `CLASSPATH` of the server side.  See [Adding User Library to CLASSPATH section](#adding-user-library-to-classpath).
+If you want to sort the result before paging, you need to specify a comparator object that implements the `Comparator` interface. Also, this comparator object should be one of `IdentifiedDataSerializable` or `Portable`. After implementing the Node.js version, you need to implement the Java equivalent of the comparator and its factory. The Java equivalent of the comparator should implement `java.util.Comparator`. Note that `compare` function of the `Comparator` on the Java side is the equivalent of the `sort` function of `Comparator` on the Node.js side. When you implement the `Comparator` and its factory, you can add them to the `CLASSPATH` of the server side.  See [Adding User Library to CLASSPATH section](#adding-user-library-to-classpath).
 
 Also, You can access a specific page more easily with the help of the `setPage` function. This way, if you make a query for the hundredth page, for example, it will get all 100 pages at once instead of reaching the hundredth page one by one using the `nextPage` function.
 
