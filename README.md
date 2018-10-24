@@ -445,26 +445,39 @@ Hazelcast Node.js client supports the following data structures and features:
 * Queue
 * Set
 * List
-* Multi Map
+* MultiMap
 * Replicated Map
 * Ringbuffer
 * Reliable Topic
-* Near Cache support for Map
 * Lock
 * Semaphore
 * Atomic Long
+* CRDT PN Counter
 * Flake Id Generator
-* Fast Aggregations
-* CRDT Counter
 * Event Listeners
-* Entry Processors
-* Predicates
+* Entry Processor
+* Query (Predicates)
+* Paging Predicate
+* Built-in Predicates
+* Listener with Predicate
+* Fast Aggregations
+* Near Cache Support
+* Eventual Consistency Control
+* Declarative Configuration (JSON)
+* Programmatic Configuration
+* Client Configuration Import
+* Fail Fast on Invalid Configuration
+* SSL Support (requires Enterprise server)
+* Mutual Authentication (requires Enterprise server)
+* Authorization
 * Smart Client
 * Unisocket Client
-* Hazelcast Native Serialization
 * Lifecycle Service
-* SSL connection support (requires enterprise server)
 * Hazelcast Cloud Discovery
+* IdentifiedDataSerializable Serialization
+* Portable Serialization
+* Custom Serialization
+* Global Serialization
 
 # 3. Configuration Overview
 
