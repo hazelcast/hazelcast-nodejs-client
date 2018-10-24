@@ -27,7 +27,7 @@
 * [5. Setting Up Client Network](#5-setting-up-client-network)
   * [5.1. Providing the Member Addresses](#51-providing-the-member-addresses)
   * [5.2. Setting Smart Routing](#52-setting-smart-routing)
-  * [5.3. Setting Redo Operation](#53-enabling-redo-operation)
+  * [5.3. Enabling Redo Operation](#53-enabling-redo-operation)
   * [5.4. Setting Connection Timeout](#54-setting-connection-timeout)
   * [5.5. Setting Connection Attempt Limit](#55-setting-connection-attempt-limit)
   * [5.6. Setting Connection Attempt Period](#56-setting-connection-attempt-period)
@@ -58,6 +58,12 @@
       * [7.5.1.3. Listening for Lifecycle Events](#7513-listening-for-lifecycle-events)
     * [7.5.2. Distributed Data Structure Events](#752-distributed-data-structure-events)
       * [7.5.2.1. Listening for Map Events](#7521-listening-for-map-events)
+  * [7.7. Distributed Query](#77-distributed-query)
+    * [7.7.1 How Distributed Query Works](#771-how-distributed-query-works)
+      * [7.7.1.1. Employee Map Query Example](#7711-employee-map-query-example)
+      * [7.7.1.2. Querying by Combining Predicates with AND, OR, NOT](#7712-querying-by-combining-predicates-with-and-or-not)
+      * [7.7.1.3. Querying with SQL](#7713-querying-with-sql)
+      * [7.7.1.4. Filtering with Paging Predicates](#7714-filtering-with-paging-predicates)
 * [8. Development and Testing](#8-development-and-testing)
   * [8.1. Building and Using Client From Sources](#81-building-and-using-client-from-sources)
   * [8.2. Testing](#82-testing)
@@ -134,6 +140,24 @@ Sep 06, 2018 10:50:23 AM com.hazelcast.core.LifecycleService
 INFO: [192.168.0.3]:5701 [dev] [3.10.4] [192.168.0.3]:5701 is STARTED
 ```
 
+#### Adding User Library to CLASSPATH
+
+ When you want to use features such as querying and language interoperability, you might need to add your own Java classes to Hazelcast member in order to use them from your Node.js client. This can be done by adding your own compiled code to the `CLASSPATH`. To do this, compile your code with the `CLASSPATH` and add the compiled files to `user-lib` folder in the extracted `hazelcast-<version>.zip`. Then, you can start your Hazelcast member by using the start scripts in the `bin` folder. The start scripts will automatically add your compiled classes to the `CLASSPATH`.
+ Note that if you are adding an `IdentifiedDataSerializable` or a `Portable` class, you need to add its factory too. Then, you should configure the factory in the `hazelcast.xml` in the `bin` folder like the following:
+ ```xml
+<hazelcast>
+     ...
+     <serialization>
+        <data-serializable-factories>
+            <data-serializable-factory factory-id=<identified-factory-id>>
+                IdentifiedFactoryClassName
+            </data-serializable-factory>
+        </data-serializable-factories>
+    </serialization>
+    ...
+</hazelcast>
+```
+Similarly, use `<portable-factories>` instead of `<data-serializable-factories>` if you are using portables.
 
 #### Using hazelcast-member Tool
 
@@ -1671,6 +1695,267 @@ map.addEntryListener(mapEventListener).then(function () {
     return map.clear();
 });
 ```
+
+## 7.7. Distributed Query
+
+Hazelcast partitions your data and spreads it across cluster of members. You can iterate over the map entries and look for certain entries (specified by predicates) you are interested in. However, this is not very efficient because you will have to bring the entire entry set and iterate locally. Instead, Hazelcast allows you to run distributed queries on your distributed map.
+
+### 7.7.1. How Distributed Query Works
+
+1. The requested predicate is sent to each member in the cluster.
+2. Each member looks at its own local entries and filters them according to the predicate. At this stage, key/value pairs of the entries are deserialized and then passed to the predicate.
+3. The predicate requester merges all the results coming from each member into a single set.
+
+Distributed query is highly scalable. If you add new members to the cluster, the partition count for each member is reduced and thus the time spent by each member on iterating its entries is reduced. In addition, the pool of partition threads evaluates the entries concurrently in each member, and the network traffic is also reduced since only filtered data is sent to the requester.
+
+**Predicates Object Operators**
+
+The `Predicates` object offered by the client includes many operators for your query requirements. Some of them are explained below.
+
+- `equal`: Checks if the result of an expression is equal to a given value.
+
+- `notEqual`: Checks if the result of an expression is not equal to a given value.
+
+- `instanceOf`: Checks if the result of an expression has a certain type.
+
+- `like`: Checks if the result of an expression matches some string pattern. `%` (percentage sign) is the placeholder for many characters, `_` (underscore) is placeholder for only one character.
+
+- `greaterThan`: Checks if the result of an expression is greater than a certain value.
+
+- `greaterEqual`: Checks if the result of an expression is greater than or equal to a certain value.
+
+- `lessThan`: Checks if the result of an expression is less than a certain value.
+
+- `lessEqual`: Checks if the result of an expression is less than or equal to a certain value.
+
+- `between`: Checks if the result of an expression is between two values (this is inclusive).
+
+- `inPredicate`: Checks if the result of an expression is an element of a certain list.
+
+- `not`: Checks if the result of an expression is false.
+
+- `regex`: Checks if the result of an expression matches some regular expression.
+
+Hazelcast offers the following ways for distributed query purposes:
+
+- Combining Predicates with AND, OR, NOT
+
+- Distributed SQL Query
+
+#### 7.7.1.1. Employee Map Query Example
+
+Assume that you have an `employee` map containing values of `Employee` objects, as coded below. 
+
+```javascript
+function Employee(name, age, active, salary) {
+    this.name = name;
+    this.age = age;
+    this.active = active;
+    this.salary = salary;
+}
+
+Employee.prototype.getClassId = function () {
+    return 1;
+}
+
+Employee.prototype.getFactoryId = function () {
+    return 1;
+}
+
+Employee.prototype.readData = function (objectDataInput) {
+    this.name = objectDataInput.readUTF();
+    this.age = objectDataInput.readInt();
+    this.active = objectDataInput.readBoolean();
+    this.salary = objectDataInput.readDouble();
+}
+
+Employee.prototype.writeData = function (objectDataOutput) {
+    objectDataOutput.writeUTF(this.name);
+    objectDataOutput.writeInt(this.age);
+    objectDataOutput.writeBoolean(this.active);
+    objectDataOutput.writeDouble(this.salary);
+}
+```
+
+Note that `Employee` is an `IdentifiedDataSerializable` object. If you just want to save the `Employee` objects as byte arrays on the map, you don't need to implement its equivalent on the server-side. However, if you want to query on the `employee` map, server needs the `Employee` objects rather than byte array formats. Therefore, you need to implement its Java equivalent and its data serializable factory on server side for server to reconstitute the objects from binary formats. After implementing the Java class and its factory, you need to add the factory to the data serializable factories or the portable factories by giving a factory `id`. Here is the example XML configuration of the server.
+
+```xml
+<hazelcast>
+    ...
+    <serialization>
+        <data-serializable-factories>
+            <data-serializable-factory factory-id="1">
+                mypackage.MyIdentifiedFactory
+            </data-serializable-factory>
+        </data-serializable-factories>
+    </serialization>
+    ...
+</hazelcast>
+```
+
+Note that before starting the server, you need to compile the `Employee` and `MyIdentifiedFactory` classes with server's `CLASSPATH` and add them to the `user-lib` folder in the extracted `hazelcast-<version>.zip`. See [Adding User Library to CLASSPATH section](#adding-user-library-to-classpath).
+
+> **NOTE: You can also make this object `Portable` and implement its Java equivalent and its portable factory on the server side. Note that querying with `Portable` object is faster as compared to `IdentifiedDataSerializable`.**
+
+#### 7.7.1.2. Querying by Combining Predicates with AND, OR, NOT
+
+You can combine predicates by using the `and`, `or`, and `not` operators, as shown in the below example.
+
+```javascript
+var map;
+client.getMap('employee').then(function (mp) {
+    map = mp;
+    var predicate = Predicates.and(Predicates.equal('active', true), Predicates.lessThan('age', 30));
+    return map.valuesWithPredicate(predicate);
+}).then(function (employees) {
+    // some operations
+});
+```
+
+In the above example code, `predicate` verifies whether the entry is active and its `age` value is less than 30. This `predicate` is applied to the `employee` map using the `map.valuesWithPredicate(predicate)` method. This method sends the predicate to all cluster members and merges the results coming from them. 
+
+> **NOTE: Predicates can also be applied to `keySet` and `entrySet` of the Hazelcast distributed map.**
+
+#### 7.7.1.3. Querying with SQL
+
+`SqlPredicate` takes the regular SQL `where` clause. Here is an example:
+
+```javascript
+var map;
+client.getMap('employee').then(function (mp) {
+    map = mp;
+    return map.valuesWithPredicate(new SqlPredicate('active AND age < 30'));
+}).then(function (employees) {
+    // some operations
+});
+```
+
+##### Supported SQL Syntax
+
+**AND/OR:** `<expression> AND <expression> AND <expression>…`
+   
+- `active AND age > 30`
+- `active = false OR age = 45 OR name = 'Joe'`
+- `active AND ( age > 20 OR salary < 60000 )`
+
+**Equality:** `=, !=, <, ⇐, >, >=`
+
+- `<expression> = value`
+- `age <= 30`
+- `name = 'Joe'`
+- `salary != 50000`
+
+**BETWEEN:** `<attribute> [NOT] BETWEEN <value1> AND <value2>`
+
+- `age BETWEEN 20 AND 33 ( same as age >= 20 AND age ⇐ 33 )`
+- `age NOT BETWEEN 30 AND 40 ( same as age < 30 OR age > 40 )`
+
+**IN:** `<attribute> [NOT] IN (val1, val2,…)`
+
+- `age IN ( 20, 30, 40 )`
+- `age NOT IN ( 60, 70 )`
+- `active AND ( salary >= 50000 OR ( age NOT BETWEEN 20 AND 30 ) )`
+- `age IN ( 20, 30, 40 ) AND salary BETWEEN ( 50000, 80000 )`
+
+**LIKE:** `<attribute> [NOT] LIKE 'expression'`
+
+The `%` (percentage sign) is placeholder for multiple characters, an `_` (underscore) is placeholder for only one character.
+
+- `name LIKE 'Jo%'` (true for 'Joe', 'Josh', 'Joseph' etc.)
+- `name LIKE 'Jo_'` (true for 'Joe'; false for 'Josh')
+- `name NOT LIKE 'Jo_'` (true for 'Josh'; false for 'Joe')
+- `name LIKE 'J_s%'` (true for 'Josh', 'Joseph'; false 'John', 'Joe')
+
+**ILIKE:** `<attribute> [NOT] ILIKE 'expression'`
+
+Similar to LIKE predicate but in a case-insensitive manner.
+
+- `name ILIKE 'Jo%'` (true for 'Joe', 'joe', 'jOe','Josh','joSH', etc.)
+- `name ILIKE 'Jo_'` (true for 'Joe' or 'jOE'; false for 'Josh')
+
+**REGEX:** `<attribute> [NOT] REGEX 'expression'`
+
+- `name REGEX 'abc-.*'` (true for 'abc-123'; false for 'abx-123')
+
+##### Querying Examples with Predicates
+
+You can use `__key` attribute to perform a predicated search for entry keys. Please see the following example:
+
+```javascript
+var personMap;
+client.getMap('persons').then(function (mp) {
+    personMap = mp;
+    return personMap.put('Ahmet', 28);
+}).then(function () {
+    return personMap.put('Ali', 30);
+}).then(function () {
+    return personMap.put('Furkan', 23);
+}).then(function () {
+    var predicate = new Predicates.sql('__key like F%');
+    return personMap.valuesWithPredicate(predicate);
+}).then(function (startingWithA) {
+    console.log(startingWithA.get(0)); // 23
+});
+```
+
+In this example, the code creates a list with the values whose keys start with the letter "F”.
+
+You can use `this` attribute to perform a predicated search for entry values. Please see the following example:
+
+```javascript
+var personMap;
+client.getMap('persons').then(function (mp) {
+    personMap = mp;
+    return personMap.put('Ahmet', 28);
+}).then(function () {
+    return personMap.put('Ali', 30);
+}).then(function () {
+    return personMap.put('Furkan', 23);
+}).then(function () {
+    var predicate = new Predicates.greaterEqual('this', 27);
+    return personMap.valuesWithPredicate(predicate);
+}).then(function (olderThan27) {
+    console.log(olderThan27.get(0), olderThan27.get(1)); // 28 30
+});
+```
+
+In this example, the code creates a list with the values greater than or equal to "27".
+
+#### 7.7.1.4. Filtering with Paging Predicates
+
+The Node.js client provides paging for defined predicates. With its `PagingPredicate` object, you can get a list of keys, values, or entries page by page by filtering them with predicates and giving the size of the pages. Also, you can sort the entries by specifying comparators.
+
+```javascript
+var map;
+hazelcastClient.getMap('students').then(function (mp) {
+    map = mp;
+
+    var greaterEqual = Predicates.greaterEqual('age', 18);
+    var pagingPredicate = Predicates.paging(greaterEqual, 5);
+
+// Set page to retrieve third page
+    pagingPredicate.setPage(3);
+
+    // Retrieve third page
+    return map.valuesWithPredicate(pagingPredicate)
+}).then(function (values) {
+    // some operations
+...
+
+    // Set up next page
+    pagingPredicate.nextPage();
+
+    // Retrieve next page
+    return map.valuesWithPredicate(pagingPredicate);
+}).then(function (values) {
+    // some operations
+});
+```
+
+If you want to sort the result before paging, you need to specify a comparator object that implements the `Comparator` interface. Also, this comparator object should be one of `IdentifiedDataSerializable` or `Portable`. After implementing the Node.js version, you need to implement the Java equivalent of the comparator and its factory. The Java equivalent of the comparator should implement `java.util.Comparator`. Note that `compare` function of the `Comparator` on the Java side is the equivalent of the `sort` function of `Comparator` on the Node.js side. When you implement the `Comparator` and its factory, you can add them to the `CLASSPATH` of the server side.  See [Adding User Library to CLASSPATH section](#adding-user-library-to-classpath).
+
+Also, You can access a specific page more easily with the help of the `setPage` function. This way, if you make a query for the hundredth page, for example, it will get all 100 pages at once instead of reaching the hundredth page one by one using the `nextPage` function.
+
 
 # 8. Development and Testing
 
