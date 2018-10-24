@@ -1,6 +1,15 @@
 # Table of Contents
 
 * [Hazelcast Node.js Client](#hazelcast-nodejs-client)
+* [Getting Started](#getting-started)
+  * [1. Requirements](#1-requirements)
+  * [2. Working with Hazelcast Clusters](#2-working-with-hazelcast-clusters)
+  * [3. Downloading and Installing](#3-downloading-and-installing)
+  * [4. Basic Configuration](#4-basic-configuration)
+    * [4.1. IMDG Configuration](#41-imdg-configuration)
+    * [4.2. Hazelcast Client Configuration](#42-hazelcast-client-configuration)
+  * [5. Basic Usage](#5-basic-usage)
+  * [6. Code Samples](#6-code-samples)
 * [Features](#features)
 * [Configuration Overview](#configuration-overview)
   * [1. Configuration Options](#1-configuration-options)
@@ -8,7 +17,6 @@
     * [1.2. Declarative Configuration (JSON)](#12-declarative-configuration-json)
   * [2. Importing Multiple Configurations](#2-importing-multiple-configurations)
   * [3. Loading Objects and Path Resolution](#3-loading-objects-and-path-resolution)
-* [Code Samples](#code-samples)
 * [Serialization](#serialization)
   * [1. IdentifiedDataSerializable Serialization](#1-identifieddataserializable-serialization)
   * [2. Portable Serialization](#2-portable-serialization)
@@ -68,42 +76,12 @@ This document explains Node.js client for Hazelcast which uses Hazelcast's Open 
 
 **Hazelcast** is a clustering and highly scalable data distribution platform. With its various distributed data structures, distributed caching capabilities, elastic nature and more importantly with so many happy users, Hazelcast is a feature-rich, enterprise-ready and developer-friendly in-memory data grid solution.
 
-
-# Features
-
-Hazelcast Node.js client supports the following data structures and features:
-
-* Map
-* Queue
-* Set
-* List
-* Multi Map
-* Replicated Map
-* Ringbuffer
-* Reliable Topic
-* Near Cache support for Map
-* Lock
-* Semaphore
-* Atomic Long
-* Flake Id Generator
-* Fast Aggregations
-* CRDT Counter
-* Event Listeners
-* Entry Processors
-* Predicates
-* Smart Client
-* Unisocket Client
-* Hazelcast Native Serialization
-* Lifecycle Service
-* SSL connection support (requires enterprise server)
-* Hazelcast Cloud Discovery
-
 # Getting Started
 
 This chapter explains all the neccessary things to start using Hazelcast Node.js Client including basic Hazelcast IMDG, IMDG and client
 configuration and how to use distributed maps with Hazelcast.
 
-## Requirements
+## 1. Requirements
 
 - Windows, Linux or MacOS
 - Node.js 4 or newer
@@ -111,7 +89,7 @@ configuration and how to use distributed maps with Hazelcast.
 - Hazelcast IMDG 3.6 or newer
 - Latest Hazelcast Node.js Client
 
-## Working with Hazelcast Clusters
+## 2. Working with Hazelcast Clusters
 
 Hazelcast Node.js Client requires a working Hazelcast IMDG cluster to run. IMDG cluster handles storage and manipulation of the user data.
 Clients are a way to connect to IMDG cluster and access such data.
@@ -162,13 +140,13 @@ Find more information about `hazelcast-member` tool at https://github.com/hazelc
 
 Refer to the official [Hazelcast IMDG Reference Manual](http://docs.hazelcast.org/docs/3.10.4/manual/html-single/index.html#getting-started) for more information regarding starting clusters.
 
-## Downloading and Installing
+## 3. Downloading and Installing
 Hazelcast Node.js Client is on NPM. Just add `hazelcast-client` as a dependency to your Node.js project and you are good to go.
 ```
 npm install hazelcast-client --save
 ```
 
-## Basic Configuration
+## 4. Basic Configuration
 If you are using Hazelcast IMDG and Node.js Client on the same computer, generally default configuration just works. This is great for
 trying out the client. However, if you run the client on a different computer than any of the cluster members, you may
 need to do some simple configuration such as specifying the member addresses.
@@ -179,7 +157,7 @@ It discusses some member side configuration options to ease understanding Hazelc
 regarding cluster connection are discussed. Configuration material regarding data structures are discussed in the following sections.
 You can refer to [IMDG Documentation](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html) and [Configuration Overview](#configuration-overview) for more information.
 
-## IMDG Configuration
+### 4.1. IMDG Configuration
 Hazelcast IMDG aims to run out of the box for most common scenarios. However if you have limitations on your network such as multicast being disabled,
 you may have to configure your Hazelcast IMDG instances so that they can find each other on the network. Also most data structures are configurable.
 Therefore, you may want to configure your Hazelcast IMDG. We will show you the basics about network configuration here.
@@ -237,7 +215,7 @@ purposes. You can remove or leave it as it is if you use Hazelcast 3.9 or later.
 
 These configuration elements are enough for most connection scenarios. Now we will move onto configuration of the Node.js client.
 
-## Hazelcast Client Configuration
+### 4.2. Hazelcast Client Configuration
 There are two ways to configure a Hazelcast Node.js Client:
 - Programmatically
 - Declaratively (JSON)
@@ -321,7 +299,7 @@ cfg.network.addresses.push('some-ip-address:port');
 }
 ```
 
-## Basic Usage
+## 5. Basic Usage
 Now that we have a working cluster and we know how to configure both our cluster and client, we can run a simple program to use a
 distributed map in Node.js client.
 
@@ -434,6 +412,40 @@ Bob is in IT department
 
 You will see this time we add only the sales employees but we get the list all known employees including the ones in IT.
 That is because our map lives in the cluster and no matter which client we use, we can access the whole map.
+
+## 6. Code Samples
+Please see Hazelcast Node.js [code samples](https://github.com/hazelcast/hazelcast-nodejs-client/tree/master/code_samples) for more examples.
+
+You can also refer to Hazelcast Node.js [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/).
+
+# Features
+
+Hazelcast Node.js client supports the following data structures and features:
+
+* Map
+* Queue
+* Set
+* List
+* Multi Map
+* Replicated Map
+* Ringbuffer
+* Reliable Topic
+* Near Cache support for Map
+* Lock
+* Semaphore
+* Atomic Long
+* Flake Id Generator
+* Fast Aggregations
+* CRDT Counter
+* Event Listeners
+* Entry Processors
+* Predicates
+* Smart Client
+* Unisocket Client
+* Hazelcast Native Serialization
+* Lifecycle Service
+* SSL connection support (requires enterprise server)
+* Hazelcast Cloud Discovery
 
 # Configuration Overview
 
@@ -589,11 +601,6 @@ and `MySSLFactory` respectively.
 If you have only one export as the default export from `factory_utils.js`, just skip `exportedName` property and
 the client will load the default export from the file.
 
-
-## Code Samples
-Please see Hazelcast Node.js [code samples](https://github.com/hazelcast/hazelcast-nodejs-client/tree/master/code_samples) for more examples.
-
-You can also refer to Hazelcast Node.js [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/).
 
 # Serialization
 
