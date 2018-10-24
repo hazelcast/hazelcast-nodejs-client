@@ -1,3 +1,5 @@
+[![Join the chat at https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 # Table of Contents
 
 * [Introduction](#introduction)
@@ -64,18 +66,24 @@
 
 # Introduction
 
-> **NOTE: This project is currently in active development.**
+This document provides information about the Node.js client for [Hazelcast](https://hazelcast.org/). This client uses Hazelcast's [Open Client Protocol](https://hazelcast.org/documentation/#open-binary) and works with Hazelcast IMDG 3.6 and higher versions.
 
-[![Join the chat at https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-<br />
+### Resources
 
-This document explains Node.js client for Hazelcast which uses Hazelcast's Open Client Protocol 1.6. This client works with Hazelcast 3.6 and higher.
+See the following for more information on Node.js and Hazelcast IMDG:
 
-**Hazelcast** is a clustering and highly scalable data distribution platform. With its various distributed data structures, distributed caching capabilities, elastic nature and more importantly with so many happy users, Hazelcast is a feature-rich, enterprise-ready and developer-friendly in-memory data grid solution.
+* Hazelcast IMDG [website](https://hazelcast.org/)
+* Hazelcast IMDG [Reference Manual](https://hazelcast.org/documentation/#imdg)
+* About [Node.js](https://nodejs.org/en/about/)
+
+### Release Notes
+
+You can see the release notes for each Node.js client release on the [Releases](https://github.com/hazelcast/hazelcast-nodejs-client/releases) page of this repository.	
+
 
 # 1. Getting Started
 
-This chapter explains all the neccessary things to start using Hazelcast Node.js Client including basic Hazelcast IMDG, IMDG and client
+This chapter explains all the neccessary things to start using Hazelcast Node.js Client including basic Hazelcast IMDG and client
 configuration and how to use distributed maps with Hazelcast.
 
 ## 1.1. Requirements
@@ -101,11 +109,13 @@ distributed data structures that live on the cluster.
 In order to use Hazelcast Node.js Client, we first need to setup an IMDG cluster.
 
 ### Setting Up an IMDG Cluster
+
 There are multiple ways of starting an IMDG cluster easily. You can run standalone IMDG members by downloading and running jar files
 from the website. You can embed IMDG members to your Java projects. The easiest way is to use [hazelcast-member tool](https://github.com/hazelcast/hazelcast-member-tool)
 if you have brew installed in your computer. We are going to download jars from the website and run a standalone member for this guide.
 
 #### Running Standalone Jars
+
 Go to https://hazelcast.org/download/ and download `.zip` or `.tar` distribution of Hazelcast IMDG. Decompress the contents into any directory that you
 want to run IMDG members from. Change into the directory that you decompressed the Hazelcast content. Go into `bin` directory. Use either
 `start.sh` or `start.bat` depending on your operating system. Once you run the start script, you should see IMDG logs on the terminal.
@@ -123,6 +133,7 @@ INFO: [192.168.0.3]:5701 [dev] [3.10.4] [192.168.0.3]:5701 is STARTED
 
 
 #### Using hazelcast-member Tool
+
 `hazelcast-member` is a tool to make downloading and running IMDG members as easy as it could be. If you have brew installed, run the following commands:
 ```
 brew tap hazelcast/homebrew-hazelcast
@@ -138,12 +149,14 @@ Find more information about `hazelcast-member` tool at https://github.com/hazelc
 Refer to the official [Hazelcast IMDG Reference Manual](http://docs.hazelcast.org/docs/3.10.4/manual/html-single/index.html#getting-started) for more information regarding starting clusters.
 
 ## 1.3. Downloading and Installing
+
 Hazelcast Node.js Client is on NPM. Just add `hazelcast-client` as a dependency to your Node.js project and you are good to go.
 ```
 npm install hazelcast-client --save
 ```
 
 ## 1.4. Basic Configuration
+
 If you are using Hazelcast IMDG and Node.js Client on the same computer, generally default configuration just works. This is great for
 trying out the client. However, if you run the client on a different computer than any of the cluster members, you may
 need to do some simple configuration such as specifying the member addresses.
@@ -155,6 +168,7 @@ regarding cluster connection are discussed. Configuration material regarding dat
 You can refer to [IMDG Documentation](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html) and [Configuration Overview](#configuration-overview) for more information.
 
 ### 1.4.1. IMDG Configuration
+
 Hazelcast IMDG aims to run out of the box for most common scenarios. However if you have limitations on your network such as multicast being disabled,
 you may have to configure your Hazelcast IMDG instances so that they can find each other on the network. Also most data structures are configurable.
 Therefore, you may want to configure your Hazelcast IMDG. We will show you the basics about network configuration here.
@@ -213,9 +227,11 @@ purposes. You can remove or leave it as it is if you use Hazelcast 3.9 or later.
 These configuration elements are enough for most connection scenarios. Now we will move onto configuration of the Node.js client.
 
 ### 1.4.2. Hazelcast Client Configuration
+
 There are two ways to configure a Hazelcast Node.js Client:
-- Programmatically
-- Declaratively (JSON)
+
+* Programmatically
+* Declaratively (JSON)
 
 This section describes some network configuration settings to cover common use cases in connecting the client to a cluster. Refer to [Configuration Overview](#configuration-overview)
 and the following sections for information about detailed network configuration and/or additional features of Hazelcast Node.js Client
@@ -277,6 +293,7 @@ cfg.group.name = //group name of you cluster
 ```
 
 ### Network Settings
+
 You need to provide the ip address and port of at least one member in your cluster so the client finds it.
 
 **Programmatic:**
@@ -297,6 +314,7 @@ cfg.network.addresses.push('some-ip-address:port');
 ```
 
 ## 1.5. Basic Usage
+
 Now that we have a working cluster and we know how to configure both our cluster and client, we can run a simple program to use a
 distributed map in Node.js client.
 
@@ -411,6 +429,7 @@ You will see this time we add only the sales employees but we get the list all k
 That is because our map lives in the cluster and no matter which client we use, we can access the whole map.
 
 ## 1.6. Code Samples
+
 Please see Hazelcast Node.js [code samples](https://github.com/hazelcast/hazelcast-nodejs-client/tree/master/code_samples) for more examples.
 
 You can also refer to Hazelcast Node.js [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/).
@@ -450,6 +469,7 @@ This chapter describes the options to configure your Node.js client and explains
 and how you should set paths and exported names for the client to load objects.
 
 ## 3.1. Configuration Options
+
 You can configure Hazelcast Node.js Client declaratively (JSON) or programmatically (API).
 
 * Programmatic configuration
@@ -626,6 +646,7 @@ On top of all, if you want to use your own serialization type, you can use a [Cu
  some interfaces are given to user by using the TypeScript files that have `.ts` extension. In the documentation, implementing an interface means an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as `an instance of the interface`. You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or Github repository for a required interface.**
 
 ## 4.1. IdentifiedDataSerializable Serialization
+
 For a faster serialization of objects, Hazelcast recommends to implement IdentifiedDataSerializable interface.
 
 Here is an example of an object implementing IdentifiedDataSerializable interface:
@@ -1671,19 +1692,25 @@ npm test
 
 Test script automatically downloads `hazelcast-remote-controller` and Hazelcast IMDG. The script uses Maven to download those.
 
-# 9. Support, License and Copyright
+# 9. Getting Help
 
-## Mail Group
+You can use the following channels for your questions and development/usage issues:
 
-Please join the mail group if you are interested in using or developing Hazelcast.
+* This repository by opening an issue.
+* Hazelcast Node.js client channel on Gitter: 
+[![Join the chat at https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+* Our Google Groups directory: https://groups.google.com/forum/#!forum/hazelcast
+* Stackoverflow: https://stackoverflow.com/questions/tagged/hazelcast
 
-http://groups.google.com/group/hazelcast
+# 9. Contributing
 
-## License
+You can always open a pull request on this repository for your feature and implementation/change requests.
 
-Hazelcast is available under the Apache 2 License. Please see the [Licensing appendix](http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#license-questions) for more information.
+# 10. License
 
-## Copyright
+[Apache 2 License](https://github.com/hazelcast/hazelcast-nodejs-client/blob/master/LICENSE).
+
+# 11. Copyright
 
 Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
 
