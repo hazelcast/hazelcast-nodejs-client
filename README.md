@@ -61,7 +61,10 @@
 * [8. Development and Testing](#8-development-and-testing)
   * [8.1. Building and Using Client From Sources](#81-building-and-using-client-from-sources)
   * [8.2. Testing](#82-testing)
-* [9. Support, License and Copyright](#9-support-license-and-copyright)
+* [9. Getting Help](#9-getting-help)
+* [10. Contributing](#10-contributing)
+* [11. License](#11-license)
+* [12. Copyright](#12-copyright)
 
 
 # Introduction
@@ -1702,15 +1705,15 @@ You can use the following channels for your questions and development/usage issu
 * Our Google Groups directory: https://groups.google.com/forum/#!forum/hazelcast
 * Stackoverflow: https://stackoverflow.com/questions/tagged/hazelcast
 
-# 9. Contributing
+# 10. Contributing
 
-You can always open a pull request on this repository for your feature and implementation/change requests.
+Besides your development contributions as explained in the [Development and Testing chapter](#8-development-and-testing) above, you can always open a pull request on this repository for your other requests such as documentation changes.
 
-# 10. License
+# 11. License
 
 [Apache 2 License](https://github.com/hazelcast/hazelcast-nodejs-client/blob/master/LICENSE).
 
-# 11. Copyright
+# 12. Copyright
 
 Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
 
