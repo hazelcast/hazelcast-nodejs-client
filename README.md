@@ -1,74 +1,68 @@
 # Table of Contents
 
-* [Hazelcast Node.js Client](#hazelcast-nodejs-client)
-* [Getting Started](#getting-started)
-  * [1. Requirements](#1-requirements)
-  * [2. Working with Hazelcast Clusters](#2-working-with-hazelcast-clusters)
-  * [3. Downloading and Installing](#3-downloading-and-installing)
-  * [4. Basic Configuration](#4-basic-configuration)
-    * [4.1. IMDG Configuration](#41-imdg-configuration)
-    * [4.2. Hazelcast Client Configuration](#42-hazelcast-client-configuration)
-  * [5. Basic Usage](#5-basic-usage)
-  * [6. Code Samples](#6-code-samples)
-* [Features](#features)
-* [Configuration Overview](#configuration-overview)
-  * [1. Configuration Options](#1-configuration-options)
-    * [1.1. Programmatic Configuration](#11-programmatic-configuration)
-    * [1.2. Declarative Configuration (JSON)](#12-declarative-configuration-json)
-  * [2. Importing Multiple Configurations](#2-importing-multiple-configurations)
-  * [3. Loading Objects and Path Resolution](#3-loading-objects-and-path-resolution)
-* [Serialization](#serialization)
-  * [1. IdentifiedDataSerializable Serialization](#1-identifieddataserializable-serialization)
-  * [2. Portable Serialization](#2-portable-serialization)
-  * [3. Custom Serialization](#3-custom-serialization)
-  * [4. Global Serialization](#4-global-serialization)
-* [Setting Up Client Network](#setting-up-client-network)
-  * [1. Providing the Member Addresses](#1-providing-the-member-addresses)
-  * [2. Setting Smart Routing](#2-setting-smart-routing)
-  * [3. Setting Redo Operation](#3-enabling-redo-operation)
-  * [4. Setting Connection Timeout](#4-setting-connection-timeout)
-  * [5. Setting Connection Attempt Limit](#5-setting-connection-attempt-limit)
-  * [6. Setting Connection Attempt Period](#6-setting-connection-attempt-period)
-  * [7. Enabling Client TLS/SSL](#7-enabling-client-tlsssl)
-  * [8. Enabling Hazelcast Cloud Discovery](#8-enabling-hazelcast-cloud-discovery)
-* [Securing Client Connection](#securing-client-connection)
-  * [1. TLS/SSL](#1-tlsssl)
-    * [1.1. TLS/SSL for Hazelcast Members](#11-tlsssl-for-hazelcast-members)
-    * [1.2. TLS/SSL for Hazelcast Node.js Clients](#12-tlsssl-for-hazelcast-nodejs-clients)
-    * [1.3. Mutual Authentication](#13-mutual-authentication)
-* [Using Node.js Client with Hazelcast IMDG](#using-nodejs-client-with-hazelcast-imdg)
-  * [1. Node.js Client API Overview](#1-nodejs-client-api-overview)
-  * [2. Node.js Client Operation Modes](#2-nodejs-client-operation-modes)
-      * [2.1. Smart Client](#21-smart-client)
-      * [2.2. Unisocket Client](#22-unisocket-client)
-  * [3. Handling Failures](#3-handling-failures)
-    * [3.1. Handling Client Connection Failure](#31-handling-client-connection-failure)
-    * [3.2. Handling Retry-able Operation Failure](#32-handling-retry-able-operation-failure)
-  * [4. Using Distributed Data Structures](#4-using-distributed-data-structures)
-    * [4.1. Using Map](#41-using-map)
-    * [4.2. Using MultiMap](#42-using-multimap)
-    * [4.3. Using ReplicatedMap](#43-using-replicatedmap)
-    * [4.4. Using Queue](#44-using-queue)
-  * [5. Distributed Events](#5-distributed-events)
-    * [5.1. Cluster Events](#51-cluster-events)
-      * [5.1.1. Listening for Member Events](#511-listening-for-member-events)
-      * [5.1.2. Listening for Distributed Object Events](#512-listening-for-distributed-object-events)
-      * [5.1.3. Listening for Lifecycle Events](#513-listening-for-lifecycle-events)
-    * [5.2. Distributed Data Structure Events](#52-distributed-data-structure-events)
-      * [5.2.1. Listening for Map Events](#521-listening-for-map-events)
-* [Development](#development)
-  * [Building And Installing from Sources](#building-and-installing-from-sources)
-  * [Using Locally Installed Package](#using-locally-installed-package)
-* [Testing](#testing)
-  * [Testing Prerequisites](#testing-prerequisites)
-  * [Running the Tests](#running-the-tests)
-* [Release Notes](#release-notes)
-* [Mail Group](#mail-group)
-* [License](#license)
-* [Copyright](#copyright)
+* [Introduction](#introduction)
+* [1. Getting Started](#1-getting-started)
+  * [1.1. Requirements](#11-requirements)
+  * [1.2. Working with Hazelcast Clusters](#12-working-with-hazelcast-clusters)
+  * [1.3. Downloading and Installing](#13-downloading-and-installing)
+  * [1.4. Basic Configuration](#14-basic-configuration)
+    * [1.4.1. IMDG Configuration](#141-imdg-configuration)
+    * [1.4.2. Hazelcast Client Configuration](#142-hazelcast-client-configuration)
+  * [1.5. Basic Usage](#15-basic-usage)
+  * [1.6. Code Samples](#16-code-samples)
+* [2. Features](#2-features)
+* [3. Configuration Overview](#3-configuration-overview)
+  * [3.1. Configuration Options](#31-configuration-options)
+    * [3.1.1. Programmatic Configuration](#311-programmatic-configuration)
+    * [3.1.2. Declarative Configuration (JSON)](#312-declarative-configuration-json)
+  * [3.2. Importing Multiple Configurations](#32-importing-multiple-configurations)
+  * [3.3. Loading Objects and Path Resolution](#33-loading-objects-and-path-resolution)
+* [4. Serialization](#4-serialization)
+  * [4.1. IdentifiedDataSerializable Serialization](#41-identifieddataserializable-serialization)
+  * [4.2. Portable Serialization](#42-portable-serialization)
+  * [4.3. Custom Serialization](#43-custom-serialization)
+  * [4.4. Global Serialization](#44-global-serialization)
+* [5. Setting Up Client Network](#5-setting-up-client-network)
+  * [5.1. Providing the Member Addresses](#51-providing-the-member-addresses)
+  * [5.2. Setting Smart Routing](#52-setting-smart-routing)
+  * [5.3. Setting Redo Operation](#53-enabling-redo-operation)
+  * [5.4. Setting Connection Timeout](#54-setting-connection-timeout)
+  * [5.5. Setting Connection Attempt Limit](#55-setting-connection-attempt-limit)
+  * [5.6. Setting Connection Attempt Period](#56-setting-connection-attempt-period)
+  * [5.7. Enabling Client TLS/SSL](#57-enabling-client-tlsssl)
+  * [5.8. Enabling Hazelcast Cloud Discovery](#58-enabling-hazelcast-cloud-discovery)
+* [6. Securing Client Connection](#6-securing-client-connection)
+  * [6.1. TLS/SSL](#61-tlsssl)
+    * [6.1.1. TLS/SSL for Hazelcast Members](#611-tlsssl-for-hazelcast-members)
+    * [6.1.2. TLS/SSL for Hazelcast Node.js Clients](#612-tlsssl-for-hazelcast-nodejs-clients)
+    * [6.1.3. Mutual Authentication](#613-mutual-authentication)
+* [7. Using Node.js Client with Hazelcast IMDG](#7-using-nodejs-client-with-hazelcast-imdg)
+  * [7.1. Node.js Client API Overview](#71-nodejs-client-api-overview)
+  * [7.2. Node.js Client Operation Modes](#72-nodejs-client-operation-modes)
+      * [7.2.1. Smart Client](#721-smart-client)
+      * [7.2.2. Unisocket Client](#722-unisocket-client)
+  * [7.3. Handling Failures](#73-handling-failures)
+    * [7.3.1. Handling Client Connection Failure](#731-handling-client-connection-failure)
+    * [7.3.2. Handling Retry-able Operation Failure](#732-handling-retry-able-operation-failure)
+  * [7.4. Using Distributed Data Structures](#74-using-distributed-data-structures)
+    * [7.4.1. Using Map](#741-using-map)
+    * [7.4.2. Using MultiMap](#742-using-multimap)
+    * [7.4.3. Using ReplicatedMap](#743-using-replicatedmap)
+    * [7.4.4. Using Queue](#744-using-queue)
+  * [7.5. Distributed Events](#75-distributed-events)
+    * [7.5.1. Cluster Events](#751-cluster-events)
+      * [7.5.1.1. Listening for Member Events](#7511-listening-for-member-events)
+      * [7.5.1.2. Listening for Distributed Object Events](#7512-listening-for-distributed-object-events)
+      * [7.5.1.3. Listening for Lifecycle Events](#7513-listening-for-lifecycle-events)
+    * [7.5.2. Distributed Data Structure Events](#752-distributed-data-structure-events)
+      * [7.5.2.1. Listening for Map Events](#7521-listening-for-map-events)
+* [8. Development and Testing](#8-development-and-testing)
+  * [8.1. Building and Using Client From Sources](#81-building-and-using-client-from-sources)
+  * [8.2. Testing](#82-testing)
+* [9. Support, License and Copyright](#9-support-license-and-copyright)
 
 
-# Hazelcast Node.js Client
+# Introduction
 
 > **NOTE: This project is currently in active development.**
 
@@ -79,12 +73,12 @@ This document explains Node.js client for Hazelcast which uses Hazelcast's Open 
 
 **Hazelcast** is a clustering and highly scalable data distribution platform. With its various distributed data structures, distributed caching capabilities, elastic nature and more importantly with so many happy users, Hazelcast is a feature-rich, enterprise-ready and developer-friendly in-memory data grid solution.
 
-# Getting Started
+# 1. Getting Started
 
 This chapter explains all the neccessary things to start using Hazelcast Node.js Client including basic Hazelcast IMDG, IMDG and client
 configuration and how to use distributed maps with Hazelcast.
 
-## 1. Requirements
+## 1.1. Requirements
 
 - Windows, Linux or MacOS
 - Node.js 4 or newer
@@ -92,7 +86,7 @@ configuration and how to use distributed maps with Hazelcast.
 - Hazelcast IMDG 3.6 or newer
 - Latest Hazelcast Node.js Client
 
-## 2. Working with Hazelcast Clusters
+## 1.2. Working with Hazelcast Clusters
 
 Hazelcast Node.js Client requires a working Hazelcast IMDG cluster to run. IMDG cluster handles storage and manipulation of the user data.
 Clients are a way to connect to IMDG cluster and access such data.
@@ -143,13 +137,13 @@ Find more information about `hazelcast-member` tool at https://github.com/hazelc
 
 Refer to the official [Hazelcast IMDG Reference Manual](http://docs.hazelcast.org/docs/3.10.4/manual/html-single/index.html#getting-started) for more information regarding starting clusters.
 
-## 3. Downloading and Installing
+## 1.3. Downloading and Installing
 Hazelcast Node.js Client is on NPM. Just add `hazelcast-client` as a dependency to your Node.js project and you are good to go.
 ```
 npm install hazelcast-client --save
 ```
 
-## 4. Basic Configuration
+## 1.4. Basic Configuration
 If you are using Hazelcast IMDG and Node.js Client on the same computer, generally default configuration just works. This is great for
 trying out the client. However, if you run the client on a different computer than any of the cluster members, you may
 need to do some simple configuration such as specifying the member addresses.
@@ -160,7 +154,7 @@ It discusses some member side configuration options to ease understanding Hazelc
 regarding cluster connection are discussed. Configuration material regarding data structures are discussed in the following sections.
 You can refer to [IMDG Documentation](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html) and [Configuration Overview](#configuration-overview) for more information.
 
-### 4.1. IMDG Configuration
+### 1.4.1. IMDG Configuration
 Hazelcast IMDG aims to run out of the box for most common scenarios. However if you have limitations on your network such as multicast being disabled,
 you may have to configure your Hazelcast IMDG instances so that they can find each other on the network. Also most data structures are configurable.
 Therefore, you may want to configure your Hazelcast IMDG. We will show you the basics about network configuration here.
@@ -218,7 +212,7 @@ purposes. You can remove or leave it as it is if you use Hazelcast 3.9 or later.
 
 These configuration elements are enough for most connection scenarios. Now we will move onto configuration of the Node.js client.
 
-### 4.2. Hazelcast Client Configuration
+### 1.4.2. Hazelcast Client Configuration
 There are two ways to configure a Hazelcast Node.js Client:
 - Programmatically
 - Declaratively (JSON)
@@ -302,7 +296,7 @@ cfg.network.addresses.push('some-ip-address:port');
 }
 ```
 
-## 5. Basic Usage
+## 1.5. Basic Usage
 Now that we have a working cluster and we know how to configure both our cluster and client, we can run a simple program to use a
 distributed map in Node.js client.
 
@@ -416,12 +410,12 @@ Bob is in IT department
 You will see this time we add only the sales employees but we get the list all known employees including the ones in IT.
 That is because our map lives in the cluster and no matter which client we use, we can access the whole map.
 
-## 6. Code Samples
+## 1.6. Code Samples
 Please see Hazelcast Node.js [code samples](https://github.com/hazelcast/hazelcast-nodejs-client/tree/master/code_samples) for more examples.
 
 You can also refer to Hazelcast Node.js [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/).
 
-# Features
+# 2. Features
 
 Hazelcast Node.js client supports the following data structures and features:
 
@@ -450,18 +444,18 @@ Hazelcast Node.js client supports the following data structures and features:
 * SSL connection support (requires enterprise server)
 * Hazelcast Cloud Discovery
 
-# Configuration Overview
+# 3. Configuration Overview
 
 This chapter describes the options to configure your Node.js client and explains how you can import multiple configurations
 and how you should set paths and exported names for the client to load objects.
 
-## 1. Configuration Options
+## 3.1. Configuration Options
 You can configure Hazelcast Node.js Client declaratively (JSON) or programmatically (API).
 
 * Programmatic configuration
 * Declarative configuration (JSON file)
 
-### 1.1. Programmatic Configuration
+### 3.1.1. Programmatic Configuration
 
 For programmatic configuration of the Hazelcast Node.js Client, just instantiate a `ClientConfig` object and configure the
 desired aspects. An example is shown below.
@@ -476,7 +470,7 @@ return HazelcastClient.newHazelcastClient(cfg);
 
 Refer to `ClientConfig` class documentation at [Hazelcast Node.js Client API Docs](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs) for details.
 
-### 1.2. Declarative Configuration (JSON)
+### 3.1.2. Declarative Configuration (JSON)
 
 If the client is not supplied with a programmatic configuration at the time of initialization, it will look for a configuration file named `hazelcast-client.json`. If this file exists, then the configuration is loaded from it. Otherwise, the client will start with the default configuration. The following are the places that the client looks for a `hazelcast-client.json` in order:
 
@@ -518,7 +512,7 @@ Following is a sample JSON configuration file:
 
 In the following chapters you will learn the description of all elements included in a JSON configuration file used to configure Hazelcast Node.js client.
 
-## 2. Importing Multiple Configurations
+## 3.2. Importing Multiple Configurations
 
 You can compose the declarative configuration of your Node.js client from multiple declarative
 configuration snippets. In order to compose a declarative configuration, you can use the `import` element to load
@@ -564,7 +558,7 @@ shown below.
 
 > Note: Use `import` element on top level of JSON hierarchy.
 
-## 3. Loading Objects and Path Resolution
+## 3.3. Loading Objects and Path Resolution
 
 For configuration elements that require you to specify a code piece, you will need to specify the path to the
 code and name of the exported element that you want the client to use. This configuration is set as follows:
@@ -605,7 +599,7 @@ If you have only one export as the default export from `factory_utils.js`, just 
 the client will load the default export from the file.
 
 
-# Serialization
+# 4. Serialization
 
 Serialization is the process of converting an object into a stream of bytes to store the object in memory, a file or database, or transmit it through network. Its main purpose is to save the state of an object in order to be able to recreate it when needed. The reverse process is called deserialization. Hazelcast offers you its own native serialization methods. You will see these methods throughout the chapter.
 
@@ -631,7 +625,7 @@ On top of all, if you want to use your own serialization type, you can use a [Cu
 > **NOTE: Hazelcast Node.js Client is a TypeScript-based project but JavaScript does not have interfaces. Therefore, 
  some interfaces are given to user by using the TypeScript files that have `.ts` extension. In the documentation, implementing an interface means an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as `an instance of the interface`. You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or Github repository for a required interface.**
 
-## 1. IdentifiedDataSerializable Serialization
+## 4.1. IdentifiedDataSerializable Serialization
 For a faster serialization of objects, Hazelcast recommends to implement IdentifiedDataSerializable interface.
 
 Here is an example of an object implementing IdentifiedDataSerializable interface:
@@ -708,7 +702,7 @@ config.serializationConfig.dataSerializableFactories[1] = new MyIdentifiedFactor
 
 Note that the id that is passed to the `SerializationConfig` is same as the `factoryId` that `Address` object returns.
 
-## 2. Portable Serialization
+## 4.2. Portable Serialization
 
 As an alternative to the existing serialization methods, Hazelcast offers Portable serialization. To use it, you need to implement `Portable` interface. Portable serialization has the following advantages:
 
@@ -787,7 +781,7 @@ config.serializationConfig.portableFactories[1] = new MyPortableFactory();
 
 Note that the id that is passed to the `SerializationConfig` is same as the `factoryId` that `Foo` object returns.
 
-## 3. Custom Serialization
+## 4.3. Custom Serialization
 
 Hazelcast lets you plug a custom serializer to be used for serialization of objects.
 
@@ -861,7 +855,7 @@ config.serializationConfig.customSerializers.push(new MusicianSerializer());
 
 From now on, Hazelcast will use `MusicianSerializer` to serialize `Musician` objects.
 
-## 4. Global Serialization
+## 4.4. Global Serialization
 
 The global serializer is identical to custom serializers from the implementation perspective. The global serializer is registered as a fallback serializer to handle all other objects if a serializer cannot be located for them.
 
@@ -916,7 +910,7 @@ config.serializationConfig.globalSerializer = new GlobalSerializer();
 }
 ```
 
-# Setting Up Client Network
+# 5. Setting Up Client Network
 
 All network related configuration of Hazelcast Node.js Client is performed via the `network` element in the declarative configuration file, or in the object `ClientNetworkConfig` when using programmatic configuration. Let’s first give the examples for these two approaches. Then we will look at its sub-elements and attributes.
 
@@ -954,7 +948,7 @@ clientConfig.networkConfig.connectionAttemptPeriod = 5000;
 clientConfig.networkConfig.connectionAttemptLimit = 5;
 ```
 
-## 1. Providing the Member Addresses
+## 5.1. Providing the Member Addresses
 
 Address list is the initial list of cluster addresses to which the client will connect. The client uses this
 list to find an alive member. Although it may be enough to give only one address of a member in the cluster
@@ -984,7 +978,7 @@ If the port part is omitted, then 5701, 5702 and 5703 will be tried in random or
 
 You can specify multiple addresses with or without port information as seen above. The provided list is shuffled and tried in random order. Its default value is `localhost`.
 
-## 2. Setting Smart Routing
+## 5.2. Setting Smart Routing
 
 Smart routing defines whether the client mode is smart or unisocket. See [Node.js Client Operation Modes section](#nodejs-client-operation-modes)
 for the description of smart and unisocket modes.
@@ -1010,7 +1004,7 @@ clientConfig.networkConfig.smartRouting = true;
 
 Its default value is `true` (smart client mode).
 
-## 3. Enabling Redo Operation
+## 5.3. Enabling Redo Operation
 
 It enables/disables redo-able operations. While sending the requests to related members, operations can fail due to various reasons. Read-only operations are retried by default. If you want to enable retry for the other operations, you can set the `redoOperation` to `true`.
 
@@ -1033,7 +1027,7 @@ clientConfig.networkConfig.redoOperation = true;
 
 Its default value is `false` (disabled).
 
-## 4. Setting Connection Timeout
+## 5.4. Setting Connection Timeout
 
 Connection timeout is the timeout value in milliseconds for members to accept client connection requests.
 If server does not respond within the timeout, the client will retry to connect as many as `ClientNetworkConfig.connectionAttemptLimit` times.
@@ -1060,7 +1054,7 @@ clientConfig.networkConfig.connectionTimeout = 6000;
 
 Its default value is `5000` milliseconds.
 
-## 5. Setting Connection Attempt Limit
+## 5.5. Setting Connection Attempt Limit
 
 While the client is trying to connect initially to one of the members in the `ClientNetworkConfig.addresses`, that member might not be available at that moment. Instead of giving up, throwing an error and stopping the client, the client will retry as many as `ClientNetworkConfig.connectionAttemptLimit` times. This is also the case when the previously established connection between the client and that member goes down.
 
@@ -1085,7 +1079,7 @@ clientConfig.networkConfig.connectionAttemptLimit = 5;
 
 Its default value is `2`.
 
-## 6. Setting Connection Attempt Period
+## 5.6. Setting Connection Attempt Period
 
 Connection timeout period is the duration in milliseconds between the connection attempts defined by `ClientNetworkConfig.connectionAttemptLimit`.
  
@@ -1110,14 +1104,14 @@ clientConfig.networkConfig.connectionAttemptPeriod = 5000;
 
 Its default value is `3000` milliseconds.
 
-## 7. Enabling Client TLS/SSL
+## 5.7. Enabling Client TLS/SSL
 
 You can use TLS/SSL to secure the connection between the clients and members. If you want TLS/SSL enabled
 for the client-cluster connection, you should set an SSL configuration. Please see [TLS/SSL section](#1-tlsssl).
 
 As explained in the [TLS/SSL section](#1-tlsssl), Hazelcast members have key stores used to identify themselves (to other members) and Hazelcast Node.js clients have certificate authorities used to define which members they can trust. Hazelcast has the mutual authentication feature which allows the Node.js clients also to have their private keys and public certificates and members to have their certificate authorities so that the members can know which clients they can trust. Please see the [Mutual Authentication section](#13-mutual-authentication).
 
-## 8. Enabling Hazelcast Cloud Discovery
+## 5.8. Enabling Hazelcast Cloud Discovery
 
 The purpose of Hazelcast Cloud Discovery is to provide clients to use IP addresses provided by `hazelcast orchestrator`. To enable Hazelcast Cloud Discovery, specify a token for the `discoveryToken` field and set the `enabled` field to `true`.
  
@@ -1155,11 +1149,11 @@ clientConfig.networkConfig.cloudConfig.discoveryToken = 'EXAMPLE_TOKEN';
 
 To be able to connect to the provided IP addresses, you should use secure TLS/SSL connection between the client and members. Therefore, you should set an SSL configuration as described in the previous section.
 
-# Securing Client Connection
+# 6. Securing Client Connection
 
 This chapter describes the security features of Hazelcast Node.js Client. These include using TLS/SSL for connections between members and between clients and members and mutual authentication. These security features require **Hazelcast IMDG Enterprise** edition.
 
-### 1. TLS/SSL
+### 6.1. TLS/SSL
 
 One of the offers of Hazelcast is the TLS/SSL protocol which you can use to establish an encrypted communication across your cluster with key stores and trust stores.
 
@@ -1169,11 +1163,11 @@ One of the offers of Hazelcast is the TLS/SSL protocol which you can use to esta
 
 You should set `keyStore` and `trustStore` before starting the members. See the next section how to set `keyStore` and `trustStore` on the server side.
 
-#### 1.1. TLS/SSL for Hazelcast Members
+#### 6.1.1. TLS/SSL for Hazelcast Members
 
 Hazelcast allows you to encrypt socket level communication between Hazelcast members and between Hazelcast clients and members, for end to end encryption. To use it, see [TLS/SSL for Hazelcast Members section](http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#tls-ssl-for-hazelcast-members).
 
-#### 1.2. TLS/SSL for Hazelcast Node.js Clients
+#### 6.1.2. TLS/SSL for Hazelcast Node.js Clients
 
 Hazelcast Node.js clients which support TLS/SSL should have the following user supplied SSL `options` object, to pass to
 [`tls.connect` of Node.js](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback):
@@ -1189,7 +1183,7 @@ clientConfig.networkConfig.sslOptions = {
 };
 ```
 
-#### 1.3. Mutual Authentication
+#### 6.1.3. Mutual Authentication
 
 As explained above, Hazelcast members have key stores used to identify themselves (to other members) and Hazelcast clients have trust stores used to define which members they can trust.
 
@@ -1322,9 +1316,9 @@ the properties section in the JSON configuration file. Lastly, the client calls 
 For information about the path resolution, please refer to the [Loading Objects and Path Resolution](#3-loading-objects-and-path-resolution) section.
 
 
-# Using Node.js Client with Hazelcast IMDG
+# 7. Using Node.js Client with Hazelcast IMDG
 
-## 1. Node.js Client API Overview
+## 7.1. Node.js Client API Overview
 
 Most of the functions in the API return `Promise`. Therefore, you need to be familiar with the concept of promises to use the Node.js client. If not, you can learn about them using various online resources.
 
@@ -1375,26 +1369,26 @@ As a final step, if you are done with your client, you can shut it down as shown
 });
 ```
 
-## 2. Node.js Client Operation Modes
+## 7.2. Node.js Client Operation Modes
 
 The client has two operation modes because of the distributed nature of the data and cluster.
 
-### 2.1. Smart Client
+### 7.2.1. Smart Client
 
 In the smart mode, clients connect to each cluster member. Since each data partition uses the well known and consistent hashing algorithm, each client can send an operation to the relevant cluster member, which increases the overall throughput and efficiency. Smart mode is the default mode.
 
 
-### 2.2. Unisocket Client
+### 7.2.2. Unisocket Client
 
 For some cases, the clients can be required to connect to a single member instead of each member in the cluster. Firewalls, security, or some custom networking issues can be the reason for these cases.
 
 In the unisocket client mode, the client will only connect to one of the configured addresses. This single member will behave as a gateway to the other members. For any operation requested from the client, it will redirect the request to the relevant member and return the response back to the client returned from this member.
 
-## 3. Handling Failures
+## 7.3. Handling Failures
 
 There are two main failure cases you should be aware of, and configurations you can perform to achieve proper behavior.
 
-### 3.1. Handling Client Connection Failure
+### 7.3.1. Handling Client Connection Failure
 
 While the client is trying to connect initially to one of the members in the `ClientNetworkConfig.addressList`, all the members might be not available. Instead of giving up, throwing an error and stopping the client, the client will retry as many as `connectionAttemptLimit` times. 
 
@@ -1402,7 +1396,7 @@ You can configure `connectionAttemptLimit` for the number of times you want the 
 
 The client executes each operation through the already established connection to the cluster. If this connection(s) disconnects or drops, the client will try to reconnect as configured.
 
-### 3.2. Handling Retry-able Operation Failure
+### 7.3.2. Handling Retry-able Operation Failure
 
 While sending the requests to related members, operations can fail due to various reasons. Read-only operations are retried by default. If you want to enable retry for the other operations, you can set the `redoOperation` to `true`. Please see [Enabling Redo Operation](#3-enabling-redo-operation).
 
@@ -1417,11 +1411,11 @@ You can set a timeout for retrying the operations sent to a member. This can be 
 When a connection problem occurs, an operation is retried if it is certain that it has not run on the member yet or if it is idempotent such as a read-only operation, i.e., retrying does not have a side effect. If it is not certain whether the operation has run on the member, then the non-idempotent operations are not retried. However, as explained in the first paragraph of this section, you can force all client operations to be retried (`redoOperation`) when there is a connection failure between the client and member. But in this case, you should know that some operations may run multiple times causing conflicts. For example, assume that your client sent a `queue.offer` operation to the member, and then the connection is lost. Since there will be no response for this operation, you will not now whether it has run on the member or not. If you enabled `redoOperation`, it means this operation may run again, which may cause two instances of the same object in the queue.
 
 
-## 4. Using Distributed Data Structures
+## 7.4. Using Distributed Data Structures
 
 Most of the Distributed Data Structures are supported by the Node.js client. In this chapter, you will learn how to use these distributed data structures.
 
-### 4.1. Using Map
+### 7.4.1. Using Map
 
 A Map usage example is shown below.
 
@@ -1436,7 +1430,7 @@ map.put(1, 'Furkan').then(function (oldValue) {
 });
 ```
 
-### 4.2. Using MultiMap
+### 7.4.2. Using MultiMap
 
 A MultiMap usage example is shown below.
 
@@ -1452,7 +1446,7 @@ multiMap.put(1, 'Furkan').then(function () {
 });
 ```
 
-### 4.3. Using ReplicatedMap
+### 7.4.3. Using ReplicatedMap
 
 A ReplicatedMap usage example is shown below.
 
@@ -1468,7 +1462,7 @@ replicatedMap.put(1, 'Furkan').then(function () {
 });
 ```
 
-### 4.4. Using Queue
+### 7.4.4. Using Queue
 
 A Queue usage example is shown below.
 
@@ -1482,12 +1476,12 @@ queue.offer('Furkan').then(function () {
 });
 ```
 
-## 5. Distributed Events
+## 7.5. Distributed Events
 
 
 This chapter explains when various events are fired and describes how you can add event listeners on a Hazelcast Node.js client. These events can be categorized as cluster and distributed data structure events.
 
-### 5.1. Cluster Events
+### 7.5.1. Cluster Events
 
 You can add event listeners to a Hazelcast Node.js client. You can configure the following listeners to listen to the events on the client side.
 
@@ -1497,7 +1491,7 @@ You can add event listeners to a Hazelcast Node.js client. You can configure the
 
 `Lifecycle Listener`: Notifies when the client is starting, started, shutting down, and shutdown.
 
-#### 5.1.1. Listening for Member Events
+#### 7.5.1.1. Listening for Member Events
 
 You can add the following types of member events to the `ClusterService`.
 
@@ -1525,7 +1519,7 @@ client.clusterService.on('memberAttributeChanged', function (memberAttributeEven
 });
 ```
 
-####  5.1.2. Listening for Distributed Object Events
+#### 7.5.1.2. Listening for Distributed Object Events
 
 The events for distributed objects are invoked when they are created and destroyed in the cluster. After the events, a listener callback function is called. The type of the callback function should be `DistributedObjectListener`. The parameter of the function is `DistributedObjectEvent` including following fields:
 
@@ -1553,7 +1547,7 @@ client.addDistributedObjectListener(function (distributedObjectEvent) {
 });
 ```
 
-#### 5.1.3. Listening for Lifecycle Events
+#### 7.5.1.3. Listening for Lifecycle Events
 
 The Lifecycle Listener notifies for the following events:
 - `starting`: A client is starting.
@@ -1593,14 +1587,14 @@ Lifecycle Event >>> shutdown
 Process finished with exit code 0
 ```
 
-### 5.2. Distributed Data Structure Events
+### 7.5.2. Distributed Data Structure Events
 
 You can add event listeners to the Distributed Data Structures.
 
 > **NOTE: Hazelcast Node.js Client is a TypeScript-based project but JavaScript does not have interfaces. Therefore, 
   some interfaces are given to user by using the TypeScript files that have `.ts` extension. In the documentation, implementing an interface means an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as `an instance of the interface`. You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or Github repository for a required interface.**
 
-#### 5.2.1. Listening for Map Events
+#### 7.5.2.1. Listening for Map Events
 
 You can listen to map-wide or entry-based events by using the functions in the `MapListener` interface. Every function type in this interface is one of the `EntryEventListener` and `MapEventListener` types. To listen to these events, you need to implement the relevant `EntryEventListener` and `MapEventListener` functions in the `MapListener` interface. 
 
@@ -1641,12 +1635,12 @@ map.addEntryListener(mapEventListener).then(function () {
 });
 ```
 
-# Development and Testing
+# 8. Development and Testing
 
 Hazelcast Node.js client is developed using TypeScript. If you want to help with bug fixes, develop new features or
 tweak the implementation to your application's needs, you can follow the steps in this section.
 
-## Building and Using Client From Sources
+## 8.1. Building and Using Client From Sources
 
 Follow the below steps to build and install Hazelcast Node.js client from its source:
 
@@ -1664,7 +1658,7 @@ local project, run:
 If you are planning to contribute, please run the style checker, as shown below, and fix the reported issues before sending a pull request.
 - `npm run lint`
 
-## Testing
+## 8.2. Testing
 In order to test Hazelcast Node.js Client locally, you will need the following:
 * Java 6 or newer
 * Maven
@@ -1677,21 +1671,19 @@ npm test
 
 Test script automatically downloads `hazelcast-remote-controller` and Hazelcast IMDG. The script uses Maven to download those.
 
-# Release Notes
+# 9. Support, License and Copyright
 
-You can see the release notes for each release on the [Releases](https://github.com/hazelcast/hazelcast-nodejs-client/releases) page.
-
-# Mail Group
+## Mail Group
 
 Please join the mail group if you are interested in using or developing Hazelcast.
 
 http://groups.google.com/group/hazelcast
 
-# License
+## License
 
 Hazelcast is available under the Apache 2 License. Please see the [Licensing appendix](http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#license-questions) for more information.
 
-# Copyright
+## Copyright
 
 Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
 
