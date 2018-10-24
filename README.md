@@ -92,7 +92,7 @@ You can see the release notes for each Node.js client release on the [Releases](
 
 # 1. Getting Started
 
-This chapter explains all the necessary things to start using Hazelcast Node.js Client including basic Hazelcast IMDG and client
+This chapter explains all the necessary things to start using Hazelcast Node.js client including basic Hazelcast IMDG and client
 configuration and how to use distributed maps with Hazelcast.
 
 ## 1.1. Requirements
@@ -101,11 +101,11 @@ configuration and how to use distributed maps with Hazelcast.
 - Node.js 4 or newer
 - Java 6 or newer
 - Hazelcast IMDG 3.6 or newer
-- Latest Hazelcast Node.js Client
+- Latest Hazelcast Node.js client
 
 ## 1.2. Working with Hazelcast Clusters
 
-Hazelcast Node.js Client requires a working Hazelcast IMDG cluster to run. IMDG cluster handles storage and manipulation of the user data.
+Hazelcast Node.js client requires a working Hazelcast IMDG cluster to run. IMDG cluster handles storage and manipulation of the user data.
 Clients are a way to connect to IMDG cluster and access such data.
 
 IMDG cluster consists of one or more Hazelcast IMDG members. These members generally run on multiple virtual or physical machines
@@ -115,7 +115,7 @@ any hardware or software problem causes a crash to any member, the data on that 
 continues to operate without any downtime. Hazelcast clients are an easy way to connect to an IMDG cluster and perform tasks on
 distributed data structures that live on the cluster.
 
-In order to use Hazelcast Node.js Client, we first need to setup an IMDG cluster.
+In order to use Hazelcast Node.js client, we first need to setup an IMDG cluster.
 
 ### Setting Up an IMDG Cluster
 
@@ -177,7 +177,7 @@ Refer to the official [Hazelcast IMDG Reference Manual](http://docs.hazelcast.or
 
 ## 1.3. Downloading and Installing
 
-Hazelcast Node.js Client is on NPM. Just add `hazelcast-client` as a dependency to your Node.js project and you are good to go.
+Hazelcast Node.js client is on NPM. Just add `hazelcast-client` as a dependency to your Node.js project and you are good to go.
 ```
 npm install hazelcast-client --save
 ```
@@ -255,16 +255,16 @@ These configuration elements are enough for most connection scenarios. Now we wi
 
 ### 1.4.2. Hazelcast Client Configuration
 
-There are two ways to configure a Hazelcast Node.js Client:
+There are two ways to configure a Hazelcast Node.js client:
 
 * Programmatically
 * Declaratively (JSON)
 
 This section describes some network configuration settings to cover common use cases in connecting the client to a cluster. Refer to [Configuration Overview](#configuration-overview)
-and the following sections for information about detailed network configuration and/or additional features of Hazelcast Node.js Client
+and the following sections for information about detailed network configuration and/or additional features of Hazelcast Node.js client
 configuration.
 
-An easy way to configure your Hazelcast Node.js Client is to create a `Config` object and set the appropriate options. Then you can
+An easy way to configure your Hazelcast Node.js client is to create a `Config` object and set the appropriate options. Then you can
 supply this object to your client at the startup. Another way to configure your client is to provide a `hazelcast-client.json` file. This approach is similar to `hazelcast.xml` approach
 in configuring the member. Note that `hazelcast-client.json` is a JSON file whereas member configuration is XML based. Although these
 two formats are different, you will realize that the names of the configuration parameters are the same for both the client and member.
@@ -286,7 +286,7 @@ Client.newHazelcastClient(cfg)
 
 **Declarative configuration**
 
-Hazelcast Node.js Client looks for a `hazelcast-client.json` in the current working directory unless you provide a configuration object
+Hazelcast Node.js client looks for a `hazelcast-client.json` in the current working directory unless you provide a configuration object
 at the startup. If you intend to configure your client using a configuration file, then place a `hazelcast-client.json` in the directory
 of your application's entry point.
 
@@ -372,7 +372,7 @@ ClientInfo {
   uuid: '532e8479-2b86-47f9-a0fb-a2da13a8d584',
   localAddress: Address { host: '127.0.0.1', port: 51903, type: 4 } }
 ```
-Congratulations, you just started a Hazelcast Node.js Client.
+Congratulations, you just started a Hazelcast Node.js client.
 
 **Using a Map**
 
@@ -510,14 +510,14 @@ and how you should set paths and exported names for the client to load objects.
 
 ## 3.1. Configuration Options
 
-You can configure Hazelcast Node.js Client declaratively (JSON) or programmatically (API).
+You can configure Hazelcast Node.js client declaratively (JSON) or programmatically (API).
 
 * Programmatic configuration
 * Declarative configuration (JSON file)
 
 ### 3.1.1. Programmatic Configuration
 
-For programmatic configuration of the Hazelcast Node.js Client, just instantiate a `ClientConfig` object and configure the
+For programmatic configuration of the Hazelcast Node.js client, just instantiate a `ClientConfig` object and configure the
 desired aspects. An example is shown below.
 
 ```javascript
@@ -682,7 +682,7 @@ However, `JSON Serialization` is not the best way of serialization in terms of p
 
 On top of all, if you want to use your own serialization type, you can use a [Custom Serialization](#3-custom-serialization).
 
-> **NOTE: Hazelcast Node.js Client is a TypeScript-based project but JavaScript does not have interfaces. Therefore, 
+> **NOTE: Hazelcast Node.js client is a TypeScript-based project but JavaScript does not have interfaces. Therefore, 
  some interfaces are given to user by using the TypeScript files that have `.ts` extension. In the documentation, implementing an interface means an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as `an instance of the interface`. You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or Github repository for a required interface.**
 
 ## 4.1. IdentifiedDataSerializable Serialization
@@ -973,7 +973,7 @@ config.serializationConfig.globalSerializer = new GlobalSerializer();
 
 # 5. Setting Up Client Network
 
-All network related configuration of Hazelcast Node.js Client is performed via the `network` element in the declarative configuration file, or in the object `ClientNetworkConfig` when using programmatic configuration. Let’s first give the examples for these two approaches. Then we will look at its sub-elements and attributes.
+All network related configuration of Hazelcast Node.js client is performed via the `network` element in the declarative configuration file, or in the object `ClientNetworkConfig` when using programmatic configuration. Let’s first give the examples for these two approaches. Then we will look at its sub-elements and attributes.
 
 ### Declarative Client Network Configuration
 
@@ -1212,7 +1212,7 @@ To be able to connect to the provided IP addresses, you should use secure TLS/SS
 
 # 6. Securing Client Connection
 
-This chapter describes the security features of Hazelcast Node.js Client. These include using TLS/SSL for connections between members and between clients and members and mutual authentication. These security features require **Hazelcast IMDG Enterprise** edition.
+This chapter describes the security features of Hazelcast Node.js client. These include using TLS/SSL for connections between members and between clients and members and mutual authentication. These security features require **Hazelcast IMDG Enterprise** edition.
 
 ### 6.1. TLS/SSL
 
@@ -1277,7 +1277,7 @@ Below subsections describe each way.
 
 **Using Built-in BasicSSLOptionsFactory**
 
-Hazelcast Node.js Client includes a utility factory class that creates the necessary `options` object out of the supplied
+Hazelcast Node.js client includes a utility factory class that creates the necessary `options` object out of the supplied
 properties. All you need to do is specifying your factory as `BasicSSLOptionsFactory` and provide the following options:
 
 - caPath
@@ -1652,7 +1652,7 @@ Process finished with exit code 0
 
 You can add event listeners to the Distributed Data Structures.
 
-> **NOTE: Hazelcast Node.js Client is a TypeScript-based project but JavaScript does not have interfaces. Therefore, 
+> **NOTE: Hazelcast Node.js client is a TypeScript-based project but JavaScript does not have interfaces. Therefore, 
   some interfaces are given to user by using the TypeScript files that have `.ts` extension. In the documentation, implementing an interface means an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as `an instance of the interface`. You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or Github repository for a required interface.**
 
 #### 7.5.2.1. Listening for Map Events
@@ -1971,7 +1971,7 @@ Follow the below steps to build and install Hazelcast Node.js client from its so
 3. Run  `npm run compile` to compile TypeScript files to JavaScript.
 
 At this point you have all the runnable code(`.js`) and type declarations(`.d.ts`) in `lib` directory. You may create a link to this module so that your local
-applications can depend on your local copy of Hazelcast Node.js Client. In order to create a link, run:
+applications can depend on your local copy of Hazelcast Node.js client. In order to create a link, run:
 - `npm link`.
 This will create a global link to this module in your computer. Whenever you need to depend on this module from another
 local project, run:
@@ -1981,7 +1981,7 @@ If you are planning to contribute, please run the style checker, as shown below,
 - `npm run lint`
 
 ## 8.2. Testing
-In order to test Hazelcast Node.js Client locally, you will need the following:
+In order to test Hazelcast Node.js client locally, you will need the following:
 * Java 6 or newer
 * Maven
 
