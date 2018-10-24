@@ -86,7 +86,7 @@ You can see the release notes for each Node.js client release on the [Releases](
 
 # 1. Getting Started
 
-This chapter explains all the neccessary things to start using Hazelcast Node.js Client including basic Hazelcast IMDG and client
+This chapter explains all the necessary things to start using Hazelcast Node.js Client including basic Hazelcast IMDG and client
 configuration and how to use distributed maps with Hazelcast.
 
 ## 1.1. Requirements
@@ -149,7 +149,7 @@ hazelcast-member stop
 ```
 Find more information about `hazelcast-member` tool at https://github.com/hazelcast/hazelcast-member-tool
 
-Refer to the official [Hazelcast IMDG Reference Manual](http://docs.hazelcast.org/docs/3.10.4/manual/html-single/index.html#getting-started) for more information regarding starting clusters.
+Refer to the official [Hazelcast IMDG Reference Manual](http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#getting-started) for more information regarding starting clusters.
 
 ## 1.3. Downloading and Installing
 
@@ -1225,7 +1225,7 @@ To enable mutual authentication, firstly, you need to set the following property
 </network>
 ```
 
-You can see the details of setting mutual authentication on the server side in the [Mutual Authentication section](https://docs.hazelcast.org/docs/3.10.5/manual/html-single/index.html#mutual-authentication) of the Reference Manual.
+You can see the details of setting mutual authentication on the server side in the [Mutual Authentication section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#mutual-authentication) of the Reference Manual.
 
 And at the Node.js client side, you need to supply SSL `options` object to pass to
 [`tls.connect` of Node.js](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback).
@@ -1521,7 +1521,7 @@ You can add the following types of member events to the `ClusterService`.
 
 - `memberAdded`: A new member is added to the cluster.
 - `memberRemoved`: An existing member leaves the cluster.
-- `memberAttributeChanged`: An attribute of a member is changed. Please refer to [Defining Member Attributes](https://docs.hazelcast.org/docs/3.10.5/manual/html-single/index.html#defining-member-attributes) section in the Hazelcast IMDG Reference Manual to learn about member attributes.
+- `memberAttributeChanged`: An attribute of a member is changed. Please refer to [Defining Member Attributes](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#defining-member-attributes) section in the Hazelcast IMDG Reference Manual to learn about member attributes.
 
 The `ClusterService` object exposes an `ClusterService.on()` function that allows one or more functions to be attached to member events emitted by the object.
 
