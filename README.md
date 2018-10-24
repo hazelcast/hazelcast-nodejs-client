@@ -38,21 +38,24 @@
     * [1.3. Mutual Authentication](#13-mutual-authentication)
 * [Using Node.js Client with Hazelcast IMDG](#using-nodejs-client-with-hazelcast-imdg)
   * [1. Node.js Client API Overview](#1-nodejs-client-api-overview)
-  * [Handling Failures](#handling-failures)
-    * [1. Handling Client Connection Failure](#1-handling-client-connection-failure)
-    * [2. Handling Retry-able Operation Failure](#2-handling-retry-able-operation-failure)
-  * [2. Using Distributed Data Structures](#2-using-distributed-data-structures)
-    * [2.1. Using Map](#21-using-map)
-    * [2.2. Using MultiMap](#22-using-multimap)
-    * [2.3. Using ReplicatedMap](#23-using-replicatedmap)
-    * [2.4. Using Queue](#24-using-queue)
-  * [4. Distributed Events](#4-distributed-events)
-    * [4.1. Cluster Events](#41-cluster-events)
-      * [4.1.1. Listening for Member Events](#411-listening-for-member-events)
-      * [4.1.2. Listening for Distributed Object Events](#412-listening-for-distributed-object-events)
-      * [4.1.3. Listening for Lifecycle Events](#413-listening-for-lifecycle-events)
-    * [4.2. Distributed Data Structure Events](#42-distributed-data-structure-events)
-      * [4.2.1. Listening for Map Events](#421-listening-for-map-events)
+  * [2. Node.js Client Operation Modes](#2-nodejs-client-operation-modes)
+      * [2.1. Smart Client](#21-smart-client)
+      * [2.2. Unisocket Client](#22-unisocket-client)
+  * [3. Handling Failures](#3-handling-failures)
+    * [3.1. Handling Client Connection Failure](#31-handling-client-connection-failure)
+    * [3.2. Handling Retry-able Operation Failure](#32-handling-retry-able-operation-failure)
+  * [4. Using Distributed Data Structures](#4-using-distributed-data-structures)
+    * [4.1. Using Map](#41-using-map)
+    * [4.2. Using MultiMap](#42-using-multimap)
+    * [4.3. Using ReplicatedMap](#43-using-replicatedmap)
+    * [4.4. Using Queue](#44-using-queue)
+  * [5. Distributed Events](#5-distributed-events)
+    * [5.1. Cluster Events](#51-cluster-events)
+      * [5.1.1. Listening for Member Events](#511-listening-for-member-events)
+      * [5.1.2. Listening for Distributed Object Events](#512-listening-for-distributed-object-events)
+      * [5.1.3. Listening for Lifecycle Events](#513-listening-for-lifecycle-events)
+    * [5.2. Distributed Data Structure Events](#52-distributed-data-structure-events)
+      * [5.2.1. Listening for Map Events](#521-listening-for-map-events)
 * [Development](#development)
   * [Building And Installing from Sources](#building-and-installing-from-sources)
   * [Using Locally Installed Package](#using-locally-installed-package)
@@ -1372,11 +1375,26 @@ As a final step, if you are done with your client, you can shut it down as shown
 });
 ```
 
-## Handling Failures
+## 2. Node.js Client Operation Modes
+
+The client has two operation modes because of the distributed nature of the data and cluster.
+
+### 2.1. Smart Client
+
+In the smart mode, clients connect to each cluster member. Since each data partition uses the well known and consistent hashing algorithm, each client can send an operation to the relevant cluster member, which increases the overall throughput and efficiency. Smart mode is the default mode.
+
+
+### 2.2. Unisocket Client
+
+For some cases, the clients can be required to connect to a single member instead of each member in the cluster. Firewalls, security, or some custom networking issues can be the reason for these cases.
+
+In the unisocket client mode, the client will only connect to one of the configured addresses. This single member will behave as a gateway to the other members. For any operation requested from the client, it will redirect the request to the relevant member and return the response back to the client returned from this member.
+
+## 3. Handling Failures
 
 There are two main failure cases you should be aware of, and configurations you can perform to achieve proper behavior.
 
-### 1. Handling Client Connection Failure
+### 3.1. Handling Client Connection Failure
 
 While the client is trying to connect initially to one of the members in the `ClientNetworkConfig.addressList`, all the members might be not available. Instead of giving up, throwing an error and stopping the client, the client will retry as many as `connectionAttemptLimit` times. 
 
@@ -1384,7 +1402,7 @@ You can configure `connectionAttemptLimit` for the number of times you want the 
 
 The client executes each operation through the already established connection to the cluster. If this connection(s) disconnects or drops, the client will try to reconnect as configured.
 
-### 2. Handling Retry-able Operation Failure
+### 3.2. Handling Retry-able Operation Failure
 
 While sending the requests to related members, operations can fail due to various reasons. Read-only operations are retried by default. If you want to enable retry for the other operations, you can set the `redoOperation` to `true`. Please see [Enabling Redo Operation](#3-enabling-redo-operation).
 
@@ -1399,11 +1417,11 @@ You can set a timeout for retrying the operations sent to a member. This can be 
 When a connection problem occurs, an operation is retried if it is certain that it has not run on the member yet or if it is idempotent such as a read-only operation, i.e., retrying does not have a side effect. If it is not certain whether the operation has run on the member, then the non-idempotent operations are not retried. However, as explained in the first paragraph of this section, you can force all client operations to be retried (`redoOperation`) when there is a connection failure between the client and member. But in this case, you should know that some operations may run multiple times causing conflicts. For example, assume that your client sent a `queue.offer` operation to the member, and then the connection is lost. Since there will be no response for this operation, you will not now whether it has run on the member or not. If you enabled `redoOperation`, it means this operation may run again, which may cause two instances of the same object in the queue.
 
 
-## 2. Using Distributed Data Structures
+## 4. Using Distributed Data Structures
 
 Most of the Distributed Data Structures are supported by the Node.js client. In this chapter, you will learn how to use these distributed data structures.
 
-## 2.1. Using Map
+### 4.1. Using Map
 
 A Map usage example is shown below.
 
@@ -1418,7 +1436,7 @@ map.put(1, 'Furkan').then(function (oldValue) {
 });
 ```
 
-## 2.2. Using MultiMap
+### 4.2. Using MultiMap
 
 A MultiMap usage example is shown below.
 
@@ -1434,7 +1452,7 @@ multiMap.put(1, 'Furkan').then(function () {
 });
 ```
 
-## 2.3. Using ReplicatedMap
+### 4.3. Using ReplicatedMap
 
 A ReplicatedMap usage example is shown below.
 
@@ -1450,7 +1468,7 @@ replicatedMap.put(1, 'Furkan').then(function () {
 });
 ```
 
-## 2.4. Using Queue
+### 4.4. Using Queue
 
 A Queue usage example is shown below.
 
@@ -1464,12 +1482,12 @@ queue.offer('Furkan').then(function () {
 });
 ```
 
-## 4. Distributed Events
+## 5. Distributed Events
 
 
 This chapter explains when various events are fired and describes how you can add event listeners on a Hazelcast Node.js client. These events can be categorized as cluster and distributed data structure events.
 
-### 4.1. Cluster Events
+### 5.1. Cluster Events
 
 You can add event listeners to a Hazelcast Node.js client. You can configure the following listeners to listen to the events on the client side.
 
@@ -1479,7 +1497,7 @@ You can add event listeners to a Hazelcast Node.js client. You can configure the
 
 `Lifecycle Listener`: Notifies when the client is starting, started, shutting down, and shutdown.
 
-#### 4.1.1. Listening for Member Events
+#### 5.1.1. Listening for Member Events
 
 You can add the following types of member events to the `ClusterService`.
 
@@ -1507,7 +1525,7 @@ client.clusterService.on('memberAttributeChanged', function (memberAttributeEven
 });
 ```
 
-####  4.1.2. Listening for Distributed Object Events
+####  5.1.2. Listening for Distributed Object Events
 
 The events for distributed objects are invoked when they are created and destroyed in the cluster. After the events, a listener callback function is called. The type of the callback function should be `DistributedObjectListener`. The parameter of the function is `DistributedObjectEvent` including following fields:
 
@@ -1535,7 +1553,7 @@ client.addDistributedObjectListener(function (distributedObjectEvent) {
 });
 ```
 
-#### 4.1.3. Listening for Lifecycle Events
+#### 5.1.3. Listening for Lifecycle Events
 
 The Lifecycle Listener notifies for the following events:
 - `starting`: A client is starting.
@@ -1575,14 +1593,14 @@ Lifecycle Event >>> shutdown
 Process finished with exit code 0
 ```
 
-### 4.2. Distributed Data Structure Events
+### 5.2. Distributed Data Structure Events
 
 You can add event listeners to the Distributed Data Structures.
 
 > **NOTE: Hazelcast Node.js Client is a TypeScript-based project but JavaScript does not have interfaces. Therefore, 
   some interfaces are given to user by using the TypeScript files that have `.ts` extension. In the documentation, implementing an interface means an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as `an instance of the interface`. You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or Github repository for a required interface.**
 
-#### 4.2.1. Listening for Map Events
+#### 5.2.1. Listening for Map Events
 
 You can listen to map-wide or entry-based events by using the functions in the `MapListener` interface. Every function type in this interface is one of the `EntryEventListener` and `MapEventListener` types. To listen to these events, you need to implement the relevant `EntryEventListener` and `MapEventListener` functions in the `MapListener` interface. 
 
