@@ -305,12 +305,14 @@ names as explained in the previous section. If you did, then you need to make ce
 ### Group Settings
 
 **Programmatic:**
+
 ```javascript
 let cfg = new Config.ClientConfig();
 cfg.group.name = //group name of you cluster
 ```
 
 **Declarative:**
+
 ```json
 {
     "group": {
@@ -319,17 +321,21 @@ cfg.group.name = //group name of you cluster
 }
 ```
 
+> **NOTE: If you have a Hazelcast release older than `3.11`, you need to provide also a group password along with the group name.**
+
 ### Network Settings
 
 You need to provide the ip address and port of at least one member in your cluster so the client finds it.
 
 **Programmatic:**
+
 ```javascript
 let cfg = new Config.ClientConfig();
 cfg.network.addresses.push('some-ip-address:port');
 ```
 
 **Declarative:**
+
 ```json
 {
     "network": {
