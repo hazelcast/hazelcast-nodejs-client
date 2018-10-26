@@ -51,6 +51,15 @@
     * [7.4.2. Using MultiMap](#742-using-multimap)
     * [7.4.3. Using ReplicatedMap](#743-using-replicatedmap)
     * [7.4.4. Using Queue](#744-using-queue)
+    * [7.4.5. Using Set](#745-using-set)
+    * [7.4.6. Using List](#746-using-list)
+    * [7.4.7. Using Ringbuffer](#747-using-ringbuffer)
+    * [7.4.8. Using Reliable Topic](#748-using-reliable-topic) 
+    * [7.4.9. Using Lock](#749-using-lock)
+    * [7.4.10. Using Atomic Long](#7410-using-atomic-long)
+    * [7.4.11. Using Semaphore](#7411-using-semaphore)
+    * [7.4.12. Using CRDT Counter](#7412-using-crdt-counter)
+    * [7.4.13. Using Flake ID Generators](#7413-using-flake-id-generators)
   * [7.5. Distributed Events](#75-distributed-events)
     * [7.5.1. Cluster Events](#751-cluster-events)
       * [7.5.1.1. Listening for Member Events](#7511-listening-for-member-events)
@@ -1534,6 +1543,156 @@ queue.offer('Furkan').then(function () {
     return queue.peek();
 }).then(function (head) {
     console.log(head); // Furkan
+});
+```
+
+## 7.4.5. Using Set
+
+A Set usage example is shown below.
+
+```javascript
+var set;
+hazelcastClient.getSet('mySet').then(function (s) {
+    set = s;
+    return set.add('Furkan');
+}).then(function () {
+    return set.contains('Furkan');
+}).then(function (val) {
+    console.log(val); // true
+});
+```
+
+## 7.4.6. Using List
+
+A List usage example is shown below.
+
+```javascript
+var list;
+hazelcastClient.getList('myList').then(function (l) {
+    list = l;
+    return list.add('Mali');
+}).then(function () {
+    return list.add('Ahmet');
+}).then(function () {
+    return list.add('Furkan');
+}).then(function () {
+    return list.size();
+}).then(function (size) {
+    console.log(size); // 3
+});
+```
+
+## 7.4.7. Using Ringbuffer
+
+A Ringbuffer usage example is shown below.
+
+```javascript
+var ringbuffer;
+hazelcastClient.getRingbuffer('myRingbuffer').then(function (buffer) {
+    ringbuffer = buffer;
+    return ringbuffer.addAll(['Mali', 'Ahmet', 'Furkan']);
+}).then(function () {
+    return Promise.all([
+        ringbuffer.readOne(0), ringbuffer.readOne(1), ringbuffer.readOne(2)
+    ]);
+}).then(function (brothers) {
+    console.log(brothers); // [ 'Mali', 'Ahmet', 'Furkan' ]
+});
+```
+
+## 7.4.8. Using Reliable Topic
+
+A Reliable Topic usage example is shown below.
+
+```javascript
+var topic;
+hazelcastClient.getReliableTopic('myReliableTopic').then(function (t) {
+    topic = t;
+    topic.addMessageListener(function (message) {
+        console.log(message.messageObject);
+    });
+    return topic.publish('Hello to distributed world!');
+});
+```
+
+## 7.4.9 Using Lock
+
+A Lock usage example is shown below.
+
+```javascript
+var lock;
+hazelcastClient.getLock('myLock').then(function (l) {
+    lock = l;
+    return lock.lock();
+}).then(function () {
+    // critical section
+}).finally(function () {
+    return lock.unlock();
+});
+```
+
+## 7.4.10 Using Atomic Long
+
+An Atomic Long usage example is shown below.
+
+```javascript
+var atomicLong;
+hazelcastClient.getAtomicLong('myAtomicLong').then(function (counter) {
+    atomicLong = counter;
+    return atomicLong.addAndGet(3);
+}).then(function (value) {
+    return atomicLong.get();
+}).then(function (value) {
+    console.log('counter: ' + value); // counter: 3
+});
+```
+
+## 7.4.11 Using Semaphore
+
+A Semaphore usage example is shown below.
+
+```javascript
+var semaphore;
+hazelcastClient.getSemaphore('mySemaphore').then(function (s) {
+    semaphore = s;
+    return semaphore.init(10);
+}).then(function () {
+    return semaphore.acquire(5);
+}).then(function () {
+    return semaphore.availablePermits();
+}).then(function (res) {
+    console.log(res); // 5
+});
+```
+
+## 7.4.12 Using CRDT Counter
+
+A CRDT Counter usage example is shown below.
+
+```javascript
+var pnCounter;
+hazelcastClient.getPNCounter('myPNCounter').then(function (counter) {
+    pnCounter = counter;
+    return pnCounter.addAndGet(5);
+}).then(function (value) {
+    console.log(value); // 5
+    return pnCounter.decrementAndGet();
+}).then(function (value) {
+    console.log(value); // 4
+});
+```
+
+## 7.4.13 Using Flake ID Generators
+
+A Flake ID Generator usage example is shown below.
+
+```javascript
+var flakeIdGenerator;
+hazelcastClient.getFlakeIdGenerator('myFlakeIdGenerator').then(function (gen) {
+    flakeIdGenerator = gen;
+    return flakeIdGenerator.newId();
+}).then(function (value) {
+    console.log('New id: ' + value.toString());
 });
 ```
 
