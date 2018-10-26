@@ -58,6 +58,8 @@
       * [7.5.1.3. Listening for Lifecycle Events](#7513-listening-for-lifecycle-events)
     * [7.5.2. Distributed Data Structure Events](#752-distributed-data-structure-events)
       * [7.5.2.1. Listening for Map Events](#7521-listening-for-map-events)
+  * [7.6. Distributed Computing](#76-distributed-computing)
+    * [7.6.1. Using EntryProcessor](#761-using-entryprocessor)
   * [7.7. Distributed Query](#77-distributed-query)
     * [7.7.1 How Distributed Query Works](#771-how-distributed-query-works)
       * [7.7.1.1. Employee Map Query Example](#7711-employee-map-query-example)
@@ -1693,6 +1695,156 @@ map.addEntryListener(mapEventListener).then(function () {
     return map.put('3', 'Furkan');
 }).then(function () {
     return map.clear();
+});
+```
+
+## 7.6. Distributed Computing
+
+This chapter explains Hazelcast’s entry processor implementation.
+
+### 7.6.1. Using EntryProcessor
+
+Hazelcast supports entry processing. An entry processor is a function that executes your code on a map entry in an atomic way.
+
+An entry processor is a good option if you perform bulk processing on an `IMap`. Usually you perform a loop of keys-- executing `IMap.get(key)`, mutating the value, and finally putting the entry back in the map using `IMap.put(key,value)`. If you perform this process from a client or from a member where the keys do not exist, you effectively perform two network hops for each update: the first to retrieve the data and the second to update the mutated value.
+
+If you are doing the process described above, you should consider using entry processors. An entry processor executes a read and updates upon the member where the data resides. This eliminates the costly network hops described above.
+
+> **NOTE: Entry processor is meant to process a single entry per call. Processing multiple entries and data structures in an entry processor is not supported as it may result in deadlocks in the server side.**
+
+Hazelcast sends the entry processor to each cluster member and these members apply it to map entries. Therefore, if you add more members, your processing completes faster.
+
+#### Processing Entries
+
+The functions below are in the `IMap` functions for entry processing.
+
+- `executeOnKey` processes an entry mapped by a key.
+
+- `executeOnKeys` processes entries mapped by a list of keys.
+
+- `executeOnEntries` can process all entries in a map with a defined predicate. Predicate is optional.
+
+In the Node.js client, an `EntryProcessor` should be `IdentifiedDataSerializable` or `Portable` because server should be able to deserialize it to process.
+
+An `EntryProcessor` which is `IdentifiedDataSerializable` example is shown below.
+
+```javascript
+function IdentifiedEntryProcessor(value) {
+    this.value = value;
+}
+
+IdentifiedEntryProcessor.prototype.readData = function (inp) {
+    this.value = inp.readUTF();
+};
+
+IdentifiedEntryProcessor.prototype.writeData = function (outp) {
+    outp.writeUTF(this.value);
+};
+
+IdentifiedEntryProcessor.prototype.getFactoryId = function () {
+    return 5;
+};
+
+IdentifiedEntryProcessor.prototype.getClassId = function () {
+    return 1;
+};
+```
+
+Now, you need to make sure that the Hazelcast member recognizes the entry processor. For this, you need to implement the Java equivalent of your entry processor and its factory and create your own compiled class or JAR files. For adding your own compiled class or JAR files to the server's `CLASSPATH`, please see [Adding User Library to CLASSPATH section](#adding-user-library-to-classpath).
+
+The following is an example code which can be the Java equivalent of entry processor in Node.js client:
+
+```java
+import com.hazelcast.map.AbstractEntryProcessor;
+import com.hazelcast.nio.ObjectDataInput;
+import com.hazelcast.nio.ObjectDataOutput;
+import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
+import java.io.IOException;
+import java.util.Map;
+
+public class IdentifiedEntryProcessor extends AbstractEntryProcessor<String, String> implements IdentifiedDataSerializable {
+     static final int CLASS_ID = 1;
+     private String value;
+     
+    public IdentifiedEntryProcessor() {
+    }
+    
+     @Override
+    public int getFactoryId() {
+        return IdentifiedFactory.FACTORY_ID;
+    }
+    
+     @Override
+    public int getId() {
+        return CLASS_ID;
+    }
+    
+     @Override
+    public void writeData(ObjectDataOutput out) throws IOException {
+        out.writeUTF(value);
+    }
+    
+     @Override
+    public void readData(ObjectDataInput in) throws IOException {
+        value = in.readUTF();
+    }
+    
+     @Override
+    public Object process(Map.Entry<String, String> entry) {
+        entry.setValue(value);
+        return value;
+    }
+}
+```
+
+You can implement the above processor’s factory as follows:
+
+```java
+import com.hazelcast.nio.serialization.DataSerializableFactory;
+import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
+
+public class IdentifiedFactory implements DataSerializableFactory {
+    public static final int FACTORY_ID = 5;
+    
+     @Override
+    public IdentifiedDataSerializable create(int typeId) {
+        if (typeId == IdentifiedEntryProcessor.CLASS_ID) {
+            return new IdentifiedEntryProcessor();
+        }
+        return null;
+    }
+}
+```
+
+Note that you need to configure the `hazelcast.xml` to add your factory. And the following is the configuration for the above factory:
+
+```xml
+<hazelcast>
+    <serialization>
+        <data-serializable-factories>
+            <data-serializable-factory factory-id="5">
+                IdentifiedFactory
+            </data-serializable-factory>
+        </data-serializable-factories>
+    </serialization>
+</hazelcast>
+```
+
+The code that runs on entries is implemented in Java on the server side. Client side entry processor is used to specify which entry processor should be called. For more details about the Java implementation of the entry processor, please see [Entry Processor section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#entry-processor) in the IMDG Reference Manual.
+
+After all implementation and starting the server where your library is added to its `CLASSPATH`, you can use the entry processor in the `IMap` functions. Let's take a look at the following example.
+
+```javascript
+var map;
+hazelcastClient.getMap('my-distributed-map').then(function (mp) {
+    map = mp;
+    return map.put('key', 'not-processed');
+}).then(function () {
+    return map.executeOnKey('key', new IdentifiedEntryProcessor('processed'));
+}).then(function () {
+    return map.get('key');
+}).then(function (value) {
+    console.log(value); // processed
 });
 ```
 
