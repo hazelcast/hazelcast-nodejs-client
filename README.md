@@ -1710,13 +1710,13 @@ An entry processor is a good option if you perform bulk processing on an `IMap`.
 
 If you are doing the process described above, you should consider using entry processors. An entry processor executes a read and updates upon the member where the data resides. This eliminates the costly network hops described above.
 
-> **NOTE: Entry processor is meant to process a single entry per call. Processing multiple entries and data structures in an entry processor is not supported as it may result in deadlocks in the server side.**
+> **NOTE: Entry processor is meant to process a single entry per call. Processing multiple entries and data structures in an entry processor is not supported as it may result in deadlocks on the server side.**
 
-Hazelcast sends the entry processor to each cluster member and these members apply it to map entries. Therefore, if you add more members, your processing completes faster.
+Hazelcast sends the entry processor to each cluster member and these members apply it to the map entries. Therefore, if you add more members, your processing completes faster.
 
 #### Processing Entries
 
-The functions below are in the `IMap` functions for entry processing.
+The `IMap` interface provides the following functions for entry processing:
 
 - `executeOnKey` processes an entry mapped by a key.
 
@@ -1724,9 +1724,9 @@ The functions below are in the `IMap` functions for entry processing.
 
 - `executeOnEntries` can process all entries in a map with a defined predicate. Predicate is optional.
 
-In the Node.js client, an `EntryProcessor` should be `IdentifiedDataSerializable` or `Portable` because server should be able to deserialize it to process.
+In the Node.js client, an `EntryProcessor` should be `IdentifiedDataSerializable` or `Portable` because the server should be able to deserialize it to process.
 
-An `EntryProcessor` which is `IdentifiedDataSerializable` example is shown below.
+The following is an example for `EntryProcessor` which is `IdentifiedDataSerializable`.
 
 ```javascript
 function IdentifiedEntryProcessor(value) {
@@ -1830,7 +1830,7 @@ Note that you need to configure the `hazelcast.xml` to add your factory. And the
 </hazelcast>
 ```
 
-The code that runs on entries is implemented in Java on the server side. Client side entry processor is used to specify which entry processor should be called. For more details about the Java implementation of the entry processor, please see [Entry Processor section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#entry-processor) in the IMDG Reference Manual.
+The code that runs on the entries is implemented in Java on the server side. Client side entry processor is used to specify which entry processor should be called. For more details about the Java implementation of the entry processor, please see [Entry Processor section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#entry-processor) in the Hazelcast IMDG Reference Manual.
 
 After all implementation and starting the server where your library is added to its `CLASSPATH`, you can use the entry processor in the `IMap` functions. Let's take a look at the following example.
 
