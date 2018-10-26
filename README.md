@@ -70,11 +70,12 @@
   * [7.6. Distributed Computing](#76-distributed-computing)
     * [7.6.1. Using EntryProcessor](#761-using-entryprocessor)
   * [7.7. Distributed Query](#77-distributed-query)
-    * [7.7.1 How Distributed Query Works](#771-how-distributed-query-works)
+    * [7.7.1. How Distributed Query Works](#771-how-distributed-query-works)
       * [7.7.1.1. Employee Map Query Example](#7711-employee-map-query-example)
       * [7.7.1.2. Querying by Combining Predicates with AND, OR, NOT](#7712-querying-by-combining-predicates-with-and-or-not)
       * [7.7.1.3. Querying with SQL](#7713-querying-with-sql)
       * [7.7.1.4. Filtering with Paging Predicates](#7714-filtering-with-paging-predicates)
+    * [7.7.2. Fast-Aggregations](#772-fast-aggregations)
 * [8. Development and Testing](#8-development-and-testing)
   * [8.1. Building and Using Client From Sources](#81-building-and-using-client-from-sources)
   * [8.2. Testing](#82-testing)
@@ -2297,6 +2298,51 @@ hazelcastClient.getMap('students').then(function (mp) {
 If you want to sort the result before paging, you need to specify a comparator object that implements the `Comparator` interface. Also, this comparator object should be one of `IdentifiedDataSerializable` or `Portable`. After implementing the Node.js version, you need to implement the Java equivalent of the comparator and its factory. The Java equivalent of the comparator should implement `java.util.Comparator`. Note that `compare` function of the `Comparator` on the Java side is the equivalent of the `sort` function of `Comparator` on the Node.js side. When you implement the `Comparator` and its factory, you can add them to the `CLASSPATH` of the server side.  See [Adding User Library to CLASSPATH section](#adding-user-library-to-classpath).
 
 Also, You can access a specific page more easily with the help of the `setPage` function. This way, if you make a query for the hundredth page, for example, it will get all 100 pages at once instead of reaching the hundredth page one by one using the `nextPage` function.
+
+### 7.7.2. Fast-Aggregations
+
+Fast-Aggregations provides some aggregate functions (such as sum, average, max, min) on top of Hazelcast `IMap` entries. Their performance is perfect since they run in parallel for each partition and are highly optimized for speed and low memory consumption.
+
+The `Aggregators` object provides a wide variety of built-in aggregators. The full list is presented below:
+
+- count
+- doubleAvg
+- doubleSum
+- numberAvg
+- fixedPointSum
+- floatingPointSum
+- max
+- min
+- integerAvg
+- integerSum
+- longAvg
+- longSum
+
+You can use these aggregators with the `IMap.aggregate()` and `IMap.aggregateWithPredicate()` functions.
+
+Let's look at the following example.
+
+```javascript
+var map;
+hazelcastClient.getMap('brothersMap').then(function (mp) {
+    map = mp;
+    return map.putAll([
+        ['Muhammet Ali', 30],
+        ['Ahmet', 27],
+        ['Furkan', 23],
+    ]);
+}).then(function () {
+    return map.aggregate(Aggregators.count());
+}).then(function (count) {
+    console.log('There are ' + count + ' brothers.'); // There are 3 brothers.
+    return map.aggregateWithPredicate(Aggregators.count(), Predicates.greaterThan('this', 25));
+}).then(function (count) {
+    console.log('There are ' + count + ' brothers older than 25.'); // There are 2 brothers older than 25.
+    return map.aggregate(Aggregators.numberAvg());
+}).then(function (avgAge) {
+    console.log('Average age is ' + avgAge); // Average age is 26.666666666666668
+});
+```
 
 
 # 8. Development and Testing
