@@ -266,7 +266,7 @@ This section describes some network configuration settings to cover common use c
 and the following sections for information about detailed network configuration and/or additional features of Hazelcast Node.js client
 configuration.
 
-An easy way to configure your Hazelcast Node.js client is to create a `Config` object and set the appropriate options. Then you can
+An easy way to configure your Hazelcast Node.js client is to create a `ClientConfig` object and set the appropriate options. Then you can
 supply this object to your client at the startup. Another way to configure your client is to provide a `hazelcast-client.json` file. This approach is similar to `hazelcast.xml` approach
 in configuring the member. Note that `hazelcast-client.json` is a JSON file whereas member configuration is XML based. Although these
 two formats are different, you will realize that the names of the configuration parameters are the same for both the client and member.
@@ -530,7 +530,6 @@ desired aspects. An example is shown below.
 
 ```javascript
 var Config = require('hazelcast-client').Config;
-var Address = require('hazelcast-client').Address;
 var cfg = new Config.ClientConfig();
 cfg.networkConfig.addresses.push('127.0.0.1:5701');
 return HazelcastClient.newHazelcastClient(cfg);
@@ -948,11 +947,11 @@ GlobalSerializer.prototype.getId = function () {
 };
 
 GlobalSerializer.prototype.write = function (objectDataOutput, object) {
-    objectDataOutput.write(SomeThirdPartySerializer.serialize(object))
+    objectDataOutput.writeByteArray(SomeThirdPartySerializer.serialize(object))
 };
 
 GlobalSerializer.prototype.read = function (objectDataInput) {
-    return SomeThirdPartySerializer.deserialize(objectDataInput);
+    return SomeThirdPartySerializer.deserialize(objectDataInput.readByteArray());
 };
 ```
 
