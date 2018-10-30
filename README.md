@@ -5,11 +5,15 @@
 * [Introduction](#introduction)
 * [1. Getting Started](#1-getting-started)
   * [1.1. Requirements](#11-requirements)
-  * [1.2. Working with Hazelcast Clusters](#12-working-with-hazelcast-clusters)
+  * [1.2. Working with Hazelcast IMDG Clusters](#12-working-with-hazelcast-imdg-clusters)
+    * [1.2.1. Setting Up a Hazelcast IMDG Cluster](#121-setting-up-a-hazelcast-imdg-cluster)
+    * [1.2.2. Running Standalone Jars](#122-running-standalone-jars)
+    * [1.2.3. Adding User Library to CLASSPATH](#123-adding-user-library-to-classpath)
+    * [1.2.4. Using hazelcast-member Tool](#124-using-hazelcast-member-tool)
   * [1.3. Downloading and Installing](#13-downloading-and-installing)
   * [1.4. Basic Configuration](#14-basic-configuration)
-    * [1.4.1. IMDG Configuration](#141-imdg-configuration)
-    * [1.4.2. Hazelcast Client Configuration](#142-hazelcast-client-configuration)
+    * [1.4.1. Configuring Hazelcast IMDG](#141-configuring-hazelcast-imdg)
+    * [1.4.2. Configuring Hazelcast Node.js Client](#142-configuring-hazelcast-nodejs-client)
   * [1.5. Basic Usage](#15-basic-usage)
   * [1.6. Code Samples](#16-code-samples)
 * [2. Features](#2-features)
@@ -99,13 +103,12 @@ See the following for more information on Node.js and Hazelcast IMDG:
 
 ### Release Notes
 
-You can see the release notes for each Node.js client release on the [Releases](https://github.com/hazelcast/hazelcast-nodejs-client/releases) page of this repository.	
+See the [Releases](https://github.com/hazelcast/hazelcast-nodejs-client/releases) page of this repository.
 
 
 # 1. Getting Started
 
-This chapter explains all the necessary things to start using Hazelcast Node.js client including basic Hazelcast IMDG and client
-configuration and how to use distributed maps with Hazelcast.
+This chapter provides information on how to get started with your Hazelcast Node.js client. It outlines the requirements, installation and configuration of the client, setting up a cluster, and provides a simple application that uses a distributed map in Node.js client.
 
 ## 1.1. Requirements
 
@@ -115,27 +118,27 @@ configuration and how to use distributed maps with Hazelcast.
 - Hazelcast IMDG 3.6 or newer
 - Latest Hazelcast Node.js client
 
-## 1.2. Working with Hazelcast Clusters
+## 1.2. Working with Hazelcast IMDG Clusters
 
-Hazelcast Node.js client requires a working Hazelcast IMDG cluster to run. IMDG cluster handles storage and manipulation of the user data.
-Clients are a way to connect to IMDG cluster and access such data.
+Hazelcast Node.js client requires a working Hazelcast IMDG cluster to run. This cluster handles storage and manipulation of the user data.
+Clients are a way to connect to the Hazelcast IMDG cluster and access such data.
 
-IMDG cluster consists of one or more Hazelcast IMDG members. These members generally run on multiple virtual or physical machines
+Hazelcast IMDG cluster consists of one or more cluster members. These members generally run on multiple virtual or physical machines
 and are connected to each other via network. Any data put on the cluster is partitioned to multiple members transparent to the user.
-It is therefore very easy to scale the system by adding new members as the data grows. IMDG cluster also offers resilience. Should
+It is therefore very easy to scale the system by adding new members as the data grows. Hazelcast IMDG cluster also offers resilience. Should
 any hardware or software problem causes a crash to any member, the data on that member is recovered from backups and the cluster
-continues to operate without any downtime. Hazelcast clients are an easy way to connect to an IMDG cluster and perform tasks on
+continues to operate without any downtime. Hazelcast clients are an easy way to connect to a Hazelcast IMDG cluster and perform tasks on
 distributed data structures that live on the cluster.
 
-In order to use Hazelcast Node.js client, we first need to setup an IMDG cluster.
+In order to use Hazelcast Node.js client, we first need to setup a Hazelcast IMDG cluster.
 
-### Setting Up an IMDG Cluster
+### 1.2.1. Setting Up a Hazelcast IMDG Cluster
 
 There are multiple ways of starting an IMDG cluster easily. You can run standalone IMDG members by downloading and running jar files
 from the website. You can embed IMDG members to your Java projects. The easiest way is to use [hazelcast-member tool](https://github.com/hazelcast/hazelcast-member-tool)
 if you have brew installed in your computer. We are going to download jars from the website and run a standalone member for this guide.
 
-#### Running Standalone Jars
+#### 1.2.2. Running Standalone Jars
 
 Go to https://hazelcast.org/download/ and download `.zip` or `.tar` distribution of Hazelcast IMDG. Decompress the contents into any directory that you
 want to run IMDG members from. Change into the directory that you decompressed the Hazelcast content. Go into `bin` directory. Use either
@@ -152,7 +155,7 @@ Sep 06, 2018 10:50:23 AM com.hazelcast.core.LifecycleService
 INFO: [192.168.0.3]:5701 [dev] [3.10.4] [192.168.0.3]:5701 is STARTED
 ```
 
-#### Adding User Library to CLASSPATH
+#### 1.2.3. Adding User Library to CLASSPATH
 
  When you want to use features such as querying and language interoperability, you might need to add your own Java classes to Hazelcast member in order to use them from your Node.js client. This can be done by adding your own compiled code to the `CLASSPATH`. To do this, compile your code with the `CLASSPATH` and add the compiled files to `user-lib` folder in the extracted `hazelcast-<version>.zip`. Then, you can start your Hazelcast member by using the start scripts in the `bin` folder. The start scripts will automatically add your compiled classes to the `CLASSPATH`.
  Note that if you are adding an `IdentifiedDataSerializable` or a `Portable` class, you need to add its factory too. Then, you should configure the factory in the `hazelcast.xml` in the `bin` folder like the following:
@@ -171,7 +174,7 @@ INFO: [192.168.0.3]:5701 [dev] [3.10.4] [192.168.0.3]:5701 is STARTED
 ```
 Similarly, use `<portable-factories>` instead of `<data-serializable-factories>` if you are using portables.
 
-#### Using hazelcast-member Tool
+#### 1.2.4. Using hazelcast-member Tool
 
 `hazelcast-member` is a tool to make downloading and running IMDG members as easy as it could be. If you have brew installed, run the following commands:
 ```
@@ -206,7 +209,7 @@ It discusses some member side configuration options to ease understanding Hazelc
 regarding cluster connection are discussed. Configuration material regarding data structures are discussed in the following sections.
 You can refer to [IMDG Documentation](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html) and [Configuration Overview](#configuration-overview) for more information.
 
-### 1.4.1. IMDG Configuration
+### 1.4.1. Configuring Hazelcast IMDG
 
 Hazelcast IMDG aims to run out of the box for most common scenarios. However if you have limitations on your network such as multicast being disabled,
 you may have to configure your Hazelcast IMDG instances so that they can find each other on the network. Also most data structures are configurable.
@@ -265,7 +268,7 @@ purposes. You can remove or leave it as it is if you use Hazelcast 3.9 or later.
 
 These configuration elements are enough for most connection scenarios. Now we will move onto configuration of the Node.js client.
 
-### 1.4.2. Hazelcast Client Configuration
+### 1.4.2. Configuring Hazelcast Node.js Client
 
 There are two ways to configure a Hazelcast Node.js client:
 
