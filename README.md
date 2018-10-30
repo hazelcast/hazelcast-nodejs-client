@@ -49,8 +49,17 @@
   * [7.4. Using Distributed Data Structures](#74-using-distributed-data-structures)
     * [7.4.1. Using Map](#741-using-map)
     * [7.4.2. Using MultiMap](#742-using-multimap)
-    * [7.4.3. Using ReplicatedMap](#743-using-replicatedmap)
+    * [7.4.3. Using Replicated Map](#743-using-replicated-map)
     * [7.4.4. Using Queue](#744-using-queue)
+    * [7.4.5. Using Set](#745-using-set)
+    * [7.4.6. Using List](#746-using-list)
+    * [7.4.7. Using Ringbuffer](#747-using-ringbuffer)
+    * [7.4.8. Using Reliable Topic](#748-using-reliable-topic) 
+    * [7.4.9. Using Lock](#749-using-lock)
+    * [7.4.10. Using Atomic Long](#7410-using-atomic-long)
+    * [7.4.11. Using Semaphore](#7411-using-semaphore)
+    * [7.4.12. Using PN Counter](#7412-using-pn-counter)
+    * [7.4.13. Using Flake ID Generator](#7413-using-flake-id-generator)
   * [7.5. Distributed Events](#75-distributed-events)
     * [7.5.1. Cluster Events](#751-cluster-events)
       * [7.5.1.1. Listening for Member Events](#7511-listening-for-member-events)
@@ -1485,6 +1494,8 @@ Most of the Distributed Data Structures are supported by the Node.js client. In 
 
 ### 7.4.1. Using Map
 
+Hazelcast Map (`IMap`) is a distributed map. Through Node.js client, you can  perform operations like reading and writing from/to a Hazelcast Map with the well known get and put methods. For details refer to [Map section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#map) in the Hazelcast IMDG Reference Manual.
+
 A Map usage example is shown below.
 
 ```javascript
@@ -1500,6 +1511,8 @@ map.put(1, 'Furkan').then(function (oldValue) {
 
 ### 7.4.2. Using MultiMap
 
+Hazelcast `MultiMap` is a distributed and specialized map where you can store multiple values under a single key. For details refer to [MultiMap section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#multimap) in the Hazelcast IMDG Reference Manual.
+
 A MultiMap usage example is shown below.
 
 ```javascript
@@ -1514,9 +1527,11 @@ multiMap.put(1, 'Furkan').then(function () {
 });
 ```
 
-### 7.4.3. Using ReplicatedMap
+### 7.4.3. Using Replicated Map
 
-A ReplicatedMap usage example is shown below.
+Hazelcast `ReplicatedMap` is a distributed key-value data structure where the data is replicated to all members in the cluster. It provides full replication of entries to all members for high speed access. For details refer to [Replicated Map section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#replicated-map) in the Hazelcast IMDG Reference Manual.
+
+A Replicated Map usage example is shown below.
 
 ```javascript
 var replicatedMap = client.getReplicatedMap('myReplicatedMap');
@@ -1532,6 +1547,8 @@ replicatedMap.put(1, 'Furkan').then(function () {
 
 ### 7.4.4. Using Queue
 
+Hazelcast Queue(`IQueue`) is a distributed queue which enables all cluster members to interact with it. For details refer to [Queue section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#queue) in the Hazelcast IMDG Reference Manual.
+
 A Queue usage example is shown below.
 
 ```javascript
@@ -1541,6 +1558,174 @@ queue.offer('Furkan').then(function () {
     return queue.peek();
 }).then(function (head) {
     console.log(head); // Furkan
+});
+```
+
+## 7.4.5. Using Set
+
+Hazelcast Set(`ISet`) is a distributed set which does not allow duplicate elements. For details refer to [Set section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#set) in the Hazelcast IMDG Reference Manual.
+
+A Set usage example is shown below.
+
+```javascript
+var set;
+hazelcastClient.getSet('mySet').then(function (s) {
+    set = s;
+    return set.add('Furkan');
+}).then(function () {
+    return set.contains('Furkan');
+}).then(function (val) {
+    console.log(val); // true
+});
+```
+
+## 7.4.6. Using List
+
+Hazelcast List(`IList`) is distributed list which allows duplicate elements and preserves the order of elements. For details refer to [List section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#list) in the Hazelcast IMDG Reference Manual.
+
+A List usage example is shown below.
+
+```javascript
+var list;
+hazelcastClient.getList('myList').then(function (l) {
+    list = l;
+    return list.add('Muhammet Ali');
+}).then(function () {
+    return list.add('Ahmet');
+}).then(function () {
+    return list.add('Furkan');
+}).then(function () {
+    return list.size();
+}).then(function (size) {
+    console.log(size); // 3
+});
+```
+
+## 7.4.7. Using Ringbuffer
+
+Hazelcast `Ringbuffer` is a replicated but not partitioned data structure that stores its data in a ring-like structure. You can think of it as a circular array with a given capacity. Each Ringbuffer has a tail and a head. The tail is where the items are added and the head is where the items are overwritten or expired. You can reach each element in a Ringbuffer using a sequence ID, which is mapped to the elements between the head and tail (inclusive) of the Ringbuffer. For details refer to [Ringbuffer section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#ringbuffer) in the Hazelcast IMDG Reference Manual.
+
+A Ringbuffer usage example is shown below.
+
+```javascript
+var ringbuffer;
+hazelcastClient.getRingbuffer('myRingbuffer').then(function (buffer) {
+    ringbuffer = buffer;
+    return ringbuffer.addAll(['Muhammet Ali', 'Ahmet', 'Furkan']);
+}).then(function () {
+    return Promise.all([
+        ringbuffer.readOne(0), ringbuffer.readOne(1), ringbuffer.readOne(2)
+    ]);
+}).then(function (brothers) {
+    console.log(brothers); // [ 'Muhammet Ali', 'Ahmet', 'Furkan' ]
+});
+```
+
+## 7.4.8. Using Reliable Topic
+
+Hazelcast `ReliableTopic` is a distributed topic implementation backed up by the `Ringbuffer` data structure. For details refer to [Reliable Topic section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#reliable-topic) in the Hazelcast IMDG Reference Manual.
+
+A Reliable Topic usage example is shown below.
+
+```javascript
+var topic;
+hazelcastClient.getReliableTopic('myReliableTopic').then(function (t) {
+    topic = t;
+    topic.addMessageListener(function (message) {
+        console.log(message.messageObject);
+    });
+    return topic.publish('Hello to distributed world!');
+});
+```
+
+## 7.4.9 Using Lock
+
+Hazelcast Lock(`ILock`) is a distributed lock implementation. You can synchronize Hazelcast members and clients using a Lock. For details refer to [Lock section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#lock) in the Hazelcast IMDG Reference Manual.
+
+A Lock usage example is shown below.
+
+```javascript
+var lock;
+hazelcastClient.getLock('myLock').then(function (l) {
+    lock = l;
+    return lock.lock();
+}).then(function () {
+    // cluster wide critical section
+}).finally(function () {
+    return lock.unlock();
+});
+```
+
+## 7.4.10 Using Atomic Long
+
+Hazelcast Atomic Long(`IAtomicLong`) is the distributed long which offers most of the operations such as `get`, `set`, `getAndSet`, `compareAndSet` and `incrementAndGet`. For details refer to [Atomic Long section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#iatomiclong) in the Hazelcast IMDG Reference Manual.
+
+An Atomic Long usage example is shown below.
+
+```javascript
+var atomicLong;
+hazelcastClient.getAtomicLong('myAtomicLong').then(function (counter) {
+    atomicLong = counter;
+    return atomicLong.addAndGet(3);
+}).then(function (value) {
+    return atomicLong.get();
+}).then(function (value) {
+    console.log('counter: ' + value); // counter: 3
+});
+```
+
+## 7.4.11 Using Semaphore
+
+Hazelcast Semaphore(`ISemaphore`) is a distributed semaphore implementation. For details refer to [Semaphore section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#isemaphore) in the Hazelcast IMDG Reference Manual.
+
+A Semaphore usage example is shown below.
+
+```javascript
+var semaphore;
+hazelcastClient.getSemaphore('mySemaphore').then(function (s) {
+    semaphore = s;
+    return semaphore.init(10);
+}).then(function () {
+    return semaphore.acquire(5);
+}).then(function () {
+    return semaphore.availablePermits();
+}).then(function (res) {
+    console.log(res); // 5
+});
+```
+
+## 7.4.12 Using PN Counter
+
+Hazelcast `PNCounter` (Positive-Negative Counter) is a CRDT positive-negative counter implementation. It is an eventually consistent counter given there is no member failure. For details refer to [PN Counter section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#pn-counter) in the Hazelcast IMDG Reference Manual.
+
+A PN Counter usage example is shown below.
+
+```javascript
+var pnCounter;
+hazelcastClient.getPNCounter('myPNCounter').then(function (counter) {
+    pnCounter = counter;
+    return pnCounter.addAndGet(5);
+}).then(function (value) {
+    console.log(value); // 5
+    return pnCounter.decrementAndGet();
+}).then(function (value) {
+    console.log(value); // 4
+});
+```
+
+## 7.4.13 Using Flake ID Generator
+
+Hazelcast `FlakeIdGenerator` is used to generate cluster-wide unique identifiers. Generated identifiers are long primitive values and are k-ordered (roughly ordered). IDs are in the range from 0 to `2^63-1 (maximum signed long value)`. For details refer to [FlakeIdGenerator section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#flakeidgenerator) in the Hazelcast IMDG Reference Manual.
+
+A Flake ID Generator usage example is shown below.
+
+```javascript
+var flakeIdGenerator;
+hazelcastClient.getFlakeIdGenerator('myFlakeIdGenerator').then(function (gen) {
+    flakeIdGenerator = gen;
+    return flakeIdGenerator.newId();
+}).then(function (value) {
+    console.log('New id: ' + value.toString());
 });
 ```
 
@@ -1693,7 +1878,7 @@ var mapEventListener = {
     }
 };
 map.addEntryListener(mapEventListener).then(function () {
-    return map.put('1', 'Mali');
+    return map.put('1', 'Muhammet Ali');
 }).then(function () {
     return map.put('2', 'Ahmet');
 }).then(function () {
