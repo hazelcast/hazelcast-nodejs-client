@@ -1,5 +1,6 @@
 var Client = require('hazelcast-client').Client;
 var Config = require('hazelcast-client').Config;
+var EvictionPolicy = require('hazelcast-client').EvictionPolicy;
 
 var nearCachedMapName = 'nearCachedMap';
 var regularMapName = 'reqularMap';
@@ -8,6 +9,7 @@ var client;
 var cfg = new Config.ClientConfig();
 var nearCacheConfig = new Config.NearCacheConfig();
 nearCacheConfig.name = nearCachedMapName;
+nearCacheConfig.evictionPolicy = EvictionPolicy.LFU;
 nearCacheConfig.invalidateOnChange = true;
 cfg.nearCacheConfigs[nearCachedMapName] = nearCacheConfig;
 
