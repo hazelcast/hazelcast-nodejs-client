@@ -1267,26 +1267,25 @@ To be able to connect to the provided IP addresses, you should use secure TLS/SS
 
 # 6. Securing Client Connection
 
-This chapter describes the security features of Hazelcast Node.js client. These include using TLS/SSL for connections between members and between clients and members and mutual authentication. These security features require **Hazelcast IMDG Enterprise** edition.
+This chapter describes the security features of Hazelcast Node.js client. These include using TLS/SSL for connections between members and between clients and members, and mutual authentication. These security features require **Hazelcast IMDG Enterprise** edition.
 
 ### 6.1. TLS/SSL
 
 One of the offers of Hazelcast is the TLS/SSL protocol which you can use to establish an encrypted communication across your cluster with key stores and trust stores.
 
-- A Java `keyStore` is a file that includes a private key and a public certificate. The equivalent of a key store is the combination of `key` and `cert` files at the Node.js client side.
+* A Java `keyStore` is a file that includes a private key and a public certificate. The equivalent of a key store is the combination of `key` and `cert` files at the Node.js client side.
+* A Java `trustStore` is a file that includes a list of certificates trusted by your application which is named as  "certificate authority". The equivalent of a trust store is a `ca` file at the Node.js client side.
 
-- A Java `trustStore` is a file that includes a list of certificates trusted by your application which is named certificate authority. The equivalent of a trust store is a `ca` file at the Node.js client side.
-
-You should set `keyStore` and `trustStore` before starting the members. See the next section how to set `keyStore` and `trustStore` on the server side.
+You should set `keyStore` and `trustStore` before starting the members. See the next section on setting `keyStore` and `trustStore` on the server side.
 
 #### 6.1.1. TLS/SSL for Hazelcast Members
 
-Hazelcast allows you to encrypt socket level communication between Hazelcast members and between Hazelcast clients and members, for end to end encryption. To use it, see [TLS/SSL for Hazelcast Members section](http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#tls-ssl-for-hazelcast-members).
+Hazelcast allows you to encrypt socket level communication between Hazelcast members and between Hazelcast clients and members, for end to end encryption. To use it, see the [TLS/SSL for Hazelcast Members section](http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#tls-ssl-for-hazelcast-members).
 
 #### 6.1.2. TLS/SSL for Hazelcast Node.js Clients
 
 Hazelcast Node.js clients which support TLS/SSL should have the following user supplied SSL `options` object, to pass to
-[`tls.connect` of Node.js](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback):
+[`tls.connect`](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) of Node.js:
 
 ```javascript
 var fs = require('fs');
@@ -1305,7 +1304,7 @@ As explained above, Hazelcast members have key stores used to identify themselve
 
 Using mutual authentication, the clients also have their key stores and members have their trust stores so that the members can know which clients they can trust.
 
-To enable mutual authentication, firstly, you need to set the following property at server side by configuring `hazelcast.xml`:
+To enable mutual authentication, firstly, you need to set the following property at the server side in the `hazelcast.xml` file:
 
 ```xml
 <network>
@@ -1317,34 +1316,33 @@ To enable mutual authentication, firstly, you need to set the following property
 </network>
 ```
 
-You can see the details of setting mutual authentication on the server side in the [Mutual Authentication section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#mutual-authentication) of the Reference Manual.
+You can see the details of setting mutual authentication on the server side in the [Mutual Authentication section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#mutual-authentication) of the Hazelcast IMDG Reference Manual.
 
-And at the Node.js client side, you need to supply SSL `options` object to pass to
-[`tls.connect` of Node.js](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback).
-
+At the Node.js client side, you need to supply an SSL `options` object to pass to
+[`tls.connect`](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) of Node.js.
 
 There are two ways to provide this object to the client:
 
 1. Using the built-in `BasicSSLOptionsFactory` bundled with the client.
-2. Writing an SSLOptionsFactory.
+2. Writing an `SSLOptionsFactory`.
 
 Below subsections describe each way.
 
-**Using Built-in BasicSSLOptionsFactory**
+**Using the Built-in `BasicSSLOptionsFactory`**
 
 Hazelcast Node.js client includes a utility factory class that creates the necessary `options` object out of the supplied
-properties. All you need to do is specifying your factory as `BasicSSLOptionsFactory` and provide the following options:
+properties. All you need to do is to specify your factory as `BasicSSLOptionsFactory` and provide the following options:
 
-- caPath
-- keyPath
-- certPath
-- servername
-- rejectUnauthorized
-- ciphers
+- `caPath`
+- `keyPath`
+- `certPath`
+- `servername`
+- `rejectUnauthorized`
+- `ciphers`
 
-Please refer to [`tls.connect` of Node.js](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) for the descriptions of each option.
+See [`tls.connect`](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) of Node.js for the descriptions of each option.
 
-> `caPath`, `keyPath` and `certPath` define file path to respective file that stores such information.
+> `caPath`, `keyPath` and `certPath` define the file path to the respective file that stores such information.
 
 ```json
 {
@@ -1368,12 +1366,11 @@ Please refer to [`tls.connect` of Node.js](https://nodejs.org/api/tls.html#tls_t
 If these options are not enough for your application, you may write your own options factory and instruct the client
 to get the options from it, as explained below.
 
-**Writing an SSL Options Factory**
+**Writing an `SSLOptionsFactory`**
 
-In order to use the full range of options provided to [`tls.connect` of Node.js](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback),
-you may write your own factory object.
+In order to use the full range of options provided to [`tls.connect`](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) of Node.js, you may write your own factory object.
 
-An example configuration:
+An example configuration is shown below.
 
 ```json
 {
@@ -1396,7 +1393,7 @@ An example configuration:
 ```
 
 
-And your own factory, `My_Factory.js`:
+An example of a factory, `My_Factory.js`, is shown below.
 
 
 ```javascript
@@ -1429,7 +1426,7 @@ exports.SSLFactory = SSLFactory;
 The client loads `MyFactory.js` at runtime and creates an instance of `SSLFactory`. It then calls the method `init` with
 the properties section in the JSON configuration file. Lastly, the client calls the method `getSSLOptions` of `SSLFactory` to create the `options` object.
 
-For information about the path resolution, please refer to the [Loading Objects and Path Resolution](#3-loading-objects-and-path-resolution) section.
+For information about the path resolution, see the [Loading Objects and Path Resolution section](#3-loading-objects-and-path-resolution).
 
 
 # 7. Using Node.js Client with Hazelcast IMDG
