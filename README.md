@@ -568,10 +568,7 @@ and how you should set paths and exported names for the client to load objects.
 
 ## 3.1. Configuration Options
 
-You can configure Hazelcast Node.js client declaratively (JSON) or programmatically (API).
-
-* Programmatic configuration
-* Declarative configuration (JSON file)
+You can configure the Hazelcast Node.js client declaratively (JSON) or programmatically (API).
 
 ### 3.1.1. Programmatic Configuration
 
@@ -585,11 +582,11 @@ cfg.networkConfig.addresses.push('127.0.0.1:5701');
 return HazelcastClient.newHazelcastClient(cfg);
 ```
 
-Refer to `ClientConfig` class documentation at [Hazelcast Node.js Client API Docs](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs) for details.
+See the `ClientConfig` class documentation at [Hazelcast Node.js Client API Docs](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs) for details.
 
 ### 3.1.2. Declarative Configuration (JSON)
 
-If the client is not supplied with a programmatic configuration at the time of initialization, it will look for a configuration file named `hazelcast-client.json`. If this file exists, then the configuration is loaded from it. Otherwise, the client will start with the default configuration. The following are the places that the client looks for a `hazelcast-client.json` in order:
+If the client is not supplied with a programmatic configuration at the time of initialization, it will look for a configuration file named `hazelcast-client.json`. If this file exists, then the configuration is loaded from it. Otherwise, the client will start with the default configuration. The following are the places that the client looks for a `hazelcast-client.json` in the given order:
 
 1. Environment variable: The client first looks for the environment variable `HAZELCAST_CLIENT_CONFIG`. If it exists,
 the client looks for the configuration file in the specified location.
@@ -597,7 +594,7 @@ the client looks for the configuration file in the specified location.
 from the current working directory.
 3. Default configuration: If all of the above methods fail, the client starts with the default configuration.
 The default configuration is programmatic. If you want to override the default configuration declaratively, you need to create
-a `hazelcast-client.json` file in your working directory. If you want to have an example for this file, you can find `hazelcast-client-default.json` and `hazelcast-client-sample.json` files in the Github repository.
+a `hazelcast-client.json` file in your working directory. If you want to have an example for this file, you can find `hazelcast-client-default.json` and `hazelcast-client-sample.json` files in the GitHub repository.
 
 Following is a sample JSON configuration file:
 
@@ -702,7 +699,7 @@ Let's say your project's directory structure is as follows:
     my_app/node_modules/
     my_app/node_modules/hazelcast-client
 
-In `factory_utils.js`, you have multiple exported functions.
+In the `factory_utils.js` file, you have multiple exported functions:
 
 ```javascript
 exports.utilityFunction = function() {...}
@@ -710,9 +707,9 @@ exports.MySSLFactory = function() {...}
 ```
 
 In order to load `MySSLFactory` in your SSL configuration, you should set `path` and `exportedName` as `factory_utils.js`
-and `MySSLFactory` respectively.
+and `MySSLFactory`, respectively.
 
-If you have only one export as the default export from `factory_utils.js`, just skip `exportedName` property and
+If you have only one export as the default export from `factory_utils.js`, just skip the `exportedName` property and
 the client will load the default export from the file.
 
 
