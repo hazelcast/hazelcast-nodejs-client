@@ -1431,15 +1431,19 @@ For information about the path resolution, see the [Loading Objects and Path Res
 
 # 7. Using Node.js Client with Hazelcast IMDG
 
+This chapter provides information on how you can use Hazelcast IMDG's data structures in the Node.js client, after giving some basic information including an overview to the client API, operation modes of the client and how it handles the failures.
+
 ## 7.1. Node.js Client API Overview
 
-Most of the functions in the API return `Promise`. Therefore, you need to be familiar with the concept of promises to use the Node.js client. If not, you can learn about them using various online resources.
+Most of the functions in the API return `Promise`. Therefore, you need to be familiar with the concept of promises to use the Node.js client. If not, you can learn about them using various online resources, e.g., the [Promise JS](https://www.promisejs.org/) website.
 
-Promises provide a better way of working with callbacks. You can chain asynchronous functions by `then()` function of promise. Also, you can use `async/await`, if you use Node.js 8 and higher versions.
+Promises provide a better way of working with callbacks. You can chain asynchronous functions by the `then()` function of promise. Also, you can use `async/await`, if you use Node.js 8 and higher versions.
 
-If you are ready to go, let's start to use Hazelcast Node.js client!
+If you are ready to go, let's start to use Hazelcast Node.js client.
 
-The first step is configuration. You can configure the Node.js client declaratively or programmatically. We will use the programmatic approach throughout this chapter. Please refer to the [Node.js Client Declarative Configuration section](#declarative-configuration) for details.
+The first step is the configuration. You can configure the Node.js client declaratively or programmatically. We will use the programmatic approach throughout this chapter. See the [Programmatic Configuration section](#programmatic-configuration) for details. 
+
+The following is an example on how to create a `ClientConfig` object and configure it programmatically:
 
 ```javascript
 var clientConfig = new Config.ClientConfig();
@@ -1447,7 +1451,7 @@ clientConfig.groupConfig.name = 'dev';
 clientConfig.networkConfig.addresses.push('10.90.0.1', '10.90.0.2:5702');
 ```
 
-The second step is initializing the `HazelcastClient` to be connected to the cluster.
+The second step is initializing the `HazelcastClient` to be connected to the cluster:
 
 ```javascript
 Client.newHazelcastClient(clientConfig).then(function (client) {
@@ -1455,9 +1459,9 @@ Client.newHazelcastClient(clientConfig).then(function (client) {
 });
 ```
 
-**This client object is your gateway to access all Hazelcast distributed objects.**
+**This client object is your gateway to access all the Hazelcast distributed objects.**
 
-Let’s create a map and populate it with some data.
+Let's create a map and populate it with some data, as shown below.
 
 ```javascript
 var client;
@@ -1473,7 +1477,7 @@ Client.newHazelcastClient(clientConfig).then(function (res) {
 });
 ```
 
-As a final step, if you are done with your client, you can shut it down as shown below. This will release all the used resources and will close connections to the cluster.
+As the final step, if you are done with your client, you can shut it down as shown below. This will release all the used resources and close connections to the cluster.
 
 ```javascript
 ...
@@ -1484,53 +1488,50 @@ As a final step, if you are done with your client, you can shut it down as shown
 
 ## 7.2. Node.js Client Operation Modes
 
-The client has two operation modes because of the distributed nature of the data and cluster.
+The client has two operation modes because of the distributed nature of the data and cluster: smart and unisocket.
 
 ### 7.2.1. Smart Client
 
-In the smart mode, clients connect to each cluster member. Since each data partition uses the well known and consistent hashing algorithm, each client can send an operation to the relevant cluster member, which increases the overall throughput and efficiency. Smart mode is the default mode.
-
+In the smart mode, the clients connect to each cluster member. Since each data partition uses the well known and consistent hashing algorithm, each client can send an operation to the relevant cluster member, which increases the overall throughput and efficiency. Smart mode is the default mode.
 
 ### 7.2.2. Unisocket Client
 
-For some cases, the clients can be required to connect to a single member instead of each member in the cluster. Firewalls, security, or some custom networking issues can be the reason for these cases.
+For some cases, the clients can be required to connect to a single member instead of each member in the cluster. Firewalls, security or some custom networking issues can be the reason for these cases.
 
 In the unisocket client mode, the client will only connect to one of the configured addresses. This single member will behave as a gateway to the other members. For any operation requested from the client, it will redirect the request to the relevant member and return the response back to the client returned from this member.
 
 ## 7.3. Handling Failures
 
-There are two main failure cases you should be aware of, and configurations you can perform to achieve proper behavior.
+There are two main failure cases you should be aware of. Below sections explain these and the configurations you can perform to achieve proper behavior.
 
 ### 7.3.1. Handling Client Connection Failure
 
-While the client is trying to connect initially to one of the members in the `ClientNetworkConfig.addressList`, all the members might be not available. Instead of giving up, throwing an error and stopping the client, the client will retry as many as `connectionAttemptLimit` times. 
+While the client is trying to connect initially to one of the members in the `ClientNetworkConfig.addressList`, all the members might not be available. Instead of giving up, throwing an error and stopping the client, the client will retry as many as `connectionAttemptLimit` times. 
 
-You can configure `connectionAttemptLimit` for the number of times you want the client to retry connecting. Please see [Setting Connection Attempt Limit](#5-setting-connection-attempt-limit).
+You can configure `connectionAttemptLimit` for the number of times you want the client to retry connecting. See the [Setting Connection Attempt Limit section](#5-setting-connection-attempt-limit).
 
 The client executes each operation through the already established connection to the cluster. If this connection(s) disconnects or drops, the client will try to reconnect as configured.
 
 ### 7.3.2. Handling Retry-able Operation Failure
 
-While sending the requests to related members, operations can fail due to various reasons. Read-only operations are retried by default. If you want to enable retry for the other operations, you can set the `redoOperation` to `true`. Please see [Enabling Redo Operation](#3-enabling-redo-operation).
+While sending the requests to the related members, the operations can fail due to various reasons. Read-only operations are retried by default. If you want to enable retrying for the other operations, you can set the `redoOperation` to `true`. See the [Enabling Redo Operation section](#3-enabling-redo-operation).
 
 You can set a timeout for retrying the operations sent to a member. This can be provided by using the property `hazelcast.client.invocation.timeout.seconds` in `ClientConfig.properties`. The client will retry an operation within this given period, of course, if it is a read-only operation or you enabled the `redoOperation` as stated in the above paragraph. This timeout value is important when there is a failure resulted by either of the following causes:
 
-- Member throws an exception.
+* Member throws an exception.
+* Connection between the client and member is closed.
+* Client’s heartbeat requests are timed out.
 
-- Connection between the client and member is closed.
-
-- Client’s heartbeat requests are timed out.
-
-When a connection problem occurs, an operation is retried if it is certain that it has not run on the member yet or if it is idempotent such as a read-only operation, i.e., retrying does not have a side effect. If it is not certain whether the operation has run on the member, then the non-idempotent operations are not retried. However, as explained in the first paragraph of this section, you can force all client operations to be retried (`redoOperation`) when there is a connection failure between the client and member. But in this case, you should know that some operations may run multiple times causing conflicts. For example, assume that your client sent a `queue.offer` operation to the member, and then the connection is lost. Since there will be no response for this operation, you will not now whether it has run on the member or not. If you enabled `redoOperation`, it means this operation may run again, which may cause two instances of the same object in the queue.
+When a connection problem occurs, an operation is retried if it is certain that it has not run on the member yet or if it is idempotent such as a read-only operation, i.e., retrying does not have a side effect. If it is not certain whether the operation has run on the member, then the non-idempotent operations are not retried. However, as explained in the first paragraph of this section, you can force all the client operations to be retried (`redoOperation`) when there is a connection failure between the client and member. But in this case, you should know that some operations may run multiple times causing conflicts. For example, assume that your client sent a `queue.offer` operation to the member and then the connection is lost. Since there will be no response for this operation, you will not know whether it has run on the member or not. If you enabled `redoOperation`, it means this operation may run again, which may cause two instances of the same object in the queue.
 
 
 ## 7.4. Using Distributed Data Structures
 
-Most of the Distributed Data Structures are supported by the Node.js client. In this chapter, you will learn how to use these distributed data structures.
+Most of the distributed data structures are supported by the Node.js client. In this chapter, you will learn how to use these distributed data structures.
 
 ### 7.4.1. Using Map
 
-Hazelcast Map (`IMap`) is a distributed map. Through Node.js client, you can  perform operations like reading and writing from/to a Hazelcast Map with the well known get and put methods. For details refer to [Map section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#map) in the Hazelcast IMDG Reference Manual.
+Hazelcast Map (`IMap`) is a distributed map. Through the Node.js client, you can perform operations like reading and writing from/to a Hazelcast Map with the well known get and put methods. For details, see the [Map section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#map) in the Hazelcast IMDG Reference Manual.
 
 A Map usage example is shown below.
 
@@ -1547,7 +1548,7 @@ map.put(1, 'Furkan').then(function (oldValue) {
 
 ### 7.4.2. Using MultiMap
 
-Hazelcast `MultiMap` is a distributed and specialized map where you can store multiple values under a single key. For details refer to [MultiMap section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#multimap) in the Hazelcast IMDG Reference Manual.
+Hazelcast `MultiMap` is a distributed and specialized map where you can store multiple values under a single key. For details, see the [MultiMap section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#multimap) in the Hazelcast IMDG Reference Manual.
 
 A MultiMap usage example is shown below.
 
@@ -1565,7 +1566,7 @@ multiMap.put(1, 'Furkan').then(function () {
 
 ### 7.4.3. Using Replicated Map
 
-Hazelcast `ReplicatedMap` is a distributed key-value data structure where the data is replicated to all members in the cluster. It provides full replication of entries to all members for high speed access. For details refer to [Replicated Map section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#replicated-map) in the Hazelcast IMDG Reference Manual.
+Hazelcast `ReplicatedMap` is a distributed key-value data structure where the data is replicated to all members in the cluster. It provides full replication of entries to all members for high speed access. For details, see the [Replicated Map section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#replicated-map) in the Hazelcast IMDG Reference Manual.
 
 A Replicated Map usage example is shown below.
 
@@ -1583,7 +1584,7 @@ replicatedMap.put(1, 'Furkan').then(function () {
 
 ### 7.4.4. Using Queue
 
-Hazelcast Queue(`IQueue`) is a distributed queue which enables all cluster members to interact with it. For details refer to [Queue section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#queue) in the Hazelcast IMDG Reference Manual.
+Hazelcast Queue (`IQueue`) is a distributed queue which enables all cluster members to interact with it. For details, see the [Queue section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#queue) in the Hazelcast IMDG Reference Manual.
 
 A Queue usage example is shown below.
 
@@ -1599,7 +1600,7 @@ queue.offer('Furkan').then(function () {
 
 ## 7.4.5. Using Set
 
-Hazelcast Set(`ISet`) is a distributed set which does not allow duplicate elements. For details refer to [Set section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#set) in the Hazelcast IMDG Reference Manual.
+Hazelcast Set (`ISet`) is a distributed set which does not allow duplicate elements. For details, see the [Set section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#set) in the Hazelcast IMDG Reference Manual.
 
 A Set usage example is shown below.
 
@@ -1617,7 +1618,7 @@ hazelcastClient.getSet('mySet').then(function (s) {
 
 ## 7.4.6. Using List
 
-Hazelcast List(`IList`) is distributed list which allows duplicate elements and preserves the order of elements. For details refer to [List section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#list) in the Hazelcast IMDG Reference Manual.
+Hazelcast List (`IList`) is a distributed list which allows duplicate elements and preserves the order of elements. For details, see the [List section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#list) in the Hazelcast IMDG Reference Manual.
 
 A List usage example is shown below.
 
@@ -1639,7 +1640,7 @@ hazelcastClient.getList('myList').then(function (l) {
 
 ## 7.4.7. Using Ringbuffer
 
-Hazelcast `Ringbuffer` is a replicated but not partitioned data structure that stores its data in a ring-like structure. You can think of it as a circular array with a given capacity. Each Ringbuffer has a tail and a head. The tail is where the items are added and the head is where the items are overwritten or expired. You can reach each element in a Ringbuffer using a sequence ID, which is mapped to the elements between the head and tail (inclusive) of the Ringbuffer. For details refer to [Ringbuffer section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#ringbuffer) in the Hazelcast IMDG Reference Manual.
+Hazelcast `Ringbuffer` is a replicated but not partitioned data structure that stores its data in a ring-like structure. You can think of it as a circular array with a given capacity. Each Ringbuffer has a tail and a head. The tail is where the items are added and the head is where the items are overwritten or expired. You can reach each element in a Ringbuffer using a sequence ID, which is mapped to the elements between the head and tail (inclusive) of the Ringbuffer. For details, see the [Ringbuffer section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#ringbuffer) in the Hazelcast IMDG Reference Manual.
 
 A Ringbuffer usage example is shown below.
 
@@ -1659,7 +1660,7 @@ hazelcastClient.getRingbuffer('myRingbuffer').then(function (buffer) {
 
 ## 7.4.8. Using Reliable Topic
 
-Hazelcast `ReliableTopic` is a distributed topic implementation backed up by the `Ringbuffer` data structure. For details refer to [Reliable Topic section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#reliable-topic) in the Hazelcast IMDG Reference Manual.
+Hazelcast `ReliableTopic` is a distributed topic implementation backed up by the `Ringbuffer` data structure. For details, see the [Reliable Topic section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#reliable-topic) in the Hazelcast IMDG Reference Manual.
 
 A Reliable Topic usage example is shown below.
 
@@ -1676,7 +1677,7 @@ hazelcastClient.getReliableTopic('myReliableTopic').then(function (t) {
 
 ## 7.4.9 Using Lock
 
-Hazelcast Lock(`ILock`) is a distributed lock implementation. You can synchronize Hazelcast members and clients using a Lock. For details refer to [Lock section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#lock) in the Hazelcast IMDG Reference Manual.
+Hazelcast Lock (`ILock`) is a distributed lock implementation. You can synchronize Hazelcast members and clients using a Lock. For details, see the [Lock section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#lock) in the Hazelcast IMDG Reference Manual.
 
 A Lock usage example is shown below.
 
@@ -1694,7 +1695,7 @@ hazelcastClient.getLock('myLock').then(function (l) {
 
 ## 7.4.10 Using Atomic Long
 
-Hazelcast Atomic Long(`IAtomicLong`) is the distributed long which offers most of the operations such as `get`, `set`, `getAndSet`, `compareAndSet` and `incrementAndGet`. For details refer to [Atomic Long section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#iatomiclong) in the Hazelcast IMDG Reference Manual.
+Hazelcast Atomic Long (`IAtomicLong`) is the distributed long which offers most of the operations such as `get`, `set`, `getAndSet`, `compareAndSet` and `incrementAndGet`. For details, see the [Atomic Long section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#iatomiclong) in the Hazelcast IMDG Reference Manual.
 
 An Atomic Long usage example is shown below.
 
@@ -1712,7 +1713,7 @@ hazelcastClient.getAtomicLong('myAtomicLong').then(function (counter) {
 
 ## 7.4.11 Using Semaphore
 
-Hazelcast Semaphore(`ISemaphore`) is a distributed semaphore implementation. For details refer to [Semaphore section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#isemaphore) in the Hazelcast IMDG Reference Manual.
+Hazelcast Semaphore (`ISemaphore`) is a distributed semaphore implementation. For details, see the [Semaphore section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#isemaphore) in the Hazelcast IMDG Reference Manual.
 
 A Semaphore usage example is shown below.
 
@@ -1732,7 +1733,7 @@ hazelcastClient.getSemaphore('mySemaphore').then(function (s) {
 
 ## 7.4.12 Using PN Counter
 
-Hazelcast `PNCounter` (Positive-Negative Counter) is a CRDT positive-negative counter implementation. It is an eventually consistent counter given there is no member failure. For details refer to [PN Counter section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#pn-counter) in the Hazelcast IMDG Reference Manual.
+Hazelcast `PNCounter` (Positive-Negative Counter) is a CRDT positive-negative counter implementation. It is an eventually consistent counter given there is no member failure. For details, see the [PN Counter section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#pn-counter) in the Hazelcast IMDG Reference Manual.
 
 A PN Counter usage example is shown below.
 
@@ -1751,7 +1752,7 @@ hazelcastClient.getPNCounter('myPNCounter').then(function (counter) {
 
 ## 7.4.13 Using Flake ID Generator
 
-Hazelcast `FlakeIdGenerator` is used to generate cluster-wide unique identifiers. Generated identifiers are long primitive values and are k-ordered (roughly ordered). IDs are in the range from 0 to `2^63-1 (maximum signed long value)`. For details refer to [FlakeIdGenerator section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#flakeidgenerator) in the Hazelcast IMDG Reference Manual.
+Hazelcast `FlakeIdGenerator` is used to generate cluster-wide unique identifiers. Generated identifiers are long primitive values and are k-ordered (roughly ordered). IDs are in the range from 0 to `2^63-1` (maximum signed long value). For details, see the [FlakeIdGenerator section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#flakeidgenerator) in the Hazelcast IMDG Reference Manual.
 
 A Flake ID Generator usage example is shown below.
 
@@ -1767,30 +1768,27 @@ hazelcastClient.getFlakeIdGenerator('myFlakeIdGenerator').then(function (gen) {
 
 ## 7.5. Distributed Events
 
-
 This chapter explains when various events are fired and describes how you can add event listeners on a Hazelcast Node.js client. These events can be categorized as cluster and distributed data structure events.
 
 ### 7.5.1. Cluster Events
 
-You can add event listeners to a Hazelcast Node.js client. You can configure the following listeners to listen to the events on the client side.
+You can add event listeners to a Hazelcast Node.js client. You can configure the following listeners to listen to the events on the client side:
 
-`Membership Listener`: Notifies when a member joins to/leaves the cluster, or when an attribute is changed in a member.
-
-`Distributed Object Listener`: Notifies when a distributed object is created or destroyed throughout the cluster.
-
-`Lifecycle Listener`: Notifies when the client is starting, started, shutting down, and shutdown.
+* Membership Listener: Notifies when a member joins to/leaves the cluster, or when an attribute is changed in a member.
+* Distributed Object Listener: Notifies when a distributed object is created or destroyed throughout the cluster.
+* Lifecycle Listener: Notifies when the client is starting, started, shutting down and shutdown.
 
 #### 7.5.1.1. Listening for Member Events
 
 You can add the following types of member events to the `ClusterService`.
 
-- `memberAdded`: A new member is added to the cluster.
-- `memberRemoved`: An existing member leaves the cluster.
-- `memberAttributeChanged`: An attribute of a member is changed. Please refer to [Defining Member Attributes](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#defining-member-attributes) section in the Hazelcast IMDG Reference Manual to learn about member attributes.
+* `memberAdded`: A new member is added to the cluster.
+* `memberRemoved`: An existing member leaves the cluster.
+* `memberAttributeChanged`: An attribute of a member is changed. See the [Defining Member Attributes section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#defining-member-attributes) in the Hazelcast IMDG Reference Manual to learn about member attributes.
 
-The `ClusterService` object exposes an `ClusterService.on()` function that allows one or more functions to be attached to member events emitted by the object.
+The `ClusterService` object exposes an `ClusterService.on()` function that allows one or more functions to be attached to the member events emitted by the object.
 
-The following is a membership listener registration by using `ClusterService.on()` function.
+The following is a membership listener registration by using the `ClusterService.on()` function.
 
 ```javascript
 client.clusterService.on('memberAdded', function (member) {
@@ -1798,9 +1796,9 @@ client.clusterService.on('memberAdded', function (member) {
 });
 ```
 
-The `memberAttributeChanged` has its own type of event named `MemberAttributeEvent`. When there is an attribute change on the member, this event is fired.
+The `memberAttributeChanged` has its own type of event named as `MemberAttributeEvent`. When there is an attribute change on the member, this event is fired.
 
-Let’s take a look at the following example.
+See the following example.
 
 ```javascript
 client.clusterService.on('memberAttributeChanged', function (memberAttributeEvent) {
@@ -1812,13 +1810,11 @@ client.clusterService.on('memberAttributeChanged', function (memberAttributeEven
 
 The events for distributed objects are invoked when they are created and destroyed in the cluster. After the events, a listener callback function is called. The type of the callback function should be `DistributedObjectListener`. The parameter of the function is `DistributedObjectEvent` including following fields:
 
-`serviceName`: Service name of the distributed object.
+* `serviceName`: Service name of the distributed object.
+* `objectName`: Name of the distributed object.
+* `eventType`: Type of the invoked event. It can be `created` or `destroyed`.
 
-`objectName`: Name of the distributed object.
-
-`eventType`: Type of the invoked event. It can be `created` or `destroyed`.
-
-The following is an example of adding a Distributed Object Listener.
+The following is an example of adding a `DistributedObjectListener`.
 
 ```javascript
 client.addDistributedObjectListener(function (distributedObjectEvent) {
@@ -1838,13 +1834,14 @@ client.addDistributedObjectListener(function (distributedObjectEvent) {
 
 #### 7.5.1.3. Listening for Lifecycle Events
 
-The Lifecycle Listener notifies for the following events:
-- `starting`: A client is starting.
-- `started`: A client has started.
-- `shuttingDown`: A client is shutting down.
-- `shutdown`: A client’s shutdown has completed.
+The `LifecycleListener` interface notifies for the following events:
 
-The following is an example of Lifecycle Listener that is added to config and its output.
+* `starting`: A client is starting.
+* `started`: A client has started.
+* `shuttingDown`: A client is shutting down.
+* `shutdown`: A client’s shutdown has completed.
+
+The following is an example of the `LifecycleListener` that is added to the `ClientConfig` object and its output.
 
 ```javascript
 var clientConfig = new Config.ClientConfig();
@@ -1878,18 +1875,18 @@ Process finished with exit code 0
 
 ### 7.5.2. Distributed Data Structure Events
 
-You can add event listeners to the Distributed Data Structures.
+You can add event listeners to the distributed data structures.
 
 > **NOTE: Hazelcast Node.js client is a TypeScript-based project but JavaScript does not have interfaces. Therefore, 
-  some interfaces are given to user by using the TypeScript files that have `.ts` extension. In the documentation, implementing an interface means an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as `an instance of the interface`. You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or Github repository for a required interface.**
+  some interfaces are given to the user by using the TypeScript files that have `.ts` extension. In this guide, implementing an interface means creating an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as `an instance of the interface`. You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or GitHub repository for a required interface.**
 
 #### 7.5.2.1. Listening for Map Events
 
 You can listen to map-wide or entry-based events by using the functions in the `MapListener` interface. Every function type in this interface is one of the `EntryEventListener` and `MapEventListener` types. To listen to these events, you need to implement the relevant `EntryEventListener` and `MapEventListener` functions in the `MapListener` interface. 
 
-- An entry-based  event is fired after the operations that affect a specific entry. For example, `IMap.put()`, `IMap.remove()` or `IMap.evict()`. You should use the `EntryEventListener` type to listen these events. An `EntryEvent` object is passed to the listener function.
+An entry-based event is fired after the operations that affect a specific entry. For example, `IMap.put()`, `IMap.remove()` or `IMap.evict()`. You should use the `EntryEventListener` type to listen to these events. An `EntryEvent` object is passed to the listener function.
 
-Let’s take a look at the following example.
+See the following example.
 
 ```javascript
 var entryEventListener = {
@@ -1902,10 +1899,9 @@ map.addEntryListener(entryEventListener, undefined, true).then(function () {
 });
 ```
 
+A map-wide event is fired as a result of a map-wide operation. For example, `IMap.clear()` or `IMap.evictAll()`. You should use the `MapEventListener` type to listen to these events. A `MapEvent` object is passed to the listener function.
 
-- A map-wide event is fired as a result of a map-wide operation. For example, `IMap.clear()` or `IMap.evictAll()`. You should use the `MapEventListener` type to listen these events. A `MapEvent` object is passed to the listener function.
-
-Let’s take a look at the following example.
+See the following example.
 
 ```javascript
 var mapEventListener = {
@@ -1926,13 +1922,13 @@ map.addEntryListener(mapEventListener).then(function () {
 
 ## 7.6. Distributed Computing
 
-This chapter explains Hazelcast’s entry processor implementation.
+This chapter explains how you can use Hazelcast IMDG's entry processor implementation in the Node.js client.
 
 ### 7.6.1. Using EntryProcessor
 
 Hazelcast supports entry processing. An entry processor is a function that executes your code on a map entry in an atomic way.
 
-An entry processor is a good option if you perform bulk processing on an `IMap`. Usually you perform a loop of keys-- executing `IMap.get(key)`, mutating the value, and finally putting the entry back in the map using `IMap.put(key,value)`. If you perform this process from a client or from a member where the keys do not exist, you effectively perform two network hops for each update: the first to retrieve the data and the second to update the mutated value.
+An entry processor is a good option if you perform bulk processing on an `IMap`. Usually you perform a loop of keys -- executing `IMap.get(key)`, mutating the value and finally putting the entry back in the map using `IMap.put(key,value)`. If you perform this process from a client or from a member where the keys do not exist, you effectively perform two network hops for each update: the first to retrieve the data and the second to update the mutated value.
 
 If you are doing the process described above, you should consider using entry processors. An entry processor executes a read and updates upon the member where the data resides. This eliminates the costly network hops described above.
 
@@ -1944,11 +1940,9 @@ Hazelcast sends the entry processor to each cluster member and these members app
 
 The `IMap` interface provides the following functions for entry processing:
 
-- `executeOnKey` processes an entry mapped by a key.
-
-- `executeOnKeys` processes entries mapped by a list of keys.
-
-- `executeOnEntries` can process all entries in a map with a defined predicate. Predicate is optional.
+* `executeOnKey` processes an entry mapped by a key.
+* `executeOnKeys` processes entries mapped by a list of keys.
+* `executeOnEntries` can process all entries in a map with a defined predicate. Predicate is optional.
 
 In the Node.js client, an `EntryProcessor` should be `IdentifiedDataSerializable` or `Portable` because the server should be able to deserialize it to process.
 
@@ -1976,9 +1970,9 @@ IdentifiedEntryProcessor.prototype.getClassId = function () {
 };
 ```
 
-Now, you need to make sure that the Hazelcast member recognizes the entry processor. For this, you need to implement the Java equivalent of your entry processor and its factory and create your own compiled class or JAR files. For adding your own compiled class or JAR files to the server's `CLASSPATH`, please see [Adding User Library to CLASSPATH section](#adding-user-library-to-classpath).
+Now, you need to make sure that the Hazelcast member recognizes the entry processor. For this, you need to implement the Java equivalent of your entry processor and its factory, and create your own compiled class or JAR files. For adding your own compiled class or JAR files to the server's `CLASSPATH`, see the [Adding User Library to CLASSPATH section](#adding-user-library-to-classpath).
 
-The following is an example code which can be the Java equivalent of entry processor in Node.js client:
+The following is the Java equivalent of the entry processor in Node.js client given above:
 
 ```java
 import com.hazelcast.map.AbstractEntryProcessor;
@@ -2042,7 +2036,7 @@ public class IdentifiedFactory implements DataSerializableFactory {
 }
 ```
 
-Note that you need to configure the `hazelcast.xml` to add your factory. And the following is the configuration for the above factory:
+Now you need to configure the `hazelcast.xml` to add your factory as shown below.
 
 ```xml
 <hazelcast>
@@ -2056,9 +2050,9 @@ Note that you need to configure the `hazelcast.xml` to add your factory. And the
 </hazelcast>
 ```
 
-The code that runs on the entries is implemented in Java on the server side. Client side entry processor is used to specify which entry processor should be called. For more details about the Java implementation of the entry processor, please see [Entry Processor section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#entry-processor) in the Hazelcast IMDG Reference Manual.
+The code that runs on the entries is implemented in Java on the server side. The client side entry processor is used to specify which entry processor should be called. For more details about the Java implementation of the entry processor, see the [Entry Processor section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#entry-processor) in the Hazelcast IMDG Reference Manual.
 
-After all implementation and starting the server where your library is added to its `CLASSPATH`, you can use the entry processor in the `IMap` functions. Let's take a look at the following example.
+After the above implementations and configuration are done and you start the server where your library is added to its `CLASSPATH`, you can use the entry processor in the `IMap` functions. See the following example.
 
 ```javascript
 var map;
@@ -2081,48 +2075,36 @@ Hazelcast partitions your data and spreads it across cluster of members. You can
 ### 7.7.1. How Distributed Query Works
 
 1. The requested predicate is sent to each member in the cluster.
-2. Each member looks at its own local entries and filters them according to the predicate. At this stage, key/value pairs of the entries are deserialized and then passed to the predicate.
+2. Each member looks at its own local entries and filters them according to the predicate. At this stage, key-value pairs of the entries are deserialized and then passed to the predicate.
 3. The predicate requester merges all the results coming from each member into a single set.
 
 Distributed query is highly scalable. If you add new members to the cluster, the partition count for each member is reduced and thus the time spent by each member on iterating its entries is reduced. In addition, the pool of partition threads evaluates the entries concurrently in each member, and the network traffic is also reduced since only filtered data is sent to the requester.
 
 **Predicates Object Operators**
 
-The `Predicates` object offered by the client includes many operators for your query requirements. Some of them are explained below.
+The `Predicates` object offered by the Node.js client includes many operators for your query requirements. Some of them are described below.
 
-- `equal`: Checks if the result of an expression is equal to a given value.
-
-- `notEqual`: Checks if the result of an expression is not equal to a given value.
-
-- `instanceOf`: Checks if the result of an expression has a certain type.
-
-- `like`: Checks if the result of an expression matches some string pattern. `%` (percentage sign) is the placeholder for many characters, `_` (underscore) is placeholder for only one character.
-
-- `greaterThan`: Checks if the result of an expression is greater than a certain value.
-
-- `greaterEqual`: Checks if the result of an expression is greater than or equal to a certain value.
-
-- `lessThan`: Checks if the result of an expression is less than a certain value.
-
-- `lessEqual`: Checks if the result of an expression is less than or equal to a certain value.
-
-- `between`: Checks if the result of an expression is between two values (this is inclusive).
-
-- `inPredicate`: Checks if the result of an expression is an element of a certain list.
-
-- `not`: Checks if the result of an expression is false.
-
-- `regex`: Checks if the result of an expression matches some regular expression.
+* `equal`: Checks if the result of an expression is equal to a given value.
+* `notEqual`: Checks if the result of an expression is not equal to a given value.
+* `instanceOf`: Checks if the result of an expression has a certain type.
+* `like`: Checks if the result of an expression matches some string pattern. `%` (percentage sign) is the placeholder for many characters, `_` (underscore) is the placeholder for only one character.
+* `greaterThan`: Checks if the result of an expression is greater than a certain value.
+* `greaterEqual`: Checks if the result of an expression is greater than or equal to a certain value.
+* `lessThan`: Checks if the result of an expression is less than a certain value.
+* `lessEqual`: Checks if the result of an expression is less than or equal to a certain value.
+* `between`: Checks if the result of an expression is between two values, inclusively.
+* `inPredicate`: Checks if the result of an expression is an element of a certain list.
+* `not`: Checks if the result of an expression is false.
+* `regex`: Checks if the result of an expression matches some regular expression.
 
 Hazelcast offers the following ways for distributed query purposes:
 
-- Combining Predicates with AND, OR, NOT
-
-- Distributed SQL Query
+* Combining Predicates with AND, OR, NOT
+* Distributed SQL Query
 
 #### 7.7.1.1. Employee Map Query Example
 
-Assume that you have an `employee` map containing values of `Employee` objects, as coded below. 
+Assume that you have an `employee` map containing the values of `Employee` objects, as coded below. 
 
 ```javascript
 function Employee(name, age, active, salary) {
@@ -2155,7 +2137,7 @@ Employee.prototype.writeData = function (objectDataOutput) {
 }
 ```
 
-Note that `Employee` is an `IdentifiedDataSerializable` object. If you just want to save the `Employee` objects as byte arrays on the map, you don't need to implement its equivalent on the server-side. However, if you want to query on the `employee` map, server needs the `Employee` objects rather than byte array formats. Therefore, you need to implement its Java equivalent and its data serializable factory on server side for server to reconstitute the objects from binary formats. After implementing the Java class and its factory, you need to add the factory to the data serializable factories or the portable factories by giving a factory `id`. Here is the example XML configuration of the server.
+Note that `Employee` is an `IdentifiedDataSerializable` object. If you just want to save the `Employee` objects as byte arrays on the map, you don't need to implement its equivalent on the server-side. However, if you want to query on the `employee` map, the server needs the `Employee` objects rather than byte array formats. Therefore, you need to implement its Java equivalent and its data serializable factory on the server side for server to reconstitute the objects from binary formats. After implementing the Java class and its factory, you need to add the factory to the data serializable factories or the portable factories by giving a factory `id`. The following is an example declarative configuration on the server.
 
 ```xml
 <hazelcast>
@@ -2171,13 +2153,13 @@ Note that `Employee` is an `IdentifiedDataSerializable` object. If you just want
 </hazelcast>
 ```
 
-Note that before starting the server, you need to compile the `Employee` and `MyIdentifiedFactory` classes with server's `CLASSPATH` and add them to the `user-lib` folder in the extracted `hazelcast-<version>.zip`. See [Adding User Library to CLASSPATH section](#adding-user-library-to-classpath).
+Note that before starting the server, you need to compile the `Employee` and `MyIdentifiedFactory` classes with server's `CLASSPATH` and add them to the `user-lib` directory in the extracted `hazelcast-<version>.zip` (or `tar`). See the [Adding User Library to CLASSPATH section](#adding-user-library-to-classpath).
 
-> **NOTE: You can also make this object `Portable` and implement its Java equivalent and its portable factory on the server side. Note that querying with `Portable` object is faster as compared to `IdentifiedDataSerializable`.**
+> **NOTE: You can also make this object `Portable` and implement its Java equivalent and portable factory on the server side. Note that querying with `Portable` object is faster as compared to `IdentifiedDataSerializable`.**
 
 #### 7.7.1.2. Querying by Combining Predicates with AND, OR, NOT
 
-You can combine predicates by using the `and`, `or`, and `not` operators, as shown in the below example.
+You can combine predicates by using the `and`, `or` and `not` operators, as shown in the below example.
 
 ```javascript
 var map;
@@ -2192,11 +2174,11 @@ client.getMap('employee').then(function (mp) {
 
 In the above example code, `predicate` verifies whether the entry is active and its `age` value is less than 30. This `predicate` is applied to the `employee` map using the `map.valuesWithPredicate(predicate)` method. This method sends the predicate to all cluster members and merges the results coming from them. 
 
-> **NOTE: Predicates can also be applied to `keySet` and `entrySet` of the Hazelcast distributed map.**
+> **NOTE: Predicates can also be applied to `keySet` and `entrySet` of the Hazelcast IMDG's distributed map.**
 
 #### 7.7.1.3. Querying with SQL
 
-`SqlPredicate` takes the regular SQL `where` clause. Here is an example:
+`SqlPredicate` takes the regular SQL `where` clause. See the following example:
 
 ```javascript
 var map;
@@ -2237,7 +2219,7 @@ client.getMap('employee').then(function (mp) {
 
 **LIKE:** `<attribute> [NOT] LIKE 'expression'`
 
-The `%` (percentage sign) is placeholder for multiple characters, an `_` (underscore) is placeholder for only one character.
+The `%` (percentage sign) is the placeholder for multiple characters, an `_` (underscore) is the placeholder for only one character.
 
 - `name LIKE 'Jo%'` (true for 'Joe', 'Josh', 'Joseph' etc.)
 - `name LIKE 'Jo_'` (true for 'Joe'; false for 'Josh')
@@ -2246,7 +2228,7 @@ The `%` (percentage sign) is placeholder for multiple characters, an `_` (unders
 
 **ILIKE:** `<attribute> [NOT] ILIKE 'expression'`
 
-Similar to LIKE predicate but in a case-insensitive manner.
+ILIKE is similar to the LIKE predicate but in a case-insensitive manner.
 
 - `name ILIKE 'Jo%'` (true for 'Joe', 'joe', 'jOe','Josh','joSH', etc.)
 - `name ILIKE 'Jo_'` (true for 'Joe' or 'jOE'; false for 'Josh')
@@ -2257,7 +2239,7 @@ Similar to LIKE predicate but in a case-insensitive manner.
 
 ##### Querying Examples with Predicates
 
-You can use `__key` attribute to perform a predicated search for entry keys. Please see the following example:
+You can use the `__key` attribute to perform a predicated search for the entry keys. See the following example:
 
 ```javascript
 var personMap;
@@ -2278,7 +2260,7 @@ client.getMap('persons').then(function (mp) {
 
 In this example, the code creates a list with the values whose keys start with the letter "F”.
 
-You can use `this` attribute to perform a predicated search for entry values. Please see the following example:
+You can use the `this` attribute to perform a predicated search for entry values. See the following example:
 
 ```javascript
 var personMap;
@@ -2301,7 +2283,7 @@ In this example, the code creates a list with the values greater than or equal t
 
 #### 7.7.1.4. Filtering with Paging Predicates
 
-The Node.js client provides paging for defined predicates. With its `PagingPredicate` object, you can get a list of keys, values, or entries page by page by filtering them with predicates and giving the size of the pages. Also, you can sort the entries by specifying comparators.
+The Node.js client provides paging for defined predicates. With its `PagingPredicate` object, you can get a list of keys, values or entries page by page by filtering them with predicates and giving the size of the pages. Also, you can sort the entries by specifying comparators.
 
 ```javascript
 var map;
@@ -2330,32 +2312,32 @@ hazelcastClient.getMap('students').then(function (mp) {
 });
 ```
 
-If you want to sort the result before paging, you need to specify a comparator object that implements the `Comparator` interface. Also, this comparator object should be one of `IdentifiedDataSerializable` or `Portable`. After implementing the Node.js version, you need to implement the Java equivalent of the comparator and its factory. The Java equivalent of the comparator should implement `java.util.Comparator`. Note that `compare` function of the `Comparator` on the Java side is the equivalent of the `sort` function of `Comparator` on the Node.js side. When you implement the `Comparator` and its factory, you can add them to the `CLASSPATH` of the server side.  See [Adding User Library to CLASSPATH section](#adding-user-library-to-classpath).
+If you want to sort the result before paging, you need to specify a comparator object that implements the `Comparator` interface. Also, this comparator object should be one of `IdentifiedDataSerializable` or `Portable`. After implementing this object in Node.js, you need to implement the Java equivalent of it and its factory. The Java equivalent of the comparator should implement `java.util.Comparator`. Note that the `compare` function of `Comparator` on the Java side is the equivalent of the `sort` function of `Comparator` on the Node.js side. When you implement the `Comparator` and its factory, you can add them to the `CLASSPATH` of the server side.  See the [Adding User Library to CLASSPATH section](#adding-user-library-to-classpath).
 
-Also, You can access a specific page more easily with the help of the `setPage` function. This way, if you make a query for the hundredth page, for example, it will get all 100 pages at once instead of reaching the hundredth page one by one using the `nextPage` function.
+Also, you can access a specific page more easily with the help of the `setPage` function. This way, if you make a query for the 100th page, for example, it will get all 100 pages at once instead of reaching the 100th page one by one using the `nextPage` function.
 
 ### 7.7.2. Fast-Aggregations
 
-Fast-Aggregations provides some aggregate functions (such as sum, average, max, min) on top of Hazelcast `IMap` entries. Their performance is perfect since they run in parallel for each partition and are highly optimized for speed and low memory consumption.
+Fast-Aggregations feature provides some aggregate functions, such as `sum`, `average`, `max`, and `min`, on top of Hazelcast `IMap` entries. Their performance is perfect since they run in parallel for each partition and are highly optimized for speed and low memory consumption.
 
 The `Aggregators` object provides a wide variety of built-in aggregators. The full list is presented below:
 
-- count
-- doubleAvg
-- doubleSum
-- numberAvg
-- fixedPointSum
-- floatingPointSum
-- max
-- min
-- integerAvg
-- integerSum
-- longAvg
-- longSum
+- `count`
+- `doubleAvg`
+- `doubleSum`
+- `numberAvg`
+- `fixedPointSum`
+- `floatingPointSum`
+- `max`
+- `min`
+- `integerAvg`
+- `integerSum`
+- `longAvg`
+- `longSum`
 
 You can use these aggregators with the `IMap.aggregate()` and `IMap.aggregateWithPredicate()` functions.
 
-Let's look at the following example.
+See the following example.
 
 ```javascript
 var map;
@@ -2378,7 +2360,6 @@ hazelcastClient.getMap('brothersMap').then(function (mp) {
     console.log('Average age is ' + avgAge); // Average age is 26.666666666666668
 });
 ```
-
 
 # 8. Development and Testing
 
