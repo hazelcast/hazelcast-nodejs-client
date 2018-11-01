@@ -29,7 +29,7 @@
   * [4.3. Custom Serialization](#43-custom-serialization)
   * [4.4. Global Serialization](#44-global-serialization)
 * [5. Setting Up Client Network](#5-setting-up-client-network)
-  * [5.1. Providing the Member Addresses](#51-providing-the-member-addresses)
+  * [5.1. Providing Member Addresses](#51-providing-member-addresses)
   * [5.2. Setting Smart Routing](#52-setting-smart-routing)
   * [5.3. Enabling Redo Operation](#53-enabling-redo-operation)
   * [5.4. Setting Connection Timeout](#54-setting-connection-timeout)
@@ -1028,11 +1028,11 @@ config.serializationConfig.globalSerializer = new GlobalSerializer();
 
 # 5. Setting Up Client Network
 
-All network related configuration of Hazelcast Node.js client is performed via the `network` element in the declarative configuration file, or in the object `ClientNetworkConfig` when using programmatic configuration. Let’s first give the examples for these two approaches. Then we will look at its sub-elements and attributes.
+All network related configuration of Hazelcast Node.js client is performed via the `network` element in the declarative configuration file, or in the object `ClientNetworkConfig` when using programmatic configuration. Let's first give the examples for these two approaches. Then we will look at its sub-elements and attributes.
 
 ### Declarative Client Network Configuration
 
-Here is an example of configuring network for Node.js Client declaratively.
+Here is an example of configuring the network for Node.js Client declaratively.
 
 ```json
 {
@@ -1052,7 +1052,7 @@ Here is an example of configuring network for Node.js Client declaratively.
 
 ### Programmatic Client Network Configuration
 
-Here is an example of configuring network for Node.js Client programmatically.
+Here is an example of configuring the network for Node.js Client programmatically.
 
 ```javascript
 var clientConfig = new Config.ClientConfig();
@@ -1064,9 +1064,9 @@ clientConfig.networkConfig.connectionAttemptPeriod = 5000;
 clientConfig.networkConfig.connectionAttemptLimit = 5;
 ```
 
-## 5.1. Providing the Member Addresses
+## 5.1. Providing Member Addresses
 
-Address list is the initial list of cluster addresses to which the client will connect. The client uses this
+Address list is the initial list of cluster addresses which the client will connect to. The client uses this
 list to find an alive member. Although it may be enough to give only one address of a member in the cluster
 (since all members communicate with each other), it is recommended that you give the addresses for all the members.
 
@@ -1090,9 +1090,9 @@ var clientConfig = new Config.ClientConfig();
 clientConfig.networkConfig.addresses.push('10.1.1.21', '10.1.1.22:5703');
 ```
 
-If the port part is omitted, then 5701, 5702 and 5703 will be tried in random order.
+If the port part is omitted, then 5701, 5702 and 5703 will be tried in a random order.
 
-You can specify multiple addresses with or without port information as seen above. The provided list is shuffled and tried in random order. Its default value is `localhost`.
+You can specify multiple addresses with or without the port information as seen above. The provided list is shuffled and tried in a random order. Its default value is `localhost`.
 
 ## 5.2. Setting Smart Routing
 
@@ -1122,7 +1122,7 @@ Its default value is `true` (smart client mode).
 
 ## 5.3. Enabling Redo Operation
 
-It enables/disables redo-able operations. While sending the requests to related members, operations can fail due to various reasons. Read-only operations are retried by default. If you want to enable retry for the other operations, you can set the `redoOperation` to `true`.
+It enables/disables redo-able operations. While sending the requests to the related members, the operations can fail due to various reasons. Read-only operations are retried by default. If you want to enable retry for the other operations, you can set the `redoOperation` to `true`.
 
 **Declarative:**
 
@@ -1145,8 +1145,8 @@ Its default value is `false` (disabled).
 
 ## 5.4. Setting Connection Timeout
 
-Connection timeout is the timeout value in milliseconds for members to accept client connection requests.
-If server does not respond within the timeout, the client will retry to connect as many as `ClientNetworkConfig.connectionAttemptLimit` times.
+Connection timeout is the timeout value in milliseconds for the members to accept the client connection requests.
+If the member does not respond within the timeout, the client will retry to connect as many as `ClientNetworkConfig.connectionAttemptLimit` times.
  
 The following are the example configurations.
 
@@ -1222,14 +1222,14 @@ Its default value is `3000` milliseconds.
 
 ## 5.7. Enabling Client TLS/SSL
 
-You can use TLS/SSL to secure the connection between the clients and members. If you want TLS/SSL enabled
+You can use TLS/SSL to secure the connection between the clients and members. If you want to enable TLS/SSL
 for the client-cluster connection, you should set an SSL configuration. Please see [TLS/SSL section](#1-tlsssl).
 
-As explained in the [TLS/SSL section](#1-tlsssl), Hazelcast members have key stores used to identify themselves (to other members) and Hazelcast Node.js clients have certificate authorities used to define which members they can trust. Hazelcast has the mutual authentication feature which allows the Node.js clients also to have their private keys and public certificates and members to have their certificate authorities so that the members can know which clients they can trust. Please see the [Mutual Authentication section](#13-mutual-authentication).
+As explained in the [TLS/SSL section](#1-tlsssl), Hazelcast members have key stores used to identify themselves (to other members) and Hazelcast Node.js clients have certificate authorities used to define which members they can trust. Hazelcast has the mutual authentication feature which allows the Node.js clients also to have their private keys and public certificates, and members to have their certificate authorities so that the members can know which clients they can trust. See the [Mutual Authentication section](#13-mutual-authentication).
 
 ## 5.8. Enabling Hazelcast Cloud Discovery
 
-The purpose of Hazelcast Cloud Discovery is to provide clients to use IP addresses provided by `hazelcast orchestrator`. To enable Hazelcast Cloud Discovery, specify a token for the `discoveryToken` field and set the `enabled` field to `true`.
+The purpose of Hazelcast Cloud Discovery is to provide the clients to use IP addresses provided by `hazelcast orchestrator`. To enable Hazelcast Cloud Discovery, specify a token for the `discoveryToken` field and set the `enabled` field to `true`.
  
 The following are example configurations.
 
