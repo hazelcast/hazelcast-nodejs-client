@@ -715,9 +715,9 @@ the client will load the default export from the file.
 
 # 4. Serialization
 
-Serialization is the process of converting an object into a stream of bytes to store the object in memory, a file or database, or transmit it through network. Its main purpose is to save the state of an object in order to be able to recreate it when needed. The reverse process is called deserialization. Hazelcast offers you its own native serialization methods. You will see these methods throughout the chapter.
+Serialization is the process of converting an object into a stream of bytes to store the object in the memory, a file or database, or transmit it through the network. Its main purpose is to save the state of an object in order to be able to recreate it when needed. The reverse process is called deserialization. Hazelcast offers you its own native serialization methods. You will see these methods throughout this chapter.
 
-Hazelcast serializes all your objects before sending them to the server. The `boolean`, `number`,`string` and `Long` types are serialized natively and you cannot override this behavior. The following table is the conversion of types for Java server side.
+Hazelcast serializes all your objects before sending them to the server. The `boolean`, `number`,`string` and `Long` types are serialized natively and you cannot override this behavior. The following table is the conversion of types for the Java server side.
 
 | Node.js | Java                                |
 |---------|-------------------------------------|
@@ -726,24 +726,22 @@ Hazelcast serializes all your objects before sending them to the server. The `bo
 | string  | String                              |
 | Long    | Long                                |
 
-> Note: A `number` type is serialized as `Double` by default. You can configure this behavior from `SerializationConfig.defaultNumberType`.
+> Note: A `number` type is serialized as `Double` by default. You can configure this behavior using the `SerializationConfig.defaultNumberType` method.
 
-Arrays of the above types can be serialized as `boolean[]`, `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `long[]` and `string[]` for Java server side respectively. 
+Arrays of the above types can be serialized as `boolean[]`, `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `long[]` and `string[]` for the Java server side, respectively. 
 
 Note that if the object is not one of the above-mentioned types, the Node.js client uses `JSON Serialization` by default.
 
-However, `JSON Serialization` is not the best way of serialization in terms of performance and interoperability between the clients in different languages. If you want the serialization to work faster or you use the clients in different languages, Hazelcast offers its own native serialization types, such as [IdentifiedDataSerializable Serialization](#1-identifieddataserializable-serialization) and [Portable Serialization](#2-portable-serialization).
+However, `JSON Serialization` is not the best way of serialization in terms of performance and interoperability between the clients in different languages. If you want the serialization to work faster or you use the clients in different languages, Hazelcast offers its own native serialization types, such as [`IdentifiedDataSerializable` Serialization](#1-identifieddataserializable-serialization) and [`Portable` Serialization](#2-portable-serialization).
 
 On top of all, if you want to use your own serialization type, you can use a [Custom Serialization](#3-custom-serialization).
 
 > **NOTE: Hazelcast Node.js client is a TypeScript-based project but JavaScript does not have interfaces. Therefore, 
- some interfaces are given to user by using the TypeScript files that have `.ts` extension. In the documentation, implementing an interface means an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as `an instance of the interface`. You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or Github repository for a required interface.**
+ some interfaces are given to the user by using the TypeScript files that have `.ts` extension. In this guide, implementing an interface means creating an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as `an instance of the interface`. You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or GitHub repository for a required interface.**
 
 ## 4.1. IdentifiedDataSerializable Serialization
 
-For a faster serialization of objects, Hazelcast recommends to implement IdentifiedDataSerializable interface.
-
-Here is an example of an object implementing IdentifiedDataSerializable interface:
+For a faster serialization of objects, Hazelcast recommends to implement the `IdentifiedDataSerializable` interface. The following is an example of an object implementing this interface:
 
 ```javascript
 function Address(street, zipCode, city, state) {
@@ -776,9 +774,9 @@ Address.prototype.readData = function (objectDataInput) {
 };
 ```
 
-IdentifiedDataSerializable uses `getClassId()` and `getFactoryId()` to reconstitute the object. To complete the implementation `IdentifiedDataSerializableFactory` should also be implemented and registered into `SerializationConfig` which can be accessed from `Config.serializationConfig`. The factory's responsibility is to return an instance of the right `IdentifiedDataSerializable` object, given the class id. 
+The `IdentifiedDataSerializable` interface uses `getClassId()` and `getFactoryId()` to reconstitute the object. To complete the implementation, `IdentifiedDataSerializableFactory` should also be implemented and registered into `SerializationConfig` which can be accessed from `Config.serializationConfig`. The factory's responsibility is to return an instance of the right `IdentifiedDataSerializable` object, given the `classId`. 
 
-A sample `IdentifiedDataSerializableFactory` could be implemented as following:
+A sample `IdentifiedDataSerializableFactory` could be implemented as follows:
 
 ```javascript
 function MyIdentifiedFactory() {
@@ -795,12 +793,14 @@ MyIdentifiedFactory.prototype.create = function (type) {
 The last step is to register the `IdentifiedDataSerializableFactory` to the `SerializationConfig`.
 
 **Programmatic Configuration:**
+
 ```javascript
 var config = new Config.ClientConfig();
 config.serializationConfig.dataSerializableFactories[1] = new MyIdentifiedFactory();
 ```
 
 **Declarative Configuration:**
+
 ```json
 {
     "serialization": {
@@ -815,23 +815,23 @@ config.serializationConfig.dataSerializableFactories[1] = new MyIdentifiedFactor
 }
 ```
 
-Note that the id that is passed to the `SerializationConfig` is same as the `factoryId` that `Address` object returns.
+Note that the ID that is passed to the `SerializationConfig` is same as the `factoryId` that the `Address` object returns.
 
 ## 4.2. Portable Serialization
 
-As an alternative to the existing serialization methods, Hazelcast offers Portable serialization. To use it, you need to implement `Portable` interface. Portable serialization has the following advantages:
+As an alternative to the existing serialization methods, Hazelcast offers portable serialization. To use it, you need to implement the `Portable` interface. Portable serialization has the following advantages:
 
-- Supporting multiversion of the same object type
-- Fetching individual fields without having to rely on reflection
-- Querying and indexing support without de-serialization and/or reflection
+- Supporting multiversion of the same object type.
+- Fetching individual fields without having to rely on the reflection.
+- Querying and indexing support without deserialization and/or reflection.
 
-In order to support these features, a serialized Portable object contains meta information like the version and the concrete location of the each field in the binary data. This way Hazelcast is able to navigate in the binary data and de-serialize only the required field without actually de-serializing the whole object which improves the Query performance.
+In order to support these features, a serialized `Portable` object contains meta information like the version and concrete location of the each field in the binary data. This way Hazelcast is able to navigate in the binary data and deserialize only the required field without actually deserializing the whole object which improves the query performance.
 
-With multiversion support, you can have two nodes where each of them having different versions of the same object and Hazelcast will store both meta information and use the correct one to serialize and de-serialize Portable objects depending on the node. This is very helpful when you are doing a rolling upgrade without shutting down the cluster.
+With multiversion support, you can have two members where each of them having different versions of the same object, and Hazelcast will store both meta information and use the correct one to serialize and deserialize portable objects depending on the member. This is very helpful when you are doing a rolling upgrade without shutting down the cluster.
 
-Also note that Portable serialization is totally language independent and is used as the binary protocol between Hazelcast server and clients.
+Also note that portable serialization is totally language independent and is used as the binary protocol between Hazelcast server and clients.
 
-A sample Portable implementation of a `Foo` class will look like the following:
+A sample portable implementation of a `Foo` class looks like the following:
 
 ```javascript
 function Foo(foo) {
@@ -855,9 +855,9 @@ Foo.prototype.readPortable = function (portableReader) {
 };
 ```
 
-Similar to `IdentifiedDataSerializable`, a Portable object must provide `classId` and `factoryId`. The factory object will be used to create the Portable object given the classId.
+Similar to `IdentifiedDataSerializable`, a `Portable` object must provide `classId` and `factoryId`. The factory object will be used to create the `Portable` object given the `classId`.
 
-A sample `PortableFactory` could be implemented as following:
+A sample `PortableFactory` could be implemented as follows:
 
 ```javascript
 function MyPortableFactory() {
@@ -874,12 +874,14 @@ MyPortableFactory.prototype.create = function (type) {
 The last step is to register the `PortableFactory` to the `SerializationConfig`.
 
 **Programmatic Configuration:**
+
 ```javascript
 var config = new Config.ClientConfig();
 config.serializationConfig.portableFactories[1] = new MyPortableFactory();
 ```
 
 **Declarative Configuration:**
+
 ```json
 {
     "serialization": {
@@ -894,13 +896,13 @@ config.serializationConfig.portableFactories[1] = new MyPortableFactory();
 }
 ```
 
-Note that the id that is passed to the `SerializationConfig` is same as the `factoryId` that `Foo` object returns.
+Note that the ID that is passed to the `SerializationConfig` is same as the `factoryId` that `Foo` object returns.
 
 ## 4.3. Custom Serialization
 
 Hazelcast lets you plug a custom serializer to be used for serialization of objects.
 
-Let's say you have an object `Musician` and you would like to customize the serialization. The reason may be you want to use an external serializer for only one object.
+Let's say you have an object `Musician` and you would like to customize the serialization. The reason might be that you want to use an external serializer for only one object.
 
 ```javascript
 function Musician(name) {
@@ -976,11 +978,10 @@ The global serializer is identical to custom serializers from the implementation
 
 By default, JSON serialization is used if the object is not `IdentifiedDataSerializable` and `Portable` or there is no custom serializer for it. When you configure a global serializer, it is used instead of JSON serialization.
 
-**Use cases**
+You can use the global serialization for the following cases:
 
-- Third party serialization frameworks can be integrated using the global serializer.
-
-- For your custom objects, you can implement a single serializer to handle all of them.
+* Third party serialization frameworks can be integrated using the global serializer.
+* For your custom objects, you can implement a single serializer to handle all of them.
 
 A sample global serializer that integrates with a third party serializer is shown below.
 
