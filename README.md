@@ -2371,21 +2371,33 @@ tweak the implementation to your application's needs, you can follow the steps i
 Follow the below steps to build and install Hazelcast Node.js client from its source:
 
 1. Clone the GitHub repository (https://github.com/hazelcast/hazelcast-nodejs-client.git).
-2. Run `npm install` to automatically download and install all required modules under `node_modules' directory.
-3. Run  `npm run compile` to compile TypeScript files to JavaScript.
+2. Run `npm install` to automatically download and install all the required modules under `node_modules` directory.
+3. Run `npm run compile` to compile TypeScript files to JavaScript.
 
-At this point you have all the runnable code(`.js`) and type declarations(`.d.ts`) in `lib` directory. You may create a link to this module so that your local
-applications can depend on your local copy of Hazelcast Node.js client. In order to create a link, run:
-- `npm link`.
+At this point you have all the runnable code (`.js`) and type declarations (`.d.ts`) in the `lib` directory. You may create a link to this module so that your local
+applications can depend on your local copy of Hazelcast Node.js client. In order to create a link, run the below command:
+
+```
+npm link
+```
+
 This will create a global link to this module in your computer. Whenever you need to depend on this module from another
-local project, run:
-- `npm link hazelcast-client`
+local project, run the below command:
 
-If you are planning to contribute, please run the style checker, as shown below, and fix the reported issues before sending a pull request.
-- `npm run lint`
+```
+npm link hazelcast-client
+```
+
+If you are planning to contribute, please run the style checker, as shown below, and fix the reported issues before sending a pull request:
+
+```
+npm run lint
+```
 
 ## 8.2. Testing
+
 In order to test Hazelcast Node.js client locally, you will need the following:
+
 * Java 6 or newer
 * Maven
 
