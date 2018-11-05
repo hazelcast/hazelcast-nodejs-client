@@ -18,6 +18,7 @@ var expect = require("chai").expect;
 var HazelcastClient = require("../../lib/index.js").Client;
 var Controller = require('./../RC');
 var Util = require('./../Util');
+var ItemEventType = require('../../lib/core/ItemListener').ItemEventType;
 
 describe("List Proxy", function () {
 
@@ -244,12 +245,12 @@ describe("List Proxy", function () {
     it("listens for added entry", function (done) {
         this.timeout(5000);
         var listener = {
-            "itemAdded": function (item) {
-                if (item == 1) {
-                    done()
-                } else {
-                    done(new Error("Expected 1, got " + item))
-                }
+            itemAdded: function (itemEvent) {
+                expect(itemEvent.name).to.be.equal('test');
+                expect(itemEvent.item).to.be.equal(1);
+                expect(itemEvent.eventType).to.be.equal(ItemEventType.ADDED);
+                expect(itemEvent.member).to.not.be.equal(null);
+                done();
             }
         };
         listInstance.addItemListener(listener, true).then(function () {
@@ -259,15 +260,41 @@ describe("List Proxy", function () {
         })
     });
 
+    it("listens for added and removed entry", function (done) {
+        this.timeout(5000);
+        var listener = {
+            itemAdded: function (itemEvent) {
+                expect(itemEvent.name).to.be.equal('test');
+                expect(itemEvent.item).to.be.equal(2);
+                expect(itemEvent.eventType).to.be.equal(ItemEventType.ADDED);
+                expect(itemEvent.member).to.not.be.equal(null);
+            },
+            itemRemoved: function (itemEvent) {
+                expect(itemEvent.name).to.be.equal('test');
+                expect(itemEvent.item).to.be.equal(2);
+                expect(itemEvent.eventType).to.be.equal(ItemEventType.REMOVED);
+                expect(itemEvent.member).to.not.be.equal(null);
+                done();
+            }
+        };
+        listInstance.addItemListener(listener, true).then(function () {
+            return listInstance.add(2);
+        }).then(function () {
+            return listInstance.remove(2);
+        }).catch(function (e) {
+            done(e);
+        })
+    });
+
     it("listens for removed entry with value included", function (done) {
         this.timeout(5000);
         var listener = {
-            "itemRemoved": function (item) {
-                if (item == 1) {
-                    done()
-                } else {
-                    done(new Error("Expected 1, got " + item))
-                }
+            itemRemoved: function (itemEvent) {
+                expect(itemEvent.name).to.be.equal('test');
+                expect(itemEvent.item).to.be.equal(1);
+                expect(itemEvent.eventType).to.be.equal(ItemEventType.REMOVED);
+                expect(itemEvent.member).to.not.be.equal(null);
+                done();
             }
         };
         listInstance.addItemListener(listener, true).then(function () {
@@ -282,12 +309,12 @@ describe("List Proxy", function () {
     it("listens for removed entry with value not included", function (done) {
         this.timeout(5000);
         var listener = {
-            "itemRemoved": function (item) {
-                if (item == null) {
-                    done()
-                } else {
-                    done(new Error("Expected 1, got " + item))
-                }
+            itemRemoved: function (itemEvent) {
+                expect(itemEvent.name).to.be.equal('test');
+                expect(itemEvent.item).to.be.equal(null);
+                expect(itemEvent.eventType).to.be.equal(ItemEventType.REMOVED);
+                expect(itemEvent.member).to.not.be.equal(null);
+                done();
             }
         };
         listInstance.addItemListener(listener, false).then(function () {
@@ -303,12 +330,13 @@ describe("List Proxy", function () {
     it("remove entry listener", function () {
         this.timeout(5000);
         return listInstance.addItemListener({
-            "itemRemoved": function (item) {
-                if (item == 1) {
-                    done()
-                } else {
-                    done(new Error("Expected 1, got " + item))
-                }
+
+            itemRemoved: function (itemEvent) {
+                expect(itemEvent.name).to.be.equal('test');
+                expect(itemEvent.item).to.be.equal(1);
+                expect(itemEvent.eventType).to.be.equal(ItemEventType.REMOVED);
+                expect(itemEvent.member).to.not.be.equal(null);
+                done();
             }
         }).then(function (registrationId) {
             return listInstance.removeItemListener(registrationId);
