@@ -439,9 +439,12 @@ let Client = require('hazelcast-client').Client;
 let Config = require('hazelcast-client').Config;
 let config = new Config.ClientConfig();
 
-Client.newHazelcastClient(config).then(function(client) {
-    let personnelMap = client.getMap('personnelMap');
-    return personnelMap.put('Alice', 'IT').then(function () {
+Client.newHazelcastClient(config).then(function (client) {
+    var personnelMap;
+    return client.getMap('personnelMap').then(function (mp) {
+        personnelMap = mp;
+        return personnelMap.put('Alice', 'IT');
+    }).then(function () {
         return personnelMap.put('Bob', 'IT');
     }).then(function () {
         return personnelMap.put('Clark', 'IT');
@@ -478,9 +481,12 @@ let Client = require('hazelcast-client').Client;
 let Config = require('hazelcast-client').Config;
 let config = new Config.ClientConfig();
 
-Client.newHazelcastClient(config).then(function(client) {
-    let personnelMap = client.getMap('personnelMap');
-    return personnelMap.put('Denise', 'Sales').then(function () {
+Client.newHazelcastClient(config).then(function (client) {
+    var personnelMap;
+    return client.getMap('personnelMap').then(function (mp) {
+        personnelMap = mp;
+        return personnelMap.put('Denise', 'Sales');
+    }).then(function () {
         return personnelMap.put('Erwing', 'Sales');
     }).then(function () {
         return personnelMap.put('Faith', 'Sales');
@@ -1468,7 +1474,9 @@ var client;
 var mapCustomers;
 Client.newHazelcastClient(clientConfig).then(function (res) {
     client = res;
-    mapCustomers = client.getMap('customers'); // creates the map proxy
+    return client.getMap('customers');
+}).then(function (mp) {
+    mapCustomers = mp;
     return mapCustomers.put('1', new Customer('Furkan', 'Senharputlu'));
 }).then(function () {
     return mapCustomers.put('2', new Customer("Joe", "Smith"));
@@ -1536,9 +1544,11 @@ Hazelcast Map (`IMap`) is a distributed map. Through the Node.js client, you can
 A Map usage example is shown below.
 
 ```javascript
-var map = client.getMap('myMap');
-
-map.put(1, 'Furkan').then(function (oldValue) {
+var map;
+client.getMap('myMap').then(function (mp) {
+    map = mp;
+    return map.put(1, 'Furkan');
+}).then(function (oldValue) {
     return map.get(1);
 }).then(function (value) {
     console.log(value); // Furkan
@@ -1553,9 +1563,11 @@ Hazelcast `MultiMap` is a distributed and specialized map where you can store mu
 A MultiMap usage example is shown below.
 
 ```javascript
-var multiMap = client.getMultiMap('myMultiMap');
-        
-multiMap.put(1, 'Furkan').then(function () {
+var multiMap;
+client.getMultiMap('myMultiMap').then(function (mmp) {
+    multiMap = mmp;
+    return multiMap.put(1, 'Furkan')
+}).then(function () {
     return multiMap.put(1, 'Mustafa');
 }).then(function () {
     return multiMap.get(1);
@@ -1571,9 +1583,11 @@ Hazelcast `ReplicatedMap` is a distributed key-value data structure where the da
 A Replicated Map usage example is shown below.
 
 ```javascript
-var replicatedMap = client.getReplicatedMap('myReplicatedMap');
-
-replicatedMap.put(1, 'Furkan').then(function () {
+var replicatedMap;
+client.getReplicatedMap('myReplicatedMap').then(function (rmp) {
+    replicatedMap = rmp;
+    return replicatedMap.put(1, 'Furkan')
+}).then(function () {
     return replicatedMap.put(2, 'Ahmet');
 }).then(function () {
     return replicatedMap.get(2);
@@ -1589,9 +1603,11 @@ Hazelcast Queue (`IQueue`) is a distributed queue which enables all cluster memb
 A Queue usage example is shown below.
 
 ```javascript
-var queue = client.getQueue('myQueue');
-
-queue.offer('Furkan').then(function () {
+var queue;
+client.getQueue('myQueue').then(function (q) {
+    queue = q;
+    return queue.offer('Furkan');
+}).then(function () {
     return queue.peek();
 }).then(function (head) {
     console.log(head); // Furkan
