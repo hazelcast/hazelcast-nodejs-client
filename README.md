@@ -736,11 +736,27 @@ Hazelcast serializes all your objects before sending them to the server. The `bo
 
 Arrays of the above types can be serialized as `boolean[]`, `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `long[]` and `string[]` for the Java server side, respectively. 
 
-Note that if the object is not one of the above-mentioned types, the Node.js client uses `JSON Serialization` by default.
+**Serialization Priority**
 
-However, `JSON Serialization` is not the best way of serialization in terms of performance and interoperability between the clients in different languages. If you want the serialization to work faster or you use the clients in different languages, Hazelcast offers its own native serialization types, such as [`IdentifiedDataSerializable` Serialization](#1-identifieddataserializable-serialization) and [`Portable` Serialization](#2-portable-serialization).
+When Hazelcast Node.js client serializes an object:
 
-On top of all, if you want to use your own serialization type, you can use a [Custom Serialization](#3-custom-serialization).
+1. It first checks whether the object is null.
+
+2. If the above check fails, then it checks if it is an instance of `IdentifiedDataSerializable`.
+
+3. If the above check fails, then it checks if it is an instance of `Portable`.
+
+4. If the above check fails, then it checks if it is an instance of one of the default types (see above default types).
+
+5. If the above check fails, then it looks for a user-specified [Custom Serialization](#43-custom-serialization).
+
+6. If the above check fails, it will use the registered [Global Serialization](#44-global-serialization) if one exists.
+
+7. If the above check fails, then the Node.js client uses `JSON Serialization` by default.
+
+However, `JSON Serialization` is not the best way of serialization in terms of performance and interoperability between the clients in different languages. If you want the serialization to work faster or you use the clients in different languages, Hazelcast offers its own native serialization methods, such as [`IdentifiedDataSerializable` Serialization](#41-identifieddataserializable-serialization) and [`Portable` Serialization](#42-portable-serialization).
+
+Or, if you want to use your own serialization method, you can use a [Custom Serialization](#43-custom-serialization).
 
 > **NOTE: Hazelcast Node.js client is a TypeScript-based project but JavaScript does not have interfaces. Therefore, 
  some interfaces are given to the user by using the TypeScript files that have `.ts` extension. In this guide, implementing an interface means creating an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as `an instance of the interface`. You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or GitHub repository for a required interface.**
