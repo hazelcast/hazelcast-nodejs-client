@@ -324,8 +324,10 @@ You need to create a `ClientConfig` object and adjust its properties. Then you c
 ```javascript
 let Client = require('hazelcast-client').Client;
 let Config = require('hazelcast-client').Config;
-let cfg = new Config.ClientConfig();
-Client.newHazelcastClient(cfg)
+let config = new Config.ClientConfig();
+Client.newHazelcastClient(config).then(function(client) {
+    // some operations
+});
 ```
 
 **Declarative configuration**
@@ -998,7 +1000,7 @@ From now on, Hazelcast will use `MusicianSerializer` to serialize `Musician` obj
 
 The global serializer is identical to custom serializers from the implementation perspective. The global serializer is registered as a fallback serializer to handle all other objects if a serializer cannot be located for them.
 
-By default, JSON serialization is used if the object is not `IdentifiedDataSerializable` and `Portable` or there is no custom serializer for it. When you configure a global serializer, it is used instead of JSON serialization.
+By default, JSON serialization is used if the object is not `IdentifiedDataSerializable` or `Portable` or there is no custom serializer for it. When you configure a global serializer, it is used instead of JSON serialization.
 
 You can use the global serialization for the following cases:
 
@@ -1219,7 +1221,7 @@ Its default value is `2`.
 
 ## 5.6. Setting Connection Attempt Period
 
-Connection timeout period is the duration in milliseconds between the connection attempts defined by `ClientNetworkConfig.connectionAttemptLimit`.
+Connection attempt period is the duration in milliseconds between the connection attempts defined by `ClientNetworkConfig.connectionAttemptLimit`.
  
 The following are example configurations.
 
