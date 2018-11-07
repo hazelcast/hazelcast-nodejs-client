@@ -15,9 +15,11 @@
  */
 
 var expect = require("chai").expect;
-var HazelcastClient = require("../../lib/index.js").Client;
 var Controller = require('./../RC');
 var Util = require('./../Util');
+
+var HazelcastClient = require("../../lib/index.js").Client;
+var ItemEventType = require('../../lib/core/ItemListener').ItemEventType;
 
 describe("Set Proxy", function () {
 
@@ -158,12 +160,12 @@ describe("Set Proxy", function () {
     it("listens for added entry", function (done) {
         this.timeout(5000);
         setInstance.addItemListener({
-            "itemAdded": function (item) {
-                if (item == 1) {
-                    done()
-                } else {
-                    done(new Error("Expected 1, got " + item))
-                }
+            itemAdded: function (itemEvent) {
+                expect(itemEvent.name).to.be.equal('test');
+                expect(itemEvent.item).to.be.equal(1);
+                expect(itemEvent.eventType).to.be.equal(ItemEventType.ADDED);
+                expect(itemEvent.member).to.not.be.equal(null);
+                done();
             }
         }).then(function () {
             setInstance.add(1);
@@ -172,15 +174,40 @@ describe("Set Proxy", function () {
         });
     });
 
+    it("listens for added and removed entry", function (done) {
+        this.timeout(5000);
+        setInstance.addItemListener({
+            itemAdded: function (itemEvent) {
+                expect(itemEvent.name).to.be.equal('test');
+                expect(itemEvent.item).to.be.equal(2);
+                expect(itemEvent.eventType).to.be.equal(ItemEventType.ADDED);
+                expect(itemEvent.member).to.not.be.equal(null);
+            },
+            itemRemoved: function (itemEvent) {
+                expect(itemEvent.name).to.be.equal('test');
+                expect(itemEvent.item).to.be.equal(2);
+                expect(itemEvent.eventType).to.be.equal(ItemEventType.REMOVED);
+                expect(itemEvent.member).to.not.be.equal(null);
+                done();
+            },
+        }).then(function () {
+            return setInstance.add(2);
+        }).then(function () {
+            return setInstance.remove(2);
+        }).catch(function (e) {
+            done(e);
+        });
+    });
+
     it("listens for removed entry", function (done) {
         this.timeout(5000);
         setInstance.addItemListener({
-            "itemRemoved": function (item) {
-                if (item == 1) {
-                    done()
-                } else {
-                    done(new Error("Expected 1, got " + item))
-                }
+            itemRemoved: function (itemEvent) {
+                expect(itemEvent.name).to.be.equal('test');
+                expect(itemEvent.item).to.be.equal(1);
+                expect(itemEvent.eventType).to.be.equal(ItemEventType.REMOVED);
+                expect(itemEvent.member).to.not.be.equal(null);
+                done();
             }
         }).then(function () {
             return setInstance.add(1);
@@ -195,12 +222,12 @@ describe("Set Proxy", function () {
     it("remove entry listener", function () {
         this.timeout(5000);
         return setInstance.addItemListener({
-            "itemRemoved": function (item) {
-                if (item == 1) {
-                    done()
-                } else {
-                    done(new Error("Expected 1, got " + item))
-                }
+            itemRemoved: function (itemEvent) {
+                expect(itemEvent.name).to.be.equal('test');
+                expect(itemEvent.item).to.be.equal(1);
+                expect(itemEvent.eventType).to.be.equal(ItemEventType.REMOVED);
+                expect(itemEvent.member).to.not.be.equal(null);
+                done();
             }
         }).then(function (registrationId) {
             return setInstance.removeItemListener(registrationId);

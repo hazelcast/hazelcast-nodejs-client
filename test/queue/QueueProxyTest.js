@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-var chai = require("chai");
+var chai = require('chai');
 var expect = chai.expect;
-var chaiAsPromised = require("chai-as-promised");
+var chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
-var HazelcastClient = require("../../lib/index.js").Client;
 var Controller = require('./../RC');
 var Util = require('./../Util');
 var Promise = require('bluebird');
 var fs = require('fs');
+
+var HazelcastClient = require('../../').Client;
+var ItemEventType = require('../../').ItemEventType;
 
 describe("Queue Proxy", function () {
 
@@ -316,12 +318,12 @@ describe("Queue Proxy", function () {
 
     it('addItemListener itemAdded', function (done) {
         queue.addItemListener({
-            itemAdded: function (item) {
-                if (item === 'item_new') {
-                    done();
-                } else {
-                    done(new Error('Expected item_new, got ' + item));
-                }
+            itemAdded: function (itemEvent) {
+                expect(itemEvent.name).to.be.equal('ClientQueueTest');
+                expect(itemEvent.item).to.be.equal('item_new');
+                expect(itemEvent.eventType).to.be.equal(ItemEventType.ADDED);
+                expect(itemEvent.member).to.not.be.equal(null);
+                done();
             }
         }, true).then(function () {
             queue.add('item_new');
@@ -330,7 +332,7 @@ describe("Queue Proxy", function () {
 
     it('addItemListener itemAdded with includeValue=false', function (done) {
         queue.addItemListener({
-            itemAdded: function (item) {
+            itemAdded: function (itemEvent) {
                 done();
             }
         }, false).then(function () {
@@ -341,12 +343,12 @@ describe("Queue Proxy", function () {
 
     it('addItemListener itemRemoved', function (done) {
         queue.addItemListener({
-            itemRemoved: function (item) {
-                if (item === 'item0') {
-                    done();
-                } else {
-                    done(new Error('Expected item_new, got ' + item));
-                }
+            itemRemoved: function (itemEvent) {
+                expect(itemEvent.name).to.be.equal('ClientQueueTest');
+                expect(itemEvent.item).to.be.equal('item0');
+                expect(itemEvent.eventType).to.be.equal(ItemEventType.REMOVED);
+                expect(itemEvent.member).to.not.be.equal(null);
+                done();
             }
         }, true).then(function () {
             queue.remove('item0');
