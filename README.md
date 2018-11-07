@@ -324,8 +324,10 @@ You need to create a `ClientConfig` object and adjust its properties. Then you c
 ```javascript
 let Client = require('hazelcast-client').Client;
 let Config = require('hazelcast-client').Config;
-let cfg = new Config.ClientConfig();
-Client.newHazelcastClient(cfg)
+let config = new Config.ClientConfig();
+Client.newHazelcastClient(config).then(function(client) {
+    // some operations
+});
 ```
 
 **Declarative configuration**
