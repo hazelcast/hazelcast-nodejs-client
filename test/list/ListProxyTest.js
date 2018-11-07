@@ -262,18 +262,21 @@ describe("List Proxy", function () {
 
     it("listens for added and removed entry", function (done) {
         this.timeout(5000);
+        var added = false;
         var listener = {
             itemAdded: function (itemEvent) {
                 expect(itemEvent.name).to.be.equal('test');
                 expect(itemEvent.item).to.be.equal(2);
                 expect(itemEvent.eventType).to.be.equal(ItemEventType.ADDED);
                 expect(itemEvent.member).to.not.be.equal(null);
+                added = true;
             },
             itemRemoved: function (itemEvent) {
                 expect(itemEvent.name).to.be.equal('test');
                 expect(itemEvent.item).to.be.equal(2);
                 expect(itemEvent.eventType).to.be.equal(ItemEventType.REMOVED);
                 expect(itemEvent.member).to.not.be.equal(null);
+                expect(added).to.be.true;
                 done();
             }
         };

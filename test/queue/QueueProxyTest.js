@@ -24,7 +24,7 @@ var Promise = require('bluebird');
 var fs = require('fs');
 
 var HazelcastClient = require('../../').Client;
-var ItemEventType = require('../../lib/core/ItemListener').ItemEventType;
+var ItemEventType = require('../../').ItemEventType;
 
 describe("Queue Proxy", function () {
 

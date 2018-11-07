@@ -32,6 +32,9 @@ import {ClassDefinition, FieldDefinition} from './serialization/portable/ClassDe
 import {MemberAttributeEvent, MemberAttributeOperationType} from './core/MemberAttributeEvent';
 import {EvictionPolicy} from './config/EvictionPolicy';
 import {InMemoryFormat} from './config/InMemoryFormat';
+import {ItemEvent, ItemEventType} from './core/ItemListener';
+import {MapEvent} from './core/MapListener';
+import {EntryEvent} from './core/EntryListener';
 
 export {
     HazelcastClient as Client,
@@ -54,4 +57,8 @@ export {
     MemberAttributeOperationType,
     EvictionPolicy,
     InMemoryFormat,
+    ItemEvent,
+    ItemEventType,
+    MapEvent,
+    EntryEvent,
 };
