@@ -41,14 +41,14 @@ import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {Data} from '../serialization/Data';
 import {assertNotNull} from '../Util';
 import {ArrayComparator} from '../util/ArrayComparator';
-import {IReplicatedMap} from './IReplicatedMap';
+import {ReplicatedMap} from './ReplicatedMap';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {MapEvent} from '../core/MapListener';
 /* tslint:enable:max-line-length */
 import Long = require('long');
 import ClientMessage = require('../ClientMessage');
 
-export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements IReplicatedMap<K, V> {
+export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements ReplicatedMap<K, V> {
 
     put(key: K, value: V, ttl: Long | number = 0): Promise<V> {
         assertNotNull(key);
