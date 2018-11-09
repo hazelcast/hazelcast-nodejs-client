@@ -20,7 +20,7 @@ import {OverflowPolicy} from '../core/OverflowPolicy';
 import {DistributedObject} from '../DistributedObject';
 import {ReadResultSet} from './ringbuffer/ReadResultSet';
 
-export interface IRingbuffer<E> extends DistributedObject {
+export interface Ringbuffer<E> extends DistributedObject {
 
     /**
      * @return capacity of this ringbuffer.

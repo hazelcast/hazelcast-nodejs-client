@@ -22,7 +22,7 @@ import {Address} from '../../index';
 import {SerializationService} from '../../serialization/SerializationService';
 import {UuidUtil} from '../../util/UuidUtil';
 import {BaseProxy} from '../BaseProxy';
-import {IRingbuffer} from '../IRingbuffer';
+import {Ringbuffer} from '../Ringbuffer';
 import {ITopic} from './ITopic';
 import {RawTopicMessage} from './RawTopicMessage';
 import {ReliableTopicListenerRunner} from './ReliableTopicListenerRunner';
@@ -35,7 +35,7 @@ export const TOPIC_INITIAL_BACKOFF = 100;
 export const TOPIC_MAX_BACKOFF = 2000;
 
 export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
-    private ringbuffer: IRingbuffer<RawTopicMessage>;
+    private ringbuffer: Ringbuffer<RawTopicMessage>;
     private readonly localAddress: Address;
     private readonly batchSize: number;
     private readonly runners: { [key: string]: ReliableTopicListenerRunner<E> } = {};
@@ -108,7 +108,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         }
     }
 
-    public getRingbuffer(): IRingbuffer<RawTopicMessage> {
+    public getRingbuffer(): Ringbuffer<RawTopicMessage> {
         return this.ringbuffer;
     }
 

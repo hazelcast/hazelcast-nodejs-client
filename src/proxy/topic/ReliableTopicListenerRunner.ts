@@ -18,7 +18,7 @@ import {ReadResultSet} from '../../';
 import {StaleSequenceError} from '../../HazelcastError';
 import {LoggingService} from '../../logging/LoggingService';
 import {SerializationService} from '../../serialization/SerializationService';
-import {IRingbuffer} from '../IRingbuffer';
+import {Ringbuffer} from '../Ringbuffer';
 import {RawTopicMessage} from './RawTopicMessage';
 import {ReliableTopicProxy} from './ReliableTopicProxy';
 import {TopicMessage} from './TopicMessage';
@@ -28,7 +28,7 @@ export class ReliableTopicListenerRunner<E> {
 
     public sequenceNumber: number = 0;
     private listener: TopicMessageListener<E>;
-    private ringbuffer: IRingbuffer<RawTopicMessage>;
+    private ringbuffer: Ringbuffer<RawTopicMessage>;
     private batchSize: number;
     private serializationService: SerializationService;
     private cancelled: boolean = false;
@@ -36,7 +36,7 @@ export class ReliableTopicListenerRunner<E> {
     private proxy: ReliableTopicProxy<E>;
     private listenerId: string;
 
-    constructor(listenerId: string, listener: TopicMessageListener<E>, ringbuffer: IRingbuffer<RawTopicMessage>,
+    constructor(listenerId: string, listener: TopicMessageListener<E>, ringbuffer: Ringbuffer<RawTopicMessage>,
                 batchSize: number, serializationService: SerializationService, proxy: ReliableTopicProxy<E>) {
         this.listenerId = listenerId;
         this.listener = listener;
