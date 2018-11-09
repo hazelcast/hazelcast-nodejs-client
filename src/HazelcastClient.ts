@@ -37,8 +37,8 @@ import {IList} from './proxy/IList';
 import {ILock} from './proxy/ILock';
 import {IMap} from './proxy/IMap';
 import {IQueue} from './proxy/IQueue';
-import {IReplicatedMap} from './proxy/IReplicatedMap';
-import {IRingbuffer} from './proxy/IRingbuffer';
+import {ReplicatedMap} from './proxy/ReplicatedMap';
+import {Ringbuffer} from './proxy/Ringbuffer';
 import {ISemaphore} from './proxy/ISemaphore';
 import {ISet} from './proxy/ISet';
 import {MultiMap} from './proxy/MultiMap';
@@ -218,10 +218,10 @@ export default class HazelcastClient {
     /**
      * Returns a distributed ringbuffer instance with the given name.
      * @param name
-     * @returns {Promise<IRingbuffer<E>>}
+     * @returns {Promise<Ringbuffer<E>>}
      */
-    getRingbuffer<E>(name: string): Promise<IRingbuffer<E>> {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.RINGBUFFER_SERVICE) as Promise<IRingbuffer<E>>;
+    getRingbuffer<E>(name: string): Promise<Ringbuffer<E>> {
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.RINGBUFFER_SERVICE) as Promise<Ringbuffer<E>>;
     }
 
     /**
@@ -236,10 +236,10 @@ export default class HazelcastClient {
     /**
      * Returns the distributed replicated-map instance with given name.
      * @param name
-     * @returns {Promise<IReplicatedMap<K, V>>}
+     * @returns {Promise<ReplicatedMap<K, V>>}
      */
-    getReplicatedMap<K, V>(name: string): Promise<IReplicatedMap<K, V>> {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.REPLICATEDMAP_SERVICE) as Promise<IReplicatedMap<K, V>>;
+    getReplicatedMap<K, V>(name: string): Promise<ReplicatedMap<K, V>> {
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.REPLICATEDMAP_SERVICE) as Promise<ReplicatedMap<K, V>>;
     }
 
     /**

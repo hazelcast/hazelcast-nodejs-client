@@ -22,7 +22,7 @@ import {DistributedObject} from '../DistributedObject';
 import {ArrayComparator} from '../util/ArrayComparator';
 import Long = require('long');
 
-export interface IReplicatedMap<K, V> extends DistributedObject {
+export interface ReplicatedMap<K, V> extends DistributedObject {
     /**
      * Associates a given value to the specified key and replicates it to the
      * cluster. If there is an old value, it will be replaced by the specified
