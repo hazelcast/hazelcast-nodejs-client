@@ -49,7 +49,7 @@ export class ConfigBuilder {
             this.handleConfig(this.loadedJson);
             return this.clientConfig;
         } catch (e) {
-            throw new HazelcastError('Error parsing config.', e);
+            throw new HazelcastError('Error parsing config: ' + e.message, e);
         }
     }
 
@@ -99,7 +99,7 @@ export class ConfigBuilder {
             } else if (key === 'connectionAttemptLimit') {
                 this.clientConfig.networkConfig.connectionAttemptLimit = tryGetNumber(jsonObject[key]);
             } else if (key === 'ssl') {
-                this.handleSsl(jsonObject[key]);
+                this.handleSSL(jsonObject[key]);
             } else if (key === 'hazelcastCloud') {
                 this.handleHazelcastCloud(jsonObject[key]);
             }
@@ -133,19 +133,25 @@ export class ConfigBuilder {
         return importConfig;
     }
 
-    private handleSsl(jsonObject: any): void {
+    private handleSSL(jsonObject: any): void {
         const sslEnabled = tryGetBoolean(jsonObject.enabled);
-        if (sslEnabled) {
+        this.clientConfig.networkConfig.sslConfig.enabled = sslEnabled;
+
+        if (jsonObject.sslOptions) {
             if (jsonObject.factory) {
-                const factory = jsonObject.factory;
-                const importConfig = this.parseImportConfig(factory);
-                if (importConfig.path == null && importConfig.exportedName !== BasicSSLOptionsFactory.name) {
-                    throw new RangeError('Invalid configuration. Either ssl factory path should be set or exportedName ' +
-                        ' should be ' + BasicSSLOptionsFactory.name);
-                } else {
-                    this.clientConfig.networkConfig.sslOptionsFactoryConfig = this.parseImportConfig(factory);
-                    this.clientConfig.networkConfig.sslOptionsFactoryProperties = this.parseProperties(factory.properties);
-                }
+                throw new RangeError('Invalid configuration. Either SSL options should be set manually or SSL factory' +
+                    ' should be used.');
+            }
+            this.clientConfig.networkConfig.sslConfig.sslOptions = jsonObject.sslOptions;
+        } else if (jsonObject.factory) {
+            const factory = jsonObject.factory;
+            const importConfig = this.parseImportConfig(factory);
+            if (importConfig.path == null && importConfig.exportedName !== BasicSSLOptionsFactory.name) {
+                throw new RangeError('Invalid configuration. Either SSL factory path should be set or exportedName' +
+                    ' should be ' + BasicSSLOptionsFactory.name + '.');
+            } else {
+                this.clientConfig.networkConfig.sslConfig.sslOptionsFactoryConfig = this.parseImportConfig(factory);
+                this.clientConfig.networkConfig.sslConfig.sslOptionsFactoryProperties = this.parseProperties(factory.properties);
             }
         }
     }
