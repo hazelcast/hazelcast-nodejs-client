@@ -26,7 +26,7 @@ describe('ConfigBuilder Test', function () {
 
     before(function () {
         var configBuilder = new ConfigBuilder();
-        process.env['HAZELCAST_CLIENT_CONFIG'] = path.join(__dirname, 'hazelcast-client-full.json');
+        process.env['HAZELCAST_CLIENT_CONFIG'] = path.join(__dirname, 'configurations/full.json');
         return configBuilder.loadConfig().then(function () {
             configFull = configBuilder.build();
         });
@@ -64,9 +64,11 @@ describe('ConfigBuilder Test', function () {
         expect(networkCfg.connectionTimeout).to.equal(6000);
         expect(networkCfg.connectionAttemptPeriod).to.equal(4000);
         expect(networkCfg.connectionAttemptLimit).to.equal(3);
-        expect(networkCfg.sslOptionsFactoryConfig.path).to.equal('path/to/file');
-        expect(networkCfg.sslOptionsFactoryConfig.exportedName).to.equal('exportedName');
-        expect(networkCfg.sslOptionsFactoryProperties['userDefinedProperty1']).to.equal('userDefinedValue');
+        expect(networkCfg.sslConfig.enabled).to.be.true;
+        expect(networkCfg.sslConfig.sslOptions).to.be.null;
+        expect(networkCfg.sslConfig.sslOptionsFactoryConfig.path).to.equal('path/to/file');
+        expect(networkCfg.sslConfig.sslOptionsFactoryConfig.exportedName).to.equal('exportedName');
+        expect(networkCfg.sslConfig.sslOptionsFactoryProperties['userDefinedProperty1']).to.equal('userDefinedValue');
     });
 
     it('group', function () {

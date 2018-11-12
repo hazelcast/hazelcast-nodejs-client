@@ -43,7 +43,7 @@ describe('ConfigLocationTest', function () {
             '       "name": "wrongName"' +
             '   }' +
             '}');
-        process.env[ENV_VARIABLE_NAME] = path.join(__dirname, 'hazelcast-client-full.json');
+        process.env[ENV_VARIABLE_NAME] = path.join(__dirname, 'configurations/full.json');
         var configBuilder = new ConfigBuilder();
         return configBuilder.loadConfig().then(function () {
             return expect(configBuilder.build().groupConfig.name).equals('hazel');
