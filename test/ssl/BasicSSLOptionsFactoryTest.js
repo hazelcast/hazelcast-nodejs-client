@@ -21,7 +21,8 @@ var HazelcastError = require('../..').HazelcastErrors.HazelcastError;
 var BasicSSLOptionsFactory = require('../../lib/connection/BasicSSLOptionsFactory').BasicSSLOptionsFactory;
 
 describe('BasicSSLOptionsFactoryTest', function () {
-    it('factory creates options object with all supported fields', function () {
+
+    it('factory creates sslOptions object with all supported fields', function () {
         var options = {
             servername: 'foo.bar.com',
             rejectUnauthorized: true,

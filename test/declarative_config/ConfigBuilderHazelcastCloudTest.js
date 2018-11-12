@@ -37,7 +37,7 @@ describe('ConfigBuilderHazelcastCloud Test', function () {
     }
 
     it('cloudConfig', function () {
-        return loadJson('hazelcast-client-full.json').then(function () {
+        return loadJson('configurations/full.json').then(function () {
             var networkConfig = configFull.networkConfig;
             expect(networkConfig.cloudConfig.enabled).to.be.false;
             expect(networkConfig.cloudConfig.discoveryToken).to.be.equal('EXAMPLE_TOKEN');
@@ -45,7 +45,7 @@ describe('ConfigBuilderHazelcastCloud Test', function () {
     });
 
     it('cloudConfig_enabled_nullToken', function () {
-        return expect(loadJson('hazelcast-client-invalid-cloud-config.json')).to.be.rejectedWith(Error);
+        return expect(loadJson('configurations/invalid-cloud.json')).to.be.rejectedWith(Error);
     });
 
     it('cloudConfig_defaults', function () {
@@ -56,7 +56,7 @@ describe('ConfigBuilderHazelcastCloud Test', function () {
     });
 
     it('cloudConfig_enabled', function () {
-        return loadJson('hazelcast-client-cloud-config-enabled.json').then(function () {
+        return loadJson('configurations/cloud-enabled.json').then(function () {
             var networkConfig = configFull.networkConfig;
             expect(networkConfig.cloudConfig.enabled).to.be.true;
             expect(networkConfig.cloudConfig.discoveryToken).to.be.equal('EXAMPLE_TOKEN');

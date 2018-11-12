@@ -28,6 +28,7 @@ import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
 import {AddressTranslator} from '../connection/AddressTranslator';
 import {AddressProvider} from '../connection/AddressProvider';
 import Address = require('../Address');
+import {SSLOptionsFactory} from '../connection/SSLOptionsFactory';
 
 const EMIT_CONNECTION_CLOSED = 'connectionClosed';
 const EMIT_CONNECTION_OPENED = 'connectionOpened';
@@ -149,21 +150,31 @@ export class ClientConnectionManager extends EventEmitter {
                 return Promise.reject(error);
             }
         }
-        if (this.client.getConfig().networkConfig.sslOptions) {
-            const opts = this.client.getConfig().networkConfig.sslOptions;
-            return this.connectTLSSocket(address, opts);
-        } else if (this.client.getConfig().networkConfig.sslOptionsFactoryConfig) {
-            const factoryConfig = this.client.getConfig().networkConfig.sslOptionsFactoryConfig;
-            const factoryProperties = this.client.getConfig().networkConfig.sslOptionsFactoryProperties;
-            let factory: any;
-            if (factoryConfig.path) {
-                factory = new (loadNameFromPath(factoryConfig.path, factoryConfig.exportedName))();
+
+        if (this.client.getConfig().networkConfig.sslConfig.enabled) {
+            if (this.client.getConfig().networkConfig.sslConfig.sslOptions) {
+                const opts = this.client.getConfig().networkConfig.sslConfig.sslOptions;
+                return this.connectTLSSocket(address, opts);
+            } else if (this.client.getConfig().networkConfig.sslConfig.sslOptionsFactoryConfig) {
+                const factoryConfig = this.client.getConfig().networkConfig.sslConfig.sslOptionsFactoryConfig;
+                const factoryProperties = this.client.getConfig().networkConfig.sslConfig.sslOptionsFactoryProperties;
+                let factory: SSLOptionsFactory;
+                if (factoryConfig.path) {
+                    factory = new (loadNameFromPath(factoryConfig.path, factoryConfig.exportedName))();
+                } else {
+                    factory = new BasicSSLOptionsFactory();
+                }
+                return factory.init(factoryProperties).then(() => {
+                    return this.connectTLSSocket(address, factory.getSSLOptions());
+                });
             } else {
-                factory = new BasicSSLOptionsFactory();
+                // the default behavior when ssl is enabled
+                const opts = this.client.getConfig().networkConfig.sslConfig.sslOptions = {
+                    checkServerIdentity: (): any => null,
+                    rejectUnauthorized: true,
+                };
+                return this.connectTLSSocket(address, opts);
             }
-            return factory.init(factoryProperties).then(() => {
-                return this.connectTLSSocket(address, factory.getSSLOptions());
-            });
         } else {
             return this.connectNetSocket(address);
         }

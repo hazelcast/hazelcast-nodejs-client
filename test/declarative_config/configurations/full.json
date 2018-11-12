@@ -22,6 +22,7 @@
         "connectionAttemptLimit": 3,
         "ssl": {
             "enabled": true,
+            "sslOptions": null,
             "factory": {
                 "path": "path/to/file",
                 "exportedName": "exportedName",
@@ -120,6 +121,6 @@
         }
     ],
     "import": [
-        "hazelcast-client-near-cache.json"
+        "near-cache.json"
     ]
 }
