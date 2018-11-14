@@ -7,9 +7,9 @@
   * [1.1. Requirements](#11-requirements)
   * [1.2. Working with Hazelcast IMDG Clusters](#12-working-with-hazelcast-imdg-clusters)
     * [1.2.1. Setting Up a Hazelcast IMDG Cluster](#121-setting-up-a-hazelcast-imdg-cluster)
-    * [1.2.2. Running Standalone Jars](#122-running-standalone-jars)
-    * [1.2.3. Adding User Library to CLASSPATH](#123-adding-user-library-to-classpath)
-    * [1.2.4. Using hazelcast-member Tool](#124-using-hazelcast-member-tool)
+      * [1.2.1.1. Running Standalone Jars](#1211-running-standalone-jars)
+      * [1.2.1.2. Adding User Library to CLASSPATH](#1212-adding-user-library-to-classpath)
+      * [1.2.1.3. Using hazelcast-member Tool](#1213-using-hazelcast-member-tool)
   * [1.3. Downloading and Installing](#13-downloading-and-installing)
   * [1.4. Basic Configuration](#14-basic-configuration)
     * [1.4.1. Configuring Hazelcast IMDG](#141-configuring-hazelcast-imdg)
@@ -144,7 +144,7 @@ There are following options to start a Hazelcast IMDG cluster easily:
 
 We are going to download JARs from the website and run a standalone member for this guide.
 
-#### 1.2.2. Running Standalone JARs
+#### 1.2.1.1. Running Standalone JARs
 
 Follow the instructions below to create a Hazelcast IMDG cluster:
 
@@ -167,7 +167,7 @@ Sep 06, 2018 10:50:23 AM com.hazelcast.core.LifecycleService
 INFO: [192.168.0.3]:5701 [dev] [3.10.4] [192.168.0.3]:5701 is STARTED
 ```
 
-#### 1.2.3. Adding User Library to CLASSPATH
+#### 1.2.1.2. Adding User Library to CLASSPATH
 
 When you want to use features such as querying and language interoperability, you might need to add your own Java classes to the Hazelcast member in order to use them from your Node.js client. This can be done by adding your own compiled code to the `CLASSPATH`. To do this, compile your code with the `CLASSPATH` and add the compiled files to the `user-lib` directory in the extracted `hazelcast-<version>.zip` (or `tar`). Then, you can start your Hazelcast member by using the start scripts in the `bin` directory. The start scripts will automatically add your compiled classes to the `CLASSPATH`.
 
@@ -190,7 +190,7 @@ The following is an example configuration when you are adding an `IdentifiedData
 ```
 If you want to add a `Portable` class, you should use `<portable-factories>` instead of `<data-serializable-factories>` in the above configuration.
 
-#### 1.2.4. Using hazelcast-member Tool
+#### 1.2.1.3. Using hazelcast-member Tool
 
 `hazelcast-member` is a tool to download and run Hazelcast IMDG members easily. If you have brew installed, run the following commands to instal this tool:
 
