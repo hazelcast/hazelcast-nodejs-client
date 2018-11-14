@@ -2432,6 +2432,39 @@ config.properties['hazelcast.client.statistics.period.seconds'] = 4;
 
 After enabling the client statistics, you can monitor your clients using Hazelcast Management Center. Please refer to the [Monitoring Clients section](https://docs.hazelcast.org/docs/management-center/latest/manual/html/index.html#monitoring-clients) in the Hazelcast Management Center Reference Manual for more information on the client statistics.
 
+### 7.9.2. Logging Configuration
+
+ To configure a logger, you need to use the `ClientConfig.properties['hazelcast.logging']` property. If you set it to `'off'`, it does not log anything.
+ 
+By default, there is a `Default Logger`. Also, it is possible to connect a custom logging library to Hazelcast Node.js client through adapters.
+
+See the following `winston` logging library example.
+
+```javascript
+var winstonAdapter = {
+    logger: new (winston.Logger)({
+        transports: [
+            new (winston.transports.Console)()
+        ]
+    }),
+
+    levels: [
+        'error',
+        'warn',
+        'info',
+        'debug',
+        'silly'
+    ],
+
+    log: function (level, className, message, furtherInfo) {
+        this.logger.log(this.levels[level], className + ' ' + message);
+    }
+};
+config.properties['hazelcast.logging'] = winstonAdapter;
+```
+
+Note that it is not possible to configure custom logging via declarative configuration.
+
 # 8. Development and Testing
 
 Hazelcast Node.js client is developed using TypeScript. If you want to help with bug fixes, develop new features or
