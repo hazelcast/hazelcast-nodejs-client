@@ -80,6 +80,8 @@
       * [7.7.1.3. Querying with SQL](#7713-querying-with-sql)
       * [7.7.1.4. Filtering with Paging Predicates](#7714-filtering-with-paging-predicates)
     * [7.7.2. Fast-Aggregations](#772-fast-aggregations)
+  * [7.8. Performance](#78-performance)
+    * [7.8.1. Partition Aware](#781-partition-aware)
   * [7.9. Monitoring and Logging](#79-monitoring-and-logging)
     * [7.9.1. Enabling Client Statistics](#791-enabling-client-statistics)
     * [7.9.2. Logging Configuration](#792-logging-configuration)
@@ -2398,8 +2400,89 @@ hazelcastClient.getMap('brothersMap').then(function (mp) {
 });
 ```
 
-## 7.9. Monitoring and Logging
+## 7.8. Performance
 
+### 7.8.1. Partition Aware
+
+Partition Aware ensures that the related entries exist on the same member. If the related data is on the same member, operations can be executed without the cost of extra network calls and extra wire data, and this improves the performance. This feature is provided by using the same partition keys for related data.
+
+Hazelcast has a standard way of finding out which member owns/manages each key object. The following operations are routed to the same member, since all of them are operating based on the same key `'key1'`.
+
+```javascript
+Client.newHazelcastClient().then(function (client) {
+    hazelcastClient = client;
+    return hazelcastClient.getMap('mapA')
+}).then(function (mp) {
+    mapA = mp;
+    return hazelcastClient.getMap('mapB');
+}).then(function (mp) {
+    mapB = mp;
+    return hazelcastClient.getMap('mapC');
+}).then(function (mp) {
+    mapC = mp;
+
+    // since map names are different, operation is manipulating
+    // different entries, but the operation takes place on the
+    // same member since the keys ('key1') are the same
+    return mapA.put('key1', 'Furkan');
+}).then(function () {
+    return mapB.get('key1');
+}).then(function (res) {
+    return mapC.remove('key1');
+}).then(function () {
+    // lock operation is still execute on the same member
+    // of the cluster since the key ("key1") is same
+    return hazelcastClient.getLock('key1');
+}).then(function (l) {
+    lock = l;
+    return lock.lock();
+});
+```
+
+When the keys are the same, entries are stored on the same member. However, we sometimes want to have the related entries stored on the same member, such as a customer and his/her order entries. We would have a customers map with `customerId` as the key and an orders map with `orderId` as the key. Since `customerId` and `orderId` are different keys, a customer and his/her orders may fall into different members in your cluster. So how can we have them stored on the same member? We create an affinity between the customer and orders. If we make them part of the same partition then these entries will be co-located. We achieve this by making `OrderKey`s `PartitionAware`.
+
+```javascript
+function OrderKey(orderId, customerId) {
+    this.orderId = orderId;
+    this.customerId = customerId;
+}
+
+OrderKey.prototype.getPartitionKey = function () {
+    return this.customerId;
+};
+```
+
+Notice that `OrderKey` implements `PartitionAware` interface and that `getPartitionKey()` returns the `customerId`. This will make sure that the `Customer` entry and its `Order`s will be stored on the same member.
+
+```javascript
+var hazelcastClient;
+var mapCustomers;
+var mapOrders;
+
+Client.newHazelcastClient().then(function (client) {
+    hazelcastClient = client;
+    return hazelcastClient.getMap('customers')
+}).then(function (mp) {
+    mapCustomers = mp;
+    return hazelcastClient.getMap('orders');
+}).then(function (mp) {
+    mapOrders = mp;
+
+    // create the customer entry with customer id = 1
+    return mapCustomers.put(1, customer);
+}).then(function () {
+    // now create the orders for this customer
+    return mapOrders.putAll([
+        [new OrderKey(21, 1), order],
+        [new OrderKey(22, 1), order],
+        [new OrderKey(23, 1), order]
+    ]);
+});
+```  
+
+For more details, see the [PartitionAware section](https://docs.hazelcast.org/docs/latest/manual/html-single/#partitionaware) in the Hazelcast IMDG Reference Manual.
+
+## 7.9. Monitoring and Logging
 
 ### 7.9.1. Enabling Client Statistics
 
