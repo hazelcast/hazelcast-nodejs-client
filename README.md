@@ -2404,9 +2404,9 @@ hazelcastClient.getMap('brothersMap').then(function (mp) {
 
 ### 7.8.1. Partition Aware
 
-Partition Aware ensures that related entries exist on the same member. If related data is on the same member, operations can be executed without the cost of extra network calls and extra wire data and this improves the performance. This feature is provided by using the same partition keys for related data.
+Partition Aware ensures that the related entries exist on the same member. If the related data is on the same member, operations can be executed without the cost of extra network calls and extra wire data, and this improves the performance. This feature is provided by using the same partition keys for related data.
 
-Hazelcast has a standard way of finding out which member owns/manages each key object. The following operations will be routed to the same member, since all of them are operating based on the same key `'key1'`.
+Hazelcast has a standard way of finding out which member owns/manages each key object. The following operations are routed to the same member, since all of them are operating based on the same key `'key1'`.
 
 ```javascript
 Client.newHazelcastClient().then(function (client) {
@@ -2421,8 +2421,8 @@ Client.newHazelcastClient().then(function (client) {
 }).then(function (mp) {
     mapC = mp;
 
-    // since map names are different, operation will be manipulating
-    // different entries, but the operation will take place on the
+    // since map names are different, operation is manipulating
+    // different entries, but the operation takes place on the
     // same member since the keys ('key1') are the same
     return mapA.put('key1', 'Furkan');
 }).then(function () {
@@ -2430,7 +2430,7 @@ Client.newHazelcastClient().then(function (client) {
 }).then(function (res) {
     return mapC.remove('key1');
 }).then(function () {
-    // lock operation will still execute on the same member
+    // lock operation is still execute on the same member
     // of the cluster since the key ("key1") is same
     return hazelcastClient.getLock('key1');
 }).then(function (l) {
@@ -2439,7 +2439,7 @@ Client.newHazelcastClient().then(function (client) {
 });
 ```
 
-When the keys are the same, entries are stored on the same member. However, we sometimes want to have related entries stored on the same member, such as a customer and his/her order entries. We would have a customers map with `customerId` as the key and an orders map with `orderId` as the key. Since `customerId` and `orderId` are different keys, a customer and his/her orders may fall into different members in your cluster. So how can we have them stored on the same member? We create an affinity between customer and orders. If we make them part of the same partition then these entries will be co-located. We achieve this by making `orderId`s `PartitionAware`.
+When the keys are the same, entries are stored on the same member. However, we sometimes want to have the related entries stored on the same member, such as a customer and his/her order entries. We would have a customers map with `customerId` as the key and an orders map with `orderId` as the key. Since `customerId` and `orderId` are different keys, a customer and his/her orders may fall into different members in your cluster. So how can we have them stored on the same member? We create an affinity between the customer and orders. If we make them part of the same partition then these entries will be co-located. We achieve this by making `OrderKey`s `PartitionAware`.
 
 ```javascript
 function OrderKey(orderId, customerId) {
@@ -2479,6 +2479,8 @@ Client.newHazelcastClient().then(function (client) {
     ]);
 });
 ```  
+
+For more details, see the [PartitionAware section](https://docs.hazelcast.org/docs/latest/manual/html-single/#partitionaware) in the Hazelcast IMDG Reference Manual.
 
 ## 7.9. Monitoring and Logging
 
