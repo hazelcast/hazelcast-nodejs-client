@@ -84,11 +84,11 @@
     * [7.8.1. Partition Aware](#781-partition-aware)
     * [7.8.2. Near Cache](#782-near-cache)
       * [7.8.2.1. Configuring Near Cache](#7821-configuring-near-cache)
-      * [7.8.2.2. Near Cache Example for Map](7822-near-cache-example-for-map)
-      * [7.8.2.3. Near Cache Eviction](7823-near-cache-eviction)
-      * [7.8.2.4. Near Cache Expiration](7824-near-cache-expiration)
-      * [7.8.2.5. Near Cache Invalidation](7825-near-cache-invalidation)
-      * [7.8.2.6. Near Cache Eventual Consistency](7826-near-cache-eventual-consistency)
+      * [7.8.2.2. Near Cache Example for Map](#7822-near-cache-example-for-map)
+      * [7.8.2.3. Near Cache Eviction](#7823-near-cache-eviction)
+      * [7.8.2.4. Near Cache Expiration](#7824-near-cache-expiration)
+      * [7.8.2.5. Near Cache Invalidation](#7825-near-cache-invalidation)
+      * [7.8.2.6. Near Cache Eventual Consistency](#7826-near-cache-eventual-consistency)
   * [7.9. Monitoring and Logging](#79-monitoring-and-logging)
     * [7.9.1. Enabling Client Statistics](#791-enabling-client-statistics)
     * [7.9.2. Logging Configuration](#792-logging-configuration)
@@ -2491,7 +2491,7 @@ For more details, see the [PartitionAware section](https://docs.hazelcast.org/do
 
 ### 7.8.2. Near Cache
 
-Map entries in Hazelcast are partitioned across the cluster members. Hazelcast clients do not have local data at all. Suppose you read the key `k` a number of times from a Hazelcast client or `k` is owned by another member in your cluster. Then each `map.get(k)` will be a remote operation, which creates a lot of network trips. If you have a data structure that is mostly read, then you should consider creating a local Near Cache, so that reads are sped up and less network traffic is created.
+Map entries in Hazelcast are partitioned across the cluster members. Hazelcast clients do not have local data at all. Suppose you read the key `k` a number of times from a Hazelcast client and `k` is owned by a member in your cluster. Then each `map.get(k)` will be a remote operation, which creates a lot of network trips. If you have a map that is mostly read, then you should consider creating a local Near Cache, so that reads are sped up and less network traffic is created.
 
 These benefits do not come for free, please consider the following trade-offs:
 
@@ -2499,11 +2499,13 @@ These benefits do not come for free, please consider the following trade-offs:
 
 - Near Cache breaks the strong consistency guarantees; you might be reading stale data.
 
-Near Cache is highly recommended for data structures that are mostly read.
+- Clients with a Near Cache will have to hold the extra cached data, which increases memory consumption.
+
+Near Cache is highly recommended for maps that are mostly read.
 
 #### 7.8.2.1. Configuring Near Cache
 
-The following shows the configuration for the Hazelcast Near Cache.
+The following snippets show how a Near Cache is configured in the Node.js client, presenting all available values for each element:
 
 **Declarative:**
 
@@ -2511,11 +2513,11 @@ The following shows the configuration for the Hazelcast Near Cache.
 {
     "nearCaches": [
         {
-            "name": "myDataStructure",
+            "name": "mostlyReadMap",
             "invalidateOnChange": (false|true),
             "timeToLiveSeconds": (0..Number.MAX_SAFE_INTEGER),
             "maxIdleSeconds": (0..Number.MAX_SAFE_INTEGER),
-            "inMemoryFormat": "(object|binary|native)",
+            "inMemoryFormat": "(object|binary)",
             "evictionPolicy": "lru|lfu|random|none",
             "evictionMaxSize": (0..Number.MAX_SAFE_INTEGER),
             "evictionSamplingCount": (0..Number.MAX_SAFE_INTEGER),
@@ -2527,6 +2529,20 @@ The following shows the configuration for the Hazelcast Near Cache.
 
 **Programmatic:**
 
+```javascript
+var nearCacheConfig = new Config.NearCacheConfig();
+nearCacheConfig.name = 'mostlyReadMap';
+nearCacheConfig.invalidateOnChange = (false|true);
+nearCacheConfig.timeToLiveSeconds = (0..Number.MAX_SAFE_INTEGER);
+nearCacheConfig.maxIdleSeconds = (0..Number.MAX_SAFE_INTEGER);
+nearCacheConfig.inMemoryFormat= (InMemoryFormat.OBJECT|InMemoryFormat.BINARY);
+nearCacheConfig.evictionPolicy = (EvictionPolicy.LRU|EvictionPolicy.LFU|EvictionPolicy.RANDOM|EvictionPolicy.NONE);
+nearCacheConfig.evictionMaxSize = (0..Number.MAX_SAFE_INTEGER);
+nearCacheConfig.evictionSamplingCount = (0..Number.MAX_SAFE_INTEGER);
+nearCacheConfig.evictionSamplingPoolSize = (0..Number.MAX_SAFE_INTEGER);
+
+cfg.nearCacheConfigs['mostlyReadMap'] = nearCacheConfig;
+```
 
 Following are the descriptions of all configuration elements:
 
@@ -2534,23 +2550,25 @@ Following are the descriptions of all configuration elements:
   - `BINARY`: Data will be stored in serialized binary format (default value).
   - `OBJECT`: Data will be stored in deserialized form.
 
-- `invalidateOnChange`: Specifies whether the cached entries are evicted when the entries are updated or removed. Its default value is true.
+- `invalidateOnChange`: Specifies whether the cached entries are evicted when the entries are updated or removed in members. Its default value is true.
 
 - `timeToLiveSeconds`: Maximum number of seconds for each entry to stay in the Near Cache. Entries that are older than this period are automatically evicted from the Near Cache. Regardless of the eviction policy used, `timeToLiveSeconds` still applies. Any integer between 0 and `Number.MAX_SAFE_INTEGER`. 0 means infinite. Its default value is 0.
 
-- `maxIdleSeconds`: Maximum number of seconds each entry can stay in the Near Cache as untouched (not read). Entries that are not read more than this period are removed from the Near Cache. Any integer between 0 and `Number.MAX_SAFE_INTEGER`. 0 means `Number.MAX_SAFE_INTEGER`. Its default value is 0.
+- `maxIdleSeconds`: Maximum number of seconds each entry can stay in the Near Cache as untouched (not read). Entries that are not read more than this period are removed from the Near Cache. Any integer between 0 and `Number.MAX_SAFE_INTEGER`. 0 means infinite. Its default value is 0.
 
 - `evictionPolicy`: Eviction policy configuration. Available values are as follows:
   - `LRU`: Least Recently Used (default value).
   - `LFU`: Least Frequently Used.
-  - `NONE`: No items will be evicted and the property max-size will be ignored. You still can combine it with `timeToLiveSeconds` and `maxIdleSeconds` to evict items from the Near Cache. 
-  - `RANDOM`: A random item will be evicted.
+  - `NONE`: No items are evicted and the `evictionMaxSize` property is ignored. You still can combine it with `timeToLiveSeconds` and `maxIdleSeconds` to evict items from the Near Cache. 
+  - `RANDOM`: A random item is evicted.
   
-- `evictionMaxSize`: Maximum number of entries kept in memory before eviction kicks in.
-- `evictionSamplingCount`: The number of random entries that are evaluated to see if some of them are already expired. If there are expired entries, those are removed and there is no need for eviction.
-- `evictionSamplingPoolSize`: The size of the pool for eviction candidates. The pool is kept sorted according to eviction policy. The entry with the highest score will be evicted. 
+- `evictionMaxSize`: Maximum number of entries kept in the memory before eviction kicks in.
+- `evictionSamplingCount`: Number of random entries that are evaluated to see if some of them are already expired. If there are expired entries, those are removed and there is no need for eviction.
+- `evictionSamplingPoolSize`: Size of the pool for eviction candidates. The pool is kept sorted according to eviction policy. The entry with the highest score is evicted. 
 
 #### 7.8.2.2. Near Cache Example for Map
+
+The following is an example configuration for a Near Cache defined in the `mostlyReadMap` map. According to this configuration, the entries are stored as `OBJECT`'s in this Near Cache and eviction starts when the count of entries reaches `5000`; entries are evicted based on the `LRU` (Least Recently Used) policy. In addition, when an entry is updated or removed on the member side, it is eventually evicted on the client side.
 
 **Declarative:**
 
@@ -2597,15 +2615,12 @@ Expiration means the eviction of expired records. A record is expired:
 
 - `timeToLiveSeconds` passed since it is put to Near Cache
 
-The actual expiration is performed in two cases:
+The actual expiration is performed when a record is accessed: it is checked if the record is expired or not. If it is expired, it is evicted and `undefined` is returned as the value to the caller.
 
-- When a record is accessed: it is checked if the record is expired or not. If it is expired, it is evicted and `undefined` is returned as the value to the caller.
-
-- In the background: there is an expiration task that periodically scans records and evicts the expired records.
 
 #### 7.8.2.5. Near Cache Invalidation
 
-Invalidation is the process of removing an entry from the Near Cache when its value is updated or it is removed from the original data structure (to prevent stale reads). See [Near Cache Invalidation section](https://docs.hazelcast.org/docs/latest/manual/html-single/#near-cache-invalidation) in the Hazelcast IMDG Reference Manual.
+Invalidation is the process of removing an entry from the Near Cache when its value is updated or it is removed from the original map (to prevent stale reads). See the [Near Cache Invalidation section](https://docs.hazelcast.org/docs/latest/manual/html-single/#near-cache-invalidation) in the Hazelcast IMDG Reference Manual.
 
 #### 7.8.2.6. Near Cache Eventual Consistency
 
