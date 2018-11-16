@@ -2237,40 +2237,26 @@ Employee.prototype.getFactoryId = function () {
     return 1;
 }
 
-Employee.prototype.readData = function (objectDataInput) {
-    this.name = objectDataInput.readUTF();
-    this.age = objectDataInput.readInt();
-    this.active = objectDataInput.readBoolean();
-    this.salary = objectDataInput.readDouble();
+Employee.prototype.readPortable = function (reader) {
+    this.name = reader.readUTF();
+    this.age = reader.readInt();
+    this.active = reader.readBoolean();
+    this.salary = reader.readDouble();
 }
 
-Employee.prototype.writeData = function (objectDataOutput) {
-    objectDataOutput.writeUTF(this.name);
-    objectDataOutput.writeInt(this.age);
-    objectDataOutput.writeBoolean(this.active);
-    objectDataOutput.writeDouble(this.salary);
+Employee.prototype.writePortable = function (writer) {
+    writer.writeUTF(this.name);
+    writer.writeInt(this.age);
+    writer.writeBoolean(this.active);
+    writer.writeDouble(this.salary);
 }
 ```
 
-Note that `Employee` is an `IdentifiedDataSerializable` object. If you just want to save the `Employee` objects as byte arrays on the map, you don't need to implement its equivalent on the server-side. However, if you want to query on the `employee` map, the server needs the `Employee` objects rather than byte array formats. Therefore, you need to implement its Java equivalent and its data serializable factory on the server side for server to reconstitute the objects from binary formats. After implementing the Java class and its factory, you need to add the factory to the data serializable factories or the portable factories by giving a factory `id`. The following is an example declarative configuration on the server.
+Note that `Employee` is a `Portable` object. As portable types are not deserialized on the server side for querying, you don't need to implement its Java equivalent on the server side.
 
-```xml
-<hazelcast>
-    ...
-    <serialization>
-        <data-serializable-factories>
-            <data-serializable-factory factory-id="1">
-                mypackage.MyIdentifiedFactory
-            </data-serializable-factory>
-        </data-serializable-factories>
-    </serialization>
-    ...
-</hazelcast>
-```
+For the non-portable types, you need to implement its Java equivalent and its serializable factory on the server side for server to reconstitute the objects from binary formats. In this case before starting the server, you need to compile the Employee and related factory classes with server's CLASSPATH and add them to the user-lib directory in the extracted hazelcast-<version>.zip (or tar).  See the [Adding User Library to CLASSPATH section](#adding-user-library-to-classpath).
 
-Note that before starting the server, you need to compile the `Employee` and `MyIdentifiedFactory` classes with server's `CLASSPATH` and add them to the `user-lib` directory in the extracted `hazelcast-<version>.zip` (or `tar`). See the [Adding User Library to CLASSPATH section](#adding-user-library-to-classpath).
-
-> **NOTE: You can also make this object `Portable` and implement its Java equivalent and portable factory on the server side. Note that querying with `Portable` object is faster as compared to `IdentifiedDataSerializable`.**
+> **NOTE: Querying with `Portable` object is faster as compared to `IdentifiedDataSerializable`.**
 
 #### 7.7.1.2. Querying by Combining Predicates with AND, OR, NOT
 
