@@ -1882,10 +1882,10 @@ client.addDistributedObjectListener(function (distributedObjectEvent) {
 
 The `LifecycleListener` interface notifies for the following events:
 
-* `starting`: A client is starting.
-* `started`: A client has started.
-* `shuttingDown`: A client is shutting down.
-* `shutdown`: A client’s shutdown has completed.
+* `starting`: The client is starting.
+* `started`: The client has started.
+* `shuttingDown`: The client is shutting down.
+* `shutdown`: The client’s shutdown has completed.
 
 The following is an example of the `LifecycleListener` that is added to the `ClientConfig` object and its output.
 
