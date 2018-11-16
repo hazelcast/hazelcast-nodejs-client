@@ -1555,6 +1555,13 @@ You can set a timeout for retrying the operations sent to a member. This can be 
 
 When a connection problem occurs, an operation is retried if it is certain that it has not run on the member yet or if it is idempotent such as a read-only operation, i.e., retrying does not have a side effect. If it is not certain whether the operation has run on the member, then the non-idempotent operations are not retried. However, as explained in the first paragraph of this section, you can force all the client operations to be retried (`redoOperation`) when there is a connection failure between the client and member. But in this case, you should know that some operations may run multiple times causing conflicts. For example, assume that your client sent a `queue.offer` operation to the member and then the connection is lost. Since there will be no response for this operation, you will not know whether it has run on the member or not. If you enabled `redoOperation`, it means this operation may run again, which may cause two instances of the same object in the queue.
 
+When invocation is being retried, the client may wait some time before it retries again. You can configure this duration for waiting using the following property:
+
+```javascript
+config.properties['hazelcast.client.invocation.retry.pause.millis'] = 500;
+```
+
+The default retry wait time is `1` second.
 
 ## 7.4. Using Distributed Data Structures
 
