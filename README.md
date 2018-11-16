@@ -14,6 +14,8 @@
   * [1.4. Basic Configuration](#14-basic-configuration)
     * [1.4.1. Configuring Hazelcast IMDG](#141-configuring-hazelcast-imdg)
     * [1.4.2. Configuring Hazelcast Node.js Client](#142-configuring-hazelcast-nodejs-client)
+      * [1.4.2.1. Group Settings](#1421-group-settings)
+      * [1.4.2.2. Network Settings](#1422-network-settings)
   * [1.5. Basic Usage](#15-basic-usage)
   * [1.6. Code Samples](#16-code-samples)
 * [2. Features](#2-features)
@@ -353,13 +355,13 @@ part that you do not explicitly set in the `hazelcast-client.json` file.
 If you run the Hazelcast IMDG members in a different server than the client, you most probably have configured the members' ports and cluster
 names as explained in the previous section. If you did, then you need to make certain changes to the network settings of your client.
 
-### Group Settings
+#### 1.4.2.1. Group Settings
 
 **Programmatic:**
 
 ```javascript
 let cfg = new Config.ClientConfig();
-cfg.group.name = //group name of you cluster
+cfg.group.name = 'group name of your cluster'
 ```
 
 **Declarative:**
@@ -367,14 +369,14 @@ cfg.group.name = //group name of you cluster
 ```json
 {
     "group": {
-        "name": "group name of you cluster"
+        "name": "group name of your cluster"
     }
 }
 ```
 
 > **NOTE: If you have a Hazelcast IMDG release older than 3.11, you need to provide also a group password along with the group name.**
 
-### Network Settings
+#### 1.4.2.2. Network Settings
 
 You need to provide the IP address and port of at least one member in your cluster so the client can find it.
 
@@ -592,7 +594,9 @@ desired aspects. An example is shown below.
 var Config = require('hazelcast-client').Config;
 var cfg = new Config.ClientConfig();
 cfg.networkConfig.addresses.push('127.0.0.1:5701');
-return HazelcastClient.newHazelcastClient(cfg);
+HazelcastClient.newHazelcastClient(cfg).then(function (client) {
+    // some operations
+});
 ```
 
 See the `ClientConfig` class documentation at [Hazelcast Node.js Client API Docs](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs) for details.
@@ -773,33 +777,31 @@ Or, if you want to use your own serialization method, you can use a [Custom Seri
 For a faster serialization of objects, Hazelcast recommends to implement the `IdentifiedDataSerializable` interface. The following is an example of an object implementing this interface:
 
 ```javascript
-function Address(street, zipCode, city, state) {
-    this.street = street;
-    this.zipCode = zipCode;
-    this.city = city;
-    this.state = state;
+function Employee(id, name) {
+    this.id = id;
+    this.name = name;
 }
 
-Address.prototype.getClassId = function () {
-    return 1;
+Employee.prototype.readData = function (input) {
+    this.id = input.readInt();
+    this.name = input.readUTF();
 };
 
-Address.prototype.getFactoryId = function () {
-    return 1;
+Employee.prototype.writeData = function (output) {
+    output.writeInt(this.id);
+    output.writeUTF(this.name);
 };
 
-Address.prototype.writeData = function (objectDataOutput) {
-    objectDataOutput.writeUTF(this.street);
-    objectDataOutput.writeInt(this.zipCode);
-    objectDataOutput.writeUTF(this.city);
-    objectDataOutput.writeUTF(this.state);
+Employee.prototype.getFactoryId = function () {
+    return 1000;
 };
 
-Address.prototype.readData = function (objectDataInput) {
-    this.street = objectDataInput.readUTF();
-    this.zipCode = objectDataInput.readInt();
-    this.city = objectDataInput.readUTF();
-    this.state = objectDataInput.readUTF();
+Employee.prototype.getClassId = function () {
+    return 100;
+};
+
+Employee.prototype.getClassId = function () {
+    return this.classId;
 };
 ```
 
@@ -808,14 +810,15 @@ The `IdentifiedDataSerializable` interface uses `getClassId()` and `getFactoryId
 A sample `IdentifiedDataSerializableFactory` could be implemented as follows:
 
 ```javascript
-function MyIdentifiedFactory() {
-
+function SampleDataSerializableFactory() {
+    // Constructor function
 }
 
-MyIdentifiedFactory.prototype.create = function (type) {
-    if (type === 1) {
-        return new Address();
+SampleDataSerializableFactory.prototype.create = function (type) {
+    if (type === 100) {
+        return new Employee();
     }
+    return null;
 };
 ```
 
@@ -825,7 +828,7 @@ The last step is to register the `IdentifiedDataSerializableFactory` to the `Ser
 
 ```javascript
 var config = new Config.ClientConfig();
-config.serializationConfig.dataSerializableFactories[1] = new MyIdentifiedFactory();
+config.serializationConfig.dataSerializableFactories[1000] = new SampleDataSerializableFactory();
 ```
 
 **Declarative Configuration:**
@@ -835,16 +838,16 @@ config.serializationConfig.dataSerializableFactories[1] = new MyIdentifiedFactor
     "serialization": {
         "dataSerializableFactories": [
             {
-                "path": "address.js",
-                "exportedName": "MyIdentifiedFactory",
-                "factoryId": 1
+                "path": "factory.js",
+                "exportedName": "SampleDataSerializableFactory",
+                "factoryId": 1000
             }
         ]
     }
 }
 ```
 
-Note that the ID that is passed to the `SerializationConfig` is same as the `factoryId` that the `Address` object returns.
+Note that the ID that is passed to the `SerializationConfig` is same as the `factoryId` that the `Employee` object returns.
 
 ## 4.2. Portable Serialization
 
@@ -860,27 +863,34 @@ With multiversion support, you can have two members where each of them having di
 
 Also note that portable serialization is totally language independent and is used as the binary protocol between Hazelcast server and clients.
 
-A sample portable implementation of a `Foo` class looks like the following:
+A sample portable implementation of a `Customer` class looks like the following:
 
 ```javascript
-function Foo(foo) {
-    this.foo = foo;
+function Customer(name, id, lastOrder) {
+    this.name = name;
+    this.id = id;
+    this.lastOrder = lastOrder;
+    this.classId = 1;
 }
 
-Foo.prototype.getClassId = function () {
-    return 1;
+Customer.prototype.readPortable = function (reader) {
+    this.name = reader.readUTF('name');
+    this.id = reader.readInt('id');
+    this.lastOrder = reader.readLong('lastOrder').toNumber();
 };
 
-Foo.prototype.getFactoryId = function () {
-    return 1;
+Customer.prototype.writePortable = function (writer) {
+    writer.writeUTF('name', this.name);
+    writer.writeInt('id', this.id);
+    writer.writeLong('lastOrder', Long.fromNumber(this.lastOrder));
 };
 
-Foo.prototype.writePortable = function (portableWriter) {
-    portableWriter.writeUTF('foo', this.foo);
+Customer.prototype.getFactoryId = function () {
+    return PortableFactory.factoryId;
 };
 
-Foo.prototype.readPortable = function (portableReader) {
-    this.foo = portableReader.readUTF('foo');
+Customer.prototype.getClassId = function () {
+    return this.classId;
 };
 ```
 
@@ -889,14 +899,15 @@ Similar to `IdentifiedDataSerializable`, a `Portable` object must provide `class
 A sample `PortableFactory` could be implemented as follows:
 
 ```javascript
-function MyPortableFactory() {
-
+function PortableFactory() {
+    // Constructor function
 }
 
-MyPortableFactory.prototype.create = function (type) {
-    if (type === 1) {
-        return new Foo();
+PortableFactory.prototype.create = function (classId) {
+    if (classId === 1) {
+        return new Customer();
     }
+    return null;
 };
 ```
 
@@ -906,7 +917,7 @@ The last step is to register the `PortableFactory` to the `SerializationConfig`.
 
 ```javascript
 var config = new Config.ClientConfig();
-config.serializationConfig.portableFactories[1] = new MyPortableFactory();
+config.serializationConfig.portableFactories[1] = new PortableFactory();
 ```
 
 **Declarative Configuration:**
@@ -916,8 +927,8 @@ config.serializationConfig.portableFactories[1] = new MyPortableFactory();
     "serialization": {
         "portableFactories": [
             {
-                "path": "foo.js",
-                "exportedName": "MyPortableFactory",
+                "path": "factory.js",
+                "exportedName": "PortableFactory",
                 "factoryId": 1
             }
         ]
@@ -925,60 +936,59 @@ config.serializationConfig.portableFactories[1] = new MyPortableFactory();
 }
 ```
 
-Note that the ID that is passed to the `SerializationConfig` is same as the `factoryId` that `Foo` object returns.
+Note that the ID that is passed to the `SerializationConfig` is same as the `factoryId` that `Customer` object returns.
 
 ## 4.3. Custom Serialization
 
 Hazelcast lets you plug a custom serializer to be used for serialization of objects.
 
-Let's say you have an object `Musician` and you would like to customize the serialization. The reason might be that you want to use an external serializer for only one object.
+Let's say you have an object `CustomSerializable` and you would like to customize the serialization. The reason might be that you want to use an external serializer for only one object.
 
 ```javascript
-function Musician(name) {
-    this.name = name;
+function CustomSerializable(value) {
+    this.value = value;
 }
 
-Musician.prototype.hzGetCustomId = function () {
+CustomSerializable.prototype.hzGetCustomId = function () {
     return 10;
 };
 ```
 
-Let's say your custom `MusicianSerializer` will serialize `Musician`.
+Let's say your custom `CustomSerializer` will serialize `CustomSerializable`.
 
 ```javascript
-function MusicianSerializer() {
-
+function CustomSerializer() {
+    // Constructor function
 }
 
-MusicianSerializer.prototype.getId = function () {
+CustomSerializer.prototype.getId = function () {
     return 10;
-}
+};
 
-
-MusicianSerializer.prototype.write = function (objectDataOutput, object) {
-    objectDataOutput.writeInt(object.name.length);
-    for (var i = 0; i < object.name.length; i++) {
-        objectDataOutput.writeInt(object.name.charCodeAt(i));
+CustomSerializer.prototype.write = function (output, t) {
+    output.writeInt(t.value.length);
+    for (var i = 0; i < t.value.length; i++) {
+        output.writeInt(t.value.charCodeAt(i));
     }
-}
+};
 
-MusicianSerializer.prototype.read = function (objectDataInput) {
-    var len = objectDataInput.readInt();
-    var name = '';
+CustomSerializer.prototype.read = function (reader) {
+    var len = reader.readInt();
+    var str = '';
     for (var i = 0; i < len; i++) {
-        name = name + String.fromCharCode(objectDataInput.readInt());
+        str = str + String.fromCharCode(reader.readInt());
     }
-    return new Musician(name);
-}
+    return new CustomSerializable(str);
+};
 ```
 
-Note that the serializer `id` must be unique as Hazelcast will use it to lookup the `MusicianSerializer` while it deserializes the object. Now the last required step is to register the `MusicianSerializer` to the configuration.
+Note that the serializer `id` must be unique as Hazelcast will use it to lookup the `CustomSerializer` while it deserializes the object. Now the last required step is to register the `CustomSerializer` to the configuration.
 
 **Programmatic Configuration:**
 
 ```javascript
 var config = new Config.ClientConfig();
-config.serializationConfig.customSerializers.push(new MusicianSerializer());
+config.serializationConfig.customSerializers.push(new CustomSerializer());
 ```
 
 **Declarative Configuration:**
@@ -990,8 +1000,8 @@ config.serializationConfig.customSerializers.push(new MusicianSerializer());
         "isBigEndian": false,
         "serializers": [
             {
-                "path": "Musician.js",
-                "exportedName": "MusicianSerializer",
+                "path": "custom.js",
+                "exportedName": "CustomSerializer",
                 "typeId": 10
             }
         ]
@@ -999,7 +1009,7 @@ config.serializationConfig.customSerializers.push(new MusicianSerializer());
 }
 ```
 
-From now on, Hazelcast will use `MusicianSerializer` to serialize `Musician` objects.
+From now on, Hazelcast will use `CustomSerializer` to serialize `CustomSerializable` objects.
 
 ## 4.4. Global Serialization
 
@@ -1016,19 +1026,19 @@ A sample global serializer that integrates with a third party serializer is show
 
 ```javascript
 function GlobalSerializer() {
-
+    // Constructor function
 }
 
 GlobalSerializer.prototype.getId = function () {
     return 20;
 };
 
-GlobalSerializer.prototype.write = function (objectDataOutput, object) {
-    objectDataOutput.writeByteArray(SomeThirdPartySerializer.serialize(object))
+GlobalSerializer.prototype.read = function (input) {
+    return MyFavoriteSerializer.deserialize(input.readByteArray());
 };
 
-GlobalSerializer.prototype.read = function (objectDataInput) {
-    return SomeThirdPartySerializer.deserialize(objectDataInput.readByteArray());
+GlobalSerializer.prototype.write = function (output, obj) {
+    output.writeByteArray(MyFavoriteSerializer.serialize(obj))
 };
 ```
 
@@ -1048,8 +1058,8 @@ config.serializationConfig.globalSerializer = new GlobalSerializer();
         "defaultNumberType": "integer",
         "isBigEndian": false,
         "globalSerializer": {
-            "path": "SomeThirdPartySerializer.js",
-            "exportedName": "SomeThirdPartySerializer"
+            "path": "global_serializer.js",
+            "exportedName": "MyFavoriteSerializer"
         },
     }
 }
@@ -1493,18 +1503,19 @@ Client.newHazelcastClient(clientConfig).then(function (client) {
 Let's create a map and populate it with some data, as shown below.
 
 ```javascript
-var client;
-var mapCustomers;
-Client.newHazelcastClient(clientConfig).then(function (res) {
-    client = res;
-    return client.getMap('customers');
-}).then(function (mp) {
-    mapCustomers = mp;
-    return mapCustomers.put('1', new Customer('Furkan', 'Senharputlu'));
+var map;
+// Get the Distributed Map from Cluster.
+client.getMap('my-distributed-map').then(function (mp) {
+    map = mp;
+    // Standard Put and Get.
+    return map.put('key', 'value');
 }).then(function () {
-    return mapCustomers.put('2', new Customer("Joe", "Smith"));
+    return map.get('key');
+}).then(function (val) {
+    // Concurrent Map methods, optimistic updating
+    return map.putIfAbsent('somekey', 'somevalue');
 }).then(function () {
-    return mapCustomers.put('3', new Customer("Muhammet", "Ali"));
+    return map.replace('key', 'value', 'newvalue');
 });
 ```
 
@@ -1555,13 +1566,6 @@ You can set a timeout for retrying the operations sent to a member. This can be 
 
 When a connection problem occurs, an operation is retried if it is certain that it has not run on the member yet or if it is idempotent such as a read-only operation, i.e., retrying does not have a side effect. If it is not certain whether the operation has run on the member, then the non-idempotent operations are not retried. However, as explained in the first paragraph of this section, you can force all the client operations to be retried (`redoOperation`) when there is a connection failure between the client and member. But in this case, you should know that some operations may run multiple times causing conflicts. For example, assume that your client sent a `queue.offer` operation to the member and then the connection is lost. Since there will be no response for this operation, you will not know whether it has run on the member or not. If you enabled `redoOperation`, it means this operation may run again, which may cause two instances of the same object in the queue.
 
-When invocation is being retried, the client may wait some time before it retries again. You can configure this duration for waiting using the following property:
-
-```javascript
-config.properties['hazelcast.client.invocation.retry.pause.millis'] = 500;
-```
-
-The default retry wait time is `1` second.
 
 ## 7.4. Using Distributed Data Structures
 
@@ -1575,14 +1579,18 @@ A Map usage example is shown below.
 
 ```javascript
 var map;
-client.getMap('myMap').then(function (mp) {
+// Get the Distributed Map from Cluster.
+client.getMap('my-distributed-map').then(function (mp) {
     map = mp;
-    return map.put(1, 'Furkan');
-}).then(function (oldValue) {
-    return map.get(1);
-}).then(function (value) {
-    console.log(value); // Furkan
-    return map.remove(1);
+    // Standard Put and Get.
+    return map.put('key', 'value');
+}).then(function () {
+    return map.get('key');
+}).then(function (val) {
+    // Concurrent Map methods, optimistic updating
+    return map.putIfAbsent('somekey', 'somevalue');
+}).then(function () {
+    return map.replace('key', 'value', 'newvalue');
 });
 ```
 
@@ -1594,15 +1602,24 @@ A MultiMap usage example is shown below.
 
 ```javascript
 var multiMap;
-client.getMultiMap('myMultiMap').then(function (mmp) {
+// Get the Distributed MultiMap from Cluster.
+hz.getMultiMap('my-distributed-multimap').then(function (mmp) {
     multiMap = mmp;
-    return multiMap.put(1, 'Furkan')
+    // Put values in the map against the same key
+    return multiMap.put('my-key', 'value1');
 }).then(function () {
-    return multiMap.put(1, 'Mustafa');
+    return multiMap.put('my-key', 'value2');
 }).then(function () {
-    return multiMap.get(1);
+    return multiMap.put('my-key', 'value3');
+}).then(function () {
+    // Print out all the values for associated with key called "my-key"
+    return multiMap.get('my-key')
 }).then(function (values) {
-    console.log(values.get(0), values.get(1)); // Furkan Mustafa
+    for (value of values) {
+        console.log(value);
+    }
+    // remove specific key/value pair
+    return multiMap.remove('my-key', 'value2');
 });
 ```
 
@@ -1613,16 +1630,19 @@ Hazelcast `ReplicatedMap` is a distributed key-value data structure where the da
 A Replicated Map usage example is shown below.
 
 ```javascript
-var replicatedMap;
-client.getReplicatedMap('myReplicatedMap').then(function (rmp) {
-    replicatedMap = rmp;
-    return replicatedMap.put(1, 'Furkan')
-}).then(function () {
-    return replicatedMap.put(2, 'Ahmet');
-}).then(function () {
-    return replicatedMap.get(2);
+var map;
+// Get a Replicated Map called "my-replicated-map"
+hz.getReplicatedMap('my-replicated-map').then(function (rmp) {
+    map = rmp;
+    // Put and Get a value from the Replicated Map
+    // key/value replicated to all members
+    return map.put('key', 'value');
+}).then(function (replacedValue) {
+    console.log('replaced value = ' + replacedValue); // Will be null as its first update
+    return map.get('key');
 }).then(function (value) {
-    console.log(value); // Ahmet
+    // The value is retrieved from a random member in the cluster
+    console.log('value for key = ' + value);
 });
 ```
 
@@ -1634,13 +1654,26 @@ A Queue usage example is shown below.
 
 ```javascript
 var queue;
-client.getQueue('myQueue').then(function (q) {
+// Get a Blocking Queue called "my-distributed-queue"
+hz.getQueue('my-distributed-queue').then(function (q) {
     queue = q;
-    return queue.offer('Furkan');
+    // Offer a String into the Distributed Queue
+    return queue.offer('item');
 }).then(function () {
-    return queue.peek();
-}).then(function (head) {
-    console.log(head); // Furkan
+    // Poll the Distributed Queue and return the String
+    return queue.poll();
+}).then(function () {
+    // Timed blocking Operations
+    return queue.offer('anotheritem', 500);
+}).then(function () {
+    return queue.poll(5000);
+}).then(function () {
+    // Indefinitely blocking Operations
+    return queue.put('yetanotheritem');
+}).then(function () {
+    return queue.take();
+}).then(function (value) {
+    console.log(value);
 });
 ```
 
@@ -1652,13 +1685,26 @@ A Set usage example is shown below.
 
 ```javascript
 var set;
-hazelcastClient.getSet('mySet').then(function (s) {
+// Get the Distributed Set from Cluster.
+hz.getSet('my-distributed-set').then(function (s) {
     set = s;
-    return set.add('Furkan');
+    // Add items to the set with duplicates
+    return set.add('item1');
 }).then(function () {
-    return set.contains('Furkan');
-}).then(function (val) {
-    console.log(val); // true
+    return set.add('item1');
+}).then(function () {
+    return set.add('item2');
+}).then(function () {
+    return set.add('item2');
+}).then(function () {
+    return set.add('item2');
+}).then(function () {
+    return set.add('item3');
+}).then(function () {
+    // Get the items. Note that there are no duplicates
+    return set.toArray();
+}).then(function (values) {
+    console.log(values);
 });
 ```
 
@@ -1670,17 +1716,24 @@ A List usage example is shown below.
 
 ```javascript
 var list;
-hazelcastClient.getList('myList').then(function (l) {
+// Get the Distributed List from Cluster.
+hz.getList('my-distributed-list').then(function (l) {
     list = l;
-    return list.add('Muhammet Ali');
+    // Add elements to the list
+    return list.add('item1');
 }).then(function () {
-    return list.add('Ahmet');
+    return list.add('item2');
 }).then(function () {
-    return list.add('Furkan');
-}).then(function () {
+    //Remove the first element
+    return list.removeAt(0);
+}).then(function (value) {
+    console.log(value);
+    // There is only one element left
     return list.size();
-}).then(function (size) {
-    console.log(size); // 3
+}).then(function (len) {
+    console.log(len);
+    // Clear the list
+    return list.clear();
 });
 ```
 
@@ -1691,16 +1744,24 @@ Hazelcast `Ringbuffer` is a replicated but not partitioned data structure that s
 A Ringbuffer usage example is shown below.
 
 ```javascript
-var ringbuffer;
-hazelcastClient.getRingbuffer('myRingbuffer').then(function (buffer) {
-    ringbuffer = buffer;
-    return ringbuffer.addAll(['Muhammet Ali', 'Ahmet', 'Furkan']);
+var rb;
+// Get a Ringbuffer called "rb"
+hz.getRingbuffer('rb').then(function (buffer) {
+    rb = buffer;
+    return rb.add(100);
 }).then(function () {
-    return Promise.all([
-        ringbuffer.readOne(0), ringbuffer.readOne(1), ringbuffer.readOne(2)
-    ]);
-}).then(function (brothers) {
-    console.log(brothers); // [ 'Muhammet Ali', 'Ahmet', 'Furkan' ]
+    return rb.add(200);
+}).then(function (value) {
+    // we start from the oldest item.
+    // if you want to start from the next item, call rb.tailSequence()+1
+    return rb.headSequence();
+}).then(function (sequence) {
+    return rb.readOne(sequence).then(function (value) {
+        console.log(value);
+        return rb.readOne(sequence.add(1));
+    }).then(function (value) {
+        console.log(value);
+    });
 });
 ```
 
@@ -1712,12 +1773,15 @@ A Reliable Topic usage example is shown below.
 
 ```javascript
 var topic;
-hazelcastClient.getReliableTopic('myReliableTopic').then(function (t) {
+// Get a Topic called "my-distributed-topic"
+hz.getReliableTopic("my-distributed-topic").then(function (t) {
     topic = t;
+    // Add a Listener to the Topic
     topic.addMessageListener(function (message) {
-        console.log(message.messageObject);
+        console.log(message);
     });
-    return topic.publish('Hello to distributed world!');
+    // Publish a message to the Topic
+    return topic.publish('Hello to distributed world');
 });
 ```
 
@@ -1729,11 +1793,13 @@ A Lock usage example is shown below.
 
 ```javascript
 var lock;
-hazelcastClient.getLock('myLock').then(function (l) {
+// Get a distributed lock called "my-distributed-lock"
+hz.getLock("my-distributed-lock").then(function (l) {
     lock = l;
+    // Now create a lock and execute some guarded code.
     return lock.lock();
 }).then(function () {
-    // cluster wide critical section
+    // do something here
 }).finally(function () {
     return lock.unlock();
 });
@@ -1746,14 +1812,17 @@ Hazelcast Atomic Long (`IAtomicLong`) is the distributed long which offers most 
 An Atomic Long usage example is shown below.
 
 ```javascript
-var atomicLong;
-hazelcastClient.getAtomicLong('myAtomicLong').then(function (counter) {
-    atomicLong = counter;
-    return atomicLong.addAndGet(3);
+var counter;
+// Get an Atomic Counter, we'll call it "counter"
+hz.getAtomicLong("counter").then(function (c) {
+    counter = c;
+    // Add and Get the "counter"
+    return counter.addAndGet(3);
 }).then(function (value) {
-    return atomicLong.get();
+    return counter.get();
 }).then(function (value) {
-    console.log('counter: ' + value); // counter: 3
+    // Display the "counter" value
+    console.log("counter: " + value);
 });
 ```
 
@@ -1871,9 +1940,9 @@ client.addDistributedObjectListener(function (distributedObjectEvent) {
     );
 }).then(function () {
     var mapname = 'test';
-    //this causes a created event
+    // this causes a created event
     client.getMap(mapname);
-    //this causes no event because map was already created
+    // this causes no event because map was already created
     client.getMap(mapname);
 });
 ```
@@ -1882,10 +1951,10 @@ client.addDistributedObjectListener(function (distributedObjectEvent) {
 
 The `LifecycleListener` interface notifies for the following events:
 
-* `starting`: The client is starting.
-* `started`: The client has started.
-* `shuttingDown`: The client is shutting down.
-* `shutdown`: The client’s shutdown has completed.
+* `starting`: A client is starting.
+* `started`: A client has started.
+* `shuttingDown`: A client is shutting down.
+* `shutdown`: A client’s shutdown has completed.
 
 The following is an example of the `LifecycleListener` that is added to the `ClientConfig` object and its output.
 
@@ -2291,37 +2360,37 @@ You can use the `__key` attribute to perform a predicated search for the entry k
 var personMap;
 client.getMap('persons').then(function (mp) {
     personMap = mp;
-    return personMap.put('Ahmet', 28);
+    return personMap.put('Alice', 35);
 }).then(function () {
-    return personMap.put('Ali', 30);
+    return personMap.put('Andy', 37);
 }).then(function () {
-    return personMap.put('Furkan', 23);
+    return personMap.put('Bob', 22);
 }).then(function () {
-    var predicate = new Predicates.sql('__key like F%');
+    var predicate = new Predicates.sql('__key like A%');
     return personMap.valuesWithPredicate(predicate);
 }).then(function (startingWithA) {
-    console.log(startingWithA.get(0)); // 23
+    console.log(startingWithA.get(0)); // 35
 });
 ```
 
-In this example, the code creates a list with the values whose keys start with the letter "F”.
+In this example, the code creates a list with the values whose keys start with the letter "A”.
 
 You can use the `this` attribute to perform a predicated search for entry values. See the following example:
 
 ```javascript
 var personMap;
-client.getMap('persons').then(function (mp) {
+return client.getMap('persons').then(function (mp) {
     personMap = mp;
-    return personMap.put('Ahmet', 28);
+    return personMap.put('Alice', 35);
 }).then(function () {
-    return personMap.put('Ali', 30);
+    return personMap.put('Andy', 37);
 }).then(function () {
-    return personMap.put('Furkan', 23);
+    return personMap.put('Bob', 22);
 }).then(function () {
     var predicate = new Predicates.greaterEqual('this', 27);
     return personMap.valuesWithPredicate(predicate);
 }).then(function (olderThan27) {
-    console.log(olderThan27.get(0), olderThan27.get(1)); // 28 30
+    console.log(olderThan27.get(0), olderThan27.get(1)); // 35 37
 });
 ```
 
