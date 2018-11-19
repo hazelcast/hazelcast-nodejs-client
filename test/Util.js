@@ -16,6 +16,8 @@
 
 var expect = require('chai').expect;
 var BuildMetadata = require('../lib/BuildMetadata').BuildMetadata;
+var Promise = require('bluebird');
+
 var promiseLater = function (time, func) {
     if (func === undefined) {
         func = function () {
@@ -108,6 +110,19 @@ exports.findMemberByAddress = function (client, address) {
         return m.address.equals(address);
     });
 };
+
+exports.DeferredPromise = function () {
+    var resolve, reject;
+    var promise = new Promise(function () {
+        resolve = arguments[0];
+        reject = arguments[1];
+    });
+    return {
+        resolve: resolve,
+        reject: reject,
+        promise: promise
+    };
+}
 
 exports.promiseLater = promiseLater;
 exports.expectAlmostEqual = expectAlmostEqual;

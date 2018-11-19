@@ -16,6 +16,7 @@
 
 import * as assert from 'assert';
 import * as Long from 'long';
+import * as Promise from 'bluebird';
 import * as Path from 'path';
 import {JsonConfigLocator} from './config/JsonConfigLocator';
 import {Comparator} from './core/Comparator';
@@ -314,4 +315,18 @@ export function cancelRepetitionTask(task: Task): void {
     } else if (task.timeoutId != null) {
         clearTimeout(task.timeoutId);
     }
+}
+
+export function DeferredPromise<T>(): Promise.Resolver<T> {
+    let resolve: any;
+    let reject: any;
+    const promise = new Promise(function (): void {
+        resolve = arguments[0];
+        reject = arguments[1];
+    });
+    return {
+        resolve,
+        reject,
+        promise,
+    } as Promise.Resolver<T>;
 }

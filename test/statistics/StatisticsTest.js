@@ -15,7 +15,7 @@
  */
 
 var expect = require('chai').expect;
-var Promise = require('bluebird');
+var DeferredPromise = require('../Util').DeferredPromise;
 
 var RC = require('../RC');
 var Client = require('../../').Client;
@@ -211,7 +211,7 @@ describe('Statistics with negative period', function () {
 });
 
 function getClientStatisticsFromServer(cluster) {
-    var deferred = Promise.defer();
+    var deferred = DeferredPromise();
     var script = 'client0=instance_0.getClientService().getConnectedClients().' +
         'toArray()[0]\nresult=client0.getClientStatistics();';
     RC.executeOnController(cluster.id, script, 1).then(function (response) {

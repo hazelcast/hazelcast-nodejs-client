@@ -23,7 +23,7 @@ import {ClientConnection} from './ClientConnection';
 import {ConnectionAuthenticator} from './ConnectionAuthenticator';
 import * as net from 'net';
 import * as tls from 'tls';
-import {loadNameFromPath} from '../Util';
+import {DeferredPromise, loadNameFromPath} from '../Util';
 import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
 import {AddressTranslator} from '../connection/AddressTranslator';
 import {AddressProvider} from '../connection/AddressProvider';
@@ -63,7 +63,7 @@ export class ClientConnectionManager extends EventEmitter {
      */
     getOrConnect(address: Address, asOwner: boolean = false): Promise<ClientConnection> {
         const addressIndex = address.toString();
-        const connectionResolver: Promise.Resolver<ClientConnection> = Promise.defer<ClientConnection>();
+        const connectionResolver: Promise.Resolver<ClientConnection> = DeferredPromise<ClientConnection>();
 
         const establishedConnection = this.establishedConnections[addressIndex];
         if (establishedConnection) {
@@ -170,7 +170,7 @@ export class ClientConnectionManager extends EventEmitter {
     }
 
     private connectTLSSocket(address: Address, configOpts: any): Promise<tls.TLSSocket> {
-        const connectionResolver = Promise.defer<tls.TLSSocket>();
+        const connectionResolver = DeferredPromise<tls.TLSSocket>();
         const socket = tls.connect(address.port, address.host, configOpts);
         socket.once('secureConnect', () => {
             connectionResolver.resolve(socket);
@@ -186,7 +186,7 @@ export class ClientConnectionManager extends EventEmitter {
     }
 
     private connectNetSocket(address: Address): Promise<net.Socket> {
-        const connectionResolver = Promise.defer<net.Socket>();
+        const connectionResolver = DeferredPromise<net.Socket>();
         const socket = net.connect(address.port, address.host);
         socket.once('connect', () => {
             connectionResolver.resolve(socket);
