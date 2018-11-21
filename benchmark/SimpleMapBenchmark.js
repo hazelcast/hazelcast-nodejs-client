@@ -35,13 +35,21 @@ var Test = {
     }
 };
 var Client = require('../.').Client;
-Client.newHazelcastClient().then(function (hazelcastClient) {
-    Test.map = hazelcastClient.getMap('default');
+var hazelcastClient;
+
+Client.newHazelcastClient().then(function (client) {
+    hazelcastClient = client;
+    return hazelcastClient.getMap('default');
+}).then(function (mp) {
+    Test.map = mp;
+
     var start;
     Test.finishCallback = function (finish) {
         console.log('Took ' + (finish - start) / 1000 + ' seconds for ' + REQ_COUNT + ' requests');
         console.log('Ops/s: ' + REQ_COUNT / ((finish - start) / 1000));
-        hazelcastClient.shutdown();
+        Test.map.destroy().then(function () {
+            hazelcastClient.shutdown();
+        });
     };
     start = new Date();
     Test.run();
