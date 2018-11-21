@@ -18,7 +18,7 @@ var expect = require('chai').expect;
 var Config = require('../.').Config;
 var Controller = require('./RC');
 var HazelcastClient = require('../.').Client;
-var Promise = require('bluebird');
+var DeferredPromise = require('../lib/Util').DeferredPromise;
 
 var dummyConfig = new Config.ClientConfig();
 dummyConfig.networkConfig.smartRouting = false;
@@ -52,7 +52,7 @@ ManagedObjects.prototype.destroyAll = function () {
 };
 
 ManagedObjects.prototype.destroy = function (name) {
-    var deferred = Promise.defer();
+    var deferred = DeferredPromise();
     this.managedObjects.filter((el) => {
         if (el.getName() === name) {
             el.destroy().then(function () {

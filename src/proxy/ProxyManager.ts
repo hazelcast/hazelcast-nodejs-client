@@ -43,6 +43,7 @@ import {ReliableTopicProxy} from './topic/ReliableTopicProxy';
 import {DistributedObjectEvent, DistributedObjectListener} from '../core/DistributedObjectListener';
 import Address = require('../Address');
 import ClientMessage = require('../ClientMessage');
+import {DeferredPromise} from '../Util';
 
 export class ProxyManager {
     public static readonly MAP_SERVICE: string = 'hz:impl:mapService';
@@ -92,7 +93,7 @@ export class ProxyManager {
         if (this.proxies[serviceName + name]) {
             return Promise.resolve(this.proxies[serviceName + name]);
         } else {
-            const deferred = Promise.defer <DistributedObject>();
+            const deferred = DeferredPromise<DistributedObject>();
             let newProxy: DistributedObject;
             if (serviceName === ProxyManager.MAP_SERVICE && this.client.getConfig().getNearCacheConfig(name)) {
                 newProxy = new NearCachedMapProxy(this.client, serviceName, name);
@@ -154,7 +155,7 @@ export class ProxyManager {
     }
 
     private createProxy(proxyObject: DistributedObject): Promise<ClientMessage> {
-        const promise = Promise.defer<ClientMessage>();
+        const promise = DeferredPromise<ClientMessage>();
         this.initializeProxy(proxyObject, promise, Date.now() + this.invocationTimeoutMillis);
         return promise.promise;
     }

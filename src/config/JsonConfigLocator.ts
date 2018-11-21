@@ -19,6 +19,7 @@ import * as fs from 'fs';
 import * as Path from 'path';
 import {LoggingService} from '../logging/LoggingService';
 import {ConfigBuilder} from './ConfigBuilder';
+import {DeferredPromise} from '../Util';
 
 export class JsonConfigLocator {
     static readonly ENV_VARIABLE_NAME = 'HAZELCAST_CLIENT_CONFIG';
@@ -60,7 +61,7 @@ export class JsonConfigLocator {
     loadFromWorkingDirectory(): Promise<boolean> {
         const cwd = process.cwd();
         const jsonPath = Path.resolve(cwd, JsonConfigLocator.DEFAULT_FILE_NAME);
-        const deferred = Promise.defer<boolean>();
+        const deferred = DeferredPromise<boolean>();
         fs.access(jsonPath, (err) => {
             if (err) {
                 deferred.resolve(false);
@@ -82,7 +83,7 @@ export class JsonConfigLocator {
     }
 
     loadPath(path: string): Promise<Buffer> {
-        const deferred = Promise.defer<Buffer>();
+        const deferred = DeferredPromise<Buffer>();
         fs.readFile(path, (err, data: Buffer) => {
             if (err) {
                 this.logger.trace('JsonConfigLocator', 'Cannot read from ' + path.toString());

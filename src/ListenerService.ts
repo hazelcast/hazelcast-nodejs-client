@@ -27,7 +27,7 @@ import {Invocation} from './invocation/InvocationService';
 import {RegistrationKey} from './invocation/RegistrationKey';
 import {ListenerMessageCodec} from './ListenerMessageCodec';
 import {LoggingService} from './logging/LoggingService';
-import {copyObjectShallow} from './Util';
+import {copyObjectShallow, DeferredPromise} from './Util';
 import {UuidUtil} from './util/UuidUtil';
 
 export class ListenerService implements ConnectionHeartbeatListener {
@@ -110,7 +110,7 @@ export class ListenerService implements ConnectionHeartbeatListener {
     }
 
     invokeRegistrationFromRecord(userRegistrationKey: string, connection: ClientConnection): Promise<ClientEventRegistration> {
-        const deferred = Promise.defer<ClientEventRegistration>();
+        const deferred = DeferredPromise<ClientEventRegistration>();
         const activeRegsOnUserKey = this.activeRegistrations.get(userRegistrationKey);
         if (activeRegsOnUserKey !== undefined && activeRegsOnUserKey.has(connection)) {
             deferred.resolve(activeRegsOnUserKey.get(connection));
@@ -159,7 +159,7 @@ export class ListenerService implements ConnectionHeartbeatListener {
     }
 
     deregisterListener(userRegistrationKey: string): Promise<boolean> {
-        const deferred = Promise.defer<boolean>();
+        const deferred = DeferredPromise<boolean>();
         const registrationsOnUserKey = this.activeRegistrations.get(userRegistrationKey);
         if (registrationsOnUserKey === undefined) {
             deferred.resolve(false);
@@ -207,7 +207,7 @@ export class ListenerService implements ConnectionHeartbeatListener {
         const activeConnections = copyObjectShallow(this.client.getConnectionManager().getActiveConnections());
         const userRegistrationKey: string = UuidUtil.generate().toString();
         let connectionsOnUserKey: Map<ClientConnection, ClientEventRegistration>;
-        const deferred = Promise.defer<string>();
+        const deferred = DeferredPromise<string>();
         const registerRequest = codec.encodeAddRequest(this.isSmart());
         connectionsOnUserKey = this.activeRegistrations.get(userRegistrationKey);
         if (connectionsOnUserKey === undefined) {

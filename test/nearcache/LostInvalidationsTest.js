@@ -21,7 +21,7 @@ var Config = require('../../').Config;
 var fs = require('fs');
 var Long = require('long');
 var Util = require('../Util');
-var Promise = require('bluebird');
+var DeferredPromise = require('../../lib/Util').DeferredPromise;
 
 describe('LostInvalidation', function () {
     this.timeout(30000);
@@ -159,7 +159,7 @@ describe('LostInvalidation', function () {
         var correlationId = clientRegistrationKey.correlationId;
         var handler = client.getInvocationService().eventHandlers[correlationId.toNumber()].handler;
         var numberOfBlockedInvalidations = 0;
-        var deferred = Promise.defer();
+        var deferred = DeferredPromise();
         client.getInvocationService().eventHandlers[correlationId.toNumber()].handler = function () {
             numberOfBlockedInvalidations++;
             if (notifyAfterNumberOfEvents !== undefined && notifyAfterNumberOfEvents === numberOfBlockedInvalidations) {
