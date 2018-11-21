@@ -111,7 +111,7 @@ describe("FlakeIdGeneratorProxyTest", function () {
             flakeIdGenerator = idGenerator;
             return flakeIdGenerator.newId()
         }).then(function (id) {
-            firstId=id;
+            firstId = id;
             return flakeIdGenerator.newId();
         }).then(function (secondId) {
             return expect(secondId.equals(firstId.add(FLAKE_ID_STEP))).to.be.true;
@@ -124,7 +124,7 @@ describe("FlakeIdGeneratorProxyTest", function () {
             flakeIdGenerator = idGenerator;
             return flakeIdGenerator.newId()
         }).then(function (id) {
-            firstId=id;
+            firstId = id;
             return Util.promiseWaitMilliseconds(SHORT_TERM_VALIDITY_MILLIS + 1000);
         }).then(function () {
             return flakeIdGenerator.newId();
@@ -140,7 +140,7 @@ describe("FlakeIdGeneratorProxyTest", function () {
             flakeIdGenerator = idGenerator;
             return flakeIdGenerator.newId()
         }).then(function (id) {
-            firstId=id;
+            firstId = id;
             return flakeIdGenerator.newId();
         }).then(function () {
             //after this we exhausted the batch at hand
@@ -152,6 +152,7 @@ describe("FlakeIdGeneratorProxyTest", function () {
         }).then(function (secondId) {
             var borderId = firstId.add(FLAKE_ID_STEP * SHORT_TERM_BATCH_SIZE);
             return expect(secondId.greaterThan(borderId), 'Expected ' + secondId + ' to be greater than ' + borderId).to.be.true;
-        });;
+        });
+        ;
     });
 });

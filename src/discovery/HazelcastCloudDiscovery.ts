@@ -1,5 +1,5 @@
 import Address = require('../Address');
-import {AddressHelper} from '../Util';
+import {AddressHelper, DeferredPromise} from '../Util';
 import {get} from 'https';
 import {IncomingMessage} from 'http';
 import * as Promise from 'bluebird';
@@ -40,7 +40,7 @@ export class HazelcastCloudDiscovery {
     }
 
     callService(): Promise<Map<string, Address>> {
-        const deferred = Promise.defer<Map<string, Address>>();
+        const deferred = DeferredPromise<Map<string, Address>>();
 
         const url = URL.parse(this.endpointUrl);
         const endpointUrlOptions = {

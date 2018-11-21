@@ -43,7 +43,7 @@ describe('CustomSerializer', function () {
             var map;
             return client.getMap('musicians').then(function (mp) {
                 map = mp;
-                return map.put('neyzen',m);
+                return map.put('neyzen', m);
             }).then(function () {
                 return map.get('neyzen');
             }).then(function (res) {

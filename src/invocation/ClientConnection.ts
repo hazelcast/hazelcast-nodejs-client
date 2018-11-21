@@ -21,6 +21,7 @@ import {BuildMetadata} from '../BuildMetadata';
 import HazelcastClient from '../HazelcastClient';
 import {IOError} from '../HazelcastError';
 import Address = require('../Address');
+import {DeferredPromise} from '../Util';
 
 export class ClientConnection {
     private address: Address;
@@ -69,7 +70,7 @@ export class ClientConnection {
     }
 
     write(buffer: Buffer): Promise<void> {
-        const deferred = Promise.defer<void>();
+        const deferred = DeferredPromise<void>();
         try {
             this.socket.write(buffer, (err: any) => {
                 if (err) {

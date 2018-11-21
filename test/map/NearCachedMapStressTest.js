@@ -15,12 +15,14 @@
  */
 
 var expect = require('chai').expect;
-var Promise = require('bluebird');
+var fs = require('fs');
+
+var DeferredPromise = require('../../lib/Util').DeferredPromise;
+var getRandomInt = require('../Util').getRandomInt;
+var Controller = require('../RC');
+
 var Config = require('../../.').Config;
 var HazelcastClient = require('../../.').Client;
-var Controller = require('../RC');
-var fs = require('fs');
-var getRandomInt = require('../Util').getRandomInt;
 
 describe('NearCachedMapStress', function () {
 
@@ -33,7 +35,7 @@ describe('NearCachedMapStress', function () {
     var completedOperations = 0;
     var concurrencyLevel = 32;
     var totalNumOperations = 100000;
-    var completedDeferred = Promise.defer();
+    var completedDeferred = DeferredPromise();
     var putPercent = 15;
     var removePercent = 20;
     var getPercent = 100 - putPercent - removePercent;

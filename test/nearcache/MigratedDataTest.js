@@ -21,7 +21,7 @@ var Config = require('../../').Config;
 var fs = require('fs');
 var Long = require('long');
 var Util = require('../Util');
-var Promise = require('bluebird');
+var DeferredPromise = require('../../lib/Util').DeferredPromise;
 var Address = require('../../.').Address;
 
 describe('MigratedData', function () {
@@ -110,7 +110,7 @@ describe('MigratedData', function () {
     });
 
     function waitUntilPartitionMovesTo(partitionService, partitionId, address) {
-        var deferred = Promise.defer();
+        var deferred = DeferredPromise();
         (function resolveOrTimeout(remainingTries) {
             if (partitionService.getAddressForPartition(partitionId).equals(address)) {
                 deferred.resolve();

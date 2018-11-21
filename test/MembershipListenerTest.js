@@ -17,8 +17,9 @@
 var HazelcastClient = require('../.').Client;
 var Controller = require('./RC');
 var expect = require('chai').expect;
-var Promise = require('bluebird');
-var MemberAttributeOperationType = require('../.').MemberAttributeOperationType
+var DeferredPromise = require('../lib/Util').DeferredPromise;
+var MemberAttributeOperationType = require('../.').MemberAttributeOperationType;
+
 describe('MembershipListener', function () {
     this.timeout(10000);
     var cluster;
@@ -49,7 +50,7 @@ describe('MembershipListener', function () {
     it('sees member added event', function (done) {
         var newMember;
         var err = undefined;
-        var listenerCalledResolver = Promise.defer();
+        var listenerCalledResolver = DeferredPromise();
 
         client.clusterService.on('memberAdded', function (member) {
             listenerCalledResolver.resolve(member);
@@ -73,7 +74,7 @@ describe('MembershipListener', function () {
 
     it('sees member removed event', function (done) {
         var newMember;
-        var listenerCalledResolver = Promise.defer();
+        var listenerCalledResolver = DeferredPromise();
 
         client.clusterService.on('memberRemoved', function (member) {
             listenerCalledResolver.resolve(member);

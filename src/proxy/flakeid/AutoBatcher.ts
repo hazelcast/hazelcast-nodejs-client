@@ -17,6 +17,7 @@
 import * as Promise from 'bluebird';
 import {EventEmitter} from 'events';
 import * as Long from 'long';
+import {DeferredPromise} from '../../Util';
 
 export class Batch {
     private nextIdLong: Long;
@@ -85,7 +86,7 @@ export class AutoBatcher {
     }
 
     nextId(): Promise<Long> {
-        const deferred = Promise.defer<Long>();
+        const deferred = DeferredPromise<Long>();
         this.queue.push(deferred);
         this.processIdRequests();
         return deferred.promise;

@@ -25,7 +25,7 @@ import HazelcastClient from '../HazelcastClient';
 import {IllegalStateError} from '../HazelcastError';
 import * as assert from 'assert';
 import {MemberSelector} from '../core/MemberSelector';
-import {AddressHelper} from '../Util';
+import {AddressHelper, DeferredPromise} from '../Util';
 import {MemberAttributeEvent, MemberAttributeOperationType} from '../core/MemberAttributeEvent';
 import Address = require('../Address');
 import ClientMessage = require('../ClientMessage');
@@ -223,7 +223,7 @@ export class ClusterService extends EventEmitter {
                 const error = new IllegalStateError(errorMessage, cause);
                 return Promise.reject(error);
             } else {
-                const deferred = Promise.defer<void>();
+                const deferred = DeferredPromise<void>();
                 setTimeout(
                     () => {
                         this.tryConnectingToAddresses(0, remainingAttemptLimit, attemptPeriod).then(() => {
