@@ -15,7 +15,7 @@
  */
 
 var expect = require('chai').expect;
-var DeferredPromise = require('../Util').DeferredPromise;
+var DeferredPromise = require('../../lib/Util').DeferredPromise;
 
 var RC = require('../RC');
 var Client = require('../../').Client;

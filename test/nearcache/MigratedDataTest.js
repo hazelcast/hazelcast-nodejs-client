@@ -21,7 +21,7 @@ var Config = require('../../').Config;
 var fs = require('fs');
 var Long = require('long');
 var Util = require('../Util');
-var DeferredPromise = require('../Util').DeferredPromise;
+var DeferredPromise = require('../../lib/Util').DeferredPromise;
 var Address = require('../../.').Address;
 
 describe('MigratedData', function () {

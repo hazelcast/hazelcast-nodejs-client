@@ -17,7 +17,7 @@
 var HazelcastClient = require('../.').Client;
 var Controller = require('./RC');
 var expect = require('chai').expect;
-var DeferredPromise = require('./Util').DeferredPromise;
+var DeferredPromise = require('../lib/Util').DeferredPromise;
 var MemberAttributeOperationType = require('../.').MemberAttributeOperationType;
 
 describe('MembershipListener', function () {

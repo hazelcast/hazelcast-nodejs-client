@@ -15,7 +15,7 @@
  */
 
 var RemoteController = require('hazelcast-remote-controller');
-var DeferredPromise = require('./Util').DeferredPromise;
+var DeferredPromise = require('../lib/Util').DeferredPromise;
 
 var controller = new RemoteController('localhost', 9701);
 

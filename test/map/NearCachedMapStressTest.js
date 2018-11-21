@@ -17,7 +17,7 @@
 var expect = require('chai').expect;
 var fs = require('fs');
 
-var DeferredPromise = require('../Util').DeferredPromise;
+var DeferredPromise = require('../../lib/Util').DeferredPromise;
 var getRandomInt = require('../Util').getRandomInt;
 var Controller = require('../RC');
 
