@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-export class BuildMetadata {
+const clientVersion = require('../package.json').version;
+
+export class BuildInfo {
 
     public static readonly UNKNOWN_VERSION_ID = -1;
     private static readonly MAJOR_VERSION_MULTIPLIER = 10000;
     private static readonly MINOR_VERSION_MULTIPLIER = 100;
     private static readonly PATTERN = /^([\d]+)\.([\d]+)(?:\.([\d]+))?(-[\w]+)?(-SNAPSHOT)?(-BETA-.)?$/;
 
-    public static calculateVersionFromString(versionString: string): number {
+    public static calculateServerVersionFromString(versionString: string): number {
         if (versionString == null) {
-            return BuildMetadata.UNKNOWN_VERSION_ID;
+            return BuildInfo.UNKNOWN_VERSION_ID;
         }
-        const info = BuildMetadata.PATTERN.exec(versionString);
+        const info = BuildInfo.PATTERN.exec(versionString);
         if (info == null) {
             return -1;
         }
@@ -37,11 +39,15 @@ export class BuildMetadata {
         } else {
             patch = Number.parseInt(info[3]);
         }
-        return this.calculateVersion(major, minor, patch);
+        return this.calculateServerVersion(major, minor, patch);
     }
 
-    public static calculateVersion(major: number, minor: number, patch: number): number {
-        return BuildMetadata.MAJOR_VERSION_MULTIPLIER * major + BuildMetadata.MINOR_VERSION_MULTIPLIER * minor + patch;
+    public static calculateServerVersion(major: number, minor: number, patch: number): number {
+        return BuildInfo.MAJOR_VERSION_MULTIPLIER * major + BuildInfo.MINOR_VERSION_MULTIPLIER * minor + patch;
+    }
+
+    public static getClientVersion(): string {
+        return clientVersion;
     }
 
 }

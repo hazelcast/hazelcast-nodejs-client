@@ -26,7 +26,7 @@ import {NearCache} from '../nearcache/NearCache';
 import {StaleReadDetectorImpl} from '../nearcache/StaleReadDetectorImpl';
 import {Data} from '../serialization/Data';
 import {MapProxy} from './MapProxy';
-import {BuildMetadata} from '../BuildMetadata';
+import {BuildInfo} from '../BuildInfo';
 import ClientMessage = require('../ClientMessage');
 
 export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
@@ -247,7 +247,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
     }
 
     private supportsRepairableNearCache(): boolean {
-        return this.getConnectedServerVersion() >= BuildMetadata.calculateVersion(3, 8, 0);
+        return this.getConnectedServerVersion() >= BuildInfo.calculateServerVersion(3, 8, 0);
     }
 
     private createPre38NearCacheEventHandler(): Function {

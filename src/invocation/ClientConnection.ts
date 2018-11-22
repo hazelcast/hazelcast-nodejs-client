@@ -17,7 +17,7 @@
 import * as Promise from 'bluebird';
 import * as net from 'net';
 import {BitsUtil} from '../BitsUtil';
-import {BuildMetadata} from '../BuildMetadata';
+import {BuildInfo} from '../BuildInfo';
 import HazelcastClient from '../HazelcastClient';
 import {IOError} from '../HazelcastError';
 import Address = require('../Address');
@@ -46,7 +46,7 @@ export class ClientConnection {
         this.lastRead = 0;
         this.closedTime = 0;
         this.connectedServerVersionString = null;
-        this.connectedServerVersion = BuildMetadata.UNKNOWN_VERSION_ID;
+        this.connectedServerVersion = BuildInfo.UNKNOWN_VERSION_ID;
     }
 
     /**
@@ -87,7 +87,7 @@ export class ClientConnection {
 
     setConnectedServerVersion(versionString: string): void {
         this.connectedServerVersionString = versionString;
-        this.connectedServerVersion = BuildMetadata.calculateVersionFromString(versionString);
+        this.connectedServerVersion = BuildInfo.calculateServerVersionFromString(versionString);
     }
 
     getConnectedServerVersion(): number {
