@@ -2100,7 +2100,7 @@ map.addEntryListener(mapEventListener).then(function () {
 });
 ```
 
-As you see, there is a parameter in the `addItemListener` function: `includeValue`. It is a boolean parameter, and if it is `true`, the map event contains the entry value.
+As you see, there is a parameter in the `addEntryListener` function: `includeValue`. It is a boolean parameter, and if it is `true`, the map event contains the entry value.
 
 #### 7.5.2.2. Entry Listener
 
@@ -2144,13 +2144,13 @@ mmp.addEntryListener(mapEventListener).then(function () {
 
 Note that all functions in the `EntryListener` interface is not supported by MultiMap and Replicated Map. See the following headings to see supported listener functions for each data structure.
 
-**Supported MultiMap Listener Functions**
+**Entry Listener Functions Supported by MultiMap**
 
 - `added`
 - `removed`
 - `mapCleared`
 
-**Supported Replicated Map Functions**
+**Entry Listener Functions Supported by Replicated Map**
 
 - `added`
 - `removed`
@@ -2158,7 +2158,7 @@ Note that all functions in the `EntryListener` interface is not supported by Mul
 - `evicted`
 - `mapCleared`
 
-As you see, there is a parameter in the `addItemListener` function: `includeValue`. It is a boolean parameter, and if it is `true`, the entry event contains the entry value.
+As you see, there is a parameter in the `addEntryListener` function: `includeValue`. It is a boolean parameter, and if it is `true`, the entry event contains the entry value.
 
 #### 7.5.2.3. Item Listener
 
@@ -2190,7 +2190,7 @@ As you see, there is a parameter in the `addItemListener` function: `includeValu
 
 The Message Listener is used by the Hazelcast `Reliable Topic`.
 
-You can listen to message events. To listen to these events, you need to implement the `TopicMessageListener` function that is a `TopicMessage` object is passed to.
+You can listen to message events. To listen to these events, you need to implement the `TopicMessageListener` function to which a `TopicMessage` object is passed.
 
 See the following example.
 
