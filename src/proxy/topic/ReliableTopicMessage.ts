@@ -22,7 +22,7 @@ import Address = require('../../Address');
 export const RELIABLE_TOPIC_MESSAGE_FACTORY_ID = -18;
 export const RELIABLE_TOPIC_CLASS_ID = 2;
 
-export class RawTopicMessage implements IdentifiedDataSerializable {
+export class ReliableTopicMessage implements IdentifiedDataSerializable {
     publishTime: Long;
     publisherAddress: Address;
     payload: Data;
@@ -51,7 +51,7 @@ export class RawTopicMessage implements IdentifiedDataSerializable {
 export class ReliableTopicMessageFactory implements IdentifiedDataSerializableFactory {
     create(type: number): IdentifiedDataSerializable {
         if (type === RELIABLE_TOPIC_CLASS_ID) {
-            return new RawTopicMessage();
+            return new ReliableTopicMessage();
         }
         return null;
     }

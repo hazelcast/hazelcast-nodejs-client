@@ -21,7 +21,7 @@ var HazelcastClient = index.Client;
 var Config = index.Config;
 var TopicOverloadPolicy = index.TopicOverloadPolicy.TopicOverloadPolicy;
 var Controller = require('./../RC');
-var RawTopicMessage = require('../../lib/proxy/topic/RawTopicMessage').RawTopicMessage;
+var ReliableTopicMessage = require('../../lib/proxy/topic/ReliableTopicMessage').ReliableTopicMessage;
 var fs = require('fs');
 var Long = require('long');
 var Promise = require('bluebird');
@@ -44,7 +44,7 @@ var generateItems = function (client, howMany) {
     var all = [];
 
     for (var i = 1; i <= howMany; i++) {
-        var reliableTopicMessage = new RawTopicMessage();
+        var reliableTopicMessage = new ReliableTopicMessage();
         reliableTopicMessage.payload = client.getSerializationService().toData(i);
         reliableTopicMessage.publishTime = Long.fromNumber(new Date().getTime());
         reliableTopicMessage.publisherAddress = client.getClusterService().getClientInfo().localAddress;
