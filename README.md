@@ -72,7 +72,10 @@
       * [7.5.1.2. Listening for Distributed Object Events](#7512-listening-for-distributed-object-events)
       * [7.5.1.3. Listening for Lifecycle Events](#7513-listening-for-lifecycle-events)
     * [7.5.2. Distributed Data Structure Events](#752-distributed-data-structure-events)
-      * [7.5.2.1. Listening for Map Events](#7521-listening-for-map-events)
+      * [7.5.2.1. Map Listener](#7521-map-listener)
+      * [7.5.2.2. Entry Listener](#7522-entry-listener)
+      * [7.5.2.3. Item Listener](#7523-item-listener)           
+      * [7.5.2.4. Message Listener](#7524-message-listener)      
   * [7.6. Distributed Computing](#76-distributed-computing)
     * [7.6.1. Using EntryProcessor](#761-using-entryprocessor)
   * [7.7. Distributed Query](#77-distributed-query)
@@ -2055,7 +2058,9 @@ You can add event listeners to the distributed data structures.
 > **NOTE: Hazelcast Node.js client is a TypeScript-based project but JavaScript does not have interfaces. Therefore, 
   some interfaces are given to the user by using the TypeScript files that have `.ts` extension. In this guide, implementing an interface means creating an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as `an instance of the interface`. You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or GitHub repository for a required interface.**
 
-#### 7.5.2.1. Listening for Map Events
+#### 7.5.2.1. Map Listener
+
+The Map Listener is used by the Hazelcast `Map`.
 
 You can listen to map-wide or entry-based events by using the functions in the `MapListener` interface. Every function type in this interface is one of the `EntryEventListener` and `MapEventListener` types. To listen to these events, you need to implement the relevant `EntryEventListener` and `MapEventListener` functions in the `MapListener` interface. 
 
@@ -2093,6 +2098,114 @@ map.addEntryListener(mapEventListener).then(function () {
 }).then(function () {
     return map.clear();
 });
+```
+
+As you see, there is a parameter in the `addItemListener` function: `includeValue`. It is a boolean parameter, and if it is `true`, the map event contains the entry value.
+
+#### 7.5.2.2. Entry Listener
+
+The Entry Listener is used by the Hazelcast `MultiMap` and `ReplicatedMap`.
+
+You can listen to map-wide or entry-based events by using the functions in the `EntryListener` interface. Every function type in this interface is one of the `EntryEventListener` and `MapEventListener` types. To listen to these events, you need to implement the relevant `EntryEventListener` and `MapEventListener` functions in the `EntryListener` interface. 
+
+An entry-based event is fired after the operations that affect a specific entry. For example, `MultiMap.put()`, `MultiMap.remove()`. You should use the `EntryEventListener` type to listen to these events. An `EntryEvent` object is passed to the listener function.
+
+```javascript
+var entryEventListener = {
+    added: function (entryEvent) {
+        console.log('Entry Added:', entryEvent.key, entryEvent.value); // Entry Added: 1 Furkan
+    }
+};
+return mmp.addEntryListener(entryEventListener, undefined, true).then(function () {
+    return mmp.put('1', 'Furkan');
+});
+```
+
+A map-wide event is fired as a result of a map-wide operation. For example, `MultiMap.clear()`. You should use the `MapEventListener` type to listen to these events. A `MapEvent` object is passed to the listener function.
+
+See the following example.
+
+```javascript
+var mapEventListener = {
+    mapCleared: function (mapEvent) {
+        console.log('Map Cleared:', mapEvent.numberOfAffectedEntries); // Map Cleared: 1
+    }
+};
+mmp.addEntryListener(mapEventListener).then(function () {
+    return mmp.put('1', 'Muhammet Ali');
+}).then(function () {
+    return mmp.put('1', 'Ahmet');
+}).then(function () {
+    return mmp.put('1', 'Furkan');
+}).then(function () {
+    return mmp.clear();
+});
+```
+
+Note that all functions in the `EntryListener` interface is not supported by MultiMap and Replicated Map. See the following headings to see supported listener functions for each data structure.
+
+**Supported MultiMap Listener Functions**
+
+- `added`
+- `removed`
+- `mapCleared`
+
+**Supported Replicated Map Functions**
+
+- `added`
+- `removed`
+- `updated`
+- `evicted`
+- `mapCleared`
+
+As you see, there is a parameter in the `addItemListener` function: `includeValue`. It is a boolean parameter, and if it is `true`, the entry event contains the entry value.
+
+#### 7.5.2.3. Item Listener
+
+The Item Listener is used by the Hazelcast `Queue`, `Set` and `List`.
+
+You can listen to item events by implementing the functions in the `ItemListener` interface including `itemAdded` and `itemRemoved`. These functions are invoked when an item is added or removed.
+
+The following is an example of item listener object and its registration to the `Set`. It also applies to `Queue` and `List`.
+
+```javascript
+var itemListener = {
+    itemAdded: function (itemEvent) {
+        console.log('Item Added:', itemEvent.item); // Item Added: Furkan
+    },
+    itemRemoved: function (itemEvent) {
+        console.log('Item Removed:', itemEvent.item); // Item Removed: Furkan
+    }
+};
+return set.addItemListener(itemListener, true).then(function () {
+    return set.add('Furkan');
+}).then(function () {
+    return set.remove('Furkan');
+});
+```
+
+As you see, there is a parameter in the `addItemListener` function: `includeValue`. It is a boolean parameter, and if it is `true`, the item event contains the item value.
+
+#### 7.5.2.4. Message Listener
+
+The Message Listener is used by the Hazelcast `Reliable Topic`.
+
+You can listen to message events. To listen to these events, you need to implement the `TopicMessageListener` function that is a `TopicMessage` object is passed to.
+
+See the following example.
+
+```javascript
+topic.addMessageListener(function (topicMessage) {
+    console.log(topicMessage.messageObject);
+});
+
+var engineer = {
+    name: 'Furkan Senharputlu',
+    age: 23,
+    field: 'Computer Engineering',
+    university: 'Bogazici University'
+}
+topic.publish(engineer);
 ```
 
 ## 7.6. Distributed Computing
