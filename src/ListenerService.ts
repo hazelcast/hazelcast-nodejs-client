@@ -26,14 +26,14 @@ import {ClientEventRegistration} from './invocation/ClientEventRegistration';
 import {Invocation} from './invocation/InvocationService';
 import {RegistrationKey} from './invocation/RegistrationKey';
 import {ListenerMessageCodec} from './ListenerMessageCodec';
-import {LoggingService} from './logging/LoggingService';
 import {copyObjectShallow, DeferredPromise} from './Util';
 import {UuidUtil} from './util/UuidUtil';
+import {ILogger} from './logging/ILogger';
 
 export class ListenerService implements ConnectionHeartbeatListener {
     private client: HazelcastClient;
     private internalEventEmitter: EventEmitter;
-    private logger = LoggingService.getLoggingService();
+    private logger: ILogger;
     private isShutdown: boolean;
     private isSmartService: boolean;
 
@@ -46,6 +46,7 @@ export class ListenerService implements ConnectionHeartbeatListener {
     constructor(client: HazelcastClient) {
         this.isShutdown = false;
         this.client = client;
+        this.logger = this.client.getLoggingService().getLogger();
         this.isSmartService = this.client.getConfig().networkConfig.smartRouting;
         this.internalEventEmitter = new EventEmitter();
         this.internalEventEmitter.setMaxListeners(0);

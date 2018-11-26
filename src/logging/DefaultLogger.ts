@@ -14,17 +14,42 @@
  * limitations under the License.
  */
 
-import {ILogger, LogLevel} from './LoggingService';
+import {LogLevel} from './LoggingService';
+import {ILogger} from './ILogger';
 
 export class DefaultLogger implements ILogger {
-    level = LogLevel.INFO;
+    private readonly level: number;
 
-    log(level: LogLevel, className: string, message: string, furtherInfo: any): void {
+    constructor(level: number) {
+        this.level = level;
+    }
+
+    log(level: LogLevel, objectName: string, message: string, furtherInfo: any): void {
         if (level <= this.level) {
-            console.log('[DefaultLogger] %s at %s: %s', LogLevel[level], className, message);
+            console.log('[DefaultLogger] %s at %s: %s', LogLevel[level], objectName, message);
             if (furtherInfo != null) {
                 console.log(furtherInfo);
             }
         }
+    }
+
+    error(objectName: string, message: string, furtherInfo?: any): void {
+        this.log(LogLevel.ERROR, objectName, message, furtherInfo);
+    }
+
+    warn(objectName: string, message: string, furtherInfo?: any): void {
+        this.log(LogLevel.WARN, objectName, message, furtherInfo);
+    }
+
+    info(objectName: string, message: string, furtherInfo?: any): void {
+        this.log(LogLevel.INFO, objectName, message, furtherInfo);
+    }
+
+    debug(objectName: string, message: string, furtherInfo?: any): void {
+        this.log(LogLevel.DEBUG, objectName, message, furtherInfo);
+    }
+
+    trace(objectName: string, message: string, furtherInfo?: any): void {
+        this.log(LogLevel.TRACE, objectName, message, furtherInfo);
     }
 }

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import {LoggingService} from '../logging/LoggingService';
 import {IdentifiedDataSerializable, IdentifiedDataSerializableFactory} from '../serialization/Serializable';
 import {
     Aggregator,
@@ -31,6 +30,7 @@ import {
     MinAggregator,
     NumberAverageAggregator,
 } from './Aggregator';
+import {ILogger} from '../logging/ILogger';
 
 export class AggregatorFactory implements IdentifiedDataSerializableFactory {
 
@@ -56,7 +56,7 @@ export class AggregatorFactory implements IdentifiedDataSerializableFactory {
     static readonly MAX_BY = 17; // needs object to implement Java's Comparable interface
     static readonly MIN_BY = 18; // needs object to implement Java's Comparable interface
 
-    private logger = LoggingService.getLoggingService();
+    private logger: ILogger;
     private idToConstructor: { [id: number]: Aggregator<any> } = {};
 
     constructor() {

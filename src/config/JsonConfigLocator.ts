@@ -17,9 +17,10 @@
 import * as Promise from 'bluebird';
 import * as fs from 'fs';
 import * as Path from 'path';
-import {LoggingService} from '../logging/LoggingService';
+import {LoggingService, LogLevel} from '../logging/LoggingService';
 import {ConfigBuilder} from './ConfigBuilder';
 import {DeferredPromise} from '../Util';
+import {DefaultLogger} from '../logging/DefaultLogger';
 
 export class JsonConfigLocator {
     static readonly ENV_VARIABLE_NAME = 'HAZELCAST_CLIENT_CONFIG';
@@ -27,7 +28,7 @@ export class JsonConfigLocator {
 
     private buffer: Buffer;
     private configLocation: string;
-    private logger = LoggingService.getLoggingService();
+    private logger = new DefaultLogger(LogLevel.INFO);
 
     load(): Promise<void> {
         return this.loadFromEnvironment().then((loaded: boolean) => {

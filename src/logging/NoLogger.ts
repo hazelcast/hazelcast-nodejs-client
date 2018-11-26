@@ -14,10 +14,31 @@
  * limitations under the License.
  */
 
-import {ILogger, LogLevel} from './LoggingService';
+import {LogLevel} from './LoggingService';
+import {ILogger} from './ILogger';
 
 export class NoLogger implements ILogger {
     log(level: LogLevel, className: string, message: string, furtherInfo: any): void {
-        /* tslint:disable */
+        return;
+    }
+
+    debug(className: string, message: string, furtherInfo: any): void {
+        return;
+    }
+
+    error(className: string, message: string, furtherInfo: any): void {
+        return;
+    }
+
+    info(className: string, message: string, furtherInfo: any): void {
+        return;
+    }
+
+    trace(className: string, message: string, furtherInfo: any): void {
+        return;
+    }
+
+    warn(className: string, message: string, furtherInfo: any): void {
+        return;
     }
 }

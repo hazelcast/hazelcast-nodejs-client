@@ -15,20 +15,20 @@
  */
 
 import {HazelcastCloudDiscovery} from './HazelcastCloudDiscovery';
-import {LoggingService} from '../logging/LoggingService';
 import {AddressTranslator} from '../connection/AddressTranslator';
 import * as Promise from 'bluebird';
 import Address = require('../Address');
+import {ILogger} from '../logging/ILogger';
 
 export class HazelcastCloudAddressTranslator implements AddressTranslator {
-    private loggingService: LoggingService;
+    private logger: ILogger;
     private readonly hazelcastCloudDiscovery: HazelcastCloudDiscovery;
 
     private privateToPublic: Map<string, Address> = new Map<string, Address>();
 
-    constructor(endpointUrl: string, connectionTimeoutMillis: number, loggingService: LoggingService) {
+    constructor(endpointUrl: string, connectionTimeoutMillis: number, logger: ILogger) {
         this.hazelcastCloudDiscovery = new HazelcastCloudDiscovery(endpointUrl, connectionTimeoutMillis);
-        this.loggingService = loggingService;
+        this.logger = logger;
     }
 
     translate(address: Address): Promise<Address> {
@@ -53,7 +53,7 @@ export class HazelcastCloudAddressTranslator implements AddressTranslator {
         return this.hazelcastCloudDiscovery.discoverNodes().then((res) => {
             this.privateToPublic = res;
         }).catch((e) => {
-            this.loggingService.warn('HazelcastCloudAddressTranslator',
+            this.logger.warn('HazelcastCloudAddressTranslator',
                 'Failed to load addresses from hazelcast.cloud : ' + e.message);
         });
     }
