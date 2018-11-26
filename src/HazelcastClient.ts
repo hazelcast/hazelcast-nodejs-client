@@ -91,8 +91,8 @@ export default class HazelcastClient {
             this.instanceName = 'hz.client_' + this.id;
         }
 
-        LoggingService.initialize(this.config.properties['hazelcast.logging'] as string);
-        this.loggingService = LoggingService.getLoggingService();
+        this.loggingService = new LoggingService(this.config.properties['hazelcast.logging'],
+            this.config.properties['hazelcast.logging.level'] as number);
         this.invocationService = new InvocationService(this);
         this.listenerService = new ListenerService(this);
         this.serializationService = new SerializationServiceV1(this.config.serializationConfig);
@@ -398,10 +398,10 @@ export default class HazelcastClient {
             this.proxyManager.init();
             this.listenerService.start();
             this.statistics.start();
-            this.loggingService.info('HazelcastClient', 'Client started');
+            this.loggingService.getLogger().info('HazelcastClient', 'Client started');
             return this;
         }).catch((e) => {
-            this.loggingService.error('HazelcastClient', 'Client failed to start', e);
+            this.loggingService.getLogger().error('HazelcastClient', 'Client failed to start', e);
             throw e;
         });
     }
@@ -412,7 +412,7 @@ export default class HazelcastClient {
             const urlEndpoint = HazelcastCloudDiscovery.createUrlEndpoint(this.getConfig().properties,
                 cloudConfig.discoveryToken);
             return new HazelcastCloudAddressTranslator(urlEndpoint, this.getConnectionTimeoutMillis(),
-                this.loggingService);
+                this.loggingService.getLogger());
         }
         return new DefaultAddressTranslator();
 
@@ -436,7 +436,8 @@ export default class HazelcastClient {
         if (cloudConfig.enabled) {
             const discoveryToken = cloudConfig.discoveryToken;
             const urlEndpoint = HazelcastCloudDiscovery.createUrlEndpoint(this.getConfig().properties, discoveryToken);
-            return new HazelcastCloudAddressProvider(urlEndpoint, this.getConnectionTimeoutMillis(), this.loggingService);
+            return new HazelcastCloudAddressProvider(urlEndpoint, this.getConnectionTimeoutMillis(),
+                this.loggingService.getLogger());
         }
         return null;
     }

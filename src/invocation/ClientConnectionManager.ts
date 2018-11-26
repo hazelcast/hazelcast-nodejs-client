@@ -15,7 +15,6 @@
  */
 
 import * as Promise from 'bluebird';
-import {LoggingService} from '../logging/LoggingService';
 import {EventEmitter} from 'events';
 import HazelcastClient from '../HazelcastClient';
 import {ClientNotActiveError, HazelcastError, IllegalStateError} from '../HazelcastError';
@@ -27,6 +26,7 @@ import {DeferredPromise, loadNameFromPath} from '../Util';
 import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
 import {AddressTranslator} from '../connection/AddressTranslator';
 import {AddressProvider} from '../connection/AddressProvider';
+import {ILogger} from '../logging/ILogger';
 import Address = require('../Address');
 import {SSLOptionsFactory} from '../connection/SSLOptionsFactory';
 
@@ -41,12 +41,13 @@ export class ClientConnectionManager extends EventEmitter {
     readonly addressProviders: AddressProvider[];
     private readonly client: HazelcastClient;
     private pendingConnections: { [address: string]: Promise.Resolver<ClientConnection> } = {};
-    private logger = LoggingService.getLoggingService();
+    private logger: ILogger;
     private readonly addressTranslator: AddressTranslator;
 
     constructor(client: HazelcastClient, addressTranslator: AddressTranslator, addressProviders: AddressProvider[]) {
         super();
         this.client = client;
+        this.logger = this.client.getLoggingService().getLogger();
         this.addressTranslator = addressTranslator;
         this.addressProviders = addressProviders;
     }

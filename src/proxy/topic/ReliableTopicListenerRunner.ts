@@ -16,13 +16,13 @@
 
 import {ReadResultSet} from '../../';
 import {StaleSequenceError} from '../../HazelcastError';
-import {LoggingService} from '../../logging/LoggingService';
 import {SerializationService} from '../../serialization/SerializationService';
 import {Ringbuffer} from '../Ringbuffer';
 import {ReliableTopicMessage} from './ReliableTopicMessage';
 import {ReliableTopicProxy} from './ReliableTopicProxy';
 import {Message} from './Message';
 import {MessageListener} from './MessageListener';
+import {ILogger} from '../../logging/ILogger';
 
 export class ReliableTopicListenerRunner<E> {
 
@@ -32,7 +32,7 @@ export class ReliableTopicListenerRunner<E> {
     private batchSize: number;
     private serializationService: SerializationService;
     private cancelled: boolean = false;
-    private loggingService = LoggingService.getLoggingService();
+    private logger: ILogger;
     private proxy: ReliableTopicProxy<E>;
     private listenerId: string;
 
@@ -44,6 +44,7 @@ export class ReliableTopicListenerRunner<E> {
         this.batchSize = batchSize;
         this.serializationService = serializationService;
         this.proxy = proxy;
+        this.logger = this.proxy.client.getLoggingService().getLogger();
     }
 
     public next(): void {
@@ -73,7 +74,7 @@ export class ReliableTopicListenerRunner<E> {
 
                     message = 'Topic "' + this.proxy.getName() + '" ran into a stale sequence. ' +
                         ' Jumping from old sequence ' + this.sequenceNumber + ' to new sequence ' + newSequence;
-                    this.loggingService.warn('ReliableTopicListenerRunner', message);
+                    this.logger.warn('ReliableTopicListenerRunner', message);
 
                     this.sequenceNumber = newSequence;
                     setImmediate(this.next.bind(this));
@@ -83,7 +84,7 @@ export class ReliableTopicListenerRunner<E> {
             }
 
             message = 'Listener of topic "' + this.proxy.getName() + '" caught an exception, terminating listener. ' + e;
-            this.loggingService.warn('ReliableTopicListenerRunner', message);
+            this.logger.warn('ReliableTopicListenerRunner', message);
 
             this.proxy.removeMessageListener(this.listenerId);
         });

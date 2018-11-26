@@ -29,6 +29,7 @@ import {MemberAttributeEvent, MemberAttributeOperationType} from '../core/Member
 import {MembershipListener} from '../core/MembershipListener';
 import {MembershipEvent} from '../core/MembershipEvent';
 import {UuidUtil} from '../util/UuidUtil';
+import {ILogger} from '../logging/ILogger';
 import Address = require('../Address');
 import ClientMessage = require('../ClientMessage');
 
@@ -56,11 +57,12 @@ export class ClusterService {
     private members: Member[] = [];
     private client: HazelcastClient;
     private ownerConnection: ClientConnection;
-    private logger = LoggingService.getLoggingService();
     private membershipListeners: Map<string, MembershipListener> = new Map();
+    private logger: ILogger;
 
     constructor(client: HazelcastClient) {
         this.client = client;
+        this.logger = this.client.getLoggingService().getLogger();
         this.members = [];
     }
 

@@ -17,11 +17,11 @@
 import * as assert from 'assert';
 import * as Long from 'long';
 import HazelcastClient from '../HazelcastClient';
-import {LoggingService} from '../logging/LoggingService';
 import {MetadataFetcher} from './MetadataFetcher';
 import {NearCache} from './NearCache';
 import {RepairingHandler} from './RepairingHandler';
 import * as Promise from 'bluebird';
+import {ILogger} from '../logging/ILogger';
 
 const PROPERTY_MAX_RECONCILIATION_INTERVAL_SECONDS = 'hazelcast.invalidation.reconciliation.interval.seconds';
 const PROPERTY_MIN_RECONCILIATION_INTERVAL_SECONDS = 'hazelcast.invalidation.min.reconciliation.interval.seconds';
@@ -38,10 +38,11 @@ export class RepairingTask {
     private client: HazelcastClient;
     private partitionCount: number;
     private readonly minAllowedReconciliationSeconds: number;
-    private readonly logger = LoggingService.getLoggingService();
+    private readonly logger: ILogger;
 
     constructor(client: HazelcastClient) {
         this.client = client;
+        this.logger = this.client.getLoggingService().getLogger();
         const config = this.client.getConfig();
         this.minAllowedReconciliationSeconds = config.properties[PROPERTY_MIN_RECONCILIATION_INTERVAL_SECONDS] as number;
         const requestedReconciliationSeconds = config.properties[PROPERTY_MAX_RECONCILIATION_INTERVAL_SECONDS] as number;
