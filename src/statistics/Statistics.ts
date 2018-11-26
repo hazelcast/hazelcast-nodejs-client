@@ -15,7 +15,6 @@
  */
 
 import HazelcastClient from '../HazelcastClient';
-import {LoggingService} from '../logging/LoggingService';
 import {ClientConnection} from '../invocation/ClientConnection';
 import {Properties} from '../config/Properties';
 import {ClientStatisticsCodec} from '../codec/ClientStatisticsCodec';
@@ -23,6 +22,7 @@ import * as Util from '../Util';
 import {Task} from '../Util';
 import * as os from 'os';
 import {BuildInfo} from '../BuildInfo';
+import {ILogger} from '../logging/ILogger';
 import Address = require('../Address');
 
 /**
@@ -47,7 +47,7 @@ export class Statistics {
     private readonly allGauges: { [name: string]: () => any } = {};
     private readonly enabled: boolean;
     private readonly properties: Properties;
-    private readonly logger = LoggingService.getLoggingService();
+    private readonly logger: ILogger;
     private client: HazelcastClient;
     private ownerAddress: Address;
     private task: Task;
@@ -56,6 +56,7 @@ export class Statistics {
         this.properties = clientInstance.getConfig().properties;
         this.enabled = this.properties[Statistics.ENABLED] as boolean;
         this.client = clientInstance;
+        this.logger = this.client.getLoggingService().getLogger();
     }
 
     /**

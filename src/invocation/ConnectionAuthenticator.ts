@@ -20,8 +20,8 @@ import HazelcastClient from '../HazelcastClient';
 import {ClientAuthenticationCustomCodec} from '../codec/ClientAuthenticationCustomCodec';
 import {ClientConnection} from './ClientConnection';
 import {ClusterService} from './ClusterService';
-import {LoggingService} from '../logging/LoggingService';
 import {AuthenticationError} from '../HazelcastError';
+import {ILogger} from '../logging/ILogger';
 import ClientMessage = require('../ClientMessage');
 import {BuildInfo} from '../BuildInfo';
 
@@ -36,11 +36,12 @@ export class ConnectionAuthenticator {
     private connection: ClientConnection;
     private client: HazelcastClient;
     private clusterService: ClusterService;
-    private logger = LoggingService.getLoggingService();
+    private logger: ILogger;
 
     constructor(connection: ClientConnection, client: HazelcastClient) {
         this.connection = connection;
         this.client = client;
+        this.logger = this.client.getLoggingService().getLogger();
         this.clusterService = this.client.getClusterService();
     }
 

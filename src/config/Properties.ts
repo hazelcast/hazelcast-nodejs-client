@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import {ILogger} from '../logging/LoggingService';
+import {ILogger} from '../logging/ILogger';
 
 export interface Properties {
     [prop: string]: string | number | boolean | ILogger;
 }
+
+export type Property = string | number | boolean | ILogger;

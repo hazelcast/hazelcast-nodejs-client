@@ -35,6 +35,7 @@ import {InMemoryFormat} from './config/InMemoryFormat';
 import {ItemEvent, ItemEventType} from './core/ItemListener';
 import {MapEvent} from './core/MapListener';
 import {EntryEvent} from './core/EntryListener';
+import {LogLevel} from './logging/LoggingService';
 
 export {
     HazelcastClient as Client,
@@ -61,4 +62,5 @@ export {
     ItemEventType,
     MapEvent,
     EntryEvent,
+    LogLevel,
 };

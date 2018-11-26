@@ -22,6 +22,7 @@ var sinon = require('sinon');
 var expect = require('chai').expect;
 var LoggingService = require('../../lib/logging/LoggingService').LoggingService;
 var Promise = require('bluebird');
+var LogLevel = require('../../lib/').LogLevel;
 
 var HazelcastCloudAddressProvider = require('../../lib/discovery/HazelcastCloudAddressProvider').HazelcastCloudAddressProvider;
 var HazelcastCloudDiscovery = require('../../lib/discovery/HazelcastCloudDiscovery').HazelcastCloudDiscovery;
@@ -36,11 +37,11 @@ describe('HazelcastCloudProvider Test', function () {
         expectedAddresses.set('10.0.0.1:5702', new Address('198.51.100.1', 5702));
         expectedAddresses.set('10.0.0.2:5701', new Address('198.51.100.2', 5701));
 
-        var loggingService = LoggingService.getLoggingService();
+        var logger = new LoggingService('default', LogLevel.INFO).getLogger();
         hazelcastCloudDiscovery = new HazelcastCloudDiscovery();
         sinon.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes').callsFake(() => Promise.resolve(expectedAddresses));
 
-        provider = new HazelcastCloudAddressProvider(hazelcastCloudDiscovery, null, loggingService);
+        provider = new HazelcastCloudAddressProvider(hazelcastCloudDiscovery, null, logger);
     });
 
     afterEach(function () {

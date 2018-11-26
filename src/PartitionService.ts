@@ -16,7 +16,7 @@
 
 import * as Promise from 'bluebird';
 import HazelcastClient from './HazelcastClient';
-import {LoggingService} from './logging/LoggingService';
+import {ILogger} from './logging/ILogger';
 import Address = require('./Address');
 import ClientMessage = require('./ClientMessage');
 import GetPartitionsCodec = require('./codec/GetPartitionsCodec');
@@ -30,10 +30,11 @@ export class PartitionService {
     private partitionCount: number;
     private partitionRefreshTask: any;
     private isShutdown: boolean;
-    private logger = LoggingService.getLoggingService();
+    private logger: ILogger;
 
     constructor(client: HazelcastClient) {
         this.client = client;
+        this.logger = client.getLoggingService().getLogger();
         this.isShutdown = false;
     }
 

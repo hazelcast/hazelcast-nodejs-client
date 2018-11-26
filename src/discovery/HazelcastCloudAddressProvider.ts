@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-import {LoggingService} from '../logging/LoggingService';
 import {HazelcastCloudDiscovery} from './HazelcastCloudDiscovery';
 import {AddressProvider} from '../connection/AddressProvider';
 import * as Promise from 'bluebird';
+import {ILogger} from '../logging/ILogger';
 
 export class HazelcastCloudAddressProvider implements AddressProvider {
-    private readonly loggingService: LoggingService;
+    private readonly logger: ILogger;
     private readonly cloudDiscovery: HazelcastCloudDiscovery;
 
-    constructor(endpointUrl: string, connectionTimeoutMillis: number, loggingService: LoggingService) {
+    constructor(endpointUrl: string, connectionTimeoutMillis: number, logger: ILogger) {
         this.cloudDiscovery = new HazelcastCloudDiscovery(endpointUrl, connectionTimeoutMillis);
-        this.loggingService = loggingService;
+        this.logger = logger;
     }
 
     loadAddresses(): Promise<string[]> {
         return this.cloudDiscovery.discoverNodes().then((res) => {
             return Array.from(res.keys());
         }).catch((e) => {
-            this.loggingService.warn('HazelcastCloudAddressProvider',
+            this.logger.warn('HazelcastCloudAddressProvider',
                 'Failed to load addresses from hazelcast.cloud : ' + e.message);
             return [];
         });

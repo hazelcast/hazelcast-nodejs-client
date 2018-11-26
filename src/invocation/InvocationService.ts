@@ -26,11 +26,11 @@ import {
     IOError,
     RetryableHazelcastError,
 } from '../HazelcastError';
-import {LoggingService} from '../logging/LoggingService';
 import {ClientConnection} from './ClientConnection';
+import {DeferredPromise} from '../Util';
+import {ILogger} from '../logging/ILogger';
 import Address = require('../Address');
 import ClientMessage = require('../ClientMessage');
-import {DeferredPromise} from '../Util';
 
 const EXCEPTION_MESSAGE_TYPE = 109;
 const MAX_FAST_INVOCATION_COUNT = 5;
@@ -110,11 +110,12 @@ export class InvocationService {
     private smartRoutingEnabled: boolean;
     private readonly invocationRetryPauseMillis: number;
     private readonly invocationTimeoutMillis: number;
-    private logger = LoggingService.getLoggingService();
+    private logger: ILogger;
     private isShutdown: boolean;
 
     constructor(hazelcastClient: HazelcastClient) {
         this.client = hazelcastClient;
+        this.logger = this.client.getLoggingService().getLogger();
         this.smartRoutingEnabled = hazelcastClient.getConfig().networkConfig.smartRouting;
         if (hazelcastClient.getConfig().networkConfig.smartRouting) {
             this.doInvoke = this.invokeSmart;

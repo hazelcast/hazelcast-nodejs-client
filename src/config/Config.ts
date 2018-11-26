@@ -28,6 +28,7 @@ import {Properties} from './Properties';
 import {ReliableTopicConfig} from './ReliableTopicConfig';
 import {SerializationConfig} from './SerializationConfig';
 import {Statistics} from '../statistics/Statistics';
+import {LogLevel} from '..';
 
 /**
  * Top level configuration object of Hazelcast client. Other configurations items are properties of this object.
@@ -45,6 +46,8 @@ export class ClientConfig {
         'hazelcast.invalidation.reconciliation.interval.seconds': 60,
         'hazelcast.invalidation.max.tolerated.miss.count': 10,
         'hazelcast.invalidation.min.reconciliation.interval.seconds': 30,
+        'hazelcast.logging': 'default',
+        'hazelcast.logging.level': LogLevel.INFO,
     };
 
     /**
