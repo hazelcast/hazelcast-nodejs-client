@@ -15,7 +15,7 @@
  */
 
 import * as Promise from 'bluebird';
-import {BuildMetadata} from '../BuildMetadata';
+import {BuildInfo} from '../BuildInfo';
 import HazelcastClient from '../HazelcastClient';
 import {Data} from '../serialization/Data';
 import Address = require('../Address');
@@ -139,7 +139,7 @@ export class BaseProxy {
         for (const address in activeConnections) {
             return activeConnections[address].getConnectedServerVersion();
         }
-        return BuildMetadata.UNKNOWN_VERSION_ID;
+        return BuildInfo.UNKNOWN_VERSION_ID;
     }
 
     private createPromise<T>(codec: any, promise: Promise<ClientMessage>): Promise<T> {

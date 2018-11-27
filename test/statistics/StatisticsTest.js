@@ -16,12 +16,12 @@
 
 var expect = require('chai').expect;
 var DeferredPromise = require('../../lib/Util').DeferredPromise;
+var BuildInfo = require('../../lib/BuildInfo').BuildInfo;
 
 var RC = require('../RC');
 var Client = require('../../').Client;
 var Util = require('../Util');
 var Config = require('../../').Config;
-var BuildInfoLoader = require('../../lib/BuildInfoLoader').BuildInfoLoader;
 
 
 describe('Statistics with default period', function () {
@@ -76,7 +76,7 @@ describe('Statistics with default period', function () {
             expect(contains(stats, 'lastStatisticsCollectionTime=')).to.be.true;
             expect(contains(stats, 'enterprise=false')).to.be.true;
             expect(contains(stats, 'clientType=NodeJS')).to.be.true;
-            expect(contains(stats, 'clientVersion=' + BuildInfoLoader.getClientVersion())).to.be.true;
+            expect(contains(stats, 'clientVersion=' + BuildInfo.getClientVersion())).to.be.true;
 
             var ownerConnection = client.getClusterService().getOwnerConnection();
             expect(contains(stats, 'clusterConnectionTimestamp=' + ownerConnection.getStartTime())).to.be.true;
