@@ -17,7 +17,7 @@
 import Long = require('long');
 import Address = require('../../Address');
 
-export class TopicMessage<T> {
+export class Message<T> {
     messageObject: T;
     publisher: Address;
     publishingTime: Long;

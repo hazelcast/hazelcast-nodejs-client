@@ -2190,13 +2190,13 @@ As you see, there is a parameter in the `addItemListener` function: `includeValu
 
 The Message Listener is used by the Hazelcast `Reliable Topic`.
 
-You can listen to message events. To listen to these events, you need to implement the `TopicMessageListener` function to which a `TopicMessage` object is passed.
+You can listen to message events. To listen to these events, you need to implement the `MessageListener` function to which a `Message` object is passed.
 
 See the following example.
 
 ```javascript
-topic.addMessageListener(function (topicMessage) {
-    console.log(topicMessage.messageObject);
+topic.addMessageListener(function (message) {
+    console.log(message.messageObject);
 });
 
 var engineer = {

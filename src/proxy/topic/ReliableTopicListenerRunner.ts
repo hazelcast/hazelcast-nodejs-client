@@ -19,16 +19,16 @@ import {StaleSequenceError} from '../../HazelcastError';
 import {LoggingService} from '../../logging/LoggingService';
 import {SerializationService} from '../../serialization/SerializationService';
 import {Ringbuffer} from '../Ringbuffer';
-import {RawTopicMessage} from './RawTopicMessage';
+import {ReliableTopicMessage} from './ReliableTopicMessage';
 import {ReliableTopicProxy} from './ReliableTopicProxy';
-import {TopicMessage} from './TopicMessage';
-import {TopicMessageListener} from './TopicMessageListener';
+import {Message} from './Message';
+import {MessageListener} from './MessageListener';
 
 export class ReliableTopicListenerRunner<E> {
 
     public sequenceNumber: number = 0;
-    private listener: TopicMessageListener<E>;
-    private ringbuffer: Ringbuffer<RawTopicMessage>;
+    private listener: MessageListener<E>;
+    private ringbuffer: Ringbuffer<ReliableTopicMessage>;
     private batchSize: number;
     private serializationService: SerializationService;
     private cancelled: boolean = false;
@@ -36,7 +36,7 @@ export class ReliableTopicListenerRunner<E> {
     private proxy: ReliableTopicProxy<E>;
     private listenerId: string;
 
-    constructor(listenerId: string, listener: TopicMessageListener<E>, ringbuffer: Ringbuffer<RawTopicMessage>,
+    constructor(listenerId: string, listener: MessageListener<E>, ringbuffer: Ringbuffer<ReliableTopicMessage>,
                 batchSize: number, serializationService: SerializationService, proxy: ReliableTopicProxy<E>) {
         this.listenerId = listenerId;
         this.listener = listener;
@@ -52,10 +52,10 @@ export class ReliableTopicListenerRunner<E> {
             return;
         }
 
-        this.ringbuffer.readMany(this.sequenceNumber, 1, this.batchSize).then((result: ReadResultSet<RawTopicMessage>) => {
+        this.ringbuffer.readMany(this.sequenceNumber, 1, this.batchSize).then((result: ReadResultSet<ReliableTopicMessage>) => {
             if (!this.cancelled) {
                 for (let i = 0; i < result.size(); i++) {
-                    const msg = new TopicMessage<E>();
+                    const msg = new Message<E>();
                     const item = result.get(i);
                     msg.messageObject = this.serializationService.toObject(item.payload);
                     msg.publisher = item.publisherAddress;

@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {TopicMessage} from './TopicMessage';
+import {Message} from './Message';
 
-export type TopicMessageListener<E> = (message: TopicMessage<E>) => void;
+export type MessageListener<E> = (message: Message<E>) => void;

@@ -16,10 +16,10 @@
 
 import * as Promise from 'bluebird';
 import {DistributedObject} from '../../DistributedObject';
-import {TopicMessageListener} from './TopicMessageListener';
+import {MessageListener} from './MessageListener';
 
 export interface ITopic<E> extends DistributedObject {
-    addMessageListener(listener: TopicMessageListener<E>): string;
+    addMessageListener(listener: MessageListener<E>): string;
 
     removeMessageListener(id: string): boolean;
 
