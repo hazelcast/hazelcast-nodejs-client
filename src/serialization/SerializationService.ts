@@ -18,7 +18,7 @@ import {AggregatorFactory} from '../aggregation/AggregatorFactory';
 import {ClusterDataFactory} from '../ClusterDataFactory';
 import {ClusterDataFactoryHelper} from '../ClusterDataFactoryHelper';
 import {SerializationConfig} from '../config/SerializationConfig';
-import {RELIABLE_TOPIC_MESSAGE_FACTORY_ID, ReliableTopicMessageFactory} from '../proxy/topic/RawTopicMessage';
+import {RELIABLE_TOPIC_MESSAGE_FACTORY_ID, ReliableTopicMessageFactory} from '../proxy/topic/ReliableTopicMessage';
 import * as Util from '../Util';
 import {Data, DataInput, DataOutput} from './Data';
 import * as DefaultPredicates from './DefaultPredicates';
