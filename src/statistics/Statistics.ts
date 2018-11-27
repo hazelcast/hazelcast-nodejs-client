@@ -21,9 +21,8 @@ import {Properties} from '../config/Properties';
 import {ClientStatisticsCodec} from '../codec/ClientStatisticsCodec';
 import * as Util from '../Util';
 import {Task} from '../Util';
-import {BuildInfoLoader} from '../BuildInfoLoader';
 import * as os from 'os';
-import {BuildMetadata} from '../BuildMetadata';
+import {BuildInfo} from '../BuildInfo';
 import Address = require('../Address');
 
 /**
@@ -39,7 +38,7 @@ export class Statistics {
 
     private static readonly NEAR_CACHE_CATEGORY_PREFIX: string = 'nc.';
     private static readonly FEATURE_SUPPORTED_SINCE_VERSION_STRING: string = '3.9';
-    private static readonly FEATURE_SUPPORTED_SINCE_VERSION: number = BuildMetadata.calculateVersionFromString(
+    private static readonly FEATURE_SUPPORTED_SINCE_VERSION: number = BuildInfo.calculateServerVersionFromString(
         Statistics.FEATURE_SUPPORTED_SINCE_VERSION_STRING);
     private static readonly STAT_SEPARATOR: string = ',';
     private static readonly KEY_VALUE_SEPARATOR: string = '=';
@@ -198,7 +197,7 @@ export class Statistics {
         this.addStat(stats, 'lastStatisticsCollectionTime', new Date().getTime());
         this.addStat(stats, 'enterprise', 'false');
         this.addStat(stats, 'clientType', this.client.getClusterService().getClientInfo().type);
-        this.addStat(stats, 'clientVersion', BuildInfoLoader.getClientVersion());
+        this.addStat(stats, 'clientVersion', BuildInfo.getClientVersion());
         this.addStat(stats, 'clusterConnectionTimestamp', ownerConnection.getStartTime());
         this.addStat(stats, 'clientAddress', ownerConnection.getLocalAddress().toString());
         this.addStat(stats, 'clientName', this.client.getName());

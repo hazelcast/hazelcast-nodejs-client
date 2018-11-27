@@ -15,7 +15,7 @@
  */
 
 var expect = require('chai').expect;
-var BuildMetadata = require('../lib/BuildMetadata').BuildMetadata;
+var BuildInfo = require('../lib/BuildInfo').BuildInfo;
 var promiseLater = function (time, func) {
     if (func === undefined) {
         func = function () {
@@ -79,14 +79,14 @@ exports.markEnterprise = function (_this) {
 
 exports.markServerVersionAtLeast = function (_this, client, expectedVersion) {
     if (process.env['SERVER_VERSION']) {
-        var actNumber = BuildMetadata.calculateVersion(process.env['SERVER_VERSION']);
+        var actNumber = BuildInfo.calculateServerVersion(process.env['SERVER_VERSION']);
     } else if (client != null) {
         var actNumber = client.getClusterService().getOwnerConnection().getConnectedServerVersion();
     } else {
         return;
     }
-    var expNumber = BuildMetadata.calculateVersion(expectedVersion);
-    if (actNumber === BuildMetadata.UNKNOWN_VERSION_ID || actNumber < expNumber) {
+    var expNumber = BuildInfo.calculateServerVersion(expectedVersion);
+    if (actNumber === BuildInfo.UNKNOWN_VERSION_ID || actNumber < expNumber) {
         _this.skip();
     }
 };

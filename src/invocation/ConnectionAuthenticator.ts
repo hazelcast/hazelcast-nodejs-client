@@ -20,10 +20,10 @@ import HazelcastClient from '../HazelcastClient';
 import {ClientAuthenticationCustomCodec} from '../codec/ClientAuthenticationCustomCodec';
 import {ClientConnection} from './ClientConnection';
 import {ClusterService} from './ClusterService';
-import {BuildInfoLoader} from '../BuildInfoLoader';
 import {LoggingService} from '../logging/LoggingService';
 import {AuthenticationError} from '../HazelcastError';
 import ClientMessage = require('../ClientMessage');
+import {BuildInfo} from '../BuildInfo';
 
 const enum AuthenticationStatus {
     AUTHENTICATED = 0,
@@ -90,7 +90,7 @@ export class ConnectionAuthenticator {
 
         let clientMessage: ClientMessage;
 
-        const clientVersion = BuildInfoLoader.getClientVersion();
+        const clientVersion = BuildInfo.getClientVersion();
 
         if (customCredentials != null) {
             const credentialsPayload = this.client.getSerializationService().toData(customCredentials);
