@@ -56,10 +56,14 @@ describe('ClusterService', function () {
     it('should know when a new member joins to cluster', function (done) {
         var member2;
 
-        client.getClusterService().once('memberAdded', function () {
-            expect(client.clusterService.getSize()).to.be.eq(2);
-            done();
-        });
+        var membershipListener = {
+            memberAdded: function (membershipEvent) {
+                expect(client.clusterService.getSize()).to.be.eq(2);
+                done();
+            }
+        }
+
+        client.clusterService.addMembershipListener(membershipListener);
 
         Controller.startMember(cluster.id).then(function (res) {
             member2 = res;
@@ -69,10 +73,14 @@ describe('ClusterService', function () {
     it('should know when a member leaves cluster', function (done) {
         var member2;
 
-        client.getClusterService().once('memberRemoved', function () {
-            expect(client.getClusterService().getSize()).to.be.eq(1);
-            done();
-        });
+        var membershipListener = {
+            memberRemoved: function (membershipEvent) {
+                expect(client.getClusterService().getSize()).to.be.eq(1);
+                done();
+            }
+        }
+
+        client.clusterService.addMembershipListener(membershipListener);
 
         Controller.startMember(cluster.id).then(function (res) {
             member2 = res;
@@ -84,17 +92,19 @@ describe('ClusterService', function () {
         this.timeout(20000);
         var member2;
         var member3;
-        client.getClusterService().once('memberRemoved', function () {
-            var remainingMemberList = client.getClusterService().getMembers();
-            try {
+
+        var membershipListener = {
+            memberRemoved: function (membershipEvent) {
+                var remainingMemberList = client.getClusterService().getMembers();
                 expect(remainingMemberList).to.have.length(2);
                 expect(remainingMemberList[0].address.port).to.equal(ownerMember.port);
                 expect(remainingMemberList[1].address.port).to.equal(member3.port);
                 done();
-            } catch (e) {
-                done(e);
             }
-        });
+        }
+
+        client.clusterService.addMembershipListener(membershipListener);
+
         Controller.startMember(cluster.id).then(function (res) {
             member2 = res;
             return Controller.startMember(cluster.id);

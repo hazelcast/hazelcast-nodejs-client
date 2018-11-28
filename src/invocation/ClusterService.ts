@@ -19,7 +19,6 @@ import * as Promise from 'bluebird';
 import {ClientAddMembershipListenerCodec} from '../codec/ClientAddMembershipListenerCodec';
 import {Member} from '../core/Member';
 import {LoggingService} from '../logging/LoggingService';
-import {EventEmitter} from 'events';
 import {ClientInfo} from '../ClientInfo';
 import HazelcastClient from '../HazelcastClient';
 import {IllegalStateError} from '../HazelcastError';
@@ -27,20 +26,21 @@ import * as assert from 'assert';
 import {MemberSelector} from '../core/MemberSelector';
 import {AddressHelper, DeferredPromise} from '../Util';
 import {MemberAttributeEvent, MemberAttributeOperationType} from '../core/MemberAttributeEvent';
+import {MembershipListener} from '../core/MembershipListener';
+import {MembershipEvent} from '../core/MembershipEvent';
+import {UuidUtil} from '../util/UuidUtil';
 import Address = require('../Address');
 import ClientMessage = require('../ClientMessage');
 
-const MEMBER_ADDED = 1;
-const MEMBER_REMOVED = 2;
-
-const EMIT_MEMBER_ADDED = 'memberAdded';
-const EMIT_MEMBER_REMOVED = 'memberRemoved';
-const EMIT_ATTRIBUTE_CHANGE = 'memberAttributeChange';
+export enum MemberEvent {
+    ADDED = 1,
+    REMOVED = 2,
+}
 
 /**
  * Manages the relationship of this client with the cluster.
  */
-export class ClusterService extends EventEmitter {
+export class ClusterService {
 
     /**
      * The unique identifier of the owner server node. This node is responsible for resource cleanup
@@ -54,13 +54,12 @@ export class ClusterService extends EventEmitter {
 
     private knownAddresses: Address[] = [];
     private members: Member[] = [];
-
     private client: HazelcastClient;
     private ownerConnection: ClientConnection;
     private logger = LoggingService.getLoggingService();
+    private membershipListeners: Map<string, MembershipListener> = new Map();
 
     constructor(client: HazelcastClient) {
-        super();
         this.client = client;
         this.members = [];
     }
@@ -167,7 +166,31 @@ export class ClusterService extends EventEmitter {
         return this.ownerConnection;
     }
 
-    initMemberShipListener(): Promise<void> {
+    /**
+     * Adds MembershipListener to listen for membership updates. There is no check for duplicate registrations,
+     * so if you register the listener twice, it will get events twice.
+     * @param {MembershipListener} The listener to be registered
+     * @return The registration ID
+     */
+    addMembershipListener(membershipListener: MembershipListener): string {
+        const registrationId = UuidUtil.generate().toString();
+        this.membershipListeners.set(registrationId, membershipListener);
+        return registrationId;
+    }
+
+    /**
+     * Removes registered MembershipListener.
+     * @param {string} The registration ID
+     * @return {boolean} true if successfully removed, false otherwise
+     */
+    removeMembershipListener(registrationId: string): boolean {
+        if (registrationId === null) {
+            throw new RangeError('registrationId cannot be null');
+        }
+        return this.membershipListeners.delete(registrationId);
+    }
+
+    initMembershipListener(): Promise<void> {
         const request = ClientAddMembershipListenerCodec.encodeRequest(false);
 
         const handler = (m: ClientMessage) => {
@@ -241,7 +264,7 @@ export class ClusterService extends EventEmitter {
             return this.client.getConnectionManager().getOrConnect(currentAddress, true).then((connection: ClientConnection) => {
                 connection.setAuthenticatedAsOwner(true);
                 this.ownerConnection = connection;
-                return this.initMemberShipListener();
+                return this.initMembershipListener();
             }).catch((e) => {
                 this.logger.warn('ClusterService', e);
                 return this.tryConnectingToAddresses(index + 1, remainingAttemptLimit, attemptPeriod, e);
@@ -250,10 +273,10 @@ export class ClusterService extends EventEmitter {
     }
 
     private handleMember(member: Member, eventType: number): void {
-        if (eventType === MEMBER_ADDED) {
+        if (eventType === MemberEvent.ADDED) {
             this.logger.info('ClusterService', member.toString() + ' added to cluster');
             this.memberAdded(member);
-        } else if (eventType === MEMBER_REMOVED) {
+        } else if (eventType === MemberEvent.REMOVED) {
             this.logger.info('ClusterService', member.toString() + ' removed from cluster');
             this.memberRemoved(member);
         }
@@ -268,14 +291,24 @@ export class ClusterService extends EventEmitter {
 
     private handleMemberAttributeChange(
         uuid: string, key: string, operationType: MemberAttributeOperationType, value: string): void {
-        const member = this.getMember(uuid);
-        const memberAttributeEvent = new MemberAttributeEvent(member, key, operationType, value);
-        this.emit(EMIT_ATTRIBUTE_CHANGE, memberAttributeEvent);
+
+        this.membershipListeners.forEach((membershipListener, registrationId) => {
+            if (membershipListener && membershipListener.memberAttributeChanged) {
+                const member = this.getMember(uuid);
+                const memberAttributeEvent = new MemberAttributeEvent(member, key, operationType, value);
+                membershipListener.memberAttributeChanged(memberAttributeEvent);
+            }
+        });
     }
 
     private memberAdded(member: Member): void {
         this.members.push(member);
-        this.emit(EMIT_MEMBER_ADDED, member);
+        this.membershipListeners.forEach((membershipListener, registrationId) => {
+            if (membershipListener && membershipListener.memberAdded) {
+                const membershipEvent = new MembershipEvent(member, MemberEvent.ADDED, this.members);
+                membershipListener.memberAdded(membershipEvent);
+            }
+        });
     }
 
     private memberRemoved(member: Member): void {
@@ -285,6 +318,11 @@ export class ClusterService extends EventEmitter {
             assert(removedMemberList.length === 1);
         }
         this.client.getConnectionManager().destroyConnection(member.address);
-        this.emit(EMIT_MEMBER_REMOVED, member);
+        this.membershipListeners.forEach((membershipListener, registrationId) => {
+            if (membershipListener && membershipListener.memberRemoved) {
+                const membershipEvent = new MembershipEvent(member, MemberEvent.REMOVED, this.members);
+                membershipListener.memberRemoved(membershipEvent);
+            }
+        });
     }
 }
