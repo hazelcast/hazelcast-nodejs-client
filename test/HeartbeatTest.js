@@ -46,10 +46,14 @@ describe('Heartbeat', function () {
         }).then(function (resp) {
             client = resp;
         }).then(function () {
-            client.clusterService.on('memberAdded', function (member) {
-                var address = new Address(member.address.host, member.address.port);
-                warmUpConnectionToAddressWithRetry(client, address);
-            });
+            var membershipListener = {
+                memberAdded: function (membershipEvent) {
+                    var address = new Address(membershipEvent.member.address.host, membershipEvent.member.address.port);
+                    warmUpConnectionToAddressWithRetry(client, address);
+                }
+            }
+
+            client.clusterService.addMembershipListener(membershipListener);
             client.heartbeat.addListener({
                 onHeartbeatStopped: function (connection) {
                     client.shutdown();
@@ -75,11 +79,15 @@ describe('Heartbeat', function () {
             return HazelcastClient.newHazelcastClient(cfg);
         }).then(function (resp) {
             client = resp;
-            client.clusterService.on('memberAdded', function (member) {
-                warmUpConnectionToAddressWithRetry(client, member.address, 3).then(function () {
-                    simulateHeartbeatLost(client, member.address, 2000);
-                }).catch(done);
-            });
+            var membershipListener = {
+                memberAdded: function (membershipEvent) {
+                    warmUpConnectionToAddressWithRetry(client, membershipEvent.member.address, 3).then(function () {
+                        simulateHeartbeatLost(client, membershipEvent.member.address, 2000);
+                    }).catch(done);
+                }
+            }
+
+            client.clusterService.addMembershipListener(membershipListener);
             client.heartbeat.addListener({
                 onHeartbeatRestored: function (connection) {
                     client.shutdown();
