@@ -167,7 +167,8 @@ export class ClusterService {
     }
 
     /**
-     * Adds MembershipListener to listen for membership updates.
+     * Adds MembershipListener to listen for membership updates. There is no check for duplicate registrations,
+     * so if you register the listener twice, it will get events twice.
      * @param {MembershipListener} The listener to be registered
      * @return The registration ID
      */

@@ -96,8 +96,8 @@ describe('MembershipListener', function () {
                 listenedSecondListener = true;
             }
         }
-        var id = client.clusterService.addMembershipListener(membershipListener2);
         client.clusterService.addMembershipListener(membershipListener);
+        client.clusterService.addMembershipListener(membershipListener2);
 
         Controller.startMember(cluster.id).then(function (res) {
             newMember = res;
@@ -116,6 +116,28 @@ describe('MembershipListener', function () {
             });
         });
 
+    });
+
+    it('if same listener is added twice, gets same event twice', function (done) {
+        var newMember;
+        var counter = 0;
+
+        var membershipListener = {
+            memberAdded: function (membershipEvent) {
+                counter++;
+            }
+        }
+        client.clusterService.addMembershipListener(membershipListener);
+        client.clusterService.addMembershipListener(membershipListener);
+
+        Controller.startMember(cluster.id).then(function (m) {
+            newMember = m;
+            expect(counter).to.equal(2);
+        }).finally(function (e) {
+            Controller.shutdownMember(cluster.id, newMember.uuid).then(function () {
+                done();
+            });
+        });
     });
 
     it('sees member removed event', function (done) {
