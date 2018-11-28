@@ -7,9 +7,9 @@
   * [1.1. Requirements](#11-requirements)
   * [1.2. Working with Hazelcast IMDG Clusters](#12-working-with-hazelcast-imdg-clusters)
     * [1.2.1. Setting Up a Hazelcast IMDG Cluster](#121-setting-up-a-hazelcast-imdg-cluster)
-      * [1.2.1.1. Running Standalone Jars](#1211-running-standalone-jars)
-      * [1.2.1.2. Adding User Library to CLASSPATH](#1212-adding-user-library-to-classpath)
-      * [1.2.1.3. Using hazelcast-member Tool](#1213-using-hazelcast-member-tool)
+      * [1.2.1.1. Using hazelcast-member Tool](#1211-using-hazelcast-member-tool)
+      * [1.2.1.2. Running Standalone JARs](#1212-running-standalone-jars)
+      * [1.2.1.3. Adding User Library to CLASSPATH](#1213-adding-user-library-to-classpath)
   * [1.3. Downloading and Installing](#13-downloading-and-installing)
   * [1.4. Basic Configuration](#14-basic-configuration)
     * [1.4.1. Configuring Hazelcast IMDG](#141-configuring-hazelcast-imdg)
@@ -159,53 +159,7 @@ There are following options to start a Hazelcast IMDG cluster easily:
 
 We are going to download JARs from the website and run a standalone member for this guide.
 
-#### 1.2.1.1. Running Standalone JARs
-
-Follow the instructions below to create a Hazelcast IMDG cluster:
-
-1. Go to Hazelcast's download [page](https://hazelcast.org/download/) and download either the `.zip` or `.tar` distribution of Hazelcast IMDG.
-2. Decompress the contents into any directory that you
-want to run members from.
-3. Change into the directory that you decompressed the Hazelcast content and then into the `bin` directory.
-4. Use either `start.sh` or `start.bat` depending on your operating system. Once you run the start script, you should see the Hazelcast IMDG logs in the terminal.
-
-You should see a log similar to the following, which means that your 1-member cluster is ready to be used:
-
-```
-INFO: [192.168.0.3]:5701 [dev] [3.10.4]
-
-Members {size:1, ver:1} [
-	Member [192.168.0.3]:5701 - 65dac4d1-2559-44bb-ba2e-ca41c56eedd6 this
-]
-
-Sep 06, 2018 10:50:23 AM com.hazelcast.core.LifecycleService
-INFO: [192.168.0.3]:5701 [dev] [3.10.4] [192.168.0.3]:5701 is STARTED
-```
-
-#### 1.2.1.2. Adding User Library to CLASSPATH
-
-When you want to use features such as querying and language interoperability, you might need to add your own Java classes to the Hazelcast member in order to use them from your Node.js client. This can be done by adding your own compiled code to the `CLASSPATH`. To do this, compile your code with the `CLASSPATH` and add the compiled files to the `user-lib` directory in the extracted `hazelcast-<version>.zip` (or `tar`). Then, you can start your Hazelcast member by using the start scripts in the `bin` directory. The start scripts will automatically add your compiled classes to the `CLASSPATH`.
-
-Note that if you are adding an `IdentifiedDataSerializable` or a `Portable` class, you need to add its factory too. Then, you should configure the factory in the `hazelcast.xml` configuration file. This file resides in the `bin` directory where you extracted the `hazelcast-<version>.zip` (or `tar`).
-
-The following is an example configuration when you are adding an `IdentifiedDataSerializable` class:
-
-```xml
-<hazelcast>
-     ...
-     <serialization>
-        <data-serializable-factories>
-            <data-serializable-factory factory-id=<identified-factory-id>>
-                IdentifiedFactoryClassName
-            </data-serializable-factory>
-        </data-serializable-factories>
-    </serialization>
-    ...
-</hazelcast>
-```
-If you want to add a `Portable` class, you should use `<portable-factories>` instead of `<data-serializable-factories>` in the above configuration.
-
-#### 1.2.1.3. Using hazelcast-member Tool
+#### 1.2.1.1. Using hazelcast-member Tool
 
 `hazelcast-member` is a tool to download and run Hazelcast IMDG members easily. You can find the installation instructions for various platforms in the following sections.
 
@@ -282,6 +236,53 @@ You can find more information about the `hazelcast-member` tool at its GitHub [r
 
 See the [Hazelcast IMDG Reference Manual](http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#getting-started) for more information on setting up the clusters.
 
+
+#### 1.2.1.2. Running Standalone JARs
+
+Follow the instructions below to create a Hazelcast IMDG cluster:
+
+1. Go to Hazelcast's download [page](https://hazelcast.org/download/) and download either the `.zip` or `.tar` distribution of Hazelcast IMDG.
+2. Decompress the contents into any directory that you
+want to run members from.
+3. Change into the directory that you decompressed the Hazelcast content and then into the `bin` directory.
+4. Use either `start.sh` or `start.bat` depending on your operating system. Once you run the start script, you should see the Hazelcast IMDG logs in the terminal.
+
+You should see a log similar to the following, which means that your 1-member cluster is ready to be used:
+
+```
+INFO: [192.168.0.3]:5701 [dev] [3.10.4]
+
+Members {size:1, ver:1} [
+	Member [192.168.0.3]:5701 - 65dac4d1-2559-44bb-ba2e-ca41c56eedd6 this
+]
+
+Sep 06, 2018 10:50:23 AM com.hazelcast.core.LifecycleService
+INFO: [192.168.0.3]:5701 [dev] [3.10.4] [192.168.0.3]:5701 is STARTED
+```
+
+#### 1.2.1.3. Adding User Library to CLASSPATH
+
+When you want to use features such as querying and language interoperability, you might need to add your own Java classes to the Hazelcast member in order to use them from your Node.js client. This can be done by adding your own compiled code to the `CLASSPATH`. To do this, compile your code with the `CLASSPATH` and add the compiled files to the `user-lib` directory in the extracted `hazelcast-<version>.zip` (or `tar`). Then, you can start your Hazelcast member by using the start scripts in the `bin` directory. The start scripts will automatically add your compiled classes to the `CLASSPATH`.
+
+Note that if you are adding an `IdentifiedDataSerializable` or a `Portable` class, you need to add its factory too. Then, you should configure the factory in the `hazelcast.xml` configuration file. This file resides in the `bin` directory where you extracted the `hazelcast-<version>.zip` (or `tar`).
+
+The following is an example configuration when you are adding an `IdentifiedDataSerializable` class:
+
+```xml
+<hazelcast>
+     ...
+     <serialization>
+        <data-serializable-factories>
+            <data-serializable-factory factory-id=<identified-factory-id>>
+                IdentifiedFactoryClassName
+            </data-serializable-factory>
+        </data-serializable-factories>
+    </serialization>
+    ...
+</hazelcast>
+```
+If you want to add a `Portable` class, you should use `<portable-factories>` instead of `<data-serializable-factories>` in the above configuration.
+
 ## 1.3. Downloading and Installing
 
 Hazelcast Node.js client is on NPM. Just add `hazelcast-client` as a dependency to your Node.js project and you are good to go.
@@ -309,7 +310,7 @@ See the [Hazelcast IMDG Reference Manual](https://docs.hazelcast.org/docs/latest
 Hazelcast IMDG aims to run out-of-the-box for most common scenarios. However if you have limitations on your network such as multicast being disabled,
 you may have to configure your Hazelcast IMDG members so that they can find each other on the network. Also, since most of the distributed data structures are configurable, you may want to configure them according to your needs. We will show you the basics about network configuration here.
 
-There are two ways to configure Hazelcast IMDG:
+You can use the following options to configure Hazelcast IMDG:
 
 * Using the `hazelcast.xml` configuration file.
 * Programmatically configuring the member before starting it from the Java code.
@@ -387,7 +388,7 @@ It is done this way to make it easier to transfer Hazelcast skills to multiple p
 Once you embedded `hazelcast-client` to your Node.js project, you may follow any of programmatic or declarative configuration approaches.
 We will provide both ways for each configuration option in this section. Pick one way and stick to it.
 
-**Programmatic configuration**
+**Programmatic Configuration:**
 
 You need to create a `ClientConfig` object and adjust its properties. Then you can pass this object to the client when starting it.
 
@@ -400,7 +401,7 @@ Client.newHazelcastClient(config).then(function(client) {
 });
 ```
 
-**Declarative configuration**
+**Declarative Configuration:**
 
 Hazelcast Node.js client looks for a `hazelcast-client.json` in the current working directory unless you provide a configuration object
 at the startup. If you intend to configure your client using a configuration file, then place a `hazelcast-client.json` in the directory
@@ -420,14 +421,16 @@ names as explained in the previous section. If you did, then you need to make ce
 
 #### 1.4.2.1. Group Settings
 
-**Programmatic:**
+You need to provide the group name of the cluster, if it is defined on the server side, to which you want the client to connect.
+
+**Programmatic Configuration:**
 
 ```javascript
 let cfg = new Config.ClientConfig();
 cfg.group.name = 'group name of your cluster'
 ```
 
-**Declarative:**
+**Declarative Configuration:**
 
 ```json
 {
@@ -443,14 +446,14 @@ cfg.group.name = 'group name of your cluster'
 
 You need to provide the IP address and port of at least one member in your cluster so the client can find it.
 
-**Programmatic:**
+**Programmatic Configuration:**
 
 ```javascript
 let cfg = new Config.ClientConfig();
 cfg.network.addresses.push('some-ip-address:port');
 ```
 
-**Declarative:**
+**Declarative Configuration:**
 
 ```json
 {
@@ -1005,7 +1008,7 @@ Note that the ID that is passed to the `SerializationConfig` is same as the `fac
 
 Hazelcast lets you plug a custom serializer to be used for serialization of objects.
 
-Let's say you have an object `CustomSerializable` and you would like to customize the serialization. The reason might be that you want to use an external serializer for only one object.
+Let's say you have an object `CustomSerializable` and you would like to customize the serialization, since you may want to use an external serializer for only one object.
 
 ```javascript
 function CustomSerializable(value) {
@@ -1080,7 +1083,7 @@ The global serializer is identical to custom serializers from the implementation
 
 By default, JSON serialization is used if the object is not `IdentifiedDataSerializable` or `Portable` or there is no custom serializer for it. When you configure a global serializer, it is used instead of JSON serialization.
 
-You can use the global serialization for the following cases:
+**Use cases:**
 
 * Third party serialization frameworks can be integrated using the global serializer.
 * For your custom objects, you can implement a single serializer to handle all of them.
@@ -1132,7 +1135,7 @@ config.serializationConfig.globalSerializer = new GlobalSerializer();
 
 All network related configuration of Hazelcast Node.js client is performed via the `network` element in the declarative configuration file, or in the object `ClientNetworkConfig` when using programmatic configuration. Let's first give the examples for these two approaches. Then we will look at its sub-elements and attributes.
 
-### Declarative Client Network Configuration
+**Declarative Configuration:**
 
 Here is an example of configuring the network for Node.js Client declaratively.
 
@@ -1152,7 +1155,7 @@ Here is an example of configuring the network for Node.js Client declaratively.
 }
 ```
 
-### Programmatic Client Network Configuration
+**Programmatic Configuration:**
 
 Here is an example of configuring the network for Node.js Client programmatically.
 
@@ -1172,7 +1175,7 @@ Address list is the initial list of cluster addresses which the client will conn
 list to find an alive member. Although it may be enough to give only one address of a member in the cluster
 (since all members communicate with each other), it is recommended that you give the addresses for all the members.
 
-**Declarative:**
+**Declarative Configuration:**
 
 ```json
 {
@@ -1185,7 +1188,7 @@ list to find an alive member. Although it may be enough to give only one address
 }
 ```
 
-**Programmatic:**
+**Programmatic Configuration:**
 
 ```javascript
 var clientConfig = new Config.ClientConfig();
@@ -1198,12 +1201,12 @@ You can specify multiple addresses with or without the port information as seen 
 
 ## 5.2. Setting Smart Routing
 
-Smart routing defines whether the client mode is smart or unisocket. See [Node.js Client Operation Modes section](#nodejs-client-operation-modes)
+Smart routing defines whether the client mode is smart or unisocket. See the [Node.js Client Operation Modes section](#72-nodejs-client-operation-modes)
 for the description of smart and unisocket modes.
  
 The following are example configurations.
 
-**Declarative:**
+**Declarative Configuration:**
 
 ```json
 {
@@ -1213,7 +1216,7 @@ The following are example configurations.
 }
 ```
 
-**Programmatic:**
+**Programmatic Configuration:**
 
 ```javascript
 var clientConfig = new Config.ClientConfig();
@@ -1226,7 +1229,7 @@ Its default value is `true` (smart client mode).
 
 It enables/disables redo-able operations. While sending the requests to the related members, the operations can fail due to various reasons. Read-only operations are retried by default. If you want to enable retry for the other operations, you can set the `redoOperation` to `true`.
 
-**Declarative:**
+**Declarative Configuration:**
 
 ```json
 {
@@ -1236,7 +1239,7 @@ It enables/disables redo-able operations. While sending the requests to the rela
 }
 ```
 
-**Programmatic:**
+**Programmatic Configuration:**
 
 ```javascript
 var clientConfig = new Config.ClientConfig();
@@ -1253,7 +1256,7 @@ If the member does not respond within the timeout, the client will retry to conn
 The following are the example configurations.
 
 
-**Declarative:**
+**Declarative Configuration:**
 
 ```json
 {
@@ -1263,7 +1266,7 @@ The following are the example configurations.
 }
 ```
 
-**Programmatic:**
+**Programmatic Configuration:**
 
 ```javascript
 var clientConfig = new Config.ClientConfig();
@@ -1278,7 +1281,7 @@ While the client is trying to connect initially to one of the members in the `Cl
 
 The following are example configurations.
 
-**Declarative:**
+**Declarative Configuration:**
 
 ```json
 {
@@ -1288,7 +1291,7 @@ The following are example configurations.
 }
 ```
 
-**Programmatic:**
+**Programmatic Configuration:**
 
 ```javascript
 var clientConfig = new Config.ClientConfig();
@@ -1303,7 +1306,7 @@ Connection attempt period is the duration in milliseconds between the connection
  
 The following are example configurations.
 
-**Declarative:**
+**Declarative Configuration:**
 
 ```json
 {
@@ -1313,7 +1316,7 @@ The following are example configurations.
 }
 ```
 
-**Programmatic:**
+**Programmatic Configuration:**
 
 ```javascript
 var clientConfig = new Config.ClientConfig();
@@ -1325,9 +1328,9 @@ Its default value is `3000` milliseconds.
 ## 5.7. Enabling Client TLS/SSL
 
 You can use TLS/SSL to secure the connection between the clients and members. If you want to enable TLS/SSL
-for the client-cluster connection, you should set an SSL configuration. Please see [TLS/SSL section](#1-tlsssl).
+for the client-cluster connection, you should set an SSL configuration. Please see [TLS/SSL section](#61-tlsssl).
 
-As explained in the [TLS/SSL section](#1-tlsssl), Hazelcast members have key stores used to identify themselves (to other members) and Hazelcast Node.js clients have certificate authorities used to define which members they can trust. Hazelcast has the mutual authentication feature which allows the Node.js clients also to have their private keys and public certificates, and members to have their certificate authorities so that the members can know which clients they can trust. See the [Mutual Authentication section](#13-mutual-authentication).
+As explained in the [TLS/SSL section](#61-tlsssl), Hazelcast members have key stores used to identify themselves (to other members) and Hazelcast Node.js clients have certificate authorities used to define which members they can trust. Hazelcast has the mutual authentication feature which allows the Node.js clients also to have their private keys and public certificates, and members to have their certificate authorities so that the members can know which clients they can trust. See the [Mutual Authentication section](#13-mutual-authentication).
 
 ## 5.8. Enabling Hazelcast Cloud Discovery
 
@@ -1335,7 +1338,7 @@ The purpose of Hazelcast Cloud Discovery is to provide the clients to use IP add
  
 The following are example configurations.
 
-**Declarative:**
+**Declarative Configuration:**
 
 ```json
 {
@@ -1354,7 +1357,7 @@ The following are example configurations.
 
 ```
 
-**Programmatic:**
+**Programmatic Configuration:**
 
 ```javascript
 var clientConfig = new Config.ClientConfig();
@@ -1406,7 +1409,7 @@ As explained above, Hazelcast members have key stores used to identify themselve
 
 Using mutual authentication, the clients also have their key stores and members have their trust stores so that the members can know which clients they can trust.
 
-To enable mutual authentication, firstly, you need to set the following property at the server side in the `hazelcast.xml` file:
+To enable mutual authentication, firstly, you need to set the following property on the server side in the `hazelcast.xml` file:
 
 ```xml
 <network>
@@ -2258,7 +2261,7 @@ IdentifiedEntryProcessor.prototype.getClassId = function () {
 };
 ```
 
-Now, you need to make sure that the Hazelcast member recognizes the entry processor. For this, you need to implement the Java equivalent of your entry processor and its factory, and create your own compiled class or JAR files. For adding your own compiled class or JAR files to the server's `CLASSPATH`, see the [Adding User Library to CLASSPATH section](#adding-user-library-to-classpath).
+Now, you need to make sure that the Hazelcast member recognizes the entry processor. For this, you need to implement the Java equivalent of your entry processor and its factory, and create your own compiled class or JAR files. For adding your own compiled class or JAR files to the server's `CLASSPATH`, see the [Adding User Library to CLASSPATH section](#1213-adding-user-library-to-classpath).
 
 The following is the Java equivalent of the entry processor in Node.js client given above:
 
@@ -2427,7 +2430,7 @@ Employee.prototype.writePortable = function (writer) {
 
 Note that `Employee` is a `Portable` object. As portable types are not deserialized on the server side for querying, you don't need to implement its Java equivalent on the server side.
 
-For the non-portable types, you need to implement its Java equivalent and its serializable factory on the server side for server to reconstitute the objects from binary formats. In this case before starting the server, you need to compile the Employee and related factory classes with server's CLASSPATH and add them to the user-lib directory in the extracted hazelcast-<version>.zip (or tar).  See the [Adding User Library to CLASSPATH section](#adding-user-library-to-classpath).
+For the non-portable types, you need to implement its Java equivalent and its serializable factory on the server side for server to reconstitute the objects from binary formats. In this case before starting the server, you need to compile the Employee and related factory classes with server's CLASSPATH and add them to the user-lib directory in the extracted hazelcast-<version>.zip (or tar).  See the [Adding User Library to CLASSPATH section](#1213-adding-user-library-to-classpath).
 
 > **NOTE: Querying with `Portable` object is faster as compared to `IdentifiedDataSerializable`.**
 
@@ -2586,7 +2589,7 @@ hazelcastClient.getMap('students').then(function (mp) {
 });
 ```
 
-If you want to sort the result before paging, you need to specify a comparator object that implements the `Comparator` interface. Also, this comparator object should be one of `IdentifiedDataSerializable` or `Portable`. After implementing this object in Node.js, you need to implement the Java equivalent of it and its factory. The Java equivalent of the comparator should implement `java.util.Comparator`. Note that the `compare` function of `Comparator` on the Java side is the equivalent of the `sort` function of `Comparator` on the Node.js side. When you implement the `Comparator` and its factory, you can add them to the `CLASSPATH` of the server side.  See the [Adding User Library to CLASSPATH section](#adding-user-library-to-classpath).
+If you want to sort the result before paging, you need to specify a comparator object that implements the `Comparator` interface. Also, this comparator object should be one of `IdentifiedDataSerializable` or `Portable`. After implementing this object in Node.js, you need to implement the Java equivalent of it and its factory. The Java equivalent of the comparator should implement `java.util.Comparator`. Note that the `compare` function of `Comparator` on the Java side is the equivalent of the `sort` function of `Comparator` on the Node.js side. When you implement the `Comparator` and its factory, you can add them to the `CLASSPATH` of the server side.  See the [Adding User Library to CLASSPATH section](#1213-adding-user-library-to-classpath).
 
 Also, you can access a specific page more easily with the help of the `setPage` function. This way, if you make a query for the 100th page, for example, it will get all 100 pages at once instead of reaching the 100th page one by one using the `nextPage` function.
 
@@ -2735,7 +2738,7 @@ Near Cache is highly recommended for maps that are mostly read.
 
 The following snippets show how a Near Cache is configured in the Node.js client, presenting all available values for each element:
 
-**Declarative:**
+**Declarative Configuration:**
 
 ```
 {
@@ -2755,7 +2758,7 @@ The following snippets show how a Near Cache is configured in the Node.js client
 }
 ```
 
-**Programmatic:**
+**Programmatic Configuration:**
 
 ```javascript
 var nearCacheConfig = new Config.NearCacheConfig();
@@ -2798,7 +2801,7 @@ Following are the descriptions of all configuration elements:
 
 The following is an example configuration for a Near Cache defined in the `mostlyReadMap` map. According to this configuration, the entries are stored as `OBJECT`'s in this Near Cache and eviction starts when the count of entries reaches `5000`; entries are evicted based on the `LRU` (Least Recently Used) policy. In addition, when an entry is updated or removed on the member side, it is eventually evicted on the client side.
 
-**Declarative:**
+**Declarative Configuration:**
 
 ```
 {
@@ -2814,7 +2817,7 @@ The following is an example configuration for a Near Cache defined in the `mostl
 }
 ```
 
-**Programmatic:**
+**Programmatic Configuration:**
 
 ```javascript
 var nearCacheConfig = new Config.NearCacheConfig();
@@ -2888,7 +2891,7 @@ Also, you need to enable the client statistics in the Node.js client. There are 
 
 You can enable client statistics and set a non-default period in seconds as follows:
 
-**Declarative:**
+**Declarative Configuration:**
 
 ```json
 {
@@ -2899,7 +2902,7 @@ You can enable client statistics and set a non-default period in seconds as foll
 }
 ```
 
-**Programmatic:**
+**Programmatic Configuration:**
 
 ```javascript
 var config = new Config.ClientConfig();
