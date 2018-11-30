@@ -44,7 +44,7 @@
         <public-address>127.0.0.1</public-address>
         <ssl enabled="true">
             <factory-class-name>
-                com.hazelcast.nio.ssl.BasicSSLContextFactory
+                com.hazelcast.nio.ssl.ClasspathSSLContextFactory
             </factory-class-name>
             <properties>
                 <property name="keyStore">[serverCertificate]</property>

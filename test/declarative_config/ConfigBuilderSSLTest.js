@@ -20,7 +20,7 @@ var expect = chai.expect;
 var path = require('path');
 
 var ConfigBuilder = require('../../').ConfigBuilder;
-var Config = require('../../lib/index').Config;
+var Config = require('../../').Config;
 var Errors = require('../..').HazelcastErrors;
 
 describe('ConfigBuilderSSLTest', function () {

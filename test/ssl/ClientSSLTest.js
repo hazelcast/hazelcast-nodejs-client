@@ -24,7 +24,7 @@ var path = require('path');
 var markEnterprise = require('../Util').markEnterprise;
 var Controller = require('./../RC');
 
-var HazelcastClient = require("../../lib/index.js").Client;
+var HazelcastClient = require("../../").Client;
 var Errors = require('../..').HazelcastErrors;
 var Config = require('../..').Config;
 
@@ -49,31 +49,34 @@ describe("Client with SSL enabled", function () {
         return Controller.shutdownCluster(cluster.id);
     });
 
-    function createClusterAndConnect() {
+    function createCluster() {
         return Controller.createCluster(null, serverConfig).then(function (response) {
             cluster = response;
             return Controller.startMember(cluster.id);
-        }).then(function (member) {
+        });
+    }
+
+    it('should not be able to connect to the server with invalid certificate', function () {
+        serverConfig = serverConfig.replace('[serverCertificate]', 'com/hazelcast/nio/ssl-mutual-auth/server1.keystore');
+        serverConfig = serverConfig.replace('[password]', 'password');
+        return createCluster().then(function () {
+            var clientConfig = new Config.ClientConfig();
+            clientConfig.networkConfig.sslConfig.enabled = true;
+            return expect(HazelcastClient.newHazelcastClient(clientConfig)).to.be.rejectedWith(Errors.IllegalStateError);
+        })
+    });
+
+    it('should be able to connect to the server with valid certificate', function () {
+        serverConfig = serverConfig.replace('[serverCertificate]', 'com/hazelcast/nio/ssl/letsencrypt.jks');
+        serverConfig = serverConfig.replace('[password]', '123456');
+        return createCluster().then(function () {
             var clientConfig = new Config.ClientConfig();
             clientConfig.networkConfig.sslConfig.enabled = true;
             return HazelcastClient.newHazelcastClient(clientConfig);
         }).then(function (hazelcastClient) {
-            client = hazelcastClient;
-        });
-    }
-
-    it('should be able to connect to the server with valid certificate', function () {
-        serverConfig = serverConfig.replace('[serverCertificate]', __dirname + '/letsencrypt.jks');
-        serverConfig = serverConfig.replace('[password]', '123456');
-        return createClusterAndConnect().then(function () {
+            client = hazelcastClient
             return expect(client.lifecycleService.isRunning()).to.be.true;
         });
-    });
-
-    it('should not be able to connect to the server with invalid certificate', function () {
-        serverConfig = serverConfig.replace('[serverCertificate]', __dirname + '/server1.keystore');
-        serverConfig = serverConfig.replace('[password]', 'password');
-        return expect(createClusterAndConnect()).to.be.rejectedWith(Errors.IllegalStateError);
     });
 });
 
