@@ -67,11 +67,11 @@
     * [7.4.12. Using PN Counter](#7412-using-pn-counter)
     * [7.4.13. Using Flake ID Generator](#7413-using-flake-id-generator)
   * [7.5. Distributed Events](#75-distributed-events)
-    * [7.5.1. Cluster Events](#751-cluster-events)
-      * [7.5.1.1. Listening for Member Events](#7511-listening-for-member-events)
-      * [7.5.1.2. Listening for Distributed Object Events](#7512-listening-for-distributed-object-events)
-      * [7.5.1.3. Listening for Lifecycle Events](#7513-listening-for-lifecycle-events)
-    * [7.5.2. Distributed Data Structure Events](#752-distributed-data-structure-events)
+    * [7.5.1. Listening for Cluster Events](#751-listening-for-cluster-events)
+      * [7.5.1.1. Membership Listener](#7511-membership-listener)
+      * [7.5.1.2. Distributed Object Listener](#7512-distributed-object-listener)
+      * [7.5.1.3. Lifecycle Listener](#7513-lifecycle-listener)
+    * [7.5.2. Listening for Distributed Data Structure Events](#752-listening-for-distributed-data-structure-events)
       * [7.5.2.1. Map Listener](#7521-map-listener)
       * [7.5.2.2. Entry Listener](#7522-entry-listener)
       * [7.5.2.3. Item Listener](#7523-item-listener)           
@@ -1951,7 +1951,7 @@ hazelcastClient.getFlakeIdGenerator('myFlakeIdGenerator').then(function (gen) {
 
 This chapter explains when various events are fired and describes how you can add event listeners on a Hazelcast Node.js client. These events can be categorized as cluster and distributed data structure events.
 
-### 7.5.1. Cluster Events
+### 7.5.1. Listening for Cluster Events
 
 You can add event listeners to a Hazelcast Node.js client. You can configure the following listeners to listen to the events on the client side:
 
@@ -1959,22 +1959,27 @@ You can add event listeners to a Hazelcast Node.js client. You can configure the
 * Distributed Object Listener: Notifies when a distributed object is created or destroyed throughout the cluster.
 * Lifecycle Listener: Notifies when the client is starting, started, shutting down and shutdown.
 
-#### 7.5.1.1. Listening for Member Events
+#### 7.5.1.1. Membership Listener
 
-You can add the following types of member events to the `ClusterService`.
+The Membership Listener interface has functions that are invoked for the following events.
 
 * `memberAdded`: A new member is added to the cluster.
 * `memberRemoved`: An existing member leaves the cluster.
 * `memberAttributeChanged`: An attribute of a member is changed. See the [Defining Member Attributes section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#defining-member-attributes) in the Hazelcast IMDG Reference Manual to learn about member attributes.
 
-The `ClusterService` object exposes an `ClusterService.on()` function that allows one or more functions to be attached to the member events emitted by the object.
+For `memberAdded` and `memberRemoved` events, a `MembershipEvent` object is passed to the listener function.
 
-The following is a membership listener registration by using the `ClusterService.on()` function.
+After you create the listener object, you can configure your cluster to include the membership listener. You can also add one or more membership listeners.
+
+The following is a membership listener registration by using the `ClusterService.addMembershipListener()` function.
 
 ```javascript
-client.clusterService.on('memberAdded', function (member) {
-    console.log('Member Added: The address is', member.address.toString());
-});
+var membershipListener = {
+    memberAdded: function (membershipEvent) {
+        console.log('Member Added: The address is', member.address.toString());
+    },
+};
+client.clusterService.addMembershipListener(membershipListener);
 ```
 
 The `memberAttributeChanged` has its own type of event named as `MemberAttributeEvent`. When there is an attribute change on the member, this event is fired.
@@ -1982,12 +1987,16 @@ The `memberAttributeChanged` has its own type of event named as `MemberAttribute
 See the following example.
 
 ```javascript
-client.clusterService.on('memberAttributeChanged', function (memberAttributeEvent) {
-    console.log('Member Attribute Changed: The address is', memberAttributeEvent.member.address.toString());
-});
+
+var membershipListener = {
+    memberAttributeChanged: function (memberAttributeEvent) {
+       console.log('Member Attribute Changed: The address is', memberAttributeEvent.member.address.toString()); 
+    },
+};
+client.clusterService.addMembershipListener(membershipListener);
 ```
 
-#### 7.5.1.2. Listening for Distributed Object Events
+#### 7.5.1.2. Distributed Object Listener
 
 The events for distributed objects are invoked when they are created and destroyed in the cluster. After the events, a listener callback function is called. The type of the callback function should be `DistributedObjectListener`. The parameter of the function is `DistributedObjectEvent` including following fields:
 
@@ -2013,7 +2022,7 @@ client.addDistributedObjectListener(function (distributedObjectEvent) {
 });
 ```
 
-#### 7.5.1.3. Listening for Lifecycle Events
+#### 7.5.1.3. Lifecycle Listener
 
 The `LifecycleListener` interface notifies for the following events:
 
@@ -2054,7 +2063,7 @@ Lifecycle Event >>> shutdown
 Process finished with exit code 0
 ```
 
-### 7.5.2. Distributed Data Structure Events
+### 7.5.2. Listening for Distributed Data Structure Events
 
 You can add event listeners to the distributed data structures.
 
