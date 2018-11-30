@@ -62,7 +62,19 @@ if defined HAZELCAST_ENTERPRISE_KEY (
 			exit 1
 		)
 	)
-	set CLASSPATH=hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar;%CLASSPATH%
+
+	if exist hazelcast-enterprise-%HAZELCAST_TEST_VERSION%-tests.jar (
+    	echo hazelcast-enterprise-test.jar already exists, not downloading from maven.
+    ) else (
+    	echo Downloading: hazelcast enterprise test jar com.hazelcast:hazelcast-enterprise:%HAZELCAST_ENTERPRISE_VERSION%:jar:tests
+    	call mvn -q dependency:get -DrepoUrl=%TEST_REPO% -Dartifact=com.hazelcast:hazelcast-enterprise:%HAZELCAST_TEST_VERSION%:jar:tests -Ddest=hazelcast-enterprise-%HAZELCAST_TEST_VERSION%-tests.jar
+    	if errorlevel 1 (
+    		echo Failed download hazelcast enterprise test jar com.hazelcast:hazelcast-enterprise:%HAZELCAST_TEST_VERSION%:jar:tests
+    		exit 1
+    	)
+    )
+
+	set CLASSPATH=hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar;hazelcast-enterprise-%HAZELCAST_TEST_VERSION%-tests.jar;%CLASSPATH%
 	echo Starting Remote Controller ... enterprise ...
 ) else (
 	if exist hazelcast-%HAZELCAST_VERSION%.jar (
