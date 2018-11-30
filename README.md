@@ -376,7 +376,7 @@ There are two ways to configure a Hazelcast Node.js client:
 * Programmatically
 * Declaratively (JSON)
 
-This section describes some network configuration settings to cover common use cases in connecting the client to a cluster. See the [Configuration Overview section](#configuration-overview)
+This section describes some network configuration settings to cover common use cases in connecting the client to a cluster. See the [Configuration Overview section](#3-configuration-overview)
 and the following sections for information about detailed network configurations and/or additional features of Hazelcast Node.js client configuration.
 
 An easy way to configure your Hazelcast Node.js client is to create a `ClientConfig` object and set the appropriate options. Then you can
@@ -1330,7 +1330,7 @@ Its default value is `3000` milliseconds.
 You can use TLS/SSL to secure the connection between the clients and members. If you want to enable TLS/SSL
 for the client-cluster connection, you should set an SSL configuration. Please see [TLS/SSL section](#61-tlsssl).
 
-As explained in the [TLS/SSL section](#61-tlsssl), Hazelcast members have key stores used to identify themselves (to other members) and Hazelcast Node.js clients have certificate authorities used to define which members they can trust. Hazelcast has the mutual authentication feature which allows the Node.js clients also to have their private keys and public certificates, and members to have their certificate authorities so that the members can know which clients they can trust. See the [Mutual Authentication section](#13-mutual-authentication).
+As explained in the [TLS/SSL section](#61-tlsssl), Hazelcast members have key stores used to identify themselves (to other members) and Hazelcast Node.js clients have certificate authorities used to define which members they can trust. Hazelcast has the mutual authentication feature which allows the Node.js clients also to have their private keys and public certificates, and members to have their certificate authorities so that the members can know which clients they can trust. See the [Mutual Authentication section](#613-mutual-authentication).
 
 ## 5.8. Enabling Hazelcast Cloud Discovery
 
@@ -1531,7 +1531,7 @@ exports.SSLFactory = SSLFactory;
 The client loads `MyFactory.js` at runtime and creates an instance of `SSLFactory`. It then calls the method `init` with
 the properties section in the JSON configuration file. Lastly, the client calls the method `getSSLOptions` of `SSLFactory` to create the `options` object.
 
-For information about the path resolution, see the [Loading Objects and Path Resolution section](#3-loading-objects-and-path-resolution).
+For information about the path resolution, see the [Loading Objects and Path Resolution section](#33-loading-objects-and-path-resolution).
 
 
 # 7. Using Node.js Client with Hazelcast IMDG
@@ -1546,7 +1546,7 @@ Promises provide a better way of working with callbacks. You can chain asynchron
 
 If you are ready to go, let's start to use Hazelcast Node.js client.
 
-The first step is the configuration. You can configure the Node.js client declaratively or programmatically. We will use the programmatic approach throughout this chapter. See the [Programmatic Configuration section](#programmatic-configuration) for details. 
+The first step is the configuration. You can configure the Node.js client declaratively or programmatically. We will use the programmatic approach throughout this chapter. See the [Programmatic Configuration section](#311-programmatic-configuration) for details. 
 
 The following is an example on how to create a `ClientConfig` object and configure it programmatically:
 
@@ -1616,13 +1616,13 @@ There are two main failure cases you should be aware of. Below sections explain 
 
 While the client is trying to connect initially to one of the members in the `ClientNetworkConfig.addressList`, all the members might not be available. Instead of giving up, throwing an error and stopping the client, the client will retry as many as `connectionAttemptLimit` times. 
 
-You can configure `connectionAttemptLimit` for the number of times you want the client to retry connecting. See the [Setting Connection Attempt Limit section](#5-setting-connection-attempt-limit).
+You can configure `connectionAttemptLimit` for the number of times you want the client to retry connecting. See the [Setting Connection Attempt Limit section](#55-setting-connection-attempt-limit).
 
 The client executes each operation through the already established connection to the cluster. If this connection(s) disconnects or drops, the client will try to reconnect as configured.
 
 ### 7.3.2. Handling Retry-able Operation Failure
 
-While sending the requests to the related members, the operations can fail due to various reasons. Read-only operations are retried by default. If you want to enable retrying for the other operations, you can set the `redoOperation` to `true`. See the [Enabling Redo Operation section](#3-enabling-redo-operation).
+While sending the requests to the related members, the operations can fail due to various reasons. Read-only operations are retried by default. If you want to enable retrying for the other operations, you can set the `redoOperation` to `true`. See the [Enabling Redo Operation section](#53-enabling-redo-operation).
 
 You can set a timeout for retrying the operations sent to a member. This can be provided by using the property `hazelcast.client.invocation.timeout.seconds` in `ClientConfig.properties`. The client will retry an operation within this given period, of course, if it is a read-only operation or you enabled the `redoOperation` as stated in the above paragraph. This timeout value is important when there is a failure resulted by either of the following causes:
 
