@@ -37,14 +37,14 @@ export class ReliableTopicListenerRunner<E> {
     private listenerId: string;
 
     constructor(listenerId: string, listener: MessageListener<E>, ringbuffer: Ringbuffer<ReliableTopicMessage>,
-                batchSize: number, serializationService: SerializationService, proxy: ReliableTopicProxy<E>) {
+                batchSize: number, serializationService: SerializationService, logger: ILogger, proxy: ReliableTopicProxy<E>) {
         this.listenerId = listenerId;
         this.listener = listener;
         this.ringbuffer = ringbuffer;
         this.batchSize = batchSize;
         this.serializationService = serializationService;
         this.proxy = proxy;
-        this.logger = this.proxy.client.getLoggingService().getLogger();
+        this.logger = logger;
     }
 
     public next(): void {

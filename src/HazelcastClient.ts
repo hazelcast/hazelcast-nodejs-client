@@ -91,11 +91,11 @@ export default class HazelcastClient {
             this.instanceName = 'hz.client_' + this.id;
         }
 
-        this.loggingService = new LoggingService(this.config.properties['hazelcast.logging'],
+        this.loggingService = new LoggingService(this.config.customLogger,
             this.config.properties['hazelcast.logging.level'] as number);
         this.invocationService = new InvocationService(this);
         this.listenerService = new ListenerService(this);
-        this.serializationService = new SerializationServiceV1(this.config.serializationConfig);
+        this.serializationService = new SerializationServiceV1(this, this.config.serializationConfig);
         this.proxyManager = new ProxyManager(this);
         this.nearCacheManager = new NearCacheManager(this);
         this.partitionService = new PartitionService(this);

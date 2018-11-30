@@ -59,7 +59,8 @@ export class AggregatorFactory implements IdentifiedDataSerializableFactory {
     private logger: ILogger;
     private idToConstructor: { [id: number]: Aggregator<any> } = {};
 
-    constructor() {
+    constructor(logger: ILogger) {
+        this.logger = logger;
         this.idToConstructor[AggregatorFactory.COUNT] = CountAggregator;
         this.idToConstructor[AggregatorFactory.DOUBLE_AVG] = DoubleAverageAggregator;
         this.idToConstructor[AggregatorFactory.DOUBLE_SUM] = DoubleSumAggregator;

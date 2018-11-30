@@ -94,7 +94,7 @@ describe('Logging Test', function () {
             loggingHappened = true;
         });
         var cfg = new Config.ClientConfig();
-        cfg.properties['hazelcast.logging'] = winstonAdapter;
+        cfg.customLogger = winstonAdapter;
         return HazelcastClient.newHazelcastClient(cfg).then(function (hz) {
             client = hz;
             return expect(loggingHappened).to.be.true;
@@ -103,7 +103,7 @@ describe('Logging Test', function () {
 
     it('no logging', function () {
         var cfg = new Config.ClientConfig();
-        cfg.properties['hazelcast.logging'] = 'off';
+        cfg.properties['hazelcast.logging.level'] = LogLevel.OFF;
         return HazelcastClient.newHazelcastClient(cfg).then(function (hz) {
             client = hz;
             return sinon.assert.notCalled(console.log);
@@ -119,7 +119,7 @@ describe('Logging Test', function () {
 
     it('default logging in case of default property', function () {
         var cfg = new Config.ClientConfig();
-        cfg.properties['hazelcast.logging'] = 'default';
+        cfg.properties['hazelcast.logging.level'] = LogLevel.INFO;
         return HazelcastClient.newHazelcastClient(cfg).then(function (hz) {
             client = hz;
             return sinon.assert.called(console.log);
@@ -128,7 +128,7 @@ describe('Logging Test', function () {
 
     it('error in case of unknown property value', function () {
         var cfg = new Config.ClientConfig();
-        cfg.properties['hazelcast.logging'] = 'unknw';
+        cfg.customLogger = 'unknw';
         return expect(HazelcastClient.newHazelcastClient.bind(this, cfg)).to.throw(Error);
     });
 

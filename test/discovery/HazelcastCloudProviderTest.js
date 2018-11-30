@@ -37,7 +37,7 @@ describe('HazelcastCloudProvider Test', function () {
         expectedAddresses.set('10.0.0.1:5702', new Address('198.51.100.1', 5702));
         expectedAddresses.set('10.0.0.2:5701', new Address('198.51.100.2', 5701));
 
-        var logger = new LoggingService('default', LogLevel.INFO).getLogger();
+        var logger = new LoggingService(null, LogLevel.INFO).getLogger();
         hazelcastCloudDiscovery = new HazelcastCloudDiscovery();
         sinon.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes').callsFake(() => Promise.resolve(expectedAddresses));
 

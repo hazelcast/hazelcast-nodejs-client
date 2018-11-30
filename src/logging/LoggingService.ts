@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import {NoLogger} from './NoLogger';
 import {Property} from '../config/Properties';
 import {DefaultLogger} from './DefaultLogger';
 import {ILogger} from './ILogger';
 
 export enum LogLevel {
+    OFF = -1,
     ERROR = 0,
     WARN = 1,
     INFO = 2,
@@ -31,20 +31,20 @@ export class LoggingService {
 
     private readonly logger: ILogger;
 
-    constructor(loggingProperty: Property, logLevel: number) {
-        if (loggingProperty === 'off') {
-            this.logger = new NoLogger();
-        } else if (loggingProperty === 'default') {
+    constructor(customLogger: ILogger, logLevel: number) {
+        if (customLogger == null) {
             this.logger = new DefaultLogger(logLevel);
-        } else if (this.isLogger(loggingProperty)) {
-            this.logger = loggingProperty;
+        } else if (this.isLogger(customLogger)) {
+            this.logger = customLogger;
         } else {
-            throw new RangeError('Logging type unknown: ' + loggingProperty);
+            throw new RangeError('Logger should implement ILogger functions!');
         }
     }
 
     isLogger(loggingProperty: Property): loggingProperty is ILogger {
-        return (loggingProperty as ILogger).log !== undefined;
+        loggingProperty = (loggingProperty as ILogger);
+        return loggingProperty.log !== undefined && loggingProperty.error !== undefined && loggingProperty.warn !== undefined &&
+            loggingProperty.info !== undefined && loggingProperty.debug !== undefined && loggingProperty.trace !== undefined;
     }
 
     getLogger(): ILogger {

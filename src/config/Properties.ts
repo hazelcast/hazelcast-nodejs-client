@@ -17,7 +17,7 @@
 import {ILogger} from '../logging/ILogger';
 
 export interface Properties {
-    [prop: string]: string | number | boolean | ILogger;
+    [prop: string]: Property;
 }
 
 export type Property = string | number | boolean | ILogger;
