@@ -26,7 +26,7 @@ import ClientMessage = require('../ClientMessage');
  */
 export class BaseProxy {
 
-    public client: HazelcastClient;
+    protected client: HazelcastClient;
     protected name: string;
     protected serviceName: string;
 

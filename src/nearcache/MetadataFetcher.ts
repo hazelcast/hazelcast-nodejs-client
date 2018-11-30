@@ -22,8 +22,8 @@ import HazelcastClient from '../HazelcastClient';
 import {Invocation} from '../invocation/InvocationService';
 import {PartitionService} from '../PartitionService';
 import {RepairingHandler} from './RepairingHandler';
-import ClientMessage = require('../ClientMessage');
 import {ILogger} from '../logging/ILogger';
+import ClientMessage = require('../ClientMessage');
 
 export class MetadataFetcher {
 
@@ -32,6 +32,7 @@ export class MetadataFetcher {
     private logger: ILogger;
 
     constructor(client: HazelcastClient) {
+        this.logger = client.getLoggingService().getLogger();
         this.client = client;
         this.partitionService = this.client.getPartitionService();
     }
