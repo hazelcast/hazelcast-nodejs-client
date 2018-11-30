@@ -150,15 +150,4 @@ describe('ClusterService', function () {
             done();
         });
     });
-
-    it('should throw with wrong group password', function (done) {
-        var cfg = new Config.ClientConfig();
-        cfg.groupConfig.password = 'wrong';
-        HazelcastClient.newHazelcastClient(cfg).then(function (newClient) {
-            newClient.shutdown();
-            done(new Error('Client falsely started with wrong group password'));
-        }).catch(function (err) {
-            done();
-        });
-    });
 });

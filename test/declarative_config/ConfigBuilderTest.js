@@ -17,7 +17,7 @@
 var expect = require('chai').expect;
 var path = require('path');
 var ConfigBuilder = require('../../').ConfigBuilder;
-var Config = require('../../lib/index').Config;
+var Config = require('../../').Config;
 var Long = require('long');
 var AddressHelper = require("../../lib/Util").AddressHelper;
 
