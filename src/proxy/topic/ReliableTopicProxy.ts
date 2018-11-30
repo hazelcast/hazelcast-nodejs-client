@@ -62,7 +62,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         const listenerId = UuidUtil.generate().toString();
 
         const runner = new ReliableTopicListenerRunner(listenerId, listener, this.ringbuffer,
-            this.batchSize, this.serializationService, this);
+            this.batchSize, this.serializationService, this.client.getLoggingService().getLogger(), this);
 
         this.runners[listenerId] = runner;
 

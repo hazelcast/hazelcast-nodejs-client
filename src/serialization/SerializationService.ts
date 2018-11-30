@@ -52,6 +52,7 @@ import {ObjectDataInput, PositionalObjectDataOutput} from './ObjectData';
 import {PortableSerializer} from './portable/PortableSerializer';
 import {PREDICATE_FACTORY_ID, PredicateFactory} from './PredicateFactory';
 import {IdentifiedDataSerializableFactory} from './Serializable';
+import HazelcastClient from '../HazelcastClient';
 
 export interface SerializationService {
     toData(object: any, paritioningStrategy?: any): Data;
@@ -77,8 +78,10 @@ export class SerializationServiceV1 implements SerializationService {
     private serializerNameToId: { [name: string]: number };
     private numberType: string;
     private serializationConfig: SerializationConfig;
+    private client: HazelcastClient;
 
-    constructor(serializationConfig: SerializationConfig) {
+    constructor(client: HazelcastClient, serializationConfig: SerializationConfig) {
+        this.client = client;
         this.serializationConfig = serializationConfig;
         this.registry = {};
         this.serializerNameToId = {};
@@ -276,7 +279,7 @@ export class SerializationServiceV1 implements SerializationService {
         factories[PREDICATE_FACTORY_ID] = new PredicateFactory(DefaultPredicates);
         factories[RELIABLE_TOPIC_MESSAGE_FACTORY_ID] = new ReliableTopicMessageFactory();
         factories[ClusterDataFactoryHelper.FACTORY_ID] = new ClusterDataFactory();
-        factories[AggregatorFactory.FACTORY_ID] = new AggregatorFactory();
+        factories[AggregatorFactory.FACTORY_ID] = new AggregatorFactory(this.client.getLoggingService().getLogger());
         this.registerSerializer('identified', new IdentifiedDataSerializableSerializer(factories));
     }
 

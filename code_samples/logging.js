@@ -21,7 +21,7 @@ var LogLevel = require('hazelcast-client').LogLevel;
 
 if (process.argv.length != 3) {
     console.log('Run as node logging.js [logger]');
-    console.log('[logger]: winston/default/off');
+    console.log('[logger]: winston/default');
 } else {
     var cfg = new Config.ClientConfig();
 

@@ -40,7 +40,7 @@ describe('HazelcastCloudTranslator Test', function () {
         lookup.set(privateAddress, publicAddress);
         lookup.set('127.0.0.2:5701', new Address('192.168.0.2', 5701));
 
-        var logger = new LoggingService('default', LogLevel.INFO).getLogger();
+        var logger = new LoggingService(null, LogLevel.INFO).getLogger();
         hazelcastCloudDiscovery = new HazelcastCloudDiscovery();
 
         translator = new HazelcastCloudAddressTranslator(hazelcastCloudDiscovery, null, logger);
