@@ -1660,6 +1660,8 @@ client.getMap('my-distributed-map').then(function (mp) {
 });
 ```
 
+Hazelcast Map supports a Near Cache for remotely stored entries to increase the performance of read operations. See the [Near Cache section](#782-near-cache) for a detailed explanation of the Near Cache feature and its configuration.
+
 ### 7.4.2. Using MultiMap
 
 Hazelcast `MultiMap` is a distributed and specialized map where you can store multiple values under a single key. For details, see the [MultiMap section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#multimap) in the Hazelcast IMDG Reference Manual.
