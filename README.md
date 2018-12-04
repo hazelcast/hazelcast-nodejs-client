@@ -1662,6 +1662,8 @@ client.getMap('my-distributed-map').then(function (mp) {
 
 Hazelcast Map supports a Near Cache for remotely stored entries to increase the performance of read operations. See the [Near Cache section](#782-near-cache) for a detailed explanation of the Near Cache feature and its configuration.
 
+Hazelcast Map uses `MapListener` to listen to events which occur when entries are added to, updated in, merged in, evicted from or removed from the Map. See the [Map Listener section](#7521-map-listener) for information on how to create a map listener object and register it.
+
 ### 7.4.2. Using MultiMap
 
 Hazelcast `MultiMap` is a distributed and specialized map where you can store multiple values under a single key. For details, see the [MultiMap section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#multimap) in the Hazelcast IMDG Reference Manual.
@@ -1691,6 +1693,8 @@ hz.getMultiMap('my-distributed-multimap').then(function (mmp) {
 });
 ```
 
+Hazelcast MultiMap uses `EntryListener` to listen to events which occur when entries are added to, or removed from the MultiMap. See the [Entry Listener section](#7522-entry-listener) for information on how to create an entry listener object and register it.
+
 ### 7.4.3. Using Replicated Map
 
 Hazelcast `ReplicatedMap` is a distributed key-value data structure where the data is replicated to all members in the cluster. It provides full replication of entries to all members for high speed access. For details, see the [Replicated Map section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#replicated-map) in the Hazelcast IMDG Reference Manual.
@@ -1713,6 +1717,8 @@ hz.getReplicatedMap('my-replicated-map').then(function (rmp) {
     console.log('value for key = ' + value);
 });
 ```
+
+Hazelcast Replicated Map uses `EntryListener` to listen to events which occur when entries are added to, updated in, evicted from or removed from the Replicated Map. See the [Entry Listener section](#7522-entry-listener) for information on how to create an entry listener object and register it.
 
 ### 7.4.4. Using Queue
 
@@ -1745,6 +1751,8 @@ hz.getQueue('my-distributed-queue').then(function (q) {
 });
 ```
 
+Hazelcast Queue uses `ItemListener` to listen to events that occur when items are added to and removed from the Queue. See the [Item Listener section](#7523-item-listener) for information on how to create an item listener object and register it.
+
 ## 7.4.5. Using Set
 
 Hazelcast Set (`ISet`) is a distributed set which does not allow duplicate elements. For details, see the [Set section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#set) in the Hazelcast IMDG Reference Manual.
@@ -1776,6 +1784,8 @@ hz.getSet('my-distributed-set').then(function (s) {
 });
 ```
 
+Hazelcast Set uses `ItemListener` to listen to events that occur when items are added to and removed from the Set. See the [Item Listener section](#7523-item-listener) for information on how to create an item listener object and register it.
+
 ## 7.4.6. Using List
 
 Hazelcast List (`IList`) is a distributed list which allows duplicate elements and preserves the order of elements. For details, see the [List section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#list) in the Hazelcast IMDG Reference Manual.
@@ -1804,6 +1814,8 @@ hz.getList('my-distributed-list').then(function (l) {
     return list.clear();
 });
 ```
+
+Hazelcast List uses `ItemListener` to listen to events that occur when items are added to and removed from the List. See the [Item Listener section](#7523-item-listener) for information on how to create an item listener object and register it.
 
 ## 7.4.7. Using Ringbuffer
 
@@ -1852,6 +1864,8 @@ hz.getReliableTopic("my-distributed-topic").then(function (t) {
     return topic.publish('Hello to distributed world');
 });
 ```
+
+Hazelcast Reliable Topic uses `MessageListener` to listen to events that occur when a message is received. See the [Message Listener section](#7524-message-listener) for information on how to create a message listener object and register it.
 
 ## 7.4.9 Using Lock
 
