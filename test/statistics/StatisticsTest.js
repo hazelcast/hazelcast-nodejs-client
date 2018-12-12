@@ -15,7 +15,6 @@
  */
 
 var expect = require('chai').expect;
-var DeferredPromise = require('../../lib/Util').DeferredPromise;
 var BuildInfo = require('../../lib/BuildInfo').BuildInfo;
 
 var RC = require('../RC');
@@ -23,40 +22,43 @@ var Client = require('../../').Client;
 var Util = require('../Util');
 var Config = require('../../').Config;
 
-
 describe('Statistics with default period', function () {
 
     var cluster;
     var client;
     var map;
-    var member;
 
     before(function () {
         return RC.createCluster(null, null).then(function (res) {
             cluster = res;
         }).then(function () {
             return RC.startMember(cluster.id);
-        }).then(function (m) {
-            member = m;
+        }).then(function () {
             var cfg = new Config.ClientConfig();
             var ncc = new Config.NearCacheConfig();
             ncc.name = 'nearCachedMap*';
             ncc.invalidateOnChange = false;
             cfg.nearCacheConfigs['nearCachedMap*'] = ncc;
             cfg.properties['hazelcast.client.statistics.enabled'] = true;
-            return Client.newHazelcastClient(cfg);
-        }).then(function (cl) {
-            client = cl;
-            return client.getMap('nearCachedMap1');
-        }).then(function (mp) {
-            map = mp;
+            return Client.newHazelcastClient(cfg).then(function (cl) {
+                client = cl;
+            })
         });
     });
 
     after(function () {
-        map.destroy();
         client.shutdown();
-        RC.shutdownCluster(cluster.id);
+        return RC.shutdownCluster(cluster.id);
+    });
+
+    beforeEach(function () {
+        return client.getMap('nearCachedMap' + Math.random()).then(function (mp) {
+            map = mp;
+        });
+    });
+
+    afterEach(function () {
+        return map.destroy();
     });
 
     it('should be enabled via configuration', function () {
@@ -97,8 +99,6 @@ describe('Statistics with default period', function () {
             expect(contains(stats, 'runtime.usedMemory=')).to.be.true;
             expect(contains(stats, 'executionService.userExecutorQueueSize=')).to.be.true;
         });
-
-
     });
 
     it('should contain near cache statistics content', function () {
@@ -107,14 +107,15 @@ describe('Statistics with default period', function () {
         }).then(function () {
             return map.get('key');
         }).then(function () {
-            return Util.promiseWaitMilliseconds(7000);
+            return Util.promiseWaitMilliseconds(5000);
         }).then(function () {
             return getClientStatisticsFromServer(cluster);
         }).then(function (stats) {
-            expect(contains(stats, 'nc.nearCachedMap1.hits=1')).to.be.true;
-            expect(contains(stats, 'nc.nearCachedMap1.creationTime=')).to.be.true;
-            expect(contains(stats, 'nc.nearCachedMap1.misses=1')).to.be.true;
-            expect(contains(stats, 'nc.nearCachedMap1.ownedEntryCount=1')).to.be.true;
+            var nearCacheStats = 'nc.' + map.getName();
+            expect(contains(stats, nearCacheStats + '.hits=1')).to.be.true;
+            expect(contains(stats, nearCacheStats + '.creationTime=')).to.be.true;
+            expect(contains(stats, nearCacheStats + '.misses=1')).to.be.true;
+            expect(contains(stats, nearCacheStats + '.ownedEntryCount=1')).to.be.true;
         });
     });
 
@@ -122,7 +123,6 @@ describe('Statistics with default period', function () {
         var firstIndex = base.indexOf(search);
         return firstIndex > -1 && firstIndex == base.lastIndexOf(search);
     }
-
 });
 
 describe('Statistics with non-default period', function () {
@@ -138,16 +138,15 @@ describe('Statistics with non-default period', function () {
             var cfg = new Config.ClientConfig();
             cfg.properties['hazelcast.client.statistics.enabled'] = true;
             cfg.properties['hazelcast.client.statistics.period.seconds'] = 2;
-            return Client.newHazelcastClient(cfg);
-        }).then(function (cl) {
-            client = cl;
+            return Client.newHazelcastClient(cfg).then(function (cl) {
+                client = cl;
+            });
         });
     });
 
-
     after(function () {
         client.shutdown();
-        RC.shutdownCluster(cluster.id);
+        return RC.shutdownCluster(cluster.id);
     });
 
     it('should not change before period', function () {
@@ -190,7 +189,7 @@ describe('Statistics with negative period', function () {
             var cfg = new Config.ClientConfig();
             cfg.properties['hazelcast.client.statistics.enabled'] = true;
             cfg.properties['hazelcast.client.statistics.period.seconds'] = -2;
-            return Client.newHazelcastClient(cfg);
+            return Client.newHazelcastClient(cfg)
         }).then(function (cl) {
             client = cl;
         });
@@ -198,7 +197,7 @@ describe('Statistics with negative period', function () {
 
     after(function () {
         client.shutdown();
-        RC.shutdownCluster(cluster.id);
+        return RC.shutdownCluster(cluster.id);
     });
 
     it('should be enabled via configuration', function () {
@@ -211,15 +210,12 @@ describe('Statistics with negative period', function () {
 });
 
 function getClientStatisticsFromServer(cluster) {
-    var deferred = DeferredPromise();
     var script = 'client0=instance_0.getClientService().getConnectedClients().' +
         'toArray()[0]\nresult=client0.getClientStatistics();';
-    RC.executeOnController(cluster.id, script, 1).then(function (response) {
+    return RC.executeOnController(cluster.id, script, 1).then(function (response) {
         if (response.result != null) {
-            return deferred.resolve(response.result.toString());
+            return response.result.toString();
         }
-        return deferred.resolve(null);
+        return null;
     });
-
-    return deferred.promise;
 }

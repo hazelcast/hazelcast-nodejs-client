@@ -80,7 +80,6 @@ describe('ConfigLocationTest', function () {
         expect(RuntimeUtil.resolvePath('..')).to.equal(process.cwd());
         process.env[ENV_VARIABLE_NAME] = '/anAbsoluteBase/config.json';
         var root = path.parse(process.cwd()).root;
-        console.log(root);
         expect(RuntimeUtil.resolvePath('.')).to.equal(path.join(root, 'anAbsoluteBase'));
         expect(RuntimeUtil.resolvePath('filename')).to.equal(path.join(root, 'anAbsoluteBase', 'filename'));
         expect(RuntimeUtil.resolvePath('..')).to.equal(root);

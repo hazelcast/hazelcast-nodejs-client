@@ -53,6 +53,7 @@ describe("Semaphore Proxy", function () {
 
     after(function () {
         client1.shutdown();
+        client2.shutdown();
         return Controller.shutdownCluster(cluster.id);
     });
 

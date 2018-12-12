@@ -41,6 +41,7 @@ describe("Client with SSL enabled", function () {
     });
 
     afterEach(function () {
+        this.timeout(12000);
         markEnterprise(this);
         if (client) {
             client.shutdown();

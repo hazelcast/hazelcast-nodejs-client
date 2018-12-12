@@ -112,8 +112,9 @@ export class Statistics {
 
     sendStats(newStats: string, ownerConnection: ClientConnection): void {
         const request = ClientStatisticsCodec.encodeRequest(newStats);
-
-        this.client.getInvocationService().invokeOnTarget(request, ownerConnection.getAddress()).catch((err) => {
+        this.logger.trace('Statistics', 'Trying to send statistics to ' +
+            this.client.getClusterService().ownerUuid + ' from ' + ownerConnection.getLocalAddress().toString());
+        this.client.getInvocationService().invokeOnConnection(ownerConnection, request).catch((err) => {
             this.logger.trace('Statistics', 'Could not send stats ', err);
         });
     }
