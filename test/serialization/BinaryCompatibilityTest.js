@@ -114,7 +114,7 @@ describe('Binary serialization compatibility test', function () {
         });
         cfg.isBigEndian = isBigEndian;
         cfg.defaultNumberType = defaultNumberType;
-        return new SerializationService(cfg)
+        return new SerializationService(undefined, cfg)
     }
 
     before(function () {

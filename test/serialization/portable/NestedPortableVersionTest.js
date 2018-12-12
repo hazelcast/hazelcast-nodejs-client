@@ -36,8 +36,8 @@ describe('Nested Portable Version', function () {
             }
         };
 
-        var ss1 = new SerializationService.SerializationServiceV1(sc);
-        var ss2 = new SerializationService.SerializationServiceV1(sc);
+        var ss1 = new SerializationService.SerializationServiceV1(undefined, sc);
+        var ss2 = new SerializationService.SerializationServiceV1(undefined, sc);
 
         // make sure ss2 cached class definition of child
         ss2.toData(new Child("Furkan"));

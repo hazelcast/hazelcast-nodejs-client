@@ -38,7 +38,7 @@ describe('Portable Serialization', function () {
                 }
             }
         };
-        return new SerializationService.SerializationServiceV1(cfg.serializationConfig);
+        return new SerializationService.SerializationServiceV1(undefined, cfg.serializationConfig);
     }
 
     it('write-read', function () {
