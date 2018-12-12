@@ -1389,19 +1389,19 @@ Hazelcast allows you to encrypt socket level communication between Hazelcast mem
 
 #### 6.1.2. TLS/SSL for Hazelcast Node.js Clients
 
-Hazelcast Node.js clients which support TLS/SSL should have the following user supplied SSL `options` object, to pass to
-[`tls.connect`](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) of Node.js:
+TLS/SSL for the Hazelcast Node.js client can be configured using the `SSLConfig` class. In order to turn it on, `enabled` property of `SSLConfig` should be set to `true`:
 
 ```javascript
 var fs = require('fs');
 
 var clientConfig = new Config.ClientConfig();
-clientConfig.networkConfig.sslOptions = {
-    rejectUnauthorized: true,
-    ca: [fs.readFileSync(__dirname + '/server-cert.pem')],
-    servername: 'foo.bar.com'
-};
+var sslConfig = new Config.SSLConfig();
+sslConfig.enabled = true;
+clientConfig.networkConfig.sslConfig = sslConfig;
 ```
+
+`SSLConfig` object takes various SSL options defined in the [Node.js TLS Documentation](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback). You can set your custom options
+object to `sslConfig.sslOptions`.
 
 #### 6.1.3. Mutual Authentication
 
