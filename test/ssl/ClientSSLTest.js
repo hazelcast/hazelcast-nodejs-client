@@ -49,17 +49,18 @@ describe("Client with SSL enabled", function () {
         return Controller.shutdownCluster(cluster.id);
     });
 
-    function createCluster() {
-        return Controller.createCluster(null, serverConfig).then(function (response) {
+    function createCluster(sConfig) {
+        return Controller.createCluster(null, sConfig).then(function (response) {
             cluster = response;
             return Controller.startMember(cluster.id);
         });
     }
 
     it('should not be able to connect to the server with invalid certificate', function () {
-        serverConfig = serverConfig.replace('[serverCertificate]', 'com/hazelcast/nio/ssl-mutual-auth/server1.keystore');
-        serverConfig = serverConfig.replace('[password]', 'password');
-        return createCluster().then(function () {
+        var sConfig = serverConfig
+            .replace('[serverCertificate]', 'com/hazelcast/nio/ssl-mutual-auth/server1.keystore')
+            .replace('[password]', 'password');
+        return createCluster(sConfig).then(function () {
             var clientConfig = new Config.ClientConfig();
             clientConfig.networkConfig.sslConfig.enabled = true;
             return expect(HazelcastClient.newHazelcastClient(clientConfig)).to.be.rejectedWith(Errors.IllegalStateError);
@@ -67,14 +68,15 @@ describe("Client with SSL enabled", function () {
     });
 
     it('should be able to connect to the server with valid certificate', function () {
-        serverConfig = serverConfig.replace('[serverCertificate]', 'com/hazelcast/nio/ssl/letsencrypt.jks');
-        serverConfig = serverConfig.replace('[password]', '123456');
-        return createCluster().then(function () {
+        var sConfig = serverConfig
+            .replace('[serverCertificate]', 'com/hazelcast/nio/ssl/letsencrypt.jks')
+            .replace('[password]', '123456');
+        return createCluster(sConfig).then(function () {
             var clientConfig = new Config.ClientConfig();
             clientConfig.networkConfig.sslConfig.enabled = true;
             return HazelcastClient.newHazelcastClient(clientConfig);
         }).then(function (hazelcastClient) {
-            client = hazelcastClient
+            client = hazelcastClient;
             return expect(client.lifecycleService.isRunning()).to.be.true;
         });
     });
