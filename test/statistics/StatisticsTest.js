@@ -107,7 +107,7 @@ describe('Statistics with default period', function () {
         }).then(function () {
             return map.get('key');
         }).then(function () {
-            return Util.promiseWaitMilliseconds(5000);
+            return Util.promiseWaitMilliseconds(7000);
         }).then(function () {
             return getClientStatisticsFromServer(cluster);
         }).then(function (stats) {

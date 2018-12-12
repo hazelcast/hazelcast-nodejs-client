@@ -92,11 +92,12 @@ describe('SSL Client Authentication Test', function () {
         describe(title, function () {
 
             before(function () {
+                markEnterprise(this);
                 Util.markServerVersionAtLeast(this, null, '3.8.1');
             });
 
             afterEach(function () {
-                return Controller.terminateCluster(cluster.id);
+                return Controller.shutdownCluster(cluster.id);
             });
 
             it('ma:required, they both know each other should connect', function () {
