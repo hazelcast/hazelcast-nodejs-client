@@ -1,9 +1,0 @@
-{
-    "network": {
-        "ssl": {
-            "enabled": false,
-            "sslOptions": {},
-            "factory": {}
-        }
-    }
-}

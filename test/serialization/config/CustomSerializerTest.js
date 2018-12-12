@@ -34,7 +34,7 @@ describe('CustomSerializer', function () {
     after(function () {
         Controller.shutdownCluster(cluster.id);
         process.chdir('../../../');
-    })
+    });
 
     it('should be configured declaratively', function () {
         var m = new Musician('Furkan');
