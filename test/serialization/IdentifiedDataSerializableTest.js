@@ -106,7 +106,7 @@ describe('Identified Data Serializable', function () {
     it('serialize deserialize identified data serializable', function () {
         var cfg = new Config.ClientConfig();
         cfg.serializationConfig.dataSerializableFactories[1] = identifiedFactory;
-        service = new SerializationService.SerializationServiceV1(cfg.serializationConfig);
+        service = new SerializationService.SerializationServiceV1(undefined, cfg.serializationConfig);
         var dd = new IdentifiedDataClass(99, true, 'a', 23, 54375456, Long.fromBits(243534, 43543654), 24.1, 32435.6533,
             'hazelcast', [99, 100, 101], [true, false, false, true], ['a', 'b', 'v'], [12, 545, 23, 6], [325, 6547656, 345],
             [Long.fromNumber(342534654), Long.fromNumber(-3215243654), Long.fromNumber(123123)], [233.2, 65.88, 657.345],

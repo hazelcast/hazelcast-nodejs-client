@@ -70,7 +70,7 @@ describe('Default serializers Test', function () {
 
     parameters.forEach(function (obj) {
         it('type: ' + typeof obj + ', isArray: ' + Array.isArray(obj) + ', value: ' + JSON.stringify(obj), function () {
-            var serializationService = new SerializationService.SerializationServiceV1(new Config.ClientConfig().serializationConfig);
+            var serializationService = new SerializationService.SerializationServiceV1(undefined, new Config.ClientConfig().serializationConfig);
             var serialized = serializationService.toData(obj);
             expect(serializationService.toObject(serialized)).to.deep.equal(obj);
         })
@@ -93,7 +93,7 @@ describe('Default serializers Test', function () {
             }
             var serializationConfig = new Config.ClientConfig().serializationConfig;
             serializationConfig.defaultNumberType = type;
-            var serializationService = new SerializationService.SerializationServiceV1(serializationConfig);
+            var serializationService = new SerializationService.SerializationServiceV1(undefined, serializationConfig);
             var serialized = serializationService.toData(num);
             expect(serializationService.toObject(serialized)).to.deep.equal(num);
         })
@@ -108,7 +108,7 @@ describe('Default serializers Test', function () {
             }
             var serializationConfig = new Config.ClientConfig().serializationConfig;
             serializationConfig.defaultNumberType = type;
-            var serializationService = new SerializationService.SerializationServiceV1(serializationConfig);
+            var serializationService = new SerializationService.SerializationServiceV1(undefined, serializationConfig);
             var serialized = serializationService.toData(nums);
             expect(serializationService.toObject(serialized)).to.deep.equal(nums);
         })

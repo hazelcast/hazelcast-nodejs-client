@@ -261,7 +261,7 @@ describe('NearCacheImpl', function () {
 
     function createSerializationService() {
         var cfg = new Config.ClientConfig().serializationConfig;
-        return new SerializationService(cfg);
+        return new SerializationService(undefined, cfg);
     }
 
     function promiseBefore(boundaryInSec, func) {
