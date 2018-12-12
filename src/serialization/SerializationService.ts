@@ -279,7 +279,7 @@ export class SerializationServiceV1 implements SerializationService {
         factories[PREDICATE_FACTORY_ID] = new PredicateFactory(DefaultPredicates);
         factories[RELIABLE_TOPIC_MESSAGE_FACTORY_ID] = new ReliableTopicMessageFactory();
         factories[ClusterDataFactoryHelper.FACTORY_ID] = new ClusterDataFactory();
-        factories[AggregatorFactory.FACTORY_ID] = new AggregatorFactory(this.client.getLoggingService().getLogger());
+        factories[AggregatorFactory.FACTORY_ID] = new AggregatorFactory();
         this.registerSerializer('identified', new IdentifiedDataSerializableSerializer(factories));
     }
 

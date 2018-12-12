@@ -44,13 +44,13 @@ describe('SerializationServiceTest', function () {
 
     var identifiedDataSerializableFactoryDefaultExportConfig = {
         path: Path.resolve(__filename, '../../javaclasses/IdentifiedFactory.js')
-    }
+    };
 
     it('adds data serializable factory by its name', function () {
         var serializationConfig = new Config.SerializationConfig();
         serializationConfig.dataSerializableFactoryConfigs[1] = identifiedDataSerializableFactoryConfig;
 
-        var serializationService = new SerializationService(serializationConfig);
+        var serializationService = new SerializationService(undefined, serializationConfig);
 
         var data = serializationService.toData(new IDataSerializable(3));
         var object = serializationService.toObject(data);
@@ -62,7 +62,7 @@ describe('SerializationServiceTest', function () {
         var serializationConfig = new Config.SerializationConfig();
         serializationConfig.portableFactoryConfigs[2] = portableSerializableFactoryConfig;
 
-        var serializationService = new SerializationService(serializationConfig);
+        var serializationService = new SerializationService(undefined, serializationConfig);
 
         var data = serializationService.toData(new Portable(3));
         var object = serializationService.toObject(data);
@@ -74,7 +74,7 @@ describe('SerializationServiceTest', function () {
         var serializationConfig = new Config.SerializationConfig();
         serializationConfig.customSerializerConfigs[44] = customSerializerConfig;
 
-        var serializationService = new SerializationService(serializationConfig);
+        var serializationService = new SerializationService(undefined, serializationConfig);
 
         var data = serializationService.toData(new CustomObject(3));
         var object = serializationService.toObject(data);
@@ -87,7 +87,7 @@ describe('SerializationServiceTest', function () {
         var serializationConfig = new Config.SerializationConfig();
         serializationConfig.globalSerializerConfig = globalSerializerConfig;
 
-        var serializationService = new SerializationService(serializationConfig);
+        var serializationService = new SerializationService(undefined, serializationConfig);
 
         var data = serializationService.toData(new AnyObject(3));
         var object = serializationService.toObject(data);
@@ -100,7 +100,7 @@ describe('SerializationServiceTest', function () {
         var serializationConfig = new Config.SerializationConfig();
         serializationConfig.dataSerializableFactoryConfigs[66] = identifiedDataSerializableFactoryDefaultExportConfig;
 
-        var serializationService = new SerializationService(serializationConfig);
+        var serializationService = new SerializationService(undefined, serializationConfig);
 
         var data = serializationService.toData(new IdentifiedEntryProcessor('x'));
         var object = serializationService.toObject(data);
