@@ -24,6 +24,7 @@ import {ImportConfig} from './ImportConfig';
 import {InMemoryFormat} from './InMemoryFormat';
 import {ListenerConfig} from './ListenerConfig';
 import {NearCacheConfig} from './NearCacheConfig';
+import {SSLConfig} from './SSLConfig';
 import {Properties} from './Properties';
 import {ReliableTopicConfig} from './ReliableTopicConfig';
 import {SerializationConfig} from './SerializationConfig';
@@ -139,3 +140,5 @@ export {NearCacheConfig};
 export {ImportConfig};
 
 export {FlakeIdGeneratorConfig};
+
+export {SSLConfig};
