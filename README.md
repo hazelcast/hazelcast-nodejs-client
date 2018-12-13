@@ -1662,7 +1662,7 @@ client.getMap('my-distributed-map').then(function (mp) {
 
 Hazelcast Map supports a Near Cache for remotely stored entries to increase the performance of read operations. See the [Near Cache section](#782-near-cache) for a detailed explanation of the Near Cache feature and its configuration.
 
-Hazelcast Map uses `MapListener` to listen to events which occur when entries are added to, updated in, merged in, evicted from or removed from the Map. See the [Map Listener section](#7521-map-listener) for information on how to create a map listener object and register it.
+Hazelcast Map uses `MapListener` to listen to the events that occur when the entries are added to, updated/merged in or evicted/removed from the Map. See the [Map Listener section](#7521-map-listener) for information on how to create a map listener object and register it.
 
 ### 7.4.2. Using MultiMap
 
@@ -1693,7 +1693,7 @@ hz.getMultiMap('my-distributed-multimap').then(function (mmp) {
 });
 ```
 
-Hazelcast MultiMap uses `EntryListener` to listen to events which occur when entries are added to, or removed from the MultiMap. See the [Entry Listener section](#7522-entry-listener) for information on how to create an entry listener object and register it.
+Hazelcast MultiMap uses `EntryListener` to listen to the events that occur when the entries are added to or removed from the MultiMap. See the [Entry Listener section](#7522-entry-listener) for information on how to create an entry listener object and register it.
 
 ### 7.4.3. Using Replicated Map
 
@@ -1718,7 +1718,7 @@ hz.getReplicatedMap('my-replicated-map').then(function (rmp) {
 });
 ```
 
-Hazelcast Replicated Map uses `EntryListener` to listen to events which occur when entries are added to, updated in, evicted from or removed from the Replicated Map. See the [Entry Listener section](#7522-entry-listener) for information on how to create an entry listener object and register it.
+Hazelcast Replicated Map uses `EntryListener` to listen to the events that occur when the entries are added to, updated in or evicted/removed from the Replicated Map. See the [Entry Listener section](#7522-entry-listener) for information on how to create an entry listener object and register it.
 
 ### 7.4.4. Using Queue
 
@@ -1751,7 +1751,7 @@ hz.getQueue('my-distributed-queue').then(function (q) {
 });
 ```
 
-Hazelcast Queue uses `ItemListener` to listen to events that occur when items are added to and removed from the Queue. See the [Item Listener section](#7523-item-listener) for information on how to create an item listener object and register it.
+Hazelcast Queue uses `ItemListener` to listen to the events that occur when the items are added to or removed from the Queue. See the [Item Listener section](#7523-item-listener) for information on how to create an item listener object and register it.
 
 ## 7.4.5. Using Set
 
@@ -1784,7 +1784,7 @@ hz.getSet('my-distributed-set').then(function (s) {
 });
 ```
 
-Hazelcast Set uses `ItemListener` to listen to events that occur when items are added to and removed from the Set. See the [Item Listener section](#7523-item-listener) for information on how to create an item listener object and register it.
+Hazelcast Set uses `ItemListener` to listen to the events that occur when the items are added to or removed from the Set. See the [Item Listener section](#7523-item-listener) for information on how to create an item listener object and register it.
 
 ## 7.4.6. Using List
 
@@ -1815,7 +1815,7 @@ hz.getList('my-distributed-list').then(function (l) {
 });
 ```
 
-Hazelcast List uses `ItemListener` to listen to events that occur when items are added to and removed from the List. See the [Item Listener section](#7523-item-listener) for information on how to create an item listener object and register it.
+Hazelcast List uses `ItemListener` to listen to the events that occur when the items are added to or removed from the List. See the [Item Listener section](#7523-item-listener) for information on how to create an item listener object and register it.
 
 ## 7.4.7. Using Ringbuffer
 
@@ -1865,7 +1865,7 @@ hz.getReliableTopic("my-distributed-topic").then(function (t) {
 });
 ```
 
-Hazelcast Reliable Topic uses `MessageListener` to listen to events that occur when a message is received. See the [Message Listener section](#7524-message-listener) for information on how to create a message listener object and register it.
+Hazelcast Reliable Topic uses `MessageListener` to listen to the events that occur when a message is received. See the [Message Listener section](#7524-message-listener) for information on how to create a message listener object and register it.
 
 ## 7.4.9 Using Lock
 
