@@ -303,7 +303,7 @@ This section describes the most common configuration elements to get you started
 It discusses some member side configuration options to ease the understanding of Hazelcast's ecosystem. Then, the client side configuration options
 regarding the cluster connection are discussed. The configurations for the Hazelcast IMDG data structures that can be used in the Node.js client are discussed in the following sections.
 
-See the [Hazelcast IMDG Reference Manual](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html) and [Configuration Overview section](#configuration-overview) for more information.
+See the [Hazelcast IMDG Reference Manual](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html) and [Configuration Overview section](#3-configuration-overview) for more information.
 
 ### 1.4.1. Configuring Hazelcast IMDG
 
@@ -410,7 +410,7 @@ of your application's entry point.
 If you prefer to keep your `hazelcast-client.json` file somewhere else, you can override the environment variable `HAZELCAST_CLIENT_CONFIG`
 with the location of your config file. In this case, the client uses the configuration file specified in the environment variable.
 
-For the structure of `hazelcast-client.json`, see the [hazelcast-client-full.json file](test/config/hazelcast-client-full.json). You
+For the structure of `hazelcast-client.json`, see the [hazelcast-client-full.json file](hazelcast-client-full.json). You
 can use only the relevant parts of the file in your `hazelcast-client.json` and remove the rest. The default configuration is used for any
 part that you do not explicitly set in the `hazelcast-client.json` file.
 
