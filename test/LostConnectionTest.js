@@ -63,7 +63,7 @@ describe('Lost connection', function () {
                     }
                 });
             }
-        }
+        };
 
         client.clusterService.addMembershipListener(membershipListener);
         Controller.startMember(cluster.id).then(function (m) {

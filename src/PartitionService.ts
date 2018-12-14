@@ -71,7 +71,8 @@ export class PartitionService {
                 this.partitionCount = Object.keys(this.partitionMap).length;
             }).catch((e) => {
                 if (this.client.getLifecycleService().isRunning()) {
-                    this.logger.warn('PartitionService', 'Error while fetching cluster partition table!', e);
+                    this.logger.warn('PartitionService', 'Error while fetching cluster partition table from'
+                        + this.client.getClusterService().ownerUuid, e);
                 }
             });
     }

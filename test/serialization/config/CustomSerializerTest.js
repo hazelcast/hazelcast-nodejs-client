@@ -16,15 +16,17 @@
 
 var Controller = require('../../RC');
 var expect = require('chai').expect;
+var path = require('path');
 
 var Client = require('../../../').Client;
 var Musician = require('./Musician').Musician;
 
 describe('CustomSerializer', function () {
     var cluster;
+    var client;
 
     before(function () {
-        process.chdir('test/serialization/config');
+        process.env['HAZELCAST_CLIENT_CONFIG'] = path.join(__dirname, 'customserializer.json');
         return Controller.createCluster(null, null).then(function (cl) {
             cluster = cl;
             return Controller.startMember(cluster.id);
@@ -32,13 +34,15 @@ describe('CustomSerializer', function () {
     });
 
     after(function () {
-        Controller.shutdownCluster(cluster.id);
-        process.chdir('../../../');
-    })
+        delete process.env['HAZELCAST_CLIENT_CONFIG'];
+        client.shutdown();
+        return Controller.shutdownCluster(cluster.id);
+    });
 
     it('should be configured declaratively', function () {
         var m = new Musician('Furkan');
-        return Client.newHazelcastClient().then(function (client) {
+        return Client.newHazelcastClient().then(function (cl) {
+            client = cl;
             expect(client.getSerializationService().findSerializerFor(m).getId()).to.be.equal(10);
             var map;
             return client.getMap('musicians').then(function (mp) {

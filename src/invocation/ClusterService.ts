@@ -102,11 +102,11 @@ export class ClusterService {
 
         let providerAddresses: Set<string> = new Set();
         const promises: Array<Promise<void>> = [];
-        this.client.getConnectionManager().addressProviders.forEach(function (addressProvider): void {
+        this.client.getConnectionManager().addressProviders.forEach((addressProvider) => {
             promises.push(addressProvider.loadAddresses().then((res) => {
                 providerAddresses = new Set([...Array.from(providerAddresses), ...res]);
             }).catch((err) => {
-                this.logger.warning('Error from AddressProvider: ' + addressProvider, err);
+                this.logger.warn('Error from AddressProvider: ' + addressProvider, err);
             }));
         });
         return Promise.all(promises).then(() => {
