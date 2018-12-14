@@ -373,13 +373,13 @@ export default class HazelcastClient {
      * Shuts down this client instance.
      */
     shutdown(): void {
+        this.lifecycleService.emitLifecycleEvent(LifecycleEvent.shuttingDown);
         if (this.mapRepairingTask !== undefined) {
             this.mapRepairingTask.shutdown();
         }
         this.nearCacheManager.destroyAllNearCaches();
         this.statistics.stop();
         this.partitionService.shutdown();
-        this.lifecycleService.emitLifecycleEvent(LifecycleEvent.shuttingDown);
         this.heartbeat.cancel();
         this.connectionManager.shutdown();
         this.listenerService.shutdown();

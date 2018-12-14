@@ -15,7 +15,6 @@
  */
 
 var expect = require('chai').expect;
-var DeferredPromise = require('../../lib/Util').DeferredPromise;
 var BuildInfo = require('../../lib/BuildInfo').BuildInfo;
 
 var RC = require('../RC');
@@ -23,53 +22,57 @@ var Client = require('../../').Client;
 var Util = require('../Util');
 var Config = require('../../').Config;
 
-
 describe('Statistics with default period', function () {
 
     var cluster;
     var client;
     var map;
-    var member;
 
     before(function () {
         return RC.createCluster(null, null).then(function (res) {
             cluster = res;
         }).then(function () {
             return RC.startMember(cluster.id);
-        }).then(function (m) {
-            member = m;
+        }).then(function () {
             var cfg = new Config.ClientConfig();
             var ncc = new Config.NearCacheConfig();
             ncc.name = 'nearCachedMap*';
             ncc.invalidateOnChange = false;
             cfg.nearCacheConfigs['nearCachedMap*'] = ncc;
             cfg.properties['hazelcast.client.statistics.enabled'] = true;
-            return Client.newHazelcastClient(cfg);
-        }).then(function (cl) {
-            client = cl;
-            return client.getMap('nearCachedMap1');
-        }).then(function (mp) {
-            map = mp;
+            return Client.newHazelcastClient(cfg).then(function (cl) {
+                client = cl;
+            })
         });
     });
 
     after(function () {
-        map.destroy();
         client.shutdown();
-        RC.shutdownCluster(cluster.id);
+        return RC.shutdownCluster(cluster.id);
+    });
+
+    beforeEach(function () {
+        return client.getMap('nearCachedMap' + Math.random()).then(function (mp) {
+            map = mp;
+        });
+    });
+
+    afterEach(function () {
+        return map.destroy();
     });
 
     it('should be enabled via configuration', function () {
         return Util.promiseWaitMilliseconds(1000).then(function () {
-            return getClientStatisticsFromServer(cluster);
+            return getClientStatisticsFromServer(cluster, client);
         }).then(function (stats) {
+            expect(stats).to.not.null;
             expect(stats).to.not.equal('');
         });
     });
 
     it('should contain statistics content', function () {
         return Util.promiseWaitMilliseconds(1000).then(function () {
-            return getClientStatisticsFromServer(cluster);
+            return getClientStatisticsFromServer(cluster, client);
         }).then(function (stats) {
             expect(stats).to.not.be.null;
             expect(contains(stats, 'clientName=' + client.getName())).to.be.true;
@@ -97,8 +100,6 @@ describe('Statistics with default period', function () {
             expect(contains(stats, 'runtime.usedMemory=')).to.be.true;
             expect(contains(stats, 'executionService.userExecutorQueueSize=')).to.be.true;
         });
-
-
     });
 
     it('should contain near cache statistics content', function () {
@@ -107,14 +108,15 @@ describe('Statistics with default period', function () {
         }).then(function () {
             return map.get('key');
         }).then(function () {
-            return Util.promiseWaitMilliseconds(7000);
+            return Util.promiseWaitMilliseconds(5000);
         }).then(function () {
-            return getClientStatisticsFromServer(cluster);
+            return getClientStatisticsFromServer(cluster, client);
         }).then(function (stats) {
-            expect(contains(stats, 'nc.nearCachedMap1.hits=1')).to.be.true;
-            expect(contains(stats, 'nc.nearCachedMap1.creationTime=')).to.be.true;
-            expect(contains(stats, 'nc.nearCachedMap1.misses=1')).to.be.true;
-            expect(contains(stats, 'nc.nearCachedMap1.ownedEntryCount=1')).to.be.true;
+            var nearCacheStats = 'nc.' + map.getName();
+            expect(contains(stats, nearCacheStats + '.hits=1')).to.be.true;
+            expect(contains(stats, nearCacheStats + '.creationTime=')).to.be.true;
+            expect(contains(stats, nearCacheStats + '.misses=1')).to.be.true;
+            expect(contains(stats, nearCacheStats + '.ownedEntryCount=1')).to.be.true;
         });
     });
 
@@ -122,7 +124,6 @@ describe('Statistics with default period', function () {
         var firstIndex = base.indexOf(search);
         return firstIndex > -1 && firstIndex == base.lastIndexOf(search);
     }
-
 });
 
 describe('Statistics with non-default period', function () {
@@ -138,25 +139,24 @@ describe('Statistics with non-default period', function () {
             var cfg = new Config.ClientConfig();
             cfg.properties['hazelcast.client.statistics.enabled'] = true;
             cfg.properties['hazelcast.client.statistics.period.seconds'] = 2;
-            return Client.newHazelcastClient(cfg);
-        }).then(function (cl) {
-            client = cl;
+            return Client.newHazelcastClient(cfg).then(function (cl) {
+                client = cl;
+            });
         });
     });
 
-
     after(function () {
         client.shutdown();
-        RC.shutdownCluster(cluster.id);
+        return RC.shutdownCluster(cluster.id);
     });
 
     it('should not change before period', function () {
         var stats1;
         return Util.promiseWaitMilliseconds(1000).then(function () {
-            return getClientStatisticsFromServer(cluster);
+            return getClientStatisticsFromServer(cluster, client);
         }).then(function (st) {
             stats1 = st;
-            return getClientStatisticsFromServer(cluster)
+            return getClientStatisticsFromServer(cluster, client)
         }).then(function (stats2) {
             expect(stats1).to.be.equal(stats2);
         });
@@ -165,12 +165,12 @@ describe('Statistics with non-default period', function () {
     it('should change after period', function () {
         var stats1;
         return Util.promiseWaitMilliseconds(1000).then(function () {
-            return getClientStatisticsFromServer(cluster);
+            return getClientStatisticsFromServer(cluster, client);
         }).then(function (st) {
             stats1 = st;
             return Util.promiseWaitMilliseconds(2000)
         }).then(function () {
-            return getClientStatisticsFromServer(cluster);
+            return getClientStatisticsFromServer(cluster, client);
         }).then(function (stats2) {
             expect(stats1).not.to.be.equal(stats2);
         });
@@ -190,7 +190,7 @@ describe('Statistics with negative period', function () {
             var cfg = new Config.ClientConfig();
             cfg.properties['hazelcast.client.statistics.enabled'] = true;
             cfg.properties['hazelcast.client.statistics.period.seconds'] = -2;
-            return Client.newHazelcastClient(cfg);
+            return Client.newHazelcastClient(cfg)
         }).then(function (cl) {
             client = cl;
         });
@@ -198,28 +198,33 @@ describe('Statistics with negative period', function () {
 
     after(function () {
         client.shutdown();
-        RC.shutdownCluster(cluster.id);
+        return RC.shutdownCluster(cluster.id);
     });
 
     it('should be enabled via configuration', function () {
         return Util.promiseWaitMilliseconds(1000).then(function () {
-            return getClientStatisticsFromServer(cluster);
+            return getClientStatisticsFromServer(cluster, client);
         }).then(function (stats) {
             expect(stats).to.not.equal('');
         });
     });
 });
 
-function getClientStatisticsFromServer(cluster) {
-    var deferred = DeferredPromise();
-    var script = 'client0=instance_0.getClientService().getConnectedClients().' +
-        'toArray()[0]\nresult=client0.getClientStatistics();';
-    RC.executeOnController(cluster.id, script, 1).then(function (response) {
+function getClientStatisticsFromServer(cluster, client) {
+    var clientUuid = client.getClusterService().uuid;
+    console.log(clientUuid);
+    var script =
+        'clients=instance_0.getClientService().getConnectedClients().toArray()\n' +
+        'for(i=0;i<clients.length;i++) {\n' +
+        '   if (clients[i].getUuid().equals("' + clientUuid + '")) {\n' +
+        '       result=clients[i].getClientStatistics();\n' +
+        '       break;' +
+        '   }\n' +
+        '}\n';
+    return RC.executeOnController(cluster.id, script, 1).then(function (response) {
         if (response.result != null) {
-            return deferred.resolve(response.result.toString());
+            return response.result.toString();
         }
-        return deferred.resolve(null);
+        return null;
     });
-
-    return deferred.promise;
 }

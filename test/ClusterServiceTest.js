@@ -61,7 +61,7 @@ describe('ClusterService', function () {
                 expect(client.clusterService.getSize()).to.be.eq(2);
                 done();
             }
-        }
+        };
 
         client.clusterService.addMembershipListener(membershipListener);
 
@@ -78,7 +78,7 @@ describe('ClusterService', function () {
                 expect(client.getClusterService().getSize()).to.be.eq(1);
                 done();
             }
-        }
+        };
 
         client.clusterService.addMembershipListener(membershipListener);
 
@@ -101,7 +101,7 @@ describe('ClusterService', function () {
                 expect(remainingMemberList[1].address.port).to.equal(member3.port);
                 done();
             }
-        }
+        };
 
         client.clusterService.addMembershipListener(membershipListener);
 

@@ -134,7 +134,8 @@ describe('Logging Test', function () {
 
     it('default logging, default level', function () {
         var cfg = new Config.ClientConfig();
-        return HazelcastClient.newHazelcastClient(cfg).then(function () {
+        return HazelcastClient.newHazelcastClient(cfg).then(function (cl) {
+            client = cl;
             return sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'INFO');
         });
     });
@@ -142,7 +143,8 @@ describe('Logging Test', function () {
     it('default logging, error level', function () {
         var cfg = new Config.ClientConfig();
         cfg.properties['hazelcast.logging.level'] = LogLevel.ERROR;
-        return HazelcastClient.newHazelcastClient(cfg).then(function () {
+        return HazelcastClient.newHazelcastClient(cfg).then(function (cl) {
+            client = cl;
             return sinon.assert.notCalled(console.log);
         });
     });
@@ -150,7 +152,8 @@ describe('Logging Test', function () {
     it('default logging, trace level', function () {
         var cfg = new Config.ClientConfig();
         cfg.properties['hazelcast.logging.level'] = LogLevel.TRACE;
-        return HazelcastClient.newHazelcastClient(cfg).then(function () {
+        return HazelcastClient.newHazelcastClient(cfg).then(function (cl) {
+            client = cl;
             return sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'INFO');
             return sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'DEBUG');
             return sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'TRACE');

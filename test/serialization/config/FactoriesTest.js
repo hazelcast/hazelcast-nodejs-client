@@ -16,6 +16,7 @@
 
 var Controller = require('../../RC');
 var expect = require('chai').expect;
+var path = require('path');
 
 var Client = require('../../../').Client;
 var Foo = require('./Foo').Foo;
@@ -23,9 +24,10 @@ var Address = require('./Address').Address;
 
 describe('Factories', function () {
     var cluster;
+    var client;
 
     before(function () {
-        process.chdir('test/serialization/config');
+        process.env['HAZELCAST_CLIENT_CONFIG'] = path.join(__dirname, 'customserializer.json');
         return Controller.createCluster(null, null).then(function (cl) {
             cluster = cl;
             return Controller.startMember(cluster.id);
@@ -33,12 +35,19 @@ describe('Factories', function () {
     });
 
     after(function () {
-        Controller.shutdownCluster(cluster.id);
-        process.chdir('../../../');
-    })
+        delete process.env['HAZELCAST_CLIENT_CONFIG'];
+        return Controller.shutdownCluster(cluster.id);
+    });
+
+    afterEach(function () {
+        if (client != null) {
+            client.shutdown();
+        }
+    });
 
     it('should be configured declaratively', function () {
-        return Client.newHazelcastClient().then(function (client) {
+        return Client.newHazelcastClient().then(function (cl) {
+            client = cl;
             var map;
             return client.getMap('furkan').then(function (mp) {
                 map = mp;
@@ -55,7 +64,6 @@ describe('Factories', function () {
                 expect(res.zipCode).to.be.equal(42000);
                 expect(res.city).to.be.equal('Konya');
                 expect(res.state).to.be.equal('Turkey');
-                client.shutdown();
             });
         });
     });

@@ -58,7 +58,7 @@ describe('MembershipListener', function () {
             memberAdded: function (membershipEvent) {
                 listenerCalledResolver.resolve(membershipEvent);
             }
-        }
+        };
         client.clusterService.addMembershipListener(membershipListener);
 
         Controller.startMember(cluster.id).then(function (res) {
@@ -89,13 +89,13 @@ describe('MembershipListener', function () {
             memberAdded: function (membershipEvent) {
                 listenerCalledResolver.resolve(membershipEvent);
             }
-        }
+        };
 
         var membershipListener2 = {
             memberAdded: function (membershipEvent) {
                 listenedSecondListener = true;
             }
-        }
+        };
         client.clusterService.addMembershipListener(membershipListener);
         client.clusterService.addMembershipListener(membershipListener2);
 
@@ -126,7 +126,7 @@ describe('MembershipListener', function () {
             memberAdded: function (membershipEvent) {
                 counter++;
             }
-        }
+        };
         client.clusterService.addMembershipListener(membershipListener);
         client.clusterService.addMembershipListener(membershipListener);
 
@@ -148,7 +148,7 @@ describe('MembershipListener', function () {
             memberRemoved: function (membershipEvent) {
                 listenerCalledResolver.resolve(membershipEvent);
             }
-        }
+        };
 
         client.clusterService.addMembershipListener(membershipListener);
 
@@ -182,8 +182,7 @@ describe('MembershipListener', function () {
                 }
             },
         };
-        client.clusterService.addMembershipListener(membershipListener)
-
+        client.clusterService.addMembershipListener(membershipListener);
 
         var script = 'function attrs() { ' +
             'return instance_0.getCluster().getLocalMember().setIntAttribute("test", 123); }; result=attrs();';
@@ -199,8 +198,8 @@ describe('MembershipListener', function () {
                     done();
                 }
             }
-        }
-        client.clusterService.addMembershipListener(membershipListener)
+        };
+        client.clusterService.addMembershipListener(membershipListener);
 
         var addScript = 'function attrs() { ' +
             'return instance_0.getCluster().getLocalMember().setIntAttribute("test", 123); }; result=attrs();';
