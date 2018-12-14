@@ -212,7 +212,6 @@ describe('Statistics with negative period', function () {
 
 function getClientStatisticsFromServer(cluster, client) {
     var clientUuid = client.getClusterService().uuid;
-    console.log(clientUuid);
     var script =
         'clients=instance_0.getClientService().getConnectedClients().toArray()\n' +
         'for(i=0;i<clients.length;i++) {\n' +
