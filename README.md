@@ -8,6 +8,9 @@
   * [1.2. Working with Hazelcast IMDG Clusters](#12-working-with-hazelcast-imdg-clusters)
     * [1.2.1. Setting Up a Hazelcast IMDG Cluster](#121-setting-up-a-hazelcast-imdg-cluster)
       * [1.2.1.1. Using hazelcast-member Tool](#1211-using-hazelcast-member-tool)
+        * [Installing on Mac OS X](#installing-on-mac-os-x)
+        * [Installing on Ubuntu and Debian](#installing-on-ubuntu-and-debian)
+        * [Installing on Red Hat and CentOS](#installing-on-red-hat-and-centos)
       * [1.2.1.2. Running Standalone JARs](#1212-running-standalone-jars)
       * [1.2.1.3. Adding User Library to CLASSPATH](#1213-adding-user-library-to-classpath)
   * [1.3. Downloading and Installing](#13-downloading-and-installing)
@@ -60,7 +63,7 @@
     * [7.4.5. Using Set](#745-using-set)
     * [7.4.6. Using List](#746-using-list)
     * [7.4.7. Using Ringbuffer](#747-using-ringbuffer)
-    * [7.4.8. Using Reliable Topic](#748-using-reliable-topic) 
+    * [7.4.8. Using Reliable Topic](#748-using-reliable-topic)
     * [7.4.9. Using Lock](#749-using-lock)
     * [7.4.10. Using Atomic Long](#7410-using-atomic-long)
     * [7.4.11. Using Semaphore](#7411-using-semaphore)
@@ -74,15 +77,18 @@
     * [7.5.2. Listening for Distributed Data Structure Events](#752-listening-for-distributed-data-structure-events)
       * [7.5.2.1. Map Listener](#7521-map-listener)
       * [7.5.2.2. Entry Listener](#7522-entry-listener)
-      * [7.5.2.3. Item Listener](#7523-item-listener)           
-      * [7.5.2.4. Message Listener](#7524-message-listener)      
+      * [7.5.2.3. Item Listener](#7523-item-listener)
+      * [7.5.2.4. Message Listener](#7524-message-listener)
   * [7.6. Distributed Computing](#76-distributed-computing)
     * [7.6.1. Using EntryProcessor](#761-using-entryprocessor)
+     * [Processing Entries](#processing-entries)
   * [7.7. Distributed Query](#77-distributed-query)
     * [7.7.1. How Distributed Query Works](#771-how-distributed-query-works)
       * [7.7.1.1. Employee Map Query Example](#7711-employee-map-query-example)
       * [7.7.1.2. Querying by Combining Predicates with AND, OR, NOT](#7712-querying-by-combining-predicates-with-and-or-not)
       * [7.7.1.3. Querying with SQL](#7713-querying-with-sql)
+         * [Supported SQL Syntax](#supported-sql-syntax)
+         * [Querying Examples with Predicates](#querying-examples-with-predicates)
       * [7.7.1.4. Filtering with Paging Predicates](#7714-filtering-with-paging-predicates)
     * [7.7.2. Fast-Aggregations](#772-fast-aggregations)
   * [7.8. Performance](#78-performance)
@@ -154,7 +160,7 @@ In order to use Hazelcast Node.js client, we first need to setup a Hazelcast IMD
 There are following options to start a Hazelcast IMDG cluster easily:
 
 * You can run standalone members by downloading and running JAR files from the website.
-* You can embed members to your Java projects. 
+* You can embed members to your Java projects.
 * The easiest way is to use [hazelcast-member tool](https://github.com/hazelcast/hazelcast-member-tool) if you have brew installed in your computer.
 
 We are going to download JARs from the website and run a standalone member for this guide.
@@ -187,7 +193,7 @@ Then, run the following commands to add the `.deb` artifact to your system confi
 ```
 echo "deb https://dl.bintray.com/hazelcast/deb stable main" | sudo tee -a /etc/apt/sources.list
 sudo apt-get update
-``` 
+```
 
 Finally, run the following command to install the `hazelcast-member` tool:
 
@@ -811,7 +817,7 @@ Hazelcast serializes all your objects before sending them to the server. The `bo
 
 > Note: A `number` type is serialized as `Double` by default. You can configure this behavior using the `SerializationConfig.defaultNumberType` method.
 
-Arrays of the above types can be serialized as `boolean[]`, `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `long[]` and `string[]` for the Java server side, respectively. 
+Arrays of the above types can be serialized as `boolean[]`, `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `long[]` and `string[]` for the Java server side, respectively.
 
 **Serialization Priority**
 
@@ -835,7 +841,7 @@ However, `JSON Serialization` is not the best way of serialization in terms of p
 
 Or, if you want to use your own serialization method, you can use a [Custom Serialization](#43-custom-serialization).
 
-> **NOTE: Hazelcast Node.js client is a TypeScript-based project but JavaScript does not have interfaces. Therefore, 
+> **NOTE: Hazelcast Node.js client is a TypeScript-based project but JavaScript does not have interfaces. Therefore,
  some interfaces are given to the user by using the TypeScript files that have `.ts` extension. In this guide, implementing an interface means creating an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as `an instance of the interface`. You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or GitHub repository for a required interface.**
 
 ## 4.1. IdentifiedDataSerializable Serialization
@@ -871,7 +877,7 @@ Employee.prototype.getClassId = function () {
 };
 ```
 
-The `IdentifiedDataSerializable` interface uses `getClassId()` and `getFactoryId()` to reconstitute the object. To complete the implementation, `IdentifiedDataSerializableFactory` should also be implemented and registered into `SerializationConfig` which can be accessed from `Config.serializationConfig`. The factory's responsibility is to return an instance of the right `IdentifiedDataSerializable` object, given the `classId`. 
+The `IdentifiedDataSerializable` interface uses `getClassId()` and `getFactoryId()` to reconstitute the object. To complete the implementation, `IdentifiedDataSerializableFactory` should also be implemented and registered into `SerializationConfig` which can be accessed from `Config.serializationConfig`. The factory's responsibility is to return an instance of the right `IdentifiedDataSerializable` object, given the `classId`.
 
 A sample `IdentifiedDataSerializableFactory` could be implemented as follows:
 
@@ -1203,7 +1209,7 @@ You can specify multiple addresses with or without the port information as seen 
 
 Smart routing defines whether the client mode is smart or unisocket. See the [Node.js Client Operation Modes section](#72-nodejs-client-operation-modes)
 for the description of smart and unisocket modes.
- 
+
 The following are example configurations.
 
 **Declarative Configuration:**
@@ -1252,7 +1258,7 @@ Its default value is `false` (disabled).
 
 Connection timeout is the timeout value in milliseconds for the members to accept the client connection requests.
 If the member does not respond within the timeout, the client will retry to connect as many as `ClientNetworkConfig.connectionAttemptLimit` times.
- 
+
 The following are the example configurations.
 
 
@@ -1303,7 +1309,7 @@ Its default value is `2`.
 ## 5.6. Setting Connection Attempt Period
 
 Connection attempt period is the duration in milliseconds between the connection attempts defined by `ClientNetworkConfig.connectionAttemptLimit`.
- 
+
 The following are example configurations.
 
 **Declarative Configuration:**
@@ -1335,7 +1341,7 @@ As explained in the [TLS/SSL section](#61-tlsssl), Hazelcast members have key st
 ## 5.8. Enabling Hazelcast Cloud Discovery
 
 The purpose of Hazelcast Cloud Discovery is to provide the clients to use IP addresses provided by `hazelcast orchestrator`. To enable Hazelcast Cloud Discovery, specify a token for the `discoveryToken` field and set the `enabled` field to `true`.
- 
+
 The following are example configurations.
 
 **Declarative Configuration:**
@@ -1546,7 +1552,7 @@ Promises provide a better way of working with callbacks. You can chain asynchron
 
 If you are ready to go, let's start to use Hazelcast Node.js client.
 
-The first step is the configuration. You can configure the Node.js client declaratively or programmatically. We will use the programmatic approach throughout this chapter. See the [Programmatic Configuration section](#311-programmatic-configuration) for details. 
+The first step is the configuration. You can configure the Node.js client declaratively or programmatically. We will use the programmatic approach throughout this chapter. See the [Programmatic Configuration section](#311-programmatic-configuration) for details.
 
 The following is an example on how to create a `ClientConfig` object and configure it programmatically:
 
@@ -1614,7 +1620,7 @@ There are two main failure cases you should be aware of. Below sections explain 
 
 ### 7.3.1. Handling Client Connection Failure
 
-While the client is trying to connect initially to one of the members in the `ClientNetworkConfig.addressList`, all the members might not be available. Instead of giving up, throwing an error and stopping the client, the client will retry as many as `connectionAttemptLimit` times. 
+While the client is trying to connect initially to one of the members in the `ClientNetworkConfig.addressList`, all the members might not be available. Instead of giving up, throwing an error and stopping the client, the client will retry as many as `connectionAttemptLimit` times.
 
 You can configure `connectionAttemptLimit` for the number of times you want the client to retry connecting. See the [Setting Connection Attempt Limit section](#55-setting-connection-attempt-limit).
 
@@ -1867,7 +1873,7 @@ hz.getReliableTopic("my-distributed-topic").then(function (t) {
 
 Hazelcast Reliable Topic uses `MessageListener` to listen to the events that occur when a message is received. See the [Message Listener section](#7524-message-listener) for information on how to create a message listener object and register it.
 
-## 7.4.9 Using Lock
+## 7.4.9. Using Lock
 
 Hazelcast Lock (`ILock`) is a distributed lock implementation. You can synchronize Hazelcast members and clients using a Lock. For details, see the [Lock section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#lock) in the Hazelcast IMDG Reference Manual.
 
@@ -1887,7 +1893,7 @@ hz.getLock("my-distributed-lock").then(function (l) {
 });
 ```
 
-## 7.4.10 Using Atomic Long
+## 7.4.10. Using Atomic Long
 
 Hazelcast Atomic Long (`IAtomicLong`) is the distributed long which offers most of the operations such as `get`, `set`, `getAndSet`, `compareAndSet` and `incrementAndGet`. For details, see the [Atomic Long section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#iatomiclong) in the Hazelcast IMDG Reference Manual.
 
@@ -1908,7 +1914,7 @@ hz.getAtomicLong("counter").then(function (c) {
 });
 ```
 
-## 7.4.11 Using Semaphore
+## 7.4.11. Using Semaphore
 
 Hazelcast Semaphore (`ISemaphore`) is a distributed semaphore implementation. For details, see the [Semaphore section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#isemaphore) in the Hazelcast IMDG Reference Manual.
 
@@ -1928,7 +1934,7 @@ hazelcastClient.getSemaphore('mySemaphore').then(function (s) {
 });
 ```
 
-## 7.4.12 Using PN Counter
+## 7.4.12. Using PN Counter
 
 Hazelcast `PNCounter` (Positive-Negative Counter) is a CRDT positive-negative counter implementation. It is an eventually consistent counter given there is no member failure. For details, see the [PN Counter section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#pn-counter) in the Hazelcast IMDG Reference Manual.
 
@@ -1947,7 +1953,7 @@ hazelcastClient.getPNCounter('myPNCounter').then(function (counter) {
 });
 ```
 
-## 7.4.13 Using Flake ID Generator
+## 7.4.13. Using Flake ID Generator
 
 Hazelcast `FlakeIdGenerator` is used to generate cluster-wide unique identifiers. Generated identifiers are long primitive values and are k-ordered (roughly ordered). IDs are in the range from 0 to `2^63-1` (maximum signed long value). For details, see the [FlakeIdGenerator section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#flakeidgenerator) in the Hazelcast IMDG Reference Manual.
 
@@ -2006,7 +2012,7 @@ See the following example.
 
 var membershipListener = {
     memberAttributeChanged: function (memberAttributeEvent) {
-       console.log('Member Attribute Changed: The address is', memberAttributeEvent.member.address.toString()); 
+       console.log('Member Attribute Changed: The address is', memberAttributeEvent.member.address.toString());
     },
 };
 client.clusterService.addMembershipListener(membershipListener);
@@ -2083,14 +2089,14 @@ Process finished with exit code 0
 
 You can add event listeners to the distributed data structures.
 
-> **NOTE: Hazelcast Node.js client is a TypeScript-based project but JavaScript does not have interfaces. Therefore, 
+> **NOTE: Hazelcast Node.js client is a TypeScript-based project but JavaScript does not have interfaces. Therefore,
   some interfaces are given to the user by using the TypeScript files that have `.ts` extension. In this guide, implementing an interface means creating an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as `an instance of the interface`. You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or GitHub repository for a required interface.**
 
 #### 7.5.2.1. Map Listener
 
 The Map Listener is used by the Hazelcast `Map`.
 
-You can listen to map-wide or entry-based events by using the functions in the `MapListener` interface. Every function type in this interface is one of the `EntryEventListener` and `MapEventListener` types. To listen to these events, you need to implement the relevant `EntryEventListener` and `MapEventListener` functions in the `MapListener` interface. 
+You can listen to map-wide or entry-based events by using the functions in the `MapListener` interface. Every function type in this interface is one of the `EntryEventListener` and `MapEventListener` types. To listen to these events, you need to implement the relevant `EntryEventListener` and `MapEventListener` functions in the `MapListener` interface.
 
 An entry-based event is fired after the operations that affect a specific entry. For example, `IMap.put()`, `IMap.remove()` or `IMap.evict()`. You should use the `EntryEventListener` type to listen to these events. An `EntryEvent` object is passed to the listener function.
 
@@ -2134,7 +2140,7 @@ As you see, there is a parameter in the `addEntryListener` function: `includeVal
 
 The Entry Listener is used by the Hazelcast `MultiMap` and `ReplicatedMap`.
 
-You can listen to map-wide or entry-based events by using the functions in the `EntryListener` interface. Every function type in this interface is one of the `EntryEventListener` and `MapEventListener` types. To listen to these events, you need to implement the relevant `EntryEventListener` and `MapEventListener` functions in the `EntryListener` interface. 
+You can listen to map-wide or entry-based events by using the functions in the `EntryListener` interface. Every function type in this interface is one of the `EntryEventListener` and `MapEventListener` types. To listen to these events, you need to implement the relevant `EntryEventListener` and `MapEventListener` functions in the `EntryListener` interface.
 
 An entry-based event is fired after the operations that affect a specific entry. For example, `MultiMap.put()`, `MultiMap.remove()`. You should use the `EntryEventListener` type to listen to these events. An `EntryEvent` object is passed to the listener function.
 
@@ -2301,30 +2307,30 @@ import java.util.Map;
 public class IdentifiedEntryProcessor extends AbstractEntryProcessor<String, String> implements IdentifiedDataSerializable {
      static final int CLASS_ID = 1;
      private String value;
-     
+
     public IdentifiedEntryProcessor() {
     }
-    
+
      @Override
     public int getFactoryId() {
         return IdentifiedFactory.FACTORY_ID;
     }
-    
+
      @Override
     public int getId() {
         return CLASS_ID;
     }
-    
+
      @Override
     public void writeData(ObjectDataOutput out) throws IOException {
         out.writeUTF(value);
     }
-    
+
      @Override
     public void readData(ObjectDataInput in) throws IOException {
         value = in.readUTF();
     }
-    
+
      @Override
     public Object process(Map.Entry<String, String> entry) {
         entry.setValue(value);
@@ -2341,7 +2347,7 @@ import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 
 public class IdentifiedFactory implements DataSerializableFactory {
     public static final int FACTORY_ID = 5;
-    
+
      @Override
     public IdentifiedDataSerializable create(int typeId) {
         if (typeId == IdentifiedEntryProcessor.CLASS_ID) {
@@ -2420,7 +2426,7 @@ Hazelcast offers the following ways for distributed query purposes:
 
 #### 7.7.1.1. Employee Map Query Example
 
-Assume that you have an `employee` map containing the values of `Employee` objects, as coded below. 
+Assume that you have an `employee` map containing the values of `Employee` objects, as coded below.
 
 ```javascript
 function Employee(name, age, active, salary) {
@@ -2474,7 +2480,7 @@ client.getMap('employee').then(function (mp) {
 });
 ```
 
-In the above example code, `predicate` verifies whether the entry is active and its `age` value is less than 30. This `predicate` is applied to the `employee` map using the `map.valuesWithPredicate(predicate)` method. This method sends the predicate to all cluster members and merges the results coming from them. 
+In the above example code, `predicate` verifies whether the entry is active and its `age` value is less than 30. This `predicate` is applied to the `employee` map using the `map.valuesWithPredicate(predicate)` method. This method sends the predicate to all cluster members and merges the results coming from them.
 
 > **NOTE: Predicates can also be applied to `keySet` and `entrySet` of the Hazelcast IMDG's distributed map.**
 
@@ -2495,7 +2501,7 @@ client.getMap('employee').then(function (mp) {
 ##### Supported SQL Syntax
 
 **AND/OR:** `<expression> AND <expression> AND <expression>…`
-   
+
 - `active AND age > 30`
 - `active = false OR age = 45 OR name = 'Joe'`
 - `active AND ( age > 20 OR salary < 60000 )`
@@ -2741,7 +2747,7 @@ Client.newHazelcastClient().then(function (client) {
         [new OrderKey(23, 1), order]
     ]);
 });
-```  
+```
 
 For more details, see the [PartitionAware section](https://docs.hazelcast.org/docs/latest/manual/html-single/#partitionaware) in the Hazelcast IMDG Reference Manual.
 
@@ -2815,12 +2821,12 @@ Following are the descriptions of all configuration elements:
 - `evictionPolicy`: Eviction policy configuration. Available values are as follows:
   - `LRU`: Least Recently Used (default value).
   - `LFU`: Least Frequently Used.
-  - `NONE`: No items are evicted and the `evictionMaxSize` property is ignored. You still can combine it with `timeToLiveSeconds` and `maxIdleSeconds` to evict items from the Near Cache. 
+  - `NONE`: No items are evicted and the `evictionMaxSize` property is ignored. You still can combine it with `timeToLiveSeconds` and `maxIdleSeconds` to evict items from the Near Cache.
   - `RANDOM`: A random item is evicted.
-  
+
 - `evictionMaxSize`: Maximum number of entries kept in the memory before eviction kicks in.
 - `evictionSamplingCount`: Number of random entries that are evaluated to see if some of them are already expired. If there are expired entries, those are removed and there is no need for eviction.
-- `evictionSamplingPoolSize`: Size of the pool for eviction candidates. The pool is kept sorted according to eviction policy. The entry with the highest score is evicted. 
+- `evictionSamplingPoolSize`: Size of the pool for eviction candidates. The pool is kept sorted according to eviction policy. The entry with the highest score is evicted.
 
 #### 7.8.2.2. Near Cache Example for Map
 
@@ -2859,7 +2865,7 @@ cfg.nearCacheConfigs['mostlyReadMap'] = nearCacheConfig;
 
 In the scope of Near Cache, eviction means evicting (clearing) the entries selected according to the given `evictionPolicy` when the specified `evictionMaxSize` has been reached.
 
-The `evictionMaxSize` defines the entry count when the Near Cache is full and determines whether the eviction should be triggered. 
+The `evictionMaxSize` defines the entry count when the Near Cache is full and determines whether the eviction should be triggered.
 
 Once the eviction is triggered the configured `evictionPolicy` determines which, if any, entries must be evicted.
 
@@ -2940,7 +2946,7 @@ After enabling the client statistics, you can monitor your clients using Hazelca
 ### 7.9.2. Logging Configuration
 
  To configure a logger, you need to use the `ClientConfig.properties['hazelcast.logging']` property. If you set it to `'off'`, it does not log anything.
- 
+
 By default, there is a `Default Logger`. Also, it is possible to connect a custom logging library to Hazelcast Node.js client through adapters.
 
 See the following `winston` logging library example.
@@ -3023,7 +3029,7 @@ Test script automatically downloads `hazelcast-remote-controller` and Hazelcast 
 You can use the following channels for your questions and development/usage issues:
 
 * This repository by opening an issue.
-* Hazelcast Node.js client channel on Gitter: 
+* Hazelcast Node.js client channel on Gitter:
 [![Join the chat at https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 * Our Google Groups directory: https://groups.google.com/forum/#!forum/hazelcast
 * Stack Overflow: https://stackoverflow.com/questions/tagged/hazelcast
