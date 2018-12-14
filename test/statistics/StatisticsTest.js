@@ -63,15 +63,16 @@ describe('Statistics with default period', function () {
 
     it('should be enabled via configuration', function () {
         return Util.promiseWaitMilliseconds(1000).then(function () {
-            return getClientStatisticsFromServer(cluster);
+            return getClientStatisticsFromServer(cluster, client);
         }).then(function (stats) {
+            expect(stats).to.not.null;
             expect(stats).to.not.equal('');
         });
     });
 
     it('should contain statistics content', function () {
         return Util.promiseWaitMilliseconds(1000).then(function () {
-            return getClientStatisticsFromServer(cluster);
+            return getClientStatisticsFromServer(cluster, client);
         }).then(function (stats) {
             expect(stats).to.not.be.null;
             expect(contains(stats, 'clientName=' + client.getName())).to.be.true;
@@ -109,7 +110,7 @@ describe('Statistics with default period', function () {
         }).then(function () {
             return Util.promiseWaitMilliseconds(5000);
         }).then(function () {
-            return getClientStatisticsFromServer(cluster);
+            return getClientStatisticsFromServer(cluster, client);
         }).then(function (stats) {
             var nearCacheStats = 'nc.' + map.getName();
             expect(contains(stats, nearCacheStats + '.hits=1')).to.be.true;
@@ -152,10 +153,10 @@ describe('Statistics with non-default period', function () {
     it('should not change before period', function () {
         var stats1;
         return Util.promiseWaitMilliseconds(1000).then(function () {
-            return getClientStatisticsFromServer(cluster);
+            return getClientStatisticsFromServer(cluster, client);
         }).then(function (st) {
             stats1 = st;
-            return getClientStatisticsFromServer(cluster)
+            return getClientStatisticsFromServer(cluster, client)
         }).then(function (stats2) {
             expect(stats1).to.be.equal(stats2);
         });
@@ -164,12 +165,12 @@ describe('Statistics with non-default period', function () {
     it('should change after period', function () {
         var stats1;
         return Util.promiseWaitMilliseconds(1000).then(function () {
-            return getClientStatisticsFromServer(cluster);
+            return getClientStatisticsFromServer(cluster, client);
         }).then(function (st) {
             stats1 = st;
             return Util.promiseWaitMilliseconds(2000)
         }).then(function () {
-            return getClientStatisticsFromServer(cluster);
+            return getClientStatisticsFromServer(cluster, client);
         }).then(function (stats2) {
             expect(stats1).not.to.be.equal(stats2);
         });
@@ -202,16 +203,24 @@ describe('Statistics with negative period', function () {
 
     it('should be enabled via configuration', function () {
         return Util.promiseWaitMilliseconds(1000).then(function () {
-            return getClientStatisticsFromServer(cluster);
+            return getClientStatisticsFromServer(cluster, client);
         }).then(function (stats) {
             expect(stats).to.not.equal('');
         });
     });
 });
 
-function getClientStatisticsFromServer(cluster) {
-    var script = 'client0=instance_0.getClientService().getConnectedClients().' +
-        'toArray()[0]\nresult=client0.getClientStatistics();';
+function getClientStatisticsFromServer(cluster, client) {
+    var clientUuid = client.getClusterService().uuid;
+    console.log(clientUuid);
+    var script =
+        'clients=instance_0.getClientService().getConnectedClients().toArray()\n' +
+        'for(i=0;i<clients.length;i++) {\n' +
+        '   if (clients[i].getUuid().equals("' + clientUuid + '")) {\n' +
+        '       result=clients[i].getClientStatistics();\n' +
+        '       break;' +
+        '   }\n' +
+        '}\n';
     return RC.executeOnController(cluster.id, script, 1).then(function (response) {
         if (response.result != null) {
             return response.result.toString();
