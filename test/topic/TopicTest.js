@@ -58,10 +58,10 @@ describe("Reliable Topic Proxy", function () {
     var clientOne;
     var clientTwo;
 
-    this.timeout(5000);
+    this.timeout(40000);
 
     before(function () {
-        this.timeout(10000);
+        this.timeout(40000);
         var config = fs.readFileSync(__dirname + '/hazelcast_topic.xml', 'utf8');
         return Controller.createCluster(null, config).then(function (response) {
             cluster = response;

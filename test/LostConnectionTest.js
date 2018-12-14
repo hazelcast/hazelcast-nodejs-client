@@ -47,7 +47,7 @@ describe('Lost connection', function () {
     });
 
     it('M2 starts, M1 goes down, client sets M2 as owner', function (done) {
-        this.timeout(12000);
+        this.timeout(32000);
         var newMember;
         var membershipListener = {
             memberAdded: function (membershipEvent) {
