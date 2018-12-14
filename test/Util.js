@@ -79,13 +79,13 @@ exports.markEnterprise = function (_this) {
 
 exports.markServerVersionAtLeast = function (_this, client, expectedVersion) {
     if (process.env['SERVER_VERSION']) {
-        var actNumber = BuildInfo.calculateServerVersion(process.env['SERVER_VERSION']);
+        var actNumber = BuildInfo.calculateServerVersionFromString(process.env['SERVER_VERSION']);
     } else if (client != null) {
         var actNumber = client.getClusterService().getOwnerConnection().getConnectedServerVersion();
     } else {
         return;
     }
-    var expNumber = BuildInfo.calculateServerVersion(expectedVersion);
+    var expNumber = BuildInfo.calculateServerVersionFromString(expectedVersion);
     if (actNumber === BuildInfo.UNKNOWN_VERSION_ID || actNumber < expNumber) {
         _this.skip();
     }
