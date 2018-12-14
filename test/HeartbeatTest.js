@@ -22,7 +22,7 @@ var Util = require('./Util');
 var Address = require('../.').Address;
 
 describe('Heartbeat', function () {
-    this.timeout(30000);
+    this.timeout(50000);
 
     var cluster;
 

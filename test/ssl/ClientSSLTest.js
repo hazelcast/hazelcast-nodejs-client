@@ -20,6 +20,7 @@ var expect = chai.expect;
 var fs = require('fs');
 var Promise = require('bluebird');
 var path = require('path');
+var Util = require('../Util');
 
 var markEnterprise = require('../Util').markEnterprise;
 var Controller = require('./../RC');
@@ -35,14 +36,16 @@ describe("Client with SSL enabled", function () {
     var serverConfig;
 
     beforeEach(function () {
-        this.timeout(10000);
+        this.timeout(20000);
         markEnterprise(this);
+        Util.markServerVersionAtLeast(this, null, '3.8.1');
         serverConfig = fs.readFileSync(__dirname + '/hazelcast-ssl.xml', 'utf8');
     });
 
     afterEach(function () {
-        this.timeout(12000);
+        this.timeout(20000);
         markEnterprise(this);
+        Util.markServerVersionAtLeast(this, null, '3.8.1');
         if (client) {
             client.shutdown();
             client = null;
