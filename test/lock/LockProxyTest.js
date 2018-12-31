@@ -118,13 +118,12 @@ describe("Lock Proxy", function () {
             return lockTwo.tryLock(2000, 1000);
         }).then(function () {
             var elapsed = Date.now() - startTime;
-            expect(elapsed).to.be.greaterThan(1000);
+            expect(elapsed).to.be.at.least(1000);
             return lockOne.lock(2000);
         }).then(function () {
             var elapsed = Date.now() - startTime;
-            expect(elapsed).to.be.greaterThan(1000);
+            expect(elapsed).to.be.at.least(1000);
         });
-
     });
 
     it("correctly reports lock status when unlocked", function () {
@@ -132,7 +131,6 @@ describe("Lock Proxy", function () {
             expect(locked).to.be.false;
         });
     });
-
 
     it("correctly reports lock status when locked", function () {
         return lockOne.lock().then(function () {
@@ -198,6 +196,4 @@ describe("Lock Proxy", function () {
             expect(locked).to.be.false;
         });
     });
-
-
 });
