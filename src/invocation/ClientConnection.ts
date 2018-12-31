@@ -26,7 +26,8 @@ import {DeferredPromise} from '../Util';
 export class ClientConnection {
     private address: Address;
     private readonly localAddress: Address;
-    private lastRead: number;
+    private lastReadTimeMillis: number;
+    private lastWriteTimeMillis: number;
     private heartbeating = true;
     private client: HazelcastClient;
     private readBuffer: Buffer;
@@ -43,7 +44,7 @@ export class ClientConnection {
         this.address = address;
         this.localAddress = new Address(socket.localAddress, socket.localPort);
         this.readBuffer = new Buffer(0);
-        this.lastRead = 0;
+        this.lastReadTimeMillis = 0;
         this.closedTime = 0;
         this.connectedServerVersionString = null;
         this.connectedServerVersion = BuildInfo.UNKNOWN_VERSION_ID;
@@ -76,6 +77,7 @@ export class ClientConnection {
                 if (err) {
                     deferred.reject(new IOError(err));
                 } else {
+                    this.lastWriteTimeMillis = Date.now();
                     deferred.resolve();
                 }
             });
@@ -126,8 +128,12 @@ export class ClientConnection {
         return this.startTime;
     }
 
-    getLastRead(): number {
-        return this.lastRead;
+    getLastReadTimeMillis(): number {
+        return this.lastReadTimeMillis;
+    }
+
+    getLastWriteTimeMillis(): number {
+        return this.lastWriteTimeMillis;
     }
 
     toString(): string {
@@ -140,7 +146,7 @@ export class ClientConnection {
      */
     registerResponseCallback(callback: Function): void {
         this.socket.on('data', (buffer: Buffer) => {
-            this.lastRead = new Date().getTime();
+            this.lastReadTimeMillis = new Date().getTime();
             this.readBuffer = Buffer.concat([this.readBuffer, buffer], this.readBuffer.length + buffer.length);
             while (this.readBuffer.length >= BitsUtil.INT_SIZE_IN_BYTES) {
                 const frameSize = this.readBuffer.readInt32LE(0);

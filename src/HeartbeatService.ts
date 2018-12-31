@@ -71,14 +71,14 @@ export class Heartbeat {
         for (const address in estConnections) {
             if (estConnections[address]) {
                 const conn = estConnections[address];
-                const timeSinceLastRead = new Date().getTime() - conn.getLastRead();
-                if (timeSinceLastRead > this.heartbeatTimeout) {
+                const now = Date.now();
+                if (now - conn.getLastReadTimeMillis() > this.heartbeatTimeout) {
                     if (conn.isHeartbeating()) {
                         conn.setHeartbeating(false);
                         this.onHeartbeatStopped(conn);
                     }
                 }
-                if (timeSinceLastRead > this.heartbeatInterval) {
+                if (now - conn.getLastWriteTimeMillis() > this.heartbeatInterval) {
                     const req = ClientPingCodec.encodeRequest();
                     this.client.getInvocationService().invokeOnConnection(conn, req)
                         .catch((error) => {
