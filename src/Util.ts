@@ -330,3 +330,9 @@ export function DeferredPromise<T>(): Promise.Resolver<T> {
         promise,
     } as Promise.Resolver<T>;
 }
+
+export function getNodejsMajorVersion(): number {
+    const versionString = process.version;
+    const versions = versionString.split('.');
+    return Number.parseInt(versions[0].substr(1));
+}
