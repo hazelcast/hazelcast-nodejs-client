@@ -153,15 +153,22 @@ export class Statistics {
         this.registerGauge('os.freeSwapSpaceSize', () => Statistics.EMPTY_STAT_VALUE);
         this.registerGauge('os.maxFileDescriptorCount', () => Statistics.EMPTY_STAT_VALUE);
         this.registerGauge('os.openFileDescriptorCount', () => Statistics.EMPTY_STAT_VALUE);
-        this.registerGauge('os.processCpuTime', () => Statistics.EMPTY_STAT_VALUE);
-        this.registerGauge('os.systemLoadAverage', () => '[' + os.loadavg().toString() + ']');
+        this.registerGauge('os.processCpuTime', () => {
+            // Nodejs 4 does not support this metric. So we do not print an ugly warning for that.
+            if (Util.getNodejsMajorVersion() >= 6) {
+                return process.cpuUsage().user * 1000; // process.cpuUsage returns micoseconds. We convert to nanoseconds.
+            } else {
+                return Statistics.EMPTY_STAT_VALUE;
+            }
+        });
+        this.registerGauge('os.systemLoadAverage', () => os.loadavg()[0]);
         this.registerGauge('os.totalPhysicalMemorySize', () => os.totalmem());
         this.registerGauge('os.totalSwapSpaceSize', () => Statistics.EMPTY_STAT_VALUE);
         this.registerGauge('runtime.availableProcessors', () => os.cpus().length);
         this.registerGauge('runtime.freeMemory', () => Statistics.EMPTY_STAT_VALUE);
         this.registerGauge('runtime.maxMemory', () => Statistics.EMPTY_STAT_VALUE);
         this.registerGauge('runtime.totalMemory', () => process.memoryUsage().heapTotal);
-        this.registerGauge('runtime.uptime', () => process.uptime());
+        this.registerGauge('runtime.uptime', () => process.uptime() * 1000);
         this.registerGauge('runtime.usedMemory', () => process.memoryUsage().heapUsed);
         this.registerGauge('executionService.userExecutorQueueSize', () => Statistics.EMPTY_STAT_VALUE);
     }
