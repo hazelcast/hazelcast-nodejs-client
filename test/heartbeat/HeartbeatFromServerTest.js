@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-var RC = require('./RC');
-var HazelcastClient = require('../.').Client;
-var expect = require('chai').expect;
-var Config = require('../.').Config;
-var Util = require('./Util');
-var Address = require('../.').Address;
+var RC = require('../RC');
+var HazelcastClient = require('../../').Client;
+var Config = require('../../').Config;
+var Util = require('../Util');
+var DeferredPromise = require('../../lib/Util').DeferredPromise;
+var Address = require('../../').Address;
 
 describe('Heartbeat', function () {
     this.timeout(50000);
@@ -38,6 +38,7 @@ describe('Heartbeat', function () {
 
     it('Heartbeat stopped fired when second member stops heartbeating', function (done) {
         var client;
+        var memberAddedPromise = new DeferredPromise();
         RC.startMember(cluster.id).then(function () {
             var cfg = new Config.ClientConfig();
             cfg.properties['hazelcast.client.heartbeat.interval'] = 500;
@@ -50,8 +51,9 @@ describe('Heartbeat', function () {
                 memberAdded: function (membershipEvent) {
                     var address = new Address(membershipEvent.member.address.host, membershipEvent.member.address.port);
                     warmUpConnectionToAddressWithRetry(client, address);
+                    memberAddedPromise.resolve();
                 }
-            }
+            };
 
             client.clusterService.addMembershipListener(membershipListener);
             client.heartbeat.addListener({
@@ -63,7 +65,9 @@ describe('Heartbeat', function () {
         }).then(function () {
             return RC.startMember(cluster.id);
         }).then(function (member2) {
-            simulateHeartbeatLost(client, member2.host + ':' + member2.port, 2000);
+            return memberAddedPromise.promise.then(function () {
+                simulateHeartbeatLost(client, member2.host + ':' + member2.port, 2000);
+            })
         }).catch(done);
     });
 
@@ -85,7 +89,7 @@ describe('Heartbeat', function () {
                         simulateHeartbeatLost(client, membershipEvent.member.address, 2000);
                     }).catch(done);
                 }
-            }
+            };
 
             client.clusterService.addMembershipListener(membershipListener);
             client.heartbeat.addListener({
@@ -124,7 +128,7 @@ describe('Heartbeat', function () {
     });
 
     function simulateHeartbeatLost(client, address, timeout) {
-        client.connectionManager.establishedConnections[address].lastRead = client.connectionManager.establishedConnections[address].lastRead - timeout;
+        client.connectionManager.establishedConnections[address].lastReadTimeMillis = client.connectionManager.establishedConnections[address].getLastReadTimeMillis() - timeout;
     }
 
     function warmUpConnectionToAddressWithRetry(client, address, retryCount) {
