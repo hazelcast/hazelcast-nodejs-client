@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
+var Statistics = require("../../lib/statistics/Statistics").Statistics;
 var expect = require('chai').expect;
 var BuildInfo = require('../../lib/BuildInfo').BuildInfo;
 
 var RC = require('../RC');
 var Client = require('../../').Client;
-var Util = require('../Util');
+var TestUtil = require('../Util');
+var Util = require('../../lib/Util');
 var Config = require('../../').Config;
+var os = require('os');
 
 describe('Statistics with default period', function () {
 
@@ -29,7 +32,7 @@ describe('Statistics with default period', function () {
     var map;
 
     before(function () {
-        Util.markServerVersionAtLeast(this, null, '3.9.0');
+        TestUtil.markServerVersionAtLeast(this, null, '3.9.0');
         return RC.createCluster(null, null).then(function (res) {
             cluster = res;
         }).then(function () {
@@ -48,7 +51,7 @@ describe('Statistics with default period', function () {
     });
 
     after(function () {
-        Util.markServerVersionAtLeast(this, null, '3.9.0');
+        TestUtil.markServerVersionAtLeast(this, null, '3.9.0');
         client.shutdown();
         return RC.shutdownCluster(cluster.id);
     });
@@ -64,7 +67,7 @@ describe('Statistics with default period', function () {
     });
 
     it('should be enabled via configuration', function () {
-        return Util.promiseWaitMilliseconds(1000).then(function () {
+        return TestUtil.promiseWaitMilliseconds(1000).then(function () {
             return getClientStatisticsFromServer(cluster, client);
         }).then(function (stats) {
             expect(stats).to.not.null;
@@ -73,34 +76,38 @@ describe('Statistics with default period', function () {
     });
 
     it('should contain statistics content', function () {
-        return Util.promiseWaitMilliseconds(1000).then(function () {
+        return TestUtil.promiseWaitMilliseconds(1000).then(function () {
             return getClientStatisticsFromServer(cluster, client);
         }).then(function (stats) {
             expect(stats).to.not.be.null;
-            expect(contains(stats, 'clientName=' + client.getName())).to.be.true;
-            expect(contains(stats, 'lastStatisticsCollectionTime=')).to.be.true;
-            expect(contains(stats, 'enterprise=false')).to.be.true;
-            expect(contains(stats, 'clientType=NodeJS')).to.be.true;
-            expect(contains(stats, 'clientVersion=' + BuildInfo.getClientVersion())).to.be.true;
-
+            expect(extractStringStatValue(stats, 'clientName')).to.equal(client.getName());
+            expect(extractIntStatValue(stats, 'lastStatisticsCollectionTime')).to.be
+                .within(Date.now() - Statistics.PERIOD_SECONDS_DEFAULT_VALUE * 2000, Date.now());
+            expect(extractBooleanStatValue(stats, 'enterprise')).to.be.false;
+            expect(extractStringStatValue(stats, 'clientType')).to.equal('NodeJS');
+            expect(extractStringStatValue(stats, 'clientVersion')).to.equal(BuildInfo.getClientVersion());
             var ownerConnection = client.getClusterService().getOwnerConnection();
-            expect(contains(stats, 'clusterConnectionTimestamp=' + ownerConnection.getStartTime())).to.be.true;
-            expect(contains(stats, 'clientAddress=' + ownerConnection.getLocalAddress().toString())).to.be.true;
-            expect(contains(stats, 'os.committedVirtualMemorySize=')).to.be.true;
-            expect(contains(stats, 'os.freeSwapSpaceSize=')).to.be.true;
-            expect(contains(stats, 'os.maxFileDescriptorCount=')).to.be.true;
-            expect(contains(stats, 'os.openFileDescriptorCount=')).to.be.true;
-            expect(contains(stats, 'os.processCpuTime=')).to.be.true;
-            expect(contains(stats, 'os.systemLoadAverage=')).to.be.true;
-            expect(contains(stats, 'os.totalPhysicalMemorySize=')).to.be.true;
-            expect(contains(stats, 'os.totalSwapSpaceSize=')).to.be.true;
-            expect(contains(stats, 'runtime.availableProcessors=')).to.be.true;
-            expect(contains(stats, 'runtime.freeMemory=')).to.be.true;
-            expect(contains(stats, 'runtime.maxMemory=')).to.be.true;
-            expect(contains(stats, 'runtime.totalMemory=')).to.be.true;
-            expect(contains(stats, 'runtime.uptime=')).to.be.true;
-            expect(contains(stats, 'runtime.usedMemory=')).to.be.true;
-            expect(contains(stats, 'executionService.userExecutorQueueSize=')).to.be.true;
+            expect(extractIntStatValue(stats, 'clusterConnectionTimestamp')).to.equal(ownerConnection.getStartTime());
+            expect(extractStringStatValue(stats, 'clientAddress')).to.equal(ownerConnection.getLocalAddress().toString());
+            expect(extractStringStatValue(stats, 'os.committedVirtualMemorySize')).to.equal('');
+            expect(extractStringStatValue(stats, 'os.freeSwapSpaceSize')).to.equal('');
+            expect(extractStringStatValue(stats, 'os.maxFileDescriptorCount')).to.equal('');
+            expect(extractStringStatValue(stats, 'os.openFileDescriptorCount')).to.equal('');
+            if (Util.getNodejsMajorVersion() >= 6) {
+                expect(extractIntStatValue(stats, 'os.processCpuTime')).to.greaterThan(1000);
+            } else {
+                expect(extractStringStatValue(stats, 'os.processCpuTime')).to.equal('');
+            }
+            expect(extractFloatStatValue(stats, 'os.systemLoadAverage')).to.be.greaterThan(0);
+            expect(extractIntStatValue(stats, 'os.totalPhysicalMemorySize')).to.equal(os.totalmem());
+            expect(extractStringStatValue(stats, 'os.totalSwapSpaceSize')).to.equal('');
+            expect(extractIntStatValue(stats, 'runtime.availableProcessors')).to.equal(os.cpus().length);
+            expect(extractStringStatValue(stats, 'runtime.freeMemory')).to.equal('');
+            expect(extractStringStatValue(stats, 'runtime.maxMemory')).to.equal('');
+            expect(extractIntStatValue(stats, 'runtime.totalMemory')).to.greaterThan(0);
+            expect(extractIntStatValue(stats, 'runtime.uptime')).to.greaterThan(0);
+            expect(extractIntStatValue(stats, 'runtime.usedMemory')).to.greaterThan(0);
+            expect(extractStringStatValue(stats, 'executionService.userExecutorQueueSize')).to.equal('');
         });
     });
 
@@ -110,7 +117,7 @@ describe('Statistics with default period', function () {
         }).then(function () {
             return map.get('key');
         }).then(function () {
-            return Util.promiseWaitMilliseconds(5000);
+            return TestUtil.promiseWaitMilliseconds(5000);
         }).then(function () {
             return getClientStatisticsFromServer(cluster, client);
         }).then(function (stats) {
@@ -133,7 +140,7 @@ describe('Statistics with non-default period', function () {
     var client;
 
     before(function () {
-        Util.markServerVersionAtLeast(this, null, '3.9.0');
+        TestUtil.markServerVersionAtLeast(this, null, '3.9.0');
         return RC.createCluster(null, null).then(function (res) {
             cluster = res;
         }).then(function () {
@@ -149,14 +156,14 @@ describe('Statistics with non-default period', function () {
     });
 
     after(function () {
-        Util.markServerVersionAtLeast(this, null, '3.9.0');
+        TestUtil.markServerVersionAtLeast(this, null, '3.9.0');
         client.shutdown();
         return RC.shutdownCluster(cluster.id);
     });
 
     it('should not change before period', function () {
         var stats1;
-        return Util.promiseWaitMilliseconds(1000).then(function () {
+        return TestUtil.promiseWaitMilliseconds(1000).then(function () {
             return getClientStatisticsFromServer(cluster, client);
         }).then(function (st) {
             stats1 = st;
@@ -168,11 +175,11 @@ describe('Statistics with non-default period', function () {
 
     it('should change after period', function () {
         var stats1;
-        return Util.promiseWaitMilliseconds(1000).then(function () {
+        return TestUtil.promiseWaitMilliseconds(1000).then(function () {
             return getClientStatisticsFromServer(cluster, client);
         }).then(function (st) {
             stats1 = st;
-            return Util.promiseWaitMilliseconds(2000)
+            return TestUtil.promiseWaitMilliseconds(2000)
         }).then(function () {
             return getClientStatisticsFromServer(cluster, client);
         }).then(function (stats2) {
@@ -186,7 +193,7 @@ describe('Statistics with negative period', function () {
     var cluster;
 
     before(function () {
-        Util.markServerVersionAtLeast(this, null, '3.9.0');
+        TestUtil.markServerVersionAtLeast(this, null, '3.9.0');
         return RC.createCluster(null, null).then(function (res) {
             cluster = res;
         }).then(function () {
@@ -202,13 +209,13 @@ describe('Statistics with negative period', function () {
     });
 
     after(function () {
-        Util.markServerVersionAtLeast(this, null, '3.9.0');
+        TestUtil.markServerVersionAtLeast(this, null, '3.9.0');
         client.shutdown();
         return RC.shutdownCluster(cluster.id);
     });
 
     it('should be enabled via configuration', function () {
-        return Util.promiseWaitMilliseconds(1000).then(function () {
+        return TestUtil.promiseWaitMilliseconds(1000).then(function () {
             return getClientStatisticsFromServer(cluster, client);
         }).then(function (stats) {
             expect(stats).to.not.equal('');
@@ -232,4 +239,22 @@ function getClientStatisticsFromServer(cluster, client) {
         }
         return null;
     });
+}
+
+function extractStringStatValue(stats, statName) {
+    var re = new RegExp(statName + '=(.*?)(?:,|$)');
+    var matches = stats.match(re);
+    return matches[1];
+}
+
+function extractFloatStatValue(stats, statName) {
+    return Number.parseFloat(extractStringStatValue(stats, statName));
+}
+
+function extractBooleanStatValue(stats, statName) {
+    return 'true' === extractStringStatValue(stats, statName);
+}
+
+function extractIntStatValue(stats, statName) {
+    return Number.parseInt(extractStringStatValue(stats, statName));
 }
