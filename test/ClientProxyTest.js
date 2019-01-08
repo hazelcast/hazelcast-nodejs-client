@@ -49,7 +49,7 @@ describe('Generic proxy test', function () {
         clientStub.getConnectionManager.returns(connectionManagerStub);
 
         var mapProxy = new MapProxy(clientStub, 'mockMapService', 'mockMap');
-        assert.equal(mapProxy.getConnectedServerVersion(), -1);
+        assert.equal(mapProxy.getConnectedServerVersion(), -2);
     });
 
     it('Client with a 3.7 server connection should return the version', function () {
