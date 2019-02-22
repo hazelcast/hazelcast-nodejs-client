@@ -3,7 +3,7 @@ var Client = require('hazelcast-client').Client;
 Client.newHazelcastClient().then(function (hz) {
     var counter;
     // Get an Atomic Counter, we'll call it "counter"
-    hz.getAtomicLong("counter").then(function (c) {
+    hz.getAtomicLong('counter').then(function (c) {
         counter = c;
         // Add and Get the "counter"
         return counter.addAndGet(3);
@@ -11,7 +11,7 @@ Client.newHazelcastClient().then(function (hz) {
         return counter.get();
     }).then(function (value) {
         // Display the "counter" value
-        console.log("counter: " + value);
+        console.log('counter: ' + value);
         // Shutdown this Hazelcast Client
         hz.shutdown();
     });
