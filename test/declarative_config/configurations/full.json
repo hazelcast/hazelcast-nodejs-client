@@ -4,12 +4,17 @@
         "password": "cast"
     },
     "properties": {
+        "hazelcast.client.heartbeat.interval": 1000,
         "hazelcast.client.heartbeat.timeout": 10000,
         "hazelcast.client.invocation.retry.pause.millis": 4000,
         "hazelcast.client.invocation.timeout.millis": 180000,
+        "hazelcast.client.cloud.url": "https://hz.cloud",
+        "hazelcast.client.statistics.enabled": true,
+        "hazelcast.client.statistics.period.seconds": 4,
         "hazelcast.invalidation.reconciliation.interval.seconds": 50,
         "hazelcast.invalidation.max.tolerated.miss.count": 15,
-        "hazelcast.invalidation.min.reconciliation.interval.seconds": 60
+        "hazelcast.invalidation.min.reconciliation.interval.seconds": 60,
+        "hazelcast.logging.level": 3
     },
     "network": {
         "clusterMembers": [
