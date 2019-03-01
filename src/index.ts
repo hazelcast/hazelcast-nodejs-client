@@ -36,6 +36,7 @@ import {ItemEvent, ItemEventType} from './core/ItemListener';
 import {MapEvent} from './core/MapListener';
 import {EntryEvent} from './core/EntryListener';
 import {LogLevel} from './logging/LoggingService';
+import {HazelcastJson} from "./core/HazelcastJson";
 
 export {
     HazelcastClient as Client,
@@ -63,4 +64,5 @@ export {
     MapEvent,
     EntryEvent,
     LogLevel,
+    HazelcastJson,
 };
