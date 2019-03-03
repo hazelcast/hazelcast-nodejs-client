@@ -20,18 +20,19 @@ import {MemberSelectors} from '../core/MemberSelectors';
 import {UUID} from '../core/UUID';
 import HazelcastClient from '../HazelcastClient';
 import {Invocation} from '../invocation/InvocationService';
-import {LoggingService} from '../logging/LoggingService';
 import {PartitionService} from '../PartitionService';
 import {RepairingHandler} from './RepairingHandler';
+import {ILogger} from '../logging/ILogger';
 import ClientMessage = require('../ClientMessage');
 
 export class MetadataFetcher {
 
     private client: HazelcastClient;
     private partitionService: PartitionService;
-    private logger: LoggingService = LoggingService.getLoggingService();
+    private logger: ILogger;
 
     constructor(client: HazelcastClient) {
+        this.logger = client.getLoggingService().getLogger();
         this.client = client;
         this.partitionService = this.client.getPartitionService();
     }

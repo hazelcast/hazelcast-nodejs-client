@@ -24,6 +24,7 @@ var Promise = require('bluebird');
 var IllegalStateError = require('../../lib/HazelcastError').IllegalStateError;
 
 var HazelcastCloudAddressTranslator = require('../../lib/discovery/HazelcastCloudAddressTranslator').HazelcastCloudAddressTranslator;
+var LogLevel = require('../../lib/').LogLevel;
 
 describe('HazelcastCloudTranslator Test', function () {
 
@@ -39,10 +40,10 @@ describe('HazelcastCloudTranslator Test', function () {
         lookup.set(privateAddress, publicAddress);
         lookup.set('127.0.0.2:5701', new Address('192.168.0.2', 5701));
 
-        var loggingService = LoggingService.getLoggingService();
+        var logger = new LoggingService(null, LogLevel.INFO).getLogger();
         hazelcastCloudDiscovery = new HazelcastCloudDiscovery();
 
-        translator = new HazelcastCloudAddressTranslator(hazelcastCloudDiscovery, null, loggingService);
+        translator = new HazelcastCloudAddressTranslator(hazelcastCloudDiscovery, null, logger);
     });
 
     beforeEach(function () {

@@ -43,7 +43,7 @@ describe('ConfigLocationTest', function () {
             '       "name": "wrongName"' +
             '   }' +
             '}');
-        process.env[ENV_VARIABLE_NAME] = path.join(__dirname, 'hazelcast-client-full.json');
+        process.env[ENV_VARIABLE_NAME] = path.join(__dirname, 'configurations/full.json');
         var configBuilder = new ConfigBuilder();
         return configBuilder.loadConfig().then(function () {
             return expect(configBuilder.build().groupConfig.name).equals('hazel');
@@ -80,7 +80,6 @@ describe('ConfigLocationTest', function () {
         expect(RuntimeUtil.resolvePath('..')).to.equal(process.cwd());
         process.env[ENV_VARIABLE_NAME] = '/anAbsoluteBase/config.json';
         var root = path.parse(process.cwd()).root;
-        console.log(root);
         expect(RuntimeUtil.resolvePath('.')).to.equal(path.join(root, 'anAbsoluteBase'));
         expect(RuntimeUtil.resolvePath('filename')).to.equal(path.join(root, 'anAbsoluteBase', 'filename'));
         expect(RuntimeUtil.resolvePath('..')).to.equal(root);

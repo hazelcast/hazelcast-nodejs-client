@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
+import {Property} from '../config/Properties';
 import {DefaultLogger} from './DefaultLogger';
-import {NoLogger} from './NoLogger';
+import {ILogger} from './ILogger';
 
 export enum LogLevel {
+    OFF = -1,
     ERROR = 0,
     WARN = 1,
     INFO = 2,
@@ -25,66 +27,27 @@ export enum LogLevel {
     TRACE = 4,
 }
 
-export interface ILogger {
-    log(level: LogLevel, className: string, message: string, furtherInfo: any): void;
-}
-
 export class LoggingService {
 
-    private static loggingService: LoggingService;
-    logger: ILogger;
+    private readonly logger: ILogger;
 
-    constructor(externalLogger: ILogger = null) {
-        if (externalLogger != null) {
-            this.logger = externalLogger;
-        }
-        if (this.logger == null) {
-            this.logger = new DefaultLogger();
-        }
-    }
-
-    static getLoggingService(): LoggingService {
-        if (LoggingService.loggingService == null) {
-            LoggingService.initialize(null);
-        }
-        return LoggingService.loggingService;
-    }
-
-    static initialize(loggerModule: string | ILogger = null): void {
-        if (typeof loggerModule === 'string') {
-            if (loggerModule === 'off') {
-                LoggingService.loggingService = new LoggingService(new NoLogger());
-            } else if (loggerModule === 'default') {
-                LoggingService.loggingService = new LoggingService();
-            } else {
-                throw new RangeError('Logging type unknown: ' + loggerModule);
-            }
+    constructor(customLogger: ILogger, logLevel: number) {
+        if (customLogger == null) {
+            this.logger = new DefaultLogger(logLevel);
+        } else if (this.isLogger(customLogger)) {
+            this.logger = customLogger;
         } else {
-            LoggingService.loggingService = new LoggingService(loggerModule as ILogger);
+            throw new RangeError('Logger should implement ILogger functions!');
         }
     }
 
-    log(level: LogLevel, className: string, message: string, furtherInfo: any): void {
-        this.logger.log(level, className, message, furtherInfo);
+    isLogger(loggingProperty: Property): loggingProperty is ILogger {
+        loggingProperty = (loggingProperty as ILogger);
+        return loggingProperty.log !== undefined && loggingProperty.error !== undefined && loggingProperty.warn !== undefined &&
+            loggingProperty.info !== undefined && loggingProperty.debug !== undefined && loggingProperty.trace !== undefined;
     }
 
-    error(className: string, message: string, furtherInfo: any = null): void {
-        this.log(LogLevel.ERROR, className, message, furtherInfo);
-    }
-
-    warn(className: string, message: string, furtherInfo: any = null): void {
-        this.log(LogLevel.WARN, className, message, furtherInfo);
-    }
-
-    info(className: string, message: string, furtherInfo: any = null): void {
-        this.log(LogLevel.INFO, className, message, furtherInfo);
-    }
-
-    debug(className: string, message: string, furtherInfo: any = null): void {
-        this.log(LogLevel.DEBUG, className, message, furtherInfo);
-    }
-
-    trace(className: string, message: string, furtherInfo: any = null): void {
-        this.log(LogLevel.TRACE, className, message, furtherInfo);
+    getLogger(): ILogger {
+        return this.logger;
     }
 }

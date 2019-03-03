@@ -25,7 +25,6 @@ import HazelcastClient from '../HazelcastClient';
 import {ClientNotActiveError, HazelcastError} from '../HazelcastError';
 import {Invocation} from '../invocation/InvocationService';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
-import {LoggingService} from '../logging/LoggingService';
 import {AtomicLongProxy} from './AtomicLongProxy';
 import {FlakeIdGeneratorProxy} from './FlakeIdGeneratorProxy';
 import {ListProxy} from './ListProxy';
@@ -41,6 +40,8 @@ import {SemaphoreProxy} from './SemaphoreProxy';
 import {SetProxy} from './SetProxy';
 import {ReliableTopicProxy} from './topic/ReliableTopicProxy';
 import {DistributedObjectEvent, DistributedObjectListener} from '../core/DistributedObjectListener';
+import {DeferredPromise} from '../Util';
+import {ILogger} from '../logging/ILogger';
 import Address = require('../Address');
 import ClientMessage = require('../ClientMessage');
 
@@ -62,12 +63,13 @@ export class ProxyManager {
     public readonly service: { [serviceName: string]: any } = {};
     private readonly proxies: { [namespace: string]: DistributedObject; } = {};
     private readonly client: HazelcastClient;
-    private readonly logger = LoggingService.getLoggingService();
+    private readonly logger: ILogger;
     private readonly invocationTimeoutMillis: number;
     private readonly invocationRetryPauseMillis: number;
 
     constructor(client: HazelcastClient) {
         this.client = client;
+        this.logger = this.client.getLoggingService().getLogger();
         this.invocationTimeoutMillis = this.client.getInvocationService().getInvocationTimeoutMillis();
         this.invocationRetryPauseMillis = this.client.getInvocationService().getInvocationRetryPauseMillis();
     }
@@ -92,7 +94,7 @@ export class ProxyManager {
         if (this.proxies[serviceName + name]) {
             return Promise.resolve(this.proxies[serviceName + name]);
         } else {
-            const deferred = Promise.defer <DistributedObject>();
+            const deferred = DeferredPromise<DistributedObject>();
             let newProxy: DistributedObject;
             if (serviceName === ProxyManager.MAP_SERVICE && this.client.getConfig().getNearCacheConfig(name)) {
                 newProxy = new NearCachedMapProxy(this.client, serviceName, name);
@@ -154,7 +156,7 @@ export class ProxyManager {
     }
 
     private createProxy(proxyObject: DistributedObject): Promise<ClientMessage> {
-        const promise = Promise.defer<ClientMessage>();
+        const promise = DeferredPromise<ClientMessage>();
         this.initializeProxy(proxyObject, promise, Date.now() + this.invocationTimeoutMillis);
         return promise.promise;
     }

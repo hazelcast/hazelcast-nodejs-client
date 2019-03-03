@@ -13,11 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {Message} from './Message';
 
-const BuildInfo = require('./BuildInfo');
-
-export class BuildInfoLoader {
-    static getClientVersion(): string {
-        return BuildInfo.version;
-    }
-}
+export type MessageListener<E> = (message: Message<E>) => void;

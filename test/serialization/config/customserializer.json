@@ -15,6 +15,13 @@
                 "exportedName": "MyPortableFactory",
                 "factoryId": 1
             }
+        ],
+        "serializers": [
+            {
+                "path": "Musician.js",
+                "exportedName": "MusicianSerializer",
+                "typeId": 10
+            }
         ]
     }
 }

@@ -28,7 +28,7 @@ import {SetIsEmptyCodec} from '../codec/SetIsEmptyCodec';
 import {SetRemoveCodec} from '../codec/SetRemoveCodec';
 import {SetRemoveListenerCodec} from '../codec/SetRemoveListenerCodec';
 import {SetSizeCodec} from '../codec/SetSizeCodec';
-import {ItemListener} from '../core/ItemListener';
+import {ItemEvent, ItemEventType, ItemListener} from '../core/ItemListener';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {Data} from '../serialization/Data';
 import {ISet} from './ISet';
@@ -89,15 +89,14 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
         const handler = (message: ClientMessage) => {
             SetAddListenerCodec.handle(message, (item: Data, uuid: string, eventType: number) => {
                 const responseObject = this.toObject(item);
-                let listenerFunction: Function;
-                if (eventType === 1) {
-                    listenerFunction = listener.itemAdded;
-                } else if (eventType === 2) {
-                    listenerFunction = listener.itemRemoved;
-                }
+                const member = this.client.getClusterService().getMember(uuid);
+                const name = this.name;
+                const itemEvent = new ItemEvent(name, eventType, responseObject, member);
 
-                if (listenerFunction) {
-                    listenerFunction.call(responseObject, responseObject);
+                if (eventType === ItemEventType.ADDED && listener.itemAdded) {
+                    listener.itemAdded.apply(null, [itemEvent]);
+                } else if (eventType === ItemEventType.REMOVED && listener.itemRemoved) {
+                    listener.itemRemoved.apply(null, [itemEvent]);
                 }
             });
         };

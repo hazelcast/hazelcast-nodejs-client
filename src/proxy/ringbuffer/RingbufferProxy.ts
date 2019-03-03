@@ -25,13 +25,13 @@ import {RingbufferRemainingCapacityCodec} from '../../codec/RingbufferRemainingC
 import {RingbufferSizeCodec} from '../../codec/RingbufferSizeCodec';
 import {RingbufferTailSequenceCodec} from '../../codec/RingbufferTailSequenceCodec';
 import {OverflowPolicy} from '../../core/OverflowPolicy';
-import {IRingbuffer} from '../IRingbuffer';
+import {Ringbuffer} from '../Ringbuffer';
 import {PartitionSpecificProxy} from '../PartitionSpecificProxy';
 import {LazyReadResultSet} from './LazyReadResultSet';
 import {ReadResultSet} from './ReadResultSet';
 import Long = require('long');
 
-export class RingbufferProxy<E> extends PartitionSpecificProxy implements IRingbuffer<E> {
+export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbuffer<E> {
 
     capacity(): Promise<Long> {
         return this.encodeInvoke<Long>(RingbufferCapacityCodec);

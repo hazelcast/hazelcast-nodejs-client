@@ -47,8 +47,8 @@
                 com.hazelcast.nio.ssl.ClasspathSSLContextFactory
             </factory-class-name>
             <properties>
-                <property name="keyStore">com/hazelcast/nio/ssl-mutual-auth/server1.keystore</property>
-                <property name="keyStorePassword">password</property>
+                <property name="keyStore">[serverCertificate]</property>
+                <property name="keyStorePassword">[password]</property>
                 <!--
                 <property name="trustStore">com/hazelcast/nio/ssl-mutual-auth/server1.truststore</property>
                 <property name="trustStorePassword">password</property>

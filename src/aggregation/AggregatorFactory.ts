@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import {LoggingService} from '../logging/LoggingService';
 import {IdentifiedDataSerializable, IdentifiedDataSerializableFactory} from '../serialization/Serializable';
 import {
     Aggregator,
@@ -31,6 +30,8 @@ import {
     MinAggregator,
     NumberAverageAggregator,
 } from './Aggregator';
+import {ILogger} from '../logging/ILogger';
+import {HazelcastError} from '../HazelcastError';
 
 export class AggregatorFactory implements IdentifiedDataSerializableFactory {
 
@@ -56,7 +57,6 @@ export class AggregatorFactory implements IdentifiedDataSerializableFactory {
     static readonly MAX_BY = 17; // needs object to implement Java's Comparable interface
     static readonly MIN_BY = 18; // needs object to implement Java's Comparable interface
 
-    private logger = LoggingService.getLoggingService();
     private idToConstructor: { [id: number]: Aggregator<any> } = {};
 
     constructor() {
@@ -79,8 +79,7 @@ export class AggregatorFactory implements IdentifiedDataSerializableFactory {
         try {
             return (new (this.idToConstructor[type] as FunctionConstructor)()) as any;
         } catch (e) {
-            this.logger.error('Aggregatorfactory', 'There is no known aggregator with type id ' + type, e);
-            return null;
+            throw new HazelcastError('There is no known aggregator with type id ' + type, e);
         }
     }
 

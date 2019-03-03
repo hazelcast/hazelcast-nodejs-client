@@ -16,34 +16,35 @@
 
 import {ReadResultSet} from '../../';
 import {StaleSequenceError} from '../../HazelcastError';
-import {LoggingService} from '../../logging/LoggingService';
 import {SerializationService} from '../../serialization/SerializationService';
-import {IRingbuffer} from '../IRingbuffer';
-import {RawTopicMessage} from './RawTopicMessage';
+import {Ringbuffer} from '../Ringbuffer';
+import {ReliableTopicMessage} from './ReliableTopicMessage';
 import {ReliableTopicProxy} from './ReliableTopicProxy';
-import {TopicMessage} from './TopicMessage';
-import {TopicMessageListener} from './TopicMessageListener';
+import {Message} from './Message';
+import {MessageListener} from './MessageListener';
+import {ILogger} from '../../logging/ILogger';
 
 export class ReliableTopicListenerRunner<E> {
 
     public sequenceNumber: number = 0;
-    private listener: TopicMessageListener<E>;
-    private ringbuffer: IRingbuffer<RawTopicMessage>;
+    private listener: MessageListener<E>;
+    private ringbuffer: Ringbuffer<ReliableTopicMessage>;
     private batchSize: number;
     private serializationService: SerializationService;
     private cancelled: boolean = false;
-    private loggingService = LoggingService.getLoggingService();
+    private logger: ILogger;
     private proxy: ReliableTopicProxy<E>;
     private listenerId: string;
 
-    constructor(listenerId: string, listener: TopicMessageListener<E>, ringbuffer: IRingbuffer<RawTopicMessage>,
-                batchSize: number, serializationService: SerializationService, proxy: ReliableTopicProxy<E>) {
+    constructor(listenerId: string, listener: MessageListener<E>, ringbuffer: Ringbuffer<ReliableTopicMessage>,
+                batchSize: number, serializationService: SerializationService, logger: ILogger, proxy: ReliableTopicProxy<E>) {
         this.listenerId = listenerId;
         this.listener = listener;
         this.ringbuffer = ringbuffer;
         this.batchSize = batchSize;
         this.serializationService = serializationService;
         this.proxy = proxy;
+        this.logger = logger;
     }
 
     public next(): void {
@@ -52,10 +53,10 @@ export class ReliableTopicListenerRunner<E> {
             return;
         }
 
-        this.ringbuffer.readMany(this.sequenceNumber, 1, this.batchSize).then((result: ReadResultSet<RawTopicMessage>) => {
+        this.ringbuffer.readMany(this.sequenceNumber, 1, this.batchSize).then((result: ReadResultSet<ReliableTopicMessage>) => {
             if (!this.cancelled) {
                 for (let i = 0; i < result.size(); i++) {
-                    const msg = new TopicMessage<E>();
+                    const msg = new Message<E>();
                     const item = result.get(i);
                     msg.messageObject = this.serializationService.toObject(item.payload);
                     msg.publisher = item.publisherAddress;
@@ -73,7 +74,7 @@ export class ReliableTopicListenerRunner<E> {
 
                     message = 'Topic "' + this.proxy.getName() + '" ran into a stale sequence. ' +
                         ' Jumping from old sequence ' + this.sequenceNumber + ' to new sequence ' + newSequence;
-                    this.loggingService.warn('ReliableTopicListenerRunner', message);
+                    this.logger.warn('ReliableTopicListenerRunner', message);
 
                     this.sequenceNumber = newSequence;
                     setImmediate(this.next.bind(this));
@@ -83,7 +84,7 @@ export class ReliableTopicListenerRunner<E> {
             }
 
             message = 'Listener of topic "' + this.proxy.getName() + '" caught an exception, terminating listener. ' + e;
-            this.loggingService.warn('ReliableTopicListenerRunner', message);
+            this.logger.warn('ReliableTopicListenerRunner', message);
 
             this.proxy.removeMessageListener(this.listenerId);
         });

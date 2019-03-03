@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-var RC = require('./RC');
-var HazelcastClient = require('../.').Client;
-var expect = require('chai').expect;
-var Config = require('../.').Config;
-var Util = require('./Util');
-var Address = require('../.').Address;
+var RC = require('../RC');
+var HazelcastClient = require('../../').Client;
+var Config = require('../../').Config;
+var Util = require('../Util');
+var DeferredPromise = require('../../lib/Util').DeferredPromise;
+var Address = require('../../').Address;
 
 describe('Heartbeat', function () {
-    this.timeout(30000);
+    this.timeout(50000);
 
     var cluster;
 
@@ -38,6 +38,7 @@ describe('Heartbeat', function () {
 
     it('Heartbeat stopped fired when second member stops heartbeating', function (done) {
         var client;
+        var memberAddedPromise = new DeferredPromise();
         RC.startMember(cluster.id).then(function () {
             var cfg = new Config.ClientConfig();
             cfg.properties['hazelcast.client.heartbeat.interval'] = 500;
@@ -46,10 +47,15 @@ describe('Heartbeat', function () {
         }).then(function (resp) {
             client = resp;
         }).then(function () {
-            client.clusterService.on('memberAdded', function (member) {
-                var address = new Address(member.address.host, member.address.port);
-                warmUpConnectionToAddressWithRetry(client, address);
-            });
+            var membershipListener = {
+                memberAdded: function (membershipEvent) {
+                    var address = new Address(membershipEvent.member.address.host, membershipEvent.member.address.port);
+                    warmUpConnectionToAddressWithRetry(client, address);
+                    memberAddedPromise.resolve();
+                }
+            };
+
+            client.clusterService.addMembershipListener(membershipListener);
             client.heartbeat.addListener({
                 onHeartbeatStopped: function (connection) {
                     client.shutdown();
@@ -59,7 +65,9 @@ describe('Heartbeat', function () {
         }).then(function () {
             return RC.startMember(cluster.id);
         }).then(function (member2) {
-            simulateHeartbeatLost(client, member2.host + ':' + member2.port, 2000);
+            return memberAddedPromise.promise.then(function () {
+                simulateHeartbeatLost(client, member2.host + ':' + member2.port, 2000);
+            })
         }).catch(done);
     });
 
@@ -75,11 +83,15 @@ describe('Heartbeat', function () {
             return HazelcastClient.newHazelcastClient(cfg);
         }).then(function (resp) {
             client = resp;
-            client.clusterService.on('memberAdded', function (member) {
-                warmUpConnectionToAddressWithRetry(client, member.address, 3).then(function () {
-                    simulateHeartbeatLost(client, member.address, 2000);
-                }).catch(done);
-            });
+            var membershipListener = {
+                memberAdded: function (membershipEvent) {
+                    warmUpConnectionToAddressWithRetry(client, membershipEvent.member.address, 3).then(function () {
+                        simulateHeartbeatLost(client, membershipEvent.member.address, 2000);
+                    }).catch(done);
+                }
+            };
+
+            client.clusterService.addMembershipListener(membershipListener);
             client.heartbeat.addListener({
                 onHeartbeatRestored: function (connection) {
                     client.shutdown();
@@ -116,7 +128,7 @@ describe('Heartbeat', function () {
     });
 
     function simulateHeartbeatLost(client, address, timeout) {
-        client.connectionManager.establishedConnections[address].lastRead = client.connectionManager.establishedConnections[address].lastRead - timeout;
+        client.connectionManager.establishedConnections[address].lastReadTimeMillis = client.connectionManager.establishedConnections[address].getLastReadTimeMillis() - timeout;
     }
 
     function warmUpConnectionToAddressWithRetry(client, address, retryCount) {

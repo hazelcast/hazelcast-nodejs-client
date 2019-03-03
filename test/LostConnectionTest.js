@@ -47,21 +47,25 @@ describe('Lost connection', function () {
     });
 
     it('M2 starts, M1 goes down, client sets M2 as owner', function (done) {
-        this.timeout(12000);
+        this.timeout(32000);
         var newMember;
-        client.clusterService.on('memberAdded', function () {
-            Controller.shutdownMember(cluster.id, oldMember.uuid).then(function () {
-                return Util.promiseWaitMilliseconds(4000);
-            }).then(function () {
-                try {
-                    expect(client.clusterService.getOwnerConnection().address.host).to.be.eq(newMember.host);
-                    expect(client.clusterService.getOwnerConnection().address.port).to.be.eq(newMember.port);
-                    done();
-                } catch (e) {
-                    done(e);
-                }
-            });
-        });
+        var membershipListener = {
+            memberAdded: function (membershipEvent) {
+                Controller.shutdownMember(cluster.id, oldMember.uuid).then(function () {
+                    return Util.promiseWaitMilliseconds(4000);
+                }).then(function () {
+                    try {
+                        expect(client.clusterService.getOwnerConnection().address.host).to.be.eq(newMember.host);
+                        expect(client.clusterService.getOwnerConnection().address.port).to.be.eq(newMember.port);
+                        done();
+                    } catch (e) {
+                        done(e);
+                    }
+                });
+            }
+        };
+
+        client.clusterService.addMembershipListener(membershipListener);
         Controller.startMember(cluster.id).then(function (m) {
             newMember = m;
         });

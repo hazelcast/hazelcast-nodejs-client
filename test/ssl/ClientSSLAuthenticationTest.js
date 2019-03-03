@@ -56,7 +56,8 @@ describe('SSL Client Authentication Test', function () {
             cert: fs.readFileSync(Path.join(__dirname, cert))
         };
         var cfg = new Config.ClientConfig();
-        cfg.networkConfig.sslOptions = sslOpts;
+        cfg.networkConfig.sslConfig.enabled = true;
+        cfg.networkConfig.sslConfig.sslOptions = sslOpts;
         cfg.networkConfig.connectionAttemptLimit = 1;
         cfg.networkConfig.connectionTimeout = 1000;
         return cfg;
@@ -64,10 +65,11 @@ describe('SSL Client Authentication Test', function () {
 
     function createClientConfigWithSSLOptsUsingBasicSSLOptionsFactory(key, cert, ca) {
         var cfg = new Config.ClientConfig();
-        cfg.networkConfig.sslOptionsFactoryConfig = {
+        cfg.networkConfig.sslConfig.enabled = true;
+        cfg.networkConfig.sslConfig.sslOptionsFactoryConfig = {
             exportedName: 'BasicSSLOptionsFactory'
         };
-        cfg.networkConfig.sslOptionsFactoryProperties = {
+        cfg.networkConfig.sslConfig.sslOptionsFactoryProperties = {
             caPath: Path.resolve(__dirname, ca),
             keyPath: Path.resolve(__dirname, key),
             certPath: Path.resolve(__dirname, cert),
@@ -90,11 +92,12 @@ describe('SSL Client Authentication Test', function () {
         describe(title, function () {
 
             before(function () {
+                markEnterprise(this);
                 Util.markServerVersionAtLeast(this, null, '3.8.1');
             });
 
             afterEach(function () {
-                return Controller.terminateCluster(cluster.id);
+                return Controller.shutdownCluster(cluster.id);
             });
 
             it('ma:required, they both know each other should connect', function () {

@@ -33,12 +33,12 @@ describe('SchemaValidationTest', function () {
     }
 
     it('hazelcast-client-full.json passes validation', function () {
-        var fulljson = fs.readFileSync(path.resolve(__dirname, 'hazelcast-client-full.json'), 'utf8');
+        var fulljson = fs.readFileSync(path.resolve(__dirname, 'configurations/full.json'), 'utf8');
         expect(validateCandidate(fulljson).valid).to.be.true;
     });
 
     it('invalid configuration is caught by the validator', function () {
-        var invalidJson = fs.readFileSync(path.resolve(__dirname, 'hazelcast-client-invalid.json'), 'utf8');
+        var invalidJson = fs.readFileSync(path.resolve(__dirname, 'configurations/invalid.json'), 'utf8');
         expect(validateCandidate(invalidJson).errors[0]).to.exist.with.property('message', 'must have a minimum value of 1000');
     });
 });

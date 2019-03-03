@@ -26,8 +26,9 @@ import {
     IOError,
     RetryableHazelcastError,
 } from '../HazelcastError';
-import {LoggingService} from '../logging/LoggingService';
 import {ClientConnection} from './ClientConnection';
+import {DeferredPromise} from '../Util';
+import {ILogger} from '../logging/ILogger';
 import Address = require('../Address');
 import ClientMessage = require('../ClientMessage');
 
@@ -109,11 +110,12 @@ export class InvocationService {
     private smartRoutingEnabled: boolean;
     private readonly invocationRetryPauseMillis: number;
     private readonly invocationTimeoutMillis: number;
-    private logger = LoggingService.getLoggingService();
+    private logger: ILogger;
     private isShutdown: boolean;
 
     constructor(hazelcastClient: HazelcastClient) {
         this.client = hazelcastClient;
+        this.logger = this.client.getLoggingService().getLogger();
         this.smartRoutingEnabled = hazelcastClient.getConfig().networkConfig.smartRouting;
         if (hazelcastClient.getConfig().networkConfig.smartRouting) {
             this.doInvoke = this.invokeSmart;
@@ -131,7 +133,7 @@ export class InvocationService {
 
     invoke(invocation: Invocation): Promise<ClientMessage> {
         const newCorrelationId = Long.fromNumber(this.correlationCounter++);
-        invocation.deferred = Promise.defer<ClientMessage>();
+        invocation.deferred = DeferredPromise<ClientMessage>();
         invocation.request.setCorrelationId(newCorrelationId);
         this.doInvoke(invocation);
         return invocation.deferred.promise;

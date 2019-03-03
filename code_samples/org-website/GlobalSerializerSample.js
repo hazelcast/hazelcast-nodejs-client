@@ -11,11 +11,11 @@ GlobalSerializer.prototype.getId = function () {
 };
 
 GlobalSerializer.prototype.read = function (input) {
-    // return MyFavoriteSerializer.deserialize(input);
+    // return MyFavoriteSerializer.deserialize(input.readByteArray());
 };
 
 GlobalSerializer.prototype.write = function (output, obj) {
-    // output.write(MyFavoriteSerializer.serialize(obj))
+    // output.writeByteArray(MyFavoriteSerializer.serialize(obj))
 };
 
 cfg.serializationConfig.globalSerializer = new GlobalSerializer();

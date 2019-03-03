@@ -1,13 +1,13 @@
-set HZ_VERSION="3.10"
-set HZ_TEST_VERSION="3.10"
+set HZ_VERSION="3.11.2-SNAPSHOT"
+set HZ_TEST_VERSION="3.11.2-SNAPSHOT"
 set HAZELCAST_TEST_VERSION=%HZ_TEST_VERSION%
 set HAZELCAST_VERSION=%HZ_VERSION%
 set HAZELCAST_ENTERPRISE_VERSION=%HZ_VERSION%
 set HAZELCAST_RC_VERSION="0.4-SNAPSHOT"
 set SNAPSHOT_REPO="https://oss.sonatype.org/content/repositories/snapshots"
 set RELEASE_REPO="http://repo1.maven.apache.org/maven2"
-set ENTERPRISE_RELEASE_REPO="https://repository-hazelcast-l337.forge.cloudbees.com/release/"
-set ENTERPRISE_SNAPSHOT_REPO="https://repository-hazelcast-l337.forge.cloudbees.com/snapshot/"
+set ENTERPRISE_RELEASE_REPO="https://repository.hazelcast.com/release/"
+set ENTERPRISE_SNAPSHOT_REPO="https://repository.hazelcast.com/snapshot/"
 
 echo %HZ_VERSION% | findstr /r ".*-SNAPSHOT" >nul 2>&1
 if errorlevel 1 (
@@ -62,7 +62,19 @@ if defined HAZELCAST_ENTERPRISE_KEY (
 			exit 1
 		)
 	)
-	set CLASSPATH=hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar;%CLASSPATH%
+
+	if exist hazelcast-enterprise-%HAZELCAST_TEST_VERSION%-tests.jar (
+    	echo hazelcast-enterprise-test.jar already exists, not downloading from maven.
+    ) else (
+    	echo Downloading: hazelcast enterprise test jar com.hazelcast:hazelcast-enterprise:%HAZELCAST_ENTERPRISE_VERSION%:jar:tests
+    	call mvn -q dependency:get -DrepoUrl=%TEST_REPO% -Dartifact=com.hazelcast:hazelcast-enterprise:%HAZELCAST_TEST_VERSION%:jar:tests -Ddest=hazelcast-enterprise-%HAZELCAST_TEST_VERSION%-tests.jar
+    	if errorlevel 1 (
+    		echo Failed download hazelcast enterprise test jar com.hazelcast:hazelcast-enterprise:%HAZELCAST_TEST_VERSION%:jar:tests
+    		exit 1
+    	)
+    )
+
+	set CLASSPATH=hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar;hazelcast-enterprise-%HAZELCAST_TEST_VERSION%-tests.jar;%CLASSPATH%
 	echo Starting Remote Controller ... enterprise ...
 ) else (
 	if exist hazelcast-%HAZELCAST_VERSION%.jar (

@@ -15,15 +15,14 @@
  */
 
 import HazelcastClient from '../HazelcastClient';
-import {LoggingService} from '../logging/LoggingService';
 import {ClientConnection} from '../invocation/ClientConnection';
 import {Properties} from '../config/Properties';
 import {ClientStatisticsCodec} from '../codec/ClientStatisticsCodec';
 import * as Util from '../Util';
 import {Task} from '../Util';
-import {BuildInfoLoader} from '../BuildInfoLoader';
 import * as os from 'os';
-import {BuildMetadata} from '../BuildMetadata';
+import {BuildInfo} from '../BuildInfo';
+import {ILogger} from '../logging/ILogger';
 import Address = require('../Address');
 
 /**
@@ -39,7 +38,7 @@ export class Statistics {
 
     private static readonly NEAR_CACHE_CATEGORY_PREFIX: string = 'nc.';
     private static readonly FEATURE_SUPPORTED_SINCE_VERSION_STRING: string = '3.9';
-    private static readonly FEATURE_SUPPORTED_SINCE_VERSION: number = BuildMetadata.calculateVersionFromString(
+    private static readonly FEATURE_SUPPORTED_SINCE_VERSION: number = BuildInfo.calculateServerVersionFromString(
         Statistics.FEATURE_SUPPORTED_SINCE_VERSION_STRING);
     private static readonly STAT_SEPARATOR: string = ',';
     private static readonly KEY_VALUE_SEPARATOR: string = '=';
@@ -48,7 +47,7 @@ export class Statistics {
     private readonly allGauges: { [name: string]: () => any } = {};
     private readonly enabled: boolean;
     private readonly properties: Properties;
-    private readonly logger = LoggingService.getLoggingService();
+    private readonly logger: ILogger;
     private client: HazelcastClient;
     private ownerAddress: Address;
     private task: Task;
@@ -57,6 +56,7 @@ export class Statistics {
         this.properties = clientInstance.getConfig().properties;
         this.enabled = this.properties[Statistics.ENABLED] as boolean;
         this.client = clientInstance;
+        this.logger = this.client.getLoggingService().getLogger();
     }
 
     /**
@@ -112,8 +112,9 @@ export class Statistics {
 
     sendStats(newStats: string, ownerConnection: ClientConnection): void {
         const request = ClientStatisticsCodec.encodeRequest(newStats);
-
-        this.client.getInvocationService().invokeOnTarget(request, ownerConnection.getAddress()).catch((err) => {
+        this.logger.trace('Statistics', 'Trying to send statistics to ' +
+            this.client.getClusterService().ownerUuid + ' from ' + ownerConnection.getLocalAddress().toString());
+        this.client.getInvocationService().invokeOnConnection(ownerConnection, request).catch((err) => {
             this.logger.trace('Statistics', 'Could not send stats ', err);
         });
     }
@@ -152,15 +153,22 @@ export class Statistics {
         this.registerGauge('os.freeSwapSpaceSize', () => Statistics.EMPTY_STAT_VALUE);
         this.registerGauge('os.maxFileDescriptorCount', () => Statistics.EMPTY_STAT_VALUE);
         this.registerGauge('os.openFileDescriptorCount', () => Statistics.EMPTY_STAT_VALUE);
-        this.registerGauge('os.processCpuTime', () => Statistics.EMPTY_STAT_VALUE);
-        this.registerGauge('os.systemLoadAverage', () => '[' + os.loadavg().toString() + ']');
+        this.registerGauge('os.processCpuTime', () => {
+            // Nodejs 4 does not support this metric. So we do not print an ugly warning for that.
+            if (Util.getNodejsMajorVersion() >= 6) {
+                return process.cpuUsage().user * 1000; // process.cpuUsage returns micoseconds. We convert to nanoseconds.
+            } else {
+                return Statistics.EMPTY_STAT_VALUE;
+            }
+        });
+        this.registerGauge('os.systemLoadAverage', () => os.loadavg()[0]);
         this.registerGauge('os.totalPhysicalMemorySize', () => os.totalmem());
         this.registerGauge('os.totalSwapSpaceSize', () => Statistics.EMPTY_STAT_VALUE);
         this.registerGauge('runtime.availableProcessors', () => os.cpus().length);
         this.registerGauge('runtime.freeMemory', () => Statistics.EMPTY_STAT_VALUE);
         this.registerGauge('runtime.maxMemory', () => Statistics.EMPTY_STAT_VALUE);
         this.registerGauge('runtime.totalMemory', () => process.memoryUsage().heapTotal);
-        this.registerGauge('runtime.uptime', () => process.uptime());
+        this.registerGauge('runtime.uptime', () => process.uptime() * 1000);
         this.registerGauge('runtime.usedMemory', () => process.memoryUsage().heapUsed);
         this.registerGauge('executionService.userExecutorQueueSize', () => Statistics.EMPTY_STAT_VALUE);
     }
@@ -198,7 +206,7 @@ export class Statistics {
         this.addStat(stats, 'lastStatisticsCollectionTime', new Date().getTime());
         this.addStat(stats, 'enterprise', 'false');
         this.addStat(stats, 'clientType', this.client.getClusterService().getClientInfo().type);
-        this.addStat(stats, 'clientVersion', BuildInfoLoader.getClientVersion());
+        this.addStat(stats, 'clientVersion', BuildInfo.getClientVersion());
         this.addStat(stats, 'clusterConnectionTimestamp', ownerConnection.getStartTime());
         this.addStat(stats, 'clientAddress', ownerConnection.getLocalAddress().toString());
         this.addStat(stats, 'clientName', this.client.getName());

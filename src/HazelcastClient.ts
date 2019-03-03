@@ -37,8 +37,8 @@ import {IList} from './proxy/IList';
 import {ILock} from './proxy/ILock';
 import {IMap} from './proxy/IMap';
 import {IQueue} from './proxy/IQueue';
-import {IReplicatedMap} from './proxy/IReplicatedMap';
-import {IRingbuffer} from './proxy/IRingbuffer';
+import {ReplicatedMap} from './proxy/ReplicatedMap';
+import {Ringbuffer} from './proxy/Ringbuffer';
 import {ISemaphore} from './proxy/ISemaphore';
 import {ISet} from './proxy/ISet';
 import {MultiMap} from './proxy/MultiMap';
@@ -91,11 +91,11 @@ export default class HazelcastClient {
             this.instanceName = 'hz.client_' + this.id;
         }
 
-        LoggingService.initialize(this.config.properties['hazelcast.logging'] as string);
-        this.loggingService = LoggingService.getLoggingService();
+        this.loggingService = new LoggingService(this.config.customLogger,
+            this.config.properties['hazelcast.logging.level'] as number);
         this.invocationService = new InvocationService(this);
         this.listenerService = new ListenerService(this);
-        this.serializationService = new SerializationServiceV1(this.config.serializationConfig);
+        this.serializationService = new SerializationServiceV1(this, this.config.serializationConfig);
         this.proxyManager = new ProxyManager(this);
         this.nearCacheManager = new NearCacheManager(this);
         this.partitionService = new PartitionService(this);
@@ -218,10 +218,10 @@ export default class HazelcastClient {
     /**
      * Returns a distributed ringbuffer instance with the given name.
      * @param name
-     * @returns {Promise<IRingbuffer<E>>}
+     * @returns {Promise<Ringbuffer<E>>}
      */
-    getRingbuffer<E>(name: string): Promise<IRingbuffer<E>> {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.RINGBUFFER_SERVICE) as Promise<IRingbuffer<E>>;
+    getRingbuffer<E>(name: string): Promise<Ringbuffer<E>> {
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.RINGBUFFER_SERVICE) as Promise<Ringbuffer<E>>;
     }
 
     /**
@@ -236,10 +236,10 @@ export default class HazelcastClient {
     /**
      * Returns the distributed replicated-map instance with given name.
      * @param name
-     * @returns {Promise<IReplicatedMap<K, V>>}
+     * @returns {Promise<ReplicatedMap<K, V>>}
      */
-    getReplicatedMap<K, V>(name: string): Promise<IReplicatedMap<K, V>> {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.REPLICATEDMAP_SERVICE) as Promise<IReplicatedMap<K, V>>;
+    getReplicatedMap<K, V>(name: string): Promise<ReplicatedMap<K, V>> {
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.REPLICATEDMAP_SERVICE) as Promise<ReplicatedMap<K, V>>;
     }
 
     /**
@@ -373,13 +373,13 @@ export default class HazelcastClient {
      * Shuts down this client instance.
      */
     shutdown(): void {
+        this.lifecycleService.emitLifecycleEvent(LifecycleEvent.shuttingDown);
         if (this.mapRepairingTask !== undefined) {
             this.mapRepairingTask.shutdown();
         }
         this.nearCacheManager.destroyAllNearCaches();
         this.statistics.stop();
         this.partitionService.shutdown();
-        this.lifecycleService.emitLifecycleEvent(LifecycleEvent.shuttingDown);
         this.heartbeat.cancel();
         this.connectionManager.shutdown();
         this.listenerService.shutdown();
@@ -398,10 +398,10 @@ export default class HazelcastClient {
             this.proxyManager.init();
             this.listenerService.start();
             this.statistics.start();
-            this.loggingService.info('HazelcastClient', 'Client started');
+            this.loggingService.getLogger().info('HazelcastClient', 'Client started');
             return this;
         }).catch((e) => {
-            this.loggingService.error('HazelcastClient', 'Client failed to start', e);
+            this.loggingService.getLogger().error('HazelcastClient', 'Client failed to start', e);
             throw e;
         });
     }
@@ -412,7 +412,7 @@ export default class HazelcastClient {
             const urlEndpoint = HazelcastCloudDiscovery.createUrlEndpoint(this.getConfig().properties,
                 cloudConfig.discoveryToken);
             return new HazelcastCloudAddressTranslator(urlEndpoint, this.getConnectionTimeoutMillis(),
-                this.loggingService);
+                this.loggingService.getLogger());
         }
         return new DefaultAddressTranslator();
 
@@ -436,7 +436,8 @@ export default class HazelcastClient {
         if (cloudConfig.enabled) {
             const discoveryToken = cloudConfig.discoveryToken;
             const urlEndpoint = HazelcastCloudDiscovery.createUrlEndpoint(this.getConfig().properties, discoveryToken);
-            return new HazelcastCloudAddressProvider(urlEndpoint, this.getConnectionTimeoutMillis(), this.loggingService);
+            return new HazelcastCloudAddressProvider(urlEndpoint, this.getConnectionTimeoutMillis(),
+                this.loggingService.getLogger());
         }
         return null;
     }

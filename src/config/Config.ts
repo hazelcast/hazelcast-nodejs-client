@@ -24,10 +24,13 @@ import {ImportConfig} from './ImportConfig';
 import {InMemoryFormat} from './InMemoryFormat';
 import {ListenerConfig} from './ListenerConfig';
 import {NearCacheConfig} from './NearCacheConfig';
+import {SSLConfig} from './SSLConfig';
 import {Properties} from './Properties';
 import {ReliableTopicConfig} from './ReliableTopicConfig';
 import {SerializationConfig} from './SerializationConfig';
 import {Statistics} from '../statistics/Statistics';
+import {LogLevel} from '..';
+import {ILogger} from '../logging/ILogger';
 
 /**
  * Top level configuration object of Hazelcast client. Other configurations items are properties of this object.
@@ -45,6 +48,7 @@ export class ClientConfig {
         'hazelcast.invalidation.reconciliation.interval.seconds': 60,
         'hazelcast.invalidation.max.tolerated.miss.count': 10,
         'hazelcast.invalidation.min.reconciliation.interval.seconds': 30,
+        'hazelcast.logging.level': LogLevel.INFO,
     };
 
     /**
@@ -53,6 +57,7 @@ export class ClientConfig {
     instanceName: string;
     groupConfig: GroupConfig = new GroupConfig();
     networkConfig: ClientNetworkConfig = new ClientNetworkConfig();
+    customLogger: ILogger;
     customCredentials: any = null;
     listeners: ListenerConfig = new ListenerConfig();
     listenerConfigs: ImportConfig[] = [];
@@ -135,3 +140,5 @@ export {NearCacheConfig};
 export {ImportConfig};
 
 export {FlakeIdGeneratorConfig};
+
+export {SSLConfig};

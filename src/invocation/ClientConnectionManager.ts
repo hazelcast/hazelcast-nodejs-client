@@ -15,7 +15,6 @@
  */
 
 import * as Promise from 'bluebird';
-import {LoggingService} from '../logging/LoggingService';
 import {EventEmitter} from 'events';
 import HazelcastClient from '../HazelcastClient';
 import {ClientNotActiveError, HazelcastError, IllegalStateError} from '../HazelcastError';
@@ -23,11 +22,13 @@ import {ClientConnection} from './ClientConnection';
 import {ConnectionAuthenticator} from './ConnectionAuthenticator';
 import * as net from 'net';
 import * as tls from 'tls';
-import {loadNameFromPath} from '../Util';
+import {DeferredPromise, loadNameFromPath} from '../Util';
 import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
 import {AddressTranslator} from '../connection/AddressTranslator';
 import {AddressProvider} from '../connection/AddressProvider';
+import {ILogger} from '../logging/ILogger';
 import Address = require('../Address');
+import {SSLOptionsFactory} from '../connection/SSLOptionsFactory';
 
 const EMIT_CONNECTION_CLOSED = 'connectionClosed';
 const EMIT_CONNECTION_OPENED = 'connectionOpened';
@@ -40,12 +41,13 @@ export class ClientConnectionManager extends EventEmitter {
     readonly addressProviders: AddressProvider[];
     private readonly client: HazelcastClient;
     private pendingConnections: { [address: string]: Promise.Resolver<ClientConnection> } = {};
-    private logger = LoggingService.getLoggingService();
+    private logger: ILogger;
     private readonly addressTranslator: AddressTranslator;
 
     constructor(client: HazelcastClient, addressTranslator: AddressTranslator, addressProviders: AddressProvider[]) {
         super();
         this.client = client;
+        this.logger = this.client.getLoggingService().getLogger();
         this.addressTranslator = addressTranslator;
         this.addressProviders = addressProviders;
     }
@@ -63,7 +65,7 @@ export class ClientConnectionManager extends EventEmitter {
      */
     getOrConnect(address: Address, asOwner: boolean = false): Promise<ClientConnection> {
         const addressIndex = address.toString();
-        const connectionResolver: Promise.Resolver<ClientConnection> = Promise.defer<ClientConnection>();
+        const connectionResolver: Promise.Resolver<ClientConnection> = DeferredPromise<ClientConnection>();
 
         const establishedConnection = this.establishedConnections[addressIndex];
         if (establishedConnection) {
@@ -149,28 +151,38 @@ export class ClientConnectionManager extends EventEmitter {
                 return Promise.reject(error);
             }
         }
-        if (this.client.getConfig().networkConfig.sslOptions) {
-            const opts = this.client.getConfig().networkConfig.sslOptions;
-            return this.connectTLSSocket(address, opts);
-        } else if (this.client.getConfig().networkConfig.sslOptionsFactoryConfig) {
-            const factoryConfig = this.client.getConfig().networkConfig.sslOptionsFactoryConfig;
-            const factoryProperties = this.client.getConfig().networkConfig.sslOptionsFactoryProperties;
-            let factory: any;
-            if (factoryConfig.path) {
-                factory = new (loadNameFromPath(factoryConfig.path, factoryConfig.exportedName))();
+
+        if (this.client.getConfig().networkConfig.sslConfig.enabled) {
+            if (this.client.getConfig().networkConfig.sslConfig.sslOptions) {
+                const opts = this.client.getConfig().networkConfig.sslConfig.sslOptions;
+                return this.connectTLSSocket(address, opts);
+            } else if (this.client.getConfig().networkConfig.sslConfig.sslOptionsFactoryConfig) {
+                const factoryConfig = this.client.getConfig().networkConfig.sslConfig.sslOptionsFactoryConfig;
+                const factoryProperties = this.client.getConfig().networkConfig.sslConfig.sslOptionsFactoryProperties;
+                let factory: SSLOptionsFactory;
+                if (factoryConfig.path) {
+                    factory = new (loadNameFromPath(factoryConfig.path, factoryConfig.exportedName))();
+                } else {
+                    factory = new BasicSSLOptionsFactory();
+                }
+                return factory.init(factoryProperties).then(() => {
+                    return this.connectTLSSocket(address, factory.getSSLOptions());
+                });
             } else {
-                factory = new BasicSSLOptionsFactory();
+                // the default behavior when ssl is enabled
+                const opts = this.client.getConfig().networkConfig.sslConfig.sslOptions = {
+                    checkServerIdentity: (): any => null,
+                    rejectUnauthorized: true,
+                };
+                return this.connectTLSSocket(address, opts);
             }
-            return factory.init(factoryProperties).then(() => {
-                return this.connectTLSSocket(address, factory.getSSLOptions());
-            });
         } else {
             return this.connectNetSocket(address);
         }
     }
 
     private connectTLSSocket(address: Address, configOpts: any): Promise<tls.TLSSocket> {
-        const connectionResolver = Promise.defer<tls.TLSSocket>();
+        const connectionResolver = DeferredPromise<tls.TLSSocket>();
         const socket = tls.connect(address.port, address.host, configOpts);
         socket.once('secureConnect', () => {
             connectionResolver.resolve(socket);
@@ -186,7 +198,7 @@ export class ClientConnectionManager extends EventEmitter {
     }
 
     private connectNetSocket(address: Address): Promise<net.Socket> {
-        const connectionResolver = Promise.defer<net.Socket>();
+        const connectionResolver = DeferredPromise<net.Socket>();
         const socket = net.connect(address.port, address.host);
         socket.once('connect', () => {
             connectionResolver.resolve(socket);

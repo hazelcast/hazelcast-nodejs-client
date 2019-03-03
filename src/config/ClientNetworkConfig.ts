@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-import {ImportConfig} from './ImportConfig';
-import {Properties} from './Properties';
-import {SSLOptions} from './SSLOptions';
 import {ClientCloudConfig} from './ClientCloudConfig';
+import {SSLConfig} from './SSLConfig';
 
 /**
- * Network configuration
+ * Network configuration.
  */
 export class ClientNetworkConfig {
     /**
@@ -59,12 +57,7 @@ export class ClientNetworkConfig {
     smartRouting: boolean = true;
 
     /**
-     * sslOptions is by default null which disables Ssl. A none null {@link SSLOptions} value enables Ssl.
-     * @type {SSLOptions}
+     * SSL configuration.
      */
-    sslOptions: SSLOptions = null;
-
-    sslOptionsFactoryConfig: ImportConfig = null;
-
-    sslOptionsFactoryProperties: Properties = null;
+    sslConfig: SSLConfig = new SSLConfig();
 }

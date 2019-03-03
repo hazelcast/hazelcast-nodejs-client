@@ -14,77 +14,75 @@
  * limitations under the License.
  */
 
-var chai = require("chai");
+var chai = require('chai');
+chai.use(require('chai-as-promised'));
 var expect = chai.expect;
-var chaiAsPromised = require("chai-as-promised");
-chai.use(chaiAsPromised);
-var HazelcastClient = require("../../lib/index.js").Client;
-var Controller = require('./../RC');
-var Config = require('../..').Config;
-var Util = require('./../Util');
-var Promise = require('bluebird');
 var fs = require('fs');
-var _fillMap = require('../Util').fillMap;
+var Promise = require('bluebird');
+var path = require('path');
+var Util = require('../Util');
+
 var markEnterprise = require('../Util').markEnterprise;
+var Controller = require('./../RC');
 
+var HazelcastClient = require("../../").Client;
+var Errors = require('../..').HazelcastErrors;
+var Config = require('../..').Config;
 
-var authorizedSslConfig = new Config.ClientConfig();
-authorizedSslConfig.networkConfig.sslOptions = {
-    rejectUnauthorized: true,
-    ca: [fs.readFileSync(__dirname + '/server1-cert.pem')],
-    servername: 'foo.bar.com'
-};
+describe("Client with SSL enabled", function () {
 
-var unauthorizedSslConfig = new Config.ClientConfig();
-unauthorizedSslConfig.networkConfig.sslOptions = {rejectUnauthorized: false};
+    var cluster;
+    var client;
+    var serverConfig;
 
-var configParams = [
-    authorizedSslConfig,
-    unauthorizedSslConfig
-];
+    beforeEach(function () {
+        this.timeout(20000);
+        markEnterprise(this);
+        Util.markServerVersionAtLeast(this, null, '3.8.1');
+        serverConfig = fs.readFileSync(__dirname + '/hazelcast-ssl.xml', 'utf8');
+    });
 
-configParams.forEach(function (cfg) {
-
-    describe("SSL rejectUnauthorized:" + cfg.networkConfig.sslOptions.rejectUnauthorized, function () {
-
-        var cluster;
-        var client;
-
-        before(function () {
-            markEnterprise(this);
-
-            this.timeout(10000);
-            return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast-ssl.xml', 'utf8')).then(function (response) {
-                cluster = response;
-                return Controller.startMember(cluster.id);
-            }).then(function (member) {
-                return HazelcastClient.newHazelcastClient(cfg).then(function (hazelcastClient) {
-                    client = hazelcastClient;
-                });
-            });
-        });
-
-        after(function () {
-            markEnterprise(this);
-
+    afterEach(function () {
+        this.timeout(20000);
+        markEnterprise(this);
+        Util.markServerVersionAtLeast(this, null, '3.8.1');
+        if (client) {
             client.shutdown();
-            return Controller.shutdownCluster(cluster.id);
-        });
+            client = null;
+        }
+        return Controller.shutdownCluster(cluster.id);
+    });
 
-        it('isRunning', function () {
+    function createCluster(sConfig) {
+        return Controller.createCluster(null, sConfig).then(function (response) {
+            cluster = response;
+            return Controller.startMember(cluster.id);
+        });
+    }
+
+    it('should not be able to connect to the server with invalid certificate', function () {
+        var sConfig = serverConfig
+            .replace('[serverCertificate]', 'com/hazelcast/nio/ssl-mutual-auth/server1.keystore')
+            .replace('[password]', 'password');
+        return createCluster(sConfig).then(function () {
+            var clientConfig = new Config.ClientConfig();
+            clientConfig.networkConfig.sslConfig.enabled = true;
+            return expect(HazelcastClient.newHazelcastClient(clientConfig)).to.be.rejectedWith(Errors.IllegalStateError);
+        })
+    });
+
+    it('should be able to connect to the server with valid certificate', function () {
+        var sConfig = serverConfig
+            .replace('[serverCertificate]', 'com/hazelcast/nio/ssl/letsencrypt.jks')
+            .replace('[password]', '123456');
+        return createCluster(sConfig).then(function () {
+            var clientConfig = new Config.ClientConfig();
+            clientConfig.networkConfig.sslConfig.enabled = true;
+            return HazelcastClient.newHazelcastClient(clientConfig);
+        }).then(function (hazelcastClient) {
+            client = hazelcastClient;
             return expect(client.lifecycleService.isRunning()).to.be.true;
-        });
-
-        it('basic map size', function () {
-            var map;
-            return client.getMap('test').then(function (mp) {
-                map = mp;
-                return _fillMap(map);
-            }).then(function () {
-                return map.size().then(function (size) {
-                    expect(size).to.equal(10);
-                });
-            })
         });
     });
 });
+

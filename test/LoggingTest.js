@@ -20,6 +20,7 @@ var winston = require('winston');
 var Config = require('../.').Config;
 var Controller = require('./RC');
 var HazelcastClient = require('../.').Client;
+var LogLevel = require('../.').LogLevel;
 describe('Logging Test', function () {
     var cluster;
     var client;
@@ -39,8 +40,28 @@ describe('Logging Test', function () {
             'silly'
         ],
 
-        log: function (level, className, message, furtherInfo) {
-            this.logger.log(this.levels[level], className + ' ' + message);
+        log: function (level, objectName, message, furtherInfo) {
+            this.logger.log(this.levels[level], objectName + ' ' + message, furtherInfo);
+        },
+
+        error: function (objectName, message, furtherInfo) {
+            this.log(LogLevel.ERROR, objectName, message, furtherInfo);
+        },
+
+        debug: function (objectName, message, furtherInfo) {
+            this.log(LogLevel.DEBUG, objectName, message, furtherInfo);
+        },
+
+        warn: function (objectName, message, furtherInfo) {
+            this.log(LogLevel.WARN, objectName, message, furtherInfo);
+        },
+
+        info: function (objectName, message, furtherInfo) {
+            this.log(LogLevel.INFO, objectName, message, furtherInfo);
+        },
+
+        trace: function (objectName, message, furtherInfo) {
+            this.log(LogLevel.TRACE, objectName, message, furtherInfo);
         }
     };
 
@@ -73,7 +94,7 @@ describe('Logging Test', function () {
             loggingHappened = true;
         });
         var cfg = new Config.ClientConfig();
-        cfg.properties['hazelcast.logging'] = winstonAdapter;
+        cfg.customLogger = winstonAdapter;
         return HazelcastClient.newHazelcastClient(cfg).then(function (hz) {
             client = hz;
             return expect(loggingHappened).to.be.true;
@@ -82,7 +103,7 @@ describe('Logging Test', function () {
 
     it('no logging', function () {
         var cfg = new Config.ClientConfig();
-        cfg.properties['hazelcast.logging'] = 'off';
+        cfg.properties['hazelcast.logging.level'] = LogLevel.OFF;
         return HazelcastClient.newHazelcastClient(cfg).then(function (hz) {
             client = hz;
             return sinon.assert.notCalled(console.log);
@@ -98,7 +119,7 @@ describe('Logging Test', function () {
 
     it('default logging in case of default property', function () {
         var cfg = new Config.ClientConfig();
-        cfg.properties['hazelcast.logging'] = 'default';
+        cfg.properties['hazelcast.logging.level'] = LogLevel.INFO;
         return HazelcastClient.newHazelcastClient(cfg).then(function (hz) {
             client = hz;
             return sinon.assert.called(console.log);
@@ -107,7 +128,35 @@ describe('Logging Test', function () {
 
     it('error in case of unknown property value', function () {
         var cfg = new Config.ClientConfig();
-        cfg.properties['hazelcast.logging'] = 'unknw';
+        cfg.customLogger = 'unknw';
         return expect(HazelcastClient.newHazelcastClient.bind(this, cfg)).to.throw(Error);
+    });
+
+    it('default logging, default level', function () {
+        var cfg = new Config.ClientConfig();
+        return HazelcastClient.newHazelcastClient(cfg).then(function (cl) {
+            client = cl;
+            return sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'INFO');
+        });
+    });
+
+    it('default logging, error level', function () {
+        var cfg = new Config.ClientConfig();
+        cfg.properties['hazelcast.logging.level'] = LogLevel.ERROR;
+        return HazelcastClient.newHazelcastClient(cfg).then(function (cl) {
+            client = cl;
+            return sinon.assert.notCalled(console.log);
+        });
+    });
+
+    it('default logging, trace level', function () {
+        var cfg = new Config.ClientConfig();
+        cfg.properties['hazelcast.logging.level'] = LogLevel.TRACE;
+        return HazelcastClient.newHazelcastClient(cfg).then(function (cl) {
+            client = cl;
+            return sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'INFO');
+            return sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'DEBUG');
+            return sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'TRACE');
+        });
     });
 });

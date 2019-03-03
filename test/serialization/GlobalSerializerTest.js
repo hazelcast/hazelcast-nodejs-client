@@ -39,7 +39,7 @@ describe('Global Serializer', function () {
                 return obj;
             }
         };
-        service = new SerializationService.SerializationServiceV1(cfg.serializationConfig);
+        service = new SerializationService.SerializationServiceV1(undefined, cfg.serializationConfig);
     });
 
     it('write-read', function () {

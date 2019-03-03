@@ -18,7 +18,7 @@ import {AggregatorFactory} from '../aggregation/AggregatorFactory';
 import {ClusterDataFactory} from '../ClusterDataFactory';
 import {ClusterDataFactoryHelper} from '../ClusterDataFactoryHelper';
 import {SerializationConfig} from '../config/SerializationConfig';
-import {RELIABLE_TOPIC_MESSAGE_FACTORY_ID, ReliableTopicMessageFactory} from '../proxy/topic/RawTopicMessage';
+import {RELIABLE_TOPIC_MESSAGE_FACTORY_ID, ReliableTopicMessageFactory} from '../proxy/topic/ReliableTopicMessage';
 import * as Util from '../Util';
 import {Data, DataInput, DataOutput} from './Data';
 import * as DefaultPredicates from './DefaultPredicates';
@@ -52,6 +52,7 @@ import {ObjectDataInput, PositionalObjectDataOutput} from './ObjectData';
 import {PortableSerializer} from './portable/PortableSerializer';
 import {PREDICATE_FACTORY_ID, PredicateFactory} from './PredicateFactory';
 import {IdentifiedDataSerializableFactory} from './Serializable';
+import HazelcastClient from '../HazelcastClient';
 
 export interface SerializationService {
     toData(object: any, paritioningStrategy?: any): Data;
@@ -77,8 +78,10 @@ export class SerializationServiceV1 implements SerializationService {
     private serializerNameToId: { [name: string]: number };
     private numberType: string;
     private serializationConfig: SerializationConfig;
+    private client: HazelcastClient;
 
-    constructor(serializationConfig: SerializationConfig) {
+    constructor(client: HazelcastClient, serializationConfig: SerializationConfig) {
+        this.client = client;
         this.serializationConfig = serializationConfig;
         this.registry = {};
         this.serializerNameToId = {};

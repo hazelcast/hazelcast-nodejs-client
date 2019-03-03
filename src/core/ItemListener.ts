@@ -16,12 +16,51 @@
 
 import {Member} from './Member';
 
+/**
+ * Item listener for IQueue, ISet, IList.
+ */
 export interface ItemListener<E> {
     itemAdded?: ItemEventListener<E>;
     itemRemoved?: ItemEventListener<E>;
 }
 
-export type ItemEventListener<E> = (item: E, member: Member, eventType: ItemEventType) => void;
+/**
+ * A type which is used for item events.
+ */
+export type ItemEventListener<E> = (itemEvent: ItemEvent<E>) => void;
+
+/**
+ * IQueue, ISet, IList item event.
+ */
+export class ItemEvent<E> {
+
+    /**
+     * The name of the data structure for this event.
+     */
+    name: string;
+
+    /**
+     * The value of the item event.
+     */
+    item: E;
+    /**
+     * The event type.
+     */
+    eventType: ItemEventType;
+
+    /**
+     * The member that fired this event.
+     */
+    member: Member;
+
+    constructor(name: string, itemEventType: ItemEventType, item: E, member: Member) {
+        this.name = name;
+        this.eventType = itemEventType;
+        this.item = item;
+        this.member = member;
+    }
+
+}
 
 export enum ItemEventType {
     ADDED = 1,

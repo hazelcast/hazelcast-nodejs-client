@@ -30,6 +30,12 @@ import {ReadResultSet} from './proxy/ringbuffer/ReadResultSet';
 import {ClassDefinitionBuilder} from './serialization/portable/ClassDefinitionBuilder';
 import {ClassDefinition, FieldDefinition} from './serialization/portable/ClassDefinition';
 import {MemberAttributeEvent, MemberAttributeOperationType} from './core/MemberAttributeEvent';
+import {EvictionPolicy} from './config/EvictionPolicy';
+import {InMemoryFormat} from './config/InMemoryFormat';
+import {ItemEvent, ItemEventType} from './core/ItemListener';
+import {MapEvent} from './core/MapListener';
+import {EntryEvent} from './core/EntryListener';
+import {LogLevel} from './logging/LoggingService';
 
 export {
     HazelcastClient as Client,
@@ -50,4 +56,11 @@ export {
     ClassDefinitionBuilder,
     MemberAttributeEvent,
     MemberAttributeOperationType,
+    EvictionPolicy,
+    InMemoryFormat,
+    ItemEvent,
+    ItemEventType,
+    MapEvent,
+    EntryEvent,
+    LogLevel,
 };

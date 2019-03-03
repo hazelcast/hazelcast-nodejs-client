@@ -1,6 +1,6 @@
 {
   "name": "hazelcast-client",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Hazelcast - open source In-Memory Data Grid - client for NodeJS",
   "main": "lib/index.js",
   "dependencies": {
@@ -17,6 +17,7 @@
     "istanbul": "0.4.5",
     "jsonschema": "1.2.4",
     "mocha": "3.5.3",
+    "mocha-junit-reporter": "1.18.0",
     "mousse": "0.3.1",
     "remap-istanbul": "0.9.6",
     "rimraf": "2.6.2",
@@ -27,12 +28,11 @@
   },
   "scripts": {
     "clean": "rimraf lib typings *.jar *.log",
-    "precompile": "node create-build-info.js",
     "compile": "tsc",
     "pretest": "node download-remote-controller.js",
-    "test": "mocha --recursive",
+    "test": "mocha --recursive --reporter-options mochaFile=report.xml --reporter mocha-junit-reporter",
     "precoverage": "node download-remote-controller.js",
-    "coverage": "rimraf coverage && istanbul cover --root lib/ --include-all-sources node_modules/mocha/bin/_mocha -- --recursive --reporter spec",
+    "coverage": "rimraf coverage && istanbul cover --root lib/ --include-all-sources node_modules/mocha/bin/_mocha -- --recursive --reporter-options mochaFile=report.xml --reporter mocha-junit-reporter",
     "coverage-without-codecs": "rimraf coverage && istanbul cover -x **/codec/**/* --root lib/ --include-all-sources node_modules/mocha/bin/_mocha -- --recursive --reporter spec",
     "postcoverage": "remap-istanbul -i coverage/coverage.json -o coverage/cobertura-coverage.xml -t cobertura && remap-istanbul -i coverage/coverage.json -o coverage -t html",
     "pregenerate-docs": "rimraf docs",
