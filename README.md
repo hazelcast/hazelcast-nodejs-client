@@ -1470,7 +1470,7 @@ To use this feature, you need to
 * have a class implementing the [`LoginModule`](https://docs.oracle.com/javase/6/docs/api/javax/security/auth/spi/LoginModule.html?is-external=true) interface which uses the `Credentials` object during the authentication process
 * configure your Hazelcast member's security properties with respect to these classes before starting it. If you have started your member as described in the [Running Standalone JARs section](#1211-running-standalone-jars), see the [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath).
 
-[`UsernamePasswordCredentials`](https://docs.hazelcast.org/docs/latest/javadoc/com/hazelcast/security/UsernamePasswordCredentials.html), a custom implementation of the `Credentials` interface, is available in the Hazelcast `com.hazelcast.security` package. 
+[`UsernamePasswordCredentials`](https://docs.hazelcast.org/docs/latest/javadoc/com/hazelcast/security/UsernamePasswordCredentials.html), a basic implementation of the `Credentials` interface, is available in the Hazelcast `com.hazelcast.security` package. 
 `UsernamePasswordCredentials` is used for default configuration during the authentication process of both members and clients. You can also use this class to carry the security attributes of your client.
 
 Hazelcast also has an abstract implementation of the `LoginModule` interface which is the `ClusterLoginModule` class in the `com.hazelcast.security` package. 
