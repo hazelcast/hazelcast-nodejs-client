@@ -2,13 +2,13 @@
 
 This code sample demonstrates how to assign different permission policies for different user groups with the Hazelcast JAAS based security features.
 
-Users within the `adminGroup` have crate, destroy, read and put permissions over the `importantAdminMap`.
+Users within the `adminGroup` have create, destroy, read and put permissions over the `importantAdminMap`.
 
 Users within the `readerGroup` have just create and read permissions over the `importantReaderMap`.
 
 To test the code sample,
 
-* Make sure you have [hazelcast.xml](hazelcast-member/src/main/resources/hazelcast.xml) is in your class path.
+* Make sure [hazelcast.xml](hazelcast-member/src/main/resources/hazelcast.xml) is in your class path.
 
 * Start the Hazelcast member with [Bootstrap.java](hazelcast-member/src/main/java/com/company/Bootstrap.java).
 
