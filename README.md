@@ -43,6 +43,7 @@
     * [6.1.1. TLS/SSL for Hazelcast Members](#611-tlsssl-for-hazelcast-members)
     * [6.1.2. TLS/SSL for Hazelcast Node.js Clients](#612-tlsssl-for-hazelcast-nodejs-clients)
     * [6.1.3. Mutual Authentication](#613-mutual-authentication)
+  * [6.2. Credentials](#62-credentials)
 * [7. Using Node.js Client with Hazelcast IMDG](#7-using-nodejs-client-with-hazelcast-imdg)
   * [7.1. Node.js Client API Overview](#71-nodejs-client-api-overview)
   * [7.2. Node.js Client Operation Modes](#72-nodejs-client-operation-modes)
@@ -1297,7 +1298,7 @@ To be able to connect to the provided IP addresses, you should use secure TLS/SS
 
 # 6. Securing Client Connection
 
-This chapter describes the security features of Hazelcast Node.js client. These include using TLS/SSL for connections between members and between clients and members, and mutual authentication. These security features require **Hazelcast IMDG Enterprise** edition.
+This chapter describes the security features of Hazelcast Node.js client. These include using TLS/SSL for connections between members and between clients and members, mutual authentication and credentials. These security features require **Hazelcast IMDG Enterprise** edition.
 
 ### 6.1. TLS/SSL
 
@@ -1458,6 +1459,177 @@ the properties section in the JSON configuration file. Lastly, the client calls 
 
 For information about the path resolution, see the [Loading Objects and Path Resolution section](#33-loading-objects-and-path-resolution).
 
+## 6.2. Credentials
+
+One of the key elements in Hazelcast security is the `Credentials` object, which can be used to carry all security attributes of the
+Hazelcast Node.js client to Hazelcast members. Then, Hazelcast members can authenticate the clients and perform access control
+checks on the client operations using this `Credentials` object.
+
+To use this feature, you need to 
+* have a class implementing the [`Credentials`](https://docs.hazelcast.org/docs/latest/javadoc/com/hazelcast/security/Credentials.html) interface which contains the security attributes of your client
+* have a class implementing the [`LoginModule`](https://docs.oracle.com/javase/6/docs/api/javax/security/auth/spi/LoginModule.html?is-external=true) interface which uses the `Credentials` object during the authentication process
+* configure your Hazelcast member's security properties with respect to these classes before starting it. If you have started your member as described in the [Running Standalone JARs section](#1211-running-standalone-jars), see the [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath).
+
+[`UsernamePasswordCredentials`](https://docs.hazelcast.org/docs/latest/javadoc/com/hazelcast/security/UsernamePasswordCredentials.html), a basic implementation of the `Credentials` interface, is available in the Hazelcast `com.hazelcast.security` package. 
+`UsernamePasswordCredentials` is used for default configuration during the authentication process of both members and clients. You can also use this class to carry the security attributes of your client.
+
+Hazelcast also has an abstract implementation of the `LoginModule` interface which is the `ClusterLoginModule` class in the `com.hazelcast.security` package. 
+You can extend this class and do the authentication on the `onLogin()` method. 
+
+Below is an example for the extension of abstract `ClusterLoginModule` class. 
+On the `ClientLoginModule#onLogin()` method, we are doing a simple authentication against a hardcoded username and password just for illustrative purposes. You should carry out the authentication against a security service of your choice.
+ 
+```java
+import com.hazelcast.security.ClusterLoginModule;
+import com.hazelcast.security.UsernamePasswordCredentials;
+
+import javax.security.auth.login.FailedLoginException;
+import javax.security.auth.login.LoginException;
+
+public class ClientLoginModule extends ClusterLoginModule {
+
+  @Override
+  protected boolean onLogin() throws LoginException {
+      if (credentials instanceof UsernamePasswordCredentials) {
+          UsernamePasswordCredentials usernamePasswordCredentials = (UsernamePasswordCredentials) credentials;
+          String username = usernamePasswordCredentials.getUsername();
+          String password = usernamePasswordCredentials.getPassword();
+          
+          if (username.equals("admin") && password.equals("password")) {
+              return true;
+          }
+          throw new FailedLoginException("Username or password doesn't match expected value.");
+      }
+      return false;
+  }
+
+  @Override
+  public boolean onCommit() {
+      return loginSucceeded;
+  }
+
+  @Override
+  protected boolean onAbort() {
+      return true;
+  }
+
+  @Override
+  protected boolean onLogout() {
+      return true;
+  }
+}
+```
+
+Finally, you can configure `hazelcast.xml` as follows to enable Hazelcast security, do mandatory authentication with `ClientLoginModule`
+and give the user with the name `admin` all the permissions over the map named `importantMap`.
+
+```xml
+<hazelcast>
+    <security enabled="true">
+        <client-login-modules>
+            <login-module class-name="com.company.ClientLoginModule" usage="REQUIRED"/>
+        </client-login-modules>
+        <client-permissions>
+            <map-permission name="importantMap" principal="admin">
+                <actions>
+                    <action>all</action>
+                </actions>
+            </map-permission>
+        </client-permissions>
+    </security>
+</hazelcast>
+```
+
+After successfully starting a Hazelcast member as described above, you need to implement `Portable` equivalent of the `UsernamePasswordCredentials`
+and register it to your client configuration.
+
+Below is the code for that.
+
+**user_pass_cred.js**
+```javascript
+function UsernamePasswordCredentials(username, password, endpoint) {
+    this.username = username;
+    this.password = Buffer.from(password, 'utf8');
+    this.endpoint = endpoint;
+}
+
+UsernamePasswordCredentials.prototype.readPortable = function (reader) {
+    this.username = reader.readUTF('principal');
+    this.endpoint = reader.readUTF('endpoint');
+    this.password = reader.readByteArray('pwd');
+};
+
+UsernamePasswordCredentials.prototype.writePortable = function (writer) {
+    writer.writeUTF('principal', this.username);
+    writer.writeUTF('endpoint', this.endpoint);
+    writer.writeByteArray('pwd', this.password);
+};
+
+UsernamePasswordCredentials.prototype.getFactoryId = function () {
+    return -1;
+};
+
+UsernamePasswordCredentials.prototype.getClassId = function () {
+    return 1;
+};
+
+exports.UsernamePasswordCredentials = UsernamePasswordCredentials;
+```
+
+And below is the `Factory` implementation for the `Portable` implementation of `UsernamePasswordCredentials`.
+
+**user_pass_cred_factory.js**
+```javascript
+var UsernamePasswordCredentials = require('./user_pass_cred').UsernamePasswordCredentials;
+
+function UsernamePasswordCredentialsFactory() {
+}
+
+UsernamePasswordCredentialsFactory.prototype.create = function (classId) {
+    if(classId === 1){
+        return new UsernamePasswordCredentials();
+    }
+    return null;
+};
+
+exports.UsernamePasswordCredentialsFactory = UsernamePasswordCredentialsFactory;
+```
+
+Now, you can start your client by registering the `Portable` factory and giving the credentials as follows.
+
+```javascript
+var Client = require('hazelcast-client').Client;
+var ClientConfig = require('hazelcast-client').Config.ClientConfig;
+
+var UsernamePasswordCredentials = require('./user_pass_cred').UsernamePasswordCredentials;
+var UsernamePasswordCredentialsFactory = require('./user_pass_cred_factory').UsernamePasswordCredentialsFactory;
+
+var config = new ClientConfig();
+config.serializationConfig.portableVersion = 1;
+config.serializationConfig.portableFactories[-1] = new UsernamePasswordCredentialsFactory();
+config.customCredentials = new UsernamePasswordCredentials('admin', 'password', '127.0.0.1');
+
+Client.newHazelcastClient(config).then(function (client) {
+    var map;
+    return client.getMap('importantMap').then(function (mp) {
+        map = mp;
+        return map.put('key', 'value');
+    }).then(function () {
+        return map.get('key');
+    }).then(function (value) {
+        console.log(value);
+        return client.shutdown();
+    });
+});
+```
+
+> NOTE: It is almost always a bad idea to write the credentials to wire in a clear-text format. Therefore, using TLS/SSL encryption is highly recommended while using the custom credentials as described in [TLS/SSL section]((#61-tlsssl)).
+
+With Hazelcast's extensible, `JAAS` based security features you can do much more than just authentication. 
+See the [JAAS code sample](code_samples/jaas_sample) to learn how to perform access control checks on the client operations based on user groups.
+
+Also, see the [Security section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#security) of Hazelcast IMDG Reference Manual for more information.
+ 
 
 # 7. Using Node.js Client with Hazelcast IMDG
 
@@ -2211,7 +2383,7 @@ IdentifiedEntryProcessor.prototype.getClassId = function () {
 };
 ```
 
-Now, you need to make sure that the Hazelcast member recognizes the entry processor. For this, you need to implement the Java equivalent of your entry processor and its factory, and create your own compiled class or JAR files. For adding your own compiled class or JAR files to the server's `CLASSPATH`, see the [Adding User Library to CLASSPATH section](#1213-adding-user-library-to-classpath).
+Now, you need to make sure that the Hazelcast member recognizes the entry processor. For this, you need to implement the Java equivalent of your entry processor and its factory, and create your own compiled class or JAR files. For adding your own compiled class or JAR files to the server's `CLASSPATH`, see the [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath).
 
 The following is the Java equivalent of the entry processor in Node.js client given above:
 
@@ -2380,7 +2552,7 @@ Employee.prototype.writePortable = function (writer) {
 
 Note that `Employee` is a `Portable` object. As portable types are not deserialized on the server side for querying, you don't need to implement its Java equivalent on the server side.
 
-For the non-portable types, you need to implement its Java equivalent and its serializable factory on the server side for server to reconstitute the objects from binary formats. In this case before starting the server, you need to compile the Employee and related factory classes with server's CLASSPATH and add them to the user-lib directory in the extracted hazelcast-<version>.zip (or tar).  See the [Adding User Library to CLASSPATH section](#1213-adding-user-library-to-classpath).
+For the non-portable types, you need to implement its Java equivalent and its serializable factory on the server side for server to reconstitute the objects from binary formats. In this case before starting the server, you need to compile the Employee and related factory classes with server's CLASSPATH and add them to the user-lib directory in the extracted hazelcast-<version>.zip (or tar).  See the [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath).
 
 > **NOTE: Querying with `Portable` object is faster as compared to `IdentifiedDataSerializable`.**
 
@@ -2539,7 +2711,7 @@ hazelcastClient.getMap('students').then(function (mp) {
 });
 ```
 
-If you want to sort the result before paging, you need to specify a comparator object that implements the `Comparator` interface. Also, this comparator object should be one of `IdentifiedDataSerializable` or `Portable`. After implementing this object in Node.js, you need to implement the Java equivalent of it and its factory. The Java equivalent of the comparator should implement `java.util.Comparator`. Note that the `compare` function of `Comparator` on the Java side is the equivalent of the `sort` function of `Comparator` on the Node.js side. When you implement the `Comparator` and its factory, you can add them to the `CLASSPATH` of the server side.  See the [Adding User Library to CLASSPATH section](#1213-adding-user-library-to-classpath).
+If you want to sort the result before paging, you need to specify a comparator object that implements the `Comparator` interface. Also, this comparator object should be one of `IdentifiedDataSerializable` or `Portable`. After implementing this object in Node.js, you need to implement the Java equivalent of it and its factory. The Java equivalent of the comparator should implement `java.util.Comparator`. Note that the `compare` function of `Comparator` on the Java side is the equivalent of the `sort` function of `Comparator` on the Node.js side. When you implement the `Comparator` and its factory, you can add them to the `CLASSPATH` of the server side.  See the [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath).
 
 Also, you can access a specific page more easily with the help of the `setPage` function. This way, if you make a query for the 100th page, for example, it will get all 100 pages at once instead of reaching the 100th page one by one using the `nextPage` function.
 
