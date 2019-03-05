@@ -13,7 +13,7 @@ To test the code sample,
 
 * Make sure [hazelcast.xml](hazelcast-member/src/main/resources/hazelcast.xml) is in your class path.
 
-* Start the Hazelcast member with [Bootstrap.java](hazelcast-member/src/main/java/com/company/Bootstrap.java).
+* Start the Hazelcast member with [Bootstrap.java](hazelcast-member/src/main/java/com/company/Bootstrap.java). If you are unsure about how to do that, see [the notes on starting `Bootstrap.java`](hazelcast-member/README.md).
 
 * Run the [admin_client.js](admin_client.js) with the command `node admin_client.js` to see what can the users within the `adminGroup` do.
 
