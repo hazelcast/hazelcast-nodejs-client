@@ -38,8 +38,7 @@ describe('Redo Operation Test: ', function () {
         Controller.shutdownCluster(cluster.id);
     });
 
-
-    it('redoOperation true, map.put operations are retried', function () {
+    it('redoOperation true, map.put operations are retried', function (done) {
         this.timeout(30000);
         var member1, member2;
         var map;
@@ -57,12 +56,11 @@ describe('Redo Operation Test: ', function () {
             map = mp;
         });
 
-        let expected = 1000;
-
         testSequence = testSequence.then(function () {
             Controller.shutdownMember(cluster.id, member1.uuid);
             return map.put(0, 'item' + 0);
         });
+        let expected = 1001;
         for (let i = 1; i < expected; i++) {
             testSequence = testSequence.then(function () {
                 return map.put(i, 'item' + i);
@@ -72,10 +70,8 @@ describe('Redo Operation Test: ', function () {
         testSequence.then(function () {
             return map.size();
         }).then(function (size) {
-            return expect(size).to.equal(expected);
-        });
-
-        return testSequence;
+            expect(size).to.equal(expected);
+        }).then(() => done(), done);
     });
 
     it('redoOperation false, map.put operations are not retried', function (done) {
@@ -96,8 +92,6 @@ describe('Redo Operation Test: ', function () {
             map = mp;
         });
         
-        let expected = 1000;
-
         testSequence = testSequence.then(function () {
             Controller.shutdownMember(cluster.id, member1.uuid);
             return map.put(0, 'item' + 0);
@@ -108,14 +102,11 @@ describe('Redo Operation Test: ', function () {
             });
         }
 
+        let expected = 1000;
         testSequence.then(function () {
             return map.size();
         }).then(function (size) {
-            if (size === expected) {
-                done("Messages have been retried");
-            } else {
-                done();
-            }
+            expect(size).to.not.equal(expected);
         }).catch(function () {
             done();
         });

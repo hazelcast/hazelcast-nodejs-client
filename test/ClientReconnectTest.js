@@ -40,6 +40,7 @@ describe('Client reconnect', function () {
         }).then(function (m) {
             member = m;
             var cfg = new Config.ClientConfig();
+            cfg.networkConfig.redoOperation = true;
             cfg.properties['hazelcast.client.heartbeat.interval'] = 1000;
             cfg.properties['hazelcast.client.heartbeat.timeout'] = 3000;
             return HazelcastClient.newHazelcastClient(cfg);
@@ -70,6 +71,7 @@ describe('Client reconnect', function () {
         }).then(function (m) {
             member = m;
             var cfg = new Config.ClientConfig();
+            cfg.networkConfig.redoOperation = true;
             cfg.properties['hazelcast.client.heartbeat.interval'] = 1000;
             cfg.properties['hazelcast.client.heartbeat.timeout'] = 3000;
             cfg.networkConfig.connectionTimeout = 10000;

@@ -52,6 +52,7 @@ describe('Listeners on reconnect', function () {
         }).then(function (m) {
             members[2] = m;
             var cfg = new Config.ClientConfig();
+            cfg.networkConfig.redoOperation = true;
             cfg.properties['hazelcast.client.heartbeat.interval'] = 1000;
             cfg.properties['hazelcast.client.heartbeat.timeout'] = 3000;
             cfg.networkConfig.smartRouting = isSmart;
@@ -127,6 +128,7 @@ describe('Listeners on reconnect', function () {
             Controller.startMember(cluster.id).then(function (m) {
                 member = m;
                 var cfg = new Config.ClientConfig();
+                cfg.networkConfig.redoOperation = true;
                 cfg.networkConfig.smartRouting = isSmart;
                 cfg.properties['hazelcast.client.heartbeat.interval'] = 1000;
                 return HazelcastClient.newHazelcastClient(cfg);
