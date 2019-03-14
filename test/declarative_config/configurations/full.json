@@ -81,7 +81,8 @@
                 "exportedName": "CustomSerializer2",
                 "typeId": 3
             }
-        ]
+        ],
+        "jsonDeserializationFormat": "hazelcast_json_value"
     },
     "nearCaches": [
         {

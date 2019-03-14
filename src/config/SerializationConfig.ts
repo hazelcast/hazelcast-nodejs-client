@@ -16,6 +16,7 @@
 
 import {IdentifiedDataSerializableFactory, PortableFactory} from '../serialization/Serializable';
 import {ImportConfig} from './ImportConfig';
+import {JsonDeserializationFormat} from './JsonDeserializationFormat';
 
 export class SerializationConfig {
     defaultNumberType: string = 'double';
@@ -29,4 +30,5 @@ export class SerializationConfig {
     customSerializerConfigs: { [id: number]: ImportConfig } = {};
     globalSerializer: any = null;
     globalSerializerConfig: ImportConfig = null;
+    jsonDeserializationFormat: JsonDeserializationFormat = JsonDeserializationFormat.OBJECT;
 }

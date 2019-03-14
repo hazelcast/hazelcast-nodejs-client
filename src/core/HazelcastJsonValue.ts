@@ -14,33 +14,45 @@
  * limitations under the License.
  */
 
+import {assertNotNull} from '../Util';
+
 /**
- * HazelcastJson is a wrapper for JSON formatted strings. It is preferred
- * to store HazelcastJson instead of Strings for JSON formatted strings.
+ * HazelcastJsonValue is a wrapper for JSON formatted strings. It is preferred
+ * to store HazelcastJsonValue instead of Strings for JSON formatted strings.
  * Users can run predicates and use indexes on the attributes of the underlying
  * JSON strings.
  *
- * HazelcastJson is queried using Hazelcast's querying language.
+ * HazelcastJsonValue is queried using Hazelcast's querying language.
  * See {@link Predicates}.
  *
  * In terms of querying, numbers in JSON strings are treated as either
  * Long or Double in the Java side. Strings, booleans and null
  * are treated as their Java counterparts.
  *
- * HazelcastJson keeps given string as it is.
+ * HazelcastJsonValue keeps given string as it is.
  *
  * This class does not validate the underlying JSON string.
  * Invalid JSON strings may cause wrong results in queries.
  */
-export class HazelcastJson {
+export class HazelcastJsonValue {
 
     private readonly jsonString: string;
 
-    constructor(jsonString: string) {
+    private constructor(jsonString: string) {
         this.jsonString = jsonString;
     }
 
-    toJsonString(): string {
+    public static fromString(jsonString: string): HazelcastJsonValue {
+        assertNotNull(jsonString);
+        return new HazelcastJsonValue(jsonString);
+    }
+
+    public static fromObject(object: any): HazelcastJsonValue {
+        assertNotNull(object);
+        return new HazelcastJsonValue(JSON.stringify(object));
+    }
+
+    toString(): string {
         return this.jsonString;
     }
 

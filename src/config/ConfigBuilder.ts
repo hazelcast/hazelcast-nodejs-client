@@ -19,7 +19,7 @@ import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
 import {HazelcastError} from '../HazelcastError';
 import {TopicOverloadPolicy} from '../proxy/topic/TopicOverloadPolicy';
 import {mergeJson, tryGetArray, tryGetBoolean, tryGetEnum, tryGetNumber, tryGetString} from '../Util';
-import {ClientConfig} from './Config';
+import {ClientConfig, JsonDeserializationFormat} from './Config';
 import {EvictionPolicy} from './EvictionPolicy';
 import {FlakeIdGeneratorConfig} from './FlakeIdGeneratorConfig';
 import {ImportConfig} from './ImportConfig';
@@ -213,6 +213,9 @@ export class ConfigBuilder {
                 this.clientConfig.serializationConfig.globalSerializerConfig = this.parseImportConfig(globalSerializer);
             } else if (key === 'serializers') {
                 this.handleSerializers(jsonObject[key]);
+            } else if (key === 'jsonDeserializationFormat') {
+                this.clientConfig.serializationConfig
+                    .jsonDeserializationFormat = tryGetEnum(JsonDeserializationFormat, jsonObject[key]);
             }
         }
     }

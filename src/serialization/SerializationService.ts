@@ -34,6 +34,7 @@ import {
     DoubleSerializer,
     FloatArraySerializer,
     FloatSerializer,
+    HazelcastJsonValueSerializer,
     IdentifiedDataSerializableSerializer,
     IntegerArraySerializer,
     IntegerSerializer,
@@ -53,6 +54,7 @@ import {PortableSerializer} from './portable/PortableSerializer';
 import {PREDICATE_FACTORY_ID, PredicateFactory} from './PredicateFactory';
 import {IdentifiedDataSerializableFactory} from './Serializable';
 import HazelcastClient from '../HazelcastClient';
+import {JsonDeserializationFormat} from '../config/JsonDeserializationFormat';
 
 export interface SerializationService {
     toData(object: any, paritioningStrategy?: any): Data;
@@ -257,11 +259,15 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('javaClass', new JavaClassSerializer());
         this.registerSerializer('floatArray', new FloatArraySerializer());
         this.registerIdentifiedFactories();
-        this.registerSerializer('!json', new JsonSerializer());
         this.registerSerializer(
             '!portable',
             new PortableSerializer(this, this.serializationConfig),
         );
+        if (this.serializationConfig.jsonDeserializationFormat === JsonDeserializationFormat.OBJECT) {
+            this.registerSerializer('!json', new JsonSerializer());
+        } else {
+            this.registerSerializer('!json', new HazelcastJsonValueSerializer());
+        }
     }
 
     protected registerIdentifiedFactories(): void {
