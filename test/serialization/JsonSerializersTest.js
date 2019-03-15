@@ -10,19 +10,19 @@ describe('Json serializers test', function () {
 
     var hzJsonValue = new HazelcastJsonValue(object);
     
-    it('JsonSerializer serialize-deserialize object', function () {
+    it('jsonSerializer serialize-deserialize object', function () {
         var serializationService = new SerializationServiceV1(undefined, new Config.ClientConfig().serializationConfig);
         var serialized = serializationService.toData(object);
         expect(serializationService.toObject(serialized)).to.deep.equal(object);
     });
 
-    it('JsonSerializer serialize-deserialize HazelcastJsonValue', function () {
+    it('jsonSerializer serialize-deserialize HazelcastJsonValue', function () {
         var serializationService = new SerializationServiceV1(undefined, new Config.ClientConfig().serializationConfig);
         var serialized = serializationService.toData(hzJsonValue);
         expect(serializationService.toObject(serialized)).to.deep.equal(object);
     });
 
-    it('HazelcastJsonValueSerializer serialize-deserialize object', function () {
+    it('hazelcastJsonValueSerializer serialize-deserialize object', function () {
         var serializationConfig = new Config.ClientConfig().serializationConfig;
         serializationConfig
             .jsonStringDeserializationPolicy = Config.JsonStringDeserializationPolicy.NO_DESERIALIZATION;
@@ -34,7 +34,7 @@ describe('Json serializers test', function () {
         expect(deserialized.parse()).to.deep.equal(object);
     });
 
-    it('HazelcastJsonValueSerializer serialize-deserialize HazelcastJsonValue', function () {
+    it('hazelcastJsonValueSerializer serialize-deserialize HazelcastJsonValue', function () {
         var serializationConfig = new Config.ClientConfig().serializationConfig;
         serializationConfig
             .jsonStringDeserializationPolicy = Config.JsonStringDeserializationPolicy.NO_DESERIALIZATION;
