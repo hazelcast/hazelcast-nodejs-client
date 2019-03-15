@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-export enum JsonDeserializationFormat {
+/**
+ * Deserialization type of the JSON serialized objects
+ */
+export enum JsonDeserializationType {
     /**
-     * JSON serialized objects are deserialized
-     * as JS objects.
+     * As JavaScript objects
      */
     OBJECT,
+
     /**
-     * JSON serialized objects are deserialzed
-     * as HazelcastJsonValue objects.
+     * As {@link HazelcastJsonValue} objects
      */
     HAZELCAST_JSON_VALUE,
 }

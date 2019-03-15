@@ -23,39 +23,50 @@ import {assertNotNull} from '../Util';
  * JSON strings.
  *
  * HazelcastJsonValue is queried using Hazelcast's querying language.
- * See {@link Predicates}.
+ * See {@link Predicate}.
  *
  * In terms of querying, numbers in JSON strings are treated as either
  * Long or Double in the Java side. Strings, booleans and null
  * are treated as their Java counterparts.
  *
- * HazelcastJsonValue keeps given string as it is.
+ * HazelcastJsonValue keeps given string as it is. Strings are not
+ * checked for being valid. Ill-formatted json strings may cause false
+ * positive or false negative results in queries.
  *
- * This class does not validate the underlying JSON string.
- * Invalid JSON strings may cause wrong results in queries.
+ * HazelcastJsonValue can also be constructed from an object. In that case,
+ * objects are converted to JSON strings and stored as such.
+ *
+ * Null values are not allowed.
  */
 export class HazelcastJsonValue {
 
     private readonly jsonString: string;
 
-    private constructor(jsonString: string) {
-        this.jsonString = jsonString;
+    /**
+     * Creates a HazelcastJsonValue from given string or object.
+     * @param value a non null Json string or JavaScript object
+     */
+    constructor(value: any) {
+        assertNotNull(value);
+        if (typeof value === 'string') {
+            this.jsonString = value;
+        } else {
+            this.jsonString = JSON.stringify(value);
+        }
     }
 
-    public static fromString(jsonString: string): HazelcastJsonValue {
-        assertNotNull(jsonString);
-        return new HazelcastJsonValue(jsonString);
-    }
-
-    public static fromObject(object: any): HazelcastJsonValue {
-        assertNotNull(object);
-        return new HazelcastJsonValue(JSON.stringify(object));
-    }
-
+    /**
+     * Returns unaltered string that was used to create this object.
+     * @return original string
+     */
     toString(): string {
         return this.jsonString;
     }
 
+    /**
+     * Parses and returns the string that was used to create this object.
+     * @return JavaScript object represented by the original string
+     */
     parse(): any {
         return JSON.parse(this.jsonString);
     }

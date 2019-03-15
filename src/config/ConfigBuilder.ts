@@ -19,7 +19,7 @@ import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
 import {HazelcastError} from '../HazelcastError';
 import {TopicOverloadPolicy} from '../proxy/topic/TopicOverloadPolicy';
 import {mergeJson, tryGetArray, tryGetBoolean, tryGetEnum, tryGetNumber, tryGetString} from '../Util';
-import {ClientConfig, JsonDeserializationFormat} from './Config';
+import {ClientConfig} from './Config';
 import {EvictionPolicy} from './EvictionPolicy';
 import {FlakeIdGeneratorConfig} from './FlakeIdGeneratorConfig';
 import {ImportConfig} from './ImportConfig';
@@ -28,6 +28,7 @@ import {JsonConfigLocator} from './JsonConfigLocator';
 import {NearCacheConfig} from './NearCacheConfig';
 import {Properties} from './Properties';
 import {ReliableTopicConfig} from './ReliableTopicConfig';
+import {JsonDeserializationType} from './JsonDeserializationType';
 
 export class ConfigBuilder {
     private clientConfig: ClientConfig = new ClientConfig();
@@ -213,9 +214,9 @@ export class ConfigBuilder {
                 this.clientConfig.serializationConfig.globalSerializerConfig = this.parseImportConfig(globalSerializer);
             } else if (key === 'serializers') {
                 this.handleSerializers(jsonObject[key]);
-            } else if (key === 'jsonDeserializationFormat') {
+            } else if (key === 'jsonDeserializationType') {
                 this.clientConfig.serializationConfig
-                    .jsonDeserializationFormat = tryGetEnum(JsonDeserializationFormat, jsonObject[key]);
+                    .jsonDeserializationType = tryGetEnum(JsonDeserializationType, jsonObject[key]);
             }
         }
     }

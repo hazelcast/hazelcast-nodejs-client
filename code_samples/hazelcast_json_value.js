@@ -15,19 +15,27 @@
  */
 
 var Client = require('hazelcast-client').Client;
+var Config = require('hazelcast-client').Config;
 var Predicates = require('hazelcast-client').Predicates;
+var HazelcastJsonValue = require('hazelcast-client').HazelcastJsonValue;
+var JsonDeserializationType = require('hazelcast-client').JsonDeserializationType;
 
-Client.newHazelcastClient().then(function(hz) {
+var config = new Config.ClientConfig();
+config.serializationConfig.jsonDeserializationType = JsonDeserializationType.HAZELCAST_JSON_VALUE;
+
+Client.newHazelcastClient(config).then(function(hz) {
     var map;
     return hz.getMap('employees').then(function(mp) {
         map = mp;
         var employees = [
-            [1, { name: 'Alice', age: 35 }],
-            [2, { name: 'Andy', age: 22}],
-            [3, { name: 'Bob', age: 37 }]
+            { name: 'Alice', age: 35 },
+            { name: 'Andy', age: 22},
+            { name: 'Bob', age: 37 }
         ];
 
-        return map.putAll(employees);
+        return map.putAll(employees.map(function (employee, index) {
+            return [index, new HazelcastJsonValue(employee)];
+        }));
     }).then(function() {
         return map.valuesWithPredicate(Predicates.and(Predicates.sql('name like A%'), Predicates.greaterThan("age", 30)));
     }).then(function(values) {

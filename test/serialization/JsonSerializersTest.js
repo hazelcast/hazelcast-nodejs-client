@@ -8,7 +8,7 @@ describe('Json serializers test', function () {
       key: 'value'
     };
 
-    var hzJsonValue = HazelcastJsonValue.fromObject(object);
+    var hzJsonValue = new HazelcastJsonValue(object);
     
     it('JsonSerializer serialize-deserialize object', function () {
         var serializationService = new SerializationServiceV1(undefined, new Config.ClientConfig().serializationConfig);
@@ -24,7 +24,7 @@ describe('Json serializers test', function () {
 
     it('HazelcastJsonValueSerializer serialize-deserialize object', function () {
         var serializationConfig = new Config.ClientConfig().serializationConfig;
-        serializationConfig.jsonDeserializationFormat = Config.JsonDeserializationFormat.HAZELCAST_JSON_VALUE;
+        serializationConfig.jsonDeserializationType = Config.JsonDeserializationType.HAZELCAST_JSON_VALUE;
         var serializationService = new SerializationServiceV1(undefined, serializationConfig);
         var serialized = serializationService.toData(object);
         var deserialized = serializationService.toObject(serialized);
@@ -35,7 +35,7 @@ describe('Json serializers test', function () {
 
     it('HazelcastJsonValueSerializer serialize-deserialize HazelcastJsonValue', function () {
         var serializationConfig = new Config.ClientConfig().serializationConfig;
-        serializationConfig.jsonDeserializationFormat = Config.JsonDeserializationFormat.HAZELCAST_JSON_VALUE;
+        serializationConfig.jsonDeserializationType = Config.JsonDeserializationType.HAZELCAST_JSON_VALUE;
         var serializationService = new SerializationServiceV1(undefined, serializationConfig);
         var serialized = serializationService.toData(hzJsonValue);
         var deserialized = serializationService.toObject(serialized);

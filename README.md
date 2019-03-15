@@ -1076,7 +1076,7 @@ Below is the configuration required to return `HazelcastJsonValue` objects inste
 **Programmatic Configuration:**
 
 ```javascript
-config.serializationConfig.jsonDeserializationFormat = JsonDeserializationFormat.HAZELCAST_JSON_VALUE;
+config.serializationConfig.jsonDeserializationType = JsonDeserializationType.HAZELCAST_JSON_VALUE;
 ```
 
 **Declarative Configuration:**
@@ -2728,11 +2728,11 @@ var person3 = '{ "name": "Trey", "age": 17 }';
 
 return hz.getMap('personsMap').then(function (map) {
     personMap = map;
-    return personMap.put(1, HazelcastJsonValue.fromString(person1));
+    return personMap.put(1, new HazelcastJsonValue(person1));
 }).then(function () {
-    return personMap.put(2, HazelcastJsonValue.fromString(person2));
+    return personMap.put(2, new HazelcastJsonValue(person2));
 }).then(function () {
-    return personMap.put(3, HazelcastJsonValue.fromString(person3));
+    return personMap.put(3, new HazelcastJsonValue(person3));
 }).then(function () {
     return personMap.valuesWithPredicate(Predicates.lessThan('age', 21));
 }).then(function (personsUnder21) {
@@ -2811,14 +2811,14 @@ as described in the [JSON Serialization](#45-json-serialization) section.
 
 ```javascript
 var config = new Config();
-config.serializationConfig.jsonDeserializationFormat = JsonDeserializationFormat.HAZELCAST_JSON_VALUE;
+config.serializationConfig.jsonDeserializationType = JsonDeserializationType.HAZELCAST_JSON_VALUE;
 
 Client.newHazelcastClient(config).then(function (hz) {
     var moviesMap;
     var movies = [
-        [1, HazelcastJsonValue.fromString('{ "name": "The Dark Knight", "rating": 9.1 }')],
-        [2, HazelcastJsonValue.fromString('{ "name": "Inception", "rating": 8.8 }')],
-        [3, HazelcastJsonValue.fromString('{ "name": "The Prestige", "rating": 8.5 }')]
+        [1, new HazelcastJsonValue('{ "name": "The Dark Knight", "rating": 9.1 }')],
+        [2, new HazelcastJsonValue('{ "name": "Inception", "rating": 8.8 }')],
+        [3, new HazelcastJsonValue('{ "name": "The Prestige", "rating": 8.5 }')]
     ];
     return hz.getMap('moviesMap').then(function (map) {
         moviesMap = map;
@@ -2832,7 +2832,6 @@ Client.newHazelcastClient(config).then(function (hz) {
         return hz.shutdown();
     });
 });
-
 ```
 
 ##### Metadata Creation for JSON Querying 
@@ -2840,7 +2839,7 @@ Client.newHazelcastClient(config).then(function (hz) {
 Hazelcast stores a metadata object per JSON serialized object stored. This metadata object is created every time a JSON serialized object is put into an `IMap`.
 Metadata is later used to speed up the query operations. Metadata creation is on by default. Depending on your application’s needs, you may want to turn off the metadata creation to decrease the put latency and increase the throughput. 
 
-You can configure this using `Metadata Policy` as for the map on the member side as follows:
+You can configure this using `metadata-policy` element for the map configuration on the member side as follows:
 
 ```xml
 <hazelcast>

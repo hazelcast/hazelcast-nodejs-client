@@ -24,12 +24,11 @@ var RC = require('./../RC');
 var Predicates = require('../../.').Predicates;
 var HazelcastJsonValue = require('../../.').HazelcastJsonValue;
 
-
 describe('HazelcastJsonTest', function () {
     var cluster;
     var map;
     var object = {'a': 1};
-    var hzJsonValue = HazelcastJsonValue.fromObject(object);
+    var hzJsonValue = new HazelcastJsonValue(object);
 
     before(function () {
         return RC.createCluster().then(function (response) {
@@ -44,11 +43,7 @@ describe('HazelcastJsonTest', function () {
 
     it('Constructing HazelcastJsonValue with null', function () {
         expect(function () {
-            HazelcastJsonValue.fromString(null);
-        }).to.throw(assert.AssertionError);
-
-        expect(function () {
-            HazelcastJsonValue.fromObject(null);
+            new HazelcastJsonValue(null);
         }).to.throw(assert.AssertionError);
     });
 
@@ -89,7 +84,7 @@ describe('HazelcastJsonTest', function () {
         return HazelcastClient.newHazelcastClient().then(function (client) {
             return client.getMap('jsonTest').then(function (mp) {
                 map = mp;
-                return map.put(1, HazelcastJsonValue.fromString(invalidString));
+                return map.put(1, new HazelcastJsonValue(invalidString));
             }).then(function () {
                 return expect(map.get(1)).to.be.rejectedWith(SyntaxError);
             }).then(function () {
@@ -102,7 +97,7 @@ describe('HazelcastJsonTest', function () {
 
     it('Storing JavaScript objects with HazelcastJsonValueSerializer', function () {
         var config = new Config.ClientConfig();
-        config.serializationConfig.jsonDeserializationFormat = Config.JsonDeserializationFormat.HAZELCAST_JSON_VALUE;
+        config.serializationConfig.jsonDeserializationType = Config.JsonDeserializationType.HAZELCAST_JSON_VALUE;
         return HazelcastClient.newHazelcastClient(config).then(function (client) {
             return client.getMap('jsonTest').then(function (mp) {
                 map = mp;
@@ -122,7 +117,7 @@ describe('HazelcastJsonTest', function () {
 
     it('Storing HazelcastJsonValue objects with HazelcastJsonValueSerializer', function () {
         var config = new Config.ClientConfig();
-        config.serializationConfig.jsonDeserializationFormat = Config.JsonDeserializationFormat.HAZELCAST_JSON_VALUE;
+        config.serializationConfig.jsonDeserializationType = Config.JsonDeserializationType.HAZELCAST_JSON_VALUE;
         return HazelcastClient.newHazelcastClient(config).then(function (client) {
             return client.getMap('jsonTest').then(function (mp) {
                 map = mp;
@@ -142,9 +137,9 @@ describe('HazelcastJsonTest', function () {
 
     it('Storing invalid Json strings with HazelcastJsonValueSerializer', function () {
         var invalidString = '{a}';
-        var hzJsonValueInvalid = HazelcastJsonValue.fromString(invalidString);
+        var hzJsonValueInvalid = new HazelcastJsonValue(invalidString);
         var config = new Config.ClientConfig();
-        config.serializationConfig.jsonDeserializationFormat = Config.JsonDeserializationFormat.HAZELCAST_JSON_VALUE;
+        config.serializationConfig.jsonDeserializationType = Config.JsonDeserializationType.HAZELCAST_JSON_VALUE;
         return HazelcastClient.newHazelcastClient(config).then(function (client) {
             return client.getMap('jsonTest').then(function (mp) {
                 map = mp;
