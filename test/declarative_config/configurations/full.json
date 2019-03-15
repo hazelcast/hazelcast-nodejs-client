@@ -82,7 +82,7 @@
                 "typeId": 3
             }
         ],
-        "jsonDeserializationType": "hazelcast_json_value"
+        "jsonStringDeserializationPolicy": "no_deserialization"
     },
     "nearCaches": [
         {

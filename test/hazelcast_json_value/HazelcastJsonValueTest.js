@@ -24,7 +24,7 @@ var RC = require('./../RC');
 var Predicates = require('../../.').Predicates;
 var HazelcastJsonValue = require('../../.').HazelcastJsonValue;
 
-describe('HazelcastJsonTest', function () {
+describe('HazelcastJsonValueTest', function () {
     var cluster;
     var map;
     var object = {'a': 1};
@@ -97,7 +97,8 @@ describe('HazelcastJsonTest', function () {
 
     it('Storing JavaScript objects with HazelcastJsonValueSerializer', function () {
         var config = new Config.ClientConfig();
-        config.serializationConfig.jsonDeserializationType = Config.JsonDeserializationType.HAZELCAST_JSON_VALUE;
+        config.serializationConfig
+            .jsonStringDeserializationPolicy = Config.JsonStringDeserializationPolicy.NO_DESERIALIZATION;
         return HazelcastClient.newHazelcastClient(config).then(function (client) {
             return client.getMap('jsonTest').then(function (mp) {
                 map = mp;
@@ -117,7 +118,8 @@ describe('HazelcastJsonTest', function () {
 
     it('Storing HazelcastJsonValue objects with HazelcastJsonValueSerializer', function () {
         var config = new Config.ClientConfig();
-        config.serializationConfig.jsonDeserializationType = Config.JsonDeserializationType.HAZELCAST_JSON_VALUE;
+        config.serializationConfig
+            .jsonStringDeserializationPolicy = Config.JsonStringDeserializationPolicy.NO_DESERIALIZATION;
         return HazelcastClient.newHazelcastClient(config).then(function (client) {
             return client.getMap('jsonTest').then(function (mp) {
                 map = mp;
@@ -139,7 +141,8 @@ describe('HazelcastJsonTest', function () {
         var invalidString = '{a}';
         var hzJsonValueInvalid = new HazelcastJsonValue(invalidString);
         var config = new Config.ClientConfig();
-        config.serializationConfig.jsonDeserializationType = Config.JsonDeserializationType.HAZELCAST_JSON_VALUE;
+        config.serializationConfig
+            .jsonStringDeserializationPolicy = Config.JsonStringDeserializationPolicy.NO_DESERIALIZATION;
         return HazelcastClient.newHazelcastClient(config).then(function (client) {
             return client.getMap('jsonTest').then(function (mp) {
                 map = mp;

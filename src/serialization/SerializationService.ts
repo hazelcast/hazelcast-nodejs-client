@@ -54,7 +54,7 @@ import {PortableSerializer} from './portable/PortableSerializer';
 import {PREDICATE_FACTORY_ID, PredicateFactory} from './PredicateFactory';
 import {IdentifiedDataSerializableFactory} from './Serializable';
 import HazelcastClient from '../HazelcastClient';
-import {JsonDeserializationType} from '../config/JsonDeserializationType';
+import {JsonStringDeserializationPolicy} from '../config/JsonStringDeserializationPolicy';
 
 export interface SerializationService {
     toData(object: any, paritioningStrategy?: any): Data;
@@ -263,7 +263,7 @@ export class SerializationServiceV1 implements SerializationService {
             '!portable',
             new PortableSerializer(this, this.serializationConfig),
         );
-        if (this.serializationConfig.jsonDeserializationType === JsonDeserializationType.OBJECT) {
+        if (this.serializationConfig.jsonStringDeserializationPolicy === JsonStringDeserializationPolicy.EAGER) {
             this.registerSerializer('!json', new JsonSerializer());
         } else {
             this.registerSerializer('!json', new HazelcastJsonValueSerializer());

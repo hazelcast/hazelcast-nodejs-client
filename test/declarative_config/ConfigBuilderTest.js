@@ -92,7 +92,8 @@ describe('ConfigBuilder Test', function () {
         expect(serializationCfg.defaultNumberType).to.equal('integer');
         expect(serializationCfg.isBigEndian).to.equal(false);
         expect(serializationCfg.portableVersion).to.equal(1);
-        expect(serializationCfg.jsonDeserializationType).to.equal(Config.JsonDeserializationType.HAZELCAST_JSON_VALUE);
+        expect(serializationCfg.jsonStringDeserializationPolicy)
+            .to.equal(Config.JsonStringDeserializationPolicy.NO_DESERIALIZATION);
         expect(serializationCfg.dataSerializableFactoryConfigs[0].path).to.equal('path/to/file');
         expect(serializationCfg.dataSerializableFactoryConfigs[0].exportedName).to.equal('exportedName');
 

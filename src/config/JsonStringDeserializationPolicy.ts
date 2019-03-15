@@ -15,16 +15,20 @@
  */
 
 /**
- * Deserialization type of the JSON serialized objects
+ * Using this policy, one can control the
+ * deserialization type of the JSON strings.
  */
-export enum JsonDeserializationType {
+export enum JsonStringDeserializationPolicy {
     /**
-     * As JavaScript objects
+     * JSON strings are parsed and returned
+     * as JavaScript objects.
      */
-    OBJECT,
+    EAGER,
 
     /**
-     * As {@link HazelcastJsonValue} objects
+     * Raw JSON strings are returned around a
+     * lightweight {@link HazelcastJsonValue}
+     * wrapper.
      */
-    HAZELCAST_JSON_VALUE,
+    NO_DESERIALIZATION,
 }

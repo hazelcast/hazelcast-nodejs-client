@@ -1076,7 +1076,7 @@ Below is the configuration required to return `HazelcastJsonValue` objects inste
 **Programmatic Configuration:**
 
 ```javascript
-config.serializationConfig.jsonDeserializationType = JsonDeserializationType.HAZELCAST_JSON_VALUE;
+config.serializationConfig.jsonStringDeserializationPolicy = JsonStringDeserializationPolicy.NO_DESERIALIZATION;
 ```
 
 **Declarative Configuration:**
@@ -1084,7 +1084,7 @@ config.serializationConfig.jsonDeserializationType = JsonDeserializationType.HAZ
 ```json
 {
     "serialization": {
-        "jsonDeserializationTye": "hazelcast_json_value"
+        "jsonStringDeserializationPolicy": "no_deserialization"
     }
 }
 ```
@@ -2811,7 +2811,7 @@ as described in the [JSON Serialization](#45-json-serialization) section.
 
 ```javascript
 var config = new Config();
-config.serializationConfig.jsonDeserializationType = JsonDeserializationType.HAZELCAST_JSON_VALUE;
+config.serializationConfig.jsonStringDeserializationPolicy = JsonStringDeserializationPolicy.NO_DESERIALIZATION;
 
 Client.newHazelcastClient(config).then(function (hz) {
     var moviesMap;
