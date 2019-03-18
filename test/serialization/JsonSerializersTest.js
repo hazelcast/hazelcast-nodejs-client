@@ -31,7 +31,7 @@ describe('Json serializers test', function () {
         var deserialized = serializationService.toObject(serialized);
         expect(deserialized).to.be.an.instanceof(HazelcastJsonValue);
         expect(deserialized).to.deep.equal(hzJsonValue);
-        expect(deserialized.parse()).to.deep.equal(object);
+        expect(JSON.parse(deserialized.toString())).to.deep.equal(object);
     });
 
     it('hazelcastJsonValueSerializer serialize-deserialize HazelcastJsonValue', function () {
@@ -43,6 +43,6 @@ describe('Json serializers test', function () {
         var deserialized = serializationService.toObject(serialized);
         expect(deserialized).to.be.an.instanceof(HazelcastJsonValue);
         expect(deserialized).to.deep.equal(hzJsonValue);
-        expect(deserialized.parse()).to.deep.equal(object);
+        expect(JSON.parse(deserialized.toString())).to.deep.equal(object);
     });
 });

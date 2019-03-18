@@ -62,12 +62,4 @@ export class HazelcastJsonValue {
     toString(): string {
         return this.jsonString;
     }
-
-    /**
-     * Parses and returns the string that was used to create this object.
-     * @return JavaScript object represented by the original string
-     */
-    parse(): any {
-        return JSON.parse(this.jsonString);
-    }
 }

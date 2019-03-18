@@ -63,7 +63,7 @@ describe('HazelcastJsonValue with HazelcastJsonValueSerializer', function () {
         }).then(function (value) {
             expect(value).to.be.an.instanceof(HazelcastJsonValue);
             expect(value).to.be.deep.equal(hzJsonValue);
-            expect(value.parse()).to.deep.equal(object);
+            expect(JSON.parse(value.toString())).to.deep.equal(object);
         });
     });
 
@@ -73,7 +73,7 @@ describe('HazelcastJsonValue with HazelcastJsonValueSerializer', function () {
         }).then(function (value) {
             expect(value).to.be.an.instanceof(HazelcastJsonValue);
             expect(value).to.be.deep.equal(hzJsonValue);
-            expect(value.parse()).to.deep.equal(object);
+            expect(JSON.parse(value.toString())).to.deep.equal(object);
         });
     });
 
@@ -85,7 +85,9 @@ describe('HazelcastJsonValue with HazelcastJsonValueSerializer', function () {
         }).then(function (value) {
             expect(value).to.be.an.instanceof(HazelcastJsonValue);
             expect(value).to.be.deep.equal(hzJsonValueInvalid);
-            expect(value.parse.bind(value)).to.throw(SyntaxError);
+            expect(function () {
+                JSON.parse(value.toString())
+            }).to.throw(SyntaxError);
         });
     });
 });

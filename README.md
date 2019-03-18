@@ -1069,7 +1069,7 @@ string to the user. However, you may want to defer the string parsing and work w
 
 For this purpose, you can configure your client to return `HazelcastJsonValue` objects when it retrieves a JSON serialized data from a member.
 
-`HazelcastJsonValue` is a lightweight wrapper around the JSON strings. You may get the JSON string representation of the object using the `toString` method and parse the string using the `parse` method.  
+`HazelcastJsonValue` is a lightweight wrapper around the JSON strings. You may get the JSON string representation of the object using the `toString` method.  
 
 Below is the configuration required to return `HazelcastJsonValue` objects instead of JavaScript objects.
 
