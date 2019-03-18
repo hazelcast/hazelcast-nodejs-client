@@ -34,7 +34,7 @@ Client.newHazelcastClient(config).then(function(hz) {
         ];
 
         return map.putAll(employees.map(function (employee, index) {
-            return [index, new HazelcastJsonValue(employee)];
+            return [index, new HazelcastJsonValue(JSON.stringify(employee))];
         }));
     }).then(function() {
         return map.valuesWithPredicate(Predicates
@@ -42,7 +42,7 @@ Client.newHazelcastClient(config).then(function(hz) {
     }).then(function(values) {
         // Prints all the employees whose name starts with 'A' and age is greater than 30
         values.toArray().forEach(function(value) {
-            console.log(value);
+            console.log(value.toString());
         });
         return hz.shutdown();
     });

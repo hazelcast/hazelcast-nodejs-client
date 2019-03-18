@@ -25,8 +25,8 @@ describe('HazelcastJsonValue with HazelcastJsonValueSerializer', function () {
     var cluster;
     var client;
     var map;
-    var object = {'a': 1};
-    var hzJsonValue = new HazelcastJsonValue(object);
+    var object = { 'a': 1 };
+    var hzJsonValue = new HazelcastJsonValue(JSON.stringify(object));
 
     before(function () {
         return RC.createCluster().then(function (response) {

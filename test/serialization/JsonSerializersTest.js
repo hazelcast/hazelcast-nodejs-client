@@ -4,11 +4,8 @@ var SerializationServiceV1 = require('../../lib/serialization/SerializationServi
 var HazelcastJsonValue = require('../../.').HazelcastJsonValue;
 
 describe('Json serializers test', function () {
-    var object = {
-      key: 'value'
-    };
-
-    var hzJsonValue = new HazelcastJsonValue(object);
+    var object = { key: 'value' };
+    var hzJsonValue = new HazelcastJsonValue(JSON.stringify(object));
     
     it('jsonSerializer serialize-deserialize object', function () {
         var serializationService = new SerializationServiceV1(undefined, new Config.ClientConfig().serializationConfig);

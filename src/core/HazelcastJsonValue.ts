@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {assertNotNull} from '../Util';
+import {assertString} from '../Util';
 
 /**
  * HazelcastJsonValue is a wrapper for JSON formatted strings. It is preferred
@@ -23,7 +23,7 @@ import {assertNotNull} from '../Util';
  * JSON strings.
  *
  * HazelcastJsonValue is queried using Hazelcast's querying language.
- * See {@link Predicate}.
+ * See {@link https://github.com/hazelcast/hazelcast-nodejs-client#77-distributed-query Distributed Query section}.
  *
  * In terms of querying, numbers in JSON strings are treated as either
  * Long or Double in the Java side. Strings, booleans and null
@@ -33,9 +33,6 @@ import {assertNotNull} from '../Util';
  * checked for being valid. Ill-formatted json strings may cause false
  * positive or false negative results in queries.
  *
- * HazelcastJsonValue can also be constructed from an object. In that case,
- * objects are converted to JSON strings and stored as such.
- *
  * Null values are not allowed.
  */
 export class HazelcastJsonValue {
@@ -43,16 +40,12 @@ export class HazelcastJsonValue {
     private readonly jsonString: string;
 
     /**
-     * Creates a HazelcastJsonValue from given string or object.
-     * @param value a non null Json string or JavaScript object
+     * Creates a HazelcastJsonValue from given string.
+     * @param jsonString a non null Json string
      */
-    constructor(value: any) {
-        assertNotNull(value);
-        if (typeof value === 'string') {
-            this.jsonString = value;
-        } else {
-            this.jsonString = JSON.stringify(value);
-        }
+    constructor(jsonString: string) {
+        assertString(jsonString);
+        this.jsonString = jsonString;
     }
 
     /**

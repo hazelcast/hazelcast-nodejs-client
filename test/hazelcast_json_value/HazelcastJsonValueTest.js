@@ -19,9 +19,19 @@ var assert = require('assert');
 var HazelcastJsonValue = require('../../.').HazelcastJsonValue;
 
 describe('HazelcastJsonValue', function () {
-    it('constructing HazelcastJsonValue with null', function () {
+    it('constructing HazelcastJsonValue with null or undefined', function () {
         expect(function () {
             new HazelcastJsonValue(null);
         }).to.throw(assert.AssertionError);
+
+        expect(function () {
+            new HazelcastJsonValue(undefined);
+        }).to.throw(assert.AssertionError);
+    });
+
+    it('constructing HazelcastJsonValue with non-string value', function () {
+       expect(function () {
+           new HazelcastJsonValue(123);
+       }).to.throw(assert.AssertionError);
     });
 });

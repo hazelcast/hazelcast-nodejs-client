@@ -2801,6 +2801,7 @@ Hazelcast does not check the validity of JSON strings put into to maps. Putting 
 However, in that case whether such an entry is going to be returned or not from a query is not defined.
 
 ##### Querying with HazelcastJsonValue Objects
+
 If the Hazelcast Node.js client cannot find a suitable serializer for an object, it uses `JSON Serialization`.  
 
 This means that, you can run queries over your JavaScript objects if they are serialized as JSON strings. However, when the result
