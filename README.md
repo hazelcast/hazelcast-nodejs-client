@@ -1061,7 +1061,7 @@ config.serializationConfig.globalSerializer = new GlobalSerializer();
 
 ## 4.5. JSON Serialization
 
-If Hazelcast Node.js client cannot find a suitable serializer for an object, it uses `JSON Serialization` by default. With `JSON Serialization`, objects
+If the Hazelcast Node.js client cannot find a suitable serializer for an object, it uses `JSON Serialization` by default. With `JSON Serialization`, objects
 are converted to JSON strings and transmitted to the Hazelcast members as such. 
 
 When the Hazelcast Node.js client retrieves a JSON serialized data from a member, it parses the JSON string and returns the object represented by that
@@ -2714,7 +2714,7 @@ In this example, the code creates a list with the values greater than or equal t
 
 #### 7.7.1.4. Querying with JSON Strings
 
-You can query JSON strings stored inside your Hazelcast clusters. To query a JSON string, you can 
+You can query the JSON strings stored inside your Hazelcast clusters. To query a JSON string, you can 
 use `HazelcastJsonValue` or JavaScript objects. 
 
 `HazelcastJsonValue` objects can be used both as keys and values in the distributed data structures.
@@ -2804,8 +2804,8 @@ However, in that case whether such an entry is going to be returned or not from 
 
 If the Hazelcast Node.js client cannot find a suitable serializer for an object, it uses `JSON Serialization`.  
 
-This means that, you can run queries over your JavaScript objects if they are serialized as JSON strings. However, when the result
-of your query is ready, results are parsed from JSON strings and returned to you as JavaScript objects.
+This means that, you can run queries over your JavaScript objects if they are serialized as JSON strings. However, when the results
+of your query are ready, they are parsed from JSON strings and returned to you as JavaScript objects.
 
 For the purposes of your application, you may want to get rid of the parsing and just work with the raw JSON strings using `HazelcastJsonValue` objects. Then, you can configure your client to do so 
 as described in the [JSON Serialization](#45-json-serialization) section.
