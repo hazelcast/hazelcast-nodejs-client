@@ -22,7 +22,7 @@ var MemberAttributeOperationType = require('../.').MemberAttributeOperationType;
 var MemberEvent = require('../lib/invocation/ClusterService').MemberEvent;
 
 describe('MembershipListener', function () {
-    this.timeout(10000);
+    this.timeout(20000);
     var cluster;
     var member;
     var client;
