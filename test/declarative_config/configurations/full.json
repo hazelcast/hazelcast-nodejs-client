@@ -81,7 +81,8 @@
                 "exportedName": "CustomSerializer2",
                 "typeId": 3
             }
-        ]
+        ],
+        "jsonStringDeserializationPolicy": "no_deserialization"
     },
     "nearCaches": [
         {

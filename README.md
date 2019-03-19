@@ -29,6 +29,7 @@
   * [4.2. Portable Serialization](#42-portable-serialization)
   * [4.3. Custom Serialization](#43-custom-serialization)
   * [4.4. Global Serialization](#44-global-serialization)
+  * [4.5. JSON Serialization](#45-json-serialization)
 * [5. Setting Up Client Network](#5-setting-up-client-network)
   * [5.1. Providing Member Addresses](#51-providing-member-addresses)
   * [5.2. Setting Smart Routing](#52-setting-smart-routing)
@@ -86,7 +87,8 @@
       * [7.7.1.3. Querying with SQL](#7713-querying-with-sql)
          * [Supported SQL Syntax](#supported-sql-syntax)
          * [Querying Examples with Predicates](#querying-examples-with-predicates)
-      * [7.7.1.4. Filtering with Paging Predicates](#7714-filtering-with-paging-predicates)
+      * [7.7.1.4. Querying with JSON Strings](#7714-querying-with-json-strings)
+      * [7.7.1.5. Filtering with Paging Predicates](#7715-filtering-with-paging-predicates)
     * [7.7.2. Fast-Aggregations](#772-fast-aggregations)
   * [7.8. Performance](#78-performance)
     * [7.8.1. Partition Aware](#781-partition-aware)
@@ -1052,7 +1054,37 @@ config.serializationConfig.globalSerializer = new GlobalSerializer();
         "globalSerializer": {
             "path": "global_serializer.js",
             "exportedName": "MyFavoriteSerializer"
-        },
+        }
+    }
+}
+```
+
+## 4.5. JSON Serialization
+
+If the Hazelcast Node.js client cannot find a suitable serializer for an object, it uses `JSON Serialization` by default. With `JSON Serialization`, objects
+are converted to JSON strings and transmitted to the Hazelcast members as such. 
+
+When the Hazelcast Node.js client retrieves a JSON serialized data from a member, it parses the JSON string and returns the object represented by that
+string to the user. However, you may want to defer the string parsing and work with the raw JSON strings.
+
+For this purpose, you can configure your client to return `HazelcastJsonValue` objects when it retrieves a JSON serialized data from a member.
+
+`HazelcastJsonValue` is a lightweight wrapper around the JSON strings. You may get the JSON string representation of the object using the `toString` method.  
+
+Below is the configuration required to return `HazelcastJsonValue` objects instead of JavaScript objects.
+
+**Programmatic Configuration:**
+
+```javascript
+config.serializationConfig.jsonStringDeserializationPolicy = JsonStringDeserializationPolicy.NO_DESERIALIZATION;
+```
+
+**Declarative Configuration:**
+
+```json
+{
+    "serialization": {
+        "jsonStringDeserializationPolicy": "no_deserialization"
     }
 }
 ```
@@ -2680,7 +2712,152 @@ return client.getMap('persons').then(function (mp) {
 
 In this example, the code creates a list with the values greater than or equal to "27".
 
-#### 7.7.1.4. Filtering with Paging Predicates
+#### 7.7.1.4. Querying with JSON Strings
+
+You can query the JSON strings stored inside your Hazelcast clusters. To query a JSON string, you can 
+use `HazelcastJsonValue` or JavaScript objects. 
+
+`HazelcastJsonValue` objects can be used both as keys and values in the distributed data structures.
+Then, it is possible to query these objects using the query methods explained in this section.
+
+```javascript
+var personMap;
+var person1 = '{ "name": "John", "age": 35 }';
+var person2 = '{ "name": "Jane", "age": 24 }';
+var person3 = '{ "name": "Trey", "age": 17 }';
+
+return hz.getMap('personsMap').then(function (map) {
+    personMap = map;
+    return personMap.put(1, new HazelcastJsonValue(person1));
+}).then(function () {
+    return personMap.put(2, new HazelcastJsonValue(person2));
+}).then(function () {
+    return personMap.put(3, new HazelcastJsonValue(person3));
+}).then(function () {
+    return personMap.valuesWithPredicate(Predicates.lessThan('age', 21));
+}).then(function (personsUnder21) {
+    personsUnder21.toArray().forEach(function (person) {
+        console.log(person);
+    });
+});
+```
+
+When running the queries, Hazelcast treats values extracted from the JSON documents as Java types so they can be compared with the query attribute. 
+JSON specification defines five primitive types to be used in the JSON documents: `number`, `string`, `true`, `false` and `null`. 
+The `string`, `true`/`false` and `null` types are treated as `String`, `boolean` and `null`, respectively. `Number` values treated as `long`s if they can be represented by a `long`.
+Otherwise, `number`s are treated as `double`s.
+
+It is possible to query nested attributes and arrays in JSON documents. The query syntax is the same as querying other Hazelcast objects using the `Predicate`s.
+
+```javascript
+var departmentsMap;
+var departments = [
+    {
+        departmentId: 1,
+        room: 'alpha',
+        people: [
+            {
+                name: 'Peter',
+                age: 26,
+                salary: 50000
+
+            },
+            {
+                name: 'Jonah',
+                age: 50,
+                salary: 140000
+            }
+        ]
+    },
+    {
+        departmentId: 2,
+        room: 'beta',
+        people: [
+            {
+                name: 'Terry',
+                age: 44,
+                salary: 100000
+            }
+        ]
+    }
+];
+return hz.getMap('departmentsMap').then(function (map) {
+    departmentsMap = map;
+    return departmentsMap.putAll(departments.map(function (department, index) {
+        return [index, department];
+    }));
+}).then(function () {
+    // The following query finds all the departments that have a person named "Peter" working in them.
+    return departmentsMap.valuesWithPredicate(Predicates.equal('people[any].name', 'Peter'))
+}).then(function (departmentWithPeter) {
+    departmentWithPeter.toArray().forEach(function (department) {
+        console.log(department);
+    });
+});
+```
+
+`HazelcastJsonValue` is a lightweight wrapper around your JSON strings. It is used merely as a way to indicate that the contained string should be treated as a valid JSON value. 
+Hazelcast does not check the validity of JSON strings put into to maps. Putting an invalid JSON string in a map is permissible. 
+However, in that case whether such an entry is going to be returned or not from a query is not defined.
+
+##### Querying with HazelcastJsonValue Objects
+
+If the Hazelcast Node.js client cannot find a suitable serializer for an object, it uses `JSON Serialization`.  
+
+This means that, you can run queries over your JavaScript objects if they are serialized as JSON strings. However, when the results
+of your query are ready, they are parsed from JSON strings and returned to you as JavaScript objects.
+
+For the purposes of your application, you may want to get rid of the parsing and just work with the raw JSON strings using `HazelcastJsonValue` objects. Then, you can configure your client to do so 
+as described in the [JSON Serialization](#45-json-serialization) section.
+
+```javascript
+var config = new Config();
+config.serializationConfig.jsonStringDeserializationPolicy = JsonStringDeserializationPolicy.NO_DESERIALIZATION;
+
+Client.newHazelcastClient(config).then(function (hz) {
+    var moviesMap;
+    var movies = [
+        [1, new HazelcastJsonValue('{ "name": "The Dark Knight", "rating": 9.1 }')],
+        [2, new HazelcastJsonValue('{ "name": "Inception", "rating": 8.8 }')],
+        [3, new HazelcastJsonValue('{ "name": "The Prestige", "rating": 8.5 }')]
+    ];
+    return hz.getMap('moviesMap').then(function (map) {
+        moviesMap = map;
+        return moviesMap.putAll(movies);
+    }).then(function () {
+        return moviesMap.valuesWithPredicate(Predicates.greaterEqual('rating', 8.8));
+    }).then(function (highRatedMovies) {
+        highRatedMovies.toArray().forEach(function (movie) {
+            console.log(movie.toString());
+        });
+        return hz.shutdown();
+    });
+});
+```
+
+##### Metadata Creation for JSON Querying 
+
+Hazelcast stores a metadata object per JSON serialized object stored. This metadata object is created every time a JSON serialized object is put into an `IMap`.
+Metadata is later used to speed up the query operations. Metadata creation is on by default. Depending on your application’s needs, you may want to turn off the metadata creation to decrease the put latency and increase the throughput. 
+
+You can configure this using `metadata-policy` element for the map configuration on the member side as follows:
+
+```xml
+<hazelcast>
+    ...
+    <map name="map-a">
+        <!--
+        valid values for metadata-policy are:
+          - OFF
+          - CREATE_ON_UPDATE (default)
+        -->
+        <metadata-policy>OFF</metadata-policy>
+    </map>
+    ...
+</hazelcast>
+```
+
+#### 7.7.1.5. Filtering with Paging Predicates
 
 The Node.js client provides paging for defined predicates. With its `PagingPredicate` object, you can get a list of keys, values or entries page by page by filtering them with predicates and giving the size of the pages. Also, you can sort the entries by specifying comparators.
 

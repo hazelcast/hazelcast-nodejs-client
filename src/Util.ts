@@ -32,6 +32,10 @@ export function assertArray(x: any): void {
     assert(Array.isArray(x), 'Should be array.');
 }
 
+export function assertString(v: any): void {
+    assert(typeof v === 'string', 'String value expected.');
+}
+
 export function shuffleArray<T>(array: T[]): void {
     let randomIndex: number;
     let temp: T;

@@ -19,6 +19,7 @@ import {BitsUtil} from '../BitsUtil';
 import {DataInput, DataOutput} from './Data';
 import {IdentifiedDataSerializable, IdentifiedDataSerializableFactory} from './Serializable';
 import {Serializer} from './SerializationService';
+import {HazelcastJsonValue} from '../core/HazelcastJsonValue';
 
 export class StringSerializer implements Serializer {
 
@@ -409,6 +410,17 @@ export class JsonSerializer implements Serializer {
     }
 
     write(output: DataOutput, object: any): void {
-        output.writeUTF(JSON.stringify(object));
+        if (object instanceof HazelcastJsonValue) {
+            output.writeUTF(object.toString());
+        } else {
+            output.writeUTF(JSON.stringify(object));
+        }
+
+    }
+}
+
+export class HazelcastJsonValueSerializer extends JsonSerializer {
+    read(input: DataInput): HazelcastJsonValue {
+        return new HazelcastJsonValue(input.readUTF());
     }
 }
