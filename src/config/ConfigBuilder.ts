@@ -28,6 +28,7 @@ import {JsonConfigLocator} from './JsonConfigLocator';
 import {NearCacheConfig} from './NearCacheConfig';
 import {Properties} from './Properties';
 import {ReliableTopicConfig} from './ReliableTopicConfig';
+import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy';
 
 export class ConfigBuilder {
     private clientConfig: ClientConfig = new ClientConfig();
@@ -213,6 +214,9 @@ export class ConfigBuilder {
                 this.clientConfig.serializationConfig.globalSerializerConfig = this.parseImportConfig(globalSerializer);
             } else if (key === 'serializers') {
                 this.handleSerializers(jsonObject[key]);
+            } else if (key === 'jsonStringDeserializationPolicy') {
+                this.clientConfig.serializationConfig
+                    .jsonStringDeserializationPolicy = tryGetEnum(JsonStringDeserializationPolicy, jsonObject[key]);
             }
         }
     }

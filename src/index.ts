@@ -36,6 +36,8 @@ import {ItemEvent, ItemEventType} from './core/ItemListener';
 import {MapEvent} from './core/MapListener';
 import {EntryEvent} from './core/EntryListener';
 import {LogLevel} from './logging/LoggingService';
+import {JsonStringDeserializationPolicy} from './config/JsonStringDeserializationPolicy';
+import {HazelcastJsonValue} from './core/HazelcastJsonValue';
 
 export {
     HazelcastClient as Client,
@@ -63,4 +65,6 @@ export {
     MapEvent,
     EntryEvent,
     LogLevel,
+    JsonStringDeserializationPolicy,
+    HazelcastJsonValue,
 };
