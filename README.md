@@ -3254,7 +3254,8 @@ tweak the implementation to your application's needs, you can follow the steps i
 Follow the below steps to build and install Hazelcast Node.js client from its source:
 
 1. Clone the GitHub repository (https://github.com/hazelcast/hazelcast-nodejs-client.git).
-2. Run `npm install` to automatically download and install all the required modules under `node_modules` directory.
+2. Run `npm install` to automatically download and install all the required modules under `node_modules` directory. Note that, 
+there may be vulnerabilities reported due to `devDependencies`. In that case, run `npm audit fix` to automatically install any compatible updates to vulnerable dependencies.
 3. Run `npm run compile` to compile TypeScript files to JavaScript.
 
 At this point you have all the runnable code (`.js`) and type declarations (`.d.ts`) in the `lib` directory. You may create a link to this module so that your local
