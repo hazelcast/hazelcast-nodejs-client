@@ -3,7 +3,7 @@ var Client = require('hazelcast-client').Client;
 Client.newHazelcastClient().then(function (hz) {
     var lock;
     // Get a distributed lock called "my-distributed-lock"
-    hz.getLock("my-distributed-lock").then(function (l) {
+    hz.getLock('my-distributed-lock').then(function (l) {
         lock = l;
         // Now create a lock and execute some guarded code.
         return lock.lock();

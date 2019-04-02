@@ -3,7 +3,7 @@ var Client = require('hazelcast-client').Client;
 Client.newHazelcastClient().then(function (hz) {
     var topic;
     // Get a Topic called "my-distributed-topic"
-    hz.getReliableTopic("my-distributed-topic").then(function (t) {
+    hz.getReliableTopic('my-distributed-topic').then(function (t) {
         topic = t;
         // Add a Listener to the Topic
         topic.addMessageListener(function (message) {

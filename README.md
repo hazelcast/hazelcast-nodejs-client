@@ -79,14 +79,11 @@
       * [7.5.2.4. Message Listener](#7524-message-listener)
   * [7.6. Distributed Computing](#76-distributed-computing)
     * [7.6.1. Using EntryProcessor](#761-using-entryprocessor)
-     * [Processing Entries](#processing-entries)
   * [7.7. Distributed Query](#77-distributed-query)
     * [7.7.1. How Distributed Query Works](#771-how-distributed-query-works)
       * [7.7.1.1. Employee Map Query Example](#7711-employee-map-query-example)
       * [7.7.1.2. Querying by Combining Predicates with AND, OR, NOT](#7712-querying-by-combining-predicates-with-and-or-not)
       * [7.7.1.3. Querying with SQL](#7713-querying-with-sql)
-         * [Supported SQL Syntax](#supported-sql-syntax)
-         * [Querying Examples with Predicates](#querying-examples-with-predicates)
       * [7.7.1.4. Querying with JSON Strings](#7714-querying-with-json-strings)
       * [7.7.1.5. Filtering with Paging Predicates](#7715-filtering-with-paging-predicates)
     * [7.7.2. Fast-Aggregations](#772-fast-aggregations)
@@ -605,7 +602,7 @@ the client looks for the configuration file in the specified location.
 from the current working directory.
 3. Default configuration: If all of the above methods fail, the client starts with the default configuration.
 The default configuration is programmatic. If you want to override the default configuration declaratively, you need to create
-a `hazelcast-client.json` file in your working directory. If you want to have an example for this file, you can find `hazelcast-client-default.json` and `hazelcast-client-sample.json` files in the GitHub repository.
+a `hazelcast-client.json` file in your working directory. To get an idea about the structure of this configuration file, see [hazelcast-client-default.json](hazelcast-client-default.json) and [hazelcast-client-full.json](hazelcast-client-full.json).
 
 Following is a sample JSON configuration file:
 
@@ -1456,7 +1453,7 @@ An example configuration is shown below.
 ```
 
 
-An example of a factory, `My_Factory.js`, is shown below.
+An example of a factory, `my_factory.js`, is shown below.
 
 
 ```javascript
@@ -1761,7 +1758,6 @@ You can set a timeout for retrying the operations sent to a member. This can be 
 
 When a connection problem occurs, an operation is retried if it is certain that it has not run on the member yet or if it is idempotent such as a read-only operation, i.e., retrying does not have a side effect. If it is not certain whether the operation has run on the member, then the non-idempotent operations are not retried. However, as explained in the first paragraph of this section, you can force all the client operations to be retried (`redoOperation`) when there is a connection failure between the client and member. But in this case, you should know that some operations may run multiple times causing conflicts. For example, assume that your client sent a `queue.offer` operation to the member and then the connection is lost. Since there will be no response for this operation, you will not know whether it has run on the member or not. If you enabled `redoOperation`, it means this operation may run again, which may cause two instances of the same object in the queue.
 
-
 ## 7.4. Using Distributed Data Structures
 
 Most of the distributed data structures are supported by the Node.js client. In this chapter, you will learn how to use these distributed data structures.
@@ -1775,7 +1771,7 @@ A Map usage example is shown below.
 ```javascript
 var map;
 // Get the Distributed Map from Cluster.
-client.getMap('my-distributed-map').then(function (mp) {
+hz.getMap('my-distributed-map').then(function (mp) {
     map = mp;
     // Standard Put and Get.
     return map.put('key', 'value');
@@ -1983,7 +1979,7 @@ A Reliable Topic usage example is shown below.
 ```javascript
 var topic;
 // Get a Topic called "my-distributed-topic"
-hz.getReliableTopic("my-distributed-topic").then(function (t) {
+hz.getReliableTopic('my-distributed-topic').then(function (t) {
     topic = t;
     // Add a Listener to the Topic
     topic.addMessageListener(function (message) {
@@ -2005,7 +2001,7 @@ A Lock usage example is shown below.
 ```javascript
 var lock;
 // Get a distributed lock called "my-distributed-lock"
-hz.getLock("my-distributed-lock").then(function (l) {
+hz.getLock('my-distributed-lock').then(function (l) {
     lock = l;
     // Now create a lock and execute some guarded code.
     return lock.lock();
@@ -2025,7 +2021,7 @@ An Atomic Long usage example is shown below.
 ```javascript
 var counter;
 // Get an Atomic Counter, we'll call it "counter"
-hz.getAtomicLong("counter").then(function (c) {
+hz.getAtomicLong('counter').then(function (c) {
     counter = c;
     // Add and Get the "counter"
     return counter.addAndGet(3);
@@ -2033,7 +2029,7 @@ hz.getAtomicLong("counter").then(function (c) {
     return counter.get();
 }).then(function (value) {
     // Display the "counter" value
-    console.log("counter: " + value);
+    console.log('counter: ' + value);
 });
 ```
 
@@ -2065,14 +2061,23 @@ A PN Counter usage example is shown below.
 
 ```javascript
 var pnCounter;
-hazelcastClient.getPNCounter('myPNCounter').then(function (counter) {
+hz.getPNCounter('myPNCounter').then(function (counter) {
     pnCounter = counter;
+    return pnCounter.get();
+}).then(function (value) {
+    console.log('Counter started with value ' + value); // 0
     return pnCounter.addAndGet(5);
 }).then(function (value) {
-    console.log(value); // 5
+    console.log('Value after operation is ' + value); // 5
+    return pnCounter.getAndAdd(2);
+}).then(function (value) {
+    console.log('Value before operation was ' + value); // 5
+    return pnCounter.get();
+}).then(function (value) {
+    console.log('New value is ' + value); // 7
     return pnCounter.decrementAndGet();
 }).then(function (value) {
-    console.log(value); // 4
+    console.log('Decremented counter by one. New value is ' + value); // 6
 });
 ```
 
@@ -2084,7 +2089,7 @@ A Flake ID Generator usage example is shown below.
 
 ```javascript
 var flakeIdGenerator;
-hazelcastClient.getFlakeIdGenerator('myFlakeIdGenerator').then(function (gen) {
+hz.getFlakeIdGenerator('myFlakeIdGenerator').then(function (gen) {
     flakeIdGenerator = gen;
     return flakeIdGenerator.newId();
 }).then(function (value) {
@@ -2228,11 +2233,11 @@ See the following example.
 ```javascript
 var entryEventListener = {
     added: function (entryEvent) {
-        console.log('Entry Added:', entryEvent.key, entryEvent.value); // Entry Added: 1 Furkan
+        console.log('Entry Added:', entryEvent.key, '-->', entryEvent.value); // Entry Added: 1 --> My new entry
     }
 };
 map.addEntryListener(entryEventListener, undefined, true).then(function () {
-    return map.put('1', 'Furkan');
+    return map.put('1', 'My new entry');
 });
 ```
 
@@ -2247,11 +2252,11 @@ var mapEventListener = {
     }
 };
 map.addEntryListener(mapEventListener).then(function () {
-    return map.put('1', 'Muhammet Ali');
+    return map.put('1', 'Muhammad Ali');
 }).then(function () {
-    return map.put('2', 'Ahmet');
+    return map.put('2', 'Mike Tyson');
 }).then(function () {
-    return map.put('3', 'Furkan');
+    return map.put('3', 'Joe Louis');
 }).then(function () {
     return map.clear();
 });
@@ -2270,11 +2275,11 @@ An entry-based event is fired after the operations that affect a specific entry.
 ```javascript
 var entryEventListener = {
     added: function (entryEvent) {
-        console.log('Entry Added:', entryEvent.key, entryEvent.value); // Entry Added: 1 Furkan
+        console.log('Entry Added:', entryEvent.key, '-->', entryEvent.value); // Entry Added: 1 --> My new entry
     }
 };
 return mmp.addEntryListener(entryEventListener, undefined, true).then(function () {
-    return mmp.put('1', 'Furkan');
+    return mmp.put('1', 'My new entry');
 });
 ```
 
@@ -2289,11 +2294,11 @@ var mapEventListener = {
     }
 };
 mmp.addEntryListener(mapEventListener).then(function () {
-    return mmp.put('1', 'Muhammet Ali');
+    return mmp.put('1', 'Muhammad Ali');
 }).then(function () {
-    return mmp.put('1', 'Ahmet');
+    return mmp.put('1', 'Mike Tyson');
 }).then(function () {
-    return mmp.put('1', 'Furkan');
+    return mmp.put('1', 'Joe Louis');
 }).then(function () {
     return mmp.clear();
 });
@@ -2328,16 +2333,16 @@ The following is an example of item listener object and its registration to the 
 ```javascript
 var itemListener = {
     itemAdded: function (itemEvent) {
-        console.log('Item Added:', itemEvent.item); // Item Added: Furkan
+        console.log('Item Added:', itemEvent.item); // Item Added: Item1
     },
     itemRemoved: function (itemEvent) {
-        console.log('Item Removed:', itemEvent.item); // Item Removed: Furkan
+        console.log('Item Removed:', itemEvent.item); // Item Removed: Item1
     }
 };
 return set.addItemListener(itemListener, true).then(function () {
-    return set.add('Furkan');
+    return set.add('Item1');
 }).then(function () {
-    return set.remove('Furkan');
+    return set.remove('Item1');
 });
 ```
 
@@ -2356,13 +2361,14 @@ topic.addMessageListener(function (message) {
     console.log(message.messageObject);
 });
 
-var engineer = {
-    name: 'Furkan Senharputlu',
-    age: 23,
-    field: 'Computer Engineering',
-    university: 'Bogazici University'
+var movie = {
+    title: 'The Prestige',
+    year: '2006',
+    runtime: '130 min',
+    director: 'Christopher Nolan',
+    imdbRating: '8.5'
 }
-topic.publish(engineer);
+topic.publish(movie);
 ```
 
 ## 7.6. Distributed Computing
@@ -2917,23 +2923,23 @@ See the following example.
 
 ```javascript
 var map;
-hazelcastClient.getMap('brothersMap').then(function (mp) {
+hz.getMap('employees').then(function (mp) {
     map = mp;
     return map.putAll([
-        ['Muhammet Ali', 30],
-        ['Ahmet', 27],
-        ['Furkan', 23],
+        ['John Stiles', 23],
+        ['Judy Doe', 29],
+        ['Richard Miles', 38],
     ]);
 }).then(function () {
     return map.aggregate(Aggregators.count());
 }).then(function (count) {
-    console.log('There are ' + count + ' brothers.'); // There are 3 brothers.
+    console.log('There are ' + count + ' employees.'); // There are 3 employees.
     return map.aggregateWithPredicate(Aggregators.count(), Predicates.greaterThan('this', 25));
 }).then(function (count) {
-    console.log('There are ' + count + ' brothers older than 25.'); // There are 2 brothers older than 25.
+    console.log('There are ' + count + ' employees older than 25.'); // There are 2 employees older than 25.
     return map.aggregate(Aggregators.numberAvg());
 }).then(function (avgAge) {
-    console.log('Average age is ' + avgAge); // Average age is 26.666666666666668
+    console.log('Average age is ' + avgAge); // Average age is 30
 });
 ```
 
@@ -2961,7 +2967,7 @@ Client.newHazelcastClient().then(function (client) {
     // since map names are different, operation is manipulating
     // different entries, but the operation takes place on the
     // same member since the keys ('key1') are the same
-    return mapA.put('key1', 'Furkan');
+    return mapA.put('key1', 'value1');
 }).then(function () {
     return mapB.get('key1');
 }).then(function (res) {
