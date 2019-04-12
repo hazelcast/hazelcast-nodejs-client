@@ -43,7 +43,7 @@ export class ClientConnection {
         this.socket = socket;
         this.address = address;
         this.localAddress = new Address(socket.localAddress, socket.localPort);
-        this.readBuffer = new Buffer(0);
+        this.readBuffer = Buffer.alloc(0);
         this.lastReadTimeMillis = 0;
         this.closedTime = 0;
         this.connectedServerVersionString = null;
@@ -153,7 +153,8 @@ export class ClientConnection {
                 if (frameSize > this.readBuffer.length) {
                     return;
                 }
-                const message: Buffer = new Buffer(frameSize);
+                // TODO reuse buffer
+                const message = Buffer.allocUnsafe(frameSize);
                 this.readBuffer.copy(message, 0, 0, frameSize);
                 this.readBuffer = this.readBuffer.slice(frameSize);
                 callback(message);

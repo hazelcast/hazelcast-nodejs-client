@@ -26,6 +26,8 @@ const MASK_1BYTE = (1 << 8) - 1;
 const MASK_2BYTE = (1 << 16) - 1;
 const MASK_4BYTE = (1 << 32) - 1;
 
+const EMPTY_BUFFER = Buffer.alloc(0);
+
 export class ObjectDataOutput implements DataOutput {
     protected buffer: Buffer;
     protected bigEndian: boolean;
@@ -33,14 +35,16 @@ export class ObjectDataOutput implements DataOutput {
     private pos: number;
 
     constructor(length: number, service: SerializationService, isBigEndian: boolean) {
-        this.buffer = new Buffer(length);
+        // TODO reuse buffer
+        this.buffer = Buffer.alloc(length);
         this.service = service;
         this.bigEndian = isBigEndian;
         this.pos = 0;
     }
 
     clear(): void {
-        this.buffer = new Buffer(this.buffer.length);
+        // TODO reuse buffer
+        this.buffer = Buffer.alloc(this.buffer.length);
         this.pos = 0;
     }
 
@@ -58,9 +62,10 @@ export class ObjectDataOutput implements DataOutput {
 
     toBuffer(): Buffer {
         if (this.buffer == null || this.pos === 0) {
-            return new Buffer(0);
+            return EMPTY_BUFFER;
         } else {
-            const snapBuffer = new Buffer(this.pos);
+            // TODO consider using #slice
+            const snapBuffer = Buffer.allocUnsafe(this.pos);
             this.buffer.copy(snapBuffer, 0, 0, this.pos);
             return snapBuffer;
         }
@@ -232,7 +237,8 @@ export class ObjectDataOutput implements DataOutput {
 
     private ensureAvailable(size: number): void {
         if (this.available() < size) {
-            const newBuffer = new Buffer(this.pos + size);
+            // TODO reuse buffer
+            const newBuffer = Buffer.alloc(this.pos + size);
             this.buffer.copy(newBuffer, 0, 0, this.pos);
             this.buffer = newBuffer;
         }
@@ -370,8 +376,9 @@ export class ObjectDataInput implements DataInput {
     }
 
     readData(): Data {
-        const bytes: number[] = this.readByteArray();
-        const data: Data = bytes === null ? null : new HeapData(new Buffer(bytes));
+        const bytes = this.readByteArray();
+        // TODO reuse buffer
+        const data: Data = bytes === null ? null : new HeapData(Buffer.from(bytes));
         return data;
     }
 

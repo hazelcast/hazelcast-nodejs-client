@@ -215,8 +215,7 @@ export class ClientConnectionManager extends EventEmitter {
 
     private initiateCommunication(connection: ClientConnection): Promise<void> {
         // Send the protocol version
-        const buffer = new Buffer(3);
-        buffer.write('CB2');
+        const buffer = Buffer.from('CB2');
         return connection.write(buffer);
     }
 

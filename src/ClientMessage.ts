@@ -53,8 +53,8 @@ class ClientMessage {
 
     public static newClientMessage(payloadSize: number): ClientMessage {
         const totalSize = BitsUtil.HEADER_SIZE + payloadSize;
-        const buffer = new Buffer(totalSize);
-        buffer.fill(0, 0, totalSize);
+        // TODO reuse buffer
+        const buffer = Buffer.alloc(totalSize);
         const message = new ClientMessage(buffer);
         message.setDataOffset(BitsUtil.HEADER_SIZE);
         message.setVersion(BitsUtil.VERSION);
@@ -224,7 +224,7 @@ class ClientMessage {
     readBuffer(): Buffer {
         const size = this.buffer.readUInt32LE(this.cursor);
         this.cursor += BitsUtil.INT_SIZE_IN_BYTES;
-        const result = new Buffer(size);
+        const result = Buffer.allocUnsafe(size);
         this.buffer.copy(result, 0, this.cursor, this.cursor + size);
         this.cursor += size;
         return result;
