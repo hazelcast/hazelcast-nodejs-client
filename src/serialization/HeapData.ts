@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {Buffer} from 'safe-buffer';
 import murmur = require('../invocation/Murmur');
 import {Data} from './Data';
 

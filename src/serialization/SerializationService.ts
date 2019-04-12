@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {Buffer} from 'safe-buffer';
 import {AggregatorFactory} from '../aggregation/AggregatorFactory';
 import {ClusterDataFactory} from '../ClusterDataFactory';
 import {ClusterDataFactoryHelper} from '../ClusterDataFactoryHelper';

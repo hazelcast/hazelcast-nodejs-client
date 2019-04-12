@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {Buffer} from 'safe-buffer';
 import * as Promise from 'bluebird';
 import {EventEmitter} from 'events';
 import HazelcastClient from '../HazelcastClient';

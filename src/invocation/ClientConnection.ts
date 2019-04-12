@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {Buffer} from 'safe-buffer';
 import * as Promise from 'bluebird';
 import * as net from 'net';
 import {BitsUtil} from '../BitsUtil';
@@ -73,7 +74,7 @@ export class ClientConnection {
     write(buffer: Buffer): Promise<void> {
         const deferred = DeferredPromise<void>();
         try {
-            this.socket.write(buffer, (err: any) => {
+            this.socket.write(<any>buffer, (err: any) => {
                 if (err) {
                     deferred.reject(new IOError(err));
                 } else {

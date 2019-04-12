@@ -15,6 +15,7 @@
  */
 
 /* tslint:disable:no-bitwise */
+import {Buffer} from 'safe-buffer';
 import * as assert from 'assert';
 import * as Long from 'long';
 import {BitsUtil} from '../BitsUtil';
@@ -35,7 +36,7 @@ export class ObjectDataOutput implements DataOutput {
     private pos: number;
 
     constructor(length: number, service: SerializationService, isBigEndian: boolean) {
-        // TODO reuse buffer
+        // TODO reuse buffer or defer its creation
         this.buffer = Buffer.alloc(length);
         this.service = service;
         this.bigEndian = isBigEndian;
@@ -129,7 +130,7 @@ export class ObjectDataOutput implements DataOutput {
         const len = (buf != null) ? buf.length : BitsUtil.NULL_ARRAY_LENGTH;
         this.writeInt(len);
         for (let i = 0; i < len; i++) {
-            this.write(buf[i]);
+            this.write((<any>buf)[i]);
         }
     }
 
@@ -259,7 +260,7 @@ export class PositionalObjectDataOutput extends ObjectDataOutput implements Posi
         if (Buffer.isBuffer(byte)) {
             byte.copy(this.buffer, position);
         } else {
-            this.buffer[position] = byte;
+            (<any>this.buffer)[position] = byte;
         }
     }
 

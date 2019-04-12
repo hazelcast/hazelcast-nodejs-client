@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {Buffer} from 'safe-buffer';
 import * as assert from 'assert';
 import * as Promise from 'bluebird';
 import * as Long from 'long';

@@ -36,6 +36,7 @@
  |                                                              ...
  */
 
+import {Buffer} from 'safe-buffer';
 import * as Long from 'long';
 import {BitsUtil} from './BitsUtil';
 import {Data} from './serialization/Data';
