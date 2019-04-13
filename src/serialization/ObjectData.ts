@@ -130,7 +130,7 @@ export class ObjectDataOutput implements DataOutput {
         const len = (buf != null) ? buf.length : BitsUtil.NULL_ARRAY_LENGTH;
         this.writeInt(len);
         for (let i = 0; i < len; i++) {
-            this.write((<any>buf)[i]);
+            this.write((buf as any)[i]);
         }
     }
 
@@ -260,7 +260,7 @@ export class PositionalObjectDataOutput extends ObjectDataOutput implements Posi
         if (Buffer.isBuffer(byte)) {
             byte.copy(this.buffer, position);
         } else {
-            (<any>this.buffer)[position] = byte;
+            (this.buffer as any)[position] = byte;
         }
     }
 

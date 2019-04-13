@@ -74,7 +74,7 @@ export class ClientConnection {
     write(buffer: Buffer): Promise<void> {
         const deferred = DeferredPromise<void>();
         try {
-            this.socket.write(<any>buffer, (err: any) => {
+            this.socket.write(buffer as any, (err: any) => {
                 if (err) {
                     deferred.reject(new IOError(err));
                 } else {
