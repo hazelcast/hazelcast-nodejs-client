@@ -21,7 +21,7 @@ var ODInp = ObjectData.ObjectDataInput;
 var ODOut = ObjectData.ObjectDataOutput;
 describe('ObjectData Test', function () {
 
-    var out = new ODOut(new Buffer(100), null, true);
+    var out = new ODOut(null, true);
 
     before(function () {
         out.write(15);

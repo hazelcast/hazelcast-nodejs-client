@@ -105,7 +105,7 @@ export class SerializationServiceV1 implements SerializationService {
         if (this.isData(object)) {
             return object as Data;
         }
-        const dataOutput: DataOutput = new PositionalObjectDataOutput(1, this, this.serializationConfig.isBigEndian);
+        const dataOutput: DataOutput = new PositionalObjectDataOutput(this, this.serializationConfig.isBigEndian);
         const serializer = this.findSerializerFor(object);
         // Check if object is partition aware
         if (object != null && object.getPartitionKey) {

@@ -54,8 +54,7 @@ class ClientMessage {
 
     public static newClientMessage(payloadSize: number): ClientMessage {
         const totalSize = BitsUtil.HEADER_SIZE + payloadSize;
-        // TODO reuse buffer
-        const buffer = Buffer.alloc(totalSize);
+        const buffer = Buffer.allocUnsafe(totalSize);
         const message = new ClientMessage(buffer);
         message.setDataOffset(BitsUtil.HEADER_SIZE);
         message.setVersion(BitsUtil.VERSION);

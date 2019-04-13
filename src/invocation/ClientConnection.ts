@@ -154,7 +154,6 @@ export class ClientConnection {
                 if (frameSize > this.readBuffer.length) {
                     return;
                 }
-                // TODO reuse buffer
                 const message = Buffer.allocUnsafe(frameSize);
                 this.readBuffer.copy(message, 0, 0, frameSize);
                 this.readBuffer = this.readBuffer.slice(frameSize);
