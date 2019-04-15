@@ -224,6 +224,7 @@ class ClientMessage {
     readBuffer(): Buffer {
         const size = this.buffer.readUInt32LE(this.cursor);
         this.cursor += BitsUtil.INT_SIZE_IN_BYTES;
+        // TODO is `size` really ok? see later `buffer.copy`
         const result = Buffer.allocUnsafe(size);
         this.buffer.copy(result, 0, this.cursor, this.cursor + size);
         this.cursor += size;

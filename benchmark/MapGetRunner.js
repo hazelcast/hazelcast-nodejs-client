@@ -1,8 +1,6 @@
 'use strict';
 
 const REQ_COUNT = 10000;
-// TODO: for some reasons throughput get much slower for BATCH_SIZE > 3
-//       (~350 vs ~100 ops/s for BATCH_SIZE = 1 vs 4) => need to understand the reason
 const BATCH_SIZE = 100;
 
 const Benchmark = require('./SimpleBenchmark');

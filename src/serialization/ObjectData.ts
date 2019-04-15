@@ -195,20 +195,10 @@ export class ObjectDataOutput implements DataOutput {
     writeUTF(val: string): void {
         const len = (val != null) ? val.length : BitsUtil.NULL_ARRAY_LENGTH;
         this.writeInt(len);
-        this.ensureAvailable(len * 3);
-        for (let i = 0; i < len; i++) {
-            const ch = val.charCodeAt(i);
-            if (ch <= 0x007F) {
-                this.writeByte(ch);
-            } else if (ch <= 0x07FF) {
-                this.write(0xC0 | ch >> 6 & 0x1F);
-                this.write(0x80 | ch & 0x3F);
-            } else {
-                this.write(0xE0 | ch >> 12 & 0x0F);
-                this.write(0x80 | ch >> 6 & 0x3F);
-                this.write(0x80 | ch & 0x3F);
-            }
-        }
+        const byteLen = Buffer.byteLength(val, 'utf8');
+        this.ensureAvailable(byteLen);
+        this.buffer.write(val, this.pos, this.pos + byteLen, 'utf8');
+        this.pos += byteLen;
     }
 
     writeUTFArray(val: string[]): void {
@@ -472,50 +462,20 @@ export class ObjectDataInput implements DataInput {
 
     readUTF(pos?: number): string {
         const len = this.readInt(pos);
-        let readingIndex = this.addOrUndefined(pos, 4);
         if (len === BitsUtil.NULL_ARRAY_LENGTH) {
             return null;
         }
-        let result: string = '';
-        let leadingByte: number;
-        for (let i = 0; i < len; i++) {
-            let charCode: number;
-            leadingByte = this.readByte(readingIndex) & MASK_1BYTE;
-            readingIndex = this.addOrUndefined(readingIndex, 1);
 
-            const b = leadingByte & 0xFF;
-            switch (b >> 4) {
-                /* tslint:disable:no-switch-case-fall-through */
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                    charCode = leadingByte;
-                    break;
-                case 12:
-                case 13:
-                    const first = (b & 0x1F) << 6;
-                    const second = this.readByte(readingIndex) & 0x3F;
-                    readingIndex = this.addOrUndefined(readingIndex, 1);
-                    charCode = first | second;
-                    break;
-                case 14:
-                    const first2 = (b & 0x0F) << 12;
-                    const second2 = (this.readByte(readingIndex) & 0x3F) << 6;
-                    readingIndex = this.addOrUndefined(readingIndex, 1);
-                    const third2 = this.readByte(readingIndex) & 0x3F;
-                    readingIndex = this.addOrUndefined(readingIndex, 1);
-                    charCode = (first2 | second2 | third2);
-                    break;
-                default:
-                    throw new RangeError('Malformed UTF8 string');
-            }
-            result += String.fromCharCode(charCode);
-        }
+        // max char size in UTF-8 is 4 bytes, see RFC3629
+        const maxByteLen = len * 4;
+        const available = this.available();
+        const readByteLen = maxByteLen > available ? available : maxByteLen;
+
+        const readStr = this.buffer.toString('utf8', this.pos, this.pos + readByteLen);
+        const result = readStr.substring(0, len);
+
+        const realByteLen = Buffer.byteLength(result, 'utf8');
+        this.pos += realByteLen;
         return result;
     }
 
@@ -560,13 +520,5 @@ export class ObjectDataInput implements DataInput {
     private assertAvailable(numOfBytes: number, pos: number = this.pos): void {
         assert(pos >= 0);
         assert(pos + numOfBytes <= this.buffer.length);
-    }
-
-    private addOrUndefined(base: number, adder: number): number {
-        if (base === undefined) {
-            return undefined;
-        } else {
-            return base + adder;
-        }
     }
 }
