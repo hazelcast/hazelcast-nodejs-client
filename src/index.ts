@@ -38,6 +38,7 @@ import {EntryEvent} from './core/EntryListener';
 import {LogLevel} from './logging/LoggingService';
 import {JsonStringDeserializationPolicy} from './config/JsonStringDeserializationPolicy';
 import {HazelcastJsonValue} from './core/HazelcastJsonValue';
+import {StringSerializationPolicy} from './config/StringSerializationPolicy';
 
 export {
     HazelcastClient as Client,
@@ -67,4 +68,5 @@ export {
     LogLevel,
     JsonStringDeserializationPolicy,
     HazelcastJsonValue,
+    StringSerializationPolicy,
 };

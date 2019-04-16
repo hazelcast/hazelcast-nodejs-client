@@ -1084,6 +1084,26 @@ config.serializationConfig.jsonStringDeserializationPolicy = JsonStringDeseriali
 }
 ```
 
+## 4.5. String Serialization
+
+TODO write documentation
+
+**Programmatic Configuration:**
+
+```javascript
+config.serializationConfig.stringSerialization = StringSerializationPolicy.LEGACY;
+```
+
+**Declarative Configuration:**
+
+```json
+{
+    "serialization": {
+        "stringSerialization": "legacy"
+    }
+}
+```
+
 # 5. Setting Up Client Network
 
 All network related configuration of Hazelcast Node.js client is performed via the `network` element in the declarative configuration file, or in the object `ClientNetworkConfig` when using programmatic configuration. Let's first give the examples for these two approaches. Then we will look at its sub-elements and attributes.

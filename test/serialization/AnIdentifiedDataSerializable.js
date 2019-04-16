@@ -96,7 +96,7 @@ AnIdentifiedDataSerializable.prototype.readData = function (dataInput) {
     this.byteSize = dataInput.readByte();
     this.bytesFully = new Buffer(this.byteSize);
     dataInput.readCopy(this.bytesFully, this.byteSize);
-    this.bytesOffset = Buffer(2);
+    this.bytesOffset = new Buffer(2);
     dataInput.readCopy(this.bytesOffset, 2);
     this.strSize = dataInput.readInt();
     this.strChars = [];
