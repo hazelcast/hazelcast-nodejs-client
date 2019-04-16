@@ -195,6 +195,10 @@ export class ObjectDataOutput implements DataOutput {
     writeUTF(val: string): void {
         const len = (val != null) ? val.length : BitsUtil.NULL_ARRAY_LENGTH;
         this.writeInt(len);
+        if (len === BitsUtil.NULL_ARRAY_LENGTH) {
+            return;
+        }
+
         const byteLen = Buffer.byteLength(val, 'utf8');
         this.ensureAvailable(byteLen);
         this.buffer.write(val, this.pos, this.pos + byteLen, 'utf8');
