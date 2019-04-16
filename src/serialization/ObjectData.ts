@@ -462,6 +462,7 @@ export class ObjectDataInput implements DataInput {
 
     readUTF(pos?: number): string {
         const len = this.readInt(pos);
+        const readPos = this.addOrUndefined(pos, 4) || this.pos;
         if (len === BitsUtil.NULL_ARRAY_LENGTH) {
             return null;
         }
@@ -471,11 +472,14 @@ export class ObjectDataInput implements DataInput {
         const available = this.available();
         const readByteLen = maxByteLen > available ? available : maxByteLen;
 
-        const readStr = this.buffer.toString('utf8', this.pos, this.pos + readByteLen);
+        const readStr = this.buffer.toString('utf8', readPos, readPos + readByteLen);
         const result = readStr.substring(0, len);
 
-        const realByteLen = Buffer.byteLength(result, 'utf8');
-        this.pos += realByteLen;
+        if (pos === undefined) {
+            const realByteLen = Buffer.byteLength(result, 'utf8');
+            this.pos += realByteLen;
+        }
+
         return result;
     }
 
@@ -520,5 +524,13 @@ export class ObjectDataInput implements DataInput {
     private assertAvailable(numOfBytes: number, pos: number = this.pos): void {
         assert(pos >= 0);
         assert(pos + numOfBytes <= this.buffer.length);
+    }
+
+    private addOrUndefined(base: number, adder: number): number {
+        if (base === undefined) {
+            return undefined;
+        } else {
+            return base + adder;
+        }
     }
 }

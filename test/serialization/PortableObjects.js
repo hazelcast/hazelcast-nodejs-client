@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-function PortableObject(a_byte, a_boolean, a_character, a_short, an_integer, a_long, a_float, a_double, a_string, a_portable, bytes, booleans, chars, shorts, integers, longs, floats, doubles, strings, portables) {
+function PortableObject(
+            a_byte, a_boolean, a_character, a_short, an_integer, a_long, a_float, a_double, a_string, a_portable,
+            bytes, booleans, chars, shorts, integers, longs, floats, doubles, strings, portables, a_string2
+        ) {
     this.a_byte = a_byte;
     this.a_boolean = a_boolean;
     this.a_character = a_character;
@@ -36,6 +39,7 @@ function PortableObject(a_byte, a_boolean, a_character, a_short, an_integer, a_l
     this.doubles = doubles;
     this.strings = strings;
     this.portables = portables;
+    this.a_string2 = a_string2;
 }
 
 PortableObject.prototype.getFactoryId = function () {
@@ -55,7 +59,9 @@ PortableObject.prototype.writePortable = function (writer) {
     writer.writeDouble('a_double', this.a_double);
     writer.writeUTF('a_string', this.a_string);
     writer.writePortable('a_portable', this.a_portable);
-    writer.writeNullPortable('a_null_portable', InnerPortableObject.prototype.getFactoryId.call(null), InnerPortableObject.prototype.getClassId.call(null));
+    writer.writeNullPortable(
+        'a_null_portable', InnerPortableObject.prototype.getFactoryId.call(null),
+        InnerPortableObject.prototype.getClassId.call(null));
 
     writer.writeByteArray('bytes', this.bytes);
     writer.writeBooleanArray('booleans', this.booleans);
@@ -67,6 +73,7 @@ PortableObject.prototype.writePortable = function (writer) {
     writer.writeDoubleArray('doubles', this.doubles);
     writer.writeUTFArray('strings', this.strings);
     writer.writePortableArray('portables', this.portables);
+    writer.writeUTF('a_string2', this.a_string2);
 };
 PortableObject.prototype.readPortable = function (reader) {
     this.a_byte = reader.readByte('a_byte');
@@ -91,6 +98,7 @@ PortableObject.prototype.readPortable = function (reader) {
     this.doubles = reader.readDoubleArray('doubles');
     this.strings = reader.readUTFArray('strings');
     this.portables = reader.readPortableArray('portables');
+    this.a_string2 = reader.readUTF('a_string2');
 };
 
 function InnerPortableObject(p1, p2) {
@@ -116,7 +124,10 @@ InnerPortableObject.prototype.writePortable = function (writer) {
     writer.writeUTF('p2', this.p2);
 };
 
-function PortableObjectV2(a_new_prop, a_byte, a_boolean, a_character, a_short, an_integer, a_long, a_float, a_double, a_portable, bytes, booleans, chars, shorts, integers, longs, floats, doubles, strings, portables) {
+function PortableObjectV2(
+            a_new_prop, a_byte, a_boolean, a_character, a_short, an_integer, a_long, a_float, a_double, 
+            a_portable, bytes, booleans, chars, shorts, integers, longs, floats, doubles, strings, portables
+        ) {
     this.a_new_prop = a_new_prop;// this prop is newly added
     this.a_byte = a_byte;
     this.a_boolean = a_boolean;
