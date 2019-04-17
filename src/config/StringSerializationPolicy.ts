@@ -32,8 +32,8 @@ export enum StringSerializationPolicy {
     /**
      * 4 byte characters are represented as
      * 6 bytes during serialization/deserialization
-     * (non-standard UTF-8). Provides full
-     * server-side compatibility with IMDG 3.x.
+     * (non-standard UTF-8). Provides full compatibility
+     * with IMDG 3.x members and other clients.
      */
     LEGACY,
 }
