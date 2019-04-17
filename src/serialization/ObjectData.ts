@@ -604,7 +604,7 @@ export class ObjectDataInput implements DataInput {
         }
 
         // max char size in UTF-8 is 4 bytes, see RFC3629
-        // TODO: change to `maxByteLen = len;` in future when client protocol changes
+        // TODO: change to `maxByteLen = len;` in future when string serialization in client protocol changes
         const maxByteLen = len * 4;
         const available = this.available();
         const readByteLen = maxByteLen > available ? available : maxByteLen;

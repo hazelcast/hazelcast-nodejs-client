@@ -98,8 +98,33 @@ stringSerializationPolicies.forEach(function(stringSerializationPolicy) {
             })
         });
 
+        it('emoji string test on client', function () {
+            return map.put('key', '1⚐中💦2😭‍🙆😔5').then(function () {
+                return map.get('key');
+            }).then(function (response) {
+                return expect(response).to.equal('1⚐中💦2😭‍🙆😔5');
+            });
+        });
+
+        it('utf8 characters test on client', function () {
+            return map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}').then(function () {
+                return map.get('key');
+            }).then(function (response) {
+                return expect(response).to.equal('\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
+            });
+        });
+
+        it('utf8 characters test on client with surrogates', function () {
+            return map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\uD834\uDF06').then(function () {
+                return map.get('key');
+            }).then(function (response) {
+                return expect(response).to.equal('\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
+            });
+        });
+
+        // TODO: remove the check in future when string serialization in client protocol changes
         if (stringSerializationPolicy === StringSerializationPolicy.LEGACY) {
-            it('emoji string', function () {
+            it('emoji string test on RC', function () {
                 return map.put('key', '1⚐中💦2😭‍🙆😔5').then(function () {
                     return RC.executeOnController(cluster.id, _generateGet('key'), 1);
                 }).then(function (response) {
@@ -107,7 +132,7 @@ stringSerializationPolicies.forEach(function(stringSerializationPolicy) {
                 });
             });
 
-            it('utf8 characters test', function () {
+            it('utf8 characters test on RC', function () {
                 return map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}').then(function () {
                     return RC.executeOnController(cluster.id, _generateGet('key'), 1);
                 }).then(function (response) {
@@ -115,7 +140,7 @@ stringSerializationPolicies.forEach(function(stringSerializationPolicy) {
                 });
             });
 
-            it('utf8 characters test with surrogates', function () {
+            it('utf8 characters test on RC with surrogates', function () {
                 return map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\uD834\uDF06').then(function () {
                     return RC.executeOnController(cluster.id, _generateGet('key'), 1);
                 }).then(function (response) {
