@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+var Buffer = require('safe-buffer').Buffer;
 var expect = require('chai').expect;
 var Long = require('long');
 var ObjectData = require('../../lib/serialization/ObjectData');
@@ -30,7 +31,7 @@ describe('ObjectData Test', function () {
 
         before(function () {
             out.write(15);
-            out.write(new Buffer(['t'.charCodeAt(0), 'e'.charCodeAt(0), 's'.charCodeAt(0), 't'.charCodeAt(0)]));
+            out.write(Buffer.from(['t'.charCodeAt(0), 'e'.charCodeAt(0), 's'.charCodeAt(0), 't'.charCodeAt(0)]));
             out.writeBoolean(true);
             out.writeBooleanArray([true, false, false, true, true]);
             out.writeByte(255 | 0);

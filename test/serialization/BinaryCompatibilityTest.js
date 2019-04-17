@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
+var Buffer = require('safe-buffer').Buffer;
 var fs = require('fs');
 var ObjectDataInput = require('../../lib/serialization/ObjectData').ObjectDataInput;
 var HeapData = require('../../lib/serialization/HeapData').HeapData;
-var expect = require('chai').expect;
 var Config = require('../../.').Config;
 var ReferenceObjects = require('./ReferenceObjects');
 var SerializationService = require('../../lib/serialization/SerializationService').SerializationServiceV1;
@@ -97,7 +97,7 @@ describe('Binary serialization compatibility test', function () {
             },
             read: function (inp) {
                 var len = inp.readInt();
-                var buf = new Buffer(len);
+                var buf = Buffer.alloc(len);
                 inp.readCopy(buf, len);
                 return new CustomByteArraySerializable(buf.readInt32BE(0), buf.readFloatBE(4));
             }
@@ -127,12 +127,12 @@ describe('Binary serialization compatibility test', function () {
             var input = new ObjectDataInput(fs.readFileSync(__dirname + '/' + createFileName(version)), 0, null, true, true);
             while (input.available() > 0) {
                 var utflen = input.readUnsignedShort();
-                var namebuf = new Buffer(utflen);
+                var namebuf = Buffer.alloc(utflen);
                 input.readCopy(namebuf, utflen);
                 var objectKey = namebuf.toString();
                 var len = input.readInt();
                 if (len !== NULL_LENGTH) {
-                    var otherBuffer = new Buffer(len);
+                    var otherBuffer = Buffer.alloc(len);
                     input.readCopy(otherBuffer, len);
                     dataMap[objectKey] = new HeapData(otherBuffer);
                 }

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+var Buffer = require('safe-buffer').Buffer;
+
 function AnIdentifiedDataSerializable(bool, b, c, d, s, f, i, l, str, booleans, bytes, chars, doubles, shorts, floats, ints
     , longs, strings, portable, identifiedDataSerializable, customStreamSerializable, customByteArraySerializableObject, data) {
     if (arguments.length === 0) return;
@@ -41,7 +43,7 @@ function AnIdentifiedDataSerializable(bool, b, c, d, s, f, i, l, str, booleans, 
     this.bytesFully = bytes;
     this.bytesOffset = bytes.slice(1, 3);
     this.strChars = str.split('');
-    this.strBytes = new Buffer(this.str.length);
+    this.strBytes = Buffer.alloc(this.str.length);
     for (var i = 0; i < str.length; i++) {
         this.strBytes[i] = this.strChars[i].charCodeAt(0);
     }
@@ -94,16 +96,16 @@ AnIdentifiedDataSerializable.prototype.readData = function (dataInput) {
     this.stringsNull = dataInput.readUTFArray();
 
     this.byteSize = dataInput.readByte();
-    this.bytesFully = new Buffer(this.byteSize);
+    this.bytesFully = Buffer.alloc(this.byteSize);
     dataInput.readCopy(this.bytesFully, this.byteSize);
-    this.bytesOffset = new Buffer(2);
+    this.bytesOffset = Buffer.alloc(2);
     dataInput.readCopy(this.bytesOffset, 2);
     this.strSize = dataInput.readInt();
     this.strChars = [];
     for (var j = 0; j < this.strSize; j++) {
         this.strChars[j] = dataInput.readChar();
     }
-    this.strBytes = new Buffer(this.strSize);
+    this.strBytes = Buffer.alloc(this.strSize);
     dataInput.readCopy(this.strBytes, this.strSize);
     this.unsignedByte = dataInput.readUnsignedByte();
     this.unsignedShort = dataInput.readUnsignedShort();
