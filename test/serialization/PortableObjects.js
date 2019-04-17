@@ -16,7 +16,7 @@
 
 function PortableObject(
             a_byte, a_boolean, a_character, a_short, an_integer, a_long, a_float, a_double, a_string, a_portable,
-            bytes, booleans, chars, shorts, integers, longs, floats, doubles, strings, portables, a_string2
+            bytes, booleans, chars, shorts, integers, longs, floats, doubles, strings, portables
         ) {
     this.a_byte = a_byte;
     this.a_boolean = a_boolean;
@@ -39,7 +39,6 @@ function PortableObject(
     this.doubles = doubles;
     this.strings = strings;
     this.portables = portables;
-    this.a_string2 = a_string2;
 }
 
 PortableObject.prototype.getFactoryId = function () {
@@ -73,7 +72,6 @@ PortableObject.prototype.writePortable = function (writer) {
     writer.writeDoubleArray('doubles', this.doubles);
     writer.writeUTFArray('strings', this.strings);
     writer.writePortableArray('portables', this.portables);
-    writer.writeUTF('a_string2', this.a_string2);
 };
 PortableObject.prototype.readPortable = function (reader) {
     this.a_byte = reader.readByte('a_byte');
@@ -98,7 +96,6 @@ PortableObject.prototype.readPortable = function (reader) {
     this.doubles = reader.readDoubleArray('doubles');
     this.strings = reader.readUTFArray('strings');
     this.portables = reader.readPortableArray('portables');
-    this.a_string2 = reader.readUTF('a_string2');
 };
 
 function InnerPortableObject(p1, p2) {
