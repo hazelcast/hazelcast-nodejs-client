@@ -1086,7 +1086,7 @@ config.serializationConfig.jsonStringDeserializationPolicy = JsonStringDeseriali
 
 ## 4.5. String Serialization
 
-Starting from version v0.11.0 Hazelcast Node.js client follows UTF-8 standard (RFC 3629) for string data type serialization of 4 byte UTF characters, like less common CJK characters and emoji. This may lead to compatibility issues with Hazelcast IMDG 3.x and other client libraries for string and JSON values. Such issues are represented by `Malformed byte sequence` (error code `64`) errors on members and other clients.
+Starting from version v0.11.0 Hazelcast Node.js client follows UTF-8 standard (RFC 3629) for string data type serialization of 4 byte UTF characters, like less common CJK characters and emoji. This may lead to compatibility issues with Hazelcast IMDG 3.x and other client libraries for string and JSON values. Such issues are represented by `Malformed byte sequence` (error code 64) errors on members and other clients.
 
 In case if you encounter these error messages, you can switch to the legacy mode of string serialization that provides full compatibility with Hazelcast IMDG 3.x members and other client libraries.
 
@@ -1095,7 +1095,7 @@ Below is the configuration required to use the legacy string serialization.
 **Programmatic Configuration:**
 
 ```javascript
-config.serializationConfig.stringSerialization = StringSerializationPolicy.LEGACY;
+config.serializationConfig.stringSerializationPolicy = StringSerializationPolicy.LEGACY;
 ```
 
 **Declarative Configuration:**
@@ -1103,7 +1103,7 @@ config.serializationConfig.stringSerialization = StringSerializationPolicy.LEGAC
 ```json
 {
     "serialization": {
-        "stringSerialization": "legacy"
+        "stringSerializationPolicy": "legacy"
     }
 }
 ```
