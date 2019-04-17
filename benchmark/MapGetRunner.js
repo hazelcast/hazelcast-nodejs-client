@@ -22,8 +22,8 @@ const VAL = randomString(100 * 1024);
 Client.newHazelcastClient()
     .then((client) => client.getMap('default'))
     .then((map) => {
-        map.set(KEY, VAL);
-        return map;
+        return map.set(KEY, VAL)
+            .then(() => map);
     })
     .then((map) => {
         const benchmark = new Benchmark({
