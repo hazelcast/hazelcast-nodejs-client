@@ -122,31 +122,43 @@ stringSerializationPolicies.forEach(function(stringSerializationPolicy) {
             });
         });
 
-        // TODO: remove the check in future when string serialization in client protocol changes
-        if (stringSerializationPolicy === StringSerializationPolicy.LEGACY) {
-            it('emoji string test on RC', function () {
-                return map.put('key', '1⚐中💦2😭‍🙆😔5').then(function () {
-                    return RC.executeOnController(cluster.id, _generateGet('key'), 1);
-                }).then(function (response) {
-                    return expect(response.result.toString()).to.equal('1⚐中💦2😭‍🙆😔5');
-                });
-            });
+        it('emoji string test on RC', function () {
+            // TODO: remove the check in future when string serialization in client protocol changes
+            if (stringSerializationPolicy === StringSerializationPolicy.STANDARD) {
+                this.skip();
+            }
 
-            it('utf8 characters test on RC', function () {
-                return map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}').then(function () {
-                    return RC.executeOnController(cluster.id, _generateGet('key'), 1);
-                }).then(function (response) {
-                    return expect(response.result.toString()).to.equal('\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
-                });
+            return map.put('key', '1⚐中💦2😭‍🙆😔5').then(function () {
+                return RC.executeOnController(cluster.id, _generateGet('key'), 1);
+            }).then(function (response) {
+                return expect(response.result.toString()).to.equal('1⚐中💦2😭‍🙆😔5');
             });
+        });
 
-            it('utf8 characters test on RC with surrogates', function () {
-                return map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\uD834\uDF06').then(function () {
-                    return RC.executeOnController(cluster.id, _generateGet('key'), 1);
-                }).then(function (response) {
-                    return expect(response.result.toString()).to.equal('\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
-                });
+        it('utf8 characters test on RC', function () {
+            // TODO: remove the check in future when string serialization in client protocol changes
+            if (stringSerializationPolicy === StringSerializationPolicy.STANDARD) {
+                this.skip();
+            }
+
+            return map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}').then(function () {
+                return RC.executeOnController(cluster.id, _generateGet('key'), 1);
+            }).then(function (response) {
+                return expect(response.result.toString()).to.equal('\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
             });
-        }
+        });
+
+        it('utf8 characters test on RC with surrogates', function () {
+            // TODO: remove the check in future when string serialization in client protocol changes
+            if (stringSerializationPolicy === StringSerializationPolicy.STANDARD) {
+                this.skip();
+            }
+
+            return map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\uD834\uDF06').then(function () {
+                return RC.executeOnController(cluster.id, _generateGet('key'), 1);
+            }).then(function (response) {
+                return expect(response.result.toString()).to.equal('\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
+            });
+        });
     });
 });

@@ -23,6 +23,7 @@ import {Data, DataInput, DataOutput, PositionalDataOutput} from './Data';
 import {HeapData} from './HeapData';
 import {SerializationService} from './SerializationService';
 
+const OUTPUT_BUFFER_INITIAL_SIZE = 1024;
 const MASK_1BYTE = (1 << 8) - 1;
 const MASK_2BYTE = (1 << 16) - 1;
 const MASK_4BYTE = (1 << 32) - 1;
@@ -35,7 +36,7 @@ export class ObjectDataOutput implements DataOutput {
     private pos: number;
 
     constructor(service: SerializationService, isBigEndian: boolean, isStandardUTF: boolean) {
-        this.buffer = Buffer.allocUnsafe(1024);
+        this.buffer = Buffer.allocUnsafe(OUTPUT_BUFFER_INITIAL_SIZE);
         this.service = service;
         this.bigEndian = isBigEndian;
         this.standardUTF = isStandardUTF;
