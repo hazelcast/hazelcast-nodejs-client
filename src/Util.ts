@@ -51,6 +51,10 @@ export function assertNotNegative(v: number, message: string = 'The value cannot
     assert(v >= 0, message);
 }
 
+export function assertPositive(v: number, message: string = 'The value should be positive.'): void {
+    assert(v > 0, message);
+}
+
 export function getType(obj: any): string {
     assertNotNull(obj);
     if (Long.isLong(obj)) {

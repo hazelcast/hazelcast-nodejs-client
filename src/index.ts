@@ -39,6 +39,8 @@ import {LogLevel} from './logging/LoggingService';
 import {JsonStringDeserializationPolicy} from './config/JsonStringDeserializationPolicy';
 import {HazelcastJsonValue} from './core/HazelcastJsonValue';
 import {StringSerializationPolicy} from './config/StringSerializationPolicy';
+import {LoadGenerator} from './core/LoadGenerator';
+import {Pipelining} from './core/Pipelining';
 
 export {
     HazelcastClient as Client,
@@ -69,4 +71,6 @@ export {
     JsonStringDeserializationPolicy,
     HazelcastJsonValue,
     StringSerializationPolicy,
+    LoadGenerator,
+    Pipelining,
 };
