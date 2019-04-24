@@ -21,6 +21,7 @@ var Client = require('../../.').Client;
 var RC = require('./../RC');
 var Predicates = require('../../.').Predicates;
 var HazelcastJsonValue = require('../../.').HazelcastJsonValue;
+var Util = require('../Util');
 
 describe('HazelcastJsonValue with JsonSerializer', function () {
     var cluster;
@@ -78,30 +79,6 @@ describe('HazelcastJsonValue with JsonSerializer', function () {
         });
     });
 
-    it('querying over JavaScript objects', function () {
-        var objects = [
-            [0, {'a': 1}],
-            [1, {'a': 3}]
-        ];
-        return map.putAll(objects).then(function () {
-            return map.valuesWithPredicate(Predicates.greaterThan('a', 2));
-        }).then(function (values) {
-            expect(values.toArray()).to.deep.equal([objects[1][1]]);
-        });
-    });
-
-    it('querying over nested attributes', function () {
-        var objects = [
-            [0, {'a': 1, 'b': {'c': 1}}],
-            [1, {'a': 3, 'b': {'c': 3}}]
-        ];
-        return map.putAll(objects).then(function () {
-            return map.valuesWithPredicate(Predicates.greaterThan('b.c', 2));
-        }).then(function (values) {
-            expect(values.toArray()).to.deep.equal([objects[1][1]]);
-        });
-    });
-
     it('storing JavaScript and HazelcastJsonValue objects as keys', function () {
         return map.put(object, 1).then(function () {
             return map.get(object);
@@ -130,11 +107,74 @@ describe('HazelcastJsonValue with JsonSerializer', function () {
             expect(value).to.deep.equal(object);
         });
     });
+});
+
+describe('Querying with HazelcastJsonValue', function () {
+    var cluster;
+    var client;
+    var map;
+    var object = { 'a': 1 };
+
+    before(function () {
+        Util.markServerVersionAtLeast(this, null, '3.12');
+        return RC.createCluster().then(function (response) {
+            cluster = response;
+            return RC.startMember(cluster.id);
+        }).then(function () {
+            return Client.newHazelcastClient().then(function (hazelcastClient) {
+                client = hazelcastClient;
+            });
+        });
+    });
+
+    beforeEach(function () {
+        return client.getMap('jsonTest').then(function (mp) {
+            map = mp;
+        });
+    });
+
+    afterEach(function () {
+        if (map)
+        return map.destroy();
+    });
+
+    after(function () {
+        if (!client) {
+            return;
+        }
+        client.shutdown();
+        return RC.shutdownCluster(cluster.id);
+    });
+
+
+    it('querying over JavaScript objects', function () {
+        var objects = [
+            [0, {'a': 1}],
+            [1, {'a': 3}]
+        ];
+        return map.putAll(objects).then(function () {
+            return map.valuesWithPredicate(Predicates.greaterThan('a', 2));
+        }).then(function (values) {
+            expect(values.toArray()).to.deep.equal([objects[1][1]]);
+        });
+    });
+
+    it('querying over nested attributes', function () {
+        var objects = [
+            [0, {'a': 1, 'b': {'c': 1}}],
+            [1, {'a': 3, 'b': {'c': 3}}]
+        ];
+        return map.putAll(objects).then(function () {
+            return map.valuesWithPredicate(Predicates.greaterThan('b.c', 2));
+        }).then(function (values) {
+            expect(values.toArray()).to.deep.equal([objects[1][1]]);
+        });
+    });
 
     it('querying over keys', function () {
         var hzJsonValue2 = new HazelcastJsonValue('{ "a": 3 }');
         return map.put(object, 1).then(function () {
-           return map.put(hzJsonValue2, 2);
+            return map.put(hzJsonValue2, 2);
         }).then(function () {
             return map.valuesWithPredicate(Predicates.sql('__key.a > 2'));
         }).then(function (values) {
