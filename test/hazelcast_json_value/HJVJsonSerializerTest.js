@@ -134,7 +134,6 @@ describe('Querying with HazelcastJsonValue', function () {
     });
 
     afterEach(function () {
-        if (map)
         return map.destroy();
     });
 
