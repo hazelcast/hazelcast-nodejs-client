@@ -23,7 +23,7 @@ var Promise = require('bluebird');
 
 describe('Listeners on reconnect', function () {
 
-    this.timeout(30000);
+    this.timeout(40000);
     var client;
     var members = [];
     var cluster;
