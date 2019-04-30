@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
+var Buffer = require('safe-buffer').Buffer;
 var fs = require('fs');
 var ObjectDataInput = require('../../lib/serialization/ObjectData').ObjectDataInput;
 var HeapData = require('../../lib/serialization/HeapData').HeapData;
-var expect = require('chai').expect;
 var Config = require('../../.').Config;
 var ReferenceObjects = require('./ReferenceObjects');
 var SerializationService = require('../../lib/serialization/SerializationService').SerializationServiceV1;
@@ -27,12 +27,15 @@ var APortable = require('./APortable');
 var CustomByteArraySerializable = require('./CustomSerializable').CustomByteArraySerializable;
 var CustomStreamSerializable = require('./CustomSerializable').CustomStreamSerializable;
 var expectAlmostEqual = require('../Util').expectAlmostEqual;
+var StringSerializationPolicy = require('../../.').StringSerializationPolicy;
+
 describe('Binary serialization compatibility test', function () {
 
     var NULL_LENGTH = -1;
     var versions = [1];
     var objects = ReferenceObjects.testObjects;
-    var isBigEndian = [true, false];
+    var isBigEndianValues = [true, false];
+    var isStandardUTFValues = [true, false];
 
     var dataMap = {};
 
@@ -62,11 +65,10 @@ describe('Binary serialization compatibility test', function () {
     }
 
     function createObjectKey(varName, version, isBigEndian) {
-
         return version + '-' + stripArticle(varName) + '-' + convertEndiannesToByteOrder(isBigEndian);
     }
 
-    function createSerializationService(isBigEndian, defaultNumberType) {
+    function createSerializationService(isBigEndian, isStandardUTF, defaultNumberType) {
         var cfg = new Config.ClientConfig().serializationConfig;
         cfg.portableFactories[ReferenceObjects.PORTABLE_FACTORY_ID] = {
             create: function (classId) {
@@ -95,7 +97,7 @@ describe('Binary serialization compatibility test', function () {
             },
             read: function (inp) {
                 var len = inp.readInt();
-                var buf = new Buffer(len);
+                var buf = Buffer.alloc(len);
                 inp.readCopy(buf, len);
                 return new CustomByteArraySerializable(buf.readInt32BE(0), buf.readFloatBE(4));
             }
@@ -113,21 +115,24 @@ describe('Binary serialization compatibility test', function () {
             }
         });
         cfg.isBigEndian = isBigEndian;
+        cfg.stringSerializationPolicy = isStandardUTF
+            ? StringSerializationPolicy.STANDARD
+            : StringSerializationPolicy.LEGACY;
         cfg.defaultNumberType = defaultNumberType;
         return new SerializationService(undefined, cfg)
     }
 
     before(function () {
         versions.forEach(function (version) {
-            var input = new ObjectDataInput(fs.readFileSync(__dirname + '/' + createFileName(version)), 0, null, true);
+            var input = new ObjectDataInput(fs.readFileSync(__dirname + '/' + createFileName(version)), 0, null, true, true);
             while (input.available() > 0) {
                 var utflen = input.readUnsignedShort();
-                var namebuf = new Buffer(utflen);
+                var namebuf = Buffer.alloc(utflen);
                 input.readCopy(namebuf, utflen);
                 var objectKey = namebuf.toString();
                 var len = input.readInt();
-                if (len != NULL_LENGTH) {
-                    var otherBuffer = new Buffer(len);
+                if (len !== NULL_LENGTH) {
+                    var otherBuffer = Buffer.alloc(len);
                     input.readCopy(otherBuffer, len);
                     dataMap[objectKey] = new HeapData(otherBuffer);
                 }
@@ -143,26 +148,27 @@ describe('Binary serialization compatibility test', function () {
             var object = objects[varName];
             if (objects.hasOwnProperty(varName)) {
                 versions.forEach(function (version) {
-                    isBigEndian.forEach(function (isBigEndian) {
-                        it(varName + '-' + convertEndiannesToByteOrder(isBigEndian) + '-' + version, function () {
-                            this.timeout(10000);
-                            var key = createObjectKey(varName, version, isBigEndian);
-                            var service = createSerializationService(isBigEndian, 'integer');
-                            var deserialized = service.toObject(dataMap[key]);
-                            expectAlmostEqual(deserialized, object);
-                        });
-                        if (!ReferenceObjects.skipOnSerialize[varName]) {
-                            it(varName + '-' + convertEndiannesToByteOrder(isBigEndian) + '-' + version + ' serialize deserialize', function () {
+                    isBigEndianValues.forEach(function (isBigEndian) {
+                        isStandardUTFValues.forEach(function (isStandardUTF) {
+                            it(varName + '-' + convertEndiannesToByteOrder(isBigEndian) + '-' + isStandardUTF + '-' + version, function () {
                                 this.timeout(10000);
                                 var key = createObjectKey(varName, version, isBigEndian);
-                                var service = createSerializationService(isBigEndian, stripArticle(varName).toLowerCase());
-                                var data = service.toData(object);
-                                var deserialized = service.toObject(data);
+                                var service = createSerializationService(isBigEndian, isStandardUTF, 'integer');
+                                var deserialized = service.toObject(dataMap[key]);
                                 expectAlmostEqual(deserialized, object);
                             });
-                        }
-                    })
-                })
+                            if (!ReferenceObjects.skipOnSerialize[varName]) {
+                                it(varName + '-' + convertEndiannesToByteOrder(isBigEndian) + '-' + isStandardUTF + '-' + version + ' serialize deserialize', function () {
+                                    this.timeout(10000);
+                                    var service = createSerializationService(isBigEndian, isStandardUTF, stripArticle(varName).toLowerCase());
+                                    var data = service.toData(object);
+                                    var deserialized = service.toObject(data);
+                                    expectAlmostEqual(deserialized, object);
+                                });
+                            }
+                        });
+                    });
+                });
             }
         })();
     }

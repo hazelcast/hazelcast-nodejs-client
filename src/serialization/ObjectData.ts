@@ -15,6 +15,7 @@
  */
 
 /* tslint:disable:no-bitwise */
+import {Buffer} from 'safe-buffer';
 import * as assert from 'assert';
 import * as Long from 'long';
 import {BitsUtil} from '../BitsUtil';
@@ -22,6 +23,7 @@ import {Data, DataInput, DataOutput, PositionalDataOutput} from './Data';
 import {HeapData} from './HeapData';
 import {SerializationService} from './SerializationService';
 
+const OUTPUT_BUFFER_INITIAL_SIZE = 1024;
 const MASK_1BYTE = (1 << 8) - 1;
 const MASK_2BYTE = (1 << 16) - 1;
 const MASK_4BYTE = (1 << 32) - 1;
@@ -29,18 +31,20 @@ const MASK_4BYTE = (1 << 32) - 1;
 export class ObjectDataOutput implements DataOutput {
     protected buffer: Buffer;
     protected bigEndian: boolean;
+    private standardUTF: boolean;
     private service: SerializationService;
     private pos: number;
 
-    constructor(length: number, service: SerializationService, isBigEndian: boolean) {
-        this.buffer = new Buffer(length);
+    constructor(service: SerializationService, isBigEndian: boolean, isStandardUTF: boolean) {
+        this.buffer = Buffer.allocUnsafe(OUTPUT_BUFFER_INITIAL_SIZE);
         this.service = service;
         this.bigEndian = isBigEndian;
+        this.standardUTF = isStandardUTF;
         this.pos = 0;
     }
 
     clear(): void {
-        this.buffer = new Buffer(this.buffer.length);
+        this.buffer = Buffer.allocUnsafe(this.buffer.length);
         this.pos = 0;
     }
 
@@ -57,13 +61,7 @@ export class ObjectDataOutput implements DataOutput {
     }
 
     toBuffer(): Buffer {
-        if (this.buffer == null || this.pos === 0) {
-            return new Buffer(0);
-        } else {
-            const snapBuffer = new Buffer(this.pos);
-            this.buffer.copy(snapBuffer, 0, 0, this.pos);
-            return snapBuffer;
-        }
+        return this.buffer.slice(0, this.pos);
     }
 
     write(byte: number | Buffer): void {
@@ -124,7 +122,7 @@ export class ObjectDataOutput implements DataOutput {
         const len = (buf != null) ? buf.length : BitsUtil.NULL_ARRAY_LENGTH;
         this.writeInt(len);
         for (let i = 0; i < len; i++) {
-            this.write(buf[i]);
+            this.write((buf as any)[i]);
         }
     }
 
@@ -198,21 +196,10 @@ export class ObjectDataOutput implements DataOutput {
     }
 
     writeUTF(val: string): void {
-        const len = (val != null) ? val.length : BitsUtil.NULL_ARRAY_LENGTH;
-        this.writeInt(len);
-        this.ensureAvailable(len * 3);
-        for (let i = 0; i < len; i++) {
-            const ch = val.charCodeAt(i);
-            if (ch <= 0x007F) {
-                this.writeByte(ch);
-            } else if (ch <= 0x07FF) {
-                this.write(0xC0 | ch >> 6 & 0x1F);
-                this.write(0x80 | ch & 0x3F);
-            } else {
-                this.write(0xE0 | ch >> 12 & 0x0F);
-                this.write(0x80 | ch >> 6 & 0x3F);
-                this.write(0x80 | ch & 0x3F);
-            }
+        if (this.standardUTF) {
+            this.writeUTFStandard(val);
+        } else {
+            this.writeUTFLegacy(val);
         }
     }
 
@@ -232,7 +219,7 @@ export class ObjectDataOutput implements DataOutput {
 
     private ensureAvailable(size: number): void {
         if (this.available() < size) {
-            const newBuffer = new Buffer(this.pos + size);
+            const newBuffer = Buffer.allocUnsafe(this.pos + size);
             this.buffer.copy(newBuffer, 0, 0, this.pos);
             this.buffer = newBuffer;
         }
@@ -246,6 +233,38 @@ export class ObjectDataOutput implements DataOutput {
             arr.forEach(boundFunc);
         }
     }
+
+    private writeUTFStandard(val: string): void {
+        const len = (val != null) ? val.length : BitsUtil.NULL_ARRAY_LENGTH;
+        this.writeInt(len);
+        if (len === BitsUtil.NULL_ARRAY_LENGTH) {
+            return;
+        }
+
+        const byteLen = Buffer.byteLength(val, 'utf8');
+        this.ensureAvailable(byteLen);
+        this.buffer.write(val, this.pos, this.pos + byteLen, 'utf8');
+        this.pos += byteLen;
+    }
+
+    private writeUTFLegacy(val: string): void {
+        const len = (val != null) ? val.length : BitsUtil.NULL_ARRAY_LENGTH;
+        this.writeInt(len);
+        this.ensureAvailable(len * 3);
+        for (let i = 0; i < len; i++) {
+            const ch = val.charCodeAt(i);
+            if (ch <= 0x007F) {
+                this.writeByte(ch);
+            } else if (ch <= 0x07FF) {
+                this.write(0xC0 | ch >> 6 & 0x1F);
+                this.write(0x80 | ch & 0x3F);
+            } else {
+                this.write(0xE0 | ch >> 12 & 0x0F);
+                this.write(0x80 | ch >> 6 & 0x3F);
+                this.write(0x80 | ch & 0x3F);
+            }
+        }
+    }
 }
 
 export class PositionalObjectDataOutput extends ObjectDataOutput implements PositionalDataOutput {
@@ -253,7 +272,7 @@ export class PositionalObjectDataOutput extends ObjectDataOutput implements Posi
         if (Buffer.isBuffer(byte)) {
             byte.copy(this.buffer, position);
         } else {
-            this.buffer[position] = byte;
+            (this.buffer as any)[position] = byte;
         }
     }
 
@@ -306,13 +325,16 @@ export class ObjectDataInput implements DataInput {
     private offset: number;
     private service: SerializationService;
     private bigEndian: boolean;
+    private standardUTF: boolean;
     private pos: number;
 
-    constructor(buffer: Buffer, offset: number, serializationService: SerializationService, isBigEndian: boolean) {
+    constructor(buffer: Buffer, offset: number, serializationService: SerializationService,
+                isBigEndian: boolean, isStandardUTF: boolean) {
         this.buffer = buffer;
         this.offset = offset;
         this.service = serializationService;
         this.bigEndian = isBigEndian;
+        this.standardUTF = isStandardUTF;
         this.pos = this.offset;
     }
 
@@ -370,8 +392,8 @@ export class ObjectDataInput implements DataInput {
     }
 
     readData(): Data {
-        const bytes: number[] = this.readByteArray();
-        const data: Data = bytes === null ? null : new HeapData(new Buffer(bytes));
+        const bytes = this.readByteArray();
+        const data: Data = bytes === null ? null : new HeapData(Buffer.from(bytes));
         return data;
     }
 
@@ -476,6 +498,57 @@ export class ObjectDataInput implements DataInput {
     }
 
     readUTF(pos?: number): string {
+        if (this.standardUTF) {
+            return this.readUTFStandard(pos);
+        } else {
+            return this.readUTFLegacy(pos);
+        }
+    }
+
+    readUTFArray(pos?: number): string[] {
+        return this.readArray<string>(this.readUTF, pos);
+    }
+
+    reset(): void {
+        this.pos = 0;
+    }
+
+    skipBytes(count: number): void {
+        this.pos += count;
+    }
+
+    readCopy(other: Buffer, numBytes: number): void {
+        this.assertAvailable(numBytes, this.pos);
+        this.buffer.copy(other, 0, this.pos, this.pos + numBytes);
+        this.pos += numBytes;
+    }
+
+    available(): number {
+        return this.buffer.length - this.pos;
+    }
+
+    private readArray<T>(func: Function, pos?: number): T[] {
+        const backupPos = this.pos;
+        if (pos !== undefined) {
+            this.pos = pos;
+        }
+        const len = this.readInt();
+        const arr: T[] = [];
+        for (let i = 0; i < len; i++) {
+            arr.push(func.call(this));
+        }
+        if (pos !== undefined) {
+            this.pos = backupPos;
+        }
+        return arr;
+    }
+
+    private assertAvailable(numOfBytes: number, pos: number = this.pos): void {
+        assert(pos >= 0);
+        assert(pos + numOfBytes <= this.buffer.length);
+    }
+
+    private readUTFLegacy(pos?: number): string {
         const len = this.readInt(pos);
         let readingIndex = this.addOrUndefined(pos, 4);
         if (len === BitsUtil.NULL_ARRAY_LENGTH) {
@@ -524,47 +597,28 @@ export class ObjectDataInput implements DataInput {
         return result;
     }
 
-    readUTFArray(pos?: number): string[] {
-        return this.readArray<string>(this.readUTF, pos);
-    }
-
-    reset(): void {
-        this.pos = 0;
-    }
-
-    skipBytes(count: number): void {
-        this.pos += count;
-    }
-
-    readCopy(other: Buffer, numBytes: number): void {
-        this.assertAvailable(numBytes, this.pos);
-        this.buffer.copy(other, 0, this.pos, this.pos + numBytes);
-        this.pos += numBytes;
-    }
-
-    available(): number {
-        return this.buffer.length - this.pos;
-    }
-
-    private readArray<T>(func: Function, pos?: number): T[] {
-        const backupPos = this.pos;
-        if (pos !== undefined) {
-            this.pos = pos;
+    private readUTFStandard(pos?: number): string {
+        const len = this.readInt(pos);
+        const readPos = this.addOrUndefined(pos, 4) || this.pos;
+        if (len === BitsUtil.NULL_ARRAY_LENGTH) {
+            return null;
         }
-        const len = this.readInt();
-        const arr: T[] = [];
-        for (let i = 0; i < len; i++) {
-            arr.push(func.call(this));
-        }
-        if (pos !== undefined) {
-            this.pos = backupPos;
-        }
-        return arr;
-    }
 
-    private assertAvailable(numOfBytes: number, pos: number = this.pos): void {
-        assert(pos >= 0);
-        assert(pos + numOfBytes <= this.buffer.length);
+        // max char size in UTF-8 is 4 bytes, see RFC3629
+        // TODO: change to `maxByteLen = len;` in future when string serialization in client protocol changes
+        const maxByteLen = len * 4;
+        const available = this.available();
+        const readByteLen = maxByteLen > available ? available : maxByteLen;
+
+        const readStr = this.buffer.toString('utf8', readPos, readPos + readByteLen);
+        const result = readStr.substring(0, len);
+
+        if (pos === undefined) {
+            const realByteLen = Buffer.byteLength(result, 'utf8');
+            this.pos += realByteLen;
+        }
+
+        return result;
     }
 
     private addOrUndefined(base: number, adder: number): number {

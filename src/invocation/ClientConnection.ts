@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {Buffer} from 'safe-buffer';
 import * as Promise from 'bluebird';
 import * as net from 'net';
 import {BitsUtil} from '../BitsUtil';
@@ -43,7 +44,7 @@ export class ClientConnection {
         this.socket = socket;
         this.address = address;
         this.localAddress = new Address(socket.localAddress, socket.localPort);
-        this.readBuffer = new Buffer(0);
+        this.readBuffer = Buffer.alloc(0);
         this.lastReadTimeMillis = 0;
         this.closedTime = 0;
         this.connectedServerVersionString = null;
@@ -73,7 +74,7 @@ export class ClientConnection {
     write(buffer: Buffer): Promise<void> {
         const deferred = DeferredPromise<void>();
         try {
-            this.socket.write(buffer, (err: any) => {
+            this.socket.write(buffer as any, (err: any) => {
                 if (err) {
                     deferred.reject(new IOError(err));
                 } else {
@@ -153,7 +154,7 @@ export class ClientConnection {
                 if (frameSize > this.readBuffer.length) {
                     return;
                 }
-                const message: Buffer = new Buffer(frameSize);
+                const message = Buffer.allocUnsafe(frameSize);
                 this.readBuffer.copy(message, 0, 0, frameSize);
                 this.readBuffer = this.readBuffer.slice(frameSize);
                 callback(message);

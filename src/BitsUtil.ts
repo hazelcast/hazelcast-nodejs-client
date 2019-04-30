@@ -15,6 +15,7 @@
  */
 
 /* tslint:disable:no-bitwise */
+import {Buffer} from 'safe-buffer';
 import Address = require('./Address');
 import {Data} from './serialization/Data';
 
