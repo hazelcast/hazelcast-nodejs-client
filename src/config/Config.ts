@@ -32,6 +32,7 @@ import {Statistics} from '../statistics/Statistics';
 import {LogLevel} from '..';
 import {ILogger} from '../logging/ILogger';
 import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy';
+import {StringSerializationPolicy} from './StringSerializationPolicy';
 
 /**
  * Top level configuration object of Hazelcast client. Other configurations items are properties of this object.
@@ -145,3 +146,5 @@ export {FlakeIdGeneratorConfig};
 export {SSLConfig};
 
 export {JsonStringDeserializationPolicy};
+
+export {StringSerializationPolicy};

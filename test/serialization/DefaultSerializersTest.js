@@ -19,14 +19,11 @@ var Long = require('long');
 var Config = require('../../.').Config;
 var SerializationService = require('../../lib/serialization/SerializationService');
 var Predicates = require('../../.').Predicates;
+var StringSerializationPolicy = require('../../.').StringSerializationPolicy;
+
 describe('Default serializers Test', function () {
 
-    var serializationService;
-
-    function testObject(obj, serializationService) {
-        var serialized = serializationService.toData(obj);
-        expect(serializationService.toObject(serialized)).to.deep.equal(obj);
-    }
+    var isStandardUTFValues = [true, false];
 
     var parameters = [
         14,
@@ -68,12 +65,22 @@ describe('Default serializers Test', function () {
         Predicates.paging(Predicates.greaterEqual('this', 10), 10)
     ];
 
-    parameters.forEach(function (obj) {
-        it('type: ' + typeof obj + ', isArray: ' + Array.isArray(obj) + ', value: ' + JSON.stringify(obj), function () {
-            var serializationService = new SerializationService.SerializationServiceV1(undefined, new Config.ClientConfig().serializationConfig);
-            var serialized = serializationService.toData(obj);
-            expect(serializationService.toObject(serialized)).to.deep.equal(obj);
-        })
+    isStandardUTFValues.forEach(function(isStandardUTF) {
+        parameters.forEach(function (obj) {
+            it(
+                'type: ' + typeof obj + ', isArray: ' + Array.isArray(obj)
+                    + ', value: ' + JSON.stringify(obj) + ', isStandardUTF: ' + isStandardUTF,
+                function () {
+                    var serializationConfig = new Config.ClientConfig().serializationConfig;
+                    serializationConfig.stringSerializationPolicy = isStandardUTF
+                        ? StringSerializationPolicy.STANDARD
+                        : StringSerializationPolicy.LEGACY;
+                    var serializationService = new SerializationService.SerializationServiceV1(undefined, serializationConfig);
+                    var serialized = serializationService.toData(obj);
+                    expect(serializationService.toObject(serialized)).to.deep.equal(obj);
+                }
+            );
+        });
     });
 
     var defaultNumberTypes = [

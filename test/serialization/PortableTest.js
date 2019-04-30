@@ -17,14 +17,13 @@
 var Config = require('../../.').Config;
 var SerializationService = require('../../lib/serialization/SerializationService');
 var Long = require('long');
-var expect = require('chai').expect;
 var Util = require('../Util');
 var PortableObject = require('./PortableObjects').PortableObject;
 var PortableObjectV2 = require('./PortableObjects').PortableObjectV2;
 var InnerPortableObject = require('./PortableObjects').InnerPortableObject;
 var SimplePortableV3 = require('./PortableObjects').SimplePortableV3;
-describe('Portable Serialization', function () {
 
+describe('Portable Serialization', function () {
     function createSerializationService(constructorFunction) {
         var cfg = new Config.ClientConfig();
         cfg.serializationConfig.portableFactories[10] = {

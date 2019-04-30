@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-function PortableObject(a_byte, a_boolean, a_character, a_short, an_integer, a_long, a_float, a_double, a_string, a_portable, bytes, booleans, chars, shorts, integers, longs, floats, doubles, strings, portables) {
+function PortableObject(
+            a_byte, a_boolean, a_character, a_short, an_integer, a_long, a_float, a_double, a_string, a_portable,
+            bytes, booleans, chars, shorts, integers, longs, floats, doubles, strings, portables
+        ) {
     this.a_byte = a_byte;
     this.a_boolean = a_boolean;
     this.a_character = a_character;
@@ -55,7 +58,9 @@ PortableObject.prototype.writePortable = function (writer) {
     writer.writeDouble('a_double', this.a_double);
     writer.writeUTF('a_string', this.a_string);
     writer.writePortable('a_portable', this.a_portable);
-    writer.writeNullPortable('a_null_portable', InnerPortableObject.prototype.getFactoryId.call(null), InnerPortableObject.prototype.getClassId.call(null));
+    writer.writeNullPortable(
+        'a_null_portable', InnerPortableObject.prototype.getFactoryId.call(null),
+        InnerPortableObject.prototype.getClassId.call(null));
 
     writer.writeByteArray('bytes', this.bytes);
     writer.writeBooleanArray('booleans', this.booleans);
@@ -116,7 +121,10 @@ InnerPortableObject.prototype.writePortable = function (writer) {
     writer.writeUTF('p2', this.p2);
 };
 
-function PortableObjectV2(a_new_prop, a_byte, a_boolean, a_character, a_short, an_integer, a_long, a_float, a_double, a_portable, bytes, booleans, chars, shorts, integers, longs, floats, doubles, strings, portables) {
+function PortableObjectV2(
+            a_new_prop, a_byte, a_boolean, a_character, a_short, an_integer, a_long, a_float, a_double, 
+            a_portable, bytes, booleans, chars, shorts, integers, longs, floats, doubles, strings, portables
+        ) {
     this.a_new_prop = a_new_prop;// this prop is newly added
     this.a_byte = a_byte;
     this.a_boolean = a_boolean;

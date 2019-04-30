@@ -58,6 +58,7 @@
         "defaultNumberType": "double",
         "isBigEndian": true,
         "jsonStringDeserializationPolicy": "eager",
+        "stringSerialization": "standard",
         "dataSerializableFactories": [
             {
                 "path": "path/to/file",

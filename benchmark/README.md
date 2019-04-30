@@ -2,6 +2,7 @@
 
 A collection of simple benchmarks that run operations on Map in parallel, measure execution time and calculate throughput:
 * `MapPutRunner` - runs `map.put('foo', 'bar')` operations.
+* `MapGetRunner` - runs `map.get` operations that read string value with >100 KB size.
 * `MapRandomOpRunner` - runs randomly selected operations (`get`, `put`, `remove`).
 
 ## Running the benchmark
@@ -21,7 +22,7 @@ Next, run at least one instance of IMDG. The most simple way to do it would be t
 docker run -p 5701:5701 hazelcast/hazelcast:3.11.2
 ```
 
-Finally, run the benchmark:
+Finally, run one of the benchmarks, e.g.:
 ```bash
 node benchmark/MapPutRunner.js
 ```

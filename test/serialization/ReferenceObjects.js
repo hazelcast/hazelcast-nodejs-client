@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+var Buffer = require('safe-buffer').Buffer;
 var Long = require('long');
 var AnInnerPortable = require('./AnInnerPortable');
 var AnIdentifiedDataSerializable = require('./AnIdentifiedDataSerializable');
@@ -21,6 +22,7 @@ var APortable = require('./APortable');
 var CustomByteArraySerializable = require('./CustomSerializable').CustomByteArraySerializable;
 var CustomStreamSerializable = require('./CustomSerializable').CustomStreamSerializable;
 var HeapData = require('../../lib/serialization/HeapData').HeapData;
+
 var to = {};
 to.aNULL = null;
 to.aBoolean = true;
@@ -58,7 +60,7 @@ to.AnInnerPortable = new AnInnerPortable(to.anInteger, to.aFloat);
 to.aCustomStreamSerializable = new CustomStreamSerializable(to.anInteger, to.aFloat);
 to.aCustomByteArraySerializable = new CustomByteArraySerializable(to.anInteger, to.aFloat);
 
-exports.aData = new HeapData(new Buffer('111313123131313131'));
+exports.aData = new HeapData(Buffer.from('111313123131313131'));
 
 to.AnIdentifiedDataSerializable = new AnIdentifiedDataSerializable(to.aBoolean, to.aByte, to.aCharacter, to.aDouble, to.aShort
     , to.aFloat, to.anInteger, to.aLong, to.aString, to.booleans, to.bytes, to.chars, to.doubles, to.shorts, to.floats
