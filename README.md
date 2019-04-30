@@ -411,18 +411,19 @@ Client.newHazelcastClient(config).then(function(client) {
 This should print logs about the cluster members and information about the client itself such as the client type, UUID and address.
 
 ```
-[DefaultLogger] INFO at ConnectionAuthenticator: Connection to 192.168.0.3:5701 authenticated
+[DefaultLogger] INFO at LifecycleService: HazelcastClient is starting
+[DefaultLogger] INFO at ConnectionAuthenticator: Connection to 10.216.1.43:5701 authenticated
 [DefaultLogger] INFO at ClusterService: Members received.
 [ Member {
-    address: Address { host: '192.168.0.3', port: 5701, type: 4 },
-    uuid: '05db1504-4f23-426b-9e8a-c9db587ad0d6',
+    address: Address { host: '10.216.1.43', port: 5701, type: 4 },
+    uuid: '7961eef2-940d-42dc-8036-2a29c5c9942c',
     isLiteMember: false,
     attributes: {} } ]
-[DefaultLogger] INFO at HazelcastClient: Client started
+[DefaultLogger] INFO at LifecycleService: HazelcastClient is started
 ClientInfo {
   type: 'NodeJS',
-  uuid: '532e8479-2b86-47f9-a0fb-a2da13a8d584',
-  localAddress: Address { host: '127.0.0.1', port: 51903, type: 4 } }
+  uuid: '8618226d-0e7b-4442-b9c2-a5918a3d3db2',
+  localAddress: Address { host: '127.0.0.1', port: 54708, type: 4 } }
 ```
 
 Congratulations! You just started a Hazelcast Node.js client.
@@ -463,7 +464,6 @@ Client.newHazelcastClient(config).then(function (client) {
 **Output**
 
 ```
-[DefaultLogger] INFO at HazelcastClient: Client started
 Added IT personnel. Logging all known personnel
 Alice is in IT department
 Clark is in IT department
@@ -505,7 +505,6 @@ Client.newHazelcastClient(config).then(function (client) {
 **Output**
 
 ```
-[DefaultLogger] INFO at HazelcastClient: Client started
 Added Sales personnel. Logging all known personnel
 Denise is in Sales department
 Erwing is in Sales department
@@ -513,7 +512,6 @@ Faith is in Sales department
 Alice is in IT department
 Clark is in IT department
 Bob is in IT department
-
 ```
 
 You will see this time we add only the sales employees but we get the list all known employees including the ones in IT.
@@ -2197,20 +2195,21 @@ Client.newHazelcastClient(clientConfig).then(function (hazelcastClient) {
 **Output:**
 
 ```
+[DefaultLogger] INFO at LifecycleService: HazelcastClient is starting
 Lifecycle Event >>> starting
-[DefaultLogger] INFO at ConnectionAuthenticator: Connection to 10.216.1.62:5701 authenticated
+[DefaultLogger] INFO at ConnectionAuthenticator: Connection to 10.216.1.43:5701 authenticated
 [DefaultLogger] INFO at ClusterService: Members received.
 [ Member {
-    address: Address { host: '10.216.1.62', port: 5701, type: 4 },
-    uuid: 'dc001432-7868-4ced-9161-5649ff6f31fc',
+    address: Address { host: '10.216.1.43', port: 5701, type: 4 },
+    uuid: '7961eef2-940d-42dc-8036-2a29c5c9942c',
     isLiteMember: false,
     attributes: {} } ]
+[DefaultLogger] INFO at LifecycleService: HazelcastClient is started
 Lifecycle Event >>> started
-[DefaultLogger] INFO at HazelcastClient: Client started
+[DefaultLogger] INFO at LifecycleService: HazelcastClient is shuttingDown
 Lifecycle Event >>> shuttingDown
+[DefaultLogger] INFO at LifecycleService: HazelcastClient is shutdown
 Lifecycle Event >>> shutdown
-
-Process finished with exit code 0
 ```
 
 ### 7.5.2. Listening for Distributed Data Structure Events

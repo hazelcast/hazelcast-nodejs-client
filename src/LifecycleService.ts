@@ -18,6 +18,7 @@ import {EventEmitter} from 'events';
 import {ImportConfig} from './config/ImportConfig';
 import HazelcastClient from './HazelcastClient';
 import * as Util from './Util';
+import {ILogger} from './logging/ILogger';
 
 /**
  * Lifecycle events.
@@ -51,23 +52,25 @@ export let LifecycleEvent = {
 export class LifecycleService extends EventEmitter {
     private active: boolean;
     private client: HazelcastClient;
+    private logger: ILogger;
 
     constructor(client: HazelcastClient) {
         super();
         this.setMaxListeners(0);
         this.client = client;
+        this.logger = this.client.getLoggingService().getLogger();
         const listeners = client.getConfig().listeners.lifecycle;
         listeners.forEach((listener) => {
             this.on(LifecycleEvent.name, listener);
         });
-        const listenerConfgs = client.getConfig().listenerConfigs;
-        listenerConfgs.forEach((importConfig: ImportConfig) => {
+        const listenerConfigs = client.getConfig().listenerConfigs;
+        listenerConfigs.forEach((importConfig: ImportConfig) => {
             const path = importConfig.path;
             const exportedName = importConfig.exportedName;
             const listener = Util.loadNameFromPath(path, exportedName);
             this.on(LifecycleEvent.name, listener);
         });
-        this.emit(LifecycleEvent.name, LifecycleEvent.starting);
+        this.emitLifecycleEvent(LifecycleEvent.starting);
     }
 
     /**
@@ -83,6 +86,7 @@ export class LifecycleService extends EventEmitter {
         } else if (state === LifecycleEvent.shuttingDown) {
             this.active = false;
         }
+        this.logger.info('LifecycleService', 'HazelcastClient is ' + state);
         this.emit(LifecycleEvent.name, state);
     }
 
