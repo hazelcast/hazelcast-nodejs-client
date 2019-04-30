@@ -398,7 +398,6 @@ export default class HazelcastClient {
             this.proxyManager.init();
             this.listenerService.start();
             this.statistics.start();
-            this.loggingService.getLogger().info('HazelcastClient', 'Client started');
             return this;
         }).catch((e) => {
             this.loggingService.getLogger().error('HazelcastClient', 'Client failed to start', e);
