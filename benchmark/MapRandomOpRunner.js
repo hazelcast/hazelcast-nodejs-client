@@ -17,7 +17,7 @@
 'use strict';
 
 const REQ_COUNT = 50000;
-const BATCH_SIZE = 100;
+const PIPELINING_DEPTH = 100;
 
 const ENTRY_COUNT = 10 * 1000;
 const VALUE_SIZE = 10000;
@@ -49,7 +49,7 @@ Client.newHazelcastClient()
         const benchmark = new Benchmark({
             nextOp: () => randomOp(map),
             totalOpsCount: REQ_COUNT,
-            batchSize: BATCH_SIZE
+            pipeliningDepth: PIPELINING_DEPTH
         });
         return benchmark.run()
             .then(() => map.destroy())

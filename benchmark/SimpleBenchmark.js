@@ -16,38 +16,37 @@
 
 'use strict';
 
+const Pipelining = require('../.').Pipelining;
+
 class Benchmark {
     constructor(config) {
-        this._nextOp = config.nextOp;
+        this.nextOp = config.nextOp;
         this.totalOpsCount = config.totalOpsCount;
-        this.batchSize = config.batchSize;
+        this.pipeliningDepth = config.pipeliningDepth;
         this.opsCount = 0;
     }
-    // increments ops counter, starts a new op and returns its promise
-    nextOp() {
-        this.opsCount++;
-        return this._nextOp();
-    }
-    // chains next op once one of ops finishes to keep constant concurrency of ops
-    chainNext(op) {
-        return op.then(() => {
-            if (this.opsCount < this.totalOpsCount) {
-                return this.chainNext(this.nextOp());
-            }
-        });
-    }
+
     run() {
-        // initial batch of ops (no-op promises)
-        const batch = new Array(this.batchSize).fill(Promise.resolve());
+        const pipelining = new Pipelining(this.pipeliningDepth, this.createLoadGenerator());
         const start = new Date();
-        return Promise.all(batch.map(this.chainNext.bind(this)))
+        return pipelining.run()
             .then(() => {
                 const finish = new Date();
                 const tookSec = (finish - start) / 1000;
-                console.log(`Took ${tookSec} seconds for ${this.opsCount} requests`);
-                console.log(`Ops/s: ${this.opsCount / tookSec}`);
+                console.log(`Took ${tookSec} seconds for ${this.totalOpsCount} requests`);
+                console.log(`Ops/s: ${this.totalOpsCount / tookSec}`);
             });
     }
-};
+
+    createLoadGenerator() {
+        return () => {
+            const index = this.opsCount++;
+            if (index < this.totalOpsCount) {
+                return this.nextOp();
+            }
+            return null;
+        }
+    }
+}
 
 module.exports = Benchmark;

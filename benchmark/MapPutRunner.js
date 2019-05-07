@@ -17,7 +17,7 @@
 'use strict';
 
 const REQ_COUNT = 50000;
-const BATCH_SIZE = 100;
+const PIPELINING_DEPTH = 100;
 
 const Benchmark = require('./SimpleBenchmark');
 const Client = require('../.').Client;
@@ -28,7 +28,7 @@ Client.newHazelcastClient()
         const benchmark = new Benchmark({
             nextOp: () => map.put('foo', 'bar'),
             totalOpsCount: REQ_COUNT,
-            batchSize: BATCH_SIZE
+            pipeliningDepth: PIPELINING_DEPTH
         });
         return benchmark.run()
             .then(() => map.destroy())
