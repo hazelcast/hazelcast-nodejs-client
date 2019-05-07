@@ -24,16 +24,16 @@ import {IterationType} from './core/Predicate';
 import {PagingPredicate} from './serialization/DefaultPredicates';
 import Address = require('./Address');
 
-export function assertNotNull(v: any): void {
-    assert.notEqual(v, null, 'Non null value expected.');
+export function assertNotNull(v: any, message: string = 'Non null value expected.'): void {
+    assert.notEqual(v, null, message);
 }
 
-export function assertArray(x: any): void {
-    assert(Array.isArray(x), 'Should be array.');
+export function assertArray(x: any, message: string = 'Should be array.'): void {
+    assert(Array.isArray(x), message);
 }
 
-export function assertString(v: any): void {
-    assert(typeof v === 'string', 'String value expected.');
+export function assertString(v: any, message: string = 'String value expected.'): void {
+    assert(typeof v === 'string', message);
 }
 
 export function shuffleArray<T>(array: T[]): void {

@@ -15,7 +15,7 @@
  */
 
 import * as Promise from 'bluebird';
-import {assertPositive} from '../Util';
+import {assertNotNull, assertPositive} from '../Util';
 
 /**
  * The Pipelining can be used to speed up requests. It is build on top of asynchronous
@@ -72,6 +72,7 @@ export class Pipelining<E> {
      */
     constructor(depth: number, loadGenerator: () => Promise<E>, storeResults: boolean = false) {
         assertPositive(depth, 'depth should be positive');
+        assertNotNull(loadGenerator, 'load generator cannot be null');
         this.depth = depth;
         this.loadGenerator = loadGenerator;
         if (storeResults) {
