@@ -24,7 +24,8 @@
             "additionalProperties": {
                 "type": [
                     "number",
-                    "string"
+                    "string",
+                    "boolean"
                 ]
             }
         },
@@ -163,6 +164,13 @@
                         "double"
                     ],
                     "default": "double"
+                },
+                "jsonStringDeserializationPolicy": {
+                    "enum": [
+                        "eager",
+                        "no_deserialization"
+                    ],
+                    "default": "eager"
                 },
                 "stringSerialization": {
                     "enum": [
