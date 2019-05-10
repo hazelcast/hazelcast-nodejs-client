@@ -79,12 +79,17 @@ describe('ConfigBuilder Test', function () {
 
     it('properties', function () {
         var properties = configFull.properties;
+        expect(properties['hazelcast.client.heartbeat.interval']).to.equal(1000);
         expect(properties['hazelcast.client.heartbeat.timeout']).to.equal(10000);
         expect(properties['hazelcast.client.invocation.retry.pause.millis']).to.equal(4000);
         expect(properties['hazelcast.client.invocation.timeout.millis']).to.equal(180000);
+        expect(properties['hazelcast.client.cloud.url']).to.equal('https://hz.cloud');
+        expect(properties['hazelcast.client.statistics.enabled']).to.be.true;
+        expect(properties['hazelcast.client.statistics.period.seconds']).to.be.equal(4);
         expect(properties['hazelcast.invalidation.reconciliation.interval.seconds']).equal(50);
         expect(properties['hazelcast.invalidation.max.tolerated.miss.count']).to.equal(15);
         expect(properties['hazelcast.invalidation.min.reconciliation.interval.seconds']).to.equal(60);
+        expect(properties['hazelcast.logging.level']).to.be.equal(3);
     });
 
     it('serialization', function () {
