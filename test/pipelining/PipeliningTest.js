@@ -132,8 +132,6 @@ describe('Pipelining', function () {
     });
 
     it('should succeed with depth 1 with storage of the results', function () {
-        this.timeout(4000); // Setting depth to 1 slows down the client
-
         var pipelining = new Pipelining(1, createLoadGenerator(map), true);
         return pipelining.run().then(function (results) {
             expect(results).to.deep.equal(expected);
@@ -148,7 +146,6 @@ describe('Pipelining', function () {
     });
 
     it('should succeed with depth 1 without storage of the results', function () {
-        this.timeout(4000); // Setting depth to 1 slows down the client
         var actual = [];
 
         var pipelining = new Pipelining(1, createLoadGeneratorWithHandler(map, actual, 0));
@@ -187,7 +184,6 @@ describe('Pipelining', function () {
     });
 
     it('should run pipeline more than once without the storage of the results', function () {
-        this.timeout(4000);
         var actual = [];
 
         var pipelining = new Pipelining(100, createLoadGeneratorWithHandler(map, actual, 0));
@@ -202,8 +198,6 @@ describe('Pipelining', function () {
     });
 
     it('should run pipeline more than once with the storage of the results', function () {
-        this.timeout(4000);
-
         var pipelining = new Pipelining(100, createLoadGenerator(map), true);
         return pipelining.run().then(function (results) {
             expect(results).to.deep.equal(expected);
