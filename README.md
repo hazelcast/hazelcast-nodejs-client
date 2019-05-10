@@ -97,6 +97,7 @@
       * [7.8.2.4. Near Cache Expiration](#7824-near-cache-expiration)
       * [7.8.2.5. Near Cache Invalidation](#7825-near-cache-invalidation)
       * [7.8.2.6. Near Cache Eventual Consistency](#7826-near-cache-eventual-consistency)
+    * [7.8.3. Pipelining](#783-pipelining)   
   * [7.9. Monitoring and Logging](#79-monitoring-and-logging)
     * [7.9.1. Enabling Client Statistics](#791-enabling-client-statistics)
     * [7.9.2. Logging Configuration](#792-logging-configuration)
@@ -3193,6 +3194,63 @@ You can configure eventual consistency with the `ClientConfig.properties` below:
 - `hazelcast.invalidation.max.tolerated.miss.count`: Default value is `10`. If missed invalidation count is bigger than this value, relevant cached data will be made unreachable.
 
 - `hazelcast.invalidation.reconciliation.interval.seconds`: Default value is `60` seconds. This is a periodic task that scans cluster members periodically to compare generated invalidation events with the received ones from the client Near Cache.
+
+### 7.8.3. Pipelining
+
+With the pipelining, you can send multiple concurrent requests without waiting for their results with a concurrency limit.
+
+The pipelining is a convenience implementation to provide back pressure, i.e., controlling
+the number of inflight requests, and it provides a convenient way to wait for all the results. 
+
+```javascript
+function createLoadGenerator(map) {
+    var counter = 0;
+    return function() {
+        if (counter < 100) {
+            return map.get(counter++);
+        }
+        return null;
+    }
+}
+
+Client.newHazelcastClient().then(function (client) {
+    var map;
+    return client.getMap('pipelining').then(function (mp) {
+        map = mp;
+        var pipelinig = new Pipelining(10, createLoadGenerator(map), true);
+        return pipelinig.run();
+    }).then(function (results) {
+        // Wait for completion
+        console.log(results);
+        return client.shutdown();
+    });
+});
+```
+
+In the above example, we make 100 concurrent `map.get()` calls, but the maximum number of inflight calls is 10.
+
+By increasing the depth of the pipelining, throughput can be increased. 
+
+The pipelining has its own back pressure, you do not need to enable the back pressure on the member to have this feature on the pipelining. 
+However, if you have many pipelines, you may still need to enable the member back pressure because it is possible to overwhelm the system with requests in that situation.
+See the [Back Pressure section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#back-pressure) of the Hazelcast IMDG Reference Manual to learn how to enable it on the member.
+
+You can use the pipelining without a special configuration, it works out-of-the-box.
+
+Pipelining can be constructed from 3 arguments: depth, load generator and a boolean flag.
+
+- As described above, **depth** is used to control the the number of inflight requests.
+- **loadGenerator** is a generator-like function that returns a promise for the concurrent requests. When it is exhausted, it should always return null.
+- **storeResults** is a boolean flag to indicate whether the pipelining should store the results of requests or not. 
+It is false by default, so the pipelining does not store the results. 
+In that case, it is expected from the load generator to handle the results. 
+When this flag is set to true, results of the requests will be stored in an array inside the pipelining in the order the requests
+are made and `Pipelining.run()` will resolve with that array when all of the requests are completed.
+
+The pipelines are cheap and should frequently be replaced because they may accumulate results depending on its construction. 
+It is fine to have a few hundred or even a few thousand calls being processed with the pipelining. 
+However, all the responses to all requests are stored in the pipeline as long as the pipeline is referenced. 
+So if you want to process a huge number of requests, then every few hundred or few thousand calls wait for the pipelining results and just create a new instance.
 
 ## 7.9. Monitoring and Logging
 
