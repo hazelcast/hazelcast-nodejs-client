@@ -179,6 +179,13 @@ describe('Pipelining', function () {
 
     });
 
+    it('should throw when null load generator is passed to setLoadGenerator', function () {
+        var pipelining = new Pipelining(1, fakeLoadGenerator());
+        expect(function () {
+            pipelining.setLoadGenerator(null);
+        }).to.throw(assert.AssertionError);
+    });
+
     it('should run pipeline more than once without the storage of the results', function () {
         this.timeout(4000);
         var actual = [];
@@ -207,4 +214,30 @@ describe('Pipelining', function () {
             expect(results.slice(ITEM_COUNT)).to.deep.equal(expected);
         });
     });
+
+    it('should not do more operations when the load generator is exhausted without the storage of results ', function () {
+        var actual = [];
+
+        var pipelining = new Pipelining(100, createLoadGeneratorWithHandler(map, actual, 0));
+        return pipelining.run().then(function (result) {
+            expect(result).to.be.an('undefined');
+            expect(actual).to.deep.equal(expected);
+            return pipelining.run();
+        }).then(function (result) {
+            expect(result).to.be.an('undefined');
+            expect(actual).to.deep.equal(expected);
+        })
+    });
+
+
+    it('should not do more operations when the load generator is exhausted with the storage of results ', function () {
+        var pipelining = new Pipelining(100, createLoadGenerator(map), true);
+        return pipelining.run().then(function (result) {
+            expect(result).to.deep.equal(expected);
+            return pipelining.run();
+        }).then(function (result) {
+            expect(result).to.deep.equal(expected);
+        })
+    });
+
 });
