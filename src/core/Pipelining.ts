@@ -48,8 +48,8 @@ import {assertNotNull, assertPositive} from '../Util';
  */
 export class Pipelining<E> {
     private readonly depth: number;
-    private readonly loadGenerator: () => Promise<E>;
     private readonly next: () => void;
+    private loadGenerator: () => Promise<E>;
     private rejected: boolean = false;
     private done: boolean = false;
     private resolve: (thenableOrResult?: (void | E[]) | PromiseLike<void | E[]>) => void;
@@ -69,6 +69,7 @@ export class Pipelining<E> {
      *  from the user to handle the results of the requests within the load generator. It is false
      *  by default.
      * @throws {AssertionError} if the depth is smaller than 1.
+     * @throws {AssertionError} if the load generator is null.
      */
     constructor(depth: number, loadGenerator: () => Promise<E>, storeResults: boolean = false) {
         assertPositive(depth, 'depth should be positive');
@@ -93,6 +94,7 @@ export class Pipelining<E> {
      * @returns array of the results or void
      */
     run(): Promise<void | E[]> {
+        this.reset();
         return new Promise<void | E[]>((resolve, reject) => {
             this.resolve = resolve;
             this.reject = reject;
@@ -104,6 +106,19 @@ export class Pipelining<E> {
                 }
             }
         });
+    }
+
+    /**
+     * Sets a new load generator for this Pipelining.
+     *
+     * @param loadGenerator a generator-like function that returns a promise
+     *  or null if the generator is exhausted.
+     *
+     * @throws {AssertionError} if the load generator is null.
+     */
+    setLoadGenerator(loadGenerator: () => Promise<E>): void {
+        assertNotNull(loadGenerator, 'load generator cannot be null');
+        this.loadGenerator = loadGenerator;
     }
 
     private nextWithoutResults(): void {
@@ -155,5 +170,12 @@ export class Pipelining<E> {
             this.rejected = true;
             this.reject(err);
         });
+    }
+
+    private reset(): void {
+        this.rejected = false;
+        this.done = false;
+        this.resolvingCount = 0;
+        this.index = this.results.length;
     }
 }

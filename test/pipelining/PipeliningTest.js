@@ -44,12 +44,13 @@ describe('Pipelining', function () {
         }
     }
 
-    function createLoadGeneratorWithHandler(map, actual) {
-        var counter = 0;
+    function createLoadGeneratorWithHandler(map, actual, counterStart) {
+        var counter = counterStart;
+        var limit = counterStart + ITEM_COUNT;
         return function () {
             var index = counter++;
-            if (index < ITEM_COUNT) {
-                return map.get(index).then(function (value) {
+            if (index < limit) {
+                return map.get(index - counterStart).then(function (value) {
                     actual[index] = value;
                 });
             }
@@ -123,7 +124,7 @@ describe('Pipelining', function () {
     it('should not store results by default', function () {
         var actual = [];
 
-        var pipelining = new Pipelining(100, createLoadGeneratorWithHandler(map, actual));
+        var pipelining = new Pipelining(100, createLoadGeneratorWithHandler(map, actual, 0));
         return pipelining.run().then(function (results) {
             expect(results).to.be.an('undefined');
             expect(actual).to.deep.equal(expected);
@@ -150,7 +151,7 @@ describe('Pipelining', function () {
         this.timeout(4000); // Setting depth to 1 slows down the client
         var actual = [];
 
-        var pipelining = new Pipelining(1, createLoadGeneratorWithHandler(map, actual));
+        var pipelining = new Pipelining(1, createLoadGeneratorWithHandler(map, actual, 0));
         return pipelining.run().then(function (results) {
             expect(results).to.be.an('undefined');
             expect(actual).to.deep.equal(expected);
@@ -160,7 +161,7 @@ describe('Pipelining', function () {
     it('should succeed with depth 1000 without storage of the results', function () {
         var actual = [];
 
-        var pipelining = new Pipelining(1000, createLoadGeneratorWithHandler(map, actual));
+        var pipelining = new Pipelining(1000, createLoadGeneratorWithHandler(map, actual, 0));
         return pipelining.run().then(function (results) {
             expect(results).to.be.an('undefined');
             expect(actual).to.deep.equal(expected);
@@ -176,5 +177,34 @@ describe('Pipelining', function () {
         var pipelining = new Pipelining(1, createRejectingLoadGenerator(), true);
         expect(pipelining.run()).to.be.be.rejectedWith('Error1');
 
+    });
+
+    it('should run pipeline more than once without the storage of the results', function () {
+        this.timeout(4000);
+        var actual = [];
+
+        var pipelining = new Pipelining(100, createLoadGeneratorWithHandler(map, actual, 0));
+        return pipelining.run().then(function () {
+           pipelining.setLoadGenerator(createLoadGeneratorWithHandler(map, actual, actual.length));
+           return pipelining.run();
+        }).then(function (results) {
+            expect(results).to.be.an('undefined');
+            expect(actual.slice(0, ITEM_COUNT)).to.deep.equal(expected);
+            expect(actual.slice(ITEM_COUNT)).to.deep.equal(expected);
+        });
+    });
+
+    it('should run pipeline more than once with the storage of the results', function () {
+        this.timeout(4000);
+
+        var pipelining = new Pipelining(100, createLoadGenerator(map), true);
+        return pipelining.run().then(function (results) {
+            expect(results).to.deep.equal(expected);
+            pipelining.setLoadGenerator(createLoadGenerator(map));
+            return pipelining.run();
+        }).then(function (results) {
+            expect(results.slice(0, ITEM_COUNT)).to.deep.equal(expected);
+            expect(results.slice(ITEM_COUNT)).to.deep.equal(expected);
+        });
     });
 });

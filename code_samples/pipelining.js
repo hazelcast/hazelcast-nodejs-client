@@ -51,6 +51,7 @@ function createGetLoadGenerator(map) {
 Client.newHazelcastClient().then(function (hazelcastClient) {
     var client = hazelcastClient;
     var map;
+    var getPipelining;
     return client.getMap('pipelining').then(function (mp) {
         map = mp;
         var putLoadGenerator = createPutLoadGenerator(map);
@@ -60,11 +61,17 @@ Client.newHazelcastClient().then(function (hazelcastClient) {
         console.log('Put operations are completed. ' +
             'Result should be undefined: ' + result);
         var getLoadGenerator = createGetLoadGenerator(map);
-        var getPipelining = new Pipelining(DEPTH, getLoadGenerator, true);
+        getPipelining = new Pipelining(DEPTH, getLoadGenerator, true);
         return getPipelining.run();
     }).then(function (result) {
         console.log('Get operations are completed. ' +
             'Result should contain all the values in order: ' + result);
+        getPipelining.setLoadGenerator(createGetLoadGenerator(map));
+        return getPipelining.run();
+    }).then(function (result) {
+        console.log('Second run of the get operations are completed. ' +
+            'Result should contain two copy of all the values in order ' +
+            'since we used the same pipeline: ' + result);
         return client.shutdown();
     });
 });
