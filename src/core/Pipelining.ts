@@ -15,11 +15,11 @@
  */
 
 import * as Promise from 'bluebird';
-import {assertNotNull, assertPositive} from '../Util';
+import {checkNotNull, checkPositive} from '../Util';
 
 /**
- * The Pipelining can be used to speed up requests. It is build on top of asynchronous
- * requests.
+ * The Pipelining can be used to run multiple asynchronous functions through a
+ * promise-returning generator-like function.
  *
  * The main purpose of the Pipelining is to control the number of concurrent requests
  * when using asynchronous invocations. This can be done by setting the depth using
@@ -36,27 +36,24 @@ import {assertNotNull, assertPositive} from '../Util';
  * A Pipelining provides its own backpressure on the system. So there will not be more
  * in flight invocations than the depth of the Pipelining. This means that the Pipelining
  * will work fine when backpressure on the member is disabled (default). Also
- * when it it enabled it will work fine, but keep in mind that the number of concurrent
+ * when it enabled it will work fine, but keep in mind that the number of concurrent
  * invocations in the Pipelining could be lower than the configured number of invocation
  * of the Pipelining because the backpressure on the member is leading.
- *
- * The Pipelining has been marked as Beta since we need to see how the API needs to
- * evolve. But there is no problem using it in production. We use similar techniques
- * to achieve high performance.
  *
  * @param E
  */
 export class Pipelining<E> {
     private readonly depth: number;
-    private readonly next: () => void;
-    private loadGenerator: () => Promise<E>;
+    private readonly storeResults: boolean;
+    private readonly loadGenerator: () => Promise<E>;
     private rejected: boolean = false;
     private done: boolean = false;
     private resolve: (thenableOrResult?: (void | E[]) | PromiseLike<void | E[]>) => void;
     private reject: (err?: any) => void;
-    private resolvingCount: number = 0;
+    private inFlightCount: number = 0;
     private index: number = 0;
     private results: E[] = [];
+    private isPipeliningRan: boolean = false;
 
     /**
      * Creates a Pipelining with the given depth and load generator.
@@ -68,19 +65,15 @@ export class Pipelining<E> {
      *  should be stored in the Pipelining or not. If this value is set to false, it is expected
      *  from the user to handle the results of the requests within the load generator. It is false
      *  by default.
-     * @throws {AssertionError} if the depth is smaller than 1.
-     * @throws {AssertionError} if the load generator is null.
+     * @throws {RangeError} if the depth is smaller than 1.
+     * @throws {TypeError} if the load generator is null.
      */
     constructor(depth: number, loadGenerator: () => Promise<E>, storeResults: boolean = false) {
-        assertPositive(depth, 'depth should be positive');
-        assertNotNull(loadGenerator, 'load generator cannot be null');
+        checkPositive(depth, 'depth should be positive');
+        checkNotNull(loadGenerator, 'load generator cannot be null');
         this.depth = depth;
         this.loadGenerator = loadGenerator;
-        if (storeResults) {
-            this.next = this.nextWithResults;
-        } else {
-            this.next = this.nextWithoutResults;
-        }
+        this.storeResults = storeResults;
     }
 
     /**
@@ -90,11 +83,16 @@ export class Pipelining<E> {
      *
      * If not, it will return void when all of the requests are completed.
      *
-     * @throws {Error} if any of the requests fails
+     * @throws {Error} with the error of the failing request if any of the requests fail. Also,
+     *  subsequent calls to this method with the same pipelining instance rejects.
      * @returns array of the results or void
      */
     run(): Promise<void | E[]> {
-        this.reset();
+        if (this.isPipeliningRan) {
+            return Promise.reject('This pipelining instance was already run. ' +
+                'Consider creating a new pipelining.');
+        }
+        this.isPipeliningRan = true;
         return new Promise<void | E[]>((resolve, reject) => {
             this.resolve = resolve;
             this.reject = reject;
@@ -108,44 +106,7 @@ export class Pipelining<E> {
         });
     }
 
-    /**
-     * Sets a new load generator for this Pipelining.
-     *
-     * @param loadGenerator a generator-like function that returns a promise
-     *  or null if the generator is exhausted.
-     *
-     * @throws {AssertionError} if the load generator is null.
-     */
-    setLoadGenerator(loadGenerator: () => Promise<E>): void {
-        assertNotNull(loadGenerator, 'load generator cannot be null');
-        this.loadGenerator = loadGenerator;
-    }
-
-    private nextWithoutResults(): void {
-        if (this.rejected) {
-            return;
-        }
-
-        const promise = this.loadGenerator();
-        if (promise == null) {
-            this.done = true;
-            if (this.resolvingCount === 0) {
-                this.resolve();
-            }
-            return;
-        }
-
-        this.resolvingCount++;
-        promise.then(() => {
-           this.resolvingCount--;
-           this.next();
-        }).catch((err) => {
-            this.rejected = true;
-            this.reject(err);
-        });
-    }
-
-    private nextWithResults(): void {
+    private next(): void {
         if (this.rejected) {
             return;
         }
@@ -155,27 +116,26 @@ export class Pipelining<E> {
 
         if (promise == null) {
             this.done = true;
-            if (this.resolvingCount === 0) {
-                this.resolve(this.results);
+            if (this.inFlightCount === 0) {
+                if (this.storeResults) {
+                    this.resolve(this.results);
+                } else {
+                    this.resolve();
+                }
             }
             return;
         }
 
-        this.resolvingCount++;
+        this.inFlightCount++;
         promise.then((value) => {
-           this.results[i] = value;
-           this.resolvingCount--;
-           this.next();
+            if (this.storeResults) {
+                this.results[i] = value;
+            }
+            this.inFlightCount--;
+            this.next();
         }).catch((err) => {
             this.rejected = true;
             this.reject(err);
         });
-    }
-
-    private reset(): void {
-        this.rejected = false;
-        this.done = false;
-        this.resolvingCount = 0;
-        this.index = this.results.length;
     }
 }

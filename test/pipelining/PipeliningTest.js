@@ -17,40 +17,42 @@
 var chai = require('chai');
 chai.use(require('chai-as-promised'));
 var expect = require("chai").expect;
-var Client = require("../../.").Client;
-var RC = require('./../RC');
 var Pipelining = require('../../.').Pipelining;
-var assert = require('assert');
+var Promise = require('bluebird');
+var Util = require('../Util');
 
 describe('Pipelining', function () {
-    var cluster;
-    var client;
-    var map;
-    var expected = [];
     var ITEM_COUNT = 10000;
+    var expected = [];
+
+    before(function () {
+        for (var i = 0; i < ITEM_COUNT; i++) {
+            expected.push(i);
+        }
+    });
 
     function fakeLoadGenerator() {
         return Promise.resolve('fake');
     }
 
-    function createLoadGenerator(map) {
+    function createLoadGenerator() {
         var counter = 0;
         return function () {
             var index = counter++;
             if (index < ITEM_COUNT) {
-                return map.get(index);
+                return Promise.resolve(index);
             }
             return null;
         }
     }
 
-    function createLoadGeneratorWithHandler(map, actual, counterStart) {
+    function createLoadGeneratorWithHandler(actual, counterStart) {
         var counter = counterStart;
         var limit = counterStart + ITEM_COUNT;
         return function () {
             var index = counter++;
             if (index < limit) {
-                return map.get(index - counterStart).then(function (value) {
+                return Promise.resolve(index - counterStart).then(function (value) {
                     actual[index] = value;
                 });
             }
@@ -73,49 +75,23 @@ describe('Pipelining', function () {
         }
     }
 
-    before(function () {
-        return RC.createCluster().then(function (response) {
-            cluster = response;
-            return RC.startMember(cluster.id);
-        }).then(function () {
-            return Client.newHazelcastClient();
-        }).then(function (hazelcastClient) {
-            client = hazelcastClient;
-            return client.getMap('pipeliningTest');
-        }).then(function (mp) {
-            map = mp;
-            var entries = [];
-            for (var i = 0; i < ITEM_COUNT; i++) {
-                var item = Math.random();
-                expected.push(item);
-                entries.push([i, item]);
-            }
-            return map.putAll(entries);
-        });
-    });
-
-    after(function () {
-        client.shutdown();
-        return RC.shutdownCluster(cluster.id);
-    });
-
     it('should throw if non-positive depth is passed to constructor', function () {
         expect(function () {
             return new Pipelining(-1, fakeLoadGenerator);
-        }).to.throw(assert.AssertionError);
+        }).to.throw(RangeError);
         expect(function () {
             return new Pipelining(0, fakeLoadGenerator)
-        }).to.throw(assert.AssertionError);
+        }).to.throw(RangeError);
     });
 
     it('should throw if null load generator is passed to constructor', function () {
         expect(function () {
             return new Pipelining(1, null);
-        }).to.throw(assert.AssertionError);
+        }).to.throw(TypeError);
     });
 
     it('should return results in order when it stores results', function () {
-        var pipelining = new Pipelining(100, createLoadGenerator(map), true);
+        var pipelining = new Pipelining(100, createLoadGenerator(), true);
         return pipelining.run().then(function (results) {
            expect(results).to.deep.equal(expected);
         });
@@ -124,7 +100,7 @@ describe('Pipelining', function () {
     it('should not store results by default', function () {
         var actual = [];
 
-        var pipelining = new Pipelining(100, createLoadGeneratorWithHandler(map, actual, 0));
+        var pipelining = new Pipelining(100, createLoadGeneratorWithHandler(actual, 0));
         return pipelining.run().then(function (results) {
             expect(results).to.be.an('undefined');
             expect(actual).to.deep.equal(expected);
@@ -132,14 +108,14 @@ describe('Pipelining', function () {
     });
 
     it('should succeed with depth 1 with storage of the results', function () {
-        var pipelining = new Pipelining(1, createLoadGenerator(map), true);
+        var pipelining = new Pipelining(1, createLoadGenerator(), true);
         return pipelining.run().then(function (results) {
             expect(results).to.deep.equal(expected);
         })
     });
 
     it('should succeed with depth 1000 with storage of the results', function () {
-        var pipelining = new Pipelining(1000, createLoadGenerator(map), true);
+        var pipelining = new Pipelining(1000, createLoadGenerator(), true);
         return pipelining.run().then(function (results) {
             expect(results).to.deep.equal(expected);
         })
@@ -148,7 +124,7 @@ describe('Pipelining', function () {
     it('should succeed with depth 1 without storage of the results', function () {
         var actual = [];
 
-        var pipelining = new Pipelining(1, createLoadGeneratorWithHandler(map, actual, 0));
+        var pipelining = new Pipelining(1, createLoadGeneratorWithHandler(actual, 0));
         return pipelining.run().then(function (results) {
             expect(results).to.be.an('undefined');
             expect(actual).to.deep.equal(expected);
@@ -158,7 +134,7 @@ describe('Pipelining', function () {
     it('should succeed with depth 1000 without storage of the results', function () {
         var actual = [];
 
-        var pipelining = new Pipelining(1000, createLoadGeneratorWithHandler(map, actual, 0));
+        var pipelining = new Pipelining(1000, createLoadGeneratorWithHandler(actual, 0));
         return pipelining.run().then(function (results) {
             expect(results).to.be.an('undefined');
             expect(actual).to.deep.equal(expected);
@@ -167,71 +143,85 @@ describe('Pipelining', function () {
 
     it('should reject if any of the requests fail without storage of the results', function () {
         var pipelining = new Pipelining(1, createRejectingLoadGenerator());
-        expect(pipelining.run()).to.be.be.rejectedWith('Error1');
+        return expect(pipelining.run()).to.be.be.rejectedWith('Error1');
     });
 
     it('should reject if any of the requests fail with storage of the results', function () {
         var pipelining = new Pipelining(1, createRejectingLoadGenerator(), true);
-        expect(pipelining.run()).to.be.be.rejectedWith('Error1');
-
+        return expect(pipelining.run()).to.be.be.rejectedWith('Error1');
     });
 
-    it('should throw when null load generator is passed to setLoadGenerator', function () {
-        var pipelining = new Pipelining(1, fakeLoadGenerator());
-        expect(function () {
-            pipelining.setLoadGenerator(null);
-        }).to.throw(assert.AssertionError);
-    });
-
-    it('should run pipeline more than once without the storage of the results', function () {
+    it('should throw when multiple run calls are made without the storage of results ', function () {
         var actual = [];
 
-        var pipelining = new Pipelining(100, createLoadGeneratorWithHandler(map, actual, 0));
-        return pipelining.run().then(function () {
-           pipelining.setLoadGenerator(createLoadGeneratorWithHandler(map, actual, actual.length));
-           return pipelining.run();
-        }).then(function (results) {
-            expect(results).to.be.an('undefined');
-            expect(actual.slice(0, ITEM_COUNT)).to.deep.equal(expected);
-            expect(actual.slice(ITEM_COUNT)).to.deep.equal(expected);
+        var pipelining = new Pipelining(100, createLoadGeneratorWithHandler(actual, 0));
+        return pipelining.run().then(function (result) {
+            expect(result).to.be.an('undefined');
+            expect(actual).to.deep.equal(expected);
+            return expect(pipelining.run()).to.be.rejectedWith();
+        })
+    });
+
+    it('should throw when multiple run calls are made with the storage of results ', function () {
+        var pipelining = new Pipelining(100, createLoadGenerator(), true);
+        return pipelining.run().then(function (result) {
+            expect(result).to.deep.equal(expected);
+            return expect(pipelining.run()).to.be.rejectedWith();
+        })
+    });
+
+    it('should respect depth 1', function () {
+        var limit = 500;
+        var counter = 0;
+        var activeRequestCount = 0;
+
+        function loadGenerator() {
+            var index = counter++;
+            if (index < limit) {
+                activeRequestCount++;
+                expect(activeRequestCount).to.be.at.most(1);
+                return new Promise(function (resolve, reject) {
+                    setTimeout(function () {
+                        activeRequestCount--;
+                        resolve(index);
+                    }, Util.getRandomInt(0, 10));
+                });
+            }
+            return null;
+        }
+
+        var pipelining = new Pipelining(1, loadGenerator, true);
+        return pipelining.run().then(function (results) {
+            var expected = [];
+            for (var i = 0; i < limit; i++) {
+                expected.push(i);
+            }
+            expect(results).to.deep.equal(expected);
         });
     });
 
-    it('should run pipeline more than once with the storage of the results', function () {
-        var pipelining = new Pipelining(100, createLoadGenerator(map), true);
+    it('should respect depth 100', function () {
+        var counter = 0;
+        var activeRequestCount = 0;
+
+        function loadGenerator() {
+            var index = counter++;
+            if (index < ITEM_COUNT) {
+                activeRequestCount++;
+                expect(activeRequestCount).to.be.at.most(100);
+                return new Promise(function (resolve, reject) {
+                    setTimeout(function () {
+                        activeRequestCount--;
+                        resolve(index);
+                    }, Util.getRandomInt(0, 10));
+                });
+            }
+            return null;
+        }
+
+        var pipelining = new Pipelining(100, loadGenerator, true);
         return pipelining.run().then(function (results) {
             expect(results).to.deep.equal(expected);
-            pipelining.setLoadGenerator(createLoadGenerator(map));
-            return pipelining.run();
-        }).then(function (results) {
-            expect(results.slice(0, ITEM_COUNT)).to.deep.equal(expected);
-            expect(results.slice(ITEM_COUNT)).to.deep.equal(expected);
         });
     });
-
-    it('should not do more operations when the load generator is exhausted without the storage of results ', function () {
-        var actual = [];
-
-        var pipelining = new Pipelining(100, createLoadGeneratorWithHandler(map, actual, 0));
-        return pipelining.run().then(function (result) {
-            expect(result).to.be.an('undefined');
-            expect(actual).to.deep.equal(expected);
-            return pipelining.run();
-        }).then(function (result) {
-            expect(result).to.be.an('undefined');
-            expect(actual).to.deep.equal(expected);
-        })
-    });
-
-
-    it('should not do more operations when the load generator is exhausted with the storage of results ', function () {
-        var pipelining = new Pipelining(100, createLoadGenerator(map), true);
-        return pipelining.run().then(function (result) {
-            expect(result).to.deep.equal(expected);
-            return pipelining.run();
-        }).then(function (result) {
-            expect(result).to.deep.equal(expected);
-        })
-    });
-
 });

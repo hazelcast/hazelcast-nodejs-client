@@ -51,8 +51,18 @@ export function assertNotNegative(v: number, message: string = 'The value cannot
     assert(v >= 0, message);
 }
 
-export function assertPositive(v: number, message: string = 'The value should be positive.'): void {
-    assert(v > 0, message);
+export function checkPositive(v: number, message: string = 'The value should be positive.'): void {
+    if (v > 0) {
+        return;
+    }
+    throw new RangeError(message);
+}
+
+export function checkNotNull(v: any, message: string = 'Non null value expected.'): void {
+    if (v != null) {
+        return;
+    }
+    throw new TypeError(message);
 }
 
 export function getType(obj: any): string {

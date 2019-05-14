@@ -3197,10 +3197,10 @@ You can configure eventual consistency with the `ClientConfig.properties` below:
 
 ### 7.8.3. Pipelining
 
-With the pipelining, you can send multiple concurrent requests without waiting for their results with a concurrency limit.
+With the pipelining, you can send multiple parallel requests with a defined concurrency limit without waiting for their results.
 
-The pipelining is a convenience implementation to provide back pressure, i.e., controlling
-the number of inflight requests, and it provides a convenient way to wait for all the results. 
+The pipelining allows to control back pressure, i.e., to limit 
+the number of inflight requests, and it also provides a convenient way to wait for all the results.
 
 ```javascript
 function createLoadGenerator(map) {
@@ -3217,8 +3217,8 @@ Client.newHazelcastClient().then(function (client) {
     var map;
     return client.getMap('pipelining').then(function (mp) {
         map = mp;
-        var pipelinig = new Pipelining(10, createLoadGenerator(map), true);
-        return pipelinig.run();
+        var pipelining = new Pipelining(10, createLoadGenerator(map), true);
+        return pipelining.run();
     }).then(function (results) {
         // Wait for completion
         console.log(results);
@@ -3237,20 +3237,20 @@ See the [Back Pressure section](https://docs.hazelcast.org/docs/latest/manual/ht
 
 You can use the pipelining without a special configuration, it works out-of-the-box.
 
-Pipelining can be constructed from 3 arguments: depth, load generator and a boolean flag.
+Pipelining can be constructed from 3 arguments: depth, load generator and a boolean switch.
 
 - As described above, **depth** is used to control the the number of inflight requests.
 - **loadGenerator** is a generator-like function that returns a promise for the concurrent requests. When it is exhausted, it should always return null.
-- **storeResults** is a boolean flag to indicate whether the pipelining should store the results of requests or not. 
+- **storeResults** is a boolean switch to indicate whether the pipelining should store the results of requests or not. 
 It is false by default, so the pipelining does not store the results. 
 In that case, it is expected from the load generator to handle the results. 
-When this flag is set to true, results of the requests will be stored in an array inside the pipelining in the order the requests
+When this switch is on, results of the requests will be stored in an array inside the pipelining in the order the requests
 are made and `Pipelining.run()` will resolve with that array when all of the requests are completed.
 
-The pipelines are cheap and should frequently be replaced because they may accumulate results depending on its construction. 
+The pipelines are cheap and when the `storeResults` switch is on, they should frequently be replaced because they accumulate results.
 It is fine to have a few hundred or even a few thousand calls being processed with the pipelining. 
-However, all the responses to all requests are stored in the pipeline as long as the pipeline is referenced. 
-So if you want to process a huge number of requests, then every few hundred or few thousand calls wait for the pipelining results and just create a new instance.
+However, all the responses to all requests are stored in the pipeline as long as the pipeline is referenced when it is constructed to do so with the `storeResults` switch. 
+So, in this case, if you want to process a huge number of requests, then every few hundred or few thousand calls wait for the pipelining results and just create a new instance.
 
 ## 7.9. Monitoring and Logging
 

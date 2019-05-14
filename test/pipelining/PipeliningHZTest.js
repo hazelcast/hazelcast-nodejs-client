@@ -1,0 +1,74 @@
+/*
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+var chai = require('chai');
+chai.use(require('chai-as-promised'));
+var expect = require("chai").expect;
+var Client = require("../../.").Client;
+var RC = require('./../RC');
+var Pipelining = require('../../.').Pipelining;
+
+describe('Pipelining with Hazelcast', function () {
+    var cluster;
+    var client;
+    var map;
+    var expected = [];
+    var ITEM_COUNT = 10000;
+
+    before(function () {
+        return RC.createCluster().then(function (response) {
+            cluster = response;
+            return RC.startMember(cluster.id);
+        }).then(function () {
+            return Client.newHazelcastClient();
+        }).then(function (hazelcastClient) {
+            client = hazelcastClient;
+            return client.getMap('pipeliningTest');
+        }).then(function (mp) {
+            map = mp;
+            var entries = [];
+            for (var i = 0; i < ITEM_COUNT; i++) {
+                var item = Math.random();
+                expected.push(item);
+                entries.push([i, item]);
+            }
+            return map.putAll(entries);
+        });
+    });
+
+    after(function () {
+        client.shutdown();
+        return RC.shutdownCluster(cluster.id);
+    });
+
+    function createGetLoadGenerator(map) {
+        var counter = 0;
+        return function () {
+            var index = counter++;
+            if (index < ITEM_COUNT) {
+                return map.get(index);
+            }
+            return null;
+        }
+    }
+
+    it('should return map.get calls in order when it stores results', function () {
+        var pipelining = new Pipelining(100, createGetLoadGenerator(map), true);
+        return pipelining.run().then(function (results) {
+            expect(results).to.deep.equal(expected);
+        })
+    });
+});

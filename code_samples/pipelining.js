@@ -17,7 +17,6 @@
 var Client = require('hazelcast-client').Client;
 var Pipelining = require('hazelcast-client').Pipelining;
 
-
 var REQUEST_COUNT = 1000;
 var DEPTH = 10;
 
@@ -66,12 +65,6 @@ Client.newHazelcastClient().then(function (hazelcastClient) {
     }).then(function (result) {
         console.log('Get operations are completed. ' +
             'Result should contain all the values in order: ' + result);
-        getPipelining.setLoadGenerator(createGetLoadGenerator(map));
-        return getPipelining.run();
-    }).then(function (result) {
-        console.log('Second run of the get operations are completed. ' +
-            'Result should contain two copy of all the values in order ' +
-            'since we used the same pipeline: ' + result);
         return client.shutdown();
     });
 });
