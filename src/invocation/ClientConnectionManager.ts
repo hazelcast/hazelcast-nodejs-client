@@ -23,13 +23,11 @@ import {ClientConnection} from './ClientConnection';
 import {ConnectionAuthenticator} from './ConnectionAuthenticator';
 import * as net from 'net';
 import * as tls from 'tls';
-import {DeferredPromise, loadNameFromPath} from '../Util';
-import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
+import {DeferredPromise} from '../Util';
 import {AddressTranslator} from '../connection/AddressTranslator';
 import {AddressProvider} from '../connection/AddressProvider';
 import {ILogger} from '../logging/ILogger';
 import Address = require('../Address');
-import {SSLOptionsFactory} from '../connection/SSLOptionsFactory';
 
 const EMIT_CONNECTION_CLOSED = 'connectionClosed';
 const EMIT_CONNECTION_OPENED = 'connectionOpened';
@@ -157,15 +155,9 @@ export class ClientConnectionManager extends EventEmitter {
             if (this.client.getConfig().networkConfig.sslConfig.sslOptions) {
                 const opts = this.client.getConfig().networkConfig.sslConfig.sslOptions;
                 return this.connectTLSSocket(address, opts);
-            } else if (this.client.getConfig().networkConfig.sslConfig.sslOptionsFactoryConfig) {
-                const factoryConfig = this.client.getConfig().networkConfig.sslConfig.sslOptionsFactoryConfig;
+            } else if (this.client.getConfig().networkConfig.sslConfig.sslOptionsFactory) {
+                const factory = this.client.getConfig().networkConfig.sslConfig.sslOptionsFactory;
                 const factoryProperties = this.client.getConfig().networkConfig.sslConfig.sslOptionsFactoryProperties;
-                let factory: SSLOptionsFactory;
-                if (factoryConfig.path) {
-                    factory = new (loadNameFromPath(factoryConfig.path, factoryConfig.exportedName))();
-                } else {
-                    factory = new BasicSSLOptionsFactory();
-                }
                 return factory.init(factoryProperties).then(() => {
                     return this.connectTLSSocket(address, factory.getSSLOptions());
                 });

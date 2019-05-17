@@ -18,7 +18,7 @@ import * as Promise from 'bluebird';
 import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
 import {HazelcastError} from '../HazelcastError';
 import {TopicOverloadPolicy} from '../proxy/topic/TopicOverloadPolicy';
-import {mergeJson, tryGetArray, tryGetBoolean, tryGetEnum, tryGetNumber, tryGetString} from '../Util';
+import {loadNameFromPath, mergeJson, tryGetArray, tryGetBoolean, tryGetEnum, tryGetNumber, tryGetString} from '../Util';
 import {ClientConfig} from './Config';
 import {EvictionPolicy} from './EvictionPolicy';
 import {FlakeIdGeneratorConfig} from './FlakeIdGeneratorConfig';
@@ -146,14 +146,23 @@ export class ConfigBuilder {
             }
             this.clientConfig.networkConfig.sslConfig.sslOptions = jsonObject.sslOptions;
         } else if (jsonObject.factory) {
-            const factory = jsonObject.factory;
-            const importConfig = this.parseImportConfig(factory);
+            const factoryObj = jsonObject.factory;
+            const importConfig = this.parseImportConfig(factoryObj);
             if (importConfig.path == null && importConfig.exportedName !== BasicSSLOptionsFactory.name) {
                 throw new RangeError('Invalid configuration. Either SSL factory path should be set or exportedName' +
                     ' should be ' + BasicSSLOptionsFactory.name + '.');
             } else {
-                this.clientConfig.networkConfig.sslConfig.sslOptionsFactoryConfig = this.parseImportConfig(factory);
-                this.clientConfig.networkConfig.sslConfig.sslOptionsFactoryProperties = this.parseProperties(factory.properties);
+                let factory;
+                if (importConfig.path) {
+                    const factoryConstructor = loadNameFromPath(importConfig.path, importConfig.exportedName);
+                    factory = new factoryConstructor();
+                } else {
+                    factory = new BasicSSLOptionsFactory();
+                }
+                this.clientConfig.networkConfig.sslConfig
+                    .sslOptionsFactory = factory;
+                this.clientConfig.networkConfig.sslConfig
+                    .sslOptionsFactoryProperties = this.parseProperties(factoryObj.properties);
             }
         }
     }
@@ -185,8 +194,10 @@ export class ConfigBuilder {
     private handleListeners(jsonObject: any): void {
         const listenersArray = tryGetArray(jsonObject);
         for (const index in listenersArray) {
-            const listenerConfig = listenersArray[index];
-            this.clientConfig.listenerConfigs.push(this.parseImportConfig(listenerConfig));
+            const listenerObj = listenersArray[index];
+            const importConfig = this.parseImportConfig(listenerObj);
+            const listener = loadNameFromPath(importConfig.path, importConfig.exportedName);
+            this.clientConfig.listeners.lifecycle.push(listener);
         }
     }
 
@@ -200,19 +211,25 @@ export class ConfigBuilder {
                 this.clientConfig.serializationConfig.portableVersion = tryGetNumber(jsonObject[key]);
             } else if (key === 'dataSerializableFactories') {
                 for (const index in jsonObject[key]) {
-                    const factory = jsonObject[key][index];
+                    const factoryObj = jsonObject[key][index];
+                    const importConfig = this.parseImportConfig(factoryObj);
+                    const factoryConstructor = loadNameFromPath(importConfig.path, importConfig.exportedName);
                     this.clientConfig.serializationConfig
-                        .dataSerializableFactoryConfigs[factory.factoryId] = this.parseImportConfig(factory);
+                        .dataSerializableFactories[factoryObj.factoryId] = new factoryConstructor();
                 }
             } else if (key === 'portableFactories') {
                 for (const index in jsonObject[key]) {
-                    const factory = jsonObject[key][index];
+                    const factoryObj = jsonObject[key][index];
+                    const importConfig = this.parseImportConfig(factoryObj);
+                    const factoryConstructor = loadNameFromPath(importConfig.path, importConfig.exportedName);
                     this.clientConfig.serializationConfig
-                        .portableFactoryConfigs[factory.factoryId] = this.parseImportConfig(factory);
+                        .portableFactories[factoryObj.factoryId] = new factoryConstructor();
                 }
             } else if (key === 'globalSerializer') {
-                const globalSerializer = jsonObject[key];
-                this.clientConfig.serializationConfig.globalSerializerConfig = this.parseImportConfig(globalSerializer);
+                const globalSerializerObj = jsonObject[key];
+                const importConfig = this.parseImportConfig(globalSerializerObj);
+                const globalSerializerConstructor = loadNameFromPath(importConfig.path, importConfig.exportedName);
+                this.clientConfig.serializationConfig.globalSerializer = new globalSerializerConstructor();
             } else if (key === 'serializers') {
                 this.handleSerializers(jsonObject[key]);
             } else if (key === 'jsonStringDeserializationPolicy') {
@@ -228,8 +245,11 @@ export class ConfigBuilder {
     private handleSerializers(jsonObject: any): void {
         const serializersArray = tryGetArray(jsonObject);
         for (const index in serializersArray) {
-            const serializer = serializersArray[index];
-            this.clientConfig.serializationConfig.customSerializerConfigs[serializer.typeId] = this.parseImportConfig(serializer);
+            const serializerObj = serializersArray[index];
+            const importConfig = this.parseImportConfig(serializerObj);
+            const serializerConstructor = loadNameFromPath(importConfig.path, importConfig.exportedName);
+            this.clientConfig.serializationConfig
+                .customSerializers[serializerObj.typeId] = new serializerConstructor();
         }
     }
 

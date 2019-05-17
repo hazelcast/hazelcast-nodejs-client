@@ -281,13 +281,6 @@ export class SerializationServiceV1 implements SerializationService {
         for (const id in this.serializationConfig.dataSerializableFactories) {
             factories[id] = this.serializationConfig.dataSerializableFactories[id];
         }
-        const factoryConfigs = this.serializationConfig.dataSerializableFactoryConfigs;
-        for (const id in factoryConfigs) {
-            const path = factoryConfigs[id].path;
-            const exportedName = factoryConfigs[id].exportedName;
-            const factoryConstructor = Util.loadNameFromPath(path, exportedName);
-            factories[id] = new factoryConstructor();
-        }
         factories[PREDICATE_FACTORY_ID] = new PredicateFactory(DefaultPredicates);
         factories[RELIABLE_TOPIC_MESSAGE_FACTORY_ID] = new ReliableTopicMessageFactory();
         factories[ClusterDataFactoryHelper.FACTORY_ID] = new ClusterDataFactory();
@@ -302,25 +295,10 @@ export class SerializationServiceV1 implements SerializationService {
             self.assertValidCustomSerializer(candidate);
             self.registerSerializer('!custom' + candidate.getId(), candidate);
         });
-        const customSerializerConfigs = this.serializationConfig.customSerializerConfigs;
-        for (const typeId in customSerializerConfigs) {
-            const serializerConfig = customSerializerConfigs[typeId];
-            const customSerializer = new (Util.loadNameFromPath(serializerConfig.path, serializerConfig.exportedName))();
-            this.registerSerializer('!custom' + typeId, customSerializer);
-        }
     }
 
     protected registerGlobalSerializer(): void {
-        let candidate: any = null;
-        if (this.serializationConfig.globalSerializerConfig != null) {
-            const exportedName = this.serializationConfig.globalSerializerConfig.exportedName;
-            const path = this.serializationConfig.globalSerializerConfig.path;
-            const serializerFactory = Util.loadNameFromPath(path, exportedName);
-            candidate = new serializerFactory();
-        }
-        if (candidate == null) {
-            candidate = this.serializationConfig.globalSerializer;
-        }
+        const candidate = this.serializationConfig.globalSerializer;
         if (candidate == null) {
             return;
         }

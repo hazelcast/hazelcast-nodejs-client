@@ -4,8 +4,8 @@
             "enabled": false,
             "sslOptions": null,
             "factory": {
-                "path": "path/to/file",
-                "exportedName": "exportedName",
+                "path": "../config_files/ssl_factory.js",
+                "exportedName": "SSLFactory",
                 "properties": {
                     "userDefinedProperty1": "userDefinedValue"
                 }

@@ -53,8 +53,8 @@ describe('ConfigBuilderSSLTest', function () {
 
             expect(networkCfg.sslConfig.enabled).to.be.false;
             expect(networkCfg.sslConfig.sslOptions).to.be.null;
-            expect(networkCfg.sslConfig.sslOptionsFactoryConfig.path).to.be.equal('path/to/file');
-            expect(networkCfg.sslConfig.sslOptionsFactoryConfig.exportedName).to.be.equal('exportedName');
+            expect(networkCfg.sslConfig.sslOptionsFactory.constructor.name).to.be.equal('SSLFactory');
+            expect(networkCfg.sslConfig.sslOptionsFactory.getSSLOptions()).to.be.deep.equal({"a": 1, "b": 2});
             expect(networkCfg.sslConfig.sslOptionsFactoryProperties['userDefinedProperty1']).to.equal('userDefinedValue');
         })
     });
@@ -67,7 +67,7 @@ describe('ConfigBuilderSSLTest', function () {
             expect(networkCfg.sslConfig.sslOptions.ca).to.be.equal('ca.pem');
             expect(networkCfg.sslConfig.sslOptions.cert).to.be.equal('cert.pem');
             expect(networkCfg.sslConfig.sslOptions.key).to.be.equal('key.pem');
-            expect(networkCfg.sslConfig.sslOptionsFactoryConfig).to.be.null;
+            expect(networkCfg.sslConfig.sslOptionsFactory).to.be.null;
         })
     });
 });

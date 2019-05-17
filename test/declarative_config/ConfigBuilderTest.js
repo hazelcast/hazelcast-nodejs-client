@@ -66,8 +66,8 @@ describe('ConfigBuilder Test', function () {
         expect(networkCfg.connectionAttemptLimit).to.equal(3);
         expect(networkCfg.sslConfig.enabled).to.be.true;
         expect(networkCfg.sslConfig.sslOptions).to.be.null;
-        expect(networkCfg.sslConfig.sslOptionsFactoryConfig.path).to.equal('path/to/file');
-        expect(networkCfg.sslConfig.sslOptionsFactoryConfig.exportedName).to.equal('exportedName');
+        expect(networkCfg.sslConfig.sslOptionsFactory.constructor.name).to.equal('SSLFactory');
+        expect(networkCfg.sslConfig.sslOptionsFactory.getSSLOptions()).to.deep.equal({"a": 1, "b": 2});
         expect(networkCfg.sslConfig.sslOptionsFactoryProperties['userDefinedProperty1']).to.equal('userDefinedValue');
     });
 
@@ -101,20 +101,20 @@ describe('ConfigBuilder Test', function () {
             .to.equal(Config.JsonStringDeserializationPolicy.NO_DESERIALIZATION);
         expect(serializationCfg.stringSerializationPolicy)
             .to.equal(Config.StringSerializationPolicy.LEGACY);
-        expect(serializationCfg.dataSerializableFactoryConfigs[0].path).to.equal('path/to/file');
-        expect(serializationCfg.dataSerializableFactoryConfigs[0].exportedName).to.equal('exportedName');
+        expect(serializationCfg.dataSerializableFactories[0].constructor.name).to.equal('DataSerializableFactory');
+        expect(serializationCfg.dataSerializableFactories[0].create(1)).to.equal(1);
 
-        expect(serializationCfg.portableFactoryConfigs[1].path).to.equal('path/to/file');
-        expect(serializationCfg.portableFactoryConfigs[1].exportedName).to.equal('exportedName');
+        expect(serializationCfg.portableFactories[1].constructor.name).to.equal('PortableFactory');
+        expect(serializationCfg.portableFactories[1].create(1)).to.equal(1);
 
-        expect(serializationCfg.globalSerializerConfig.exportedName).to.equal('exportedName');
-        expect(serializationCfg.globalSerializerConfig.path).to.equal('path/to/file');
+        expect(serializationCfg.globalSerializer.constructor.name).to.equal('GlobalSerializer');
+        expect(serializationCfg.globalSerializer.getId()).to.equal(1);
 
-        expect(serializationCfg.customSerializerConfigs[2].exportedName).to.equal('CustomSerializer1');
-        expect(serializationCfg.customSerializerConfigs[2].path).to.equal('path/to/custom');
+        expect(serializationCfg.customSerializers[2].constructor.name).to.equal('CustomSerializer1');
+        expect(serializationCfg.customSerializers[2].getId()).to.equal(1);
 
-        expect(serializationCfg.customSerializerConfigs[3].exportedName).to.equal('CustomSerializer2');
-        expect(serializationCfg.customSerializerConfigs[3].path).to.equal('path/to/custom');
+        expect(serializationCfg.customSerializers[3].constructor.name).to.equal('CustomSerializer2');
+        expect(serializationCfg.customSerializers[3].getId()).to.equal(2);
     });
 
     it('nearCaches', function () {
@@ -152,11 +152,11 @@ describe('ConfigBuilder Test', function () {
     });
 
     it('listenerConfig', function () {
-        var listenerConfig = configFull.listenerConfigs;
-        expect(listenerConfig[0].exportedName).to.equal('listener');
-        expect(listenerConfig[0].path).to.equal('path/to/file');
-        expect(listenerConfig[1].exportedName).to.equal('listener2');
-        expect(listenerConfig[1].path).to.equal('path/to/file');
+        var listeners = configFull.listeners.lifecycle;
+        expect(listeners[0].name).to.equal('listener1');
+        expect(listeners[0](1)).to.equal(1);
+        expect(listeners[1].name).to.equal('listener2');
+        expect(listeners[1](2)).to.equal(2);
     });
 
     it('flakeIdGeneratorConfigs', function () {

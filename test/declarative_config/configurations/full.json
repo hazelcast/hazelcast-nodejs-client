@@ -29,8 +29,8 @@
             "enabled": true,
             "sslOptions": null,
             "factory": {
-                "path": "path/to/file",
-                "exportedName": "exportedName",
+                "path": "../config_files/ssl_factory.js",
+                "exportedName": "SSLFactory",
                 "properties": {
                     "userDefinedProperty1": "userDefinedValue"
                 }
@@ -44,12 +44,12 @@
     "listeners": [
         {
             "type": "lifecycle",
-            "path": "path/to/file",
-            "exportedName": "listener"
+            "path": "../config_files/listener1.js",
+            "exportedName": "listener1"
         },
         {
             "type": "lifecycle",
-            "path": "path/to/file",
+            "path": "../config_files/listener2.js",
             "exportedName": "listener2"
         }
     ],
@@ -58,31 +58,31 @@
         "isBigEndian": false,
         "dataSerializableFactories": [
             {
-                "path": "path/to/file",
-                "exportedName": "exportedName",
+                "path": "../config_files/data_serializable_factory.js",
+                "exportedName": "DataSerializableFactory",
                 "factoryId": 0
             }
         ],
         "portableFactories": [
             {
-                "path": "path/to/file",
-                "exportedName": "exportedName",
+                "path": "../config_files/portable_factory.js",
+                "exportedName": "PortableFactory",
                 "factoryId": 1
             }
         ],
         "portableVersion": 1,
         "globalSerializer": {
-            "path": "path/to/file",
-            "exportedName": "exportedName"
+            "path": "../config_files/global_serializer.js",
+            "exportedName": "GlobalSerializer"
         },
         "serializers": [
             {
-                "path": "path/to/custom",
+                "path": "../config_files/custom_serializer1.js",
                 "exportedName": "CustomSerializer1",
                 "typeId": 2
             },
             {
-                "path": "path/to/custom",
+                "path": "../config_files/custom_serializer2.js",
                 "exportedName": "CustomSerializer2",
                 "typeId": 3
             }

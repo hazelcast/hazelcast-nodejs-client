@@ -16,7 +16,7 @@
 
 import {ConnectionOptions} from 'tls';
 import {Properties} from './Properties';
-import {ImportConfig} from './ImportConfig';
+import {SSLOptionsFactory} from '../connection/SSLOptionsFactory';
 
 /**
  * SSL configuration.
@@ -42,13 +42,14 @@ export class SSLConfig {
     sslOptions: ConnectionOptions = null;
 
     /**
-     * sslOptionsFactoryConfig is config for ssl options factory. If you don't specify the path, BasicSSLOptionsFactory is used
+     * An implementation of {@link SSLOptionsFactory}.
+     * If you don't set an implementation, {@link BasicSSLOptionsFactory} is used
      * by default.
      */
-    sslOptionsFactoryConfig: ImportConfig = null;
+    sslOptionsFactory: SSLOptionsFactory = null;
 
     /**
-     * sslOptionsFactoryProperties is the properties to be set for ssl options.
+     * Properties to be set for SSL options.
      */
     sslOptionsFactoryProperties: Properties = null;
 }

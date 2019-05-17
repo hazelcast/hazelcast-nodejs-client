@@ -62,7 +62,6 @@ export class ClientConfig {
     customLogger: ILogger;
     customCredentials: any = null;
     listeners: ListenerConfig = new ListenerConfig();
-    listenerConfigs: ImportConfig[] = [];
     serializationConfig: SerializationConfig = new SerializationConfig();
     reliableTopicConfigs: { [name: string]: ReliableTopicConfig } = {};
     nearCacheConfigs: { [name: string]: NearCacheConfig } = {};

@@ -24,9 +24,7 @@ import {ClassDefinition, FieldType} from './ClassDefinition';
 import {DefaultPortableWriter} from './DefaultPortableWriter';
 import * as Long from 'long';
 import {SerializationConfig} from '../../config/SerializationConfig';
-import * as Path from 'path';
 import {HazelcastSerializationError} from '../../HazelcastError';
-import * as Util from '../../Util';
 
 export class PortableSerializer implements Serializer {
 
@@ -38,13 +36,6 @@ export class PortableSerializer implements Serializer {
         this.service = service;
         this.portableContext = new PortableContext(this.service, serializationConfig.portableVersion);
         this.factories = serializationConfig.portableFactories;
-        const factoryConfigs = serializationConfig.portableFactoryConfigs;
-        for (const id in factoryConfigs) {
-            const exportedName = factoryConfigs[id].exportedName;
-            const path = factoryConfigs[id].path;
-            const factoryConstructor = Util.loadNameFromPath(path, exportedName);
-            this.factories[id] = new factoryConstructor();
-        }
     }
 
     getId(): number {
