@@ -64,6 +64,12 @@ class ClientMessage {
         return message;
     }
 
+    copy(): ClientMessage {
+        const message = new ClientMessage(Buffer.from(this.buffer));
+        message.isRetryable = this.isRetryable;
+        return message;
+    }
+
     getBuffer(): Buffer {
         return this.buffer;
     }

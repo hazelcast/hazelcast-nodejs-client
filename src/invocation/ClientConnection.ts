@@ -50,8 +50,7 @@ export class WriteQueue {
             // if there was a write error, it's useless to keep writing to the socket
             return process.nextTick(() => resolver.reject(this.error));
         }
-        // TODO try to get rid of Buffer.from (failures in ListenersOnReconnectTest and MigratedDataTest)
-        this.queue.push({ buffer: Buffer.from(buffer), resolver });
+        this.queue.push({ buffer, resolver });
         this.run();
     }
 
