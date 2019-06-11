@@ -23,7 +23,6 @@ import HazelcastClient from '../HazelcastClient';
 import {IOError} from '../HazelcastError';
 import Address = require('../Address');
 import {DeferredPromise} from '../Util';
-import Socket = NodeJS.Socket;
 
 interface OutputQueueItem {
     buffer: Buffer;
@@ -33,25 +32,26 @@ interface OutputQueueItem {
 const FROZEN_QUEUE = Object.freeze([]) as OutputQueueItem[];
 
 // TODO: cover with tests
-export class OutputQueue {
+export class WriteQueue {
 
-    private socket: Socket;
+    private socket: net.Socket;
     private queue: OutputQueueItem[] = [];
-    private writeError: Error;
+    private error: Error;
     private running: boolean;
     // coalescing threshold in bytes
     private threshold: number = 8192; // TODO try 16384
 
-    constructor(socket: Socket) {
+    constructor(socket: net.Socket) {
         this.socket = socket;
     }
 
     push(buffer: Buffer, resolver: Promise.Resolver<void>): void {
-        if (this.writeError) {
+        if (this.error) {
             // if there was a write error, it's useless to keep writing to the socket
-            return process.nextTick(() => resolver.reject(this.writeError));
+            return process.nextTick(() => resolver.reject(this.error));
         }
-        this.queue.push({ buffer, resolver });
+        // TODO try to get rid of Buffer.from (failures in ListenersOnReconnectTest and MigratedDataTest)
+        this.queue.push({ buffer: Buffer.from(buffer), resolver });
         this.run();
     }
 
@@ -64,7 +64,7 @@ export class OutputQueue {
     }
 
     process(): void {
-        if (this.writeError) {
+        if (this.error) {
             return;
         }
 
@@ -88,7 +88,7 @@ export class OutputQueue {
         // coalesce buffers and write to the socket: no further writes until flushed
         this.socket.write(Buffer.concat(buffers, totalLength) as any, (err: Error) => {
             if (err) {
-                this.handleWriteError(err, resolvers);
+                this.handleError(err, resolvers);
                 return;
             }
             
@@ -105,16 +105,16 @@ export class OutputQueue {
         });
     }
 
-    handleWriteError(err: Error, sentResolvers: Promise.Resolver<void>[]): void {
-        this.writeError = new IOError(err.message, err);
+    handleError(err: any, sentResolvers: Promise.Resolver<void>[]): void {
+        this.error = new IOError(err);
         for (let i = 0; i < sentResolvers.length; i++) {
-            sentResolvers[i].reject(this.writeError);
+            sentResolvers[i].reject(this.error);
         }        
         // no more items can be added now
         const q = this.queue;
         this.queue = FROZEN_QUEUE;
         for (let i = 0; i < q.length; i++) {
-            q[i].resolver.reject(this.writeError);
+            q[i].resolver.reject(this.error);
         }
     }
 }
@@ -133,12 +133,12 @@ export class ClientConnection {
     private connectedServerVersion: number;
     private authenticatedAsOwner: boolean;
     private socket: net.Socket;
-    private writeQueue: OutputQueue;
+    private writeQueue: WriteQueue;
 
     constructor(client: HazelcastClient, address: Address, socket: net.Socket) {
         this.client = client;
         this.socket = socket;
-        this.writeQueue = new OutputQueue(socket);
+        this.writeQueue = new WriteQueue(socket);
         this.address = address;
         this.localAddress = new Address(socket.localAddress, socket.localPort);
         this.readBuffer = Buffer.alloc(0);
@@ -243,6 +243,7 @@ export class ClientConnection {
                     return;
                 }
                 const message = Buffer.allocUnsafe(frameSize);
+                // TODO consider using .slice() instead of copy here
                 this.readBuffer.copy(message, 0, 0, frameSize);
                 this.readBuffer = this.readBuffer.slice(frameSize);
                 callback(message);
