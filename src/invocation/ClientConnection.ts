@@ -23,6 +23,99 @@ import HazelcastClient from '../HazelcastClient';
 import {IOError} from '../HazelcastError';
 import Address = require('../Address');
 import {DeferredPromise} from '../Util';
+import Socket = NodeJS.Socket;
+
+interface OutputQueueItem {
+    buffer: Buffer;
+    resolver: Promise.Resolver<void>;
+}
+
+const FROZEN_QUEUE = Object.freeze([]) as OutputQueueItem[];
+
+// TODO: cover with tests
+export class OutputQueue {
+
+    private socket: Socket;
+    private queue: OutputQueueItem[] = [];
+    private writeError: Error;
+    private running: boolean;
+    // coalescing threshold in bytes
+    private threshold: number = 8192; // TODO try 16384
+
+    constructor(socket: Socket) {
+        this.socket = socket;
+    }
+
+    push(buffer: Buffer, resolver: Promise.Resolver<void>): void {
+        if (this.writeError) {
+            // if there was a write error, it's useless to keep writing to the socket
+            return process.nextTick(() => resolver.reject(this.writeError));
+        }
+        this.queue.push({ buffer, resolver });
+        this.run();
+    }
+
+    run(): void {
+        if (!this.running) {
+            this.running = true;
+            // nextTick allows queue to be processed on the current event loop phase
+            process.nextTick(() => this.process());
+        }
+    }
+
+    process(): void {
+        if (this.writeError) {
+            return;
+        }
+
+        const buffers: Buffer[] = [];
+        const resolvers: Promise.Resolver<void>[] = [];
+        let totalLength = 0;
+
+        while (this.queue.length > 0 && totalLength < this.threshold) {
+            const item = this.queue.shift();
+            const data = item.buffer;
+            totalLength += data.length;
+            buffers.push(data);
+            resolvers.push(item.resolver);
+        }
+
+        if (totalLength === 0) {
+            this.running = false;
+            return;
+        }
+
+        // invoke callbacks before writing to socket to avoid race condition
+        for (let i = 0; i < resolvers.length; i++) {
+            resolvers[i].resolve();
+        }
+        // coalesce buffers and write to the socket: no further writes until flushed
+        this.socket.write(Buffer.concat(buffers, totalLength) as any, (err: Error) => {
+            if (err) {
+                this.handleWriteError(err);
+                return;
+            }
+            if (this.queue.length === 0) {
+                // will start running on the next message
+                this.running = false;
+                return;
+            }
+            // setImmediate allows IO between writes
+            setImmediate(() => this.process());
+        });
+    }
+
+    handleWriteError(err: Error): void {
+        this.writeError = new IOError(err.message, err);
+        const q = this.queue;
+        // no more items can be added now
+        this.queue = FROZEN_QUEUE;
+        for (let i = 0; i < q.length; i++) {
+            const item = q[i];
+            item.resolver.reject(this.writeError);
+        }
+    }
+}
 
 export class ClientConnection {
     private address: Address;
@@ -38,10 +131,12 @@ export class ClientConnection {
     private connectedServerVersion: number;
     private authenticatedAsOwner: boolean;
     private socket: net.Socket;
+    private writeQueue: OutputQueue;
 
     constructor(client: HazelcastClient, address: Address, socket: net.Socket) {
         this.client = client;
         this.socket = socket;
+        this.writeQueue = new OutputQueue(socket);
         this.address = address;
         this.localAddress = new Address(socket.localAddress, socket.localPort);
         this.readBuffer = Buffer.alloc(0);
@@ -73,19 +168,10 @@ export class ClientConnection {
 
     write(buffer: Buffer): Promise<void> {
         const deferred = DeferredPromise<void>();
-        try {
-            this.socket.write(buffer as any, (err: any) => {
-                if (err) {
-                    deferred.reject(new IOError(err));
-                } else {
-                    this.lastWriteTimeMillis = Date.now();
-                    deferred.resolve();
-                }
-            });
-        } catch (err) {
-            deferred.reject(new IOError(err));
-        }
-        return deferred.promise;
+        this.writeQueue.push(buffer, deferred);
+        return deferred.promise.then(() => {
+            this.lastWriteTimeMillis = Date.now();
+        });
     }
 
     setConnectedServerVersion(versionString: string): void {
