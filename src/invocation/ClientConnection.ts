@@ -85,15 +85,15 @@ export class OutputQueue {
             return;
         }
 
-        // invoke callbacks before writing to socket to avoid race condition
-        for (let i = 0; i < resolvers.length; i++) {
-            resolvers[i].resolve();
-        }
         // coalesce buffers and write to the socket: no further writes until flushed
         this.socket.write(Buffer.concat(buffers, totalLength) as any, (err: Error) => {
             if (err) {
-                this.handleWriteError(err);
+                this.handleWriteError(err, resolvers);
                 return;
+            }
+            
+            for (let i = 0; i < resolvers.length; i++) {
+                resolvers[i].resolve();
             }
             if (this.queue.length === 0) {
                 // will start running on the next message
@@ -105,14 +105,16 @@ export class OutputQueue {
         });
     }
 
-    handleWriteError(err: Error): void {
+    handleWriteError(err: Error, sentResolvers: Promise.Resolver<void>[]): void {
         this.writeError = new IOError(err.message, err);
-        const q = this.queue;
+        for (let i = 0; i < sentResolvers.length; i++) {
+            sentResolvers[i].reject(this.writeError);
+        }        
         // no more items can be added now
+        const q = this.queue;
         this.queue = FROZEN_QUEUE;
         for (let i = 0; i < q.length; i++) {
-            const item = q[i];
-            item.resolver.reject(this.writeError);
+            q[i].resolver.reject(this.writeError);
         }
     }
 }
