@@ -68,7 +68,7 @@ export class WriteQueue {
         }
 
         const buffers: Buffer[] = [];
-        const resolvers: Promise.Resolver<void>[] = [];
+        const resolvers: Array<Promise.Resolver<void>> = [];
         let totalLength = 0;
 
         while (this.queue.length > 0 && totalLength < this.threshold) {
@@ -90,9 +90,9 @@ export class WriteQueue {
                 this.handleError(err, resolvers);
                 return;
             }
-            
-            for (let i = 0; i < resolvers.length; i++) {
-                resolvers[i].resolve();
+
+            for (const r of resolvers) {
+                r.resolve();
             }
             if (this.queue.length === 0) {
                 // will start running on the next message
@@ -104,16 +104,16 @@ export class WriteQueue {
         });
     }
 
-    handleError(err: any, sentResolvers: Promise.Resolver<void>[]): void {
+    handleError(err: any, sentResolvers: Array<Promise.Resolver<void>>): void {
         this.error = new IOError(err);
-        for (let i = 0; i < sentResolvers.length; i++) {
-            sentResolvers[i].reject(this.error);
-        }        
+        for (const r of sentResolvers) {
+            r.reject(this.error);
+        }
         // no more items can be added now
         const q = this.queue;
         this.queue = FROZEN_QUEUE;
-        for (let i = 0; i < q.length; i++) {
-            q[i].resolver.reject(this.error);
+        for (const it of q) {
+            it.resolver.reject(this.error);
         }
     }
 }
