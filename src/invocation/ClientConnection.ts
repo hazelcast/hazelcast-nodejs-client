@@ -241,9 +241,7 @@ export class ClientConnection {
                 if (frameSize > this.readBuffer.length) {
                     return;
                 }
-                const message = Buffer.allocUnsafe(frameSize);
-                // TODO consider using .slice() instead of copy here
-                this.readBuffer.copy(message, 0, 0, frameSize);
+                const message = this.readBuffer.slice(0, frameSize);
                 this.readBuffer = this.readBuffer.slice(frameSize);
                 callback(message);
             }
