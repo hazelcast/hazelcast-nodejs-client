@@ -60,7 +60,7 @@ export class Invocation {
     /**
      * Deadline of validity. Client will not try to send this request to server after the deadline passes.
      */
-    deadline: Date;
+    deadline: number;
     /**
      * Connection of the request. If request is not bound to any specific address, should be set to null.
      */
@@ -79,7 +79,7 @@ export class Invocation {
     constructor(client: HazelcastClient, request: ClientMessage) {
         this.client = client;
         this.invocationService = client.getInvocationService();
-        this.deadline = new Date(new Date().getTime() + this.invocationService.getInvocationTimeoutMillis());
+        this.deadline = Date.now() + this.invocationService.getInvocationTimeoutMillis();
         this.request = request;
     }
 
@@ -342,7 +342,7 @@ export class InvocationService {
             invocation.deferred.reject(error);
             return true;
         }
-        if (invocation.deadline.getTime() < Date.now()) {
+        if (invocation.deadline < Date.now()) {
             this.logger.trace('InvocationService', 'Error will not be retried because invocation timed out');
             invocation.deferred.reject(new InvocationTimeoutError('Invocation ' + invocation.request.getCorrelationId() + ')'
                 + ' reached its deadline.', error));
