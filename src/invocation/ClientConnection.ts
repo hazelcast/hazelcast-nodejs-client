@@ -37,7 +37,7 @@ export class WriteQueue {
     private socket: net.Socket;
     private queue: OutputQueueItem[] = [];
     private error: Error;
-    private running: boolean;
+    private scheduled: boolean;
     // coalescing threshold in bytes
     private threshold: number = 8192; // TODO try 16384
 
@@ -51,12 +51,12 @@ export class WriteQueue {
             return process.nextTick(() => resolver.reject(this.error));
         }
         this.queue.push({ buffer, resolver });
-        this.run();
+        this.schedule();
     }
 
-    run(): void {
-        if (!this.running) {
-            this.running = true;
+    schedule(): void {
+        if (!this.scheduled) {
+            this.scheduled = true;
             // nextTick allows queue to be processed on the current event loop phase
             process.nextTick(() => this.process());
         }
@@ -80,12 +80,13 @@ export class WriteQueue {
         }
 
         if (totalLength === 0) {
-            this.running = false;
+            this.scheduled = false;
             return;
         }
 
         // coalesce buffers and write to the socket: no further writes until flushed
-        this.socket.write(Buffer.concat(buffers, totalLength) as any, (err: Error) => {
+        const cBuffer = buffers.length === 1 ? buffers[0] : Buffer.concat(buffers, totalLength);
+        this.socket.write(cBuffer as any, (err: Error) => {
             if (err) {
                 this.handleError(err, resolvers);
                 return;
@@ -96,7 +97,7 @@ export class WriteQueue {
             }
             if (this.queue.length === 0) {
                 // will start running on the next message
-                this.running = false;
+                this.scheduled = false;
                 return;
             }
             // setImmediate allows IO between writes
@@ -235,7 +236,8 @@ export class ClientConnection {
     registerResponseCallback(callback: Function): void {
         this.socket.on('data', (buffer: Buffer) => {
             this.lastReadTimeMillis = new Date().getTime();
-            this.readBuffer = Buffer.concat([this.readBuffer, buffer], this.readBuffer.length + buffer.length);
+            this.readBuffer = this.readBuffer.length === 0 ? buffer
+                : Buffer.concat([this.readBuffer, buffer], this.readBuffer.length + buffer.length);
             while (this.readBuffer.length >= BitsUtil.INT_SIZE_IN_BYTES) {
                 const frameSize = this.readBuffer.readInt32LE(0);
                 if (frameSize > this.readBuffer.length) {
