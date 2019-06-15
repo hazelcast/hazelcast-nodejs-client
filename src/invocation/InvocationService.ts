@@ -17,7 +17,6 @@
 import {Buffer} from 'safe-buffer';
 import * as assert from 'assert';
 import * as Promise from 'bluebird';
-import * as Long from 'long';
 import {BitsUtil} from '../BitsUtil';
 import HazelcastClient from '../HazelcastClient';
 import {
@@ -133,8 +132,8 @@ export class InvocationService {
     }
 
     invoke(invocation: Invocation): Promise<ClientMessage> {
-        const newCorrelationId = Long.fromNumber(this.correlationCounter++);
         invocation.deferred = DeferredPromise<ClientMessage>();
+        const newCorrelationId = this.correlationCounter++;
         invocation.request.setCorrelationId(newCorrelationId);
         this.doInvoke(invocation);
         return invocation.deferred.promise;
@@ -215,7 +214,7 @@ export class InvocationService {
      */
     processResponse(buffer: Buffer): void {
         const clientMessage = new ClientMessage(buffer);
-        const correlationId = clientMessage.getCorrelationId().toNumber();
+        const correlationId = clientMessage.getCorrelationId();
         const messageType = clientMessage.getMessageType();
 
         if (clientMessage.hasFlags(BitsUtil.LISTENER_FLAG)) {
@@ -309,9 +308,9 @@ export class InvocationService {
     }
 
     private notifyError(invocation: Invocation, error: Error): void {
-        const correlationId = invocation.request.getCorrelationId().toNumber();
+        const correlationId = invocation.request.getCorrelationId();
         if (this.rejectIfNotRetryable(invocation, error)) {
-            delete this.pending[invocation.request.getCorrelationId().toNumber()];
+            delete this.pending[correlationId];
             return;
         }
         this.logger.debug('InvocationService',
@@ -352,7 +351,7 @@ export class InvocationService {
 
     private registerInvocation(invocation: Invocation): void {
         const message = invocation.request;
-        const correlationId = message.getCorrelationId().toNumber();
+        const correlationId = message.getCorrelationId();
         if (invocation.hasPartitionId()) {
             message.setPartitionId(invocation.partitionId);
         } else {

@@ -74,12 +74,12 @@ class ClientMessage {
         return this.buffer;
     }
 
-    getCorrelationId(): Long {
+    getCorrelationId(): number {
         const offset = BitsUtil.CORRELATION_ID_FIELD_OFFSET;
-        return this.readLongInternal(offset);
+        return this.readLongInternal(offset).toNumber();
     }
 
-    setCorrelationId(value: Long): void {
+    setCorrelationId(value: number): void {
         this.writeLongInternal(value, BitsUtil.CORRELATION_ID_FIELD_OFFSET);
     }
 
