@@ -230,8 +230,7 @@ class ClientMessage {
     readBuffer(): Buffer {
         const size = this.buffer.readUInt32LE(this.cursor);
         this.cursor += BitsUtil.INT_SIZE_IN_BYTES;
-        const result = Buffer.allocUnsafe(size);
-        this.buffer.copy(result, 0, this.cursor, this.cursor + size);
+        const result = this.buffer.slice(this.cursor, this.cursor + size);
         this.cursor += size;
         return result;
     }
