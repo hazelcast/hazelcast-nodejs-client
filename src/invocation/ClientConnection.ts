@@ -235,7 +235,7 @@ export class ClientConnection {
      */
     registerResponseCallback(callback: Function): void {
         this.socket.on('data', (buffer: Buffer) => {
-            this.lastReadTimeMillis = new Date().getTime();
+            this.lastReadTimeMillis = Date.now();
             this.readBuffer = this.readBuffer.length === 0 ? buffer
                 : Buffer.concat([this.readBuffer, buffer], this.readBuffer.length + buffer.length);
             while (this.readBuffer.length >= BitsUtil.INT_SIZE_IN_BYTES) {

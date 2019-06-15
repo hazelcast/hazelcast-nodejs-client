@@ -81,7 +81,7 @@ export class NearCacheImpl implements NearCache {
     private expiredCount: number = 0;
     private missCount: number = 0;
     private hitCount: number = 0;
-    private creationTime = new Date().getTime();
+    private creationTime = Date.now();
     private compareFunc: (x: DataRecord, y: DataRecord) => number;
     private ready: Promise.Resolver<void>;
 
