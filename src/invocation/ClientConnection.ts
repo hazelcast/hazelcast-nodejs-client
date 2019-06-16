@@ -37,9 +37,9 @@ export class WriteQueue {
     private socket: net.Socket;
     private queue: OutputQueueItem[] = [];
     private error: Error;
-    private scheduled: boolean;
+    private scheduled: boolean = false;
     // coalescing threshold in bytes
-    private threshold: number = 8192; // TODO try 16384
+    private threshold: number = 8192;
 
     constructor(socket: net.Socket) {
         this.socket = socket;
@@ -85,8 +85,8 @@ export class WriteQueue {
         }
 
         // coalesce buffers and write to the socket: no further writes until flushed
-        const cBuffer = buffers.length === 1 ? buffers[0] : Buffer.concat(buffers, totalLength);
-        this.socket.write(cBuffer as any, (err: Error) => {
+        const merged = buffers.length === 1 ? buffers[0] : Buffer.concat(buffers, totalLength);
+        this.socket.write(merged as any, (err: Error) => {
             if (err) {
                 this.handleError(err, resolvers);
                 return;
@@ -119,6 +119,56 @@ export class WriteQueue {
     }
 }
 
+// TODO: cover with tests
+export class FrameReader {
+
+    private chunks: Buffer[] = [];
+    private chunksTotalSize: number = 0;
+    private frameSize: number = 0;
+
+    append(buffer: Buffer): void {
+        this.chunksTotalSize += buffer.length;
+        this.chunks.push(buffer);
+    }
+
+    read(): Buffer {
+        if (this.chunksTotalSize < BitsUtil.INT_SIZE_IN_BYTES) {
+            return null;
+        }
+        if (this.frameSize === 0) {
+            this.frameSize = this.readFrameSize();
+        }
+        if (this.chunksTotalSize < this.frameSize) {
+            return null;
+        }
+
+        let frame = this.chunks.length === 1 ? this.chunks[0] : Buffer.concat(this.chunks, this.chunksTotalSize);
+        this.chunks = [];
+        if (this.chunksTotalSize > this.frameSize) {
+            this.chunks.push(frame.slice(this.frameSize));
+            frame = frame.slice(0, this.frameSize);
+        }
+        this.chunksTotalSize -= this.frameSize;
+        this.frameSize = 0;
+        return frame;
+    }
+
+    private readFrameSize(): number {
+        if (this.chunks[0].length >= BitsUtil.INT_SIZE_IN_BYTES) {
+            return this.chunks[0].readInt32LE(0);
+        }
+        let readChunksSize = 0;
+        for (let i = 0; i < this.chunks.length; i++) {
+            readChunksSize += this.chunks[i].length;
+            if (readChunksSize >= BitsUtil.INT_SIZE_IN_BYTES) {
+                const merged = Buffer.concat(this.chunks.slice(0, i + 1), readChunksSize);
+                return merged.readInt32LE(0);
+            }
+        }
+        throw new Error('Detected illegal internal call in FrameReader!');
+    }
+}
+
 export class ClientConnection {
     private address: Address;
     private readonly localAddress: Address;
@@ -126,7 +176,7 @@ export class ClientConnection {
     private lastWriteTimeMillis: number;
     private heartbeating = true;
     private client: HazelcastClient;
-    private readBuffer: Buffer;
+    private reader: FrameReader;
     private readonly startTime: number = Date.now();
     private closedTime: number;
     private connectedServerVersionString: string;
@@ -141,7 +191,7 @@ export class ClientConnection {
         this.writeQueue = new WriteQueue(socket);
         this.address = address;
         this.localAddress = new Address(socket.localAddress, socket.localPort);
-        this.readBuffer = Buffer.alloc(0);
+        this.reader = new FrameReader();
         this.lastReadTimeMillis = 0;
         this.closedTime = 0;
         this.connectedServerVersionString = null;
@@ -236,16 +286,11 @@ export class ClientConnection {
     registerResponseCallback(callback: Function): void {
         this.socket.on('data', (buffer: Buffer) => {
             this.lastReadTimeMillis = Date.now();
-            this.readBuffer = this.readBuffer.length === 0 ? buffer
-                : Buffer.concat([this.readBuffer, buffer], this.readBuffer.length + buffer.length);
-            while (this.readBuffer.length >= BitsUtil.INT_SIZE_IN_BYTES) {
-                const frameSize = this.readBuffer.readInt32LE(0);
-                if (frameSize > this.readBuffer.length) {
-                    return;
-                }
-                const message = this.readBuffer.slice(0, frameSize);
-                this.readBuffer = this.readBuffer.slice(frameSize);
-                callback(message);
+            this.reader.append(buffer);
+            let frame = this.reader.read();
+            while (frame !== null) {
+                callback(frame);
+                frame = this.reader.read();
             }
         });
         this.socket.on('error', (e: any) => {
