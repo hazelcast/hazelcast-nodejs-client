@@ -143,10 +143,15 @@ export class FrameReader {
         }
 
         let frame = this.chunks.length === 1 ? this.chunks[0] : Buffer.concat(this.chunks, this.chunksTotalSize);
-        this.chunks = [];
         if (this.chunksTotalSize > this.frameSize) {
-            this.chunks.push(frame.slice(this.frameSize));
+            if (this.chunks.length === 1) {
+                this.chunks[0] = frame.slice(this.frameSize);
+            } else {
+                this.chunks = [frame.slice(this.frameSize)];
+            }
             frame = frame.slice(0, this.frameSize);
+        } else {
+            this.chunks = [];
         }
         this.chunksTotalSize -= this.frameSize;
         this.frameSize = 0;
