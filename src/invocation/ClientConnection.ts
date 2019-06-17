@@ -17,6 +17,7 @@
 import {Buffer} from 'safe-buffer';
 import * as Promise from 'bluebird';
 import * as net from 'net';
+import {EventEmitter} from 'events';
 import {BitsUtil} from '../BitsUtil';
 import {BuildInfo} from '../BuildInfo';
 import HazelcastClient from '../HazelcastClient';
@@ -29,10 +30,9 @@ interface OutputQueueItem {
     resolver: Promise.Resolver<void>;
 }
 
-const FROZEN_QUEUE = Object.freeze([]) as OutputQueueItem[];
+const FROZEN_ARRAY = Object.freeze([]) as OutputQueueItem[];
 
-// TODO: cover with tests
-export class WriteQueue {
+export class WriteQueue extends EventEmitter {
 
     private socket: net.Socket;
     private queue: OutputQueueItem[] = [];
@@ -42,6 +42,7 @@ export class WriteQueue {
     private threshold: number = 8192;
 
     constructor(socket: net.Socket) {
+        super();
         this.socket = socket;
     }
 
@@ -92,6 +93,7 @@ export class WriteQueue {
                 return;
             }
 
+            this.emit('write');
             for (const r of resolvers) {
                 r.resolve();
             }
@@ -112,14 +114,13 @@ export class WriteQueue {
         }
         // no more items can be added now
         const q = this.queue;
-        this.queue = FROZEN_QUEUE;
+        this.queue = FROZEN_ARRAY;
         for (const it of q) {
             it.resolver.reject(this.error);
         }
     }
 }
 
-// TODO: cover with tests
 export class FrameReader {
 
     private chunks: Buffer[] = [];
@@ -193,14 +194,17 @@ export class ClientConnection {
     constructor(client: HazelcastClient, address: Address, socket: net.Socket) {
         this.client = client;
         this.socket = socket;
-        this.writeQueue = new WriteQueue(socket);
         this.address = address;
         this.localAddress = new Address(socket.localAddress, socket.localPort);
-        this.reader = new FrameReader();
         this.lastReadTimeMillis = 0;
         this.closedTime = 0;
         this.connectedServerVersionString = null;
         this.connectedServerVersion = BuildInfo.UNKNOWN_VERSION_ID;
+        this.reader = new FrameReader();
+        this.writeQueue = new WriteQueue(socket);
+        this.writeQueue.on('write', () => {
+            this.lastWriteTimeMillis = Date.now();
+        });
     }
 
     /**
@@ -226,9 +230,7 @@ export class ClientConnection {
     write(buffer: Buffer): Promise<void> {
         const deferred = DeferredPromise<void>();
         this.writeQueue.push(buffer, deferred);
-        return deferred.promise.then(() => {
-            this.lastWriteTimeMillis = Date.now();
-        });
+        return deferred.promise;
     }
 
     setConnectedServerVersion(versionString: string): void {

@@ -173,4 +173,22 @@ describe('WriteQueue', () => {
         Promise.all([resolver1.promise, resolver2.promise]).catch(() => done());
     });
 
+    it('emits write event on write success', (done) => {
+        setUpWriteSuccess();
+
+        queue.on('write', done);
+        queue.push(Buffer.from('test'), DeferredPromise());
+    });
+
+    it('does not emit write event on write failure', (done) => {
+        setUpWriteFailure(new Error());
+
+        queue.on('write', () => done(new Error()));
+        const resolver = DeferredPromise();
+        queue.push(Buffer.from('test'), resolver);
+        resolver.promise.catch(_ => {
+            done();
+        });
+    });
+
 });
