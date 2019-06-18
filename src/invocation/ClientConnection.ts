@@ -28,6 +28,7 @@ import {DeferredPromise} from '../Util';
 const FROZEN_ARRAY = Object.freeze([]) as OutputQueueItem[];
 const PROPERTY_PIPELINING_ENABLED = 'hazelcast.client.autopipelining.enabled';
 const PROPERTY_PIPELINING_THRESHOLD = 'hazelcast.client.autopipelining.threshold.bytes';
+const PROPERTY_NO_DELAY = 'hazelcast.client.socket.no.delay';
 
 interface OutputQueueItem {
     buffer: Buffer;
@@ -218,6 +219,8 @@ export class ClientConnection {
     constructor(client: HazelcastClient, address: Address, socket: net.Socket) {
         const enablePipelining = client.getConfig().properties[PROPERTY_PIPELINING_ENABLED];
         const pipeliningThreshold = client.getConfig().properties[PROPERTY_PIPELINING_THRESHOLD] as number;
+        const noDelay = client.getConfig().properties[PROPERTY_NO_DELAY] as boolean;
+        socket.setNoDelay(noDelay);
 
         this.client = client;
         this.socket = socket;

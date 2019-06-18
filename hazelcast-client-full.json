@@ -16,7 +16,8 @@
         "hazelcast.invalidation.min.reconciliation.interval.seconds": 30,
         "hazelcast.logging.level": 2,
         "hazelcast.client.autopipelining.enabled": true,
-        "hazelcast.client.autopipelining.threshold.bytes": 8192
+        "hazelcast.client.autopipelining.threshold.bytes": 8192,
+        "hazelcast.client.socket.no.delay": true
     },
     "network": {
         "clusterMembers": [

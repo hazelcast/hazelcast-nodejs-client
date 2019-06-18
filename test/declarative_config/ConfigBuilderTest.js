@@ -91,6 +91,7 @@ describe('ConfigBuilder Test', function () {
         expect(properties['hazelcast.logging.level']).to.be.equal(3);
         expect(properties['hazelcast.client.autopipelining.enabled']).to.be.false;
         expect(properties['hazelcast.client.autopipelining.threshold.bytes']).to.equal(1024);
+        expect(properties['hazelcast.client.socket.no.delay']).to.be.false;
     });
 
     it('serialization', function () {
