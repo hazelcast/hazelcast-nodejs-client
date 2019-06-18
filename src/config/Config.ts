@@ -53,7 +53,7 @@ export class ClientConfig {
         'hazelcast.logging.level': LogLevel.INFO,
         'hazelcast.client.autopipelining.enabled': true,
         'hazelcast.client.autopipelining.threshold.bytes': 8192,
-        'hazelcast.client.socket.no.delay': true
+        'hazelcast.client.socket.no.delay': true,
     };
 
     /**
