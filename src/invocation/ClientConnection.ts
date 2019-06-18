@@ -37,7 +37,7 @@ interface OutputQueueItem {
 
 export class PipelinedWriter extends EventEmitter {
 
-    private socket: net.Socket;
+    private readonly socket: net.Socket;
     private queue: OutputQueueItem[] = [];
     private error: Error;
     private scheduled: boolean = false;
@@ -59,7 +59,7 @@ export class PipelinedWriter extends EventEmitter {
         this.schedule();
     }
 
-    schedule(): void {
+    private schedule(): void {
         if (!this.scheduled) {
             this.scheduled = true;
             // nextTick allows queue to be processed on the current event loop phase
@@ -67,7 +67,7 @@ export class PipelinedWriter extends EventEmitter {
         }
     }
 
-    process(): void {
+    private process(): void {
         if (this.error) {
             return;
         }
@@ -111,7 +111,7 @@ export class PipelinedWriter extends EventEmitter {
         });
     }
 
-    handleError(err: any, sentResolvers: Array<Promise.Resolver<void>>): void {
+    private handleError(err: any, sentResolvers: Array<Promise.Resolver<void>>): void {
         this.error = new IOError(err);
         for (const r of sentResolvers) {
             r.reject(this.error);
@@ -127,7 +127,7 @@ export class PipelinedWriter extends EventEmitter {
 
 export class DirectWriter extends EventEmitter {
 
-    private socket: net.Socket;
+    private readonly socket: net.Socket;
 
     constructor(socket: net.Socket) {
         super();
@@ -206,15 +206,15 @@ export class ClientConnection {
     private lastReadTimeMillis: number;
     private lastWriteTimeMillis: number;
     private heartbeating = true;
-    private client: HazelcastClient;
+    private readonly client: HazelcastClient;
     private readonly startTime: number = Date.now();
     private closedTime: number;
     private connectedServerVersionString: string;
     private connectedServerVersion: number;
     private authenticatedAsOwner: boolean;
-    private socket: net.Socket;
-    private writer: PipelinedWriter | DirectWriter;
-    private reader: FrameReader;
+    private readonly socket: net.Socket;
+    private readonly writer: PipelinedWriter | DirectWriter;
+    private readonly reader: FrameReader;
 
     constructor(client: HazelcastClient, address: Address, socket: net.Socket) {
         const enablePipelining = client.getConfig().properties[PROPERTY_PIPELINING_ENABLED];
