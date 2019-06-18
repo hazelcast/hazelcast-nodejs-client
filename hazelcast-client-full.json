@@ -14,7 +14,9 @@
         "hazelcast.invalidation.reconciliation.interval.seconds": 60,
         "hazelcast.invalidation.max.tolerated.miss.count": 10,
         "hazelcast.invalidation.min.reconciliation.interval.seconds": 30,
-        "hazelcast.logging.level": 2
+        "hazelcast.logging.level": 2,
+        "hazelcast.client.autopipelining.enabled": true,
+        "hazelcast.client.autopipelining.threshold.bytes": 8192
     },
     "network": {
         "clusterMembers": [

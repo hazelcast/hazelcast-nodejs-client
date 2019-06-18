@@ -18,7 +18,6 @@ var expect = require('chai').expect;
 var path = require('path');
 var ConfigBuilder = require('../../').ConfigBuilder;
 var Config = require('../../').Config;
-var Long = require('long');
 var AddressHelper = require("../../lib/Util").AddressHelper;
 
 describe('ConfigBuilder Test', function () {
@@ -90,6 +89,8 @@ describe('ConfigBuilder Test', function () {
         expect(properties['hazelcast.invalidation.max.tolerated.miss.count']).to.equal(15);
         expect(properties['hazelcast.invalidation.min.reconciliation.interval.seconds']).to.equal(60);
         expect(properties['hazelcast.logging.level']).to.be.equal(3);
+        expect(properties['hazelcast.client.autopipelining.enabled']).to.be.false;
+        expect(properties['hazelcast.client.autopipelining.threshold.bytes']).to.equal(1024);
     });
 
     it('serialization', function () {

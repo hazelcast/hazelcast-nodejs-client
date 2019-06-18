@@ -23,11 +23,11 @@ const expect = require('chai').expect;
 const Promise = require('bluebird');
 
 const DeferredPromise = require('../../lib/Util').DeferredPromise;
-const WriteQueue = require('../../lib/invocation/ClientConnection').WriteQueue;
+const PipelinedWriter = require('../../lib/invocation/ClientConnection').PipelinedWriter;
 
-describe('WriteQueue', () => {
+describe('PipelinedWriter', function () {
 
-    let queue;
+    let writer;
     let mockSocket;
 
     const setUpWriteSuccess = () => {
@@ -36,7 +36,7 @@ describe('WriteQueue', () => {
             cb();
             mockSocket.emit('data', data);
         });
-        queue = new WriteQueue(mockSocket);
+        writer = new PipelinedWriter(mockSocket, 8192);
     }
 
     const setUpWriteFailure = (err) => {
@@ -44,14 +44,14 @@ describe('WriteQueue', () => {
         sinon.stub(mockSocket, 'write').callsFake((_, cb) => {
             cb(err);
         });
-        queue = new WriteQueue(mockSocket);
+        writer = new PipelinedWriter(mockSocket, 8192);
     }
 
     it('writes single message into socket (without copying it)', (done) => {
         setUpWriteSuccess();
         
         const buffer = Buffer.from('test');
-        queue.push(buffer, DeferredPromise());
+        writer.write(buffer, DeferredPromise());
         mockSocket.on('data', function(data) {
             expect(data).to.be.equal(buffer);
             done();
@@ -61,9 +61,9 @@ describe('WriteQueue', () => {
     it('writes multiple messages as one into socket', (done) => {
         setUpWriteSuccess();
 
-        queue.push(Buffer.from('1'), DeferredPromise());
-        queue.push(Buffer.from('2'), DeferredPromise());
-        queue.push(Buffer.from('3'), DeferredPromise());
+        writer.write(Buffer.from('1'), DeferredPromise());
+        writer.write(Buffer.from('2'), DeferredPromise());
+        writer.write(Buffer.from('3'), DeferredPromise());
         mockSocket.on('data', function(data) {
             expect(data).to.be.deep.equal(Buffer.from('123'));
             done();
@@ -75,11 +75,11 @@ describe('WriteQueue', () => {
 
         const size = 4200;
         const resolver1 = DeferredPromise();
-        queue.push(Buffer.alloc(size), resolver1);
+        writer.write(Buffer.alloc(size), resolver1);
         const resolver2 = DeferredPromise();
-        queue.push(Buffer.alloc(size), resolver2);
+        writer.write(Buffer.alloc(size), resolver2);
         const resolver3 = DeferredPromise();
-        queue.push(Buffer.alloc(size), resolver3);
+        writer.write(Buffer.alloc(size), resolver3);
         
         let cnt = 0;
         let allData = Buffer.alloc(0);
@@ -109,8 +109,8 @@ describe('WriteQueue', () => {
         setUpWriteSuccess();
 
         const size = 9000;
-        queue.push(Buffer.alloc(size), DeferredPromise());
-        queue.push(Buffer.alloc(size), DeferredPromise());
+        writer.write(Buffer.alloc(size), DeferredPromise());
+        writer.write(Buffer.alloc(size), DeferredPromise());
         let cnt = 0;
         // the second write is queued with setImmediate,
         // thus, callback in this setImmediate must not see cnt === 0 or cnt === 2
@@ -130,7 +130,7 @@ describe('WriteQueue', () => {
         setUpWriteSuccess();
 
         const resolver = DeferredPromise();
-        queue.push(Buffer.from('test'), resolver);
+        writer.write(Buffer.from('test'), resolver);
         resolver.promise.then(done);
     });
 
@@ -138,9 +138,9 @@ describe('WriteQueue', () => {
         setUpWriteSuccess();
 
         const resolver1 = DeferredPromise();
-        queue.push(Buffer.from('test'), resolver1);
+        writer.write(Buffer.from('test'), resolver1);
         const resolver2 = DeferredPromise();
-        queue.push(Buffer.from('test'), resolver2);
+        writer.write(Buffer.from('test'), resolver2);
         Promise.all([resolver1.promise, resolver2.promise]).then(() => done());
     });
 
@@ -149,7 +149,7 @@ describe('WriteQueue', () => {
         setUpWriteFailure(err);
 
         const resolver = DeferredPromise();
-        queue.push(Buffer.from('test'), resolver);
+        writer.write(Buffer.from('test'), resolver);
         resolver.promise.catch((err) => {
             expect(err).to.be.equal(err);
             done();
@@ -161,9 +161,9 @@ describe('WriteQueue', () => {
         setUpWriteFailure(err);
 
         const resolver1 = DeferredPromise();
-        queue.push(Buffer.from('test'), resolver1);
+        writer.write(Buffer.from('test'), resolver1);
         const resolver2 = DeferredPromise();
-        queue.push(Buffer.from('test'), resolver2);
+        writer.write(Buffer.from('test'), resolver2);
         resolver1.promise.catch((err) => {
             expect(err).to.be.equal(err);
         });
@@ -176,16 +176,16 @@ describe('WriteQueue', () => {
     it('emits write event on write success', (done) => {
         setUpWriteSuccess();
 
-        queue.on('write', done);
-        queue.push(Buffer.from('test'), DeferredPromise());
+        writer.on('write', done);
+        writer.write(Buffer.from('test'), DeferredPromise());
     });
 
     it('does not emit write event on write failure', (done) => {
         setUpWriteFailure(new Error());
 
-        queue.on('write', () => done(new Error()));
+        writer.on('write', () => done(new Error()));
         const resolver = DeferredPromise();
-        queue.push(Buffer.from('test'), resolver);
+        writer.write(Buffer.from('test'), resolver);
         resolver.promise.catch(_ => {
             done();
         });

@@ -51,6 +51,8 @@ export class ClientConfig {
         'hazelcast.invalidation.max.tolerated.miss.count': 10,
         'hazelcast.invalidation.min.reconciliation.interval.seconds': 30,
         'hazelcast.logging.level': LogLevel.INFO,
+        'hazelcast.client.autopipelining.enabled': true,
+        'hazelcast.client.autopipelining.threshold.bytes': 8192,
     };
 
     /**

@@ -25,28 +25,31 @@ import {IOError} from '../HazelcastError';
 import Address = require('../Address');
 import {DeferredPromise} from '../Util';
 
+const FROZEN_ARRAY = Object.freeze([]) as OutputQueueItem[];
+const PROPERTY_PIPELINING_ENABLED = 'hazelcast.client.autopipelining.enabled';
+const PROPERTY_PIPELINING_THRESHOLD = 'hazelcast.client.autopipelining.threshold.bytes';
+
 interface OutputQueueItem {
     buffer: Buffer;
     resolver: Promise.Resolver<void>;
 }
 
-const FROZEN_ARRAY = Object.freeze([]) as OutputQueueItem[];
-
-export class WriteQueue extends EventEmitter {
+export class PipelinedWriter extends EventEmitter {
 
     private socket: net.Socket;
     private queue: OutputQueueItem[] = [];
     private error: Error;
     private scheduled: boolean = false;
     // coalescing threshold in bytes
-    private threshold: number = 8192;
+    private readonly threshold: number;
 
-    constructor(socket: net.Socket) {
+    constructor(socket: net.Socket, threshold: number) {
         super();
         this.socket = socket;
+        this.threshold = threshold;
     }
 
-    push(buffer: Buffer, resolver: Promise.Resolver<void>): void {
+    write(buffer: Buffer, resolver: Promise.Resolver<void>): void {
         if (this.error) {
             // if there was a write error, it's useless to keep writing to the socket
             return process.nextTick(() => resolver.reject(this.error));
@@ -121,6 +124,27 @@ export class WriteQueue extends EventEmitter {
     }
 }
 
+export class DirectWriter extends EventEmitter {
+
+    private socket: net.Socket;
+
+    constructor(socket: net.Socket) {
+        super();
+        this.socket = socket;
+    }
+
+    write(buffer: Buffer, resolver: Promise.Resolver<void>): void {
+        this.socket.write(buffer as any, (err: any) => {
+            if (err) {
+                resolver.reject(new IOError(err));
+                return;
+            }
+            this.emit('write');
+            resolver.resolve();
+        });
+    }
+}
+
 export class FrameReader {
 
     private chunks: Buffer[] = [];
@@ -182,16 +206,19 @@ export class ClientConnection {
     private lastWriteTimeMillis: number;
     private heartbeating = true;
     private client: HazelcastClient;
-    private reader: FrameReader;
     private readonly startTime: number = Date.now();
     private closedTime: number;
     private connectedServerVersionString: string;
     private connectedServerVersion: number;
     private authenticatedAsOwner: boolean;
     private socket: net.Socket;
-    private writeQueue: WriteQueue;
+    private writer: PipelinedWriter | DirectWriter;
+    private reader: FrameReader;
 
     constructor(client: HazelcastClient, address: Address, socket: net.Socket) {
+        const enablePipelining = client.getConfig().properties[PROPERTY_PIPELINING_ENABLED];
+        const pipeliningThreshold = client.getConfig().properties[PROPERTY_PIPELINING_THRESHOLD] as number;
+
         this.client = client;
         this.socket = socket;
         this.address = address;
@@ -200,11 +227,11 @@ export class ClientConnection {
         this.closedTime = 0;
         this.connectedServerVersionString = null;
         this.connectedServerVersion = BuildInfo.UNKNOWN_VERSION_ID;
-        this.reader = new FrameReader();
-        this.writeQueue = new WriteQueue(socket);
-        this.writeQueue.on('write', () => {
+        this.writer = enablePipelining ? new PipelinedWriter(socket, pipeliningThreshold) : new DirectWriter(socket);
+        this.writer.on('write', () => {
             this.lastWriteTimeMillis = Date.now();
         });
+        this.reader = new FrameReader();
     }
 
     /**
@@ -229,7 +256,7 @@ export class ClientConnection {
 
     write(buffer: Buffer): Promise<void> {
         const deferred = DeferredPromise<void>();
-        this.writeQueue.push(buffer, deferred);
+        this.writer.write(buffer, deferred);
         return deferred.promise;
     }
 

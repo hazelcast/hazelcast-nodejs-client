@@ -21,7 +21,7 @@ const expect = require('chai').expect;
 
 const FrameReader = require('../../lib/invocation/ClientConnection').FrameReader;
 
-describe('FrameReader', () => {
+describe('FrameReader', function () {
 
     let reader;
 
