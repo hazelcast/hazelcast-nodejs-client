@@ -97,6 +97,7 @@
       * [7.8.2.4. Near Cache Expiration](#7824-near-cache-expiration)
       * [7.8.2.5. Near Cache Invalidation](#7825-near-cache-invalidation)
       * [7.8.2.6. Near Cache Eventual Consistency](#7826-near-cache-eventual-consistency)
+    * [7.8.3. Automated Pipelining](#783-automated-pipelining)
   * [7.9. Monitoring and Logging](#79-monitoring-and-logging)
     * [7.9.1. Enabling Client Statistics](#791-enabling-client-statistics)
     * [7.9.2. Logging Configuration](#792-logging-configuration)
@@ -3193,6 +3194,16 @@ You can configure eventual consistency with the `ClientConfig.properties` below:
 - `hazelcast.invalidation.max.tolerated.miss.count`: Default value is `10`. If missed invalidation count is bigger than this value, relevant cached data will be made unreachable.
 
 - `hazelcast.invalidation.reconciliation.interval.seconds`: Default value is `60` seconds. This is a periodic task that scans cluster members periodically to compare generated invalidation events with the received ones from the client Near Cache.
+
+### 7.8.3. Automated Pipelining
+
+Hazelcast Node.js client performs automated pipelining of operations. It means that the library pushes all operations into an internal queue and tries to send them in batches. This reduces the count of executed `Socket.write()` calls and significantly improves throughtput for read operations.
+
+You can configure automated operation pipelining with the `ClientConfig.properties` below:
+
+- `hazelcast.client.autopipelining.enabled`: Default value is `true`. Turns automated pipelining feature on/off. If your application does only writes operations, like `IMap.set()`, you can try disabling automated pipelining to get a slightly better throughtput.
+
+- `hazelcast.client.autopipelining.threshold.bytes`: Default value is `8192` bytes. This is the coalescing threshold for the internal queue used by automated pipelining. Once the total size of operation payloads taken from the queue reaches this value during batch preparation, these operations are written to the socket. Notice that automated pipelining will still send operations if their total size is smaller than the threshold and there are no more operations in the internal queue.
 
 ## 7.9. Monitoring and Logging
 
