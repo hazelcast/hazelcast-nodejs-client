@@ -64,7 +64,7 @@ class ClientMessage {
         return message;
     }
 
-    copy(): ClientMessage {
+    clone(): ClientMessage {
         const message = new ClientMessage(Buffer.from(this.buffer));
         message.isRetryable = this.isRetryable;
         return message;

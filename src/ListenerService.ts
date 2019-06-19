@@ -221,7 +221,7 @@ export class ListenerService implements ConnectionHeartbeatListener {
             if (connectionsOnUserKey.has(activeConnections[address])) {
                 continue;
             }
-            const requestCopy = registerRequest.copy();
+            const requestCopy = registerRequest.clone();
             const invocation = new Invocation(this.client, requestCopy);
             invocation.handler = listenerHandlerFunc as any;
             invocation.connection = activeConnections[address];
