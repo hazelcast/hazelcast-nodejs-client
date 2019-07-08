@@ -17,11 +17,13 @@
 var RC = require('./RC');
 var HazelcastClient = require('../.').Client;
 var Config = require('../.').Config;
+var ConfigBuilder = require('../.').ConfigBuilder;
 var expect = require('chai').expect;
+var path = require('path');
+var fs = require('fs');
 
 describe('LifecycleService', function () {
     var cluster;
-    var client;
 
     before(function () {
         return RC.createCluster(null, null).then(function (res) {
@@ -52,28 +54,6 @@ describe('LifecycleService', function () {
                 }
             }
         );
-        HazelcastClient.newHazelcastClient(cfg).then(function (client) {
-            client.shutdown();
-        });
-    });
-
-    it('client should emit starting, started, shuttingDown and shutdown events in order (via import config)', function (done) {
-        var cfg = new Config.ClientConfig();
-        var expectedState = 'starting';
-        exports.lifecycleListener = function (state) {
-            if (state === 'starting' && expectedState === 'starting') {
-                expectedState = 'started'
-            } else if (state === 'started' && expectedState === 'started') {
-                expectedState = 'shuttingDown';
-            } else if (state === 'shuttingDown' && expectedState === 'shuttingDown') {
-                expectedState = 'shutdown';
-            } else if (state === 'shutdown' && expectedState === 'shutdown') {
-                done();
-            } else {
-                done('Got lifecycle event ' + state + ' instead of ' + expectedState);
-            }
-        };
-        cfg.listenerConfigs.push({path: __filename, exportedName: 'lifecycleListener'});
         HazelcastClient.newHazelcastClient(cfg).then(function (client) {
             client.shutdown();
         });
@@ -123,5 +103,58 @@ describe('LifecycleService', function () {
             client.shutdown();
             done();
         });
-    })
+    });
+
+    describe('DeclarativeConfiguration', function () {
+        var JSON_LOCATION = path.resolve(process.cwd(), 'hazelcast-client-listener.json');
+        var ENV_VARIABLE_NAME = 'HAZELCAST_CLIENT_CONFIG';
+
+        beforeEach(function () {
+            process.env[ENV_VARIABLE_NAME] = JSON_LOCATION;
+        });
+        
+        afterEach(function () {
+            try {
+                fs.unlinkSync(JSON_LOCATION);
+            } catch (e) {
+            } finally {
+                delete process.env[ENV_VARIABLE_NAME];
+            }
+        });
+        
+        it('client should emit starting, started, shuttingDown and shutdown events in order', function (done) {
+            fs.writeFileSync(JSON_LOCATION, '' +
+                '{' +
+                '   "listeners": [' +
+                '       {' +
+                '           "type": "lifecycle",' +
+                '           "path": "' + __filename + '",' +
+                '           "exportedName": "lifecycleListener"' +
+                 '       }' +
+                '   ]' +
+                '}');
+
+            var expectedState = 'starting';
+            exports.lifecycleListener = function (state) {
+                if (state === 'starting' && expectedState === 'starting') {
+                    expectedState = 'started'
+                } else if (state === 'started' && expectedState === 'started') {
+                    expectedState = 'shuttingDown';
+                } else if (state === 'shuttingDown' && expectedState === 'shuttingDown') {
+                    expectedState = 'shutdown';
+                } else if (state === 'shutdown' && expectedState === 'shutdown') {
+                    done();
+                } else {
+                    done('Got lifecycle event ' + state + ' instead of ' + expectedState);
+                }
+            };
+
+            var configBuilder = new ConfigBuilder();
+            configBuilder.loadConfig().then(function () {
+                return HazelcastClient.newHazelcastClient(configBuilder.build()).then(function (client) {
+                    return client.shutdown();
+                });
+            });
+        });
+    });
 });

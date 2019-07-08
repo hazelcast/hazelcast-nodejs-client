@@ -26,6 +26,7 @@ var HzErrors = require('../..').HazelcastErrors;
 var markEnterprise = require('../Util').markEnterprise;
 var Path = require('path');
 var Util = require('../Util');
+var BasicSSLOptionsFactory = require('../../lib/connection/BasicSSLOptionsFactory').BasicSSLOptionsFactory;
 
 describe('SSL Client Authentication Test', function () {
     var cluster;
@@ -66,9 +67,7 @@ describe('SSL Client Authentication Test', function () {
     function createClientConfigWithSSLOptsUsingBasicSSLOptionsFactory(key, cert, ca) {
         var cfg = new Config.ClientConfig();
         cfg.networkConfig.sslConfig.enabled = true;
-        cfg.networkConfig.sslConfig.sslOptionsFactoryConfig = {
-            exportedName: 'BasicSSLOptionsFactory'
-        };
+        cfg.networkConfig.sslConfig.sslOptionsFactory = new BasicSSLOptionsFactory();
         cfg.networkConfig.sslConfig.sslOptionsFactoryProperties = {
             caPath: Path.resolve(__dirname, ca),
             keyPath: Path.resolve(__dirname, key),

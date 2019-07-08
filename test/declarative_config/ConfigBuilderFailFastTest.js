@@ -30,6 +30,10 @@ describe('ConfigBuilderFailFastTest', function () {
         process.env[ENV_VARIABLE_NAME] = JSON_LOCATION;
     });
 
+    after(function () {
+       delete process.env[ENV_VARIABLE_NAME];
+    });
+
     afterEach(function () {
         try {
             fs.unlinkSync(JSON_LOCATION);
