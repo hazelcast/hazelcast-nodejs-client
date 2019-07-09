@@ -42,7 +42,7 @@ export interface Portable {
 }
 
 export interface VersionedPortable extends Portable {
-    getVersion(): number;
+    getClassVersion(): number;
 }
 
 export interface PortableFactory {

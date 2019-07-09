@@ -127,11 +127,11 @@ export class PortableContext {
     }
 
     getClassVersion(portable: VersionedPortable | Portable): number {
-        if ((portable as VersionedPortable).getVersion) {
-            if ((portable as VersionedPortable).getVersion() < 0) {
+        if ((portable as VersionedPortable).getClassVersion) {
+            if ((portable as VersionedPortable).getClassVersion() < 0) {
                 throw new RangeError('Version cannot be negative!');
             }
-            return (portable as VersionedPortable).getVersion();
+            return (portable as VersionedPortable).getClassVersion();
         } else {
             return this.version;
         }

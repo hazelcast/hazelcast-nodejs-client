@@ -149,7 +149,7 @@ function PortableObjectV2(
     this.portables = portables;
 }
 
-PortableObjectV2.prototype.getVersion = function () {
+PortableObjectV2.prototype.getClassVersion = function () {
     return 2;
 };
 
@@ -250,7 +250,7 @@ SimplePortableV3.prototype.writePortable = function (writer) {
     writer.writePortable('innerObject', this.innerObject);
 };
 
-SimplePortableV3.prototype.getVersion = function () {
+SimplePortableV3.prototype.getClassVersion = function () {
     return 3;
 };
 
