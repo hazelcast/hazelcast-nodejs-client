@@ -197,7 +197,7 @@ export class ConfigBuilder {
             const listenerObj = listenersArray[index];
             const importConfig = this.parseImportConfig(listenerObj);
             const listener = loadNameFromPath(importConfig.path, importConfig.exportedName);
-            this.clientConfig.listeners.lifecycle.push(listener);
+            this.clientConfig.listeners.addLifecycleListener(listener);
         }
     }
 
