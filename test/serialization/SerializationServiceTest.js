@@ -19,161 +19,106 @@ var SerializationService = require('../../lib/serialization/SerializationService
 var IdentifiedEntryProcessor = require('../javaclasses/IdentifiedEntryProcessor');
 var ConfigBuilder = require('../../').ConfigBuilder;
 var path = require('path');
-var fs = require('fs');
 
 describe('SerializationServiceTest', function () {
-
-    var JSON_LOCATION = path.resolve(process.cwd(), 'hazelcast-client-serialization-service.json');
-    var ENV_VARIABLE_NAME = 'HAZELCAST_CLIENT_CONFIG';
-
-    before(function () {
-        process.env[ENV_VARIABLE_NAME] = JSON_LOCATION;
-    });
-
-    after(function () {
-       delete process.env[ENV_VARIABLE_NAME];
-    });
-
-    afterEach(function () {
-        try {
-            fs.unlinkSync(JSON_LOCATION);
-        } catch (e) {
-        }
-    });
-
     it('adds data serializable factory by its name', function () {
-        fs.writeFileSync(JSON_LOCATION, '' +
-            '{' +
-            '   "serialization": {' +
-            '       "dataSerializableFactories": [' +
-            '           {' +
-            '               "path": "' + __filename + '",' +
-            '               "exportedName": "IDataSerializableFactory",' +
-            '               "factoryId": 1' +
-            '           }' +
-            '       ]' +
-            '   }' +
-            '}');
-
-        var configBuilder = new ConfigBuilder();
-        return configBuilder.loadConfig().then(function () {
-            var serializationConfig = configBuilder.build().serializationConfig;
-
-            var serializationService = new SerializationService(undefined, serializationConfig);
-
-            var data = serializationService.toData(new IDataSerializable(3));
-            var object = serializationService.toObject(data);
-
-            expect(object.val).to.equal(3);
+        var serializationService = generateSerializationServiceFromConfig({
+            serialization: {
+                dataSerializableFactories: [
+                    {
+                        path: __filename,
+                        exportedName: 'IDataSerializableFactory',
+                        factoryId: 1
+                    }
+                ]
+            }
         });
+
+        var data = serializationService.toData(new IDataSerializable(3));
+        var object = serializationService.toObject(data);
+
+        expect(object.val).to.equal(3);
     });
 
     it('adds portable factory by its name', function () {
-        fs.writeFileSync(JSON_LOCATION, '' +
-            '{' +
-            '   "serialization": {' +
-            '       "portableFactories": [' +
-            '           {' +
-            '               "path": "' + __filename + '",' +
-            '               "exportedName": "PortableFactory",' +
-            '               "factoryId": 2' +
-            '           }' +
-            '       ]' +
-            '   }' +
-            '}');
-
-        var configBuilder = new ConfigBuilder();
-        return configBuilder.loadConfig().then(function () {
-            var serializationConfig = configBuilder.build().serializationConfig;
-
-            var serializationService = new SerializationService(undefined, serializationConfig);
-
-            var data = serializationService.toData(new Portable(3));
-            var object = serializationService.toObject(data);
-
-            expect(object.val).to.equal(3);
+        var serializationService = generateSerializationServiceFromConfig({
+            serialization: {
+                portableFactories: [
+                    {
+                        path: __filename,
+                        exportedName: 'PortableFactory',
+                        factoryId: 2
+                    }
+                ]
+            }
         });
+
+        var data = serializationService.toData(new Portable(3));
+        var object = serializationService.toObject(data);
+
+        expect(object.val).to.equal(3);
     });
 
     it('adds custom serializer by its name', function () {
-        fs.writeFileSync(JSON_LOCATION, '' +
-            '{' +
-            '   "serialization": {' +
-            '       "serializers": [' +
-            '           {' +
-            '               "path": "' + __filename + '",' +
-            '               "exportedName": "CustomSerializer",' +
-            '               "typeId": 44' +
-            '           }' +
-            '       ]' +
-            '   }' +
-            '}');
-
-        var configBuilder = new ConfigBuilder();
-        return configBuilder.loadConfig().then(function () {
-            var serializationConfig = configBuilder.build().serializationConfig;
-
-            var serializationService = new SerializationService(undefined, serializationConfig);
-
-            var data = serializationService.toData(new CustomObject(3));
-            var object = serializationService.toObject(data);
-
-            expect(object.val).to.equal(3);
-            expect(object.self).to.equal(object);
+        var serializationService = generateSerializationServiceFromConfig({
+            serialization: {
+                serializers: [
+                    {
+                        path: __filename,
+                        exportedName: 'CustomSerializer',
+                        typeId: 44
+                    }
+                ]
+            }
         });
 
+        var data = serializationService.toData(new CustomObject(3));
+        var object = serializationService.toObject(data);
+
+        expect(object.val).to.equal(3);
+        expect(object.self).to.equal(object);
     });
 
     it('adds global serializer by its name', function () {
-        fs.writeFileSync(JSON_LOCATION, '' +
-            '{' +
-            '   "serialization": {' +
-            '       "globalSerializer": {' +
-            '           "path": "' + __filename + '",' +
-            '           "exportedName": "GlobalSerializer"' +
-            '       }' +
-            '   }' +
-            '}');
-
-        var configBuilder = new ConfigBuilder();
-        return configBuilder.loadConfig().then(function () {
-            var serializationConfig = configBuilder.build().serializationConfig;
-
-            var serializationService = new SerializationService(undefined, serializationConfig);
-
-            var data = serializationService.toData(new AnyObject(3));
-            var object = serializationService.toObject(data);
-
-            expect(object.val).to.equal(3);
-            expect(object.self).to.equal(object);
+        var serializationService = generateSerializationServiceFromConfig({
+            serialization: {
+                globalSerializer: {
+                    path: __filename,
+                    exportedName: 'GlobalSerializer'
+                }
+            }
         });
+
+        var data = serializationService.toData(new AnyObject(3));
+        var object = serializationService.toObject(data);
+
+        expect(object.val).to.equal(3);
+        expect(object.self).to.equal(object);
     });
 
     it('adds identified factory without named export', function () {
-        fs.writeFileSync(JSON_LOCATION, '' +
-            '{' +
-            '   "serialization": {' +
-            '       "dataSerializableFactories": [' +
-            '           {' +
-            '               "path": "' + path.resolve(__filename, '../../javaclasses/IdentifiedFactory.js') + '",' +
-            '               "factoryId": 66' +
-            '           }' +
-            '       ]' +
-            '   }' +
-            '}');
-
-        var configBuilder = new ConfigBuilder();
-        return configBuilder.loadConfig().then(function () {
-            var serializationConfig = configBuilder.build().serializationConfig;
-
-            var serializationService = new SerializationService(undefined, serializationConfig);
-
-            var data = serializationService.toData(new IdentifiedEntryProcessor('x'));
-            var object = serializationService.toObject(data);
-
-            expect(object.value).to.equal('x');
+        var serializationService = generateSerializationServiceFromConfig({
+            serialization: {
+                dataSerializableFactories: [
+                    {
+                        path: path.resolve(__filename, '../../javaclasses/IdentifiedFactory.js'),
+                        factoryId: 66
+                    }
+                ]
+            }
         });
-    })
+
+        var data = serializationService.toData(new IdentifiedEntryProcessor('x'));
+        var object = serializationService.toObject(data);
+
+        expect(object.value).to.equal('x');
+    });
+
+    function generateSerializationServiceFromConfig(config) {
+        var configBuilder = new ConfigBuilder();
+        configBuilder.loadedJson = config;
+        return new SerializationService(undefined, configBuilder.build().serializationConfig);
+    }
 });
 
 function IDataSerializable(val) {

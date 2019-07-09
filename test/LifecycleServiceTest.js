@@ -17,10 +17,7 @@
 var RC = require('./RC');
 var HazelcastClient = require('../.').Client;
 var Config = require('../.').Config;
-var ConfigBuilder = require('../.').ConfigBuilder;
 var expect = require('chai').expect;
-var path = require('path');
-var fs = require('fs');
 
 describe('LifecycleService', function () {
     var cluster;
