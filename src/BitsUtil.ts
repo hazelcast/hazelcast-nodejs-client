@@ -83,7 +83,7 @@ export class BitsUtil {
             size += 1;
         }
 
-        size += value == null ? 0 : value.length;
+        size += value == null ? 0 : Buffer.byteLength(value, 'utf8');
 
         return size;
     }

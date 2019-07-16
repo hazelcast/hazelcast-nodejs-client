@@ -154,7 +154,7 @@ class ClientMessage {
     }
 
     appendString(value: string): void {
-        const length = value.length;
+        const length = Buffer.byteLength(value, 'utf8');
         this.buffer.writeInt32LE(length, this.cursor);
         this.cursor += 4;
         this.buffer.write(value, this.cursor);
