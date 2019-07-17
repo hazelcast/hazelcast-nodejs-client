@@ -217,7 +217,7 @@ export class ClientConnection {
     private readonly reader: FrameReader;
 
     constructor(client: HazelcastClient, address: Address, socket: net.Socket) {
-        const enablePipelining = client.getConfig().properties[PROPERTY_PIPELINING_ENABLED];
+        const enablePipelining = client.getConfig().properties[PROPERTY_PIPELINING_ENABLED] as boolean;
         const pipeliningThreshold = client.getConfig().properties[PROPERTY_PIPELINING_THRESHOLD] as number;
         const noDelay = client.getConfig().properties[PROPERTY_NO_DELAY] as boolean;
         socket.setNoDelay(noDelay);

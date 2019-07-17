@@ -36,11 +36,9 @@ describe('AutoPipeliningDisabledTest', function () {
     before(function () {
         this.timeout(32000);
         return Controller.createCluster(null, null).then(c => {
-            console.log('cluster');
             cluster = c;
             return Controller.startMember(cluster.id);
         }).then(_ => {
-            console.log('member');
             return createClient();
         }).then(c => {
             client = c;
