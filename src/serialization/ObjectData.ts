@@ -20,10 +20,10 @@ import * as assert from 'assert';
 import * as Long from 'long';
 import {BitsUtil} from '../BitsUtil';
 import {Data, DataInput, DataOutput, PositionalDataOutput} from './Data';
-import {HeapData} from './HeapData';
+import {HeapData, HEAP_DATA_OVERHEAD} from './HeapData';
 import {SerializationService} from './SerializationService';
 
-const OUTPUT_BUFFER_INITIAL_SIZE = 1024;
+const OUTPUT_BUFFER_INITIAL_SIZE = HEAP_DATA_OVERHEAD + BitsUtil.LONG_SIZE_IN_BYTES;
 const MASK_1BYTE = (1 << 8) - 1;
 const MASK_2BYTE = (1 << 16) - 1;
 const MASK_4BYTE = (1 << 32) - 1;

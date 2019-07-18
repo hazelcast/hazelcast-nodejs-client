@@ -16,10 +16,10 @@
 
 'use strict';
 
-const REQ_COUNT = 50000;
+const REQ_COUNT = 100000;
 const BATCH_SIZE = 100;
 
-const ENTRY_COUNT = 10 * 1000;
+const ENTRY_COUNT = 1000;
 const VALUE_SIZE = 10000;
 const GET_PERCENTAGE = 40;
 const PUT_PERCENTAGE = 40;

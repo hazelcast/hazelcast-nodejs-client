@@ -157,10 +157,10 @@ describe('LostInvalidation', function () {
         var listenerId = nearCachedMap.invalidationListenerId;
         var clientRegistrationKey = client.getListenerService().activeRegistrations.get(listenerId).get(client.clusterService.getOwnerConnection());
         var correlationId = clientRegistrationKey.correlationId;
-        var handler = client.getInvocationService().eventHandlers[correlationId.toNumber()].handler;
+        var handler = client.getInvocationService().eventHandlers[correlationId].handler;
         var numberOfBlockedInvalidations = 0;
         var deferred = DeferredPromise();
-        client.getInvocationService().eventHandlers[correlationId.toNumber()].handler = function () {
+        client.getInvocationService().eventHandlers[correlationId].handler = function () {
             numberOfBlockedInvalidations++;
             if (notifyAfterNumberOfEvents !== undefined && notifyAfterNumberOfEvents === numberOfBlockedInvalidations) {
                 deferred.resolve();
@@ -170,6 +170,6 @@ describe('LostInvalidation', function () {
     }
 
     function unblockInvalidationEvents(client, metadata) {
-        client.getInvocationService().eventHandlers[metadata.correlationId.toNumber()].handler = metadata.handler;
+        client.getInvocationService().eventHandlers[metadata.correlationId].handler = metadata.handler;
     }
 });

@@ -91,7 +91,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
     publish(message: E): Promise<void> {
         const reliableTopicMessage = new ReliableTopicMessage();
         reliableTopicMessage.payload = this.serializationService.toData(message);
-        reliableTopicMessage.publishTime = Long.fromNumber(new Date().getTime());
+        reliableTopicMessage.publishTime = Long.fromNumber(Date.now());
         reliableTopicMessage.publisherAddress = this.localAddress;
 
         switch (this.overloadPolicy) {

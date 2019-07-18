@@ -64,16 +64,22 @@ class ClientMessage {
         return message;
     }
 
+    clone(): ClientMessage {
+        const message = new ClientMessage(Buffer.from(this.buffer));
+        message.isRetryable = this.isRetryable;
+        return message;
+    }
+
     getBuffer(): Buffer {
         return this.buffer;
     }
 
-    getCorrelationId(): Long {
+    getCorrelationId(): number {
         const offset = BitsUtil.CORRELATION_ID_FIELD_OFFSET;
-        return this.readLongInternal(offset);
+        return this.readLongInternal(offset).toNumber();
     }
 
-    setCorrelationId(value: Long): void {
+    setCorrelationId(value: number): void {
         this.writeLongInternal(value, BitsUtil.CORRELATION_ID_FIELD_OFFSET);
     }
 
@@ -224,8 +230,7 @@ class ClientMessage {
     readBuffer(): Buffer {
         const size = this.buffer.readUInt32LE(this.cursor);
         this.cursor += BitsUtil.INT_SIZE_IN_BYTES;
-        const result = Buffer.allocUnsafe(size);
-        this.buffer.copy(result, 0, this.cursor, this.cursor + size);
+        const result = this.buffer.slice(this.cursor, this.cursor + size);
         this.cursor += size;
         return result;
     }
