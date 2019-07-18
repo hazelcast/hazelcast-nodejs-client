@@ -565,7 +565,6 @@ Hazelcast Node.js client supports the following data structures and features:
 * Hazelcast Cloud Discovery
 * IdentifiedDataSerializable Serialization
 * Portable Serialization
-* Portable Multiversion Serialization
 * Custom Serialization
 * Global Serialization
 
@@ -852,7 +851,7 @@ As an alternative to the existing serialization methods, Hazelcast offers portab
 
 In order to support these features, a serialized `Portable` object contains meta information like the version and concrete location of the each field in the binary data. This way Hazelcast is able to navigate in the binary data and deserialize only the required field without actually deserializing the whole object which improves the query performance.
 
-With multiversion support, you can have two members where each of them having different versions of the same object, and Hazelcast will store both meta information and use the correct one to serialize and deserialize portable objects depending on the member. This is very helpful when you are doing a rolling upgrade without shutting down the cluster.
+With multiversion support, you can have two members each having different versions of the same object; Hazelcast stores both meta information and uses the correct one to serialize and deserialize portable objects depending on the member. This is very helpful when you are doing a rolling upgrade without shutting down the cluster.
 
 Also note that portable serialization is totally language independent and is used as the binary protocol between Hazelcast server and clients.
 
@@ -938,44 +937,53 @@ More than one version of the same class may need to be serialized and deserializ
 
 Portable serialization supports versioning. It is a global versioning, meaning that all portable classes that are serialized through a member get the globally configured portable version.
 
-In NodeJs Client, you can achieve this by simply adding the `getClassIdd()` method to your class’s implementation of `Portable`, and setting the `ClassVersion` to be different than the default global version.
+You can declare the version in the `hazelcast.xml` configuration file using the `portable-version` element, as shown below.
+	
+	```xml
+	<hazelcast>
+	    ...
+	    <serialization>
+	        <portable-version>1</portable-version>
+	    </serialization>
+	    ...
+	</hazelcast>
+	```
+	If you update the class by changing the type of one of the fields or by adding a new field, it is a good idea to upgrade the version of the class, rather than sticking to the global version specified in the `hazelcast.xml` file.
+	In NodeJs Client, you can achieve this by simply adding the `getClassIdd()` method to your class’s implementation of `Portable`, and setting the `ClassVersion` to be different than the default global version.
 
+> **NOTE: If you do not use the `getVersion()` method in your `Portable` implementation, it will have the global version, by default.**
 
-A sample portable implementation of a `Employee2` class looks like the following:
+Here is an example implementation of creating a version 2 for the above Foo class:
 
 ```javascript
-function Employee2(name,age,manager) {
-    this.name=name;
-    this.age=age;
-    this.manager=manager;
+function Foo(foo,foo2) {
+	this.foo=foo;
+	this.foo2=foo2;
 };
 
-Employee2.prototype.readPortable = function (reader) {
-    this.name = reader.readUTF('name');
-    this.age = reader.readInt('age');
-    this.manager = reader.readUTF('manager');
-};
-
-Employee2.prototype.writePortable = function (writer) {
-    writer.writeUTF('name', this.name);
-    writer.writeInt('age', this.age);
-    writer.writeUTF('manager', this.manager);
-};
-
-Employee2.prototype.getFactoryId = function () {
+Foo.prototype.getFactoryId = function () {
     return 1;
 };
 
-Employee2.prototype.getClassId = function () {
+Foo.prototype.getClassId = function () {
     return 1;
 };
 
-Employee2.prototype.getVersion = function () {		//*
+Foo.prototype.getVersion = function () {
     return 2;
 };
-```
 
-> *This method is used in the form of `getVersion` for NodeJs while Java is  `getClassVersion` .
+Foo.prototype.readPortable = function (reader) {
+    this.foo = reader.readUTF('foo');
+	this.foo2 = reader.readUTF('foo2');
+
+};
+
+Foo.prototype.writePortable = function (writer) {
+    writer.writeUTF('foo', this.foo);
+	writer.writeUTF('foo2', this.foo2);
+};
+```
 
 Similar to `IdentifiedDataSerializable`, a `Portable` object must provide `classId` and `factoryId`. The factory object will be used to create the `Portable` object given the `classId`.
 
