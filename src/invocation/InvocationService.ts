@@ -17,7 +17,6 @@
 import {Buffer} from 'safe-buffer';
 import * as assert from 'assert';
 import * as Promise from 'bluebird';
-import * as Long from 'long';
 import {BitsUtil} from '../BitsUtil';
 import HazelcastClient from '../HazelcastClient';
 import {
@@ -60,7 +59,7 @@ export class Invocation {
     /**
      * Deadline of validity. Client will not try to send this request to server after the deadline passes.
      */
-    deadline: Date;
+    deadline: number;
     /**
      * Connection of the request. If request is not bound to any specific address, should be set to null.
      */
@@ -79,7 +78,7 @@ export class Invocation {
     constructor(client: HazelcastClient, request: ClientMessage) {
         this.client = client;
         this.invocationService = client.getInvocationService();
-        this.deadline = new Date(new Date().getTime() + this.invocationService.getInvocationTimeoutMillis());
+        this.deadline = Date.now() + this.invocationService.getInvocationTimeoutMillis();
         this.request = request;
     }
 
@@ -133,8 +132,8 @@ export class InvocationService {
     }
 
     invoke(invocation: Invocation): Promise<ClientMessage> {
-        const newCorrelationId = Long.fromNumber(this.correlationCounter++);
         invocation.deferred = DeferredPromise<ClientMessage>();
+        const newCorrelationId = this.correlationCounter++;
         invocation.request.setCorrelationId(newCorrelationId);
         this.doInvoke(invocation);
         return invocation.deferred.promise;
@@ -215,7 +214,7 @@ export class InvocationService {
      */
     processResponse(buffer: Buffer): void {
         const clientMessage = new ClientMessage(buffer);
-        const correlationId = clientMessage.getCorrelationId().toNumber();
+        const correlationId = clientMessage.getCorrelationId();
         const messageType = clientMessage.getMessageType();
 
         if (clientMessage.hasFlags(BitsUtil.LISTENER_FLAG)) {
@@ -309,9 +308,9 @@ export class InvocationService {
     }
 
     private notifyError(invocation: Invocation, error: Error): void {
-        const correlationId = invocation.request.getCorrelationId().toNumber();
+        const correlationId = invocation.request.getCorrelationId();
         if (this.rejectIfNotRetryable(invocation, error)) {
-            delete this.pending[invocation.request.getCorrelationId().toNumber()];
+            delete this.pending[correlationId];
             return;
         }
         this.logger.debug('InvocationService',
@@ -342,7 +341,7 @@ export class InvocationService {
             invocation.deferred.reject(error);
             return true;
         }
-        if (invocation.deadline.getTime() < Date.now()) {
+        if (invocation.deadline < Date.now()) {
             this.logger.trace('InvocationService', 'Error will not be retried because invocation timed out');
             invocation.deferred.reject(new InvocationTimeoutError('Invocation ' + invocation.request.getCorrelationId() + ')'
                 + ' reached its deadline.', error));
@@ -352,7 +351,7 @@ export class InvocationService {
 
     private registerInvocation(invocation: Invocation): void {
         const message = invocation.request;
-        const correlationId = message.getCorrelationId().toNumber();
+        const correlationId = message.getCorrelationId();
         if (invocation.hasPartitionId()) {
             message.setPartitionId(invocation.partitionId);
         } else {

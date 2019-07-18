@@ -41,7 +41,7 @@ export class DataRecord {
         if (creationTime) {
             this.creationTime = creationTime;
         } else {
-            this.creationTime = new Date().getTime();
+            this.creationTime = Date.now();
         }
         if (ttl) {
             this.expirationTime = this.creationTime + ttl * 1000;
@@ -69,7 +69,7 @@ export class DataRecord {
     }
 
     isExpired(maxIdleSeconds: number): boolean {
-        const now = new Date().getTime();
+        const now = Date.now();
         if ((this.expirationTime > 0 && this.expirationTime < now) ||
             (maxIdleSeconds > 0 && this.lastAccessTime + maxIdleSeconds * 1000 < now)) {
             return true;
@@ -79,7 +79,7 @@ export class DataRecord {
     }
 
     setAccessTime(): void {
-        this.lastAccessTime = new Date().getTime();
+        this.lastAccessTime = Date.now();
     }
 
     hitRecord(): void {
@@ -118,7 +118,7 @@ export class DataRecord {
         if (creationTime) {
             this.creationTime = creationTime;
         } else {
-            this.creationTime = new Date().getTime();
+            this.creationTime = Date.now();
         }
         if (this.ttl) {
             this.expirationTime = this.creationTime + this.ttl * 1000;

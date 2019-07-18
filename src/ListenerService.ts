@@ -105,7 +105,7 @@ export class ListenerService implements ConnectionHeartbeatListener {
                                           userKey: string) => {
             const eventRegistration: ClientEventRegistration = registrationsOnUserKey.get(connection);
             if (eventRegistration !== undefined) {
-                this.client.getInvocationService().removeEventHandler(eventRegistration.correlationId.toNumber());
+                this.client.getInvocationService().removeEventHandler(eventRegistration.correlationId);
             }
         });
     }
@@ -172,7 +172,7 @@ export class ListenerService implements ConnectionHeartbeatListener {
             invocation.connection = eventRegistration.subscriber;
             this.client.getInvocationService().invoke(invocation).then((responseMessage) => {
                 registrationsOnUserKey.delete(connection);
-                this.client.getInvocationService().removeEventHandler(eventRegistration.correlationId.low);
+                this.client.getInvocationService().removeEventHandler(eventRegistration.correlationId);
                 this.logger.debug('ListenerService',
                     'Listener ' + userRegistrationKey + ' unregistered from ' + invocation.connection.toString());
                 this.activeRegistrations.delete(userRegistrationKey);
@@ -221,7 +221,8 @@ export class ListenerService implements ConnectionHeartbeatListener {
             if (connectionsOnUserKey.has(activeConnections[address])) {
                 continue;
             }
-            const invocation = new Invocation(this.client, registerRequest);
+            const requestCopy = registerRequest.clone();
+            const invocation = new Invocation(this.client, requestCopy);
             invocation.handler = listenerHandlerFunc as any;
             invocation.connection = activeConnections[address];
             this.client.getInvocationService().invoke(invocation).then((responseMessage) => {

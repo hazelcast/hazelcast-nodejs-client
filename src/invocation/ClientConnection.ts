@@ -17,6 +17,7 @@
 import {Buffer} from 'safe-buffer';
 import * as Promise from 'bluebird';
 import * as net from 'net';
+import {EventEmitter} from 'events';
 import {BitsUtil} from '../BitsUtil';
 import {BuildInfo} from '../BuildInfo';
 import HazelcastClient from '../HazelcastClient';
@@ -24,31 +25,216 @@ import {IOError} from '../HazelcastError';
 import Address = require('../Address');
 import {DeferredPromise} from '../Util';
 
+const FROZEN_ARRAY = Object.freeze([]) as OutputQueueItem[];
+const PROPERTY_PIPELINING_ENABLED = 'hazelcast.client.autopipelining.enabled';
+const PROPERTY_PIPELINING_THRESHOLD = 'hazelcast.client.autopipelining.threshold.bytes';
+const PROPERTY_NO_DELAY = 'hazelcast.client.socket.no.delay';
+
+interface OutputQueueItem {
+    buffer: Buffer;
+    resolver: Promise.Resolver<void>;
+}
+
+export class PipelinedWriter extends EventEmitter {
+
+    private readonly socket: net.Socket;
+    private queue: OutputQueueItem[] = [];
+    private error: Error;
+    private scheduled: boolean = false;
+    // coalescing threshold in bytes
+    private readonly threshold: number;
+
+    constructor(socket: net.Socket, threshold: number) {
+        super();
+        this.socket = socket;
+        this.threshold = threshold;
+    }
+
+    write(buffer: Buffer, resolver: Promise.Resolver<void>): void {
+        if (this.error) {
+            // if there was a write error, it's useless to keep writing to the socket
+            return process.nextTick(() => resolver.reject(this.error));
+        }
+        this.queue.push({ buffer, resolver });
+        this.schedule();
+    }
+
+    private schedule(): void {
+        if (!this.scheduled) {
+            this.scheduled = true;
+            // nextTick allows queue to be processed on the current event loop phase
+            process.nextTick(() => this.process());
+        }
+    }
+
+    private process(): void {
+        if (this.error) {
+            return;
+        }
+
+        const buffers: Buffer[] = [];
+        const resolvers: Array<Promise.Resolver<void>> = [];
+        let totalLength = 0;
+
+        while (this.queue.length > 0 && totalLength < this.threshold) {
+            const item = this.queue.shift();
+            const data = item.buffer;
+            totalLength += data.length;
+            buffers.push(data);
+            resolvers.push(item.resolver);
+        }
+
+        if (totalLength === 0) {
+            this.scheduled = false;
+            return;
+        }
+
+        // coalesce buffers and write to the socket: no further writes until flushed
+        const merged = buffers.length === 1 ? buffers[0] : Buffer.concat(buffers, totalLength);
+        this.socket.write(merged as any, (err: Error) => {
+            if (err) {
+                this.handleError(err, resolvers);
+                return;
+            }
+
+            this.emit('write');
+            for (const r of resolvers) {
+                r.resolve();
+            }
+            if (this.queue.length === 0) {
+                // will start running on the next message
+                this.scheduled = false;
+                return;
+            }
+            // setImmediate allows IO between writes
+            setImmediate(() => this.process());
+        });
+    }
+
+    private handleError(err: any, sentResolvers: Array<Promise.Resolver<void>>): void {
+        this.error = new IOError(err);
+        for (const r of sentResolvers) {
+            r.reject(this.error);
+        }
+        // no more items can be added now
+        const q = this.queue;
+        this.queue = FROZEN_ARRAY;
+        for (const it of q) {
+            it.resolver.reject(this.error);
+        }
+    }
+}
+
+export class DirectWriter extends EventEmitter {
+
+    private readonly socket: net.Socket;
+
+    constructor(socket: net.Socket) {
+        super();
+        this.socket = socket;
+    }
+
+    write(buffer: Buffer, resolver: Promise.Resolver<void>): void {
+        this.socket.write(buffer as any, (err: any) => {
+            if (err) {
+                resolver.reject(new IOError(err));
+                return;
+            }
+            this.emit('write');
+            resolver.resolve();
+        });
+    }
+}
+
+export class FrameReader {
+
+    private chunks: Buffer[] = [];
+    private chunksTotalSize: number = 0;
+    private frameSize: number = 0;
+
+    append(buffer: Buffer): void {
+        this.chunksTotalSize += buffer.length;
+        this.chunks.push(buffer);
+    }
+
+    read(): Buffer {
+        if (this.chunksTotalSize < BitsUtil.INT_SIZE_IN_BYTES) {
+            return null;
+        }
+        if (this.frameSize === 0) {
+            this.frameSize = this.readFrameSize();
+        }
+        if (this.chunksTotalSize < this.frameSize) {
+            return null;
+        }
+
+        let frame = this.chunks.length === 1 ? this.chunks[0] : Buffer.concat(this.chunks, this.chunksTotalSize);
+        if (this.chunksTotalSize > this.frameSize) {
+            if (this.chunks.length === 1) {
+                this.chunks[0] = frame.slice(this.frameSize);
+            } else {
+                this.chunks = [frame.slice(this.frameSize)];
+            }
+            frame = frame.slice(0, this.frameSize);
+        } else {
+            this.chunks = [];
+        }
+        this.chunksTotalSize -= this.frameSize;
+        this.frameSize = 0;
+        return frame;
+    }
+
+    private readFrameSize(): number {
+        if (this.chunks[0].length >= BitsUtil.INT_SIZE_IN_BYTES) {
+            return this.chunks[0].readInt32LE(0);
+        }
+        let readChunksSize = 0;
+        for (let i = 0; i < this.chunks.length; i++) {
+            readChunksSize += this.chunks[i].length;
+            if (readChunksSize >= BitsUtil.INT_SIZE_IN_BYTES) {
+                const merged = Buffer.concat(this.chunks.slice(0, i + 1), readChunksSize);
+                return merged.readInt32LE(0);
+            }
+        }
+        throw new Error('Detected illegal internal call in FrameReader!');
+    }
+}
+
 export class ClientConnection {
     private address: Address;
     private readonly localAddress: Address;
     private lastReadTimeMillis: number;
     private lastWriteTimeMillis: number;
     private heartbeating = true;
-    private client: HazelcastClient;
-    private readBuffer: Buffer;
+    private readonly client: HazelcastClient;
     private readonly startTime: number = Date.now();
     private closedTime: number;
     private connectedServerVersionString: string;
     private connectedServerVersion: number;
     private authenticatedAsOwner: boolean;
-    private socket: net.Socket;
+    private readonly socket: net.Socket;
+    private readonly writer: PipelinedWriter | DirectWriter;
+    private readonly reader: FrameReader;
 
     constructor(client: HazelcastClient, address: Address, socket: net.Socket) {
+        const enablePipelining = client.getConfig().properties[PROPERTY_PIPELINING_ENABLED] as boolean;
+        const pipeliningThreshold = client.getConfig().properties[PROPERTY_PIPELINING_THRESHOLD] as number;
+        const noDelay = client.getConfig().properties[PROPERTY_NO_DELAY] as boolean;
+        socket.setNoDelay(noDelay);
+
         this.client = client;
         this.socket = socket;
         this.address = address;
         this.localAddress = new Address(socket.localAddress, socket.localPort);
-        this.readBuffer = Buffer.alloc(0);
         this.lastReadTimeMillis = 0;
         this.closedTime = 0;
         this.connectedServerVersionString = null;
         this.connectedServerVersion = BuildInfo.UNKNOWN_VERSION_ID;
+        this.writer = enablePipelining ? new PipelinedWriter(socket, pipeliningThreshold) : new DirectWriter(socket);
+        this.writer.on('write', () => {
+            this.lastWriteTimeMillis = Date.now();
+        });
+        this.reader = new FrameReader();
     }
 
     /**
@@ -73,18 +259,7 @@ export class ClientConnection {
 
     write(buffer: Buffer): Promise<void> {
         const deferred = DeferredPromise<void>();
-        try {
-            this.socket.write(buffer as any, (err: any) => {
-                if (err) {
-                    deferred.reject(new IOError(err));
-                } else {
-                    this.lastWriteTimeMillis = Date.now();
-                    deferred.resolve();
-                }
-            });
-        } catch (err) {
-            deferred.reject(new IOError(err));
-        }
+        this.writer.write(buffer, deferred);
         return deferred.promise;
     }
 
@@ -147,17 +322,12 @@ export class ClientConnection {
      */
     registerResponseCallback(callback: Function): void {
         this.socket.on('data', (buffer: Buffer) => {
-            this.lastReadTimeMillis = new Date().getTime();
-            this.readBuffer = Buffer.concat([this.readBuffer, buffer], this.readBuffer.length + buffer.length);
-            while (this.readBuffer.length >= BitsUtil.INT_SIZE_IN_BYTES) {
-                const frameSize = this.readBuffer.readInt32LE(0);
-                if (frameSize > this.readBuffer.length) {
-                    return;
-                }
-                const message = Buffer.allocUnsafe(frameSize);
-                this.readBuffer.copy(message, 0, 0, frameSize);
-                this.readBuffer = this.readBuffer.slice(frameSize);
-                callback(message);
+            this.lastReadTimeMillis = Date.now();
+            this.reader.append(buffer);
+            let frame = this.reader.read();
+            while (frame !== null) {
+                callback(frame);
+                frame = this.reader.read();
             }
         });
         this.socket.on('error', (e: any) => {

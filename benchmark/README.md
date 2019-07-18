@@ -19,7 +19,7 @@ npm run compile
 
 Next, run at least one instance of IMDG. The most simple way to do it would be to use the [official Docker image](https://hub.docker.com/r/hazelcast/hazelcast/):
 ```bash
-docker run -p 5701:5701 hazelcast/hazelcast:3.11.2
+docker run -p 5701:5701 hazelcast/hazelcast:3.12.1
 ```
 
 Finally, run one of the benchmarks, e.g.:

@@ -66,12 +66,10 @@ export class ClientConnectionManager extends EventEmitter {
      */
     getOrConnect(address: Address, asOwner: boolean = false): Promise<ClientConnection> {
         const addressIndex = address.toString();
-        const connectionResolver: Promise.Resolver<ClientConnection> = DeferredPromise<ClientConnection>();
 
         const establishedConnection = this.establishedConnections[addressIndex];
         if (establishedConnection) {
-            connectionResolver.resolve(establishedConnection);
-            return connectionResolver.promise;
+            return Promise.resolve(establishedConnection);
         }
 
         const pendingConnection = this.pendingConnections[addressIndex];
@@ -79,6 +77,7 @@ export class ClientConnectionManager extends EventEmitter {
             return pendingConnection.promise;
         }
 
+        const connectionResolver: Promise.Resolver<ClientConnection> = DeferredPromise<ClientConnection>();
         this.pendingConnections[addressIndex] = connectionResolver;
 
         const processResponseCallback = (data: Buffer) => {

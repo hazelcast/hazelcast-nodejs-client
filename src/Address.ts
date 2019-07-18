@@ -24,17 +24,21 @@ class Address implements IdentifiedDataSerializable {
     host: string;
     port: number;
     type: number;
+    // memoization for toString()
+    private addrStr: string;
 
     constructor(host?: string, port?: number) {
         this.host = host;
         this.port = port;
         this.type = net.isIP(host);
+        this.addrStr = this.toStringInternal();
     }
 
     readData(input: DataInput): any {
         this.port = input.readInt();
         this.type = input.readByte();
         this.host = input.readUTF();
+        this.addrStr = this.toStringInternal();
     }
 
     writeData(output: DataOutput): void {
@@ -67,6 +71,10 @@ class Address implements IdentifiedDataSerializable {
     }
 
     toString(): string {
+        return this.addrStr;
+    }
+
+    private toStringInternal(): string {
         return this.host + ':' + this.port;
     }
 }

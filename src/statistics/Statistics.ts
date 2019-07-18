@@ -203,7 +203,7 @@ export class Statistics {
     }
 
     private fillMetrics(stats: string[], ownerConnection: ClientConnection): void {
-        this.addStat(stats, 'lastStatisticsCollectionTime', new Date().getTime());
+        this.addStat(stats, 'lastStatisticsCollectionTime', Date.now());
         this.addStat(stats, 'enterprise', 'false');
         this.addStat(stats, 'clientType', this.client.getClusterService().getClientInfo().type);
         this.addStat(stats, 'clientVersion', BuildInfo.getClientVersion());

@@ -16,7 +16,7 @@
 
 'use strict';
 
-const REQ_COUNT = 10000;
+const REQ_COUNT = 100000;
 const BATCH_SIZE = 100;
 
 const Benchmark = require('./SimpleBenchmark');
