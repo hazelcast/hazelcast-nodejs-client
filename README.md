@@ -935,31 +935,30 @@ Note that the ID that is passed to the `SerializationConfig` is same as the `fac
 
 More than one version of the same class may need to be serialized and deserialized. For example, a client may have an older version of a class and the member to which it is connected may have a newer version of the same class.
 
-Portable serialization supports versioning. It is a global versioning, meaning that all portable classes that are serialized through a member get the globally configured portable version.
+Portable serialization supports versioning. It is a global versioning, meaning that all portable classes that are serialized through a client get the globally configured portable version.
 
-You can declare the version in the `hazelcast.xml` configuration file using the `portable-version` element, as shown below.
+You can declare the version in the `hazelcast-client.json` configuration file using the `portableVersion` element, as shown below.
 	
-	```xml
-	<hazelcast>
-	    ...
-	    <serialization>
-	        <portable-version>1</portable-version>
-	    </serialization>
-	    ...
-	</hazelcast>
-	```
-	If you update the class by changing the type of one of the fields or by adding a new field, it is a good idea to upgrade the version of the class, rather than sticking to the global version specified in the `hazelcast.xml` file.
-	In NodeJs Client, you can achieve this by simply adding the `getClassIdd()` method to your class’s implementation of `Portable`, and setting the `ClassVersion` to be different than the default global version.
+```json
+{
+    "serialization": {
+        "portableVersion": 0
+    }
+}
+```
+
+If you update the class by changing the type of one of the fields or by adding a new field, it is a good idea to upgrade the version of the class, rather than sticking to the global version specified in the `hazelcast-client.json` file.
+In NodeJs Client, you can achieve this by simply adding the `getClassIdd()` method to your class’s implementation of `Portable`, and setting the `ClassVersion` to be different than the default global version.
 
 > **NOTE: If you do not use the `getVersion()` method in your `Portable` implementation, it will have the global version, by default.**
 
 Here is an example implementation of creating a version 2 for the above Foo class:
 
 ```javascript
-function Foo(foo,foo2) {
-	this.foo=foo;
-	this.foo2=foo2;
-};
+function Foo(foo, foo2) {
+    this.foo = foo;
+    this.foo2 = foo2;
+}
 
 Foo.prototype.getFactoryId = function () {
     return 1;
@@ -975,59 +974,14 @@ Foo.prototype.getVersion = function () {
 
 Foo.prototype.readPortable = function (reader) {
     this.foo = reader.readUTF('foo');
-	this.foo2 = reader.readUTF('foo2');
-
+    this.foo2 = reader.readUTF('foo2');
 };
 
 Foo.prototype.writePortable = function (writer) {
     writer.writeUTF('foo', this.foo);
-	writer.writeUTF('foo2', this.foo2);
+    writer.writeUTF('foo2', this.foo2);
 };
 ```
-
-Similar to `IdentifiedDataSerializable`, a `Portable` object must provide `classId` and `factoryId`. The factory object will be used to create the `Portable` object given the `classId`.
-
-A sample `PortableFactory2` could be implemented as follows:
-
-```javascript
-function PortableFactory2() {
-    // Constructor function
-}
-
-PortableFactory2.prototype.create = function (classId) {
-    if (classId === 2) {
-        return new Employee2();
-    }
-    return null;
-};
-```
-
-The last step is to register the `PortableFactory` to the `SerializationConfig`.
-
-**Programmatic Configuration:**
-
-```javascript
-var config2 = new Config2.ClientConfig();
-config2.serializationConfig.portableFactories[1] = new PortableFactory();
-```
-
-**Declarative Configuration:**
-
-```json
-{
-    "serialization": {
-        "portableFactories": [
-            {
-                "path": "factory.js",
-                "exportedName": "PortableFactory",
-                "factoryId": 1
-            }
-        ]
-    }
-}
-```
-
-Note that the ID that is passed to the `SerializationConfig` is same as the `factoryId` that `Employee2` object returns.
 
 You should consider the following when you perform versioning:
 - It is important to change the version whenever an update is performed in the serialized fields of a class, for example by incrementing the version.
