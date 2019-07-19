@@ -18,16 +18,16 @@ var Client = require('hazelcast-client').Client;
 var Predicates = require('hazelcast-client').Predicates;
 
 function Customer(name, active, age) {
+    this.name = name;
     this.active = active;
     this.age = age;
-    this.name = name;
-};
+}
 
-Client.newHazelcastClient().then(function (hazelcastClient) {
-    var client = hazelcastClient;
+Client.newHazelcastClient().then(function (client) {
     var personMap;
     client.getMap('personMap').then(function (mp) {
         personMap = mp;
+
         return personMap.putAll([
             ['1', new Customer('Peter', true, 36)],
             ['2', new Customer('John', false, 40)],
@@ -43,7 +43,7 @@ Client.newHazelcastClient().then(function (hazelcastClient) {
     }).then(function (values) {
         values.toArray().forEach(function (value) {
             console.log(value);
-            return client.shutdown();
         });
+        return client.shutdown();
     });
 });
