@@ -19,6 +19,7 @@ var HazelcastClient = require("../../lib/index.js").Client;
 var Controller = require('./../RC');
 var fs = require('fs');
 var _fillMap = require('../Util').fillMap;
+var promiseWaitMilliseconds = require('../Util').promiseWaitMilliseconds;
 
 describe('MapStore', function () {
     var cluster;
@@ -167,5 +168,32 @@ describe('MapStore', function () {
         }).then(function (s) {
             return expect(s).to.equal(0);
         });
+    });
+
+    it('addEntryListener on map entryLoaded includeValue=true', function (done) {
+        var listenerObj = {
+            loaded: function (entryEvent) {
+                try {
+                    expect(entryEvent.name).to.equal('mapstore-test');
+                    expect(entryEvent.key).to.equal('some-key');
+                    expect(entryEvent.value).to.equal('some-value');
+                    expect(entryEvent.oldValue).to.be.undefined;
+                    expect(entryEvent.mergingValue).to.be.undefined;
+                    expect(entryEvent.member).to.not.be.equal(null);
+                    done();
+                } catch (err) {
+                    done(err);
+                }
+            }
+        };
+
+        map.addEntryListener(listenerObj, undefined, true)
+            .then(function () {
+                return map.put('some-key', 'some-value', 1000)
+            }).then(function () {
+                return promiseWaitMilliseconds(1100);
+            }).then(function () {
+                return map.containsKey('some-key');
+            });
     });
 });

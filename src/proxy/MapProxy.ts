@@ -559,6 +559,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             merged: EventType.MERGED,
             removed: EventType.REMOVED,
             updated: EventType.UPDATED,
+            expired: EventType.EXPIRED,
+            loaded: EventType.LOADED,
         };
         for (const funcName in conversionTable) {
             if (listener[funcName]) {
@@ -604,6 +606,11 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                 case EventType.MERGED:
                     listener.merged.apply(null, [entryEvent]);
                     break;
+                case EventType.EXPIRED:
+                    listener.expired.apply(null, [entryEvent]);
+                    break;
+                case EventType.LOADED:
+                    listener.loaded.apply(null, [entryEvent]);
             }
         };
         let codec: ListenerMessageCodec;
