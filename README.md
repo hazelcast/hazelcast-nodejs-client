@@ -27,7 +27,7 @@
 * [4. Serialization](#4-serialization)
   * [4.1. IdentifiedDataSerializable Serialization](#41-identifieddataserializable-serialization)
   * [4.2. Portable Serialization](#42-portable-serialization)
-	* [4.2.1. Versioning for Portable Serialization](#421-multiversion-portable-serialization)
+	* [4.2.1. Versioning for Portable Serialization](#421-versioning-for-portable-serialization)
   * [4.3. Custom Serialization](#43-custom-serialization)
   * [4.4. Global Serialization](#44-global-serialization)
   * [4.5. JSON Serialization](#45-json-serialization)
@@ -948,11 +948,11 @@ You can declare the version in the `hazelcast-client.json` configuration file us
 ```
 
 If you update the class by changing the type of one of the fields or by adding a new field, it is a good idea to upgrade the version of the class, rather than sticking to the global version specified in the `hazelcast-client.json` file.
-In NodeJs Client, you can achieve this by simply adding the `getClassIdd()` method to your class’s implementation of `Portable`, and setting the `ClassVersion` to be different than the default global version.
+In the Node.js client, you can achieve this by simply adding the `getVersion()` method to your class’s implementation of `Portable`, and setting the `ClassVersion` to be different than the default global version.
 
 > **NOTE: If you do not use the `getVersion()` method in your `Portable` implementation, it will have the global version, by default.**
 
-Here is an example implementation of creating a version 2 for the above Foo class:
+Here is an example implementation of creating a version 2 for the Foo class:
 
 ```javascript
 function Foo(foo, foo2) {
