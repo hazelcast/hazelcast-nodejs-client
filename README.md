@@ -27,6 +27,7 @@
 * [4. Serialization](#4-serialization)
   * [4.1. IdentifiedDataSerializable Serialization](#41-identifieddataserializable-serialization)
   * [4.2. Portable Serialization](#42-portable-serialization)
+	* [4.2.1. Versioning for Portable Serialization](#421-versioning-for-portable-serialization)
   * [4.3. Custom Serialization](#43-custom-serialization)
   * [4.4. Global Serialization](#44-global-serialization)
   * [4.5. JSON Serialization](#45-json-serialization)
@@ -850,7 +851,7 @@ As an alternative to the existing serialization methods, Hazelcast offers portab
 
 In order to support these features, a serialized `Portable` object contains meta information like the version and concrete location of the each field in the binary data. This way Hazelcast is able to navigate in the binary data and deserialize only the required field without actually deserializing the whole object which improves the query performance.
 
-With multiversion support, you can have two members where each of them having different versions of the same object, and Hazelcast will store both meta information and use the correct one to serialize and deserialize portable objects depending on the member. This is very helpful when you are doing a rolling upgrade without shutting down the cluster.
+With multiversion support, you can have two members each having different versions of the same object; Hazelcast stores both meta information and uses the correct one to serialize and deserialize portable objects depending on the member. This is very helpful when you are doing a rolling upgrade without shutting down the cluster.
 
 Also note that portable serialization is totally language independent and is used as the binary protocol between Hazelcast server and clients.
 
@@ -928,6 +929,78 @@ config.serializationConfig.portableFactories[1] = new PortableFactory();
 ```
 
 Note that the ID that is passed to the `SerializationConfig` is same as the `factoryId` that `Customer` object returns.
+
+
+### 4.2.1. Versioning for Portable Serialization
+
+More than one version of the same class may need to be serialized and deserialized. For example, a client may have an older version of a class and the member to which it is connected may have a newer version of the same class.
+
+Portable serialization supports versioning. It is a global versioning, meaning that all portable classes that are serialized through a client get the globally configured portable version.
+
+You can declare the version in the `hazelcast-client.json` configuration file using the `portableVersion` element, as shown below.
+	
+```json
+{
+    "serialization": {
+        "portableVersion": 0
+    }
+}
+```
+
+If you update the class by changing the type of one of the fields or by adding a new field, it is a good idea to upgrade the version of the class, rather than sticking to the global version specified in the `hazelcast-client.json` file.
+In the Node.js client, you can achieve this by simply adding the `getVersion()` method to your class’s implementation of `Portable`, and setting the `ClassVersion` to be different than the default global version.
+
+> **NOTE: If you do not use the `getVersion()` method in your `Portable` implementation, it will have the global version, by default.**
+
+Here is an example implementation of creating a version 2 for the Foo class:
+
+```javascript
+function Foo(foo, foo2) {
+    this.foo = foo;
+    this.foo2 = foo2;
+}
+
+Foo.prototype.getFactoryId = function () {
+    return 1;
+};
+
+Foo.prototype.getClassId = function () {
+    return 1;
+};
+
+Foo.prototype.getVersion = function () {
+    return 2;
+};
+
+Foo.prototype.readPortable = function (reader) {
+    this.foo = reader.readUTF('foo');
+    this.foo2 = reader.readUTF('foo2');
+};
+
+Foo.prototype.writePortable = function (writer) {
+    writer.writeUTF('foo', this.foo);
+    writer.writeUTF('foo2', this.foo2);
+};
+```
+
+You should consider the following when you perform versioning:
+
+- It is important to change the version whenever an update is performed in the serialized fields of a class, for example by incrementing the version.
+- If a client performs a Portable deserialization on a field and then that Portable is updated by removing that field on the cluster side, this may lead to problems such as a TypeError being thrown when an older version of the client tries to access the removed field.
+- Portable serialization does not use reflection and hence, fields in the class and in the serialized content are not automatically mapped. Field renaming is a simpler process. Also, since the class ID is stored, renaming the Portable does not lead to problems.
+- Types of fields need to be updated carefully. Hazelcast performs basic type upgradings, such as `int` to `float`.
+
+#### Example Portable Versioning Scenarios:
+
+Assume that a new client joins to the cluster with a class that has been modified and class's version has been upgraded due to this modification.
+
+If you modified the class by adding a new field, the new client’s put operations include that new field. If this new client tries to get an object that was put from the older clients, it gets null for the newly added field.
+
+If you modified the class by removing a field, the old clients get null for the objects that are put by the new client.
+
+If you modified the class by changing the type of a field to an incompatible type (such as from `int` to `String`), a `TypeError` is generated as the client tries accessing an object with the older version of the class. The same applies if a client with the old version tries to access a new version object.
+
+If you did not modify a class at all, it works as usual.
 
 ## 4.3. Custom Serialization
 
