@@ -28,7 +28,7 @@ SSLFactory.prototype.init = function(props) {
 
 SSLFactory.prototype.getSSLOptions = function() {
     var sslOpts = {
-        servername: 'foo.bar.com',
+        servername: 'servername',
         rejectUnauthorized: true,
         ca: fs.readFileSync(this.caPath),
     };
