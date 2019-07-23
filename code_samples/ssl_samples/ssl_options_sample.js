@@ -29,7 +29,7 @@ config.networkConfig.sslConfig.sslOptions = {
         'TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384',
         'TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256',
         'TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384'].join(':'),
-    servername: 'foo.bar.com'
+    servername: 'servername'
 };
 
 Client.newHazelcastClient(config).then(function (client) {
