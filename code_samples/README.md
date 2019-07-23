@@ -2,7 +2,9 @@
 
 This folder contains an extensive collection of Hazelcast Node.js Client code samples, which helps you to learn how to use Hazelcast features. The following lists the samples with their brief descriptions.
 
-**org-website/** —  Folder including the samples to display on https://hazelcast.org.
+**org-website/** — Folder including the samples to display on https://hazelcast.org.
+
+**ssl_samples/** — Folder including the samples to SSL.
 
 **aggregation.js** — Built-in aggregation samples.
 
@@ -35,5 +37,3 @@ This folder contains an extensive collection of Hazelcast Node.js Client code sa
 **queue.js** — Usage of distributed queue.
 
 **set.js** — Usage of distributed set.
-
-**ssl_authentication.js** — Mutual authentication to cluster via SSL.
