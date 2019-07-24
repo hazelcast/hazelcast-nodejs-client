@@ -14,21 +14,39 @@
  * limitations under the License.
  */
 
-/*
-var Client = require('hazelcast-client').Client;
-var mapA,mapB,mapC;
-var lock;
+function OrderKey(orderId, customerId) {
+    this.orderId = orderId;
+    this.customerId = customerId;
+}
+
+OrderKey.prototype.getPartitionKey = function () {
+    return this.customerId;
+};
+
+var Client = require('hazelcast-client').Client;;
+var mapCustomers;
+var mapOrders;
+var customer, order;
 
 Client.newHazelcastClient().then(function (client) {
     Client = client;
-    return client.getMap('mapA');
+    return Client.getMap('customers');
 }).then(function (mp) {
-    mapA = mp;
-    return client.getMap('mapB');
-}).then
-
-
-}
-
-
- */
+    mapCustomers = mp;
+    return Client.getMap('orders');
+}).then(function (mp) {
+    mapOrders = mp;
+    customer = new OrderKey(1,1);
+    return mapCustomers.put(1,customer);
+}).then(function (value) {
+    order =new OrderKey(3,1);
+    console.log('order: ',order);
+    console.log('customer: ',customer);
+    return mapOrders.putAll([
+        [new OrderKey(21,1), order],
+        [new OrderKey(22,1), order],
+        [new OrderKey(23,1), order]
+    ]).then(function () {
+        return Client.shutdown();
+    });
+});
