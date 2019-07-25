@@ -14,25 +14,29 @@
  * limitations under the License.
  */
 
-//Custom SSL Factory
+var Promise = require("bluebird").Promise;
+var fs = require("fs");
+var SSLFactory = /** @class */ (function () {
+    function SSLFactory() {
+    }
 
-var fs = require('fs');
-
-function SSLFactory() {
-}
-
-SSLFactory.prototype.init = function(props) {
-    this.caPath = props.caPath;
-    return Promise.resolve();
-};
-
-SSLFactory.prototype.getSSLOptions = function() {
-    var sslOpts = {
-        servername: 'servername',
-        rejectUnauthorized: true,
-        ca: fs.readFileSync(this.caPath),
+    SSLFactory.prototype.init = function (properties) {
+        var promises = [];
+        var readFile = Promise.promisify(fs.readFile);
+        var self = this;
+        promises.push(readFile(properties.caPath).then(function (data) {
+            self.ca = data;
+        }));
+        return Promise.all(promises).return();
     };
-    return sslOpts;
-};
-exports.SSLFactory = SSLFactory;
 
+    SSLFactory.prototype.getSSLOptions = function () {
+        return {
+            ca: this.ca,
+            servername: 'servername',
+            rejectUnauthorized: true,
+        };
+    };
+    return SSLFactory;
+}());
+exports.SSLFactory = SSLFactory;
