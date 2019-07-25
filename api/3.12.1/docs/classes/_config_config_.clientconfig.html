@@ -1,0 +1,649 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>ClientConfig | hazelcast-client</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.js" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">hazelcast-client</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-only-exported" />
+							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../globals.html">Globals</a>
+				</li>
+				<li>
+					<a href="../modules/_config_config_.html">&quot;config/Config&quot;</a>
+				</li>
+				<li>
+					<a href="_config_config_.clientconfig.html">ClientConfig</a>
+				</li>
+			</ul>
+			<h1>Class ClientConfig</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>Top level configuration object of Hazelcast client. Other configurations items are properties of this object.</p>
+					</div>
+				</div>
+			</section>
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="target">ClientConfig</span>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_config_config_.clientconfig.html#customcredentials" class="tsd-kind-icon">custom<wbr>Credentials</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_config_config_.clientconfig.html#customlogger" class="tsd-kind-icon">custom<wbr>Logger</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_config_config_.clientconfig.html#flakeidgeneratorconfigs" class="tsd-kind-icon">flake<wbr>IdGenerator<wbr>Configs</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_config_config_.clientconfig.html#groupconfig" class="tsd-kind-icon">group<wbr>Config</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_config_config_.clientconfig.html#instancename" class="tsd-kind-icon">instance<wbr>Name</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_config_config_.clientconfig.html#listenerconfigs" class="tsd-kind-icon">listener<wbr>Configs</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_config_config_.clientconfig.html#listeners" class="tsd-kind-icon">listeners</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_config_config_.clientconfig.html#nearcacheconfigs" class="tsd-kind-icon">near<wbr>Cache<wbr>Configs</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_config_config_.clientconfig.html#networkconfig" class="tsd-kind-icon">network<wbr>Config</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_config_config_.clientconfig.html#reliabletopicconfigs" class="tsd-kind-icon">reliable<wbr>Topic<wbr>Configs</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_config_config_.clientconfig.html#serializationconfig" class="tsd-kind-icon">serialization<wbr>Config</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Methods</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_config_config_.clientconfig.html#getflakeidgeneratorconfig" class="tsd-kind-icon">get<wbr>Flake<wbr>IdGenerator<wbr>Config</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_config_config_.clientconfig.html#getinstancename" class="tsd-kind-icon">get<wbr>Instance<wbr>Name</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_config_config_.clientconfig.html#getnearcacheconfig" class="tsd-kind-icon">get<wbr>Near<wbr>Cache<wbr>Config</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_config_config_.clientconfig.html#getreliabletopicconfig" class="tsd-kind-icon">get<wbr>Reliable<wbr>Topic<wbr>Config</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Object literals</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-object-literal tsd-parent-kind-class"><a href="_config_config_.clientconfig.html#properties" class="tsd-kind-icon">properties</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="customcredentials" class="tsd-anchor"></a>
+					<h3>custom<wbr>Credentials</h3>
+					<div class="tsd-signature tsd-kind-icon">custom<wbr>Credentials<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> =&nbsp;null</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L66">config/Config.ts:66</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="customlogger" class="tsd-anchor"></a>
+					<h3>custom<wbr>Logger</h3>
+					<div class="tsd-signature tsd-kind-icon">custom<wbr>Logger<span class="tsd-signature-symbol">:</span> <a href="../interfaces/_logging_ilogger_.ilogger.html" class="tsd-signature-type">ILogger</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L65">config/Config.ts:65</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="flakeidgeneratorconfigs" class="tsd-anchor"></a>
+					<h3>flake<wbr>IdGenerator<wbr>Configs</h3>
+					<div class="tsd-signature tsd-kind-icon">flake<wbr>IdGenerator<wbr>Configs<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L72">config/Config.ts:72</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-index-signature">
+								<h5><span class="tsd-signature-symbol">[</span>name: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><a href="_config_flakeidgeneratorconfig_.flakeidgeneratorconfig.html" class="tsd-signature-type">FlakeIdGeneratorConfig</a></h5>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="groupconfig" class="tsd-anchor"></a>
+					<h3>group<wbr>Config</h3>
+					<div class="tsd-signature tsd-kind-icon">group<wbr>Config<span class="tsd-signature-symbol">:</span> <a href="_config_groupconfig_.groupconfig.html" class="tsd-signature-type">GroupConfig</a><span class="tsd-signature-symbol"> =&nbsp;new GroupConfig()</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L63">config/Config.ts:63</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="instancename" class="tsd-anchor"></a>
+					<h3>instance<wbr>Name</h3>
+					<div class="tsd-signature tsd-kind-icon">instance<wbr>Name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L62">config/Config.ts:62</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Name of this client instance.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="listenerconfigs" class="tsd-anchor"></a>
+					<h3>listener<wbr>Configs</h3>
+					<div class="tsd-signature tsd-kind-icon">listener<wbr>Configs<span class="tsd-signature-symbol">:</span> <a href="../interfaces/_config_importconfig_.importconfig.html" class="tsd-signature-type">ImportConfig</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[]</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L68">config/Config.ts:68</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="listeners" class="tsd-anchor"></a>
+					<h3>listeners</h3>
+					<div class="tsd-signature tsd-kind-icon">listeners<span class="tsd-signature-symbol">:</span> <a href="_config_listenerconfig_.listenerconfig.html" class="tsd-signature-type">ListenerConfig</a><span class="tsd-signature-symbol"> =&nbsp;new ListenerConfig()</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L67">config/Config.ts:67</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="nearcacheconfigs" class="tsd-anchor"></a>
+					<h3>near<wbr>Cache<wbr>Configs</h3>
+					<div class="tsd-signature tsd-kind-icon">near<wbr>Cache<wbr>Configs<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L71">config/Config.ts:71</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-index-signature">
+								<h5><span class="tsd-signature-symbol">[</span>name: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><a href="_config_nearcacheconfig_.nearcacheconfig.html" class="tsd-signature-type">NearCacheConfig</a></h5>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="networkconfig" class="tsd-anchor"></a>
+					<h3>network<wbr>Config</h3>
+					<div class="tsd-signature tsd-kind-icon">network<wbr>Config<span class="tsd-signature-symbol">:</span> <a href="_config_clientnetworkconfig_.clientnetworkconfig.html" class="tsd-signature-type">ClientNetworkConfig</a><span class="tsd-signature-symbol"> =&nbsp;new ClientNetworkConfig()</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L64">config/Config.ts:64</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="reliabletopicconfigs" class="tsd-anchor"></a>
+					<h3>reliable<wbr>Topic<wbr>Configs</h3>
+					<div class="tsd-signature tsd-kind-icon">reliable<wbr>Topic<wbr>Configs<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L70">config/Config.ts:70</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-index-signature">
+								<h5><span class="tsd-signature-symbol">[</span>name: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><a href="_config_reliabletopicconfig_.reliabletopicconfig.html" class="tsd-signature-type">ReliableTopicConfig</a></h5>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="serializationconfig" class="tsd-anchor"></a>
+					<h3>serialization<wbr>Config</h3>
+					<div class="tsd-signature tsd-kind-icon">serialization<wbr>Config<span class="tsd-signature-symbol">:</span> <a href="_config_serializationconfig_.serializationconfig.html" class="tsd-signature-type">SerializationConfig</a><span class="tsd-signature-symbol"> =&nbsp;new SerializationConfig()</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L69">config/Config.ts:69</a></li>
+						</ul>
+					</aside>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="getflakeidgeneratorconfig" class="tsd-anchor"></a>
+					<h3>get<wbr>Flake<wbr>IdGenerator<wbr>Config</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Flake<wbr>IdGenerator<wbr>Config<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_config_flakeidgeneratorconfig_.flakeidgeneratorconfig.html" class="tsd-signature-type">FlakeIdGeneratorConfig</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L102">config/Config.ts:102</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>name: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="_config_flakeidgeneratorconfig_.flakeidgeneratorconfig.html" class="tsd-signature-type">FlakeIdGeneratorConfig</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="getinstancename" class="tsd-anchor"></a>
+					<h3>get<wbr>Instance<wbr>Name</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Instance<wbr>Name<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L76">config/Config.ts:76</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="getnearcacheconfig" class="tsd-anchor"></a>
+					<h3>get<wbr>Near<wbr>Cache<wbr>Config</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Near<wbr>Cache<wbr>Config<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_config_nearcacheconfig_.nearcacheconfig.html" class="tsd-signature-type">NearCacheConfig</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L92">config/Config.ts:92</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>name: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="_config_nearcacheconfig_.nearcacheconfig.html" class="tsd-signature-type">NearCacheConfig</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="getreliabletopicconfig" class="tsd-anchor"></a>
+					<h3>get<wbr>Reliable<wbr>Topic<wbr>Config</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Reliable<wbr>Topic<wbr>Config<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_config_reliabletopicconfig_.reliabletopicconfig.html" class="tsd-signature-type">ReliableTopicConfig</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L80">config/Config.ts:80</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>name: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="_config_reliabletopicconfig_.reliabletopicconfig.html" class="tsd-signature-type">ReliableTopicConfig</a></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Object literals</h2>
+				<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-parent-kind-class">
+					<a name="properties" class="tsd-anchor"></a>
+					<h3>properties</h3>
+					<div class="tsd-signature tsd-kind-icon">properties<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L42">config/Config.ts:42</a></li>
+						</ul>
+					</aside>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="properties.hazelcast_client_autopipelining_enabled" class="tsd-anchor"></a>
+						<h3>hazelcast.client.autopipelining.enabled</h3>
+						<div class="tsd-signature tsd-kind-icon">hazelcast.client.autopipelining.enabled<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> =&nbsp;true</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L54">config/Config.ts:54</a></li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="properties.hazelcast_client_autopipelining_threshold_bytes" class="tsd-anchor"></a>
+						<h3>hazelcast.client.autopipelining.threshold.bytes</h3>
+						<div class="tsd-signature tsd-kind-icon">hazelcast.client.autopipelining.threshold.bytes<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;8192</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L55">config/Config.ts:55</a></li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="properties.hazelcast_client_cloud_url" class="tsd-anchor"></a>
+						<h3>hazelcast.client.cloud.url</h3>
+						<div class="tsd-signature tsd-kind-icon">hazelcast.client.cloud.url<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;https://coordinator.hazelcast.cloud&quot;</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L47">config/Config.ts:47</a></li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="properties.hazelcast_client_heartbeat_interval" class="tsd-anchor"></a>
+						<h3>hazelcast.client.heartbeat.interval</h3>
+						<div class="tsd-signature tsd-kind-icon">hazelcast.client.heartbeat.interval<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;5000</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L43">config/Config.ts:43</a></li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="properties.hazelcast_client_heartbeat_timeout" class="tsd-anchor"></a>
+						<h3>hazelcast.client.heartbeat.timeout</h3>
+						<div class="tsd-signature tsd-kind-icon">hazelcast.client.heartbeat.timeout<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;60000</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L44">config/Config.ts:44</a></li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="properties.hazelcast_client_invocation_retry_pause_millis" class="tsd-anchor"></a>
+						<h3>hazelcast.client.invocation.retry.pause.millis</h3>
+						<div class="tsd-signature tsd-kind-icon">hazelcast.client.invocation.retry.pause.millis<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;1000</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L45">config/Config.ts:45</a></li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="properties.hazelcast_client_invocation_timeout_millis" class="tsd-anchor"></a>
+						<h3>hazelcast.client.invocation.timeout.millis</h3>
+						<div class="tsd-signature tsd-kind-icon">hazelcast.client.invocation.timeout.millis<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;120000</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L46">config/Config.ts:46</a></li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="properties.hazelcast_client_socket_no_delay" class="tsd-anchor"></a>
+						<h3>hazelcast.client.socket.no.delay</h3>
+						<div class="tsd-signature tsd-kind-icon">hazelcast.client.socket.no.delay<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> =&nbsp;true</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L56">config/Config.ts:56</a></li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="properties.hazelcast_client_statistics_enabled" class="tsd-anchor"></a>
+						<h3>hazelcast.client.statistics.enabled</h3>
+						<div class="tsd-signature tsd-kind-icon">hazelcast.client.statistics.enabled<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> =&nbsp;false</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L48">config/Config.ts:48</a></li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="properties.hazelcast_client_statistics_period_seconds" class="tsd-anchor"></a>
+						<h3>hazelcast.client.statistics.period.seconds</h3>
+						<div class="tsd-signature tsd-kind-icon">hazelcast.client.statistics.period.seconds<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;Statistics.PERIOD_SECONDS_DEFAULT_VALUE</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L49">config/Config.ts:49</a></li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="properties.hazelcast_invalidation_max_tolerated_miss_count" class="tsd-anchor"></a>
+						<h3>hazelcast.invalidation.max.tolerated.miss.count</h3>
+						<div class="tsd-signature tsd-kind-icon">hazelcast.invalidation.max.tolerated.miss.count<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;10</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L51">config/Config.ts:51</a></li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="properties.hazelcast_invalidation_min_reconciliation_interval_seconds" class="tsd-anchor"></a>
+						<h3>hazelcast.invalidation.min.reconciliation.interval.seconds</h3>
+						<div class="tsd-signature tsd-kind-icon">hazelcast.invalidation.min.reconciliation.interval.seconds<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;30</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L52">config/Config.ts:52</a></li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="properties.hazelcast_invalidation_reconciliation_interval_seconds" class="tsd-anchor"></a>
+						<h3>hazelcast.invalidation.reconciliation.interval.seconds</h3>
+						<div class="tsd-signature tsd-kind-icon">hazelcast.invalidation.reconciliation.interval.seconds<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;60</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L50">config/Config.ts:50</a></li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="properties.hazelcast_logging_level" class="tsd-anchor"></a>
+						<h3>hazelcast.logging.level</h3>
+						<div class="tsd-signature tsd-kind-icon">hazelcast.logging.level<span class="tsd-signature-symbol">:</span> <a href="../enums/_logging_loggingservice_.loglevel.html" class="tsd-signature-type">LogLevel</a><span class="tsd-signature-symbol"> =&nbsp;LogLevel.INFO</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/hazelcast/hazelcast-nodejs-client/blob/e871169/src/config/Config.ts#L53">config/Config.ts:53</a></li>
+							</ul>
+						</aside>
+					</section>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="../globals.html"><em>Globals</em></a>
+					</li>
+					<li class="current tsd-kind-external-module">
+						<a href="../modules/_config_config_.html">"config/<wbr>Config"</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-class tsd-parent-kind-external-module">
+						<a href="_config_config_.clientconfig.html" class="tsd-kind-icon">Client<wbr>Config</a>
+						<ul>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="_config_config_.clientconfig.html#customcredentials" class="tsd-kind-icon">custom<wbr>Credentials</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="_config_config_.clientconfig.html#customlogger" class="tsd-kind-icon">custom<wbr>Logger</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="_config_config_.clientconfig.html#flakeidgeneratorconfigs" class="tsd-kind-icon">flake<wbr>IdGenerator<wbr>Configs</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="_config_config_.clientconfig.html#groupconfig" class="tsd-kind-icon">group<wbr>Config</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="_config_config_.clientconfig.html#instancename" class="tsd-kind-icon">instance<wbr>Name</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="_config_config_.clientconfig.html#listenerconfigs" class="tsd-kind-icon">listener<wbr>Configs</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="_config_config_.clientconfig.html#listeners" class="tsd-kind-icon">listeners</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="_config_config_.clientconfig.html#nearcacheconfigs" class="tsd-kind-icon">near<wbr>Cache<wbr>Configs</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="_config_config_.clientconfig.html#networkconfig" class="tsd-kind-icon">network<wbr>Config</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="_config_config_.clientconfig.html#reliabletopicconfigs" class="tsd-kind-icon">reliable<wbr>Topic<wbr>Configs</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="_config_config_.clientconfig.html#serializationconfig" class="tsd-kind-icon">serialization<wbr>Config</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_config_config_.clientconfig.html#getflakeidgeneratorconfig" class="tsd-kind-icon">get<wbr>Flake<wbr>IdGenerator<wbr>Config</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_config_config_.clientconfig.html#getinstancename" class="tsd-kind-icon">get<wbr>Instance<wbr>Name</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_config_config_.clientconfig.html#getnearcacheconfig" class="tsd-kind-icon">get<wbr>Near<wbr>Cache<wbr>Config</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_config_config_.clientconfig.html#getreliabletopicconfig" class="tsd-kind-icon">get<wbr>Reliable<wbr>Topic<wbr>Config</a>
+							</li>
+							<li class=" tsd-kind-object-literal tsd-parent-kind-class">
+								<a href="_config_config_.clientconfig.html#properties" class="tsd-kind-icon">properties</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-module"><span class="tsd-kind-icon">Module</span></li>
+				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-enum-member"><span class="tsd-kind-icon">Enumeration member</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-enum"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-enum"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-interface"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-interface"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-class"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
+				<li class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="http://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+<script>if (location.protocol == 'file:') document.write('<script src="../assets/js/search.js"><' + '/script>');</script>
+</body>
+</html>
