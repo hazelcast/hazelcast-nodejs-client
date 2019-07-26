@@ -34,7 +34,7 @@ Client.newHazelcastClient().then(function (client) {
         return semaphore.availablePermits();
     }).then(function (res) {
         console.log("Available Permits: ",res);
-        return semaphore.acquire(7);
+        return semaphore.tryAcquire(7);
     }).then(function () {
         return semaphore.availablePermits();
     }).then(function (res) {
