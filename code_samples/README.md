@@ -4,11 +4,11 @@ This folder contains an extensive collection of Hazelcast Node.js Client code sa
 
 **org-website/** —  Folder including the samples to display on https://hazelcast.org.
 
+**listener_samples/** —  Folder including the samples various events are fired and describes how you can add event listeners.
+
 **aggregation.js** — Built-in aggregation samples.
 
 **custom_serializer.js** — Creating and adding custom serializer to serialization configuration.
-
-**distibuted_object_listener.js** — Listening to distributed object events.
 
 **flakeid_generator.js** — Usage of distributed Flake ID Generator.
 
@@ -16,15 +16,11 @@ This folder contains an extensive collection of Hazelcast Node.js Client code sa
 
 **hazelcast-cloud-discovery.js** — Usage of cloud discovery.
 
-**lifecycle_listener.js** — Listening to lifecycle events of the Hazelcast instance.
-
 **list.js** — Usage of distributed list.
 
 **logging.js** — Defining log levels.
 
 **map.js** — Usage of distributed map.
-
-**map_entry_listener.js** — Listening to map events.
 
 **near_cache.js** — Usage of distributed map with a near cache.
 
