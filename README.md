@@ -1557,20 +1557,32 @@ An example of a factory, `my_factory.js`, is shown below.
 function SSLFactory() {
 }
 
-SSLFactory.prototype.init = function(props) {
-    this.caPath = props.caPath;
-    this.keyPath = props.keyPath;
-    this.certPath = props.certPath;
+SSLFactory.prototype.init = function (properties) {
+    var promises = [];
+    var readFile = Promise.promisify(fs.readFile);
     this.keepOrder = props.userDefinedProperty1;
+    var self = this;
+
+    promises.push(readFile(properties.caPath).then(function (data) {
+        self.ca = data;
+    }));
+    promises.push(readFile(properties.keyPath).then(function (data) {
+        self.key = data;
+    }));
+    promises.push(readFile(properties.certPath).then(function (data) {
+        self.cert = data;
+    }));
+    
+    return Promise.all(promises).return();
 };
 
-SSLFactory.prototype.getSSLOptions = function() {
+SSLFactory.prototype.getSSLOptions = function () {
     var sslOpts = {
+        ca: this.ca,
+        key: this.key,
+        cert: this.cert,
         servername: 'foo.bar.com',
-        rejectUnauthorized: true,
-        ca: fs.readFileSync(this.caPath)
-        key: fs.readFileSync(this.keyPath),
-        cert: fs.readFileSync(this.certPath),
+        rejectUnauthorized: true
     };
     if (this.keepOrder) {
         sslOpts.honorCipherOrder = true;
