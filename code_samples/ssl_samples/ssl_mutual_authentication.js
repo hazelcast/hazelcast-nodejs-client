@@ -22,15 +22,9 @@ var config = new Config();
 config.networkConfig.sslConfig.enabled = true;
 
 config.networkConfig.sslConfig.sslOptions = {
-    ca: [
-        fs.readFileSync('ca.pem')
-    ],
-    cert: [
-        fs.readFileSync('cert.pem')
-    ],
-    key: [
-        fs.readFileSync('key.pem')
-    ],
+    ca: [fs.readFileSync('ca.pem')],
+    cert: [fs.readFileSync('cert.pem')],
+    key: [fs.readFileSync('key.pem')],
     servername: 'servername'
 };
 

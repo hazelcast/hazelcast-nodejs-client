@@ -16,27 +16,26 @@
 
 var Promise = require("bluebird").Promise;
 var fs = require("fs");
-var SSLFactory = /** @class */ (function () {
-    function SSLFactory() {
-    }
 
-    SSLFactory.prototype.init = function (properties) {
-        var promises = [];
-        var readFile = Promise.promisify(fs.readFile);
-        var self = this;
-        promises.push(readFile(properties.caPath).then(function (data) {
-            self.ca = data;
-        }));
-        return Promise.all(promises).return();
-    };
+function SSLFactory() {
+}
 
-    SSLFactory.prototype.getSSLOptions = function () {
-        return {
-            ca: this.ca,
-            servername: 'servername',
-            rejectUnauthorized: true,
-        };
+SSLFactory.prototype.init = function (properties) {
+    var promises = [];
+    var readFile = Promise.promisify(fs.readFile);
+    var self = this;
+    promises.push(readFile(properties.caPath).then(function (data) {
+        self.ca = data;
+    }));
+    return Promise.all(promises).return();
+};
+
+SSLFactory.prototype.getSSLOptions = function () {
+    return {
+        ca: this.ca,
+        servername: 'servername',
+        rejectUnauthorized: true,
     };
-    return SSLFactory;
-}());
+};
+
 exports.SSLFactory = SSLFactory;
