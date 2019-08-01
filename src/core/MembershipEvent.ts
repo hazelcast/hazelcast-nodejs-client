@@ -24,17 +24,17 @@ export class MembershipEvent {
     /**
      * the removed or added member.
      */
-    private member: Member;
+    public member: Member;
 
     /**
      * the membership event type.
      */
-    private eventType: number;
+    public eventType: number;
 
     /**
      * the members at the moment after this event.
      */
-    private members: Member[];
+    public members: Member[];
 
     constructor(member: Member, eventType: number, members: Member[]) {
         this.member = member;

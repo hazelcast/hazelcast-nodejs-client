@@ -18,7 +18,6 @@ import {ClientConnection} from './ClientConnection';
 import * as Promise from 'bluebird';
 import {ClientAddMembershipListenerCodec} from '../codec/ClientAddMembershipListenerCodec';
 import {Member} from '../core/Member';
-import {LoggingService} from '../logging/LoggingService';
 import {ClientInfo} from '../ClientInfo';
 import HazelcastClient from '../HazelcastClient';
 import {IllegalStateError} from '../HazelcastError';
@@ -286,9 +285,45 @@ export class ClusterService {
     }
 
     private handleMemberList(members: Member[]): void {
+        let prevMembers: Member[] = [];
+        if (this.members.length !== 0) {
+            prevMembers = this.members.slice();
+        }
+
         this.members = members;
+        const events: MembershipEvent[] = this.detectMembershipEvents(prevMembers);
         this.client.getPartitionService().refresh();
         this.logger.info('ClusterService', 'Members received.', this.members);
+        this.fireMembershipEvent(events);
+    }
+
+    private fireMembershipEvent(events: MembershipEvent[]): any {
+        for (const event of events) {
+            this.client.getClusterService().handleMember(event.member, event.eventType);
+        }
+    }
+
+    private detectMembershipEvents(prevMembers: Member[]): MembershipEvent[] {
+        const events: MembershipEvent[] = [];
+
+        const addedMembers: Member[] = [];
+
+        for (const member of this.members) {
+            const index = prevMembers.indexOf(member);
+            if (index === -1) {
+                addedMembers.push(member);
+            } else {
+                prevMembers.splice(index, 1);
+            }
+        }
+
+        for (const member of addedMembers) {
+            events.push(new MembershipEvent(member, MemberEvent.ADDED, this.members));
+        }
+        for (const member of prevMembers) {
+            events.push(new MembershipEvent(member, MemberEvent.REMOVED, this.members));
+        }
+        return events;
     }
 
     private handleMemberAttributeChange(
@@ -304,7 +339,9 @@ export class ClusterService {
     }
 
     private memberAdded(member: Member): void {
-        this.members.push(member);
+        if (this.members.indexOf(member) === -1) {
+            this.members.push(member);
+        }
         this.membershipListeners.forEach((membershipListener, registrationId) => {
             if (membershipListener && membershipListener.memberAdded) {
                 const membershipEvent = new MembershipEvent(member, MemberEvent.ADDED, this.members);
