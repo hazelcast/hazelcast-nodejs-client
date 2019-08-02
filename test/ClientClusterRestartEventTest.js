@@ -22,11 +22,10 @@ var MemberAttributeOperationType = require('../.').MemberAttributeOperationType;
 var MemberEvent = require('../lib/invocation/ClusterService').MemberEvent;
 var Config = require('../.').Config;
 
-
-describe('ClientClusterRestartEvenetTest',function () {
+describe('ClientClusterRestartEventTest', function () {
     var cluster;
     var client;
-    var member;
+    var member , member2;
 
     beforeEach(function () {
         return Controller.createCluster(null, null).then(function (res) {
@@ -45,39 +44,91 @@ describe('ClientClusterRestartEvenetTest',function () {
         return Controller.shutdownCluster(cluster.id);
     });
 
-
     it('test single member restart', function () {
         this.timeout(20000);
-        var listenerCalledResolver = DeferredPromise();
+        var listenerCalledResolverA = DeferredPromise();
+        var listenerCalledResolverR = DeferredPromise();
 
         var membershipListener = {
             memberAdded: function (membershipEvent) {
                 console.log('Added Event');
-                listenerCalledResolver.resolve(membershipEvent);
+                listenerCalledResolverA.resolve(membershipEvent);
             },
             memberRemoved: function (membershipEvent) {
                 console.log('Removed Event');
-                listenerCalledResolver.resolve(membershipEvent);
-            },
-            memberAttributeChanged: function (membershipEvent) {
-
+                listenerCalledResolverR.resolve(membershipEvent);
             }
         };
+
         client.clusterService.addMembershipListener(membershipListener);
 
         return Controller.shutdownMember(cluster.id, member.uuid)
             .then(function () {
                 return Controller.startMember(cluster.id);
+            }).then(function (mem) {
+                //mem tut
+                return this.member = mem;
             }).then(function () {
-                return listenerCalledResolver.promise;
+                return listenerCalledResolverR.promise;
             }).then(function (membershipEvent) {
                 console.log(membershipEvent);
                 // expect(membershipEvent.eventType).to.equal(MemberEvent.ADDED);
-                // expect(membershipEvent.eventType).to.equal(MemberEvent.REMOVED);
-                // expect(membershipEvent.members).to.equal(client.clusterService.getMembers());
-                // expect(membershipEvent.members.size()).to.equal(1);
-
+                expect(membershipEvent.eventType).to.equal(MemberEvent.REMOVED);
+                console.log('removed');
+                 // expect(membershipEvent.members).contains(this.member);
+                  expect(membershipEvent.members.length).to.equal(1);
+            }).then(function () {
+                return listenerCalledResolverA.promise;
+            }).then(function (membershipEvent) {
+                console.log(membershipEvent);
+                expect(membershipEvent.eventType).to.equal(MemberEvent.ADDED);
+                console.log('added');
             });
+    });
+
+
+    it('test multi member restart', function () {
+        var countA = 0;
+        var countR = 0;
+        this.timeout(20000);
+        var listenerCalledResolverA = DeferredPromise();
+        var listenerCalledResolverR = DeferredPromise();
+        var membershipListener = {
+             memberAdded: function (membershipEvent) {
+                 console.log('Added Event');
+                 countA++;
+                 if(countA === 2)
+                 listenerCalledResolverA.resolve(membershipEvent);
+             },
+             memberRemoved: function (membershipEvent) {
+                 console.log('Removed Event');
+                 countR++;
+                 if(countR === 2)
+                 listenerCalledResolverR.resolve(membershipEvent);
+             }
+         };
+        client.clusterService.addMembershipListener(membershipListener);
+        return Controller.startMember(cluster.id).then(function () {
+            return Controller.shutdownMember(cluster.id, member.uuid);
+        }).then(function () {
+            return Controller.shutdownMember(cluster.id,member2.uuid);
+        }).then(function () {
+            return Controller.startMember(cluster.id);
+        }).then(function () {
+            return Controller.startMember(cluster.id);
+        }).then(function () {
+            return listenerCalledResolverR.promise;
+        }).then(function (membershipEvent) {
+            console.log(membershipEvent);
+            expect(membershipEvent.eventType).to.equal(membershipEvent.REMOVED);
+            console.log('removed for multi member');
+        }).then(function () {
+            return listenerCalledResolverA.promise;
+        }).then(function (membershipEvent) {
+            console.log(membershipEvent);
+            expect(membershipEvent.eventType).to.equal(MemberEvent.ADDED);
+            console.log('added for multi member');
+        });
 
     });
 
