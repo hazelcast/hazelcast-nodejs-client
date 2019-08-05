@@ -25,7 +25,7 @@ var Config = require('../.').Config;
 describe('ClientClusterRestartEventTest', function () {
     var cluster;
     var client;
-    var member , member2;
+    var member;
 
     beforeEach(function () {
         return Controller.createCluster(null, null).then(function (res) {
@@ -45,89 +45,100 @@ describe('ClientClusterRestartEventTest', function () {
     });
 
     it('test single member restart', function () {
+        let newMember;
         this.timeout(20000);
-        var listenerCalledResolverA = DeferredPromise();
-        var listenerCalledResolverR = DeferredPromise();
+        var AddedPromise = DeferredPromise();
+        var RemovedPromise = DeferredPromise();
 
         var membershipListener = {
             memberAdded: function (membershipEvent) {
-                console.log('Added Event');
-                listenerCalledResolverA.resolve(membershipEvent);
+                AddedPromise.resolve(membershipEvent);
             },
             memberRemoved: function (membershipEvent) {
-                console.log('Removed Event');
-                listenerCalledResolverR.resolve(membershipEvent);
+                RemovedPromise.resolve(membershipEvent);
             }
         };
 
         client.clusterService.addMembershipListener(membershipListener);
-
         return Controller.shutdownMember(cluster.id, member.uuid)
             .then(function () {
                 return Controller.startMember(cluster.id);
-            }).then(function (mem) {
-                //mem tut
-                return this.member = mem;
-            }).then(function () {
-                return listenerCalledResolverR.promise;
+            }).then(function (m) {
+                newMember = m;
+                return RemovedPromise.promise;
             }).then(function (membershipEvent) {
                 console.log(membershipEvent);
-                // expect(membershipEvent.eventType).to.equal(MemberEvent.ADDED);
                 expect(membershipEvent.eventType).to.equal(MemberEvent.REMOVED);
-                console.log('removed');
-                 // expect(membershipEvent.members).contains(this.member);
-                  expect(membershipEvent.members.length).to.equal(1);
+                expect(membershipEvent.member.uuid).to.equal(member.uuid);
             }).then(function () {
-                return listenerCalledResolverA.promise;
+                return AddedPromise.promise;
             }).then(function (membershipEvent) {
                 console.log(membershipEvent);
                 expect(membershipEvent.eventType).to.equal(MemberEvent.ADDED);
-                console.log('added');
+                expect(membershipEvent.member.uuid).to.equal(newMember.uuid);
+                const members = Array.from(client.clusterService.getMembers()).map(function (m) {
+                    return m.uuid;
+                });
+                expect(members).to.includes(newMember.uuid);
+                expect(members.length).to.equal(1);
             });
     });
 
-
     it('test multi member restart', function () {
-        var countA = 0;
-        var countR = 0;
-        this.timeout(20000);
-        var listenerCalledResolverA = DeferredPromise();
-        var listenerCalledResolverR = DeferredPromise();
+        let newMember1, newMember2;
+        var AddedCount = 0;
+        var RemovedCount = 0;
+        this.timeout(32000);
+        var AddedPromise = DeferredPromise();
+        var RemovedPromise = DeferredPromise();
+
+        var added = [];
+        var removed = [];
+
         var membershipListener = {
-             memberAdded: function (membershipEvent) {
-                 console.log('Added Event');
-                 countA++;
-                 if(countA === 2)
-                 listenerCalledResolverA.resolve(membershipEvent);
-             },
-             memberRemoved: function (membershipEvent) {
-                 console.log('Removed Event');
-                 countR++;
-                 if(countR === 2)
-                 listenerCalledResolverR.resolve(membershipEvent);
-             }
-         };
-        client.clusterService.addMembershipListener(membershipListener);
-        return Controller.startMember(cluster.id).then(function () {
+            memberAdded: function (membershipEvent) {
+                AddedCount++;
+                added.push(membershipEvent.member);
+                if (AddedCount === 2)
+                    AddedPromise.resolve();
+            },
+            memberRemoved: function (membershipEvent) {
+                removed.push(membershipEvent.member);
+                RemovedCount++;
+                if (RemovedCount === 2)
+                    RemovedPromise.resolve();
+            }
+        };
+
+        var member2;
+        return Controller.startMember(cluster.id).then(function (m) {
+            member2 = m;
+            client.clusterService.addMembershipListener(membershipListener);
             return Controller.shutdownMember(cluster.id, member.uuid);
         }).then(function () {
-            return Controller.shutdownMember(cluster.id,member2.uuid);
+            return Controller.shutdownMember(cluster.id, member2.uuid);
         }).then(function () {
             return Controller.startMember(cluster.id);
-        }).then(function () {
+        }).then(function (m) {
+            newMember1 = m;
             return Controller.startMember(cluster.id);
+        }).then(function (m) {
+            newMember2 = m;
+            return RemovedPromise.promise;
         }).then(function () {
-            return listenerCalledResolverR.promise;
-        }).then(function (membershipEvent) {
-            console.log(membershipEvent);
-            expect(membershipEvent.eventType).to.equal(membershipEvent.REMOVED);
-            console.log('removed for multi member');
+            expect(removed[0].uuid).to.equal(member.uuid);
+            expect(removed[1].uuid).to.equal(member2.uuid);
         }).then(function () {
-            return listenerCalledResolverA.promise;
-        }).then(function (membershipEvent) {
-            console.log(membershipEvent);
-            expect(membershipEvent.eventType).to.equal(MemberEvent.ADDED);
-            console.log('added for multi member');
+            return AddedPromise.promise;
+        }).then(function () {
+            expect(added[0].uuid).to.equal(newMember1.uuid);
+            expect(added[1].uuid).to.equal(newMember2.uuid);
+            const members = Array.from(client.clusterService.getMembers()).map(function (m) {
+                return m.uuid;
+            });
+            expect(members).to.includes(newMember1.uuid);
+            expect(members).to.includes(newMember2.uuid);
+            expect(members.length).to.equal(2);
         });
 
     });

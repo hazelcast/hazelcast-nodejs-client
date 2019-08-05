@@ -164,13 +164,13 @@ export class ProxyManager {
     private findNextAddress(): Address {
         const members = this.client.getClusterService().getMembers();
         let liteMember: Member = null;
-        for (const member of members) {
+        members.forEach((member) => {
             if (member != null && member.isLiteMember === false) {
                 return member.address;
             } else if (member != null && member.isLiteMember) {
                 liteMember = member;
             }
-        }
+        });
 
         if (liteMember != null) {
             return liteMember.address;

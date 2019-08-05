@@ -21,7 +21,6 @@ import {Member} from '../core/Member';
 import {ClientInfo} from '../ClientInfo';
 import HazelcastClient from '../HazelcastClient';
 import {IllegalStateError} from '../HazelcastError';
-import * as assert from 'assert';
 import {MemberSelector} from '../core/MemberSelector';
 import {AddressHelper, DeferredPromise} from '../Util';
 import {MemberAttributeEvent, MemberAttributeOperationType} from '../core/MemberAttributeEvent';
@@ -53,7 +52,7 @@ export class ClusterService {
     public uuid: string = null;
 
     private knownAddresses: Address[] = [];
-    private members: Member[] = [];
+    private members: Set<Member> = new Set();
     private client: HazelcastClient;
     private ownerConnection: ClientConnection;
     private membershipListeners: Map<string, MembershipListener> = new Map();
@@ -62,7 +61,7 @@ export class ClusterService {
     constructor(client: HazelcastClient) {
         this.client = client;
         this.logger = this.client.getLoggingService().getLogger();
-        this.members = [];
+        this.members = new Set<Member>();
     }
 
     /**
@@ -117,14 +116,14 @@ export class ClusterService {
      * Returns the list of members in the cluster.
      * @returns
      */
-    getMembers(selector?: MemberSelector): Member[] {
+    getMembers(selector?: MemberSelector): Set<Member> {
         if (selector === undefined) {
             return this.members;
         } else {
-            const members: Member[] = [];
+            const members: Set<Member> = new Set();
             this.members.forEach(function (member): void {
                 if (selector.select(member)) {
-                    members.push(member);
+                    members.add(member);
                 }
             });
             return members;
@@ -132,11 +131,11 @@ export class ClusterService {
     }
 
     getMember(uuid: string): Member {
-        for (const member of this.members) {
+        this.members.forEach((member) => {
             if (member.uuid === uuid) {
                 return member;
             }
-        }
+        });
         return null;
     }
 
@@ -145,7 +144,7 @@ export class ClusterService {
      * @returns {number}
      */
     getSize(): number {
-        return this.members.length;
+        return this.members.size;
     }
 
     /**
@@ -284,45 +283,59 @@ export class ClusterService {
         this.client.getPartitionService().refresh();
     }
 
-    private handleMemberList(members: Member[]): void {
-        let prevMembers: Member[] = [];
-        if (this.members.length !== 0) {
-            prevMembers = this.members.slice();
+    private handleMemberList(members: Set<Member>): void {
+        let prevMembers = new Set<Member>();
+        if (this.members.size !== 0) {
+            prevMembers = new Set<Member>(this.members);
+            this.members.clear();
         }
-
-        this.members = members;
-        const events: MembershipEvent[] = this.detectMembershipEvents(prevMembers);
+        members.forEach((member) => {
+            this.members.add(member);
+        });
+        const events = this.detectMembershipEvents(prevMembers);
         this.client.getPartitionService().refresh();
         this.logger.info('ClusterService', 'Members received.', this.members);
-        this.fireMembershipEvent(events);
+        events.forEach((event) => {
+            this.fireMembershipEvent(event);
+        });
     }
 
-    private fireMembershipEvent(events: MembershipEvent[]): any {
-        for (const event of events) {
-            this.client.getClusterService().handleMember(event.member, event.eventType);
-        }
-    }
-
-    private detectMembershipEvents(prevMembers: Member[]): MembershipEvent[] {
-        const events: MembershipEvent[] = [];
-
-        const addedMembers: Member[] = [];
-
-        for (const member of this.members) {
-            const index = prevMembers.indexOf(member);
-            if (index === -1) {
-                addedMembers.push(member);
+    private fireMembershipEvent(membershipEvent: MembershipEvent): void {
+        this.membershipListeners.forEach((membershipListener, registrationId) => {
+            if (membershipEvent.eventType === MemberEvent.ADDED) {
+                if (membershipListener && membershipListener.memberAdded) {
+                    membershipListener.memberAdded(membershipEvent);
+                }
             } else {
-                prevMembers.splice(index, 1);
+                if (membershipListener && membershipListener.memberRemoved) {
+                    membershipListener.memberRemoved(membershipEvent);
+                }
             }
-        }
+        });
+    }
 
-        for (const member of addedMembers) {
-            events.push(new MembershipEvent(member, MemberEvent.ADDED, this.members));
-        }
-        for (const member of prevMembers) {
-            events.push(new MembershipEvent(member, MemberEvent.REMOVED, this.members));
-        }
+    private detectMembershipEvents(prevMembers: Set<Member>): Set<MembershipEvent> {
+        const events: Set<MembershipEvent> = new Set();
+        const eventMembers = new Set(this.members);
+
+        const addedMembers: Set<Member> = new Set();
+
+        this.members.forEach((member) => {
+            const index = prevMembers.has(member);
+            if (index === false) {
+                addedMembers.add(member);
+            } else {
+                prevMembers.delete(member);
+            }
+        });
+
+        addedMembers.forEach((member) => {
+            events.add(new MembershipEvent(member, MemberEvent.ADDED, eventMembers));
+        });
+        prevMembers.forEach((member) => {
+            events.add(new MembershipEvent(member, MemberEvent.REMOVED, eventMembers));
+        });
+
         return events;
     }
 
@@ -339,29 +352,15 @@ export class ClusterService {
     }
 
     private memberAdded(member: Member): void {
-        if (this.members.indexOf(member) === -1) {
-            this.members.push(member);
-        }
-        this.membershipListeners.forEach((membershipListener, registrationId) => {
-            if (membershipListener && membershipListener.memberAdded) {
-                const membershipEvent = new MembershipEvent(member, MemberEvent.ADDED, this.members);
-                membershipListener.memberAdded(membershipEvent);
-            }
-        });
+        this.members.add(member);
+        const membershipEvent = new MembershipEvent(member, MemberEvent.ADDED, new Set(this.members));
+        this.fireMembershipEvent(membershipEvent);
     }
 
     private memberRemoved(member: Member): void {
-        const memberIndex = this.members.findIndex(member.equals, member);
-        if (memberIndex !== -1) {
-            const removedMemberList = this.members.splice(memberIndex, 1);
-            assert(removedMemberList.length === 1);
-        }
+        this.members.delete(member);
         this.client.getConnectionManager().destroyConnection(member.address);
-        this.membershipListeners.forEach((membershipListener, registrationId) => {
-            if (membershipListener && membershipListener.memberRemoved) {
-                const membershipEvent = new MembershipEvent(member, MemberEvent.REMOVED, this.members);
-                membershipListener.memberRemoved(membershipEvent);
-            }
-        });
+        const membershipEvent = new MembershipEvent(member, MemberEvent.REMOVED, new Set(this.members));
+        this.fireMembershipEvent(membershipEvent);
     }
 }

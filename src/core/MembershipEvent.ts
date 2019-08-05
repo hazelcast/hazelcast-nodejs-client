@@ -34,9 +34,9 @@ export class MembershipEvent {
     /**
      * the members at the moment after this event.
      */
-    public members: Member[];
+    public members: Set<Member>;
 
-    constructor(member: Member, eventType: number, members: Member[]) {
+    constructor(member: Member, eventType: number, members: Set<Member>) {
         this.member = member;
         this.eventType = eventType;
         this.members = members;
