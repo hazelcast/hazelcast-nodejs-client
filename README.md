@@ -3310,7 +3310,7 @@ You can enable client statistics and set a non-default period in seconds as foll
 {
     "properties": {
         "hazelcast.client.statistics.enabled": true,
-        "hazelcast.client.statistics.period.seconds": 4,
+        "hazelcast.client.statistics.period.seconds": 4
     }
 }
 ```
@@ -3327,12 +3327,16 @@ After enabling the client statistics, you can monitor your clients using Hazelca
 
 ### 7.9.2. Logging Configuration
 
- To configure a logger, you need to use the `ClientConfig.properties['hazelcast.logging']` property. If you set it to `'off'`, it does not log anything.
-
-By default, there is a `Default Logger`. Also, it is possible to connect a custom logging library to Hazelcast Node.js client through adapters.
-
-See the following `winston` logging library example.
-
+ By default, Hazelcast Node.js client uses a default logger which logs to the stdout with the INFO log level. You can change the log level using the `'hazelcast.logging.level'` property of the `ClientConfig.properties`.
+ 
+Below is an example of the logging configuration with the `OFF` log level which disables logging.
+ 
+ `cfg.properties['hazelcast.logging.level'] = LogLevel.OFF;`
+ 
+ You can also implement a custom logger depending on your needs. Your custom logger must have `log`, `error`, `warn` ... methods. After implementing it, you can use your custom logger using the `customLogger` property of the `ClientConfig`
+  
+See the following for a custom logger example.
+ 
 ```javascript
 var winstonAdapter = {
     logger: new (winston.Logger)({
@@ -3342,6 +3346,7 @@ var winstonAdapter = {
     }),
 
     levels: [
+        'off',
         'error',
         'warn',
         'info',
@@ -3349,11 +3354,36 @@ var winstonAdapter = {
         'silly'
     ],
 
-    log: function (level, className, message, furtherInfo) {
-        this.logger.log(this.levels[level], className + ' ' + message);
+    off: function (level, objectName, message, furtherInfo) {
+        this.logger.log(LogLevel.OFF, objectName, message, furtherInfo);
+    },
+
+    log: function (level, objectName, message, furtherInfo) {
+        this.logger.log(this.levels[level], objectName + ': ' + message, furtherInfo);
+    },
+
+    error: function (objectName, message, furtherInfo) {
+        this.log(LogLevel.ERROR, objectName, message, furtherInfo);
+    },
+
+    debug: function (objectName, message, furtherInfo) {
+        this.log(LogLevel.DEBUG, objectName, message, furtherInfo);
+    },
+
+    warn: function (objectName, message, furtherInfo) {
+        this.log(LogLevel.WARN, objectName, message, furtherInfo);
+    },
+
+    info: function (objectName, message, furtherInfo) {
+        this.log(LogLevel.INFO, objectName, message, furtherInfo);
+    },
+
+    trace: function (objectName, message, furtherInfo) {
+        this.log(LogLevel.TRACE, objectName, message, furtherInfo);
     }
+
 };
-config.properties['hazelcast.logging'] = winstonAdapter;
+cfg.customLogger = winstonAdapter;
 ```
 
 Note that it is not possible to configure custom logging via declarative configuration.
