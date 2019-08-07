@@ -29,20 +29,21 @@ var winstonAdapter = {
     }),
 
     levels: [
+        'log',
         'off',
         'error',
+        'debug',
         'warn',
         'info',
-        'debug',
-        'silly'
+        'trace'
     ],
-
-    off: function (level, objectName, message, furtherInfo) {
-        this.logger.log(LogLevel.OFF, objectName, message, furtherInfo);
-    },
 
     log: function (level, objectName, message, furtherInfo) {
         this.logger.log(this.levels[level], objectName + ': ' + message, furtherInfo);
+    },
+
+    off: function (level, objectName, message, furtherInfo) {
+        this.log(LogLevel.OFF, objectName, message, furtherInfo);
     },
 
     error: function (objectName, message, furtherInfo) {
