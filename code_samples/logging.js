@@ -29,12 +29,10 @@ var winstonAdapter = {
     }),
 
     levels: [
-        'log',
-        'off',
         'error',
-        'debug',
         'warn',
         'info',
+        'debug',
         'trace'
     ],
 
@@ -42,16 +40,8 @@ var winstonAdapter = {
         this.logger.log(this.levels[level], objectName + ': ' + message, furtherInfo);
     },
 
-    off: function (level, objectName, message, furtherInfo) {
-        this.log(LogLevel.OFF, objectName, message, furtherInfo);
-    },
-
     error: function (objectName, message, furtherInfo) {
         this.log(LogLevel.ERROR, objectName, message, furtherInfo);
-    },
-
-    debug: function (objectName, message, furtherInfo) {
-        this.log(LogLevel.DEBUG, objectName, message, furtherInfo);
     },
 
     warn: function (objectName, message, furtherInfo) {
@@ -60,6 +50,10 @@ var winstonAdapter = {
 
     info: function (objectName, message, furtherInfo) {
         this.log(LogLevel.INFO, objectName, message, furtherInfo);
+    },
+
+    debug: function (objectName, message, furtherInfo) {
+        this.log(LogLevel.DEBUG, objectName, message, furtherInfo);
     },
 
     trace: function (objectName, message, furtherInfo) {

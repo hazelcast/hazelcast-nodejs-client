@@ -3327,13 +3327,15 @@ After enabling the client statistics, you can monitor your clients using Hazelca
 
 ### 7.9.2. Logging Configuration
 
- By default, Hazelcast Node.js client uses a default logger which logs to the stdout with the INFO log level. You can change the log level using the `'hazelcast.logging.level'` property of the `ClientConfig.properties`.
+ By default, Hazelcast Node.js client uses a default logger which logs to the `stdout` with the `INFO` log level. You can change the log level using the `'hazelcast.logging.level'` property of the `ClientConfig.properties`.
  
 Below is an example of the logging configuration with the `OFF` log level which disables logging.
  
- `cfg.properties['hazelcast.logging.level'] = LogLevel.OFF;`
+```javascript
+cfg.properties['hazelcast.logging.level'] = LogLevel.OFF;
+```
  
- You can also implement a custom logger depending on your needs. Your custom logger must have `log`, `error`, `warn` ... methods. After implementing it, you can use your custom logger using the `customLogger` property of the `ClientConfig`
+ You can also implement a custom logger depending on your needs. Your custom logger must have `log`, `error`, `warn`, `info`, `debug`, `trace` methods. After implementing it, you can use your custom logger using the `customLogger` property of the `ClientConfig`
   
 See the following for a custom logger example.
  
@@ -3346,17 +3348,12 @@ var winstonAdapter = {
     }),
 
     levels: [
-        'off',
         'error',
         'warn',
         'info',
         'debug',
-        'silly'
+        'trace'
     ],
-
-    off: function (level, objectName, message, furtherInfo) {
-        this.logger.log(LogLevel.OFF, objectName, message, furtherInfo);
-    },
 
     log: function (level, objectName, message, furtherInfo) {
         this.logger.log(this.levels[level], objectName + ': ' + message, furtherInfo);
@@ -3366,16 +3363,16 @@ var winstonAdapter = {
         this.log(LogLevel.ERROR, objectName, message, furtherInfo);
     },
 
-    debug: function (objectName, message, furtherInfo) {
-        this.log(LogLevel.DEBUG, objectName, message, furtherInfo);
-    },
-
     warn: function (objectName, message, furtherInfo) {
         this.log(LogLevel.WARN, objectName, message, furtherInfo);
     },
 
     info: function (objectName, message, furtherInfo) {
         this.log(LogLevel.INFO, objectName, message, furtherInfo);
+    },
+
+    debug: function (objectName, message, furtherInfo) {
+        this.log(LogLevel.DEBUG, objectName, message, furtherInfo);
     },
 
     trace: function (objectName, message, furtherInfo) {
