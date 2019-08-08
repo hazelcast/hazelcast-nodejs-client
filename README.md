@@ -3335,7 +3335,7 @@ Below is an example of the logging configuration with the `OFF` log level which 
 cfg.properties['hazelcast.logging.level'] = LogLevel.OFF;
 ```
  
- You can also implement a custom logger depending on your needs. Your custom logger must have `log`, `error`, `warn`, `info`, `debug`, `trace` methods. After implementing it, you can use your custom logger using the `customLogger` property of the `ClientConfig`
+ You can also implement a custom logger depending on your needs. Your custom logger must have `log`, `error`, `warn`, `info`, `debug`, `trace` methods. After implementing it, you can use your custom logger using the `customLogger` property of `ClientConfig`
   
 See the following for a custom logger example.
  
