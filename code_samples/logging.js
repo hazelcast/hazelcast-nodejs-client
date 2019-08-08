@@ -33,7 +33,7 @@ var winstonAdapter = {
         'warn',
         'info',
         'debug',
-        'trace'
+        'silly'
     ],
 
     log: function (level, objectName, message, furtherInfo) {
