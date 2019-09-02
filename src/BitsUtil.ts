@@ -13,31 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+// tslint:disable-next-line:comment-format
+//eklendi
 /* tslint:disable:no-bitwise */
 import {Buffer} from 'safe-buffer';
-import Address = require('./Address');
-import {Data} from './serialization/Data';
+import {Address} from '/Users/gulcesirvanci/Desktop/hazelcast-client-protocol/ts/customCodecs/Address';
+import {Data} from '/Users/gulcesirvanci/Desktop/hazelcast-nodejs-client/lib/serialization/Data';
+import * as Long from 'long';
+import {FixedSizeTypes} from '/Users/gulcesirvanci/hazelcast-nodejs-client/src/builtin/FixedSizeTypes';
 
 export class BitsUtil {
-    static EVENT_MEMBER = 200;
-    static EVENT_MEMBERLIST = 201;
-    static EVENT_MEMBERATTRIBUTECHANGE = 202;
-    static EVENT_ENTRY = 203;
-    static EVENT_ITEM = 204;
-    static EVENT_TOPIC = 205;
-    static EVENT_PARTITIONLOST = 206;
-    static EVENT_DISTRIBUTEDOBJECT = 207;
-    static EVENT_CACHEINVALIDATION = 208;
-    static EVENT_MAPPARTITIONLOST = 209;
-    static EVENT_CACHE = 210;
-    static EVENT_CACHEBATCHINVALIDATION = 211;
-    static EVENT_QUERYCACHESINGLE = 212;
-    static EVENT_QUERYCACHEBATCH = 213;
-    static EVENT_CACHEPARTITIONLOST = 214;
-    static EVENT_IMAPINVALIDATION = 215;
-    static EVENT_IMAPBATCHINVALIDATION = 216;
-    static EVENT_PARTITIONS = 217;
 
     static BYTE_SIZE_IN_BYTES: number = 1;
     static BOOLEAN_SIZE_IN_BYTES: number = 1;
@@ -52,10 +37,9 @@ export class BitsUtil {
     static LITTLE_ENDIAN: number = 1;
 
     static VERSION: number = 1;
-    static BEGIN_FLAG: number = 0x80;
-    static END_FLAG: number = 0x40;
-    static BEGIN_END_FLAG: number = BitsUtil.BEGIN_FLAG | BitsUtil.END_FLAG;
-    static LISTENER_FLAG: number = 0x01;
+
+    static BEGIN_FLAG: number ;
+    static END_FLAG: number ;
 
     static NULL_ARRAY_LENGTH: number = -1;
 
@@ -124,7 +108,21 @@ export class BitsUtil {
         buffer.writeUInt8(val, pos);
     }
 
-    static writeInt32(buffer: Buffer, pos: number, val: number, isBigEndian: boolean): void {
+    static writeLong(buffer: Buffer, value: any, offset: number): void {
+        if (!Long.isLong(value)) {
+            value = Long.fromValue(value);
+        }
+        buffer.writeInt32LE(value.low, offset);
+        buffer.writeInt32LE(value.high, offset + 4);
+    }
+
+    static readLong(buffer: Buffer, offset: number): Long {
+        const low = buffer.readInt32LE(offset);
+        const high = buffer.readInt32LE(offset + 4);
+        return new Long(low, high);
+    }
+
+    static writeInt32(buffer: Buffer, pos: number, val: number, isBigEndian: boolean = false): void {
         if (isBigEndian) {
             buffer.writeInt32BE(val, pos);
         } else {
@@ -132,7 +130,7 @@ export class BitsUtil {
         }
     }
 
-    static writeInt16(buffer: Buffer, pos: number, val: number, isBigEndian: boolean): void {
+    static writeInt16(buffer: Buffer, pos: number, val: number, isBigEndian: boolean = false): void {
         if (isBigEndian) {
             buffer.writeInt16BE(val, pos);
         } else {
@@ -141,7 +139,7 @@ export class BitsUtil {
     }
 
     static writeInt8(buffer: Buffer, pos: number, val: number): void {
-        buffer.writeInt8(val, pos);
+        buffer.writeInt8( val, pos);
     }
 
     static writeFloat(buffer: Buffer, pos: number, val: number, isBigEndian: boolean): void {
@@ -180,7 +178,7 @@ export class BitsUtil {
         return buffer.readInt8(pos);
     }
 
-    static readInt16(buffer: Buffer, pos: number, isBigEndian: boolean): number {
+    static readInt16(buffer: Buffer, pos: number, isBigEndian: boolean = false): number {
         if (isBigEndian) {
             return buffer.readInt16BE(pos);
         } else {
@@ -188,7 +186,7 @@ export class BitsUtil {
         }
     }
 
-    static readInt32(buffer: Buffer, pos: number, isBigEndian: boolean): number {
+    static readInt32(buffer: Buffer, pos: number, isBigEndian: boolean = false): number {
         if (isBigEndian) {
             return buffer.readInt32BE(pos);
         } else {

@@ -39,224 +39,330 @@
 import {Buffer} from 'safe-buffer';
 import * as Long from 'long';
 import {BitsUtil} from './BitsUtil';
-import {Data} from './serialization/Data';
-import {HeapData} from './serialization/HeapData';
+import {ClientConnection} from '/Users/gulcesirvanci/hazelcast-nodejs-client/src/invocation/ClientConnection';
 
-class ClientMessage {
+export class LinkedListFrame {
+    protected headFrame: Frame;
+    protected tailFrame: Frame;
 
-    private buffer: Buffer;
-    private cursor: number = BitsUtil.HEADER_SIZE;
-    private isRetryable: boolean;
-
-    constructor(buffer: Buffer) {
-        this.buffer = buffer;
+    constructor(item: Frame) {
+        this.headFrame = item;
+        this.tailFrame = item;
     }
 
-    public static newClientMessage(payloadSize: number): ClientMessage {
-        const totalSize = BitsUtil.HEADER_SIZE + payloadSize;
-        const buffer = Buffer.allocUnsafe(totalSize);
-        const message = new ClientMessage(buffer);
-        message.setDataOffset(BitsUtil.HEADER_SIZE);
-        message.setVersion(BitsUtil.VERSION);
-        message.setFrameLength(totalSize);
-        message.setFlags(0xc0);
-        message.setPartitionId(-1);
-        return message;
+    // tslint:disable-next-line:typedef
+    get() {
+        return this.headFrame;
     }
 
-    clone(): ClientMessage {
-        const message = new ClientMessage(Buffer.from(this.buffer));
-        message.isRetryable = this.isRetryable;
-        return message;
-    }
-
-    getBuffer(): Buffer {
-        return this.buffer;
-    }
-
-    getCorrelationId(): number {
-        const offset = BitsUtil.CORRELATION_ID_FIELD_OFFSET;
-        return this.readLongInternal(offset).toNumber();
-    }
-
-    setCorrelationId(value: number): void {
-        this.writeLongInternal(value, BitsUtil.CORRELATION_ID_FIELD_OFFSET);
-    }
-
-    getPartitionId(): number {
-        return this.buffer.readInt32LE(BitsUtil.PARTITION_ID_FIELD_OFFSET);
-    }
-
-    setPartitionId(value: number): void {
-        this.buffer.writeInt32LE(value, BitsUtil.PARTITION_ID_FIELD_OFFSET);
-    }
-
-    setVersion(value: number): void {
-        this.buffer.writeUInt8(value, BitsUtil.VERSION_FIELD_OFFSET);
-    }
-
-    getMessageType(): number {
-        return this.buffer.readUInt16LE(BitsUtil.TYPE_FIELD_OFFSET);
-    }
-
-    setMessageType(value: number): void {
-        this.buffer.writeUInt16LE(value, BitsUtil.TYPE_FIELD_OFFSET);
-    }
-
-    getFlags(): number {
-        return this.buffer.readUInt8(BitsUtil.FLAGS_FIELD_OFFSET);
-    }
-
-    setFlags(value: number): void {
-        this.buffer.writeUInt8(value, BitsUtil.FLAGS_FIELD_OFFSET);
-    }
-
-    hasFlags(flags: number): number {
-        return this.getFlags() & flags;
-    }
-
-    getFrameLength(): number {
-        return this.buffer.readInt32LE(BitsUtil.FRAME_LENGTH_FIELD_OFFSET);
-    }
-
-    setFrameLength(value: number): void {
-        this.buffer.writeInt32LE(value, BitsUtil.FRAME_LENGTH_FIELD_OFFSET);
-    }
-
-    getDataOffset(): number {
-        return this.buffer.readInt16LE(BitsUtil.DATA_OFFSET_FIELD_OFFSET);
-    }
-
-    setDataOffset(value: number): void {
-        this.buffer.writeInt16LE(value, BitsUtil.DATA_OFFSET_FIELD_OFFSET);
-    }
-
-    setRetryable(value: boolean): void {
-        this.isRetryable = value;
-    }
-
-    appendByte(value: number): void {
-        this.buffer.writeUInt8(value, this.cursor);
-        this.cursor += BitsUtil.BYTE_SIZE_IN_BYTES;
-    }
-
-    appendBoolean(value: boolean): void {
-        return this.appendByte(value ? 1 : 0);
-    }
-
-    appendInt32(value: number): void {
-        this.buffer.writeInt32LE(value, this.cursor);
-        this.cursor += BitsUtil.INT_SIZE_IN_BYTES;
-    }
-
-    appendUint8(value: number): void {
-        this.buffer.writeUInt8(value, this.cursor);
-        this.cursor += BitsUtil.BYTE_SIZE_IN_BYTES;
-    }
-
-    appendLong(value: any): void {
-        this.writeLongInternal(value, this.cursor);
-        this.cursor += BitsUtil.LONG_SIZE_IN_BYTES;
-    }
-
-    appendString(value: string): void {
-        const length = Buffer.byteLength(value, 'utf8');
-        this.buffer.writeInt32LE(length, this.cursor);
-        this.cursor += 4;
-        this.buffer.write(value, this.cursor);
-        this.cursor += length;
-    }
-
-    appendBuffer(buffer: Buffer): void {
-        const length = buffer.length;
-        this.appendInt32(length);
-        buffer.copy(this.buffer, this.cursor);
-        this.cursor += length;
-    }
-
-    appendData(data: Data): void {
-        this.appendBuffer(data.toBuffer());
-    }
-
-    addFlag(value: number): void {
-        this.buffer.writeUInt8(value | this.getFlags(), BitsUtil.FLAGS_FIELD_OFFSET);
-    }
-
-    updateFrameLength(): void {
-        this.setFrameLength(this.cursor);
-    }
-
-    readData(): Data {
-        const dataPayload: Buffer = this.readBuffer();
-        return new HeapData(dataPayload);
-    }
-
-    readByte(): number {
-        const value = this.buffer.readUInt8(this.cursor);
-        this.cursor += BitsUtil.BYTE_SIZE_IN_BYTES;
-        return value;
-    }
-
-    readBoolean(): boolean {
-        return this.readByte() === 1;
-    }
-
-    readUInt8(): number {
-        const value = this.buffer.readUInt8(this.cursor);
-        this.cursor += BitsUtil.BYTE_SIZE_IN_BYTES;
-        return value;
-    }
-
-    readInt32(): number {
-        const value = this.buffer.readInt32LE(this.cursor);
-        this.cursor += BitsUtil.INT_SIZE_IN_BYTES;
-        return value;
-    }
-
-    readLong(): Long {
-        const value = this.readLongInternal(this.cursor);
-        this.cursor += BitsUtil.LONG_SIZE_IN_BYTES;
-        return value;
-    }
-
-    readString(): string {
-        const length = this.buffer.readInt32LE(this.cursor);
-        this.cursor += BitsUtil.INT_SIZE_IN_BYTES;
-        const value = this.buffer.toString('utf8', this.cursor, this.cursor + length);
-        this.cursor += length;
-        return value;
-    }
-
-    readBuffer(): Buffer {
-        const size = this.buffer.readUInt32LE(this.cursor);
-        this.cursor += BitsUtil.INT_SIZE_IN_BYTES;
-        const result = this.buffer.slice(this.cursor, this.cursor + size);
-        this.cursor += size;
-        return result;
-    }
-
-    isComplete(): boolean {
-        return (this.cursor >= BitsUtil.HEADER_SIZE) && (this.cursor === this.getFrameLength());
-    }
-
-    readMapEntry(): any {
-        // TODO
-    }
-
-    private writeLongInternal(value: any, offset: number): void {
-        if (!Long.isLong(value)) {
-            value = Long.fromValue(value);
+    // tslint:disable-next-line:typedef
+    getIndex(index: number) {
+        if (index >= 0 && index < this.size()) {
+            return this.node(index);
+        } else {
+            console.log('error');
         }
-
-        this.buffer.writeInt32LE(value.low, offset);
-        this.buffer.writeInt32LE(value.high, offset + 4);
     }
 
-    private readLongInternal(offset: number): Long {
-        const low = this.buffer.readInt32LE(offset);
-        const high = this.buffer.readInt32LE(offset + 4);
-        return new Long(low, high);
+    // tslint:disable-next-line:typedef
+    node(index: number) {
+        if (index < (this.size() >> 1)) {
+            // tslint:disable-next-line:no-shadowed-variable
+            let x = this.headFrame;
+            // tslint:disable-next-line:no-shadowed-variable
+            for (let i = 0; i < index; i++) {
+                x = x.next;
+            }
+            return x;
+        } else {
+            let x = this.tailFrame;
+            for (let i = this.size() - 1; i > index; i--) {
+                x = x.prev;
+            }
+            return x;
+        }
+    }
+
+    size(): number {
+        let count = 0;
+        let currentItem: Frame = this.headFrame;
+        if (!currentItem) {
+            return count;
+        } else {
+            while (true) {
+                count++;
+                if (currentItem.next) {
+                    currentItem = currentItem.next;
+                } else {
+                    return count;
+                }
+            }
+        }
+    }
+
+    next(): Frame {
+        return this.headFrame.next;
+    }
+
+    add(val: any): Frame {
+        const newItem = new Frame(val);
+
+        if (!this.headFrame) {
+            this.headFrame = newItem;
+            this.tailFrame = this.headFrame;
+            return this.headFrame;
+        }
+        newItem.prev = this.tailFrame;
+        this.tailFrame.next = newItem;
+        this.tailFrame = this.tailFrame.next;
+
+        return this.tailFrame;
     }
 }
 
-export = ClientMessage;
+export class Frame {
+    public next: Frame;
+    public prev: Frame;
+    public content: Buffer;
+    public flags: number;
+
+    constructor(content: Buffer, flag: number = 0) {
+        this.content = content;
+        this.flags = flag;
+        this.next = null;
+    }
+
+    // tslint:disable-next-line:typedef
+    public copy() {
+        const newContent: Buffer = Buffer.from(this.content);
+        return new Frame(newContent, this.flags);
+    }
+
+    public isEndFrame(): boolean {
+        return ClientMessage.isFlagSet(this.flags, ClientMessage.END_DATA_STRUCTURE_FLAG);
+    }
+
+    public isNullFrame(): boolean {
+        return ClientMessage.isFlagSet(this.flags, ClientMessage.IS_NULL_FLAG);
+    }
+
+    public getSize(): number {
+        if (this.content == null) {
+            return ClientMessage.SIZE_OF_FRAME_LENGTH_AND_FLAGS;
+        } else {
+            return ClientMessage.SIZE_OF_FRAME_LENGTH_AND_FLAGS + this.content.length;
+        }
+    }
+
+    public previous(): Frame {
+        return this.prev;
+    }
+
+    public equals(o: Frame): boolean {
+        if (o === null) {
+            return false;
+        }
+
+        const frame: Frame = o;
+
+        if (this.flags !== frame.flags) {
+            return false;
+        }
+        return frame.content.equals(this.content);
+
+    }
+
+}
+
+export class ClientMessage extends LinkedListFrame {
+
+    // All offsets here are offset of frame.content byte[]
+    // Note that frames have frame length and flags before this byte[] content
+    public static TYPE_FIELD_OFFSET = 0;
+    public static CORRELATION_ID_FIELD_OFFSET = ClientMessage.TYPE_FIELD_OFFSET + BitsUtil.SHORT_SIZE_IN_BYTES;
+    // tslint:disable-next-line:comment-format
+    //offset valid for fragmentation frames only
+    public static FRAGMENTATION_ID_OFFSET = 0;
+    // tslint:disable-next-line:comment-format
+    //optional fixed partition id field offset
+    public static PARTITION_ID_FIELD_OFFSET = ClientMessage.CORRELATION_ID_FIELD_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
+
+    public static DEFAULT_FLAGS = 0;
+    public static BEGIN_FRAGMENT_FLAG = 1 << 15;
+    public static END_FRAGMENT_FLAG = 1 << 14;
+    public static UNFRAGMENTED_MESSAGE = ClientMessage.BEGIN_FRAGMENT_FLAG | ClientMessage.END_FRAGMENT_FLAG;
+    public static IS_FINAL_FLAG = 1 << 13;
+    public static BEGIN_DATA_STRUCTURE_FLAG = 1 << 12;
+    public static END_DATA_STRUCTURE_FLAG = 1 << 11;
+    public static IS_NULL_FLAG = 1 << 10;
+    public static IS_EVENT_FLAG = 1 << 9;
+
+    public static SIZE_OF_FRAME_LENGTH_AND_FLAGS = BitsUtil.INT_SIZE_IN_BYTES + BitsUtil.SHORT_SIZE_IN_BYTES;
+    public static NULL_FRAME: Frame = new Frame(Buffer.allocUnsafe(0), ClientMessage.IS_NULL_FLAG);
+    public static BEGIN_FRAME: Frame = new Frame(Buffer.allocUnsafe(0), ClientMessage.BEGIN_DATA_STRUCTURE_FLAG);
+    public static END_FRAME: Frame = new Frame(Buffer.allocUnsafe(0), ClientMessage.END_DATA_STRUCTURE_FLAG);
+
+    private retryable: boolean;
+    private acquiresResource: boolean;
+    private operationName: string;
+    private connection: ClientConnection;
+
+    constructor(frames: Frame = null) {
+        super(frames);
+    }
+
+    public static createForEncode(): ClientMessage {
+        return new ClientMessage();
+    }
+
+    public static createForDecode(frames: Frame): ClientMessage {
+        return new ClientMessage(frames);
+    }
+
+    public getMessageType(): number {
+        return BitsUtil.readInt8(this.get().content, ClientMessage.TYPE_FIELD_OFFSET);
+    }
+
+    public setMessageType(messageType: number): ClientMessage {
+        BitsUtil.writeInt8(this.get().content, ClientMessage.TYPE_FIELD_OFFSET, messageType);
+        return this;
+    }
+
+    public getCorrelationId(): Long {
+        return BitsUtil.readLong(this.get().content, ClientMessage.CORRELATION_ID_FIELD_OFFSET);
+    }
+
+    public setCorrelationId(correlationId: number): ClientMessage {
+        BitsUtil.writeLong(this.get().content, ClientMessage.PARTITION_ID_FIELD_OFFSET, correlationId);
+        return this;
+    }
+
+    public getPartitionId(): number {
+        return BitsUtil.readInt32(this.get().content, ClientMessage.PARTITION_ID_FIELD_OFFSET, false);
+    }
+
+    public setPartitionId(partitionId: number): ClientMessage {
+        BitsUtil.writeInt32(this.get().content, ClientMessage.PARTITION_ID_FIELD_OFFSET, partitionId, false);
+        return this;
+    }
+
+    public getHeaderFlags(): number {
+        return this.get().flags;
+    }
+
+    public isRetryable(): boolean {
+        return this.retryable;
+    }
+
+    public isAcquiresResource(): boolean {
+        return this.acquiresResource;
+    }
+
+    public setAcquiresResource(acquiresResource: boolean): void {
+        this.acquiresResource = acquiresResource;
+    }
+
+    public setRetryable(isRetryable: boolean): void {
+        this.retryable = isRetryable;
+    }
+
+    public setOperationName(operationName: string): void {
+        this.operationName = operationName;
+    }
+
+    public getOperationName(): string {
+        return this.operationName;
+    }
+
+    // tslint:disable-next-line:member-ordering
+    public static isFlagSet(flags: number, flagMask: number): boolean {
+        const i: number = flags & flagMask;
+        return i === flagMask;
+    }
+
+    public setConnection(connection: ClientConnection): void {
+        this.connection = connection;
+    }
+
+    public getConnection(): ClientConnection {
+        return this.connection;
+    }
+
+    public getFrameLength(): number {
+        let frameLength = 0;
+        let currentItem: Frame = this.headFrame;
+        if (!currentItem) {
+            return frameLength;
+        } else {
+            while (true) {
+                frameLength += currentItem.getSize();
+                if (currentItem.next) {
+                    currentItem = currentItem.next;
+                } else {
+                    return frameLength;
+                }
+            }
+        }
+
+    }
+
+    public isUrgent(): boolean {
+        return false;
+    }
+
+    public toString(): string {
+        const sb = 'ClientMessage{\n' + 'connection=' + this.connection;
+        if (this.size() > 0) {
+            sb.concat(', length=' + this.getFrameLength() +
+                ', operation=' + this.getCorrelationId() +
+                ', operation=' + this.getOperationName() +
+                ', messageType=' + this.getMessageType() +
+                ', isRetryable=' + this.isRetryable() +
+                ', isEvent=' + ClientMessage.isFlagSet(this.get().flags, ClientMessage.IS_EVENT_FLAG) +
+                ', isFragmented=' + !ClientMessage.isFlagSet(this.get().flags, ClientMessage.UNFRAGMENTED_MESSAGE) + '}');
+
+        }
+
+        return sb.toString();
+    }
+
+    public copyWithNewCorrelationId(correlationId: number): ClientMessage {
+        const newMessage: ClientMessage = new ClientMessage();
+
+        const initialFrameCopy: Frame = newMessage.get().copy();
+        newMessage.set(initialFrameCopy);
+
+        newMessage.setCorrelationId(correlationId);
+
+        newMessage.retryable = this.retryable;
+        newMessage.acquiresResource = this.acquiresResource;
+        newMessage.operationName = this.operationName;
+
+        return newMessage;
+    }
+
+    public set(element: Frame): ClientMessage {
+        const newMessage: ClientMessage = new ClientMessage(element);
+        return newMessage;
+    }
+
+    public equals(o: ClientMessage): boolean {
+        if (o === null) {
+            return false;
+        }
+
+        const message: ClientMessage = o;
+
+        if (this.isRetryable !== message.isRetryable) {
+            return false;
+        }
+        if (this.acquiresResource !== message.acquiresResource) {
+            return false;
+        }
+        if (!(this.operationName === message.operationName)) {
+            return false;
+        }
+        return (this.connection === message.connection);
+    }
+
+}

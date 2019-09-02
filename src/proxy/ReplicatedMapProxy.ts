@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import * as Promise from 'bluebird';
 import {ReplicatedMapAddEntryListenerCodec} from '../codec/ReplicatedMapAddEntryListenerCodec';
 import {ReplicatedMapAddEntryListenerToKeyCodec} from '../codec/ReplicatedMapAddEntryListenerToKeyCodec';
@@ -46,7 +45,7 @@ import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {MapEvent} from '../core/MapListener';
 /* tslint:enable:max-line-length */
 import Long = require('long');
-import ClientMessage = require('../ClientMessage');
+import {ClientMessage} from '/Users/gulcesirvanci/Desktop/hazelcast-client-protocol/ts/customCodecs/ClientMessage';
 
 export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements ReplicatedMap<K, V> {
 

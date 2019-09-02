@@ -15,11 +15,12 @@
  */
 
 import * as net from 'net';
-import {ClusterDataFactoryHelper} from './ClusterDataFactoryHelper';
-import {DataInput, DataOutput} from './serialization/Data';
-import {IdentifiedDataSerializable} from './serialization/Serializable';
-
-class Address implements IdentifiedDataSerializable {
+import {ClusterDataFactoryHelper} from '/Users/gulcesirvanci/hazelcast-nodejs-client/src/ClusterDataFactoryHelper';
+import {DataInput, DataOutput} from '/Users/gulcesirvanci/hazelcast-nodejs-client/src/serialization/Data';
+import {IdentifiedDataSerializable} from '/Users/gulcesirvanci/hazelcast-nodejs-client/src/serialization/Serializable';
+// tslint:disable-next-line:comment-format
+//eklendi
+export class Address implements IdentifiedDataSerializable {
 
     host: string;
     port: number;
@@ -77,6 +78,13 @@ class Address implements IdentifiedDataSerializable {
     private toStringInternal(): string {
         return this.host + ':' + this.port;
     }
-}
 
-export = Address;
+    /*public getPort() : number{
+        return this.port;
+    }
+
+    public getHost() : string {
+        return this.host;
+    } */
+
+}
