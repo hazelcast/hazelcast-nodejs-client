@@ -1,4 +1,4 @@
-import {ClientMessage, Frame} from '/Users/gulcesirvanci/hazelcast-nodejs-client/src/ClientMessage';
+import {ClientMessage, Frame} from '../ClientMessage';
 
 export class CodecUtil {
 

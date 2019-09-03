@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ClientMessage} from '../ClientMessage';
+import {ClientMessage, Frame} from '../ClientMessage';
 import {
     AuthenticationError,
     CallerNotMemberError,
@@ -52,7 +52,7 @@ import {
     UnsupportedOperationError,
     HazelcastSerializationError,
 } from '/Users/gulcesirvanci/Desktop/hazelcast-nodejs-client/src/HazelcastError';
-import {ClientProtocolErrorCodes} from '../builtin/ClientProtocolErrorCodes';
+import {ClientProtocolErrorCodes} from './ClientProtocolErrorCodes';
 import {ErrorCodec} from './ErrorCodec';
 
 type ErrorFactory = (msg: string, cause: Error) => Error;
@@ -115,8 +115,8 @@ export class ClientErrorFactory {
         this.register(ClientProtocolErrorCodes.CONSISTENCY_LOST_EXCEPTION, (m, c) => new ConsistencyLostError(m, c));
     }
 
-    createErrorFromClientMessage(clientMessage: ClientMessage): Error {
-        const errorCodec = ErrorCodec.decode(clientMessage);
+    createErrorFromClientMessage(frame: Frame): Error {
+        const errorCodec = ErrorCodec.decode(frame);
         return this.createError(errorCodec.errorCode, errorCodec.className, errorCodec.message, null);
     }
 

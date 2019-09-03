@@ -2,7 +2,7 @@ import {ClientMessage, Frame} from '../ClientMessage';
 import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
 import {FixedSizeTypes} from './FixedSizeTypes';
-import {UUID} from '/Users/gulcesirvanci/Desktop/hazelcast-nodejs-client/lib/core/UUID';
+import {UUID} from '../core/UUID';
 
 export class ListUUIDCodec {
 
