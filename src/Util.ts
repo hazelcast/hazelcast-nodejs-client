@@ -22,7 +22,7 @@ import {JsonConfigLocator} from './config/JsonConfigLocator';
 import {Comparator} from './core/Comparator';
 import {IterationType} from './core/Predicate';
 import {PagingPredicate} from './serialization/DefaultPredicates';
-import Address = require('./Address');
+import {Address} from './Address';
 
 export function assertNotNull(v: any): void {
     assert.notEqual(v, null, 'Non null value expected.');

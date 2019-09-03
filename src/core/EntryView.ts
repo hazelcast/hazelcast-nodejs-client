@@ -29,4 +29,5 @@ export class EntryView<K, V> {
     version: Long;
     evictionCriteriaNumber: Long;
     ttl: Long;
+    maxIdle: Long;
 }

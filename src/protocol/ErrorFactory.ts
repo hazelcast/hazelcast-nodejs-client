@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import ClientMessage = require('../ClientMessage');
+import {ClientMessage} from '../ClientMessage';
 import {
     AuthenticationError,
     CallerNotMemberError,
@@ -51,8 +51,8 @@ import {
     UndefinedErrorCodeError,
     UnsupportedOperationError,
     HazelcastSerializationError,
-} from '../HazelcastError';
-import {ClientProtocolErrorCodes} from './ClientProtocolErrorCodes';
+} from '/Users/gulcesirvanci/Desktop/hazelcast-nodejs-client/src/HazelcastError';
+import {ClientProtocolErrorCodes} from '../builtin/ClientProtocolErrorCodes';
 import {ErrorCodec} from './ErrorCodec';
 
 type ErrorFactory = (msg: string, cause: Error) => Error;

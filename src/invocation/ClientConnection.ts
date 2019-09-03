@@ -18,11 +18,11 @@ import {Buffer} from 'safe-buffer';
 import * as Promise from 'bluebird';
 import * as net from 'net';
 import {EventEmitter} from 'events';
-import {BitsUtil} from '/Users/gulcesirvanci/hazelcast-nodejs-client/src/BitsUtil';
+import {BitsUtil} from '../BitsUtil';
 import {BuildInfo} from '../BuildInfo';
 import HazelcastClient from '../HazelcastClient';
 import {IOError} from '../HazelcastError';
-import {Address} from '/Users/gulcesirvanci/hazelcast-nodejs-client/src/Address';
+import {Address} from '../Address';
 import {DeferredPromise} from '../Util';
 
 const FROZEN_ARRAY = Object.freeze([]) as OutputQueueItem[];

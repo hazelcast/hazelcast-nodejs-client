@@ -1,14 +1,12 @@
-import {ClientMessage, Frame} from "../ClientMessage";
+import {ClientMessage, Frame} from '../ClientMessage';
 import {Buffer} from 'safe-buffer';
-import {FixedSizeTypes} from "./FixedSizeTypes";
-// @ts-ignore
-import * as Long from "long";
-import {EntryView} from "/Users/gulcesirvanci/Desktop/hazelcast-nodejs-client/src/core/EntryView";
-import {CodecUtil} from "./CodecUtil";
-import {BitsUtil} from "../BitsUtil";
-import {Data} from "/Users/gulcesirvanci/Desktop/hazelcast-nodejs-client/lib/serialization/Data";
-import {DataCodec} from "./DataCodec";
-
+import {FixedSizeTypes} from './FixedSizeTypes';
+import * as Long from 'long';
+import {EntryView} from '../core/EntryView';
+import {CodecUtil} from './CodecUtil';
+import {BitsUtil} from '../BitsUtil';
+import {Data} from '../serialization/Data';
+import {DataCodec} from './DataCodec';
 
 export class SimpleEntryViewCodec {
 
@@ -24,12 +22,13 @@ export class SimpleEntryViewCodec {
     private static MAX_IDLE_OFFSET = SimpleEntryViewCodec.TTL_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
     private static INITIAL_FRAME_SIZE = SimpleEntryViewCodec.MAX_IDLE_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
+    // tslint:disable-next-line:no-empty
     constructor() {
     }
 
-    public static encode(clientMessage: ClientMessage,entryView : EntryView<Data, Data>): void {
+    public static encode(clientMessage: ClientMessage, entryView: EntryView<Data, Data>): void {
         clientMessage.add(ClientMessage.BEGIN_FRAME);
-        var initialFrame : Frame = new Frame(Buffer.allocUnsafe(SimpleEntryViewCodec.INITIAL_FRAME_SIZE));
+        const initialFrame: Frame = new Frame(Buffer.allocUnsafe(SimpleEntryViewCodec.INITIAL_FRAME_SIZE));
 
         FixedSizeTypes.encodeLong(initialFrame.content, SimpleEntryViewCodec.COST_OFFSET, entryView.cost);
         FixedSizeTypes.encodeLong(initialFrame.content, SimpleEntryViewCodec.CREATION_TIME_OFFSET, entryView.creationTime);
@@ -52,25 +51,28 @@ export class SimpleEntryViewCodec {
 
     public static decode(frame: Frame): EntryView<Data, Data> {
         frame = frame.next;
-        var initialFrame : Frame = frame.next;
+        const initialFrame: Frame = frame.next;
 
-        var cost : Long = FixedSizeTypes.decodeLong(initialFrame.content, SimpleEntryViewCodec.COST_OFFSET);
-        var creationTime : Long = FixedSizeTypes.decodeLong(initialFrame.content, SimpleEntryViewCodec.CREATION_TIME_OFFSET);
-        var expirationTime : Long = FixedSizeTypes.decodeLong(initialFrame.content, SimpleEntryViewCodec.EXPIRATION_TIME_OFFSET);
-        var hits : Long = FixedSizeTypes.decodeLong(initialFrame.content, SimpleEntryViewCodec.HITS_OFFSET);
-        var lastAccessTime : Long = FixedSizeTypes.decodeLong(initialFrame.content, SimpleEntryViewCodec.LAST_ACCESS_TIME_OFFSET);
-        var lastStoredTime : Long = FixedSizeTypes.decodeLong(initialFrame.content, SimpleEntryViewCodec.LAST_STORED_TIME_OFFSET);
-        var lastUpdateTime : Long = FixedSizeTypes.decodeLong(initialFrame.content, SimpleEntryViewCodec.LAST_UPDATE_TIME_OFFSET);
-        var version : Long = FixedSizeTypes.decodeLong(initialFrame.content, SimpleEntryViewCodec.VERSION_OFFSET);
-        var ttl : Long = FixedSizeTypes.decodeLong(initialFrame.content, SimpleEntryViewCodec.TTL_OFFSET);
-        var maxIdle : Long= FixedSizeTypes.decodeLong(initialFrame.content, SimpleEntryViewCodec.MAX_IDLE_OFFSET);
+        const cost: Long = FixedSizeTypes.decodeLong(initialFrame.content, SimpleEntryViewCodec.COST_OFFSET);
+        const creationTime: Long = FixedSizeTypes.decodeLong(initialFrame.content, SimpleEntryViewCodec.CREATION_TIME_OFFSET);
+        const expirationTime: Long = FixedSizeTypes.decodeLong(initialFrame.content, SimpleEntryViewCodec.EXPIRATION_TIME_OFFSET);
+        const hits: Long = FixedSizeTypes.decodeLong(initialFrame.content, SimpleEntryViewCodec.HITS_OFFSET);
+        const lastAccessTime: Long = FixedSizeTypes.decodeLong(initialFrame.content,
+            SimpleEntryViewCodec.LAST_ACCESS_TIME_OFFSET);
+        const lastStoredTime: Long = FixedSizeTypes.decodeLong(initialFrame.content,
+            SimpleEntryViewCodec.LAST_STORED_TIME_OFFSET);
+        const lastUpdateTime: Long = FixedSizeTypes.decodeLong(initialFrame.content,
+            SimpleEntryViewCodec.LAST_UPDATE_TIME_OFFSET);
+        const version: Long = FixedSizeTypes.decodeLong(initialFrame.content, SimpleEntryViewCodec.VERSION_OFFSET);
+        const ttl: Long = FixedSizeTypes.decodeLong(initialFrame.content, SimpleEntryViewCodec.TTL_OFFSET);
+        const maxIdle: Long = FixedSizeTypes.decodeLong(initialFrame.content, SimpleEntryViewCodec.MAX_IDLE_OFFSET);
 
-        var key : Data = DataCodec.decode(frame);
-        var value : Data = DataCodec.decode(frame);
+        const key: Data = DataCodec.decode(frame);
+        const value: Data = DataCodec.decode(frame);
 
         CodecUtil.fastForwardToEndFrame(frame);
 
-        var entryView : EntryView<Data, Data> =  new EntryView<Data, Data>();
+        const entryView: EntryView<Data, Data> =  new EntryView<Data, Data>();
         entryView.key = key;
         entryView.value = value;
 
@@ -87,6 +89,4 @@ export class SimpleEntryViewCodec {
 
         return entryView;
     }
-
-
 }

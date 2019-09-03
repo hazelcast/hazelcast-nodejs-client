@@ -1,9 +1,10 @@
-import {ClientMessage, Frame} from "../ClientMessage";
-import {Data} from "/Users/gulcesirvanci/Desktop/hazelcast-nodejs-client/lib/serialization/Data";
-import {HeapData} from "/Users/gulcesirvanci/Desktop/hazelcast-nodejs-client/lib/serialization/HeapData";
+import {ClientMessage, Frame} from '../ClientMessage';
+import {Data} from '../serialization/Data';
+import {HeapData} from '../serialization/HeapData';
 
 export class DataCodec {
 
+    // tslint:disable-next-line:no-empty
     constructor() {
     }
 

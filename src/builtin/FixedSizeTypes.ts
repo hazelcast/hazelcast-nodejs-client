@@ -1,8 +1,7 @@
-// @ts-ignore
 import * as Long from 'long';
 import {Buffer} from 'safe-buffer';
 import {UUID} from '/Users/gulcesirvanci/Desktop/hazelcast-nodejs-client/lib/core/UUID';
-import {BitsUtil} from '/Users/gulcesirvanci/Desktop/hazelcast-client-protocol/output/BitsUtil'
+import {BitsUtil} from '../BitsUtil';
 
 export class FixedSizeTypes {
 
@@ -20,8 +19,8 @@ export class FixedSizeTypes {
         return BitsUtil.readInt32(buffer, pos, false);
     }
 
-    public static encodeLong(buffer: Buffer, pos: number, value: Long): void { //byte[]
-        BitsUtil.writeLong(buffer, pos, value); //long
+    public static encodeLong(buffer: Buffer, pos: number, value: Long): void {
+        BitsUtil.writeLong(buffer, pos, value);
     }
 
     public static decodeLong(buffer: Buffer, pos: number): Long {
@@ -33,8 +32,10 @@ export class FixedSizeTypes {
     }
 
     public static decodeBoolean(buffer: Buffer, pos): boolean {
-        if (BitsUtil.readInt8(buffer, pos) == 1)
+        // tslint:disable-next-line:curly
+        if (BitsUtil.readInt8(buffer, pos) === 1)
             return true;
+        // tslint:disable-next-line:curly
         else
             return false;
     }
@@ -61,5 +62,3 @@ export class FixedSizeTypes {
     }
 
 }
-
-

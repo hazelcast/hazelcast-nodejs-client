@@ -14,44 +14,53 @@
  * limitations under the License.
  */
 
-import ClientMessage = require('../ClientMessage');
+import {ClientMessage, Frame} from '../ClientMessage';
 import {StackTraceElementCodec} from './StackTraceElementCodec';
+import {BitsUtil} from '../BitsUtil';
+import {Buffer} from 'safe-buffer';
+import {StringCodec} from '../builtin/StringCodec';
+import {FixedSizeTypes} from '../builtin/FixedSizeTypes';
+import {CodecUtil} from '../builtin/CodecUtil';
+import {ErrorHolder} from './ErrorHolder';
+import {StackTraceElement} from './StackTraceElement';
+import {ListMultiFrameCodec} from '../builtin/ListMultiFrameCodec';
 
 export class ErrorCodec {
 
-    errorCode: number = null;
-    className: string = null;
-    message: string = null;
-    stackTrace: StackTraceElementCodec[] = [];
-    causeErrorCode: number = null;
-    causeClassName: string = null;
+    public static EXCEPTION: number = 109;
+    private static ERROR_CODE: number = 0;
+    private static INITIAL_FRAME_SIZE: number = ErrorCodec.ERROR_CODE + BitsUtil.INT_SIZE_IN_BYTES;
 
-    static decode(clientMessage: ClientMessage): ErrorCodec {
-        const exception = new ErrorCodec();
+    // tslint:disable-next-line:no-empty
+    constructor() {
+    }
 
-        exception.errorCode = clientMessage.readInt32();
-        exception.className = clientMessage.readString();
+    public static encode(clientMessage: ClientMessage, errorHolder: ErrorHolder): void {
+        clientMessage.add(ClientMessage.BEGIN_FRAME);
+        const initialFrame: Frame = new Frame(Buffer.allocUnsafe(ErrorCodec.INITIAL_FRAME_SIZE));
+        clientMessage.add(initialFrame);
 
-        const isMessageNull = clientMessage.readBoolean();
-        if (!isMessageNull) {
-            exception.message = clientMessage.readString();
-        }
+        StringCodec.encode(clientMessage, errorHolder.getClassName());
+        CodecUtil.encodeNullable(clientMessage, errorHolder.getMessage(), StringCodec.encode);
+        ListMultiFrameCodec.encode(clientMessage, errorHolder.getStackTraceElements(), StackTraceElementCodec.encode);
 
-        const stackTraceDepth = clientMessage.readInt32();
-        exception.stackTrace = [];
-        for (let i = 0; i < stackTraceDepth; i++) {
-            exception.stackTrace.push(StackTraceElementCodec.decode(clientMessage));
-        }
+        clientMessage.add(ClientMessage.END_FRAME);
+    }
 
-        exception.causeErrorCode = clientMessage.readInt32();
+    // tslint:disable-next-line:typedef
+    public static decode(frame: Frame) {
+        frame = frame.next;
+        const initialFrame: Frame = frame.next;
 
-        const causeClassNameNull = clientMessage.readBoolean();
+        const errorCode: number = FixedSizeTypes.decodeInt(initialFrame.content, ErrorCodec.ERROR_CODE);
 
-        if (!causeClassNameNull) {
-            exception.causeClassName = clientMessage.readString();
-        }
+        const className: string = StringCodec.decode(frame);
+        const message: string = CodecUtil.decodeNullable(frame, StringCodec.decode);
+        const stackTraceElement: StackTraceElement[] = ListMultiFrameCodec.decode(frame, StackTraceElementCodec.decode);
 
-        return exception;
+        CodecUtil.fastForwardToEndFrame(frame);
+        return new ErrorHolder(errorCode, className, message, stackTraceElement);
+
     }
 
 }

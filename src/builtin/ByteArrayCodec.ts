@@ -1,8 +1,9 @@
-import {ClientMessage, Frame} from "../ClientMessage";
+import {ClientMessage, Frame} from '../ClientMessage';
 import {Buffer} from 'safe-buffer';
 
 export class ByteArrayCodec {
 
+    // tslint:disable-next-line:no-empty
     constructor() {
     }
 

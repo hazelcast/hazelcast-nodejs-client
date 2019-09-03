@@ -1,11 +1,12 @@
-import {ClientMessage, Frame} from "../ClientMessage";
-import {DistributedObject} from "/Users/gulcesirvanci/Desktop/hazelcast-nodejs-client/lib/DistributedObject";
-import {HeapData} from "/Users/gulcesirvanci/Desktop/hazelcast-nodejs-client/lib/serialization/HeapData";
-import {StringCodec} from "./StringCodec";
-import {CodecUtil} from "./CodecUtil";
+import {ClientMessage, Frame} from '../ClientMessage';
+import {DistributedObject} from '../DistributedObject';
+import {StringCodec} from './StringCodec';
+import {CodecUtil} from './CodecUtil';
+import {DistributedObjectInfo} from './DistributedObjectInfo';
 
 export class DistributedObjectInfoCodec {
 
+    // tslint:disable-next-line:no-empty
     constructor() {
     }
 
@@ -18,20 +19,17 @@ export class DistributedObjectInfoCodec {
         clientMessage.add(ClientMessage.END_FRAME);
     }
 
-    public static decode(frame : Frame) : DistributedObject{
-    // begin frame
-    frame = frame.next;
+    public static decode(frame: Frame): DistributedObjectInfo {
+        frame = frame.next;
 
-    var serviceName : string = StringCodec.decode(frame);
-    var name : string = StringCodec.decode(frame);
+        const serviceName: string = StringCodec.decode(frame);
+        const name: string = StringCodec.decode(frame);
 
-    CodecUtil.fastForwardToEndFrame(frame);
+        CodecUtil.fastForwardToEndFrame(frame);
 
-    return new DistributedObject(serviceName, name);
-}
+        return new DistributedObjectInfo(serviceName, name);
+    }
 }
 
 //distributedobjectinfo classi olusturmalisin
 //her decode icin de key ekle hem custom hem genericated
-
-

@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-// tslint:disable-next-line:comment-format
-//eklendi
-
  export class StackTraceElement {
 
      public declaringClass: string;

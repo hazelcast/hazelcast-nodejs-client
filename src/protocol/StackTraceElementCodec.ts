@@ -14,25 +14,48 @@
  * limitations under the License.
  */
 
-import ClientMessage = require('../ClientMessage');
+import {ClientMessage, Frame} from '../ClientMessage';
+import {BitsUtil} from '../BitsUtil';
+import {Buffer} from 'safe-buffer';
+import {FixedSizeTypes} from '../builtin/FixedSizeTypes';
+import {CodecUtil} from '../builtin/CodecUtil';
+import {StringCodec} from '../builtin/StringCodec';
+import {StackTraceElement} from './StackTraceElement';
 
 export class StackTraceElementCodec {
-    declaringClass: string = null;
-    methodName: string = null;
-    fileName: string = null;
-    lineNumber: number = null;
+    private static LINE_NUMBER: number = 0;
+    private static INITIAL_FRAME_SIZE: number = StackTraceElementCodec.LINE_NUMBER + BitsUtil.INT_SIZE_IN_BYTES;
 
-    static decode(payload: ClientMessage): StackTraceElementCodec {
-        const stackTraceElement = new StackTraceElementCodec();
+    // tslint:disable-next-line:no-empty
+    constructor() {
+    }
 
-        stackTraceElement.declaringClass = payload.readString();
-        stackTraceElement.methodName = payload.readString();
+    // tslint:disable-next-line:typedef
+    static encode(clientMessage: ClientMessage, stackTraceElement: StackTraceElement) {
+        clientMessage.add(ClientMessage.BEGIN_FRAME);
 
-        const fileNameNull = payload.readBoolean();
-        if (!fileNameNull) {
-            stackTraceElement.fileName = payload.readString();
-        }
-        stackTraceElement.lineNumber = payload.readInt32();
-        return stackTraceElement;
+        const initialFrame: Frame = new Frame(Buffer.allocUnsafe(StackTraceElementCodec.INITIAL_FRAME_SIZE));
+        FixedSizeTypes.encodeInt(initialFrame.content, StackTraceElementCodec.LINE_NUMBER, stackTraceElement.lineNumber);
+        clientMessage.add(initialFrame);
+
+        StringCodec.encode(clientMessage, stackTraceElement.declaringClass);
+        StringCodec.encode(clientMessage, stackTraceElement.methodName);
+        CodecUtil.encodeNullable(clientMessage, stackTraceElement.fileName, StringCodec.encode);
+
+        clientMessage.add(ClientMessage.END_FRAME);
+
+    }
+
+    static decode(frame: Frame): StackTraceElement {
+        frame = frame.next;
+        const initialFrame: Frame = frame.next;
+        const lineNumber: number = FixedSizeTypes.decodeInt(initialFrame.content, StackTraceElementCodec.LINE_NUMBER);
+
+        const declaringClass: string = StringCodec.decode(frame);
+        const methodName: string = StringCodec.decode(frame);
+        const fileName: string = CodecUtil.decodeNullable(frame, StringCodec.decode);
+
+        CodecUtil.fastForwardToEndFrame(frame);
+        return new StackTraceElement(declaringClass, methodName, fileName, lineNumber);
     }
 }

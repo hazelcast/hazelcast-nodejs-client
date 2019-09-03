@@ -1,48 +1,41 @@
-import {ClientMessage, Frame} from "../ClientMessage";
+import {ClientMessage, Frame} from '../ClientMessage';
 import {Buffer} from 'safe-buffer';
-import {BitsUtil} from "../BitsUtil";
-import {FixedSizeTypes} from "./FixedSizeTypes";
-// @ts-ignore
-import * as Long from "long";
-import {UUID} from '/Users/gulcesirvanci/Desktop/hazelcast-nodejs-client/lib/core/UUID';
-import {StringCodec} from "./StringCodec";
-import {ListLongCodec} from "./ListLongCodec";
-import {ListMultiFrameCodec} from "./ListMultiFrameCodec";
-
-
+import {BitsUtil} from '../BitsUtil';
+import {FixedSizeTypes} from './FixedSizeTypes';
+import * as Long from 'long';
+import {UUID} from '../core/UUID';
 
 export class MapUUIDLongCodec {
 
-    private static ENTRY_SIZE_IN_BYTES : number = FixedSizeTypes.UUID_SIZE_IN_BYTES + BitsUtil.LONG_SIZE_IN_BYTES;
+    private static ENTRY_SIZE_IN_BYTES: number = FixedSizeTypes.UUID_SIZE_IN_BYTES + BitsUtil.LONG_SIZE_IN_BYTES;
 
+    // tslint:disable-next-line:no-empty
     constructor() {
     }
 
-    public static encode(clientMessage: ClientMessage, collection : Array<[UUID,Long]>): void {
-        var itemCount: number = collection.length;
-        var frame: Frame = new Frame(Buffer.allocUnsafe(itemCount * MapUUIDLongCodec.ENTRY_SIZE_IN_BYTES));
-        var iterator: Array<[UUID, Long]> = collection;
+    public static encode(clientMessage: ClientMessage, collection: Array<[UUID, Long]>): void {
+        const itemCount: number = collection.length;
+        const frame: Frame = new Frame(Buffer.allocUnsafe(itemCount * MapUUIDLongCodec.ENTRY_SIZE_IN_BYTES));
+        const iterator: Array<[UUID, Long]> = collection;
 
-        for (var i = 0; i < itemCount; i++) {
-            var entry : Map<UUID, Long> = iterator[i];
+        for (let i = 0; i < itemCount; i++) {
+            const entry: [UUID, Long] = iterator[i];
             FixedSizeTypes.encodeUUID(frame.content, i * MapUUIDLongCodec.ENTRY_SIZE_IN_BYTES, entry[0]);
-            FixedSizeTypes.encodeLong(frame.content, i * MapUUIDLongCodec.ENTRY_SIZE_IN_BYTES + FixedSizeTypes.UUID_SIZE_IN_BYTES, entry.getValue());
+            FixedSizeTypes.encodeLong(frame.content,
+                i * MapUUIDLongCodec.ENTRY_SIZE_IN_BYTES + FixedSizeTypes.UUID_SIZE_IN_BYTES, entry[1]);
         }
         clientMessage.add(frame);
     }
 
-    public static decode(frame: Frame): Array<[UUID,Long]> {
-        var itemCount: number = frame.content.length / MapUUIDLongCodec.ENTRY_SIZE_IN_BYTES;
-        var result: Array<[UUID,Long]> = new Array<[UUID, Long]>();
-        for (var i = 0; i < itemCount; i++) {
-            var key : UUID = FixedSizeTypes.decodeUUID(frame.content, i * MapUUIDLongCodec.ENTRY_SIZE_IN_BYTES);
-            var value : Long = FixedSizeTypes.decodeLong(frame.content, i * MapUUIDLongCodec.ENTRY_SIZE_IN_BYTES + FixedSizeTypes.UUID_SIZE_IN_BYTES);
-            var map  = new Map();
-            map.set(key, value);
-            result.push(map);
+    public static decode(frame: Frame): Array<[UUID, Long]> {
+        const itemCount: number = frame.content.length / MapUUIDLongCodec.ENTRY_SIZE_IN_BYTES;
+        const result: Array<[UUID, Long]> = new Array<[UUID, Long]>();
+        for (let i = 0; i < itemCount; i++) {
+            const key: UUID = FixedSizeTypes.decodeUUID(frame.content, i * MapUUIDLongCodec.ENTRY_SIZE_IN_BYTES);
+            const value: Long = FixedSizeTypes.decodeLong(frame.content,
+                i * MapUUIDLongCodec.ENTRY_SIZE_IN_BYTES + FixedSizeTypes.UUID_SIZE_IN_BYTES);
+            result.push([key, value]);
         }
         return result;
     }
-
-
 }

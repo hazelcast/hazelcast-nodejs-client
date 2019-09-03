@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// tslint:disable-next-line:comment-format
-//eklendi
+
 /* tslint:disable:no-bitwise */
 import {Buffer} from 'safe-buffer';
-import {Address} from '/Users/gulcesirvanci/Desktop/hazelcast-client-protocol/ts/customCodecs/Address';
-import {Data} from '/Users/gulcesirvanci/Desktop/hazelcast-nodejs-client/lib/serialization/Data';
+import {Address} from './Address';
+import {Data} from './serialization/Data';
 import * as Long from 'long';
-import {FixedSizeTypes} from '/Users/gulcesirvanci/hazelcast-nodejs-client/src/builtin/FixedSizeTypes';
 
 export class BitsUtil {
 

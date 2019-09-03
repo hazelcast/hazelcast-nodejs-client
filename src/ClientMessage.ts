@@ -39,7 +39,7 @@
 import {Buffer} from 'safe-buffer';
 import * as Long from 'long';
 import {BitsUtil} from './BitsUtil';
-import {ClientConnection} from '/Users/gulcesirvanci/hazelcast-nodejs-client/src/invocation/ClientConnection';
+import {ClientConnection} from './invocation/ClientConnection';
 
 export class LinkedListFrame {
     protected headFrame: Frame;
