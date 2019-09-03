@@ -23,7 +23,7 @@ import {Task} from '../Util';
 import * as os from 'os';
 import {BuildInfo} from '../BuildInfo';
 import {ILogger} from '../logging/ILogger';
-import Address = require('../Address');
+import {Address} from '../Address';
 
 /**
  * This class is the main entry point for collecting and sending the client

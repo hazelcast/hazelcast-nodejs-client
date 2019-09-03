@@ -25,7 +25,7 @@ import {NoDataMemberInClusterError} from '../HazelcastError';
 import {randomInt} from '../Util';
 import {BaseProxy} from './BaseProxy';
 import {PNCounter} from './PNCounter';
-import Address = require('../Address');
+import {Address} from '../Address';
 
 export class PNCounterProxy extends BaseProxy implements PNCounter {
     private static readonly EMPTY_ARRAY: Address[] = [];

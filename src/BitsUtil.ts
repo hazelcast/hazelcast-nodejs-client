@@ -53,6 +53,8 @@ export class BitsUtil {
 
     static HEADER_SIZE: number = BitsUtil.DATA_OFFSET_FIELD_OFFSET + BitsUtil.SHORT_SIZE_IN_BYTES;
 
+    static LISTENER_FLAG: number = 0x01;
+
     static calculateSizeData(data: Data): number {
         return BitsUtil.INT_SIZE_IN_BYTES + data.totalSize();
     }
@@ -106,7 +108,7 @@ export class BitsUtil {
         buffer.writeUInt8(val, pos);
     }
 
-    static writeLong(buffer: Buffer, value: any, offset: number): void {
+    static writeLong(buffer: Buffer, offset: number , value: any): void {
         if (!Long.isLong(value)) {
             value = Long.fromValue(value);
         }

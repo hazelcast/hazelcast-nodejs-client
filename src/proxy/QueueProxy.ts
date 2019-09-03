@@ -41,7 +41,7 @@ import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {Data} from '../serialization/Data';
 import {IQueue} from './IQueue';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
-import ClientMessage = require('../ClientMessage');
+import {ClientMessage} from '../ClientMessage';
 
 export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
 

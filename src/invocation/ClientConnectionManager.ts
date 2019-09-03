@@ -28,7 +28,7 @@ import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
 import {AddressTranslator} from '../connection/AddressTranslator';
 import {AddressProvider} from '../connection/AddressProvider';
 import {ILogger} from '../logging/ILogger';
-import Address = require('../Address');
+import {Address} from '../Address';
 import {SSLOptionsFactory} from '../connection/SSLOptionsFactory';
 
 const EMIT_CONNECTION_CLOSED = 'connectionClosed';

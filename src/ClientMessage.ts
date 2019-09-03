@@ -206,6 +206,7 @@ export class ClientMessage extends LinkedListFrame {
     private acquiresResource: boolean;
     private operationName: string;
     private connection: ClientConnection;
+    private buffer: Buffer;
 
     constructor(frames: Frame = null) {
         super(frames);
@@ -228,8 +229,8 @@ export class ClientMessage extends LinkedListFrame {
         return this;
     }
 
-    public getCorrelationId(): Long {
-        return BitsUtil.readLong(this.get().content, ClientMessage.CORRELATION_ID_FIELD_OFFSET);
+    public getCorrelationId(): number {
+        return BitsUtil.readLong(this.get().content, ClientMessage.CORRELATION_ID_FIELD_OFFSET).toNumber();
     }
 
     public setCorrelationId(correlationId: number): ClientMessage {
@@ -310,6 +311,14 @@ export class ClientMessage extends LinkedListFrame {
         return false;
     }
 
+    public getFlags(): number {
+        return this.buffer.readUInt8(BitsUtil.FLAGS_FIELD_OFFSET);
+    }
+
+    public hasFlags(flags: number): number {
+        return this.getFlags() & flags;
+    }
+
     public toString(): string {
         const sb = 'ClientMessage{\n' + 'connection=' + this.connection;
         if (this.size() > 0) {
@@ -324,6 +333,19 @@ export class ClientMessage extends LinkedListFrame {
         }
 
         return sb.toString();
+    }
+
+    public clone(): ClientMessage {
+        const newMessage: ClientMessage = new ClientMessage();
+
+        const initialFrameCopy: Frame = newMessage.get().copy();
+        newMessage.set(initialFrameCopy);
+
+        newMessage.retryable = this.retryable;
+        newMessage.acquiresResource = this.acquiresResource;
+        newMessage.operationName = this.operationName;
+
+        return newMessage;
     }
 
     public copyWithNewCorrelationId(correlationId: number): ClientMessage {

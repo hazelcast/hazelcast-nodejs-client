@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Address = require('../Address');
+import {Address} from '../Address';
 import * as Promise from 'bluebird';
 
 /**

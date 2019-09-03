@@ -23,7 +23,7 @@ import {Invocation} from '../invocation/InvocationService';
 import {PartitionService} from '../PartitionService';
 import {RepairingHandler} from './RepairingHandler';
 import {ILogger} from '../logging/ILogger';
-import ClientMessage = require('../ClientMessage');
+import {ClientMessage} from '../ClientMessage';
 
 export class MetadataFetcher {
 

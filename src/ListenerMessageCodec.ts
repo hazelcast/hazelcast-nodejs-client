@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import ClientMessage = require('./ClientMessage');
+import {ClientMessage} from './ClientMessage';
 
 export interface ListenerMessageCodec {
     encodeAddRequest: (localOnly: boolean) => ClientMessage;

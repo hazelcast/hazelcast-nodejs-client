@@ -42,8 +42,8 @@ export class SimpleEntryViewCodec {
         FixedSizeTypes.encodeLong(initialFrame.content, SimpleEntryViewCodec.MAX_IDLE_OFFSET, entryView.maxIdle);
         clientMessage.add(initialFrame);
 
-        SimpleEntryViewCodec.encode(clientMessage, entryView[0]);
-        SimpleEntryViewCodec.encode(clientMessage, entryView[1]);
+        DataCodec.encode(clientMessage, entryView.key);
+        DataCodec.encode(clientMessage, entryView.value);
 
         clientMessage.add(ClientMessage.END_FRAME);
 

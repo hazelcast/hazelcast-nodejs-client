@@ -17,7 +17,7 @@
 import {HazelcastCloudDiscovery} from './HazelcastCloudDiscovery';
 import {AddressTranslator} from '../connection/AddressTranslator';
 import * as Promise from 'bluebird';
-import Address = require('../Address');
+import {Address} from '../Address';
 import {ILogger} from '../logging/ILogger';
 
 export class HazelcastCloudAddressTranslator implements AddressTranslator {

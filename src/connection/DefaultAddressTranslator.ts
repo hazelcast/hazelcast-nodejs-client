@@ -16,7 +16,7 @@
 
 import {AddressTranslator} from './AddressTranslator';
 import * as Promise from 'bluebird';
-import Address = require('../Address');
+import {Address} from '../Address';
 
 /**
  * Default Address Translator is a no-op. It always returns the given address.

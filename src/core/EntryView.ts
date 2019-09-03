@@ -30,4 +30,9 @@ export class EntryView<K, V> {
     evictionCriteriaNumber: Long;
     ttl: Long;
     maxIdle: Long;
+
+    // tslint:disable-next-line:no-empty
+    constructor() {
+
+    }
 }

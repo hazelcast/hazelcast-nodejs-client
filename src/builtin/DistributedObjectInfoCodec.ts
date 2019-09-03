@@ -10,7 +10,7 @@ export class DistributedObjectInfoCodec {
     constructor() {
     }
 
-    public static encode(clientMessage: ClientMessage, info: DistributedObject): void {
+    public static encode(clientMessage: ClientMessage, info: DistributedObjectInfo): void {
         clientMessage.add(ClientMessage.BEGIN_FRAME);
 
         StringCodec.encode(clientMessage, info.getServiceName());

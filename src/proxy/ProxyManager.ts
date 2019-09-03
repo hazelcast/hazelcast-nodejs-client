@@ -42,8 +42,8 @@ import {ReliableTopicProxy} from './topic/ReliableTopicProxy';
 import {DistributedObjectEvent, DistributedObjectListener} from '../core/DistributedObjectListener';
 import {DeferredPromise} from '../Util';
 import {ILogger} from '../logging/ILogger';
-import Address = require('../Address');
-import ClientMessage = require('../ClientMessage');
+import {Address} from '../Address';
+import {ClientMessage} from '../ClientMessage';
 
 export class ProxyManager {
     public static readonly MAP_SERVICE: string = 'hz:impl:mapService';

@@ -17,9 +17,10 @@
 import * as Promise from 'bluebird';
 import HazelcastClient from './HazelcastClient';
 import {ILogger} from './logging/ILogger';
-import Address = require('./Address');
-import ClientMessage = require('./ClientMessage');
-import GetPartitionsCodec = require('./codec/GetPartitionsCodec');
+import {Address} from './Address';
+import {ClientMessage} from './ClientMessage';
+// tslint:disable-next-line:import-spacing
+import {ClientGetPartitionsCodec} from  './codec/ClientGetPartitionsCodec';
 
 const PARTITION_REFRESH_INTERVAL = 10000;
 
@@ -59,14 +60,14 @@ export class PartitionService {
         if (ownerConnection == null) {
             return Promise.resolve();
         }
-        const clientMessage: ClientMessage = GetPartitionsCodec.encodeRequest();
+        const clientMessage: ClientMessage = ClientGetPartitionsCodec.encodeRequest();
 
         return this.client.getInvocationService()
             .invokeOnConnection(ownerConnection, clientMessage)
             .then((response: ClientMessage) => {
-                const receivedPartitionMap = GetPartitionsCodec.decodeResponse(response);
+                const receivedPartitionMap = ClientGetPartitionsCodec.decodeResponse(response);
                 for (const partitionId in receivedPartitionMap) {
-                    this.partitionMap[partitionId] = receivedPartitionMap[partitionId];
+                    (this.partitionMap as any)[partitionId] = (receivedPartitionMap as any)[partitionId];
                 }
                 this.partitionCount = Object.keys(this.partitionMap).length;
             }).catch((e) => {

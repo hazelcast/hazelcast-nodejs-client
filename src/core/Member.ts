@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Address = require('../Address');
+import {Address} from '../Address';
 
 export class Member {
     /**

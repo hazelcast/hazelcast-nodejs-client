@@ -18,8 +18,8 @@ import * as Promise from 'bluebird';
 import {BuildInfo} from '../BuildInfo';
 import HazelcastClient from '../HazelcastClient';
 import {Data} from '../serialization/Data';
-import Address = require('../Address');
-import ClientMessage = require('../ClientMessage');
+import {Address} from '../Address';
+import {ClientMessage} from '../ClientMessage';
 
 /**
  * Common super class for any proxy.

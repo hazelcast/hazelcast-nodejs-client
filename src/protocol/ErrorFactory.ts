@@ -51,7 +51,7 @@ import {
     UndefinedErrorCodeError,
     UnsupportedOperationError,
     HazelcastSerializationError,
-} from '/Users/gulcesirvanci/Desktop/hazelcast-nodejs-client/src/HazelcastError';
+} from '../HazelcastError';
 import {ClientProtocolErrorCodes} from './ClientProtocolErrorCodes';
 import {ErrorCodec} from './ErrorCodec';
 

@@ -16,7 +16,7 @@
 import * as Promise from 'bluebird';
 import {ReplicatedMapAddEntryListenerCodec} from '../codec/ReplicatedMapAddEntryListenerCodec';
 import {ReplicatedMapAddEntryListenerToKeyCodec} from '../codec/ReplicatedMapAddEntryListenerToKeyCodec';
-/* tslint:disable:max-line-length */
+// tslint:disable-next-line:import-spacing max-line-length
 import {ReplicatedMapAddEntryListenerToKeyWithPredicateCodec} from '../codec/ReplicatedMapAddEntryListenerToKeyWithPredicateCodec';
 import {ReplicatedMapAddEntryListenerWithPredicateCodec} from '../codec/ReplicatedMapAddEntryListenerWithPredicateCodec';
 import {ReplicatedMapClearCodec} from '../codec/ReplicatedMapClearCodec';
@@ -43,9 +43,8 @@ import {ArrayComparator} from '../util/ArrayComparator';
 import {ReplicatedMap} from './ReplicatedMap';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {MapEvent} from '../core/MapListener';
-/* tslint:enable:max-line-length */
 import Long = require('long');
-import {ClientMessage} from '/Users/gulcesirvanci/Desktop/hazelcast-client-protocol/ts/customCodecs/ClientMessage';
+import {ClientMessage} from '../ClientMessage';
 
 export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements ReplicatedMap<K, V> {
 

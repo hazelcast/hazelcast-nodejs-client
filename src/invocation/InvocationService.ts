@@ -29,8 +29,8 @@ import {
 import {ClientConnection} from './ClientConnection';
 import {DeferredPromise} from '../Util';
 import {ILogger} from '../logging/ILogger';
-import Address = require('../Address');
-import ClientMessage = require('../ClientMessage');
+import {Address} from '../Address';
+import {ClientMessage, Frame} from '../ClientMessage';
 
 const EXCEPTION_MESSAGE_TYPE = 109;
 const MAX_FAST_INVOCATION_COUNT = 5;
@@ -213,7 +213,8 @@ export class InvocationService {
      * @param buffer
      */
     processResponse(buffer: Buffer): void {
-        const clientMessage = new ClientMessage(buffer);
+        const clientMessage = new ClientMessage();
+        const frame = new Frame(buffer);
         const correlationId = clientMessage.getCorrelationId();
         const messageType = clientMessage.getMessageType();
 
@@ -229,7 +230,7 @@ export class InvocationService {
         const pendingInvocation = this.pending[correlationId];
         const deferred = pendingInvocation.deferred;
         if (messageType === EXCEPTION_MESSAGE_TYPE) {
-            const remoteError = this.client.getErrorFactory().createErrorFromClientMessage(clientMessage);
+            const remoteError = this.client.getErrorFactory().createErrorFromClientMessage(frame);
             this.notifyError(pendingInvocation, remoteError);
         } else {
             delete this.pending[correlationId];
@@ -304,7 +305,8 @@ export class InvocationService {
     }
 
     private write(invocation: Invocation, connection: ClientConnection): Promise<void> {
-        return connection.write(invocation.request.getBuffer());
+        // tslint:disable-next-line:comment-format
+        return; //connection.write(invocation.request.getBuffer());
     }
 
     private notifyError(invocation: Invocation, error: Error): void {
@@ -358,8 +360,8 @@ export class InvocationService {
             message.setPartitionId(-1);
         }
         if (invocation.hasOwnProperty('handler')) {
-            this.eventHandlers[correlationId] = invocation;
+            (this.eventHandlers as any)[correlationId] = invocation;
         }
-        this.pending[correlationId] = invocation;
+        (this.pending as any)[correlationId] = invocation;
     }
 }

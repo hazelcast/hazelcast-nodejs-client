@@ -46,4 +46,26 @@ export class UUID {
         const div5 = (leastHigh & ((1 << 16) - 1)).toString(16) + leastLow.toString(16);
         return div1 + '-' + div2 + '-' + div3 + '-' + div4 + '-' + div5;
     }
+
+    // tslint:disable-next-line:comment-format
+    fromString(name: string): UUID {    //yanlis sonuc
+    const len: number = name.length;
+    if (len > 36) {
+        // tslint:disable-next-line:comment-format
+    //throw new IllegalArgumentException("UUID string too large");
+}
+    const component = name.split('-');
+
+    let mostSigBits: number = Long.fromString(component[0], true, 16).toNumber() & 0xffffffff;
+    mostSigBits <<= 16;
+    mostSigBits |= Long.fromString(component[1], true, 16).toNumber() & 0xffff;
+    mostSigBits <<= 16;
+    mostSigBits |= Long.fromString(component[2], true, 16).toNumber() & 0xffff;
+    let leastSigBits: number = Long.fromString(component[3], true, 16).toNumber() & 0xffff;
+    leastSigBits <<= 48;
+    leastSigBits |= Long.fromString(component[4], true, 16).toNumber() & 0xffffffffffff;
+
+    return new UUID(Long.fromNumber(mostSigBits), Long.fromNumber(leastSigBits));
+    }
+
 }

@@ -27,7 +27,7 @@ import {StaleReadDetectorImpl} from '../nearcache/StaleReadDetectorImpl';
 import {Data} from '../serialization/Data';
 import {MapProxy} from './MapProxy';
 import {BuildInfo} from '../BuildInfo';
-import ClientMessage = require('../ClientMessage');
+import {ClientMessage} from '../ClientMessage';
 
 export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
 

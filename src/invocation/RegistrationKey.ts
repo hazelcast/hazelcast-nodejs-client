@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import ClientMessage = require('../ClientMessage');
+import {ClientMessage} from '../ClientMessage';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 
 export class RegistrationKey {

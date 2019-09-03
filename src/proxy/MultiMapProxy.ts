@@ -46,7 +46,7 @@ import {MultiMapValueCountCodec} from './../codec/MultiMapValueCountCodec';
 import {MultiMapValuesCodec} from './../codec/MultiMapValuesCodec';
 import {BaseProxy} from './BaseProxy';
 import {MultiMap} from './MultiMap';
-import ClientMessage = require('../ClientMessage');
+import {ClientMessage} from '../ClientMessage';
 import {MapEvent} from '../core/MapListener';
 
 export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {

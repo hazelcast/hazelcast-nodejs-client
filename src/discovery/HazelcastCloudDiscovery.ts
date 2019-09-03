@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Address = require('../Address');
+import {Address} from '../Address';
 import {AddressHelper, DeferredPromise} from '../Util';
 import {get} from 'https';
 import {IncomingMessage} from 'http';

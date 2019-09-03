@@ -33,7 +33,7 @@ import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {Data} from '../serialization/Data';
 import {ISet} from './ISet';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
-import ClientMessage = require('../ClientMessage');
+import {ClientMessage} from '../ClientMessage';
 
 export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
 

@@ -1,6 +1,6 @@
 import * as Long from 'long';
 import {Buffer} from 'safe-buffer';
-import {UUID} from '/Users/gulcesirvanci/Desktop/hazelcast-nodejs-client/lib/core/UUID';
+import {UUID} from '../core/UUID';
 import {BitsUtil} from '../BitsUtil';
 
 export class FixedSizeTypes {
@@ -31,7 +31,7 @@ export class FixedSizeTypes {
         BitsUtil.writeInt8(buffer, pos, value ? 1 : 0);
     }
 
-    public static decodeBoolean(buffer: Buffer, pos): boolean {
+    public static decodeBoolean(buffer: Buffer, pos: number): boolean {
         // tslint:disable-next-line:curly
         if (BitsUtil.readInt8(buffer, pos) === 1)
             return true;
@@ -41,11 +41,11 @@ export class FixedSizeTypes {
     }
 
     public static encodeByte(buffer: Buffer, pos: number, value: number): void {
-        buffer[pos] = value;
+        (buffer as any)[pos]  = value;
     }
 
     public static decodeByte(buffer: Buffer, pos: number): number {
-        return buffer[pos];
+        return (buffer as any)[pos];
     }
 
     public static encodeUUID(buffer: Buffer, pos: number, value: UUID): void {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Address = require('./Address');
+import {Address} from './Address';
 import TopicOverloadPolicy = require('./proxy/topic/TopicOverloadPolicy');
 import * as Aggregators from './aggregation/Aggregators';
 import {ClientInfo} from './ClientInfo';

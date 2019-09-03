@@ -30,8 +30,8 @@ import {MembershipListener} from '../core/MembershipListener';
 import {MembershipEvent} from '../core/MembershipEvent';
 import {UuidUtil} from '../util/UuidUtil';
 import {ILogger} from '../logging/ILogger';
-import Address = require('../Address');
-import ClientMessage = require('../ClientMessage');
+import {Address} from '../Address';
+import {ClientMessage} from '../ClientMessage';
 
 export enum MemberEvent {
     ADDED = 1,

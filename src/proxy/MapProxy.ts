@@ -80,7 +80,7 @@ import {assertArray, assertNotNull, getSortedQueryResultSet} from '../Util';
 import {BaseProxy} from './BaseProxy';
 import {IMap} from './IMap';
 import {EntryEvent} from '../core/EntryListener';
-import ClientMessage = require('../ClientMessage');
+import {ClientMessage} from '../ClientMessage';
 
 export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     aggregate<R>(aggregator: Aggregator<R>): Promise<R> {

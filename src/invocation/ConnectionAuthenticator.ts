@@ -22,7 +22,7 @@ import {ClientConnection} from './ClientConnection';
 import {ClusterService} from './ClusterService';
 import {AuthenticationError} from '../HazelcastError';
 import {ILogger} from '../logging/ILogger';
-import ClientMessage = require('../ClientMessage');
+import {ClientMessage} from '../ClientMessage';
 import {BuildInfo} from '../BuildInfo';
 
 const enum AuthenticationStatus {
@@ -97,7 +97,9 @@ export class ConnectionAuthenticator {
             const credentialsPayload = this.client.getSerializationService().toData(customCredentials);
 
             clientMessage = ClientAuthenticationCustomCodec.encodeRequest(
-                credentialsPayload, uuid, ownerUuid, asOwner, 'NJS', 1, clientVersion);
+                credentialsPayload, uuid, ownerUuid, asOwner, 'NJS', 1,
+                clientVersion, this.client.getName(), null, this.client.getPartitionService().getPartitionCount(),
+                'clusterID');
         } else {
             clientMessage = ClientAuthenticationCodec.encodeRequest(
                 groupConfig.name, groupConfig.password, uuid, ownerUuid, asOwner, 'NJS', 1, clientVersion);

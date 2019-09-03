@@ -21,7 +21,7 @@ export class LongArrayCodec {
 
     public static decode(frame: Frame): Long[] {
         const itemCount: number = frame.content == null ? 0 : frame.content.length / BitsUtil.LONG_SIZE_IN_BYTES;
-        const result: Long[] = new Long[itemCount];
+        const result: Long[] = new Array(itemCount);
         for (let i = 0; i < itemCount; i++) {
             result[i] = FixedSizeTypes.decodeLong(frame.content, i * BitsUtil.LONG_SIZE_IN_BYTES);
         }
