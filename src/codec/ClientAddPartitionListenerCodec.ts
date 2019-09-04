@@ -123,14 +123,14 @@ export class ClientAddPartitionListenerCodec {
         return clientMessage;
     }
 
-static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunction: (data: Data) => any = null) {
+static handle(clientMessage : ClientMessage,  handlePartitions: any, toObjectFunction: (data: Data) => any = null) {
             var messageType = clientMessage.getMessageType();
             var frame : Frame = clientMessage.get();
             if (messageType == ClientAddPartitionListenerCodec.EVENT_PARTITIONS_MESSAGE_TYPE) {
                 var initialFrame : Frame = frame.next;
                 var partitionStateVersion : number  = FixedSizeTypes.decodeInt(initialFrame.content, ClientAddPartitionListenerCodec.EVENT_PARTITIONS_PARTITION_STATE_VERSION_FIELD_OFFSET);
                 var partitions : Array<[Address, Array<number>]> = MapCodec.decode(frame, AddressCodec.decode, ListIntegerCodec.decode);
-                handleEventEntry(partitions, partitionStateVersion);
+                handlePartitions(partitions, partitionStateVersion);
                 return;
             }
         }

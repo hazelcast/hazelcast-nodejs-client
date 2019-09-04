@@ -167,20 +167,20 @@ export class ClientAddMembershipListenerCodec {
         return clientMessage;
     }
 
-static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunction: (data: Data) => any = null) {
+static handle(clientMessage : ClientMessage,  handleMember: any, handleMemberList: any, handleMemberAttributeChange: any, toObjectFunction: (data: Data) => any = null) {
             var messageType = clientMessage.getMessageType();
             var frame : Frame = clientMessage.get();
             if (messageType == ClientAddMembershipListenerCodec.EVENT_MEMBER_MESSAGE_TYPE) {
                 var initialFrame : Frame = frame.next;
                 var eventType : number  = FixedSizeTypes.decodeInt(initialFrame.content, ClientAddMembershipListenerCodec.EVENT_MEMBER_EVENT_TYPE_FIELD_OFFSET);
                 var member : Member = MemberCodec.decode(frame);
-                handleEventEntry(member, eventType);
+                handleMember(member, eventType);
                 return;
             }
             if (messageType == ClientAddMembershipListenerCodec.EVENT_MEMBER_LIST_MESSAGE_TYPE) {
                 frame = frame.next;
                 var members : Array<Member> = ListMultiFrameCodec.decode(frame, MemberCodec.decode);
-                handleEventEntry(members);
+                handleMemberList(members);
                 return;
             }
             if (messageType == ClientAddMembershipListenerCodec.EVENT_MEMBER_ATTRIBUTE_CHANGE_MESSAGE_TYPE) {
@@ -190,7 +190,7 @@ static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunc
                 var members : Array<Member> = ListMultiFrameCodec.decode(frame, MemberCodec.decode);
                 var key : string = StringCodec.decode(frame);
                 var value : string = CodecUtil.decodeNullable(frame, StringCodec.decode);
-                handleEventEntry(member, members, key, operationType, value);
+                handleMemberAttributeChange(member, members, key, operationType, value);
                 return;
             }
         }

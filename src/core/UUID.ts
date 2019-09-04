@@ -25,6 +25,27 @@ export class UUID {
         this.leastSignificant = leastSig;
     }
 
+    // tslint:disable-next-line:comment-format,
+    /* tslint:disable:no-bitwise */
+    static fromString(name: string): UUID {
+        const len: number = name.length;
+        if (len > 36) {
+            throw new RangeError('UUID string too large');
+        }
+        const components = name.split('-');
+
+        let mostSigBits: Long = Long.fromString(components[0], true, 16).and(0xffffffff);
+        mostSigBits = mostSigBits.shiftLeft(16);
+        mostSigBits = mostSigBits.or(Long.fromString(components[1], true, 16).and(0xffff));
+        mostSigBits = mostSigBits.shiftLeft(16);
+        mostSigBits = mostSigBits.or(Long.fromString(components[2], true, 16).and( 0xffff));
+        let leastSigBits: Long = Long.fromString(components[3], true, 16).and(0xffff);
+        leastSigBits = mostSigBits.shiftRight(48);
+        leastSigBits = leastSigBits.or(Long.fromString(components[4], true, 16).and(0xffffffffffff));
+
+        return new UUID(mostSigBits, leastSigBits);
+    }
+
     equals(other: UUID): boolean {
         if (other == null) {
             return false;
@@ -32,7 +53,6 @@ export class UUID {
         return other.mostSignificant.equals(this.mostSignificant) && other.leastSignificant.equals(this.leastSignificant);
     }
 
-    /* tslint:disable:no-bitwise */
     toString(): string {
         const mostHigh = this.mostSignificant.getHighBitsUnsigned(); // (32) 32 32 32
         const mostLow = this.mostSignificant.getLowBitsUnsigned(); // 32 (32) 32 32
@@ -46,26 +66,4 @@ export class UUID {
         const div5 = (leastHigh & ((1 << 16) - 1)).toString(16) + leastLow.toString(16);
         return div1 + '-' + div2 + '-' + div3 + '-' + div4 + '-' + div5;
     }
-
-    // tslint:disable-next-line:comment-format
-    fromString(name: string): UUID {    //yanlis sonuc
-    const len: number = name.length;
-    if (len > 36) {
-        // tslint:disable-next-line:comment-format
-    //throw new IllegalArgumentException("UUID string too large");
-}
-    const component = name.split('-');
-
-    let mostSigBits: number = Long.fromString(component[0], true, 16).toNumber() & 0xffffffff;
-    mostSigBits <<= 16;
-    mostSigBits |= Long.fromString(component[1], true, 16).toNumber() & 0xffff;
-    mostSigBits <<= 16;
-    mostSigBits |= Long.fromString(component[2], true, 16).toNumber() & 0xffff;
-    let leastSigBits: number = Long.fromString(component[3], true, 16).toNumber() & 0xffff;
-    leastSigBits <<= 48;
-    leastSigBits |= Long.fromString(component[4], true, 16).toNumber() & 0xffffffffffff;
-
-    return new UUID(Long.fromNumber(mostSigBits), Long.fromNumber(leastSigBits));
-    }
-
 }

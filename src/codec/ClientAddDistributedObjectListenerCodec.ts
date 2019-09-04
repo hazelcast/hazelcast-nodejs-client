@@ -138,7 +138,7 @@ export class ClientAddDistributedObjectListenerCodec {
         return clientMessage;
     }
 
-static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunction: (data: Data) => any = null) {
+static handle(clientMessage : ClientMessage,  handleDistributedObject: any, toObjectFunction: (data: Data) => any = null) {
             var messageType = clientMessage.getMessageType();
             var frame : Frame = clientMessage.get();
             if (messageType == ClientAddDistributedObjectListenerCodec.EVENT_DISTRIBUTED_OBJECT_MESSAGE_TYPE) {
@@ -146,7 +146,7 @@ static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunc
                 var name : string = StringCodec.decode(frame);
                 var serviceName : string = StringCodec.decode(frame);
                 var eventType : string = StringCodec.decode(frame);
-                handleEventEntry(name, serviceName, eventType);
+                handleDistributedObject(name, serviceName, eventType);
                 return;
             }
         }

@@ -24,7 +24,7 @@ export class MemberCodec {
         clientMessage.add(ClientMessage.BEGIN_FRAME);
         const initialFrame: Frame = new Frame(Buffer.allocUnsafe(MemberCodec.INITIAL_FRAME_SIZE));
         FixedSizeTypes.encodeBoolean(initialFrame.content, MemberCodec.LITE_MEMBER_OFFSET, member.isLiteMember);
-        FixedSizeTypes.encodeUUID(initialFrame.content, MemberCodec.UUID_OFFSET, member.uuid);
+        FixedSizeTypes.encodeUUID(initialFrame.content, MemberCodec.UUID_OFFSET, UUID.fromString(member.uuid));
 
         clientMessage.add(initialFrame);
 

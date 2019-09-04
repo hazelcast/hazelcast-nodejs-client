@@ -140,7 +140,7 @@ export class ClientAddPartitionLostListenerCodec {
         return clientMessage;
     }
 
-static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunction: (data: Data) => any = null) {
+static handle(clientMessage : ClientMessage,  handlePartitionLost: any, toObjectFunction: (data: Data) => any = null) {
             var messageType = clientMessage.getMessageType();
             var frame : Frame = clientMessage.get();
             if (messageType == ClientAddPartitionLostListenerCodec.EVENT_PARTITION_LOST_MESSAGE_TYPE) {
@@ -148,7 +148,7 @@ static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunc
                 var partitionId : number  = FixedSizeTypes.decodeInt(initialFrame.content, ClientAddPartitionLostListenerCodec.EVENT_PARTITION_LOST_PARTITION_ID_FIELD_OFFSET);
                 var lostBackupCount : number  = FixedSizeTypes.decodeInt(initialFrame.content, ClientAddPartitionLostListenerCodec.EVENT_PARTITION_LOST_LOST_BACKUP_COUNT_FIELD_OFFSET);
                 var source : Address = CodecUtil.decodeNullable(frame, AddressCodec.decode);
-                handleEventEntry(partitionId, lostBackupCount, source);
+                handlePartitionLost(partitionId, lostBackupCount, source);
                 return;
             }
         }

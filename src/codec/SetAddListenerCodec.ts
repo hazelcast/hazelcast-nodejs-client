@@ -153,7 +153,7 @@ export class SetAddListenerCodec {
         return clientMessage;
     }
 
-static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunction: (data: Data) => any = null) {
+static handle(clientMessage : ClientMessage,  handleItem: any, toObjectFunction: (data: Data) => any = null) {
             var messageType = clientMessage.getMessageType();
             var frame : Frame = clientMessage.get();
             if (messageType == SetAddListenerCodec.EVENT_ITEM_MESSAGE_TYPE) {
@@ -161,7 +161,7 @@ static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunc
                 var eventType : number  = FixedSizeTypes.decodeInt(initialFrame.content, SetAddListenerCodec.EVENT_ITEM_EVENT_TYPE_FIELD_OFFSET);
                 var item : Data = CodecUtil.decodeNullable(frame, DataCodec.decode);
                 var uuid : string = StringCodec.decode(frame);
-                handleEventEntry(item, uuid, eventType);
+                handleItem(item, uuid, eventType);
                 return;
             }
         }

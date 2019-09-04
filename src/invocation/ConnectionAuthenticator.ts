@@ -97,12 +97,12 @@ export class ConnectionAuthenticator {
             const credentialsPayload = this.client.getSerializationService().toData(customCredentials);
 
             clientMessage = ClientAuthenticationCustomCodec.encodeRequest(
-                credentialsPayload, uuid, ownerUuid, asOwner, 'NJS', 1,
-                clientVersion, this.client.getName(), null, this.client.getPartitionService().getPartitionCount(),
-                'clusterID');
+                credentialsPayload, uuid, ownerUuid, asOwner, 'NJS', 1, clientVersion,
+                this.client.getName(), [], -1, null);
         } else {
             clientMessage = ClientAuthenticationCodec.encodeRequest(
-                groupConfig.name, groupConfig.password, uuid, ownerUuid, asOwner, 'NJS', 1, clientVersion);
+                groupConfig.name, groupConfig.password, uuid, ownerUuid, asOwner, 'NJS', 1,
+                clientVersion, this.client.getName(), [], -1, null);
 
         }
 

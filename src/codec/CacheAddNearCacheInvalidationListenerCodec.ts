@@ -166,7 +166,7 @@ export class CacheAddNearCacheInvalidationListenerCodec {
         return clientMessage;
     }
 
-static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunction: (data: Data) => any = null) {
+static handle(clientMessage : ClientMessage,  handleCacheInvalidation: any, handleCacheBatchInvalidation: any, toObjectFunction: (data: Data) => any = null) {
             var messageType = clientMessage.getMessageType();
             var frame : Frame = clientMessage.get();
             if (messageType == CacheAddNearCacheInvalidationListenerCodec.EVENT_CACHE_INVALIDATION_MESSAGE_TYPE) {
@@ -176,7 +176,7 @@ static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunc
                 var name : string = StringCodec.decode(frame);
                 var key : Data = CodecUtil.decodeNullable(frame, DataCodec.decode);
                 var sourceUuid : string = CodecUtil.decodeNullable(frame, StringCodec.decode);
-                handleEventEntry(name, key, sourceUuid, partitionUuid, sequence);
+                handleCacheInvalidation(name, key, sourceUuid, partitionUuid, sequence);
                 return;
             }
             if (messageType == CacheAddNearCacheInvalidationListenerCodec.EVENT_CACHE_BATCH_INVALIDATION_MESSAGE_TYPE) {
@@ -186,7 +186,7 @@ static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunc
                 var sourceUuids : Array<string> = ListMultiFrameCodec.decodeNullable(frame, StringCodec.decode);
                 var partitionUuids : Array<UUID> = ListUUIDCodec.decode(frame);
                 var sequences : Array<Long> = ListLongCodec.decode(frame);
-                handleEventEntry(name, keys, sourceUuids, partitionUuids, sequences);
+                handleCacheBatchInvalidation(name, keys, sourceUuids, partitionUuids, sequences);
                 return;
             }
         }

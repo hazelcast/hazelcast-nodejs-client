@@ -148,14 +148,14 @@ export class CacheAddPartitionLostListenerCodec {
         return clientMessage;
     }
 
-static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunction: (data: Data) => any = null) {
+static handle(clientMessage : ClientMessage,  handleCachePartitionLost: any, toObjectFunction: (data: Data) => any = null) {
             var messageType = clientMessage.getMessageType();
             var frame : Frame = clientMessage.get();
             if (messageType == CacheAddPartitionLostListenerCodec.EVENT_CACHE_PARTITION_LOST_MESSAGE_TYPE) {
                 var initialFrame : Frame = frame.next;
                 var partitionId : number  = FixedSizeTypes.decodeInt(initialFrame.content, CacheAddPartitionLostListenerCodec.EVENT_CACHE_PARTITION_LOST_PARTITION_ID_FIELD_OFFSET);
                 var uuid : string = StringCodec.decode(frame);
-                handleEventEntry(partitionId, uuid);
+                handleCachePartitionLost(partitionId, uuid);
                 return;
             }
         }

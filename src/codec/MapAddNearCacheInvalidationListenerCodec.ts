@@ -172,7 +172,7 @@ export class MapAddNearCacheInvalidationListenerCodec {
         return clientMessage;
     }
 
-static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunction: (data: Data) => any = null) {
+static handle(clientMessage : ClientMessage,  handleIMapInvalidation: any, handleIMapBatchInvalidation: any, toObjectFunction: (data: Data) => any = null) {
             var messageType = clientMessage.getMessageType();
             var frame : Frame = clientMessage.get();
             if (messageType == MapAddNearCacheInvalidationListenerCodec.EVENT_I_MAP_INVALIDATION_MESSAGE_TYPE) {
@@ -181,7 +181,7 @@ static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunc
                 var sequence : Long  = FixedSizeTypes.decodeLong(initialFrame.content, MapAddNearCacheInvalidationListenerCodec.EVENT_I_MAP_INVALIDATION_SEQUENCE_FIELD_OFFSET);
                 var key : Data = CodecUtil.decodeNullable(frame, DataCodec.decode);
                 var sourceUuid : string = StringCodec.decode(frame);
-                handleEventEntry(key, sourceUuid, partitionUuid, sequence);
+                handleIMapInvalidation(key, sourceUuid, partitionUuid, sequence);
                 return;
             }
             if (messageType == MapAddNearCacheInvalidationListenerCodec.EVENT_I_MAP_BATCH_INVALIDATION_MESSAGE_TYPE) {
@@ -190,7 +190,7 @@ static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunc
                 var sourceUuids : Array<string> = ListMultiFrameCodec.decode(frame, StringCodec.decode);
                 var partitionUuids : Array<UUID> = ListUUIDCodec.decode(frame);
                 var sequences : Array<Long> = ListLongCodec.decode(frame);
-                handleEventEntry(keys, sourceUuids, partitionUuids, sequences);
+                handleIMapBatchInvalidation(keys, sourceUuids, partitionUuids, sequences);
                 return;
             }
         }

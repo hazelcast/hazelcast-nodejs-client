@@ -49,7 +49,7 @@ import {StackTraceElementCodec} from '../protocol/StackTraceElementCodec'
 import {StringCodec} from '../builtin/StringCodec'
 import {EntryView} from '../core/EntryView';
 
-/* tslint:disabled:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
+    /* tslint:disabled:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
    export class RequestParameters {
 
         /**
@@ -71,10 +71,10 @@ import {EntryView} from '../core/EntryView';
     /* tslint:disable:urf-unread-public-or-protected-field */
    export class ResponseParameters {
 
-       /**
+        /**
          * TODO DOC
          */
-        public response : EntryView;
+        public response : EntryView<Data, Data>;
 
         /**
          * TODO DOC
@@ -126,7 +126,7 @@ export class MapGetEntryViewCodec {
     }
 
 
-     static encodeResponse(response: EntryView , maxIdle: Long ) {
+     static encodeResponse(response: EntryView<Data, Data> , maxIdle: Long ) {
         var clientMessage = ClientMessage.createForEncode();
         var initialFrame : Frame = new Frame(Buffer.allocUnsafe(MapGetEntryViewCodec.RESPONSE_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
         FixedSizeTypes.encodeInt(initialFrame.content, ClientMessage.TYPE_FIELD_OFFSET, MapGetEntryViewCodec.RESPONSE_MESSAGE_TYPE);
@@ -147,7 +147,7 @@ export class MapGetEntryViewCodec {
     }
 
 
-static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunction: (data: Data) => any = null) {
+static handle(clientMessage : ClientMessage,  toObjectFunction: (data: Data) => any = null) {
             var messageType = clientMessage.getMessageType();
             var frame : Frame = clientMessage.get();
         }

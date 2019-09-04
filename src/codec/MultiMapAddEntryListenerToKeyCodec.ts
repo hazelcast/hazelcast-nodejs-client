@@ -166,7 +166,7 @@ export class MultiMapAddEntryListenerToKeyCodec {
         return clientMessage;
     }
 
-static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunction: (data: Data) => any = null) {
+static handle(clientMessage : ClientMessage,  handleEntry: any, toObjectFunction: (data: Data) => any = null) {
             var messageType = clientMessage.getMessageType();
             var frame : Frame = clientMessage.get();
             if (messageType == MultiMapAddEntryListenerToKeyCodec.EVENT_ENTRY_MESSAGE_TYPE) {
@@ -178,7 +178,7 @@ static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunc
                 var oldValue : Data = CodecUtil.decodeNullable(frame, DataCodec.decode);
                 var mergingValue : Data = CodecUtil.decodeNullable(frame, DataCodec.decode);
                 var uuid : string = StringCodec.decode(frame);
-                handleEventEntry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
+                handleEntry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
                 return;
             }
         }

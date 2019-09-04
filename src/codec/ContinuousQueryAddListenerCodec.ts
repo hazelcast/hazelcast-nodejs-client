@@ -157,13 +157,13 @@ export class ContinuousQueryAddListenerCodec {
         return clientMessage;
     }
 
-static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunction: (data: Data) => any = null) {
+static handle(clientMessage : ClientMessage,  handleQueryCacheSingle: any, handleQueryCacheBatch: any, toObjectFunction: (data: Data) => any = null) {
             var messageType = clientMessage.getMessageType();
             var frame : Frame = clientMessage.get();
             if (messageType == ContinuousQueryAddListenerCodec.EVENT_QUERY_CACHE_SINGLE_MESSAGE_TYPE) {
                 frame = frame.next;
                 var data : QueryCacheEventData = QueryCacheEventDataCodec.decode(frame);
-                handleEventEntry(data);
+                handleQueryCacheSingle(data);
                 return;
             }
             if (messageType == ContinuousQueryAddListenerCodec.EVENT_QUERY_CACHE_BATCH_MESSAGE_TYPE) {
@@ -171,7 +171,7 @@ static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunc
                 var partitionId : number  = FixedSizeTypes.decodeInt(initialFrame.content, ContinuousQueryAddListenerCodec.EVENT_QUERY_CACHE_BATCH_PARTITION_ID_FIELD_OFFSET);
                 var events : Array<QueryCacheEventData> = ListMultiFrameCodec.decode(frame, QueryCacheEventDataCodec.decode);
                 var source : string = StringCodec.decode(frame);
-                handleEventEntry(events, source, partitionId);
+                handleQueryCacheBatch(events, source, partitionId);
                 return;
             }
         }

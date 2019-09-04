@@ -149,14 +149,14 @@ export class MapAddPartitionLostListenerCodec {
         return clientMessage;
     }
 
-static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunction: (data: Data) => any = null) {
+static handle(clientMessage : ClientMessage,  handleMapPartitionLost: any, toObjectFunction: (data: Data) => any = null) {
             var messageType = clientMessage.getMessageType();
             var frame : Frame = clientMessage.get();
             if (messageType == MapAddPartitionLostListenerCodec.EVENT_MAP_PARTITION_LOST_MESSAGE_TYPE) {
                 var initialFrame : Frame = frame.next;
                 var partitionId : number  = FixedSizeTypes.decodeInt(initialFrame.content, MapAddPartitionLostListenerCodec.EVENT_MAP_PARTITION_LOST_PARTITION_ID_FIELD_OFFSET);
                 var uuid : string = StringCodec.decode(frame);
-                handleEventEntry(partitionId, uuid);
+                handleMapPartitionLost(partitionId, uuid);
                 return;
             }
         }

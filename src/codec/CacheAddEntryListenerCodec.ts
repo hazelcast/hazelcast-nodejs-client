@@ -146,7 +146,7 @@ export class CacheAddEntryListenerCodec {
         return clientMessage;
     }
 
-static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunction: (data: Data) => any = null) {
+static handle(clientMessage : ClientMessage,  handleCache: any, toObjectFunction: (data: Data) => any = null) {
             var messageType = clientMessage.getMessageType();
             var frame : Frame = clientMessage.get();
             if (messageType == CacheAddEntryListenerCodec.EVENT_CACHE_MESSAGE_TYPE) {
@@ -154,7 +154,7 @@ static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunc
                 var type : number  = FixedSizeTypes.decodeInt(initialFrame.content, CacheAddEntryListenerCodec.EVENT_CACHE_TYPE_FIELD_OFFSET);
                 var completionId : number  = FixedSizeTypes.decodeInt(initialFrame.content, CacheAddEntryListenerCodec.EVENT_CACHE_COMPLETION_ID_FIELD_OFFSET);
                 var keys : Array<CacheEventData> = ListMultiFrameCodec.decode(frame, CacheEventDataCodec.decode);
-                handleEventEntry(type, keys, completionId);
+                handleCache(type, keys, completionId);
                 return;
             }
         }

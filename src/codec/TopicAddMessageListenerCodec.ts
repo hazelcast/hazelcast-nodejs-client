@@ -146,7 +146,7 @@ export class TopicAddMessageListenerCodec {
         return clientMessage;
     }
 
-static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunction: (data: Data) => any = null) {
+static handle(clientMessage : ClientMessage,  handleTopic: any, toObjectFunction: (data: Data) => any = null) {
             var messageType = clientMessage.getMessageType();
             var frame : Frame = clientMessage.get();
             if (messageType == TopicAddMessageListenerCodec.EVENT_TOPIC_MESSAGE_TYPE) {
@@ -154,7 +154,7 @@ static handle(clientMessage : ClientMessage, handleEventEntry: any, toObjectFunc
                 var publishTime : Long  = FixedSizeTypes.decodeLong(initialFrame.content, TopicAddMessageListenerCodec.EVENT_TOPIC_PUBLISH_TIME_FIELD_OFFSET);
                 var item : Data = DataCodec.decode(frame);
                 var uuid : string = StringCodec.decode(frame);
-                handleEventEntry(item, publishTime, uuid);
+                handleTopic(item, publishTime, uuid);
                 return;
             }
         }
