@@ -15,9 +15,9 @@
  */
 
 import * as net from 'net';
-import {ClusterDataFactoryHelper} from '../src/ClusterDataFactoryHelper';
-import {DataInput, DataOutput} from '../src/serialization/Data';
-import {IdentifiedDataSerializable} from '../src/serialization/Serializable';
+import {ClusterDataFactoryHelper} from './ClusterDataFactoryHelper';
+import {DataInput, DataOutput} from './serialization/Data';
+import {IdentifiedDataSerializable} from './serialization/Serializable';
 
 export class Address implements IdentifiedDataSerializable {
 
@@ -77,5 +77,4 @@ export class Address implements IdentifiedDataSerializable {
     private toStringInternal(): string {
         return this.host + ':' + this.port;
     }
-
 }

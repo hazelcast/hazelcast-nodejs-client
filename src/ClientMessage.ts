@@ -108,16 +108,14 @@ export class LinkedListFrame {
         return this.headFrame.next;
     }
 
-    add(val: any): Frame {
-        const newItem = new Frame(val);
-
+    add(frame: Frame): Frame {
         if (!this.headFrame) {
-            this.headFrame = newItem;
+            this.headFrame = frame;
             this.tailFrame = this.headFrame;
             return this.headFrame;
         }
-        newItem.prev = this.tailFrame;
-        this.tailFrame.next = newItem;
+        frame.prev = this.tailFrame;
+        this.tailFrame.next = frame;
         this.tailFrame = this.tailFrame.next;
 
         return this.tailFrame;
