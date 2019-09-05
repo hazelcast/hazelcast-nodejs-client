@@ -54,6 +54,10 @@ export class LinkedListFrame {
     get() {
         return this.headFrame;
     }
+    // tslint:disable-next-line:typedef
+    getTail() {
+        return this.tailFrame;
+    }
 
     // tslint:disable-next-line:typedef
     getIndex(index: number) {
