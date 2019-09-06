@@ -305,8 +305,7 @@ export class InvocationService {
     }
 
     private write(invocation: Invocation, connection: ClientConnection): Promise<void> {
-        // tslint:disable-next-line:comment-format
-        return; //connection.write(invocation.request.getBuffer());
+        return connection.write(invocation.request);
     }
 
     private notifyError(invocation: Invocation, error: Error): void {

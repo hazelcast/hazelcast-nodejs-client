@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
 import * as Long from 'long';
 import {Address} from '../Address';
-import {AddressCodec} from'../builtin/AddressCodec';
+import {AddressCodec} from '../builtin/AddressCodec';
 import {MemberCodec} from '../builtin/MemberCodec';
 import {Data} from '../serialization/Data';
 import {SimpleEntryViewCodec} from '../builtin/SimpleEntryViewCodec';
@@ -25,85 +24,82 @@ import {DistributedObjectInfoCodec} from '../builtin/DistributedObjectInfoCodec'
 import {DistributedObjectInfo} from '../builtin/DistributedObjectInfo';
 import {Member} from '../core/Member';
 import {UUID} from '../core/UUID';
-import {FixedSizeTypes} from '../builtin/FixedSizeTypes'
-import {BitsUtil} from '../BitsUtil'
-import {ClientConnection} from '../invocation/ClientConnection'
-import {ClientMessage, Frame} from '../ClientMessage'
-import {Buffer} from 'safe-buffer'
-import {ClientProtocolErrorCodes} from '../protocol/ClientProtocolErrorCodes'
-import {CodecUtil} from '../builtin/CodecUtil'
-import {DataCodec} from '../builtin/DataCodec'
-import {ErrorCodec} from '../protocol/ErrorCodec'
-import {ErrorsCodec} from '../protocol/ErrorsCodec'
-import {ListIntegerCodec} from '../builtin/ListIntegerCodec'
-import {ListUUIDCodec} from '../builtin/ListUUIDCodec'
-import {ListLongCodec} from '../builtin/ListLongCodec'
-import {ListMultiFrameCodec} from '../builtin/ListMultiFrameCodec'
-import {LongArrayCodec} from '../builtin/LongArrayCodec'
-import {MapCodec} from '../builtin/MapCodec'
-import {MapIntegerLongCodec} from '../builtin/MapIntegerLongCodec'
-import {MapIntegerUUIDCodec} from '../builtin/MapIntegerUUIDCodec'
-import {MapStringLongCodec} from '../builtin/MapStringLongCodec'
-import {MapUUIDLongCodec} from '../builtin/MapUUIDLongCodec'
-import {StackTraceElementCodec} from '../protocol/StackTraceElementCodec'
-import {StringCodec} from '../builtin/StringCodec'
+import {FixedSizeTypes} from '../builtin/FixedSizeTypes';
+import {BitsUtil} from '../BitsUtil';
+import {ClientConnection} from '../invocation/ClientConnection';
+import {ClientMessage, Frame} from '../ClientMessage';
+import {Buffer} from 'safe-buffer';
+import {ClientProtocolErrorCodes} from '../protocol/ClientProtocolErrorCodes';
+import {CodecUtil} from '../builtin/CodecUtil';
+import {DataCodec} from '../builtin/DataCodec';
+import {ErrorCodec} from '../protocol/ErrorCodec';
+import {ErrorsCodec} from '../protocol/ErrorsCodec';
+import {ListIntegerCodec} from '../builtin/ListIntegerCodec';
+import {ListUUIDCodec} from '../builtin/ListUUIDCodec';
+import {ListLongCodec} from '../builtin/ListLongCodec';
+import {ListMultiFrameCodec} from '../builtin/ListMultiFrameCodec';
+import {LongArrayCodec} from '../builtin/LongArrayCodec';
+import {MapCodec} from '../builtin/MapCodec';
+import {MapIntegerLongCodec} from '../builtin/MapIntegerLongCodec';
+import {MapIntegerUUIDCodec} from '../builtin/MapIntegerUUIDCodec';
+import {MapStringLongCodec} from '../builtin/MapStringLongCodec';
+import {MapUUIDLongCodec} from '../builtin/MapUUIDLongCodec';
+import {StackTraceElementCodec} from '../protocol/StackTraceElementCodec';
+import {StringCodec} from '../builtin/StringCodec';
 
-    /* tslint:disabled:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
-   export class RequestParameters {
+/* tslint:disabled:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
+export class RequestParameters {
 
-        /**
-         * The name of the scheduler.
-         */
-        public schedulerName: string;
+    /**
+     * The name of the scheduler.
+     */
+    public schedulerName: string;
 
-        /**
-         * The name of the task
-         */
-        public taskName: string;
+    /**
+     * The name of the task
+     */
+    public taskName: string;
 
-        /**
-         * The address of the member where the task will get scheduled.
-         */
-        public address: Address;
+    /**
+     * The address of the member where the task will get scheduled.
+     */
+    public address: Address;
 
-        /**
-         * A boolean flag to indicate whether the task should be interrupted.
-         */
-        public mayInterruptIfRunning: boolean;
-    };
+    /**
+     * A boolean flag to indicate whether the task should be interrupted.
+     */
+    public mayInterruptIfRunning: boolean;
+}
 
-    /* tslint:disable:urf-unread-public-or-protected-field */
-   export class ResponseParameters {
+/* tslint:disable:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
+export class ResponseParameters {
 
-        /**
-         * True if the task was cancelled
-         */
-        public response : boolean;
-    };
+    /**
+     * True if the task was cancelled
+     */
+    public response: boolean;
+}
 
 /**
  * Cancels further execution and scheduling of the task
  */
+/* tslint:disable:max-line-length no-bitwise */
 export class ScheduledExecutorCancelFromAddressCodec {
-    //hex: 0x1D0A00
+    // hex: 0x1D0A00
     public static REQUEST_MESSAGE_TYPE = 1903104;
-    //hex: 0x1D0A01
+    // hex: 0x1D0A01
     public static RESPONSE_MESSAGE_TYPE = 1903105;
     private static REQUEST_MAY_INTERRUPT_IF_RUNNING_FIELD_OFFSET = ClientMessage.PARTITION_ID_FIELD_OFFSET + FixedSizeTypes.INT_SIZE_IN_BYTES;
     private static REQUEST_INITIAL_FRAME_SIZE = ScheduledExecutorCancelFromAddressCodec.REQUEST_MAY_INTERRUPT_IF_RUNNING_FIELD_OFFSET + FixedSizeTypes.BOOLEAN_SIZE_IN_BYTES;
     private static RESPONSE_RESPONSE_FIELD_OFFSET = ClientMessage.CORRELATION_ID_FIELD_OFFSET + FixedSizeTypes.LONG_SIZE_IN_BYTES;
     private static RESPONSE_INITIAL_FRAME_SIZE = ScheduledExecutorCancelFromAddressCodec.RESPONSE_RESPONSE_FIELD_OFFSET + FixedSizeTypes.BOOLEAN_SIZE_IN_BYTES;
 
-    private ScheduledExecutorCancelFromAddressCodec() {
-    }
-
-
-    static encodeRequest(schedulerName: string, taskName: string, address: Address, mayInterruptIfRunning: boolean) {
-        var clientMessage = ClientMessage.createForEncode();
+    static encodeRequest(schedulerName: string, taskName: string, address: Address, mayInterruptIfRunning: boolean): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(true);
         clientMessage.setAcquiresResource(false);
-        clientMessage.setOperationName("ScheduledExecutor.CancelFromAddress");
-        var initialFrame : Frame= new Frame(Buffer.allocUnsafe(ScheduledExecutorCancelFromAddressCodec.REQUEST_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
+        clientMessage.setOperationName('ScheduledExecutor.CancelFromAddress');
+        const initialFrame: Frame = new Frame(Buffer.allocUnsafe(ScheduledExecutorCancelFromAddressCodec.REQUEST_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
         FixedSizeTypes.encodeInt(initialFrame.content, ClientMessage.TYPE_FIELD_OFFSET, ScheduledExecutorCancelFromAddressCodec.REQUEST_MESSAGE_TYPE);
         FixedSizeTypes.encodeBoolean(initialFrame.content, ScheduledExecutorCancelFromAddressCodec.REQUEST_MAY_INTERRUPT_IF_RUNNING_FIELD_OFFSET, mayInterruptIfRunning);
         clientMessage.add(initialFrame);
@@ -113,10 +109,10 @@ export class ScheduledExecutorCancelFromAddressCodec {
         return clientMessage;
     }
 
-    static decodeRequest(clientMessage : ClientMessage) {
-        var frame : Frame = clientMessage.get();
-        var request : RequestParameters = new RequestParameters();
-        var initialFrame : Frame= frame.next;
+    static decodeRequest(clientMessage: ClientMessage): RequestParameters {
+        const request: RequestParameters = new RequestParameters();
+        const frame: Frame = clientMessage.get();
+        const initialFrame: Frame = frame.next;
         request.mayInterruptIfRunning =  FixedSizeTypes.decodeBoolean(initialFrame.content, ScheduledExecutorCancelFromAddressCodec.REQUEST_MAY_INTERRUPT_IF_RUNNING_FIELD_OFFSET);
         request.schedulerName = StringCodec.decode(frame);
         request.taskName = StringCodec.decode(frame);
@@ -124,10 +120,9 @@ export class ScheduledExecutorCancelFromAddressCodec {
         return request;
     }
 
-
-     static encodeResponse(response: boolean ) {
-        var clientMessage = ClientMessage.createForEncode();
-        var initialFrame : Frame = new Frame(Buffer.allocUnsafe(ScheduledExecutorCancelFromAddressCodec.RESPONSE_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
+     static encodeResponse(response: boolean ): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        const initialFrame: Frame = new Frame(Buffer.allocUnsafe(ScheduledExecutorCancelFromAddressCodec.RESPONSE_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
         FixedSizeTypes.encodeInt(initialFrame.content, ClientMessage.TYPE_FIELD_OFFSET, ScheduledExecutorCancelFromAddressCodec.RESPONSE_MESSAGE_TYPE);
         clientMessage.add(initialFrame);
 
@@ -135,17 +130,11 @@ export class ScheduledExecutorCancelFromAddressCodec {
         return clientMessage;
     }
 
-     static decodeResponse(clientMessage: ClientMessage) {
-        var frame : Frame = clientMessage.get();
-        var response : ResponseParameters = new ResponseParameters();
-        var initialFrame : Frame = frame.next;
+     static decodeResponse(clientMessage: ClientMessage): ResponseParameters {
+        const response: ResponseParameters = new ResponseParameters();
+        const frame: Frame = clientMessage.get();
+        const initialFrame: Frame = frame.next;
         response.response =  FixedSizeTypes.decodeBoolean(initialFrame.content, ScheduledExecutorCancelFromAddressCodec.RESPONSE_RESPONSE_FIELD_OFFSET);
         return response;
     }
-
-
-static handle(clientMessage : ClientMessage,  toObjectFunction: (data: Data) => any = null) {
-            var messageType = clientMessage.getMessageType();
-            var frame : Frame = clientMessage.get();
-        }
 }

@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
 import * as Long from 'long';
 import {Address} from '../Address';
-import {AddressCodec} from'../builtin/AddressCodec';
+import {AddressCodec} from '../builtin/AddressCodec';
 import {MemberCodec} from '../builtin/MemberCodec';
 import {Data} from '../serialization/Data';
 import {SimpleEntryViewCodec} from '../builtin/SimpleEntryViewCodec';
@@ -25,76 +24,73 @@ import {DistributedObjectInfoCodec} from '../builtin/DistributedObjectInfoCodec'
 import {DistributedObjectInfo} from '../builtin/DistributedObjectInfo';
 import {Member} from '../core/Member';
 import {UUID} from '../core/UUID';
-import {FixedSizeTypes} from '../builtin/FixedSizeTypes'
-import {BitsUtil} from '../BitsUtil'
-import {ClientConnection} from '../invocation/ClientConnection'
-import {ClientMessage, Frame} from '../ClientMessage'
-import {Buffer} from 'safe-buffer'
-import {ClientProtocolErrorCodes} from '../protocol/ClientProtocolErrorCodes'
-import {CodecUtil} from '../builtin/CodecUtil'
-import {DataCodec} from '../builtin/DataCodec'
-import {ErrorCodec} from '../protocol/ErrorCodec'
-import {ErrorsCodec} from '../protocol/ErrorsCodec'
-import {ListIntegerCodec} from '../builtin/ListIntegerCodec'
-import {ListUUIDCodec} from '../builtin/ListUUIDCodec'
-import {ListLongCodec} from '../builtin/ListLongCodec'
-import {ListMultiFrameCodec} from '../builtin/ListMultiFrameCodec'
-import {LongArrayCodec} from '../builtin/LongArrayCodec'
-import {MapCodec} from '../builtin/MapCodec'
-import {MapIntegerLongCodec} from '../builtin/MapIntegerLongCodec'
-import {MapIntegerUUIDCodec} from '../builtin/MapIntegerUUIDCodec'
-import {MapStringLongCodec} from '../builtin/MapStringLongCodec'
-import {MapUUIDLongCodec} from '../builtin/MapUUIDLongCodec'
-import {StackTraceElementCodec} from '../protocol/StackTraceElementCodec'
-import {StringCodec} from '../builtin/StringCodec'
+import {FixedSizeTypes} from '../builtin/FixedSizeTypes';
+import {BitsUtil} from '../BitsUtil';
+import {ClientConnection} from '../invocation/ClientConnection';
+import {ClientMessage, Frame} from '../ClientMessage';
+import {Buffer} from 'safe-buffer';
+import {ClientProtocolErrorCodes} from '../protocol/ClientProtocolErrorCodes';
+import {CodecUtil} from '../builtin/CodecUtil';
+import {DataCodec} from '../builtin/DataCodec';
+import {ErrorCodec} from '../protocol/ErrorCodec';
+import {ErrorsCodec} from '../protocol/ErrorsCodec';
+import {ListIntegerCodec} from '../builtin/ListIntegerCodec';
+import {ListUUIDCodec} from '../builtin/ListUUIDCodec';
+import {ListLongCodec} from '../builtin/ListLongCodec';
+import {ListMultiFrameCodec} from '../builtin/ListMultiFrameCodec';
+import {LongArrayCodec} from '../builtin/LongArrayCodec';
+import {MapCodec} from '../builtin/MapCodec';
+import {MapIntegerLongCodec} from '../builtin/MapIntegerLongCodec';
+import {MapIntegerUUIDCodec} from '../builtin/MapIntegerUUIDCodec';
+import {MapStringLongCodec} from '../builtin/MapStringLongCodec';
+import {MapUUIDLongCodec} from '../builtin/MapUUIDLongCodec';
+import {StackTraceElementCodec} from '../protocol/StackTraceElementCodec';
+import {StringCodec} from '../builtin/StringCodec';
 
-    /* tslint:disabled:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
-   export class RequestParameters {
+/* tslint:disabled:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
+export class RequestParameters {
 
-        /**
-         * Name of the List
-         */
-        public name: string;
+    /**
+     * Name of the List
+     */
+    public name: string;
 
-        /**
-         * Element to search for
-         */
-        public value: Data;
-    };
+    /**
+     * Element to search for
+     */
+    public value: Data;
+}
 
-    /* tslint:disable:urf-unread-public-or-protected-field */
-   export class ResponseParameters {
+/* tslint:disable:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
+export class ResponseParameters {
 
-        /**
-         * The index of the first occurrence of the specified element in
-         * this list, or -1 if this list does not contain the element
-         */
-        public response : number;
-    };
+    /**
+     * The index of the first occurrence of the specified element in
+     * this list, or -1 if this list does not contain the element
+     */
+    public response: number;
+}
 
 /**
  * Returns the index of the first occurrence of the specified element in this list, or -1 if this list does not
  * contain the element.
  */
+/* tslint:disable:max-line-length no-bitwise */
 export class ListIndexOfCodec {
-    //hex: 0x051400
+    // hex: 0x051400
     public static REQUEST_MESSAGE_TYPE = 332800;
-    //hex: 0x051401
+    // hex: 0x051401
     public static RESPONSE_MESSAGE_TYPE = 332801;
     private static REQUEST_INITIAL_FRAME_SIZE = ClientMessage.PARTITION_ID_FIELD_OFFSET + FixedSizeTypes.INT_SIZE_IN_BYTES;
     private static RESPONSE_RESPONSE_FIELD_OFFSET = ClientMessage.CORRELATION_ID_FIELD_OFFSET + FixedSizeTypes.LONG_SIZE_IN_BYTES;
     private static RESPONSE_INITIAL_FRAME_SIZE = ListIndexOfCodec.RESPONSE_RESPONSE_FIELD_OFFSET + FixedSizeTypes.INT_SIZE_IN_BYTES;
 
-    private ListIndexOfCodec() {
-    }
-
-
-    static encodeRequest(name: string, value: Data) {
-        var clientMessage = ClientMessage.createForEncode();
+    static encodeRequest(name: string, value: Data): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(true);
         clientMessage.setAcquiresResource(false);
-        clientMessage.setOperationName("List.IndexOf");
-        var initialFrame : Frame= new Frame(Buffer.allocUnsafe(ListIndexOfCodec.REQUEST_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
+        clientMessage.setOperationName('List.IndexOf');
+        const initialFrame: Frame = new Frame(Buffer.allocUnsafe(ListIndexOfCodec.REQUEST_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
         FixedSizeTypes.encodeInt(initialFrame.content, ClientMessage.TYPE_FIELD_OFFSET, ListIndexOfCodec.REQUEST_MESSAGE_TYPE);
         clientMessage.add(initialFrame);
         StringCodec.encode(clientMessage, name);
@@ -102,20 +98,19 @@ export class ListIndexOfCodec {
         return clientMessage;
     }
 
-    static decodeRequest(clientMessage : ClientMessage) {
-        var frame : Frame = clientMessage.get();
-        var request : RequestParameters = new RequestParameters();
-        //empty initial frame
+    static decodeRequest(clientMessage: ClientMessage): RequestParameters {
+        const request: RequestParameters = new RequestParameters();
+        // empty initial frame
+        let frame: Frame = clientMessage.get();
         frame = frame.next;
         request.name = StringCodec.decode(frame);
         request.value = DataCodec.decode(frame);
         return request;
     }
 
-
-     static encodeResponse(response: number ) {
-        var clientMessage = ClientMessage.createForEncode();
-        var initialFrame : Frame = new Frame(Buffer.allocUnsafe(ListIndexOfCodec.RESPONSE_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
+     static encodeResponse(response: number ): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        const initialFrame: Frame = new Frame(Buffer.allocUnsafe(ListIndexOfCodec.RESPONSE_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
         FixedSizeTypes.encodeInt(initialFrame.content, ClientMessage.TYPE_FIELD_OFFSET, ListIndexOfCodec.RESPONSE_MESSAGE_TYPE);
         clientMessage.add(initialFrame);
 
@@ -123,17 +118,12 @@ export class ListIndexOfCodec {
         return clientMessage;
     }
 
-     static decodeResponse(clientMessage: ClientMessage) {
-        var frame : Frame = clientMessage.get();
-        var response : ResponseParameters = new ResponseParameters();
-        var initialFrame : Frame = frame.next;
+     static decodeResponse(clientMessage: ClientMessage): ResponseParameters {
+        const response: ResponseParameters = new ResponseParameters();
+        // empty initial frame
+        let frame: Frame = clientMessage.get();
+        frame = frame.next;
         response.response =  FixedSizeTypes.decodeInt(initialFrame.content, ListIndexOfCodec.RESPONSE_RESPONSE_FIELD_OFFSET);
         return response;
     }
-
-
-static handle(clientMessage : ClientMessage,  toObjectFunction: (data: Data) => any = null) {
-            var messageType = clientMessage.getMessageType();
-            var frame : Frame = clientMessage.get();
-        }
 }

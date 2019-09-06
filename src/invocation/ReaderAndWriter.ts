@@ -6,7 +6,8 @@ export class ReaderAndWriter {
     private chunks: Buffer[] = [];
     private chunksTotalSize: number = 0;
     private frameSize: number = 0;
-    private writeOffset: number = -1;
+    // tslint:disable-next-line:member-ordering
+    static writeOffset: number = -1;
 
     read(): Frame {
         if (this.chunksTotalSize < BitsUtil.INT_SIZE_IN_BYTES) {
@@ -76,15 +77,15 @@ export class ReaderAndWriter {
         }
     }
     // tslint:disable-next-line:member-ordering
-    write(clientMessage: ClientMessage): Buffer {
+    static write(clientMessage: ClientMessage): Buffer {
         const buffer: Buffer = Buffer.allocUnsafe(clientMessage.getFrameLength());
         let currentFrame = clientMessage.get();
         const length = currentFrame.content.length;
         const frameLength = length + 6;
         const flagsOffset = 4 + this.writeOffset;
+        this.writeOffset = 0;
         while (currentFrame !== null) {
-            this.writeOffset = -1;
-            buffer.writeInt32LE(frameLength, 0);
+            buffer.writeInt32LE(frameLength, this.writeOffset);
             this.writeOffset = this.writeOffset + 4;
             if (currentFrame.next === null) {
                 // tslint:disable-next-line:no-bitwise

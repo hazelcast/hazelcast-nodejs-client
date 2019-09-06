@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
 import * as Long from 'long';
 import {Address} from '../Address';
-import {AddressCodec} from'../builtin/AddressCodec';
+import {AddressCodec} from '../builtin/AddressCodec';
 import {MemberCodec} from '../builtin/MemberCodec';
 import {Data} from '../serialization/Data';
 import {SimpleEntryViewCodec} from '../builtin/SimpleEntryViewCodec';
@@ -25,76 +24,73 @@ import {DistributedObjectInfoCodec} from '../builtin/DistributedObjectInfoCodec'
 import {DistributedObjectInfo} from '../builtin/DistributedObjectInfo';
 import {Member} from '../core/Member';
 import {UUID} from '../core/UUID';
-import {FixedSizeTypes} from '../builtin/FixedSizeTypes'
-import {BitsUtil} from '../BitsUtil'
-import {ClientConnection} from '../invocation/ClientConnection'
-import {ClientMessage, Frame} from '../ClientMessage'
-import {Buffer} from 'safe-buffer'
-import {ClientProtocolErrorCodes} from '../protocol/ClientProtocolErrorCodes'
-import {CodecUtil} from '../builtin/CodecUtil'
-import {DataCodec} from '../builtin/DataCodec'
-import {ErrorCodec} from '../protocol/ErrorCodec'
-import {ErrorsCodec} from '../protocol/ErrorsCodec'
-import {ListIntegerCodec} from '../builtin/ListIntegerCodec'
-import {ListUUIDCodec} from '../builtin/ListUUIDCodec'
-import {ListLongCodec} from '../builtin/ListLongCodec'
-import {ListMultiFrameCodec} from '../builtin/ListMultiFrameCodec'
-import {LongArrayCodec} from '../builtin/LongArrayCodec'
-import {MapCodec} from '../builtin/MapCodec'
-import {MapIntegerLongCodec} from '../builtin/MapIntegerLongCodec'
-import {MapIntegerUUIDCodec} from '../builtin/MapIntegerUUIDCodec'
-import {MapStringLongCodec} from '../builtin/MapStringLongCodec'
-import {MapUUIDLongCodec} from '../builtin/MapUUIDLongCodec'
-import {StackTraceElementCodec} from '../protocol/StackTraceElementCodec'
-import {StringCodec} from '../builtin/StringCodec'
+import {FixedSizeTypes} from '../builtin/FixedSizeTypes';
+import {BitsUtil} from '../BitsUtil';
+import {ClientConnection} from '../invocation/ClientConnection';
+import {ClientMessage, Frame} from '../ClientMessage';
+import {Buffer} from 'safe-buffer';
+import {ClientProtocolErrorCodes} from '../protocol/ClientProtocolErrorCodes';
+import {CodecUtil} from '../builtin/CodecUtil';
+import {DataCodec} from '../builtin/DataCodec';
+import {ErrorCodec} from '../protocol/ErrorCodec';
+import {ErrorsCodec} from '../protocol/ErrorsCodec';
+import {ListIntegerCodec} from '../builtin/ListIntegerCodec';
+import {ListUUIDCodec} from '../builtin/ListUUIDCodec';
+import {ListLongCodec} from '../builtin/ListLongCodec';
+import {ListMultiFrameCodec} from '../builtin/ListMultiFrameCodec';
+import {LongArrayCodec} from '../builtin/LongArrayCodec';
+import {MapCodec} from '../builtin/MapCodec';
+import {MapIntegerLongCodec} from '../builtin/MapIntegerLongCodec';
+import {MapIntegerUUIDCodec} from '../builtin/MapIntegerUUIDCodec';
+import {MapStringLongCodec} from '../builtin/MapStringLongCodec';
+import {MapUUIDLongCodec} from '../builtin/MapUUIDLongCodec';
+import {StackTraceElementCodec} from '../protocol/StackTraceElementCodec';
+import {StringCodec} from '../builtin/StringCodec';
 
-    /* tslint:disabled:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
-   export class RequestParameters {
+/* tslint:disabled:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
+export class RequestParameters {
 
-        /**
-         * Name of the Set
-         */
-        public name: string;
+    /**
+     * Name of the Set
+     */
+    public name: string;
 
-        /**
-         * Object to be removed from this set, if present
-         */
-        public value: Data;
-    };
+    /**
+     * Object to be removed from this set, if present
+     */
+    public value: Data;
+}
 
-    /* tslint:disable:urf-unread-public-or-protected-field */
-   export class ResponseParameters {
+/* tslint:disable:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
+export class ResponseParameters {
 
-        /**
-         * True if this set contained the specified element and it is removed successfully
-         */
-        public response : boolean;
-    };
+    /**
+     * True if this set contained the specified element and it is removed successfully
+     */
+    public response: boolean;
+}
 
 /**
  * Removes the specified element from this set if it is present (optional operation).
  * Returns true if this set contained the element (or equivalently, if this set changed as a result of the call).
  * (This set will not contain the element once the call returns.)
  */
+/* tslint:disable:max-line-length no-bitwise */
 export class SetRemoveCodec {
-    //hex: 0x060500
+    // hex: 0x060500
     public static REQUEST_MESSAGE_TYPE = 394496;
-    //hex: 0x060501
+    // hex: 0x060501
     public static RESPONSE_MESSAGE_TYPE = 394497;
     private static REQUEST_INITIAL_FRAME_SIZE = ClientMessage.PARTITION_ID_FIELD_OFFSET + FixedSizeTypes.INT_SIZE_IN_BYTES;
     private static RESPONSE_RESPONSE_FIELD_OFFSET = ClientMessage.CORRELATION_ID_FIELD_OFFSET + FixedSizeTypes.LONG_SIZE_IN_BYTES;
     private static RESPONSE_INITIAL_FRAME_SIZE = SetRemoveCodec.RESPONSE_RESPONSE_FIELD_OFFSET + FixedSizeTypes.BOOLEAN_SIZE_IN_BYTES;
 
-    private SetRemoveCodec() {
-    }
-
-
-    static encodeRequest(name: string, value: Data) {
-        var clientMessage = ClientMessage.createForEncode();
+    static encodeRequest(name: string, value: Data): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(false);
         clientMessage.setAcquiresResource(false);
-        clientMessage.setOperationName("Set.Remove");
-        var initialFrame : Frame= new Frame(Buffer.allocUnsafe(SetRemoveCodec.REQUEST_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
+        clientMessage.setOperationName('Set.Remove');
+        const initialFrame: Frame = new Frame(Buffer.allocUnsafe(SetRemoveCodec.REQUEST_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
         FixedSizeTypes.encodeInt(initialFrame.content, ClientMessage.TYPE_FIELD_OFFSET, SetRemoveCodec.REQUEST_MESSAGE_TYPE);
         clientMessage.add(initialFrame);
         StringCodec.encode(clientMessage, name);
@@ -102,20 +98,19 @@ export class SetRemoveCodec {
         return clientMessage;
     }
 
-    static decodeRequest(clientMessage : ClientMessage) {
-        var frame : Frame = clientMessage.get();
-        var request : RequestParameters = new RequestParameters();
-        //empty initial frame
+    static decodeRequest(clientMessage: ClientMessage): RequestParameters {
+        const request: RequestParameters = new RequestParameters();
+        // empty initial frame
+        let frame: Frame = clientMessage.get();
         frame = frame.next;
         request.name = StringCodec.decode(frame);
         request.value = DataCodec.decode(frame);
         return request;
     }
 
-
-     static encodeResponse(response: boolean ) {
-        var clientMessage = ClientMessage.createForEncode();
-        var initialFrame : Frame = new Frame(Buffer.allocUnsafe(SetRemoveCodec.RESPONSE_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
+     static encodeResponse(response: boolean ): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        const initialFrame: Frame = new Frame(Buffer.allocUnsafe(SetRemoveCodec.RESPONSE_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
         FixedSizeTypes.encodeInt(initialFrame.content, ClientMessage.TYPE_FIELD_OFFSET, SetRemoveCodec.RESPONSE_MESSAGE_TYPE);
         clientMessage.add(initialFrame);
 
@@ -123,17 +118,12 @@ export class SetRemoveCodec {
         return clientMessage;
     }
 
-     static decodeResponse(clientMessage: ClientMessage) {
-        var frame : Frame = clientMessage.get();
-        var response : ResponseParameters = new ResponseParameters();
-        var initialFrame : Frame = frame.next;
+     static decodeResponse(clientMessage: ClientMessage): ResponseParameters {
+        const response: ResponseParameters = new ResponseParameters();
+        // empty initial frame
+        let frame: Frame = clientMessage.get();
+        frame = frame.next;
         response.response =  FixedSizeTypes.decodeBoolean(initialFrame.content, SetRemoveCodec.RESPONSE_RESPONSE_FIELD_OFFSET);
         return response;
     }
-
-
-static handle(clientMessage : ClientMessage,  toObjectFunction: (data: Data) => any = null) {
-            var messageType = clientMessage.getMessageType();
-            var frame : Frame = clientMessage.get();
-        }
 }

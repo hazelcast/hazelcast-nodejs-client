@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
 import * as Long from 'long';
 import {Address} from '../Address';
-import {AddressCodec} from'../builtin/AddressCodec';
+import {AddressCodec} from '../builtin/AddressCodec';
 import {MemberCodec} from '../builtin/MemberCodec';
 import {Data} from '../serialization/Data';
 import {SimpleEntryViewCodec} from '../builtin/SimpleEntryViewCodec';
@@ -25,71 +24,71 @@ import {DistributedObjectInfoCodec} from '../builtin/DistributedObjectInfoCodec'
 import {DistributedObjectInfo} from '../builtin/DistributedObjectInfo';
 import {Member} from '../core/Member';
 import {UUID} from '../core/UUID';
-import {FixedSizeTypes} from '../builtin/FixedSizeTypes'
-import {BitsUtil} from '../BitsUtil'
-import {ClientConnection} from '../invocation/ClientConnection'
-import {ClientMessage, Frame} from '../ClientMessage'
-import {Buffer} from 'safe-buffer'
-import {ClientProtocolErrorCodes} from '../protocol/ClientProtocolErrorCodes'
-import {CodecUtil} from '../builtin/CodecUtil'
-import {DataCodec} from '../builtin/DataCodec'
-import {ErrorCodec} from '../protocol/ErrorCodec'
-import {ErrorsCodec} from '../protocol/ErrorsCodec'
-import {ListIntegerCodec} from '../builtin/ListIntegerCodec'
-import {ListUUIDCodec} from '../builtin/ListUUIDCodec'
-import {ListLongCodec} from '../builtin/ListLongCodec'
-import {ListMultiFrameCodec} from '../builtin/ListMultiFrameCodec'
-import {LongArrayCodec} from '../builtin/LongArrayCodec'
-import {MapCodec} from '../builtin/MapCodec'
-import {MapIntegerLongCodec} from '../builtin/MapIntegerLongCodec'
-import {MapIntegerUUIDCodec} from '../builtin/MapIntegerUUIDCodec'
-import {MapStringLongCodec} from '../builtin/MapStringLongCodec'
-import {MapUUIDLongCodec} from '../builtin/MapUUIDLongCodec'
-import {StackTraceElementCodec} from '../protocol/StackTraceElementCodec'
-import {StringCodec} from '../builtin/StringCodec'
+import {FixedSizeTypes} from '../builtin/FixedSizeTypes';
+import {BitsUtil} from '../BitsUtil';
+import {ClientConnection} from '../invocation/ClientConnection';
+import {ClientMessage, Frame} from '../ClientMessage';
+import {Buffer} from 'safe-buffer';
+import {ClientProtocolErrorCodes} from '../protocol/ClientProtocolErrorCodes';
+import {CodecUtil} from '../builtin/CodecUtil';
+import {DataCodec} from '../builtin/DataCodec';
+import {ErrorCodec} from '../protocol/ErrorCodec';
+import {ErrorsCodec} from '../protocol/ErrorsCodec';
+import {ListIntegerCodec} from '../builtin/ListIntegerCodec';
+import {ListUUIDCodec} from '../builtin/ListUUIDCodec';
+import {ListLongCodec} from '../builtin/ListLongCodec';
+import {ListMultiFrameCodec} from '../builtin/ListMultiFrameCodec';
+import {LongArrayCodec} from '../builtin/LongArrayCodec';
+import {MapCodec} from '../builtin/MapCodec';
+import {MapIntegerLongCodec} from '../builtin/MapIntegerLongCodec';
+import {MapIntegerUUIDCodec} from '../builtin/MapIntegerUUIDCodec';
+import {MapStringLongCodec} from '../builtin/MapStringLongCodec';
+import {MapUUIDLongCodec} from '../builtin/MapUUIDLongCodec';
+import {StackTraceElementCodec} from '../protocol/StackTraceElementCodec';
+import {StringCodec} from '../builtin/StringCodec';
 
-    /* tslint:disabled:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
-   export class RequestParameters {
+/* tslint:disabled:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
+export class RequestParameters {
 
-        /**
-         * Name of the MultiMap
-         */
-        public name: string;
+    /**
+     * Name of the MultiMap
+     */
+    public name: string;
 
-        /**
-         * Key to lock in this map.
-         */
-        public key: Data;
+    /**
+     * Key to lock in this map.
+     */
+    public key: Data;
 
-        /**
-         * The id of the user thread performing the operation. It is used to guarantee that only the lock holder thread (if a lock exists on the entry) can perform the requested operation
-         */
-        public threadId: Long;
+    /**
+     * The id of the user thread performing the operation. It is used to guarantee that only the lock holder thread (if a lock exists on the entry) can perform the requested operation
+     */
+    public threadId: Long;
 
-        /**
-         * Time in milliseconds to wait before releasing the lock.
-         */
-        public lease: Long;
+    /**
+     * Time in milliseconds to wait before releasing the lock.
+     */
+    public lease: Long;
 
-        /**
-         * Maximum time to wait for the lock.
-         */
-        public timeout: Long;
+    /**
+     * Maximum time to wait for the lock.
+     */
+    public timeout: Long;
 
-        /**
-         * The client-wide unique id for this request. It is used to make the request idempotent by sending the same reference id during retries.
-         */
-        public referenceId: Long;
-    };
+    /**
+     * The client-wide unique id for this request. It is used to make the request idempotent by sending the same reference id during retries.
+     */
+    public referenceId: Long;
+}
 
-    /* tslint:disable:urf-unread-public-or-protected-field */
-   export class ResponseParameters {
+/* tslint:disable:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
+export class ResponseParameters {
 
-        /**
-         * True if the lock was acquired and false if the waiting time elapsed before the lock acquired
-         */
-        public response : boolean;
-    };
+    /**
+     * True if the lock was acquired and false if the waiting time elapsed before the lock acquired
+     */
+    public response: boolean;
+}
 
 /**
  * Tries to acquire the lock for the specified key for the specified lease time. After lease time, the lock will be
@@ -97,10 +96,11 @@ import {StringCodec} from '../builtin/StringCodec'
  * and lies dormant until one of two things happens:the lock is acquired by the current thread, or the specified
  * waiting time elapses.
  */
+/* tslint:disable:max-line-length no-bitwise */
 export class MultiMapTryLockCodec {
-    //hex: 0x021100
+    // hex: 0x021100
     public static REQUEST_MESSAGE_TYPE = 135424;
-    //hex: 0x021101
+    // hex: 0x021101
     public static RESPONSE_MESSAGE_TYPE = 135425;
     private static REQUEST_THREAD_ID_FIELD_OFFSET = ClientMessage.PARTITION_ID_FIELD_OFFSET + FixedSizeTypes.INT_SIZE_IN_BYTES;
     private static REQUEST_LEASE_FIELD_OFFSET = MultiMapTryLockCodec.REQUEST_THREAD_ID_FIELD_OFFSET + FixedSizeTypes.LONG_SIZE_IN_BYTES;
@@ -110,16 +110,12 @@ export class MultiMapTryLockCodec {
     private static RESPONSE_RESPONSE_FIELD_OFFSET = ClientMessage.CORRELATION_ID_FIELD_OFFSET + FixedSizeTypes.LONG_SIZE_IN_BYTES;
     private static RESPONSE_INITIAL_FRAME_SIZE = MultiMapTryLockCodec.RESPONSE_RESPONSE_FIELD_OFFSET + FixedSizeTypes.BOOLEAN_SIZE_IN_BYTES;
 
-    private MultiMapTryLockCodec() {
-    }
-
-
-    static encodeRequest(name: string, key: Data, threadId: Long, lease: Long, timeout: Long, referenceId: Long) {
-        var clientMessage = ClientMessage.createForEncode();
+    static encodeRequest(name: string, key: Data, threadId: Long, lease: Long, timeout: Long, referenceId: Long): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(true);
         clientMessage.setAcquiresResource(true);
-        clientMessage.setOperationName("MultiMap.TryLock");
-        var initialFrame : Frame= new Frame(Buffer.allocUnsafe(MultiMapTryLockCodec.REQUEST_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
+        clientMessage.setOperationName('MultiMap.TryLock');
+        const initialFrame: Frame = new Frame(Buffer.allocUnsafe(MultiMapTryLockCodec.REQUEST_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
         FixedSizeTypes.encodeInt(initialFrame.content, ClientMessage.TYPE_FIELD_OFFSET, MultiMapTryLockCodec.REQUEST_MESSAGE_TYPE);
         FixedSizeTypes.encodeLong(initialFrame.content, MultiMapTryLockCodec.REQUEST_THREAD_ID_FIELD_OFFSET, threadId);
         FixedSizeTypes.encodeLong(initialFrame.content, MultiMapTryLockCodec.REQUEST_LEASE_FIELD_OFFSET, lease);
@@ -131,10 +127,10 @@ export class MultiMapTryLockCodec {
         return clientMessage;
     }
 
-    static decodeRequest(clientMessage : ClientMessage) {
-        var frame : Frame = clientMessage.get();
-        var request : RequestParameters = new RequestParameters();
-        var initialFrame : Frame= frame.next;
+    static decodeRequest(clientMessage: ClientMessage): RequestParameters {
+        const request: RequestParameters = new RequestParameters();
+        const frame: Frame = clientMessage.get();
+        const initialFrame: Frame = frame.next;
         request.threadId =  FixedSizeTypes.decodeLong(initialFrame.content, MultiMapTryLockCodec.REQUEST_THREAD_ID_FIELD_OFFSET);
         request.lease =  FixedSizeTypes.decodeLong(initialFrame.content, MultiMapTryLockCodec.REQUEST_LEASE_FIELD_OFFSET);
         request.timeout =  FixedSizeTypes.decodeLong(initialFrame.content, MultiMapTryLockCodec.REQUEST_TIMEOUT_FIELD_OFFSET);
@@ -144,10 +140,9 @@ export class MultiMapTryLockCodec {
         return request;
     }
 
-
-     static encodeResponse(response: boolean ) {
-        var clientMessage = ClientMessage.createForEncode();
-        var initialFrame : Frame = new Frame(Buffer.allocUnsafe(MultiMapTryLockCodec.RESPONSE_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
+     static encodeResponse(response: boolean ): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        const initialFrame: Frame = new Frame(Buffer.allocUnsafe(MultiMapTryLockCodec.RESPONSE_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
         FixedSizeTypes.encodeInt(initialFrame.content, ClientMessage.TYPE_FIELD_OFFSET, MultiMapTryLockCodec.RESPONSE_MESSAGE_TYPE);
         clientMessage.add(initialFrame);
 
@@ -155,17 +150,11 @@ export class MultiMapTryLockCodec {
         return clientMessage;
     }
 
-     static decodeResponse(clientMessage: ClientMessage) {
-        var frame : Frame = clientMessage.get();
-        var response : ResponseParameters = new ResponseParameters();
-        var initialFrame : Frame = frame.next;
+     static decodeResponse(clientMessage: ClientMessage): ResponseParameters {
+        const response: ResponseParameters = new ResponseParameters();
+        const frame: Frame = clientMessage.get();
+        const initialFrame: Frame = frame.next;
         response.response =  FixedSizeTypes.decodeBoolean(initialFrame.content, MultiMapTryLockCodec.RESPONSE_RESPONSE_FIELD_OFFSET);
         return response;
     }
-
-
-static handle(clientMessage : ClientMessage,  toObjectFunction: (data: Data) => any = null) {
-            var messageType = clientMessage.getMessageType();
-            var frame : Frame = clientMessage.get();
-        }
 }

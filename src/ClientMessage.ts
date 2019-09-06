@@ -111,12 +111,12 @@ export class LinkedListFrame {
     add(frame: Frame): Frame {
         if (!this.headFrame) {
             this.headFrame = frame;
-            this.tailFrame = this.headFrame;
+            this.tailFrame = frame;
             return this.headFrame;
         }
         frame.prev = this.tailFrame;
         this.tailFrame.next = frame;
-        this.tailFrame = this.tailFrame.next;
+        this.tailFrame = frame;
 
         return this.tailFrame;
     }
@@ -291,7 +291,7 @@ export class ClientMessage extends LinkedListFrame {
         return this.connection;
     }
 
-    public getFrameLength(): number {
+     public getFrameLength(): number {
         let frameLength = 0;
         let currentItem: Frame = this.headFrame;
         if (!currentItem) {

@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
 import * as Long from 'long';
 import {Address} from '../Address';
-import {AddressCodec} from'../builtin/AddressCodec';
+import {AddressCodec} from '../builtin/AddressCodec';
 import {MemberCodec} from '../builtin/MemberCodec';
 import {Data} from '../serialization/Data';
 import {SimpleEntryViewCodec} from '../builtin/SimpleEntryViewCodec';
@@ -25,74 +24,71 @@ import {DistributedObjectInfoCodec} from '../builtin/DistributedObjectInfoCodec'
 import {DistributedObjectInfo} from '../builtin/DistributedObjectInfo';
 import {Member} from '../core/Member';
 import {UUID} from '../core/UUID';
-import {FixedSizeTypes} from '../builtin/FixedSizeTypes'
-import {BitsUtil} from '../BitsUtil'
-import {ClientConnection} from '../invocation/ClientConnection'
-import {ClientMessage, Frame} from '../ClientMessage'
-import {Buffer} from 'safe-buffer'
-import {ClientProtocolErrorCodes} from '../protocol/ClientProtocolErrorCodes'
-import {CodecUtil} from '../builtin/CodecUtil'
-import {DataCodec} from '../builtin/DataCodec'
-import {ErrorCodec} from '../protocol/ErrorCodec'
-import {ErrorsCodec} from '../protocol/ErrorsCodec'
-import {ListIntegerCodec} from '../builtin/ListIntegerCodec'
-import {ListUUIDCodec} from '../builtin/ListUUIDCodec'
-import {ListLongCodec} from '../builtin/ListLongCodec'
-import {ListMultiFrameCodec} from '../builtin/ListMultiFrameCodec'
-import {LongArrayCodec} from '../builtin/LongArrayCodec'
-import {MapCodec} from '../builtin/MapCodec'
-import {MapIntegerLongCodec} from '../builtin/MapIntegerLongCodec'
-import {MapIntegerUUIDCodec} from '../builtin/MapIntegerUUIDCodec'
-import {MapStringLongCodec} from '../builtin/MapStringLongCodec'
-import {MapUUIDLongCodec} from '../builtin/MapUUIDLongCodec'
-import {StackTraceElementCodec} from '../protocol/StackTraceElementCodec'
-import {StringCodec} from '../builtin/StringCodec'
+import {FixedSizeTypes} from '../builtin/FixedSizeTypes';
+import {BitsUtil} from '../BitsUtil';
+import {ClientConnection} from '../invocation/ClientConnection';
+import {ClientMessage, Frame} from '../ClientMessage';
+import {Buffer} from 'safe-buffer';
+import {ClientProtocolErrorCodes} from '../protocol/ClientProtocolErrorCodes';
+import {CodecUtil} from '../builtin/CodecUtil';
+import {DataCodec} from '../builtin/DataCodec';
+import {ErrorCodec} from '../protocol/ErrorCodec';
+import {ErrorsCodec} from '../protocol/ErrorsCodec';
+import {ListIntegerCodec} from '../builtin/ListIntegerCodec';
+import {ListUUIDCodec} from '../builtin/ListUUIDCodec';
+import {ListLongCodec} from '../builtin/ListLongCodec';
+import {ListMultiFrameCodec} from '../builtin/ListMultiFrameCodec';
+import {LongArrayCodec} from '../builtin/LongArrayCodec';
+import {MapCodec} from '../builtin/MapCodec';
+import {MapIntegerLongCodec} from '../builtin/MapIntegerLongCodec';
+import {MapIntegerUUIDCodec} from '../builtin/MapIntegerUUIDCodec';
+import {MapStringLongCodec} from '../builtin/MapStringLongCodec';
+import {MapUUIDLongCodec} from '../builtin/MapUUIDLongCodec';
+import {StackTraceElementCodec} from '../protocol/StackTraceElementCodec';
+import {StringCodec} from '../builtin/StringCodec';
 
-    /* tslint:disabled:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
-   export class RequestParameters {
+/* tslint:disabled:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
+export class RequestParameters {
 
-        /**
-         * Name of the ReplicatedMap
-         */
-        public name: string;
+    /**
+     * Name of the ReplicatedMap
+     */
+    public name: string;
 
-        /**
-         * The key whose associated value is to be returned.
-         */
-        public key: Data;
-    };
+    /**
+     * The key whose associated value is to be returned.
+     */
+    public key: Data;
+}
 
-    /* tslint:disable:urf-unread-public-or-protected-field */
-   export class ResponseParameters {
+/* tslint:disable:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
+export class ResponseParameters {
 
-        /**
-         * <tt>True</tt> if this map contains a mapping for the specified key
-         */
-        public response : boolean;
-    };
+    /**
+     * <tt>True</tt> if this map contains a mapping for the specified key
+     */
+    public response: boolean;
+}
 
 /**
  * Returns true if this map contains a mapping for the specified key.
  */
+/* tslint:disable:max-line-length no-bitwise */
 export class ReplicatedMapContainsKeyCodec {
-    //hex: 0x0E0400
+    // hex: 0x0E0400
     public static REQUEST_MESSAGE_TYPE = 918528;
-    //hex: 0x0E0401
+    // hex: 0x0E0401
     public static RESPONSE_MESSAGE_TYPE = 918529;
     private static REQUEST_INITIAL_FRAME_SIZE = ClientMessage.PARTITION_ID_FIELD_OFFSET + FixedSizeTypes.INT_SIZE_IN_BYTES;
     private static RESPONSE_RESPONSE_FIELD_OFFSET = ClientMessage.CORRELATION_ID_FIELD_OFFSET + FixedSizeTypes.LONG_SIZE_IN_BYTES;
     private static RESPONSE_INITIAL_FRAME_SIZE = ReplicatedMapContainsKeyCodec.RESPONSE_RESPONSE_FIELD_OFFSET + FixedSizeTypes.BOOLEAN_SIZE_IN_BYTES;
 
-    private ReplicatedMapContainsKeyCodec() {
-    }
-
-
-    static encodeRequest(name: string, key: Data) {
-        var clientMessage = ClientMessage.createForEncode();
+    static encodeRequest(name: string, key: Data): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(true);
         clientMessage.setAcquiresResource(false);
-        clientMessage.setOperationName("ReplicatedMap.ContainsKey");
-        var initialFrame : Frame= new Frame(Buffer.allocUnsafe(ReplicatedMapContainsKeyCodec.REQUEST_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
+        clientMessage.setOperationName('ReplicatedMap.ContainsKey');
+        const initialFrame: Frame = new Frame(Buffer.allocUnsafe(ReplicatedMapContainsKeyCodec.REQUEST_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
         FixedSizeTypes.encodeInt(initialFrame.content, ClientMessage.TYPE_FIELD_OFFSET, ReplicatedMapContainsKeyCodec.REQUEST_MESSAGE_TYPE);
         clientMessage.add(initialFrame);
         StringCodec.encode(clientMessage, name);
@@ -100,20 +96,19 @@ export class ReplicatedMapContainsKeyCodec {
         return clientMessage;
     }
 
-    static decodeRequest(clientMessage : ClientMessage) {
-        var frame : Frame = clientMessage.get();
-        var request : RequestParameters = new RequestParameters();
-        //empty initial frame
+    static decodeRequest(clientMessage: ClientMessage): RequestParameters {
+        const request: RequestParameters = new RequestParameters();
+        // empty initial frame
+        let frame: Frame = clientMessage.get();
         frame = frame.next;
         request.name = StringCodec.decode(frame);
         request.key = DataCodec.decode(frame);
         return request;
     }
 
-
-     static encodeResponse(response: boolean ) {
-        var clientMessage = ClientMessage.createForEncode();
-        var initialFrame : Frame = new Frame(Buffer.allocUnsafe(ReplicatedMapContainsKeyCodec.RESPONSE_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
+     static encodeResponse(response: boolean ): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        const initialFrame: Frame = new Frame(Buffer.allocUnsafe(ReplicatedMapContainsKeyCodec.RESPONSE_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
         FixedSizeTypes.encodeInt(initialFrame.content, ClientMessage.TYPE_FIELD_OFFSET, ReplicatedMapContainsKeyCodec.RESPONSE_MESSAGE_TYPE);
         clientMessage.add(initialFrame);
 
@@ -121,17 +116,12 @@ export class ReplicatedMapContainsKeyCodec {
         return clientMessage;
     }
 
-     static decodeResponse(clientMessage: ClientMessage) {
-        var frame : Frame = clientMessage.get();
-        var response : ResponseParameters = new ResponseParameters();
-        var initialFrame : Frame = frame.next;
+     static decodeResponse(clientMessage: ClientMessage): ResponseParameters {
+        const response: ResponseParameters = new ResponseParameters();
+        // empty initial frame
+        let frame: Frame = clientMessage.get();
+        frame = frame.next;
         response.response =  FixedSizeTypes.decodeBoolean(initialFrame.content, ReplicatedMapContainsKeyCodec.RESPONSE_RESPONSE_FIELD_OFFSET);
         return response;
     }
-
-
-static handle(clientMessage : ClientMessage,  toObjectFunction: (data: Data) => any = null) {
-            var messageType = clientMessage.getMessageType();
-            var frame : Frame = clientMessage.get();
-        }
 }

@@ -24,6 +24,8 @@ import HazelcastClient from '../HazelcastClient';
 import {IOError} from '../HazelcastError';
 import {Address} from '../Address';
 import {DeferredPromise} from '../Util';
+import {ClientMessage} from '../ClientMessage';
+import {ReaderAndWriter} from './ReaderAndWriter';
 
 const FROZEN_ARRAY = Object.freeze([]) as OutputQueueItem[];
 const PROPERTY_PIPELINING_ENABLED = 'hazelcast.client.autopipelining.enabled';
@@ -50,11 +52,24 @@ export class PipelinedWriter extends EventEmitter {
         this.threshold = threshold;
     }
 
-    write(buffer: Buffer, resolver: Promise.Resolver<void>): void {
+    initBuffer(resolver: Promise.Resolver<void>): void {
+        this.socket.write('CB2', (err: any) => {
+            if (err) {
+                resolver.reject(new IOError(err));
+                return;
+            } else {
+                resolver.resolve();
+            }
+        });
+    }
+
+    write(clientMessage: ClientMessage, resolver: Promise.Resolver<void>): void {
         if (this.error) {
             // if there was a write error, it's useless to keep writing to the socket
             return process.nextTick(() => resolver.reject(this.error));
         }
+        const buffer: Buffer = ReaderAndWriter.write(clientMessage);
+        console.log(buffer);
         this.queue.push({ buffer, resolver });
         this.schedule();
     }
@@ -134,7 +149,19 @@ export class DirectWriter extends EventEmitter {
         this.socket = socket;
     }
 
-    write(buffer: Buffer, resolver: Promise.Resolver<void>): void {
+    initBuffer(resolver: Promise.Resolver<void>): void {
+        this.socket.write('CB2', (err: any) => {
+            if (err) {
+                resolver.reject(new IOError(err));
+                return;
+            } else {
+                resolver.resolve();
+            }
+        });
+    }
+
+    write(clientMessage: ClientMessage, resolver: Promise.Resolver<void>): void {
+        const buffer: Buffer = ReaderAndWriter.write(clientMessage);
         this.socket.write(buffer as any, (err: any) => {
             if (err) {
                 resolver.reject(new IOError(err));
@@ -257,9 +284,13 @@ export class ClientConnection {
         this.address = address;
     }
 
-    write(buffer: Buffer): Promise<void> {
+    initBuffer(resolver: Promise.Resolver<void>): void {
+        this.writer.initBuffer(resolver);
+    }
+
+    write(clientMessage: ClientMessage): Promise<void> {
         const deferred = DeferredPromise<void>();
-        this.writer.write(buffer, deferred);
+        this.writer.write(clientMessage, deferred);
         return deferred.promise;
     }
 

@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
 import * as Long from 'long';
 import {Address} from '../Address';
-import {AddressCodec} from'../builtin/AddressCodec';
+import {AddressCodec} from '../builtin/AddressCodec';
 import {MemberCodec} from '../builtin/MemberCodec';
 import {Data} from '../serialization/Data';
 import {SimpleEntryViewCodec} from '../builtin/SimpleEntryViewCodec';
@@ -25,213 +24,214 @@ import {DistributedObjectInfoCodec} from '../builtin/DistributedObjectInfoCodec'
 import {DistributedObjectInfo} from '../builtin/DistributedObjectInfo';
 import {Member} from '../core/Member';
 import {UUID} from '../core/UUID';
-import {FixedSizeTypes} from '../builtin/FixedSizeTypes'
-import {BitsUtil} from '../BitsUtil'
-import {ClientConnection} from '../invocation/ClientConnection'
-import {ClientMessage, Frame} from '../ClientMessage'
-import {Buffer} from 'safe-buffer'
-import {ClientProtocolErrorCodes} from '../protocol/ClientProtocolErrorCodes'
-import {CodecUtil} from '../builtin/CodecUtil'
-import {DataCodec} from '../builtin/DataCodec'
-import {ErrorCodec} from '../protocol/ErrorCodec'
-import {ErrorsCodec} from '../protocol/ErrorsCodec'
-import {ListIntegerCodec} from '../builtin/ListIntegerCodec'
-import {ListUUIDCodec} from '../builtin/ListUUIDCodec'
-import {ListLongCodec} from '../builtin/ListLongCodec'
-import {ListMultiFrameCodec} from '../builtin/ListMultiFrameCodec'
-import {LongArrayCodec} from '../builtin/LongArrayCodec'
-import {MapCodec} from '../builtin/MapCodec'
-import {MapIntegerLongCodec} from '../builtin/MapIntegerLongCodec'
-import {MapIntegerUUIDCodec} from '../builtin/MapIntegerUUIDCodec'
-import {MapStringLongCodec} from '../builtin/MapStringLongCodec'
-import {MapUUIDLongCodec} from '../builtin/MapUUIDLongCodec'
-import {StackTraceElementCodec} from '../protocol/StackTraceElementCodec'
-import {StringCodec} from '../builtin/StringCodec'
+import {FixedSizeTypes} from '../builtin/FixedSizeTypes';
+import {BitsUtil} from '../BitsUtil';
+import {ClientConnection} from '../invocation/ClientConnection';
+import {ClientMessage, Frame} from '../ClientMessage';
+import {Buffer} from 'safe-buffer';
+import {ClientProtocolErrorCodes} from '../protocol/ClientProtocolErrorCodes';
+import {CodecUtil} from '../builtin/CodecUtil';
+import {DataCodec} from '../builtin/DataCodec';
+import {ErrorCodec} from '../protocol/ErrorCodec';
+import {ErrorsCodec} from '../protocol/ErrorsCodec';
+import {ListIntegerCodec} from '../builtin/ListIntegerCodec';
+import {ListUUIDCodec} from '../builtin/ListUUIDCodec';
+import {ListLongCodec} from '../builtin/ListLongCodec';
+import {ListMultiFrameCodec} from '../builtin/ListMultiFrameCodec';
+import {LongArrayCodec} from '../builtin/LongArrayCodec';
+import {MapCodec} from '../builtin/MapCodec';
+import {MapIntegerLongCodec} from '../builtin/MapIntegerLongCodec';
+import {MapIntegerUUIDCodec} from '../builtin/MapIntegerUUIDCodec';
+import {MapStringLongCodec} from '../builtin/MapStringLongCodec';
+import {MapUUIDLongCodec} from '../builtin/MapUUIDLongCodec';
+import {StackTraceElementCodec} from '../protocol/StackTraceElementCodec';
+import {StringCodec} from '../builtin/StringCodec';
 
-    /* tslint:disabled:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
-   export class RequestParameters {
+/* tslint:disabled:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
+export class RequestParameters {
 
-        /**
-         * TODO DOC
-         */
-        public name: string;
+    /**
+     * TODO DOC
+     */
+    public name: string;
 
-        /**
-         * number of synchronous backups
-         */
-        public backupCount: number;
+    /**
+     * number of synchronous backups
+     */
+    public backupCount: number;
 
-        /**
-         * number of asynchronous backups
-         */
-        public asyncBackupCount: number;
+    /**
+     * number of asynchronous backups
+     */
+    public asyncBackupCount: number;
 
-        /**
-         * maximum number of seconds for each entry to stay in the map.
-         */
-        public timeToLiveSeconds: number;
+    /**
+     * maximum number of seconds for each entry to stay in the map.
+     */
+    public timeToLiveSeconds: number;
 
-        /**
-         * maximum number of seconds for each entry to stay idle in the map
-         */
-        public maxIdleSeconds: number;
+    /**
+     * maximum number of seconds for each entry to stay idle in the map
+     */
+    public maxIdleSeconds: number;
 
-        /**
-         * eviction policy. Valid values: {@code NONE} (no eviction), {@code LRU}
-         * (Least Recently Used), {@code LFU} (Least Frequently Used),
-         * {@code RANDOM} (evict random entry).
-         */
-        public evictionPolicy: string;
+    /**
+     * eviction policy. Valid values: {@code NONE} (no eviction), {@code LRU}
+     * (Least Recently Used), {@code LFU} (Least Frequently Used),
+     * {@code RANDOM} (evict random entry).
+     */
+    public evictionPolicy: string;
 
-        /**
-         * {@code true} to enable reading local backup entries, {@code false} otherwise
-         */
-        public readBackupData: boolean;
+    /**
+     * {@code true} to enable reading local backup entries, {@code false} otherwise
+     */
+    public readBackupData: boolean;
 
-        /**
-         * control caching of de-serialized values. Valid values are {@code NEVER}
-         * (Never cache de-serialized object), {@code INDEX_ONLY} (Cache values only
-         * when they are inserted into an index) and {@code ALWAYS} (Always cache
-         * de-serialized values
-         */
-        public cacheDeserializedValues: string;
+    /**
+     * control caching of de-serialized values. Valid values are {@code NEVER}
+     * (Never cache de-serialized object), {@code INDEX_ONLY} (Cache values only
+     * when they are inserted into an index) and {@code ALWAYS} (Always cache
+     * de-serialized values
+     */
+    public cacheDeserializedValues: string;
 
-        /**
-         * class name of a class implementing
-         * {@code com.hazelcast.map.merge.MapMergePolicy} to merge entries
-         * while recovering from a split brain
-         */
-        public mergePolicy: string;
+    /**
+     * class name of a class implementing
+     * {@code com.hazelcast.map.merge.MapMergePolicy} to merge entries
+     * while recovering from a split brain
+     */
+    public mergePolicy: string;
 
-        /**
-         * data type used to store entries. Valid values are {@code BINARY},
-         * {@code OBJECT} and {@code NATIVE}.
-         */
-        public inMemoryFormat: string;
+    /**
+     * data type used to store entries. Valid values are {@code BINARY},
+     * {@code OBJECT} and {@code NATIVE}.
+     */
+    public inMemoryFormat: string;
 
-        /**
-         * entry listener configurations
-         */
-        public listenerConfigs: Array<ListenerConfigHolder>;
+    /**
+     * entry listener configurations
+     */
+    public listenerConfigs: Array<ListenerConfigHolder>;
 
-        /**
-         * partition lost listener configurations
-         */
-        public partitionLostListenerConfigs: Array<ListenerConfigHolder>;
+    /**
+     * partition lost listener configurations
+     */
+    public partitionLostListenerConfigs: Array<ListenerConfigHolder>;
 
-        /**
-         * {@code true} to enable gathering of statistics, otherwise {@code false}
-         */
-        public statisticsEnabled: boolean;
+    /**
+     * {@code true} to enable gathering of statistics, otherwise {@code false}
+     */
+    public statisticsEnabled: boolean;
 
-        /**
-         * name of an existing configured quorum to be used to determine the minimum
-         * number of members required in the cluster for the map to remain functional.
-         * When {@code null}, quorum does not apply to this map's operations.
-         */
-        public quorumName: string;
+    /**
+     * name of an existing configured split brain protection to be used to determine the minimum
+     * number of members required in the cluster for the map to remain functional.
+     * When {@code null}, split brain protection does not apply to this map's operations.
+     */
+    public splitBrainProtectionName: string;
 
-        /**
-         * custom {@code com.hazelcast.map.eviction.MapEvictionPolicy} implementation
-         * or {@code null}
-         */
-        public mapEvictionPolicy: Data;
+    /**
+     * custom {@code com.hazelcast.map.eviction.MapEvictionPolicy} implementation
+     * or {@code null}
+     */
+    public mapEvictionPolicy: Data;
 
-        /**
-         * maximum size policy. Valid values are {@code PER_NODE},
-         * {@code PER_PARTITION}, {@code USED_HEAP_PERCENTAGE}, {@code USED_HEAP_SIZE},
-         * {@code FREE_HEAP_PERCENTAGE}, {@code FREE_HEAP_SIZE},
-         * {@code USED_NATIVE_MEMORY_SIZE}, {@code USED_NATIVE_MEMORY_PERCENTAGE},
-         * {@code FREE_NATIVE_MEMORY_SIZE}, {@code FREE_NATIVE_MEMORY_PERCENTAGE}.
-         */
-        public maxSizeConfigMaxSizePolicy: string;
+    /**
+     * maximum size policy. Valid values are {@code PER_NODE},
+     * {@code PER_PARTITION}, {@code USED_HEAP_PERCENTAGE}, {@code USED_HEAP_SIZE},
+     * {@code FREE_HEAP_PERCENTAGE}, {@code FREE_HEAP_SIZE},
+     * {@code USED_NATIVE_MEMORY_SIZE}, {@code USED_NATIVE_MEMORY_PERCENTAGE},
+     * {@code FREE_NATIVE_MEMORY_SIZE}, {@code FREE_NATIVE_MEMORY_PERCENTAGE}.
+     */
+    public maxSizeConfigMaxSizePolicy: string;
 
-        /**
-         * maximum size of map
-         */
-        public maxSizeConfigSize: number;
+    /**
+     * maximum size of map
+     */
+    public maxSizeConfigSize: number;
 
-        /**
-         * configuration of backing map store or {@code null} for none
-         */
-        public mapStoreConfig: MapStoreConfigHolder;
+    /**
+     * configuration of backing map store or {@code null} for none
+     */
+    public mapStoreConfig: MapStoreConfigHolder;
 
-        /**
-         * configuration of near cache or {@code null} for none
-         */
-        public nearCacheConfig: NearCacheConfigHolder;
+    /**
+     * configuration of near cache or {@code null} for none
+     */
+    public nearCacheConfig: NearCacheConfigHolder;
 
-        /**
-         * reference to an existing WAN replication configuration
-         */
-        public wanReplicationRef: WanReplicationRef;
+    /**
+     * reference to an existing WAN replication configuration
+     */
+    public wanReplicationRef: WanReplicationRef;
 
-        /**
-         * map index configurations
-         */
-        public mapIndexConfigs: Array<MapIndexConfig>;
+    /**
+     * map index configurations
+     */
+    public mapIndexConfigs: Array<MapIndexConfig>;
 
-        /**
-         * map attributes
-         */
-        public mapAttributeConfigs: Array<MapAttributeConfig>;
+    /**
+     * map attributes
+     */
+    public mapAttributeConfigs: Array<MapAttributeConfig>;
 
-        /**
-         * configurations for query caches on this map
-         */
-        public queryCacheConfigs: Array<QueryCacheConfigHolder>;
+    /**
+     * configurations for query caches on this map
+     */
+    public queryCacheConfigs: Array<QueryCacheConfigHolder>;
 
-        /**
-         * name of class implementing {@code com.hazelcast.core.PartitioningStrategy}
-         * or {@code null}
-         */
-        public partitioningStrategyClassName: string;
+    /**
+     * name of class implementing {@code com.hazelcast.core.PartitioningStrategy}
+     * or {@code null}
+     */
+    public partitioningStrategyClassName: string;
 
-        /**
-         * a serialized instance of a partitioning strategy
-         */
-        public partitioningStrategyImplementation: Data;
+    /**
+     * a serialized instance of a partitioning strategy
+     */
+    public partitioningStrategyImplementation: Data;
 
-        /**
-         * hot restart configuration
-         */
-        public hotRestartConfig: HotRestartConfig;
+    /**
+     * hot restart configuration
+     */
+    public hotRestartConfig: HotRestartConfig;
 
-        /**
-         * Event Journal configuration
-         */
-        public eventJournalConfig: EventJournalConfig;
+    /**
+     * Event Journal configuration
+     */
+    public eventJournalConfig: EventJournalConfig;
 
-        /**
-         * - merkle tree configuration
-         */
-        public merkleTreeConfig: MerkleTreeConfig;
+    /**
+     * - merkle tree configuration
+     */
+    public merkleTreeConfig: MerkleTreeConfig;
 
-        /**
-         * TODO DOC
-         */
-        public mergeBatchSize: number;
+    /**
+     * TODO DOC
+     */
+    public mergeBatchSize: number;
 
-        /**
-         * metadata policy configuration for the supported data types. Valid values
-         * are {@code CREATE_ON_UPDATE} and {@code OFF}
-         */
-        public metadataPolicy: number;
-    };
+    /**
+     * metadata policy configuration for the supported data types. Valid values
+     * are {@code CREATE_ON_UPDATE} and {@code OFF}
+     */
+    public metadataPolicy: number;
+}
 
-    /* tslint:disable:urf-unread-public-or-protected-field */
-   export class ResponseParameters {
-    };
+/* tslint:disable:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
+export class ResponseParameters {
+}
 
 /**
  * Adds a new map configuration to a running cluster.
  * If a map configuration with the given {@code name} already exists, then
  * the new configuration is ignored and the existing one is preserved.
  */
+/* tslint:disable:max-line-length no-bitwise */
 export class DynamicConfigAddMapConfigCodec {
-    //hex: 0x1E0E00
+    // hex: 0x1E0E00
     public static REQUEST_MESSAGE_TYPE = 1969664;
-    //hex: 0x1E0E01
+    // hex: 0x1E0E01
     public static RESPONSE_MESSAGE_TYPE = 1969665;
     private static REQUEST_BACKUP_COUNT_FIELD_OFFSET = ClientMessage.PARTITION_ID_FIELD_OFFSET + FixedSizeTypes.INT_SIZE_IN_BYTES;
     private static REQUEST_ASYNC_BACKUP_COUNT_FIELD_OFFSET = DynamicConfigAddMapConfigCodec.REQUEST_BACKUP_COUNT_FIELD_OFFSET + FixedSizeTypes.INT_SIZE_IN_BYTES;
@@ -245,16 +245,12 @@ export class DynamicConfigAddMapConfigCodec {
     private static REQUEST_INITIAL_FRAME_SIZE = DynamicConfigAddMapConfigCodec.REQUEST_METADATA_POLICY_FIELD_OFFSET + FixedSizeTypes.INT_SIZE_IN_BYTES;
     private static RESPONSE_INITIAL_FRAME_SIZE = ClientMessage.CORRELATION_ID_FIELD_OFFSET + FixedSizeTypes.LONG_SIZE_IN_BYTES;
 
-    private DynamicConfigAddMapConfigCodec() {
-    }
-
-
-    static encodeRequest(name: string, backupCount: number, asyncBackupCount: number, timeToLiveSeconds: number, maxIdleSeconds: number, evictionPolicy: string, readBackupData: boolean, cacheDeserializedValues: string, mergePolicy: string, inMemoryFormat: string, listenerConfigs: Array<ListenerConfigHolder>, partitionLostListenerConfigs: Array<ListenerConfigHolder>, statisticsEnabled: boolean, quorumName: string, mapEvictionPolicy: Data, maxSizeConfigMaxSizePolicy: string, maxSizeConfigSize: number, mapStoreConfig: MapStoreConfigHolder, nearCacheConfig: NearCacheConfigHolder, wanReplicationRef: WanReplicationRef, mapIndexConfigs: Array<MapIndexConfig>, mapAttributeConfigs: Array<MapAttributeConfig>, queryCacheConfigs: Array<QueryCacheConfigHolder>, partitioningStrategyClassName: string, partitioningStrategyImplementation: Data, hotRestartConfig: HotRestartConfig, eventJournalConfig: EventJournalConfig, merkleTreeConfig: MerkleTreeConfig, mergeBatchSize: number, metadataPolicy: number) {
-        var clientMessage = ClientMessage.createForEncode();
+    static encodeRequest(name: string, backupCount: number, asyncBackupCount: number, timeToLiveSeconds: number, maxIdleSeconds: number, evictionPolicy: string, readBackupData: boolean, cacheDeserializedValues: string, mergePolicy: string, inMemoryFormat: string, listenerConfigs: Array<ListenerConfigHolder>, partitionLostListenerConfigs: Array<ListenerConfigHolder>, statisticsEnabled: boolean, splitBrainProtectionName: string, mapEvictionPolicy: Data, maxSizeConfigMaxSizePolicy: string, maxSizeConfigSize: number, mapStoreConfig: MapStoreConfigHolder, nearCacheConfig: NearCacheConfigHolder, wanReplicationRef: WanReplicationRef, mapIndexConfigs: Array<MapIndexConfig>, mapAttributeConfigs: Array<MapAttributeConfig>, queryCacheConfigs: Array<QueryCacheConfigHolder>, partitioningStrategyClassName: string, partitioningStrategyImplementation: Data, hotRestartConfig: HotRestartConfig, eventJournalConfig: EventJournalConfig, merkleTreeConfig: MerkleTreeConfig, mergeBatchSize: number, metadataPolicy: number): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(false);
         clientMessage.setAcquiresResource(false);
-        clientMessage.setOperationName("DynamicConfig.AddMapConfig");
-        var initialFrame : Frame= new Frame(Buffer.allocUnsafe(DynamicConfigAddMapConfigCodec.REQUEST_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
+        clientMessage.setOperationName('DynamicConfig.AddMapConfig');
+        const initialFrame: Frame = new Frame(Buffer.allocUnsafe(DynamicConfigAddMapConfigCodec.REQUEST_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
         FixedSizeTypes.encodeInt(initialFrame.content, ClientMessage.TYPE_FIELD_OFFSET, DynamicConfigAddMapConfigCodec.REQUEST_MESSAGE_TYPE);
         FixedSizeTypes.encodeInt(initialFrame.content, DynamicConfigAddMapConfigCodec.REQUEST_BACKUP_COUNT_FIELD_OFFSET, backupCount);
         FixedSizeTypes.encodeInt(initialFrame.content, DynamicConfigAddMapConfigCodec.REQUEST_ASYNC_BACKUP_COUNT_FIELD_OFFSET, asyncBackupCount);
@@ -273,27 +269,27 @@ export class DynamicConfigAddMapConfigCodec {
         StringCodec.encode(clientMessage, inMemoryFormat);
         ListMultiFrameCodec.encodeNullable(clientMessage, listenerConfigs , ListenerConfigHolderCodec.encode);
         ListMultiFrameCodec.encodeNullable(clientMessage, partitionLostListenerConfigs , ListenerConfigHolderCodec.encode);
-        CodecUtil.encodeNullable(clientMessage,  quorumName , StringCodec.encode );
-        CodecUtil.encodeNullable(clientMessage,  mapEvictionPolicy , DataCodec.encode );
+        CodecUtil.encodeNullable(clientMessage,  splitBrainProtectionName, StringCodec.encode );
+        CodecUtil.encodeNullable(clientMessage,  mapEvictionPolicy, DataCodec.encode );
         StringCodec.encode(clientMessage, maxSizeConfigMaxSizePolicy);
-        CodecUtil.encodeNullable(clientMessage,  mapStoreConfig , MapStoreConfigHolderCodec.encode );
-        CodecUtil.encodeNullable(clientMessage,  nearCacheConfig , NearCacheConfigHolderCodec.encode );
-        CodecUtil.encodeNullable(clientMessage,  wanReplicationRef , WanReplicationRefCodec.encode );
+        CodecUtil.encodeNullable(clientMessage,  mapStoreConfig, MapStoreConfigHolderCodec.encode );
+        CodecUtil.encodeNullable(clientMessage,  nearCacheConfig, NearCacheConfigHolderCodec.encode );
+        CodecUtil.encodeNullable(clientMessage,  wanReplicationRef, WanReplicationRefCodec.encode );
         ListMultiFrameCodec.encodeNullable(clientMessage, mapIndexConfigs , MapIndexConfigCodec.encode);
         ListMultiFrameCodec.encodeNullable(clientMessage, mapAttributeConfigs , MapAttributeConfigCodec.encode);
         ListMultiFrameCodec.encodeNullable(clientMessage, queryCacheConfigs , QueryCacheConfigHolderCodec.encode);
-        CodecUtil.encodeNullable(clientMessage,  partitioningStrategyClassName , StringCodec.encode );
-        CodecUtil.encodeNullable(clientMessage,  partitioningStrategyImplementation , DataCodec.encode );
-        CodecUtil.encodeNullable(clientMessage,  hotRestartConfig , HotRestartConfigCodec.encode );
-        CodecUtil.encodeNullable(clientMessage,  eventJournalConfig , EventJournalConfigCodec.encode );
-        CodecUtil.encodeNullable(clientMessage,  merkleTreeConfig , MerkleTreeConfigCodec.encode );
+        CodecUtil.encodeNullable(clientMessage,  partitioningStrategyClassName, StringCodec.encode );
+        CodecUtil.encodeNullable(clientMessage,  partitioningStrategyImplementation, DataCodec.encode );
+        CodecUtil.encodeNullable(clientMessage,  hotRestartConfig, HotRestartConfigCodec.encode );
+        CodecUtil.encodeNullable(clientMessage,  eventJournalConfig, EventJournalConfigCodec.encode );
+        CodecUtil.encodeNullable(clientMessage,  merkleTreeConfig, MerkleTreeConfigCodec.encode );
         return clientMessage;
     }
 
-    static decodeRequest(clientMessage : ClientMessage) {
-        var frame : Frame = clientMessage.get();
-        var request : RequestParameters = new RequestParameters();
-        var initialFrame : Frame= frame.next;
+    static decodeRequest(clientMessage: ClientMessage): RequestParameters {
+        const request: RequestParameters = new RequestParameters();
+        const frame: Frame = clientMessage.get();
+        const initialFrame: Frame = frame.next;
         request.backupCount =  FixedSizeTypes.decodeInt(initialFrame.content, DynamicConfigAddMapConfigCodec.REQUEST_BACKUP_COUNT_FIELD_OFFSET);
         request.asyncBackupCount =  FixedSizeTypes.decodeInt(initialFrame.content, DynamicConfigAddMapConfigCodec.REQUEST_ASYNC_BACKUP_COUNT_FIELD_OFFSET);
         request.timeToLiveSeconds =  FixedSizeTypes.decodeInt(initialFrame.content, DynamicConfigAddMapConfigCodec.REQUEST_TIME_TO_LIVE_SECONDS_FIELD_OFFSET);
@@ -310,7 +306,7 @@ export class DynamicConfigAddMapConfigCodec {
         request.inMemoryFormat = StringCodec.decode(frame);
         request.listenerConfigs = ListMultiFrameCodec.decodeNullable(frame, ListenerConfigHolderCodec.decode);
         request.partitionLostListenerConfigs = ListMultiFrameCodec.decodeNullable(frame, ListenerConfigHolderCodec.decode);
-        request.quorumName = CodecUtil.decodeNullable(frame, StringCodec.decode);
+        request.splitBrainProtectionName = CodecUtil.decodeNullable(frame, StringCodec.decode);
         request.mapEvictionPolicy = CodecUtil.decodeNullable(frame, DataCodec.decode);
         request.maxSizeConfigMaxSizePolicy = StringCodec.decode(frame);
         request.mapStoreConfig = CodecUtil.decodeNullable(frame, MapStoreConfigHolderCodec.decode);
@@ -327,27 +323,19 @@ export class DynamicConfigAddMapConfigCodec {
         return request;
     }
 
-
-     static encodeResponse() {
-        var clientMessage = ClientMessage.createForEncode();
-        var initialFrame : Frame = new Frame(Buffer.allocUnsafe(DynamicConfigAddMapConfigCodec.RESPONSE_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
+     static encodeResponse(): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        const initialFrame: Frame = new Frame(Buffer.allocUnsafe(DynamicConfigAddMapConfigCodec.RESPONSE_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
         FixedSizeTypes.encodeInt(initialFrame.content, ClientMessage.TYPE_FIELD_OFFSET, DynamicConfigAddMapConfigCodec.RESPONSE_MESSAGE_TYPE);
         clientMessage.add(initialFrame);
 
         return clientMessage;
     }
 
-     static decodeResponse(clientMessage: ClientMessage) {
-        var frame : Frame = clientMessage.get();
-        var response : ResponseParameters = new ResponseParameters();
-        //empty initial frame
-        frame = frame.next;
+     static decodeResponse(clientMessage: ClientMessage): ResponseParameters {
+        const response: ResponseParameters = new ResponseParameters();
+        const frame: Frame = clientMessage.get();
+        const initialFrame: Frame = frame.next;
         return response;
     }
-
-
-static handle(clientMessage : ClientMessage,  toObjectFunction: (data: Data) => any = null) {
-            var messageType = clientMessage.getMessageType();
-            var frame : Frame = clientMessage.get();
-        }
 }

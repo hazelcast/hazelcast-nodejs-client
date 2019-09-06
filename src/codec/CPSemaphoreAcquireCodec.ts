@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
 import * as Long from 'long';
 import {Address} from '../Address';
-import {AddressCodec} from'../builtin/AddressCodec';
+import {AddressCodec} from '../builtin/AddressCodec';
 import {MemberCodec} from '../builtin/MemberCodec';
 import {Data} from '../serialization/Data';
 import {SimpleEntryViewCodec} from '../builtin/SimpleEntryViewCodec';
@@ -25,77 +24,77 @@ import {DistributedObjectInfoCodec} from '../builtin/DistributedObjectInfoCodec'
 import {DistributedObjectInfo} from '../builtin/DistributedObjectInfo';
 import {Member} from '../core/Member';
 import {UUID} from '../core/UUID';
-import {FixedSizeTypes} from '../builtin/FixedSizeTypes'
-import {BitsUtil} from '../BitsUtil'
-import {ClientConnection} from '../invocation/ClientConnection'
-import {ClientMessage, Frame} from '../ClientMessage'
-import {Buffer} from 'safe-buffer'
-import {ClientProtocolErrorCodes} from '../protocol/ClientProtocolErrorCodes'
-import {CodecUtil} from '../builtin/CodecUtil'
-import {DataCodec} from '../builtin/DataCodec'
-import {ErrorCodec} from '../protocol/ErrorCodec'
-import {ErrorsCodec} from '../protocol/ErrorsCodec'
-import {ListIntegerCodec} from '../builtin/ListIntegerCodec'
-import {ListUUIDCodec} from '../builtin/ListUUIDCodec'
-import {ListLongCodec} from '../builtin/ListLongCodec'
-import {ListMultiFrameCodec} from '../builtin/ListMultiFrameCodec'
-import {LongArrayCodec} from '../builtin/LongArrayCodec'
-import {MapCodec} from '../builtin/MapCodec'
-import {MapIntegerLongCodec} from '../builtin/MapIntegerLongCodec'
-import {MapIntegerUUIDCodec} from '../builtin/MapIntegerUUIDCodec'
-import {MapStringLongCodec} from '../builtin/MapStringLongCodec'
-import {MapUUIDLongCodec} from '../builtin/MapUUIDLongCodec'
-import {StackTraceElementCodec} from '../protocol/StackTraceElementCodec'
-import {StringCodec} from '../builtin/StringCodec'
+import {FixedSizeTypes} from '../builtin/FixedSizeTypes';
+import {BitsUtil} from '../BitsUtil';
+import {ClientConnection} from '../invocation/ClientConnection';
+import {ClientMessage, Frame} from '../ClientMessage';
+import {Buffer} from 'safe-buffer';
+import {ClientProtocolErrorCodes} from '../protocol/ClientProtocolErrorCodes';
+import {CodecUtil} from '../builtin/CodecUtil';
+import {DataCodec} from '../builtin/DataCodec';
+import {ErrorCodec} from '../protocol/ErrorCodec';
+import {ErrorsCodec} from '../protocol/ErrorsCodec';
+import {ListIntegerCodec} from '../builtin/ListIntegerCodec';
+import {ListUUIDCodec} from '../builtin/ListUUIDCodec';
+import {ListLongCodec} from '../builtin/ListLongCodec';
+import {ListMultiFrameCodec} from '../builtin/ListMultiFrameCodec';
+import {LongArrayCodec} from '../builtin/LongArrayCodec';
+import {MapCodec} from '../builtin/MapCodec';
+import {MapIntegerLongCodec} from '../builtin/MapIntegerLongCodec';
+import {MapIntegerUUIDCodec} from '../builtin/MapIntegerUUIDCodec';
+import {MapStringLongCodec} from '../builtin/MapStringLongCodec';
+import {MapUUIDLongCodec} from '../builtin/MapUUIDLongCodec';
+import {StackTraceElementCodec} from '../protocol/StackTraceElementCodec';
+import {StringCodec} from '../builtin/StringCodec';
 
-    /* tslint:disabled:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
-   export class RequestParameters {
+/* tslint:disabled:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
+export class RequestParameters {
 
-        /**
-         * CP group id of this ISemaphore instance
-         */
-        public groupId: RaftGroupId;
+    /**
+     * CP group id of this ISemaphore instance
+     */
+    public groupId: RaftGroupId;
 
-        /**
-         * Name of this ISemaphore instance
-         */
-        public name: string;
+    /**
+     * Name of this ISemaphore instance
+     */
+    public name: string;
 
-        /**
-         * Session ID of the caller
-         */
-        public sessionId: Long;
+    /**
+     * Session ID of the caller
+     */
+    public sessionId: Long;
 
-        /**
-         * ID of the caller thread
-         */
-        public threadId: Long;
+    /**
+     * ID of the caller thread
+     */
+    public threadId: Long;
 
-        /**
-         * UID of this invocation
-         */
-        public invocationUid: UUID;
+    /**
+     * UID of this invocation
+     */
+    public invocationUid: UUID;
 
-        /**
-         * number of permits to acquire
-         */
-        public permits: number;
+    /**
+     * number of permits to acquire
+     */
+    public permits: number;
 
-        /**
-         * Duration to wait for permit acquire
-         */
-        public timeoutMs: Long;
-    };
+    /**
+     * Duration to wait for permit acquire
+     */
+    public timeoutMs: Long;
+}
 
-    /* tslint:disable:urf-unread-public-or-protected-field */
-   export class ResponseParameters {
+/* tslint:disable:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
+export class ResponseParameters {
 
-        /**
-         * true if requested permits are acquired,
-         * false otherwise
-         */
-        public response : boolean;
-    };
+    /**
+     * true if requested permits are acquired,
+     * false otherwise
+     */
+    public response: boolean;
+}
 
 /**
  * Acquires the requested amount of permits if available, reducing
@@ -103,10 +102,11 @@ import {StringCodec} from '../builtin/StringCodec'
  * then the current thread becomes disabled for thread scheduling purposes
  * and lies dormant until other threads release enough permits.
  */
+/* tslint:disable:max-line-length no-bitwise */
 export class CPSemaphoreAcquireCodec {
-    //hex: 0x270200
+    // hex: 0x270200
     public static REQUEST_MESSAGE_TYPE = 2556416;
-    //hex: 0x270201
+    // hex: 0x270201
     public static RESPONSE_MESSAGE_TYPE = 2556417;
     private static REQUEST_SESSION_ID_FIELD_OFFSET = ClientMessage.PARTITION_ID_FIELD_OFFSET + FixedSizeTypes.INT_SIZE_IN_BYTES;
     private static REQUEST_THREAD_ID_FIELD_OFFSET = CPSemaphoreAcquireCodec.REQUEST_SESSION_ID_FIELD_OFFSET + FixedSizeTypes.LONG_SIZE_IN_BYTES;
@@ -117,16 +117,12 @@ export class CPSemaphoreAcquireCodec {
     private static RESPONSE_RESPONSE_FIELD_OFFSET = ClientMessage.CORRELATION_ID_FIELD_OFFSET + FixedSizeTypes.LONG_SIZE_IN_BYTES;
     private static RESPONSE_INITIAL_FRAME_SIZE = CPSemaphoreAcquireCodec.RESPONSE_RESPONSE_FIELD_OFFSET + FixedSizeTypes.BOOLEAN_SIZE_IN_BYTES;
 
-    private CPSemaphoreAcquireCodec() {
-    }
-
-
-    static encodeRequest(groupId: RaftGroupId, name: string, sessionId: Long, threadId: Long, invocationUid: UUID, permits: number, timeoutMs: Long) {
-        var clientMessage = ClientMessage.createForEncode();
+    static encodeRequest(groupId: RaftGroupId, name: string, sessionId: Long, threadId: Long, invocationUid: UUID, permits: number, timeoutMs: Long): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(true);
         clientMessage.setAcquiresResource(false);
-        clientMessage.setOperationName("CPSemaphore.Acquire");
-        var initialFrame : Frame= new Frame(Buffer.allocUnsafe(CPSemaphoreAcquireCodec.REQUEST_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
+        clientMessage.setOperationName('CPSemaphore.Acquire');
+        const initialFrame: Frame = new Frame(Buffer.allocUnsafe(CPSemaphoreAcquireCodec.REQUEST_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
         FixedSizeTypes.encodeInt(initialFrame.content, ClientMessage.TYPE_FIELD_OFFSET, CPSemaphoreAcquireCodec.REQUEST_MESSAGE_TYPE);
         FixedSizeTypes.encodeLong(initialFrame.content, CPSemaphoreAcquireCodec.REQUEST_SESSION_ID_FIELD_OFFSET, sessionId);
         FixedSizeTypes.encodeLong(initialFrame.content, CPSemaphoreAcquireCodec.REQUEST_THREAD_ID_FIELD_OFFSET, threadId);
@@ -139,10 +135,10 @@ export class CPSemaphoreAcquireCodec {
         return clientMessage;
     }
 
-    static decodeRequest(clientMessage : ClientMessage) {
-        var frame : Frame = clientMessage.get();
-        var request : RequestParameters = new RequestParameters();
-        var initialFrame : Frame= frame.next;
+    static decodeRequest(clientMessage: ClientMessage): RequestParameters {
+        const request: RequestParameters = new RequestParameters();
+        const frame: Frame = clientMessage.get();
+        const initialFrame: Frame = frame.next;
         request.sessionId =  FixedSizeTypes.decodeLong(initialFrame.content, CPSemaphoreAcquireCodec.REQUEST_SESSION_ID_FIELD_OFFSET);
         request.threadId =  FixedSizeTypes.decodeLong(initialFrame.content, CPSemaphoreAcquireCodec.REQUEST_THREAD_ID_FIELD_OFFSET);
         request.invocationUid =  FixedSizeTypes.decodeUUID(initialFrame.content, CPSemaphoreAcquireCodec.REQUEST_INVOCATION_UID_FIELD_OFFSET);
@@ -153,10 +149,9 @@ export class CPSemaphoreAcquireCodec {
         return request;
     }
 
-
-     static encodeResponse(response: boolean ) {
-        var clientMessage = ClientMessage.createForEncode();
-        var initialFrame : Frame = new Frame(Buffer.allocUnsafe(CPSemaphoreAcquireCodec.RESPONSE_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
+     static encodeResponse(response: boolean ): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        const initialFrame: Frame = new Frame(Buffer.allocUnsafe(CPSemaphoreAcquireCodec.RESPONSE_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
         FixedSizeTypes.encodeInt(initialFrame.content, ClientMessage.TYPE_FIELD_OFFSET, CPSemaphoreAcquireCodec.RESPONSE_MESSAGE_TYPE);
         clientMessage.add(initialFrame);
 
@@ -164,17 +159,11 @@ export class CPSemaphoreAcquireCodec {
         return clientMessage;
     }
 
-     static decodeResponse(clientMessage: ClientMessage) {
-        var frame : Frame = clientMessage.get();
-        var response : ResponseParameters = new ResponseParameters();
-        var initialFrame : Frame = frame.next;
+     static decodeResponse(clientMessage: ClientMessage): ResponseParameters {
+        const response: ResponseParameters = new ResponseParameters();
+        const frame: Frame = clientMessage.get();
+        const initialFrame: Frame = frame.next;
         response.response =  FixedSizeTypes.decodeBoolean(initialFrame.content, CPSemaphoreAcquireCodec.RESPONSE_RESPONSE_FIELD_OFFSET);
         return response;
     }
-
-
-static handle(clientMessage : ClientMessage,  toObjectFunction: (data: Data) => any = null) {
-            var messageType = clientMessage.getMessageType();
-            var frame : Frame = clientMessage.get();
-        }
 }
