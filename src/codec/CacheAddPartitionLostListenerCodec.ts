@@ -125,8 +125,9 @@ export class CacheAddPartitionLostListenerCodec {
 
      static decodeResponse(clientMessage: ClientMessage): ResponseParameters {
         const response: ResponseParameters = new ResponseParameters();
-        const frame: Frame = clientMessage.get();
-        const initialFrame: Frame = frame.next;
+        // empty initial frame
+        let frame: Frame = clientMessage.get();
+        frame = frame.next;
         response.response = StringCodec.decode(frame);
         return response;
     }

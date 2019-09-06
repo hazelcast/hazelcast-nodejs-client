@@ -62,7 +62,7 @@ export class ResponseParameters {
     /**
      * a set clone of the keys mappings in this map
      */
-    public response: Array<[Data,Data]>;
+    public response: Array<[Data, Data]>;
 }
 
 /**
@@ -101,7 +101,7 @@ export class MapEntrySetCodec {
         return request;
     }
 
-     static encodeResponse(response: Array<[Data,Data]> ): ClientMessage {
+     static encodeResponse(response: Array<[Data, Data]> ): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         const initialFrame: Frame = new Frame(Buffer.allocUnsafe(MapEntrySetCodec.RESPONSE_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
         FixedSizeTypes.encodeInt(initialFrame.content, ClientMessage.TYPE_FIELD_OFFSET, MapEntrySetCodec.RESPONSE_MESSAGE_TYPE);

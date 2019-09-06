@@ -112,9 +112,8 @@ export class ListSizeCodec {
 
      static decodeResponse(clientMessage: ClientMessage): ResponseParameters {
         const response: ResponseParameters = new ResponseParameters();
-        // empty initial frame
-        let frame: Frame = clientMessage.get();
-        frame = frame.next;
+        const frame: Frame = clientMessage.get();
+        const initialFrame: Frame = frame.next;
         response.response =  FixedSizeTypes.decodeInt(initialFrame.content, ListSizeCodec.RESPONSE_RESPONSE_FIELD_OFFSET);
         return response;
     }

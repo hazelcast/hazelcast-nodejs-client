@@ -74,7 +74,7 @@ export class ResponseParameters {
      * A map of entries that were found for the given keys. Keys not found
      * in the cache are not in the returned map.
      */
-    public response: Array<[Data,Data]>;
+    public response: Array<[Data, Data]>;
 }
 
 /**
@@ -117,7 +117,7 @@ export class CacheGetAllCodec {
         return request;
     }
 
-     static encodeResponse(response: Array<[Data,Data]> ): ClientMessage {
+     static encodeResponse(response: Array<[Data, Data]> ): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         const initialFrame: Frame = new Frame(Buffer.allocUnsafe(CacheGetAllCodec.RESPONSE_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
         FixedSizeTypes.encodeInt(initialFrame.content, ClientMessage.TYPE_FIELD_OFFSET, CacheGetAllCodec.RESPONSE_MESSAGE_TYPE);

@@ -124,8 +124,9 @@ export class ContinuousQueryAddListenerCodec {
 
      static decodeResponse(clientMessage: ClientMessage): ResponseParameters {
         const response: ResponseParameters = new ResponseParameters();
-        const frame: Frame = clientMessage.get();
-        const initialFrame: Frame = frame.next;
+        // empty initial frame
+        let frame: Frame = clientMessage.get();
+        frame = frame.next;
         response.response = StringCodec.decode(frame);
         return response;
     }
@@ -154,8 +155,9 @@ export class ContinuousQueryAddListenerCodec {
     static handle(clientMessage: ClientMessage,  handleQueryCacheSingle: any, handleQueryCacheBatch: any, toObjectFunction: (data: Data) => any = null): void {
         const messageType = clientMessage.getMessageType();
         if (messageType === ContinuousQueryAddListenerCodec.EVENT_QUERY_CACHE_SINGLE_MESSAGE_TYPE) {
-        const frame: Frame = clientMessage.get();
-        const initialFrame: Frame = frame.next;
+        // empty initial frame
+        let frame: Frame = clientMessage.get();
+        frame = frame.next;
         const data: QueryCacheEventData = QueryCacheEventDataCodec.decode(frame);
         handleQueryCacheSingle(data);
         return;

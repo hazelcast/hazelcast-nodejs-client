@@ -139,9 +139,8 @@ export class CPFencedLockGetLockOwnershipCodec {
 
      static decodeResponse(clientMessage: ClientMessage): ResponseParameters {
         const response: ResponseParameters = new ResponseParameters();
-        // empty initial frame
-        let frame: Frame = clientMessage.get();
-        frame = frame.next;
+        const frame: Frame = clientMessage.get();
+        const initialFrame: Frame = frame.next;
         response.fence =  FixedSizeTypes.decodeLong(initialFrame.content, CPFencedLockGetLockOwnershipCodec.RESPONSE_FENCE_FIELD_OFFSET);
         response.lockCount =  FixedSizeTypes.decodeInt(initialFrame.content, CPFencedLockGetLockOwnershipCodec.RESPONSE_LOCK_COUNT_FIELD_OFFSET);
         response.sessionId =  FixedSizeTypes.decodeLong(initialFrame.content, CPFencedLockGetLockOwnershipCodec.RESPONSE_SESSION_ID_FIELD_OFFSET);

@@ -120,9 +120,8 @@ export class SetContainsAllCodec {
 
      static decodeResponse(clientMessage: ClientMessage): ResponseParameters {
         const response: ResponseParameters = new ResponseParameters();
-        // empty initial frame
-        let frame: Frame = clientMessage.get();
-        frame = frame.next;
+        const frame: Frame = clientMessage.get();
+        const initialFrame: Frame = frame.next;
         response.response =  FixedSizeTypes.decodeBoolean(initialFrame.content, SetContainsAllCodec.RESPONSE_RESPONSE_FIELD_OFFSET);
         return response;
     }

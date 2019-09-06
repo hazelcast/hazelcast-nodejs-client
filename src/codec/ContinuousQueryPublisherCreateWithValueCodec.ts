@@ -98,7 +98,7 @@ export class ResponseParameters {
     /**
      * Array of key-value pairs.
      */
-    public response: Array<[Data,Data]>;
+    public response: Array<[Data, Data]>;
 }
 
 /**
@@ -152,7 +152,7 @@ export class ContinuousQueryPublisherCreateWithValueCodec {
         return request;
     }
 
-     static encodeResponse(response: Array<[Data,Data]> ): ClientMessage {
+     static encodeResponse(response: Array<[Data, Data]> ): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         const initialFrame: Frame = new Frame(Buffer.allocUnsafe(ContinuousQueryPublisherCreateWithValueCodec.RESPONSE_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
         FixedSizeTypes.encodeInt(initialFrame.content, ClientMessage.TYPE_FIELD_OFFSET, ContinuousQueryPublisherCreateWithValueCodec.RESPONSE_MESSAGE_TYPE);
@@ -164,8 +164,9 @@ export class ContinuousQueryPublisherCreateWithValueCodec {
 
      static decodeResponse(clientMessage: ClientMessage): ResponseParameters {
         const response: ResponseParameters = new ResponseParameters();
-        const frame: Frame = clientMessage.get();
-        const initialFrame: Frame = frame.next;
+        // empty initial frame
+        let frame: Frame = clientMessage.get();
+        frame = frame.next;
         response.response = MapCodec.decode(frame, DataCodec.decode, DataCodec.decode);
         return response;
     }

@@ -114,8 +114,9 @@ export class ClientAddDistributedObjectListenerCodec {
 
      static decodeResponse(clientMessage: ClientMessage): ResponseParameters {
         const response: ResponseParameters = new ResponseParameters();
-        const frame: Frame = clientMessage.get();
-        const initialFrame: Frame = frame.next;
+        // empty initial frame
+        let frame: Frame = clientMessage.get();
+        frame = frame.next;
         response.response = StringCodec.decode(frame);
         return response;
     }
@@ -135,8 +136,9 @@ export class ClientAddDistributedObjectListenerCodec {
     static handle(clientMessage: ClientMessage,  handleDistributedObject: any, toObjectFunction: (data: Data) => any = null): void {
         const messageType = clientMessage.getMessageType();
         if (messageType === ClientAddDistributedObjectListenerCodec.EVENT_DISTRIBUTED_OBJECT_MESSAGE_TYPE) {
-        const frame: Frame = clientMessage.get();
-        const initialFrame: Frame = frame.next;
+        // empty initial frame
+        let frame: Frame = clientMessage.get();
+        frame = frame.next;
         const name: string = StringCodec.decode(frame);
         const serviceName: string = StringCodec.decode(frame);
         const eventType: string = StringCodec.decode(frame);

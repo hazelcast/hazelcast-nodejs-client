@@ -62,7 +62,7 @@ export class ResponseParameters {
     /**
      * A lazy set view of the mappings contained in this map.
      */
-    public response: Array<[Data,Data]>;
+    public response: Array<[Data, Data]>;
 }
 
 /**
@@ -98,7 +98,7 @@ export class ReplicatedMapEntrySetCodec {
         return request;
     }
 
-     static encodeResponse(response: Array<[Data,Data]> ): ClientMessage {
+     static encodeResponse(response: Array<[Data, Data]> ): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         const initialFrame: Frame = new Frame(Buffer.allocUnsafe(ReplicatedMapEntrySetCodec.RESPONSE_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
         FixedSizeTypes.encodeInt(initialFrame.content, ClientMessage.TYPE_FIELD_OFFSET, ReplicatedMapEntrySetCodec.RESPONSE_MESSAGE_TYPE);

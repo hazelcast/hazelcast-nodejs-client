@@ -110,9 +110,8 @@ export class ClientGetPartitionsCodec {
 
      static decodeResponse(clientMessage: ClientMessage): ResponseParameters {
         const response: ResponseParameters = new ResponseParameters();
-        // empty initial frame
-        let frame: Frame = clientMessage.get();
-        frame = frame.next;
+        const frame: Frame = clientMessage.get();
+        const initialFrame: Frame = frame.next;
         response.partitionStateVersion =  FixedSizeTypes.decodeInt(initialFrame.content, ClientGetPartitionsCodec.RESPONSE_PARTITION_STATE_VERSION_FIELD_OFFSET);
         response.partitions = MapCodec.decode(frame, AddressCodec.decode, ListIntegerCodec.decode);
         return response;

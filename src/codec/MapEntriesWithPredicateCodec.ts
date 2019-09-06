@@ -67,7 +67,7 @@ export class ResponseParameters {
     /**
      * result key-value entry collection of the query.
      */
-    public response: Array<[Data,Data]>;
+    public response: Array<[Data, Data]>;
 }
 
 /**
@@ -108,7 +108,7 @@ export class MapEntriesWithPredicateCodec {
         return request;
     }
 
-     static encodeResponse(response: Array<[Data,Data]> ): ClientMessage {
+     static encodeResponse(response: Array<[Data, Data]> ): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         const initialFrame: Frame = new Frame(Buffer.allocUnsafe(MapEntriesWithPredicateCodec.RESPONSE_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
         FixedSizeTypes.encodeInt(initialFrame.content, ClientMessage.TYPE_FIELD_OFFSET, MapEntriesWithPredicateCodec.RESPONSE_MESSAGE_TYPE);

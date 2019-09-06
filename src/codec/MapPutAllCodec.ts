@@ -58,7 +58,7 @@ export class RequestParameters {
     /**
      * mappings to be stored in this map
      */
-    public entries: Array<[Data,Data]>;
+    public entries: Array<[Data, Data]>;
 }
 
 /* tslint:disable:URF-UNREAD-PUBLIC-OR-PROTECTED-FIELD */
@@ -83,7 +83,7 @@ export class MapPutAllCodec {
     private static REQUEST_INITIAL_FRAME_SIZE = ClientMessage.PARTITION_ID_FIELD_OFFSET + FixedSizeTypes.INT_SIZE_IN_BYTES;
     private static RESPONSE_INITIAL_FRAME_SIZE = ClientMessage.CORRELATION_ID_FIELD_OFFSET + FixedSizeTypes.LONG_SIZE_IN_BYTES;
 
-    static encodeRequest(name: string, entries: Array<[Data,Data]>): ClientMessage {
+    static encodeRequest(name: string, entries: Array<[Data, Data]>): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(false);
         clientMessage.setAcquiresResource(false);

@@ -125,8 +125,9 @@ export class CacheAddInvalidationListenerCodec {
 
      static decodeResponse(clientMessage: ClientMessage): ResponseParameters {
         const response: ResponseParameters = new ResponseParameters();
-        const frame: Frame = clientMessage.get();
-        const initialFrame: Frame = frame.next;
+        // empty initial frame
+        let frame: Frame = clientMessage.get();
+        frame = frame.next;
         response.response = StringCodec.decode(frame);
         return response;
     }
@@ -172,8 +173,9 @@ export class CacheAddInvalidationListenerCodec {
         return;
         }
         if (messageType === CacheAddInvalidationListenerCodec.EVENT_CACHE_BATCH_INVALIDATION_MESSAGE_TYPE) {
-        const frame: Frame = clientMessage.get();
-        const initialFrame: Frame = frame.next;
+        // empty initial frame
+        let frame: Frame = clientMessage.get();
+        frame = frame.next;
         const name: string = StringCodec.decode(frame);
         const keys: Array<Data> = ListMultiFrameCodec.decode(frame, DataCodec.decode);
         const sourceUuids: string[] = ListMultiFrameCodec.decodeNullable(frame, StringCodec.decode);

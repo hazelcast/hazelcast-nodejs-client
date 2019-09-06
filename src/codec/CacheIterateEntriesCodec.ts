@@ -77,7 +77,7 @@ export class ResponseParameters {
     /**
      * TODO DOC
      */
-    public entries: Array<[Data,Data]>;
+    public entries: Array<[Data, Data]>;
 }
 
 /**
@@ -119,7 +119,7 @@ export class CacheIterateEntriesCodec {
         return request;
     }
 
-     static encodeResponse(tableIndex: number , entries: Array<[Data,Data]> ): ClientMessage {
+     static encodeResponse(tableIndex: number , entries: Array<[Data, Data]> ): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         const initialFrame: Frame = new Frame(Buffer.allocUnsafe(CacheIterateEntriesCodec.RESPONSE_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
         FixedSizeTypes.encodeInt(initialFrame.content, ClientMessage.TYPE_FIELD_OFFSET, CacheIterateEntriesCodec.RESPONSE_MESSAGE_TYPE);

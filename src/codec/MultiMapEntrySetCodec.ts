@@ -62,7 +62,7 @@ export class ResponseParameters {
     /**
      * The set of key-value pairs in the multimap. The returned set might be modifiable but it has no effect on the multimap.
      */
-    public response: Array<[Data,Data]>;
+    public response: Array<[Data, Data]>;
 }
 
 /**
@@ -99,7 +99,7 @@ export class MultiMapEntrySetCodec {
         return request;
     }
 
-     static encodeResponse(response: Array<[Data,Data]> ): ClientMessage {
+     static encodeResponse(response: Array<[Data, Data]> ): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         const initialFrame: Frame = new Frame(Buffer.allocUnsafe(MultiMapEntrySetCodec.RESPONSE_INITIAL_FRAME_SIZE), ClientMessage.UNFRAGMENTED_MESSAGE);
         FixedSizeTypes.encodeInt(initialFrame.content, ClientMessage.TYPE_FIELD_OFFSET, MultiMapEntrySetCodec.RESPONSE_MESSAGE_TYPE);

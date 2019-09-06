@@ -145,9 +145,8 @@ export class PNCounterGetCodec {
 
      static decodeResponse(clientMessage: ClientMessage): ResponseParameters {
         const response: ResponseParameters = new ResponseParameters();
-        // empty initial frame
-        let frame: Frame = clientMessage.get();
-        frame = frame.next;
+        const frame: Frame = clientMessage.get();
+        const initialFrame: Frame = frame.next;
         response.value =  FixedSizeTypes.decodeLong(initialFrame.content, PNCounterGetCodec.RESPONSE_VALUE_FIELD_OFFSET);
         response.replicaCount =  FixedSizeTypes.decodeInt(initialFrame.content, PNCounterGetCodec.RESPONSE_REPLICA_COUNT_FIELD_OFFSET);
         response.replicaTimestamps = MapStringLongCodec.decode(frame);

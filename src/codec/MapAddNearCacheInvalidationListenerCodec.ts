@@ -135,8 +135,9 @@ export class MapAddNearCacheInvalidationListenerCodec {
 
      static decodeResponse(clientMessage: ClientMessage): ResponseParameters {
         const response: ResponseParameters = new ResponseParameters();
-        const frame: Frame = clientMessage.get();
-        const initialFrame: Frame = frame.next;
+        // empty initial frame
+        let frame: Frame = clientMessage.get();
+        frame = frame.next;
         response.response = StringCodec.decode(frame);
         return response;
     }
@@ -179,8 +180,9 @@ export class MapAddNearCacheInvalidationListenerCodec {
         return;
         }
         if (messageType === MapAddNearCacheInvalidationListenerCodec.EVENT_I_MAP_BATCH_INVALIDATION_MESSAGE_TYPE) {
-        const frame: Frame = clientMessage.get();
-        const initialFrame: Frame = frame.next;
+        // empty initial frame
+        let frame: Frame = clientMessage.get();
+        frame = frame.next;
         const keys: Array<Data> = ListMultiFrameCodec.decode(frame, DataCodec.decode);
         const sourceUuids: string[] = ListMultiFrameCodec.decode(frame, StringCodec.decode);
         const partitionUuids: Array<UUID> = ListUUIDCodec.decode(frame);

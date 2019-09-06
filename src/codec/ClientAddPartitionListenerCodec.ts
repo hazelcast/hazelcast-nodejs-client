@@ -121,9 +121,8 @@ export class ClientAddPartitionListenerCodec {
     static handle(clientMessage: ClientMessage,  handlePartitions: any, toObjectFunction: (data: Data) => any = null): void {
         const messageType = clientMessage.getMessageType();
         if (messageType === ClientAddPartitionListenerCodec.EVENT_PARTITIONS_MESSAGE_TYPE) {
-        // empty initial frame
-        let frame: Frame = clientMessage.get();
-        frame = frame.next;
+        const frame: Frame = clientMessage.get();
+        const initialFrame: Frame = frame.next;
         const partitionStateVersion: number  = FixedSizeTypes.decodeInt(initialFrame.content, ClientAddPartitionListenerCodec.EVENT_PARTITIONS_PARTITION_STATE_VERSION_FIELD_OFFSET);
         const partitions: Array<[Address, Array<number>]> = MapCodec.decode(frame, AddressCodec.decode, ListIntegerCodec.decode);
         handlePartitions(partitions, partitionStateVersion);

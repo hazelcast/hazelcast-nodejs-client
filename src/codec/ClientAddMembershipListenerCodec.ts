@@ -122,8 +122,9 @@ export class ClientAddMembershipListenerCodec {
 
      static decodeResponse(clientMessage: ClientMessage): ResponseParameters {
         const response: ResponseParameters = new ResponseParameters();
-        const frame: Frame = clientMessage.get();
-        const initialFrame: Frame = frame.next;
+        // empty initial frame
+        let frame: Frame = clientMessage.get();
+        frame = frame.next;
         response.response = StringCodec.decode(frame);
         return response;
     }
@@ -172,8 +173,9 @@ export class ClientAddMembershipListenerCodec {
         return;
         }
         if (messageType === ClientAddMembershipListenerCodec.EVENT_MEMBER_LIST_MESSAGE_TYPE) {
-        const frame: Frame = clientMessage.get();
-        const initialFrame: Frame = frame.next;
+        // empty initial frame
+        let frame: Frame = clientMessage.get();
+        frame = frame.next;
         const members: Array<Member> = ListMultiFrameCodec.decode(frame, MemberCodec.decode);
         handleMemberList(members);
         return;

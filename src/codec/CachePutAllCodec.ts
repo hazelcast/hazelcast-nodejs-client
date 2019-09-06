@@ -58,7 +58,7 @@ export class RequestParameters {
     /**
      * entries to be put as batch
      */
-    public entries: Array<[Data,Data]>;
+    public entries: Array<[Data, Data]>;
 
     /**
      * expiry policy for the entry. Byte-array which is serialized from an object implementing
@@ -90,7 +90,7 @@ export class CachePutAllCodec {
     private static REQUEST_INITIAL_FRAME_SIZE = CachePutAllCodec.REQUEST_COMPLETION_ID_FIELD_OFFSET + FixedSizeTypes.INT_SIZE_IN_BYTES;
     private static RESPONSE_INITIAL_FRAME_SIZE = ClientMessage.CORRELATION_ID_FIELD_OFFSET + FixedSizeTypes.LONG_SIZE_IN_BYTES;
 
-    static encodeRequest(name: string, entries: Array<[Data,Data]>, expiryPolicy: Data, completionId: number): ClientMessage {
+    static encodeRequest(name: string, entries: Array<[Data, Data]>, expiryPolicy: Data, completionId: number): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(false);
         clientMessage.setAcquiresResource(false);
@@ -127,8 +127,9 @@ export class CachePutAllCodec {
 
      static decodeResponse(clientMessage: ClientMessage): ResponseParameters {
         const response: ResponseParameters = new ResponseParameters();
-        const frame: Frame = clientMessage.get();
-        const initialFrame: Frame = frame.next;
+        // empty initial frame
+        let frame: Frame = clientMessage.get();
+        frame = frame.next;
         return response;
     }
 }
