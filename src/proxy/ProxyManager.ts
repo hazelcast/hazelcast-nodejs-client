@@ -61,7 +61,7 @@ export class ProxyManager {
     public static readonly RELIABLETOPIC_SERVICE: string = 'hz:impl:reliableTopicService';
 
     public readonly service: { [serviceName: string]: any } = {};
-    private readonly proxies: { [namespace: string]: DistributedObject; } = {};
+    private readonly proxies: { [namespace: string]: Promise<DistributedObject>; } = {};
     private readonly client: HazelcastClient;
     private readonly logger: ILogger;
     private readonly invocationTimeoutMillis: number;
@@ -91,37 +91,38 @@ export class ProxyManager {
     }
 
     public getOrCreateProxy(name: string, serviceName: string, createAtServer = true): Promise<DistributedObject> {
-        if (this.proxies[serviceName + name]) {
-            return Promise.resolve(this.proxies[serviceName + name]);
-        } else {
-            const deferred = DeferredPromise<DistributedObject>();
-            let newProxy: DistributedObject;
-            if (serviceName === ProxyManager.MAP_SERVICE && this.client.getConfig().getNearCacheConfig(name)) {
-                newProxy = new NearCachedMapProxy(this.client, serviceName, name);
-            } else if (serviceName === ProxyManager.RELIABLETOPIC_SERVICE) {
-                newProxy = new ReliableTopicProxy(this.client, serviceName, name);
-                if (createAtServer) {
-                    (newProxy as ReliableTopicProxy<any>).setRingbuffer().then(() => {
-                        return this.createProxy(newProxy);
-                    }).then(function (): void {
-                        deferred.resolve(newProxy);
-                    });
-                }
-                this.proxies[serviceName + name] = newProxy;
-                return deferred.promise;
-            } else {
-                newProxy = new this.service[serviceName](this.client, serviceName, name);
-            }
+        const fullName = serviceName + name;
+        if (this.proxies[fullName]) {
+            return this.proxies[fullName];
+        }
+
+        const deferred = DeferredPromise<DistributedObject>();
+        let newProxy: DistributedObject;
+        if (serviceName === ProxyManager.MAP_SERVICE && this.client.getConfig().getNearCacheConfig(name)) {
+            newProxy = new NearCachedMapProxy(this.client, serviceName, name);
+        } else if (serviceName === ProxyManager.RELIABLETOPIC_SERVICE) {
+            newProxy = new ReliableTopicProxy(this.client, serviceName, name);
             if (createAtServer) {
-                this.createProxy(newProxy).then(function (): void {
+                (newProxy as ReliableTopicProxy<any>).setRingbuffer().then(() => {
+                    return this.createProxy(newProxy);
+                }).then(function (): void {
                     deferred.resolve(newProxy);
                 });
             }
-
-            this.proxies[serviceName + name] = newProxy;
+            this.proxies[fullName] = deferred.promise;
             return deferred.promise;
-
+        } else {
+            newProxy = new this.service[serviceName](this.client, serviceName, name);
         }
+
+        if (createAtServer) {
+            this.createProxy(newProxy).then(function (): void {
+                deferred.resolve(newProxy);
+            });
+        }
+
+        this.proxies[fullName] = deferred.promise;
+        return deferred.promise;
     }
 
     destroyProxy(name: string, serviceName: string): Promise<void> {
