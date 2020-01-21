@@ -89,8 +89,10 @@ export class HazelcastCloudDiscovery {
             const privateAddress = value[HazelcastCloudDiscovery.PRIVATE_ADDRESS_PROPERTY];
             const publicAddress = value[HazelcastCloudDiscovery.PUBLIC_ADDRESS_PROPERTY];
 
-            const publicAddr = AddressHelper.createAddressFromString(publicAddress.toString());
-            privateToPublicAddresses.set(new Address(privateAddress, publicAddr.port).toString(), publicAddr);
+            const publicAddr = AddressHelper.createAddressFromString(publicAddress.toString(), -1);
+            // If not explicitly given, create the private address with the public addresses port
+            const privateAddr = AddressHelper.createAddressFromString(privateAddress.toString(), publicAddr.port);
+            privateToPublicAddresses.set(privateAddr.toString(), publicAddr);
         }
 
         return privateToPublicAddresses;
