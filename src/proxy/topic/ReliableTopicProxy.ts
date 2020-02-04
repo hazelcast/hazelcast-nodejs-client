@@ -44,7 +44,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
 
     constructor(client: HazelcastClient, serviceName: string, name: string) {
         super(client, serviceName, name);
-        this.localAddress = client.getClusterService().getClientInfo().localAddress;
+        this.localAddress = client.getClusterService().getLocalClient().localAddress;
         const config = client.getConfig().getReliableTopicConfig(name);
         this.batchSize = config.readBatchSize;
         this.overloadPolicy = config.overloadPolicy;

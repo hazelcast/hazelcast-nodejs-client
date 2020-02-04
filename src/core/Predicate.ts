@@ -119,3 +119,15 @@ export enum IterationType {
     VALUE,
     ENTRY,
 }
+
+export enum QueryConstants {
+    /**
+     * Attribute name of the key.
+     */
+    KEY_ATTRIBUTE_NAME = '__key',
+
+    /**
+     * Attribute name of the "this".
+     */
+    THIS_ATTRIBUTE_NAME = 'this',
+}

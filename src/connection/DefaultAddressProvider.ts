@@ -17,6 +17,7 @@
 import {AddressProvider} from './AddressProvider';
 import {ClientNetworkConfig} from '../config/ClientNetworkConfig';
 import * as Promise from 'bluebird';
+import {Address} from '../Address';
 
 /**
  * Default address provider of Hazelcast.
@@ -26,19 +27,21 @@ import * as Promise from 'bluebird';
 export class DefaultAddressProvider implements AddressProvider {
 
     private networkConfig: ClientNetworkConfig;
-    private readonly noOtherAddressProviderExist: boolean;
 
-    constructor(networkConfig: ClientNetworkConfig, noOtherAddressProviderExist: boolean) {
+    constructor(networkConfig: ClientNetworkConfig) {
         this.networkConfig = networkConfig;
-        this.noOtherAddressProviderExist = noOtherAddressProviderExist;
     }
 
     loadAddresses(): Promise<string[]> {
         const addresses: string[] = this.networkConfig.addresses;
-        if (addresses.length === 0 && this.noOtherAddressProviderExist) {
-            addresses.push('localhost:5701');
+        if (addresses.length === 0) {
+            addresses.push('localhost');
         }
 
         return Promise.resolve(addresses);
+    }
+
+    translate(address: Address): Promise<Address> {
+        return Promise.resolve(address);
     }
 }

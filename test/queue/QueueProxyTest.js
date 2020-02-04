@@ -24,6 +24,7 @@ var Promise = require('bluebird');
 var fs = require('fs');
 
 var HazelcastClient = require('../../').Client;
+var Config = require('../../').Config;
 var ItemEventType = require('../../').ItemEventType;
 
 describe("Queue Proxy", function () {
@@ -39,7 +40,9 @@ describe("Queue Proxy", function () {
             cluster = response;
             return Controller.startMember(cluster.id);
         }).then(function () {
-            return HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
+            const config = new Config.ClientConfig();
+            config.clusterName = cluster.id;
+            return HazelcastClient.newHazelcastClient(config).then(function (hazelcastClient) {
                 client = hazelcastClient;
             });
         });

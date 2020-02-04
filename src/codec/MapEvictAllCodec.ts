@@ -14,37 +14,32 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
+import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
-import {MapMessageType} from './MapMessageType';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, MESSAGE_TYPE_OFFSET, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
+import {StringCodec} from './builtin/StringCodec';
 
-var REQUEST_TYPE = MapMessageType.MAP_EVICTALL;
-var RESPONSE_TYPE = 100;
-var RETRYABLE = false;
+// hex: 0x011F00
+const REQUEST_MESSAGE_TYPE = 73472;
+// hex: 0x011F01
+const RESPONSE_MESSAGE_TYPE = 73473;
+
+const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
 
 export class MapEvictAllCodec {
+    static encodeRequest(name: string): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(false);
 
+        const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, MESSAGE_TYPE_OFFSET, REQUEST_MESSAGE_TYPE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
+        clientMessage.add(initialFrame);
 
-    static calculateSize(name: string) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        return dataSize;
-    }
-
-    static encodeRequest(name: string) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.updateFrameLength();
+        StringCodec.encode(clientMessage, name);
         return clientMessage;
     }
-
-// Empty decodeResponse(ClientMessage), this message has no parameters to decode
-
-
 }

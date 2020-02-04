@@ -14,136 +14,87 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
+import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
-import {UUIDCodec} from './UUIDCodec';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, MESSAGE_TYPE_OFFSET, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
+import {StringCodec} from './builtin/StringCodec';
+import {UUID} from '../core/UUID';
+import * as Long from 'long';
 import {Data} from '../serialization/Data';
-import {MapMessageType} from './MapMessageType';
+import {DataCodec} from './builtin/DataCodec';
+import {CodecUtil} from './builtin/CodecUtil';
+import {ListMultiFrameCodec} from './builtin/ListMultiFrameCodec';
+import {ListUUIDCodec} from './builtin/ListUUIDCodec';
+import {ListLongCodec} from './builtin/ListLongCodec';
 
-var REQUEST_TYPE = MapMessageType.MAP_ADDNEARCACHEINVALIDATIONLISTENER;
-var RESPONSE_TYPE = 104;
-var RETRYABLE = false;
+// hex: 0x013F00
+const REQUEST_MESSAGE_TYPE = 81664;
+// hex: 0x013F01
+const RESPONSE_MESSAGE_TYPE = 81665;
+// hex: 0x013F02
+const EVENT_I_MAP_INVALIDATION_MESSAGE_TYPE = 81666;
+// hex: 0x013F03
+const EVENT_I_MAP_BATCH_INVALIDATION_MESSAGE_TYPE = 81667;
 
+const REQUEST_LISTENER_FLAGS_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const REQUEST_LOCAL_ONLY_OFFSET = REQUEST_LISTENER_FLAGS_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const REQUEST_INITIAL_FRAME_SIZE = REQUEST_LOCAL_ONLY_OFFSET + BitsUtil.BOOLEAN_SIZE_IN_BYTES;
+const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
+const EVENT_I_MAP_INVALIDATION_SOURCE_UUID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const EVENT_I_MAP_INVALIDATION_PARTITION_UUID_OFFSET = EVENT_I_MAP_INVALIDATION_SOURCE_UUID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
+const EVENT_I_MAP_INVALIDATION_SEQUENCE_OFFSET = EVENT_I_MAP_INVALIDATION_PARTITION_UUID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
 
+export interface MapAddNearCacheInvalidationListenerResponseParams {
+    response: UUID;
+}
 export class MapAddNearCacheInvalidationListenerCodec {
+    static encodeRequest(name: string, listenerFlags: number, localOnly: boolean): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(false);
 
+        const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, MESSAGE_TYPE_OFFSET, REQUEST_MESSAGE_TYPE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, REQUEST_LISTENER_FLAGS_OFFSET, listenerFlags);
+        FixSizedTypesCodec.encodeBoolean(initialFrame.content, REQUEST_LOCAL_ONLY_OFFSET, localOnly);
+        clientMessage.add(initialFrame);
 
-    static calculateSize(name: string, listenerFlags: number, localOnly: boolean) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.INT_SIZE_IN_BYTES;
-        dataSize += BitsUtil.BOOLEAN_SIZE_IN_BYTES;
-        return dataSize;
-    }
-
-    static encodeRequest(name: string, listenerFlags: number, localOnly: boolean) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, listenerFlags, localOnly));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendInt32(listenerFlags);
-        clientMessage.appendBoolean(localOnly);
-        clientMessage.updateFrameLength();
+        StringCodec.encode(clientMessage, name);
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        // Decode response from client message
-        var parameters: any = {
-            'response': null
+    static decodeResponse(clientMessage: ClientMessage): MapAddNearCacheInvalidationListenerResponseParams {
+        const iterator = clientMessage.frameIterator();
+        const initialFrame = iterator.next();
+
+        return {
+            response: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
         };
-
-        if (clientMessage.isComplete()) {
-            return parameters;
-        }
-        parameters['response'] = clientMessage.readString();
-
-        return parameters;
     }
 
-    static handle(clientMessage: ClientMessage, handleEventImapinvalidation: any, handleEventImapbatchinvalidation: any, toObjectFunction: (data: Data) => any = null) {
-
-        var messageType = clientMessage.getMessageType();
-        if (messageType === BitsUtil.EVENT_IMAPINVALIDATION && handleEventImapinvalidation !== null) {
-            var messageFinished = false;
-            var key: Data = undefined;
-            if (!messageFinished) {
-                messageFinished = clientMessage.isComplete();
-            }
-            if (!messageFinished) {
-
-                if (clientMessage.readBoolean() !== true) {
-                    key = clientMessage.readData();
-                }
-            }
-            var sourceUuid: string = undefined;
-            if (!messageFinished) {
-                sourceUuid = clientMessage.readString();
-            }
-            var partitionUuid: any = undefined;
-            if (!messageFinished) {
-                partitionUuid = UUIDCodec.decode(clientMessage, toObjectFunction);
-            }
-            var sequence: any = undefined;
-            if (!messageFinished) {
-                sequence = clientMessage.readLong();
-            }
-            handleEventImapinvalidation(key, sourceUuid, partitionUuid, sequence);
+    static handle(clientMessage: ClientMessage, handleIMapInvalidationEvent: (key: Data, sourceUuid: UUID, partitionUuid: UUID, sequence: Long) => void = null, handleIMapBatchInvalidationEvent: (keys: Data[], sourceUuids: UUID[], partitionUuids: UUID[], sequences: Long[]) => void = null): void {
+        const messageType = clientMessage.getMessageType();
+        const iterator = clientMessage.frameIterator();
+        if (messageType === EVENT_I_MAP_INVALIDATION_MESSAGE_TYPE && handleIMapInvalidationEvent !== null) {
+            const initialFrame = iterator.next();
+            const sourceUuid = FixSizedTypesCodec.decodeUUID(initialFrame.content, EVENT_I_MAP_INVALIDATION_SOURCE_UUID_OFFSET);
+            const partitionUuid = FixSizedTypesCodec.decodeUUID(initialFrame.content, EVENT_I_MAP_INVALIDATION_PARTITION_UUID_OFFSET);
+            const sequence = FixSizedTypesCodec.decodeLong(initialFrame.content, EVENT_I_MAP_INVALIDATION_SEQUENCE_OFFSET);
+            const key = CodecUtil.decodeNullable(iterator, DataCodec.decode);
+            handleIMapInvalidationEvent(key, sourceUuid, partitionUuid, sequence);
+            return;
         }
-        if (messageType === BitsUtil.EVENT_IMAPBATCHINVALIDATION && handleEventImapbatchinvalidation !== null) {
-            var messageFinished = false;
-            var keys: any = undefined;
-            if (!messageFinished) {
-                messageFinished = clientMessage.isComplete();
-            }
-            if (!messageFinished) {
-
-                var keysSize = clientMessage.readInt32();
-                keys = [];
-                for (var keysIndex = 0; keysIndex < keysSize; keysIndex++) {
-                    var keysItem: Data;
-                    keysItem = clientMessage.readData();
-                    keys.push(keysItem);
-                }
-            }
-            var sourceUuids: any = undefined;
-            if (!messageFinished) {
-
-                var sourceUuidsSize = clientMessage.readInt32();
-                sourceUuids = [];
-                for (var sourceUuidsIndex = 0; sourceUuidsIndex < sourceUuidsSize; sourceUuidsIndex++) {
-                    var sourceUuidsItem: string;
-                    sourceUuidsItem = clientMessage.readString();
-                    sourceUuids.push(sourceUuidsItem);
-                }
-            }
-            var partitionUuids: any = undefined;
-            if (!messageFinished) {
-
-                var partitionUuidsSize = clientMessage.readInt32();
-                partitionUuids = [];
-                for (var partitionUuidsIndex = 0; partitionUuidsIndex < partitionUuidsSize; partitionUuidsIndex++) {
-                    var partitionUuidsItem: any;
-                    partitionUuidsItem = UUIDCodec.decode(clientMessage, toObjectFunction);
-                    partitionUuids.push(partitionUuidsItem);
-                }
-            }
-            var sequences: any = undefined;
-            if (!messageFinished) {
-
-                var sequencesSize = clientMessage.readInt32();
-                sequences = [];
-                for (var sequencesIndex = 0; sequencesIndex < sequencesSize; sequencesIndex++) {
-                    var sequencesItem: any;
-                    sequencesItem = clientMessage.readLong();
-                    sequences.push(sequencesItem);
-                }
-            }
-            handleEventImapbatchinvalidation(keys, sourceUuids, partitionUuids, sequences);
+        if (messageType === EVENT_I_MAP_BATCH_INVALIDATION_MESSAGE_TYPE && handleIMapBatchInvalidationEvent !== null) {
+            // empty initial frame
+            iterator.next();
+            const keys = ListMultiFrameCodec.decode(iterator, DataCodec.decode);
+            const sourceUuids = ListUUIDCodec.decode(iterator);
+            const partitionUuids = ListUUIDCodec.decode(iterator);
+            const sequences = ListLongCodec.decode(iterator);
+            handleIMapBatchInvalidationEvent(keys, sourceUuids, partitionUuids, sequences);
+            return;
         }
     }
-
 }

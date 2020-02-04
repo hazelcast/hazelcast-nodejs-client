@@ -19,7 +19,7 @@ import {MemberSelector} from './MemberSelector';
 
 export class DataMemberSelector implements MemberSelector {
     select(member: Member): boolean {
-        return !member.isLiteMember;
+        return !member.liteMember;
     }
 }
 

@@ -23,7 +23,7 @@ import {Invocation} from '../invocation/InvocationService';
 import {PartitionService} from '../PartitionService';
 import {RepairingHandler} from './RepairingHandler';
 import {ILogger} from '../logging/ILogger';
-import ClientMessage = require('../ClientMessage');
+import {ClientMessage} from '../ClientMessage';
 
 export class MetadataFetcher {
 
@@ -87,7 +87,7 @@ export class MetadataFetcher {
         const members = this.client.getClusterService().getMembers(MemberSelectors.DATA_MEMBER_SELECTOR);
         const promises: Array<Promise<any>> = [];
         members.forEach((member) => {
-            const request = MapFetchNearCacheInvalidationMetadataCodec.encodeRequest(objectNames, member.address);
+            const request = MapFetchNearCacheInvalidationMetadataCodec.encodeRequest(objectNames, member.uuid);
             const promise = this.client.getInvocationService().invoke(new Invocation(this.client, request));
             promises.push(promise);
         });

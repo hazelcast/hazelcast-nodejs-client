@@ -32,6 +32,7 @@ describe('AddressHelper', function () {
             return Controller.startMember(cluster.id);
         }).then(function () {
             var cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
             cfg.networkConfig.addresses = ['127.0.0.2', '127.0.0.1:5701'];
             return HazelcastClient.newHazelcastClient(cfg);
         }).then(function (res) {
@@ -46,8 +47,8 @@ describe('AddressHelper', function () {
 
 
     it('should try all addresses', function () {
-        var knownAddresses = client.getClusterService().knownAddresses.map(function (address) {
-            return address.toString();
+        var knownAddresses = client.getClusterService().getMemberList().map(function (member) {
+            return member.address.toString();
         });
 
         expect(knownAddresses).to.have.members(['127.0.0.2:5701', '127.0.0.2:5702', '127.0.0.2:5703', '127.0.0.1:5701']);

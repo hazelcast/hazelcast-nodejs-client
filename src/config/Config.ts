@@ -33,6 +33,10 @@ import {LogLevel} from '..';
 import {ILogger} from '../logging/ILogger';
 import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy';
 import {StringSerializationPolicy} from './StringSerializationPolicy';
+import {ConnectionStrategyConfig} from './ConnectionStrategyConfig';
+import {LoadBalancer} from '../LoadBalancer';
+
+const DEFAULT_CLUSTER_NAME = 'dev';
 
 /**
  * Top level configuration object of Hazelcast client. Other configurations items are properties of this object.
@@ -54,6 +58,7 @@ export class ClientConfig {
         'hazelcast.client.autopipelining.enabled': true,
         'hazelcast.client.autopipelining.threshold.bytes': 8192,
         'hazelcast.client.socket.no.delay': true,
+        'hazelcast.client.shuffle.member.list': true,
     };
 
     /**
@@ -70,6 +75,10 @@ export class ClientConfig {
     reliableTopicConfigs: { [name: string]: ReliableTopicConfig } = {};
     nearCacheConfigs: { [name: string]: NearCacheConfig } = {};
     flakeIdGeneratorConfigs: { [name: string]: FlakeIdGeneratorConfig } = {};
+    connectionStrategyConfig: ConnectionStrategyConfig = new ConnectionStrategyConfig();
+    clusterName: string = DEFAULT_CLUSTER_NAME;
+    labels = new Set<string>();
+    loadBalancer: LoadBalancer;
 
     private configPatternMatcher = new ConfigPatternMatcher();
 

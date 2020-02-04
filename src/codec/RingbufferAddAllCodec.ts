@@ -14,60 +14,51 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
+import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, MESSAGE_TYPE_OFFSET, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
+import {StringCodec} from './builtin/StringCodec';
 import {Data} from '../serialization/Data';
-import {RingbufferMessageType} from './RingbufferMessageType';
+import {ListMultiFrameCodec} from './builtin/ListMultiFrameCodec';
+import {DataCodec} from './builtin/DataCodec';
+import * as Long from 'long';
 
-var REQUEST_TYPE = RingbufferMessageType.RINGBUFFER_ADDALL;
-var RESPONSE_TYPE = 103;
-var RETRYABLE = false;
+// hex: 0x170800
+const REQUEST_MESSAGE_TYPE = 1509376;
+// hex: 0x170801
+const RESPONSE_MESSAGE_TYPE = 1509377;
 
+const REQUEST_OVERFLOW_POLICY_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const REQUEST_INITIAL_FRAME_SIZE = REQUEST_OVERFLOW_POLICY_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
+export interface RingbufferAddAllResponseParams {
+    response: Long;
+}
 export class RingbufferAddAllCodec {
+    static encodeRequest(name: string, valueList: Data[], overflowPolicy: number): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(false);
 
+        const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, MESSAGE_TYPE_OFFSET, REQUEST_MESSAGE_TYPE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, REQUEST_OVERFLOW_POLICY_OFFSET, overflowPolicy);
+        clientMessage.add(initialFrame);
 
-    static calculateSize(name: string, valueList: any, overflowPolicy: number) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.INT_SIZE_IN_BYTES;
-
-        valueList.forEach((valueListItem: any) => {
-            dataSize += BitsUtil.calculateSizeData(valueListItem);
-        });
-        dataSize += BitsUtil.INT_SIZE_IN_BYTES;
-        return dataSize;
-    }
-
-    static encodeRequest(name: string, valueList: any, overflowPolicy: number) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, valueList, overflowPolicy));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendInt32(valueList.length);
-
-        valueList.forEach((valueListItem: any) => {
-            clientMessage.appendData(valueListItem);
-        });
-
-        clientMessage.appendInt32(overflowPolicy);
-        clientMessage.updateFrameLength();
+        StringCodec.encode(clientMessage, name);
+        ListMultiFrameCodec.encode(clientMessage, valueList, DataCodec.encode);
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        // Decode response from client message
-        var parameters: any = {
-            'response': null
+    static decodeResponse(clientMessage: ClientMessage): RingbufferAddAllResponseParams {
+        const iterator = clientMessage.frameIterator();
+        const initialFrame = iterator.next();
+
+        return {
+            response: FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
         };
-
-        parameters['response'] = clientMessage.readLong();
-
-        return parameters;
     }
-
-
 }

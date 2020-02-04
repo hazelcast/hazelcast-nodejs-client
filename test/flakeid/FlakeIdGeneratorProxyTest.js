@@ -39,6 +39,7 @@ describe("FlakeIdGeneratorProxyTest", function () {
             return Controller.startMember(cluster.id);
         }).then(function () {
             var cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
             var flakeConfig = new Config.FlakeIdGeneratorConfig();
             flakeConfig.prefetchValidityMillis = SHORT_TERM_VALIDITY_MILLIS;
             flakeConfig.prefetchCount = SHORT_TERM_BATCH_SIZE;

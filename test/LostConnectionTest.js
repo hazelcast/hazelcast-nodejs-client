@@ -33,6 +33,7 @@ describe('Lost connection', function () {
             oldMember = m;
         }).then(function () {
             var cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
             cfg.properties['hazelcast.client.heartbeat.interval'] = 500;
             cfg.properties['hazelcast.client.heartbeat.timeout'] = 2000;
             return HazelcastClient.newHazelcastClient(cfg);

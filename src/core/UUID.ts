@@ -19,6 +19,7 @@ import * as Long from 'long';
 export class UUID {
     readonly leastSignificant: Long;
     readonly mostSignificant: Long;
+    private cachedString: string;
 
     constructor(mostSig: Long, leastSig: Long) {
         this.mostSignificant = mostSig;
@@ -34,6 +35,9 @@ export class UUID {
 
     /* tslint:disable:no-bitwise */
     toString(): string {
+        if (this.cachedString) {
+            return this.cachedString;
+        }
         const mostHigh = this.mostSignificant.getHighBitsUnsigned(); // (32) 32 32 32
         const mostLow = this.mostSignificant.getLowBitsUnsigned(); // 32 (32) 32 32
         const leastHigh = this.leastSignificant.getHighBitsUnsigned(); // 32 32 (32) 32
@@ -44,6 +48,7 @@ export class UUID {
         const div3 = (mostLow & ((1 << 16) - 1)).toString(16);
         const div4 = (leastHigh >>> 16).toString(16);
         const div5 = (leastHigh & ((1 << 16) - 1)).toString(16) + leastLow.toString(16);
-        return div1 + '-' + div2 + '-' + div3 + '-' + div4 + '-' + div5;
+        this.cachedString = div1 + '-' + div2 + '-' + div3 + '-' + div4 + '-' + div5;
+        return this.cachedString;
     }
 }

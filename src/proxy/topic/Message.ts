@@ -15,7 +15,7 @@
  */
 
 import Long = require('long');
-import Address = require('../../Address');
+import {Address} from '../../Address';
 
 export class Message<T> {
     messageObject: T;

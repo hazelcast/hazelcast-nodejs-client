@@ -39,224 +39,219 @@
 import {Buffer} from 'safe-buffer';
 import * as Long from 'long';
 import {BitsUtil} from './BitsUtil';
-import {Data} from './serialization/Data';
-import {HeapData} from './serialization/HeapData';
+import {ClientConnection} from './network/ClientConnection';
 
-class ClientMessage {
+export const MESSAGE_TYPE_OFFSET = 0;
+export const CORRELATION_ID_OFFSET = MESSAGE_TYPE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+export const RESPONSE_BACKUP_ACKS_OFFSET = CORRELATION_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
+export const PARTITION_ID_OFFSET = CORRELATION_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
+export const FRAGMENTATION_ID_OFFSET = 0;
 
-    private buffer: Buffer;
-    private cursor: number = BitsUtil.HEADER_SIZE;
-    private isRetryable: boolean;
+export const DEFAULT_FLAGS = 0;
+export const BEGIN_FRAGMENT_FLAG = 1 << 15;
+export const END_FRAGMENT_FLAG = 1 << 14;
+export const UNFRAGMENTED_MESSAGE = BEGIN_FRAGMENT_FLAG | END_FRAGMENT_FLAG;
+export const IS_FINAL_FLAG = 1 << 13;
+export const BEGIN_DATA_STRUCTURE_FLAG = 1 << 12;
+export const END_DATA_STRUCTURE_FLAG = 1 << 11;
+export const IS_NULL_FLAG = 1 << 10;
+export const IS_EVENT_FLAG = 1 << 9;
+export const BACKUP_AWARE_FLAG = 1 << 8;
+export const BACKUP_EVENT_FLAG = 1 << 7;
 
-    constructor(buffer: Buffer) {
-        this.buffer = buffer;
-    }
+export const SIZE_OF_FRAME_LENGTH_AND_FLAGS = BitsUtil.INT_SIZE_IN_BYTES + BitsUtil.SHORT_SIZE_IN_BYTES;
 
-    public static newClientMessage(payloadSize: number): ClientMessage {
-        const totalSize = BitsUtil.HEADER_SIZE + payloadSize;
-        const buffer = Buffer.allocUnsafe(totalSize);
-        const message = new ClientMessage(buffer);
-        message.setDataOffset(BitsUtil.HEADER_SIZE);
-        message.setVersion(BitsUtil.VERSION);
-        message.setFrameLength(totalSize);
-        message.setFlags(0xc0);
-        message.setPartitionId(-1);
-        return message;
-    }
+export class Frame {
+    content: Buffer;
+    flags: number;
+    next: Frame;
 
-    clone(): ClientMessage {
-        const message = new ClientMessage(Buffer.from(this.buffer));
-        message.isRetryable = this.isRetryable;
-        return message;
-    }
-
-    getBuffer(): Buffer {
-        return this.buffer;
-    }
-
-    getCorrelationId(): number {
-        const offset = BitsUtil.CORRELATION_ID_FIELD_OFFSET;
-        return this.readLongInternal(offset).toNumber();
-    }
-
-    setCorrelationId(value: number): void {
-        this.writeLongInternal(value, BitsUtil.CORRELATION_ID_FIELD_OFFSET);
-    }
-
-    getPartitionId(): number {
-        return this.buffer.readInt32LE(BitsUtil.PARTITION_ID_FIELD_OFFSET);
-    }
-
-    setPartitionId(value: number): void {
-        this.buffer.writeInt32LE(value, BitsUtil.PARTITION_ID_FIELD_OFFSET);
-    }
-
-    setVersion(value: number): void {
-        this.buffer.writeUInt8(value, BitsUtil.VERSION_FIELD_OFFSET);
-    }
-
-    getMessageType(): number {
-        return this.buffer.readUInt16LE(BitsUtil.TYPE_FIELD_OFFSET);
-    }
-
-    setMessageType(value: number): void {
-        this.buffer.writeUInt16LE(value, BitsUtil.TYPE_FIELD_OFFSET);
-    }
-
-    getFlags(): number {
-        return this.buffer.readUInt8(BitsUtil.FLAGS_FIELD_OFFSET);
-    }
-
-    setFlags(value: number): void {
-        this.buffer.writeUInt8(value, BitsUtil.FLAGS_FIELD_OFFSET);
-    }
-
-    hasFlags(flags: number): number {
-        return this.getFlags() & flags;
-    }
-
-    getFrameLength(): number {
-        return this.buffer.readInt32LE(BitsUtil.FRAME_LENGTH_FIELD_OFFSET);
-    }
-
-    setFrameLength(value: number): void {
-        this.buffer.writeInt32LE(value, BitsUtil.FRAME_LENGTH_FIELD_OFFSET);
-    }
-
-    getDataOffset(): number {
-        return this.buffer.readInt16LE(BitsUtil.DATA_OFFSET_FIELD_OFFSET);
-    }
-
-    setDataOffset(value: number): void {
-        this.buffer.writeInt16LE(value, BitsUtil.DATA_OFFSET_FIELD_OFFSET);
-    }
-
-    setRetryable(value: boolean): void {
-        this.isRetryable = value;
-    }
-
-    appendByte(value: number): void {
-        this.buffer.writeUInt8(value, this.cursor);
-        this.cursor += BitsUtil.BYTE_SIZE_IN_BYTES;
-    }
-
-    appendBoolean(value: boolean): void {
-        return this.appendByte(value ? 1 : 0);
-    }
-
-    appendInt32(value: number): void {
-        this.buffer.writeInt32LE(value, this.cursor);
-        this.cursor += BitsUtil.INT_SIZE_IN_BYTES;
-    }
-
-    appendUint8(value: number): void {
-        this.buffer.writeUInt8(value, this.cursor);
-        this.cursor += BitsUtil.BYTE_SIZE_IN_BYTES;
-    }
-
-    appendLong(value: any): void {
-        this.writeLongInternal(value, this.cursor);
-        this.cursor += BitsUtil.LONG_SIZE_IN_BYTES;
-    }
-
-    appendString(value: string): void {
-        const length = Buffer.byteLength(value, 'utf8');
-        this.buffer.writeInt32LE(length, this.cursor);
-        this.cursor += 4;
-        this.buffer.write(value, this.cursor);
-        this.cursor += length;
-    }
-
-    appendBuffer(buffer: Buffer): void {
-        const length = buffer.length;
-        this.appendInt32(length);
-        buffer.copy(this.buffer, this.cursor);
-        this.cursor += length;
-    }
-
-    appendData(data: Data): void {
-        this.appendBuffer(data.toBuffer());
-    }
-
-    addFlag(value: number): void {
-        this.buffer.writeUInt8(value | this.getFlags(), BitsUtil.FLAGS_FIELD_OFFSET);
-    }
-
-    updateFrameLength(): void {
-        this.setFrameLength(this.cursor);
-    }
-
-    readData(): Data {
-        const dataPayload: Buffer = this.readBuffer();
-        return new HeapData(dataPayload);
-    }
-
-    readByte(): number {
-        const value = this.buffer.readUInt8(this.cursor);
-        this.cursor += BitsUtil.BYTE_SIZE_IN_BYTES;
-        return value;
-    }
-
-    readBoolean(): boolean {
-        return this.readByte() === 1;
-    }
-
-    readUInt8(): number {
-        const value = this.buffer.readUInt8(this.cursor);
-        this.cursor += BitsUtil.BYTE_SIZE_IN_BYTES;
-        return value;
-    }
-
-    readInt32(): number {
-        const value = this.buffer.readInt32LE(this.cursor);
-        this.cursor += BitsUtil.INT_SIZE_IN_BYTES;
-        return value;
-    }
-
-    readLong(): Long {
-        const value = this.readLongInternal(this.cursor);
-        this.cursor += BitsUtil.LONG_SIZE_IN_BYTES;
-        return value;
-    }
-
-    readString(): string {
-        const length = this.buffer.readInt32LE(this.cursor);
-        this.cursor += BitsUtil.INT_SIZE_IN_BYTES;
-        const value = this.buffer.toString('utf8', this.cursor, this.cursor + length);
-        this.cursor += length;
-        return value;
-    }
-
-    readBuffer(): Buffer {
-        const size = this.buffer.readUInt32LE(this.cursor);
-        this.cursor += BitsUtil.INT_SIZE_IN_BYTES;
-        const result = this.buffer.slice(this.cursor, this.cursor + size);
-        this.cursor += size;
-        return result;
-    }
-
-    isComplete(): boolean {
-        return (this.cursor >= BitsUtil.HEADER_SIZE) && (this.cursor === this.getFrameLength());
-    }
-
-    readMapEntry(): any {
-        // TODO
-    }
-
-    private writeLongInternal(value: any, offset: number): void {
-        if (!Long.isLong(value)) {
-            value = Long.fromValue(value);
+    constructor(content: Buffer, flags?: number) {
+        this.content = content;
+        if (flags) {
+            this.flags = flags;
+        } else {
+            this.flags = DEFAULT_FLAGS;
         }
-
-        this.buffer.writeInt32LE(value.low, offset);
-        this.buffer.writeInt32LE(value.high, offset + 4);
     }
 
-    private readLongInternal(offset: number): Long {
-        const low = this.buffer.readInt32LE(offset);
-        const high = this.buffer.readInt32LE(offset + 4);
-        return new Long(low, high);
+    getLength(): number {
+        return SIZE_OF_FRAME_LENGTH_AND_FLAGS + this.content.length;
+    }
+
+    copy(): Frame {
+        const frame = new Frame(this.content, this.flags);
+        frame.next = this.next;
+        return frame;
+    }
+
+    deepCopy(): Frame {
+        const content = Buffer.from(this.content);
+        const frame = new Frame(content, this.flags);
+        frame.next = this.next;
+        return frame;
+    }
+
+    isBeginFrame(): boolean {
+        return ClientMessage.isFlagSet(this.flags, BEGIN_DATA_STRUCTURE_FLAG);
+    }
+
+    isEndFrame(): boolean {
+        return ClientMessage.isFlagSet(this.flags, END_DATA_STRUCTURE_FLAG);
+    }
+
+    isNullFrame(): boolean {
+        return ClientMessage.isFlagSet(this.flags, IS_NULL_FLAG);
     }
 }
 
-export = ClientMessage;
+export const NULL_FRAME = new Frame(Buffer.allocUnsafe(0), IS_NULL_FLAG);
+export const BEGIN_FRAME = new Frame(Buffer.allocUnsafe(0), BEGIN_DATA_STRUCTURE_FLAG);
+export const END_FRAME = new  Frame(Buffer.allocUnsafe(0), END_DATA_STRUCTURE_FLAG);
+
+export class ForwardFrameIterator {
+    private nextFrame: Frame;
+    constructor(startFrame: Frame) {
+        this.nextFrame = startFrame;
+    }
+
+    next(): Frame {
+        const result = this.nextFrame;
+        if (this.nextFrame != null) {
+            this.nextFrame = this.nextFrame.next;
+        }
+        return result;
+    }
+
+    hasNext(): boolean {
+        return this.nextFrame !== null;
+    }
+
+    peekNext(): Frame {
+        return this.nextFrame;
+    }
+}
+
+export class ClientMessage {
+    startFrame: Frame;
+    endFrame: Frame;
+    private retryable: boolean;
+    private connection: ClientConnection;
+
+    private constructor(startFrame?: Frame, endFrame?: Frame) {
+        this.startFrame = startFrame;
+        this.endFrame = endFrame || startFrame;
+    }
+
+    static createForEncode(): ClientMessage {
+        return new ClientMessage();
+    }
+
+    static createForDecode(startFrame: Frame): ClientMessage {
+        return new ClientMessage(startFrame);
+    }
+
+    static isFlagSet(flags: number, flagMask: number): boolean {
+        const i = flags & flagMask;
+        return i === flagMask;
+    }
+
+    getStartFrame(): Frame {
+        return this.startFrame;
+    }
+
+    add(frame: Frame): void {
+        frame.next = null;
+        if (this.startFrame == null) {
+            this.startFrame = frame;
+            this.endFrame = frame;
+            return;
+        }
+
+        this.endFrame.next = frame;
+        this.endFrame = frame;
+    }
+
+    frameIterator(): ForwardFrameIterator {
+        return new ForwardFrameIterator(this.startFrame);
+    }
+
+    getMessageType(): number {
+        return this.startFrame.content.readInt32LE(MESSAGE_TYPE_OFFSET);
+    }
+
+    setMessageType(messageType: number): void {
+        this.startFrame.content.writeInt32LE(messageType, MESSAGE_TYPE_OFFSET);
+    }
+
+    getCorrelationId(): number {
+        const low = this.startFrame.content.readInt32LE(CORRELATION_ID_OFFSET);
+        const high = this.startFrame.content.readInt32LE(CORRELATION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES);
+        return new Long(low, high).toNumber();
+    }
+
+    setCorrelationId(correlationId: any): void {
+        if (!Long.isLong(correlationId)) {
+            correlationId = Long.fromValue(correlationId);
+        }
+        this.startFrame.content.writeInt32LE(correlationId.low, CORRELATION_ID_OFFSET);
+        this.startFrame.content.writeInt32LE(correlationId.high, CORRELATION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES);
+    }
+
+    getNumberOfBackupAcks(): number {
+        return this.startFrame.content.readInt8(RESPONSE_BACKUP_ACKS_OFFSET);
+    }
+
+    getPartitionId(): number {
+        return this.startFrame.content.readInt32LE(PARTITION_ID_OFFSET);
+    }
+
+    setPartitionId(partitionId: number): void {
+        this.startFrame.content.writeInt32LE(partitionId, PARTITION_ID_OFFSET);
+    }
+
+    getHeaderFlags(): number {
+        return this.startFrame.flags;
+    }
+
+    isRetryable(): boolean {
+        return this.retryable;
+    }
+
+    setRetryable(retryable: boolean): void {
+        this.retryable = retryable;
+    }
+
+    getConnection(): ClientConnection {
+        return this.connection;
+    }
+
+    setConnection(connection: ClientConnection): void {
+        this.connection = connection;
+    }
+
+    getTotalFrameLength(): number {
+        let frameLength = 0;
+        let currentFrame = this.startFrame;
+        while (currentFrame != null) {
+            frameLength += currentFrame.getLength();
+            currentFrame = currentFrame.next;
+        }
+        return frameLength;
+    }
+
+    merge(fragment: ClientMessage): void {
+        // Ignore the first frame of the fragment since first frame marks the fragment
+        this.endFrame.next = fragment.startFrame.next;
+        this.endFrame = fragment.endFrame;
+    }
+
+    copyWithNewCorrelationId(correlationId: any): ClientMessage {
+        const startFrameCopy = this.startFrame.deepCopy();
+        const newMessage = new ClientMessage(startFrameCopy, this.endFrame);
+
+        newMessage.setCorrelationId(correlationId);
+        newMessage.retryable = this.retryable;
+        return newMessage;
+    }
+}

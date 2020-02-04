@@ -26,11 +26,11 @@ export class RepairingHandler {
     private readonly nearCache: NearCache;
     private readonly partitionCount: number;
     private readonly partitionService: PartitionService;
-    private readonly localUuid: string;
+    private readonly localUuid: UUID;
     private readonly name: string;
     private containers: MetadataContainer[];
 
-    constructor(name: string, partitionService: PartitionService, nearCache: NearCache, localUuid: string) {
+    constructor(name: string, partitionService: PartitionService, nearCache: NearCache, localUuid: UUID) {
         this.nearCache = nearCache;
         this.name = name;
         this.partitionService = partitionService;
@@ -60,8 +60,8 @@ export class RepairingHandler {
         }
     }
 
-    handle(key: Data, sourceUuid: string, partitionUuid: UUID, sequence: Long): void {
-        if (this.localUuid !== sourceUuid) {
+    handle(key: Data, sourceUuid: UUID, partitionUuid: UUID, sequence: Long): void {
+        if (this.localUuid.equals(sourceUuid)) {
             if (key == null) {
                 this.nearCache.clear();
             } else {
@@ -73,7 +73,7 @@ export class RepairingHandler {
         this.checkOrRepairUuid(partitionId, partitionUuid);
     }
 
-    handleBatch(keys: any[], sourceUuids: string[], partitionUuids: UUID[], sequences: Long[]): void {
+    handleBatch(keys: any[], sourceUuids: UUID[], partitionUuids: UUID[], sequences: Long[]): void {
         for (let i = 0; i < keys.length; i++) {
             this.handle(keys[i], sourceUuids[i], partitionUuids[i], sequences[i]);
         }

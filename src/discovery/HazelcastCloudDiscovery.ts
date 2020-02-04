@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import Address = require('../Address');
 import {AddressHelper, DeferredPromise} from '../Util';
 import {get} from 'https';
 import {IncomingMessage} from 'http';
 import * as Promise from 'bluebird';
 import {Properties} from '../config/Properties';
 import * as URL from 'url';
+import {Address} from '../Address';
 
 /**
  * Discovery service that discover nodes via hazelcast.cloud

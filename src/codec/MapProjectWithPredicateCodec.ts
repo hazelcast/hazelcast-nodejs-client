@@ -14,62 +14,49 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
+import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, MESSAGE_TYPE_OFFSET, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
+import {StringCodec} from './builtin/StringCodec';
 import {Data} from '../serialization/Data';
-import {MapMessageType} from './MapMessageType';
+import {DataCodec} from './builtin/DataCodec';
+import {ListMultiFrameCodec} from './builtin/ListMultiFrameCodec';
 
-var REQUEST_TYPE = MapMessageType.MAP_PROJECTWITHPREDICATE;
-var RESPONSE_TYPE = 119;
-var RETRYABLE = true;
+// hex: 0x013C00
+const REQUEST_MESSAGE_TYPE = 80896;
+// hex: 0x013C01
+const RESPONSE_MESSAGE_TYPE = 80897;
 
+const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+export interface MapProjectWithPredicateResponseParams {
+    response: Data[];
+}
 export class MapProjectWithPredicateCodec {
+    static encodeRequest(name: string, projection: Data, predicate: Data): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(true);
 
+        const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, MESSAGE_TYPE_OFFSET, REQUEST_MESSAGE_TYPE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
+        clientMessage.add(initialFrame);
 
-    static calculateSize(name: string, projection: Data, predicate: Data) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.calculateSizeData(projection);
-        dataSize += BitsUtil.calculateSizeData(predicate);
-        return dataSize;
-    }
-
-    static encodeRequest(name: string, projection: Data, predicate: Data) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, projection, predicate));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendData(projection);
-        clientMessage.appendData(predicate);
-        clientMessage.updateFrameLength();
+        StringCodec.encode(clientMessage, name);
+        DataCodec.encode(clientMessage, projection);
+        DataCodec.encode(clientMessage, predicate);
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        // Decode response from client message
-        var parameters: any = {
-            'response': null
+    static decodeResponse(clientMessage: ClientMessage): MapProjectWithPredicateResponseParams {
+        const iterator = clientMessage.frameIterator();
+        // empty initial frame
+        iterator.next();
+
+        return {
+            response: ListMultiFrameCodec.decodeContainsNullable(iterator, DataCodec.decode),
         };
-
-        if (clientMessage.isComplete()) {
-            return parameters;
-        }
-
-        var responseSize = clientMessage.readInt32();
-        var response: any = [];
-        for (var responseIndex = 0; responseIndex < responseSize; responseIndex++) {
-            var responseItem: Data;
-            responseItem = clientMessage.readData();
-            response.push(responseItem);
-        }
-        parameters['response'] = response;
-
-        return parameters;
     }
-
-
 }

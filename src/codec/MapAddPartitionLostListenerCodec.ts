@@ -14,65 +14,63 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
+import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
-import {Data} from '../serialization/Data';
-import {MapMessageType} from './MapMessageType';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, MESSAGE_TYPE_OFFSET, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
+import {StringCodec} from './builtin/StringCodec';
+import {UUID} from '../core/UUID';
 
-var REQUEST_TYPE = MapMessageType.MAP_ADDPARTITIONLOSTLISTENER;
-var RESPONSE_TYPE = 104;
-var RETRYABLE = false;
+// hex: 0x011B00
+const REQUEST_MESSAGE_TYPE = 72448;
+// hex: 0x011B01
+const RESPONSE_MESSAGE_TYPE = 72449;
+// hex: 0x011B02
+const EVENT_MAP_PARTITION_LOST_MESSAGE_TYPE = 72450;
 
+const REQUEST_LOCAL_ONLY_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const REQUEST_INITIAL_FRAME_SIZE = REQUEST_LOCAL_ONLY_OFFSET + BitsUtil.BOOLEAN_SIZE_IN_BYTES;
+const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
+const EVENT_MAP_PARTITION_LOST_PARTITION_ID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const EVENT_MAP_PARTITION_LOST_UUID_OFFSET = EVENT_MAP_PARTITION_LOST_PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+export interface MapAddPartitionLostListenerResponseParams {
+    response: UUID;
+}
 export class MapAddPartitionLostListenerCodec {
+    static encodeRequest(name: string, localOnly: boolean): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(false);
 
+        const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, MESSAGE_TYPE_OFFSET, REQUEST_MESSAGE_TYPE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
+        FixSizedTypesCodec.encodeBoolean(initialFrame.content, REQUEST_LOCAL_ONLY_OFFSET, localOnly);
+        clientMessage.add(initialFrame);
 
-    static calculateSize(name: string, localOnly: boolean) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.BOOLEAN_SIZE_IN_BYTES;
-        return dataSize;
-    }
-
-    static encodeRequest(name: string, localOnly: boolean) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, localOnly));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendBoolean(localOnly);
-        clientMessage.updateFrameLength();
+        StringCodec.encode(clientMessage, name);
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        // Decode response from client message
-        var parameters: any = {
-            'response': null
+    static decodeResponse(clientMessage: ClientMessage): MapAddPartitionLostListenerResponseParams {
+        const iterator = clientMessage.frameIterator();
+        const initialFrame = iterator.next();
+
+        return {
+            response: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
         };
-
-        parameters['response'] = clientMessage.readString();
-
-        return parameters;
     }
 
-    static handle(clientMessage: ClientMessage, handleEventMappartitionlost: any, toObjectFunction: (data: Data) => any = null) {
-
-        var messageType = clientMessage.getMessageType();
-        if (messageType === BitsUtil.EVENT_MAPPARTITIONLOST && handleEventMappartitionlost !== null) {
-            var messageFinished = false;
-            var partitionId: number = undefined;
-            if (!messageFinished) {
-                partitionId = clientMessage.readInt32();
-            }
-            var uuid: string = undefined;
-            if (!messageFinished) {
-                uuid = clientMessage.readString();
-            }
-            handleEventMappartitionlost(partitionId, uuid);
+    static handle(clientMessage: ClientMessage, handleMapPartitionLostEvent: (partitionId: number, uuid: UUID) => void = null): void {
+        const messageType = clientMessage.getMessageType();
+        const iterator = clientMessage.frameIterator();
+        if (messageType === EVENT_MAP_PARTITION_LOST_MESSAGE_TYPE && handleMapPartitionLostEvent !== null) {
+            const initialFrame = iterator.next();
+            const partitionId = FixSizedTypesCodec.decodeInt(initialFrame.content, EVENT_MAP_PARTITION_LOST_PARTITION_ID_OFFSET);
+            const uuid = FixSizedTypesCodec.decodeUUID(initialFrame.content, EVENT_MAP_PARTITION_LOST_UUID_OFFSET);
+            handleMapPartitionLostEvent(partitionId, uuid);
+            return;
         }
     }
-
 }

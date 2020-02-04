@@ -1,0 +1,85 @@
+/*
+ * Copyright (c) 2008-2020, Hazelcast, Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*tslint:disable:max-line-length*/
+import {Buffer} from 'safe-buffer';
+import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
+import {BitsUtil} from '../../BitsUtil';
+import {ClientMessage, BEGIN_FRAME, END_FRAME, ForwardFrameIterator, Frame} from '../../ClientMessage';
+import {CodecUtil} from '../builtin/CodecUtil';
+import * as Long from 'long';
+import {Data} from '../../serialization/Data';
+import {DataCodec} from '../builtin/DataCodec';
+import {SimpleEntryView} from '../../core/SimpleEntryView';
+
+const COST_OFFSET = 0;
+const CREATION_TIME_OFFSET = COST_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
+const EXPIRATION_TIME_OFFSET = CREATION_TIME_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
+const HITS_OFFSET = EXPIRATION_TIME_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
+const LAST_ACCESS_TIME_OFFSET = HITS_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
+const LAST_STORED_TIME_OFFSET = LAST_ACCESS_TIME_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
+const LAST_UPDATE_TIME_OFFSET = LAST_STORED_TIME_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
+const VERSION_OFFSET = LAST_UPDATE_TIME_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
+const TTL_OFFSET = VERSION_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
+const MAX_IDLE_OFFSET = TTL_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
+const INITIAL_FRAME_SIZE = MAX_IDLE_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
+
+export class SimpleEntryViewCodec {
+    static encode(clientMessage: ClientMessage, simpleEntryView: SimpleEntryView<Data, Data>): void {
+        clientMessage.add(BEGIN_FRAME.copy());
+
+        const initialFrame = new Frame(Buffer.allocUnsafe(INITIAL_FRAME_SIZE));
+        FixSizedTypesCodec.encodeLong(initialFrame.content, COST_OFFSET, simpleEntryView.cost);
+        FixSizedTypesCodec.encodeLong(initialFrame.content, CREATION_TIME_OFFSET, simpleEntryView.creationTime);
+        FixSizedTypesCodec.encodeLong(initialFrame.content, EXPIRATION_TIME_OFFSET, simpleEntryView.expirationTime);
+        FixSizedTypesCodec.encodeLong(initialFrame.content, HITS_OFFSET, simpleEntryView.hits);
+        FixSizedTypesCodec.encodeLong(initialFrame.content, LAST_ACCESS_TIME_OFFSET, simpleEntryView.lastAccessTime);
+        FixSizedTypesCodec.encodeLong(initialFrame.content, LAST_STORED_TIME_OFFSET, simpleEntryView.lastStoredTime);
+        FixSizedTypesCodec.encodeLong(initialFrame.content, LAST_UPDATE_TIME_OFFSET, simpleEntryView.lastUpdateTime);
+        FixSizedTypesCodec.encodeLong(initialFrame.content, VERSION_OFFSET, simpleEntryView.version);
+        FixSizedTypesCodec.encodeLong(initialFrame.content, TTL_OFFSET, simpleEntryView.ttl);
+        FixSizedTypesCodec.encodeLong(initialFrame.content, MAX_IDLE_OFFSET, simpleEntryView.maxIdle);
+        clientMessage.add(initialFrame);
+
+        DataCodec.encode(clientMessage, simpleEntryView.key);
+        DataCodec.encode(clientMessage, simpleEntryView.value);
+
+        clientMessage.add(END_FRAME.copy());
+    }
+
+    static decode(iterator: ForwardFrameIterator): SimpleEntryView<Data, Data> {
+        // begin frame
+        iterator.next();
+
+        const initialFrame = iterator.next();
+        const cost: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, COST_OFFSET);
+        const creationTime: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, CREATION_TIME_OFFSET);
+        const expirationTime: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, EXPIRATION_TIME_OFFSET);
+        const hits: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, HITS_OFFSET);
+        const lastAccessTime: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, LAST_ACCESS_TIME_OFFSET);
+        const lastStoredTime: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, LAST_STORED_TIME_OFFSET);
+        const lastUpdateTime: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, LAST_UPDATE_TIME_OFFSET);
+        const version: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, VERSION_OFFSET);
+        const ttl: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, TTL_OFFSET);
+        const maxIdle: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, MAX_IDLE_OFFSET);
+        const key: Data = DataCodec.decode(iterator);
+        const value: Data = DataCodec.decode(iterator);
+
+        CodecUtil.fastForwardToEndFrame(iterator);
+
+        return new SimpleEntryView<Data, Data>(key, value, cost, creationTime, expirationTime, hits, lastAccessTime, lastStoredTime, lastUpdateTime, version, ttl, maxIdle);
+    }
+}

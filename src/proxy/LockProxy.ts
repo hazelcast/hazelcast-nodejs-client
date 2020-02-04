@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+/*
 import * as Promise from 'bluebird';
 import {ILock} from './ILock';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
@@ -72,3 +72,4 @@ export class LockProxy extends PartitionSpecificProxy implements ILock {
         return this.lockReferenceIdGenerator.getNextReferenceId();
     }
 }
+*/

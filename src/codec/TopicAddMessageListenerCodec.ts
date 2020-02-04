@@ -14,69 +14,67 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
+import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, MESSAGE_TYPE_OFFSET, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
+import {StringCodec} from './builtin/StringCodec';
+import {UUID} from '../core/UUID';
+import * as Long from 'long';
 import {Data} from '../serialization/Data';
-import {TopicMessageType} from './TopicMessageType';
+import {DataCodec} from './builtin/DataCodec';
 
-var REQUEST_TYPE = TopicMessageType.TOPIC_ADDMESSAGELISTENER;
-var RESPONSE_TYPE = 104;
-var RETRYABLE = false;
+// hex: 0x040200
+const REQUEST_MESSAGE_TYPE = 262656;
+// hex: 0x040201
+const RESPONSE_MESSAGE_TYPE = 262657;
+// hex: 0x040202
+const EVENT_TOPIC_MESSAGE_TYPE = 262658;
 
+const REQUEST_LOCAL_ONLY_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const REQUEST_INITIAL_FRAME_SIZE = REQUEST_LOCAL_ONLY_OFFSET + BitsUtil.BOOLEAN_SIZE_IN_BYTES;
+const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
+const EVENT_TOPIC_PUBLISH_TIME_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const EVENT_TOPIC_UUID_OFFSET = EVENT_TOPIC_PUBLISH_TIME_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
+export interface TopicAddMessageListenerResponseParams {
+    response: UUID;
+}
 export class TopicAddMessageListenerCodec {
+    static encodeRequest(name: string, localOnly: boolean): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(false);
 
+        const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, MESSAGE_TYPE_OFFSET, REQUEST_MESSAGE_TYPE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
+        FixSizedTypesCodec.encodeBoolean(initialFrame.content, REQUEST_LOCAL_ONLY_OFFSET, localOnly);
+        clientMessage.add(initialFrame);
 
-    static calculateSize(name: string, localOnly: boolean) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.BOOLEAN_SIZE_IN_BYTES;
-        return dataSize;
-    }
-
-    static encodeRequest(name: string, localOnly: boolean) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, localOnly));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendBoolean(localOnly);
-        clientMessage.updateFrameLength();
+        StringCodec.encode(clientMessage, name);
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        // Decode response from client message
-        var parameters: any = {
-            'response': null
+    static decodeResponse(clientMessage: ClientMessage): TopicAddMessageListenerResponseParams {
+        const iterator = clientMessage.frameIterator();
+        const initialFrame = iterator.next();
+
+        return {
+            response: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
         };
-
-        parameters['response'] = clientMessage.readString();
-
-        return parameters;
     }
 
-    static handle(clientMessage: ClientMessage, handleEventTopic: any, toObjectFunction: (data: Data) => any = null) {
-
-        var messageType = clientMessage.getMessageType();
-        if (messageType === BitsUtil.EVENT_TOPIC && handleEventTopic !== null) {
-            var messageFinished = false;
-            var item: Data = undefined;
-            if (!messageFinished) {
-                item = clientMessage.readData();
-            }
-            var publishTime: any = undefined;
-            if (!messageFinished) {
-                publishTime = clientMessage.readLong();
-            }
-            var uuid: string = undefined;
-            if (!messageFinished) {
-                uuid = clientMessage.readString();
-            }
-            handleEventTopic(item, publishTime, uuid);
+    static handle(clientMessage: ClientMessage, handleTopicEvent: (item: Data, publishTime: Long, uuid: UUID) => void = null): void {
+        const messageType = clientMessage.getMessageType();
+        const iterator = clientMessage.frameIterator();
+        if (messageType === EVENT_TOPIC_MESSAGE_TYPE && handleTopicEvent !== null) {
+            const initialFrame = iterator.next();
+            const publishTime = FixSizedTypesCodec.decodeLong(initialFrame.content, EVENT_TOPIC_PUBLISH_TIME_OFFSET);
+            const uuid = FixSizedTypesCodec.decodeUUID(initialFrame.content, EVENT_TOPIC_UUID_OFFSET);
+            const item = DataCodec.decode(iterator);
+            handleTopicEvent(item, publishTime, uuid);
+            return;
         }
     }
-
 }

@@ -14,58 +14,48 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
+import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, MESSAGE_TYPE_OFFSET, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
+import {StringCodec} from './builtin/StringCodec';
 import {Data} from '../serialization/Data';
-import {SetMessageType} from './SetMessageType';
+import {ListMultiFrameCodec} from './builtin/ListMultiFrameCodec';
+import {DataCodec} from './builtin/DataCodec';
 
-var REQUEST_TYPE = SetMessageType.SET_ADDALL;
-var RESPONSE_TYPE = 101;
-var RETRYABLE = false;
+// hex: 0x060600
+const REQUEST_MESSAGE_TYPE = 394752;
+// hex: 0x060601
+const RESPONSE_MESSAGE_TYPE = 394753;
 
+const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
+export interface SetAddAllResponseParams {
+    response: boolean;
+}
 export class SetAddAllCodec {
+    static encodeRequest(name: string, valueList: Data[]): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(false);
 
+        const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, MESSAGE_TYPE_OFFSET, REQUEST_MESSAGE_TYPE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
+        clientMessage.add(initialFrame);
 
-    static calculateSize(name: string, valueList: any) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.INT_SIZE_IN_BYTES;
-
-        valueList.forEach((valueListItem: any) => {
-            dataSize += BitsUtil.calculateSizeData(valueListItem);
-        });
-        return dataSize;
-    }
-
-    static encodeRequest(name: string, valueList: any) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, valueList));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendInt32(valueList.length);
-
-        valueList.forEach((valueListItem: any) => {
-            clientMessage.appendData(valueListItem);
-        });
-
-        clientMessage.updateFrameLength();
+        StringCodec.encode(clientMessage, name);
+        ListMultiFrameCodec.encode(clientMessage, valueList, DataCodec.encode);
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        // Decode response from client message
-        var parameters: any = {
-            'response': null
+    static decodeResponse(clientMessage: ClientMessage): SetAddAllResponseParams {
+        const iterator = clientMessage.frameIterator();
+        const initialFrame = iterator.next();
+
+        return {
+            response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
         };
-
-        parameters['response'] = clientMessage.readBoolean();
-
-        return parameters;
     }
-
-
 }

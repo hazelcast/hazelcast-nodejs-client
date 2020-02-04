@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/*
 import * as Promise from 'bluebird';
 import {SemaphoreAcquireCodec} from '../codec/SemaphoreAcquireCodec';
 import {SemaphoreAvailablePermitsCodec} from '../codec/SemaphoreAvailablePermitsCodec';
@@ -62,3 +63,4 @@ export class SemaphoreProxy extends PartitionSpecificProxy implements ISemaphore
         return this.encodeInvoke<boolean>(SemaphoreTryAcquireCodec, permits, timeout);
     }
 }
+*/

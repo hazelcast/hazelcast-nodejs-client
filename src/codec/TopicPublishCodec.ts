@@ -14,40 +14,35 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
+import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, MESSAGE_TYPE_OFFSET, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
+import {StringCodec} from './builtin/StringCodec';
 import {Data} from '../serialization/Data';
-import {TopicMessageType} from './TopicMessageType';
+import {DataCodec} from './builtin/DataCodec';
 
-var REQUEST_TYPE = TopicMessageType.TOPIC_PUBLISH;
-var RESPONSE_TYPE = 100;
-var RETRYABLE = false;
+// hex: 0x040100
+const REQUEST_MESSAGE_TYPE = 262400;
+// hex: 0x040101
+const RESPONSE_MESSAGE_TYPE = 262401;
+
+const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
 
 export class TopicPublishCodec {
+    static encodeRequest(name: string, message: Data): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(false);
 
+        const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, MESSAGE_TYPE_OFFSET, REQUEST_MESSAGE_TYPE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
+        clientMessage.add(initialFrame);
 
-    static calculateSize(name: string, message: Data) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.calculateSizeData(message);
-        return dataSize;
-    }
-
-    static encodeRequest(name: string, message: Data) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, message));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendData(message);
-        clientMessage.updateFrameLength();
+        StringCodec.encode(clientMessage, name);
+        DataCodec.encode(clientMessage, message);
         return clientMessage;
     }
-
-// Empty decodeResponse(ClientMessage), this message has no parameters to decode
-
-
 }

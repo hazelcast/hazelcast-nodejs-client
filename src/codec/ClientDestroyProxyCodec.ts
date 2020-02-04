@@ -14,39 +14,33 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
+import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
-import {ClientMessageType} from './ClientMessageType';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, MESSAGE_TYPE_OFFSET, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
+import {StringCodec} from './builtin/StringCodec';
 
-var REQUEST_TYPE = ClientMessageType.CLIENT_DESTROYPROXY;
-var RESPONSE_TYPE = 100;
-var RETRYABLE = false;
+// hex: 0x000500
+const REQUEST_MESSAGE_TYPE = 1280;
+// hex: 0x000501
+const RESPONSE_MESSAGE_TYPE = 1281;
+
+const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
 
 export class ClientDestroyProxyCodec {
+    static encodeRequest(name: string, serviceName: string): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(false);
 
+        const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, MESSAGE_TYPE_OFFSET, REQUEST_MESSAGE_TYPE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
+        clientMessage.add(initialFrame);
 
-    static calculateSize(name: string, serviceName: string) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.calculateSizeString(serviceName);
-        return dataSize;
-    }
-
-    static encodeRequest(name: string, serviceName: string) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, serviceName));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendString(serviceName);
-        clientMessage.updateFrameLength();
+        StringCodec.encode(clientMessage, name);
+        StringCodec.encode(clientMessage, serviceName);
         return clientMessage;
     }
-
-// Empty decodeResponse(ClientMessage), this message has no parameters to decode
-
-
 }

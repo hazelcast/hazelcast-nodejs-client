@@ -18,8 +18,9 @@ import * as Promise from 'bluebird';
 import {BuildInfo} from '../BuildInfo';
 import HazelcastClient from '../HazelcastClient';
 import {Data} from '../serialization/Data';
-import Address = require('../Address');
-import ClientMessage = require('../ClientMessage');
+import {Address} from '../Address';
+import {ClientMessage} from '../ClientMessage';
+import {UUID} from '../core/UUID';
 
 /**
  * Common super class for any proxy.
@@ -78,9 +79,9 @@ export class BaseProxy {
      * @param codecArguments
      * @returns
      */
-    protected encodeInvokeOnKey<T>(codec: any, partitionKey: any, ...codecArguments: any[]): Promise<T> {
+    protected encodeInvokeOnKey(codec: any, partitionKey: any, ...codecArguments: any[]): Promise<ClientMessage> {
         const partitionId: number = this.client.getPartitionService().getPartitionId(partitionKey);
-        return this.encodeInvokeOnPartition<T>(codec, partitionId, ...codecArguments);
+        return this.encodeInvokeOnPartition(codec, partitionId, ...codecArguments);
     }
 
     /**
@@ -89,16 +90,14 @@ export class BaseProxy {
      * @param codecArguments
      * @returns
      */
-    protected encodeInvokeOnRandomTarget<T>(codec: any, ...codecArguments: any[]): Promise<T> {
+    protected encodeInvokeOnRandomTarget(codec: any, ...codecArguments: any[]): Promise<ClientMessage> {
         const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
-        const invocationResponse = this.client.getInvocationService().invokeOnRandomTarget(clientMessage);
-        return this.createPromise<T>(codec, invocationResponse);
+        return this.client.getInvocationService().invokeOnRandomTarget(clientMessage);
     }
 
-    protected encodeInvokeOnAddress<T>(codec: any, address: Address, ...codecArguments: any[]): Promise<T> {
+    protected encodeInvokeOnTarget(codec: any, target: UUID, ...codecArguments: any[]): Promise<ClientMessage> {
         const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
-        const invocation: Promise<ClientMessage> = this.client.getInvocationService().invokeOnTarget(clientMessage, address);
-        return this.createPromise<T>(codec, invocation);
+        return  this.client.getInvocationService().invokeOnTarget(clientMessage, target);
     }
 
     /**
@@ -108,12 +107,9 @@ export class BaseProxy {
      * @param codecArguments
      * @returns
      */
-    protected encodeInvokeOnPartition<T>(codec: any, partitionId: number, ...codecArguments: any[]): Promise<T> {
+    protected encodeInvokeOnPartition(codec: any, partitionId: number, ...codecArguments: any[]): Promise<ClientMessage> {
         const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
-        const invocationResponse: Promise<ClientMessage> = this.client.getInvocationService()
-            .invokeOnPartition(clientMessage, partitionId);
-
-        return this.createPromise<T>(codec, invocationResponse);
+        return this.client.getInvocationService().invokeOnPartition(clientMessage, partitionId);
     }
 
     /**
@@ -140,21 +136,5 @@ export class BaseProxy {
             return activeConnections[address].getConnectedServerVersion();
         }
         return BuildInfo.UNKNOWN_VERSION_ID;
-    }
-
-    private createPromise<T>(codec: any, promise: Promise<ClientMessage>): Promise<T> {
-        const toObject = this.toObject.bind(this);
-        return promise.then(function (clientMessage: ClientMessage): any {
-            if (codec.decodeResponse) {
-                const raw = codec.decodeResponse(clientMessage, toObject);
-
-                const response = raw.response;
-                if (typeof response === 'undefined') {
-                    return raw;
-                } else {
-                    return response;
-                }
-            }
-        });
     }
 }

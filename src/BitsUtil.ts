@@ -16,8 +16,8 @@
 
 /* tslint:disable:no-bitwise */
 import {Buffer} from 'safe-buffer';
-import Address = require('./Address');
 import {Data} from './serialization/Data';
+import {Address} from './Address';
 
 export class BitsUtil {
     static EVENT_MEMBER = 200;
@@ -47,6 +47,7 @@ export class BitsUtil {
     static FLOAT_SIZE_IN_BYTES: number = 4;
     static LONG_SIZE_IN_BYTES: number = 8;
     static DOUBLE_SIZE_IN_BYTES: number = 8;
+    static UUID_SIZE_IN_BYTES: number = BitsUtil.BOOLEAN_SIZE_IN_BYTES + 2 * BitsUtil.LONG_SIZE_IN_BYTES;
 
     static BIG_ENDIAN: number = 2;
     static LITTLE_ENDIAN: number = 1;

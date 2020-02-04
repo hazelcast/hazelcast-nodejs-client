@@ -18,6 +18,7 @@
 
 var expect = require('chai').expect;
 var HazelcastClient = require('../../lib/index.js').Client;
+var Config = require('../../lib/index.js').Config;
 var Controller = require('./../RC');
 var Util = require('./../Util');
 var fs = require('fs');
@@ -39,7 +40,9 @@ describe('ReplicatedMap Proxy', function () {
             cluster = response;
             return Controller.startMember(cluster.id);
         }).then(function () {
-            return HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
+            const config = new Config.ClientConfig();
+            config.clusterName = cluster.id;
+            return HazelcastClient.newHazelcastClient(config).then(function (hazelcastClient) {
                 client = hazelcastClient;
             });
         });

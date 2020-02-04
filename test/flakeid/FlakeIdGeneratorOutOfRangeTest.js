@@ -64,6 +64,7 @@ describe("FlakeIdGeneratorOutOfRangeTest", function () {
             }).then(function () {
                 var cfg = new Config.ClientConfig();
                 cfg.networkConfig.smartRouting = false;
+                cfg.clusterName = cluster.id;
                 return HazelcastClient.newHazelcastClient(cfg);
             }).then(function (value) {
                 client = value;
@@ -93,7 +94,9 @@ describe("FlakeIdGeneratorOutOfRangeTest", function () {
         }).then(function () {
             return assignOverflowedNodeId(cluster.id, 1);
         }).then(function () {
-            return HazelcastClient.newHazelcastClient();
+            const cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
+            return HazelcastClient.newHazelcastClient(cfg);
         }).then(function (cl) {
             client = cl;
             return client.getFlakeIdGenerator('test');

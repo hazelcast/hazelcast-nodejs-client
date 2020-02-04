@@ -19,7 +19,7 @@ import {ClusterDataFactoryHelper} from './ClusterDataFactoryHelper';
 import {DataInput, DataOutput} from './serialization/Data';
 import {IdentifiedDataSerializable} from './serialization/Serializable';
 
-class Address implements IdentifiedDataSerializable {
+export class Address implements IdentifiedDataSerializable {
 
     host: string;
     port: number;
@@ -78,5 +78,3 @@ class Address implements IdentifiedDataSerializable {
         return this.host + ':' + this.port;
     }
 }
-
-export = Address;

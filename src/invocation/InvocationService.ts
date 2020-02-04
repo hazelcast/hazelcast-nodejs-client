@@ -26,13 +26,15 @@ import {
     IOError,
     RetryableHazelcastError,
 } from '../HazelcastError';
-import {ClientConnection} from './ClientConnection';
+import {ClientConnection} from '../network/ClientConnection';
 import {DeferredPromise} from '../Util';
 import {ILogger} from '../logging/ILogger';
-import Address = require('../Address');
-import ClientMessage = require('../ClientMessage');
+import {ClientMessage, IS_EVENT_FLAG} from '../ClientMessage';
+import {EXCEPTION_MESSAGE_TYPE} from '../codec/builtin/ErrorsCodec';
+import {ClientConnectionManager} from '../network/ClientConnectionManager';
+import {UUID} from '../core/UUID';
+import {PartitionService} from '../PartitionService';
 
-const EXCEPTION_MESSAGE_TYPE = 109;
 const MAX_FAST_INVOCATION_COUNT = 5;
 const PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS = 'hazelcast.client.invocation.retry.pause.millis';
 const PROPERTY_INVOCATION_TIMEOUT_MILLIS = 'hazelcast.client.invocation.timeout.millis';
@@ -45,7 +47,7 @@ export class Invocation {
     client: HazelcastClient;
     invocationService: InvocationService;
     /**
-     * Representatiton of the request in binary form.
+     * Representation of the request in binary form.
      */
     request: ClientMessage;
     /**
@@ -53,9 +55,9 @@ export class Invocation {
      */
     partitionId: number;
     /**
-     * Address of the request. If request is not bound to any specific address, should be set to null.
+     * Uuid of the request. If request is not bound to any specific uuid, should be set to null.
      */
-    address: Address;
+    uuid: UUID;
     /**
      * Deadline of validity. Client will not try to send this request to server after the deadline passes.
      */
@@ -74,6 +76,11 @@ export class Invocation {
      * Otherwise, should be set to null.
      */
     handler: (...args: any[]) => any;
+
+    /**
+     * True if this invocation is urgent (can be invoked even in the client is in the disconnected state), false otherwise.
+     */
+    urgent: boolean = false;
 
     constructor(client: HazelcastClient, request: ClientMessage) {
         this.client = client;
@@ -94,7 +101,7 @@ export class Invocation {
     }
 
     isAllowedToRetryOnSelection(err: Error): boolean {
-        return (this.connection == null && this.address == null) || !(err instanceof IOError);
+        return (this.connection == null && this.uuid == null) || !(err instanceof IOError);
     }
 }
 
@@ -112,9 +119,13 @@ export class InvocationService {
     private readonly invocationTimeoutMillis: number;
     private logger: ILogger;
     private isShutdown: boolean;
+    private connectionManager: ClientConnectionManager;
+    private partitionService: PartitionService;
 
     constructor(hazelcastClient: HazelcastClient) {
         this.client = hazelcastClient;
+        this.connectionManager = hazelcastClient.getConnectionManager();
+        this.partitionService = hazelcastClient.getPartitionService();
         this.logger = this.client.getLoggingService().getLogger();
         this.smartRoutingEnabled = hazelcastClient.getConfig().networkConfig.smartRouting;
         if (hazelcastClient.getConfig().networkConfig.smartRouting) {
@@ -135,8 +146,18 @@ export class InvocationService {
         invocation.deferred = DeferredPromise<ClientMessage>();
         const newCorrelationId = this.correlationCounter++;
         invocation.request.setCorrelationId(newCorrelationId);
+        if (!invocation.urgent) {
+            if (!this.connectionManager.isInvocationAllowed(invocation.deferred)) {
+                return invocation.deferred.promise;
+            }
+        }
         this.doInvoke(invocation);
         return invocation.deferred.promise;
+    }
+
+    invokeUrgent(invocation: Invocation): Promise<ClientMessage> {
+        invocation.urgent = true;
+        return this.invoke(invocation);
     }
 
     /**
@@ -169,14 +190,14 @@ export class InvocationService {
     }
 
     /**
-     * Invokes given invocation on the host with given address.
+     * Invokes given invocation on the host with given uuid.
      * @param request
      * @param target
      * @returns
      */
-    invokeOnTarget(request: ClientMessage, target: Address): Promise<ClientMessage> {
+    invokeOnTarget(request: ClientMessage, target: UUID): Promise<ClientMessage> {
         const invocation = new Invocation(this.client, request);
-        invocation.address = target;
+        invocation.uuid = target;
         return this.invoke(invocation);
     }
 
@@ -210,14 +231,13 @@ export class InvocationService {
 
     /**
      * Extract codec specific properties in a protocol message and resolves waiting promise.
-     * @param buffer
+     * @param clientMessage
      */
-    processResponse(buffer: Buffer): void {
-        const clientMessage = new ClientMessage(buffer);
+    processResponse(clientMessage: ClientMessage): void {
         const correlationId = clientMessage.getCorrelationId();
         const messageType = clientMessage.getMessageType();
 
-        if (clientMessage.hasFlags(BitsUtil.LISTENER_FLAG)) {
+        if (ClientMessage.isFlagSet(clientMessage.startFrame.flags, IS_EVENT_FLAG)) {
             setImmediate(() => {
                 if (this.eventHandlers[correlationId] !== undefined) {
                     this.eventHandlers[correlationId].handler(clientMessage);
@@ -242,12 +262,25 @@ export class InvocationService {
         invocation.invokeCount++;
         if (invocation.hasOwnProperty('connection')) {
             invocationPromise = this.send(invocation, invocation.connection);
-        } else if (invocation.hasPartitionId()) {
+            invocationPromise.catch((err) => {
+                this.notifyError(invocation, err);
+            });
+            return;
+        }
+
+        if (invocation.hasPartitionId()) {
             invocationPromise = this.invokeOnPartitionOwner(invocation, invocation.partitionId);
-        } else if (invocation.hasOwnProperty('address')) {
-            invocationPromise = this.invokeOnAddress(invocation, invocation.address);
+        } else if (invocation.hasOwnProperty('uuid')) {
+            invocationPromise = this.invokeOnUuid(invocation, invocation.uuid);
         } else {
-            invocationPromise = this.invokeOnOwner(invocation);
+            invocationPromise = this.invokeOnRandomConnection(invocation);
+        }
+
+        if (invocationPromise.isRejected()) {
+            invocationPromise.catch(() => {
+                // No-op
+            });
+            invocationPromise = this.invokeOnRandomConnection(invocation);
         }
         invocationPromise.catch((err) => {
             this.notifyError(invocation, err);
@@ -260,38 +293,37 @@ export class InvocationService {
         if (invocation.hasOwnProperty('connection')) {
             invocationPromise = this.send(invocation, invocation.connection);
         } else {
-            invocationPromise = this.invokeOnOwner(invocation);
+            invocationPromise = this.invokeOnRandomConnection(invocation);
         }
         invocationPromise.catch((err) => {
             this.notifyError(invocation, err);
         });
     }
 
-    private invokeOnOwner(invocation: Invocation): Promise<void> {
-        const owner = this.client.getClusterService().getOwnerConnection();
-        if (owner == null) {
-            return Promise.reject(new IOError('Unisocket client\'s owner connection is not available.'));
+    private invokeOnRandomConnection(invocation: Invocation): Promise<void> {
+        const connection = this.connectionManager.getRandomConnection();
+        if (connection == null) {
+            return Promise.reject(new IOError('No connection found to invoke'));
         }
-        return this.send(invocation, owner);
+        return this.send(invocation, connection);
     }
 
-    private invokeOnAddress(invocation: Invocation, address: Address): Promise<void> {
-        return this.client.getConnectionManager().getOrConnect(address).then((connection: ClientConnection) => {
-            return this.send(invocation, connection);
-        }).catch((e) => {
-            this.logger.debug('InvocationService', e);
-            throw new IOError(address.toString() + ' is not available.', e);
-        });
+    private invokeOnUuid(invocation: Invocation, target: UUID): Promise<void> {
+        const connection = this.connectionManager.getConnection(target);
+        if (connection == null) {
+            this.logger.trace('InvocationService', `Client is not connected to target: ${target}`);
+            return Promise.reject(new IOError('No connection found to invoke'));
+        }
+        return this.send(invocation, connection);
     }
 
     private invokeOnPartitionOwner(invocation: Invocation, partitionId: number): Promise<void> {
-        const ownerAddress = this.client.getPartitionService().getAddressForPartition(partitionId);
-        return this.client.getConnectionManager().getOrConnect(ownerAddress).then((connection: ClientConnection) => {
-            return this.send(invocation, connection);
-        }).catch((e) => {
-            this.logger.debug('InvocationService', e);
-            throw new IOError(ownerAddress.toString() + '(partition owner) is not available.', e);
-        });
+        const partitionOwner = this.partitionService.getPartitionOwner(partitionId);
+        if (partitionOwner == null) {
+            this.logger.trace('InvocationService', 'Partition owner is not assigned yet');
+            return Promise.reject(new IOError('No connection found to invoke'));
+        }
+        return this.invokeOnUuid(invocation, partitionOwner);
     }
 
     private send(invocation: Invocation, connection: ClientConnection): Promise<void> {
@@ -304,7 +336,7 @@ export class InvocationService {
     }
 
     private write(invocation: Invocation, connection: ClientConnection): Promise<void> {
-        return connection.write(invocation.request.getBuffer());
+        return connection.write(invocation.request);
     }
 
     private notifyError(invocation: Invocation, error: Error): void {

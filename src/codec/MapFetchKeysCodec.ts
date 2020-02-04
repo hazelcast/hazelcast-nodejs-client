@@ -14,67 +14,53 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
+import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, MESSAGE_TYPE_OFFSET, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
+import {StringCodec} from './builtin/StringCodec';
+import {EntryListIntegerIntegerCodec} from './builtin/EntryListIntegerIntegerCodec';
 import {Data} from '../serialization/Data';
-import {MapMessageType} from './MapMessageType';
+import {ListMultiFrameCodec} from './builtin/ListMultiFrameCodec';
+import {DataCodec} from './builtin/DataCodec';
 
-var REQUEST_TYPE = MapMessageType.MAP_FETCHKEYS;
-var RESPONSE_TYPE = 116;
-var RETRYABLE = true;
+// hex: 0x013700
+const REQUEST_MESSAGE_TYPE = 79616;
+// hex: 0x013701
+const RESPONSE_MESSAGE_TYPE = 79617;
 
+const REQUEST_BATCH_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const REQUEST_INITIAL_FRAME_SIZE = REQUEST_BATCH_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+export interface MapFetchKeysResponseParams {
+    iterationPointers: Array<[number, number]>;
+    keys: Data[];
+}
 export class MapFetchKeysCodec {
+    static encodeRequest(name: string, iterationPointers: Array<[number, number]>, batch: number): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(true);
 
+        const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, MESSAGE_TYPE_OFFSET, REQUEST_MESSAGE_TYPE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, REQUEST_BATCH_OFFSET, batch);
+        clientMessage.add(initialFrame);
 
-    static calculateSize(name: string, partitionId: number, tableIndex: number, batch: number) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.INT_SIZE_IN_BYTES;
-        dataSize += BitsUtil.INT_SIZE_IN_BYTES;
-        dataSize += BitsUtil.INT_SIZE_IN_BYTES;
-        return dataSize;
-    }
-
-    static encodeRequest(name: string, partitionId: number, tableIndex: number, batch: number) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, partitionId, tableIndex, batch));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendInt32(partitionId);
-        clientMessage.appendInt32(tableIndex);
-        clientMessage.appendInt32(batch);
-        clientMessage.updateFrameLength();
+        StringCodec.encode(clientMessage, name);
+        EntryListIntegerIntegerCodec.encode(clientMessage, iterationPointers);
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        // Decode response from client message
-        var parameters: any = {
-            'tableIndex': null,
-            'keys': null
+    static decodeResponse(clientMessage: ClientMessage): MapFetchKeysResponseParams {
+        const iterator = clientMessage.frameIterator();
+        // empty initial frame
+        iterator.next();
+
+        return {
+            iterationPointers: EntryListIntegerIntegerCodec.decode(iterator),
+            keys: ListMultiFrameCodec.decode(iterator, DataCodec.decode),
         };
-
-        if (clientMessage.isComplete()) {
-            return parameters;
-        }
-        parameters['tableIndex'] = clientMessage.readInt32();
-
-
-        var keysSize = clientMessage.readInt32();
-        var keys: any = [];
-        for (var keysIndex = 0; keysIndex < keysSize; keysIndex++) {
-            var keysItem: Data;
-            keysItem = clientMessage.readData();
-            keys.push(keysItem);
-        }
-        parameters['keys'] = keys;
-
-        return parameters;
     }
-
-
 }

@@ -14,102 +14,54 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
-import Address = require('../Address');
+/*tslint:disable:max-line-length*/
+import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
-import {AddressCodec} from './AddressCodec';
-import {UUIDCodec} from './UUIDCodec';
-import {Data} from '../serialization/Data';
-import {MapMessageType} from './MapMessageType';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, MESSAGE_TYPE_OFFSET, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
+import {UUID} from '../core/UUID';
+import {ListMultiFrameCodec} from './builtin/ListMultiFrameCodec';
+import {StringCodec} from './builtin/StringCodec';
+import {EntryListCodec} from './builtin/EntryListCodec';
+import {EntryListIntegerLongCodec} from './builtin/EntryListIntegerLongCodec';
+import * as Long from 'long';
+import {EntryListIntegerUUIDCodec} from './builtin/EntryListIntegerUUIDCodec';
 
-var REQUEST_TYPE = MapMessageType.MAP_FETCHNEARCACHEINVALIDATIONMETADATA;
-var RESPONSE_TYPE = 122;
-var RETRYABLE = false;
+// hex: 0x013D00
+const REQUEST_MESSAGE_TYPE = 81152;
+// hex: 0x013D01
+const RESPONSE_MESSAGE_TYPE = 81153;
 
+const REQUEST_UUID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const REQUEST_INITIAL_FRAME_SIZE = REQUEST_UUID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
 
+export interface MapFetchNearCacheInvalidationMetadataResponseParams {
+    namePartitionSequenceList: Array<[string, Array<[number, Long]>]>;
+    partitionUuidList: Array<[number, UUID]>;
+}
 export class MapFetchNearCacheInvalidationMetadataCodec {
+    static encodeRequest(names: string[], uuid: UUID): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(false);
 
+        const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, MESSAGE_TYPE_OFFSET, REQUEST_MESSAGE_TYPE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
+        FixSizedTypesCodec.encodeUUID(initialFrame.content, REQUEST_UUID_OFFSET, uuid);
+        clientMessage.add(initialFrame);
 
-    static calculateSize(names: any, address: Address) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.INT_SIZE_IN_BYTES;
-
-        names.forEach((namesItem: any) => {
-            dataSize += BitsUtil.calculateSizeString(namesItem);
-        });
-        dataSize += BitsUtil.calculateSizeAddress(address);
-        return dataSize;
-    }
-
-    static encodeRequest(names: any, address: Address) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(names, address));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendInt32(names.length);
-
-        names.forEach((namesItem: any) => {
-            clientMessage.appendString(namesItem);
-        });
-
-        AddressCodec.encode(clientMessage, address);
-        clientMessage.updateFrameLength();
+        ListMultiFrameCodec.encode(clientMessage, names, StringCodec.encode);
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        // Decode response from client message
-        var parameters: any = {
-            'namePartitionSequenceList': null,
-            'partitionUuidList': null
+    static decodeResponse(clientMessage: ClientMessage): MapFetchNearCacheInvalidationMetadataResponseParams {
+        const iterator = clientMessage.frameIterator();
+        // empty initial frame
+        iterator.next();
+
+        return {
+            namePartitionSequenceList: EntryListCodec.decode(iterator, StringCodec.decode, EntryListIntegerLongCodec.decode),
+            partitionUuidList: EntryListIntegerUUIDCodec.decode(iterator),
         };
-
-        if (clientMessage.isComplete()) {
-            return parameters;
-        }
-
-        var namePartitionSequenceListSize = clientMessage.readInt32();
-        var namePartitionSequenceList: any = [];
-        for (var namePartitionSequenceListIndex = 0; namePartitionSequenceListIndex < namePartitionSequenceListSize; namePartitionSequenceListIndex++) {
-            var namePartitionSequenceListItem: any;
-            var namePartitionSequenceListItemKey: string;
-            var namePartitionSequenceListItemVal: any;
-            namePartitionSequenceListItemKey = clientMessage.readString();
-
-            var namePartitionSequenceListItemValSize = clientMessage.readInt32();
-            var namePartitionSequenceListItemVal: any = [];
-            for (var namePartitionSequenceListItemValIndex = 0; namePartitionSequenceListItemValIndex < namePartitionSequenceListItemValSize; namePartitionSequenceListItemValIndex++) {
-                var namePartitionSequenceListItemValItem: any;
-                var namePartitionSequenceListItemValItemKey: number;
-                var namePartitionSequenceListItemValItemVal: any;
-                namePartitionSequenceListItemValItemKey = clientMessage.readInt32();
-                namePartitionSequenceListItemValItemVal = clientMessage.readLong();
-                namePartitionSequenceListItemValItem = [namePartitionSequenceListItemValItemKey, namePartitionSequenceListItemValItemVal];
-                namePartitionSequenceListItemVal.push(namePartitionSequenceListItemValItem);
-            }
-            namePartitionSequenceListItem = [namePartitionSequenceListItemKey, namePartitionSequenceListItemVal];
-            namePartitionSequenceList.push(namePartitionSequenceListItem);
-        }
-        parameters['namePartitionSequenceList'] = namePartitionSequenceList;
-
-
-        var partitionUuidListSize = clientMessage.readInt32();
-        var partitionUuidList: any = [];
-        for (var partitionUuidListIndex = 0; partitionUuidListIndex < partitionUuidListSize; partitionUuidListIndex++) {
-            var partitionUuidListItem: any;
-            var partitionUuidListItemKey: number;
-            var partitionUuidListItemVal: any;
-            partitionUuidListItemKey = clientMessage.readInt32();
-            partitionUuidListItemVal = UUIDCodec.decode(clientMessage, toObjectFunction);
-            partitionUuidListItem = [partitionUuidListItemKey, partitionUuidListItemVal];
-            partitionUuidList.push(partitionUuidListItem);
-        }
-        parameters['partitionUuidList'] = partitionUuidList;
-
-        return parameters;
     }
-
-
 }

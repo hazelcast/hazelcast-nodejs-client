@@ -14,114 +14,78 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
+import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
-import {AddressCodec} from './AddressCodec';
-import {MemberCodec} from './MemberCodec';
-import {Data} from '../serialization/Data';
-import {ClientMessageType} from './ClientMessageType';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, MESSAGE_TYPE_OFFSET, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
+import {UUID} from '../core/UUID';
+import {CodecUtil} from './builtin/CodecUtil';
+import {StringCodec} from './builtin/StringCodec';
+import {ByteArrayCodec} from './builtin/ByteArrayCodec';
+import {ListMultiFrameCodec} from './builtin/ListMultiFrameCodec';
+import {Address} from '../Address';
+import {AddressCodec} from './custom/AddressCodec';
 
-var REQUEST_TYPE = ClientMessageType.CLIENT_AUTHENTICATIONCUSTOM;
-var RESPONSE_TYPE = 107;
-var RETRYABLE = true;
+// hex: 0x000200
+const REQUEST_MESSAGE_TYPE = 512;
+// hex: 0x000201
+const RESPONSE_MESSAGE_TYPE = 513;
 
+const REQUEST_UUID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const REQUEST_SERIALIZATION_VERSION_OFFSET = REQUEST_UUID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
+const REQUEST_INITIAL_FRAME_SIZE = REQUEST_SERIALIZATION_VERSION_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
+const RESPONSE_STATUS_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
+const RESPONSE_MEMBER_UUID_OFFSET = RESPONSE_STATUS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
+const RESPONSE_SERIALIZATION_VERSION_OFFSET = RESPONSE_MEMBER_UUID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
+const RESPONSE_PARTITION_COUNT_OFFSET = RESPONSE_SERIALIZATION_VERSION_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
+const RESPONSE_CLUSTER_ID_OFFSET = RESPONSE_PARTITION_COUNT_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const RESPONSE_FAILOVER_SUPPORTED_OFFSET = RESPONSE_CLUSTER_ID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
 
+export interface ClientAuthenticationCustomResponseParams {
+    status: number;
+    address: Address;
+    memberUuid: UUID;
+    serializationVersion: number;
+    serverHazelcastVersion: string;
+    partitionCount: number;
+    clusterId: UUID;
+    failoverSupported: boolean;
+}
 export class ClientAuthenticationCustomCodec {
+    static encodeRequest(clusterName: string, credentials: Buffer, uuid: UUID, clientType: string, serializationVersion: number, clientHazelcastVersion: string, clientName: string, labels: string[]): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(true);
 
+        const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, MESSAGE_TYPE_OFFSET, REQUEST_MESSAGE_TYPE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
+        FixSizedTypesCodec.encodeUUID(initialFrame.content, REQUEST_UUID_OFFSET, uuid);
+        FixSizedTypesCodec.encodeByte(initialFrame.content, REQUEST_SERIALIZATION_VERSION_OFFSET, serializationVersion);
+        clientMessage.add(initialFrame);
 
-    static calculateSize(credentials: Data, uuid: string, ownerUuid: string, isOwnerConnection: boolean, clientType: string, serializationVersion: any, clientHazelcastVersion: string) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeData(credentials);
-        dataSize += BitsUtil.BOOLEAN_SIZE_IN_BYTES;
-        if (uuid !== null) {
-            dataSize += BitsUtil.calculateSizeString(uuid);
-        }
-        dataSize += BitsUtil.BOOLEAN_SIZE_IN_BYTES;
-        if (ownerUuid !== null) {
-            dataSize += BitsUtil.calculateSizeString(ownerUuid);
-        }
-        dataSize += BitsUtil.BOOLEAN_SIZE_IN_BYTES;
-        dataSize += BitsUtil.calculateSizeString(clientType);
-        dataSize += BitsUtil.BYTE_SIZE_IN_BYTES;
-        dataSize += BitsUtil.calculateSizeString(clientHazelcastVersion);
-        return dataSize;
-    }
-
-    static encodeRequest(credentials: Data, uuid: string, ownerUuid: string, isOwnerConnection: boolean, clientType: string, serializationVersion: any, clientHazelcastVersion: string) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(credentials, uuid, ownerUuid, isOwnerConnection, clientType, serializationVersion, clientHazelcastVersion));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendData(credentials);
-        clientMessage.appendBoolean(uuid === null);
-        if (uuid !== null) {
-            clientMessage.appendString(uuid);
-        }
-        clientMessage.appendBoolean(ownerUuid === null);
-        if (ownerUuid !== null) {
-            clientMessage.appendString(ownerUuid);
-        }
-        clientMessage.appendBoolean(isOwnerConnection);
-        clientMessage.appendString(clientType);
-        clientMessage.appendByte(serializationVersion);
-        clientMessage.appendString(clientHazelcastVersion);
-        clientMessage.updateFrameLength();
+        StringCodec.encode(clientMessage, clusterName);
+        ByteArrayCodec.encode(clientMessage, credentials);
+        StringCodec.encode(clientMessage, clientType);
+        StringCodec.encode(clientMessage, clientHazelcastVersion);
+        StringCodec.encode(clientMessage, clientName);
+        ListMultiFrameCodec.encode(clientMessage, labels, StringCodec.encode);
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        // Decode response from client message
-        var parameters: any = {
-            'status': null,
-            'address': null,
-            'uuid': null,
-            'ownerUuid': null,
-            'serializationVersion': null,
-            'serverHazelcastVersion': null,
-            'clientUnregisteredMembers': null
+    static decodeResponse(clientMessage: ClientMessage): ClientAuthenticationCustomResponseParams {
+        const iterator = clientMessage.frameIterator();
+        const initialFrame = iterator.next();
+
+        return {
+            status: FixSizedTypesCodec.decodeByte(initialFrame.content, RESPONSE_STATUS_OFFSET),
+            memberUuid: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_MEMBER_UUID_OFFSET),
+            serializationVersion: FixSizedTypesCodec.decodeByte(initialFrame.content, RESPONSE_SERIALIZATION_VERSION_OFFSET),
+            partitionCount: FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_PARTITION_COUNT_OFFSET),
+            clusterId: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_CLUSTER_ID_OFFSET),
+            failoverSupported: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_FAILOVER_SUPPORTED_OFFSET),
+            address: CodecUtil.decodeNullable(iterator, AddressCodec.decode),
+            serverHazelcastVersion: StringCodec.decode(iterator),
         };
-
-        parameters['status'] = clientMessage.readByte();
-
-
-        if (clientMessage.readBoolean() !== true) {
-            parameters['address'] = AddressCodec.decode(clientMessage, toObjectFunction);
-        }
-
-
-        if (clientMessage.readBoolean() !== true) {
-            parameters['uuid'] = clientMessage.readString();
-        }
-
-
-        if (clientMessage.readBoolean() !== true) {
-            parameters['ownerUuid'] = clientMessage.readString();
-        }
-
-        parameters['serializationVersion'] = clientMessage.readByte();
-
-        if (clientMessage.isComplete()) {
-            return parameters;
-        }
-        parameters['serverHazelcastVersion'] = clientMessage.readString();
-        parameters.serverHazelcastVersionExist = true;
-
-        if (clientMessage.readBoolean() !== true) {
-
-            var clientUnregisteredMembersSize = clientMessage.readInt32();
-            var clientUnregisteredMembers: any = [];
-            for (var clientUnregisteredMembersIndex = 0; clientUnregisteredMembersIndex < clientUnregisteredMembersSize; clientUnregisteredMembersIndex++) {
-                var clientUnregisteredMembersItem: any;
-                clientUnregisteredMembersItem = MemberCodec.decode(clientMessage, toObjectFunction);
-                clientUnregisteredMembers.push(clientUnregisteredMembersItem);
-            }
-            parameters['clientUnregisteredMembers'] = clientUnregisteredMembers;
-        }
-        parameters.clientUnregisteredMembersExist = true;
-        return parameters;
     }
-
-
 }

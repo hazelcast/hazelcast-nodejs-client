@@ -33,17 +33,16 @@ function createController(nearCacheEnabled) {
     }
 }
 
-function createClient(nearCacheEnabled) {
+function createClient(nearCacheEnabled, clusterName) {
+    const cfg = new Config.ClientConfig();
+    cfg.clusterName = clusterName;
     if (nearCacheEnabled) {
-        var cfg = new Config.ClientConfig();
         var ncc = new Config.NearCacheConfig();
         ncc.name = 'test';
         ncc.timeToLiveSeconds = 1;
         cfg.nearCacheConfigs['test'] = ncc;
-        return HazelcastClient.newHazelcastClient(cfg);
-    } else {
-        return HazelcastClient.newHazelcastClient()
     }
+    return HazelcastClient.newHazelcastClient(cfg);
 }
 
 describe('MapProxy', function () {
@@ -61,7 +60,7 @@ describe('MapProxy', function () {
                     cluster = res;
                     return Controller.startMember(cluster.id);
                 }).then(function (m) {
-                    return createClient(nearCacheEnabled).then(function (hazelcastClient) {
+                    return createClient(nearCacheEnabled, cluster.id).then(function (hazelcastClient) {
                         client = hazelcastClient;
                     });
                 });

@@ -1,11 +1,11 @@
 #!/bin/sh
-HZ_VERSION="3.12.6"
-HZ_TEST_VERSION="3.12.6"
+HZ_VERSION="4.0"
+HZ_TEST_VERSION="4.0"
 HAZELCAST_TEST_VERSION=${HZ_TEST_VERSION}
 HAZELCAST_VERSION=${HZ_VERSION}
 HAZELCAST_ENTERPRISE_VERSION=${HZ_VERSION}
 HAZELCAST_ENTERPRISE_TEST_VERSION=${HZ_VERSION}
-HAZELCAST_RC_VERSION="0.4-SNAPSHOT"
+HAZELCAST_RC_VERSION="0.7-SNAPSHOT"
 SNAPSHOT_REPO="https://oss.sonatype.org/content/repositories/snapshots"
 RELEASE_REPO="http://repo1.maven.apache.org/maven2"
 ENTERPRISE_RELEASE_REPO="https://repository.hazelcast.com/release/"
@@ -93,7 +93,7 @@ else
     echo "Starting Remote Controller ... oss ..."
 fi
 
-nohup java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} -cp ${CLASSPATH}  com.hazelcast.remotecontroller.Main>rc_stdout.log 2>rc_stderr.log &
+nohup java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} -cp ${CLASSPATH}  com.hazelcast.remotecontroller.Main --use-simple-server>rc_stdout.log 2>rc_stderr.log &
 
 sleep 10
 

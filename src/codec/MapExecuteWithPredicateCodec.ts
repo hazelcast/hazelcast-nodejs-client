@@ -14,63 +14,49 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
+import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, MESSAGE_TYPE_OFFSET, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
+import {StringCodec} from './builtin/StringCodec';
 import {Data} from '../serialization/Data';
-import {MapMessageType} from './MapMessageType';
+import {DataCodec} from './builtin/DataCodec';
+import {EntryListCodec} from './builtin/EntryListCodec';
 
-var REQUEST_TYPE = MapMessageType.MAP_EXECUTEWITHPREDICATE;
-var RESPONSE_TYPE = 117;
-var RETRYABLE = false;
+// hex: 0x013100
+const REQUEST_MESSAGE_TYPE = 78080;
+// hex: 0x013101
+const RESPONSE_MESSAGE_TYPE = 78081;
 
+const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+export interface MapExecuteWithPredicateResponseParams {
+    response: Array<[Data, Data]>;
+}
 export class MapExecuteWithPredicateCodec {
+    static encodeRequest(name: string, entryProcessor: Data, predicate: Data): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(false);
 
+        const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, MESSAGE_TYPE_OFFSET, REQUEST_MESSAGE_TYPE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
+        clientMessage.add(initialFrame);
 
-    static calculateSize(name: string, entryProcessor: Data, predicate: Data) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.calculateSizeData(entryProcessor);
-        dataSize += BitsUtil.calculateSizeData(predicate);
-        return dataSize;
-    }
-
-    static encodeRequest(name: string, entryProcessor: Data, predicate: Data) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, entryProcessor, predicate));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendData(entryProcessor);
-        clientMessage.appendData(predicate);
-        clientMessage.updateFrameLength();
+        StringCodec.encode(clientMessage, name);
+        DataCodec.encode(clientMessage, entryProcessor);
+        DataCodec.encode(clientMessage, predicate);
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        // Decode response from client message
-        var parameters: any = {
-            'response': null
+    static decodeResponse(clientMessage: ClientMessage): MapExecuteWithPredicateResponseParams {
+        const iterator = clientMessage.frameIterator();
+        // empty initial frame
+        iterator.next();
+
+        return {
+            response: EntryListCodec.decode(iterator, DataCodec.decode, DataCodec.decode),
         };
-
-
-        var responseSize = clientMessage.readInt32();
-        var response: any = [];
-        for (var responseIndex = 0; responseIndex < responseSize; responseIndex++) {
-            var responseItem: any;
-            var responseItemKey: Data;
-            var responseItemVal: any;
-            responseItemKey = clientMessage.readData();
-            responseItemVal = clientMessage.readData();
-            responseItem = [responseItemKey, responseItemVal];
-            response.push(responseItem);
-        }
-        parameters['response'] = response;
-
-        return parameters;
     }
-
-
 }

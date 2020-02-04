@@ -14,84 +14,73 @@
  * limitations under the License.
  */
 
-import * as Promise from 'bluebird';
 import HazelcastClient from './HazelcastClient';
 import {ILogger} from './logging/ILogger';
-import Address = require('./Address');
-import ClientMessage = require('./ClientMessage');
-import GetPartitionsCodec = require('./codec/GetPartitionsCodec');
+import {ClientConnection} from './network/ClientConnection';
+import {UUID} from './core/UUID';
+import {ClientOfflineError} from './HazelcastError';
 
-const PARTITION_REFRESH_INTERVAL = 10000;
+class PartitionTable {
+    connection: ClientConnection;
+    partitionStateVersion: number = -1;
+    partitions = new Map<number, UUID>();
+}
 
+/**
+ * Partition service for Hazelcast clients.
+ *
+ * Allows to retrieve information about the partition count, the partition owner or the partitionId of a key.
+ */
 export class PartitionService {
 
     private client: HazelcastClient;
-    private partitionMap: { [partitionId: number]: Address } = {};
-    private partitionCount: number;
-    private partitionRefreshTask: any;
-    private isShutdown: boolean;
+    private partitionTable = new PartitionTable();
+    private partitionCount: number = 0;
     private logger: ILogger;
 
     constructor(client: HazelcastClient) {
         this.client = client;
         this.logger = client.getLoggingService().getLogger();
-        this.isShutdown = false;
-    }
-
-    initialize(): Promise<void> {
-        this.partitionRefreshTask = setInterval(this.refresh.bind(this), PARTITION_REFRESH_INTERVAL);
-        return this.refresh();
-    }
-
-    shutdown(): void {
-        clearInterval(this.partitionRefreshTask);
-        this.isShutdown = true;
     }
 
     /**
-     * Refreshes the internal partition table.
+     * The partitions can be empty on the response, client will not apply the empty partition table,
      */
-    refresh(): Promise<void> {
-        if (this.isShutdown) {
-            return Promise.resolve();
+    public handlePartitionViewEvent(connection: ClientConnection, partitions: Array<[UUID, number[]]>,
+                                    partitionStateVersion: number): void {
+        this.logger.debug('PartitionService',
+            'Handling new partition table with  partitionStateVersion: ' + partitionStateVersion);
+        if (!this.shouldBeApplied(connection, partitions, partitionStateVersion, this.partitionTable)) {
+            return;
         }
-        const ownerConnection = this.client.getClusterService().getOwnerConnection();
-        if (ownerConnection == null) {
-            return Promise.resolve();
-        }
-        const clientMessage: ClientMessage = GetPartitionsCodec.encodeRequest();
-
-        return this.client.getInvocationService()
-            .invokeOnConnection(ownerConnection, clientMessage)
-            .then((response: ClientMessage) => {
-                const receivedPartitionMap = GetPartitionsCodec.decodeResponse(response);
-                for (const partitionId in receivedPartitionMap) {
-                    this.partitionMap[partitionId] = receivedPartitionMap[partitionId];
-                }
-                this.partitionCount = Object.keys(this.partitionMap).length;
-            }).catch((e) => {
-                if (this.client.getLifecycleService().isRunning()) {
-                    this.logger.warn('PartitionService', 'Error while fetching cluster partition table from'
-                        + this.client.getClusterService().ownerUuid, e);
-                }
-            });
+        const newPartitions = this.convertToMap(partitions);
+        this.partitionTable.connection = connection;
+        this.partitionTable.partitionStateVersion = partitionStateVersion;
+        this.partitionTable.partitions = newPartitions;
     }
 
     /**
-     * Returns the {@link Address} of the node which owns given partition id.
      * @param partitionId
-     * @returns the address of the node.
+     * @return the owner of the partition or undefined if a partition is not assigned yet
      */
-    getAddressForPartition(partitionId: number): Address {
-        return this.partitionMap[partitionId];
+    public getPartitionOwner(partitionId: number): UUID {
+        return this.getPartitions().get(partitionId);
     }
 
     /**
      * Computes the partition id for a given key.
      * @param key
      * @returns the partition id.
+     * @throws ClientOfflineError if the partition table is not arrived yet.
      */
-    getPartitionId(key: any): number {
+    public getPartitionId(key: any): number {
+        if (this.partitionCount === 0) {
+            // Partition count can not be zero for the sync mode.
+            // On the sync mode, we are waiting for the first connection to be established.
+            // We are initializing the partition count with the value coming from the server with authentication.
+            // This exception is used only for async mode client.
+            throw new ClientOfflineError();
+        }
         let partitionHash: number;
         if (typeof key === 'object' && 'getPartitionHash' in key) {
             partitionHash = key.getPartitionHash();
@@ -101,7 +90,79 @@ export class PartitionService {
         return Math.abs(partitionHash) % this.partitionCount;
     }
 
-    getPartitionCount(): number {
+    /**
+     * If partition table is not fetched yet, this method returns zero
+     *
+     * @return the partition count
+     */
+    public getPartitionCount(): number {
         return this.partitionCount;
+    }
+
+    /**
+     * Resets the partition table to initial state.
+     */
+    public reset(): void {
+        this.partitionTable.partitions = new Map<number, UUID>();
+        this.partitionTable.connection = null;
+        this.partitionTable.partitionStateVersion = -1;
+    }
+
+    /**
+     * @param newPartitionCount
+     * @return true if partition count can be set for the first time, or it is equal to
+     * one that is already available, returns false otherwise
+     */
+    public checkAndSetPartitionCount(newPartitionCount: number): boolean {
+        if (this.partitionCount === 0) {
+            this.partitionCount = newPartitionCount;
+            return true;
+        }
+        return this.partitionCount === newPartitionCount;
+    }
+
+    private convertToMap(partitions: Array<[UUID, number[]]>): Map<number, UUID> {
+        const newPartitions = new Map<number, UUID>();
+        for (const entry of partitions) {
+            const uuid = entry[0];
+            const ownedPartitions = entry[1];
+            for (const ownedPartition of ownedPartitions) {
+                newPartitions.set(ownedPartition, uuid);
+            }
+        }
+        return newPartitions;
+    }
+
+    private logFailure(connection: ClientConnection, partitionStateVersion: number,
+                       current: PartitionTable, cause: string): void {
+        this.logger.debug('PartitionService', 'Response will not be applied since ' + cause
+            + '. Response is from ' + connection
+            + '. Current connection ' + current.connection
+            + '. Response state version ' + partitionStateVersion
+            + '. Current state version ' + current.partitionStateVersion);
+    }
+
+    private getPartitions(): Map<number, UUID> {
+        return this.partitionTable.partitions;
+    }
+
+    private shouldBeApplied(connection: ClientConnection, partitions: Array<[UUID, number[]]>,
+                            partitionStateVersion: number, current: PartitionTable): boolean {
+        if (partitions.length === 0) {
+            this.logFailure(connection, partitionStateVersion, current, 'response is empty');
+            return false;
+        }
+
+        if (!connection.equals(current.connection)) {
+            this.logger.trace('PartitionService', 'Event coming from a new connection. Old connection: ' + current.connection
+                + ', new connection ' + connection);
+            return true;
+        }
+
+        if (partitionStateVersion <= current.partitionStateVersion) {
+            this.logFailure(connection, partitionStateVersion, current, 'response state version is old');
+            return false;
+        }
+        return true;
     }
 }

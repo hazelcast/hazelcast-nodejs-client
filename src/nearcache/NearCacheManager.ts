@@ -57,4 +57,10 @@ export class NearCacheManager {
         return Array.from(this.caches.values());
     }
 
+    public clearAllNearCaches(): void {
+        for (const nearCache of this.listAllNearCaches()) {
+            nearCache.clear();
+        }
+    }
+
 }

@@ -14,50 +14,38 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
+import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
-import {MapMessageType} from './MapMessageType';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, MESSAGE_TYPE_OFFSET, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
+import {StringCodec} from './builtin/StringCodec';
+import {Data} from '../serialization/Data';
+import {ListMultiFrameCodec} from './builtin/ListMultiFrameCodec';
+import {DataCodec} from './builtin/DataCodec';
 
-var REQUEST_TYPE = MapMessageType.MAP_LOADGIVENKEYS;
-var RESPONSE_TYPE = 100;
-var RETRYABLE = false;
+// hex: 0x012100
+const REQUEST_MESSAGE_TYPE = 73984;
+// hex: 0x012101
+const RESPONSE_MESSAGE_TYPE = 73985;
+
+const REQUEST_REPLACE_EXISTING_VALUES_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const REQUEST_INITIAL_FRAME_SIZE = REQUEST_REPLACE_EXISTING_VALUES_OFFSET + BitsUtil.BOOLEAN_SIZE_IN_BYTES;
 
 
 export class MapLoadGivenKeysCodec {
+    static encodeRequest(name: string, keys: Data[], replaceExistingValues: boolean): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(false);
 
+        const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, MESSAGE_TYPE_OFFSET, REQUEST_MESSAGE_TYPE);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
+        FixSizedTypesCodec.encodeBoolean(initialFrame.content, REQUEST_REPLACE_EXISTING_VALUES_OFFSET, replaceExistingValues);
+        clientMessage.add(initialFrame);
 
-    static calculateSize(name: string, keys: any, replaceExistingValues: boolean) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.INT_SIZE_IN_BYTES;
-
-        keys.forEach((keysItem: any) => {
-            dataSize += BitsUtil.calculateSizeData(keysItem);
-        });
-        dataSize += BitsUtil.BOOLEAN_SIZE_IN_BYTES;
-        return dataSize;
-    }
-
-    static encodeRequest(name: string, keys: any, replaceExistingValues: boolean) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, keys, replaceExistingValues));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendInt32(keys.length);
-
-        keys.forEach((keysItem: any) => {
-            clientMessage.appendData(keysItem);
-        });
-
-        clientMessage.appendBoolean(replaceExistingValues);
-        clientMessage.updateFrameLength();
+        StringCodec.encode(clientMessage, name);
+        ListMultiFrameCodec.encode(clientMessage, keys, DataCodec.encode);
         return clientMessage;
     }
-
-// Empty decodeResponse(ClientMessage), this message has no parameters to decode
-
-
 }

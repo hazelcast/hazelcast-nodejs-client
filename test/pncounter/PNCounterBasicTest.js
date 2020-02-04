@@ -17,6 +17,7 @@
 var expect = require('chai').expect;
 var RC = require('../RC');
 var Client = require('../../').Client;
+var Config = require('../../').Config;
 var Util = require('../Util');
 
 describe('PNCounterBasicTest', function () {
@@ -30,7 +31,9 @@ describe('PNCounterBasicTest', function () {
             cluster = cl;
             return RC.startMember(cluster.id);
         }).then(function (member) {
-            return Client.newHazelcastClient();
+            const cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
+            return Client.newHazelcastClient(cfg);
         }).then(function (cl) {
             client = cl;
         });

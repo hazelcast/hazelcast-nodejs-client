@@ -15,7 +15,7 @@
  */
 
 import HazelcastClient from '../HazelcastClient';
-import {ClientConnection} from '../invocation/ClientConnection';
+import {ClientConnection} from '../network/ClientConnection';
 import {Properties} from '../config/Properties';
 import {ClientStatisticsCodec} from '../codec/ClientStatisticsCodec';
 import * as Util from '../Util';
@@ -23,7 +23,7 @@ import {Task} from '../Util';
 import * as os from 'os';
 import {BuildInfo} from '../BuildInfo';
 import {ILogger} from '../logging/ILogger';
-import Address = require('../Address');
+import {Address} from '../Address';
 
 /**
  * This class is the main entry point for collecting and sending the client
@@ -111,24 +111,27 @@ export class Statistics {
     }
 
     sendStats(newStats: string, ownerConnection: ClientConnection): void {
+        // TODO migrate to new statistics architecture
+        /*
         const request = ClientStatisticsCodec.encodeRequest(newStats);
         this.logger.trace('Statistics', 'Trying to send statistics to ' +
             this.client.getClusterService().ownerUuid + ' from ' + ownerConnection.getLocalAddress().toString());
         this.client.getInvocationService().invokeOnConnection(ownerConnection, request).catch((err) => {
             this.logger.trace('Statistics', 'Could not send stats ', err);
         });
+         */
     }
 
     /**
      * @return the owner connection to the server for the client only if the server supports the client statistics feature
      */
     private getOwnerConnection(): ClientConnection {
-        const connection = this.client.getClusterService().getOwnerConnection();
+        const connection = this.client.getConnectionManager().getRandomConnection();
         if (connection == null) {
             return null;
         }
 
-        const ownerConnectionAddress: Address = connection.getAddress();
+        const ownerConnectionAddress: Address = connection.getRemoteAddress();
         const serverVersion: number = connection.getConnectedServerVersion();
         if (serverVersion < Statistics.FEATURE_SUPPORTED_SINCE_VERSION) {
 
@@ -205,7 +208,7 @@ export class Statistics {
     private fillMetrics(stats: string[], ownerConnection: ClientConnection): void {
         this.addStat(stats, 'lastStatisticsCollectionTime', Date.now());
         this.addStat(stats, 'enterprise', 'false');
-        this.addStat(stats, 'clientType', this.client.getClusterService().getClientInfo().type);
+        this.addStat(stats, 'clientType', this.client.getClusterService().getLocalClient().type);
         this.addStat(stats, 'clientVersion', BuildInfo.getClientVersion());
         this.addStat(stats, 'clusterConnectionTimestamp', ownerConnection.getStartTime());
         this.addStat(stats, 'clientAddress', ownerConnection.getLocalAddress().toString());

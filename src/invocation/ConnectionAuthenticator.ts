@@ -18,12 +18,13 @@ import * as Promise from 'bluebird';
 import {ClientAuthenticationCodec} from '../codec/ClientAuthenticationCodec';
 import HazelcastClient from '../HazelcastClient';
 import {ClientAuthenticationCustomCodec} from '../codec/ClientAuthenticationCustomCodec';
-import {ClientConnection} from './ClientConnection';
+import {ClientConnection} from '../network/ClientConnection';
 import {ClusterService} from './ClusterService';
 import {AuthenticationError} from '../HazelcastError';
 import {ILogger} from '../logging/ILogger';
-import ClientMessage = require('../ClientMessage');
 import {BuildInfo} from '../BuildInfo';
+import {ClientMessage} from '../ClientMessage';
+import {UUID} from '../core/UUID';
 
 const enum AuthenticationStatus {
     AUTHENTICATED = 0,
@@ -53,7 +54,7 @@ export class ConnectionAuthenticator {
                 const authResponse = ClientAuthenticationCodec.decodeResponse(msg);
                 switch (authResponse.status) {
                     case AuthenticationStatus.AUTHENTICATED:
-                        this.connection.setAddress(authResponse.address);
+                        this.connection.setRemoteAddress(authResponse.address);
                         this.connection.setConnectedServerVersion(authResponse.serverHazelcastVersion);
                         if (asOwner) {
                             this.clusterService.uuid = authResponse.uuid;
@@ -62,30 +63,30 @@ export class ConnectionAuthenticator {
                         }
                         this.logger.info('ConnectionAuthenticator',
                             'Connection to ' +
-                            this.connection.getAddress().toString() + ' authenticated');
+                            this.connection.getRemoteAddress().toString() + ' authenticated');
                         break;
                     case AuthenticationStatus.CREDENTIALS_FAILED:
                         this.logger.error('ConnectionAuthenticator', 'Invalid Credentials');
                         throw new Error('Invalid Credentials, could not authenticate connection to ' +
-                            this.connection.getAddress().toString());
+                            this.connection.getRemoteAddress().toString());
                     case AuthenticationStatus.SERIALIZATION_VERSION_MISMATCH:
                         this.logger.error('ConnectionAuthenticator', 'Serialization version mismatch');
                         throw new Error('Serialization version mismatch, could not authenticate connection to ' +
-                            this.connection.getAddress().toString());
+                            this.connection.getRemoteAddress().toString());
                     default:
                         this.logger.error('ConnectionAuthenticator', 'Unknown authentication status: '
                             + authResponse.status);
                         throw new AuthenticationError('Unknown authentication status: ' + authResponse.status +
                             ' , could not authenticate connection to ' +
-                            this.connection.getAddress().toString());
+                            this.connection.getRemoteAddress().toString());
                 }
             });
     }
 
     createCredentials(asOwner: boolean): ClientMessage {
         const groupConfig = this.client.getConfig().groupConfig;
-        const uuid: string = this.clusterService.uuid;
-        const ownerUuid: string = this.clusterService.ownerUuid;
+        const uuid: UUID = this.clusterService.uuid;
+        const ownerUuid: UUID = this.clusterService.ownerUuid;
 
         const customCredentials = this.client.getConfig().customCredentials;
 

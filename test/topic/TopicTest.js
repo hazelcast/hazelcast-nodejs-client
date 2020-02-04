@@ -47,7 +47,7 @@ var generateItems = function (client, howMany) {
         var reliableTopicMessage = new ReliableTopicMessage();
         reliableTopicMessage.payload = client.getSerializationService().toData(i);
         reliableTopicMessage.publishTime = Long.fromNumber(new Date().getTime());
-        reliableTopicMessage.publisherAddress = client.getClusterService().getClientInfo().localAddress;
+        reliableTopicMessage.publisherAddress = client.getClusterService().getLocalClient().localAddress;
         all.push(reliableTopicMessage);
     }
     return all;

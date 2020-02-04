@@ -54,6 +54,27 @@ export class ClientNotActiveError extends HazelcastError {
     }
 }
 
+export class ClientNotAllowedInClusterError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, ClientNotAllowedInClusterError.prototype);
+    }
+}
+
+export class ClientOfflineError extends HazelcastError {
+    constructor(cause?: Error) {
+        super('No connection found to cluster', cause);
+        Object.setPrototypeOf(this, ClientOfflineError.prototype);
+    }
+}
+
+export class InvalidConfigurationError extends HazelcastError{
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, InvalidConfigurationError.prototype);
+    }
+}
+
 export class IllegalStateError extends HazelcastError {
     constructor(msg: string, cause?: Error) {
         super(msg, cause);
@@ -152,24 +173,10 @@ export class ConfigMismatchError extends HazelcastError {
     }
 }
 
-export class ConfigurationError extends HazelcastError {
-    constructor(msg: string, cause?: Error) {
-        super(msg, cause);
-        Object.setPrototypeOf(this, ConfigurationError.prototype);
-    }
-}
-
 export class DistributedObjectDestroyedError extends HazelcastError {
     constructor(msg: string, cause?: Error) {
         super(msg, cause);
         Object.setPrototypeOf(this, DistributedObjectDestroyedError.prototype);
-    }
-}
-
-export class DuplicateInstanceNameError extends HazelcastError {
-    constructor(msg: string, cause?: Error) {
-        super(msg, cause);
-        Object.setPrototypeOf(this, DuplicateInstanceNameError.prototype);
     }
 }
 
@@ -222,10 +229,10 @@ export class TransactionTimedOutError extends HazelcastError {
     }
 }
 
-export class QuorumError extends TransactionError {
+export class SplitBrainProtectionError extends TransactionError {
     constructor(msg: string, cause?: Error) {
         super(msg, cause);
-        Object.setPrototypeOf(this, QuorumError.prototype);
+        Object.setPrototypeOf(this, SplitBrainProtectionError.prototype);
     }
 }
 

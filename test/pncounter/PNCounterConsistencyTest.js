@@ -19,6 +19,7 @@ chai.use(require('chai-as-promised'));
 var expect = require('chai').expect;
 var RC = require('../RC');
 var Client = require('../../').Client;
+const Config = require('../../').Config;
 var Errors = require('../..').HazelcastErrors;
 var fs = require('fs');
 var path = require('path');
@@ -43,7 +44,9 @@ describe('PNCounterConsistencyTest', function () {
             member1 = value;
             return RC.startMember(cluster.id);
         }).then(function (value) {
-            return Client.newHazelcastClient();
+            const cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
+            return Client.newHazelcastClient(cfg);
         }).then(function (value) {
             client = value;
         });
@@ -63,9 +66,9 @@ describe('PNCounterConsistencyTest', function () {
             return pncounter.getAndAdd(3)
         }).then(function () {
             var currentReplicaAddress = pncounter.currentTargetReplicaAddress;
-            var currentReplicaMember = Util.findMemberByAddress(client, currentReplicaAddress);
-            return RC.terminateMember(cluster.id, currentReplicaMember.uuid);
-        }).then(function () {
+            return RC.terminateMember(cluster.id, currentReplicaAddress.uuid.toString());
+        }).then(function (yy) {
+            console.log("xx");
             return expect(pncounter.addAndGet(10)).to.be.rejectedWith(Errors.ConsistencyLostError);
         });
     });
@@ -78,8 +81,7 @@ describe('PNCounterConsistencyTest', function () {
             return pncounter.getAndAdd(3);
         }).then(function () {
             var currentReplicaAddress = pncounter.currentTargetReplicaAddress;
-            var currentReplicaMember = Util.findMemberByAddress(client, currentReplicaAddress);
-            return RC.terminateMember(cluster.id, currentReplicaMember.uuid);
+            return RC.terminateMember(cluster.id, currentReplicaAddress.uuid.toString());
         }).then(function () {
             return pncounter.reset();
         }).then(function () {

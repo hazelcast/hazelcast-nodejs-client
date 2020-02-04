@@ -14,17 +14,28 @@
  * limitations under the License.
  */
 
+import {MembershipListener} from '../core/MembershipListener';
+
 /**
  * Configurations for LifecycleListeners. These are registered as soon as client started.
  */
 export class ListenerConfig {
-    lifecycle: Function[] = [];
+    lifecycleListeners: Function[] = [];
+    membershipListeners: MembershipListener[] = [];
 
     addLifecycleListener(listener: Function): void {
-        this.lifecycle.push(listener);
+        this.lifecycleListeners.push(listener);
+    }
+
+    addMembershipListener(listener: MembershipListener): void {
+        this.membershipListeners.push(listener);
     }
 
     getLifecycleListeners(): Function[] {
-        return this.lifecycle;
+        return this.lifecycleListeners;
+    }
+
+    getMembershipListeners(): MembershipListener[] {
+        return this.membershipListeners;
     }
 }

@@ -32,10 +32,4 @@ export interface MembershipListener {
      * @param {MembershipEvent} membership event when an existing member leaves the cluster
      */
     memberRemoved(membership: MembershipEvent): void;
-
-    /**
-     * Invoked when an attribute of a member was changed.
-     * @param {MemberAttributeEvent} member attribute event when an attribute of a member was changed
-     */
-    memberAttributeChanged(memberAttributeEvent: MemberAttributeEvent): void;
 }

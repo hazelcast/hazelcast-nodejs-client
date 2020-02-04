@@ -19,6 +19,7 @@ chai.use(require('chai-as-promised'));
 var expect = chai.expect;
 var Controller = require('../RC');
 var Client = require('../..').Client;
+const Config = require('../..').Config;
 var Errors = require('../..').HazelcastErrors;
 var fs = require('fs');
 var path = require('path');
@@ -35,7 +36,9 @@ describe('PNCounterWithLiteMembersTest', function () {
             cluster = cl;
             return Controller.startMember(cluster.id);
         }).then(function () {
-            return Client.newHazelcastClient();
+            const cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
+            return Client.newHazelcastClient(cfg);
         }).then(function (cl) {
             client = cl;
         });
