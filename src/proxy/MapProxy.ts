@@ -611,6 +611,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                     break;
                 case EventType.LOADED:
                     listener.loaded.apply(null, [entryEvent]);
+                    break;
             }
         };
         let codec: ListenerMessageCodec;

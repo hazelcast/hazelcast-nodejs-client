@@ -191,9 +191,9 @@ describe('MapStore', function () {
             .then(function () {
                 return map.put('some-key', 'some-value', 1000)
             }).then(function () {
-                return promiseWaitMilliseconds(1100);
+                return promiseWaitMilliseconds(2000);
             }).then(function () {
-                return map.containsKey('some-key');
+                return map.get('some-key');
             });
     });
 });
