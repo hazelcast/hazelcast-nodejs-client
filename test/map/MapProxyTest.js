@@ -703,7 +703,7 @@ describe('MapProxy', function () {
                 });
             });
 
-            it('addEntryListener on key entryRemoved includeValue=yes', function (done) {
+            it('addEntryListener on key entryRemoved includeValue=true', function (done) {
                 var listenerObject = {
                     removed: function (entryEvent) {
                         try {
@@ -724,7 +724,7 @@ describe('MapProxy', function () {
                 });
             });
 
-            it('addEntryListener on key evicted includeValue=yes', function (done) {
+            it('addEntryListener on key evicted includeValue=true', function (done) {
                 var listenerObject = {
                     evicted: function (entryEvent) {
                         try {
@@ -779,6 +779,29 @@ describe('MapProxy', function () {
                 map.addEntryListener(listenerObject).then(function () {
                     map.clear();
                 });
+            });
+
+            it('addEntryListener on map entryExpired includeValue=true', function (done) {
+                var listenerObj = {
+                  expired: function (entryEvent) {
+                      try {
+                          expect(entryEvent.name).to.equal('test');
+                          expect(entryEvent.key).to.equal('expiringKey');
+                          expect(entryEvent.value).to.be.undefined;
+                          expect(entryEvent.oldValue).to.equal('expiringValue');
+                          expect(entryEvent.mergingValue).to.be.undefined;
+                          expect(entryEvent.member).to.not.be.equal(null);
+                          done();
+                      } catch (err) {
+                          done(err);
+                      }
+                  }
+                };
+
+                map.addEntryListener(listenerObj, undefined, true)
+                    .then(function () {
+                        return map.put('expiringKey', 'expiringValue', 1000);
+                    });
             });
 
             it('removeEntryListener with correct id', function () {

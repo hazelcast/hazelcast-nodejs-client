@@ -25,4 +25,5 @@ export enum EventType {
     MERGED = 1 << 6,
     EXPIRED = 1 << 7,
     INVALIDATION = 1 << 8,
+    LOADED = 1 << 9,
 }
