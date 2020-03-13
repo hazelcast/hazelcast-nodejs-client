@@ -20,6 +20,7 @@ var Controller = require('./../RC');
 var fs = require('fs');
 var _fillMap = require('../Util').fillMap;
 var promiseWaitMilliseconds = require('../Util').promiseWaitMilliseconds;
+var Util = require('../Util');
 
 describe('MapStore', function () {
     var cluster;
@@ -171,6 +172,7 @@ describe('MapStore', function () {
     });
 
     it('addEntryListener on map entryLoaded includeValue=true', function (done) {
+        Util.markServerVersionAtLeast(this, client, '3.11');
         var listenerObj = {
             loaded: function (entryEvent) {
                 try {
@@ -189,7 +191,7 @@ describe('MapStore', function () {
 
         map.addEntryListener(listenerObj, undefined, true)
             .then(function () {
-                return map.put('some-key', 'some-value', 1000)
+                return map.put('some-key', 'some-value', 100)
             }).then(function () {
                 return promiseWaitMilliseconds(2000);
             }).then(function () {
