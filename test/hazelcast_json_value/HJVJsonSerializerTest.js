@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2020, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,7 +92,7 @@ describe('HazelcastJsonValue with JsonSerializer', function () {
             expect(size).to.equal(1);
         });
     });
-    
+
     it('storing JavaScript and HazelcastJsonValue objects together', function () {
         return map.put(1, object).then(function () {
             return map.put(2, hzJsonValue);

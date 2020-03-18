@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2020, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ describe('FrameReader', function () {
             pos += chunkSize;
             expect(reader.read()).to.be.equal(null);
         }
-        
+
         reader.append(buffer.slice(pos));
         expect(reader.read()).to.be.deep.equal(Buffer.from(buffer));
     });
@@ -64,7 +64,7 @@ describe('FrameReader', function () {
         reader.append(buffer.slice(0, 2));
 
         expect(reader.read()).to.be.equal(null);
-        
+
         reader.append(buffer.slice(2));
         expect(reader.read()).to.be.deep.equal(Buffer.from(buffer));
     });
@@ -87,7 +87,7 @@ describe('FrameReader', function () {
         const buffer = prepareMessage(8);
         reader.append(buffer);
         reader.read();
-        
+
         expect(reader.read()).to.be.equal(null);
     });
 

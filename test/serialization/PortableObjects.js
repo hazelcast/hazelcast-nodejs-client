@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2020, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,7 +122,7 @@ InnerPortableObject.prototype.writePortable = function (writer) {
 };
 
 function PortableObjectV2(
-            a_new_prop, a_byte, a_boolean, a_character, a_short, an_integer, a_long, a_float, a_double, 
+            a_new_prop, a_byte, a_boolean, a_character, a_short, an_integer, a_long, a_float, a_double,
             a_portable, bytes, booleans, chars, shorts, integers, longs, floats, doubles, strings, portables
         ) {
     this.a_new_prop = a_new_prop;// this prop is newly added
