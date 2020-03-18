@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2020, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ describe('PipelinedWriter', function () {
 
     it('writes single message into socket (without copying it)', (done) => {
         setUpWriteSuccess();
-        
+
         const buffer = Buffer.from('test');
         writer.write(buffer, DeferredPromise());
         mockSocket.on('data', function(data) {
@@ -80,7 +80,7 @@ describe('PipelinedWriter', function () {
         writer.write(Buffer.alloc(size), resolver2);
         const resolver3 = DeferredPromise();
         writer.write(Buffer.alloc(size), resolver3);
-        
+
         let cnt = 0;
         let allData = Buffer.alloc(0);
         mockSocket.on('data', function(data) {
@@ -93,7 +93,7 @@ describe('PipelinedWriter', function () {
                 expect(data).to.be.deep.equal(Buffer.alloc(size));
             }
         });
-        
+
         Promise.all([
             resolver1.promise,
             resolver2.promise,
