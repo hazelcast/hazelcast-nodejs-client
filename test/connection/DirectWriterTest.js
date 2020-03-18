@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2020, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,13 +48,13 @@ describe('DirectWriter', function () {
 
     it('writes single message into socket (without copying it)', (done) => {
         setUpWriteSuccess();
-        
+
         const buffer = Buffer.from('test');
         mockSocket.on('data', function(data) {
             expect(data).to.be.equal(buffer);
             done();
         });
-        
+
         queue.write(buffer, DeferredPromise());
     });
 
@@ -68,7 +68,7 @@ describe('DirectWriter', function () {
                 done();
             }
         });
-        
+
         queue.write(Buffer.from('test'), DeferredPromise());
         queue.write(Buffer.from('test'), DeferredPromise());
         queue.write(Buffer.from('test'), DeferredPromise());
