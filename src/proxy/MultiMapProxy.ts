@@ -118,7 +118,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
         return this.encodeInvokeOnRandomTarget(MultiMapEntrySetCodec)
             .then((clientMessage) => {
                 const response = MultiMapEntrySetCodec.decodeResponse(clientMessage);
-                return SerializationUtil.deserializeEntryList(this.toObject, response.response);
+                return SerializationUtil.deserializeEntryList(this.toObject.bind(this), response.response);
             });
     }
 

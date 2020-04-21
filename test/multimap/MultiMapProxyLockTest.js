@@ -16,6 +16,7 @@
 
 var expect = require("chai").expect;
 var HazelcastClient = require("../../lib/index.js").Client;
+const Config = require("../../lib/index.js").Config;
 var Controller = require('./../RC');
 var Util = require('./../Util');
 var Promise = require('bluebird');
@@ -35,11 +36,13 @@ describe("MultiMap Proxy Lock", function () {
             cluster = response;
             return Controller.startMember(cluster.id);
         }).then(function () {
+            const cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
             return Promise.all([
-                HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
+                HazelcastClient.newHazelcastClient(cfg).then(function (hazelcastClient) {
                     clientOne = hazelcastClient;
                 }),
-                HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
+                HazelcastClient.newHazelcastClient(cfg).then(function (hazelcastClient) {
                     clientTwo = hazelcastClient;
                 })
             ]);
