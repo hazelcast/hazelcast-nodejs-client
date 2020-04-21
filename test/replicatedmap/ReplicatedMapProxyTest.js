@@ -287,8 +287,8 @@ describe('ReplicatedMap Proxy', function () {
                     expect(entryEvent.name).to.equal('test');
                     expect(entryEvent.key).to.equal('new-key');
                     expect(entryEvent.value).to.equal('value');
-                    expect(entryEvent.oldValue).to.be.undefined;
-                    expect(entryEvent.mergingValue).to.be.undefined;
+                    expect(entryEvent.oldValue).to.be.equal(null);
+                    expect(entryEvent.mergingValue).to.be.equal(null);
                     expect(entryEvent.member).to.not.be.equal(null);
                 } catch (err) {
                     error = err;
@@ -317,9 +317,9 @@ describe('ReplicatedMap Proxy', function () {
                 try {
                     expect(entryEvent.name).to.equal('test');
                     expect(entryEvent.key).to.equal('key-to-remove');
-                    expect(entryEvent.value).to.be.undefined;
+                    expect(entryEvent.value).to.be.equal(null);
                     expect(entryEvent.oldValue).to.equal('value');
-                    expect(entryEvent.mergingValue).to.be.undefined;
+                    expect(entryEvent.mergingValue).to.be.equal(null);
                     expect(entryEvent.member).to.not.be.equal(null);
                 } catch (err) {
                     error = err;
@@ -351,7 +351,7 @@ describe('ReplicatedMap Proxy', function () {
                     expect(entryEvent.key).to.equal('key-to-update');
                     expect(entryEvent.value).to.equal('value2');
                     expect(entryEvent.oldValue).to.equal('value1');
-                    expect(entryEvent.mergingValue).to.be.undefined;
+                    expect(entryEvent.mergingValue).to.be.equal(null);
                     expect(entryEvent.member).to.not.be.equal(null);
                 } catch (err) {
                     error = err;
@@ -422,8 +422,8 @@ describe('ReplicatedMap Proxy', function () {
                     expect(entryEvent.name).to.equal('test');
                     expect(entryEvent.key).to.equal('key1');
                     expect(entryEvent.value).to.equal('value');
-                    expect(entryEvent.oldValue).to.be.undefined;
-                    expect(entryEvent.mergingValue).to.be.undefined;
+                    expect(entryEvent.oldValue).to.be.equal(null);
+                    expect(entryEvent.mergingValue).to.be.equal(null);
                     expect(entryEvent.member).to.not.be.equal(null);
                 } catch (err) {
                     error = err;
@@ -458,8 +458,8 @@ describe('ReplicatedMap Proxy', function () {
                     expect(entryEvent.name).to.equal('test');
                     expect(entryEvent.key).to.equal('key10');
                     expect(entryEvent.value).to.equal('val10');
-                    expect(entryEvent.oldValue).to.be.undefined;
-                    expect(entryEvent.mergingValue).to.be.undefined;
+                    expect(entryEvent.oldValue).to.be.equal(null);
+                    expect(entryEvent.mergingValue).to.be.equal(null);
                     expect(entryEvent.member).to.not.be.equal(null);
                 } catch (err) {
                     error = err;
@@ -487,8 +487,8 @@ describe('ReplicatedMap Proxy', function () {
                     expect(entryEvent.name).to.equal('test');
                     expect(entryEvent.key).to.equal('key');
                     expect(entryEvent.value).to.be.equal('value');
-                    expect(entryEvent.oldValue).to.be.undefined;
-                    expect(entryEvent.mergingValue).to.be.undefined;
+                    expect(entryEvent.oldValue).to.be.equal(null);
+                    expect(entryEvent.mergingValue).to.be.equal(null);
                     expect(entryEvent.member).to.not.be.equal(null);
 
                 } catch (err) {
