@@ -39,6 +39,7 @@ stringSerializationPolicies.forEach(function (stringSerializationPolicy) {
                 return RC.startMember(cluster.id);
             }).then(function () {
                 var config = new Config.ClientConfig();
+                config.clusterName = cluster.id;
                 config.serializationConfig.stringSerializationPolicy = stringSerializationPolicy;
                 return Client.newHazelcastClient(config);
             }).then(function (cl) {

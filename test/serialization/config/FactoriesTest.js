@@ -21,6 +21,7 @@ var path = require('path');
 var Client = require('../../../').Client;
 var Foo = require('./Foo').Foo;
 var Address = require('./Address').Address;
+const ConfigBuilder = require('../../../').ConfigBuilder;
 
 describe('Factories', function () {
     var cluster;
@@ -46,25 +47,32 @@ describe('Factories', function () {
     });
 
     it('should be configured declaratively', function () {
-        return Client.newHazelcastClient().then(function (cl) {
-            client = cl;
-            var map;
-            return client.getMap('furkan').then(function (mp) {
-                map = mp;
-                return map.put('foo', new Foo("elma"));
-            }).then(function () {
-                return map.put('address', new Address('Sahibiata', 42000, 'Konya', 'Turkey'))
-            }).then(function () {
-                return map.get('foo');
-            }).then(function (res) {
-                expect(res.foo).to.be.equal('elma');
-                return map.get('address');
-            }).then(function (res) {
-                expect(res.street).to.be.equal('Sahibiata');
-                expect(res.zipCode).to.be.equal(42000);
-                expect(res.city).to.be.equal('Konya');
-                expect(res.state).to.be.equal('Turkey');
+        const configBuilder = new ConfigBuilder();
+        return configBuilder.loadConfig()
+            .then(() => {
+                const cfg = configBuilder.build();
+                cfg.clusterName = cluster.id;
+                return Client.newHazelcastClient(cfg);
+            })
+            .then(function (cl) {
+                client = cl;
+                var map;
+                return client.getMap('furkan').then(function (mp) {
+                    map = mp;
+                    return map.put('foo', new Foo("elma"));
+                }).then(function () {
+                    return map.put('address', new Address('Sahibiata', 42000, 'Konya', 'Turkey'))
+                }).then(function () {
+                    return map.get('foo');
+                }).then(function (res) {
+                    expect(res.foo).to.be.equal('elma');
+                    return map.get('address');
+                }).then(function (res) {
+                    expect(res.street).to.be.equal('Sahibiata');
+                    expect(res.zipCode).to.be.equal(42000);
+                    expect(res.city).to.be.equal('Konya');
+                    expect(res.state).to.be.equal('Turkey');
+                });
             });
-        });
     });
 });

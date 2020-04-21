@@ -17,6 +17,7 @@
 var Controller = require('../../RC');
 var expect = require('chai').expect;
 var path = require('path');
+const ConfigBuilder = require('../../../').ConfigBuilder;
 
 var Client = require('../../../').Client;
 var Musician = require('./Musician').Musician;
@@ -41,19 +42,26 @@ describe('CustomSerializer', function () {
 
     it('should be configured declaratively', function () {
         var m = new Musician('Furkan');
-        return Client.newHazelcastClient().then(function (cl) {
-            client = cl;
-            expect(client.getSerializationService().findSerializerFor(m).getId()).to.be.equal(10);
-            var map;
-            return client.getMap('musicians').then(function (mp) {
-                map = mp;
-                return map.put('neyzen', m);
-            }).then(function () {
-                return map.get('neyzen');
-            }).then(function (res) {
-                expect(res.name).to.be.equal('Furkan');
+        const configBuilder = new ConfigBuilder();
+        return configBuilder.loadConfig()
+            .then(() => {
+                const cfg = configBuilder.build();
+                cfg.clusterName = cluster.id;
+                return Client.newHazelcastClient(cfg);
+            })
+            .then(function (cl) {
+                client = cl;
+                expect(client.getSerializationService().findSerializerFor(m).getId()).to.be.equal(10);
+                var map;
+                return client.getMap('musicians').then(function (mp) {
+                    map = mp;
+                    return map.put('neyzen', m);
+                }).then(function () {
+                    return map.get('neyzen');
+                }).then(function (res) {
+                    expect(res.name).to.be.equal('Furkan');
+                });
             });
-        });
     });
 });
 
