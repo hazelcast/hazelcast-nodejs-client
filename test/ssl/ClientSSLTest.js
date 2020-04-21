@@ -66,7 +66,10 @@ describe("Client with SSL enabled", function () {
             .replace('[password]', 'password');
         return createCluster(sConfig).then(function () {
             var clientConfig = new Config.ClientConfig();
+            clientConfig.clusterName = cluster.id;
             clientConfig.networkConfig.sslConfig.enabled = true;
+            clientConfig.networkConfig.addresses.push('127.0.0.1:5701');
+            clientConfig.connectionStrategyConfig.connectionRetryConfig.clusterConnectTimeoutMillis = 1000;
             return expect(HazelcastClient.newHazelcastClient(clientConfig)).to.be.rejectedWith(Errors.IllegalStateError);
         })
     });
@@ -77,6 +80,7 @@ describe("Client with SSL enabled", function () {
             .replace('[password]', '123456');
         return createCluster(sConfig).then(function () {
             var clientConfig = new Config.ClientConfig();
+            clientConfig.clusterName = cluster.id;
             clientConfig.networkConfig.sslConfig.enabled = true;
             return HazelcastClient.newHazelcastClient(clientConfig);
         }).then(function (hazelcastClient) {
