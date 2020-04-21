@@ -13,3 +13,4 @@ scripts/
 *.jar
 *.log
 download-remote-controller.js
+COMPLETE_DOCUMENTATION.md
