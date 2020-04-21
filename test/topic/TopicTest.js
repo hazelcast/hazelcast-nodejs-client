@@ -26,8 +26,9 @@ var fs = require('fs');
 var Long = require('long');
 var Promise = require('bluebird');
 
-var createConfig = function () {
+var createConfig = function (clusterName) {
     var config = new Config.ClientConfig();
+    config.clusterName = clusterName;
 
     var discard = new Config.ReliableTopicConfig();
     discard.overloadPolicy = TopicOverloadPolicy.DISCARD_NEWEST;
@@ -67,7 +68,7 @@ describe("Reliable Topic Proxy", function () {
             cluster = response;
             return Controller.startMember(cluster.id);
         }).then(function () {
-            var config = createConfig();
+            var config = createConfig(cluster.id);
 
             return Promise.all([
                 HazelcastClient.newHazelcastClient(config).then(function (hazelcastClient) {

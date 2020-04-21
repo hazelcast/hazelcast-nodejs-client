@@ -14,11 +14,10 @@
   ~ limitations under the License.
   -->
 
-<hazelcast xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://www.hazelcast.com/schema/config hazelcast-config-3.6.xsd"
-           xmlns="http://www.hazelcast.com/schema/config">
-
-
+<hazelcast xmlns="http://www.hazelcast.com/schema/config"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://www.hazelcast.com/schema/config
+           http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
     <ringbuffer name="blocking">
         <time-to-live-seconds>3</time-to-live-seconds>
         <capacity>10</capacity>
