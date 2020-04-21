@@ -82,7 +82,7 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbu
     }
 
     addAll(items: E[], overflowPolicy: OverflowPolicy = OverflowPolicy.OVERWRITE): Promise<Long> {
-        const dataList = items.map(this.toData);
+        const dataList = items.map(this.toData.bind(this));
 
         return this.encodeInvoke(RingbufferAddAllCodec, dataList, overflowPolicy)
             .then((clientMessage) => {
