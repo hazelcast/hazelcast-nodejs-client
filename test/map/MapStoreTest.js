@@ -16,6 +16,7 @@
 
 var expect = require("chai").expect;
 var HazelcastClient = require("../../lib/index.js").Client;
+const Config = require("../../lib/index.js").Config;
 var Controller = require('./../RC');
 var fs = require('fs');
 var _fillMap = require('../Util').fillMap;
@@ -33,7 +34,9 @@ describe('MapStore', function () {
             cluster = res;
             return Controller.startMember(cluster.id);
         }).then(function (member) {
-            return HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
+            const cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
+            return HazelcastClient.newHazelcastClient(cfg).then(function (hazelcastClient) {
                 client = hazelcastClient;
             });
         });
@@ -179,8 +182,8 @@ describe('MapStore', function () {
                     expect(entryEvent.name).to.equal('mapstore-test');
                     expect(entryEvent.key).to.equal('some-key');
                     expect(entryEvent.value).to.equal('some-value');
-                    expect(entryEvent.oldValue).to.be.undefined;
-                    expect(entryEvent.mergingValue).to.be.undefined;
+                    expect(entryEvent.oldValue).to.be.equal(null);
+                    expect(entryEvent.mergingValue).to.be.equal(null);
                     expect(entryEvent.member).to.not.be.equal(null);
                     done();
                 } catch (err) {

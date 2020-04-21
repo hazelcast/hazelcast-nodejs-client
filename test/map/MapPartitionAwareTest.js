@@ -15,6 +15,7 @@
  */
 
 var Client = require('../../.').Client;
+const Config = require('../../.').Config;
 var Controller = require('../RC');
 var expect = require('chai').expect;
 var Promise = require('bluebird');
@@ -65,7 +66,9 @@ describe('Map Partition Aware', function () {
             return Promise.all(members);
         }).then(function (m) {
             members = m;
-            return Client.newHazelcastClient();
+            const cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
+            return Client.newHazelcastClient(cfg);
         }).then(function (cl) {
             client = cl;
         });

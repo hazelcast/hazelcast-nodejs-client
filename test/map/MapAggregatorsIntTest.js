@@ -29,12 +29,13 @@ describe('MapAggregatorsIntTest', function () {
     var map;
 
     before(function () {
-        var cfg = new Config.ClientConfig();
-        cfg.serializationConfig.defaultNumberType = 'integer';
         return Controller.createCluster(null, null).then(function (cl) {
             cluster = cl;
             return Controller.startMember(cluster.id);
         }).then(function () {
+            const cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
+            cfg.serializationConfig.defaultNumberType = 'integer';
             return Client.newHazelcastClient(cfg);
         }).then(function (cl) {
             client = cl;

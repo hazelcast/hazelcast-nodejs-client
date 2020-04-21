@@ -47,7 +47,7 @@ export class IndexConfig {
     /**
      * Indexed attributes.
      */
-    attributes: string[];
+    attributes: string[] = [];
 
     bitmapIndexOptions: BitmapIndexOptions;
 
@@ -72,5 +72,21 @@ export class IndexConfig {
         IndexUtil.validateAttribute(this, attribute);
         this.attributes.push(attribute);
         return this;
+    }
+
+    toString(): string {
+        let bitmapIndexOptions: string;
+        if (this.bitmapIndexOptions == null) {
+            bitmapIndexOptions = undefined;
+        } else {
+            bitmapIndexOptions = this.bitmapIndexOptions.toString();
+        }
+
+        return 'IndexConfig[' +
+            'name: ' + this.name +
+            ', type: ' + this.type +
+            ', attributes: ' + this.attributes +
+            ', bitmapIndexOptions: ' + bitmapIndexOptions +
+            ']';
     }
 }

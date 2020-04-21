@@ -30,12 +30,13 @@ describe('MapAggregatorsLongTest', function () {
     var entryCount = 50;
 
     before(function () {
-        var cfg = new Config.ClientConfig();
-        cfg.serializationConfig.defaultNumberType = 'long';
         return Controller.createCluster(null, null).then(function (cl) {
             cluster = cl;
             return Controller.startMember(cluster.id);
         }).then(function () {
+            const cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
+            cfg.serializationConfig.defaultNumberType = 'long';
             return Client.newHazelcastClient(cfg);
         }).then(function (cl) {
             client = cl;

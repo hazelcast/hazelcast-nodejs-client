@@ -68,4 +68,11 @@ export class BitmapIndexOptions {
         this.uniqueKey = uniqueKey;
         this.uniqueKeyTransformation = uniqueKeyTransformation;
     }
+
+    toString(): string {
+        return 'BitmapIndexOptions[' +
+            'uniqueKey: ' + this.uniqueKey +
+            ', uniqueKeyTransformation: ' + this.uniqueKeyTransformation +
+            ']';
+    }
 }

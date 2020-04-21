@@ -33,7 +33,7 @@ export class CodecUtil {
     }
 
     static encodeNullable<T>(clientMessage: ClientMessage, value: T, encoder: (msg: ClientMessage, val: T) => void): void {
-        if (value === null) {
+        if (value == null) {
             clientMessage.add(NULL_FRAME.copy());
         } else {
             encoder(clientMessage, value);

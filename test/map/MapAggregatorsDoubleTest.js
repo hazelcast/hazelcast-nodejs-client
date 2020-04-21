@@ -16,6 +16,7 @@
 
 var Controller = require('../RC');
 var Client = require('../../').Client;
+var Config = require('../../.').Config;
 var Aggregators = require('../../').Aggregators;
 var Predicates = require('../../').Predicates;
 var _fillMap = require('../Util').fillMap;
@@ -32,7 +33,9 @@ describe('MapAggregatorsDoubleTest', function () {
             cluster = cl;
             return Controller.startMember(cluster.id);
         }).then(function () {
-            return Client.newHazelcastClient();
+            var cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
+            return Client.newHazelcastClient(cfg);
         }).then(function (cl) {
             client = cl;
             return client.getMap('aggregatorsMap');

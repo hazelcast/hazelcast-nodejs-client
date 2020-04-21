@@ -35,6 +35,8 @@ import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy
 import {StringSerializationPolicy} from './StringSerializationPolicy';
 import {ConnectionStrategyConfig} from './ConnectionStrategyConfig';
 import {LoadBalancer} from '../LoadBalancer';
+import {IndexConfig} from './IndexConfig';
+import {IndexType} from './IndexType';
 
 const DEFAULT_CLUSTER_NAME = 'dev';
 
@@ -160,3 +162,7 @@ export {SSLConfig};
 export {JsonStringDeserializationPolicy};
 
 export {StringSerializationPolicy};
+
+export {IndexConfig};
+
+export {IndexType};

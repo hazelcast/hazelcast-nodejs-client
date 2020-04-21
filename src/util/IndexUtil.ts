@@ -41,20 +41,20 @@ export class IndexUtil {
         const originalAttributeNames = config.attributes;
 
         if (originalAttributeNames.length === 0) {
-            throw new TypeError('Index must have at least one attribute: ' + config);
+            throw new TypeError('Index must have at least one attribute: ' + config.toString());
         }
 
         if (originalAttributeNames.length > MAX_ATTRIBUTES) {
-            throw new TypeError('Index cannot have more than ' + MAX_ATTRIBUTES + ' attributes: ' + config);
+            throw new TypeError('Index cannot have more than ' + MAX_ATTRIBUTES + ' attributes: ' + config.toString());
         }
 
         if (config.type === IndexType.BITMAP && originalAttributeNames.length > 1) {
-            throw new TypeError('Composite bitmap indexes are not supported: ' + config);
+            throw new TypeError('Composite bitmap indexes are not supported: ' + config.toString());
         }
 
         const normalizedAttributeNames = new Array<string>(originalAttributeNames.length);
         for (let i = 0; i < originalAttributeNames.length; i++) {
-            let originalAttributeName = normalizedAttributeNames[i];
+            let originalAttributeName = originalAttributeNames[i];
             this.validateAttribute(config, originalAttributeName);
 
             originalAttributeName = originalAttributeName.trim();
@@ -67,11 +67,11 @@ export class IndexUtil {
 
                 if (duplicateOriginalAttributeName === originalAttributeName) {
                     throw new TypeError('Duplicate attribute name [attributeName= '
-                        + originalAttributeName + ', indexConfig=' + config + ']');
+                        + originalAttributeName + ', indexConfig=' + config.toString() + ']');
                 } else {
                     throw new TypeError('Duplicate attribute names [attributeName1='
                         + duplicateOriginalAttributeName + ', attributeName2='
-                        + originalAttributeName + ', indexConfig=' + config + ']');
+                        + originalAttributeName + ', indexConfig=' + config.toString() + ']');
                 }
             }
 
