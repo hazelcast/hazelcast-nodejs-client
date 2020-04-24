@@ -31,14 +31,11 @@ import {RepairingTask} from './nearcache/RepairingTask';
 import {PartitionService} from './PartitionService';
 import {ClientErrorFactory} from './protocol/ErrorFactory';
 import {FlakeIdGenerator} from './proxy/FlakeIdGenerator';
-import {IAtomicLong} from './proxy/IAtomicLong';
 import {IList} from './proxy/IList';
-import {ILock} from './proxy/ILock';
 import {IMap} from './proxy/IMap';
 import {IQueue} from './proxy/IQueue';
 import {ReplicatedMap} from './proxy/ReplicatedMap';
 import {Ringbuffer} from './proxy/Ringbuffer';
-import {ISemaphore} from './proxy/ISemaphore';
 import {ISet} from './proxy/ISet';
 import {MultiMap} from './proxy/MultiMap';
 import {PNCounter} from './proxy/PNCounter';
@@ -181,15 +178,6 @@ export default class HazelcastClient {
     }
 
     /**
-     * Returns the distributed lock instance with given name.
-     * @param name
-     * @returns {Promise<ILock>}
-     */
-    getLock(name: string): Promise<ILock> {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.LOCK_SERVICE) as Promise<ILock>;
-    }
-
-    /**
      * Returns the distributed queue instance with given name.
      * @param name
      * @returns {Promise<IQueue<E>>}
@@ -244,15 +232,6 @@ export default class HazelcastClient {
     }
 
     /**
-     * Returns the distributed atomic long instance with given name.
-     * @param name
-     * @returns {Promise<IAtomicLong>}
-     */
-    getAtomicLong(name: string): Promise<IAtomicLong> {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.ATOMICLONG_SERVICE) as Promise<IAtomicLong>;
-    }
-
-    /**
      * Returns the distributed flake ID generator instance with given name.
      * @param name
      * @returns {Promise<FlakeIdGenerator>}
@@ -268,15 +247,6 @@ export default class HazelcastClient {
      */
     getPNCounter(name: string): Promise<PNCounter> {
         return this.proxyManager.getOrCreateProxy(name, ProxyManager.PNCOUNTER_SERVICE) as Promise<PNCounter>;
-    }
-
-    /**
-     * Returns the distributed semaphore instance with given name.
-     * @param name
-     * @returns {Promise<ISemaphore>}
-     */
-    getSemaphore(name: string): Promise<ISemaphore> {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.SEMAPHORE_SERVICE) as Promise<ISemaphore>;
     }
 
     /**

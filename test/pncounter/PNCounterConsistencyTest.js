@@ -43,7 +43,7 @@ describe('PNCounterConsistencyTest', function () {
         }).then(function (value) {
             member1 = value;
             return RC.startMember(cluster.id);
-        }).then(function (value) {
+        }).then(function () {
             const cfg = new Config.ClientConfig();
             cfg.clusterName = cluster.id;
             return Client.newHazelcastClient(cfg);
@@ -67,8 +67,7 @@ describe('PNCounterConsistencyTest', function () {
         }).then(function () {
             var currentReplicaAddress = pncounter.currentTargetReplicaAddress;
             return RC.terminateMember(cluster.id, currentReplicaAddress.uuid.toString());
-        }).then(function (yy) {
-            console.log("xx");
+        }).then(function () {
             return expect(pncounter.addAndGet(10)).to.be.rejectedWith(Errors.ConsistencyLostError);
         });
     });
