@@ -36,6 +36,7 @@ describe('MigratedData', function () {
 
     function createConfig() {
         var cfg = new Config.ClientConfig();
+        cfg.clusterName = cluster.id;
         var ncConfig = new Config.NearCacheConfig();
         ncConfig.name = mapName;
         cfg.nearCacheConfigs[mapName] = ncConfig;
@@ -85,8 +86,8 @@ describe('MigratedData', function () {
         }).then(function () {
             var partitionService = client.getPartitionService();
             var partitionIdForKey = partitionService.getPartitionId(key);
-            var addressForKey = partitionService.getAddressForPartition(partitionIdForKey);
-            if (addressForKey.equals(new Address(member1.host, member1.port))) {
+            var keyOwner = partitionService.getPartitionOwner(partitionIdForKey).toString();
+            if (keyOwner === member1.uuid) {
                 survivingMember = member2;
                 return RC.terminateMember(cluster.id, member1.uuid);
             } else {
@@ -96,7 +97,7 @@ describe('MigratedData', function () {
         }).then(function () {
             var partitionService = client.getPartitionService();
             var partitionIdForKey = partitionService.getPartitionId(key);
-            return waitUntilPartitionMovesTo(partitionService, partitionIdForKey, new Address(survivingMember.host, survivingMember.port));
+            return waitUntilPartitionMovesTo(partitionService, partitionIdForKey, survivingMember.uuid);
         }).then(function () {
             return Util.promiseWaitMilliseconds(1500);
         }).then(function () {
@@ -109,15 +110,15 @@ describe('MigratedData', function () {
         })
     });
 
-    function waitUntilPartitionMovesTo(partitionService, partitionId, address) {
+    function waitUntilPartitionMovesTo(partitionService, partitionId, uuid) {
         var deferred = DeferredPromise();
         (function resolveOrTimeout(remainingTries) {
-            if (partitionService.getAddressForPartition(partitionId).equals(address)) {
+            if (partitionService.getPartitionOwner(partitionId).toString() === uuid) {
                 deferred.resolve();
             } else if (remainingTries > 0) {
                 setTimeout(resolveOrTimeout, 1000, remainingTries - 1);
             } else {
-                deferred.reject(new Error('Partition ' + partitionId + ' was not moved to ' + address.toString()));
+                deferred.reject(new Error('Partition ' + partitionId + ' was not moved to ' + uuid));
             }
         })(20);
         return deferred.promise;

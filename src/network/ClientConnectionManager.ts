@@ -105,7 +105,7 @@ export class ClientConnectionManager extends EventEmitter {
     private readonly client: HazelcastClient;
     private heartbeatManager: HeartbeatManager;
     private authenticationTimeout: number;
-    private clientUuid = UuidUtil.generate();
+    private clientUuid = UuidUtil.generate(false);
     private labels: string[];
     private shuffleMemberList: boolean;
     private waitStrategy: WaitStrategy;
@@ -299,6 +299,7 @@ export class ClientConnectionManager extends EventEmitter {
             }
         }
 
+        // TODO does the iterator.next() random enough ?
         const iterator = this.activeConnections.values();
         const next = iterator.next();
         if (!next.done) {
@@ -318,7 +319,7 @@ export class ClientConnectionManager extends EventEmitter {
             return;
         }
 
-        if (this.activeConnections.delete(memberUuid.toString())) {
+        if (memberUuid != null && this.activeConnections.delete(memberUuid.toString())) {
             this.logger.info('ConnectionManager', 'Removed connection to endpoint: ' +
                 endpoint + ':' + memberUuid + ', connection: ' + connection);
             if (this.activeConnections.size === 0) {
@@ -449,7 +450,7 @@ export class ClientConnectionManager extends EventEmitter {
         this.logger.info('ConnectionManager', 'Trying to connect to ' + address);
         return this.getOrConnect(address)
             .catch((error) => {
-                this.logger.warn('ConnectionManager', 'Error during initial connection to ' + address + ':' +
+                this.logger.warn('ConnectionManager', 'Error during initial connection to ' + address + ' ' +
                     error);
                 return null;
             });

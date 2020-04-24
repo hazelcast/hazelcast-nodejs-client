@@ -61,7 +61,9 @@ export class RepairingHandler {
     }
 
     handle(key: Data, sourceUuid: UUID, partitionUuid: UUID, sequence: Long): void {
-        if (this.localUuid.equals(sourceUuid)) {
+        // apply invalidation if it's not originated by local member/client (because local
+        // Near Caches are invalidated immediately there is no need to invalidate them twice)
+        if (!this.localUuid.equals(sourceUuid)) {
             if (key == null) {
                 this.nearCache.clear();
             } else {

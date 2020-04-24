@@ -36,6 +36,7 @@ describe('LostInvalidation', function () {
 
     function createConfig() {
         var cfg = new Config.ClientConfig();
+        cfg.clusterName = cluster.id;
         var ncConfig = new Config.NearCacheConfig();
         ncConfig.name = mapName;
         cfg.nearCacheConfigs[mapName] = ncConfig;
@@ -57,7 +58,10 @@ describe('LostInvalidation', function () {
     beforeEach(function () {
         return HazelcastClient.newHazelcastClient(createConfig()).then(function (resp) {
             client = resp;
-            return HazelcastClient.newHazelcastClient();
+
+            const cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
+            return HazelcastClient.newHazelcastClient(cfg);
         }).then(function (resp) {
             modifyingClient = resp;
         });
@@ -155,7 +159,7 @@ describe('LostInvalidation', function () {
 
     function blockInvalidationEvents(client, nearCachedMap, notifyAfterNumberOfEvents) {
         var listenerId = nearCachedMap.invalidationListenerId;
-        var clientRegistrationKey = client.getListenerService().activeRegistrations.get(listenerId).get(client.clusterService.getOwnerConnection());
+        var clientRegistrationKey = client.getListenerService().activeRegistrations.get(listenerId).get(client.getConnectionManager().getRandomConnection());
         var correlationId = clientRegistrationKey.correlationId;
         var handler = client.getInvocationService().eventHandlers[correlationId].handler;
         var numberOfBlockedInvalidations = 0;

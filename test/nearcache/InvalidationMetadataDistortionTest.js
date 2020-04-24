@@ -53,6 +53,7 @@ describe('Invalidation metadata distortion', function () {
 
     function createConfig(withNearCache) {
         var cfg = new Config.ClientConfig();
+        cfg.clusterName = cluster.id;
         if (withNearCache) {
             var ncc = new Config.NearCacheConfig();
             ncc.name = mapName;

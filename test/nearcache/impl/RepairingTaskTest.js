@@ -47,6 +47,7 @@ describe('RepairingTask', function () {
 
     function startClientWithReconciliationInterval(reconciliationInterval) {
         var cfg = new Config.ClientConfig();
+        cfg.clusterName = cluster.id;
         var nccConfig = new Config.NearCacheConfig();
         nccConfig.name = 'test';
         cfg.nearCacheConfigs['test'] = nccConfig;
