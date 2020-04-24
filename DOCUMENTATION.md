@@ -1,5 +1,3 @@
-[![Join the chat at https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
 # Table of Contents
 
 * [Introduction](#introduction)
@@ -938,7 +936,7 @@ More than one version of the same class may need to be serialized and deserializ
 Portable serialization supports versioning. It is a global versioning, meaning that all portable classes that are serialized through a client get the globally configured portable version.
 
 You can declare the version in the `hazelcast-client.json` configuration file using the `portableVersion` element, as shown below.
-	
+
 ```json
 {
     "serialization": {
@@ -1132,14 +1130,14 @@ config.serializationConfig.globalSerializer = new GlobalSerializer();
 ## 4.5. JSON Serialization
 
 If the Hazelcast Node.js client cannot find a suitable serializer for an object, it uses `JSON Serialization` by default. With `JSON Serialization`, objects
-are converted to JSON strings and transmitted to the Hazelcast members as such. 
+are converted to JSON strings and transmitted to the Hazelcast members as such.
 
 When the Hazelcast Node.js client retrieves a JSON serialized data from a member, it parses the JSON string and returns the object represented by that
 string to the user. However, you may want to defer the string parsing and work with the raw JSON strings.
 
 For this purpose, you can configure your client to return `HazelcastJsonValue` objects when it retrieves a JSON serialized data from a member.
 
-`HazelcastJsonValue` is a lightweight wrapper around the JSON strings. You may get the JSON string representation of the object using the `toString` method.  
+`HazelcastJsonValue` is a lightweight wrapper around the JSON strings. You may get the JSON string representation of the object using the `toString` method.
 
 Below is the configuration required to return `HazelcastJsonValue` objects instead of JavaScript objects.
 
@@ -1572,7 +1570,7 @@ SSLFactory.prototype.init = function (properties) {
     promises.push(readFile(properties.certPath).then(function (data) {
         self.cert = data;
     }));
-    
+
     return Promise.all(promises).return();
 };
 
@@ -1603,20 +1601,20 @@ One of the key elements in Hazelcast security is the `Credentials` object, which
 Hazelcast Node.js client to Hazelcast members. Then, Hazelcast members can authenticate the clients and perform access control
 checks on the client operations using this `Credentials` object.
 
-To use this feature, you need to 
+To use this feature, you need to
 * have a class implementing the [`Credentials`](https://docs.hazelcast.org/docs/latest/javadoc/com/hazelcast/security/Credentials.html) interface which contains the security attributes of your client
 * have a class implementing the [`LoginModule`](https://docs.oracle.com/javase/6/docs/api/javax/security/auth/spi/LoginModule.html?is-external=true) interface which uses the `Credentials` object during the authentication process
 * configure your Hazelcast member's security properties with respect to these classes before starting it. If you have started your member as described in the [Running Standalone JARs section](#1211-running-standalone-jars), see the [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath).
 
-[`UsernamePasswordCredentials`](https://docs.hazelcast.org/docs/latest/javadoc/com/hazelcast/security/UsernamePasswordCredentials.html), a basic implementation of the `Credentials` interface, is available in the Hazelcast `com.hazelcast.security` package. 
+[`UsernamePasswordCredentials`](https://docs.hazelcast.org/docs/latest/javadoc/com/hazelcast/security/UsernamePasswordCredentials.html), a basic implementation of the `Credentials` interface, is available in the Hazelcast `com.hazelcast.security` package.
 `UsernamePasswordCredentials` is used for default configuration during the authentication process of both members and clients. You can also use this class to carry the security attributes of your client.
 
-Hazelcast also has an abstract implementation of the `LoginModule` interface which is the `ClusterLoginModule` class in the `com.hazelcast.security` package. 
-You can extend this class and do the authentication on the `onLogin()` method. 
+Hazelcast also has an abstract implementation of the `LoginModule` interface which is the `ClusterLoginModule` class in the `com.hazelcast.security` package.
+You can extend this class and do the authentication on the `onLogin()` method.
 
-Below is an example for the extension of abstract `ClusterLoginModule` class. 
+Below is an example for the extension of abstract `ClusterLoginModule` class.
 On the `ClientLoginModule#onLogin()` method, we are doing a simple authentication against a hardcoded username and password just for illustrative purposes. You should carry out the authentication against a security service of your choice.
- 
+
 ```java
 import com.hazelcast.security.ClusterLoginModule;
 import com.hazelcast.security.UsernamePasswordCredentials;
@@ -1632,7 +1630,7 @@ public class ClientLoginModule extends ClusterLoginModule {
           UsernamePasswordCredentials usernamePasswordCredentials = (UsernamePasswordCredentials) credentials;
           String username = usernamePasswordCredentials.getUsername();
           String password = usernamePasswordCredentials.getPassword();
-          
+
           if (username.equals("admin") && password.equals("password")) {
               return true;
           }
@@ -1763,11 +1761,11 @@ Client.newHazelcastClient(config).then(function (client) {
 
 > NOTE: It is almost always a bad idea to write the credentials to wire in a clear-text format. Therefore, using TLS/SSL encryption is highly recommended while using the custom credentials as described in [TLS/SSL section]((#61-tlsssl)).
 
-With Hazelcast's extensible, `JAAS` based security features you can do much more than just authentication. 
+With Hazelcast's extensible, `JAAS` based security features you can do much more than just authentication.
 See the [JAAS code sample](code_samples/jaas_sample) to learn how to perform access control checks on the client operations based on user groups.
 
 Also, see the [Security section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#security) of Hazelcast IMDG Reference Manual for more information.
- 
+
 
 # 7. Using Node.js Client with Hazelcast IMDG
 
@@ -2830,8 +2828,8 @@ In this example, the code creates a list with the values greater than or equal t
 
 #### 7.7.1.4. Querying with JSON Strings
 
-You can query the JSON strings stored inside your Hazelcast clusters. To query a JSON string, you can 
-use `HazelcastJsonValue` or JavaScript objects. 
+You can query the JSON strings stored inside your Hazelcast clusters. To query a JSON string, you can
+use `HazelcastJsonValue` or JavaScript objects.
 
 `HazelcastJsonValue` objects can be used both as keys and values in the distributed data structures.
 Then, it is possible to query these objects using the query methods explained in this section.
@@ -2858,8 +2856,8 @@ return hz.getMap('personsMap').then(function (map) {
 });
 ```
 
-When running the queries, Hazelcast treats values extracted from the JSON documents as Java types so they can be compared with the query attribute. 
-JSON specification defines five primitive types to be used in the JSON documents: `number`, `string`, `true`, `false` and `null`. 
+When running the queries, Hazelcast treats values extracted from the JSON documents as Java types so they can be compared with the query attribute.
+JSON specification defines five primitive types to be used in the JSON documents: `number`, `string`, `true`, `false` and `null`.
 The `string`, `true`/`false` and `null` types are treated as `String`, `boolean` and `null`, respectively. `Number` values treated as `long`s if they can be represented by a `long`.
 Otherwise, `number`s are treated as `double`s.
 
@@ -2912,18 +2910,18 @@ return hz.getMap('departmentsMap').then(function (map) {
 });
 ```
 
-`HazelcastJsonValue` is a lightweight wrapper around your JSON strings. It is used merely as a way to indicate that the contained string should be treated as a valid JSON value. 
-Hazelcast does not check the validity of JSON strings put into to maps. Putting an invalid JSON string in a map is permissible. 
+`HazelcastJsonValue` is a lightweight wrapper around your JSON strings. It is used merely as a way to indicate that the contained string should be treated as a valid JSON value.
+Hazelcast does not check the validity of JSON strings put into to maps. Putting an invalid JSON string in a map is permissible.
 However, in that case whether such an entry is going to be returned or not from a query is not defined.
 
 ##### Querying with HazelcastJsonValue Objects
 
-If the Hazelcast Node.js client cannot find a suitable serializer for an object, it uses `JSON Serialization`.  
+If the Hazelcast Node.js client cannot find a suitable serializer for an object, it uses `JSON Serialization`.
 
 This means that, you can run queries over your JavaScript objects if they are serialized as JSON strings. However, when the results
 of your query are ready, they are parsed from JSON strings and returned to you as JavaScript objects.
 
-For the purposes of your application, you may want to get rid of the parsing and just work with the raw JSON strings using `HazelcastJsonValue` objects. Then, you can configure your client to do so 
+For the purposes of your application, you may want to get rid of the parsing and just work with the raw JSON strings using `HazelcastJsonValue` objects. Then, you can configure your client to do so
 as described in the [JSON Serialization](#45-json-serialization) section.
 
 ```javascript
@@ -2951,10 +2949,10 @@ Client.newHazelcastClient(config).then(function (hz) {
 });
 ```
 
-##### Metadata Creation for JSON Querying 
+##### Metadata Creation for JSON Querying
 
 Hazelcast stores a metadata object per JSON serialized object stored. This metadata object is created every time a JSON serialized object is put into an `IMap`.
-Metadata is later used to speed up the query operations. Metadata creation is on by default. Depending on your application’s needs, you may want to turn off the metadata creation to decrease the put latency and increase the throughput. 
+Metadata is later used to speed up the query operations. Metadata creation is on by default. Depending on your application’s needs, you may want to turn off the metadata creation to decrease the put latency and increase the throughput.
 
 You can configure this using `metadata-policy` element for the map configuration on the member side as follows:
 
@@ -3340,17 +3338,17 @@ After enabling the client statistics, you can monitor your clients using Hazelca
 ### 7.9.2. Logging Configuration
 
  By default, Hazelcast Node.js client uses a default logger which logs to the `stdout` with the `INFO` log level. You can change the log level using the `'hazelcast.logging.level'` property of the `ClientConfig.properties`.
- 
+
 Below is an example of the logging configuration with the `OFF` log level which disables logging.
- 
+
 ```javascript
 cfg.properties['hazelcast.logging.level'] = LogLevel.OFF;
 ```
- 
+
  You can also implement a custom logger depending on your needs. Your custom logger must have `log`, `error`, `warn`, `info`, `debug`, `trace` methods. After implementing it, you can use your custom logger using the `customLogger` property of `ClientConfig`
-  
+
 See the following for a custom logger example.
- 
+
 ```javascript
 var winstonAdapter = {
     logger: new (winston.Logger)({
@@ -3407,7 +3405,7 @@ tweak the implementation to your application's needs, you can follow the steps i
 Follow the below steps to build and install Hazelcast Node.js client from its source:
 
 1. Clone the GitHub repository (https://github.com/hazelcast/hazelcast-nodejs-client.git).
-2. Run `npm install` to automatically download and install all the required modules under `node_modules` directory. Note that, 
+2. Run `npm install` to automatically download and install all the required modules under `node_modules` directory. Note that,
 there may be vulnerabilities reported due to `devDependencies`. In that case, run `npm audit fix` to automatically install any compatible updates to vulnerable dependencies.
 3. Run `npm run compile` to compile TypeScript files to JavaScript.
 

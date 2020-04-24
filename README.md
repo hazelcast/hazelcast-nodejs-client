@@ -16,9 +16,8 @@
 [Hazelcast](https://hazelcast.org/) is an open-source distributed in-memory data store and computation platform that
 provides a wide variety of distributed data structures and concurrency primitives.
 
-Hazelcast Node.js client is a way to connect to Hazelcast clusters and access data stored in the cluster nodes.
-The client provides an entirely asynchronous API that is based on promises with a builtin support for native
-JavaScript objects.
+Hazelcast Node.js client is a way to communicate to Hazelcast IMDG clusters and access the cluster data.
+The client provides a Promise-based API with a builtin support for native JavaScript objects.
 
 ## Installation
 
@@ -27,14 +26,15 @@ JavaScript objects.
 Hazelcast Node.js client requires a working Hazelcast IMDG cluster to run. This cluster handles the storage and
 manipulation of the user data.
 
-Hazelcast IMDG cluster consists of one or more cluster members. These members generally run on multiple virtual or
+A Hazelcast IMDG cluster consists of one or more cluster members. These members generally run on multiple virtual or
 physical machines and are connected to each other via the network. Any data put on the cluster is partitioned to
 multiple members transparent to the user. It is therefore very easy to scale the system by adding new members as
 the data grows. Hazelcast IMDG cluster also offers resilience. Should any hardware or software problem causes a crash
 to any member, the data on that member is recovered from backups and the cluster continues to operate without any
 downtime.
 
-The quickest way to get started is to use our [Docker images](https://hub.docker.com/r/hazelcast/hazelcast/).
+The quickest way to start a single member cluster for development purposes is to use our
+[Docker images](https://hub.docker.com/r/hazelcast/hazelcast/).
 
 ```bash
 docker run -p 5701:5701 hazelcast/hazelcast:3.12.6
@@ -56,44 +56,33 @@ npm install hazelcast-client
 ### Usage
 
 ```js
-const Client = require('hazelcast-client').Client;
+const { Client } = require('hazelcast-client');
 
 // Connect to Hazelcast cluster
-Client.newHazelcastClient()
-  .then(client => {
-    let map;
+const client = await Client.newHazelcastClient();
 
-    // Get or create the 'distributed-map' on the cluster
-    return client.getMap('distributed-map')
-      .then(m => {
-        map = m;
+// Get or create the 'distributed-map' on the cluster
+const map = await client.getMap('distributed-map');
 
-        // Put 'key', 'value' pair into the 'distributed-map'
-        return map.put('key', 'value');
-      })
-      .then(() => {
+// Put 'key', 'value' pair into the 'distributed-map'
+await map.put('key', 'value');
 
-        // Get the value associated with the given key from the cluster
-        return map.get('key');
-      })
-      .then(value => {
-        console.log(value); // Outputs 'value'
+// Get the value associated with the given key from the cluster
+const value = await map.get('key');
+console.log(value); // Outputs 'value'
 
-        // Shutdown the client
-        return client.shutdown();
-      });
-  });
+// Shutdown the client
+client.shutdown();
 ```
 
-If you are using Hazelcast and the Node.js client on the same computer, default configuration should work
+If you are using Hazelcast IMDG and the Node.js client on the same machine, the default configuration should work
 out-of-the-box. However, you may need to configure the client to connect to cluster nodes that are running on
-different computers or to customize client properties.
+different machines or to customize client properties.
 
 ### Configuration
 
 ```js
-const Client = require('hazelcast-client').Client;
-const Config = require('hazelcast-client').Config;
+const { Client, Config } = require('hazelcast-client');
 
 // Create a configuration object
 const clientConfig = new Config.ClientConfig();
@@ -104,15 +93,14 @@ clientConfig.networkConfig.addresses.push('10.90.0.2:5701');
 clientConfig.networkConfig.addresses.push('10.90.0.3:5701');
 
 // Initialize the client with the given configuration
-Client.newHazelcastClient(clientConfig)
-  .then(client => {
-    console.log('Connected to cluster');
-    return client.shutdown();
-  });
+const client = await Client.newHazelcastClient(clientConfig);
+
+console.log('Connected to cluster');
+client.shutdown();
 ```
 
 You can also configure the client
-[declaratively](https://github.com/hazelcast/hazelcast-nodejs-client#312-declarative-configuration-json) using a JSON file.
+[declaratively](https://github.com/hazelcast/hazelcast-nodejs-client/blob/master/DOCUMENTATION.md#312-declarative-configuration-json) using a JSON file.
 
 ## Features
 
@@ -122,16 +110,17 @@ You can also configure the client
 * Cluster-wide unique ID generator, called **FlakeIdGenerator**
 * Distributed, CRDT based counter, called **PNCounter**
 * Primitives for distributed computing such as **Lock**, **Semaphore**, **Atomic Long**
-* Integration with [Hazelcast.cloud](https://cloud.hazelcast.com/)
+* Integration with [Hazelcast Cloud](https://cloud.hazelcast.com/)
 * Support for serverless and traditional web service architectures with **Unisocket** and **Smart** operation modes
-* and [many more](https://github.com/hazelcast/hazelcast-nodejs-client#2-features).
+* Ability to listen client lifecycle, cluster state and distributed data structure events
+* and [many more](https://hazelcast.org/imdg/clients-languages/node-js/#client-features).
 
 ## Getting Help
 
 You can use the following channels for your questions and development/usage issues:
 
 * [GitHub repository](https://github.com/hazelcast/hazelcast-nodejs-client)
-* [Complete documentation](https://github.com/hazelcast/hazelcast-nodejs-client/blob/master/README.md)
+* [Complete documentation](https://github.com/hazelcast/hazelcast-nodejs-client/blob/master/DOCUMENTATION.md)
 * [API documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/)
 * [Gitter](https://gitter.im/hazelcast/hazelcast)
 * [Google Groups](https://groups.google.com/forum/#!forum/hazelcast)
