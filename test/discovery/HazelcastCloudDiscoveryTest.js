@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-var Address = require('../../lib/Address');
+var Address = require('../../lib/Address').Address;
 var expect = require('chai').expect;
 var HazelcastCloudDiscovery = require('../../lib/discovery/HazelcastCloudDiscovery').HazelcastCloudDiscovery;
 
