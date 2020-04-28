@@ -356,7 +356,7 @@ export default class HazelcastClient {
         this.connectionManager.shutdown();
         this.invocationService.shutdown();
         this.listenerService.shutdown();
-        // this.statistics.stop();
+        this.statistics.stop();
     }
 
     /**
@@ -401,7 +401,7 @@ export default class HazelcastClient {
                 this.listenerService.start();
                 this.proxyManager.init();
                 this.loadBalancer.initLoadBalancer(this.clusterService, this.config);
-                // this.statistics.start();
+                this.statistics.start();
                 return this.sendStateToCluster();
             })
             .then(() => {
