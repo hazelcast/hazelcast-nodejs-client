@@ -41,7 +41,7 @@ docker run -p 5701:5701 hazelcast/hazelcast:3.12.6
 ```
 
 You can also use our ZIP or TAR [distributions](https://hazelcast.org/imdg/download/archives/#hazelcast-imdg)
-as described [here](https://github.com/hazelcast/hazelcast-nodejs-client#121-setting-up-a-hazelcast-imdg-cluster).
+as described [here](DOCUMENTATION.md#121-setting-up-a-hazelcast-imdg-cluster).
 
 Make sure to use Hazelcast IMDG 3.x versions as the work to support 4.x versions is in progress.
 
@@ -100,7 +100,7 @@ client.shutdown();
 ```
 
 You can also configure the client
-[declaratively](https://github.com/hazelcast/hazelcast-nodejs-client/blob/master/DOCUMENTATION.md#312-declarative-configuration-json) using a JSON file.
+[declaratively](DOCUMENTATION.md#312-declarative-configuration-json) using a JSON file.
 
 ## Features
 
@@ -120,7 +120,7 @@ You can also configure the client
 You can use the following channels for your questions and development/usage issues:
 
 * [GitHub repository](https://github.com/hazelcast/hazelcast-nodejs-client)
-* [Complete documentation](https://github.com/hazelcast/hazelcast-nodejs-client/blob/master/DOCUMENTATION.md)
+* [Complete documentation](DOCUMENTATION.md)
 * [API documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/)
 * [Gitter](https://gitter.im/hazelcast/hazelcast)
 * [Google Groups](https://groups.google.com/forum/#!forum/hazelcast)
@@ -169,7 +169,7 @@ Test script automatically downloads `hazelcast-remote-controller` and Hazelcast 
 
 ## License
 
-[Apache 2 License](https://github.com/hazelcast/hazelcast-nodejs-client/blob/master/LICENSE).
+[Apache 2 License](LICENSE).
 
 ## Copyright
 
