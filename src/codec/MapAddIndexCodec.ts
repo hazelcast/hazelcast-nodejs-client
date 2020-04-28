@@ -30,7 +30,6 @@ const RESPONSE_MESSAGE_TYPE = 76033;
 
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
-
 export class MapAddIndexCodec {
     static encodeRequest(name: string, indexConfig: IndexConfig): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

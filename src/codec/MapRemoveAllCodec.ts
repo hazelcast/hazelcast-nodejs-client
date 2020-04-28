@@ -30,7 +30,6 @@ const RESPONSE_MESSAGE_TYPE = 81409;
 
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
-
 export class MapRemoveAllCodec {
     static encodeRequest(name: string, predicate: Data): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

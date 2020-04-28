@@ -31,7 +31,6 @@ const RESPONSE_MESSAGE_TYPE = 3073;
 const REQUEST_TIMESTAMP_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_TIMESTAMP_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
-
 export class ClientStatisticsCodec {
     static encodeRequest(timestamp: Long, clientAttributes: string, metricsBlob: Buffer): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

@@ -32,7 +32,6 @@ const RESPONSE_MESSAGE_TYPE = 78593;
 const REQUEST_REFERENCE_ID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_REFERENCE_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
-
 export class MapForceUnlockCodec {
     static encodeRequest(name: string, key: Data, referenceId: Long): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

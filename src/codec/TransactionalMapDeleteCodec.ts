@@ -34,7 +34,6 @@ const REQUEST_TXN_ID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_THREAD_ID_OFFSET = REQUEST_TXN_ID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_THREAD_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
-
 export class TransactionalMapDeleteCodec {
     static encodeRequest(name: string, txnId: UUID, threadId: Long, key: Data): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

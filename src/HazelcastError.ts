@@ -68,7 +68,7 @@ export class ClientOfflineError extends HazelcastError {
     }
 }
 
-export class InvalidConfigurationError extends HazelcastError{
+export class InvalidConfigurationError extends HazelcastError {
     constructor(msg: string, cause?: Error) {
         super(msg, cause);
         Object.setPrototypeOf(this, InvalidConfigurationError.prototype);

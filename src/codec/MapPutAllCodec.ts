@@ -31,7 +31,6 @@ const RESPONSE_MESSAGE_TYPE = 76801;
 
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
-
 export class MapPutAllCodec {
     static encodeRequest(name: string, entries: Array<[Data, Data]>): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

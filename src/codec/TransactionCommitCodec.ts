@@ -31,7 +31,6 @@ const REQUEST_TRANSACTION_ID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN
 const REQUEST_THREAD_ID_OFFSET = REQUEST_TRANSACTION_ID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_THREAD_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
-
 export class TransactionCommitCodec {
     static encodeRequest(transactionId: UUID, threadId: Long): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

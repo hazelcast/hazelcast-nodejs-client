@@ -38,7 +38,6 @@ const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BY
 const EVENT_MEMBERS_VIEW_VERSION_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const EVENT_PARTITIONS_VIEW_VERSION_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
-
 export class ClientAddClusterViewListenerCodec {
     static encodeRequest(): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

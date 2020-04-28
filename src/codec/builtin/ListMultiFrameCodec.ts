@@ -26,7 +26,8 @@ export class ListMultiFrameCodec {
         clientMessage.add(END_FRAME.copy());
     }
 
-    static encodeContainsNullable<T>(clientMessage: ClientMessage, list: T[], encoder: (msg: ClientMessage, value: T) => void): void {
+    static encodeContainsNullable<T>(clientMessage: ClientMessage, list: T[],
+                                     encoder: (msg: ClientMessage, value: T) => void): void {
         clientMessage.add(BEGIN_FRAME.copy());
         for (let i = 0, n = list.length; i < n; i++) {
             const item = list[i];
