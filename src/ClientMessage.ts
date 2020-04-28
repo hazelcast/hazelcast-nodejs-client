@@ -15,27 +15,6 @@
  */
 
 /* tslint:disable:no-bitwise */
-/*
- Client Message is the carrier framed data as defined below.
- Any request parameter, response or event data will be carried in the payload.
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
- +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- |R|                      Frame Length                           |
- +-------------+---------------+---------------------------------+
- |  Version    |B|E|  Flags    |               Type              |
- +-------------+---------------+---------------------------------+
- |                       CorrelationId                           |
- |                                                               |
- +---------------------------------------------------------------+
- |                        PartitionId                            |
- +-----------------------------+---------------------------------+
- |        Data Offset          |                                 |
- +-----------------------------+                                 |
- |                      Message Payload Data                    ...
- |                                                              ...
- */
-
 import {Buffer} from 'safe-buffer';
 import * as Long from 'long';
 import {BitsUtil} from './BitsUtil';

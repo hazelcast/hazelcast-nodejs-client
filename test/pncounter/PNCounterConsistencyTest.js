@@ -28,9 +28,7 @@ var Util = require('../Util');
 describe('PNCounterConsistencyTest', function () {
 
     var cluster;
-    var member1;
     var client;
-    var member2;
 
     before(function () {
         Util.markServerVersionAtLeast(this, null, '3.10');
@@ -41,11 +39,9 @@ describe('PNCounterConsistencyTest', function () {
         return RC.createCluster(null, fs.readFileSync(path.resolve(__dirname, 'hazelcast_crdtreplication_delayed.xml'), 'utf8')).then(function (cl) {
             cluster = cl;
             return RC.startMember(cluster.id);
-        }).then(function (value) {
-            member1 = value;
+        }).then(function () {
             return RC.startMember(cluster.id);
-        }).then(function (value) {
-            member2 = value;
+        }).then(function () {
             const cfg = new Config.ClientConfig();
             cfg.clusterName = cluster.id;
             return Client.newHazelcastClient(cfg);
