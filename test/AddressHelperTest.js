@@ -47,7 +47,7 @@ describe('AddressHelper', function () {
 
 
     it('should try all addresses', function () {
-        var knownAddresses = client.getClusterService().getMemberList().map(function (member) {
+        var knownAddresses = client.getConnectionManager().get().map(function (member) {
             return member.address.toString();
         });
 

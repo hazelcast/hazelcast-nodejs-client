@@ -15,6 +15,7 @@
  */
 
 import * as Long from 'long';
+import {pad} from '../Util';
 
 export class UUID {
     readonly leastSignificant: Long;
@@ -48,7 +49,11 @@ export class UUID {
         const div3 = (mostLow & ((1 << 16) - 1)).toString(16);
         const div4 = (leastHigh >>> 16).toString(16);
         const div5 = (leastHigh & ((1 << 16) - 1)).toString(16) + leastLow.toString(16);
-        this.cachedString = div1 + '-' + div2 + '-' + div3 + '-' + div4 + '-' + div5;
+        this.cachedString = pad(8, div1, '0') + '-'
+            + pad(4, div2, '0') + '-'
+            + pad(4, div3, '0') + '-'
+            + pad(4, div4, '0') + '-'
+            + pad(12, div5, '0');
         return this.cachedString;
     }
 }

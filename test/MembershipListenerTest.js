@@ -15,6 +15,7 @@
  */
 
 var HazelcastClient = require('../.').Client;
+var Config = require('../.').Config;
 var Controller = require('./RC');
 var expect = require('chai').expect;
 var DeferredPromise = require('../lib/Util').DeferredPromise;
@@ -32,7 +33,9 @@ describe('MembershipListener', function () {
             return Controller.startMember(cluster.id)
         }).then(function (res) {
             member = res;
-            return HazelcastClient.newHazelcastClient();
+            const config = new Config.ClientConfig();
+            config.clusterName = cluster.id;
+            return HazelcastClient.newHazelcastClient(config);
         }).then(function (res) {
             client = res;
         });
@@ -61,7 +64,7 @@ describe('MembershipListener', function () {
             expect(membershipEvent.member.address.host).to.equal(newMember.host);
             expect(membershipEvent.member.address.port).to.equal(newMember.port);
             expect(membershipEvent.eventType).to.equal(MemberEvent.ADDED);
-            expect(membershipEvent.members).to.equal(client.clusterService.getMembers());
+            expect(membershipEvent.members).to.deep.equal(client.clusterService.getMemberList());
         });
     });
 
@@ -92,7 +95,7 @@ describe('MembershipListener', function () {
             expect(membershipEvent.member.address.host).to.equal(newMember.host);
             expect(membershipEvent.member.address.port).to.equal(newMember.port);
             expect(membershipEvent.eventType).to.equal(MemberEvent.ADDED);
-            expect(membershipEvent.members).to.equal(client.clusterService.getMembers());
+            expect(membershipEvent.members).to.deep.equal(client.clusterService.getMemberList());
             expect(listenedSecondListener).to.be.true;
         });
 
@@ -137,62 +140,7 @@ describe('MembershipListener', function () {
             expect(membershipEvent.member.address.host).to.equal(newMember.host);
             expect(membershipEvent.member.address.port).to.equal(newMember.port);
             expect(membershipEvent.eventType).to.equal(MemberEvent.REMOVED);
-            expect(membershipEvent.members).to.equal(client.clusterService.getMembers());
-        });
-    });
-
-    it('sees member attribute change put event', function () {
-        var attributeChangePromise = new DeferredPromise();
-
-        var membershipListener = {
-            memberAttributeChanged: function (memberAttributeEvent) {
-                attributeChangePromise.resolve(memberAttributeEvent);
-            }
-        };
-        client.clusterService.addMembershipListener(membershipListener);
-
-        var script = 'function attrs() { ' +
-            'return instance_0.getCluster().getLocalMember().setIntAttribute("test", 123); }; result=attrs();';
-        return Controller.executeOnController(cluster.id, script, 1).then(function () {
-            return attributeChangePromise.promise;
-        }).then(function (memberAttributeEvent) {
-            expect(memberAttributeEvent.operationType === MemberAttributeOperationType.PUT);
-            expect(memberAttributeEvent.member.uuid).to.equal(member.uuid);
-            expect(memberAttributeEvent.key).to.equal('test');
-            expect(memberAttributeEvent.value).to.equal('123');
-        });
-    });
-
-    it('sees member attribute change remove event', function () {
-        var attributeRemovePromise = new DeferredPromise();
-        var attributeAddPromise = new DeferredPromise();
-        var membershipListener = {
-            memberAttributeChanged: function (memberAttributeEvent) {
-                if (memberAttributeEvent.operationType === MemberAttributeOperationType.PUT) {
-                    attributeAddPromise.resolve(memberAttributeEvent);
-                } else if (memberAttributeEvent.operationType === MemberAttributeOperationType.REMOVE) {
-                    attributeRemovePromise.resolve(memberAttributeEvent);
-                } else {
-                    attributeAddPromise.reject(undefined);
-                }
-            }
-        };
-        client.clusterService.addMembershipListener(membershipListener);
-
-        var addScript = 'function attrs() { ' +
-            'return instance_0.getCluster().getLocalMember().setIntAttribute("test", 123); }; result=attrs();';
-        var removeScript = 'function attrs() { ' +
-            'return instance_0.getCluster().getLocalMember().removeAttribute("test"); }; result=attrs();';
-        return Controller.executeOnController(cluster.id, addScript, 1).then(function () {
-            return attributeAddPromise.promise;
-        }).then(function () {
-            return Controller.executeOnController(cluster.id, removeScript, 1);
-        }).then(function () {
-            return attributeRemovePromise.promise;
-        }).then(function (memberAttributeEvent) {
-            expect(memberAttributeEvent.operationType === MemberAttributeOperationType.REMOVE);
-            expect(memberAttributeEvent.member.uuid).to.equal(member.uuid);
-            expect(memberAttributeEvent.key, 'test3');
+            expect(membershipEvent.members).to.deep.equal(client.clusterService.getMemberList());
         });
     });
 });

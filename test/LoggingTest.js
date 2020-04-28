@@ -94,6 +94,7 @@ describe('Logging Test', function () {
             loggingHappened = true;
         });
         var cfg = new Config.ClientConfig();
+        cfg.clusterName = cluster.id;
         cfg.customLogger = winstonAdapter;
         return HazelcastClient.newHazelcastClient(cfg).then(function (hz) {
             client = hz;
@@ -103,6 +104,7 @@ describe('Logging Test', function () {
 
     it('no logging', function () {
         var cfg = new Config.ClientConfig();
+        cfg.clusterName = cluster.id;
         cfg.properties['hazelcast.logging.level'] = LogLevel.OFF;
         return HazelcastClient.newHazelcastClient(cfg).then(function (hz) {
             client = hz;
@@ -111,7 +113,9 @@ describe('Logging Test', function () {
     });
 
     it('default logging in case of empty property', function () {
-        return HazelcastClient.newHazelcastClient().then(function (hz) {
+        var cfg = new Config.ClientConfig();
+        cfg.clusterName = cluster.id;
+        return HazelcastClient.newHazelcastClient(cfg).then(function (hz) {
             client = hz;
             return sinon.assert.called(console.log);
         });
@@ -119,6 +123,7 @@ describe('Logging Test', function () {
 
     it('default logging in case of default property', function () {
         var cfg = new Config.ClientConfig();
+        cfg.clusterName = cluster.id;
         cfg.properties['hazelcast.logging.level'] = LogLevel.INFO;
         return HazelcastClient.newHazelcastClient(cfg).then(function (hz) {
             client = hz;
@@ -128,12 +133,14 @@ describe('Logging Test', function () {
 
     it('error in case of unknown property value', function () {
         var cfg = new Config.ClientConfig();
+        cfg.clusterName = cluster.id;
         cfg.customLogger = 'unknw';
         return expect(HazelcastClient.newHazelcastClient.bind(this, cfg)).to.throw(Error);
     });
 
     it('default logging, default level', function () {
         var cfg = new Config.ClientConfig();
+        cfg.clusterName = cluster.id;
         return HazelcastClient.newHazelcastClient(cfg).then(function (cl) {
             client = cl;
             return sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'INFO');
@@ -142,6 +149,7 @@ describe('Logging Test', function () {
 
     it('default logging, error level', function () {
         var cfg = new Config.ClientConfig();
+        cfg.clusterName = cluster.id;
         cfg.properties['hazelcast.logging.level'] = LogLevel.ERROR;
         return HazelcastClient.newHazelcastClient(cfg).then(function (cl) {
             client = cl;
@@ -151,6 +159,7 @@ describe('Logging Test', function () {
 
     it('default logging, trace level', function () {
         var cfg = new Config.ClientConfig();
+        cfg.clusterName = cluster.id;
         cfg.properties['hazelcast.logging.level'] = LogLevel.TRACE;
         return HazelcastClient.newHazelcastClient(cfg).then(function (cl) {
             client = cl;

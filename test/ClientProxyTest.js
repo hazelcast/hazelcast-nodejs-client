@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2008-2020, Hazelcast, Inc. All Rights Reserved.
  *
@@ -18,9 +19,10 @@ var Controller = require('./RC');
 var expect = require('chai').expect;
 
 var MapProxy = require('../lib/proxy/MapProxy').MapProxy;
-var ConnectionManager = require('../lib/invocation/ClientConnectionManager').ClientConnectionManager;
-var ClientConnection = require('../lib/invocation/ClientConnection').ClientConnection;
+var ConnectionManager = require('../lib/network/ClientConnectionManager').ClientConnectionManager;
+var ClientConnection = require('../lib/network/ClientConnection').ClientConnection;
 var HazelcastClient = require('../.').Client;
+var Config = require('../.').Config;
 var sinon = require('sinon');
 var assert = require('chai').assert;
 var sandbox = sinon.createSandbox();
@@ -71,7 +73,9 @@ describe('Generic proxy test', function () {
             cluster = response;
             return Controller.startMember(cluster.id);
         }).then(function () {
-            return HazelcastClient.newHazelcastClient();
+            const config = new Config.ClientConfig();
+            config.clusterName = cluster.id;
+            return HazelcastClient.newHazelcastClient(config);
         }).then(function (res) {
             client = res;
             return client.getMap('Furkan').then(function (m) {

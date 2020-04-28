@@ -34,6 +34,7 @@ var Util = require('./Util');
                 return RC.startMember(clusterId)
             }).then(function () {
                 var cfg = new Config.ClientConfig();
+                cfg.clusterName = cluster.id;
                 cfg.networkConfig.smartRouting = isSmartService;
                 return HazelcastClient.newHazelcastClient(cfg);
             }).then(function (res) {

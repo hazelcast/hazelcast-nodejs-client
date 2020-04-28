@@ -75,6 +75,7 @@ configParams.forEach(function (cfg) {
                 cluster = res;
                 return Controller.startMember(cluster.id);
             }).then(function (member) {
+                cfg.clusterName = cluster.id;
                 return HazelcastClient.newHazelcastClient(cfg);
             }).then(function (res) {
                 client = res;
@@ -105,10 +106,11 @@ configParams.forEach(function (cfg) {
 
         it('getLocalEndpoint returns correct info', function () {
             var info = client.getLocalEndpoint();
-            expect(info.localAddress.host).to.equal(client.clusterService.getOwnerConnection().localAddress.host);
-            expect(info.localAddress.port).to.equal(client.clusterService.getOwnerConnection().localAddress.port);
-            expect(info.uuid).to.equal(client.clusterService.uuid);
+            expect(info.localAddress.host).to.equal(client.getConnectionManager().getRandomConnection().localAddress.host);
+            expect(info.localAddress.port).to.equal(client.getConnectionManager().getRandomConnection().localAddress.port);
+            expect(info.uuid).to.deep.equal(client.getConnectionManager().getClientUuid());
             expect(info.type).to.equal('NodeJS');
+            expect(info.labels).to.deep.equal(new Set());
         });
 
         it('getDistributedObjects returns all dist objects', function (done) {

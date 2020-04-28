@@ -37,6 +37,9 @@ describe('HazelcastCloudProvider Test', function () {
         expectedAddresses.set('10.0.0.1:5702', new Address('198.51.100.1', 5702));
         expectedAddresses.set('10.0.0.2:5701', new Address('198.51.100.2', 5701));
 
+    });
+
+    beforeEach(() => {
         var logger = new LoggingService(null, LogLevel.INFO).getLogger();
         hazelcastCloudDiscovery = new HazelcastCloudDiscovery();
         sinon.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes').callsFake(() => Promise.resolve(expectedAddresses));
@@ -45,7 +48,10 @@ describe('HazelcastCloudProvider Test', function () {
     });
 
     afterEach(function () {
-        HazelcastCloudDiscovery.prototype.discoverNodes.restore();
+        if (HazelcastCloudDiscovery.prototype.discoverNodes.restore
+            && HazelcastCloudDiscovery.prototype.discoverNodes.restore.sinon) {
+            HazelcastCloudDiscovery.prototype.discoverNodes.restore();
+        }
     });
 
 
@@ -56,6 +62,7 @@ describe('HazelcastCloudProvider Test', function () {
     });
 
     it('loadAddresses_whenErrorIsThrown', function () {
+        HazelcastCloudDiscovery.prototype.discoverNodes.restore();
         sinon.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes').callsFake(function () {
             return Promise.reject(new IllegalStateError('Expected exception'));
         });

@@ -340,3 +340,12 @@ export function getNodejsMajorVersion(): number {
     const versions = versionString.split('.');
     return Number.parseInt(versions[0].substr(1));
 }
+
+export function pad(targetLength: number, str: string, padString: string): string {
+    // TODO use str#padStart
+    if (str.length >= targetLength) {
+        return str;
+    } else {
+        return new Array(targetLength - str.length + 1).join(padString) + str;
+    }
+}
