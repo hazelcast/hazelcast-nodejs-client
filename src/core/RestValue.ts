@@ -21,8 +21,8 @@ export const REST_VALUE_FACTORY_ID = -37;
 export const REST_VALUE_CLASS_ID = 1;
 
 export class RestValue implements IdentifiedDataSerializable {
-    value: number[];
-    contentType: number[];
+    value: string;
+    contentType: string;
 
     getClassId(): number {
         return REST_VALUE_CLASS_ID;
@@ -33,13 +33,13 @@ export class RestValue implements IdentifiedDataSerializable {
     }
 
     readData(input: DataInput): any {
-        this.value = input.readByteArray();
-        this.contentType = input.readByteArray();
+        this.value = input.readUTF();
+        this.contentType = input.readUTF();
     }
 
     writeData(output: DataOutput): void {
-        output.writeByteArray(this.value);
-        output.writeByteArray(this.contentType);
+        output.writeUTF(this.value);
+        output.writeUTF(this.contentType);
     }
 }
 

@@ -20,7 +20,6 @@ var RC = require('../RC');
 var expect = require('chai').expect;
 var StringSerializationPolicy = require('../../.').StringSerializationPolicy;
 var RestValue = require('../../lib/core/RestValue').RestValue;
-var Buffer = require('safe-buffer').Buffer;
 
 var stringSerializationPolicies = [StringSerializationPolicy.STANDARD, StringSerializationPolicy.LEGACY];
 
@@ -166,16 +165,16 @@ stringSerializationPolicies.forEach(function (stringSerializationPolicy) {
         it('rest value', function () {
             // Making sure that the object is properly de-serialized at the server
             var restValue = new RestValue();
-            restValue.value = Buffer.from('{"test":"data"}').toJSON().data;
-            restValue.contentType = Buffer.from('text/plain').toJSON().data;
+            restValue.value = '{\'test\':\'data\'}';
+            restValue.contentType = 'text/plain';
 
             var script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
                 'var restValue = map.get("key");\n' +
                 'var contentType = restValue.getContentType();\n' +
                 'var value = restValue.getValue();\n' +
-                'var Arrays = Java.type("java.util.Arrays");\n' +
-                'result = "{\\"contentType\\": " + Arrays.toString(contentType) + ", ' +
-                '\\"value\\": " +  Arrays.toString(value) + "}"\n';
+                'var String = Java.type("java.lang.String");\n' +
+                'result = "{\\"contentType\\": \\"" + new String(contentType) + "\\", ' +
+                '\\"value\\": \\"" +  new String(value) + "\\"}"\n';
 
             return map.put('key', restValue)
                 .then(function () {
@@ -183,8 +182,8 @@ stringSerializationPolicies.forEach(function (stringSerializationPolicy) {
                 })
                 .then(function (response) {
                     var result = JSON.parse(response.result.toString());
-                    expect(result.contentType).to.deep.equal(restValue.contentType);
-                    expect(result.value).to.deep.equal(restValue.value);
+                    expect(result.contentType).to.equal(restValue.contentType);
+                    expect(result.value).to.equal(restValue.value);
                 });
         });
     });

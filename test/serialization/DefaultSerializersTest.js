@@ -21,14 +21,13 @@ var SerializationService = require('../../lib/serialization/SerializationService
 var Predicates = require('../../.').Predicates;
 var StringSerializationPolicy = require('../../.').StringSerializationPolicy;
 var RestValue = require('../../lib/core/RestValue').RestValue;
-var Buffer = require('safe-buffer').Buffer;
 
 describe('Default serializers Test', function () {
 
     var isStandardUTFValues = [true, false];
     var restValue = new RestValue();
-    restValue.value = Buffer.from('{"test":"data"}').toJSON().data;
-    restValue.contentType = Buffer.from('text/plain').toJSON().data;
+    restValue.value = '{"test":"data"}';
+    restValue.contentType = 'text/plain';
 
     var parameters = [
         14,

@@ -55,16 +55,15 @@ describe('RestValueTest', function () {
         const value = {
             'key': 'value'
         };
+        const postData = querystring.stringify(value);
 
         client.getQueue('test')
             .then((queue) => {
                 const itemListener = {
                     itemAdded: (event) => {
                         const item = event.item;
-                        const receivedContentType = Buffer.from(item.contentType).toString();
-                        const receivedValue = Buffer.from(item.value).toString();
-                        expect(receivedContentType).to.equal(contentType);
-                        expect(receivedValue).to.equal('key=value');
+                        expect(item.contentType).to.equal(contentType);
+                        expect(item.value).to.equal(postData);
                         done();
                     }
                 };
@@ -73,7 +72,6 @@ describe('RestValueTest', function () {
             .then(() => {
                 const deferred = DeferredPromise();
 
-                const postData = querystring.stringify(value);
                 const options = {
                     hostname: member.host,
                     port: member.port,
