@@ -47,7 +47,7 @@ describe('Lost connection', function () {
         return Controller.shutdownCluster(cluster.id);
     });
 
-    it('M2 starts, M1 goes down, client sets M2 as owner', function (done) {
+    it('M2 starts, M1 goes down, client connects to M2', function (done) {
         this.timeout(32000);
         var newMember;
         var membershipListener = {
@@ -56,8 +56,9 @@ describe('Lost connection', function () {
                     return Util.promiseWaitMilliseconds(4000);
                 }).then(function () {
                     try {
-                        expect(client.clusterService.getOwnerConnection().address.host).to.be.eq(newMember.host);
-                        expect(client.clusterService.getOwnerConnection().address.port).to.be.eq(newMember.port);
+                        const address = client.getConnectionManager().getRandomConnection().getRemoteAddress();
+                        expect(address.host).to.equal(newMember.host);
+                        expect(address.port).to.equal(newMember.port);
                         done();
                     } catch (e) {
                         done(e);

@@ -91,7 +91,7 @@ var Util = require('./Util');
         it('listener is not invoked when listener was already removed by user', function (done) {
             this.timeout(3000);
             client.addDistributedObjectListener(function (distributedObjectEvent) {
-                done('Should not have run!');
+                done(new Error('Should not have run!'));
             }).then(function (listenerId) {
                 return client.removeDistributedObjectListener(listenerId)
             }).then(function () {
