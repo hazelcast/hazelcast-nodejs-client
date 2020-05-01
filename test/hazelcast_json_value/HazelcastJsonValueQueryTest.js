@@ -59,7 +59,7 @@ describe('HazelcastJsonValue query test', function () {
             return;
         }
         client.shutdown();
-        return RC.shutdownCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('querying over JavaScript objects', function () {

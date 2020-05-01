@@ -72,7 +72,7 @@ describe("NearCachedMap", function () {
             after(function () {
                 client1.shutdown();
                 client2.shutdown();
-                return Controller.shutdownCluster(cluster.id);
+                return Controller.terminateCluster(cluster.id);
             });
 
             function getNearCacheStats(map) {

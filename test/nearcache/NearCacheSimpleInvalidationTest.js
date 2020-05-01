@@ -64,7 +64,7 @@ describe('NearCacheSimpleInvalidation', function () {
             after(function () {
                 client.shutdown();
                 updaterClient.shutdown();
-                return Controller.shutdownCluster(cluster.id);
+                return Controller.terminateCluster(cluster.id);
             });
 
             it('client observes outside invalidations', function () {

@@ -56,7 +56,7 @@ describe("Ringbuffer Proxy", function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     it("adds one item and reads back", function () {

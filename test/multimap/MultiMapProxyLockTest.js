@@ -65,7 +65,7 @@ describe("MultiMap Proxy Lock", function () {
     after(function () {
         clientOne.shutdown();
         clientTwo.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
 

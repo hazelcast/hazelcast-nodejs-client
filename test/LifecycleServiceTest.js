@@ -31,7 +31,7 @@ describe('LifecycleService', function () {
     });
 
     after(function () {
-        return RC.shutdownCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('client should emit STARTING, STARTED, CLIENT_CONNECTED, SHUTTING_DOWN, CLIENT_DISCONNECTED and SHUTDOWN events in order', function (done) {

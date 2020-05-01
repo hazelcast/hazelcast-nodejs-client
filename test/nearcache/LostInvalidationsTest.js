@@ -73,7 +73,7 @@ describe('LostInvalidation', function () {
     });
 
     after(function () {
-        return RC.shutdownCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('client eventually receives an update for which the invalidation event was dropped', function () {

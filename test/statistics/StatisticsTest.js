@@ -55,7 +55,7 @@ describe('Statistics with default period', function () {
     after(function () {
         TestUtil.markServerVersionAtLeast(this, null, '3.9.0');
         client.shutdown();
-        return RC.shutdownCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     beforeEach(function () {
@@ -161,7 +161,7 @@ describe('Statistics with non-default period', function () {
     after(function () {
         TestUtil.markServerVersionAtLeast(this, null, '3.9.0');
         client.shutdown();
-        return RC.shutdownCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('should not change before period', function () {
@@ -215,7 +215,7 @@ describe('Statistics with negative period', function () {
     after(function () {
         TestUtil.markServerVersionAtLeast(this, null, '3.9.0');
         client.shutdown();
-        return RC.shutdownCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('should be enabled via configuration', function () {

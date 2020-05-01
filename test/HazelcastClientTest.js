@@ -92,7 +92,7 @@ configParams.forEach(function (cfg) {
 
         after(function () {
             client.shutdown();
-            return Controller.shutdownCluster(cluster.id);
+            return Controller.terminateCluster(cluster.id);
         });
 
         it('getDistributedObject returns empty array when there is no distributed object', function () {

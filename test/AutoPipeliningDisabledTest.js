@@ -58,7 +58,7 @@ describe('AutoPipeliningDisabledTest', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     it('basic map operations work fine', function () {

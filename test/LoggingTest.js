@@ -73,7 +73,7 @@ describe('Logging Test', function () {
     });
 
     after(function () {
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     beforeEach(function () {

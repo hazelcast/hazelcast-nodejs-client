@@ -43,7 +43,7 @@ describe('Invalidation metadata distortion', function () {
     });
 
     after(function () {
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     afterEach(function () {

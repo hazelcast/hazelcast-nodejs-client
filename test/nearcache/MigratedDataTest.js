@@ -68,7 +68,7 @@ describe('MigratedData', function () {
     });
 
     after(function () {
-        return RC.shutdownCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('killing a server migrates data to the other node, migrated data has new uuid, near cache discards data with old uuid', function () {

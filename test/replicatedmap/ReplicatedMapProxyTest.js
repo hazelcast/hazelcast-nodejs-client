@@ -60,7 +60,7 @@ describe('ReplicatedMap Proxy', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     it('puts one entry and gets one entry', function () {

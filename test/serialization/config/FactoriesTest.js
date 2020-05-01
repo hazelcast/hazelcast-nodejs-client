@@ -37,7 +37,7 @@ describe('Factories', function () {
 
     after(function () {
         delete process.env['HAZELCAST_CLIENT_CONFIG'];
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     afterEach(function () {

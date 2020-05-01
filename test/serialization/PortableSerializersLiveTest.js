@@ -63,7 +63,7 @@ describe('Default serializers with live instance', function () {
 
     after(function () {
         client.shutdown();
-        return RC.shutdownCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('client can write and read two different serializable objects of the same factory', function () {

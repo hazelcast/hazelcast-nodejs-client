@@ -50,7 +50,7 @@ describe("Client with SSL enabled", function () {
             client.shutdown();
             client = null;
         }
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     function createCluster(sConfig) {

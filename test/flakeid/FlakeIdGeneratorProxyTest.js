@@ -61,7 +61,7 @@ describe("FlakeIdGeneratorProxyTest", function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     function addToListFunction(l) {

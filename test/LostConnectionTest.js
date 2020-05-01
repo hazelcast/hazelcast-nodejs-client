@@ -44,7 +44,7 @@ describe('Lost connection', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     it('M2 starts, M1 goes down, client connects to M2', function (done) {

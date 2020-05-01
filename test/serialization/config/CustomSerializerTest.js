@@ -37,7 +37,7 @@ describe('CustomSerializer', function () {
     after(function () {
         delete process.env['HAZELCAST_CLIENT_CONFIG'];
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     it('should be configured declaratively', function () {

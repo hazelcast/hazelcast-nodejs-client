@@ -34,7 +34,7 @@ describe('Heartbeat', function () {
     });
 
     afterEach(function () {
-        return RC.shutdownCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('client sends heartbeat periodically even when server continuously pushes messages', function () {

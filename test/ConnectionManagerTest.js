@@ -57,7 +57,7 @@ describe('ConnectionManager', function () {
     });
 
     after(function () {
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
 

@@ -42,7 +42,7 @@ describe('RepairingTask', function () {
     });
 
     after(function () {
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     function startClientWithReconciliationInterval(reconciliationInterval) {

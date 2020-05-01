@@ -48,7 +48,7 @@ describe('MapAggregatorsLongTest', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     beforeEach(function () {

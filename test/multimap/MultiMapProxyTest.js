@@ -54,7 +54,7 @@ describe("MultiMap Proxy", function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     it("adds and retrieves a single item", function () {

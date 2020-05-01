@@ -56,7 +56,7 @@ describe('MapStore', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     it('loadAll with no arguments loads all keys', function () {

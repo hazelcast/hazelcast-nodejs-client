@@ -44,7 +44,7 @@ var Util = require('./Util');
 
         after(function () {
             client.shutdown();
-            return RC.shutdownCluster(cluster.id);
+            return RC.terminateCluster(cluster.id);
         });
 
         it('listener is invoked when a new object is created', function (done) {

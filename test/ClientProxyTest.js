@@ -41,7 +41,7 @@ describe('Generic proxy test', function () {
                 })
                 .then(function () {
                     client.shutdown();
-                    return Controller.shutdownCluster(cluster.id);
+                    return Controller.terminateCluster(cluster.id);
                 });
         }
     });

@@ -55,7 +55,7 @@ describe('HazelcastJsonValue with HazelcastJsonValueSerializer', function () {
 
     after(function () {
         client.shutdown();
-        return RC.shutdownCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('storing JavaScript objects', function () {

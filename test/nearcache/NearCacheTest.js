@@ -76,7 +76,7 @@ describe('NearCacheImpl', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     describe('CacheRecord', function () {

@@ -77,7 +77,7 @@ describe('Map Partition Aware', function () {
     after(function () {
         this.timeout(30000);
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     beforeEach(function () {

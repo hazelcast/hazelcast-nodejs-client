@@ -100,7 +100,7 @@ describe('SSL Client Authentication Test', function () {
             });
 
             afterEach(function () {
-                return Controller.shutdownCluster(cluster.id);
+                return Controller.terminateCluster(cluster.id);
             });
 
             it('ma:required, they both know each other should connect', function () {

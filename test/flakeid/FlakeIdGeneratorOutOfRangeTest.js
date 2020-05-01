@@ -37,7 +37,7 @@ describe("FlakeIdGeneratorOutOfRangeTest", function () {
     afterEach(function () {
         return flakeIdGenerator.destroy().then(function () {
             client.shutdown();
-            return Controller.shutdownCluster(cluster.id);
+            return Controller.terminateCluster(cluster.id);
         });
     });
 

@@ -53,7 +53,7 @@ describe('PNCounterConsistencyTest', function () {
     afterEach(function () {
         this.timeout(10000);
         client.shutdown();
-        return RC.shutdownCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('target replica killed, no replica is sufficiently up-to-date, get operation throws ConsistencyLostError', function () {

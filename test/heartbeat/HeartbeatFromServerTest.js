@@ -34,7 +34,7 @@ describe('Heartbeat', function () {
     });
 
     afterEach(function () {
-        return RC.shutdownCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('connectionRemoved fired when second member stops heartbeating', function (done) {

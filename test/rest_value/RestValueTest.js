@@ -50,7 +50,7 @@ describe('RestValueTest', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     it('client should receive REST events from server as RestValue', function (done) {

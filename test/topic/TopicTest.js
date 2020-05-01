@@ -85,7 +85,7 @@ describe("Reliable Topic Proxy", function () {
     after(function () {
         clientOne.shutdown();
         clientTwo.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     it("writes and reads messages", function (done) {

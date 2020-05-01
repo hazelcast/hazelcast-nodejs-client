@@ -41,7 +41,7 @@ describe('PNCounterBasicTest', function () {
 
     after(function () {
         client.shutdown();
-        return RC.shutdownCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     beforeEach(function () {

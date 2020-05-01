@@ -79,7 +79,7 @@ describe('MapProxy', function () {
 
             after(function () {
                 client.shutdown();
-                return Controller.shutdownCluster(cluster.id);
+                return Controller.terminateCluster(cluster.id);
             });
 
             function _generateLockScript(mapName, keyName) {
