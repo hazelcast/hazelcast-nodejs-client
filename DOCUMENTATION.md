@@ -62,11 +62,8 @@
     * [7.4.6. Using List](#746-using-list)
     * [7.4.7. Using Ringbuffer](#747-using-ringbuffer)
     * [7.4.8. Using Reliable Topic](#748-using-reliable-topic)
-    * [7.4.9. Using Lock](#749-using-lock)
-    * [7.4.10. Using Atomic Long](#7410-using-atomic-long)
-    * [7.4.11. Using Semaphore](#7411-using-semaphore)
-    * [7.4.12. Using PN Counter](#7412-using-pn-counter)
-    * [7.4.13. Using Flake ID Generator](#7413-using-flake-id-generator)
+    * [7.4.9. Using PN Counter](#749-using-pn-counter)
+    * [7.4.10. Using Flake ID Generator](#7410-using-flake-id-generator)
   * [7.5. Distributed Events](#75-distributed-events)
     * [7.5.1. Listening for Cluster Events](#751-listening-for-cluster-events)
       * [7.5.1.1. Membership Listener](#7511-membership-listener)
@@ -536,9 +533,6 @@ Hazelcast Node.js client supports the following data structures and features:
 * Replicated Map
 * Ringbuffer
 * Reliable Topic
-* Lock
-* Semaphore
-* Atomic Long
 * CRDT PN Counter
 * Flake Id Generator
 * Event Listeners
@@ -2099,68 +2093,8 @@ hz.getReliableTopic('my-distributed-topic').then(function (t) {
 
 Hazelcast Reliable Topic uses `MessageListener` to listen to the events that occur when a message is received. See the [Message Listener section](#7524-message-listener) for information on how to create a message listener object and register it.
 
-## 7.4.9. Using Lock
 
-Hazelcast Lock (`ILock`) is a distributed lock implementation. You can synchronize Hazelcast members and clients using a Lock. For details, see the [Lock section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#lock) in the Hazelcast IMDG Reference Manual.
-
-A Lock usage example is shown below.
-
-```javascript
-var lock;
-// Get a distributed lock called "my-distributed-lock"
-hz.getLock('my-distributed-lock').then(function (l) {
-    lock = l;
-    // Now create a lock and execute some guarded code.
-    return lock.lock();
-}).then(function () {
-    // do something here
-}).finally(function () {
-    return lock.unlock();
-});
-```
-
-## 7.4.10. Using Atomic Long
-
-Hazelcast Atomic Long (`IAtomicLong`) is the distributed long which offers most of the operations such as `get`, `set`, `getAndSet`, `compareAndSet` and `incrementAndGet`. For details, see the [Atomic Long section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#iatomiclong) in the Hazelcast IMDG Reference Manual.
-
-An Atomic Long usage example is shown below.
-
-```javascript
-var counter;
-// Get an Atomic Counter, we'll call it "counter"
-hz.getAtomicLong('counter').then(function (c) {
-    counter = c;
-    // Add and Get the "counter"
-    return counter.addAndGet(3);
-}).then(function (value) {
-    return counter.get();
-}).then(function (value) {
-    // Display the "counter" value
-    console.log('counter: ' + value);
-});
-```
-
-## 7.4.11. Using Semaphore
-
-Hazelcast Semaphore (`ISemaphore`) is a distributed semaphore implementation. For details, see the [Semaphore section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#isemaphore) in the Hazelcast IMDG Reference Manual.
-
-A Semaphore usage example is shown below.
-
-```javascript
-var semaphore;
-hazelcastClient.getSemaphore('mySemaphore').then(function (s) {
-    semaphore = s;
-    return semaphore.init(10);
-}).then(function () {
-    return semaphore.acquire(5);
-}).then(function () {
-    return semaphore.availablePermits();
-}).then(function (res) {
-    console.log(res); // 5
-});
-```
-
-## 7.4.12. Using PN Counter
+## 7.4.9. Using PN Counter
 
 Hazelcast `PNCounter` (Positive-Negative Counter) is a CRDT positive-negative counter implementation. It is an eventually consistent counter given there is no member failure. For details, see the [PN Counter section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#pn-counter) in the Hazelcast IMDG Reference Manual.
 
@@ -2188,7 +2122,7 @@ hz.getPNCounter('myPNCounter').then(function (counter) {
 });
 ```
 
-## 7.4.13. Using Flake ID Generator
+## 7.4.10. Using Flake ID Generator
 
 Hazelcast `FlakeIdGenerator` is used to generate cluster-wide unique identifiers. Generated identifiers are long primitive values and are k-ordered (roughly ordered). IDs are in the range from 0 to `2^63-1` (maximum signed long value). For details, see the [FlakeIdGenerator section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#flakeidgenerator) in the Hazelcast IMDG Reference Manual.
 

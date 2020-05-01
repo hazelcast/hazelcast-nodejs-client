@@ -18,13 +18,13 @@
 
 const expect = require('chai').expect;
 const HazelcastClient = require('../../lib').Client;
+const Config = require('../../lib').Config;
 const Controller = require('../RC');
 const fs = require('fs');
 const http = require('http');
 const querystring = require('querystring');
 const DeferredPromise = require('../../lib/Util').DeferredPromise;
 const Buffer = require('safe-buffer').Buffer;
-const Util = require('../Util');
 
 describe('RestValueTest', function () {
 
@@ -40,14 +40,12 @@ describe('RestValueTest', function () {
                 return Controller.startMember(cluster.id);
             }).then(m => {
                 member = m;
-                return HazelcastClient.newHazelcastClient();
+                const config = new Config.ClientConfig();
+                config.clusterName = cluster.id;
+                return HazelcastClient.newHazelcastClient(config);
             }).then(c => {
                 client = c;
             });
-    });
-
-    beforeEach(function () {
-        Util.markServerVersionAtLeast(this, client, '3.8');
     });
 
     after(function () {

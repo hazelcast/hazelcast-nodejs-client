@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import {MemberAttributeEvent} from './MemberAttributeEvent';
 import {MembershipEvent} from './MembershipEvent';
 
 /**

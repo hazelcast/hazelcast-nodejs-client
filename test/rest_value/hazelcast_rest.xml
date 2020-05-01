@@ -14,10 +14,13 @@
   ~ limitations under the License.
   -->
 
-<hazelcast xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://www.hazelcast.com/schema/config hazelcast-config-3.6.xsd"
-           xmlns="http://www.hazelcast.com/schema/config">
-    <properties>
-        <property name="hazelcast.rest.enabled">true</property>
-    </properties>
+<hazelcast xmlns="http://www.hazelcast.com/schema/config"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://www.hazelcast.com/schema/config
+           http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
+    <network>
+        <rest-api enabled="true">
+            <endpoint-group name="DATA" enabled="true"/>
+        </rest-api>
+    </network>
 </hazelcast>

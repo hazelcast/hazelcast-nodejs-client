@@ -17,7 +17,7 @@
 import {IdentifiedDataSerializable, IdentifiedDataSerializableFactory} from '../serialization/Serializable';
 import {DataInput, DataOutput} from '../serialization/Data';
 
-export const REST_VALUE_FACTORY_ID = -37;
+export const REST_VALUE_FACTORY_ID = -25;
 export const REST_VALUE_CLASS_ID = 1;
 
 export class RestValue implements IdentifiedDataSerializable {
