@@ -20,10 +20,14 @@ var Config = require('../../.').Config;
 var SerializationService = require('../../lib/serialization/SerializationService');
 var Predicates = require('../../.').Predicates;
 var StringSerializationPolicy = require('../../.').StringSerializationPolicy;
+var RestValue = require('../../lib/core/RestValue').RestValue;
 
 describe('Default serializers Test', function () {
 
     var isStandardUTFValues = [true, false];
+    var restValue = new RestValue();
+    restValue.value = '{"test":"data"}';
+    restValue.contentType = 'text/plain';
 
     var parameters = [
         14,
@@ -62,7 +66,8 @@ describe('Default serializers Test', function () {
         Predicates.regex('this', '/abc/'),
         Predicates.alwaysTrue(),
         Predicates.alwaysFalse(),
-        Predicates.paging(Predicates.greaterEqual('this', 10), 10)
+        Predicates.paging(Predicates.greaterEqual('this', 10), 10),
+        restValue
     ];
 
     isStandardUTFValues.forEach(function(isStandardUTF) {
