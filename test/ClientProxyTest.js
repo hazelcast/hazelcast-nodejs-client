@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2008-2020, Hazelcast, Inc. All Rights Reserved.
  *
@@ -34,15 +33,18 @@ describe('Generic proxy test', function () {
     var list;
 
     afterEach(function () {
-            sandbox.restore();
-            if (map && list) {
-                map.destroy();
-                list.destroy();
-                client.shutdown();
-                return Controller.shutdownCluster(cluster.id);
-            }
+        sandbox.restore();
+        if (map && list) {
+            return map.destroy()
+                .then(function () {
+                    return list.destroy();
+                })
+                .then(function () {
+                    client.shutdown();
+                    return Controller.shutdownCluster(cluster.id);
+                });
         }
-    );
+    });
 
     it('Client without active connection should return unknown version', function () {
         var connectionManagerStub = sandbox.stub(ConnectionManager.prototype);
@@ -84,7 +86,8 @@ describe('Generic proxy test', function () {
             }).then(function (l) {
                 list = l;
                 expect(list.getServiceName()).to.be.equal('hz:impl:listService');
+                expect(map.getServiceName()).to.be.equal('hz:impl:mapService');
             });
         });
     });
-})
+});

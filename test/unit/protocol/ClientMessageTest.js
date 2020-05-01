@@ -14,11 +14,21 @@
  * limitations under the License.
  */
 
-const {ClientMessage, Frame, DEFAULT_FLAGS, IS_FINAL_FLAG, BEGIN_FRAME, END_FRAME} = require('../../../lib/ClientMessage');
-const {expect} = require('chai');
-const {Buffer} = require('safe-buffer');
+'use strict';
+
+const cm = require('../../../lib/ClientMessage');
+const expect = require('chai').expect;
+const Buffer = require('safe-buffer').Buffer;
 const Long = require('long');
-const {CodecUtil} = require('../../../lib/codec/builtin/CodecUtil');
+const CodecUtil = require('../../../lib/codec/builtin/CodecUtil').CodecUtil;
+
+const ClientMessage = cm.ClientMessage;
+const Frame = cm.Frame;
+const DEFAULT_FLAGS = cm.DEFAULT_FLAGS;
+const IS_FINAL_FLAG = cm.IS_FINAL_FLAG;
+const BEGIN_FRAME = cm.BEGIN_FRAME;
+const END_FRAME = cm.END_FRAME;
+
 
 describe('ClientMessage', function () {
     it('should be encoded and decoded', function () {

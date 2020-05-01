@@ -244,6 +244,7 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     protected registerDefaultSerializers(): void {
+        // TODO there are +20 new serializers in the Java side. Check these and implement the ones that fit Node.js
         this.registerSerializer('string', new StringSerializer());
         this.registerSerializer('double', new DoubleSerializer());
         this.registerSerializer('byte', new ByteSerializer());

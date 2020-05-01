@@ -64,6 +64,7 @@ const CONNECTION_ADDED_EVENT_NAME = 'connectionAdded';
 
 const CLIENT_TYPE = 'NJS';
 const SERIALIZATION_VERSION = 1;
+const SET_TIMEOUT_MAX_DELAY = 2147483647;
 
 enum ClientState {
     /**
@@ -346,7 +347,7 @@ export class ClientConnectionManager extends EventEmitter {
     private initConnectionTimeoutMillis(): number {
         const networkConfig = this.client.getConfig().networkConfig;
         const connTimeout = networkConfig.connectionTimeout;
-        return connTimeout === 0 ? Number.MAX_SAFE_INTEGER : connTimeout;
+        return connTimeout === 0 ? SET_TIMEOUT_MAX_DELAY : connTimeout;
     }
 
     private connectToCluster(): Promise<void> {
@@ -381,7 +382,7 @@ export class ClientConnectionManager extends EventEmitter {
     }
 
     private doConnectToCluster(): Promise<void> {
-        const triedAddresses = new Set<Address>();
+        const triedAddresses = new Set<string>();
         this.waitStrategy.reset();
         return this.tryConnectingToAddresses(triedAddresses)
             .then((isConnected) => {
@@ -390,7 +391,8 @@ export class ClientConnectionManager extends EventEmitter {
                 }
                 this.logger.info('ConnectionManager', 'Unable to connect any address from the cluster ' +
                     'with the name: ' + this.client.getConfig().clusterName +
-                    '. The following addresses were tried: ' + triedAddresses);
+                    '. The following addresses were tried: ' +
+                    Array.from(triedAddresses));
 
                 const message = this.client.getLifecycleService().isRunning()
                     ? 'Unable to connect any cluster.' : 'Client is being shutdown.';
@@ -398,7 +400,7 @@ export class ClientConnectionManager extends EventEmitter {
             });
     }
 
-    private tryConnectingToAddresses(triedAddresses: Set<Address>): Promise<boolean> {
+    private tryConnectingToAddresses(triedAddresses: Set<string>): Promise<boolean> {
         return this.getPossibleMemberAddresses()
             .then((addresses) => {
                 return this.tryConnectingToAddress(0, addresses, triedAddresses);
@@ -428,7 +430,7 @@ export class ClientConnectionManager extends EventEmitter {
             });
     }
 
-    private tryConnectingToAddress(index: number, addresses: Address[], triedAddresses: Set<Address>): Promise<boolean> {
+    private tryConnectingToAddress(index: number, addresses: Address[], triedAddresses: Set<string>): Promise<boolean> {
         if (index >= addresses.length) {
             return Promise.resolve(false);
         }
@@ -436,7 +438,7 @@ export class ClientConnectionManager extends EventEmitter {
         if (!this.client.getLifecycleService().isRunning()) {
             return Promise.reject(new ClientNotActiveError('Client is not active.'));
         }
-        triedAddresses.add(address);
+        triedAddresses.add(address.toString());
         return this.connect(address)
             .then((connection) => {
                 if (connection != null) {

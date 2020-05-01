@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-const {AddressHelper} = require('../../lib/Util');
-const {expect} = require('chai');
+'use strict';
+
+const AddressHelper = require('../../lib/Util').AddressHelper;
+const expect = require('chai').expect;
 
 describe('AddressHelper', function () {
     const v4Address = '127.0.0.1';

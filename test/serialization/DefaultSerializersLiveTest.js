@@ -18,176 +18,151 @@ var Client = require('../../.').Client;
 var Config = require('../../.').Config;
 var RC = require('../RC');
 var expect = require('chai').expect;
-var StringSerializationPolicy = require('../../.').StringSerializationPolicy;
 var RestValue = require('../../lib/core/RestValue').RestValue;
-var Util = require('../Util');
 
-var stringSerializationPolicies = [StringSerializationPolicy.STANDARD, StringSerializationPolicy.LEGACY];
+describe('Default serializers with live instance', function () {
+    var cluster;
+    var client;
+    var map;
 
-stringSerializationPolicies.forEach(function (stringSerializationPolicy) {
-    var label = ' - ' + stringSerializationPolicy + 'string serialization';
-
-    describe('Default serializers with live instance' + label, function () {
-        var cluster;
-        var client;
-        var map;
-
-        before(function () {
-            return RC.createCluster(null, null).then(function (res) {
-                cluster = res;
-            }).then(function () {
-                return RC.startMember(cluster.id);
-            }).then(function () {
-                var config = new Config.ClientConfig();
-                config.clusterName = cluster.id;
-                config.serializationConfig.stringSerializationPolicy = stringSerializationPolicy;
-                return Client.newHazelcastClient(config);
-            }).then(function (cl) {
-                client = cl;
-                return client.getMap('test').then(function (mp) {
-                    map = mp;
-                });
+    before(function () {
+        return RC.createCluster(null, null).then(function (res) {
+            cluster = res;
+        }).then(function () {
+            return RC.startMember(cluster.id);
+        }).then(function () {
+            var config = new Config.ClientConfig();
+            config.clusterName = cluster.id;
+            return Client.newHazelcastClient(config);
+        }).then(function (cl) {
+            client = cl;
+            return client.getMap('test').then(function (mp) {
+                map = mp;
             });
         });
+    });
 
-        after(function () {
-            client.shutdown();
-            return RC.shutdownCluster(cluster.id);
+    after(function () {
+        client.shutdown();
+        return RC.shutdownCluster(cluster.id);
+    });
+
+    function _generateGet(key) {
+        return 'var StringArray = Java.type("java.lang.String[]");' +
+            'function foo() {' +
+            '   var map = instance_0.getMap("' + map.getName() + '");' +
+            '   var res = map.get("' + key + '");' +
+            '   if (res.getClass().isArray()) {' +
+            '       return Java.from(res);' +
+            '   } else {' +
+            '       return res;' +
+            '   }' +
+            '}' +
+            'result = ""+foo();'
+    }
+
+    it('string', function () {
+        return map.put('testStringKey', 'testStringValue').then(function () {
+            return RC.executeOnController(cluster.id, _generateGet('testStringKey'), 1);
+        }).then(function (response) {
+            return expect(response.result.toString()).to.equal('testStringValue');
+        })
+    });
+
+    it('utf8 sample string test', function () {
+        return map.put('key', 'Iñtërnâtiônàlizætiøn').then(function () {
+            return RC.executeOnController(cluster.id, _generateGet('key'), 1);
+        }).then(function (response) {
+            return expect(response.result.toString()).to.equal('Iñtërnâtiônàlizætiøn');
         });
+    });
 
-        function _generateGet(key) {
-            return 'var StringArray = Java.type("java.lang.String[]");' +
-                'function foo() {' +
-                '   var map = instance_0.getMap("' + map.getName() + '");' +
-                '   var res = map.get("' + key + '");' +
-                '   if (res.getClass().isArray()) {' +
-                '       return Java.from(res);' +
-                '   } else {' +
-                '       return res;' +
-                '   }' +
-                '}' +
-                'result = ""+foo();'
-        }
+    it('number', function () {
+        return map.put('a', 23).then(function () {
+            return RC.executeOnController(cluster.id, _generateGet('a'), 1);
+        }).then(function (response) {
+            return expect(Number.parseInt(response.result.toString())).to.equal(23);
+        })
+    });
 
-        it('string', function () {
-            return map.put('testStringKey', 'testStringValue').then(function () {
-                return RC.executeOnController(cluster.id, _generateGet('testStringKey'), 1);
-            }).then(function (response) {
-                return expect(response.result.toString()).to.equal('testStringValue');
+    it('array', function () {
+        return map.put('a', ['a', 'v', 'vg']).then(function () {
+            return RC.executeOnController(cluster.id, _generateGet('a'), 1);
+        }).then(function (response) {
+            return expect(response.result.toString()).to.equal(['a', 'v', 'vg'].toString());
+        })
+    });
+
+    it('emoji string test on client', function () {
+        return map.put('key', '1⚐中💦2😭‍🙆😔5').then(function () {
+            return map.get('key');
+        }).then(function (response) {
+            return expect(response).to.equal('1⚐中💦2😭‍🙆😔5');
+        });
+    });
+
+    it('utf8 characters test on client', function () {
+        return map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}').then(function () {
+            return map.get('key');
+        }).then(function (response) {
+            return expect(response).to.equal('\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
+        });
+    });
+
+    it('utf8 characters test on client with surrogates', function () {
+        return map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\uD834\uDF06').then(function () {
+            return map.get('key');
+        }).then(function (response) {
+            return expect(response).to.equal('\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
+        });
+    });
+
+    it('emoji string test on RC', function () {
+        return map.put('key', '1⚐中💦2😭‍🙆😔5').then(function () {
+            return RC.executeOnController(cluster.id, _generateGet('key'), 1);
+        }).then(function (response) {
+            return expect(response.result.toString()).to.equal('1⚐中💦2😭‍🙆😔5');
+        });
+    });
+
+    it('utf8 characters test on RC', function () {
+        return map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}').then(function () {
+            return RC.executeOnController(cluster.id, _generateGet('key'), 1);
+        }).then(function (response) {
+            return expect(response.result.toString()).to.equal('\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
+        });
+    });
+
+    it('utf8 characters test on RC with surrogates', function () {
+        return map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\uD834\uDF06').then(function () {
+            return RC.executeOnController(cluster.id, _generateGet('key'), 1);
+        }).then(function (response) {
+            return expect(response.result.toString()).to.equal('\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
+        });
+    });
+
+    it('rest value', function () {
+        // Making sure that the object is properly de-serialized at the server
+        var restValue = new RestValue();
+        restValue.value = '{\'test\':\'data\'}';
+        restValue.contentType = 'text/plain';
+
+        var script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
+            'var restValue = map.get("key");\n' +
+            'var contentType = restValue.getContentType();\n' +
+            'var value = restValue.getValue();\n' +
+            'var String = Java.type("java.lang.String");\n' +
+            'result = "{\\"contentType\\": \\"" + new String(contentType) + "\\", ' +
+            '\\"value\\": \\"" +  new String(value) + "\\"}"\n';
+
+        return map.put('key', restValue)
+            .then(function () {
+                return RC.executeOnController(cluster.id, script, 1);
             })
-        });
-
-        it('utf8 sample string test', function () {
-            return map.put('key', 'Iñtërnâtiônàlizætiøn').then(function () {
-                return RC.executeOnController(cluster.id, _generateGet('key'), 1);
-            }).then(function (response) {
-                return expect(response.result.toString()).to.equal('Iñtërnâtiônàlizætiøn');
+            .then(function (response) {
+                var result = JSON.parse(response.result.toString());
+                expect(result.contentType).to.equal(restValue.contentType);
+                expect(result.value).to.equal(restValue.value);
             });
-        });
-
-        it('number', function () {
-            return map.put('a', 23).then(function () {
-                return RC.executeOnController(cluster.id, _generateGet('a'), 1);
-            }).then(function (response) {
-                return expect(Number.parseInt(response.result.toString())).to.equal(23);
-            })
-        });
-
-        it('array', function () {
-            return map.put('a', ['a', 'v', 'vg']).then(function () {
-                return RC.executeOnController(cluster.id, _generateGet('a'), 1);
-            }).then(function (response) {
-                return expect(response.result.toString()).to.equal(['a', 'v', 'vg'].toString());
-            })
-        });
-
-        it('emoji string test on client', function () {
-            return map.put('key', '1⚐中💦2😭‍🙆😔5').then(function () {
-                return map.get('key');
-            }).then(function (response) {
-                return expect(response).to.equal('1⚐中💦2😭‍🙆😔5');
-            });
-        });
-
-        it('utf8 characters test on client', function () {
-            return map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}').then(function () {
-                return map.get('key');
-            }).then(function (response) {
-                return expect(response).to.equal('\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
-            });
-        });
-
-        it('utf8 characters test on client with surrogates', function () {
-            return map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\uD834\uDF06').then(function () {
-                return map.get('key');
-            }).then(function (response) {
-                return expect(response).to.equal('\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
-            });
-        });
-
-        it('emoji string test on RC', function () {
-            // TODO: remove the check in future when string serialization in client protocol changes
-            if (stringSerializationPolicy === StringSerializationPolicy.STANDARD) {
-                this.skip();
-            }
-
-            return map.put('key', '1⚐中💦2😭‍🙆😔5').then(function () {
-                return RC.executeOnController(cluster.id, _generateGet('key'), 1);
-            }).then(function (response) {
-                return expect(response.result.toString()).to.equal('1⚐中💦2😭‍🙆😔5');
-            });
-        });
-
-        it('utf8 characters test on RC', function () {
-            // TODO: remove the check in future when string serialization in client protocol changes
-            if (stringSerializationPolicy === StringSerializationPolicy.STANDARD) {
-                this.skip();
-            }
-
-            return map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}').then(function () {
-                return RC.executeOnController(cluster.id, _generateGet('key'), 1);
-            }).then(function (response) {
-                return expect(response.result.toString()).to.equal('\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
-            });
-        });
-
-        it('utf8 characters test on RC with surrogates', function () {
-            // TODO: remove the check in future when string serialization in client protocol changes
-            if (stringSerializationPolicy === StringSerializationPolicy.STANDARD) {
-                this.skip();
-            }
-
-            return map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\uD834\uDF06').then(function () {
-                return RC.executeOnController(cluster.id, _generateGet('key'), 1);
-            }).then(function (response) {
-                return expect(response.result.toString()).to.equal('\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
-            });
-        });
-
-        it('rest value', function () {
-            Util.markServerVersionAtLeast(this, client, '3.8');
-            // Making sure that the object is properly de-serialized at the server
-            var restValue = new RestValue();
-            restValue.value = '{\'test\':\'data\'}';
-            restValue.contentType = 'text/plain';
-
-            var script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
-                'var restValue = map.get("key");\n' +
-                'var contentType = restValue.getContentType();\n' +
-                'var value = restValue.getValue();\n' +
-                'var String = Java.type("java.lang.String");\n' +
-                'result = "{\\"contentType\\": \\"" + new String(contentType) + "\\", ' +
-                '\\"value\\": \\"" +  new String(value) + "\\"}"\n';
-
-            return map.put('key', restValue)
-                .then(function () {
-                    return RC.executeOnController(cluster.id, script, 1);
-                })
-                .then(function (response) {
-                    var result = JSON.parse(response.result.toString());
-                    expect(result.contentType).to.equal(restValue.contentType);
-                    expect(result.value).to.equal(restValue.value);
-                });
-        });
     });
 });

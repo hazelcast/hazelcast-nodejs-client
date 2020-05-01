@@ -27,15 +27,13 @@ var APortable = require('./APortable');
 var CustomByteArraySerializable = require('./CustomSerializable').CustomByteArraySerializable;
 var CustomStreamSerializable = require('./CustomSerializable').CustomStreamSerializable;
 var expectAlmostEqual = require('../Util').expectAlmostEqual;
-var StringSerializationPolicy = require('../../.').StringSerializationPolicy;
 
 describe('Binary serialization compatibility test', function () {
-
+    // TODO there are +20 new serializers in the Java side. Update this test when new serializers are implemented.
     var NULL_LENGTH = -1;
     var versions = [1];
     var objects = ReferenceObjects.testObjects;
     var isBigEndianValues = [true, false];
-    var isStandardUTFValues = [true, false];
 
     var dataMap = {};
 
@@ -68,13 +66,13 @@ describe('Binary serialization compatibility test', function () {
         return version + '-' + stripArticle(varName) + '-' + convertEndiannesToByteOrder(isBigEndian);
     }
 
-    function createSerializationService(isBigEndian, isStandardUTF, defaultNumberType) {
+    function createSerializationService(isBigEndian, defaultNumberType) {
         var cfg = new Config.ClientConfig().serializationConfig;
         cfg.portableFactories[ReferenceObjects.PORTABLE_FACTORY_ID] = {
             create: function (classId) {
                 if (classId === ReferenceObjects.INNER_PORTABLE_CLASS_ID) {
                     return new AnInnerPortable();
-                } else if (classId == ReferenceObjects.PORTABLE_CLASS_ID) {
+                } else if (classId === ReferenceObjects.PORTABLE_CLASS_ID) {
                     return new APortable();
                 }
             }
@@ -115,9 +113,6 @@ describe('Binary serialization compatibility test', function () {
             }
         });
         cfg.isBigEndian = isBigEndian;
-        cfg.stringSerializationPolicy = isStandardUTF
-            ? StringSerializationPolicy.STANDARD
-            : StringSerializationPolicy.LEGACY;
         cfg.defaultNumberType = defaultNumberType;
         return new SerializationService(undefined, cfg)
     }
@@ -149,24 +144,22 @@ describe('Binary serialization compatibility test', function () {
             if (objects.hasOwnProperty(varName)) {
                 versions.forEach(function (version) {
                     isBigEndianValues.forEach(function (isBigEndian) {
-                        isStandardUTFValues.forEach(function (isStandardUTF) {
-                            it(varName + '-' + convertEndiannesToByteOrder(isBigEndian) + '-' + isStandardUTF + '-' + version, function () {
+                        it(varName + '-' + convertEndiannesToByteOrder(isBigEndian) + '-' + version, function () {
+                            this.timeout(10000);
+                            var key = createObjectKey(varName, version, isBigEndian);
+                            var service = createSerializationService(isBigEndian, 'integer');
+                            var deserialized = service.toObject(dataMap[key]);
+                            expectAlmostEqual(deserialized, object);
+                        });
+                        if (!ReferenceObjects.skipOnSerialize[varName]) {
+                            it(varName + '-' + convertEndiannesToByteOrder(isBigEndian) + '-' + version + ' serialize deserialize', function () {
                                 this.timeout(10000);
-                                var key = createObjectKey(varName, version, isBigEndian);
-                                var service = createSerializationService(isBigEndian, isStandardUTF, 'integer');
-                                var deserialized = service.toObject(dataMap[key]);
+                                var service = createSerializationService(isBigEndian, stripArticle(varName).toLowerCase());
+                                var data = service.toData(object);
+                                var deserialized = service.toObject(data);
                                 expectAlmostEqual(deserialized, object);
                             });
-                            if (!ReferenceObjects.skipOnSerialize[varName]) {
-                                it(varName + '-' + convertEndiannesToByteOrder(isBigEndian) + '-' + isStandardUTF + '-' + version + ' serialize deserialize', function () {
-                                    this.timeout(10000);
-                                    var service = createSerializationService(isBigEndian, isStandardUTF, stripArticle(varName).toLowerCase());
-                                    var data = service.toData(object);
-                                    var deserialized = service.toObject(data);
-                                    expectAlmostEqual(deserialized, object);
-                                });
-                            }
-                        });
+                        }
                     });
                 });
             }

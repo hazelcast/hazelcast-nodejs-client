@@ -25,6 +25,7 @@ var Config = require('../.').Config;
 var Hazelcast = require('../.').Client;
 var Controller = require('./RC');
 var Errors = require('../').HazelcastErrors;
+var Address = require('../.').Address;
 
 describe('ConnectionManager', function () {
 
@@ -74,11 +75,12 @@ describe('ConnectionManager', function () {
     it('gives up connecting after timeout', function () {
         var timeoutTime = 1000;
         var cfg = new Config.ClientConfig();
+        cfg.clusterName = cluster.id;
         cfg.networkConfig.connectionTimeout = timeoutTime;
         startUnresponsiveServer(9999);
         return Hazelcast.newHazelcastClient(cfg).then(function (cl) {
             client = cl;
-            return client.getConnectionManager().getOrConnect({'host': 'localhost', 'port': 9999});
+            return client.getConnectionManager().getOrConnect(new Address('localhost',9999));
         }).should.eventually.be.rejected;
     });
 
@@ -87,6 +89,7 @@ describe('ConnectionManager', function () {
 
         var timeoutTime = 0;
         var cfg = new Config.ClientConfig();
+        cfg.clusterName = cluster.id;
         cfg.networkConfig.connectionTimeout = timeoutTime;
         startUnresponsiveServer(9999);
 
@@ -96,7 +99,7 @@ describe('ConnectionManager', function () {
 
         Hazelcast.newHazelcastClient(cfg).then(function (cl) {
             client = cl;
-            return client.getConnectionManager().getOrConnect({'host': 'localhost', 'port': 9999});
+            return client.getConnectionManager().getOrConnect(new Address('localhost',9999));
         }).then(function (value) {
             clearTimeout(scheduled);
             done(new Error('Client should be retrying!'));
@@ -114,6 +117,7 @@ describe('ConnectionManager', function () {
         var cfg = new Config.ClientConfig();
         cfg.networkConfig.connectionTimeout = timeoutTime;
         cfg.networkConfig.addresses = ['127.0.0.1:9999'];
+        cfg.connectionStrategyConfig.connectionRetryConfig.clusterConnectTimeoutMillis = 2000;
         startUnresponsiveServer(9999);
         return expect(Hazelcast.newHazelcastClient(cfg)).to.be.rejectedWith(Errors.IllegalStateError);
     });
