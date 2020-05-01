@@ -19,10 +19,11 @@ var Config = require('../../.').Config;
 var RC = require('../RC');
 var expect = require('chai').expect;
 var StringSerializationPolicy = require('../../.').StringSerializationPolicy;
+var RestValue = require('../../lib/core/RestValue').RestValue;
 
 var stringSerializationPolicies = [StringSerializationPolicy.STANDARD, StringSerializationPolicy.LEGACY];
 
-stringSerializationPolicies.forEach(function(stringSerializationPolicy) {
+stringSerializationPolicies.forEach(function (stringSerializationPolicy) {
     var label = ' - ' + stringSerializationPolicy + 'string serialization';
 
     describe('Default serializers with live instance' + label, function () {
@@ -159,6 +160,31 @@ stringSerializationPolicies.forEach(function(stringSerializationPolicy) {
             }).then(function (response) {
                 return expect(response.result.toString()).to.equal('\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
             });
+        });
+
+        it('rest value', function () {
+            // Making sure that the object is properly de-serialized at the server
+            var restValue = new RestValue();
+            restValue.value = '{\'test\':\'data\'}';
+            restValue.contentType = 'text/plain';
+
+            var script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
+                'var restValue = map.get("key");\n' +
+                'var contentType = restValue.getContentType();\n' +
+                'var value = restValue.getValue();\n' +
+                'var String = Java.type("java.lang.String");\n' +
+                'result = "{\\"contentType\\": \\"" + new String(contentType) + "\\", ' +
+                '\\"value\\": \\"" +  new String(value) + "\\"}"\n';
+
+            return map.put('key', restValue)
+                .then(function () {
+                    return RC.executeOnController(cluster.id, script, 1);
+                })
+                .then(function (response) {
+                    var result = JSON.parse(response.result.toString());
+                    expect(result.contentType).to.equal(restValue.contentType);
+                    expect(result.value).to.equal(restValue.value);
+                });
         });
     });
 });

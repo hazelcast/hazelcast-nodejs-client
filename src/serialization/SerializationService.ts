@@ -57,6 +57,7 @@ import {IdentifiedDataSerializableFactory} from './Serializable';
 import HazelcastClient from '../HazelcastClient';
 import {JsonStringDeserializationPolicy} from '../config/JsonStringDeserializationPolicy';
 import {StringSerializationPolicy} from '../config/StringSerializationPolicy';
+import {RestValueFactory, REST_VALUE_FACTORY_ID} from '../core/RestValue';
 
 export interface SerializationService {
     toData(object: any, paritioningStrategy?: any): Data;
@@ -292,6 +293,7 @@ export class SerializationServiceV1 implements SerializationService {
         factories[RELIABLE_TOPIC_MESSAGE_FACTORY_ID] = new ReliableTopicMessageFactory();
         factories[ClusterDataFactoryHelper.FACTORY_ID] = new ClusterDataFactory();
         factories[AggregatorFactory.FACTORY_ID] = new AggregatorFactory();
+        factories[REST_VALUE_FACTORY_ID] = new RestValueFactory();
         this.registerSerializer('identified', new IdentifiedDataSerializableSerializer(factories));
     }
 
