@@ -24,8 +24,6 @@
 var thrift = require('thrift');
 var Thrift = thrift.Thrift;
 var Q = thrift.Q;
-var Int64 = require('node-int64');
-
 
 var ttypes = module.exports = {};
 ttypes.Lang = {
