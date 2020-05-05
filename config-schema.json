@@ -44,7 +44,7 @@
                         "type": {
                             "enum": [
                                 "lifecycle",
-                                "map"
+                                "membership"
                             ]
                         }
                     }
@@ -73,24 +73,21 @@
         }
     },
     "properties": {
-        "group": {
-            "type": "object",
-            "required": [
-                "name",
-                "password"
-            ],
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                }
-            },
-            "additionalProperties": false
+        "clusterName": {
+            "type": ["string", "null"]
+        },
+        "instanceName": {
+            "type": ["string", "null"]
         },
         "properties": {
             "$ref": "#/definitions/propertiesObject"
+        },
+        "labels": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+                "type": "string"
+            }
         },
         "network": {
             "type": "object",
@@ -112,15 +109,17 @@
                     "minimum": 1000,
                     "default": 5000
                 },
-                "connectionAttemptPeriod": {
-                    "type": "number",
-                    "minimum": 1,
-                    "default": 3000
-                },
-                "connectionAttemptLimit": {
-                    "type": "number",
-                    "minimum": 0,
-                    "default": 2
+                "hazelcastCloud": {
+                    "type": "object",
+                    "properties": {
+                        "discoveryToken": {
+                            "type": "string"
+                        },
+                        "enabled": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    }
                 },
                 "ssl": {
                     "type": "object",

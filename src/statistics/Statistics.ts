@@ -23,7 +23,6 @@ import {Task} from '../Util';
 import * as os from 'os';
 import {BuildInfo} from '../BuildInfo';
 import {ILogger} from '../logging/ILogger';
-import {Address} from '../Address';
 import * as Long from 'long';
 import {Buffer} from 'safe-buffer';
 
@@ -48,7 +47,6 @@ export class Statistics {
     private readonly properties: Properties;
     private readonly logger: ILogger;
     private client: HazelcastClient;
-    private ownerAddress: Address;
     private task: Task;
 
     constructor(clientInstance: HazelcastClient) {
@@ -183,7 +181,6 @@ export class Statistics {
         this.addStat(stats, 'clusterConnectionTimestamp', connection.getStartTime());
         this.addStat(stats, 'clientAddress', connection.getLocalAddress().toString());
         this.addStat(stats, 'clientName', this.client.getName());
-        this.addStat(stats, 'credentials.principal', this.client.getConfig().groupConfig.name);
 
         for (const gaugeName in this.allGauges) {
             const gaugeValueFunc = this.allGauges[gaugeName];

@@ -25,18 +25,18 @@ export enum ReconnectMode {
     /**
      * Prevent reconnect to cluster after a disconnect
      */
-    OFF = 0,
+    OFF = 'OFF',
 
     /**
      * Reconnect to cluster by blocking invocations
      */
-    ON = 1,
+    ON = 'ON',
 
     /**
      * Reconnect to cluster without blocking invocations. Invocations will receive
      * {@link ClientOfflineError }
      */
-    ASYNC = 2,
+    ASYNC = 'ASYNC',
 }
 
 /**

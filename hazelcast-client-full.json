@@ -1,8 +1,6 @@
 {
-    "group": {
-        "name": "hazel",
-        "password": "cast"
-    },
+    "clusterName": "dev",
+    "instanceName": "hazelcastClient",
     "properties": {
         "hazelcast.client.heartbeat.interval": 5000,
         "hazelcast.client.heartbeat.timeout": 60000,
@@ -17,7 +15,8 @@
         "hazelcast.logging.level": 2,
         "hazelcast.client.autopipelining.enabled": true,
         "hazelcast.client.autopipelining.threshold.bytes": 8192,
-        "hazelcast.client.socket.no.delay": true
+        "hazelcast.client.socket.no.delay": true,
+        "hazelcast.client.shuffle.member.list": true
     },
     "network": {
         "clusterMembers": [
@@ -27,8 +26,6 @@
         "smartRouting": true,
         "redoOperation": false,
         "connectionTimeout": 5000,
-        "connectionAttemptPeriod": 3000,
-        "connectionAttemptLimit": 2,
         "ssl": {
             "enabled": false,
             "sslOptions": null,
@@ -45,6 +42,17 @@
             "enabled": false
         }
     },
+    "connectionStrategy": {
+        "asyncStart": false,
+        "reconnectMode": "ON",
+        "connectionRetry": {
+            "initialBackoffMillis": 1000,
+            "maxBackoffMillis": 30000,
+            "multiplier": 1,
+            "clusterConnectTimeoutMillis": 20000,
+            "jitter": 0
+        }
+    },
     "listeners": [
         {
             "type": "lifecycle",
@@ -52,7 +60,7 @@
             "exportedName": "listener"
         },
         {
-            "type": "lifecycle",
+            "type": "membership",
             "path": "path/to/file",
             "exportedName": "listener2"
         }

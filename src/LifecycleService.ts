@@ -15,7 +15,7 @@
  */
 
 import {EventEmitter} from 'events';
-import {ImportConfig} from './config/ImportConfig';
+import {ListenerImportConfig} from './config/ImportConfig';
 import HazelcastClient from './HazelcastClient';
 import * as Util from './Util';
 import {ILogger} from './logging/ILogger';
@@ -80,11 +80,13 @@ export class LifecycleService extends EventEmitter {
             this.on(LIFECYCLE_EVENT_NAME, listener);
         });
         const listenerConfigs = client.getConfig().listenerConfigs;
-        listenerConfigs.forEach((importConfig: ImportConfig) => {
-            const path = importConfig.path;
-            const exportedName = importConfig.exportedName;
-            const listener = Util.loadNameFromPath(path, exportedName);
-            this.on(LIFECYCLE_EVENT_NAME, listener);
+        listenerConfigs.forEach((config: ListenerImportConfig) => {
+            if (config.type === 'lifecycle') {
+                const path = config.importConfig.path;
+                const exportedName = config.importConfig.exportedName;
+                const listener = Util.loadNameFromPath(path, exportedName);
+                this.on(LIFECYCLE_EVENT_NAME, listener);
+            }
         });
     }
 

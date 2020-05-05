@@ -19,7 +19,7 @@ var ClientConfig = require('hazelcast-client').Config.ClientConfig;
 var fs = require('fs');
 var Path = require('path');
 
-
+// TODO test this sample with the Hazelcast Cloud
 function createClientConfigWithSSLOpts(key, cert, ca) {
     var sslOpts = {
         servername: 'Hazelcast-Inc',
@@ -29,15 +29,13 @@ function createClientConfigWithSSLOpts(key, cert, ca) {
         cert: fs.readFileSync(Path.join(__dirname, cert))
     };
     var cfg = new ClientConfig();
-    cfg.networkConfig.sslOptions = sslOpts;
-    cfg.networkConfig.connectionAttemptLimit = 1000;
+    cfg.networkConfig.sslConfig.sslOptions = sslOpts;
 
     var token = 'EXAMPLE_TOKEN';
 
     cfg.networkConfig.cloudConfig.enabled = true;
     cfg.networkConfig.cloudConfig.discoveryToken = token;
-    cfg.groupConfig.name = 'hazel';
-    cfg.groupConfig.password = 'cast';
+    cfg.clusterName = 'hazelcast';
     return cfg;
 }
 

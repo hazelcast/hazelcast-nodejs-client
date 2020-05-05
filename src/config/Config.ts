@@ -19,8 +19,7 @@ import {ClientNetworkConfig} from './ClientNetworkConfig';
 import {ConfigPatternMatcher} from './ConfigPatternMatcher';
 import {EvictionPolicy} from './EvictionPolicy';
 import {FlakeIdGeneratorConfig} from './FlakeIdGeneratorConfig';
-import {GroupConfig} from './GroupConfig';
-import {ImportConfig} from './ImportConfig';
+import {ImportConfig, ListenerImportConfig} from './ImportConfig';
 import {InMemoryFormat} from './InMemoryFormat';
 import {ListenerConfig} from './ListenerConfig';
 import {NearCacheConfig} from './NearCacheConfig';
@@ -67,12 +66,11 @@ export class ClientConfig {
      * Name of this client instance.
      */
     instanceName: string;
-    groupConfig: GroupConfig = new GroupConfig();
     networkConfig: ClientNetworkConfig = new ClientNetworkConfig();
     customLogger: ILogger;
     customCredentials: any = null;
     listeners: ListenerConfig = new ListenerConfig();
-    listenerConfigs: ImportConfig[] = [];
+    listenerConfigs: ListenerImportConfig[] = [];
     serializationConfig: SerializationConfig = new SerializationConfig();
     reliableTopicConfigs: { [name: string]: ReliableTopicConfig } = {};
     nearCacheConfigs: { [name: string]: NearCacheConfig } = {};
@@ -142,8 +140,6 @@ export {ClientNetworkConfig};
 export {TopicOverloadPolicy};
 
 export {SerializationConfig};
-
-export {GroupConfig};
 
 export {ReliableTopicConfig};
 

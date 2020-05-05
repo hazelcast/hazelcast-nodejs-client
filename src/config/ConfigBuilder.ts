@@ -22,7 +22,7 @@ import {mergeJson, tryGetArray, tryGetBoolean, tryGetEnum, tryGetNumber, tryGetS
 import {ClientConfig} from './Config';
 import {EvictionPolicy} from './EvictionPolicy';
 import {FlakeIdGeneratorConfig} from './FlakeIdGeneratorConfig';
-import {ImportConfig} from './ImportConfig';
+import {ImportConfig, ListenerImportConfig} from './ImportConfig';
 import {InMemoryFormat} from './InMemoryFormat';
 import {JsonConfigLocator} from './JsonConfigLocator';
 import {NearCacheConfig} from './NearCacheConfig';
@@ -30,6 +30,7 @@ import {Properties} from './Properties';
 import {ReliableTopicConfig} from './ReliableTopicConfig';
 import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy';
 import {StringSerializationPolicy} from './StringSerializationPolicy';
+import {ReconnectMode} from './ConnectionStrategyConfig';
 
 export class ConfigBuilder {
     private clientConfig: ClientConfig = new ClientConfig();
@@ -68,23 +69,69 @@ export class ConfigBuilder {
 
     private handleConfig(jsonObject: any): void {
         for (const key in jsonObject) {
-            if (key === 'network') {
-                this.handleNetwork(jsonObject[key]);
-            } else if (key === 'group') {
-                this.handleGroup(jsonObject[key]);
+            const value = jsonObject[key];
+            if (key === 'clusterName') {
+                this.clientConfig.clusterName = tryGetString(value);
+            } else if (key === 'instanceName') {
+                this.clientConfig.instanceName = tryGetString(value);
             } else if (key === 'properties') {
-                this.handleProperties(jsonObject[key]);
+                this.handleProperties(value);
+            } else if (key === 'labels') {
+                this.handleLabels(value);
+            } else if (key === 'network') {
+                this.handleNetwork(value);
+            } else if (key === 'connectionStrategy') {
+                this.handleConnectionStrategy(value);
             } else if (key === 'listeners') {
-                this.handleListeners(jsonObject[key]);
+                this.handleListeners(value);
             } else if (key === 'serialization') {
-                this.handleSerialization(jsonObject[key]);
+                this.handleSerialization(value);
             } else if (key === 'nearCaches') {
-                this.handleNearCaches(jsonObject[key]);
+                this.handleNearCaches(value);
             } else if (key === 'reliableTopics') {
-                this.handleReliableTopics(jsonObject[key]);
+                this.handleReliableTopics(value);
             } else if (key === 'flakeIdGeneratorConfigs') {
-                this.handleFlakeIds(jsonObject[key]);
+                this.handleFlakeIds(value);
             }
+        }
+    }
+
+    private handleConnectionStrategy(jsonObject: any): void {
+        for (const key in jsonObject) {
+            const value = jsonObject[key];
+            if (key === 'asyncStart') {
+                this.clientConfig.connectionStrategyConfig.asyncStart = tryGetBoolean(value);
+            } else if (key === 'reconnectMode') {
+                this.clientConfig.connectionStrategyConfig.reconnectMode = tryGetEnum(ReconnectMode, value);
+            } else if (key === 'connectionRetry') {
+                this.handleConnectionRetry(value);
+            }
+        }
+    }
+
+    private handleConnectionRetry(jsonObject: any): void {
+        for (const key in jsonObject) {
+            const value = jsonObject[key];
+            if (key === 'initialBackoffMillis') {
+                this.clientConfig.connectionStrategyConfig.connectionRetryConfig.initialBackoffMillis = tryGetNumber(value);
+            } else if (key === 'maxBackoffMillis') {
+                this.clientConfig.connectionStrategyConfig.connectionRetryConfig.maxBackoffMillis = tryGetNumber(value);
+            } else if (key === 'multiplier') {
+                this.clientConfig.connectionStrategyConfig.connectionRetryConfig.multiplier = tryGetNumber(value);
+            } else if (key === 'clusterConnectTimeoutMillis') {
+                this.clientConfig.connectionStrategyConfig.connectionRetryConfig
+                    .clusterConnectTimeoutMillis = tryGetNumber(value);
+            } else if (key === 'jitter') {
+                this.clientConfig.connectionStrategyConfig.connectionRetryConfig.jitter = tryGetNumber(value);
+            }
+        }
+    }
+
+    private handleLabels(jsonObject: any): void {
+        const labelsArray = tryGetArray(jsonObject);
+        for (const index in labelsArray) {
+            const label = labelsArray[index];
+            this.clientConfig.labels.add(label);
         }
     }
 
@@ -96,10 +143,6 @@ export class ConfigBuilder {
                 this.clientConfig.networkConfig.smartRouting = tryGetBoolean(jsonObject[key]);
             } else if (key === 'connectionTimeout') {
                 this.clientConfig.networkConfig.connectionTimeout = tryGetNumber(jsonObject[key]);
-            } else if (key === 'connectionAttemptPeriod') {
-                this.clientConfig.networkConfig.connectionAttemptPeriod = tryGetNumber(jsonObject[key]);
-            } else if (key === 'connectionAttemptLimit') {
-                this.clientConfig.networkConfig.connectionAttemptLimit = tryGetNumber(jsonObject[key]);
             } else if (key === 'ssl') {
                 this.handleSSL(jsonObject[key]);
             } else if (key === 'hazelcastCloud') {
@@ -166,16 +209,6 @@ export class ConfigBuilder {
         }
     }
 
-    private handleGroup(jsonObject: any): void {
-        for (const key in jsonObject) {
-            if (key === 'name') {
-                this.clientConfig.groupConfig.name = tryGetString(jsonObject[key]);
-            } else if (key === 'password') {
-                this.clientConfig.groupConfig.password = tryGetString(jsonObject[key]);
-            }
-        }
-    }
-
     private handleProperties(jsonObject: any): void {
         for (const key in jsonObject) {
             this.clientConfig.properties[key] = jsonObject[key];
@@ -185,8 +218,11 @@ export class ConfigBuilder {
     private handleListeners(jsonObject: any): void {
         const listenersArray = tryGetArray(jsonObject);
         for (const index in listenersArray) {
-            const listenerConfig = listenersArray[index];
-            this.clientConfig.listenerConfigs.push(this.parseImportConfig(listenerConfig));
+            const listener = listenersArray[index];
+            const listenerConfig = {} as ListenerImportConfig;
+            listenerConfig.importConfig = this.parseImportConfig(listener);
+            listenerConfig.type = listener.type;
+            this.clientConfig.listenerConfigs.push(listenerConfig);
         }
     }
 

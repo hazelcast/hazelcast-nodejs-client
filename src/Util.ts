@@ -171,7 +171,11 @@ export function getBooleanOrUndefined(val: any): boolean {
 }
 
 export function tryGetEnum<T>(enumClass: any | { [index: string]: number }, str: string): T {
-    return enumClass[str.toUpperCase()] as any;
+    const result = enumClass[str.toUpperCase()];
+    if (result == null) {
+        throw new TypeError(str + ' is not a member of the enum ' + enumClass);
+    }
+    return result;
 }
 
 export function resolvePath(path: string): string {
