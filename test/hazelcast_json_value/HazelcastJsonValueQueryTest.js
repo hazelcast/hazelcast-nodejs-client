@@ -22,7 +22,6 @@ const Config = require('../../.').Config;
 var RC = require('./../RC');
 var Predicates = require('../../.').Predicates;
 var HazelcastJsonValue = require('../../.').HazelcastJsonValue;
-var Util = require('../Util');
 
 describe('HazelcastJsonValue query test', function () {
     var cluster;
@@ -31,7 +30,6 @@ describe('HazelcastJsonValue query test', function () {
     var object = { 'a': 1 };
 
     before(function () {
-        Util.markServerVersionAtLeast(this, null, '3.12');
         return RC.createCluster().then(function (response) {
             cluster = response;
             return RC.startMember(cluster.id);

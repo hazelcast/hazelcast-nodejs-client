@@ -51,10 +51,6 @@ describe("FlakeIdGeneratorProxyTest", function () {
         });
     });
 
-    beforeEach(function () {
-        Util.markServerVersionAtLeast(this, client, '3.10');
-    });
-
     afterEach(function () {
         return flakeIdGenerator.destroy();
     });

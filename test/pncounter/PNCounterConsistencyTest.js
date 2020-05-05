@@ -23,16 +23,11 @@ const Config = require('../../').Config;
 var Errors = require('../..').HazelcastErrors;
 var fs = require('fs');
 var path = require('path');
-var Util = require('../Util');
 
 describe('PNCounterConsistencyTest', function () {
 
     var cluster;
     var client;
-
-    before(function () {
-        Util.markServerVersionAtLeast(this, null, '3.10');
-    });
 
     beforeEach(function () {
         this.timeout(10000);
@@ -57,7 +52,6 @@ describe('PNCounterConsistencyTest', function () {
     });
 
     it('target replica killed, no replica is sufficiently up-to-date, get operation throws ConsistencyLostError', function () {
-        Util.markServerVersionAtLeast(this, client, '3.10');
         var pncounter;
         return client.getPNCounter('pncounter').then(function (counter) {
             pncounter = counter;
@@ -71,7 +65,6 @@ describe('PNCounterConsistencyTest', function () {
     });
 
     it('target replica killed, no replica is sufficiently up-to-date, get operation may proceed after calling reset', function () {
-        Util.markServerVersionAtLeast(this, client, '3.10');
         var pncounter;
         return client.getPNCounter('pncounter').then(function (counter) {
             pncounter = counter;

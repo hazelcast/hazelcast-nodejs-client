@@ -33,7 +33,6 @@ describe('Statistics with default period', function () {
     var map;
 
     before(function () {
-        TestUtil.markServerVersionAtLeast(this, null, '3.9.0');
         return RC.createCluster(null, null).then(function (res) {
             cluster = res;
         }).then(function () {
@@ -53,7 +52,6 @@ describe('Statistics with default period', function () {
     });
 
     after(function () {
-        TestUtil.markServerVersionAtLeast(this, null, '3.9.0');
         client.shutdown();
         return RC.terminateCluster(cluster.id);
     });
@@ -142,7 +140,6 @@ describe('Statistics with non-default period', function () {
     var client;
 
     before(function () {
-        TestUtil.markServerVersionAtLeast(this, null, '3.9.0');
         return RC.createCluster(null, null).then(function (res) {
             cluster = res;
         }).then(function () {
@@ -159,7 +156,6 @@ describe('Statistics with non-default period', function () {
     });
 
     after(function () {
-        TestUtil.markServerVersionAtLeast(this, null, '3.9.0');
         client.shutdown();
         return RC.terminateCluster(cluster.id);
     });
@@ -196,7 +192,6 @@ describe('Statistics with negative period', function () {
     var cluster;
 
     before(function () {
-        TestUtil.markServerVersionAtLeast(this, null, '3.9.0');
         return RC.createCluster(null, null).then(function (res) {
             cluster = res;
         }).then(function () {
@@ -213,7 +208,6 @@ describe('Statistics with negative period', function () {
     });
 
     after(function () {
-        TestUtil.markServerVersionAtLeast(this, null, '3.9.0');
         client.shutdown();
         return RC.terminateCluster(cluster.id);
     });
