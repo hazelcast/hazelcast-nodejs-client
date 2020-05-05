@@ -20,6 +20,7 @@ var RC = require('../RC');
 var expect = require('chai').expect;
 var StringSerializationPolicy = require('../../.').StringSerializationPolicy;
 var RestValue = require('../../lib/core/RestValue').RestValue;
+var Util = require('../Util');
 
 var stringSerializationPolicies = [StringSerializationPolicy.STANDARD, StringSerializationPolicy.LEGACY];
 
@@ -163,6 +164,7 @@ stringSerializationPolicies.forEach(function (stringSerializationPolicy) {
         });
 
         it('rest value', function () {
+            Util.markServerVersionAtLeast(this, client, '3.8');
             // Making sure that the object is properly de-serialized at the server
             var restValue = new RestValue();
             restValue.value = '{\'test\':\'data\'}';

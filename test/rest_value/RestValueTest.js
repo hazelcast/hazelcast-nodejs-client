@@ -24,6 +24,7 @@ const http = require('http');
 const querystring = require('querystring');
 const DeferredPromise = require('../../lib/Util').DeferredPromise;
 const Buffer = require('safe-buffer').Buffer;
+const Util = require('../Util');
 
 describe('RestValueTest', function () {
 
@@ -43,6 +44,10 @@ describe('RestValueTest', function () {
             }).then(c => {
                 client = c;
             });
+    });
+
+    beforeEach(function () {
+        Util.markServerVersionAtLeast(this, client, '3.8');
     });
 
     after(function () {

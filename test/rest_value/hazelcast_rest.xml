@@ -15,11 +15,9 @@
   -->
 
 <hazelcast xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://www.hazelcast.com/schema/config hazelcast-config-3.12.xsd"
+           xsi:schemaLocation="http://www.hazelcast.com/schema/config hazelcast-config-3.6.xsd"
            xmlns="http://www.hazelcast.com/schema/config">
-    <network>
-        <rest-api enabled="true">
-            <endpoint-group name="DATA" enabled="true"/>
-        </rest-api>
-    </network>
+    <properties>
+        <property name="hazelcast.rest.enabled">true</property>
+    </properties>
 </hazelcast>
