@@ -196,10 +196,10 @@ export class ClientConnectionManager extends EventEmitter {
         return this.activeConnections.get(uuid.toString());
     }
 
-    public isInvocationAllowed(invocation: Promise.Resolver<ClientMessage>): boolean {
+    public isInvocationAllowed(): Error {
         const state = this.clientState;
         if (state === ClientState.INITIALIZED_ON_CLUSTER && this.activeConnections.size > 0) {
-            return true;
+            return null;
         }
 
         let error: Error;
@@ -214,8 +214,7 @@ export class ClientConnectionManager extends EventEmitter {
         } else {
             error = new IOError('No connection found to cluster.');
         }
-        invocation.reject(error);
-        return false;
+        return error;
     }
 
     public getActiveConnections(): ClientConnection[] {

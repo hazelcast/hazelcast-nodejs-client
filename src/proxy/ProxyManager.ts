@@ -89,6 +89,7 @@ export class ProxyManager {
         }
 
         const deferred = DeferredPromise<DistributedObject>();
+        this.proxies.set(fullName, deferred.promise);
         let newProxy: DistributedObject;
         if (serviceName === ProxyManager.MAP_SERVICE && this.client.getConfig().getNearCacheConfig(name)) {
             newProxy = new NearCachedMapProxy(this.client, serviceName, name);
@@ -99,6 +100,9 @@ export class ProxyManager {
                     return this.createProxy(newProxy);
                 }).then(function (): void {
                     deferred.resolve(newProxy);
+                }).catch((error) => {
+                    this.proxies.delete(fullName);
+                    deferred.reject(error);
                 });
             }
             this.proxies.set(fullName, deferred.promise);
@@ -110,10 +114,12 @@ export class ProxyManager {
         if (createAtServer) {
             this.createProxy(newProxy).then(function (): void {
                 deferred.resolve(newProxy);
+            }).catch((error) => {
+                this.proxies.delete(fullName);
+                deferred.reject(error);
             });
         }
 
-        this.proxies.set(fullName, deferred.promise);
         return deferred.promise;
     }
 
@@ -166,37 +172,9 @@ export class ProxyManager {
         this.proxies.clear();
     }
 
-    protected isRetryable(error: HazelcastError): boolean {
-        if (error instanceof ClientNotActiveError) {
-            return false;
-        }
-        return true;
-    }
-
     private createProxy(proxyObject: DistributedObject): Promise<ClientMessage> {
-        const promise = DeferredPromise<ClientMessage>();
-        this.initializeProxy(proxyObject, promise, Date.now() + this.invocationTimeoutMillis);
-        return promise.promise;
-    }
-
-    private initializeProxy(proxyObject: DistributedObject, promise: Promise.Resolver<ClientMessage>, deadline: number): void {
-        if (Date.now() <= deadline) {
-            const request = ClientCreateProxyCodec.encodeRequest(proxyObject.getName(), proxyObject.getServiceName());
-            this.client.getInvocationService().invokeOnRandomTarget(request)
-                .then((response) => {
-                    promise.resolve(response);
-                }).catch((error) => {
-                    if (this.isRetryable(error)) {
-                    this.logger.warn('ProxyManager', 'Create proxy request for ' + proxyObject.getName() +
-                        ' failed. Retrying in ' + this.invocationRetryPauseMillis + 'ms. ' + error);
-                    setTimeout(this.initializeProxy.bind(this, proxyObject, promise, deadline), this.invocationRetryPauseMillis);
-                } else {
-                    this.logger.warn('ProxyManager', 'Create proxy request for ' + proxyObject.getName() + ' failed ' + error);
-                }
-            });
-        } else {
-            promise.reject('Create proxy request timed-out for ' + proxyObject.getName());
-        }
+        const request = ClientCreateProxyCodec.encodeRequest(proxyObject.getName(), proxyObject.getServiceName());
+        return this.client.getInvocationService().invokeOnRandomTarget(request);
     }
 
     private createDistributedObjectListener(): ListenerMessageCodec {

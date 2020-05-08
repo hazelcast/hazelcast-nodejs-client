@@ -16,6 +16,8 @@
 
 var expect = require('chai').expect;
 var BuildInfo = require('../lib/BuildInfo').BuildInfo;
+var UuidUtil = require('../lib/util/UuidUtil').UuidUtil;
+
 var promiseLater = function (time, func) {
     if (func === undefined) {
         func = function () {
@@ -111,3 +113,7 @@ exports.findMemberByAddress = function (client, address) {
 
 exports.promiseLater = promiseLater;
 exports.expectAlmostEqual = expectAlmostEqual;
+
+exports.randomString = function () {
+    return UuidUtil.generate().toString();
+};

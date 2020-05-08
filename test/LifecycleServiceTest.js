@@ -83,7 +83,13 @@ describe('LifecycleService', function () {
                 done('Got lifecycle event ' + state + ' instead of ' + expectedState);
             }
         };
-        cfg.listenerConfigs.push({path: __filename, exportedName: 'lifecycleListener'});
+        cfg.listenerConfigs.push({
+            type: 'lifecycle',
+            importConfig: {
+                path: __filename,
+                exportedName: 'lifecycleListener'
+            }
+        });
         HazelcastClient.newHazelcastClient(cfg).then(function (client) {
             client.shutdown();
         });

@@ -24,7 +24,7 @@ import {
     HazelcastInstanceNotActiveError,
     InvocationTimeoutError,
     IOError,
-    RetryableHazelcastError,
+    RetryableHazelcastError, TargetDisconnectedError, TargetNotMemberError,
 } from '../HazelcastError';
 import {ClientConnection} from '../network/ClientConnection';
 import {DeferredPromise} from '../Util';
@@ -89,10 +89,6 @@ export class Invocation {
         this.request = request;
     }
 
-    static isRetrySafeError(err: Error): boolean {
-        return err instanceof IOError || err instanceof HazelcastInstanceNotActiveError || err instanceof RetryableHazelcastError;
-    }
-
     /**
      * @returns {boolean}
      */
@@ -100,8 +96,27 @@ export class Invocation {
         return this.hasOwnProperty('partitionId') && this.partitionId >= 0;
     }
 
-    isAllowedToRetryOnSelection(err: Error): boolean {
-        return (this.connection == null && this.uuid == null) || !(err instanceof IOError);
+    shouldRetry(err: Error): boolean {
+        if (this.connection != null && (err instanceof IOError || err instanceof TargetDisconnectedError)) {
+            return false;
+        }
+
+        if (this.uuid != null && err instanceof TargetNotMemberError) {
+            // when invocation send to a specific member
+            // if target is no longer a member, we should not retry
+            // note that this exception could come from the server
+            return false;
+        }
+
+        if (err instanceof IOError || err instanceof HazelcastInstanceNotActiveError || err instanceof RetryableHazelcastError) {
+            return true;
+        }
+
+        if (err instanceof TargetDisconnectedError) {
+            return this.request.isRetryable();
+        }
+
+        return false;
     }
 }
 
@@ -146,11 +161,6 @@ export class InvocationService {
         invocation.deferred = DeferredPromise<ClientMessage>();
         const newCorrelationId = this.correlationCounter++;
         invocation.request.setCorrelationId(newCorrelationId);
-        if (!invocation.urgent) {
-            if (!this.connectionManager.isInvocationAllowed(invocation.deferred)) {
-                return invocation.deferred.promise;
-            }
-        }
         this.doInvoke(invocation);
         return invocation.deferred.promise;
     }
@@ -258,8 +268,16 @@ export class InvocationService {
     }
 
     private invokeSmart(invocation: Invocation): void {
-        let invocationPromise: Promise<void>;
         invocation.invokeCount++;
+        if (!invocation.urgent) {
+            const error = this.connectionManager.isInvocationAllowed();
+            if (error != null) {
+                this.notifyError(invocation, error);
+                return;
+            }
+        }
+
+        let invocationPromise: Promise<void>;
         if (invocation.hasOwnProperty('connection')) {
             invocationPromise = this.send(invocation, invocation.connection);
             invocationPromise.catch((err) => {
@@ -288,8 +306,16 @@ export class InvocationService {
     }
 
     private invokeNonSmart(invocation: Invocation): void {
-        let invocationPromise: Promise<void>;
         invocation.invokeCount++;
+        if (!invocation.urgent) {
+            const error = this.connectionManager.isInvocationAllowed();
+            if (error != null) {
+                this.notifyError(invocation, error);
+                return;
+            }
+        }
+
+        let invocationPromise: Promise<void>;
         if (invocation.hasOwnProperty('connection')) {
             invocationPromise = this.send(invocation, invocation.connection);
         } else {
@@ -362,17 +388,15 @@ export class InvocationService {
      */
     private rejectIfNotRetryable(invocation: Invocation, error: Error): boolean {
         if (!this.client.getLifecycleService().isRunning()) {
-            invocation.deferred.reject(new ClientNotActiveError('Client is not active.', error));
+            invocation.deferred.reject(new ClientNotActiveError('Client is shutting down.', error));
             return true;
         }
-        if (!invocation.isAllowedToRetryOnSelection(error)) {
+
+        if (!invocation.shouldRetry(error)) {
             invocation.deferred.reject(error);
             return true;
         }
-        if (!Invocation.isRetrySafeError(error)) {
-            invocation.deferred.reject(error);
-            return true;
-        }
+
         if (invocation.deadline < Date.now()) {
             this.logger.trace('InvocationService', 'Error will not be retried because invocation timed out');
             invocation.deferred.reject(new InvocationTimeoutError('Invocation ' + invocation.request.getCorrelationId() + ')'
