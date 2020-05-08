@@ -1,0 +1,753 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>hazelcast-client</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.js" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">hazelcast-client</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-only-exported" />
+							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="globals.html">Globals</a>
+				</li>
+			</ul>
+			<h1> hazelcast-client</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<p align="center">
+					<a href="https://github.com/hazelcast/hazelcast-nodejs-client/">
+						<img src="https://3l0wd94f0qdd10om8642z9se-wpengine.netdna-ssl.com/images/logos/hazelcast-logo-horz_md.png" />
+					</a>
+					<h2 align="center">Hazelcast Node.js Client</h2>
+				</p>
+				<p align="center">
+					<a href="https://www.npmjs.com/package/hazelcast-client"><img src="https://img.shields.io/npm/v/hazelcast-client" alt="NPM version"></a>
+					<a href="https://gitter.im/hazelcast/hazelcast?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"><img src="https://img.shields.io/gitter/room/gitterHQ/gitter.svg" alt="Chat on Gitter"></a>
+					<a href="https://twitter.com/Hazelcast"><img src="https://img.shields.io/twitter/follow/Hazelcast.svg?style=flat-square&colorA=1da1f2&colorB=&label=Follow%20on%20Twitter" alt="Follow on Twitter"></a>
+				</p>
+				<hr>
+				<p><a href="https://hazelcast.org/">Hazelcast</a> is an open-source distributed in-memory data store and computation platform that
+				provides a wide variety of distributed data structures and concurrency primitives.</p>
+				<p>Hazelcast Node.js client is a way to communicate to Hazelcast IMDG clusters and access the cluster data.
+				The client provides a Promise-based API with a builtin support for native JavaScript objects.</p>
+				<h2 id="installation">Installation</h2>
+				<h3 id="hazelcast">Hazelcast</h3>
+				<p>Hazelcast Node.js client requires a working Hazelcast IMDG cluster to run. This cluster handles the storage and
+				manipulation of the user data.</p>
+				<p>A Hazelcast IMDG cluster consists of one or more cluster members. These members generally run on multiple virtual or
+					physical machines and are connected to each other via the network. Any data put on the cluster is partitioned to
+					multiple members transparent to the user. It is therefore very easy to scale the system by adding new members as
+					the data grows. Hazelcast IMDG cluster also offers resilience. Should any hardware or software problem causes a crash
+					to any member, the data on that member is recovered from backups and the cluster continues to operate without any
+				downtime.</p>
+				<p>The quickest way to start a single member cluster for development purposes is to use our
+				<a href="https://hub.docker.com/r/hazelcast/hazelcast/">Docker images</a>.</p>
+				<pre><code class="lang-bash">docker run -p 5701:5701 hazelcast/hazelcast:3.12.6
+</code></pre>
+				<p>You can also use our ZIP or TAR <a href="https://hazelcast.org/imdg/download/archives/#hazelcast-imdg">distributions</a>
+				as described <a href="DOCUMENTATION.md#121-setting-up-a-hazelcast-imdg-cluster">here</a>.</p>
+				<p>Make sure to use Hazelcast IMDG 3.x versions as the work to support 4.x versions is in progress.</p>
+				<h3 id="client">Client</h3>
+				<pre><code class="lang-bash">npm install hazelcast-client
+</code></pre>
+				<h2 id="overview">Overview</h2>
+				<h3 id="usage">Usage</h3>
+				<pre><code class="lang-js"><span class="hljs-keyword">const</span> { Client } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'hazelcast-client'</span>);
+
+<span class="hljs-comment">// Connect to Hazelcast cluster</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">await</span> Client.newHazelcastClient();
+
+<span class="hljs-comment">// Get or create the 'distributed-map' on the cluster</span>
+<span class="hljs-keyword">const</span> map = <span class="hljs-keyword">await</span> client.getMap(<span class="hljs-string">'distributed-map'</span>);
+
+<span class="hljs-comment">// Put 'key', 'value' pair into the 'distributed-map'</span>
+<span class="hljs-keyword">await</span> map.put(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>);
+
+<span class="hljs-comment">// Get the value associated with the given key from the cluster</span>
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> map.get(<span class="hljs-string">'key'</span>);
+<span class="hljs-built_in">console</span>.log(value); <span class="hljs-comment">// Outputs 'value'</span>
+
+<span class="hljs-comment">// Shutdown the client</span>
+client.shutdown();
+</code></pre>
+				<p>If you are using Hazelcast IMDG and the Node.js client on the same machine, the default configuration should work
+					out-of-the-box. However, you may need to configure the client to connect to cluster nodes that are running on
+				different machines or to customize client properties.</p>
+				<h3 id="configuration">Configuration</h3>
+				<pre><code class="lang-js"><span class="hljs-keyword">const</span> { Client, Config } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'hazelcast-client'</span>);
+
+<span class="hljs-comment">// Create a configuration object</span>
+<span class="hljs-keyword">const</span> clientConfig = <span class="hljs-keyword">new</span> Config.ClientConfig();
+
+<span class="hljs-comment">// Customize the client configuration</span>
+clientConfig.groupConfig.name = <span class="hljs-string">'cluster-name'</span>;
+clientConfig.networkConfig.addresses.push(<span class="hljs-string">'10.90.0.2:5701'</span>);
+clientConfig.networkConfig.addresses.push(<span class="hljs-string">'10.90.0.3:5701'</span>);
+
+<span class="hljs-comment">// Initialize the client with the given configuration</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">await</span> Client.newHazelcastClient(clientConfig);
+
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Connected to cluster'</span>);
+client.shutdown();
+</code></pre>
+				<p>You can also configure the client
+				<a href="DOCUMENTATION.md#312-declarative-configuration-json">declaratively</a> using a JSON file.</p>
+				<h2 id="features">Features</h2>
+				<ul>
+					<li>Distributed, partitioned and queryable in-memory key-value store implementation, called <strong>Map</strong></li>
+					<li>Eventually consistent cache implementation to store a subset of the Map data locally in the memory of the client, called <strong>Near Cache</strong></li>
+					<li>Additional data structures and simple messaging constructs such as <strong>Set</strong>, <strong>MultiMap</strong>, <strong>Queue</strong>, <strong>Topic</strong></li>
+					<li>Cluster-wide unique ID generator, called <strong>FlakeIdGenerator</strong></li>
+					<li>Distributed, CRDT based counter, called <strong>PNCounter</strong></li>
+					<li>Primitives for distributed computing such as <strong>Lock</strong>, <strong>Semaphore</strong>, <strong>Atomic Long</strong></li>
+					<li>Integration with <a href="https://cloud.hazelcast.com/">Hazelcast Cloud</a></li>
+					<li>Support for serverless and traditional web service architectures with <strong>Unisocket</strong> and <strong>Smart</strong> operation modes</li>
+					<li>Ability to listen client lifecycle, cluster state and distributed data structure events</li>
+					<li>and <a href="https://hazelcast.org/imdg/clients-languages/node-js/#client-features">many more</a>.</li>
+				</ul>
+				<h2 id="getting-help">Getting Help</h2>
+				<p>You can use the following channels for your questions and development/usage issues:</p>
+				<ul>
+					<li><a href="https://github.com/hazelcast/hazelcast-nodejs-client">GitHub repository</a></li>
+					<li><a href="DOCUMENTATION.md">Complete documentation</a></li>
+					<li><a href="http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/">API documentation</a></li>
+					<li><a href="https://gitter.im/hazelcast/hazelcast">Gitter</a></li>
+					<li><a href="https://groups.google.com/forum/#!forum/hazelcast">Google Groups</a></li>
+					<li><a href="https://stackoverflow.com/questions/tagged/hazelcast">Stack Overflow</a></li>
+				</ul>
+				<h2 id="contributing">Contributing</h2>
+				<p>We encourage any type of contribution in the form of issue reports or pull requests.</p>
+				<h3 id="issue-reports">Issue Reports</h3>
+				<p>For issue reports, please share the following information with us to quickly resolve the problems.</p>
+				<ul>
+					<li>Hazelcast IMDG and the client version that you use</li>
+					<li>General information about the environment and the architecture you use like Node.js version, cluster size, number of clients, Java version, JVM parameters, operating system etc.</li>
+					<li>Logs and stack traces, if any.</li>
+					<li>Detailed description of the steps to reproduce the issue.</li>
+				</ul>
+				<h3 id="pull-requests">Pull Requests</h3>
+				<p>Contributions are submitted, reviewed and accepted using the pull requests on GitHub. For an enhancement or larger
+				feature, create a GitHub issue first to discuss.</p>
+				<h4 id="development">Development</h4>
+				<ol>
+					<li>Clone the GitHub <a href="https://github.com/hazelcast/hazelcast-nodejs-client.git">repository</a>.</li>
+					<li>Run <code>npm install</code> to automatically download and install all the required modules.</li>
+					<li>Do the work.</li>
+					<li>Hazelcast Node.js client developed using TypeScript. Run <code>npm run compile</code> to compile TypeScript files to JavaScript.</li>
+					<li>To have a consistent code style across the code base, Hazelcast Node.js client uses a style checker. Run <code>npm run lint</code> and fix the reported issues, if any.</li>
+				</ol>
+				<h4 id="testing">Testing</h4>
+				<p>In order to test Hazelcast Node.js client locally, you will need the following:</p>
+				<ul>
+					<li>Java 8 or newer</li>
+					<li>Maven</li>
+				</ul>
+				<p>Following command starts the tests:</p>
+				<pre><code class="lang-bash">npm <span class="hljs-built_in">test</span>
+</code></pre>
+				<p>Test script automatically downloads <code>hazelcast-remote-controller</code> and Hazelcast IMDG. The script uses Maven to download those.</p>
+				<h2 id="license">License</h2>
+				<p><a href="LICENSE">Apache 2 License</a>.</p>
+				<h2 id="copyright">Copyright</h2>
+				<p>Copyright (c) 2008-2020, Hazelcast, Inc. All Rights Reserved.</p>
+				<p>Visit <a href="http://www.hazelcast.com">www.hazelcast.com</a> for more information.</p>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="globals.html"><em>Globals</em></a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_address_.html">"<wbr>Address"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_bitsutil_.html">"<wbr>Bits<wbr>Util"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_buildinfo_.html">"<wbr>Build<wbr>Info"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_clientinfo_.html">"<wbr>Client<wbr>Info"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_clientmessage_.html">"<wbr>Client<wbr>Message"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_clusterdatafactory_.html">"<wbr>Cluster<wbr>Data<wbr>Factory"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_clusterdatafactoryhelper_.html">"<wbr>Cluster<wbr>Data<wbr>Factory<wbr>Helper"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_datastorehashmap_.html">"<wbr>Data<wbr>Store<wbr>Hash<wbr>Map"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_distributedobject_.html">"<wbr>Distributed<wbr>Object"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_hazelcastclient_.html">"<wbr>Hazelcast<wbr>Client"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_hazelcasterror_.html">"<wbr>Hazelcast<wbr>Error"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_heartbeatservice_.html">"<wbr>Heartbeat<wbr>Service"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_lifecycleservice_.html">"<wbr>Lifecycle<wbr>Service"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_listenermessagecodec_.html">"<wbr>Listener<wbr>Message<wbr>Codec"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_listenerservice_.html">"<wbr>Listener<wbr>Service"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_lockreferenceidgenerator_.html">"<wbr>Lock<wbr>Reference<wbr>IdGenerator"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_partitionservice_.html">"<wbr>Partition<wbr>Service"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_util_.html">"<wbr>Util"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_aggregation_aggregator_.html">"aggregation/<wbr>Aggregator"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_aggregation_aggregatorfactory_.html">"aggregation/<wbr>Aggregator<wbr>Factory"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_aggregation_aggregators_.html">"aggregation/<wbr>Aggregators"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_config_clientcloudconfig_.html">"config/<wbr>Client<wbr>Cloud<wbr>Config"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_config_clientnetworkconfig_.html">"config/<wbr>Client<wbr>Network<wbr>Config"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_config_config_.html">"config/<wbr>Config"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_config_configbuilder_.html">"config/<wbr>Config<wbr>Builder"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_config_configpatternmatcher_.html">"config/<wbr>Config<wbr>Pattern<wbr>Matcher"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_config_evictionpolicy_.html">"config/<wbr>Eviction<wbr>Policy"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_config_flakeidgeneratorconfig_.html">"config/<wbr>Flake<wbr>IdGenerator<wbr>Config"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_config_groupconfig_.html">"config/<wbr>Group<wbr>Config"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_config_importconfig_.html">"config/<wbr>Import<wbr>Config"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_config_inmemoryformat_.html">"config/<wbr>InMemory<wbr>Format"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_config_jsonconfiglocator_.html">"config/<wbr>Json<wbr>Config<wbr>Locator"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_config_jsonstringdeserializationpolicy_.html">"config/<wbr>Json<wbr>String<wbr>Deserialization<wbr>Policy"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_config_listenerconfig_.html">"config/<wbr>Listener<wbr>Config"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_config_nearcacheconfig_.html">"config/<wbr>Near<wbr>Cache<wbr>Config"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_config_properties_.html">"config/<wbr>Properties"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_config_reliabletopicconfig_.html">"config/<wbr>Reliable<wbr>Topic<wbr>Config"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_config_sslconfig_.html">"config/SSLConfig"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_config_serializationconfig_.html">"config/<wbr>Serialization<wbr>Config"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_config_stringserializationpolicy_.html">"config/<wbr>String<wbr>Serialization<wbr>Policy"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_connection_addressprovider_.html">"connection/<wbr>Address<wbr>Provider"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_connection_addresstranslator_.html">"connection/<wbr>Address<wbr>Translator"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_connection_basicssloptionsfactory_.html">"connection/<wbr>BasicSSLOptions<wbr>Factory"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_connection_defaultaddressprovider_.html">"connection/<wbr>Default<wbr>Address<wbr>Provider"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_connection_defaultaddresstranslator_.html">"connection/<wbr>Default<wbr>Address<wbr>Translator"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_connection_ssloptionsfactory_.html">"connection/SSLOptions<wbr>Factory"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_core_comparator_.html">"core/<wbr>Comparator"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_core_connectionheartbeatlistener_.html">"core/<wbr>Connection<wbr>Heartbeat<wbr>Listener"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_core_distributedobjectlistener_.html">"core/<wbr>Distributed<wbr>Object<wbr>Listener"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_core_entrylistener_.html">"core/<wbr>Entry<wbr>Listener"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_core_entryview_.html">"core/<wbr>Entry<wbr>View"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_core_eventtype_.html">"core/<wbr>Event<wbr>Type"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_core_hazelcastjsonvalue_.html">"core/<wbr>Hazelcast<wbr>Json<wbr>Value"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_core_itemlistener_.html">"core/<wbr>Item<wbr>Listener"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_core_maplistener_.html">"core/<wbr>Map<wbr>Listener"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_core_member_.html">"core/<wbr>Member"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_core_memberattributeevent_.html">"core/<wbr>Member<wbr>Attribute<wbr>Event"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_core_memberselector_.html">"core/<wbr>Member<wbr>Selector"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_core_memberselectors_.html">"core/<wbr>Member<wbr>Selectors"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_core_membershipevent_.html">"core/<wbr>Membership<wbr>Event"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_core_membershiplistener_.html">"core/<wbr>Membership<wbr>Listener"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_core_overflowpolicy_.html">"core/<wbr>Overflow<wbr>Policy"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_core_partitionaware_.html">"core/<wbr>Partition<wbr>Aware"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_core_predicate_.html">"core/<wbr>Predicate"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_core_readonlylazylist_.html">"core/<wbr>Read<wbr>Only<wbr>Lazy<wbr>List"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_core_restvalue_.html">"core/<wbr>Rest<wbr>Value"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_core_uuid_.html">"core/UUID"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_core_vectorclock_.html">"core/<wbr>Vector<wbr>Clock"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_discovery_hazelcastcloudaddressprovider_.html">"discovery/<wbr>Hazelcast<wbr>Cloud<wbr>Address<wbr>Provider"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_discovery_hazelcastcloudaddresstranslator_.html">"discovery/<wbr>Hazelcast<wbr>Cloud<wbr>Address<wbr>Translator"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_discovery_hazelcastclouddiscovery_.html">"discovery/<wbr>Hazelcast<wbr>Cloud<wbr>Discovery"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_index_.html">"index"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_invocation_clientconnection_.html">"invocation/<wbr>Client<wbr>Connection"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_invocation_clientconnectionmanager_.html">"invocation/<wbr>Client<wbr>Connection<wbr>Manager"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_invocation_clienteventregistration_.html">"invocation/<wbr>Client<wbr>Event<wbr>Registration"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_invocation_clusterservice_.html">"invocation/<wbr>Cluster<wbr>Service"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_invocation_connectionauthenticator_.html">"invocation/<wbr>Connection<wbr>Authenticator"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_invocation_invocationservice_.html">"invocation/<wbr>Invocation<wbr>Service"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_invocation_murmur_.html">"invocation/<wbr>Murmur"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_invocation_registrationkey_.html">"invocation/<wbr>Registration<wbr>Key"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_logging_defaultlogger_.html">"logging/<wbr>Default<wbr>Logger"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_logging_ilogger_.html">"logging/ILogger"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_logging_loggingservice_.html">"logging/<wbr>Logging<wbr>Service"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_nearcache_alwaysfreshstalereaddetectorimpl_.html">"nearcache/<wbr>Always<wbr>Fresh<wbr>Stale<wbr>Read<wbr>Detector<wbr>Impl"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_nearcache_datarecord_.html">"nearcache/<wbr>Data<wbr>Record"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_nearcache_metadatacontainer_.html">"nearcache/<wbr>Metadata<wbr>Container"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_nearcache_metadatafetcher_.html">"nearcache/<wbr>Metadata<wbr>Fetcher"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_nearcache_nearcache_.html">"nearcache/<wbr>Near<wbr>Cache"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_nearcache_nearcachemanager_.html">"nearcache/<wbr>Near<wbr>Cache<wbr>Manager"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_nearcache_repairinghandler_.html">"nearcache/<wbr>Repairing<wbr>Handler"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_nearcache_repairingtask_.html">"nearcache/<wbr>Repairing<wbr>Task"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_nearcache_stalereaddetector_.html">"nearcache/<wbr>Stale<wbr>Read<wbr>Detector"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_nearcache_stalereaddetectorimpl_.html">"nearcache/<wbr>Stale<wbr>Read<wbr>Detector<wbr>Impl"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_protocol_clientprotocolerrorcodes_.html">"protocol/<wbr>Client<wbr>Protocol<wbr>Error<wbr>Codes"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_protocol_errorcodec_.html">"protocol/<wbr>Error<wbr>Codec"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_protocol_errorfactory_.html">"protocol/<wbr>Error<wbr>Factory"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_protocol_stacktraceelementcodec_.html">"protocol/<wbr>Stack<wbr>Trace<wbr>Element<wbr>Codec"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_atomiclongproxy_.html">"proxy/<wbr>Atomic<wbr>Long<wbr>Proxy"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_baseproxy_.html">"proxy/<wbr>Base<wbr>Proxy"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_flakeidgenerator_.html">"proxy/<wbr>Flake<wbr>IdGenerator"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_flakeidgeneratorproxy_.html">"proxy/<wbr>Flake<wbr>IdGenerator<wbr>Proxy"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_iatomiclong_.html">"proxy/IAtomic<wbr>Long"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_ilist_.html">"proxy/IList"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_ilock_.html">"proxy/ILock"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_imap_.html">"proxy/IMap"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_iqueue_.html">"proxy/IQueue"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_isemaphore_.html">"proxy/ISemaphore"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_iset_.html">"proxy/ISet"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_listproxy_.html">"proxy/<wbr>List<wbr>Proxy"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_lockproxy_.html">"proxy/<wbr>Lock<wbr>Proxy"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_mapproxy_.html">"proxy/<wbr>Map<wbr>Proxy"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_multimap_.html">"proxy/<wbr>Multi<wbr>Map"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_multimapproxy_.html">"proxy/<wbr>Multi<wbr>Map<wbr>Proxy"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_nearcachedmapproxy_.html">"proxy/<wbr>Near<wbr>Cached<wbr>Map<wbr>Proxy"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_pncounter_.html">"proxy/PNCounter"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_pncounterproxy_.html">"proxy/PNCounter<wbr>Proxy"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_partitionspecificproxy_.html">"proxy/<wbr>Partition<wbr>Specific<wbr>Proxy"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_proxymanager_.html">"proxy/<wbr>Proxy<wbr>Manager"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_queueproxy_.html">"proxy/<wbr>Queue<wbr>Proxy"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_replicatedmap_.html">"proxy/<wbr>Replicated<wbr>Map"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_replicatedmapproxy_.html">"proxy/<wbr>Replicated<wbr>Map<wbr>Proxy"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_ringbuffer_.html">"proxy/<wbr>Ringbuffer"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_semaphoreproxy_.html">"proxy/<wbr>Semaphore<wbr>Proxy"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_setproxy_.html">"proxy/<wbr>Set<wbr>Proxy"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_flakeid_autobatcher_.html">"proxy/flakeid/<wbr>Auto<wbr>Batcher"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_ringbuffer_lazyreadresultset_.html">"proxy/ringbuffer/<wbr>Lazy<wbr>Read<wbr>Result<wbr>Set"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_ringbuffer_readresultset_.html">"proxy/ringbuffer/<wbr>Read<wbr>Result<wbr>Set"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_ringbuffer_ringbufferproxy_.html">"proxy/ringbuffer/<wbr>Ringbuffer<wbr>Proxy"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_topic_itopic_.html">"proxy/topic/ITopic"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_topic_message_.html">"proxy/topic/<wbr>Message"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_topic_messagelistener_.html">"proxy/topic/<wbr>Message<wbr>Listener"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_topic_reliabletopiclistenerrunner_.html">"proxy/topic/<wbr>Reliable<wbr>Topic<wbr>Listener<wbr>Runner"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_topic_reliabletopicmessage_.html">"proxy/topic/<wbr>Reliable<wbr>Topic<wbr>Message"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_topic_reliabletopicproxy_.html">"proxy/topic/<wbr>Reliable<wbr>Topic<wbr>Proxy"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_proxy_topic_topicoverloadpolicy_.html">"proxy/topic/<wbr>Topic<wbr>Overload<wbr>Policy"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_serialization_data_.html">"serialization/<wbr>Data"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_serialization_defaultpredicates_.html">"serialization/<wbr>Default<wbr>Predicates"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_serialization_defaultserializer_.html">"serialization/<wbr>Default<wbr>Serializer"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_serialization_heapdata_.html">"serialization/<wbr>Heap<wbr>Data"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_serialization_objectdata_.html">"serialization/<wbr>Object<wbr>Data"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_serialization_predicatefactory_.html">"serialization/<wbr>Predicate<wbr>Factory"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_serialization_serializable_.html">"serialization/<wbr>Serializable"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_serialization_serializationservice_.html">"serialization/<wbr>Serialization<wbr>Service"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_serialization_serializationutil_.html">"serialization/<wbr>Serialization<wbr>Util"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_serialization_portable_classdefinition_.html">"serialization/portable/<wbr>Class<wbr>Definition"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_serialization_portable_classdefinitionbuilder_.html">"serialization/portable/<wbr>Class<wbr>Definition<wbr>Builder"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_serialization_portable_classdefinitioncontext_.html">"serialization/portable/<wbr>Class<wbr>Definition<wbr>Context"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_serialization_portable_classdefinitionwriter_.html">"serialization/portable/<wbr>Class<wbr>Definition<wbr>Writer"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_serialization_portable_defaultportablereader_.html">"serialization/portable/<wbr>Default<wbr>Portable<wbr>Reader"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_serialization_portable_defaultportablewriter_.html">"serialization/portable/<wbr>Default<wbr>Portable<wbr>Writer"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_serialization_portable_morphingportablereader_.html">"serialization/portable/<wbr>Morphing<wbr>Portable<wbr>Reader"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_serialization_portable_portablecontext_.html">"serialization/portable/<wbr>Portable<wbr>Context"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_serialization_portable_portableserializer_.html">"serialization/portable/<wbr>Portable<wbr>Serializer"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_statistics_statistics_.html">"statistics/<wbr>Statistics"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_util_arraycomparator_.html">"util/<wbr>Array<wbr>Comparator"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_util_uuidutil_.html">"util/<wbr>Uuid<wbr>Util"</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-module"><span class="tsd-kind-icon">Module</span></li>
+				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-enum-member"><span class="tsd-kind-icon">Enumeration member</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-enum"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-enum"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-interface"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-interface"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-class"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
+				<li class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="http://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+<script>if (location.protocol == 'file:') document.write('<script src="assets/js/search.js"><' + '/script>');</script>
+</body>
+</html>
