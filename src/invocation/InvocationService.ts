@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-import {Buffer} from 'safe-buffer';
 import * as assert from 'assert';
 import * as Promise from 'bluebird';
-import {BitsUtil} from '../BitsUtil';
 import HazelcastClient from '../HazelcastClient';
 import {
     ClientNotActiveError,
@@ -45,32 +43,41 @@ const PROPERTY_INVOCATION_TIMEOUT_MILLIS = 'hazelcast.client.invocation.timeout.
 export class Invocation {
 
     client: HazelcastClient;
+
     invocationService: InvocationService;
+
     /**
      * Representation of the request in binary form.
      */
     request: ClientMessage;
+
     /**
      * Partition id of the request. If request is not bound to a specific partition, should be set to -1.
      */
     partitionId: number;
+
     /**
      * Uuid of the request. If request is not bound to any specific uuid, should be set to null.
      */
     uuid: UUID;
+
     /**
      * Deadline of validity. Client will not try to send this request to server after the deadline passes.
      */
     deadline: number;
+
     /**
      * Connection of the request. If request is not bound to any specific address, should be set to null.
      */
     connection: ClientConnection;
+
     /**
      * Promise managing object.
      */
     deferred: Promise.Resolver<ClientMessage>;
+
     invokeCount: number = 0;
+
     /**
      * If this is an event listener registration, handler should be set to the function to be called on events.
      * Otherwise, should be set to null.
@@ -294,13 +301,9 @@ export class InvocationService {
             invocationPromise = this.invokeOnRandomConnection(invocation);
         }
 
-        if (invocationPromise.isRejected()) {
-            invocationPromise.catch(() => {
-                // No-op
-            });
-            invocationPromise = this.invokeOnRandomConnection(invocation);
-        }
-        invocationPromise.catch((err) => {
+        invocationPromise.catch(() => {
+            return this.invokeOnRandomConnection(invocation);
+        }).catch((err) => {
             this.notifyError(invocation, err);
         });
     }
