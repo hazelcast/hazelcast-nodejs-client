@@ -189,7 +189,6 @@ export class ClusterService implements Cluster {
     }
 
     public handleMembersViewEvent(memberListVersion: number, memberInfos: MemberInfo[]): void {
-        // TODO logging
         if (this.memberListSnapshot === EMPTY_SNAPSHOT) {
             this.applyInitialState(memberListVersion, memberInfos);
             this.initialListFetched.resolve();

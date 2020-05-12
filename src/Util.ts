@@ -346,7 +346,6 @@ export function getNodejsMajorVersion(): number {
 }
 
 export function pad(targetLength: number, str: string, padString: string): string {
-    // TODO use str#padStart
     if (str.length >= targetLength) {
         return str;
     } else {

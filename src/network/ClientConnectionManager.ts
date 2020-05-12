@@ -737,7 +737,7 @@ export class ClientConnectionManager extends EventEmitter {
             clientMessage = ClientAuthenticationCustomCodec.encodeRequest(clusterName, credentialsPayload, this.clientUuid,
                 CLIENT_TYPE, SERIALIZATION_VERSION, clientVersion, clientName, this.labels);
         } else {
-            // TODO Security config
+            // TODO Implement Security config
             clientMessage = ClientAuthenticationCodec.encodeRequest(clusterName, null, null, this.clientUuid,
                 CLIENT_TYPE, SERIALIZATION_VERSION, clientVersion, clientName, this.labels);
         }
