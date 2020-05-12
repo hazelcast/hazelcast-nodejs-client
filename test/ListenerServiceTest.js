@@ -32,18 +32,23 @@ var Util = require('./Util');
                 return Promise.resolve(cluster.id);
             }).then(function (clusterId) {
                 return RC.startMember(clusterId)
-            }).then(function () {
-                var cfg = new Config.ClientConfig();
-                cfg.clusterName = cluster.id;
-                cfg.networkConfig.smartRouting = isSmartService;
-                return HazelcastClient.newHazelcastClient(cfg);
-            }).then(function (res) {
-                client = res;
             });
         });
 
+        beforeEach(function () {
+            var cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
+            cfg.networkConfig.smartRouting = isSmartService;
+            return HazelcastClient.newHazelcastClient(cfg).then(function (c) {
+                client = c;
+            });
+        });
+
+        afterEach(function () {
+            return client.shutdown();
+        });
+
         after(function () {
-            client.shutdown();
             return RC.terminateCluster(cluster.id);
         });
 
@@ -89,11 +94,12 @@ var Util = require('./Util');
         });
 
         it('listener is not invoked when listener was already removed by user', function (done) {
-            this.timeout(3000);
-            client.addDistributedObjectListener(function (distributedObjectEvent) {
+            client.addDistributedObjectListener(function () {
                 done(new Error('Should not have run!'));
             }).then(function (listenerId) {
                 return client.removeDistributedObjectListener(listenerId)
+            }).then(function () {
+                return client.getMap('testMap');
             }).then(function () {
                 setTimeout(done, 1000);
             });
