@@ -489,21 +489,21 @@ describe('MapProxy', function () {
                 });
             });
 
-            // TODO Fix index test
-            // it('addIndex', function () {
-            //     const orderedIndexCfg = new Config.IndexConfig();
-            //     orderedIndexCfg.name = 'length';
-            //     orderedIndexCfg.addAttribute('bytes');
-            //
-            //     const unorderedIndexCfg = new Config.IndexConfig();
-            //     unorderedIndexCfg.name = 'length';
-            //     unorderedIndexCfg.type = Config.IndexType.HASH;
-            //     unorderedIndexCfg.addAttribute('bytes');
-            //     return Promise.all([
-            //         map.addIndex(orderedIndexCfg),
-            //         map.addIndex(unorderedIndexCfg)
-            //     ]);
-            // });
+            it('addIndex', function () {
+                const orderedIndexCfg = new Config.IndexConfig();
+                orderedIndexCfg.name = 'length';
+                orderedIndexCfg.addAttribute('this');
+
+                const unorderedIndexCfg = new Config.IndexConfig();
+                unorderedIndexCfg.name = 'length';
+                unorderedIndexCfg.type = Config.IndexType.HASH;
+                unorderedIndexCfg.addAttribute('this');
+
+                return Promise.all([
+                    map.addIndex(orderedIndexCfg),
+                    map.addIndex(unorderedIndexCfg)
+                ]);
+            });
 
             it('tryLock_success', function () {
                 return map.tryLock('key0').then(function (success) {

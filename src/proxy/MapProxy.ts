@@ -493,9 +493,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         assertNotNull(indexConfig);
         const indexConfig0 = IndexUtil.validateAndNormalize(this.name, indexConfig);
         return this.encodeInvokeOnRandomTarget(MapAddIndexCodec, indexConfig0)
-            .then(() => {
-                return Promise.resolve();
-            });
+            .thenReturn();
     }
 
     tryLock(key: K, timeout: number = 0, lease: number = -1): Promise<boolean> {

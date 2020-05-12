@@ -55,16 +55,17 @@ export class BitmapIndexOptions {
      * Defaults to {@code __key}. The unique key attribute is used as a source
      * of values which uniquely identify each entry being inserted into an index.
      */
-    uniqueKey: string = DEFAULT_UNIQUE_KEY;
+    uniqueKey: string;
 
     /**
      * Unique key transformation configured in this index. Defaults
      * to {@link UniqueKeyTransformation#OBJECT OBJECT}. The transformation is
      * applied to every value extracted from unique key attribute.
      */
-    uniqueKeyTransformation: UniqueKeyTransformation = DEFAULT_UNIQUE_KEY_TRANSFORMATION;
+    uniqueKeyTransformation: UniqueKeyTransformation;
 
-    constructor(uniqueKey: string, uniqueKeyTransformation: UniqueKeyTransformation) {
+    constructor(uniqueKey: string = DEFAULT_UNIQUE_KEY,
+                uniqueKeyTransformation: UniqueKeyTransformation = DEFAULT_UNIQUE_KEY_TRANSFORMATION) {
         this.uniqueKey = uniqueKey;
         this.uniqueKeyTransformation = uniqueKeyTransformation;
     }

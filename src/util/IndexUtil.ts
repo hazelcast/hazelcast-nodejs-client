@@ -16,6 +16,7 @@
 
 import {IndexConfig} from '../config/IndexConfig';
 import {IndexType} from '../config/IndexType';
+import {BitmapIndexOptions} from '../config/BitmapIndexOptions';
 
 /**
  * Maximum number of attributes allowed in the index.
@@ -136,6 +137,7 @@ export class IndexUtil {
     private static buildNormalizedConfig(mapName: string, indexType: IndexType, indexName: string,
                                          normalizedAttributeNames: string[]): IndexConfig {
         const newConfig = new IndexConfig();
+        newConfig.bitmapIndexOptions = new BitmapIndexOptions();
         newConfig.type = indexType;
 
         let name = indexName == null ? mapName + '_' + this.getIndexTypeName(indexType) : null;
