@@ -488,6 +488,7 @@ describe('MapProxy', function () {
                     return expect(entry).to.be.null;
                 });
             });
+
             // TODO Fix index test
             // it('addIndex', function () {
             //     const orderedIndexCfg = new Config.IndexConfig();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2020, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,7 @@ import {ClientAuthenticationCustomCodec} from '../codec/ClientAuthenticationCust
 import {ClientAuthenticationCodec, ClientAuthenticationResponseParams} from '../codec/ClientAuthenticationCodec';
 import {AuthenticationStatus} from '../protocol/AuthenticationStatus';
 import {Invocation} from '../invocation/InvocationService';
+import {Member} from '../core/Member';
 
 const CONNECTION_REMOVED_EVENT_NAME = 'connectionRemoved';
 const CONNECTION_ADDED_EVENT_NAME = 'connectionAdded';
@@ -159,15 +160,8 @@ export class ClientConnectionManager extends EventEmitter {
             return Promise.resolve();
         }
 
-        const promises = new Array<Promise<any>>();
-        for (const member of this.client.getClusterService().getMemberList()) {
-            promises.push(this.getOrConnect(member.address)
-                .catch((error) => {
-                    // Noop
-                }));
-        }
-        return Promise.all(promises)
-            .then();
+        const members = this.client.getClusterService().getMemberList();
+        return this.tryConnectToAllClusterMembers(0, members);
     }
 
     public shutdown(): void {
@@ -790,6 +784,21 @@ export class ClientConnectionManager extends EventEmitter {
                         targetClusterId + ', name: ' + clusterName);
                     return this.initializeClientOnCluster(targetClusterId);
                 }
+            });
+    }
+
+    private tryConnectToAllClusterMembers(index: number, members: Member[]): Promise<void> {
+        if (index >= members.length) {
+            return Promise.resolve();
+        }
+
+        const member = members[index];
+        return this.getOrConnect(member.address)
+            .catch(() => {
+                // No-op
+            })
+            .then(() => {
+                return this.tryConnectToAllClusterMembers(index + 1, members);
             });
     }
 }
