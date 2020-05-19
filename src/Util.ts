@@ -345,7 +345,7 @@ export function getNodejsMajorVersion(): number {
     return Number.parseInt(versions[0].substr(1));
 }
 
-export function pad(targetLength: number, str: string, padString: string): string {
+export function pad(str: string, targetLength: number, padString: string): string {
     if (str.length >= targetLength) {
         return str;
     } else {
