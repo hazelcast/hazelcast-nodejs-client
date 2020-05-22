@@ -318,7 +318,7 @@ export class ClientConnectionManager extends EventEmitter {
                 endpoint + ':' + memberUuid + ', connection: ' + connection);
             if (this.activeConnections.size === 0) {
                 if (this.clientState === ClientState.INITIALIZED_ON_CLUSTER) {
-                    this.emitLifecycleEvent(LifecycleState.CLIENT_DISCONNECTED);
+                    this.emitLifecycleEvent(LifecycleState.DISCONNECTED);
                 }
                 this.triggerClusterReconnection();
             }
@@ -703,7 +703,7 @@ export class ClientConnectionManager extends EventEmitter {
                 this.initializeClientOnCluster(newClusterId);
             } else {
                 this.clientState = ClientState.INITIALIZED_ON_CLUSTER;
-                this.emitLifecycleEvent(LifecycleState.CLIENT_CONNECTED);
+                this.emitLifecycleEvent(LifecycleState.CONNECTED);
             }
         }
 
@@ -768,7 +768,7 @@ export class ClientConnectionManager extends EventEmitter {
                         targetClusterId);
 
                     this.clientState = ClientState.INITIALIZED_ON_CLUSTER;
-                    this.emitLifecycleEvent(LifecycleState.CLIENT_CONNECTED);
+                    this.emitLifecycleEvent(LifecycleState.CONNECTED);
                 } else {
                     this.logger.warn('ConnectionManager', 'Cannot set client state to initialized on ' +
                         'cluster because current cluster id: ' + this.clusterId + ' is different than expected cluster id: ' +

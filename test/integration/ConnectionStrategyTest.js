@@ -83,7 +83,7 @@ describe('ConnectionStrategyTest', function () {
 
         const connected = Util.DeferredPromise();
         config.listeners.addLifecycleListener((state) => {
-            if (state === LifecycleState.CLIENT_CONNECTED) {
+            if (state === LifecycleState.CONNECTED) {
                 connected.resolve();
             }
         });
@@ -169,7 +169,7 @@ describe('ConnectionStrategyTest', function () {
         const disconnected = Util.DeferredPromise();
         const reconnected = Util.DeferredPromise();
         config.listeners.addLifecycleListener((state) => {
-            if (state === LifecycleState.CLIENT_DISCONNECTED) {
+            if (state === LifecycleState.DISCONNECTED) {
                 disconnected.resolve();
             }
         });
@@ -208,7 +208,7 @@ describe('ConnectionStrategyTest', function () {
             })
             .then(() => {
                 client.getLifecycleService().on('lifecycleEvent', (state) => {
-                    if (state === LifecycleState.CLIENT_CONNECTED) {
+                    if (state === LifecycleState.CONNECTED) {
                         reconnected.resolve();
                     }
                 });

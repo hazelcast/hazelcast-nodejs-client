@@ -407,7 +407,7 @@ This should print logs about the cluster members and information about the clien
 [DefaultLogger] INFO at LifecycleService: HazelcastClient is STARTING
 [DefaultLogger] INFO at LifecycleService: HazelcastClient is STARTED
 [DefaultLogger] INFO at ConnectionManager: Trying to connect to localhost:5701
-[DefaultLogger] INFO at LifecycleService: HazelcastClient is CLIENT_CONNECTED
+[DefaultLogger] INFO at LifecycleService: HazelcastClient is CONNECTED
 [DefaultLogger] INFO at ConnectionManager: Authenticated with server 192.168.1.10:5701:01bda57b-b987-448c-ac7f-6c0e4e8dd675, server version: 4.1-SNAPSHOT, local address: 127.0.0.1:54528
 [DefaultLogger] INFO at ClusterService:
 
@@ -1933,9 +1933,8 @@ The Membership Listener interface has functions that are invoked for the followi
 
 * `memberAdded`: A new member is added to the cluster.
 * `memberRemoved`: An existing member leaves the cluster.
-* `memberAttributeChanged`: An attribute of a member is changed. See the [Defining Member Attributes section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#defining-member-attributes) in the Hazelcast IMDG Reference Manual to learn about member attributes.
 
-For `memberAdded` and `memberRemoved` events, a `MembershipEvent` object is passed to the listener function.
+For these events, a `MembershipEvent` object is passed to the listener function.
 
 After you create the listener object, you can configure your cluster to include the membership listener. You can also add one or more membership listeners.
 
@@ -1943,25 +1942,31 @@ The following is a membership listener registration by using the `ClusterService
 
 ```javascript
 var membershipListener = {
-    memberAdded: function (membershipEvent) {
-        console.log('Member Added: The address is', member.address.toString());
+    memberAdded: function (event) {
+        console.log('Member Added: The address is', event.member.address.toString());
     },
 };
 client.clusterService.addMembershipListener(membershipListener);
 ```
 
-The `memberAttributeChanged` has its own type of event named as `MemberAttributeEvent`. When there is an attribute change on the member, this event is fired.
+Also, if you want to receive the available members when the client connects to cluster you may register an
+`InitialMembershipListener`. This listener receives an only-once `InitialMembershipEvent` when the member list becomes
+available. After that event has been received, the listener will receive the normal `MembershipEvent`s.
 
-See the following example.
+The following is an initial membership listener registration by using the `config.listeners.addMembershipListener()` function.
 
 ```javascript
-
 var membershipListener = {
-    memberAttributeChanged: function (memberAttributeEvent) {
-       console.log('Member Attribute Changed: The address is', memberAttributeEvent.member.address.toString());
+    init: function (event) {
+      console.log("Initial member list received -> " + event.members);
+    },
+    memberAdded: function (event) {
+        console.log('Member Added: The address is', event.member.address.toString());
     },
 };
-client.clusterService.addMembershipListener(membershipListener);
+
+var config = new Config.ClientConfig();
+config.listeners.addMembershipListener(membershipListener);
 ```
 
 #### 7.5.1.2. Distributed Object Listener
@@ -1994,10 +1999,12 @@ client.addDistributedObjectListener(function (distributedObjectEvent) {
 
 The `LifecycleListener` interface notifies for the following events:
 
-* `starting`: A client is starting.
-* `started`: A client has started.
-* `shuttingDown`: A client is shutting down.
-* `shutdown`: A client’s shutdown has completed.
+* `STARTING`: The client is starting.
+* `STARTED`: The client has started.
+* `CONNECTED`: The client connected to a member.
+* `SHUTTING_DOWN`: The client is shutting down.
+* `DISCONNECTED`: The client disconnected from a member.
+* `SHUTDOWN`: The client has shutdown.
 
 The following is an example of the `LifecycleListener` that is added to the `ClientConfig` object and its output.
 
@@ -2015,21 +2022,27 @@ Client.newHazelcastClient(clientConfig).then(function (hazelcastClient) {
 **Output:**
 
 ```
-[DefaultLogger] INFO at LifecycleService: HazelcastClient is starting
-Lifecycle Event >>> starting
-[DefaultLogger] INFO at ConnectionAuthenticator: Connection to 10.216.1.43:5701 authenticated
-[DefaultLogger] INFO at ClusterService: Members received.
-[ Member {
-    address: Address { host: '10.216.1.43', port: 5701, type: 4 },
-    uuid: '7961eef2-940d-42dc-8036-2a29c5c9942c',
-    isLiteMember: false,
-    attributes: {} } ]
-[DefaultLogger] INFO at LifecycleService: HazelcastClient is started
-Lifecycle Event >>> started
-[DefaultLogger] INFO at LifecycleService: HazelcastClient is shuttingDown
-Lifecycle Event >>> shuttingDown
-[DefaultLogger] INFO at LifecycleService: HazelcastClient is shutdown
-Lifecycle Event >>> shutdown
+[DefaultLogger] INFO at LifecycleService: HazelcastClient is STARTING
+Lifecycle Event >>> STARTING
+[DefaultLogger] INFO at LifecycleService: HazelcastClient is STARTED
+Lifecycle Event >>> STARTED
+[DefaultLogger] INFO at ConnectionManager: Trying to connect to localhost:5701
+[DefaultLogger] INFO at LifecycleService: HazelcastClient is CONNECTED
+Lifecycle Event >>> CONNECTED
+[DefaultLogger] INFO at ConnectionManager: Authenticated with server 192.168.1.10:5701:8d69d670-fa8a-4278-a91f-b43875fccfe8, server version: 4.1-SNAPSHOT, local address: 127.0.0.1:59316
+[DefaultLogger] INFO at ClusterService:
+
+Members [1] {
+	Member [192.168.1.10]:5701 - 8d69d670-fa8a-4278-a91f-b43875fccfe8
+}
+
+[DefaultLogger] INFO at LifecycleService: HazelcastClient is SHUTTING_DOWN
+Lifecycle Event >>> SHUTTING_DOWN
+[DefaultLogger] INFO at ConnectionManager: Removed connection to endpoint: 192.168.1.10:5701:8d69d670-fa8a-4278-a91f-b43875fccfe8, connection: ClientConnection{alive=false, connectionId=0, remoteAddress=192.168.1.10:5701}
+[DefaultLogger] INFO at LifecycleService: HazelcastClient is DISCONNECTED
+Lifecycle Event >>> DISCONNECTED
+[DefaultLogger] INFO at LifecycleService: HazelcastClient is SHUTDOWN
+Lifecycle Event >>> SHUTDOWN
 ```
 
 ### 7.5.2. Listening for Distributed Data Structure Events

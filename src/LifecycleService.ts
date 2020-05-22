@@ -25,39 +25,39 @@ import {ILogger} from './logging/ILogger';
  */
 export enum LifecycleState {
     /**
-     * Fired when the member is starting.
+     * Fired when the client is starting.
      */
     STARTING = 'STARTING',
 
     /**
-     * Fired when the member start is completed.
+     * Fired when the client's start is completed.
      */
     STARTED = 'STARTED',
 
     /**
-     * Fired when the member is shutting down.
+     * Fired when the client is shutting down.
      */
     SHUTTING_DOWN = 'SHUTTING_DOWN',
 
     /**
-     * Fired when the member shut down is completed.
+     * Fired when the client's shut down is completed.
      */
     SHUTDOWN = 'SHUTDOWN',
 
     /**
      * Fired when a client is connected to the member.
      */
-    CLIENT_CONNECTED = 'CLIENT_CONNECTED',
+    CONNECTED = 'CONNECTED',
 
     /**
      * Fired when a client is disconnected from the member.
      */
-    CLIENT_DISCONNECTED = 'CLIENT_DISCONNECTED',
+    DISCONNECTED = 'DISCONNECTED',
 
     /**
      * Fired when a client is connected to a new cluster.
      */
-    CLIENT_CHANGED_CLUSTER = 'CLIENT_CHANGED_CLUSTER',
+    CHANGED_CLUSTER = 'CHANGED_CLUSTER',
 }
 
 const LIFECYCLE_EVENT_NAME = 'lifecycleEvent';
