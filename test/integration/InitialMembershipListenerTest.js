@@ -64,7 +64,7 @@ describe('InitialMembershipListenerTest', function () {
                 expect(member.address.port).to.equal(initialMember.port);
                 done();
             }
-        }
+        };
 
         config.clusterName = cluster.id;
         config.listeners.addMembershipListener(membershipListener);
@@ -86,7 +86,7 @@ describe('InitialMembershipListenerTest', function () {
                 expect(member.address.port).to.equal(initialMember.port);
                 done();
             }
-        }
+        };
 
         config.clusterName = cluster.id;
         Client.newHazelcastClient(config)
@@ -94,7 +94,7 @@ describe('InitialMembershipListenerTest', function () {
                 client = c;
 
                 client.getClusterService().addMembershipListener(membershipListener);
-            })
+            });
     });
 
     it('receives events after initial event', function (done) {
@@ -120,9 +120,9 @@ describe('InitialMembershipListenerTest', function () {
                     })
                     .catch((e) => {
                         done(e);
-                    })
+                    });
             }
-        }
+        };
 
         config.clusterName = cluster.id;
         config.listeners.addMembershipListener(membershipListener);
@@ -138,8 +138,8 @@ describe('InitialMembershipListenerTest', function () {
                 newMemberResolved.resolve();
             })
             .catch((e) => {
-                newMemberResolved.reject(e);
-            })
+                done(e);
+            });
     });
 
 });
