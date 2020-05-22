@@ -51,7 +51,7 @@ export class QueuePeekCodec {
     static decodeResponse(clientMessage: ClientMessage): QueuePeekResponseParams {
         const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.next();
+        iterator.getNextFrame();
 
         return {
             response: CodecUtil.decodeNullable(iterator, DataCodec.decode),

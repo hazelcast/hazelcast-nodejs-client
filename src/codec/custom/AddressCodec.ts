@@ -41,9 +41,9 @@ export class AddressCodec {
 
     static decode(iterator: ForwardFrameIterator): Address {
         // begin frame
-        iterator.next();
+        iterator.getNextFrame();
 
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
         const port: number = FixSizedTypesCodec.decodeInt(initialFrame.content, PORT_OFFSET);
         const host: string = StringCodec.decode(iterator);
 

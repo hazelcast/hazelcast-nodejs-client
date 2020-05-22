@@ -23,6 +23,6 @@ export class ByteArrayCodec {
     }
 
     static decode(iterator: ForwardFrameIterator): Buffer {
-        return iterator.next().content;
+        return iterator.getNextFrame().content;
     }
 }

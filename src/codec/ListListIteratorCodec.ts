@@ -53,7 +53,7 @@ export class ListListIteratorCodec {
     static decodeResponse(clientMessage: ClientMessage): ListListIteratorResponseParams {
         const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.next();
+        iterator.getNextFrame();
 
         return {
             response: ListMultiFrameCodec.decode(iterator, DataCodec.decode),

@@ -57,7 +57,7 @@ export class TransactionalListAddCodec {
 
     static decodeResponse(clientMessage: ClientMessage): TransactionalListAddResponseParams {
         const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),

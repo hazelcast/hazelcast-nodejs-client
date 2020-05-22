@@ -53,7 +53,7 @@ export class ClientAddDistributedObjectListenerCodec {
 
     static decodeResponse(clientMessage: ClientMessage): ClientAddDistributedObjectListenerResponseParams {
         const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
@@ -64,7 +64,7 @@ export class ClientAddDistributedObjectListenerCodec {
         const messageType = clientMessage.getMessageType();
         const iterator = clientMessage.frameIterator();
         if (messageType === EVENT_DISTRIBUTED_OBJECT_MESSAGE_TYPE && handleDistributedObjectEvent !== null) {
-            const initialFrame = iterator.next();
+            const initialFrame = iterator.getNextFrame();
             const source = FixSizedTypesCodec.decodeUUID(initialFrame.content, EVENT_DISTRIBUTED_OBJECT_SOURCE_OFFSET);
             const name = StringCodec.decode(iterator);
             const serviceName = StringCodec.decode(iterator);

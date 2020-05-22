@@ -53,7 +53,7 @@ export class MapExecuteWithPredicateCodec {
     static decodeResponse(clientMessage: ClientMessage): MapExecuteWithPredicateResponseParams {
         const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.next();
+        iterator.getNextFrame();
 
         return {
             response: EntryListCodec.decode(iterator, DataCodec.decode, DataCodec.decode),

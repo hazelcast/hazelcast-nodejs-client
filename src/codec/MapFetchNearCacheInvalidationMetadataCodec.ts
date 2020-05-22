@@ -57,7 +57,7 @@ export class MapFetchNearCacheInvalidationMetadataCodec {
     static decodeResponse(clientMessage: ClientMessage): MapFetchNearCacheInvalidationMetadataResponseParams {
         const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.next();
+        iterator.getNextFrame();
 
         return {
             namePartitionSequenceList: EntryListCodec.decode(iterator, StringCodec.decode, EntryListIntegerLongCodec.decode),

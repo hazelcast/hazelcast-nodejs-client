@@ -60,7 +60,7 @@ export class QueueAddListenerCodec {
 
     static decodeResponse(clientMessage: ClientMessage): QueueAddListenerResponseParams {
         const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
@@ -71,7 +71,7 @@ export class QueueAddListenerCodec {
         const messageType = clientMessage.getMessageType();
         const iterator = clientMessage.frameIterator();
         if (messageType === EVENT_ITEM_MESSAGE_TYPE && handleItemEvent !== null) {
-            const initialFrame = iterator.next();
+            const initialFrame = iterator.getNextFrame();
             const uuid = FixSizedTypesCodec.decodeUUID(initialFrame.content, EVENT_ITEM_UUID_OFFSET);
             const eventType = FixSizedTypesCodec.decodeInt(initialFrame.content, EVENT_ITEM_EVENT_TYPE_OFFSET);
             const item = CodecUtil.decodeNullable(iterator, DataCodec.decode);

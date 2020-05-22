@@ -35,7 +35,7 @@ export class EntryListUUIDLongCodec {
     }
 
     static decode(iterator: ForwardFrameIterator): Array<[UUID, Long]> {
-        const frame = iterator.next();
+        const frame = iterator.getNextFrame();
         const entryCount = frame.content.length / ENTRY_SIZE_IN_BYTES;
         const result = new Array<[UUID, Long]>(entryCount);
         for (let i = 0; i < entryCount; i++) {

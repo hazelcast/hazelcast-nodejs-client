@@ -34,7 +34,7 @@ export class EntryListIntegerLongCodec {
     }
 
     static decode(iterator: ForwardFrameIterator): Array<[number, Long]> {
-        const frame = iterator.next();
+        const frame = iterator.getNextFrame();
         const entryCount = frame.content.length / ENTRY_SIZE_IN_BYTES;
         const result = new Array<[number, Long]>(entryCount);
         for (let i = 0; i < entryCount; i++) {

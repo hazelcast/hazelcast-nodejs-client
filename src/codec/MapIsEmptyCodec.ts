@@ -48,7 +48,7 @@ export class MapIsEmptyCodec {
 
     static decodeResponse(clientMessage: ClientMessage): MapIsEmptyResponseParams {
         const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),

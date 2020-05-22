@@ -23,7 +23,7 @@ export class CodecUtil {
         let numberOfExpectedEndFrames = 1;
         let frame: Frame;
         while (numberOfExpectedEndFrames !== 0) {
-            frame = iterator.next();
+            frame = iterator.getNextFrame();
             if (frame.isEndFrame()) {
                 numberOfExpectedEndFrames--;
             } else if (frame.isBeginFrame()) {
@@ -45,13 +45,13 @@ export class CodecUtil {
     }
 
     static nextFrameIsDataStructureEndFrame(iterator: ForwardFrameIterator): boolean {
-        return iterator.peekNext().isEndFrame();
+        return iterator.peekNextFrame().isEndFrame();
     }
 
     static nextFrameIsNullEndFrame(iterator: ForwardFrameIterator): boolean {
-        const isNull = iterator.peekNext().isNullFrame();
+        const isNull = iterator.peekNextFrame().isNullFrame();
         if (isNull) {
-            iterator.next();
+            iterator.getNextFrame();
         }
         return isNull;
     }

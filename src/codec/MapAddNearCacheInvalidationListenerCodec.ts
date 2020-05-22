@@ -67,7 +67,7 @@ export class MapAddNearCacheInvalidationListenerCodec {
 
     static decodeResponse(clientMessage: ClientMessage): MapAddNearCacheInvalidationListenerResponseParams {
         const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
@@ -78,7 +78,7 @@ export class MapAddNearCacheInvalidationListenerCodec {
         const messageType = clientMessage.getMessageType();
         const iterator = clientMessage.frameIterator();
         if (messageType === EVENT_I_MAP_INVALIDATION_MESSAGE_TYPE && handleIMapInvalidationEvent !== null) {
-            const initialFrame = iterator.next();
+            const initialFrame = iterator.getNextFrame();
             const sourceUuid = FixSizedTypesCodec.decodeUUID(initialFrame.content, EVENT_I_MAP_INVALIDATION_SOURCE_UUID_OFFSET);
             const partitionUuid = FixSizedTypesCodec.decodeUUID(initialFrame.content, EVENT_I_MAP_INVALIDATION_PARTITION_UUID_OFFSET);
             const sequence = FixSizedTypesCodec.decodeLong(initialFrame.content, EVENT_I_MAP_INVALIDATION_SEQUENCE_OFFSET);
@@ -88,7 +88,7 @@ export class MapAddNearCacheInvalidationListenerCodec {
         }
         if (messageType === EVENT_I_MAP_BATCH_INVALIDATION_MESSAGE_TYPE && handleIMapBatchInvalidationEvent !== null) {
             // empty initial frame
-            iterator.next();
+            iterator.getNextFrame();
             const keys = ListMultiFrameCodec.decode(iterator, DataCodec.decode);
             const sourceUuids = ListUUIDCodec.decode(iterator);
             const partitionUuids = ListUUIDCodec.decode(iterator);

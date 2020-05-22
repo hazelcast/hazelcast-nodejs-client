@@ -62,9 +62,9 @@ export class SimpleEntryViewCodec {
 
     static decode(iterator: ForwardFrameIterator): SimpleEntryView<Data, Data> {
         // begin frame
-        iterator.next();
+        iterator.getNextFrame();
 
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
         const cost: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, COST_OFFSET);
         const creationTime: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, CREATION_TIME_OFFSET);
         const expirationTime: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, EXPIRATION_TIME_OFFSET);

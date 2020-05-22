@@ -41,9 +41,9 @@ export class BitmapIndexOptionsCodec {
 
     static decode(iterator: ForwardFrameIterator): BitmapIndexOptions {
         // begin frame
-        iterator.next();
+        iterator.getNextFrame();
 
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
         const uniqueKeyTransformation: number = FixSizedTypesCodec.decodeInt(initialFrame.content, UNIQUE_KEY_TRANSFORMATION_OFFSET);
         const uniqueKey: string = StringCodec.decode(iterator);
 

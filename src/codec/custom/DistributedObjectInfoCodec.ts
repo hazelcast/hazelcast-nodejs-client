@@ -32,7 +32,7 @@ export class DistributedObjectInfoCodec {
 
     static decode(iterator: ForwardFrameIterator): DistributedObjectInfo {
         // begin frame
-        iterator.next();
+        iterator.getNextFrame();
         const serviceName: string = StringCodec.decode(iterator);
         const name: string = StringCodec.decode(iterator);
 

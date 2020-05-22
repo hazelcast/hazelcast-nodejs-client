@@ -42,9 +42,9 @@ export class MemberVersionCodec {
 
     static decode(iterator: ForwardFrameIterator): MemberVersion {
         // begin frame
-        iterator.next();
+        iterator.getNextFrame();
 
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
         const major: number = FixSizedTypesCodec.decodeByte(initialFrame.content, MAJOR_OFFSET);
         const minor: number = FixSizedTypesCodec.decodeByte(initialFrame.content, MINOR_OFFSET);
         const patch: number = FixSizedTypesCodec.decodeByte(initialFrame.content, PATCH_OFFSET);

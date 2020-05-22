@@ -51,7 +51,7 @@ export class MapKeySetCodec {
     static decodeResponse(clientMessage: ClientMessage): MapKeySetResponseParams {
         const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.next();
+        iterator.getNextFrame();
 
         return {
             response: ListMultiFrameCodec.decode(iterator, DataCodec.decode),

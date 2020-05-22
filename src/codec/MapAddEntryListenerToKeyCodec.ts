@@ -64,7 +64,7 @@ export class MapAddEntryListenerToKeyCodec {
 
     static decodeResponse(clientMessage: ClientMessage): MapAddEntryListenerToKeyResponseParams {
         const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
@@ -75,7 +75,7 @@ export class MapAddEntryListenerToKeyCodec {
         const messageType = clientMessage.getMessageType();
         const iterator = clientMessage.frameIterator();
         if (messageType === EVENT_ENTRY_MESSAGE_TYPE && handleEntryEvent !== null) {
-            const initialFrame = iterator.next();
+            const initialFrame = iterator.getNextFrame();
             const eventType = FixSizedTypesCodec.decodeInt(initialFrame.content, EVENT_ENTRY_EVENT_TYPE_OFFSET);
             const uuid = FixSizedTypesCodec.decodeUUID(initialFrame.content, EVENT_ENTRY_UUID_OFFSET);
             const numberOfAffectedEntries = FixSizedTypesCodec.decodeInt(initialFrame.content, EVENT_ENTRY_NUMBER_OF_AFFECTED_ENTRIES_OFFSET);

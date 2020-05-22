@@ -23,7 +23,7 @@ export class StringCodec {
     }
 
     static decode(iterator: ForwardFrameIterator): string {
-        const frame = iterator.next();
+        const frame = iterator.getNextFrame();
         return frame.content.toString('utf8');
     }
 }

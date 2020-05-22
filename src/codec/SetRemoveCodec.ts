@@ -51,7 +51,7 @@ export class SetRemoveCodec {
 
     static decodeResponse(clientMessage: ClientMessage): SetRemoveResponseParams {
         const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),

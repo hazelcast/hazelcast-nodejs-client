@@ -51,7 +51,7 @@ export class MapEventJournalSubscribeCodec {
 
     static decodeResponse(clientMessage: ClientMessage): MapEventJournalSubscribeResponseParams {
         const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
 
         return {
             oldestSequence: FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_OLDEST_SEQUENCE_OFFSET),

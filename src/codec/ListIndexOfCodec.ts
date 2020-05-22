@@ -51,7 +51,7 @@ export class ListIndexOfCodec {
 
     static decodeResponse(clientMessage: ClientMessage): ListIndexOfResponseParams {
         const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_RESPONSE_OFFSET),

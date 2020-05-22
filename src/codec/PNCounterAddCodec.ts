@@ -61,7 +61,7 @@ export class PNCounterAddCodec {
 
     static decodeResponse(clientMessage: ClientMessage): PNCounterAddResponseParams {
         const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
 
         return {
             value: FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_VALUE_OFFSET),

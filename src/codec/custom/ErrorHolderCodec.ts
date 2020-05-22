@@ -46,9 +46,9 @@ export class ErrorHolderCodec {
 
     static decode(iterator: ForwardFrameIterator): ErrorHolder {
         // begin frame
-        iterator.next();
+        iterator.getNextFrame();
 
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
         const errorCode: number = FixSizedTypesCodec.decodeInt(initialFrame.content, ERROR_CODE_OFFSET);
         const className: string = StringCodec.decode(iterator);
         const message: string = CodecUtil.decodeNullable(iterator, StringCodec.decode);

@@ -51,7 +51,7 @@ export class MultiMapEntrySetCodec {
     static decodeResponse(clientMessage: ClientMessage): MultiMapEntrySetResponseParams {
         const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.next();
+        iterator.getNextFrame();
 
         return {
             response: EntryListCodec.decode(iterator, DataCodec.decode, DataCodec.decode),

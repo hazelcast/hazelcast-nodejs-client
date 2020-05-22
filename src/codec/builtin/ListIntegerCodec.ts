@@ -30,7 +30,7 @@ export class ListIntegerCodec {
     }
 
     static decode(iterator: ForwardFrameIterator): number[] {
-        const frame = iterator.next();
+        const frame = iterator.getNextFrame();
         const itemCount = frame.content.length / BitsUtil.INT_SIZE_IN_BYTES;
         const result = new Array<number>(itemCount);
         for (let i = 0; i < itemCount; i++) {

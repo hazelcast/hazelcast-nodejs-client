@@ -54,7 +54,7 @@ export class MapEvictCodec {
 
     static decodeResponse(clientMessage: ClientMessage): MapEvictResponseParams {
         const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),

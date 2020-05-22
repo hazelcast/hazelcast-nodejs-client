@@ -64,13 +64,13 @@ describe('ClientMessage', function () {
 
         // get the frame after the start frame for comparison
         const originalIterator = originalMessage.frameIterator();
-        originalIterator.next();
+        originalIterator.getNextFrame();
 
         const copyIterator = copyMessage.frameIterator();
-        copyIterator.next();
+        copyIterator.getNextFrame();
 
-        const originalFrame = originalIterator.next();
-        const copyFrame = copyIterator.next();
+        const originalFrame = originalIterator.getNextFrame();
+        const copyFrame = copyIterator.getNextFrame();
 
         expect(originalFrame.content).to.equal(copyFrame.content);
         expect(originalFrame.flags).to.equal(copyFrame.flags);
@@ -97,9 +97,9 @@ describe('ClientMessage', function () {
 
         const iterator = clientMessage.frameIterator();
         // begin frame
-        iterator.next();
+        iterator.getNextFrame();
         CodecUtil.fastForwardToEndFrame(iterator);
 
-        expect(iterator.hasNext()).to.be.false;
+        expect(iterator.hasNextFrame()).to.be.false;
     });
 });

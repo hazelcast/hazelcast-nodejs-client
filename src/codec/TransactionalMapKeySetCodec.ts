@@ -57,7 +57,7 @@ export class TransactionalMapKeySetCodec {
     static decodeResponse(clientMessage: ClientMessage): TransactionalMapKeySetResponseParams {
         const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.next();
+        iterator.getNextFrame();
 
         return {
             response: ListMultiFrameCodec.decode(iterator, DataCodec.decode),

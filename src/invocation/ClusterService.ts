@@ -127,6 +127,7 @@ export class ClusterService implements Cluster {
         info.uuid = connectionManager.getClientUuid();
         info.localAddress = localAddress;
         info.labels = this.labels;
+        info.name = this.client.getName();
         return info;
     }
 

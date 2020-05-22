@@ -58,7 +58,7 @@ export class TransactionalMapRemoveIfSameCodec {
 
     static decodeResponse(clientMessage: ClientMessage): TransactionalMapRemoveIfSameResponseParams {
         const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),

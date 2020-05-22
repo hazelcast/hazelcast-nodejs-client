@@ -53,7 +53,7 @@ export class MapGetAllCodec {
     static decodeResponse(clientMessage: ClientMessage): MapGetAllResponseParams {
         const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.next();
+        iterator.getNextFrame();
 
         return {
             response: EntryListCodec.decode(iterator, DataCodec.decode, DataCodec.decode),

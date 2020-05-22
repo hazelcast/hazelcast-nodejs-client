@@ -52,7 +52,7 @@ export class MapAggregateCodec {
     static decodeResponse(clientMessage: ClientMessage): MapAggregateResponseParams {
         const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.next();
+        iterator.getNextFrame();
 
         return {
             response: CodecUtil.decodeNullable(iterator, DataCodec.decode),

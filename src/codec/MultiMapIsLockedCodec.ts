@@ -51,7 +51,7 @@ export class MultiMapIsLockedCodec {
 
     static decodeResponse(clientMessage: ClientMessage): MultiMapIsLockedResponseParams {
         const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),

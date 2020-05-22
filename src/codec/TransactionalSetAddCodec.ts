@@ -57,7 +57,7 @@ export class TransactionalSetAddCodec {
 
     static decodeResponse(clientMessage: ClientMessage): TransactionalSetAddResponseParams {
         const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),

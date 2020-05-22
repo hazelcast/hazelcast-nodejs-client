@@ -58,7 +58,7 @@ export class MapPutCodec {
     static decodeResponse(clientMessage: ClientMessage): MapPutResponseParams {
         const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.next();
+        iterator.getNextFrame();
 
         return {
             response: CodecUtil.decodeNullable(iterator, DataCodec.decode),

@@ -56,7 +56,7 @@ export class MapFetchKeysCodec {
     static decodeResponse(clientMessage: ClientMessage): MapFetchKeysResponseParams {
         const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.next();
+        iterator.getNextFrame();
 
         return {
             iterationPointers: EntryListIntegerIntegerCodec.decode(iterator),

@@ -56,7 +56,7 @@ export class ReplicatedMapPutCodec {
     static decodeResponse(clientMessage: ClientMessage): ReplicatedMapPutResponseParams {
         const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.next();
+        iterator.getNextFrame();
 
         return {
             response: CodecUtil.decodeNullable(iterator, DataCodec.decode),

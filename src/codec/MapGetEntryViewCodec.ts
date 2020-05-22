@@ -58,7 +58,7 @@ export class MapGetEntryViewCodec {
 
     static decodeResponse(clientMessage: ClientMessage): MapGetEntryViewResponseParams {
         const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
 
         return {
             maxIdle: FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_MAX_IDLE_OFFSET),

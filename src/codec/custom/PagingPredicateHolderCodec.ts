@@ -51,9 +51,9 @@ export class PagingPredicateHolderCodec {
 
     static decode(iterator: ForwardFrameIterator): PagingPredicateHolder {
         // begin frame
-        iterator.next();
+        iterator.getNextFrame();
 
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
         const pageSize: number = FixSizedTypesCodec.decodeInt(initialFrame.content, PAGE_SIZE_OFFSET);
         const page: number = FixSizedTypesCodec.decodeInt(initialFrame.content, PAGE_OFFSET);
         const iterationTypeId: number = FixSizedTypesCodec.decodeByte(initialFrame.content, ITERATION_TYPE_ID_OFFSET);

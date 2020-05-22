@@ -43,9 +43,9 @@ export class StackTraceElementCodec {
 
     static decode(iterator: ForwardFrameIterator): StackTraceElement {
         // begin frame
-        iterator.next();
+        iterator.getNextFrame();
 
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
         const lineNumber: number = FixSizedTypesCodec.decodeInt(initialFrame.content, LINE_NUMBER_OFFSET);
         const className: string = StringCodec.decode(iterator);
         const methodName: string = StringCodec.decode(iterator);

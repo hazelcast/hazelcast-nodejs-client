@@ -33,7 +33,7 @@ export class DataCodec {
     }
 
     static decode(iterator: ForwardFrameIterator): Data {
-        return new HeapData(iterator.next().content);
+        return new HeapData(iterator.getNextFrame().content);
     }
 
     static decodeNullable(iterator: ForwardFrameIterator): Data {

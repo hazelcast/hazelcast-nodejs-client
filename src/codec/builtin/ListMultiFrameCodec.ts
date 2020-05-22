@@ -51,12 +51,12 @@ export class ListMultiFrameCodec {
     static decode<T>(iterator: ForwardFrameIterator, decoder: (it: ForwardFrameIterator) => T): T[] {
         const result: T[] = [];
         // begin frame
-        iterator.next();
+        iterator.getNextFrame();
         while (!CodecUtil.nextFrameIsDataStructureEndFrame(iterator)) {
             result.push(decoder(iterator));
         }
         // end frame
-        iterator.next();
+        iterator.getNextFrame();
         return result;
     }
 }

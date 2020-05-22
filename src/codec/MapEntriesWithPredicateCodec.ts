@@ -52,7 +52,7 @@ export class MapEntriesWithPredicateCodec {
     static decodeResponse(clientMessage: ClientMessage): MapEntriesWithPredicateResponseParams {
         const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.next();
+        iterator.getNextFrame();
 
         return {
             response: EntryListCodec.decode(iterator, DataCodec.decode, DataCodec.decode),

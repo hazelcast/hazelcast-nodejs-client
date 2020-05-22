@@ -54,7 +54,7 @@ export class TransactionalMapSizeCodec {
 
     static decodeResponse(clientMessage: ClientMessage): TransactionalMapSizeResponseParams {
         const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_RESPONSE_OFFSET),

@@ -57,7 +57,7 @@ export class MapValuesWithPagingPredicateCodec {
     static decodeResponse(clientMessage: ClientMessage): MapValuesWithPagingPredicateResponseParams {
         const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.next();
+        iterator.getNextFrame();
 
         return {
             response: ListMultiFrameCodec.decode(iterator, DataCodec.decode),

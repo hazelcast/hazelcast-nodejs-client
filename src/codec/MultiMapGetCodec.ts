@@ -55,7 +55,7 @@ export class MultiMapGetCodec {
     static decodeResponse(clientMessage: ClientMessage): MultiMapGetResponseParams {
         const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.next();
+        iterator.getNextFrame();
 
         return {
             response: ListMultiFrameCodec.decode(iterator, DataCodec.decode),

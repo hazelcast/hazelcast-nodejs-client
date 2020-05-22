@@ -51,7 +51,7 @@ export class ClientLocalBackupListenerCodec {
 
     static decodeResponse(clientMessage: ClientMessage): ClientLocalBackupListenerResponseParams {
         const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
@@ -62,7 +62,7 @@ export class ClientLocalBackupListenerCodec {
         const messageType = clientMessage.getMessageType();
         const iterator = clientMessage.frameIterator();
         if (messageType === EVENT_BACKUP_MESSAGE_TYPE && handleBackupEvent !== null) {
-            const initialFrame = iterator.next();
+            const initialFrame = iterator.getNextFrame();
             const sourceInvocationCorrelationId = FixSizedTypesCodec.decodeLong(initialFrame.content, EVENT_BACKUP_SOURCE_INVOCATION_CORRELATION_ID_OFFSET);
             handleBackupEvent(sourceInvocationCorrelationId);
             return;

@@ -66,7 +66,7 @@ export class MapEventJournalReadCodec {
 
     static decodeResponse(clientMessage: ClientMessage): MapEventJournalReadResponseParams {
         const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
 
         return {
             readCount: FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_READ_COUNT_OFFSET),

@@ -31,7 +31,7 @@ export class LongArrayCodec {
     }
 
     static decode(iterator: ForwardFrameIterator): Long[] {
-        const frame = iterator.next();
+        const frame = iterator.getNextFrame();
         const itemCount = frame.content.length / BitsUtil.LONG_SIZE_IN_BYTES;
         const result = new Array<Long>(itemCount);
         for (let i = 0; i < itemCount; i++) {

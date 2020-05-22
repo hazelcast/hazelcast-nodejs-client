@@ -52,7 +52,7 @@ export class SetCompareAndRetainAllCodec {
 
     static decodeResponse(clientMessage: ClientMessage): SetCompareAndRetainAllResponseParams {
         const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),

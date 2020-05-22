@@ -59,7 +59,7 @@ export class TransactionalQueuePeekCodec {
     static decodeResponse(clientMessage: ClientMessage): TransactionalQueuePeekResponseParams {
         const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.next();
+        iterator.getNextFrame();
 
         return {
             response: CodecUtil.decodeNullable(iterator, DataCodec.decode),

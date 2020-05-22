@@ -51,7 +51,7 @@ export class QueueDrainToCodec {
     static decodeResponse(clientMessage: ClientMessage): QueueDrainToResponseParams {
         const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.next();
+        iterator.getNextFrame();
 
         return {
             response: ListMultiFrameCodec.decode(iterator, DataCodec.decode),

@@ -40,7 +40,7 @@ export class ErrorsCodec {
     static decode(clientMessage: ClientMessage): ErrorHolder[] {
         const iterator = clientMessage.frameIterator();
         // initial frame
-        iterator.next();
+        iterator.getNextFrame();
         return ListMultiFrameCodec.decode(iterator, ErrorHolderCodec.decode);
     }
 }

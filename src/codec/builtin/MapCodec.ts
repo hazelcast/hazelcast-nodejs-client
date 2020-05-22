@@ -44,14 +44,14 @@ export class MapCodec {
                         valueDecoder: (it: ForwardFrameIterator) => V): Map<K, V> {
         const result = new Map<K, V>();
         // begin frame
-        iterator.next();
+        iterator.getNextFrame();
         while (!CodecUtil.nextFrameIsDataStructureEndFrame(iterator)) {
             const key = keyDecoder(iterator);
             const value = valueDecoder(iterator);
             result.set(key, value);
         }
         // end frame
-        iterator.next();
+        iterator.getNextFrame();
         return result;
     }
 

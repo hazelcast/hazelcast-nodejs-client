@@ -52,7 +52,7 @@ export class MapProjectCodec {
     static decodeResponse(clientMessage: ClientMessage): MapProjectResponseParams {
         const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.next();
+        iterator.getNextFrame();
 
         return {
             response: ListMultiFrameCodec.decodeContainsNullable(iterator, DataCodec.decode),

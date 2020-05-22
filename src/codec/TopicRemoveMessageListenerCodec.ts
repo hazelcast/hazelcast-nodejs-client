@@ -51,7 +51,7 @@ export class TopicRemoveMessageListenerCodec {
 
     static decodeResponse(clientMessage: ClientMessage): TopicRemoveMessageListenerResponseParams {
         const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),

@@ -54,7 +54,7 @@ export class MapExecuteOnKeysCodec {
     static decodeResponse(clientMessage: ClientMessage): MapExecuteOnKeysResponseParams {
         const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.next();
+        iterator.getNextFrame();
 
         return {
             response: EntryListCodec.decode(iterator, DataCodec.decode, DataCodec.decode),

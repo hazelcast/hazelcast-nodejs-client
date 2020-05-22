@@ -58,7 +58,7 @@ export class TransactionalMapGetCodec {
     static decodeResponse(clientMessage: ClientMessage): TransactionalMapGetResponseParams {
         const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.next();
+        iterator.getNextFrame();
 
         return {
             response: CodecUtil.decodeNullable(iterator, DataCodec.decode),

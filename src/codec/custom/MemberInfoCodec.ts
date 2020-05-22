@@ -51,9 +51,9 @@ export class MemberInfoCodec {
 
     static decode(iterator: ForwardFrameIterator): MemberInfo {
         // begin frame
-        iterator.next();
+        iterator.getNextFrame();
 
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
         const uuid: UUID = FixSizedTypesCodec.decodeUUID(initialFrame.content, UUID_OFFSET);
         const liteMember: boolean = FixSizedTypesCodec.decodeBoolean(initialFrame.content, LITE_MEMBER_OFFSET);
         const address: Address = AddressCodec.decode(iterator);

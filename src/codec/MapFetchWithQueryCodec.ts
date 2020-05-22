@@ -58,7 +58,7 @@ export class MapFetchWithQueryCodec {
     static decodeResponse(clientMessage: ClientMessage): MapFetchWithQueryResponseParams {
         const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.next();
+        iterator.getNextFrame();
 
         return {
             results: ListMultiFrameCodec.decodeContainsNullable(iterator, DataCodec.decode),

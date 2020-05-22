@@ -52,7 +52,7 @@ export class MapKeySetWithPredicateCodec {
     static decodeResponse(clientMessage: ClientMessage): MapKeySetWithPredicateResponseParams {
         const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.next();
+        iterator.getNextFrame();
 
         return {
             response: ListMultiFrameCodec.decode(iterator, DataCodec.decode),

@@ -35,7 +35,7 @@ export class AnchorDataListHolderCodec {
 
     static decode(iterator: ForwardFrameIterator): AnchorDataListHolder {
         // begin frame
-        iterator.next();
+        iterator.getNextFrame();
         const anchorPageList: number[] = ListIntegerCodec.decode(iterator);
         const anchorDataList: Array<[Data, Data]> = EntryListCodec.decode(iterator, DataCodec.decode, DataCodec.decode);
 

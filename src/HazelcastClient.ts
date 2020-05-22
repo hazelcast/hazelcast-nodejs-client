@@ -150,12 +150,13 @@ export default class HazelcastClient {
         const proxyManager = this.proxyManager;
         return this.invocationService.invokeOnRandomTarget(clientMessage)
             .then((resp) => {
+                // TODO Java client destroys local instances of the destroyed proxies as a side effect. Should we do it too ?
                 const response = ClientGetDistributedObjectsCodec.decodeResponse(resp).response;
-                return response.map((objectInfo) => {
-                    // TODO value throws if the returned promise from the getOrCreate is not fullfiled yet.
-                    //  This needs to be fixed. Also, we should create local instances instead of making remote calls.
-                    return proxyManager.getOrCreateProxy(objectInfo.name, objectInfo.serviceName, false).value();
+                const promises = new Array<Promise<DistributedObject>>();
+                response.forEach((objectInfo) => {
+                   promises.push(proxyManager.getOrCreateProxy(objectInfo.name, objectInfo.serviceName, false));
                 });
+                return Promise.all(promises);
             });
     }
 
@@ -427,7 +428,7 @@ export default class HazelcastClient {
         const addressListProvided = networkConfig.addresses.length !== 0;
         const hazelcastCloudEnabled = networkConfig.cloudConfig.enabled;
         if (addressListProvided && hazelcastCloudEnabled) {
-            throw new IllegalStateError('Only one discovery method can be enabled at a time.'
+            throw new IllegalStateError('Only one discovery method can be enabled at a time. '
                 + 'Cluster members given explicitly: ' + addressListProvided
                 + ', hazelcast.cloud enabled: ' + hazelcastCloudEnabled);
         }

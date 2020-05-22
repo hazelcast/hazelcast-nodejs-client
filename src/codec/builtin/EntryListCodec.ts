@@ -44,14 +44,14 @@ export class EntryListCodec {
                         valueDecoder: (it: ForwardFrameIterator) => V): Array<[K, V]> {
         const result: Array<[K, V]> = [];
         // begin frame
-        iterator.next();
+        iterator.getNextFrame();
         while (!CodecUtil.nextFrameIsDataStructureEndFrame(iterator)) {
             const key = keyDecoder(iterator);
             const value = valueDecoder(iterator);
             result.push([key, value]);
         }
         // end frame
-        iterator.next();
+        iterator.getNextFrame();
         return result;
     }
 

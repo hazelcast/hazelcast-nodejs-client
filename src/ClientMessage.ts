@@ -47,11 +47,7 @@ export class Frame {
 
     constructor(content: Buffer, flags?: number) {
         this.content = content;
-        if (flags) {
-            this.flags = flags;
-        } else {
-            this.flags = DEFAULT_FLAGS;
-        }
+        this.flags = flags || DEFAULT_FLAGS;
     }
 
     getLength(): number {
@@ -88,34 +84,30 @@ export const NULL_FRAME = new Frame(Buffer.allocUnsafe(0), IS_NULL_FLAG);
 export const BEGIN_FRAME = new Frame(Buffer.allocUnsafe(0), BEGIN_DATA_STRUCTURE_FLAG);
 export const END_FRAME = new  Frame(Buffer.allocUnsafe(0), END_DATA_STRUCTURE_FLAG);
 
-export class ForwardFrameIterator {
-    private nextFrame: Frame;
-    constructor(startFrame: Frame) {
-        this.nextFrame = startFrame;
-    }
+export interface ForwardFrameIterator {
 
-    next(): Frame {
-        const result = this.nextFrame;
-        if (this.nextFrame != null) {
-            this.nextFrame = this.nextFrame.next;
-        }
-        return result;
-    }
+    /**
+     * Returns the next frame and consumes the iterator.
+     */
+    getNextFrame(): Frame;
 
-    hasNext(): boolean {
-        return this.nextFrame !== null;
-    }
+    /**
+     * Returns true if the iterator has a non-null next frame; false otherwise.
+     */
+    hasNextFrame(): boolean;
 
-    peekNext(): Frame {
-        return this.nextFrame;
-    }
+    /**
+     * Returns the next frame.
+     */
+    peekNextFrame(): Frame;
 }
 
-export class ClientMessage {
+export class ClientMessage implements ForwardFrameIterator {
     startFrame: Frame;
     endFrame: Frame;
     private retryable: boolean;
     private connection: ClientConnection;
+    private nextFrame: Frame;
 
     private constructor(startFrame?: Frame, endFrame?: Frame) {
         this.startFrame = startFrame;
@@ -139,6 +131,22 @@ export class ClientMessage {
         return this.startFrame;
     }
 
+    getNextFrame(): Frame {
+        const result = this.nextFrame;
+        if (this.nextFrame != null) {
+            this.nextFrame = this.nextFrame.next;
+        }
+        return result;
+    }
+
+    hasNextFrame(): boolean {
+        return this.nextFrame != null;
+    }
+
+    peekNextFrame(): Frame {
+        return this.nextFrame;
+    }
+
     add(frame: Frame): void {
         frame.next = null;
         if (this.startFrame == null) {
@@ -152,7 +160,8 @@ export class ClientMessage {
     }
 
     frameIterator(): ForwardFrameIterator {
-        return new ForwardFrameIterator(this.startFrame);
+        this.nextFrame = this.startFrame;
+        return this;
     }
 
     getMessageType(): number {

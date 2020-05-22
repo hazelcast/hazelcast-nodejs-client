@@ -75,7 +75,7 @@ export class ClientAuthenticationCustomCodec {
 
     static decodeResponse(clientMessage: ClientMessage): ClientAuthenticationCustomResponseParams {
         const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
 
         return {
             status: FixSizedTypesCodec.decodeByte(initialFrame.content, RESPONSE_STATUS_OFFSET),

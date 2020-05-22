@@ -48,7 +48,7 @@ export class SetSizeCodec {
 
     static decodeResponse(clientMessage: ClientMessage): SetSizeResponseParams {
         const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_RESPONSE_OFFSET),

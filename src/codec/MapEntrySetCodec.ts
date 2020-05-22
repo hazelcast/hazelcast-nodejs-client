@@ -51,7 +51,7 @@ export class MapEntrySetCodec {
     static decodeResponse(clientMessage: ClientMessage): MapEntrySetResponseParams {
         const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.next();
+        iterator.getNextFrame();
 
         return {
             response: EntryListCodec.decode(iterator, DataCodec.decode, DataCodec.decode),

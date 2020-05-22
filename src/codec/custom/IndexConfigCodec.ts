@@ -46,9 +46,9 @@ export class IndexConfigCodec {
 
     static decode(iterator: ForwardFrameIterator): IndexConfig {
         // begin frame
-        iterator.next();
+        iterator.getNextFrame();
 
-        const initialFrame = iterator.next();
+        const initialFrame = iterator.getNextFrame();
         const type: number = FixSizedTypesCodec.decodeInt(initialFrame.content, TYPE_OFFSET);
         const name: string = CodecUtil.decodeNullable(iterator, StringCodec.decode);
         const attributes: string[] = ListMultiFrameCodec.decode(iterator, StringCodec.decode);
