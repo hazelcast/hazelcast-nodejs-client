@@ -88,7 +88,7 @@ const { Client, Config } = require('hazelcast-client');
 const clientConfig = new Config.ClientConfig();
 
 // Customize the client configuration
-clientConfig.groupConfig.name = 'cluster-name';
+clientConfig.clusterName = 'cluster-name';
 clientConfig.networkConfig.addresses.push('10.90.0.2:5701');
 clientConfig.networkConfig.addresses.push('10.90.0.3:5701');
 

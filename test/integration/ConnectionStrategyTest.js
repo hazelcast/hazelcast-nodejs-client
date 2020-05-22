@@ -64,6 +64,18 @@ describe('ConnectionStrategyTest', function () {
             });
     });
 
+    it('client with async start throws after shutdown when there is no cluster', function () {
+        const config = new Config.ClientConfig();
+        config.connectionStrategyConfig.asyncStart = true;
+
+        return Client.newHazelcastClient(config)
+            .then((c) => {
+                client = c;
+                client.shutdown();
+                return expect(client.getMap(TestUtil.randomString())).to.be.rejectedWith(Errors.ClientNotActiveError);
+            })
+    });
+
     it('client with async start connects to cluster', function () {
         const config = new Config.ClientConfig();
 

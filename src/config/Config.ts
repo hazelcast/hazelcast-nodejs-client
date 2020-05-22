@@ -32,10 +32,11 @@ import {LogLevel} from '..';
 import {ILogger} from '../logging/ILogger';
 import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy';
 import {StringSerializationPolicy} from './StringSerializationPolicy';
-import {ConnectionStrategyConfig} from './ConnectionStrategyConfig';
+import {ConnectionStrategyConfig, ReconnectMode} from './ConnectionStrategyConfig';
 import {LoadBalancer} from '../LoadBalancer';
 import {IndexConfig} from './IndexConfig';
 import {IndexType} from './IndexType';
+import {ConnectionRetryConfig} from './ConnectionRetryConfig';
 
 const DEFAULT_CLUSTER_NAME = 'dev';
 
@@ -162,3 +163,9 @@ export {StringSerializationPolicy};
 export {IndexConfig};
 
 export {IndexType};
+
+export {ConnectionStrategyConfig};
+
+export {ReconnectMode};
+
+export {ConnectionRetryConfig};

@@ -139,7 +139,7 @@ describe('ClusterService', function () {
 
         HazelcastClient.newHazelcastClient(cfg).then(function (newClient) {
             newClient.shutdown();
-            done(new Error('Client falsely started with wrong group name'));
+            done(new Error('Client falsely started with wrong cluster name'));
         }).catch(function (err) {
             done();
         });
