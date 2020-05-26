@@ -113,7 +113,7 @@
                     "type": "object",
                     "properties": {
                         "discoveryToken": {
-                            "type": "string"
+                            "type": ["string", "null"]
                         },
                         "enabled": {
                             "type": "boolean",
@@ -128,6 +128,21 @@
                             "type": "boolean",
                             "default": false
                         },
+                        "sslOptions": {
+                            "anyOf": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "properties": {
+                                            "$ref": "#/definitions/propertiesObject"
+                                        }
+                                    }
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ]
+                        },
                         "factory": {
                             "anyOf": [
                                 {
@@ -140,6 +155,9 @@
                                             "$ref": "#/definitions/propertiesObject"
                                         }
                                     }
+                                },
+                                {
+                                    "type": "null"
                                 }
                             ]
                         }

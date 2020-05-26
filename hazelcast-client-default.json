@@ -25,7 +25,16 @@
         ],
         "smartRouting": true,
         "redoOperation": false,
-        "connectionTimeout": 5000
+        "connectionTimeout": 5000,
+        "ssl": {
+            "enabled": false,
+            "sslOptions": null,
+            "factory": null
+        },
+        "hazelcastCloud": {
+            "discoveryToken": null,
+            "enabled": false
+        }
     },
     "connectionStrategy": {
         "asyncStart": false,
