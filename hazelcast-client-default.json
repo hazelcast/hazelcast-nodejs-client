@@ -18,6 +18,7 @@
         "hazelcast.client.socket.no.delay": true,
         "hazelcast.client.shuffle.member.list": true
     },
+    "clientLabels": [],
     "network": {
         "clusterMembers": [
             "127.0.0.1"

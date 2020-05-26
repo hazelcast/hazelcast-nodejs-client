@@ -18,6 +18,10 @@
         "hazelcast.client.socket.no.delay": true,
         "hazelcast.client.shuffle.member.list": true
     },
+    "clientLabels": [
+        "role admin",
+        "region foo"
+    ],
     "network": {
         "clusterMembers": [
             "127.0.0.1",

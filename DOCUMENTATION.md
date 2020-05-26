@@ -3119,6 +3119,35 @@ cfg.customLogger = winstonAdapter;
 
 Note that it is not possible to configure custom logging via declarative configuration.
 
+## 7.10. Defining Client Labels
+
+Through the client labels, you can assign special roles for your clients and use these roles to perform some actions
+specific to those client connections.
+
+You can also group your clients using the client labels. These client groups can be blacklisted in the
+Hazelcast Management Center so that they can be prevented from connecting to a cluster.
+See the related section in the Hazelcast Management Center Reference Manual for more information on this topic.
+
+Declaratively, you can define the client labels using the `clientLabels` configuration element. See the below example.
+
+```json
+{
+    "clientLabels": [
+        "role admin",
+        "region foo"
+    ]
+}
+```
+
+The equivalent programmatic approach is shown below.
+
+```javascript
+var config = new Config.ClientConfig();
+
+config.labels.add("role admin");
+config.labels.add("region foo");
+```
+
 # 8. Securing Client Connection
 
 This chapter describes the security features of Hazelcast Node.js client. These include using TLS/SSL for connections between members and between clients and members, mutual authentication and credentials. These security features require **Hazelcast IMDG Enterprise** edition.

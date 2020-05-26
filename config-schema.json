@@ -82,7 +82,7 @@
         "properties": {
             "$ref": "#/definitions/propertiesObject"
         },
-        "labels": {
+        "clientLabels": {
             "type": "array",
             "uniqueItems": true,
             "items": {

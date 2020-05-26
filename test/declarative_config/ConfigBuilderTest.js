@@ -44,7 +44,7 @@ describe('ConfigBuilder Test', function () {
         expect(fullConfig.instanceName).to.equal('clientName');
     });
 
-    it('labels', function () {
+    it('clientLabels', function () {
         var labels = fullConfig.labels;
         expect(labels.size).to.equal(2);
         expect(labels.has('label1')).to.be.true;

@@ -76,8 +76,8 @@ export class ConfigBuilder {
                 this.clientConfig.instanceName = tryGetString(value);
             } else if (key === 'properties') {
                 this.handleProperties(value);
-            } else if (key === 'labels') {
-                this.handleLabels(value);
+            } else if (key === 'clientLabels') {
+                this.handleClientLabels(value);
             } else if (key === 'network') {
                 this.handleNetwork(value);
             } else if (key === 'connectionStrategy') {
@@ -127,7 +127,7 @@ export class ConfigBuilder {
         }
     }
 
-    private handleLabels(jsonObject: any): void {
+    private handleClientLabels(jsonObject: any): void {
         const labelsArray = tryGetArray(jsonObject);
         for (const index in labelsArray) {
             const label = labelsArray[index];

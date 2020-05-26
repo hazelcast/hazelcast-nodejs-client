@@ -18,7 +18,7 @@
         "hazelcast.client.socket.no.delay": false,
         "hazelcast.client.shuffle.member.list": false
     },
-    "labels": [
+    "clientLabels": [
         "label1",
         "label2"
     ],
