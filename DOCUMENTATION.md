@@ -60,6 +60,7 @@
     * [7.4.9. Using PN Counter](#749-using-pn-counter)
     * [7.4.10. Using Flake ID Generator](#7410-using-flake-id-generator)
       * [7.4.10.1. Configuring Flake ID Generator](#74101-configuring-flake-id-generator)
+    * [7.4.11. Using Lock, Semaphore and Atomic Long](#7411-using-lock-semaphore-and-atomic-long)
   * [7.5. Distributed Events](#75-distributed-events)
     * [7.5.1. Listening for Cluster Events](#751-listening-for-cluster-events)
       * [7.5.1.1. Membership Listener](#7511-membership-listener)
@@ -93,6 +94,8 @@
   * [7.9. Monitoring and Logging](#79-monitoring-and-logging)
     * [7.9.1. Enabling Client Statistics](#791-enabling-client-statistics)
     * [7.9.2. Logging Configuration](#792-logging-configuration)
+  * [7.10. Defining Client Labels](#710-defining-client-labels)
+  * [7.11. Defining Instance Name](#711-defining-instance-name)
 * [8. Securing Client Connection](#8-securing-client-connection)
   * [8.1. TLS/SSL](#81-tlsssl)
     * [8.1.1. TLS/SSL for Hazelcast Members](#811-tlsssl-for-hazelcast-members)
@@ -156,7 +159,7 @@ There are following options to start a Hazelcast IMDG cluster easily:
 
 * You can run standalone members by downloading and running JAR files from the website.
 * You can embed members to your Java projects.
-* For development purposes, you can use our [Docker images](https://hub.docker.com/r/hazelcast/hazelcast/).
+* You can use our [Docker images](https://hub.docker.com/r/hazelcast/hazelcast/).
 
 We are going to download JARs from the website and run a standalone member for this guide.
 
@@ -212,7 +215,7 @@ See the [Hazelcast IMDG Reference Manual](http://docs.hazelcast.org/docs/latest/
 
 ## 1.3. Downloading and Installing
 
-Hazelcast Node.js client is on NPM. Just add `hazelcast-client` as a dependency to your Node.js project, and you are good to go.
+Hazelcast Node.js client is on [NPM](https://www.npmjs.com/package/hazelcast-client). Just add `hazelcast-client` as a dependency to your Node.js project, and you are good to go.
 
 ```
 npm install hazelcast-client --save
@@ -319,7 +322,7 @@ let Client = require('hazelcast-client').Client;
 let Config = require('hazelcast-client').Config;
 let config = new Config.ClientConfig();
 Client.newHazelcastClient(config).then(function(client) {
-    // some operations
+    // Some operations
 });
 ```
 
@@ -592,7 +595,7 @@ var Config = require('hazelcast-client').Config;
 var cfg = new Config.ClientConfig();
 cfg.networkConfig.addresses.push('127.0.0.1:5701');
 HazelcastClient.newHazelcastClient(cfg).then(function (client) {
-    // some operations
+    // Some operations
 });
 ```
 
@@ -1327,7 +1330,7 @@ As explained in the [TLS/SSL section](#81-tlsssl), Hazelcast members have key st
 
 ## 5.6. Enabling Hazelcast Cloud Discovery
 
-The purpose of Hazelcast Cloud Discovery is to provide the clients to use IP addresses provided by `hazelcast orchestrator`. To enable Hazelcast Cloud Discovery, specify a token for the `discoveryToken` field and set the `enabled` field to `true`.
+The purpose of [Hazelcast Cloud](https://cloud.hazelcast.com/) Discovery is to provide the clients to use IP addresses provided by Hazelcast orchestrator. To enable Hazelcast Cloud Discovery, specify a token for the `discoveryToken` field and set the `enabled` field to `true`.
 
 The following are example configurations.
 
@@ -1442,11 +1445,11 @@ clientConfig.connectionStrategyConfig.connectionRetryConfig = connectionRetryCon
 
 The following are configuration element descriptions:
 
-* `initialBackoffMillis`: Specifies how long to wait (backoff), in milliseconds, after the first failure before retrying. Its default value is 1000 ms.
-* `maxBackoffMillis`: Specifies the upper limit for the backoff in milliseconds. Its default value is 30000 ms.
-* `multiplier`: Factor to multiply the backoff after a failed retry. Its default value is 1.
-* `clusterConnectTimeoutMillis`: Timeout value in milliseconds for the client to give up to connect to the current cluster Its default value is 20000.
-* `jitter`: Specifies by how much to randomize backoffs. Its default value is 0.
+* `initialBackoffMillis`: Specifies how long to wait (backoff), in milliseconds, after the first failure before retrying. Its default value is `1000` ms.
+* `maxBackoffMillis`: Specifies the upper limit for the backoff in milliseconds. Its default value is `30000` ms.
+* `multiplier`: Factor to multiply the backoff after a failed retry. Its default value is `1`.
+* `clusterConnectTimeoutMillis`: Timeout value in milliseconds for the client to give up to connect to the current cluster. Its default value is `20000`.
+* `jitter`: Specifies by how much to randomize backoffs. Its default value is `0`.
 
 A pseudo-code is as follows:
 
@@ -1471,9 +1474,9 @@ This chapter provides information on how you can use Hazelcast IMDG's data struc
 
 ## 7.1. Node.js Client API Overview
 
-Most of the functions in the API return `Promise`. Therefore, you need to be familiar with the concept of promises to use the Node.js client. If not, you can learn about them using various online resources, e.g., the [Promise JS](https://www.promisejs.org/) website.
-
-Promises provide a better way of working with callbacks. You can chain asynchronous functions by the `then()` function of promise. Also, you can use `async/await`, if you use Node.js 8 and higher versions.
+Most of the functions in the API return Promises. Therefore, you need to be familiar with the concept of
+promises to use the Node.js client. If not, you can learn about them using various online resources.
+Also, you can use `async/await`.
 
 If you are ready to go, let's start to use Hazelcast Node.js client.
 
@@ -1491,20 +1494,20 @@ The second step is initializing the `HazelcastClient` to be connected to the clu
 
 ```javascript
 Client.newHazelcastClient(clientConfig).then(function (client) {
-    // some operation
+    // Some operation
 });
 ```
 
-**This client object is your gateway to access all the Hazelcast distributed objects.**
+This client object is your gateway to access all the Hazelcast distributed objects.
 
 Let's create a map and populate it with some data, as shown below.
 
 ```javascript
 var map;
-// Get the Distributed Map from Cluster.
+// Get the Distributed Map from Cluster
 client.getMap('my-distributed-map').then(function (mp) {
     map = mp;
-    // Standard Put and Get.
+    // Standard Put and Get
     return map.put('key', 'value');
 }).then(function () {
     return map.get('key');
@@ -1528,32 +1531,41 @@ As the final step, if you are done with your client, you can shut it down as sho
 ## 7.2. Node.js Client Operation Modes
 
 The client has two operation modes because of the distributed nature of the data and cluster: smart and unisocket.
+Refer to the [Setting Smart Routing](#52-setting-smart-routing) section to see how to configure the client for
+different operation modes.
 
 ### 7.2.1. Smart Client
 
-In the smart mode, the clients connect to each cluster member. Since each data partition uses the well known and consistent hashing algorithm, each client can send an operation to the relevant cluster member, which increases the overall throughput and efficiency. Smart mode is the default mode.
+In the smart mode, the clients connect to each cluster member. Since each data partition uses the well-known and
+consistent hashing algorithm, each client can send an operation to the relevant cluster member,
+which increases the overall throughput and efficiency. Smart mode is the default mode.
 
 ### 7.2.2. Unisocket Client
 
-For some cases, the clients can be required to connect to a single member instead of each member in the cluster. Firewalls, security or some custom networking issues can be the reason for these cases.
+For some cases, the clients can be required to connect to a single member instead of each member in the cluster.
+Firewalls, security or some custom networking issues can be the reason for these cases.
 
-In the unisocket client mode, the client will only connect to one of the configured addresses. This single member will behave as a gateway to the other members. For any operation requested from the client, it will redirect the request to the relevant member and return the response back to the client returned from this member.
+In the unisocket client mode, the client will only connect to one of the configured addresses.
+This single member will behave as a gateway to the other members.
+For any operation requested from the client, it will redirect the request to the relevant member and return the
+response back to the client connected to this member.
 
 ## 7.3. Handling Failures
 
-There are two main failure cases you should be aware of. Below sections explain these and the configurations you can perform to achieve proper behavior.
+There are two main failure cases you should be aware of. Below sections explain these,
+and the configuration options you can use to achieve proper behavior.
 
 ### 7.3.1. Handling Client Connection Failure
 
 While the client is trying to connect initially to one of the members in the `ClientNetworkConfig.addressList`, all the members might not be available.
-Instead of giving up, throwing an error and stopping the client, the client retries to connect as configured which is
-described in the [Configuring Client Connection Retry](#61-configuring-client-connection-retry) section.
+Instead of giving up, throwing an error and stopping the client, the client retries to connect as configured.
+This behavior is described in the [Configuring Client Connection Retry](#61-configuring-client-connection-retry) section.
 
 The client executes each operation through the already established connection to the cluster. If this connection(s) disconnects or drops, the client will try to reconnect as configured.
 
 ### 7.3.2. Handling Retry-able Operation Failure
 
-While sending the requests to the related members, the operations can fail due to various reasons. Read-only operations are retried by default. If you want to enable retrying for the other operations, you can set the `redoOperation` to `true`. See the [Enabling Redo Operation section](#53-enabling-redo-operation).
+While sending requests to cluster members, the operations may fail due to various reasons. Read-only operations are retried by default. If you want to enable retrying for non-read-only operations, you can set the `redoOperation` to `true`. See the [Enabling Redo Operation section](#53-enabling-redo-operation).
 
 You can set a timeout for retrying the operations sent to a member. This can be provided by using the property `hazelcast.client.invocation.timeout.seconds` in `ClientConfig.properties`. The client will retry an operation within this given period, of course, if it is a read-only operation or you enabled the `redoOperation` as stated in the above paragraph. This timeout value is important when there is a failure resulted by either of the following causes:
 
@@ -1565,7 +1577,7 @@ When a connection problem occurs, an operation is retried if it is certain that 
 
 ## 7.4. Using Distributed Data Structures
 
-Most of the distributed data structures are supported by the Node.js client. In this chapter, you will learn how to use these distributed data structures.
+Most of the distributed data structures available in IMDG are supported by the Node.js client. In this chapter, you will learn how to use these distributed data structures.
 
 ### 7.4.1. Using Map
 
@@ -1575,10 +1587,10 @@ A Map usage example is shown below.
 
 ```javascript
 var map;
-// Get the Distributed Map from Cluster.
+// Get the Distributed Map from Cluster
 hz.getMap('my-distributed-map').then(function (mp) {
     map = mp;
-    // Standard Put and Get.
+    // Standard Put and Get
     return map.put('key', 'value');
 }).then(function () {
     return map.get('key');
@@ -1602,7 +1614,7 @@ A MultiMap usage example is shown below.
 
 ```javascript
 var multiMap;
-// Get the Distributed MultiMap from Cluster.
+// Get the Distributed MultiMap from Cluster
 hz.getMultiMap('my-distributed-multimap').then(function (mmp) {
     multiMap = mmp;
     // Put values in the map against the same key
@@ -1618,7 +1630,7 @@ hz.getMultiMap('my-distributed-multimap').then(function (mmp) {
     for (value of values) {
         console.log(value);
     }
-    // remove specific key/value pair
+    // Remove specific key/value pair
     return multiMap.remove('my-key', 'value2');
 });
 ```
@@ -1637,7 +1649,7 @@ var map;
 hz.getReplicatedMap('my-replicated-map').then(function (rmp) {
     map = rmp;
     // Put and Get a value from the Replicated Map
-    // key/value replicated to all members
+    // Key/value replicated to all members
     return map.put('key', 'value');
 }).then(function (replacedValue) {
     console.log('replaced value = ' + replacedValue); // Will be null as its first update
@@ -1691,7 +1703,7 @@ A Set usage example is shown below.
 
 ```javascript
 var set;
-// Get the Distributed Set from Cluster.
+// Get the Distributed Set from Cluster
 hz.getSet('my-distributed-set').then(function (s) {
     set = s;
     // Add items to the set with duplicates
@@ -1724,7 +1736,7 @@ A List usage example is shown below.
 
 ```javascript
 var list;
-// Get the Distributed List from Cluster.
+// Get the Distributed List from Cluster
 hz.getList('my-distributed-list').then(function (l) {
     list = l;
     // Add elements to the list
@@ -1762,8 +1774,8 @@ hz.getRingbuffer('rb').then(function (buffer) {
 }).then(function () {
     return rb.add(200);
 }).then(function (value) {
-    // we start from the oldest item.
-    // if you want to start from the next item, call rb.tailSequence()+1
+    // We start from the oldest item.
+    // If you want to start from the next item, call rb.tailSequence()+1
     return rb.headSequence();
 }).then(function (sequence) {
     return rb.readOne(sequence).then(function (value) {
@@ -1809,7 +1821,7 @@ You may configure `ReliableTopic`s as the following:
         {
             "name": "rt1",
             "readBatchSize": 35,
-            "overloadPolicy": "discard_newest"
+            "overloadPolicy": "DISCARD_NEWEST"
         }
     ]
 }
@@ -1831,7 +1843,7 @@ config.reliableTopicConfigs['rt1'] = reliableTopicConfig;
 The following are the descriptions of configuration elements and attributes:
 
 * `name`: Name of your Reliable Topic.
-* `readBatchSize`: Minimum number of messages that Reliable Topic tries to read in batches. Its default value is 10.
+* `readBatchSize`: Minimum number of messages that Reliable Topic tries to read in batches. Its default value is `10`.
 * `overloadPolicy`: Policy to handle an overloaded topic. Available values are `DISCARD_OLDEST`, `DISCARD_NEWEST`, `BLOCK` and `ERROR`. Its default value is `BLOCK`. See [Slow Consumers](https://docs.hazelcast.org/docs/latest/manual/html-single/#slow-consumers) for definitions of these policies.
 
 ### 7.4.9. Using PN Counter
@@ -1864,7 +1876,7 @@ hz.getPNCounter('myPNCounter').then(function (counter) {
 
 ### 7.4.10. Using Flake ID Generator
 
-Hazelcast `FlakeIdGenerator` is used to generate cluster-wide unique identifiers. Generated identifiers are long primitive values and are k-ordered (roughly ordered). IDs are in the range from 0 to `2^63-1` (maximum signed long value). For details, see the [FlakeIdGenerator section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#flakeidgenerator) in the Hazelcast IMDG Reference Manual.
+Hazelcast `FlakeIdGenerator` is used to generate cluster-wide unique identifiers. Generated identifiers are long primitive values and are k-ordered (roughly ordered). IDs are in the range from `0` to `2^63-1` (maximum value for Java's `long` type). For details, see the [FlakeIdGenerator section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#flakeidgenerator) in the Hazelcast IMDG Reference Manual.
 
 A Flake ID Generator usage example is shown below.
 
@@ -1912,8 +1924,18 @@ config.flakeIdGeneratorConfigs['flakeidgenerator'] = flakeIdGeneratorConfig;
 The following are the descriptions of configuration elements and attributes:
 
 * `name`: Name of your Flake ID Generator.
-* `prefetchCount`: Count of IDs which are pre-fetched on the background when one call to `FlakeIdGenerator.newId()` is made. Its value must be in the range 1 -100,000. Its default value is 100.
-* `prefetchValidityMillis`: Specifies for how long the pre-fetched IDs can be used. After this time elapses, a new batch of IDs are fetched. Time unit is milliseconds. Its default value is 600,000 milliseconds (10 minutes). The IDs contain a timestamp component, which ensures a rough global ordering of them. If an ID is assigned to an object that was created later, it will be out of order. If ordering is not important, set this value to 0.
+* `prefetchCount`: Count of IDs which are pre-fetched on the background when one call to `FlakeIdGenerator.newId()` is made. Its value must be in the range `1` - `100,000`. Its default value is `100`.
+* `prefetchValidityMillis`: Specifies for how long the pre-fetched IDs can be used. After this time elapses, a new batch of IDs are fetched. Time unit is milliseconds. Its default value is `600,000` milliseconds (`10` minutes). The IDs contain a timestamp component, which ensures a rough global ordering of them. If an ID is assigned to an object that was created later, it will be out of order. If ordering is not important, set this value to `0`.
+
+### 7.4.11. Using Lock, Semaphore and Atomic Long
+
+Hazelcast IMDG 4.0 introduces CP concurrency primitives with respect to the [CAP principle](http://awoc.wolski.fi/dlib/big-data/Brewer_podc_keynote_2000.pdf), i.e., they always
+maintain [linearizability](https://aphyr.com/posts/313-strong-consistency-models) and prefer consistency to availability during network partitions and client or server failures.
+
+These new implementations are accessed using the [CP Subsystem](https://docs.hazelcast.org/docs/latest/manual/html-single/#cp-subsystem)
+which cannot be used with the Node.js client yet. We plan to implement support for the CP Subsystem in the upcoming 4.0 release.
+In the meantime, since there is no way to access old non-CP primitives using IMDG 4.x, we removed their implementations,
+code samples and documentations. They will be back once we implement them.
 
 ## 7.5. Distributed Events
 
@@ -1949,9 +1971,9 @@ var membershipListener = {
 client.clusterService.addMembershipListener(membershipListener);
 ```
 
-Also, if you want to receive the available members when the client connects to cluster you may register an
+Also, if you want to receive the list of available members when the client connects to cluster you may register an
 `InitialMembershipListener`. This listener receives an only-once `InitialMembershipEvent` when the member list becomes
-available. After that event has been received, the listener will receive the normal `MembershipEvent`s.
+available. After the event has been received, the listener will receive the normal `MembershipEvent`s.
 
 The following is an initial membership listener registration by using the `config.listeners.addMembershipListener()` function.
 
@@ -1988,9 +2010,9 @@ client.addDistributedObjectListener(function (distributedObjectEvent) {
     );
 }).then(function () {
     var mapname = 'test';
-    // this causes a created event
+    // This causes a created event
     client.getMap(mapname);
-    // this causes no event because map was already created
+    // This causes no event because map was already created
     client.getMap(mapname);
 });
 ```
@@ -2347,7 +2369,7 @@ hazelcastClient.getMap('my-distributed-map').then(function (mp) {
 }).then(function () {
     return map.get('key');
 }).then(function (value) {
-    console.log(value); // processed
+    console.log(value); // Processed
 });
 ```
 
@@ -2437,7 +2459,7 @@ client.getMap('employee').then(function (mp) {
     var predicate = Predicates.and(Predicates.equal('active', true), Predicates.lessThan('age', 30));
     return map.valuesWithPredicate(predicate);
 }).then(function (employees) {
-    // some operations
+    // Some operations
 });
 ```
 
@@ -2455,7 +2477,7 @@ client.getMap('employee').then(function (mp) {
     map = mp;
     return map.valuesWithPredicate(new SqlPredicate('active AND age < 30'));
 }).then(function (employees) {
-    // some operations
+    // Some operations
 });
 ```
 
@@ -2625,7 +2647,7 @@ return hz.getMap('departmentsMap').then(function (map) {
         return [index, department];
     }));
 }).then(function () {
-    // The following query finds all the departments that have a person named "Peter" working in them.
+    // The following query finds all the departments that have a person named "Peter" working in them
     return departmentsMap.valuesWithPredicate(Predicates.equal('people[any].name', 'Peter'))
 }).then(function (departmentWithPeter) {
     departmentWithPeter.toArray().forEach(function (department) {
@@ -2713,7 +2735,7 @@ hazelcastClient.getMap('students').then(function (mp) {
     // Retrieve third page
     return map.valuesWithPredicate(pagingPredicate)
 }).then(function (values) {
-    // some operations
+    // Some operations
 ...
 
     // Set up next page
@@ -2722,7 +2744,7 @@ hazelcastClient.getMap('students').then(function (mp) {
     // Retrieve next page
     return map.valuesWithPredicate(pagingPredicate);
 }).then(function (values) {
-    // some operations
+    // Some operations
 });
 ```
 
@@ -2765,7 +2787,7 @@ hz.getMap('employees').then(function (mp) {
 }).then(function () {
     return map.aggregate(Aggregators.count());
 }).then(function (count) {
-    console.log('There are ' + count + ' employees.'); // There are 3 employees.
+    console.log('There are ' + count + ' employees.'); // There are 3 employees
     return map.aggregateWithPredicate(Aggregators.count(), Predicates.greaterThan('this', 25));
 }).then(function (count) {
     console.log('There are ' + count + ' employees older than 25.'); // There are 2 employees older than 25.
@@ -2796,7 +2818,7 @@ Client.newHazelcastClient().then(function (client) {
 }).then(function (mp) {
     mapC = mp;
 
-    // since map names are different, operation is manipulating
+    // Since map names are different, operation is manipulating
     // different entries, but the operation takes place on the
     // same member since the keys ('key1') are the same
     return mapA.put('key1', 'value1');
@@ -2805,7 +2827,7 @@ Client.newHazelcastClient().then(function (client) {
 }).then(function (res) {
     return mapC.remove('key1');
 }).then(function () {
-    // lock operation is still execute on the same member
+    // Lock operation is still execute on the same member
     // of the cluster since the key ("key1") is same
     return hazelcastClient.getLock('key1');
 }).then(function (l) {
@@ -2814,7 +2836,7 @@ Client.newHazelcastClient().then(function (client) {
 });
 ```
 
-When the keys are the same, entries are stored on the same member. However, we sometimes want to have the related entries stored on the same member, such as a customer and his/her order entries. We would have a customers map with `customerId` as the key and an orders map with `orderId` as the key. Since `customerId` and `orderId` are different keys, a customer and his/her orders may fall into different members in your cluster. So how can we have them stored on the same member? We create an affinity between the customer and orders. If we make them part of the same partition then these entries will be co-located. We achieve this by making `OrderKey`s `PartitionAware`.
+When the keys are the same, entries are stored on the same member. However, we sometimes want to have the related entries stored on the same member, such as a customer and their order entries. We would have a customers map with `customerId` as the key and an orders map with `orderId` as the key. Since `customerId` and `orderId` are different keys, a customer and their orders may fall into different members in your cluster. So how can we have them stored on the same member? We create an affinity between the customer and orders. If we make them part of the same partition then these entries will be co-located. We achieve this by making `OrderKey`s `PartitionAware`.
 
 ```javascript
 function OrderKey(orderId, customerId) {
@@ -2843,10 +2865,10 @@ Client.newHazelcastClient().then(function (client) {
 }).then(function (mp) {
     mapOrders = mp;
 
-    // create the customer entry with customer id = 1
+    // Create the customer entry with customer id = 1
     return mapCustomers.put(1, customer);
 }).then(function () {
-    // now create the orders for this customer
+    // Now create the orders for this customer
     return mapOrders.putAll([
         [new OrderKey(21, 1), order],
         [new OrderKey(22, 1), order],
@@ -3126,7 +3148,7 @@ specific to those client connections.
 
 You can also group your clients using the client labels. These client groups can be blacklisted in the
 Hazelcast Management Center so that they can be prevented from connecting to a cluster.
-See the related section in the Hazelcast Management Center Reference Manual for more information on this topic.
+See the [related section](https://docs.hazelcast.org/docs/management-center/latest/manual/html/index.html#changing-cluster-client-filtering) in the Hazelcast Management Center Reference Manual for more information on this topic.
 
 Declaratively, you can define the client labels using the `clientLabels` configuration element. See the below example.
 
@@ -3146,6 +3168,27 @@ var config = new Config.ClientConfig();
 
 config.labels.add("role admin");
 config.labels.add("region foo");
+```
+
+## 7.11. Defining Instance Name
+
+Each client has a name associated with it. By default, it is set to `hz.client_${CLIENT_ID}`.
+`CLIENT_ID` starts from `0` and it is incremented by `1` for each new client. This id is incremented and set by the
+client, so it may not be unique between different clients used by different applications.
+
+Declaratively, you can set the client name using the `instanceName` configuration element.
+
+```json
+{
+    "instanceName": "blue_client_0"
+}
+```
+The equivalent programmatic approach is shown below.
+
+```javascript
+var config = new Config.ClientConfig();
+
+config.name = "blue_client_0";
 ```
 
 # 8. Securing Client Connection
