@@ -43,8 +43,7 @@
                     "properties": {
                         "type": {
                             "enum": [
-                                "lifecycle",
-                                "map"
+                                "lifecycle"
                             ]
                         }
                     }
@@ -122,12 +121,39 @@
                     "minimum": 0,
                     "default": 2
                 },
+                "hazelcastCloud": {
+                    "type": "object",
+                    "properties": {
+                        "discoveryToken": {
+                            "type": ["string", "null"]
+                        },
+                        "enabled": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    }
+                },
                 "ssl": {
                     "type": "object",
                     "properties": {
                         "enabled": {
                             "type": "boolean",
                             "default": false
+                        },
+                        "sslOptions": {
+                            "anyOf": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "properties": {
+                                            "$ref": "#/definitions/propertiesObject"
+                                        }
+                                    }
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ]
                         },
                         "factory": {
                             "anyOf": [
@@ -141,6 +167,9 @@
                                             "$ref": "#/definitions/propertiesObject"
                                         }
                                     }
+                                },
+                                {
+                                    "type": "null"
                                 }
                             ]
                         }
