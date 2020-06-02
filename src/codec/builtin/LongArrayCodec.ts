@@ -27,7 +27,7 @@ export class LongArrayCodec {
         for (let i = 0; i < itemCount; i++) {
             FixSizedTypesCodec.encodeLong(frame.content, i * BitsUtil.LONG_SIZE_IN_BYTES, array[i]);
         }
-        clientMessage.add(frame);
+        clientMessage.addFrame(frame);
     }
 
     static decode(iterator: ForwardFrameIterator): Long[] {

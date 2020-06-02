@@ -25,12 +25,12 @@ import {AnchorDataListHolder} from '../../protocol/AnchorDataListHolder';
 
 export class AnchorDataListHolderCodec {
     static encode(clientMessage: ClientMessage, anchorDataListHolder: AnchorDataListHolder): void {
-        clientMessage.add(BEGIN_FRAME.copy());
+        clientMessage.addFrame(BEGIN_FRAME.copy());
 
         ListIntegerCodec.encode(clientMessage, anchorDataListHolder.anchorPageList);
         EntryListCodec.encode(clientMessage, anchorDataListHolder.anchorDataList, DataCodec.encode, DataCodec.encode);
 
-        clientMessage.add(END_FRAME.copy());
+        clientMessage.addFrame(END_FRAME.copy());
     }
 
     static decode(iterator: ForwardFrameIterator): AnchorDataListHolder {

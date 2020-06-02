@@ -59,8 +59,7 @@ describe('ClientMessage', function () {
         originalMessage.setRetryable(true);
         originalMessage.add(new Frame(Buffer.allocUnsafe(20), IS_FINAL_FLAG));
 
-        const newCorrelationId = 2;
-        const copyMessage = originalMessage.copyWithNewCorrelationId(newCorrelationId);
+        const copyMessage = originalMessage.copyWithNewCorrelationId();
 
         // get the frame after the start frame for comparison
         const originalIterator = originalMessage.frameIterator();
@@ -80,7 +79,7 @@ describe('ClientMessage', function () {
         expect(originalMessage.getPartitionId()).to.equal(copyMessage.getPartitionId());
         expect(originalMessage.getTotalFrameLength()).to.equal(copyMessage.getTotalFrameLength());
         expect(originalMessage.getNumberOfBackupAcks()).to.equal(copyMessage.getNumberOfBackupAcks());
-        expect(copyMessage.getCorrelationId()).to.equal(2);
+        expect(copyMessage.getCorrelationId()).to.equal(-1);
     });
 
     it('should be fast forwardable when extended', function () {

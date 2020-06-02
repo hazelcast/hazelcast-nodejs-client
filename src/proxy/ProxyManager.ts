@@ -41,6 +41,7 @@ import {ILogger} from '../logging/ILogger';
 import {ClientMessage} from '../ClientMessage';
 import {UUID} from '../core/UUID';
 import {ClientCreateProxiesCodec} from '../codec/ClientCreateProxiesCodec';
+import {BaseProxy} from './BaseProxy';
 
 export class ProxyManager {
     public static readonly MAP_SERVICE: string = 'hz:impl:mapService';
@@ -104,8 +105,9 @@ export class ProxyManager {
                     this.proxies.delete(fullName);
                     deferred.reject(error);
                 });
+            } else {
+                deferred.resolve(newProxy);
             }
-            this.proxies.set(fullName, deferred.promise);
             return deferred.promise;
         } else {
             newProxy = new this.service[serviceName](this.client, serviceName, name);
@@ -118,6 +120,8 @@ export class ProxyManager {
                 this.proxies.delete(fullName);
                 deferred.reject(error);
             });
+        } else {
+            deferred.resolve(newProxy);
         }
 
         return deferred.promise;
@@ -143,7 +147,15 @@ export class ProxyManager {
             .return();
     }
 
-    destroyProxy(name: string, serviceName: string): Promise<void> {
+    public getDistributedObjects(): Promise<DistributedObject[]> {
+        const promises = new Array<Promise<DistributedObject>>();
+        Array.from(this.proxies.values()).forEach((proxy) => {
+            promises.push(proxy);
+        });
+        return Promise.all(promises);
+    }
+
+    public destroyProxy(name: string, serviceName: string): Promise<void> {
         this.proxies.delete(serviceName + name);
         const clientMessage = ClientDestroyProxyCodec.encodeRequest(name, serviceName);
         clientMessage.setPartitionId(-1);
@@ -151,7 +163,18 @@ export class ProxyManager {
             .return();
     }
 
-    addDistributedObjectListener(distributedObjectListener: DistributedObjectListener): Promise<string> {
+    public destroyProxyLocally(namespace: string): Promise<void> {
+        const proxy = this.proxies.get(namespace);
+        if (proxy != null) {
+            this.proxies.delete(namespace);
+            return proxy.then((distributedObject) => {
+                return (distributedObject as BaseProxy).destroyLocally();
+            });
+        }
+        return Promise.resolve();
+    }
+
+    public addDistributedObjectListener(distributedObjectListener: DistributedObjectListener): Promise<string> {
         const handler = function (clientMessage: ClientMessage): void {
             const converterFunc = (objectName: string, serviceName: string, eventType: string) => {
                 eventType = eventType.toLowerCase();
@@ -164,7 +187,7 @@ export class ProxyManager {
         return this.client.getListenerService().registerListener(codec, handler);
     }
 
-    removeDistributedObjectListener(listenerId: string): Promise<boolean> {
+    public removeDistributedObjectListener(listenerId: string): Promise<boolean> {
         return this.client.getListenerService().deregisterListener(listenerId);
     }
 

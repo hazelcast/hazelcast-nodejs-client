@@ -31,7 +31,7 @@ export class EntryListUUIDLongCodec {
             FixSizedTypesCodec.encodeUUID(frame.content, i * ENTRY_SIZE_IN_BYTES, entries[i][0]);
             FixSizedTypesCodec.encodeLong(frame.content, i * ENTRY_SIZE_IN_BYTES + BitsUtil.UUID_SIZE_IN_BYTES, entries[i][1]);
         }
-        clientMessage.add(frame);
+        clientMessage.addFrame(frame);
     }
 
     static decode(iterator: ForwardFrameIterator): Array<[UUID, Long]> {

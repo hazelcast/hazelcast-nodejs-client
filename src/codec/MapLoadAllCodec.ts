@@ -38,7 +38,7 @@ export class MapLoadAllCodec {
         FixSizedTypesCodec.encodeInt(initialFrame.content, MESSAGE_TYPE_OFFSET, REQUEST_MESSAGE_TYPE);
         FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
         FixSizedTypesCodec.encodeBoolean(initialFrame.content, REQUEST_REPLACE_EXISTING_VALUES_OFFSET, replaceExistingValues);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         StringCodec.encode(clientMessage, name);
         return clientMessage;

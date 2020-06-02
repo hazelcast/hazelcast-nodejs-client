@@ -22,12 +22,12 @@ import {DistributedObjectInfo} from '../../DistributedObjectInfo';
 
 export class DistributedObjectInfoCodec {
     static encode(clientMessage: ClientMessage, distributedObjectInfo: DistributedObjectInfo): void {
-        clientMessage.add(BEGIN_FRAME.copy());
+        clientMessage.addFrame(BEGIN_FRAME.copy());
 
         StringCodec.encode(clientMessage, distributedObjectInfo.serviceName);
         StringCodec.encode(clientMessage, distributedObjectInfo.name);
 
-        clientMessage.add(END_FRAME.copy());
+        clientMessage.addFrame(END_FRAME.copy());
     }
 
     static decode(iterator: ForwardFrameIterator): DistributedObjectInfo {

@@ -45,7 +45,7 @@ export class QueueOfferCodec {
         FixSizedTypesCodec.encodeInt(initialFrame.content, MESSAGE_TYPE_OFFSET, REQUEST_MESSAGE_TYPE);
         FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
         FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_TIMEOUT_MILLIS_OFFSET, timeoutMillis);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         StringCodec.encode(clientMessage, name);
         DataCodec.encode(clientMessage, value);

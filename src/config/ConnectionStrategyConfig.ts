@@ -34,7 +34,7 @@ export enum ReconnectMode {
 
     /**
      * Reconnect to cluster without blocking invocations. Invocations will receive
-     * {@link ClientOfflineError }
+     * {@link ClientOfflineError}
      */
     ASYNC = 'ASYNC',
 }

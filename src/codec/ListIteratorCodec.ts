@@ -42,7 +42,7 @@ export class ListIteratorCodec {
         const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
         FixSizedTypesCodec.encodeInt(initialFrame.content, MESSAGE_TYPE_OFFSET, REQUEST_MESSAGE_TYPE);
         FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         StringCodec.encode(clientMessage, name);
         return clientMessage;

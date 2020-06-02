@@ -44,12 +44,12 @@ export class PartitionService {
     }
 
     /**
-     * The partitions can be empty on the response, client will not apply the empty partition table,
+     * The partitions can be empty on the response, client will not apply the empty partition table.
      */
     public handlePartitionViewEvent(connection: ClientConnection, partitions: Array<[UUID, number[]]>,
                                     partitionStateVersion: number): void {
         this.logger.debug('PartitionService',
-            'Handling new partition table with  partitionStateVersion: ' + partitionStateVersion);
+            'Handling new partition table with partitionStateVersion: ' + partitionStateVersion);
         if (!this.shouldBeApplied(connection, partitions, partitionStateVersion, this.partitionTable)) {
             return;
         }
@@ -61,7 +61,7 @@ export class PartitionService {
 
     /**
      * @param partitionId
-     * @return the owner of the partition or undefined if a partition is not assigned yet
+     * @return the owner of the partition or `undefined` if a partition is not assigned yet
      */
     public getPartitionOwner(partitionId: number): UUID {
         return this.getPartitions().get(partitionId);
@@ -97,15 +97,6 @@ export class PartitionService {
      */
     public getPartitionCount(): number {
         return this.partitionCount;
-    }
-
-    /**
-     * Resets the partition table to initial state.
-     */
-    public reset(): void {
-        this.partitionTable.partitions = new Map<number, UUID>();
-        this.partitionTable.connection = null;
-        this.partitionTable.partitionStateVersion = -1;
     }
 
     /**

@@ -46,7 +46,7 @@ export class MapFetchWithQueryCodec {
         FixSizedTypesCodec.encodeInt(initialFrame.content, MESSAGE_TYPE_OFFSET, REQUEST_MESSAGE_TYPE);
         FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
         FixSizedTypesCodec.encodeInt(initialFrame.content, REQUEST_BATCH_OFFSET, batch);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         StringCodec.encode(clientMessage, name);
         EntryListIntegerIntegerCodec.encode(clientMessage, iterationPointers);

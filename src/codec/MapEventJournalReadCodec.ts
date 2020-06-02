@@ -56,7 +56,7 @@ export class MapEventJournalReadCodec {
         FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_START_SEQUENCE_OFFSET, startSequence);
         FixSizedTypesCodec.encodeInt(initialFrame.content, REQUEST_MIN_SIZE_OFFSET, minSize);
         FixSizedTypesCodec.encodeInt(initialFrame.content, REQUEST_MAX_SIZE_OFFSET, maxSize);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         StringCodec.encode(clientMessage, name);
         CodecUtil.encodeNullable(clientMessage, predicate, DataCodec.encode);

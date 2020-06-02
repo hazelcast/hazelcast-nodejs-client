@@ -30,7 +30,7 @@ export class EntryListIntegerLongCodec {
             FixSizedTypesCodec.encodeInt(frame.content, i * ENTRY_SIZE_IN_BYTES, entries[i][0]);
             FixSizedTypesCodec.encodeLong(frame.content, i * ENTRY_SIZE_IN_BYTES + BitsUtil.INT_SIZE_IN_BYTES, entries[i][1]);
         }
-        clientMessage.add(frame);
+        clientMessage.addFrame(frame);
     }
 
     static decode(iterator: ForwardFrameIterator): Array<[number, Long]> {

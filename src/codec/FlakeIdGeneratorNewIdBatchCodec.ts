@@ -47,7 +47,7 @@ export class FlakeIdGeneratorNewIdBatchCodec {
         FixSizedTypesCodec.encodeInt(initialFrame.content, MESSAGE_TYPE_OFFSET, REQUEST_MESSAGE_TYPE);
         FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
         FixSizedTypesCodec.encodeInt(initialFrame.content, REQUEST_BATCH_SIZE_OFFSET, batchSize);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         StringCodec.encode(clientMessage, name);
         return clientMessage;

@@ -15,15 +15,16 @@
  */
 
 import {MembershipListener} from '../core/MembershipListener';
+import {LifecycleState} from '../LifecycleService';
 
 /**
  * Configurations for LifecycleListeners. These are registered as soon as client started.
  */
 export class ListenerConfig {
-    lifecycleListeners: Function[] = [];
+    lifecycleListeners: Array<(state: LifecycleState) => void> = [];
     membershipListeners: MembershipListener[] = [];
 
-    addLifecycleListener(listener: Function): void {
+    addLifecycleListener(listener: (state: LifecycleState) => void): void {
         this.lifecycleListeners.push(listener);
     }
 
@@ -31,7 +32,7 @@ export class ListenerConfig {
         this.membershipListeners.push(listener);
     }
 
-    getLifecycleListeners(): Function[] {
+    getLifecycleListeners(): Array<(state: LifecycleState) => void> {
         return this.lifecycleListeners;
     }
 

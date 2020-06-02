@@ -24,12 +24,12 @@ export class EntryListUUIDListIntegerCodec {
     static encode(clientMessage: ClientMessage, entries: Array<[UUID, number[]]>): void {
         const entryCount = entries.length;
         const keys = new Array<UUID>(entryCount);
-        clientMessage.add(BEGIN_FRAME.copy());
+        clientMessage.addFrame(BEGIN_FRAME.copy());
         for (let i = 0; i < entryCount; i++) {
             keys[i] = entries[i][0];
             ListIntegerCodec.encode(clientMessage, entries[i][1]);
         }
-        clientMessage.add(END_FRAME.copy());
+        clientMessage.addFrame(END_FRAME.copy());
         ListUUIDCodec.encode(clientMessage, keys);
     }
 

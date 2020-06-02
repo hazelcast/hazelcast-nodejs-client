@@ -21,14 +21,14 @@ import {CodecUtil} from './CodecUtil';
 
 export class DataCodec {
     static encode(clientMessage: ClientMessage, data: Data): void {
-        clientMessage.add(new Frame(data.toBuffer()));
+        clientMessage.addFrame(new Frame(data.toBuffer()));
     }
 
     static encodeNullable(clientMessage: ClientMessage, data: Data): void {
         if (data === null) {
-            clientMessage.add(NULL_FRAME.copy());
+            clientMessage.addFrame(NULL_FRAME.copy());
         } else {
-            clientMessage.add(new Frame(data.toBuffer()));
+            clientMessage.addFrame(new Frame(data.toBuffer()));
         }
     }
 

@@ -28,15 +28,15 @@ const INITIAL_FRAME_SIZE = PORT_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
 export class AddressCodec {
     static encode(clientMessage: ClientMessage, address: Address): void {
-        clientMessage.add(BEGIN_FRAME.copy());
+        clientMessage.addFrame(BEGIN_FRAME.copy());
 
         const initialFrame = new Frame(Buffer.allocUnsafe(INITIAL_FRAME_SIZE));
         FixSizedTypesCodec.encodeInt(initialFrame.content, PORT_OFFSET, address.port);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         StringCodec.encode(clientMessage, address.host);
 
-        clientMessage.add(END_FRAME.copy());
+        clientMessage.addFrame(END_FRAME.copy());
     }
 
     static decode(iterator: ForwardFrameIterator): Address {

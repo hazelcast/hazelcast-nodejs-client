@@ -165,6 +165,47 @@
                 }
             }
         },
+        "connectionStrategy": {
+            "type": "object",
+            "properties": {
+                "asyncStart": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "reconnectMode": {
+                    "enum": [
+                        "on",
+                        "off",
+                        "async"
+                    ]
+                },
+                "connectionRetry": {
+                    "type": "object",
+                    "properties": {
+                        "initialBackoffMillis": {
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "maxBackoffMillis": {
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "multiplier": {
+                            "type": "number",
+                            "minimum": 1
+                        },
+                        "clusterConnectTimeoutMillis": {
+                            "type": "number"
+                        },
+                        "jitter": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                        }
+                    }
+                }
+            }
+        },
         "listeners": {
             "type": "array",
             "items": {

@@ -31,17 +31,17 @@ const INITIAL_FRAME_SIZE = ERROR_CODE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
 export class ErrorHolderCodec {
     static encode(clientMessage: ClientMessage, errorHolder: ErrorHolder): void {
-        clientMessage.add(BEGIN_FRAME.copy());
+        clientMessage.addFrame(BEGIN_FRAME.copy());
 
         const initialFrame = new Frame(Buffer.allocUnsafe(INITIAL_FRAME_SIZE));
         FixSizedTypesCodec.encodeInt(initialFrame.content, ERROR_CODE_OFFSET, errorHolder.errorCode);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         StringCodec.encode(clientMessage, errorHolder.className);
         CodecUtil.encodeNullable(clientMessage, errorHolder.message, StringCodec.encode);
         ListMultiFrameCodec.encode(clientMessage, errorHolder.stackTraceElements, StackTraceElementCodec.encode);
 
-        clientMessage.add(END_FRAME.copy());
+        clientMessage.addFrame(END_FRAME.copy());
     }
 
     static decode(iterator: ForwardFrameIterator): ErrorHolder {

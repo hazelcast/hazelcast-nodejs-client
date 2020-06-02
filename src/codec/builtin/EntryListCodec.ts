@@ -21,19 +21,19 @@ export class EntryListCodec {
     static encode<K, V>(clientMessage: ClientMessage, entries: Array<[K, V]>,
                         keyEncoder: (msg: ClientMessage, key: K) => void,
                         valueEncoder: (msg: ClientMessage, value: V) => void): void {
-        clientMessage.add(BEGIN_FRAME.copy());
+        clientMessage.addFrame(BEGIN_FRAME.copy());
         for (let i = 0, n = entries.length; i < n; i++) {
             keyEncoder(clientMessage, entries[i][0]);
             valueEncoder(clientMessage, entries[i][1]);
         }
-        clientMessage.add(END_FRAME.copy());
+        clientMessage.addFrame(END_FRAME.copy());
     }
 
     static encodeNullable<K, V>(clientMessage: ClientMessage, entries: Array<[K, V]>,
                                 keyEncoder: (msg: ClientMessage, key: K) => void,
                                 valueEncoder: (msg: ClientMessage, value: V) => void): void {
         if (entries === null) {
-            clientMessage.add(NULL_FRAME.copy());
+            clientMessage.addFrame(NULL_FRAME.copy());
         } else {
             this.encode(clientMessage, entries, keyEncoder, valueEncoder);
         }

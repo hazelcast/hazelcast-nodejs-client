@@ -244,7 +244,7 @@ export class ClientMessageReader {
         if (this.clientMessage == null) {
             this.clientMessage = ClientMessage.createForDecode(frame);
         } else {
-            this.clientMessage.add(frame);
+            this.clientMessage.addFrame(frame);
         }
         return true;
     }

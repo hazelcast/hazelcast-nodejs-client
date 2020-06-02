@@ -48,7 +48,7 @@ export class MapFetchNearCacheInvalidationMetadataCodec {
         FixSizedTypesCodec.encodeInt(initialFrame.content, MESSAGE_TYPE_OFFSET, REQUEST_MESSAGE_TYPE);
         FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
         FixSizedTypesCodec.encodeUUID(initialFrame.content, REQUEST_UUID_OFFSET, uuid);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         ListMultiFrameCodec.encode(clientMessage, names, StringCodec.encode);
         return clientMessage;

@@ -52,7 +52,7 @@ export class PNCounterAddCodec {
         FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_DELTA_OFFSET, delta);
         FixSizedTypesCodec.encodeBoolean(initialFrame.content, REQUEST_GET_BEFORE_UPDATE_OFFSET, getBeforeUpdate);
         FixSizedTypesCodec.encodeUUID(initialFrame.content, REQUEST_TARGET_REPLICA_UUID_OFFSET, targetReplicaUUID);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         StringCodec.encode(clientMessage, name);
         EntryListUUIDLongCodec.encode(clientMessage, replicaTimestamps);

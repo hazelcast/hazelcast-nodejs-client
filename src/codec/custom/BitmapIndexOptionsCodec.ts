@@ -28,15 +28,15 @@ const INITIAL_FRAME_SIZE = UNIQUE_KEY_TRANSFORMATION_OFFSET + BitsUtil.INT_SIZE_
 
 export class BitmapIndexOptionsCodec {
     static encode(clientMessage: ClientMessage, bitmapIndexOptions: BitmapIndexOptions): void {
-        clientMessage.add(BEGIN_FRAME.copy());
+        clientMessage.addFrame(BEGIN_FRAME.copy());
 
         const initialFrame = new Frame(Buffer.allocUnsafe(INITIAL_FRAME_SIZE));
         FixSizedTypesCodec.encodeInt(initialFrame.content, UNIQUE_KEY_TRANSFORMATION_OFFSET, bitmapIndexOptions.uniqueKeyTransformation);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         StringCodec.encode(clientMessage, bitmapIndexOptions.uniqueKey);
 
-        clientMessage.add(END_FRAME.copy());
+        clientMessage.addFrame(END_FRAME.copy());
     }
 
     static decode(iterator: ForwardFrameIterator): BitmapIndexOptions {

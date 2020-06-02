@@ -19,7 +19,7 @@ import {ClientMessage, ForwardFrameIterator, Frame} from '../../ClientMessage';
 
 export class ByteArrayCodec {
     static encode(clientMessage: ClientMessage, bytes: Buffer): void {
-        clientMessage.add(new Frame(bytes));
+        clientMessage.addFrame(new Frame(bytes));
     }
 
     static decode(iterator: ForwardFrameIterator): Buffer {

@@ -21,19 +21,19 @@ export class MapCodec {
     static encode<K, V>(clientMessage: ClientMessage, map: Map<K, V>,
                         keyEncoder: (msg: ClientMessage, key: K) => void,
                         valueEncoder: (msg: ClientMessage, value: V) => void): void {
-        clientMessage.add(BEGIN_FRAME.copy());
+        clientMessage.addFrame(BEGIN_FRAME.copy());
         map.forEach((value, key) => {
             keyEncoder(clientMessage, key);
             valueEncoder(clientMessage, value);
         });
-        clientMessage.add(END_FRAME.copy());
+        clientMessage.addFrame(END_FRAME.copy());
     }
 
     static encodeNullable<K, V>(clientMessage: ClientMessage, map: Map<K, V>,
                                 keyEncoder: (msg: ClientMessage, key: K) => void,
                                 valueEncoder: (msg: ClientMessage, value: V) => void): void {
         if (map === null) {
-            clientMessage.add(NULL_FRAME.copy());
+            clientMessage.addFrame(NULL_FRAME.copy());
         } else {
             this.encode(clientMessage, map, keyEncoder, valueEncoder);
         }

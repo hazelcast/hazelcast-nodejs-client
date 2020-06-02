@@ -25,12 +25,12 @@ export class EntryListLongByteArrayCodec {
     static encode(clientMessage: ClientMessage, entries: Array<[Long, Buffer]>): void {
         const entryCount = entries.length;
         const keys = new Array<Long>(entryCount);
-        clientMessage.add(BEGIN_FRAME.copy());
+        clientMessage.addFrame(BEGIN_FRAME.copy());
         for (let i = 0; i < entryCount; i++) {
             keys[i] = entries[i][0];
             ByteArrayCodec.encode(clientMessage, entries[i][1]);
         }
-        clientMessage.add(END_FRAME.copy());
+        clientMessage.addFrame(END_FRAME.copy());
         ListLongCodec.encode(clientMessage, keys);
     }
 

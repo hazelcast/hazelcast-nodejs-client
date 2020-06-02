@@ -45,7 +45,7 @@ export class RingbufferAddCodec {
         FixSizedTypesCodec.encodeInt(initialFrame.content, MESSAGE_TYPE_OFFSET, REQUEST_MESSAGE_TYPE);
         FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
         FixSizedTypesCodec.encodeInt(initialFrame.content, REQUEST_OVERFLOW_POLICY_OFFSET, overflowPolicy);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         StringCodec.encode(clientMessage, name);
         DataCodec.encode(clientMessage, value);

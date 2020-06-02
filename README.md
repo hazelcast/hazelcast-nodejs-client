@@ -1,3 +1,9 @@
+This client is under heavy development for version 4.0.
+
+Please switch to a 3.12.x branch or tag if you are using a 3.12.x version of Hazelcast IMDG.
+
+---
+
 <p align="center">
     <a href="https://github.com/hazelcast/hazelcast-nodejs-client/">
         <img src="https://3l0wd94f0qdd10om8642z9se-wpengine.netdna-ssl.com/images/logos/hazelcast-logo-horz_md.png" />

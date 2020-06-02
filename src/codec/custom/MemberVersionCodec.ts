@@ -29,15 +29,15 @@ const INITIAL_FRAME_SIZE = PATCH_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
 export class MemberVersionCodec {
     static encode(clientMessage: ClientMessage, memberVersion: MemberVersion): void {
-        clientMessage.add(BEGIN_FRAME.copy());
+        clientMessage.addFrame(BEGIN_FRAME.copy());
 
         const initialFrame = new Frame(Buffer.allocUnsafe(INITIAL_FRAME_SIZE));
         FixSizedTypesCodec.encodeByte(initialFrame.content, MAJOR_OFFSET, memberVersion.major);
         FixSizedTypesCodec.encodeByte(initialFrame.content, MINOR_OFFSET, memberVersion.minor);
         FixSizedTypesCodec.encodeByte(initialFrame.content, PATCH_OFFSET, memberVersion.patch);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
-        clientMessage.add(END_FRAME.copy());
+        clientMessage.addFrame(END_FRAME.copy());
     }
 
     static decode(iterator: ForwardFrameIterator): MemberVersion {

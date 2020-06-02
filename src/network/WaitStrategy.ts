@@ -18,14 +18,14 @@ import {ILogger} from '../logging/ILogger';
 import * as Promise from 'bluebird';
 
 export class WaitStrategy {
-    private initialBackoffMillis: number;
-    private maxBackoffMillis: number;
-    private multiplier: number;
-    private jitter: number;
+    private readonly initialBackoffMillis: number;
+    private readonly maxBackoffMillis: number;
+    private readonly multiplier: number;
+    private readonly jitter: number;
+    private readonly clusterConnectTimeoutMillis: number;
     private logger: ILogger;
     private attempt: number;
     private currentBackoffMillis: number;
-    private clusterConnectTimeoutMillis: number;
     private clusterConnectAttemptBegin: number;
 
     constructor(initialBackoffMillis: number, maxBackoffMillis: number, multiplier: number, clusterConnectTimeoutMillis: number,
@@ -56,8 +56,8 @@ export class WaitStrategy {
 
         // random_between
         // Random(-jitter * current_backoff, jitter * current_backoff)
-        let actualSleepTime = this.currentBackoffMillis - (this.currentBackoffMillis * this.jitter)
-            + (this.currentBackoffMillis * this.jitter * Math.random());
+        let actualSleepTime = this.currentBackoffMillis
+            + this.currentBackoffMillis * this.jitter * (2.0 * Math.random() - 1.0);
 
         actualSleepTime = Math.min(actualSleepTime, this.clusterConnectTimeoutMillis - timePassed);
         this.logger.warn('WaitStrategy', `Unable to get live cluster connection, retry in

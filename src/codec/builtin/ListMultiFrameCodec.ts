@@ -19,30 +19,30 @@ import {CodecUtil} from './CodecUtil';
 
 export class ListMultiFrameCodec {
     static encode<T>(clientMessage: ClientMessage, list: T[], encoder: (msg: ClientMessage, value: T) => void): void {
-        clientMessage.add(BEGIN_FRAME.copy());
+        clientMessage.addFrame(BEGIN_FRAME.copy());
         for (let i = 0, n = list.length; i < n; i++) {
             encoder(clientMessage, list[i]);
         }
-        clientMessage.add(END_FRAME.copy());
+        clientMessage.addFrame(END_FRAME.copy());
     }
 
     static encodeContainsNullable<T>(clientMessage: ClientMessage, list: T[],
                                      encoder: (msg: ClientMessage, value: T) => void): void {
-        clientMessage.add(BEGIN_FRAME.copy());
+        clientMessage.addFrame(BEGIN_FRAME.copy());
         for (let i = 0, n = list.length; i < n; i++) {
             const item = list[i];
             if (item === null) {
-                clientMessage.add(NULL_FRAME.copy());
+                clientMessage.addFrame(NULL_FRAME.copy());
             } else {
                 encoder(clientMessage, list[i]);
             }
         }
-        clientMessage.add(END_FRAME.copy());
+        clientMessage.addFrame(END_FRAME.copy());
     }
 
     static encodeNullable<T>(clientMessage: ClientMessage, list: T[], encoder: (msg: ClientMessage, value: T) => void): void {
         if (list === null) {
-            clientMessage.add(NULL_FRAME.copy());
+            clientMessage.addFrame(NULL_FRAME.copy());
         } else {
             this.encode(clientMessage, list, encoder);
         }

@@ -47,7 +47,7 @@
     },
     "connectionStrategy": {
         "asyncStart": true,
-        "reconnectMode": "ASYNC",
+        "reconnectMode": "async",
         "connectionRetry": {
             "initialBackoffMillis": 2000,
             "maxBackoffMillis": 60000,

@@ -31,17 +31,17 @@ const INITIAL_FRAME_SIZE = TYPE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
 export class IndexConfigCodec {
     static encode(clientMessage: ClientMessage, indexConfig: IndexConfig): void {
-        clientMessage.add(BEGIN_FRAME.copy());
+        clientMessage.addFrame(BEGIN_FRAME.copy());
 
         const initialFrame = new Frame(Buffer.allocUnsafe(INITIAL_FRAME_SIZE));
         FixSizedTypesCodec.encodeInt(initialFrame.content, TYPE_OFFSET, indexConfig.type);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         CodecUtil.encodeNullable(clientMessage, indexConfig.name, StringCodec.encode);
         ListMultiFrameCodec.encode(clientMessage, indexConfig.attributes, StringCodec.encode);
         CodecUtil.encodeNullable(clientMessage, indexConfig.bitmapIndexOptions, BitmapIndexOptionsCodec.encode);
 
-        clientMessage.add(END_FRAME.copy());
+        clientMessage.addFrame(END_FRAME.copy());
     }
 
     static decode(iterator: ForwardFrameIterator): IndexConfig {

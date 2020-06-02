@@ -31,7 +31,7 @@ export class ErrorsCodec {
     static encode(errorHolders: ErrorHolder[]): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         const initialFrame = new Frame(Buffer.allocUnsafe(INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
         clientMessage.setMessageType(EXCEPTION_MESSAGE_TYPE);
         ListMultiFrameCodec.encode(clientMessage, errorHolders, ErrorHolderCodec.encode);
         return clientMessage;

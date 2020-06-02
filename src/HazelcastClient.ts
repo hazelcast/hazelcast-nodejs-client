@@ -53,6 +53,7 @@ import {IllegalStateError} from './HazelcastError';
 import {LoadBalancer} from './LoadBalancer';
 import {RoundRobinLB} from './util/RoundRobinLB';
 import {ClusterViewListenerService} from './listener/ClusterViewListenerService';
+import {ClientMessage} from './ClientMessage';
 
 export default class HazelcastClient {
     private static CLIENT_ID = 0;
@@ -147,16 +148,35 @@ export default class HazelcastClient {
      */
     getDistributedObjects(): Promise<DistributedObject[]> {
         const clientMessage = ClientGetDistributedObjectsCodec.encodeRequest();
-        const proxyManager = this.proxyManager;
+        let localDistributedObjects: Set<string>;
+        let responseMessage: ClientMessage;
         return this.invocationService.invokeOnRandomTarget(clientMessage)
             .then((resp) => {
-                // TODO Java client destroys local instances of the destroyed proxies as a side effect. Should we do it too ?
-                const response = ClientGetDistributedObjectsCodec.decodeResponse(resp).response;
-                const promises = new Array<Promise<DistributedObject>>();
-                response.forEach((objectInfo) => {
-                   promises.push(proxyManager.getOrCreateProxy(objectInfo.name, objectInfo.serviceName, false));
+                responseMessage = resp;
+                return this.proxyManager.getDistributedObjects();
+            })
+            .then((distributedObjects) => {
+                localDistributedObjects = new Set<string>();
+                distributedObjects.forEach((obj) => {
+                    localDistributedObjects.add(obj.getServiceName() + obj.getName());
                 });
-                return Promise.all(promises);
+
+                const newDistributedObjectInfos = ClientGetDistributedObjectsCodec.decodeResponse(responseMessage).response;
+                const createLocalProxiesPromise = newDistributedObjectInfos.map((doi) => {
+                    return this.proxyManager.getOrCreateProxy(doi.name, doi.serviceName, false)
+                            .then(() => localDistributedObjects.delete(doi.serviceName + doi.name));
+                });
+
+                return Promise.all(createLocalProxiesPromise);
+            })
+            .then(() => {
+               const destroyLocalProxiesPromise = Array.from(localDistributedObjects).map((namespace) => {
+                  return this.proxyManager.destroyProxyLocally(namespace);
+               });
+               return Promise.all(destroyLocalProxiesPromise);
+            })
+            .then(() => {
+                return this.proxyManager.getDistributedObjects();
             });
     }
 
@@ -356,7 +376,6 @@ export default class HazelcastClient {
         this.proxyManager.destroy();
         this.connectionManager.shutdown();
         this.invocationService.shutdown();
-        this.listenerService.shutdown();
         this.statistics.stop();
     }
 
@@ -387,7 +406,7 @@ export default class HazelcastClient {
             this.clusterViewListenerService.start();
         } catch (e) {
             this.loggingService.getLogger().error('HazelcastClient', 'Client failed to start', e);
-            return Promise.reject(e);
+            throw e;
         }
 
         return this.connectionManager.start()

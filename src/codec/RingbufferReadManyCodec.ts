@@ -56,7 +56,7 @@ export class RingbufferReadManyCodec {
         FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_START_SEQUENCE_OFFSET, startSequence);
         FixSizedTypesCodec.encodeInt(initialFrame.content, REQUEST_MIN_COUNT_OFFSET, minCount);
         FixSizedTypesCodec.encodeInt(initialFrame.content, REQUEST_MAX_COUNT_OFFSET, maxCount);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         StringCodec.encode(clientMessage, name);
         CodecUtil.encodeNullable(clientMessage, filter, DataCodec.encode);

@@ -28,17 +28,17 @@ const INITIAL_FRAME_SIZE = LINE_NUMBER_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
 export class StackTraceElementCodec {
     static encode(clientMessage: ClientMessage, stackTraceElement: StackTraceElement): void {
-        clientMessage.add(BEGIN_FRAME.copy());
+        clientMessage.addFrame(BEGIN_FRAME.copy());
 
         const initialFrame = new Frame(Buffer.allocUnsafe(INITIAL_FRAME_SIZE));
         FixSizedTypesCodec.encodeInt(initialFrame.content, LINE_NUMBER_OFFSET, stackTraceElement.lineNumber);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         StringCodec.encode(clientMessage, stackTraceElement.className);
         StringCodec.encode(clientMessage, stackTraceElement.methodName);
         CodecUtil.encodeNullable(clientMessage, stackTraceElement.fileName, StringCodec.encode);
 
-        clientMessage.add(END_FRAME.copy());
+        clientMessage.addFrame(END_FRAME.copy());
     }
 
     static decode(iterator: ForwardFrameIterator): StackTraceElement {

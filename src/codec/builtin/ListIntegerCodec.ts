@@ -26,7 +26,7 @@ export class ListIntegerCodec {
         for (let i = 0; i < itemCount; i++) {
             FixSizedTypesCodec.encodeInt(frame.content, i * BitsUtil.INT_SIZE_IN_BYTES, list[i]);
         }
-        clientMessage.add(frame);
+        clientMessage.addFrame(frame);
     }
 
     static decode(iterator: ForwardFrameIterator): number[] {

@@ -46,7 +46,7 @@ export class ListSubCodec {
         FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
         FixSizedTypesCodec.encodeInt(initialFrame.content, REQUEST_FROM_OFFSET, from);
         FixSizedTypesCodec.encodeInt(initialFrame.content, REQUEST_TO_OFFSET, to);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         StringCodec.encode(clientMessage, name);
         return clientMessage;

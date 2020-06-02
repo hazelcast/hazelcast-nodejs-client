@@ -42,7 +42,7 @@ export class ClientRemovePartitionLostListenerCodec {
         FixSizedTypesCodec.encodeInt(initialFrame.content, MESSAGE_TYPE_OFFSET, REQUEST_MESSAGE_TYPE);
         FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
         FixSizedTypesCodec.encodeUUID(initialFrame.content, REQUEST_REGISTRATION_ID_OFFSET, registrationId);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         return clientMessage;
     }

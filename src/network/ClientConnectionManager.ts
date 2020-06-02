@@ -160,7 +160,7 @@ export class ClientConnectionManager extends EventEmitter {
             return Promise.resolve();
         }
 
-        const members = this.client.getClusterService().getMemberList();
+        const members = this.client.getClusterService().getMembers();
         return this.tryConnectToAllClusterMembers(0, members);
     }
 
@@ -456,7 +456,7 @@ export class ClientConnectionManager extends EventEmitter {
     }
 
     private getPossibleMemberAddresses(): Promise<Address[]> {
-        const addresses = this.client.getClusterService().getMemberList()
+        const addresses = this.client.getClusterService().getMembers()
             .map(((member) => member.address.toString()));
 
         if (this.shuffleMemberList) {
@@ -618,7 +618,7 @@ export class ClientConnectionManager extends EventEmitter {
             return;
         }
 
-        for (const member of this.client.getClusterService().getMemberList()) {
+        for (const member of this.client.getClusterService().getMembers()) {
             const address = member.address;
 
             if (this.getConnectionFromAddress(address) == null) {

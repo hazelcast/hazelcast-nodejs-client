@@ -49,7 +49,7 @@ export class MapPutWithMaxIdleCodec {
         FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_THREAD_ID_OFFSET, threadId);
         FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_TTL_OFFSET, ttl);
         FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_MAX_IDLE_OFFSET, maxIdle);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         StringCodec.encode(clientMessage, name);
         DataCodec.encode(clientMessage, key);

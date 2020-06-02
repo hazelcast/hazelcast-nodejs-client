@@ -29,14 +29,12 @@ import {ILogger} from './logging/ILogger';
 export class ListenerService {
     private client: HazelcastClient;
     private logger: ILogger;
-    private isShutdown: boolean;
     private isSmartService: boolean;
 
     private activeRegistrations: Map<string, Map<ClientConnection, ClientEventRegistration>>;
     private userRegistrationKeyInformation: Map<string, RegistrationKey>;
 
     constructor(client: HazelcastClient) {
-        this.isShutdown = false;
         this.client = client;
         this.logger = this.client.getLoggingService().getLogger();
         this.isSmartService = this.client.getConfig().networkConfig.smartRouting;
@@ -94,7 +92,8 @@ export class ListenerService {
             return deferred.promise;
         }
         const registrationKey = this.userRegistrationKeyInformation.get(userRegistrationKey);
-        const registerRequest = registrationKey.getRegisterRequest().copyWithNewCorrelationId(-1);
+        // New correlation id will be set on the invoke call
+        const registerRequest = registrationKey.getRegisterRequest().copyWithNewCorrelationId();
         const codec = registrationKey.getCodec();
         const invocation = new Invocation(this.client, registerRequest);
         invocation.handler = registrationKey.getHandler() as any;
@@ -132,7 +131,7 @@ export class ListenerService {
                 continue;
             }
             // New correlation id will be set on the invoke call
-            const requestCopy = registerRequest.copyWithNewCorrelationId(-1);
+            const requestCopy = registerRequest.copyWithNewCorrelationId();
             const invocation = new Invocation(this.client, requestCopy);
             invocation.handler = listenerHandlerFunc as any;
             invocation.connection = connection;
@@ -183,9 +182,5 @@ export class ListenerService {
 
     isSmart(): boolean {
         return this.isSmartService;
-    }
-
-    shutdown(): void {
-        this.isShutdown = true;
     }
 }

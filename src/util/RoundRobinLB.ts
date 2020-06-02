@@ -18,6 +18,8 @@ import {AbstractLoadBalancer} from './AbstractLoadBalancer';
 import {randomInt} from '../Util';
 import {Member} from '../core/Member';
 
+const INITIAL_SEED_CAP = Math.ceil(Number.MAX_SAFE_INTEGER / 1024);
+
 /**
  * A {@link LoadBalancer} implementation that relies on using round robin
  * to a next member to send a request to.
@@ -27,7 +29,11 @@ export class RoundRobinLB extends AbstractLoadBalancer {
 
     constructor() {
         super();
-        this.index = randomInt(Date.now());
+        let seed = process.hrtime()[1];
+        if (seed > INITIAL_SEED_CAP) {
+            seed = randomInt(INITIAL_SEED_CAP);
+        }
+        this.index = seed;
     }
 
     next(): Member {

@@ -49,7 +49,7 @@ export class TransactionCreateCodec {
         FixSizedTypesCodec.encodeInt(initialFrame.content, REQUEST_DURABILITY_OFFSET, durability);
         FixSizedTypesCodec.encodeInt(initialFrame.content, REQUEST_TRANSACTION_TYPE_OFFSET, transactionType);
         FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_THREAD_ID_OFFSET, threadId);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         return clientMessage;
     }

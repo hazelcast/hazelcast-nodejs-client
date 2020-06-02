@@ -51,7 +51,7 @@ export class MapTryLockCodec {
         FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_LEASE_OFFSET, lease);
         FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_TIMEOUT_OFFSET, timeout);
         FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_REFERENCE_ID_OFFSET, referenceId);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         StringCodec.encode(clientMessage, name);
         DataCodec.encode(clientMessage, key);

@@ -41,7 +41,7 @@ export class TransactionRollbackCodec {
         FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
         FixSizedTypesCodec.encodeUUID(initialFrame.content, REQUEST_TRANSACTION_ID_OFFSET, transactionId);
         FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_THREAD_ID_OFFSET, threadId);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         return clientMessage;
     }

@@ -68,6 +68,17 @@ export class BaseProxy {
         });
     }
 
+    /**
+     * Destroys this client proxy instance locally without issuing distributed
+     * object destroy request to the cluster as the destroy method does.
+     * <p>
+     * The local destruction operation still may perform some communication
+     * with the cluster; for example, to unregister remote event subscriptions.
+     */
+    destroyLocally(): Promise<void> {
+        return this.postDestroy();
+    }
+
     protected postDestroy(): Promise<void> {
         return Promise.resolve();
     }

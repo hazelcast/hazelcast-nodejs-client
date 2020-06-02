@@ -39,7 +39,7 @@ const INITIAL_FRAME_SIZE = MAX_IDLE_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
 export class SimpleEntryViewCodec {
     static encode(clientMessage: ClientMessage, simpleEntryView: SimpleEntryView<Data, Data>): void {
-        clientMessage.add(BEGIN_FRAME.copy());
+        clientMessage.addFrame(BEGIN_FRAME.copy());
 
         const initialFrame = new Frame(Buffer.allocUnsafe(INITIAL_FRAME_SIZE));
         FixSizedTypesCodec.encodeLong(initialFrame.content, COST_OFFSET, simpleEntryView.cost);
@@ -52,12 +52,12 @@ export class SimpleEntryViewCodec {
         FixSizedTypesCodec.encodeLong(initialFrame.content, VERSION_OFFSET, simpleEntryView.version);
         FixSizedTypesCodec.encodeLong(initialFrame.content, TTL_OFFSET, simpleEntryView.ttl);
         FixSizedTypesCodec.encodeLong(initialFrame.content, MAX_IDLE_OFFSET, simpleEntryView.maxIdle);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         DataCodec.encode(clientMessage, simpleEntryView.key);
         DataCodec.encode(clientMessage, simpleEntryView.value);
 
-        clientMessage.add(END_FRAME.copy());
+        clientMessage.addFrame(END_FRAME.copy());
     }
 
     static decode(iterator: ForwardFrameIterator): SimpleEntryView<Data, Data> {

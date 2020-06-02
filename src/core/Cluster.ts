@@ -58,18 +58,9 @@ export interface Cluster {
      * Every member in the cluster returns the 'members' in the same order.
      * To obtain the oldest member (the master) in the cluster, you can retrieve the first item in the list.
      *
-     * @param memberSelector {@link MemberSelector} instance to filter members to return
+     * @param memberSelector Optional {@link MemberSelector} instance to filter members to return.
+     *      If not provided, the returned list will contain all the available cluster members.
      * @return current members in the cluster
      */
     getMembers(memberSelector?: MemberSelector): Member[];
-
-    /**
-     * List of the current members in the cluster.
-     * <p>
-     * Every member in the cluster returns the 'members' in the same order.
-     * To obtain the oldest member (the master) in the cluster, you can retrieve the first item in the list.
-     *
-     * @return current members in the cluster
-     */
-    getMemberList(): Member[];
 }

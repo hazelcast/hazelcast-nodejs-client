@@ -82,29 +82,24 @@ export class ClusterService implements Cluster {
     }
 
     /**
-     * Gets the collection of members.
-     *
-     * @return The collection of members.
-     */
-    public getMemberList(): Member[] {
-        return Array.from(this.memberListSnapshot.members.values());
-    }
-
-    /**
      * Returns a collection of the members that satisfy the given {@link MemberSelector}.
      *
      * @param selector {@link MemberSelector} instance to filter members to return
      * @return members that satisfy the given {@link MemberSelector}.
      */
-    public getMembers(selector: MemberSelector): Member[] {
-        assertNotNull(selector);
-        const members: Member[] = [];
-        this.getMemberList().forEach((member) => {
+    public getMembers(selector?: MemberSelector): Member[] {
+        const members = this.getMemberList();
+        if (selector == null) {
+            return members;
+        }
+
+        const selectedMembers: Member[] = [];
+        members.forEach((member) => {
             if (selector.select(member)) {
-                members.push(member);
+                selectedMembers.push(member);
             }
         });
-        return members;
+        return selectedMembers;
     }
 
     /**
@@ -293,4 +288,9 @@ export class ClusterService implements Cluster {
         logString += '\n}\n';
         return logString;
     }
+
+    private getMemberList(): Member[] {
+        return Array.from(this.memberListSnapshot.members.values());
+    }
+
 }

@@ -21,22 +21,22 @@ import {BitsUtil} from './BitsUtil';
 import {ClientConnection} from './network/ClientConnection';
 
 export const MESSAGE_TYPE_OFFSET = 0;
-export const CORRELATION_ID_OFFSET = MESSAGE_TYPE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const CORRELATION_ID_OFFSET = MESSAGE_TYPE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 export const RESPONSE_BACKUP_ACKS_OFFSET = CORRELATION_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 export const PARTITION_ID_OFFSET = CORRELATION_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
-export const FRAGMENTATION_ID_OFFSET = 0;
+const FRAGMENTATION_ID_OFFSET = 0;
 
-export const DEFAULT_FLAGS = 0;
-export const BEGIN_FRAGMENT_FLAG = 1 << 15;
-export const END_FRAGMENT_FLAG = 1 << 14;
+const DEFAULT_FLAGS = 0;
+const BEGIN_FRAGMENT_FLAG = 1 << 15;
+const END_FRAGMENT_FLAG = 1 << 14;
 export const UNFRAGMENTED_MESSAGE = BEGIN_FRAGMENT_FLAG | END_FRAGMENT_FLAG;
 export const IS_FINAL_FLAG = 1 << 13;
-export const BEGIN_DATA_STRUCTURE_FLAG = 1 << 12;
-export const END_DATA_STRUCTURE_FLAG = 1 << 11;
-export const IS_NULL_FLAG = 1 << 10;
+const BEGIN_DATA_STRUCTURE_FLAG = 1 << 12;
+const END_DATA_STRUCTURE_FLAG = 1 << 11;
+const IS_NULL_FLAG = 1 << 10;
 export const IS_EVENT_FLAG = 1 << 9;
-export const BACKUP_AWARE_FLAG = 1 << 8;
-export const BACKUP_EVENT_FLAG = 1 << 7;
+const BACKUP_AWARE_FLAG = 1 << 8;
+const BACKUP_EVENT_FLAG = 1 << 7;
 
 export const SIZE_OF_FRAME_LENGTH_AND_FLAGS = BitsUtil.INT_SIZE_IN_BYTES + BitsUtil.SHORT_SIZE_IN_BYTES;
 
@@ -82,7 +82,7 @@ export class Frame {
 
 export const NULL_FRAME = new Frame(Buffer.allocUnsafe(0), IS_NULL_FLAG);
 export const BEGIN_FRAME = new Frame(Buffer.allocUnsafe(0), BEGIN_DATA_STRUCTURE_FLAG);
-export const END_FRAME = new  Frame(Buffer.allocUnsafe(0), END_DATA_STRUCTURE_FLAG);
+export const END_FRAME = new Frame(Buffer.allocUnsafe(0), END_DATA_STRUCTURE_FLAG);
 
 export interface ForwardFrameIterator {
 
@@ -147,7 +147,7 @@ export class ClientMessage implements ForwardFrameIterator {
         return this.nextFrame;
     }
 
-    add(frame: Frame): void {
+    addFrame(frame: Frame): void {
         frame.next = null;
         if (this.startFrame == null) {
             this.startFrame = frame;
@@ -234,11 +234,11 @@ export class ClientMessage implements ForwardFrameIterator {
         this.endFrame = fragment.endFrame;
     }
 
-    copyWithNewCorrelationId(correlationId: any): ClientMessage {
+    copyWithNewCorrelationId(): ClientMessage {
         const startFrameCopy = this.startFrame.deepCopy();
         const newMessage = new ClientMessage(startFrameCopy, this.endFrame);
 
-        newMessage.setCorrelationId(correlationId);
+        newMessage.setCorrelationId(-1);
         newMessage.retryable = this.retryable;
         return newMessage;
     }

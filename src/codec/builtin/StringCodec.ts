@@ -19,7 +19,7 @@ import {Buffer} from 'safe-buffer';
 
 export class StringCodec {
     static encode(clientMessage: ClientMessage, value: string): void {
-        clientMessage.add(new Frame(Buffer.from(value, 'utf8')));
+        clientMessage.addFrame(new Frame(Buffer.from(value, 'utf8')));
     }
 
     static decode(iterator: ForwardFrameIterator): string {

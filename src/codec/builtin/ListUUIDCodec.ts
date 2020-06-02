@@ -27,7 +27,7 @@ export class ListUUIDCodec {
         for (let i = 0; i < itemCount; i++) {
             FixSizedTypesCodec.encodeUUID(frame.content, i * BitsUtil.UUID_SIZE_IN_BYTES, list[i]);
         }
-        clientMessage.add(frame);
+        clientMessage.addFrame(frame);
     }
 
     static decode(iterator: ForwardFrameIterator): UUID[] {

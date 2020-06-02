@@ -50,6 +50,6 @@ export abstract class AbstractLoadBalancer implements LoadBalancer, InitialMembe
     }
 
     private setMembers(): void {
-        this.members = this.cluster.getMemberList();
+        this.members = this.cluster.getMembers();
     }
 }

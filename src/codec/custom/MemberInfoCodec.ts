@@ -35,18 +35,18 @@ const INITIAL_FRAME_SIZE = LITE_MEMBER_OFFSET + BitsUtil.BOOLEAN_SIZE_IN_BYTES;
 
 export class MemberInfoCodec {
     static encode(clientMessage: ClientMessage, memberInfo: MemberInfo): void {
-        clientMessage.add(BEGIN_FRAME.copy());
+        clientMessage.addFrame(BEGIN_FRAME.copy());
 
         const initialFrame = new Frame(Buffer.allocUnsafe(INITIAL_FRAME_SIZE));
         FixSizedTypesCodec.encodeUUID(initialFrame.content, UUID_OFFSET, memberInfo.uuid);
         FixSizedTypesCodec.encodeBoolean(initialFrame.content, LITE_MEMBER_OFFSET, memberInfo.liteMember);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         AddressCodec.encode(clientMessage, memberInfo.address);
         MapCodec.encode(clientMessage, memberInfo.attributes, StringCodec.encode, StringCodec.encode);
         MemberVersionCodec.encode(clientMessage, memberInfo.version);
 
-        clientMessage.add(END_FRAME.copy());
+        clientMessage.addFrame(END_FRAME.copy());
     }
 
     static decode(iterator: ForwardFrameIterator): MemberInfo {

@@ -33,20 +33,20 @@ const INITIAL_FRAME_SIZE = ITERATION_TYPE_ID_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTE
 
 export class PagingPredicateHolderCodec {
     static encode(clientMessage: ClientMessage, pagingPredicateHolder: PagingPredicateHolder): void {
-        clientMessage.add(BEGIN_FRAME.copy());
+        clientMessage.addFrame(BEGIN_FRAME.copy());
 
         const initialFrame = new Frame(Buffer.allocUnsafe(INITIAL_FRAME_SIZE));
         FixSizedTypesCodec.encodeInt(initialFrame.content, PAGE_SIZE_OFFSET, pagingPredicateHolder.pageSize);
         FixSizedTypesCodec.encodeInt(initialFrame.content, PAGE_OFFSET, pagingPredicateHolder.page);
         FixSizedTypesCodec.encodeByte(initialFrame.content, ITERATION_TYPE_ID_OFFSET, pagingPredicateHolder.iterationTypeId);
-        clientMessage.add(initialFrame);
+        clientMessage.addFrame(initialFrame);
 
         AnchorDataListHolderCodec.encode(clientMessage, pagingPredicateHolder.anchorDataListHolder);
         CodecUtil.encodeNullable(clientMessage, pagingPredicateHolder.predicateData, DataCodec.encode);
         CodecUtil.encodeNullable(clientMessage, pagingPredicateHolder.comparatorData, DataCodec.encode);
         CodecUtil.encodeNullable(clientMessage, pagingPredicateHolder.partitionKeyData, DataCodec.encode);
 
-        clientMessage.add(END_FRAME.copy());
+        clientMessage.addFrame(END_FRAME.copy());
     }
 
     static decode(iterator: ForwardFrameIterator): PagingPredicateHolder {
