@@ -34,7 +34,7 @@ describe('ClientMessage', function () {
     it('should be encoded and decoded', function () {
         const cmEncode = ClientMessage.createForEncode();
 
-        cmEncode.add(new Frame(Buffer.allocUnsafe(50), DEFAULT_FLAGS));
+        cmEncode.addFrame(new Frame(Buffer.allocUnsafe(50), DEFAULT_FLAGS));
         cmEncode.setMessageType(1);
         cmEncode.setCorrelationId(Long.fromString('1234567812345678'));
         cmEncode.setPartitionId(11223344);
@@ -52,12 +52,12 @@ describe('ClientMessage', function () {
     it('should be copied with new correlation id and share the non-header frames', function () {
         const originalMessage = ClientMessage.createForEncode();
 
-        originalMessage.add(new Frame(Buffer.allocUnsafe(50), DEFAULT_FLAGS));
+        originalMessage.addFrame(new Frame(Buffer.allocUnsafe(50), DEFAULT_FLAGS));
         originalMessage.setMessageType(1);
         originalMessage.setCorrelationId(Long.fromString('1234567812345678'));
         originalMessage.setPartitionId(11223344);
         originalMessage.setRetryable(true);
-        originalMessage.add(new Frame(Buffer.allocUnsafe(20), IS_FINAL_FLAG));
+        originalMessage.addFrame(new Frame(Buffer.allocUnsafe(20), IS_FINAL_FLAG));
 
         const copyMessage = originalMessage.copyWithNewCorrelationId();
 
@@ -85,14 +85,14 @@ describe('ClientMessage', function () {
     it('should be fast forwardable when extended', function () {
         const clientMessage = ClientMessage.createForEncode();
 
-        clientMessage.add(BEGIN_FRAME.copy());
+        clientMessage.addFrame(BEGIN_FRAME.copy());
 
         // New custom-typed parameter with its own begin and end frames
-        clientMessage.add(BEGIN_FRAME.copy());
-        clientMessage.add(new Frame(Buffer.allocUnsafe(0)));
-        clientMessage.add(END_FRAME.copy());
+        clientMessage.addFrame(BEGIN_FRAME.copy());
+        clientMessage.addFrame(new Frame(Buffer.allocUnsafe(0)));
+        clientMessage.addFrame(END_FRAME.copy());
 
-        clientMessage.add(END_FRAME.copy());
+        clientMessage.addFrame(END_FRAME.copy());
 
         const iterator = clientMessage.frameIterator();
         // begin frame
