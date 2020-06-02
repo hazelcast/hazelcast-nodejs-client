@@ -18,7 +18,7 @@
 import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
 import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
-import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, MESSAGE_TYPE_OFFSET, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
+import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
 import * as Long from 'long';
 import {StringCodec} from './builtin/StringCodec';
 import {Data} from '../serialization/Data';
@@ -51,12 +51,12 @@ export class RingbufferReadManyCodec {
         clientMessage.setRetryable(true);
 
         const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
-        FixSizedTypesCodec.encodeInt(initialFrame.content, MESSAGE_TYPE_OFFSET, REQUEST_MESSAGE_TYPE);
-        FixSizedTypesCodec.encodeInt(initialFrame.content, PARTITION_ID_OFFSET, -1);
         FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_START_SEQUENCE_OFFSET, startSequence);
         FixSizedTypesCodec.encodeInt(initialFrame.content, REQUEST_MIN_COUNT_OFFSET, minCount);
         FixSizedTypesCodec.encodeInt(initialFrame.content, REQUEST_MAX_COUNT_OFFSET, maxCount);
         clientMessage.addFrame(initialFrame);
+        clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);
+        clientMessage.setPartitionId(-1);
 
         StringCodec.encode(clientMessage, name);
         CodecUtil.encodeNullable(clientMessage, filter, DataCodec.encode);

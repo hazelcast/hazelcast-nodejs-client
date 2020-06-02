@@ -20,7 +20,7 @@ import * as Long from 'long';
 import {BitsUtil} from './BitsUtil';
 import {ClientConnection} from './network/ClientConnection';
 
-export const MESSAGE_TYPE_OFFSET = 0;
+const MESSAGE_TYPE_OFFSET = 0;
 const CORRELATION_ID_OFFSET = MESSAGE_TYPE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 export const RESPONSE_BACKUP_ACKS_OFFSET = CORRELATION_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 export const PARTITION_ID_OFFSET = CORRELATION_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
