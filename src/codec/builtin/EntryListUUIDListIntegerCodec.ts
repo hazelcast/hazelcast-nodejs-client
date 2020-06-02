@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {BEGIN_FRAME, ClientMessage, END_FRAME, ForwardFrameIterator} from '../../ClientMessage';
+import {BEGIN_FRAME, ClientMessage, END_FRAME} from '../../ClientMessage';
 import {UUID} from '../../core/UUID';
 import {ListIntegerCodec} from './ListIntegerCodec';
 import {ListUUIDCodec} from './ListUUIDCodec';
@@ -33,9 +33,9 @@ export class EntryListUUIDListIntegerCodec {
         ListUUIDCodec.encode(clientMessage, keys);
     }
 
-    static decode(iterator: ForwardFrameIterator): Array<[UUID, number[]]> {
-        const values = ListMultiFrameCodec.decode(iterator, ListIntegerCodec.decode);
-        const keys = ListUUIDCodec.decode(iterator);
+    static decode(clientMessage: ClientMessage): Array<[UUID, number[]]> {
+        const values = ListMultiFrameCodec.decode(clientMessage, ListIntegerCodec.decode);
+        const keys = ListUUIDCodec.decode(clientMessage);
 
         const result = new Array<[UUID, number[]]>(keys.length);
         for (let i = 0; i < result.length; i++) {

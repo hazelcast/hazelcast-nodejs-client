@@ -50,8 +50,7 @@ export class ReplicatedMapContainsValueCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): ReplicatedMapContainsValueResponseParams {
-        const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.getNextFrame();
+        const initialFrame = clientMessage.nextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),

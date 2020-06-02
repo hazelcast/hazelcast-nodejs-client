@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ClientMessage, ForwardFrameIterator, Frame} from '../../ClientMessage';
+import {ClientMessage, Frame} from '../../ClientMessage';
 import {Buffer} from 'safe-buffer';
 
 export class StringCodec {
@@ -22,8 +22,8 @@ export class StringCodec {
         clientMessage.addFrame(new Frame(Buffer.from(value, 'utf8')));
     }
 
-    static decode(iterator: ForwardFrameIterator): string {
-        const frame = iterator.getNextFrame();
+    static decode(clientMessage: ClientMessage): string {
+        const frame = clientMessage.nextFrame();
         return frame.content.toString('utf8');
     }
 }

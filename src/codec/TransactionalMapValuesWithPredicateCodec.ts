@@ -56,12 +56,11 @@ export class TransactionalMapValuesWithPredicateCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): TransactionalMapValuesWithPredicateResponseParams {
-        const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.getNextFrame();
+        clientMessage.nextFrame();
 
         return {
-            response: ListMultiFrameCodec.decode(iterator, DataCodec.decode),
+            response: ListMultiFrameCodec.decode(clientMessage, DataCodec.decode),
         };
     }
 }

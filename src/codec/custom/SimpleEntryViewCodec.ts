@@ -18,7 +18,7 @@
 import {Buffer} from 'safe-buffer';
 import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
-import {ClientMessage, BEGIN_FRAME, END_FRAME, ForwardFrameIterator, Frame} from '../../ClientMessage';
+import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
 import * as Long from 'long';
 import {Data} from '../../serialization/Data';
@@ -60,11 +60,11 @@ export class SimpleEntryViewCodec {
         clientMessage.addFrame(END_FRAME.copy());
     }
 
-    static decode(iterator: ForwardFrameIterator): SimpleEntryView<Data, Data> {
+    static decode(clientMessage: ClientMessage): SimpleEntryView<Data, Data> {
         // begin frame
-        iterator.getNextFrame();
+        clientMessage.nextFrame();
 
-        const initialFrame = iterator.getNextFrame();
+        const initialFrame = clientMessage.nextFrame();
         const cost: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, COST_OFFSET);
         const creationTime: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, CREATION_TIME_OFFSET);
         const expirationTime: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, EXPIRATION_TIME_OFFSET);
@@ -75,10 +75,10 @@ export class SimpleEntryViewCodec {
         const version: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, VERSION_OFFSET);
         const ttl: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, TTL_OFFSET);
         const maxIdle: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, MAX_IDLE_OFFSET);
-        const key: Data = DataCodec.decode(iterator);
-        const value: Data = DataCodec.decode(iterator);
+        const key: Data = DataCodec.decode(clientMessage);
+        const value: Data = DataCodec.decode(clientMessage);
 
-        CodecUtil.fastForwardToEndFrame(iterator);
+        CodecUtil.fastForwardToEndFrame(clientMessage);
 
         return new SimpleEntryView<Data, Data>(key, value, cost, creationTime, expirationTime, hits, lastAccessTime, lastStoredTime, lastUpdateTime, version, ttl, maxIdle);
     }

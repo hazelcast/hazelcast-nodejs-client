@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {BEGIN_FRAME, ClientMessage, END_FRAME, ForwardFrameIterator, NULL_FRAME} from '../../ClientMessage';
+import {BEGIN_FRAME, ClientMessage, END_FRAME, NULL_FRAME} from '../../ClientMessage';
 import {CodecUtil} from './CodecUtil';
 
 export class MapCodec {
@@ -39,25 +39,25 @@ export class MapCodec {
         }
     }
 
-    static decode<K, V>(iterator: ForwardFrameIterator,
-                        keyDecoder: (it: ForwardFrameIterator) => K,
-                        valueDecoder: (it: ForwardFrameIterator) => V): Map<K, V> {
+    static decode<K, V>(clientMessage: ClientMessage,
+                        keyDecoder: (msg: ClientMessage) => K,
+                        valueDecoder: (msg: ClientMessage) => V): Map<K, V> {
         const result = new Map<K, V>();
         // begin frame
-        iterator.getNextFrame();
-        while (!CodecUtil.nextFrameIsDataStructureEndFrame(iterator)) {
-            const key = keyDecoder(iterator);
-            const value = valueDecoder(iterator);
+        clientMessage.nextFrame();
+        while (!CodecUtil.nextFrameIsDataStructureEndFrame(clientMessage)) {
+            const key = keyDecoder(clientMessage);
+            const value = valueDecoder(clientMessage);
             result.set(key, value);
         }
         // end frame
-        iterator.getNextFrame();
+        clientMessage.nextFrame();
         return result;
     }
 
-    static decodeNullable<K, V>(iterator: ForwardFrameIterator,
-                                keyDecoder: (it: ForwardFrameIterator) => K,
-                                valueDecoder: (it: ForwardFrameIterator) => V): Map<K, V> {
-        return CodecUtil.nextFrameIsNullEndFrame(iterator) ? null : this.decode(iterator, keyDecoder, valueDecoder);
+    static decodeNullable<K, V>(clientMessage: ClientMessage,
+                                keyDecoder: (msg: ClientMessage) => K,
+                                valueDecoder: (msg: ClientMessage) => V): Map<K, V> {
+        return CodecUtil.nextFrameIsNullEndFrame(clientMessage) ? null : this.decode(clientMessage, keyDecoder, valueDecoder);
     }
 }

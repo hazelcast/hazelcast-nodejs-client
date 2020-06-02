@@ -54,8 +54,7 @@ export class ClientAddPartitionLostListenerCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): ClientAddPartitionLostListenerResponseParams {
-        const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.getNextFrame();
+        const initialFrame = clientMessage.nextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
@@ -64,9 +63,8 @@ export class ClientAddPartitionLostListenerCodec {
 
     static handle(clientMessage: ClientMessage, handlePartitionLostEvent: (partitionId: number, lostBackupCount: number, source: UUID) => void = null): void {
         const messageType = clientMessage.getMessageType();
-        const iterator = clientMessage.frameIterator();
         if (messageType === EVENT_PARTITION_LOST_MESSAGE_TYPE && handlePartitionLostEvent !== null) {
-            const initialFrame = iterator.getNextFrame();
+            const initialFrame = clientMessage.nextFrame();
             const partitionId = FixSizedTypesCodec.decodeInt(initialFrame.content, EVENT_PARTITION_LOST_PARTITION_ID_OFFSET);
             const lostBackupCount = FixSizedTypesCodec.decodeInt(initialFrame.content, EVENT_PARTITION_LOST_LOST_BACKUP_COUNT_OFFSET);
             const source = FixSizedTypesCodec.decodeUUID(initialFrame.content, EVENT_PARTITION_LOST_SOURCE_OFFSET);

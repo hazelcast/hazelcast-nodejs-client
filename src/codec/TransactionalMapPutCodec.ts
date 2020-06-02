@@ -59,12 +59,11 @@ export class TransactionalMapPutCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): TransactionalMapPutResponseParams {
-        const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.getNextFrame();
+        clientMessage.nextFrame();
 
         return {
-            response: CodecUtil.decodeNullable(iterator, DataCodec.decode),
+            response: CodecUtil.decodeNullable(clientMessage, DataCodec.decode),
         };
     }
 }

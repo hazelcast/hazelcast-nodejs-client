@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ClientMessage, ForwardFrameIterator, Frame} from '../../ClientMessage';
+import {ClientMessage, Frame} from '../../ClientMessage';
 import {BitsUtil} from '../../BitsUtil';
 import {Buffer} from 'safe-buffer';
 import {FixSizedTypesCodec} from './FixSizedTypesCodec';
@@ -29,8 +29,8 @@ export class ListIntegerCodec {
         clientMessage.addFrame(frame);
     }
 
-    static decode(iterator: ForwardFrameIterator): number[] {
-        const frame = iterator.getNextFrame();
+    static decode(clientMessage: ClientMessage): number[] {
+        const frame = clientMessage.nextFrame();
         const itemCount = frame.content.length / BitsUtil.INT_SIZE_IN_BYTES;
         const result = new Array<number>(itemCount);
         for (let i = 0; i < itemCount; i++) {

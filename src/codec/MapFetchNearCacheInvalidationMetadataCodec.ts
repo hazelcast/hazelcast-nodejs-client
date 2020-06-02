@@ -55,13 +55,12 @@ export class MapFetchNearCacheInvalidationMetadataCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): MapFetchNearCacheInvalidationMetadataResponseParams {
-        const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.getNextFrame();
+        clientMessage.nextFrame();
 
         return {
-            namePartitionSequenceList: EntryListCodec.decode(iterator, StringCodec.decode, EntryListIntegerLongCodec.decode),
-            partitionUuidList: EntryListIntegerUUIDCodec.decode(iterator),
+            namePartitionSequenceList: EntryListCodec.decode(clientMessage, StringCodec.decode, EntryListIntegerLongCodec.decode),
+            partitionUuidList: EntryListIntegerUUIDCodec.decode(clientMessage),
         };
     }
 }

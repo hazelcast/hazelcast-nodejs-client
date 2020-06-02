@@ -18,7 +18,7 @@
 import {Buffer} from 'safe-buffer';
 import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
-import {ClientMessage, BEGIN_FRAME, END_FRAME, ForwardFrameIterator, Frame} from '../../ClientMessage';
+import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
 import {StringCodec} from '../builtin/StringCodec';
 import {ListMultiFrameCodec} from '../builtin/ListMultiFrameCodec';
@@ -44,17 +44,17 @@ export class IndexConfigCodec {
         clientMessage.addFrame(END_FRAME.copy());
     }
 
-    static decode(iterator: ForwardFrameIterator): IndexConfig {
+    static decode(clientMessage: ClientMessage): IndexConfig {
         // begin frame
-        iterator.getNextFrame();
+        clientMessage.nextFrame();
 
-        const initialFrame = iterator.getNextFrame();
+        const initialFrame = clientMessage.nextFrame();
         const type: number = FixSizedTypesCodec.decodeInt(initialFrame.content, TYPE_OFFSET);
-        const name: string = CodecUtil.decodeNullable(iterator, StringCodec.decode);
-        const attributes: string[] = ListMultiFrameCodec.decode(iterator, StringCodec.decode);
-        const bitmapIndexOptions: BitmapIndexOptions = CodecUtil.decodeNullable(iterator, BitmapIndexOptionsCodec.decode);
+        const name: string = CodecUtil.decodeNullable(clientMessage, StringCodec.decode);
+        const attributes: string[] = ListMultiFrameCodec.decode(clientMessage, StringCodec.decode);
+        const bitmapIndexOptions: BitmapIndexOptions = CodecUtil.decodeNullable(clientMessage, BitmapIndexOptionsCodec.decode);
 
-        CodecUtil.fastForwardToEndFrame(iterator);
+        CodecUtil.fastForwardToEndFrame(clientMessage);
 
         return new IndexConfig(name, type, attributes, bitmapIndexOptions);
     }

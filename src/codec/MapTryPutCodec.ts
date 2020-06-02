@@ -56,8 +56,7 @@ export class MapTryPutCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): MapTryPutResponseParams {
-        const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.getNextFrame();
+        const initialFrame = clientMessage.nextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),

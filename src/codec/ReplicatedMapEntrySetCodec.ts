@@ -49,12 +49,11 @@ export class ReplicatedMapEntrySetCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): ReplicatedMapEntrySetResponseParams {
-        const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.getNextFrame();
+        clientMessage.nextFrame();
 
         return {
-            response: EntryListCodec.decode(iterator, DataCodec.decode, DataCodec.decode),
+            response: EntryListCodec.decode(clientMessage, DataCodec.decode, DataCodec.decode),
         };
     }
 }

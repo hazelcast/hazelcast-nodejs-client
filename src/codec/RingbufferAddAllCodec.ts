@@ -54,8 +54,7 @@ export class RingbufferAddAllCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): RingbufferAddAllResponseParams {
-        const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.getNextFrame();
+        const initialFrame = clientMessage.nextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_RESPONSE_OFFSET),

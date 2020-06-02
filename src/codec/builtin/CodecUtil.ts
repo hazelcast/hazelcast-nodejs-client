@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-import {ClientMessage, ForwardFrameIterator, Frame, NULL_FRAME} from '../../ClientMessage';
+import {ClientMessage, Frame, NULL_FRAME} from '../../ClientMessage';
 
 export class CodecUtil {
-    static fastForwardToEndFrame(iterator: ForwardFrameIterator): void {
+    static fastForwardToEndFrame(clientMessage: ClientMessage): void {
         // We are starting from 1 because of the BEGIN_FRAME we read
         // in the beginning of the decode method
         let numberOfExpectedEndFrames = 1;
         let frame: Frame;
         while (numberOfExpectedEndFrames !== 0) {
-            frame = iterator.getNextFrame();
+            frame = clientMessage.nextFrame();
             if (frame.isEndFrame()) {
                 numberOfExpectedEndFrames--;
             } else if (frame.isBeginFrame()) {
@@ -40,18 +40,18 @@ export class CodecUtil {
         }
     }
 
-    static decodeNullable<T>(iterator: ForwardFrameIterator, decoder: (it: ForwardFrameIterator) => T): T {
-        return CodecUtil.nextFrameIsNullEndFrame(iterator) ? null : decoder(iterator);
+    static decodeNullable<T>(clientMessage: ClientMessage, decoder: (msg: ClientMessage) => T): T {
+        return CodecUtil.nextFrameIsNullEndFrame(clientMessage) ? null : decoder(clientMessage);
     }
 
-    static nextFrameIsDataStructureEndFrame(iterator: ForwardFrameIterator): boolean {
-        return iterator.peekNextFrame().isEndFrame();
+    static nextFrameIsDataStructureEndFrame(clientMessage: ClientMessage): boolean {
+        return clientMessage.peekNextFrame().isEndFrame();
     }
 
-    static nextFrameIsNullEndFrame(iterator: ForwardFrameIterator): boolean {
-        const isNull = iterator.peekNextFrame().isNullFrame();
+    static nextFrameIsNullEndFrame(clientMessage: ClientMessage): boolean {
+        const isNull = clientMessage.peekNextFrame().isNullFrame();
         if (isNull) {
-            iterator.getNextFrame();
+            clientMessage.nextFrame();
         }
         return isNull;
     }

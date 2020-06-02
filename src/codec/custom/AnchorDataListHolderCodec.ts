@@ -15,7 +15,7 @@
  */
 
 /*tslint:disable:max-line-length*/
-import {ClientMessage, BEGIN_FRAME, END_FRAME, ForwardFrameIterator} from '../../ClientMessage';
+import {ClientMessage, BEGIN_FRAME, END_FRAME} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
 import {ListIntegerCodec} from '../builtin/ListIntegerCodec';
 import {EntryListCodec} from '../builtin/EntryListCodec';
@@ -33,13 +33,13 @@ export class AnchorDataListHolderCodec {
         clientMessage.addFrame(END_FRAME.copy());
     }
 
-    static decode(iterator: ForwardFrameIterator): AnchorDataListHolder {
+    static decode(clientMessage: ClientMessage): AnchorDataListHolder {
         // begin frame
-        iterator.getNextFrame();
-        const anchorPageList: number[] = ListIntegerCodec.decode(iterator);
-        const anchorDataList: Array<[Data, Data]> = EntryListCodec.decode(iterator, DataCodec.decode, DataCodec.decode);
+        clientMessage.nextFrame();
+        const anchorPageList: number[] = ListIntegerCodec.decode(clientMessage);
+        const anchorDataList: Array<[Data, Data]> = EntryListCodec.decode(clientMessage, DataCodec.decode, DataCodec.decode);
 
-        CodecUtil.fastForwardToEndFrame(iterator);
+        CodecUtil.fastForwardToEndFrame(clientMessage);
 
         return new AnchorDataListHolder(anchorPageList, anchorDataList);
     }

@@ -84,34 +84,17 @@ export const NULL_FRAME = new Frame(Buffer.allocUnsafe(0), IS_NULL_FLAG);
 export const BEGIN_FRAME = new Frame(Buffer.allocUnsafe(0), BEGIN_DATA_STRUCTURE_FLAG);
 export const END_FRAME = new Frame(Buffer.allocUnsafe(0), END_DATA_STRUCTURE_FLAG);
 
-export interface ForwardFrameIterator {
-
-    /**
-     * Returns the next frame and consumes the iterator.
-     */
-    getNextFrame(): Frame;
-
-    /**
-     * Returns true if the iterator has a non-null next frame; false otherwise.
-     */
-    hasNextFrame(): boolean;
-
-    /**
-     * Returns the next frame.
-     */
-    peekNextFrame(): Frame;
-}
-
-export class ClientMessage implements ForwardFrameIterator {
+export class ClientMessage {
     startFrame: Frame;
     endFrame: Frame;
     private retryable: boolean;
     private connection: ClientConnection;
-    private nextFrame: Frame;
+    private _nextFrame: Frame;
 
     private constructor(startFrame?: Frame, endFrame?: Frame) {
         this.startFrame = startFrame;
         this.endFrame = endFrame || startFrame;
+        this._nextFrame = startFrame;
     }
 
     static createForEncode(): ClientMessage {
@@ -131,20 +114,20 @@ export class ClientMessage implements ForwardFrameIterator {
         return this.startFrame;
     }
 
-    getNextFrame(): Frame {
-        const result = this.nextFrame;
-        if (this.nextFrame != null) {
-            this.nextFrame = this.nextFrame.next;
+    nextFrame(): Frame {
+        const result = this._nextFrame;
+        if (this._nextFrame != null) {
+            this._nextFrame = this._nextFrame.next;
         }
         return result;
     }
 
     hasNextFrame(): boolean {
-        return this.nextFrame != null;
+        return this._nextFrame != null;
     }
 
     peekNextFrame(): Frame {
-        return this.nextFrame;
+        return this._nextFrame;
     }
 
     addFrame(frame: Frame): void {
@@ -152,16 +135,12 @@ export class ClientMessage implements ForwardFrameIterator {
         if (this.startFrame == null) {
             this.startFrame = frame;
             this.endFrame = frame;
+            this._nextFrame = frame;
             return;
         }
 
         this.endFrame.next = frame;
         this.endFrame = frame;
-    }
-
-    frameIterator(): ForwardFrameIterator {
-        this.nextFrame = this.startFrame;
-        return this;
     }
 
     getMessageType(): number {

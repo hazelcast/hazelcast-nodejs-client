@@ -55,13 +55,12 @@ export class MapEntriesWithPagingPredicateCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): MapEntriesWithPagingPredicateResponseParams {
-        const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.getNextFrame();
+        clientMessage.nextFrame();
 
         return {
-            response: EntryListCodec.decode(iterator, DataCodec.decode, DataCodec.decode),
-            anchorDataList: AnchorDataListHolderCodec.decode(iterator),
+            response: EntryListCodec.decode(clientMessage, DataCodec.decode, DataCodec.decode),
+            anchorDataList: AnchorDataListHolderCodec.decode(clientMessage),
         };
     }
 }

@@ -15,7 +15,7 @@
  */
 
 /*tslint:disable:max-line-length*/
-import {ClientMessage, BEGIN_FRAME, END_FRAME, ForwardFrameIterator} from '../../ClientMessage';
+import {ClientMessage, BEGIN_FRAME, END_FRAME} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
 import {StringCodec} from '../builtin/StringCodec';
 import {DistributedObjectInfo} from '../../DistributedObjectInfo';
@@ -30,13 +30,13 @@ export class DistributedObjectInfoCodec {
         clientMessage.addFrame(END_FRAME.copy());
     }
 
-    static decode(iterator: ForwardFrameIterator): DistributedObjectInfo {
+    static decode(clientMessage: ClientMessage): DistributedObjectInfo {
         // begin frame
-        iterator.getNextFrame();
-        const serviceName: string = StringCodec.decode(iterator);
-        const name: string = StringCodec.decode(iterator);
+        clientMessage.nextFrame();
+        const serviceName: string = StringCodec.decode(clientMessage);
+        const name: string = StringCodec.decode(clientMessage);
 
-        CodecUtil.fastForwardToEndFrame(iterator);
+        CodecUtil.fastForwardToEndFrame(clientMessage);
 
         return new DistributedObjectInfo(serviceName, name);
     }

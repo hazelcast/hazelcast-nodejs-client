@@ -56,13 +56,12 @@ export class PNCounterGetCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): PNCounterGetResponseParams {
-        const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.getNextFrame();
+        const initialFrame = clientMessage.nextFrame();
 
         return {
             value: FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_VALUE_OFFSET),
             replicaCount: FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_REPLICA_COUNT_OFFSET),
-            replicaTimestamps: EntryListUUIDLongCodec.decode(iterator),
+            replicaTimestamps: EntryListUUIDLongCodec.decode(clientMessage),
         };
     }
 }

@@ -18,7 +18,7 @@
 import {Buffer} from 'safe-buffer';
 import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
-import {ClientMessage, BEGIN_FRAME, END_FRAME, ForwardFrameIterator, Frame} from '../../ClientMessage';
+import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
 import {StringCodec} from '../builtin/StringCodec';
 import {BitmapIndexOptions} from '../../config/BitmapIndexOptions';
@@ -39,15 +39,15 @@ export class BitmapIndexOptionsCodec {
         clientMessage.addFrame(END_FRAME.copy());
     }
 
-    static decode(iterator: ForwardFrameIterator): BitmapIndexOptions {
+    static decode(clientMessage: ClientMessage): BitmapIndexOptions {
         // begin frame
-        iterator.getNextFrame();
+        clientMessage.nextFrame();
 
-        const initialFrame = iterator.getNextFrame();
+        const initialFrame = clientMessage.nextFrame();
         const uniqueKeyTransformation: number = FixSizedTypesCodec.decodeInt(initialFrame.content, UNIQUE_KEY_TRANSFORMATION_OFFSET);
-        const uniqueKey: string = StringCodec.decode(iterator);
+        const uniqueKey: string = StringCodec.decode(clientMessage);
 
-        CodecUtil.fastForwardToEndFrame(iterator);
+        CodecUtil.fastForwardToEndFrame(clientMessage);
 
         return new BitmapIndexOptions(uniqueKey, uniqueKeyTransformation);
     }

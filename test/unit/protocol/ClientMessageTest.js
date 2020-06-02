@@ -62,14 +62,11 @@ describe('ClientMessage', function () {
         const copyMessage = originalMessage.copyWithNewCorrelationId();
 
         // get the frame after the start frame for comparison
-        const originalIterator = originalMessage.frameIterator();
-        originalIterator.getNextFrame();
+        originalMessage.nextFrame();
+        copyMessage.nextFrame();
 
-        const copyIterator = copyMessage.frameIterator();
-        copyIterator.getNextFrame();
-
-        const originalFrame = originalIterator.getNextFrame();
-        const copyFrame = copyIterator.getNextFrame();
+        const originalFrame = originalMessage.nextFrame();
+        const copyFrame = copyMessage.nextFrame();
 
         expect(originalFrame.content).to.equal(copyFrame.content);
         expect(originalFrame.flags).to.equal(copyFrame.flags);
@@ -94,11 +91,10 @@ describe('ClientMessage', function () {
 
         clientMessage.addFrame(END_FRAME.copy());
 
-        const iterator = clientMessage.frameIterator();
         // begin frame
-        iterator.getNextFrame();
-        CodecUtil.fastForwardToEndFrame(iterator);
+        clientMessage.nextFrame();
+        CodecUtil.fastForwardToEndFrame(clientMessage);
 
-        expect(iterator.hasNextFrame()).to.be.false;
+        expect(clientMessage.hasNextFrame()).to.be.false;
     });
 });

@@ -15,7 +15,7 @@
  */
 
 import {BitsUtil} from '../../BitsUtil';
-import {ClientMessage, ForwardFrameIterator, Frame} from '../../ClientMessage';
+import {ClientMessage, Frame} from '../../ClientMessage';
 import {UUID} from '../../core/UUID';
 import {Buffer} from 'safe-buffer';
 import {FixSizedTypesCodec} from './FixSizedTypesCodec';
@@ -33,8 +33,8 @@ export class EntryListUUIDUUIDCodec {
         clientMessage.addFrame(frame);
     }
 
-    static decode(iterator: ForwardFrameIterator): Array<[UUID, UUID]> {
-        const frame = iterator.getNextFrame();
+    static decode(clientMessage: ClientMessage): Array<[UUID, UUID]> {
+        const frame = clientMessage.nextFrame();
         const entryCount = frame.content.length / ENTRY_SIZE_IN_BYTES;
         const result = new Array<[UUID, UUID]>(entryCount);
         for (let i = 0; i < entryCount; i++) {

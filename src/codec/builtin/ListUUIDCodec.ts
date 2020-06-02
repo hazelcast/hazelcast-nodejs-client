@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ClientMessage, ForwardFrameIterator, Frame} from '../../ClientMessage';
+import {ClientMessage, Frame} from '../../ClientMessage';
 import {UUID} from '../../core/UUID';
 import {BitsUtil} from '../../BitsUtil';
 import {Buffer} from 'safe-buffer';
@@ -30,8 +30,8 @@ export class ListUUIDCodec {
         clientMessage.addFrame(frame);
     }
 
-    static decode(iterator: ForwardFrameIterator): UUID[] {
-        const frame = iterator.getNextFrame();
+    static decode(clientMessage: ClientMessage): UUID[] {
+        const frame = clientMessage.nextFrame();
         const itemCount = frame.content.length / BitsUtil.UUID_SIZE_IN_BYTES;
         const result = new Array<UUID>(itemCount);
         for (let i = 0; i < itemCount; i++) {

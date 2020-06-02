@@ -60,8 +60,7 @@ export class ReplicatedMapAddNearCacheEntryListenerCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): ReplicatedMapAddNearCacheEntryListenerResponseParams {
-        const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.getNextFrame();
+        const initialFrame = clientMessage.nextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
@@ -70,16 +69,15 @@ export class ReplicatedMapAddNearCacheEntryListenerCodec {
 
     static handle(clientMessage: ClientMessage, handleEntryEvent: (key: Data, value: Data, oldValue: Data, mergingValue: Data, eventType: number, uuid: UUID, numberOfAffectedEntries: number) => void = null): void {
         const messageType = clientMessage.getMessageType();
-        const iterator = clientMessage.frameIterator();
         if (messageType === EVENT_ENTRY_MESSAGE_TYPE && handleEntryEvent !== null) {
-            const initialFrame = iterator.getNextFrame();
+            const initialFrame = clientMessage.nextFrame();
             const eventType = FixSizedTypesCodec.decodeInt(initialFrame.content, EVENT_ENTRY_EVENT_TYPE_OFFSET);
             const uuid = FixSizedTypesCodec.decodeUUID(initialFrame.content, EVENT_ENTRY_UUID_OFFSET);
             const numberOfAffectedEntries = FixSizedTypesCodec.decodeInt(initialFrame.content, EVENT_ENTRY_NUMBER_OF_AFFECTED_ENTRIES_OFFSET);
-            const key = CodecUtil.decodeNullable(iterator, DataCodec.decode);
-            const value = CodecUtil.decodeNullable(iterator, DataCodec.decode);
-            const oldValue = CodecUtil.decodeNullable(iterator, DataCodec.decode);
-            const mergingValue = CodecUtil.decodeNullable(iterator, DataCodec.decode);
+            const key = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
+            const value = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
+            const oldValue = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
+            const mergingValue = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
             handleEntryEvent(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
             return;
         }

@@ -18,7 +18,7 @@
 import {Buffer} from 'safe-buffer';
 import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
-import {ClientMessage, BEGIN_FRAME, END_FRAME, ForwardFrameIterator, Frame} from '../../ClientMessage';
+import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
 import {StringCodec} from '../builtin/StringCodec';
 import {StackTraceElement} from '../../protocol/StackTraceElement';
@@ -44,17 +44,17 @@ export class ErrorHolderCodec {
         clientMessage.addFrame(END_FRAME.copy());
     }
 
-    static decode(iterator: ForwardFrameIterator): ErrorHolder {
+    static decode(clientMessage: ClientMessage): ErrorHolder {
         // begin frame
-        iterator.getNextFrame();
+        clientMessage.nextFrame();
 
-        const initialFrame = iterator.getNextFrame();
+        const initialFrame = clientMessage.nextFrame();
         const errorCode: number = FixSizedTypesCodec.decodeInt(initialFrame.content, ERROR_CODE_OFFSET);
-        const className: string = StringCodec.decode(iterator);
-        const message: string = CodecUtil.decodeNullable(iterator, StringCodec.decode);
-        const stackTraceElements: StackTraceElement[] = ListMultiFrameCodec.decode(iterator, StackTraceElementCodec.decode);
+        const className: string = StringCodec.decode(clientMessage);
+        const message: string = CodecUtil.decodeNullable(clientMessage, StringCodec.decode);
+        const stackTraceElements: StackTraceElement[] = ListMultiFrameCodec.decode(clientMessage, StackTraceElementCodec.decode);
 
-        CodecUtil.fastForwardToEndFrame(iterator);
+        CodecUtil.fastForwardToEndFrame(clientMessage);
 
         return new ErrorHolder(errorCode, className, message, stackTraceElements);
     }

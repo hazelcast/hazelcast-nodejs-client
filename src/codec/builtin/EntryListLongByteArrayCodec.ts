@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {BEGIN_FRAME, ClientMessage, END_FRAME, ForwardFrameIterator} from '../../ClientMessage';
+import {BEGIN_FRAME, ClientMessage, END_FRAME} from '../../ClientMessage';
 import * as Long from 'long';
 import {Buffer} from 'safe-buffer';
 import {ByteArrayCodec} from './ByteArrayCodec';
@@ -34,9 +34,9 @@ export class EntryListLongByteArrayCodec {
         ListLongCodec.encode(clientMessage, keys);
     }
 
-    static decode(iterator: ForwardFrameIterator): Array<[Long, Buffer]> {
-        const values = ListMultiFrameCodec.decode(iterator, ByteArrayCodec.decode);
-        const keys = ListLongCodec.decode(iterator);
+    static decode(clientMessage: ClientMessage): Array<[Long, Buffer]> {
+        const values = ListMultiFrameCodec.decode(clientMessage, ByteArrayCodec.decode);
+        const keys = ListLongCodec.decode(clientMessage);
 
         const result = new Array<[Long, Buffer]>(keys.length);
         for (let i = 0; i < result.length; i++) {

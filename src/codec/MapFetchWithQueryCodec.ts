@@ -56,13 +56,12 @@ export class MapFetchWithQueryCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): MapFetchWithQueryResponseParams {
-        const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.getNextFrame();
+        clientMessage.nextFrame();
 
         return {
-            results: ListMultiFrameCodec.decodeContainsNullable(iterator, DataCodec.decode),
-            iterationPointers: EntryListIntegerIntegerCodec.decode(iterator),
+            results: ListMultiFrameCodec.decodeContainsNullable(clientMessage, DataCodec.decode),
+            iterationPointers: EntryListIntegerIntegerCodec.decode(clientMessage),
         };
     }
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {BEGIN_FRAME, ClientMessage, END_FRAME, ForwardFrameIterator, NULL_FRAME} from '../../ClientMessage';
+import {BEGIN_FRAME, ClientMessage, END_FRAME, NULL_FRAME} from '../../ClientMessage';
 import {CodecUtil} from './CodecUtil';
 
 export class ListMultiFrameCodec {
@@ -48,15 +48,15 @@ export class ListMultiFrameCodec {
         }
     }
 
-    static decode<T>(iterator: ForwardFrameIterator, decoder: (it: ForwardFrameIterator) => T): T[] {
+    static decode<T>(clientMessage: ClientMessage, decoder: (msg: ClientMessage) => T): T[] {
         const result: T[] = [];
         // begin frame
-        iterator.getNextFrame();
-        while (!CodecUtil.nextFrameIsDataStructureEndFrame(iterator)) {
-            result.push(decoder(iterator));
+        clientMessage.nextFrame();
+        while (!CodecUtil.nextFrameIsDataStructureEndFrame(clientMessage)) {
+            result.push(decoder(clientMessage));
         }
         // end frame
-        iterator.getNextFrame();
+        clientMessage.nextFrame();
         return result;
     }
 }

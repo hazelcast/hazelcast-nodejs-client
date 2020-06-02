@@ -16,7 +16,7 @@
 
 import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../../BitsUtil';
-import {ClientMessage, ForwardFrameIterator, Frame} from '../../ClientMessage';
+import {ClientMessage, Frame} from '../../ClientMessage';
 import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 
 const ENTRY_SIZE_IN_BYTES = BitsUtil.INT_SIZE_IN_BYTES + BitsUtil.INT_SIZE_IN_BYTES;
@@ -32,8 +32,8 @@ export class EntryListIntegerIntegerCodec {
         clientMessage.addFrame(frame);
     }
 
-    static decode(iterator: ForwardFrameIterator): Array<[number, number]> {
-        const frame = iterator.getNextFrame();
+    static decode(clientMessage: ClientMessage): Array<[number, number]> {
+        const frame = clientMessage.nextFrame();
         const entryCount = frame.content.length / ENTRY_SIZE_IN_BYTES;
         const result = new Array<[number, number]>(entryCount);
         for (let i = 0; i < entryCount; i++) {

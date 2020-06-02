@@ -18,7 +18,7 @@
 import {Buffer} from 'safe-buffer';
 import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
-import {ClientMessage, BEGIN_FRAME, END_FRAME, ForwardFrameIterator, Frame} from '../../ClientMessage';
+import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
 import {AnchorDataListHolder} from '../../protocol/AnchorDataListHolder';
 import {AnchorDataListHolderCodec} from './AnchorDataListHolderCodec';
@@ -49,20 +49,20 @@ export class PagingPredicateHolderCodec {
         clientMessage.addFrame(END_FRAME.copy());
     }
 
-    static decode(iterator: ForwardFrameIterator): PagingPredicateHolder {
+    static decode(clientMessage: ClientMessage): PagingPredicateHolder {
         // begin frame
-        iterator.getNextFrame();
+        clientMessage.nextFrame();
 
-        const initialFrame = iterator.getNextFrame();
+        const initialFrame = clientMessage.nextFrame();
         const pageSize: number = FixSizedTypesCodec.decodeInt(initialFrame.content, PAGE_SIZE_OFFSET);
         const page: number = FixSizedTypesCodec.decodeInt(initialFrame.content, PAGE_OFFSET);
         const iterationTypeId: number = FixSizedTypesCodec.decodeByte(initialFrame.content, ITERATION_TYPE_ID_OFFSET);
-        const anchorDataListHolder: AnchorDataListHolder = AnchorDataListHolderCodec.decode(iterator);
-        const predicateData: Data = CodecUtil.decodeNullable(iterator, DataCodec.decode);
-        const comparatorData: Data = CodecUtil.decodeNullable(iterator, DataCodec.decode);
-        const partitionKeyData: Data = CodecUtil.decodeNullable(iterator, DataCodec.decode);
+        const anchorDataListHolder: AnchorDataListHolder = AnchorDataListHolderCodec.decode(clientMessage);
+        const predicateData: Data = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
+        const comparatorData: Data = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
+        const partitionKeyData: Data = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
 
-        CodecUtil.fastForwardToEndFrame(iterator);
+        CodecUtil.fastForwardToEndFrame(clientMessage);
 
         return new PagingPredicateHolder(anchorDataListHolder, predicateData, comparatorData, pageSize, page, iterationTypeId, partitionKeyData);
     }

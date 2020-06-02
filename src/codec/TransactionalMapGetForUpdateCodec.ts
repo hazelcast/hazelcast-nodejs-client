@@ -56,12 +56,11 @@ export class TransactionalMapGetForUpdateCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): TransactionalMapGetForUpdateResponseParams {
-        const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.getNextFrame();
+        clientMessage.nextFrame();
 
         return {
-            response: CodecUtil.decodeNullable(iterator, DataCodec.decode),
+            response: CodecUtil.decodeNullable(clientMessage, DataCodec.decode),
         };
     }
 }

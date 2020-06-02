@@ -65,14 +65,13 @@ export class MapEventJournalReadCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): MapEventJournalReadResponseParams {
-        const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.getNextFrame();
+        const initialFrame = clientMessage.nextFrame();
 
         return {
             readCount: FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_READ_COUNT_OFFSET),
             nextSeq: FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_NEXT_SEQ_OFFSET),
-            items: ListMultiFrameCodec.decode(iterator, DataCodec.decode),
-            itemSeqs: CodecUtil.decodeNullable(iterator, LongArrayCodec.decode),
+            items: ListMultiFrameCodec.decode(clientMessage, DataCodec.decode),
+            itemSeqs: CodecUtil.decodeNullable(clientMessage, LongArrayCodec.decode),
         };
     }
 }

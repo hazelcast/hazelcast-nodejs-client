@@ -54,13 +54,12 @@ export class MapFetchKeysCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): MapFetchKeysResponseParams {
-        const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.getNextFrame();
+        clientMessage.nextFrame();
 
         return {
-            iterationPointers: EntryListIntegerIntegerCodec.decode(iterator),
-            keys: ListMultiFrameCodec.decode(iterator, DataCodec.decode),
+            iterationPointers: EntryListIntegerIntegerCodec.decode(clientMessage),
+            keys: ListMultiFrameCodec.decode(clientMessage, DataCodec.decode),
         };
     }
 }

@@ -53,8 +53,7 @@ export class MultiMapValueCountCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): MultiMapValueCountResponseParams {
-        const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.getNextFrame();
+        const initialFrame = clientMessage.nextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_RESPONSE_OFFSET),

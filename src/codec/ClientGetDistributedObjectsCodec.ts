@@ -47,12 +47,11 @@ export class ClientGetDistributedObjectsCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): ClientGetDistributedObjectsResponseParams {
-        const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.getNextFrame();
+        clientMessage.nextFrame();
 
         return {
-            response: ListMultiFrameCodec.decode(iterator, DistributedObjectInfoCodec.decode),
+            response: ListMultiFrameCodec.decode(clientMessage, DistributedObjectInfoCodec.decode),
         };
     }
 }

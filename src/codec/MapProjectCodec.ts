@@ -50,12 +50,11 @@ export class MapProjectCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): MapProjectResponseParams {
-        const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.getNextFrame();
+        clientMessage.nextFrame();
 
         return {
-            response: ListMultiFrameCodec.decodeContainsNullable(iterator, DataCodec.decode),
+            response: ListMultiFrameCodec.decodeContainsNullable(clientMessage, DataCodec.decode),
         };
     }
 }

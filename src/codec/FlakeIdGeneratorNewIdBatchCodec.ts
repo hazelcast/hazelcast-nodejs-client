@@ -54,8 +54,7 @@ export class FlakeIdGeneratorNewIdBatchCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): FlakeIdGeneratorNewIdBatchResponseParams {
-        const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.getNextFrame();
+        const initialFrame = clientMessage.nextFrame();
 
         return {
             base: FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_BASE_OFFSET),

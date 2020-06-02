@@ -74,8 +74,7 @@ export class ClientAuthenticationCustomCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): ClientAuthenticationCustomResponseParams {
-        const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.getNextFrame();
+        const initialFrame = clientMessage.nextFrame();
 
         return {
             status: FixSizedTypesCodec.decodeByte(initialFrame.content, RESPONSE_STATUS_OFFSET),
@@ -84,8 +83,8 @@ export class ClientAuthenticationCustomCodec {
             partitionCount: FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_PARTITION_COUNT_OFFSET),
             clusterId: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_CLUSTER_ID_OFFSET),
             failoverSupported: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_FAILOVER_SUPPORTED_OFFSET),
-            address: CodecUtil.decodeNullable(iterator, AddressCodec.decode),
-            serverHazelcastVersion: StringCodec.decode(iterator),
+            address: CodecUtil.decodeNullable(clientMessage, AddressCodec.decode),
+            serverHazelcastVersion: StringCodec.decode(clientMessage),
         };
     }
 }

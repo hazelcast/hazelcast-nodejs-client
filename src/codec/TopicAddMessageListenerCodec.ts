@@ -57,8 +57,7 @@ export class TopicAddMessageListenerCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): TopicAddMessageListenerResponseParams {
-        const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.getNextFrame();
+        const initialFrame = clientMessage.nextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
@@ -67,12 +66,11 @@ export class TopicAddMessageListenerCodec {
 
     static handle(clientMessage: ClientMessage, handleTopicEvent: (item: Data, publishTime: Long, uuid: UUID) => void = null): void {
         const messageType = clientMessage.getMessageType();
-        const iterator = clientMessage.frameIterator();
         if (messageType === EVENT_TOPIC_MESSAGE_TYPE && handleTopicEvent !== null) {
-            const initialFrame = iterator.getNextFrame();
+            const initialFrame = clientMessage.nextFrame();
             const publishTime = FixSizedTypesCodec.decodeLong(initialFrame.content, EVENT_TOPIC_PUBLISH_TIME_OFFSET);
             const uuid = FixSizedTypesCodec.decodeUUID(initialFrame.content, EVENT_TOPIC_UUID_OFFSET);
-            const item = DataCodec.decode(iterator);
+            const item = DataCodec.decode(clientMessage);
             handleTopicEvent(item, publishTime, uuid);
             return;
         }

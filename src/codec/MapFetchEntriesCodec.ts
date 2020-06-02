@@ -54,13 +54,12 @@ export class MapFetchEntriesCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): MapFetchEntriesResponseParams {
-        const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.getNextFrame();
+        clientMessage.nextFrame();
 
         return {
-            iterationPointers: EntryListIntegerIntegerCodec.decode(iterator),
-            entries: EntryListCodec.decode(iterator, DataCodec.decode, DataCodec.decode),
+            iterationPointers: EntryListIntegerIntegerCodec.decode(clientMessage),
+            entries: EntryListCodec.decode(clientMessage, DataCodec.decode, DataCodec.decode),
         };
     }
 }

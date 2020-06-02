@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ClientMessage, ForwardFrameIterator, Frame, NULL_FRAME} from '../../ClientMessage';
+import {ClientMessage, Frame, NULL_FRAME} from '../../ClientMessage';
 import {Data} from '../../serialization/Data';
 import {HeapData} from '../../serialization/HeapData';
 import {CodecUtil} from './CodecUtil';
@@ -32,11 +32,11 @@ export class DataCodec {
         }
     }
 
-    static decode(iterator: ForwardFrameIterator): Data {
-        return new HeapData(iterator.getNextFrame().content);
+    static decode(clientMessage: ClientMessage): Data {
+        return new HeapData(clientMessage.nextFrame().content);
     }
 
-    static decodeNullable(iterator: ForwardFrameIterator): Data {
-        return CodecUtil.nextFrameIsNullEndFrame(iterator) ? null : this.decode(iterator);
+    static decodeNullable(clientMessage: ClientMessage): Data {
+        return CodecUtil.nextFrameIsNullEndFrame(clientMessage) ? null : this.decode(clientMessage);
     }
 }

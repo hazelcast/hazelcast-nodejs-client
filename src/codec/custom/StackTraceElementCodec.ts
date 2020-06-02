@@ -18,7 +18,7 @@
 import {Buffer} from 'safe-buffer';
 import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
-import {ClientMessage, BEGIN_FRAME, END_FRAME, ForwardFrameIterator, Frame} from '../../ClientMessage';
+import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
 import {StringCodec} from '../builtin/StringCodec';
 import {StackTraceElement} from '../../protocol/StackTraceElement';
@@ -41,17 +41,17 @@ export class StackTraceElementCodec {
         clientMessage.addFrame(END_FRAME.copy());
     }
 
-    static decode(iterator: ForwardFrameIterator): StackTraceElement {
+    static decode(clientMessage: ClientMessage): StackTraceElement {
         // begin frame
-        iterator.getNextFrame();
+        clientMessage.nextFrame();
 
-        const initialFrame = iterator.getNextFrame();
+        const initialFrame = clientMessage.nextFrame();
         const lineNumber: number = FixSizedTypesCodec.decodeInt(initialFrame.content, LINE_NUMBER_OFFSET);
-        const className: string = StringCodec.decode(iterator);
-        const methodName: string = StringCodec.decode(iterator);
-        const fileName: string = CodecUtil.decodeNullable(iterator, StringCodec.decode);
+        const className: string = StringCodec.decode(clientMessage);
+        const methodName: string = StringCodec.decode(clientMessage);
+        const fileName: string = CodecUtil.decodeNullable(clientMessage, StringCodec.decode);
 
-        CodecUtil.fastForwardToEndFrame(iterator);
+        CodecUtil.fastForwardToEndFrame(clientMessage);
 
         return new StackTraceElement(className, methodName, fileName, lineNumber);
     }

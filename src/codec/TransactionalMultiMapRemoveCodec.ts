@@ -56,12 +56,11 @@ export class TransactionalMultiMapRemoveCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): TransactionalMultiMapRemoveResponseParams {
-        const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.getNextFrame();
+        clientMessage.nextFrame();
 
         return {
-            response: ListMultiFrameCodec.decode(iterator, DataCodec.decode),
+            response: ListMultiFrameCodec.decode(clientMessage, DataCodec.decode),
         };
     }
 }

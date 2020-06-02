@@ -18,7 +18,7 @@
 import {Buffer} from 'safe-buffer';
 import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
-import {ClientMessage, BEGIN_FRAME, END_FRAME, ForwardFrameIterator, Frame} from '../../ClientMessage';
+import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
 import {UUID} from '../../core/UUID';
 import {Address} from '../../Address';
@@ -49,18 +49,18 @@ export class MemberInfoCodec {
         clientMessage.addFrame(END_FRAME.copy());
     }
 
-    static decode(iterator: ForwardFrameIterator): MemberInfo {
+    static decode(clientMessage: ClientMessage): MemberInfo {
         // begin frame
-        iterator.getNextFrame();
+        clientMessage.nextFrame();
 
-        const initialFrame = iterator.getNextFrame();
+        const initialFrame = clientMessage.nextFrame();
         const uuid: UUID = FixSizedTypesCodec.decodeUUID(initialFrame.content, UUID_OFFSET);
         const liteMember: boolean = FixSizedTypesCodec.decodeBoolean(initialFrame.content, LITE_MEMBER_OFFSET);
-        const address: Address = AddressCodec.decode(iterator);
-        const attributes: Map<string, string> = MapCodec.decode(iterator, StringCodec.decode, StringCodec.decode);
-        const version: MemberVersion = MemberVersionCodec.decode(iterator);
+        const address: Address = AddressCodec.decode(clientMessage);
+        const attributes: Map<string, string> = MapCodec.decode(clientMessage, StringCodec.decode, StringCodec.decode);
+        const version: MemberVersion = MemberVersionCodec.decode(clientMessage);
 
-        CodecUtil.fastForwardToEndFrame(iterator);
+        CodecUtil.fastForwardToEndFrame(clientMessage);
 
         return new MemberInfo(address, uuid, attributes, liteMember, version);
     }

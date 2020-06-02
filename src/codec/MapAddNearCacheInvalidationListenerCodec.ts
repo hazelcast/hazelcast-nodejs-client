@@ -66,8 +66,7 @@ export class MapAddNearCacheInvalidationListenerCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): MapAddNearCacheInvalidationListenerResponseParams {
-        const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.getNextFrame();
+        const initialFrame = clientMessage.nextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
@@ -76,23 +75,22 @@ export class MapAddNearCacheInvalidationListenerCodec {
 
     static handle(clientMessage: ClientMessage, handleIMapInvalidationEvent: (key: Data, sourceUuid: UUID, partitionUuid: UUID, sequence: Long) => void = null, handleIMapBatchInvalidationEvent: (keys: Data[], sourceUuids: UUID[], partitionUuids: UUID[], sequences: Long[]) => void = null): void {
         const messageType = clientMessage.getMessageType();
-        const iterator = clientMessage.frameIterator();
         if (messageType === EVENT_I_MAP_INVALIDATION_MESSAGE_TYPE && handleIMapInvalidationEvent !== null) {
-            const initialFrame = iterator.getNextFrame();
+            const initialFrame = clientMessage.nextFrame();
             const sourceUuid = FixSizedTypesCodec.decodeUUID(initialFrame.content, EVENT_I_MAP_INVALIDATION_SOURCE_UUID_OFFSET);
             const partitionUuid = FixSizedTypesCodec.decodeUUID(initialFrame.content, EVENT_I_MAP_INVALIDATION_PARTITION_UUID_OFFSET);
             const sequence = FixSizedTypesCodec.decodeLong(initialFrame.content, EVENT_I_MAP_INVALIDATION_SEQUENCE_OFFSET);
-            const key = CodecUtil.decodeNullable(iterator, DataCodec.decode);
+            const key = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
             handleIMapInvalidationEvent(key, sourceUuid, partitionUuid, sequence);
             return;
         }
         if (messageType === EVENT_I_MAP_BATCH_INVALIDATION_MESSAGE_TYPE && handleIMapBatchInvalidationEvent !== null) {
             // empty initial frame
-            iterator.getNextFrame();
-            const keys = ListMultiFrameCodec.decode(iterator, DataCodec.decode);
-            const sourceUuids = ListUUIDCodec.decode(iterator);
-            const partitionUuids = ListUUIDCodec.decode(iterator);
-            const sequences = ListLongCodec.decode(iterator);
+            clientMessage.nextFrame();
+            const keys = ListMultiFrameCodec.decode(clientMessage, DataCodec.decode);
+            const sourceUuids = ListUUIDCodec.decode(clientMessage);
+            const partitionUuids = ListUUIDCodec.decode(clientMessage);
+            const sequences = ListLongCodec.decode(clientMessage);
             handleIMapBatchInvalidationEvent(keys, sourceUuids, partitionUuids, sequences);
             return;
         }

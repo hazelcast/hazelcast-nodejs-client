@@ -18,7 +18,7 @@
 import {Buffer} from 'safe-buffer';
 import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
-import {ClientMessage, BEGIN_FRAME, END_FRAME, ForwardFrameIterator, Frame} from '../../ClientMessage';
+import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
 import {MemberVersion} from '../../core/MemberVersion';
 
@@ -40,16 +40,16 @@ export class MemberVersionCodec {
         clientMessage.addFrame(END_FRAME.copy());
     }
 
-    static decode(iterator: ForwardFrameIterator): MemberVersion {
+    static decode(clientMessage: ClientMessage): MemberVersion {
         // begin frame
-        iterator.getNextFrame();
+        clientMessage.nextFrame();
 
-        const initialFrame = iterator.getNextFrame();
+        const initialFrame = clientMessage.nextFrame();
         const major: number = FixSizedTypesCodec.decodeByte(initialFrame.content, MAJOR_OFFSET);
         const minor: number = FixSizedTypesCodec.decodeByte(initialFrame.content, MINOR_OFFSET);
         const patch: number = FixSizedTypesCodec.decodeByte(initialFrame.content, PATCH_OFFSET);
 
-        CodecUtil.fastForwardToEndFrame(iterator);
+        CodecUtil.fastForwardToEndFrame(clientMessage);
 
         return new MemberVersion(major, minor, patch);
     }

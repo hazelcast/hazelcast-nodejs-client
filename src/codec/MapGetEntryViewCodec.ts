@@ -57,12 +57,11 @@ export class MapGetEntryViewCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): MapGetEntryViewResponseParams {
-        const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.getNextFrame();
+        const initialFrame = clientMessage.nextFrame();
 
         return {
             maxIdle: FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_MAX_IDLE_OFFSET),
-            response: CodecUtil.decodeNullable(iterator, SimpleEntryViewCodec.decode),
+            response: CodecUtil.decodeNullable(clientMessage, SimpleEntryViewCodec.decode),
         };
     }
 }

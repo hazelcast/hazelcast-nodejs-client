@@ -53,18 +53,17 @@ export class ClientAddClusterViewListenerCodec {
 
     static handle(clientMessage: ClientMessage, handleMembersViewEvent: (version: number, memberInfos: MemberInfo[]) => void = null, handlePartitionsViewEvent: (version: number, partitions: Array<[UUID, number[]]>) => void = null): void {
         const messageType = clientMessage.getMessageType();
-        const iterator = clientMessage.frameIterator();
         if (messageType === EVENT_MEMBERS_VIEW_MESSAGE_TYPE && handleMembersViewEvent !== null) {
-            const initialFrame = iterator.getNextFrame();
+            const initialFrame = clientMessage.nextFrame();
             const version = FixSizedTypesCodec.decodeInt(initialFrame.content, EVENT_MEMBERS_VIEW_VERSION_OFFSET);
-            const memberInfos = ListMultiFrameCodec.decode(iterator, MemberInfoCodec.decode);
+            const memberInfos = ListMultiFrameCodec.decode(clientMessage, MemberInfoCodec.decode);
             handleMembersViewEvent(version, memberInfos);
             return;
         }
         if (messageType === EVENT_PARTITIONS_VIEW_MESSAGE_TYPE && handlePartitionsViewEvent !== null) {
-            const initialFrame = iterator.getNextFrame();
+            const initialFrame = clientMessage.nextFrame();
             const version = FixSizedTypesCodec.decodeInt(initialFrame.content, EVENT_PARTITIONS_VIEW_VERSION_OFFSET);
-            const partitions = EntryListUUIDListIntegerCodec.decode(iterator);
+            const partitions = EntryListUUIDListIntegerCodec.decode(clientMessage);
             handlePartitionsViewEvent(version, partitions);
             return;
         }

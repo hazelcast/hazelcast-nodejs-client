@@ -15,14 +15,14 @@
  */
 
 import {Buffer} from 'safe-buffer';
-import {ClientMessage, ForwardFrameIterator, Frame} from '../../ClientMessage';
+import {ClientMessage, Frame} from '../../ClientMessage';
 
 export class ByteArrayCodec {
     static encode(clientMessage: ClientMessage, bytes: Buffer): void {
         clientMessage.addFrame(new Frame(bytes));
     }
 
-    static decode(iterator: ForwardFrameIterator): Buffer {
-        return iterator.getNextFrame().content;
+    static decode(clientMessage: ClientMessage): Buffer {
+        return clientMessage.nextFrame().content;
     }
 }

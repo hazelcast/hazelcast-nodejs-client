@@ -49,12 +49,11 @@ export class MapAddInterceptorCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): MapAddInterceptorResponseParams {
-        const iterator = clientMessage.frameIterator();
         // empty initial frame
-        iterator.getNextFrame();
+        clientMessage.nextFrame();
 
         return {
-            response: StringCodec.decode(iterator),
+            response: StringCodec.decode(clientMessage),
         };
     }
 }

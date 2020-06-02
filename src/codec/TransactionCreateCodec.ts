@@ -55,8 +55,7 @@ export class TransactionCreateCodec {
     }
 
     static decodeResponse(clientMessage: ClientMessage): TransactionCreateResponseParams {
-        const iterator = clientMessage.frameIterator();
-        const initialFrame = iterator.getNextFrame();
+        const initialFrame = clientMessage.nextFrame();
 
         return {
             response: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
