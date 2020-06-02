@@ -19,7 +19,7 @@ import {randomInt} from '../Util';
 import {Member} from '../core/Member';
 
 // tslint:disable-next-line:no-bitwise
-const INITIAL_SEED_CAP = Math.ceil(Number.MAX_SAFE_INTEGER / (1 << 16));
+const INITIAL_SEED_CAP = 1 << 16;
 
 /**
  * A {@link LoadBalancer} implementation that relies on using round robin
