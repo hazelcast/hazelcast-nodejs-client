@@ -1,5 +1,5 @@
-set HZ_VERSION="4.0"
-set HZ_TEST_VERSION="4.0"
+set HZ_VERSION="4.0.2-SNAPSHOT"
+set HZ_TEST_VERSION="4.0.2-SNAPSHOT"
 set HAZELCAST_TEST_VERSION=%HZ_TEST_VERSION%
 set HAZELCAST_VERSION=%HZ_VERSION%
 set HAZELCAST_ENTERPRISE_VERSION=%HZ_VERSION%
@@ -67,7 +67,7 @@ if defined HAZELCAST_ENTERPRISE_KEY (
     	echo hazelcast-enterprise-test.jar already exists, not downloading from maven.
     ) else (
     	echo Downloading: hazelcast enterprise test jar com.hazelcast:hazelcast-enterprise:%HAZELCAST_ENTERPRISE_VERSION%:jar:tests
-    	call mvn -q dependency:get -DrepoUrl=%TEST_REPO% -Dartifact=com.hazelcast:hazelcast-enterprise:%HAZELCAST_TEST_VERSION%:jar:tests -Ddest=hazelcast-enterprise-%HAZELCAST_TEST_VERSION%-tests.jar
+    	call mvn -q dependency:get -DrepoUrl=%ENTRERPRISE_TEST_REPO% -Dartifact=com.hazelcast:hazelcast-enterprise:%HAZELCAST_TEST_VERSION%:jar:tests -Ddest=hazelcast-enterprise-%HAZELCAST_TEST_VERSION%-tests.jar
     	if errorlevel 1 (
     		echo Failed download hazelcast enterprise test jar com.hazelcast:hazelcast-enterprise:%HAZELCAST_TEST_VERSION%:jar:tests
     		exit 1

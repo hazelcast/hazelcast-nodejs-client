@@ -1,6 +1,6 @@
 #!/bin/sh
-HZ_VERSION="4.0"
-HZ_TEST_VERSION="4.0"
+HZ_VERSION="4.0.2-SNAPSHOT"
+HZ_TEST_VERSION="4.0.2-SNAPSHOT"
 HAZELCAST_TEST_VERSION=${HZ_TEST_VERSION}
 HAZELCAST_VERSION=${HZ_VERSION}
 HAZELCAST_ENTERPRISE_VERSION=${HZ_VERSION}
@@ -69,7 +69,7 @@ if [ -n "${HAZELCAST_ENTERPRISE_KEY}" ]; then
         echo "hazelcast-enterprise-tests.jar already exists, not downloading from maven."
     else
         echo "Downloading: hazelcast enterprise test jar com.hazelcast:hazelcast-enterprise:${HAZELCAST_TEST_VERSION}:jar:tests"
-        mvn -q org.apache.maven.plugins:maven-dependency-plugin:2.8:get -DrepoUrl=${ENTERPRISE_REPO} -Dartifact=com.hazelcast:hazelcast-enterprise:${HAZELCAST_TEST_VERSION}:jar:tests -Ddest=hazelcast-enterprise-${HAZELCAST_TEST_VERSION}-tests.jar
+        mvn -q org.apache.maven.plugins:maven-dependency-plugin:2.8:get -DrepoUrl=${ENTRERPRISE_TEST_REPO} -Dartifact=com.hazelcast:hazelcast-enterprise:${HAZELCAST_TEST_VERSION}:jar:tests -Ddest=hazelcast-enterprise-${HAZELCAST_TEST_VERSION}-tests.jar
         if [ $? -ne 0 ]; then
             echo "Failed to download hazelcast enterprise test jar com.hazelcast:hazelcast-enterprise:${HAZELCAST_TEST_VERSION}:jar:tests"
             exit 1
