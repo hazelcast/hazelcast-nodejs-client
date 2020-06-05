@@ -225,4 +225,15 @@ describe('ConnectionStrategyTest', function () {
             })
     });
 
+    it('client with async start should should reject get partition specific proxy calls when there is no cluster', function () {
+        const config = new Config.ClientConfig();
+        config.connectionStrategyConfig.asyncStart = true;
+
+        return Client.newHazelcastClient(config)
+            .then((c) => {
+                client = c;
+                return expect(client.getList(TestUtil.randomString())).to.be.rejectedWith(Errors.ClientOfflineError);
+            });
+    });
+
 });

@@ -42,6 +42,9 @@ import {ClientMessage} from '../ClientMessage';
 import {UUID} from '../core/UUID';
 import {ClientCreateProxiesCodec} from '../codec/ClientCreateProxiesCodec';
 import {BaseProxy} from './BaseProxy';
+import {Ringbuffer} from './Ringbuffer';
+
+const RINGBUFFER_PREFIX = '_hz_rb_';
 
 export class ProxyManager {
     public static readonly MAP_SERVICE: string = 'hz:impl:mapService';
@@ -91,38 +94,25 @@ export class ProxyManager {
 
         const deferred = DeferredPromise<DistributedObject>();
         this.proxies.set(fullName, deferred.promise);
-        let newProxy: DistributedObject;
-        if (serviceName === ProxyManager.MAP_SERVICE && this.client.getConfig().getNearCacheConfig(name)) {
-            newProxy = new NearCachedMapProxy(this.client, serviceName, name);
-        } else if (serviceName === ProxyManager.RELIABLETOPIC_SERVICE) {
-            newProxy = new ReliableTopicProxy(this.client, serviceName, name);
-            if (createAtServer) {
-                (newProxy as ReliableTopicProxy<any>).setRingbuffer().then(() => {
-                    return this.createProxy(newProxy);
-                }).then(function (): void {
-                    deferred.resolve(newProxy);
-                }).catch((error) => {
-                    this.proxies.delete(fullName);
-                    deferred.reject(error);
-                });
-            } else {
-                deferred.resolve(newProxy);
-            }
-            return deferred.promise;
+
+        let createProxyPromise: Promise<any>;
+        if (createAtServer) {
+            createProxyPromise = this.createProxy(name, serviceName);
         } else {
-            newProxy = new this.service[serviceName](this.client, serviceName, name);
+            createProxyPromise = Promise.resolve();
         }
 
-        if (createAtServer) {
-            this.createProxy(newProxy).then(function (): void {
-                deferred.resolve(newProxy);
-            }).catch((error) => {
+        createProxyPromise
+            .then(() => {
+                return this.initializeLocalProxy(name, serviceName, createAtServer);
+            })
+            .then((localProxy) => {
+                deferred.resolve(localProxy);
+            })
+            .catch((error) => {
                 this.proxies.delete(fullName);
                 deferred.reject(error);
             });
-        } else {
-            deferred.resolve(newProxy);
-        }
 
         return deferred.promise;
     }
@@ -195,8 +185,8 @@ export class ProxyManager {
         this.proxies.clear();
     }
 
-    private createProxy(proxyObject: DistributedObject): Promise<ClientMessage> {
-        const request = ClientCreateProxyCodec.encodeRequest(proxyObject.getName(), proxyObject.getServiceName());
+    private createProxy(name: string, serviceName: string): Promise<ClientMessage> {
+        const request = ClientCreateProxyCodec.encodeRequest(name, serviceName);
         return this.client.getInvocationService().invokeOnRandomTarget(request);
     }
 
@@ -212,5 +202,27 @@ export class ProxyManager {
                 return ClientRemoveDistributedObjectListenerCodec.encodeRequest(listenerId);
             },
         };
+    }
+
+    private initializeLocalProxy(name: string, serviceName: string, createAtServer: boolean): Promise<DistributedObject> {
+        let localProxy: DistributedObject;
+
+        if (serviceName === ProxyManager.MAP_SERVICE && this.client.getConfig().getNearCacheConfig(name)) {
+            localProxy = new NearCachedMapProxy(this.client, serviceName, name);
+        } else {
+            // This call may throw ClientOfflineError for partition specific proxies with async start
+            localProxy = new this.service[serviceName](this.client, serviceName, name);
+        }
+
+        if (serviceName === ProxyManager.RELIABLETOPIC_SERVICE) {
+            return this.getOrCreateProxy(RINGBUFFER_PREFIX + name, ProxyManager.RINGBUFFER_SERVICE, createAtServer)
+                .then((ringbuffer) => {
+                    (localProxy as ReliableTopicProxy<any>).setRingbuffer((ringbuffer as Ringbuffer<any>));
+                    return localProxy;
+                });
+        } else {
+            return Promise.resolve(localProxy);
+        }
+
     }
 }

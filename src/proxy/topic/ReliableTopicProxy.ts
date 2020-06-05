@@ -30,7 +30,6 @@ import {MessageListener} from './MessageListener';
 import {TopicOverloadPolicy} from './TopicOverloadPolicy';
 import Long = require('long');
 
-export const RINGBUFFER_PREFIX = '_hz_rb_';
 export const TOPIC_INITIAL_BACKOFF = 100;
 export const TOPIC_MAX_BACKOFF = 2000;
 
@@ -52,10 +51,8 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         this.name = name;
     }
 
-    setRingbuffer(): Promise<void> {
-        return this.client.getRingbuffer<ReliableTopicMessage>(RINGBUFFER_PREFIX + this.name).then((buffer) => {
-            this.ringbuffer = buffer;
-        });
+    setRingbuffer(ringbuffer: Ringbuffer<ReliableTopicMessage>): void {
+        this.ringbuffer = ringbuffer;
     }
 
     addMessageListener(listener: MessageListener<E>): string {
