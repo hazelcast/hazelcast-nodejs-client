@@ -15,7 +15,6 @@
  */
 
 /*tslint:disable:max-line-length*/
-import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
 import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
 import {ClientMessage, Frame, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
@@ -39,7 +38,7 @@ export class TransactionalMapDeleteCodec {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(false);
 
-        const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE, UNFRAGMENTED_MESSAGE);
         FixSizedTypesCodec.encodeUUID(initialFrame.content, REQUEST_TXN_ID_OFFSET, txnId);
         FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_THREAD_ID_OFFSET, threadId);
         clientMessage.addFrame(initialFrame);

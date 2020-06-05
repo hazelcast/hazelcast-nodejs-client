@@ -50,6 +50,10 @@ export class Frame {
         this.flags = flags || DEFAULT_FLAGS;
     }
 
+    static createInitialFrame(size: number, flags?: number): Frame {
+        return new Frame(Buffer.allocUnsafe(size), flags);
+    }
+
     getLength(): number {
         return SIZE_OF_FRAME_LENGTH_AND_FLAGS + this.content.length;
     }

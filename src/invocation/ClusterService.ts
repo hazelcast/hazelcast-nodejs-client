@@ -236,11 +236,11 @@ export class ClusterService implements Cluster {
 
         const deadMembers = new Map<string, Member>();
         for (const member of prevMembers) {
-            deadMembers.set(member.hashCodeString(), member);
+            deadMembers.set(member.id(), member);
         }
 
         for (const member of currentMembers) {
-            if (!deadMembers.delete(member.hashCodeString())) {
+            if (!deadMembers.delete(member.id())) {
                 newMembers.push(member);
             }
         }

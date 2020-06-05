@@ -44,14 +44,15 @@ export class HazelcastCloudAddressProvider implements AddressProvider {
         if (address == null) {
             return Promise.resolve(null);
         }
-        const publicAddress = this.privateToPublic.get(address.toString());
+        let publicAddress = this.privateToPublic.get(address.toString());
         if (publicAddress != null) {
             return Promise.resolve(publicAddress);
         }
 
         return this.refresh().then(() => {
-            if (this.privateToPublic.get(address.toString())) {
-                return this.privateToPublic.get(address.toString());
+            publicAddress = this.privateToPublic.get(address.toString());
+            if (publicAddress != null) {
+                return publicAddress;
             } else {
                 return null;
             }

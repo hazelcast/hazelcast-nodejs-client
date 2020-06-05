@@ -15,7 +15,6 @@
  */
 
 /*tslint:disable:max-line-length*/
-import {Buffer} from 'safe-buffer';
 import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
 import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame} from '../../ClientMessage';
@@ -37,7 +36,7 @@ export class MemberInfoCodec {
     static encode(clientMessage: ClientMessage, memberInfo: MemberInfo): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());
 
-        const initialFrame = new Frame(Buffer.allocUnsafe(INITIAL_FRAME_SIZE));
+        const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE);
         FixSizedTypesCodec.encodeUUID(initialFrame.content, UUID_OFFSET, memberInfo.uuid);
         FixSizedTypesCodec.encodeBoolean(initialFrame.content, LITE_MEMBER_OFFSET, memberInfo.liteMember);
         clientMessage.addFrame(initialFrame);

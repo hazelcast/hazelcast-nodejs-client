@@ -15,7 +15,6 @@
  */
 
 /*tslint:disable:max-line-length*/
-import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
 import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
 import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
@@ -39,12 +38,13 @@ const EVENT_PARTITION_LOST_SOURCE_OFFSET = EVENT_PARTITION_LOST_LOST_BACKUP_COUN
 export interface ClientAddPartitionLostListenerResponseParams {
     response: UUID;
 }
+
 export class ClientAddPartitionLostListenerCodec {
     static encodeRequest(localOnly: boolean): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(false);
 
-        const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE, UNFRAGMENTED_MESSAGE);
         FixSizedTypesCodec.encodeBoolean(initialFrame.content, REQUEST_LOCAL_ONLY_OFFSET, localOnly);
         clientMessage.addFrame(initialFrame);
         clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);

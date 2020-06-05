@@ -15,7 +15,6 @@
  */
 
 /*tslint:disable:max-line-length*/
-import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
 import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
 import {ClientMessage, Frame, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
@@ -36,12 +35,13 @@ const REQUEST_INITIAL_FRAME_SIZE = REQUEST_TO_OFFSET + BitsUtil.INT_SIZE_IN_BYTE
 export interface ListSubResponseParams {
     response: Data[];
 }
+
 export class ListSubCodec {
     static encodeRequest(name: string, from: number, to: number): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(true);
 
-        const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE, UNFRAGMENTED_MESSAGE);
         FixSizedTypesCodec.encodeInt(initialFrame.content, REQUEST_FROM_OFFSET, from);
         FixSizedTypesCodec.encodeInt(initialFrame.content, REQUEST_TO_OFFSET, to);
         clientMessage.addFrame(initialFrame);

@@ -15,7 +15,6 @@
  */
 
 /*tslint:disable:max-line-length*/
-import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
 import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
 import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
@@ -41,12 +40,13 @@ export interface PNCounterAddResponseParams {
     replicaTimestamps: Array<[UUID, Long]>;
     replicaCount: number;
 }
+
 export class PNCounterAddCodec {
     static encodeRequest(name: string, delta: Long, getBeforeUpdate: boolean, replicaTimestamps: Array<[UUID, Long]>, targetReplicaUUID: UUID): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(false);
 
-        const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE, UNFRAGMENTED_MESSAGE);
         FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_DELTA_OFFSET, delta);
         FixSizedTypesCodec.encodeBoolean(initialFrame.content, REQUEST_GET_BEFORE_UPDATE_OFFSET, getBeforeUpdate);
         FixSizedTypesCodec.encodeUUID(initialFrame.content, REQUEST_TARGET_REPLICA_UUID_OFFSET, targetReplicaUUID);

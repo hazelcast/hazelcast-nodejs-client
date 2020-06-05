@@ -67,7 +67,7 @@ export class Member {
         return memberStr;
     }
 
-    hashCodeString(): string {
+    id(): string {
         let hashCode = this.address.toString();
         if (this.uuid) {
             hashCode += this.uuid.toString();

@@ -43,13 +43,11 @@ The quickest way to start a single member cluster for development purposes is to
 [Docker images](https://hub.docker.com/r/hazelcast/hazelcast/).
 
 ```bash
-docker run -p 5701:5701 hazelcast/hazelcast:3.12.6
+docker run -p 5701:5701 hazelcast/hazelcast:4.0.1
 ```
 
 You can also use our ZIP or TAR [distributions](https://hazelcast.org/imdg/download/archives/#hazelcast-imdg)
 as described [here](DOCUMENTATION.md#121-setting-up-a-hazelcast-imdg-cluster).
-
-Make sure to use Hazelcast IMDG 3.x versions as the work to support 4.x versions is in progress.
 
 ### Client
 
@@ -115,11 +113,13 @@ You can also configure the client
 * Additional data structures and simple messaging constructs such as **Set**, **MultiMap**, **Queue**, **Topic**
 * Cluster-wide unique ID generator, called **FlakeIdGenerator**
 * Distributed, CRDT based counter, called **PNCounter**
-* Primitives for distributed computing such as **Lock**, **Semaphore**, **Atomic Long**
+* Primitives for distributed computing such as **Lock**, **Semaphore**, **Atomic Long** *
 * Integration with [Hazelcast Cloud](https://cloud.hazelcast.com/)
 * Support for serverless and traditional web service architectures with **Unisocket** and **Smart** operation modes
 * Ability to listen client lifecycle, cluster state and distributed data structure events
 * and [many more](https://hazelcast.org/imdg/clients-languages/node-js/#client-features).
+
+> *: Make sure to use Hazelcast IMDG 3.x versions to access them as the work to support these primitives in 4.x versions is in progress.
 
 ## Getting Help
 

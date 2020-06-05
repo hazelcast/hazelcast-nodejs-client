@@ -15,7 +15,6 @@
  */
 
 /*tslint:disable:max-line-length*/
-import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
 import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
 import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
@@ -33,12 +32,13 @@ const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZ
 export interface RingbufferRemainingCapacityResponseParams {
     response: Long;
 }
+
 export class RingbufferRemainingCapacityCodec {
     static encodeRequest(name: string): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(true);
 
-        const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE, UNFRAGMENTED_MESSAGE);
         clientMessage.addFrame(initialFrame);
         clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);
         clientMessage.setPartitionId(-1);

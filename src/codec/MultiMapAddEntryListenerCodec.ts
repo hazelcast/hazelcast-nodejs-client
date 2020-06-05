@@ -15,7 +15,6 @@
  */
 
 /*tslint:disable:max-line-length*/
-import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
 import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
 import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
@@ -43,12 +42,13 @@ const EVENT_ENTRY_NUMBER_OF_AFFECTED_ENTRIES_OFFSET = EVENT_ENTRY_UUID_OFFSET + 
 export interface MultiMapAddEntryListenerResponseParams {
     response: UUID;
 }
+
 export class MultiMapAddEntryListenerCodec {
     static encodeRequest(name: string, includeValue: boolean, localOnly: boolean): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(false);
 
-        const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE, UNFRAGMENTED_MESSAGE);
         FixSizedTypesCodec.encodeBoolean(initialFrame.content, REQUEST_INCLUDE_VALUE_OFFSET, includeValue);
         FixSizedTypesCodec.encodeBoolean(initialFrame.content, REQUEST_LOCAL_ONLY_OFFSET, localOnly);
         clientMessage.addFrame(initialFrame);

@@ -15,13 +15,13 @@
  */
 
 /*tslint:disable:max-line-length*/
-import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
 import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
 import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
 import {UUID} from '../core/UUID';
 import {CodecUtil} from './builtin/CodecUtil';
 import {StringCodec} from './builtin/StringCodec';
+import {Buffer} from 'safe-buffer';
 import {ByteArrayCodec} from './builtin/ByteArrayCodec';
 import {ListMultiFrameCodec} from './builtin/ListMultiFrameCodec';
 import {Address} from '../Address';
@@ -52,12 +52,13 @@ export interface ClientAuthenticationCustomResponseParams {
     clusterId: UUID;
     failoverSupported: boolean;
 }
+
 export class ClientAuthenticationCustomCodec {
     static encodeRequest(clusterName: string, credentials: Buffer, uuid: UUID, clientType: string, serializationVersion: number, clientHazelcastVersion: string, clientName: string, labels: string[]): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(true);
 
-        const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE, UNFRAGMENTED_MESSAGE);
         FixSizedTypesCodec.encodeUUID(initialFrame.content, REQUEST_UUID_OFFSET, uuid);
         FixSizedTypesCodec.encodeByte(initialFrame.content, REQUEST_SERIALIZATION_VERSION_OFFSET, serializationVersion);
         clientMessage.addFrame(initialFrame);

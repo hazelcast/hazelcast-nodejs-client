@@ -15,7 +15,6 @@
  */
 
 /*tslint:disable:max-line-length*/
-import {Buffer} from 'safe-buffer';
 import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
 import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame} from '../../ClientMessage';
@@ -30,7 +29,7 @@ export class AddressCodec {
     static encode(clientMessage: ClientMessage, address: Address): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());
 
-        const initialFrame = new Frame(Buffer.allocUnsafe(INITIAL_FRAME_SIZE));
+        const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE);
         FixSizedTypesCodec.encodeInt(initialFrame.content, PORT_OFFSET, address.port);
         clientMessage.addFrame(initialFrame);
 

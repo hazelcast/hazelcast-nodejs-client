@@ -15,9 +15,7 @@
  */
 
 /*tslint:disable:max-line-length*/
-import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../BitsUtil';
-import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
 import {ClientMessage, Frame, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
 import {EntryListCodec} from './builtin/EntryListCodec';
 import {StringCodec} from './builtin/StringCodec';
@@ -34,7 +32,7 @@ export class ClientCreateProxiesCodec {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(false);
 
-        const initialFrame = new Frame(Buffer.allocUnsafe(REQUEST_INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE, UNFRAGMENTED_MESSAGE);
         clientMessage.addFrame(initialFrame);
         clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);
         clientMessage.setPartitionId(-1);
