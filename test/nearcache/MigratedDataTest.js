@@ -19,10 +19,8 @@ var HazelcastClient = require('../../').Client;
 var expect = require('chai').expect;
 var Config = require('../../').Config;
 var fs = require('fs');
-var Long = require('long');
 var Util = require('../Util');
 var DeferredPromise = require('../../lib/Util').DeferredPromise;
-var Address = require('../../.').Address;
 
 describe('MigratedData', function () {
     this.timeout(20000);
@@ -75,6 +73,7 @@ describe('MigratedData', function () {
         var map;
         var survivingMember;
         var key = 1;
+        var partitionService = client.getPartitionService();
         return client.getMap(mapName).then(function (mp) {
             map = mp;
             return map.put(key, 1);
@@ -83,7 +82,8 @@ describe('MigratedData', function () {
         }).then(function () {
             return map.get(key);
         }).then(function () {
-            var partitionService = client.getPartitionService();
+            return waitForPartitionTableEvent(partitionService);
+        }).then(function () {
             var partitionIdForKey = partitionService.getPartitionId(key);
             var keyOwner = partitionService.getPartitionOwner(partitionIdForKey).toString();
             if (keyOwner === member1.uuid) {
@@ -94,7 +94,6 @@ describe('MigratedData', function () {
                 return RC.terminateMember(cluster.id, member2.uuid);
             }
         }).then(function () {
-            var partitionService = client.getPartitionService();
             var partitionIdForKey = partitionService.getPartitionId(key);
             return waitUntilPartitionMovesTo(partitionService, partitionIdForKey, survivingMember.uuid);
         }).then(function () {
@@ -108,6 +107,24 @@ describe('MigratedData', function () {
             expect(stats.entryCount).to.equal(1);
         })
     });
+
+    function waitForPartitionTableEvent(partitionService) {
+        var deferred = DeferredPromise();
+        var expectedPartitionCount = partitionService.partitionCount;
+
+        function checkPartitionTable(remainingTries) {
+            if (partitionService.partitionTable.partitions.size === expectedPartitionCount) {
+                deferred.resolve();
+            } else if (remainingTries > 0) {
+                setTimeout(checkPartitionTable, 1000, remainingTries - 1);
+            } else {
+                deferred.reject(new Error('Partition table is not received!'));
+            }
+        }
+        checkPartitionTable(10);
+        return deferred.promise;
+
+    }
 
     function waitUntilPartitionMovesTo(partitionService, partitionId, uuid) {
         var deferred = DeferredPromise();
