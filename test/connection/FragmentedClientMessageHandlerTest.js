@@ -25,7 +25,7 @@ const ClientMessageReader = require('../../lib/network/ClientConnection').Client
 const cm = require('../../lib/ClientMessage');
 const FixSizedTypesCodec = require('../../lib/codec/builtin/FixSizedTypesCodec').FixSizedTypesCodec;
 
-describe('FragmentedClientMessageReader', function () {
+describe('FragmentedClientMessageHandler', function () {
 
     let reader;
     let handler;

@@ -128,8 +128,8 @@ export class ClientMessage {
         return new ClientMessage();
     }
 
-    static createForDecode(startFrame: Frame): ClientMessage {
-        return new ClientMessage(startFrame);
+    static createForDecode(startFrame: Frame, endFrame?: Frame): ClientMessage {
+        return new ClientMessage(startFrame, endFrame);
     }
 
     getStartFrame(): Frame {

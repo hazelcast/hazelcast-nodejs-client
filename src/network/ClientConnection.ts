@@ -236,8 +236,8 @@ export class ClientMessageReader {
     }
 }
 
-class ClientMessageDecoder {
-    private readonly incompleteMessages = new Map<number, ClientMessage>();
+export class FragmentedClientMessageHandler {
+    private readonly fragmentedMessages = new Map<number, ClientMessage>();
 
     handleFragmentedMessage(clientMessage: ClientMessage, callback: Function): void {
         const fragmentationId = clientMessage.getFragmentationId();
@@ -245,7 +245,7 @@ class ClientMessageDecoder {
             // Ignore the fragmentation frame
             clientMessage.nextFrame();
             const startFrame = clientMessage.nextFrame();
-            this.incompleteMessages.set(fragmentationId, ClientMessage.createForDecode(startFrame));
+            this.fragmentedMessages.set(fragmentationId, ClientMessage.createForDecode(startFrame, clientMessage.endFrame));
         } else if (clientMessage.startFrame.hasEndFragmentFlag()) {
             const mergedMessage = this.mergeIntoExistingClientMessage(fragmentationId, clientMessage);
             callback(mergedMessage);
@@ -255,7 +255,7 @@ class ClientMessageDecoder {
     }
 
     private mergeIntoExistingClientMessage(fragmentationId: number, clientMessage: ClientMessage): ClientMessage {
-        const existingMessage = this.incompleteMessages.get(fragmentationId);
+        const existingMessage = this.fragmentedMessages.get(fragmentationId);
         existingMessage.merge(clientMessage);
         return existingMessage;
     }
@@ -279,7 +279,7 @@ export class ClientConnection {
     private readonly writer: PipelinedWriter | DirectWriter;
     private readonly reader: ClientMessageReader;
     private readonly logger: ILogger;
-    private readonly decoder: ClientMessageDecoder;
+    private readonly fragmentedMessageHandler: FragmentedClientMessageHandler;
 
     constructor(client: HazelcastClient, remoteAddress: Address, socket: net.Socket, connectionId: number) {
         const enablePipelining = client.getConfig().properties[PROPERTY_PIPELINING_ENABLED] as boolean;
@@ -302,7 +302,7 @@ export class ClientConnection {
         this.reader = new ClientMessageReader();
         this.connectionId = connectionId;
         this.logger = this.client.getLoggingService().getLogger();
-        this.decoder = new ClientMessageDecoder();
+        this.fragmentedMessageHandler = new FragmentedClientMessageHandler();
     }
 
     /**
@@ -412,7 +412,7 @@ export class ClientConnection {
                 if (clientMessage.startFrame.hasUnfragmentedMessageFlag()) {
                     callback(clientMessage);
                 } else {
-                    this.decoder.handleFragmentedMessage(clientMessage, callback);
+                    this.fragmentedMessageHandler.handleFragmentedMessage(clientMessage, callback);
                 }
                 clientMessage = this.reader.read();
             }
