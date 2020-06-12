@@ -19,34 +19,31 @@
 const Buffer = require('safe-buffer').Buffer;
 const expect = require('chai').expect;
 
-const FrameReader = require('../../lib/network/ClientConnection').FrameReader;
+const ClientMessageReader = require('../../lib/network/ClientConnection').ClientMessageReader;
+const cm = require('../../lib/ClientMessage');
+const headerSize = cm.SIZE_OF_FRAME_LENGTH_AND_FLAGS;
 
-describe('FrameReader', function () {
+describe('ClientMessageReader', function () {
 
     let reader;
 
-    before(function() {
-        // TODO Check client message reader/writers and fix these tests
-        this.skip();
-    });
-
     beforeEach(() => {
-        reader = new FrameReader;
+        reader = new ClientMessageReader();
     });
 
-    it('reads single message (without copying it)', () => {
+    it('reads single message', () => {
         const buffer = prepareMessage(8);
         reader.append(buffer);
 
-        expect(reader.read()).to.be.equal(buffer);
+        expect(reader.read().startFrame.content).to.be.deep.equal(buffer.slice(headerSize));
     });
 
     it('reads multiple messages', () => {
         const buffer = Buffer.concat([prepareMessage(8), prepareMessage(8)]);
         reader.append(buffer);
 
-        expect(reader.read()).to.be.deep.equal(buffer.slice(0, 8));
-        expect(reader.read()).to.be.deep.equal(buffer.slice(8));
+        expect(reader.read().startFrame.content).to.be.deep.equal(buffer.slice(headerSize, headerSize + 8));
+        expect(reader.read().startFrame.content).to.be.deep.equal(buffer.slice(2 * headerSize + 8));
     });
 
     it('reads chunked message', () => {
@@ -61,7 +58,7 @@ describe('FrameReader', function () {
         }
 
         reader.append(buffer.slice(pos));
-        expect(reader.read()).to.be.deep.equal(Buffer.from(buffer));
+        expect(reader.read().startFrame.content).to.be.deep.equal(buffer.slice(headerSize));
     });
 
     it('reads chunked message with small first chunk', () => {
@@ -71,7 +68,7 @@ describe('FrameReader', function () {
         expect(reader.read()).to.be.equal(null);
 
         reader.append(buffer.slice(2));
-        expect(reader.read()).to.be.deep.equal(Buffer.from(buffer));
+        expect(reader.read().startFrame.content).to.be.deep.equal(buffer.slice(headerSize));
     });
 
     it('returns slices for multiple messages in single chunk', () => {
@@ -81,7 +78,7 @@ describe('FrameReader', function () {
         const read = reader.read();
         buffer.writeInt32LE(42, 4);
 
-        expect(read).to.be.deep.equal(buffer.slice(0, 8));
+        expect(read.startFrame.content).to.be.deep.equal(buffer.slice(headerSize, headerSize + 8));
     });
 
     it('returns null on read initially', () => {
@@ -97,8 +94,9 @@ describe('FrameReader', function () {
     });
 
     const prepareMessage = (size) => {
-        const buffer = Buffer.allocUnsafe(size);
-        buffer.writeInt32LE(size);
+        const buffer = Buffer.allocUnsafe(cm.SIZE_OF_FRAME_LENGTH_AND_FLAGS + size);
+        buffer.writeInt32LE(buffer.length, 0);
+        buffer.writeUInt16LE(1 << 15 | 1 << 14 | 1 << 13, 4);
         return buffer;
     }
 

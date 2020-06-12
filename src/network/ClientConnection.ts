@@ -34,7 +34,7 @@ const PROPERTY_PIPELINING_THRESHOLD = 'hazelcast.client.autopipelining.threshold
 const PROPERTY_NO_DELAY = 'hazelcast.client.socket.no.delay';
 
 interface OutputQueueItem {
-    clientMessage: ClientMessage;
+    buffer: Buffer;
     resolver: Promise.Resolver<void>;
 }
 
@@ -53,12 +53,12 @@ export class PipelinedWriter extends EventEmitter {
         this.threshold = threshold;
     }
 
-    write(clientMessage: ClientMessage, resolver: Promise.Resolver<void>): void {
+    write(buffer: Buffer, resolver: Promise.Resolver<void>): void {
         if (this.error) {
             // if there was a write error, it's useless to keep writing to the socket
             return process.nextTick(() => resolver.reject(this.error));
         }
-        this.queue.push({ clientMessage, resolver });
+        this.queue.push({ buffer, resolver });
         this.schedule();
     }
 
@@ -81,10 +81,9 @@ export class PipelinedWriter extends EventEmitter {
 
         while (this.queue.length > 0 && totalLength < this.threshold) {
             const item = this.queue.shift();
-            const clientMessage = item.clientMessage;
-            const buffer = clientMessage.toBuffer();
-            buffers.push(buffer);
-            totalLength += buffer.length;
+            const data = item.buffer;
+            totalLength += data.length;
+            buffers.push(data);
             resolvers.push(item.resolver);
         }
 
@@ -138,8 +137,7 @@ export class DirectWriter extends EventEmitter {
         this.socket = socket;
     }
 
-    write(clientMessage: ClientMessage, resolver: Promise.Resolver<void>): void {
-        const buffer = clientMessage.toBuffer();
+    write(buffer: Buffer, resolver: Promise.Resolver<void>): void {
         this.socket.write(buffer as any, (err: any) => {
             if (err) {
                 resolver.reject(new IOError(err));
@@ -221,7 +219,7 @@ export class ClientMessageReader {
     private readFrameSizeAndFlags(): void {
         if (this.chunks[0].length >= SIZE_OF_FRAME_LENGTH_AND_FLAGS) {
             this.frameSize = this.chunks[0].readInt32LE(0);
-            this.flags = this.chunks[0].readInt16LE(BitsUtil.INT_SIZE_IN_BYTES);
+            this.flags = this.chunks[0].readUInt16LE(BitsUtil.INT_SIZE_IN_BYTES);
             return;
         }
         let readChunksSize = 0;
@@ -230,7 +228,7 @@ export class ClientMessageReader {
             if (readChunksSize >= SIZE_OF_FRAME_LENGTH_AND_FLAGS) {
                 const merged = Buffer.concat(this.chunks.slice(0, i + 1), readChunksSize);
                 this.frameSize = merged.readInt32LE(0);
-                this.flags = merged.readInt16LE(BitsUtil.INT_SIZE_IN_BYTES);
+                this.flags = merged.readUInt16LE(BitsUtil.INT_SIZE_IN_BYTES);
                 return;
             }
         }
@@ -335,9 +333,9 @@ export class ClientConnection {
         this.remoteUuid = remoteUuid;
     }
 
-    write(clientMessage: ClientMessage): Promise<void> {
+    write(buffer: Buffer): Promise<void> {
         const deferred = DeferredPromise<void>();
-        this.writer.write(clientMessage, deferred);
+        this.writer.write(buffer, deferred);
         return deferred.promise;
     }
 

@@ -259,6 +259,6 @@ export class ClientMessage {
             buffers.push(currentFrame.content);
             currentFrame = currentFrame.next;
         }
-        return buffers.length === 1 ? buffers[0] : Buffer.concat(buffers, totalLength);
+        return Buffer.concat(buffers, totalLength);
     }
 }

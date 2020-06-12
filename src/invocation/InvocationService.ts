@@ -367,7 +367,7 @@ export class InvocationService {
     }
 
     private write(invocation: Invocation, connection: ClientConnection): Promise<void> {
-        return connection.write(invocation.request);
+        return connection.write(invocation.request.toBuffer());
     }
 
     private notifyError(invocation: Invocation, error: Error): void {

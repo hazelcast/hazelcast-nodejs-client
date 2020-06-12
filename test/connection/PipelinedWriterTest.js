@@ -29,11 +29,6 @@ describe('PipelinedWriter', function () {
     let writer;
     let mockSocket;
 
-    before(function() {
-        // TODO Check client message reader/writers and fix these tests
-        this.skip();
-    });
-
     const setUpWriteSuccess = () => {
         mockSocket = new Socket({});
         sinon.stub(mockSocket, 'write').callsFake((data, cb) => {
