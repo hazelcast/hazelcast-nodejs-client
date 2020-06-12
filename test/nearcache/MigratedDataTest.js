@@ -123,7 +123,6 @@ describe('MigratedData', function () {
         }
         checkPartitionTable(10);
         return deferred.promise;
-
     }
 
     function waitUntilPartitionMovesTo(partitionService, partitionId, uuid) {

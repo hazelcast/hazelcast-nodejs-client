@@ -118,12 +118,13 @@ export class ProxyManager {
     }
 
     public createDistributedObjectsOnCluster(): Promise<void> {
-        const proxyEntries = new Array<[string, string]>();
+        const proxyEntries = new Array<[string, string]>(this.proxies.size);
+        let index = 0;
         this.proxies.forEach((_, namespace) => {
             const separatorIndex = namespace.indexOf(NAMESPACE_SEPARATOR);
             const serviceName = namespace.substring(0, separatorIndex);
             const name = namespace.substring(separatorIndex + 1);
-            proxyEntries.push([name, serviceName]);
+            proxyEntries[index++] = [name, serviceName];
         });
         if (proxyEntries.length === 0) {
             return Promise.resolve();
@@ -137,9 +138,10 @@ export class ProxyManager {
     }
 
     public getDistributedObjects(): Promise<DistributedObject[]> {
-        const promises = new Array<Promise<DistributedObject>>();
+        const promises = new Array<Promise<DistributedObject>>(this.proxies.size);
+        let index = 0;
         this.proxies.forEach((proxy) => {
-            promises.push(proxy);
+            promises[index++] = proxy;
         });
         return Promise.all(promises);
     }

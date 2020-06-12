@@ -193,15 +193,14 @@ export class ClusterService implements Cluster {
             return;
         }
 
-        let events = new Array<MembershipEvent>();
         if (memberListVersion >= this.memberListSnapshot.version) {
             const prevMembers = this.memberListSnapshot.memberList;
             const snapshot = this.createSnapshot(memberListVersion, memberInfos);
             this.memberListSnapshot = snapshot;
             const currentMembers = snapshot.memberList;
-            events = this.detectMembershipEvents(prevMembers, currentMembers);
+            const events = this.detectMembershipEvents(prevMembers, currentMembers);
+            this.fireEvents(events);
         }
-        this.fireEvents(events);
     }
 
     private fireEvents(events: MembershipEvent[]): void {
@@ -247,11 +246,12 @@ export class ClusterService implements Cluster {
             }
         }
 
-        const events = new Array<MembershipEvent>();
+        const events = new Array<MembershipEvent>(deadMembers.size + newMembers.length);
+        let index = 0;
 
         // removal events should be added before added events
         deadMembers.forEach((member) => {
-            events.push(new MembershipEvent(member, MemberEvent.REMOVED, currentMembers));
+            events[index++] = new MembershipEvent(member, MemberEvent.REMOVED, currentMembers);
             const connection: ClientConnection = this.connectionManager.getConnection(member.uuid);
             if (connection != null) {
                 connection.close(null, new TargetDisconnectedError('The client has closed the connection to this ' +
@@ -260,7 +260,7 @@ export class ClusterService implements Cluster {
         });
 
         for (const member of newMembers) {
-            events.push(new MembershipEvent(member, MemberEvent.ADDED, currentMembers));
+            events[index++] = new MembershipEvent(member, MemberEvent.ADDED, currentMembers);
         }
 
         if (events.length !== 0) {
