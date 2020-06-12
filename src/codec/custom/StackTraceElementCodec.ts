@@ -29,7 +29,7 @@ export class StackTraceElementCodec {
     static encode(clientMessage: ClientMessage, stackTraceElement: StackTraceElement): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());
 
-        const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE);
+        const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE, undefined);
         FixSizedTypesCodec.encodeInt(initialFrame.content, LINE_NUMBER_OFFSET, stackTraceElement.lineNumber);
         clientMessage.addFrame(initialFrame);
 

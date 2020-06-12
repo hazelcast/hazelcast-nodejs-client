@@ -49,8 +49,8 @@ export class WaitStrategy {
         const currentTimeMillis = Date.now();
         const timePassed = currentTimeMillis - this.clusterConnectAttemptBegin;
         if (timePassed > this.clusterConnectTimeoutMillis) {
-            this.logger.warn('WaitStrategy', `Unable to get live cluster connection,
-            cluster connect timeout (${this.clusterConnectTimeoutMillis} millis) is reached. Attempt ${this.attempt}.`);
+            this.logger.warn('WaitStrategy', 'Unable to get live cluster connection, cluster connect timeout (' +
+                this.clusterConnectTimeoutMillis + ' millis) is reached. Attempt ' + this.attempt);
             return Promise.resolve(false);
         }
 
@@ -60,15 +60,14 @@ export class WaitStrategy {
             + this.currentBackoffMillis * this.jitter * (2.0 * Math.random() - 1.0);
 
         actualSleepTime = Math.min(actualSleepTime, this.clusterConnectTimeoutMillis - timePassed);
-        this.logger.warn('WaitStrategy', `Unable to get live cluster connection, retry in
-            ${actualSleepTime} ms, attempt: ${this.attempt},
-            cluster connect timeout: ${this.clusterConnectTimeoutMillis} ms,
-            max backoff millis: ${this.maxBackoffMillis}`);
+        this.logger.warn('WaitStrategy', + 'Unable to get live cluster connection, retry in ' +
+            actualSleepTime + ' ms, attempt: ' + this.attempt + ', cluster connect timeout: ' +
+            this.clusterConnectTimeoutMillis + ' ms, max backoff millis: ' + this.maxBackoffMillis);
 
         return Promise.delay(actualSleepTime)
             .then(() => {
                 this.currentBackoffMillis = Math.min(Math.round(currentTimeMillis * this.multiplier), this.maxBackoffMillis);
-                return Promise.resolve(true);
+                return true;
             });
     }
 }

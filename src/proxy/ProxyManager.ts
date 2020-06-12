@@ -21,7 +21,6 @@ import {ClientDestroyProxyCodec} from '../codec/ClientDestroyProxyCodec';
 import {ClientRemoveDistributedObjectListenerCodec} from '../codec/ClientRemoveDistributedObjectListenerCodec';
 import {DistributedObject} from '../DistributedObject';
 import HazelcastClient from '../HazelcastClient';
-import {ClientNotActiveError, HazelcastError} from '../HazelcastError';
 import {Invocation} from '../invocation/InvocationService';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {FlakeIdGeneratorProxy} from './FlakeIdGeneratorProxy';
@@ -44,6 +43,7 @@ import {ClientCreateProxiesCodec} from '../codec/ClientCreateProxiesCodec';
 import {BaseProxy} from './BaseProxy';
 import {Ringbuffer} from './Ringbuffer';
 
+export const NAMESPACE_SEPARATOR = '/';
 const RINGBUFFER_PREFIX = '_hz_rb_';
 
 export class ProxyManager {
@@ -87,7 +87,7 @@ export class ProxyManager {
     }
 
     public getOrCreateProxy(name: string, serviceName: string, createAtServer = true): Promise<DistributedObject> {
-        const fullName = serviceName + name;
+        const fullName = serviceName + NAMESPACE_SEPARATOR + name;
         if (this.proxies.has(fullName)) {
             return this.proxies.get(fullName);
         }
@@ -119,13 +119,12 @@ export class ProxyManager {
 
     public createDistributedObjectsOnCluster(): Promise<void> {
         const proxyEntries = new Array<[string, string]>();
-        for (const namespace of Array.from(this.proxies.keys())) {
-            const promise = this.proxies.get(namespace);
-            if (promise.isFulfilled()) {
-                const proxy = promise.value();
-                proxyEntries.push([proxy.getName(), proxy.getServiceName()]);
-            }
-        }
+        this.proxies.forEach((_, namespace) => {
+            const separatorIndex = namespace.indexOf(NAMESPACE_SEPARATOR);
+            const serviceName = namespace.substring(0, separatorIndex);
+            const name = namespace.substring(separatorIndex + 1);
+            proxyEntries.push([name, serviceName]);
+        });
         if (proxyEntries.length === 0) {
             return Promise.resolve();
         }
@@ -134,23 +133,23 @@ export class ProxyManager {
         const invocation = new Invocation(this.client, request);
         return this.client.getInvocationService()
             .invokeUrgent(invocation)
-            .return();
+            .then(() => undefined);
     }
 
     public getDistributedObjects(): Promise<DistributedObject[]> {
         const promises = new Array<Promise<DistributedObject>>();
-        Array.from(this.proxies.values()).forEach((proxy) => {
+        this.proxies.forEach((proxy) => {
             promises.push(proxy);
         });
         return Promise.all(promises);
     }
 
     public destroyProxy(name: string, serviceName: string): Promise<void> {
-        this.proxies.delete(serviceName + name);
+        this.proxies.delete(serviceName + NAMESPACE_SEPARATOR + name);
         const clientMessage = ClientDestroyProxyCodec.encodeRequest(name, serviceName);
         clientMessage.setPartitionId(-1);
         return this.client.getInvocationService().invokeOnRandomTarget(clientMessage)
-            .return();
+            .then(() => undefined);
     }
 
     public destroyProxyLocally(namespace: string): Promise<void> {

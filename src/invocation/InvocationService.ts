@@ -22,12 +22,14 @@ import {
     HazelcastInstanceNotActiveError,
     InvocationTimeoutError,
     IOError,
-    RetryableHazelcastError, TargetDisconnectedError, TargetNotMemberError,
+    RetryableHazelcastError,
+    TargetDisconnectedError,
+    TargetNotMemberError,
 } from '../HazelcastError';
 import {ClientConnection} from '../network/ClientConnection';
 import {DeferredPromise} from '../Util';
 import {ILogger} from '../logging/ILogger';
-import {ClientMessage, IS_EVENT_FLAG} from '../ClientMessage';
+import {ClientMessage} from '../ClientMessage';
 import {EXCEPTION_MESSAGE_TYPE} from '../codec/builtin/ErrorsCodec';
 import {ClientConnectionManager} from '../network/ClientConnectionManager';
 import {UUID} from '../core/UUID';
@@ -57,7 +59,7 @@ export class Invocation {
     partitionId: number;
 
     /**
-     * Uuid of the request. If request is not bound to any specific uuid, should be set to null.
+     * UUID of the request. If request is not bound to any specific UUID, should be set to null.
      */
     uuid: UUID;
 
@@ -207,7 +209,7 @@ export class InvocationService {
     }
 
     /**
-     * Invokes given invocation on the host with given uuid.
+     * Invokes given invocation on the host with given UUID.
      * @param request
      * @param target
      * @returns
@@ -254,7 +256,7 @@ export class InvocationService {
         const correlationId = clientMessage.getCorrelationId();
         const messageType = clientMessage.getMessageType();
 
-        if (ClientMessage.isFlagSet(clientMessage.startFrame.flags, IS_EVENT_FLAG)) {
+        if (clientMessage.startFrame.hasEventFlag()) {
             setImmediate(() => {
                 if (this.eventHandlers[correlationId] !== undefined) {
                     this.eventHandlers[correlationId].handler(clientMessage);
@@ -277,7 +279,7 @@ export class InvocationService {
     private invokeSmart(invocation: Invocation): void {
         invocation.invokeCount++;
         if (!invocation.urgent) {
-            const error = this.connectionManager.isInvocationAllowed();
+            const error = this.connectionManager.checkIfInvocationAllowed();
             if (error != null) {
                 this.notifyError(invocation, error);
                 return;
@@ -311,7 +313,7 @@ export class InvocationService {
     private invokeNonSmart(invocation: Invocation): void {
         invocation.invokeCount++;
         if (!invocation.urgent) {
-            const error = this.connectionManager.isInvocationAllowed();
+            const error = this.connectionManager.checkIfInvocationAllowed();
             if (error != null) {
                 this.notifyError(invocation, error);
                 return;

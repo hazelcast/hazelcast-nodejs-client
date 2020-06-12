@@ -34,7 +34,7 @@ export class PagingPredicateHolderCodec {
     static encode(clientMessage: ClientMessage, pagingPredicateHolder: PagingPredicateHolder): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());
 
-        const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE);
+        const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE, undefined);
         FixSizedTypesCodec.encodeInt(initialFrame.content, PAGE_SIZE_OFFSET, pagingPredicateHolder.pageSize);
         FixSizedTypesCodec.encodeInt(initialFrame.content, PAGE_OFFSET, pagingPredicateHolder.page);
         FixSizedTypesCodec.encodeByte(initialFrame.content, ITERATION_TYPE_ID_OFFSET, pagingPredicateHolder.iterationTypeId);

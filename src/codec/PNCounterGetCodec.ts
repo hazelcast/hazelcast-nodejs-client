@@ -17,7 +17,7 @@
 /*tslint:disable:max-line-length*/
 import {BitsUtil} from '../BitsUtil';
 import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
-import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
+import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET} from '../ClientMessage';
 import {UUID} from '../core/UUID';
 import {StringCodec} from './builtin/StringCodec';
 import {EntryListUUIDLongCodec} from './builtin/EntryListUUIDLongCodec';
@@ -44,7 +44,7 @@ export class PNCounterGetCodec {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(true);
 
-        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE, UNFRAGMENTED_MESSAGE);
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
         FixSizedTypesCodec.encodeUUID(initialFrame.content, REQUEST_TARGET_REPLICA_UUID_OFFSET, targetReplicaUUID);
         clientMessage.addFrame(initialFrame);
         clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);

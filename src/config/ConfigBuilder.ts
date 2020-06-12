@@ -31,6 +31,8 @@ import {ReliableTopicConfig} from './ReliableTopicConfig';
 import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy';
 import {StringSerializationPolicy} from './StringSerializationPolicy';
 import {ReconnectMode} from './ConnectionStrategyConfig';
+import {RandomLB} from '../util/RandomLB';
+import {RoundRobinLB} from '../util/RoundRobinLB';
 
 export class ConfigBuilder {
     private clientConfig: ClientConfig = new ClientConfig();
@@ -63,7 +65,7 @@ export class ConfigBuilder {
                 return this.configLocator.loadImported(path);
             }).map((buffer: Buffer) => {
                 mergeJson(jsonObject, JSON.parse(buffer.toString()));
-            }).return();
+            }).then(() => undefined);
         }
     }
 
@@ -92,6 +94,8 @@ export class ConfigBuilder {
                 this.handleReliableTopics(value);
             } else if (key === 'flakeIdGeneratorConfigs') {
                 this.handleFlakeIds(value);
+            } else if (key === 'loadBalancer') {
+                this.handleLoadBalancer(value);
             }
         }
     }
@@ -335,4 +339,16 @@ export class ConfigBuilder {
         }
     }
 
+    private handleLoadBalancer(jsonObject: any): void {
+        for (const key in jsonObject) {
+            if (key === 'type') {
+                const loadBalancer = tryGetString(jsonObject[key]);
+                if (loadBalancer === 'random') {
+                    this.clientConfig.loadBalancer = new RandomLB();
+                } else if (loadBalancer === 'roundRobin') {
+                    this.clientConfig.loadBalancer = new RoundRobinLB();
+                }
+            }
+        }
+    }
 }

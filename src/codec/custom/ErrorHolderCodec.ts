@@ -32,7 +32,7 @@ export class ErrorHolderCodec {
     static encode(clientMessage: ClientMessage, errorHolder: ErrorHolder): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());
 
-        const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE);
+        const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE, undefined);
         FixSizedTypesCodec.encodeInt(initialFrame.content, ERROR_CODE_OFFSET, errorHolder.errorCode);
         clientMessage.addFrame(initialFrame);
 

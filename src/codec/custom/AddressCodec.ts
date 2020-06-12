@@ -29,7 +29,7 @@ export class AddressCodec {
     static encode(clientMessage: ClientMessage, address: Address): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());
 
-        const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE);
+        const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE, undefined);
         FixSizedTypesCodec.encodeInt(initialFrame.content, PORT_OFFSET, address.port);
         clientMessage.addFrame(initialFrame);
 

@@ -68,9 +68,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
 
     clear(): Promise<void> {
         return this.encodeInvokeOnRandomTarget(ReplicatedMapClearCodec)
-            .then(() => {
-                return Promise.resolve();
-            });
+            .then(() => undefined);
     }
 
     get(key: K): Promise<V> {
@@ -145,9 +143,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         }
 
         return this.encodeInvokeOnRandomTarget(ReplicatedMapPutAllCodec, entries)
-            .then(() => {
-                return Promise.resolve();
-            });
+            .then(() => undefined);
     }
 
     keySet(): Promise<K[]> {

@@ -66,6 +66,7 @@ const CONNECTION_ADDED_EVENT_NAME = 'connectionAdded';
 const CLIENT_TYPE = 'NJS';
 const SERIALIZATION_VERSION = 1;
 const SET_TIMEOUT_MAX_DELAY = 2147483647;
+const BINARY_PROTOCOL_VERSION = Buffer.from('CP2');
 
 enum ClientState {
     /**
@@ -102,25 +103,25 @@ export class ClientConnectionManager extends EventEmitter {
     private connectionIdCounter = 0;
     private alive = false;
 
-    private logger: ILogger;
-    private connectionTimeoutMillis: number;
+    private readonly logger: ILogger;
     private readonly client: HazelcastClient;
+    private readonly labels: string[];
+    private readonly shuffleMemberList: boolean;
+    private readonly asyncStart: boolean;
+    private readonly reconnectMode: ReconnectMode;
+    private readonly isSmartRoutingEnabled: boolean;
+    private connectionTimeoutMillis: number;
     private heartbeatManager: HeartbeatManager;
     private authenticationTimeout: number;
     private clientUuid = UuidUtil.generate(false);
-    private labels: string[];
-    private shuffleMemberList: boolean;
     private waitStrategy: WaitStrategy;
-    private asyncStart: boolean;
-    private reconnectMode: ReconnectMode;
     private loadBalancer: LoadBalancer;
-    private isSmartRoutingEnabled: boolean;
     private activeConnections = new Map<string, ClientConnection>();
     private pendingConnections = new Map<string, Promise.Resolver<ClientConnection>>();
     private clusterId: UUID;
     private clientState = ClientState.INITIAL;
     private connectToClusterTaskSubmitted: boolean;
-    private connectToAllClusterMembersTask: Task;
+    private reconnectToMembersTask: Task;
     private connectingAddresses = new Set<Address>();
 
     constructor(client: HazelcastClient) {
@@ -150,7 +151,7 @@ export class ClientConnectionManager extends EventEmitter {
         return this.connectToCluster()
             .then(() => {
                 if (this.isSmartRoutingEnabled) {
-                    this.connectToAllClusterMembersTask = scheduleWithRepetition(this.connectToAllMembers.bind(this), 1000, 1000);
+                    this.reconnectToMembersTask = scheduleWithRepetition(this.reconnectToMembers.bind(this), 1000, 1000);
                 }
             });
     }
@@ -161,7 +162,7 @@ export class ClientConnectionManager extends EventEmitter {
         }
 
         const members = this.client.getClusterService().getMembers();
-        return this.tryConnectToAllClusterMembers(0, members);
+        return this.tryConnectToAllClusterMembers(members);
     }
 
     public shutdown(): void {
@@ -171,14 +172,14 @@ export class ClientConnectionManager extends EventEmitter {
 
         this.alive = false;
         if (this.isSmartRoutingEnabled) {
-            cancelRepetitionTask(this.connectToAllClusterMembersTask);
+            cancelRepetitionTask(this.reconnectToMembersTask);
         }
         this.pendingConnections.forEach((pending) => {
             pending.reject(new ClientNotActiveError('Hazelcast client is shutting down'));
         });
 
         this.activeConnections.forEach((connection) => {
-           connection.close('Hazelcast client is shutting down', null);
+            connection.close('Hazelcast client is shutting down', null);
         });
 
         this.removeAllListeners(CONNECTION_REMOVED_EVENT_NAME);
@@ -190,7 +191,7 @@ export class ClientConnectionManager extends EventEmitter {
         return this.activeConnections.get(uuid.toString());
     }
 
-    public isInvocationAllowed(): Error {
+    public checkIfInvocationAllowed(): Error {
         const state = this.clientState;
         if (state === ClientState.INITIALIZED_ON_CLUSTER && this.activeConnections.size > 0) {
             return null;
@@ -326,7 +327,7 @@ export class ClientConnectionManager extends EventEmitter {
             this.emitConnectionRemovedEvent(connection);
         } else {
             this.logger.trace('ConnectionManager', 'Destroying a connection, but there is no mapping ' +
-                endpoint + ':' + memberUuid + '->' +  connection + ' in the connection map.)');
+                endpoint + ':' + memberUuid + '->' + connection + ' in the connection map.)');
         }
     }
 
@@ -485,7 +486,7 @@ export class ClientConnectionManager extends EventEmitter {
     }
 
     private getConnectionFromAddress(address: Address): ClientConnection {
-        for (const connection of Array.from(this.activeConnections.values())) {
+        for (const connection of this.getActiveConnections()) {
             if (connection.getRemoteAddress().equals(address)) {
                 return connection;
             }
@@ -495,10 +496,8 @@ export class ClientConnectionManager extends EventEmitter {
 
     private initiateCommunication(socket: net.Socket): Promise<void> {
         // Send the protocol version
-        const buffer = Buffer.from('CP2');
         const deferred = DeferredPromise<void>();
-
-        socket.write(buffer as any, (err: Error) => {
+        socket.write(BINARY_PROTOCOL_VERSION as any, (err: Error) => {
             if (err) {
                 deferred.reject(err);
             }
@@ -605,6 +604,7 @@ export class ClientConnectionManager extends EventEmitter {
             this.submitConnectToClusterTask();
         }
     }
+
     private shutdownClient(): void {
         try {
             this.client.getLifecycleService().shutdown();
@@ -613,7 +613,9 @@ export class ClientConnectionManager extends EventEmitter {
         }
     }
 
-    private connectToAllMembers(): void {
+    // This method makes sure that the smart client has connection to all cluster members.
+    // This is called periodically.
+    private reconnectToMembers(): void {
         if (!this.client.getLifecycleService().isRunning()) {
             return;
         }
@@ -787,18 +789,17 @@ export class ClientConnectionManager extends EventEmitter {
             });
     }
 
-    private tryConnectToAllClusterMembers(index: number, members: Member[]): Promise<void> {
-        if (index >= members.length) {
-            return Promise.resolve();
+    private tryConnectToAllClusterMembers(members: Member[]): Promise<void> {
+        const promises: Array<Promise<void | ClientConnection>> = [];
+
+        for (const member of members) {
+            promises.push(this.getOrConnect(member.address)
+                .catch(() => {
+                    // No-op
+                }));
         }
 
-        const member = members[index];
-        return this.getOrConnect(member.address)
-            .catch(() => {
-                // No-op
-            })
-            .then(() => {
-                return this.tryConnectToAllClusterMembers(index + 1, members);
-            });
+        return Promise.all(promises)
+            .then(() => undefined);
     }
 }

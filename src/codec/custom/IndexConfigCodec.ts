@@ -32,7 +32,7 @@ export class IndexConfigCodec {
     static encode(clientMessage: ClientMessage, indexConfig: IndexConfig): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());
 
-        const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE);
+        const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE, undefined);
         FixSizedTypesCodec.encodeInt(initialFrame.content, TYPE_OFFSET, indexConfig.type);
         clientMessage.addFrame(initialFrame);
 

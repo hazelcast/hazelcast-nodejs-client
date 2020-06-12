@@ -24,8 +24,6 @@ const CodecUtil = require('../../../lib/codec/builtin/CodecUtil').CodecUtil;
 
 const ClientMessage = cm.ClientMessage;
 const Frame = cm.Frame;
-const DEFAULT_FLAGS = cm.DEFAULT_FLAGS;
-const IS_FINAL_FLAG = cm.IS_FINAL_FLAG;
 const BEGIN_FRAME = cm.BEGIN_FRAME;
 const END_FRAME = cm.END_FRAME;
 
@@ -34,7 +32,7 @@ describe('ClientMessage', function () {
     it('should be encoded and decoded', function () {
         const cmEncode = ClientMessage.createForEncode();
 
-        cmEncode.addFrame(new Frame(Buffer.allocUnsafe(50), DEFAULT_FLAGS));
+        cmEncode.addFrame(Frame.createInitialFrame(50));
         cmEncode.setMessageType(1);
         cmEncode.setCorrelationId(Long.fromString('1234567812345678'));
         cmEncode.setPartitionId(11223344);
@@ -46,18 +44,17 @@ describe('ClientMessage', function () {
         expect(cmEncode.getCorrelationId()).to.equal(cmDecode.getCorrelationId());
         expect(cmEncode.getPartitionId()).to.equal(cmDecode.getPartitionId());
         expect(cmEncode.getTotalFrameLength()).to.equal(cmDecode.getTotalFrameLength());
-        expect(cmEncode.getNumberOfBackupAcks()).to.equal(cmDecode.getNumberOfBackupAcks());
     });
 
     it('should be copied with new correlation id and share the non-header frames', function () {
         const originalMessage = ClientMessage.createForEncode();
 
-        originalMessage.addFrame(new Frame(Buffer.allocUnsafe(50), DEFAULT_FLAGS));
+        originalMessage.addFrame(Frame.createInitialFrame(50));
         originalMessage.setMessageType(1);
         originalMessage.setCorrelationId(Long.fromString('1234567812345678'));
         originalMessage.setPartitionId(11223344);
         originalMessage.setRetryable(true);
-        originalMessage.addFrame(new Frame(Buffer.allocUnsafe(20), IS_FINAL_FLAG));
+        originalMessage.addFrame(Frame.createInitialFrame(20));
 
         const copyMessage = originalMessage.copyWithNewCorrelationId();
 
@@ -75,7 +72,6 @@ describe('ClientMessage', function () {
         expect(originalMessage.getHeaderFlags()).to.equal(copyMessage.getHeaderFlags());
         expect(originalMessage.getPartitionId()).to.equal(copyMessage.getPartitionId());
         expect(originalMessage.getTotalFrameLength()).to.equal(copyMessage.getTotalFrameLength());
-        expect(originalMessage.getNumberOfBackupAcks()).to.equal(copyMessage.getNumberOfBackupAcks());
         expect(copyMessage.getCorrelationId()).to.equal(-1);
     });
 

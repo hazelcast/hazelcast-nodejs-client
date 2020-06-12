@@ -48,9 +48,10 @@ export class NearCacheManager {
     }
 
     public destroyAllNearCaches(): void {
-        for (const key of Array.from(this.caches.keys())) {
-            this.destroyNearCache(key);
-        }
+        this.caches.forEach((cache) => {
+            cache.clear();
+        });
+        this.caches.clear();
     }
 
     public listAllNearCaches(): NearCache[] {

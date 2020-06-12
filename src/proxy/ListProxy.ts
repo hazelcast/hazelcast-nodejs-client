@@ -73,14 +73,12 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
 
     addAt(index: number, element: E): Promise<void> {
         return this.encodeInvoke(ListAddWithIndexCodec, index, this.toData(element))
-            .return();
+            .then(() => undefined);
     }
 
     clear(): Promise<void> {
         return this.encodeInvoke(ListClearCodec)
-            .then(() => {
-                return Promise.resolve();
-            });
+            .then(() => undefined);
     }
 
     contains(entry: E): Promise<boolean> {

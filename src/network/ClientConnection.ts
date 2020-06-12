@@ -26,7 +26,7 @@ import {DeferredPromise} from '../Util';
 import {Address} from '../Address';
 import {UUID} from '../core/UUID';
 import {ILogger} from '../logging/ILogger';
-import {ClientMessage, Frame, IS_FINAL_FLAG, SIZE_OF_FRAME_LENGTH_AND_FLAGS} from '../ClientMessage';
+import {ClientMessage, Frame, SIZE_OF_FRAME_LENGTH_AND_FLAGS} from '../ClientMessage';
 
 const FROZEN_ARRAY = Object.freeze([]) as OutputQueueItem[];
 const PROPERTY_PIPELINING_ENABLED = 'hazelcast.client.autopipelining.enabled';
@@ -82,24 +82,9 @@ export class PipelinedWriter extends EventEmitter {
         while (this.queue.length > 0 && totalLength < this.threshold) {
             const item = this.queue.shift();
             const clientMessage = item.clientMessage;
-            let currentFrame = clientMessage.startFrame;
-            while (currentFrame != null) {
-                const isLastFrame = currentFrame.next == null;
-                const frameLengthAndFlags = Buffer.allocUnsafe(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
-                frameLengthAndFlags.writeInt32LE(currentFrame.content.length + SIZE_OF_FRAME_LENGTH_AND_FLAGS, 0);
-
-                if (isLastFrame) {
-                    // tslint:disable-next-line:no-bitwise
-                    frameLengthAndFlags.writeUInt16LE(currentFrame.flags | IS_FINAL_FLAG, BitsUtil.INT_SIZE_IN_BYTES);
-                } else {
-                    frameLengthAndFlags.writeUInt16LE(currentFrame.flags, BitsUtil.INT_SIZE_IN_BYTES);
-                }
-                totalLength += SIZE_OF_FRAME_LENGTH_AND_FLAGS;
-                buffers.push(frameLengthAndFlags);
-                totalLength += currentFrame.content.length;
-                buffers.push(currentFrame.content);
-                currentFrame = currentFrame.next;
-            }
+            const buffer = clientMessage.toBuffer();
+            buffers.push(buffer);
+            totalLength += buffer.length;
             resolvers.push(item.resolver);
         }
 
@@ -154,30 +139,8 @@ export class DirectWriter extends EventEmitter {
     }
 
     write(clientMessage: ClientMessage, resolver: Promise.Resolver<void>): void {
-
-        const buffers: Buffer[] = [];
-        let totalLength = 0;
-        let currentFrame = clientMessage.startFrame;
-        while (currentFrame != null) {
-            const isLastFrame = currentFrame.next == null;
-            const frameLengthAndFlags = Buffer.allocUnsafe(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
-            frameLengthAndFlags.writeInt32LE(currentFrame.content.length + SIZE_OF_FRAME_LENGTH_AND_FLAGS, 0);
-
-            if (isLastFrame) {
-                // tslint:disable-next-line:no-bitwise
-                frameLengthAndFlags.writeUInt16LE(currentFrame.flags | IS_FINAL_FLAG, BitsUtil.INT_SIZE_IN_BYTES);
-            } else {
-                frameLengthAndFlags.writeUInt16LE(currentFrame.flags, BitsUtil.INT_SIZE_IN_BYTES);
-            }
-            totalLength += SIZE_OF_FRAME_LENGTH_AND_FLAGS;
-            buffers.push(frameLengthAndFlags);
-            totalLength += currentFrame.content.length;
-            buffers.push(currentFrame.content);
-            currentFrame = currentFrame.next;
-        }
-
-        const merged = buffers.length === 1 ? buffers[0] : Buffer.concat(buffers, totalLength);
-        this.socket.write(merged as any, (err: any) => {
+        const buffer = clientMessage.toBuffer();
+        this.socket.write(buffer as any, (err: any) => {
             if (err) {
                 resolver.reject(new IOError(err));
                 return;
@@ -204,8 +167,10 @@ export class ClientMessageReader {
     read(): ClientMessage {
         while (true) {
             if (this.readFrame()) {
-                if (ClientMessage.isFlagSet(this.clientMessage.endFrame.flags, IS_FINAL_FLAG)) {
-                    return this.clientMessage;
+                if (this.clientMessage.endFrame.isFinalFrame()) {
+                    const message = this.clientMessage;
+                    this.reset();
+                    return message;
                 }
             } else {
                 return null;
@@ -225,22 +190,22 @@ export class ClientMessageReader {
             return false;
         }
 
-        let bytes = this.chunks.length === 1 ? this.chunks[0] : Buffer.concat(this.chunks, this.chunksTotalSize);
+        let buf = this.chunks.length === 1 ? this.chunks[0] : Buffer.concat(this.chunks, this.chunksTotalSize);
         if (this.chunksTotalSize > this.frameSize) {
             if (this.chunks.length === 1) {
-                this.chunks[0] = bytes.slice(this.frameSize);
+                this.chunks[0] = buf.slice(this.frameSize);
             } else {
-                this.chunks = [bytes.slice(this.frameSize)];
+                this.chunks = [buf.slice(this.frameSize)];
             }
-            bytes = bytes.slice(SIZE_OF_FRAME_LENGTH_AND_FLAGS, this.frameSize);
+            buf = buf.slice(SIZE_OF_FRAME_LENGTH_AND_FLAGS, this.frameSize);
         } else {
             this.chunks = [];
-            bytes = bytes.slice(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+            buf = buf.slice(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
         }
         this.chunksTotalSize -= this.frameSize;
         this.frameSize = 0;
         // No need to reset flags since it will be overwritten on the next readFrameSizeAndFlags call.
-        const frame = new Frame(bytes, this.flags);
+        const frame = new Frame(buf, this.flags);
         if (this.clientMessage == null) {
             this.clientMessage = ClientMessage.createForDecode(frame);
         } else {
@@ -249,7 +214,7 @@ export class ClientMessageReader {
         return true;
     }
 
-    reset(): void {
+    private reset(): void {
         this.clientMessage = null;
     }
 
@@ -273,6 +238,31 @@ export class ClientMessageReader {
     }
 }
 
+class ClientMessageDecoder {
+    private readonly incompleteMessages = new Map<number, ClientMessage>();
+
+    handleFragmentedMessage(clientMessage: ClientMessage, callback: Function): void {
+        const fragmentationId = clientMessage.getFragmentationId();
+        if (clientMessage.startFrame.hasBeginFragmentFlag()) {
+            // Ignore the fragmentation frame
+            clientMessage.nextFrame();
+            const startFrame = clientMessage.nextFrame();
+            this.incompleteMessages.set(fragmentationId, ClientMessage.createForDecode(startFrame));
+        } else if (clientMessage.startFrame.hasEndFragmentFlag()) {
+            const mergedMessage = this.mergeIntoExistingClientMessage(fragmentationId, clientMessage);
+            callback(mergedMessage);
+        } else {
+            this.mergeIntoExistingClientMessage(fragmentationId, clientMessage);
+        }
+    }
+
+    private mergeIntoExistingClientMessage(fragmentationId: number, clientMessage: ClientMessage): ClientMessage {
+        const existingMessage = this.incompleteMessages.get(fragmentationId);
+        existingMessage.merge(clientMessage);
+        return existingMessage;
+    }
+}
+
 export class ClientConnection {
     private readonly connectionId: number;
     private remoteAddress: Address;
@@ -290,7 +280,8 @@ export class ClientConnection {
     private readonly socket: net.Socket;
     private readonly writer: PipelinedWriter | DirectWriter;
     private readonly reader: ClientMessageReader;
-    private logger: ILogger;
+    private readonly logger: ILogger;
+    private readonly decoder: ClientMessageDecoder;
 
     constructor(client: HazelcastClient, remoteAddress: Address, socket: net.Socket, connectionId: number) {
         const enablePipelining = client.getConfig().properties[PROPERTY_PIPELINING_ENABLED] as boolean;
@@ -313,6 +304,7 @@ export class ClientConnection {
         this.reader = new ClientMessageReader();
         this.connectionId = connectionId;
         this.logger = this.client.getLoggingService().getLogger();
+        this.decoder = new ClientMessageDecoder();
     }
 
     /**
@@ -419,8 +411,11 @@ export class ClientConnection {
             this.reader.append(buffer);
             let clientMessage = this.reader.read();
             while (clientMessage !== null) {
-                callback(clientMessage);
-                this.reader.reset();
+                if (clientMessage.startFrame.hasUnfragmentedMessageFlag()) {
+                    callback(clientMessage);
+                } else {
+                    this.decoder.handleFragmentedMessage(clientMessage, callback);
+                }
                 clientMessage = this.reader.read();
             }
         });

@@ -96,6 +96,7 @@
     * [7.9.2. Logging Configuration](#792-logging-configuration)
   * [7.10. Defining Client Labels](#710-defining-client-labels)
   * [7.11. Defining Instance Name](#711-defining-instance-name)
+  * [7.12. Configuring Load Balancer](#712-configuring-load-balancer)
 * [8. Securing Client Connection](#8-securing-client-connection)
   * [8.1. TLS/SSL](#81-tlsssl)
     * [8.1.1. TLS/SSL for Hazelcast Members](#811-tlsssl-for-hazelcast-members)
@@ -3189,6 +3190,36 @@ The equivalent programmatic approach is shown below.
 var config = new Config.ClientConfig();
 
 config.name = "blue_client_0";
+```
+
+## 7.12. Configuring Load Balancer
+
+`LoadBalancer` allows you to specify which cluster member to send next operation when queried.
+It is up to your implementation to use different load balancing policies.
+You should implement the `LoadBalancer` interface or extend the `AbstractLoadBalancer` class for that purpose.
+
+If it is a [smart client](#721-smart-client), only the operations that are not key-based are routed to the member
+that is returned by the `LoadBalancer`. If it is not a smart client, `LoadBalancer` is ignored.
+
+By default, client uses `RoundRobinLB` which picks each cluster member in turn. Also, the client provides
+`RandomLB` which picks the next member randomly as the name suggests. For the declarative configuration,
+you can use `roundRobin` or `random` configuration elements as the load balancer type.
+
+The following are example configurations.
+
+Declarative Configuration:
+```json
+{
+  "loadBalancer": {
+    "type": "roundRobin"
+  }
+}
+```
+
+Programmatic Configuration:
+```javascript
+var config = new Config.ClientConfig();
+config.loadBalancer = new RoundRobinLB();
 ```
 
 # 8. Securing Client Connection

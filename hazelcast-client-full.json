@@ -143,6 +143,9 @@
             "prefetchValidityMillis": 500000
         }
     ],
+    "loadBalancer": {
+        "type": "random"
+    },
     "import": [
         "hazelcast-client-near-cache.json"
     ]

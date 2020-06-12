@@ -17,9 +17,8 @@
 // Other codecs message types can be in range 0x000100 - 0xFFFFFF
 // So, it is safe to supply a custom message type for exceptions in
 // the range 0x000000 - 0x0000FF
-import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, UNFRAGMENTED_MESSAGE} from '../../ClientMessage';
+import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET} from '../../ClientMessage';
 import {BitsUtil} from '../../BitsUtil';
-import {Buffer} from 'safe-buffer';
 import {ErrorHolder} from '../../protocol/ErrorHolder';
 import {ListMultiFrameCodec} from './ListMultiFrameCodec';
 import {ErrorHolderCodec} from '../custom/ErrorHolderCodec';
@@ -30,7 +29,7 @@ const INITIAL_FRAME_SIZE = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_B
 export class ErrorsCodec {
     static encode(errorHolders: ErrorHolder[]): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
-        const initialFrame = new Frame(Buffer.allocUnsafe(INITIAL_FRAME_SIZE), UNFRAGMENTED_MESSAGE);
+        const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE);
         clientMessage.addFrame(initialFrame);
         clientMessage.setMessageType(EXCEPTION_MESSAGE_TYPE);
         ListMultiFrameCodec.encode(clientMessage, errorHolders, ErrorHolderCodec.encode);

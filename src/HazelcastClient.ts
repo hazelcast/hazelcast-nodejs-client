@@ -39,7 +39,7 @@ import {Ringbuffer} from './proxy/Ringbuffer';
 import {ISet} from './proxy/ISet';
 import {MultiMap} from './proxy/MultiMap';
 import {PNCounter} from './proxy/PNCounter';
-import {ProxyManager} from './proxy/ProxyManager';
+import {ProxyManager, NAMESPACE_SEPARATOR} from './proxy/ProxyManager';
 import {ITopic} from './proxy/topic/ITopic';
 import {SerializationService, SerializationServiceV1} from './serialization/SerializationService';
 import {AddressProvider} from './connection/AddressProvider';
@@ -158,22 +158,24 @@ export default class HazelcastClient {
             .then((distributedObjects) => {
                 localDistributedObjects = new Set<string>();
                 distributedObjects.forEach((obj) => {
-                    localDistributedObjects.add(obj.getServiceName() + obj.getName());
+                    localDistributedObjects.add(obj.getServiceName() + NAMESPACE_SEPARATOR + obj.getName());
                 });
 
                 const newDistributedObjectInfos = ClientGetDistributedObjectsCodec.decodeResponse(responseMessage).response;
                 const createLocalProxiesPromise = newDistributedObjectInfos.map((doi) => {
                     return this.proxyManager.getOrCreateProxy(doi.name, doi.serviceName, false)
-                            .then(() => localDistributedObjects.delete(doi.serviceName + doi.name));
+                        .then(() => localDistributedObjects.delete(doi.serviceName + NAMESPACE_SEPARATOR + doi.name));
                 });
 
                 return Promise.all(createLocalProxiesPromise);
             })
             .then(() => {
-               const destroyLocalProxiesPromise = Array.from(localDistributedObjects).map((namespace) => {
-                  return this.proxyManager.destroyProxyLocally(namespace);
-               });
-               return Promise.all(destroyLocalProxiesPromise);
+                const destroyLocalProxiesPromises = new Array<Promise<void>>(localDistributedObjects.size);
+                let index = 0;
+                localDistributedObjects.forEach((namespace) => {
+                    destroyLocalProxiesPromises[index++] = this.proxyManager.destroyProxyLocally(namespace);
+                });
+                return Promise.all(destroyLocalProxiesPromises);
             })
             .then(() => {
                 return this.proxyManager.getDistributedObjects();

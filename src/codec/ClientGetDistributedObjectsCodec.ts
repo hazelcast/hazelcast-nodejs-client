@@ -16,7 +16,7 @@
 
 /*tslint:disable:max-line-length*/
 import {BitsUtil} from '../BitsUtil';
-import {ClientMessage, Frame, PARTITION_ID_OFFSET, UNFRAGMENTED_MESSAGE} from '../ClientMessage';
+import {ClientMessage, Frame, PARTITION_ID_OFFSET} from '../ClientMessage';
 import {DistributedObjectInfo} from '../DistributedObjectInfo';
 import {ListMultiFrameCodec} from './builtin/ListMultiFrameCodec';
 import {DistributedObjectInfoCodec} from './custom/DistributedObjectInfoCodec';
@@ -37,7 +37,7 @@ export class ClientGetDistributedObjectsCodec {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(false);
 
-        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE, UNFRAGMENTED_MESSAGE);
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
         clientMessage.addFrame(initialFrame);
         clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);
         clientMessage.setPartitionId(-1);

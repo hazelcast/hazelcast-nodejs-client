@@ -160,9 +160,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
 
     clear(): Promise<void> {
         return this.encodeInvokeOnRandomTarget(MultiMapClearCodec)
-            .then(() => {
-                return Promise.resolve();
-            });
+            .then(() => undefined);
     }
 
     valueCount(key: K): Promise<number> {
@@ -237,9 +235,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     lock(key: K, leaseMillis: number = -1): Promise<void> {
         const keyData = this.toData(key);
         return this.encodeInvokeOnKey(MultiMapLockCodec, keyData, keyData, 1, leaseMillis, this.nextSequence())
-            .then(() => {
-                return Promise.resolve();
-            });
+            .then(() => undefined);
     }
 
     isLocked(key: K): Promise<boolean> {
@@ -263,17 +259,13 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     unlock(key: K): Promise<void> {
         const keyData = this.toData(key);
         return this.encodeInvokeOnKey(MultiMapUnlockCodec, keyData, keyData, 1, this.nextSequence())
-            .then(() => {
-                return Promise.resolve();
-            });
+            .then(() => undefined);
     }
 
     forceUnlock(key: K): Promise<void> {
         const keyData = this.toData(key);
         return this.encodeInvokeOnKey(MultiMapForceUnlockCodec, keyData, keyData, this.nextSequence())
-            .then(() => {
-                return Promise.resolve();
-            });
+            .then(() => undefined);
     }
 
     private nextSequence(): Long {

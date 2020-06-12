@@ -29,7 +29,7 @@ export class BitmapIndexOptionsCodec {
     static encode(clientMessage: ClientMessage, bitmapIndexOptions: BitmapIndexOptions): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());
 
-        const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE);
+        const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE, undefined);
         FixSizedTypesCodec.encodeInt(initialFrame.content, UNIQUE_KEY_TRANSFORMATION_OFFSET, bitmapIndexOptions.uniqueKeyTransformation);
         clientMessage.addFrame(initialFrame);
 

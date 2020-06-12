@@ -40,16 +40,18 @@ export enum MemberEvent {
 
 class MemberListSnapshot {
     version: number;
-    members: Map<string, Member>;
+    readonly members: Map<string, Member>;
+    readonly memberList: Member[];
 
-    constructor(version: number, members: Map<string, Member>) {
+    constructor(version: number, members: Map<string, Member>, memberList: Member[]) {
         this.version = version;
         this.members = members;
+        this.memberList = memberList;
     }
 }
 
-const EMPTY_SNAPSHOT = new MemberListSnapshot(-1, new Map<string, Member>());
-const INITIAL_MEMBERS_TIMEOUT_SECONDS = 120;
+const EMPTY_SNAPSHOT = new MemberListSnapshot(-1, new Map<string, Member>(), []);
+const INITIAL_MEMBERS_TIMEOUT_IN_MILLIS = 120 * 1000; // 120 seconds
 
 /**
  * Manages the relationship of this client with the cluster.
@@ -165,7 +167,7 @@ export class ClusterService implements Cluster {
 
     public waitInitialMemberListFetched(): Promise<void> {
         return this.initialListFetched.promise
-            .timeout(INITIAL_MEMBERS_TIMEOUT_SECONDS * 1000)
+            .timeout(INITIAL_MEMBERS_TIMEOUT_IN_MILLIS)
             .catch((error) => {
                 return Promise.reject(new IllegalStateError('Could not get initial member list from the cluster!', error));
             });
@@ -193,10 +195,10 @@ export class ClusterService implements Cluster {
 
         let events = new Array<MembershipEvent>();
         if (memberListVersion >= this.memberListSnapshot.version) {
-            const prevMembers = Array.from(this.memberListSnapshot.members.values());
+            const prevMembers = this.memberListSnapshot.memberList;
             const snapshot = this.createSnapshot(memberListVersion, memberInfos);
             this.memberListSnapshot = snapshot;
-            const currentMembers = Array.from(snapshot.members.values());
+            const currentMembers = snapshot.memberList;
             events = this.detectMembershipEvents(prevMembers, currentMembers);
         }
         this.fireEvents(events);
@@ -204,13 +206,13 @@ export class ClusterService implements Cluster {
 
     private fireEvents(events: MembershipEvent[]): void {
         for (const event of events) {
-            for (const listener of Array.from(this.listeners.values())) {
+            this.listeners.forEach((listener) => {
                 if (event.eventType === MemberEvent.ADDED && listener.memberAdded) {
                     listener.memberAdded(event);
                 } else if (event.eventType === MemberEvent.REMOVED && listener.memberRemoved) {
                     listener.memberRemoved(event);
                 }
-            }
+            });
         }
     }
 
@@ -222,13 +224,13 @@ export class ClusterService implements Cluster {
         const snapshot = this.createSnapshot(memberListVersion, memberInfos);
         this.memberListSnapshot = snapshot;
         this.logger.info('ClusterService', this.membersString(snapshot));
-        const members = Array.from(snapshot.members.values());
+        const members = snapshot.memberList;
         const event = new InitialMembershipEvent(members);
-        for (const listener of Array.from(this.listeners.values())) {
+        this.listeners.forEach((listener) => {
             if (this.isInitialMembershipListener(listener)) {
                 listener.init(event);
             }
-        }
+        });
     }
 
     private detectMembershipEvents(prevMembers: Member[], currentMembers: Member[]): MembershipEvent[] {
@@ -248,14 +250,14 @@ export class ClusterService implements Cluster {
         const events = new Array<MembershipEvent>();
 
         // removal events should be added before added events
-        for (const member of Array.from(deadMembers.values())) {
+        deadMembers.forEach((member) => {
             events.push(new MembershipEvent(member, MemberEvent.REMOVED, currentMembers));
             const connection: ClientConnection = this.connectionManager.getConnection(member.uuid);
             if (connection != null) {
                 connection.close(null, new TargetDisconnectedError('The client has closed the connection to this ' +
                     'member, after receiving a member left event from the cluster ' + connection));
             }
-        }
+        });
 
         for (const member of newMembers) {
             events.push(new MembershipEvent(member, MemberEvent.ADDED, currentMembers));
@@ -271,16 +273,19 @@ export class ClusterService implements Cluster {
 
     private createSnapshot(memberListVersion: number, memberInfos: MemberInfo[]): MemberListSnapshot {
         const newMembers = new Map<string, Member>();
+        const newMemberList = new Array<Member>(memberInfos.length);
+        let index = 0;
         for (const memberInfo of memberInfos) {
             const member = new Member(memberInfo.address, memberInfo.uuid, memberInfo.attributes, memberInfo.liteMember,
                 memberInfo.version);
             newMembers.set(memberInfo.uuid.toString(), member);
+            newMemberList[index++] = member;
         }
-        return new MemberListSnapshot(memberListVersion, newMembers);
+        return new MemberListSnapshot(memberListVersion, newMembers, newMemberList);
     }
 
     private membersString(snapshot: MemberListSnapshot): string {
-        const members = Array.from(snapshot.members.values());
+        const members = snapshot.memberList;
         let logString = '\n\nMembers [' + members.length + '] {';
         for (const member of members) {
             logString += '\n\t' + member.toString();
@@ -290,7 +295,7 @@ export class ClusterService implements Cluster {
     }
 
     private getMemberList(): Member[] {
-        return Array.from(this.memberListSnapshot.members.values());
+        return this.memberListSnapshot.memberList;
     }
 
 }

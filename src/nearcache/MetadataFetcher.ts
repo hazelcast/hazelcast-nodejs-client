@@ -53,7 +53,7 @@ export class MetadataFetcher {
         const promises = this.scanMembers(objectNames);
         return Promise.each(promises, (clientMessage: ClientMessage) => {
             this.processResponse(clientMessage, handlers);
-        }).return();
+        }).then(() => undefined);
     }
 
     protected processResponse(responseMessage: ClientMessage, handlers: Map<string, RepairingHandler>): void {

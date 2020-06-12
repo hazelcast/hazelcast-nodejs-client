@@ -16,9 +16,9 @@
 
 /* tslint:disable:no-bitwise */
 import {Buffer} from 'safe-buffer';
-import * as Long from 'long';
 import {BitsUtil} from './BitsUtil';
 import {ClientConnection} from './network/ClientConnection';
+import {FixSizedTypesCodec} from './codec/builtin/FixSizedTypesCodec';
 
 const MESSAGE_TYPE_OFFSET = 0;
 const CORRELATION_ID_OFFSET = MESSAGE_TYPE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
@@ -29,14 +29,12 @@ const FRAGMENTATION_ID_OFFSET = 0;
 const DEFAULT_FLAGS = 0;
 const BEGIN_FRAGMENT_FLAG = 1 << 15;
 const END_FRAGMENT_FLAG = 1 << 14;
-export const UNFRAGMENTED_MESSAGE = BEGIN_FRAGMENT_FLAG | END_FRAGMENT_FLAG;
-export const IS_FINAL_FLAG = 1 << 13;
+const UNFRAGMENTED_MESSAGE = BEGIN_FRAGMENT_FLAG | END_FRAGMENT_FLAG;
+const IS_FINAL_FLAG = 1 << 13;
 const BEGIN_DATA_STRUCTURE_FLAG = 1 << 12;
 const END_DATA_STRUCTURE_FLAG = 1 << 11;
 const IS_NULL_FLAG = 1 << 10;
-export const IS_EVENT_FLAG = 1 << 9;
-const BACKUP_AWARE_FLAG = 1 << 8;
-const BACKUP_EVENT_FLAG = 1 << 7;
+const IS_EVENT_FLAG = 1 << 9;
 
 export const SIZE_OF_FRAME_LENGTH_AND_FLAGS = BitsUtil.INT_SIZE_IN_BYTES + BitsUtil.SHORT_SIZE_IN_BYTES;
 
@@ -50,7 +48,7 @@ export class Frame {
         this.flags = flags || DEFAULT_FLAGS;
     }
 
-    static createInitialFrame(size: number, flags?: number): Frame {
+    static createInitialFrame(size: number, flags = UNFRAGMENTED_MESSAGE): Frame {
         return new Frame(Buffer.allocUnsafe(size), flags);
     }
 
@@ -72,15 +70,40 @@ export class Frame {
     }
 
     isBeginFrame(): boolean {
-        return ClientMessage.isFlagSet(this.flags, BEGIN_DATA_STRUCTURE_FLAG);
+        return this.isFlagSet(this.flags, BEGIN_DATA_STRUCTURE_FLAG);
     }
 
     isEndFrame(): boolean {
-        return ClientMessage.isFlagSet(this.flags, END_DATA_STRUCTURE_FLAG);
+        return this.isFlagSet(this.flags, END_DATA_STRUCTURE_FLAG);
     }
 
     isNullFrame(): boolean {
-        return ClientMessage.isFlagSet(this.flags, IS_NULL_FLAG);
+        return this.isFlagSet(this.flags, IS_NULL_FLAG);
+    }
+
+    hasEventFlag(): boolean {
+        return this.isFlagSet(this.flags, IS_EVENT_FLAG);
+    }
+
+    isFinalFrame(): boolean {
+        return this.isFlagSet(this.flags, IS_FINAL_FLAG);
+    }
+
+    hasUnfragmentedMessageFlag(): boolean {
+        return this.isFlagSet(this.flags, UNFRAGMENTED_MESSAGE);
+    }
+
+    hasBeginFragmentFlag(): boolean {
+        return this.isFlagSet(this.flags, BEGIN_FRAGMENT_FLAG);
+    }
+
+    hasEndFragmentFlag(): boolean {
+        return this.isFlagSet(this.flags, END_FRAGMENT_FLAG);
+    }
+
+    private isFlagSet(flags: number, flagMask: number): boolean {
+        const i = flags & flagMask;
+        return i === flagMask;
     }
 }
 
@@ -107,11 +130,6 @@ export class ClientMessage {
 
     static createForDecode(startFrame: Frame): ClientMessage {
         return new ClientMessage(startFrame);
-    }
-
-    static isFlagSet(flags: number, flagMask: number): boolean {
-        const i = flags & flagMask;
-        return i === flagMask;
     }
 
     getStartFrame(): Frame {
@@ -156,21 +174,11 @@ export class ClientMessage {
     }
 
     getCorrelationId(): number {
-        const low = this.startFrame.content.readInt32LE(CORRELATION_ID_OFFSET);
-        const high = this.startFrame.content.readInt32LE(CORRELATION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES);
-        return new Long(low, high).toNumber();
+        return FixSizedTypesCodec.decodeLong(this.startFrame.content, CORRELATION_ID_OFFSET).toNumber();
     }
 
     setCorrelationId(correlationId: any): void {
-        if (!Long.isLong(correlationId)) {
-            correlationId = Long.fromValue(correlationId);
-        }
-        this.startFrame.content.writeInt32LE(correlationId.low, CORRELATION_ID_OFFSET);
-        this.startFrame.content.writeInt32LE(correlationId.high, CORRELATION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES);
-    }
-
-    getNumberOfBackupAcks(): number {
-        return this.startFrame.content.readInt8(RESPONSE_BACKUP_ACKS_OFFSET);
+        FixSizedTypesCodec.encodeLong(this.startFrame.content, CORRELATION_ID_OFFSET, correlationId);
     }
 
     getPartitionId(): number {
@@ -211,6 +219,10 @@ export class ClientMessage {
         return frameLength;
     }
 
+    getFragmentationId(): number {
+        return FixSizedTypesCodec.decodeLong(this.startFrame.content, FRAGMENTATION_ID_OFFSET).toNumber();
+    }
+
     merge(fragment: ClientMessage): void {
         // Ignore the first frame of the fragment since first frame marks the fragment
         this.endFrame.next = fragment.startFrame.next;
@@ -224,5 +236,29 @@ export class ClientMessage {
         newMessage.setCorrelationId(-1);
         newMessage.retryable = this.retryable;
         return newMessage;
+    }
+
+    toBuffer(): Buffer {
+        const buffers: Buffer[] = [];
+        let totalLength = 0;
+        let currentFrame = this.startFrame;
+        while (currentFrame != null) {
+            const isLastFrame = currentFrame.next == null;
+            const frameLengthAndFlags = Buffer.allocUnsafe(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+            frameLengthAndFlags.writeInt32LE(currentFrame.content.length + SIZE_OF_FRAME_LENGTH_AND_FLAGS, 0);
+
+            if (isLastFrame) {
+                // tslint:disable-next-line:no-bitwise
+                frameLengthAndFlags.writeUInt16LE(currentFrame.flags | IS_FINAL_FLAG, BitsUtil.INT_SIZE_IN_BYTES);
+            } else {
+                frameLengthAndFlags.writeUInt16LE(currentFrame.flags, BitsUtil.INT_SIZE_IN_BYTES);
+            }
+            totalLength += SIZE_OF_FRAME_LENGTH_AND_FLAGS;
+            buffers.push(frameLengthAndFlags);
+            totalLength += currentFrame.content.length;
+            buffers.push(currentFrame.content);
+            currentFrame = currentFrame.next;
+        }
+        return buffers.length === 1 ? buffers[0] : Buffer.concat(buffers, totalLength);
     }
 }

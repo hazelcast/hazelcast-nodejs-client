@@ -31,11 +31,11 @@ import {Invocation} from '../invocation/InvocationService';
  */
 export class ClusterViewListenerService {
 
-    private client: HazelcastClient;
-    private connectionManager: ClientConnectionManager;
-    private partitionService: PartitionService;
-    private clusterService: ClusterService;
-    private logger: ILogger;
+    private readonly client: HazelcastClient;
+    private readonly clusterService: ClusterService;
+    private readonly connectionManager: ClientConnectionManager;
+    private readonly partitionService: PartitionService;
+    private readonly logger: ILogger;
     private listenerAddedConnection: ClientConnection;
 
     constructor(client: HazelcastClient) {

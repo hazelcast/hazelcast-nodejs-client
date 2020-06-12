@@ -74,10 +74,16 @@
     },
     "properties": {
         "clusterName": {
-            "type": ["string", "null"]
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "instanceName": {
-            "type": ["string", "null"]
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "properties": {
             "$ref": "#/definitions/propertiesObject"
@@ -113,7 +119,10 @@
                     "type": "object",
                     "properties": {
                         "discoveryToken": {
-                            "type": ["string", "null"]
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "enabled": {
                             "type": "boolean",
@@ -358,6 +367,17 @@
                         ],
                         "default": "block"
                     }
+                }
+            }
+        },
+        "loadBalancer": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "enum": [
+                        "roundRobin",
+                        "random"
+                    ]
                 }
             }
         },

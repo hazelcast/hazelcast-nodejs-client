@@ -195,4 +195,9 @@ describe('ConfigBuilder Test', function () {
         expect(flakeIdConfigs['flakeid2'].prefetchCount).to.equal(1234);
         expect(1900000).to.be.equal(flakeIdConfigs['flakeid2'].prefetchValidityMillis);
     })
+
+    it('loadBalancer', function () {
+        var loadBalancer = fullConfig.loadBalancer;
+        expect(loadBalancer.constructor.name).to.equal('RandomLB');
+    });
 });

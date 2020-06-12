@@ -61,5 +61,8 @@
     },
     "nearCaches": [],
     "reliableTopics": [],
-    "flakeIdGeneratorConfigs": []
+    "flakeIdGeneratorConfigs": [],
+    "loadBalancer": {
+        "type": "roundRobin"
+    }
 }
