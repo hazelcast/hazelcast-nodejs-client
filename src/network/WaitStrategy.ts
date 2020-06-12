@@ -60,7 +60,7 @@ export class WaitStrategy {
             + this.currentBackoffMillis * this.jitter * (2.0 * Math.random() - 1.0);
 
         actualSleepTime = Math.min(actualSleepTime, this.clusterConnectTimeoutMillis - timePassed);
-        this.logger.warn('WaitStrategy', + 'Unable to get live cluster connection, retry in ' +
+        this.logger.warn('WaitStrategy', 'Unable to get live cluster connection, retry in ' +
             actualSleepTime + ' ms, attempt: ' + this.attempt + ', cluster connect timeout: ' +
             this.clusterConnectTimeoutMillis + ' ms, max backoff millis: ' + this.maxBackoffMillis);
 
