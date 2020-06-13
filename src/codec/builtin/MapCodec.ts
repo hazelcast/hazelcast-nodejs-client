@@ -58,6 +58,6 @@ export class MapCodec {
     static decodeNullable<K, V>(clientMessage: ClientMessage,
                                 keyDecoder: (msg: ClientMessage) => K,
                                 valueDecoder: (msg: ClientMessage) => V): Map<K, V> {
-        return CodecUtil.nextFrameIsNullEndFrame(clientMessage) ? null : this.decode(clientMessage, keyDecoder, valueDecoder);
+        return CodecUtil.nextFrameIsNullFrame(clientMessage) ? null : this.decode(clientMessage, keyDecoder, valueDecoder);
     }
 }

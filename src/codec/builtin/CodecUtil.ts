@@ -41,7 +41,7 @@ export class CodecUtil {
     }
 
     static decodeNullable<T>(clientMessage: ClientMessage, decoder: (msg: ClientMessage) => T): T {
-        return CodecUtil.nextFrameIsNullEndFrame(clientMessage) ? null : decoder(clientMessage);
+        return CodecUtil.nextFrameIsNullFrame(clientMessage) ? null : decoder(clientMessage);
     }
 
     static nextFrameIsDataStructureEndFrame(clientMessage: ClientMessage): boolean {
@@ -53,7 +53,7 @@ export class CodecUtil {
      * If it is a {@link NULL_FRAME}, this method consumes the iterator
      * by calling {@link ClientMessage#nextFrame} once to skip the {@link NULL_FRAME}.
      */
-    static nextFrameIsNullEndFrame(clientMessage: ClientMessage): boolean {
+    static nextFrameIsNullFrame(clientMessage: ClientMessage): boolean {
         const isNull = clientMessage.peekNextFrame().isNullFrame();
         if (isNull) {
             clientMessage.nextFrame();

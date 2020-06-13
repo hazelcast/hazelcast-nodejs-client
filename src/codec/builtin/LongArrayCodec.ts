@@ -14,29 +14,16 @@
  * limitations under the License.
  */
 
-import {ClientMessage, Frame} from '../../ClientMessage';
+import {ClientMessage} from '../../ClientMessage';
 import * as Long from 'long';
-import {BitsUtil} from '../../BitsUtil';
-import {Buffer} from 'safe-buffer';
-import {FixSizedTypesCodec} from './FixSizedTypesCodec';
+import {ListLongCodec} from './ListLongCodec';
 
 export class LongArrayCodec {
     static encode(clientMessage: ClientMessage, array: Long[]): void {
-        const itemCount = array.length;
-        const frame = new Frame(Buffer.allocUnsafe(itemCount * BitsUtil.LONG_SIZE_IN_BYTES));
-        for (let i = 0; i < itemCount; i++) {
-            FixSizedTypesCodec.encodeLong(frame.content, i * BitsUtil.LONG_SIZE_IN_BYTES, array[i]);
-        }
-        clientMessage.addFrame(frame);
+        ListLongCodec.encode(clientMessage, array);
     }
 
     static decode(clientMessage: ClientMessage): Long[] {
-        const frame = clientMessage.nextFrame();
-        const itemCount = frame.content.length / BitsUtil.LONG_SIZE_IN_BYTES;
-        const result = new Array<Long>(itemCount);
-        for (let i = 0; i < itemCount; i++) {
-            result[i] = FixSizedTypesCodec.decodeLong(frame.content, i * BitsUtil.LONG_SIZE_IN_BYTES);
-        }
-        return result;
+        return ListLongCodec.decode(clientMessage);
     }
 }

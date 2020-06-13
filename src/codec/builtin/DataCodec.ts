@@ -37,6 +37,6 @@ export class DataCodec {
     }
 
     static decodeNullable(clientMessage: ClientMessage): Data {
-        return CodecUtil.nextFrameIsNullEndFrame(clientMessage) ? null : this.decode(clientMessage);
+        return CodecUtil.nextFrameIsNullFrame(clientMessage) ? null : this.decode(clientMessage);
     }
 }
