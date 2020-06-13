@@ -41,7 +41,6 @@ export class PagingPredicateHolder {
     }
 
     static of(predicate: PagingPredicate, serializationService: SerializationService): PagingPredicateHolder {
-        // TODO PartitionPredicate is not implemented yet.
         if (predicate == null) {
             return null;
         }

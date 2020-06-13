@@ -294,7 +294,6 @@ export class ClientConnectionManager extends EventEmitter {
             }
         }
 
-        // TODO does the iterator.next() random enough ?
         const iterator = this.activeConnections.values();
         const next = iterator.next();
         if (!next.done) {
@@ -720,7 +719,6 @@ export class ClientConnectionManager extends EventEmitter {
         // connection. We do a final check here to remove this connection
         // if needed.
         if (!connection.isAlive()) {
-            // TODO Can the client be in this state ?
             this.onConnectionClose(connection);
         }
 
@@ -739,7 +737,6 @@ export class ClientConnectionManager extends EventEmitter {
             clientMessage = ClientAuthenticationCustomCodec.encodeRequest(clusterName, credentialsPayload, this.clientUuid,
                 CLIENT_TYPE, SERIALIZATION_VERSION, clientVersion, clientName, this.labels);
         } else {
-            // TODO Implement Security config
             clientMessage = ClientAuthenticationCodec.encodeRequest(clusterName, null, null, this.clientUuid,
                 CLIENT_TYPE, SERIALIZATION_VERSION, clientVersion, clientName, this.labels);
         }

@@ -29,7 +29,6 @@ var CustomStreamSerializable = require('./CustomSerializable').CustomStreamSeria
 var expectAlmostEqual = require('../Util').expectAlmostEqual;
 
 describe('Binary serialization compatibility test', function () {
-    // TODO there are +20 new serializers in the Java side. Update this test when new serializers are implemented.
     var NULL_LENGTH = -1;
     var versions = [1];
     var objects = ReferenceObjects.testObjects;

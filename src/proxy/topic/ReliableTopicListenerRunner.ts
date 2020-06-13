@@ -68,7 +68,6 @@ export class ReliableTopicListenerRunner<E> {
             }
         }).catch((e) => {
             let message: string;
-            // TODO Server does not throw StaleSequenceError anymore. https://github.com/hazelcast/hazelcast/pull/16303
             if (e instanceof StaleSequenceError) {
                 this.ringbuffer.headSequence().then((seq: Long) => {
                     const newSequence = seq.toNumber();

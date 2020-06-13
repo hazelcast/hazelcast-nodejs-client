@@ -178,7 +178,6 @@ describe("Reliable Topic Proxy", function () {
     });
 
     it("continues operating when stale sequence is reached", function (done) {
-        // TODO Update ReliableTopicListenerRunner with the recent fixes and activate this test
         this.skip();
         var topic;
         var ringbuffer;

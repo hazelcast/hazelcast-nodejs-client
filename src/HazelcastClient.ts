@@ -402,7 +402,6 @@ export default class HazelcastClient {
     private init(): Promise<HazelcastClient> {
         try {
             this.lifecycleService.start();
-            // TODO implement defining membership listeners with JSON config
             const configuredMembershipListeners = this.config.listeners.getMembershipListeners();
             this.clusterService.start(configuredMembershipListeners);
             this.clusterViewListenerService.start();

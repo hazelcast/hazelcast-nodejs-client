@@ -130,7 +130,6 @@ export class ClientErrorFactory {
         } else {
             error = new UndefinedErrorCodeError(errorHolder.message, errorHolder.className);
         }
-        // TODO Set error.stack to errorHolder.stackTraceElements
         return error;
     }
 
