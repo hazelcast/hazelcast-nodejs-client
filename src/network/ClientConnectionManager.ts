@@ -247,40 +247,28 @@ export class ClientConnectionManager extends EventEmitter {
             this.client.getInvocationService().processResponse(msg);
         };
 
+        let translatedAddress: Address;
+        let clientConnection: ClientConnection;
         this.translate(address)
-            .then((translatedAddress) => {
+            .then((translated) => {
+                translatedAddress = translated;
                 if (translatedAddress == null) {
-                    connectionResolver.reject(new RangeError(`Address Translator could not translate address ${address}`));
-                    return;
+                    throw new RangeError(`Address Translator could not translate address ${address}`);
                 }
-
-                this.triggerConnect(translatedAddress)
-                    .then((socket) => {
-                        const clientConnection = new ClientConnection(this.client, translatedAddress, socket,
-                            this.connectionIdCounter++);
-                        return this.initiateCommunication(socket)
-                            .then(() => {
-                                return clientConnection.registerResponseCallback(processResponseCallback);
-                            })
-                            .then(() => {
-                                return this.authenticateOnCluster(clientConnection);
-                            }).then(() => {
-                                connectionResolver.resolve(clientConnection);
-                            });
-                    })
-                    .catch((error) => {
-                        connectionResolver.reject(error);
-                    })
-                    .finally(() => {
-                        this.pendingConnections.delete(addressKey);
-                    });
-            });
+                return this.triggerConnect(translatedAddress);
+            })
+            .then((socket) => {
+                clientConnection = new ClientConnection(this.client, translatedAddress, socket, this.connectionIdCounter++);
+                return this.initiateCommunication(socket);
+            })
+            .then(() => clientConnection.registerResponseCallback(processResponseCallback))
+            .then(() => this.authenticateOnCluster(clientConnection))
+            .then(() => connectionResolver.resolve(clientConnection))
+            .catch((error) => connectionResolver.reject(error));
 
         return connectionResolver.promise
             .timeout(this.connectionTimeoutMillis, new HazelcastError(`Connection timed out to address ${address}.`))
-            .finally(() => {
-                this.pendingConnections.delete(addressKey);
-            });
+            .finally(() => this.pendingConnections.delete(addressKey));
     }
 
     public getRandomConnection(): ClientConnection {

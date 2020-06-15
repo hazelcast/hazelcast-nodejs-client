@@ -17,7 +17,7 @@
 /*tslint:disable:max-line-length*/
 import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
-import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame} from '../../ClientMessage';
+import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame, DEFAULT_FLAGS} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
 import {AnchorDataListHolder} from '../../protocol/AnchorDataListHolder';
 import {AnchorDataListHolderCodec} from './AnchorDataListHolderCodec';
@@ -34,7 +34,7 @@ export class PagingPredicateHolderCodec {
     static encode(clientMessage: ClientMessage, pagingPredicateHolder: PagingPredicateHolder): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());
 
-        const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE, undefined);
+        const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE, DEFAULT_FLAGS);
         FixSizedTypesCodec.encodeInt(initialFrame.content, PAGE_SIZE_OFFSET, pagingPredicateHolder.pageSize);
         FixSizedTypesCodec.encodeInt(initialFrame.content, PAGE_OFFSET, pagingPredicateHolder.page);
         FixSizedTypesCodec.encodeByte(initialFrame.content, ITERATION_TYPE_ID_OFFSET, pagingPredicateHolder.iterationTypeId);

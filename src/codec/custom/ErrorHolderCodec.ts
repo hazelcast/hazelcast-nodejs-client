@@ -17,7 +17,7 @@
 /*tslint:disable:max-line-length*/
 import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
-import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame} from '../../ClientMessage';
+import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame, DEFAULT_FLAGS} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
 import {StringCodec} from '../builtin/StringCodec';
 import {StackTraceElement} from '../../protocol/StackTraceElement';
@@ -32,7 +32,7 @@ export class ErrorHolderCodec {
     static encode(clientMessage: ClientMessage, errorHolder: ErrorHolder): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());
 
-        const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE, undefined);
+        const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE, DEFAULT_FLAGS);
         FixSizedTypesCodec.encodeInt(initialFrame.content, ERROR_CODE_OFFSET, errorHolder.errorCode);
         clientMessage.addFrame(initialFrame);
 

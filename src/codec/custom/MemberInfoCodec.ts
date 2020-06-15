@@ -17,7 +17,7 @@
 /*tslint:disable:max-line-length*/
 import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
-import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame} from '../../ClientMessage';
+import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame, DEFAULT_FLAGS} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
 import {UUID} from '../../core/UUID';
 import {Address} from '../../Address';
@@ -36,7 +36,7 @@ export class MemberInfoCodec {
     static encode(clientMessage: ClientMessage, memberInfo: MemberInfo): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());
 
-        const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE, undefined);
+        const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE, DEFAULT_FLAGS);
         FixSizedTypesCodec.encodeUUID(initialFrame.content, UUID_OFFSET, memberInfo.uuid);
         FixSizedTypesCodec.encodeBoolean(initialFrame.content, LITE_MEMBER_OFFSET, memberInfo.liteMember);
         clientMessage.addFrame(initialFrame);

@@ -17,7 +17,7 @@
 /*tslint:disable:max-line-length*/
 import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
-import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame} from '../../ClientMessage';
+import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame, DEFAULT_FLAGS} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
 import * as Long from 'long';
 import {Data} from '../../serialization/Data';
@@ -40,7 +40,7 @@ export class SimpleEntryViewCodec {
     static encode(clientMessage: ClientMessage, simpleEntryView: SimpleEntryView<Data, Data>): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());
 
-        const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE, undefined);
+        const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE, DEFAULT_FLAGS);
         FixSizedTypesCodec.encodeLong(initialFrame.content, COST_OFFSET, simpleEntryView.cost);
         FixSizedTypesCodec.encodeLong(initialFrame.content, CREATION_TIME_OFFSET, simpleEntryView.creationTime);
         FixSizedTypesCodec.encodeLong(initialFrame.content, EXPIRATION_TIME_OFFSET, simpleEntryView.expirationTime);
