@@ -155,9 +155,9 @@ export default class HazelcastClient {
         const proxyManager = this.proxyManager;
         return this.invocationService.invokeOnRandomTarget(clientMessage).then(function (resp): any {
             const response = ClientGetDistributedObjectsCodec.decodeResponse(resp, toObjectFunc).response;
-            return response.map((objectInfo: { [key: string]: any }) => {
-                return proxyManager.getOrCreateProxy(objectInfo.value, objectInfo.key, false).value();
-            });
+            return Promise.all(response.map((objectInfo: { [key: string]: any }) => {
+                return proxyManager.getOrCreateProxy(objectInfo.value, objectInfo.key, false);
+            }));
         });
     }
 
