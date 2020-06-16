@@ -224,9 +224,14 @@ export class ClientMessage {
     }
 
     merge(fragment: ClientMessage): void {
-        // Ignore the first frame of the fragment since first frame marks the fragment
-        this.endFrame.next = fragment.startFrame.next;
+        // Should be called after calling dropFragmentationFrame() on the fragment
+        this.endFrame.next = fragment.startFrame;
         this.endFrame = fragment.endFrame;
+    }
+
+    dropFragmentationFrame(): void {
+        this.startFrame = this.startFrame.next;
+        this._nextFrame = this._nextFrame.next;
     }
 
     copyWithNewCorrelationId(): ClientMessage {

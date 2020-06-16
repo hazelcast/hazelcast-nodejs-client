@@ -240,13 +240,12 @@ export class FragmentedClientMessageHandler {
     private readonly fragmentedMessages = new Map<number, ClientMessage>();
 
     handleFragmentedMessage(clientMessage: ClientMessage, callback: Function): void {
+        const fragmentationFrame = clientMessage.startFrame;
         const fragmentationId = clientMessage.getFragmentationId();
-        if (clientMessage.startFrame.hasBeginFragmentFlag()) {
-            // Ignore the fragmentation frame
-            clientMessage.nextFrame();
-            const startFrame = clientMessage.nextFrame();
-            this.fragmentedMessages.set(fragmentationId, ClientMessage.createForDecode(startFrame, clientMessage.endFrame));
-        } else if (clientMessage.startFrame.hasEndFragmentFlag()) {
+        clientMessage.dropFragmentationFrame();
+        if (fragmentationFrame.hasBeginFragmentFlag()) {
+            this.fragmentedMessages.set(fragmentationId, clientMessage);
+        } else if (fragmentationFrame.hasEndFragmentFlag()) {
             const mergedMessage = this.mergeIntoExistingClientMessage(fragmentationId, clientMessage);
             callback(mergedMessage);
         } else {
