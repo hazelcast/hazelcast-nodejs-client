@@ -1,3 +1,4 @@
+
 This client is under heavy development for version 4.0.
 
 Please switch to a 3.12.x branch or tag if you are using a 3.12.x version of Hazelcast IMDG.
@@ -119,7 +120,7 @@ You can also configure the client
 * Ability to listen client lifecycle, cluster state and distributed data structure events
 * and [many more](https://hazelcast.org/imdg/clients-languages/node-js/#client-features).
 
-> *: Make sure to use Hazelcast IMDG 3.x versions to access them as the work to support these primitives in 4.x versions is in progress.
+> *: Make sure to use 3.x versions of Hazelcast Node.js client and IMDG to access these primitives as the work to support them in 4.x versions is in progress.
 
 ## Getting Help
 
