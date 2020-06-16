@@ -48,7 +48,7 @@ export class UUID {
         const div2 = (mostLow >>> 16).toString(16);
         const div3 = (mostLow & ((1 << 16) - 1)).toString(16);
         const div4 = (leastHigh >>> 16).toString(16);
-        const div5 = (leastHigh & ((1 << 16) - 1)).toString(16) + leastLow.toString(16);
+        const div5 = (leastHigh & ((1 << 16) - 1)).toString(16) + pad(leastLow.toString(16), 8, '0');
         this.cachedString = pad(div1, 8, '0') + '-'
             + pad(div2, 4, '0') + '-'
             + pad(div3, 4, '0') + '-'
