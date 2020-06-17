@@ -14,43 +14,30 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
-import Address = require('../Address');
+/*tslint:disable:max-line-length*/
 import {BitsUtil} from '../BitsUtil';
-import {AddressCodec} from './AddressCodec';
-import {ClientMessageType} from './ClientMessageType';
+import {ClientMessage, Frame, PARTITION_ID_OFFSET} from '../ClientMessage';
+import {StringCodec} from './builtin/StringCodec';
 
-var REQUEST_TYPE = ClientMessageType.CLIENT_CREATEPROXY;
-var RESPONSE_TYPE = 100;
-var RETRYABLE = false;
+// hex: 0x000400
+const REQUEST_MESSAGE_TYPE = 1024;
+// hex: 0x000401
+const RESPONSE_MESSAGE_TYPE = 1025;
 
+const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
 export class ClientCreateProxyCodec {
+    static encodeRequest(name: string, serviceName: string): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(false);
 
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
+        clientMessage.addFrame(initialFrame);
+        clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);
+        clientMessage.setPartitionId(-1);
 
-    static calculateSize(name: string, serviceName: string, target: Address) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.calculateSizeString(serviceName);
-        dataSize += BitsUtil.calculateSizeAddress(target);
-        return dataSize;
-    }
-
-    static encodeRequest(name: string, serviceName: string, target: Address) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, serviceName, target));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendString(serviceName);
-        AddressCodec.encode(clientMessage, target);
-        clientMessage.updateFrameLength();
+        StringCodec.encode(clientMessage, name);
+        StringCodec.encode(clientMessage, serviceName);
         return clientMessage;
     }
-
-// Empty decodeResponse(ClientMessage), this message has no parameters to decode
-
-
 }

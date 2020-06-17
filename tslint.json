@@ -56,6 +56,10 @@
             true,
             "call-signature",
             "property-declaration"
+        ],
+        "variable-name": [
+            true,
+            "allow-leading-underscore"
         ]
     }
 }

@@ -14,97 +14,70 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
 import {BitsUtil} from '../BitsUtil';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET} from '../ClientMessage';
+import {StringCodec} from './builtin/StringCodec';
+import {UUID} from '../core/UUID';
 import {Data} from '../serialization/Data';
-import {ReplicatedMapMessageType} from './ReplicatedMapMessageType';
+import {DataCodec} from './builtin/DataCodec';
+import {CodecUtil} from './builtin/CodecUtil';
 
-var REQUEST_TYPE = ReplicatedMapMessageType.REPLICATEDMAP_ADDENTRYLISTENER;
-var RESPONSE_TYPE = 104;
-var RETRYABLE = false;
+// hex: 0x0D0D00
+const REQUEST_MESSAGE_TYPE = 855296;
+// hex: 0x0D0D01
+const RESPONSE_MESSAGE_TYPE = 855297;
+// hex: 0x0D0D02
+const EVENT_ENTRY_MESSAGE_TYPE = 855298;
 
+const REQUEST_LOCAL_ONLY_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const REQUEST_INITIAL_FRAME_SIZE = REQUEST_LOCAL_ONLY_OFFSET + BitsUtil.BOOLEAN_SIZE_IN_BYTES;
+const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
+const EVENT_ENTRY_EVENT_TYPE_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const EVENT_ENTRY_UUID_OFFSET = EVENT_ENTRY_EVENT_TYPE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const EVENT_ENTRY_NUMBER_OF_AFFECTED_ENTRIES_OFFSET = EVENT_ENTRY_UUID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
+
+export interface ReplicatedMapAddEntryListenerResponseParams {
+    response: UUID;
+}
 
 export class ReplicatedMapAddEntryListenerCodec {
+    static encodeRequest(name: string, localOnly: boolean): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(false);
 
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
+        FixSizedTypesCodec.encodeBoolean(initialFrame.content, REQUEST_LOCAL_ONLY_OFFSET, localOnly);
+        clientMessage.addFrame(initialFrame);
+        clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);
+        clientMessage.setPartitionId(-1);
 
-    static calculateSize(name: string, localOnly: boolean) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.BOOLEAN_SIZE_IN_BYTES;
-        return dataSize;
-    }
-
-    static encodeRequest(name: string, localOnly: boolean) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, localOnly));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendBoolean(localOnly);
-        clientMessage.updateFrameLength();
+        StringCodec.encode(clientMessage, name);
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        // Decode response from client message
-        var parameters: any = {
-            'response': null
+    static decodeResponse(clientMessage: ClientMessage): ReplicatedMapAddEntryListenerResponseParams {
+        const initialFrame = clientMessage.nextFrame();
+
+        return {
+            response: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
         };
-
-        parameters['response'] = clientMessage.readString();
-
-        return parameters;
     }
 
-    static handle(clientMessage: ClientMessage, handleEventEntry: any, toObjectFunction: (data: Data) => any = null) {
-
-        var messageType = clientMessage.getMessageType();
-        if (messageType === BitsUtil.EVENT_ENTRY && handleEventEntry !== null) {
-            var messageFinished = false;
-            var key: Data = undefined;
-            if (!messageFinished) {
-
-                if (clientMessage.readBoolean() !== true) {
-                    key = clientMessage.readData();
-                }
-            }
-            var value: Data = undefined;
-            if (!messageFinished) {
-
-                if (clientMessage.readBoolean() !== true) {
-                    value = clientMessage.readData();
-                }
-            }
-            var oldValue: Data = undefined;
-            if (!messageFinished) {
-
-                if (clientMessage.readBoolean() !== true) {
-                    oldValue = clientMessage.readData();
-                }
-            }
-            var mergingValue: Data = undefined;
-            if (!messageFinished) {
-
-                if (clientMessage.readBoolean() !== true) {
-                    mergingValue = clientMessage.readData();
-                }
-            }
-            var eventType: number = undefined;
-            if (!messageFinished) {
-                eventType = clientMessage.readInt32();
-            }
-            var uuid: string = undefined;
-            if (!messageFinished) {
-                uuid = clientMessage.readString();
-            }
-            var numberOfAffectedEntries: number = undefined;
-            if (!messageFinished) {
-                numberOfAffectedEntries = clientMessage.readInt32();
-            }
-            handleEventEntry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
+    static handle(clientMessage: ClientMessage, handleEntryEvent: (key: Data, value: Data, oldValue: Data, mergingValue: Data, eventType: number, uuid: UUID, numberOfAffectedEntries: number) => void = null): void {
+        const messageType = clientMessage.getMessageType();
+        if (messageType === EVENT_ENTRY_MESSAGE_TYPE && handleEntryEvent !== null) {
+            const initialFrame = clientMessage.nextFrame();
+            const eventType = FixSizedTypesCodec.decodeInt(initialFrame.content, EVENT_ENTRY_EVENT_TYPE_OFFSET);
+            const uuid = FixSizedTypesCodec.decodeUUID(initialFrame.content, EVENT_ENTRY_UUID_OFFSET);
+            const numberOfAffectedEntries = FixSizedTypesCodec.decodeInt(initialFrame.content, EVENT_ENTRY_NUMBER_OF_AFFECTED_ENTRIES_OFFSET);
+            const key = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
+            const value = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
+            const oldValue = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
+            const mergingValue = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
+            handleEntryEvent(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
+            return;
         }
     }
-
 }

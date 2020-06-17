@@ -66,7 +66,9 @@ describe('NearCacheImpl', function () {
             cluster = res;
             return Controller.startMember(cluster.id);
         }).then(function () {
-            return HazelcastClient.newHazelcastClient();
+            const cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
+            return HazelcastClient.newHazelcastClient(cfg);
         }).then(function (cl) {
             client = cl;
         });
@@ -74,7 +76,7 @@ describe('NearCacheImpl', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     describe('CacheRecord', function () {

@@ -14,83 +14,54 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
-import Address = require('../Address');
+/*tslint:disable:max-line-length*/
 import {BitsUtil} from '../BitsUtil';
-import {AddressCodec} from './AddressCodec';
-import {Data} from '../serialization/Data';
-import {PNCounterMessageType} from './PNCounterMessageType';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET} from '../ClientMessage';
+import {UUID} from '../core/UUID';
+import {StringCodec} from './builtin/StringCodec';
+import {EntryListUUIDLongCodec} from './builtin/EntryListUUIDLongCodec';
+import * as Long from 'long';
 
-var REQUEST_TYPE = PNCounterMessageType.PNCOUNTER_GET;
-var RESPONSE_TYPE = 127;
-var RETRYABLE = true;
+// hex: 0x1D0100
+const REQUEST_MESSAGE_TYPE = 1900800;
+// hex: 0x1D0101
+const RESPONSE_MESSAGE_TYPE = 1900801;
 
+const REQUEST_TARGET_REPLICA_UUID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const REQUEST_INITIAL_FRAME_SIZE = REQUEST_TARGET_REPLICA_UUID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
+const RESPONSE_VALUE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
+const RESPONSE_REPLICA_COUNT_OFFSET = RESPONSE_VALUE_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
+
+export interface PNCounterGetResponseParams {
+    value: Long;
+    replicaTimestamps: Array<[UUID, Long]>;
+    replicaCount: number;
+}
 
 export class PNCounterGetCodec {
-    static calculateSize(name: string, replicaTimestamps: Array<[string, any]>, targetReplica: Address) {
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.INT_SIZE_IN_BYTES;
+    static encodeRequest(name: string, replicaTimestamps: Array<[UUID, Long]>, targetReplicaUUID: UUID): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(true);
 
-        replicaTimestamps.forEach((replicaTimestampsItem: [string, any]) => {
-            var key: string = replicaTimestampsItem[0];
-            var val: any = replicaTimestampsItem[1];
-            dataSize += BitsUtil.calculateSizeString(key);
-            dataSize += BitsUtil.LONG_SIZE_IN_BYTES;
-        });
-        dataSize += BitsUtil.calculateSizeAddress(targetReplica);
-        return dataSize;
-    }
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
+        FixSizedTypesCodec.encodeUUID(initialFrame.content, REQUEST_TARGET_REPLICA_UUID_OFFSET, targetReplicaUUID);
+        clientMessage.addFrame(initialFrame);
+        clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);
+        clientMessage.setPartitionId(-1);
 
-    static encodeRequest(name: string, replicaTimestamps: Array<[string, any]>, targetReplica: Address) {
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, replicaTimestamps, targetReplica));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendInt32(replicaTimestamps.length);
-
-        replicaTimestamps.forEach((replicaTimestampsItem: any) => {
-            var key: string = replicaTimestampsItem[0];
-            var val: any = replicaTimestampsItem[1];
-            clientMessage.appendString(key);
-            clientMessage.appendLong(val);
-        });
-
-        AddressCodec.encode(clientMessage, targetReplica);
-        clientMessage.updateFrameLength();
+        StringCodec.encode(clientMessage, name);
+        EntryListUUIDLongCodec.encode(clientMessage, replicaTimestamps);
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        var parameters: any = {
-            'value': null,
-            'replicaTimestamps': null,
-            'replicaCount': null
+    static decodeResponse(clientMessage: ClientMessage): PNCounterGetResponseParams {
+        const initialFrame = clientMessage.nextFrame();
+
+        return {
+            value: FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_VALUE_OFFSET),
+            replicaCount: FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_REPLICA_COUNT_OFFSET),
+            replicaTimestamps: EntryListUUIDLongCodec.decode(clientMessage),
         };
-
-        if (clientMessage.isComplete()) {
-            return parameters;
-        }
-        parameters['value'] = clientMessage.readLong();
-
-
-        var replicaTimestampsSize = clientMessage.readInt32();
-        var replicaTimestamps: Array<[string, any]> = [];
-        for (var replicaTimestampsIndex = 0; replicaTimestampsIndex < replicaTimestampsSize; replicaTimestampsIndex++) {
-            var replicaTimestampsItem: [string, any];
-            var replicaTimestampsItemKey: string;
-            var replicaTimestampsItemVal: any;
-            replicaTimestampsItemKey = clientMessage.readString();
-            replicaTimestampsItemVal = clientMessage.readLong();
-            replicaTimestampsItem = [replicaTimestampsItemKey, replicaTimestampsItemVal];
-            replicaTimestamps.push(replicaTimestampsItem);
-        }
-        parameters['replicaTimestamps'] = replicaTimestamps;
-
-        parameters['replicaCount'] = clientMessage.readInt32();
-
-        return parameters;
     }
-
 }

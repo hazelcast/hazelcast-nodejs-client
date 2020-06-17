@@ -22,7 +22,6 @@ var IdentifiedFactory = require('../javaclasses/IdentifiedFactory');
 var DistortInvalidationMetadataEntryProcessor = require('../javaclasses/DistortInvalidationMetadataEntryProcessor');
 var Promise = require('bluebird');
 var expect = require('chai').expect;
-var Util = require('../Util');
 
 describe('Invalidation metadata distortion', function () {
 
@@ -43,7 +42,7 @@ describe('Invalidation metadata distortion', function () {
     });
 
     after(function () {
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     afterEach(function () {
@@ -53,6 +52,7 @@ describe('Invalidation metadata distortion', function () {
 
     function createConfig(withNearCache) {
         var cfg = new Config.ClientConfig();
+        cfg.clusterName = cluster.id;
         if (withNearCache) {
             var ncc = new Config.NearCacheConfig();
             ncc.name = mapName;
@@ -74,8 +74,6 @@ describe('Invalidation metadata distortion', function () {
 
 
     it('lost invalidation', function (done) {
-        Util.markServerVersionAtLeast(this, client, '3.8');
-
         this.timeout(13000);
         var stopTest = false;
         var map;

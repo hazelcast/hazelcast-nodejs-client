@@ -22,6 +22,7 @@ import {NearCache} from './NearCache';
 import {RepairingHandler} from './RepairingHandler';
 import * as Promise from 'bluebird';
 import {ILogger} from '../logging/ILogger';
+import {UUID} from '../core/UUID';
 
 const PROPERTY_MAX_RECONCILIATION_INTERVAL_SECONDS = 'hazelcast.invalidation.reconciliation.interval.seconds';
 const PROPERTY_MIN_RECONCILIATION_INTERVAL_SECONDS = 'hazelcast.invalidation.min.reconciliation.interval.seconds';
@@ -33,7 +34,7 @@ export class RepairingTask {
     private handlers: Map<string, RepairingHandler>;
     private reconcilliationInterval: number;
     private maxToleratedMissCount: number;
-    private localUuid: string;
+    private localUuid: UUID;
     private metadataFetcher: MetadataFetcher;
     private client: HazelcastClient;
     private partitionCount: number;

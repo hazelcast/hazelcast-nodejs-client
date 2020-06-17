@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-var RemoteController = require('hazelcast-remote-controller');
+var RemoteController = require('./remote_controller/Controller');
 var DeferredPromise = require('../lib/Util').DeferredPromise;
 
 var controller = new RemoteController('localhost', 9701);

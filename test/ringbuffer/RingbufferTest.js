@@ -16,6 +16,7 @@
 
 var expect = require("chai").expect;
 var HazelcastClient = require('../../').Client;
+const Config = require('../../').Config;
 var Controller = require('./../RC');
 var Util = require('./../Util');
 var fs = require('fs');
@@ -35,7 +36,9 @@ describe("Ringbuffer Proxy", function () {
             cluster = response;
             return Controller.startMember(cluster.id);
         }).then(function () {
-            return HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
+            const cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
+            return HazelcastClient.newHazelcastClient(cfg).then(function (hazelcastClient) {
                 client = hazelcastClient;
             });
         });
@@ -53,7 +56,7 @@ describe("Ringbuffer Proxy", function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     it("adds one item and reads back", function () {

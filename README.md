@@ -1,3 +1,10 @@
+
+This client is under heavy development for version 4.0.
+
+Please switch to a 3.12.x branch or tag if you are using a 3.12.x version of Hazelcast IMDG.
+
+---
+
 <p align="center">
     <a href="https://github.com/hazelcast/hazelcast-nodejs-client/">
         <img src="https://3l0wd94f0qdd10om8642z9se-wpengine.netdna-ssl.com/images/logos/hazelcast-logo-horz_md.png" />
@@ -37,13 +44,11 @@ The quickest way to start a single member cluster for development purposes is to
 [Docker images](https://hub.docker.com/r/hazelcast/hazelcast/).
 
 ```bash
-docker run -p 5701:5701 hazelcast/hazelcast:3.12.6
+docker run -p 5701:5701 hazelcast/hazelcast:4.0.1
 ```
 
 You can also use our ZIP or TAR [distributions](https://hazelcast.org/imdg/download/archives/#hazelcast-imdg)
 as described [here](DOCUMENTATION.md#121-setting-up-a-hazelcast-imdg-cluster).
-
-Make sure to use Hazelcast IMDG 3.x versions as the work to support 4.x versions is in progress.
 
 ### Client
 
@@ -88,7 +93,7 @@ const { Client, Config } = require('hazelcast-client');
 const clientConfig = new Config.ClientConfig();
 
 // Customize the client configuration
-clientConfig.groupConfig.name = 'cluster-name';
+clientConfig.clusterName = 'cluster-name';
 clientConfig.networkConfig.addresses.push('10.90.0.2:5701');
 clientConfig.networkConfig.addresses.push('10.90.0.3:5701');
 
@@ -109,11 +114,13 @@ You can also configure the client
 * Additional data structures and simple messaging constructs such as **Set**, **MultiMap**, **Queue**, **Topic**
 * Cluster-wide unique ID generator, called **FlakeIdGenerator**
 * Distributed, CRDT based counter, called **PNCounter**
-* Primitives for distributed computing such as **Lock**, **Semaphore**, **Atomic Long**
+* Primitives for distributed computing such as **Lock**, **Semaphore**, **Atomic Long** *
 * Integration with [Hazelcast Cloud](https://cloud.hazelcast.com/)
 * Support for serverless and traditional web service architectures with **Unisocket** and **Smart** operation modes
 * Ability to listen client lifecycle, cluster state and distributed data structure events
 * and [many more](https://hazelcast.org/imdg/clients-languages/node-js/#client-features).
+
+> *: Make sure to use 3.x versions of Hazelcast Node.js client and IMDG to access these primitives as the work to support them in 4.x versions is in progress.
 
 ## Getting Help
 

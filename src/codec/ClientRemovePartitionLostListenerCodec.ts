@@ -14,47 +14,44 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
 import {BitsUtil} from '../BitsUtil';
-import {Data} from '../serialization/Data';
-import {ClientMessageType} from './ClientMessageType';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET} from '../ClientMessage';
+import {UUID} from '../core/UUID';
 
-var REQUEST_TYPE = ClientMessageType.CLIENT_REMOVEPARTITIONLOSTLISTENER;
-var RESPONSE_TYPE = 101;
-var RETRYABLE = true;
+// hex: 0x000700
+const REQUEST_MESSAGE_TYPE = 1792;
+// hex: 0x000701
+const RESPONSE_MESSAGE_TYPE = 1793;
 
+const REQUEST_REGISTRATION_ID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const REQUEST_INITIAL_FRAME_SIZE = REQUEST_REGISTRATION_ID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
+const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
+
+export interface ClientRemovePartitionLostListenerResponseParams {
+    response: boolean;
+}
 
 export class ClientRemovePartitionLostListenerCodec {
+    static encodeRequest(registrationId: UUID): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(true);
 
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
+        FixSizedTypesCodec.encodeUUID(initialFrame.content, REQUEST_REGISTRATION_ID_OFFSET, registrationId);
+        clientMessage.addFrame(initialFrame);
+        clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);
+        clientMessage.setPartitionId(-1);
 
-    static calculateSize(registrationId: string) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(registrationId);
-        return dataSize;
-    }
-
-    static encodeRequest(registrationId: string) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(registrationId));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(registrationId);
-        clientMessage.updateFrameLength();
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        // Decode response from client message
-        var parameters: any = {
-            'response': null
+    static decodeResponse(clientMessage: ClientMessage): ClientRemovePartitionLostListenerResponseParams {
+        const initialFrame = clientMessage.nextFrame();
+
+        return {
+            response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
         };
-
-        parameters['response'] = clientMessage.readBoolean();
-
-        return parameters;
     }
-
-
 }

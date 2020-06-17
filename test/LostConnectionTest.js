@@ -33,6 +33,7 @@ describe('Lost connection', function () {
             oldMember = m;
         }).then(function () {
             var cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
             cfg.properties['hazelcast.client.heartbeat.interval'] = 500;
             cfg.properties['hazelcast.client.heartbeat.timeout'] = 2000;
             return HazelcastClient.newHazelcastClient(cfg);
@@ -43,10 +44,10 @@ describe('Lost connection', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
-    it('M2 starts, M1 goes down, client sets M2 as owner', function (done) {
+    it('M2 starts, M1 goes down, client connects to M2', function (done) {
         this.timeout(32000);
         var newMember;
         var membershipListener = {
@@ -55,8 +56,9 @@ describe('Lost connection', function () {
                     return Util.promiseWaitMilliseconds(4000);
                 }).then(function () {
                     try {
-                        expect(client.clusterService.getOwnerConnection().address.host).to.be.eq(newMember.host);
-                        expect(client.clusterService.getOwnerConnection().address.port).to.be.eq(newMember.port);
+                        const address = client.getConnectionManager().getRandomConnection().getRemoteAddress();
+                        expect(address.host).to.equal(newMember.host);
+                        expect(address.port).to.equal(newMember.port);
                         done();
                     } catch (e) {
                         done(e);

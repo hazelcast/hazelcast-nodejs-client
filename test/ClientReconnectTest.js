@@ -27,7 +27,7 @@ describe('Client reconnect', function () {
 
     afterEach(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     it('member restarts, while map.put in progress', function () {
@@ -40,6 +40,7 @@ describe('Client reconnect', function () {
         }).then(function (m) {
             member = m;
             var cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
             cfg.properties['hazelcast.client.heartbeat.interval'] = 1000;
             cfg.properties['hazelcast.client.heartbeat.timeout'] = 3000;
             return HazelcastClient.newHazelcastClient(cfg);
@@ -70,6 +71,7 @@ describe('Client reconnect', function () {
         }).then(function (m) {
             member = m;
             var cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
             cfg.properties['hazelcast.client.heartbeat.interval'] = 1000;
             cfg.properties['hazelcast.client.heartbeat.timeout'] = 3000;
             cfg.networkConfig.connectionTimeout = 10000;
@@ -106,6 +108,7 @@ describe('Client reconnect', function () {
         }).then(function (m) {
             member = m;
             var cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
             cfg.properties['hazelcast.client.heartbeat.interval'] = 1000;
             cfg.properties['hazelcast.client.heartbeat.timeout'] = 3000;
             return HazelcastClient.newHazelcastClient(cfg);

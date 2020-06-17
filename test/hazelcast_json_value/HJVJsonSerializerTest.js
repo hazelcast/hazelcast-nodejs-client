@@ -18,6 +18,7 @@ var chai = require('chai');
 chai.use(require('chai-as-promised'));
 var expect = require('chai').expect;
 var Client = require('../../.').Client;
+const Config = require('../../.').Config;
 var RC = require('./../RC');
 var HazelcastJsonValue = require('../../.').HazelcastJsonValue;
 
@@ -33,7 +34,9 @@ describe('HazelcastJsonValue with JsonSerializer', function () {
             cluster = response;
             return RC.startMember(cluster.id);
         }).then(function () {
-            return Client.newHazelcastClient().then(function (hazelcastClient) {
+            const cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
+            return Client.newHazelcastClient(cfg).then(function (hazelcastClient) {
                 client = hazelcastClient;
             });
         });
@@ -51,7 +54,7 @@ describe('HazelcastJsonValue with JsonSerializer', function () {
 
     after(function () {
         client.shutdown();
-        return RC.shutdownCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('storing JavaScript objects', function () {

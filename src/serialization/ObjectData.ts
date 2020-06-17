@@ -235,16 +235,15 @@ export class ObjectDataOutput implements DataOutput {
     }
 
     private writeUTFStandard(val: string): void {
-        const len = (val != null) ? val.length : BitsUtil.NULL_ARRAY_LENGTH;
+        const len = (val != null) ? Buffer.byteLength(val, 'utf8') : BitsUtil.NULL_ARRAY_LENGTH;
         this.writeInt(len);
         if (len === BitsUtil.NULL_ARRAY_LENGTH) {
             return;
         }
 
-        const byteLen = Buffer.byteLength(val, 'utf8');
-        this.ensureAvailable(byteLen);
-        this.buffer.write(val, this.pos, this.pos + byteLen, 'utf8');
-        this.pos += byteLen;
+        this.ensureAvailable(len);
+        this.buffer.write(val, this.pos, this.pos + len, 'utf8');
+        this.pos += len;
     }
 
     private writeUTFLegacy(val: string): void {
@@ -604,18 +603,10 @@ export class ObjectDataInput implements DataInput {
             return null;
         }
 
-        // max char size in UTF-8 is 4 bytes, see RFC3629
-        // TODO: change to `maxByteLen = len;` in future when string serialization in client protocol changes
-        const maxByteLen = len * 4;
-        const available = this.available();
-        const readByteLen = maxByteLen > available ? available : maxByteLen;
-
-        const readStr = this.buffer.toString('utf8', readPos, readPos + readByteLen);
-        const result = readStr.substring(0, len);
+        const result = this.buffer.toString('utf8', readPos, readPos + len);
 
         if (pos === undefined) {
-            const realByteLen = Buffer.byteLength(result, 'utf8');
-            this.pos += realByteLen;
+            this.pos += len;
         }
 
         return result;

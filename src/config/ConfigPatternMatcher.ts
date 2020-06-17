@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import {ConfigurationError} from '../HazelcastError';
-
 export class ConfigPatternMatcher {
 
     /**
@@ -42,7 +40,7 @@ export class ConfigPatternMatcher {
             }
         });
         if (duplicatePattern != null) {
-            throw new ConfigurationError('Found ambiguous configurations for item ' + itemName + ': "' + matchingPattern +
+            throw new TypeError('Found ambiguous configurations for item ' + itemName + ': "' + matchingPattern +
                 '" vs "' + duplicatePattern + '". Please specify your configuration.');
         }
         return matchingPattern;

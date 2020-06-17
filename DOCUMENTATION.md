@@ -11,7 +11,7 @@
   * [1.4. Basic Configuration](#14-basic-configuration)
     * [1.4.1. Configuring Hazelcast IMDG](#141-configuring-hazelcast-imdg)
     * [1.4.2. Configuring Hazelcast Node.js Client](#142-configuring-hazelcast-nodejs-client)
-      * [1.4.2.1. Group Settings](#1421-group-settings)
+      * [1.4.2.1. Cluster Name Setting](#1421-cluster-name-setting)
       * [1.4.2.2. Network Settings](#1422-network-settings)
   * [1.5. Basic Usage](#15-basic-usage)
   * [1.6. Code Samples](#16-code-samples)
@@ -35,16 +35,10 @@
   * [5.2. Setting Smart Routing](#52-setting-smart-routing)
   * [5.3. Enabling Redo Operation](#53-enabling-redo-operation)
   * [5.4. Setting Connection Timeout](#54-setting-connection-timeout)
-  * [5.5. Setting Connection Attempt Limit](#55-setting-connection-attempt-limit)
-  * [5.6. Setting Connection Attempt Period](#56-setting-connection-attempt-period)
-  * [5.7. Enabling Client TLS/SSL](#57-enabling-client-tlsssl)
-  * [5.8. Enabling Hazelcast Cloud Discovery](#58-enabling-hazelcast-cloud-discovery)
-* [6. Securing Client Connection](#6-securing-client-connection)
-  * [6.1. TLS/SSL](#61-tlsssl)
-    * [6.1.1. TLS/SSL for Hazelcast Members](#611-tlsssl-for-hazelcast-members)
-    * [6.1.2. TLS/SSL for Hazelcast Node.js Clients](#612-tlsssl-for-hazelcast-nodejs-clients)
-    * [6.1.3. Mutual Authentication](#613-mutual-authentication)
-  * [6.2. Credentials](#62-credentials)
+  * [5.5. Enabling Client TLS/SSL](#55-enabling-client-tlsssl)
+  * [5.6. Enabling Hazelcast Cloud Discovery](#56-enabling-hazelcast-cloud-discovery)
+* [6. Client Connection Strategy](#6-client-connection-strategy)
+  * [6.1. Configuring Client Connection Retry](#61-configuring-client-connection-retry)
 * [7. Using Node.js Client with Hazelcast IMDG](#7-using-nodejs-client-with-hazelcast-imdg)
   * [7.1. Node.js Client API Overview](#71-nodejs-client-api-overview)
   * [7.2. Node.js Client Operation Modes](#72-nodejs-client-operation-modes)
@@ -62,11 +56,11 @@
     * [7.4.6. Using List](#746-using-list)
     * [7.4.7. Using Ringbuffer](#747-using-ringbuffer)
     * [7.4.8. Using Reliable Topic](#748-using-reliable-topic)
-    * [7.4.9. Using Lock](#749-using-lock)
-    * [7.4.10. Using Atomic Long](#7410-using-atomic-long)
-    * [7.4.11. Using Semaphore](#7411-using-semaphore)
-    * [7.4.12. Using PN Counter](#7412-using-pn-counter)
-    * [7.4.13. Using Flake ID Generator](#7413-using-flake-id-generator)
+      * [7.4.8.1. Configuring Reliable Topic](#7481-configuring-reliable-topic)
+    * [7.4.9. Using PN Counter](#749-using-pn-counter)
+    * [7.4.10. Using Flake ID Generator](#7410-using-flake-id-generator)
+      * [7.4.10.1. Configuring Flake ID Generator](#74101-configuring-flake-id-generator)
+    * [7.4.11. Using Lock, Semaphore and Atomic Long](#7411-using-lock-semaphore-and-atomic-long)
   * [7.5. Distributed Events](#75-distributed-events)
     * [7.5.1. Listening for Cluster Events](#751-listening-for-cluster-events)
       * [7.5.1.1. Membership Listener](#7511-membership-listener)
@@ -100,18 +94,27 @@
   * [7.9. Monitoring and Logging](#79-monitoring-and-logging)
     * [7.9.1. Enabling Client Statistics](#791-enabling-client-statistics)
     * [7.9.2. Logging Configuration](#792-logging-configuration)
-* [8. Development and Testing](#8-development-and-testing)
-  * [8.1. Building and Using Client From Sources](#81-building-and-using-client-from-sources)
-  * [8.2. Testing](#82-testing)
-* [9. Getting Help](#9-getting-help)
-* [10. Contributing](#10-contributing)
-* [11. License](#11-license)
-* [12. Copyright](#12-copyright)
+  * [7.10. Defining Client Labels](#710-defining-client-labels)
+  * [7.11. Defining Instance Name](#711-defining-instance-name)
+  * [7.12. Configuring Load Balancer](#712-configuring-load-balancer)
+* [8. Securing Client Connection](#8-securing-client-connection)
+  * [8.1. TLS/SSL](#81-tlsssl)
+    * [8.1.1. TLS/SSL for Hazelcast Members](#811-tlsssl-for-hazelcast-members)
+    * [8.1.2. TLS/SSL for Hazelcast Node.js Clients](#812-tlsssl-for-hazelcast-nodejs-clients)
+    * [8.1.3. Mutual Authentication](#813-mutual-authentication)
+  * [8.2. Credentials](#82-credentials)
+* [9. Development and Testing](#9-development-and-testing)
+  * [9.1. Building and Using Client From Sources](#91-building-and-using-client-from-sources)
+  * [9.2. Testing](#92-testing)
+* [10. Getting Help](#10-getting-help)
+* [11. Contributing](#11-contributing)
+* [12. License](#12-license)
+* [13. Copyright](#13-copyright)
 
 
 # Introduction
 
-This document provides information about the Node.js client for [Hazelcast](https://hazelcast.org/). This client uses Hazelcast's [Open Client Protocol](https://hazelcast.org/documentation/#open-binary) and works with Hazelcast IMDG 3.6 and higher versions.
+This document provides information about the Node.js client for [Hazelcast](https://hazelcast.org/). This client uses Hazelcast's [Open Client Protocol](https://github.com/hazelcast/hazelcast-client-protocol) and works with Hazelcast IMDG 4.0 and higher versions.
 
 ### Resources
 
@@ -125,7 +128,6 @@ See the following for more information on Node.js and Hazelcast IMDG:
 
 See the [Releases](https://github.com/hazelcast/hazelcast-nodejs-client/releases) page of this repository.
 
-
 # 1. Getting Started
 
 This chapter provides information on how to get started with your Hazelcast Node.js client. It outlines the requirements, installation and configuration of the client, setting up a cluster, and provides a simple application that uses a distributed map in Node.js client.
@@ -133,9 +135,9 @@ This chapter provides information on how to get started with your Hazelcast Node
 ## 1.1. Requirements
 
 - Windows, Linux or MacOS
-- Node.js 4 or newer
-- Java 6 or newer
-- Hazelcast IMDG 3.6 or newer
+- Node.js 8 or newer
+- Java 8 or newer
+- Hazelcast IMDG 4.0 or newer
 - Latest Hazelcast Node.js client
 
 ## 1.2. Working with Hazelcast IMDG Clusters
@@ -146,11 +148,11 @@ Clients are a way to connect to the Hazelcast IMDG cluster and access such data.
 Hazelcast IMDG cluster consists of one or more cluster members. These members generally run on multiple virtual or physical machines
 and are connected to each other via network. Any data put on the cluster is partitioned to multiple members transparent to the user.
 It is therefore very easy to scale the system by adding new members as the data grows. Hazelcast IMDG cluster also offers resilience. Should
-any hardware or software problem causes a crash to any member, the data on that member is recovered from backups and the cluster
+any hardware or software problem causes a crash to any member, the data on that member is recovered from backups, and the cluster
 continues to operate without any downtime. Hazelcast clients are an easy way to connect to a Hazelcast IMDG cluster and perform tasks on
 distributed data structures that live on the cluster.
 
-In order to use Hazelcast Node.js client, we first need to setup a Hazelcast IMDG cluster.
+In order to use Hazelcast Node.js client, we first need to set up a Hazelcast IMDG cluster.
 
 ### 1.2.1. Setting Up a Hazelcast IMDG Cluster
 
@@ -158,6 +160,7 @@ There are following options to start a Hazelcast IMDG cluster easily:
 
 * You can run standalone members by downloading and running JAR files from the website.
 * You can embed members to your Java projects.
+* You can use our [Docker images](https://hub.docker.com/r/hazelcast/hazelcast/).
 
 We are going to download JARs from the website and run a standalone member for this guide.
 
@@ -174,14 +177,16 @@ want to run members from.
 You should see a log similar to the following, which means that your 1-member cluster is ready to be used:
 
 ```
-INFO: [192.168.0.3]:5701 [dev] [3.10.4]
+INFO: [192.168.1.10]:5701 [dev] [4.0.1] [192.168.1.10]:5701 is STARTING
+May 22, 2020 2:59:11 PM com.hazelcast.internal.cluster.ClusterService
+INFO: [192.168.1.10]:5701 [dev] [4.0.1]
 
 Members {size:1, ver:1} [
-	Member [192.168.0.3]:5701 - 65dac4d1-2559-44bb-ba2e-ca41c56eedd6 this
+	Member [192.168.1.10]:5701 - 60255b17-d31c-43c4-a1c1-30f19b90f1ea this
 ]
 
-Sep 06, 2018 10:50:23 AM com.hazelcast.core.LifecycleService
-INFO: [192.168.0.3]:5701 [dev] [3.10.4] [192.168.0.3]:5701 is STARTED
+May 22, 2020 2:59:11 PM com.hazelcast.core.LifecycleService
+INFO: [192.168.1.10]:5701 [dev] [4.0.1] [192.168.1.10]:5701 is STARTED
 ```
 
 #### 1.2.1.2. Adding User Library to CLASSPATH
@@ -211,7 +216,7 @@ See the [Hazelcast IMDG Reference Manual](http://docs.hazelcast.org/docs/latest/
 
 ## 1.3. Downloading and Installing
 
-Hazelcast Node.js client is on NPM. Just add `hazelcast-client` as a dependency to your Node.js project and you are good to go.
+Hazelcast Node.js client is on [NPM](https://www.npmjs.com/package/hazelcast-client). Just add `hazelcast-client` as a dependency to your Node.js project, and you are good to go.
 
 ```
 npm install hazelcast-client --save
@@ -223,7 +228,7 @@ If you are using Hazelcast IMDG and Node.js Client on the same computer, general
 trying out the client. However, if you run the client on a different computer than any of the cluster members, you may
 need to do some simple configurations such as specifying the member addresses.
 
-The Hazelcast IMDG members and clients have their own configuration options. You may need to reflect some of the member side configurations on the client side to properly connect to the cluster.
+The Hazelcast IMDG members and clients have their own configuration options. You may need to reflect some member side configurations on the client side to properly connect to the cluster.
 
 This section describes the most common configuration elements to get you started in no time.
 It discusses some member side configuration options to ease the understanding of Hazelcast's ecosystem. Then, the client side configuration options
@@ -233,7 +238,7 @@ See the [Hazelcast IMDG Reference Manual](https://docs.hazelcast.org/docs/latest
 
 ### 1.4.1. Configuring Hazelcast IMDG
 
-Hazelcast IMDG aims to run out-of-the-box for most common scenarios. However if you have limitations on your network such as multicast being disabled,
+Hazelcast IMDG aims to run out-of-the-box for most common scenarios. However, if you have limitations on your network such as multicast being disabled,
 you may have to configure your Hazelcast IMDG members so that they can find each other on the network. Also, since most of the distributed data structures are configurable, you may want to configure them according to your needs. We will show you the basics about network configuration here.
 
 You can use the following options to configure Hazelcast IMDG:
@@ -247,10 +252,7 @@ When you download and unzip `hazelcast-<version>.zip` (or `tar`), you see the `h
 
 ```xml
 <hazelcast>
-    <group>
-        <name>dev</name>
-        <password>dev-pass</password>
-    </group>
+    <cluster-name>dev</cluster-name>
     <network>
         <port auto-increment="true" port-count="100">5701</port>
         <join>
@@ -276,11 +278,9 @@ When you download and unzip `hazelcast-<version>.zip` (or `tar`), you see the `h
 
 We will go over some important configuration elements in the rest of this section.
 
-- `<group>`: Specifies which cluster this member belongs to. A member connects only to the other members that are in the same group as
-itself. As shown in the above configuration sample, there are `<name>` and `<password>` tags under the `<group>` element with some pre-configured values. You may give your clusters different names so that they can
-live in the same network without disturbing each other. Note that the cluster name should be the same across all members and clients that belong
- to the same cluster. The `<password>` tag is not in use since Hazelcast 3.9. It is there for backward compatibility
-purposes. You can remove or leave it as it is if you use Hazelcast 3.9 or later.
+- `<cluster-name>` : Specifies which cluster this member belongs to. A member connects only to the other members that are in the same cluster as
+itself. You may give your clusters different names so that they can live in the same network without disturbing each other. Note that the cluster name should be the same across all members and clients that belong
+to the same cluster.
 - `<network>`
     - `<port>`: Specifies the port number to be used by the member when it starts. Its default value is 5701. You can specify another port number, and if
      you set `auto-increment` to `true`, then Hazelcast will try the subsequent ports until it finds an available port or the `port-count` is reached.
@@ -323,7 +323,7 @@ let Client = require('hazelcast-client').Client;
 let Config = require('hazelcast-client').Config;
 let config = new Config.ClientConfig();
 Client.newHazelcastClient(config).then(function(client) {
-    // some operations
+    // Some operations
 });
 ```
 
@@ -338,45 +338,41 @@ with the location of your config file. In this case, the client uses the configu
 
 For the structure of `hazelcast-client.json`, see the [hazelcast-client-full.json file](hazelcast-client-full.json). You
 can use only the relevant parts of the file in your `hazelcast-client.json` and remove the rest. The default configuration is used for any
-part that you do not explicitly set in the `hazelcast-client.json` file.
+part you do not explicitly set in the `hazelcast-client.json` file.
 
 ---
 
 If you run the Hazelcast IMDG members in a different server than the client, you most probably have configured the members' ports and cluster
 names as explained in the previous section. If you did, then you need to make certain changes to the network settings of your client.
 
-#### 1.4.2.1. Group Settings
+#### 1.4.2.1. Cluster Name Setting
 
-You need to provide the group name of the cluster, if it is defined on the server side, to which you want the client to connect.
+You need to provide the name of the cluster, if it is defined on the server side, to which you want the client to connect.
 
 **Programmatic Configuration:**
 
 ```javascript
 let cfg = new Config.ClientConfig();
-cfg.group.name = 'group name of your cluster'
+cfg.clusterName = 'name of your cluster';
 ```
 
 **Declarative Configuration:**
 
 ```json
 {
-    "group": {
-        "name": "group name of your cluster"
-    }
+    "clusterName": "name of your cluster"
 }
 ```
 
-> **NOTE: If you have a Hazelcast IMDG release older than 3.11, you need to provide also a group password along with the group name.**
-
 #### 1.4.2.2. Network Settings
 
-You need to provide the IP address and port of at least one member in your cluster so the client can find it.
+You need to provide the IP address and port of at least one member in your cluster, so the client can find it.
 
 **Programmatic Configuration:**
 
 ```javascript
 let cfg = new Config.ClientConfig();
-cfg.network.addresses.push('some-ip-address:port');
+cfg.networkConfig.addresses.push('some-ip-address:port');
 ```
 
 **Declarative Configuration:**
@@ -386,14 +382,14 @@ cfg.network.addresses.push('some-ip-address:port');
     "network": {
         "clusterMembers": [
             "some-ip-address:port"
-        ],
+        ]
     }
 }
 ```
 
 ## 1.5. Basic Usage
 
-Now that we have a working cluster and we know how to configure both our cluster and client, we can run a simple program to use a
+Now we have a working cluster, and we know how to configure both our cluster and client, we can run a simple program to use a
 distributed map in the Node.js client.
 
 The following example first creates a programmatic configuration object. Then, it starts a client.
@@ -412,19 +408,31 @@ Client.newHazelcastClient(config).then(function(client) {
 This should print logs about the cluster members and information about the client itself such as the client type, UUID and address.
 
 ```
-[DefaultLogger] INFO at LifecycleService: HazelcastClient is starting
-[DefaultLogger] INFO at ConnectionAuthenticator: Connection to 10.216.1.43:5701 authenticated
-[DefaultLogger] INFO at ClusterService: Members received.
-[ Member {
-    address: Address { host: '10.216.1.43', port: 5701, type: 4 },
-    uuid: '7961eef2-940d-42dc-8036-2a29c5c9942c',
-    isLiteMember: false,
-    attributes: {} } ]
-[DefaultLogger] INFO at LifecycleService: HazelcastClient is started
+[DefaultLogger] INFO at LifecycleService: HazelcastClient is STARTING
+[DefaultLogger] INFO at LifecycleService: HazelcastClient is STARTED
+[DefaultLogger] INFO at ConnectionManager: Trying to connect to localhost:5701
+[DefaultLogger] INFO at LifecycleService: HazelcastClient is CONNECTED
+[DefaultLogger] INFO at ConnectionManager: Authenticated with server 192.168.1.10:5701:01bda57b-b987-448c-ac7f-6c0e4e8dd675, server version: 4.1-SNAPSHOT, local address: 127.0.0.1:54528
+[DefaultLogger] INFO at ClusterService:
+
+Members [1] {
+	Member [192.168.1.10]:5701 - 01bda57b-b987-448c-ac7f-6c0e4e8dd675
+}
+
 ClientInfo {
   type: 'NodeJS',
-  uuid: '8618226d-0e7b-4442-b9c2-a5918a3d3db2',
-  localAddress: Address { host: '127.0.0.1', port: 54708, type: 4 } }
+  uuid:
+   UUID {
+     mostSignificant: Long { low: -798352083, high: 92336003, unsigned: false },
+     leastSignificant: Long { low: -763619649, high: 328743032, unsigned: false } },
+  localAddress:
+   Address {
+     host: '127.0.0.1',
+     port: 54528,
+     type: 4,
+     addrStr: '127.0.0.1:54528' },
+  labels: Set {},
+  name: 'hz.client_0' }
 ```
 
 Congratulations! You just started a Hazelcast Node.js client.
@@ -515,7 +523,7 @@ Clark is in IT department
 Bob is in IT department
 ```
 
-You will see this time we add only the sales employees but we get the list all known employees including the ones in IT.
+You will see this time we add only the sales employees, but we get the list all known employees including the ones in IT.
 That is because our map lives in the cluster and no matter which client we use, we can access the whole map.
 
 ## 1.6. Code Samples
@@ -536,9 +544,6 @@ Hazelcast Node.js client supports the following data structures and features:
 * Replicated Map
 * Ringbuffer
 * Reliable Topic
-* Lock
-* Semaphore
-* Atomic Long
 * CRDT PN Counter
 * Flake Id Generator
 * Event Listeners
@@ -557,14 +562,20 @@ Hazelcast Node.js client supports the following data structures and features:
 * SSL Support (requires Enterprise server)
 * Mutual Authentication (requires Enterprise server)
 * Authorization
+* Management Center Integration / Awareness
+* Client Near Cache Stats
+* Client Runtime Stats
+* Client Operating Systems Stats
+* Hazelcast Cloud Discovery
 * Smart Client
 * Unisocket Client
 * Lifecycle Service
-* Hazelcast Cloud Discovery
 * IdentifiedDataSerializable Serialization
 * Portable Serialization
 * Custom Serialization
 * Global Serialization
+* Connection Strategy
+* Connection Retry
 
 # 3. Configuration Overview
 
@@ -585,7 +596,7 @@ var Config = require('hazelcast-client').Config;
 var cfg = new Config.ClientConfig();
 cfg.networkConfig.addresses.push('127.0.0.1:5701');
 HazelcastClient.newHazelcastClient(cfg).then(function (client) {
-    // some operations
+    // Some operations
 });
 ```
 
@@ -607,10 +618,7 @@ Following is a sample JSON configuration file:
 
 ```json
 {
-    "group": {
-        "name": "hazel",
-        "password": "cast"
-    },
+    "clusterName": "hzCluster",
     "properties": {
         "hazelcast.client.heartbeat.timeout": 10000,
         "hazelcast.client.invocation.retry.pause.millis": 4000,
@@ -624,9 +632,7 @@ Following is a sample JSON configuration file:
             "127.0.0.1:5701"
         ],
         "smartRouting": true,
-        "connectionTimeout": 6000,
-        "connectionAttemptPeriod": 4000,
-        "connectionAttemptLimit": 3
+        "connectionTimeout": 6000
     }
 }
 ```
@@ -641,14 +647,11 @@ different declarative configuration files.
 
 Let's assume you have the following two configurations:
 
-`group-config.json`:
+`cluster-name-config.json`:
 
 ```json
 {
-    "group": {
-        "name": "hazel",
-        "password": "cast"
-    }
+    "clusterName": "hzCluster"
 }
 ```
 
@@ -671,7 +674,7 @@ shown below.
 ```json
 {
     "import": [
-        "group-config.json",
+        "cluster-name-config.json",
         "network-config.json"
     ]
 }
@@ -1198,9 +1201,7 @@ Here is an example of configuring the network for Node.js Client declaratively.
         ],
         "smartRouting": true,
         "redoOperation": true,
-        "connectionTimeout": 6000,
-        "connectionAttemptPeriod": 5000,
-        "connectionAttemptLimit": 5
+        "connectionTimeout": 6000
     }
 }
 ```
@@ -1215,8 +1216,6 @@ clientConfig.networkConfig.addresses.push('10.1.1.21', '10.1.1.22:5703');
 clientConfig.networkConfig.smartRouting = true;
 clientConfig.networkConfig.redoOperation = true;
 clientConfig.networkConfig.connectionTimeout = 6000;
-clientConfig.networkConfig.connectionAttemptPeriod = 5000;
-clientConfig.networkConfig.connectionAttemptLimit = 5;
 ```
 
 ## 5.1. Providing Member Addresses
@@ -1301,10 +1300,8 @@ Its default value is `false` (disabled).
 ## 5.4. Setting Connection Timeout
 
 Connection timeout is the timeout value in milliseconds for the members to accept the client connection requests.
-If the member does not respond within the timeout, the client will retry to connect as many as `ClientNetworkConfig.connectionAttemptLimit` times.
 
 The following are the example configurations.
-
 
 **Declarative Configuration:**
 
@@ -1325,66 +1322,16 @@ clientConfig.networkConfig.connectionTimeout = 6000;
 
 Its default value is `5000` milliseconds.
 
-## 5.5. Setting Connection Attempt Limit
-
-While the client is trying to connect initially to one of the members in the `ClientNetworkConfig.addresses`, that member might not be available at that moment. Instead of giving up, throwing an error and stopping the client, the client will retry as many as `ClientNetworkConfig.connectionAttemptLimit` times. This is also the case when the previously established connection between the client and that member goes down.
-
-The following are example configurations.
-
-**Declarative Configuration:**
-
-```json
-{
-    "network": {
-        "connectionAttemptLimit": 5
-    }
-}
-```
-
-**Programmatic Configuration:**
-
-```javascript
-var clientConfig = new Config.ClientConfig();
-clientConfig.networkConfig.connectionAttemptLimit = 5;
-```
-
-Its default value is `2`.
-
-## 5.6. Setting Connection Attempt Period
-
-Connection attempt period is the duration in milliseconds between the connection attempts defined by `ClientNetworkConfig.connectionAttemptLimit`.
-
-The following are example configurations.
-
-**Declarative Configuration:**
-
-```json
-{
-    "network": {
-        "connectionAttemptPeriod": 5000
-    }
-}
-```
-
-**Programmatic Configuration:**
-
-```javascript
-var clientConfig = new Config.ClientConfig();
-clientConfig.networkConfig.connectionAttemptPeriod = 5000;
-```
-
-Its default value is `3000` milliseconds.
-
-## 5.7. Enabling Client TLS/SSL
+## 5.5. Enabling Client TLS/SSL
 
 You can use TLS/SSL to secure the connection between the clients and members. If you want to enable TLS/SSL
-for the client-cluster connection, you should set an SSL configuration. Please see [TLS/SSL section](#61-tlsssl).
+for the client-cluster connection, you should set an SSL configuration. Please see [TLS/SSL section](#81-tlsssl).
 
-As explained in the [TLS/SSL section](#61-tlsssl), Hazelcast members have key stores used to identify themselves (to other members) and Hazelcast Node.js clients have certificate authorities used to define which members they can trust. Hazelcast has the mutual authentication feature which allows the Node.js clients also to have their private keys and public certificates, and members to have their certificate authorities so that the members can know which clients they can trust. See the [Mutual Authentication section](#613-mutual-authentication).
+As explained in the [TLS/SSL section](#81-tlsssl), Hazelcast members have key stores used to identify themselves (to other members) and Hazelcast Node.js clients have certificate authorities used to define which members they can trust. Hazelcast has the mutual authentication feature which allows the Node.js clients also to have their private keys and public certificates, and members to have their certificate authorities so that the members can know which clients they can trust. See the [Mutual Authentication section](#813-mutual-authentication).
 
-## 5.8. Enabling Hazelcast Cloud Discovery
+## 5.6. Enabling Hazelcast Cloud Discovery
 
-The purpose of Hazelcast Cloud Discovery is to provide the clients to use IP addresses provided by `hazelcast orchestrator`. To enable Hazelcast Cloud Discovery, specify a token for the `discoveryToken` field and set the `enabled` field to `true`.
+The purpose of [Hazelcast Cloud](https://cloud.hazelcast.com/) Discovery is to provide the clients to use IP addresses provided by Hazelcast orchestrator. To enable Hazelcast Cloud Discovery, specify a token for the `discoveryToken` field and set the `enabled` field to `true`.
 
 The following are example configurations.
 
@@ -1392,11 +1339,7 @@ The following are example configurations.
 
 ```json
 {
- "group": {
-        "name": "hazel",
-        "password": "cast"
-    },
-
+    "clusterName": "hzCluster",
     "network": {
         "hazelcastCloud": {
             "discoveryToken": "EXAMPLE_TOKEN",
@@ -1404,15 +1347,13 @@ The following are example configurations.
         }
     }
 }
-
 ```
 
 **Programmatic Configuration:**
 
 ```javascript
 var clientConfig = new Config.ClientConfig();
-clientConfig.groupConfig.name = 'hazel';
-clientConfig.groupConfig.password = 'cast';
+clientConfig.clusterName = 'hzCluster';
 
 clientConfig.networkConfig.cloudConfig.enabled = true;
 clientConfig.networkConfig.cloudConfig.discoveryToken = 'EXAMPLE_TOKEN';
@@ -1420,352 +1361,113 @@ clientConfig.networkConfig.cloudConfig.discoveryToken = 'EXAMPLE_TOKEN';
 
 To be able to connect to the provided IP addresses, you should use secure TLS/SSL connection between the client and members. Therefore, you should set an SSL configuration as described in the previous section.
 
-# 6. Securing Client Connection
+# 6. Client Connection Strategy
 
-This chapter describes the security features of Hazelcast Node.js client. These include using TLS/SSL for connections between members and between clients and members, mutual authentication and credentials. These security features require **Hazelcast IMDG Enterprise** edition.
+Node.js client can be configured to connect to a cluster in an async manner during the client start and reconnecting
+after a cluster disconnect. Both of these options are configured via `ClientConnectionStrategyConfig`.
 
-### 6.1. TLS/SSL
+You can configure the client’s starting mode as async or sync using the configuration element `asyncStart`.
+When it is set to `true` (async), the behavior of `Client.newHazelcastClient()` call changes.
+It resolves a client instance without waiting to establish a cluster connection. In this case, the client rejects
+any network dependent operation with `ClientOfflineError` immediately until it connects to the cluster. If it is `false`,
+the call is not resolved and the client is not created until a connection with the cluster is established.
+Its default value is `false` (sync).
 
-One of the offers of Hazelcast is the TLS/SSL protocol which you can use to establish an encrypted communication across your cluster with key stores and trust stores.
+You can also configure how the client reconnects to the cluster after a disconnection. This is configured using the
+configuration element `reconnectMode`; it has three options:
 
-* A Java `keyStore` is a file that includes a private key and a public certificate. The equivalent of a key store is the combination of `key` and `cert` files at the Node.js client side.
-* A Java `trustStore` is a file that includes a list of certificates trusted by your application which is named as  "certificate authority". The equivalent of a trust store is a `ca` file at the Node.js client side.
+* `OFF`:  Client rejects to reconnect to the cluster and triggers the shutdown process.
+* `ON`: Client opens a connection to the cluster in a blocking manner by not resolving any of the waiting invocations.
+* `ASYNC`: Client opens a connection to the cluster in a non-blocking manner by resolving all the waiting invocations with `ClientOfflineError`.
 
-You should set `keyStore` and `trustStore` before starting the members. See the next section on setting `keyStore` and `trustStore` on the server side.
+Its default value is `ON`.
 
-#### 6.1.1. TLS/SSL for Hazelcast Members
+The example declarative and programmatic configurations below show how to configure a Node.js client’s starting and reconnecting modes.
 
-Hazelcast allows you to encrypt socket level communication between Hazelcast members and between Hazelcast clients and members, for end to end encryption. To use it, see the [TLS/SSL for Hazelcast Members section](http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#tls-ssl-for-hazelcast-members).
+**Declarative Configuration:**
 
-#### 6.1.2. TLS/SSL for Hazelcast Node.js Clients
+```json
+{
+    "connectionStrategy": {
+        "asyncStart": false,
+        "reconnectMode": "ON"
+    }
+}
+```
 
-TLS/SSL for the Hazelcast Node.js client can be configured using the `SSLConfig` class. In order to turn it on, `enabled` property of `SSLConfig` should be set to `true`:
+**Programmatic Configuration:**
 
 ```javascript
-var fs = require('fs');
-
 var clientConfig = new Config.ClientConfig();
-var sslConfig = new Config.SSLConfig();
-sslConfig.enabled = true;
-clientConfig.networkConfig.sslConfig = sslConfig;
+
+clientConfig.connectionStrategyConfig.asyncStart = false;
+clientConfig.connectionStrategyConfig.reconnectMode = Config.ReconnectMode.ON;
 ```
 
-`SSLConfig` object takes various SSL options defined in the [Node.js TLS Documentation](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback). You can set your custom options
-object to `sslConfig.sslOptions`.
+## 6.1. Configuring Client Connection Retry
 
-#### 6.1.3. Mutual Authentication
+When client is disconnected from the cluster, it searches for new connections to reconnect.
+You can configure the frequency of the reconnection attempts and client shutdown behavior using
+`ConnectionRetryConfig` (programmatical approach) or `connectionRetry` element (declarative approach).
 
-As explained above, Hazelcast members have key stores used to identify themselves (to other members) and Hazelcast clients have trust stores used to define which members they can trust.
+Below are the example configurations for each.
 
-Using mutual authentication, the clients also have their key stores and members have their trust stores so that the members can know which clients they can trust.
-
-To enable mutual authentication, firstly, you need to set the following property on the server side in the `hazelcast.xml` file:
-
-```xml
-<network>
-    <ssl enabled="true">
-        <properties>
-            <property name="javax.net.ssl.mutualAuthentication">REQUIRED</property>
-        </properties>
-    </ssl>
-</network>
-```
-
-You can see the details of setting mutual authentication on the server side in the [Mutual Authentication section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#mutual-authentication) of the Hazelcast IMDG Reference Manual.
-
-At the Node.js client side, you need to supply an SSL `options` object to pass to
-[`tls.connect`](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) of Node.js.
-
-There are two ways to provide this object to the client:
-
-1. Using the built-in `BasicSSLOptionsFactory` bundled with the client.
-2. Writing an `SSLOptionsFactory`.
-
-Below subsections describe each way.
-
-**Using the Built-in `BasicSSLOptionsFactory`**
-
-Hazelcast Node.js client includes a utility factory class that creates the necessary `options` object out of the supplied
-properties. All you need to do is to specify your factory as `BasicSSLOptionsFactory` and provide the following options:
-
-- `caPath`
-- `keyPath`
-- `certPath`
-- `servername`
-- `rejectUnauthorized`
-- `ciphers`
-
-See [`tls.connect`](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) of Node.js for the descriptions of each option.
-
-> `caPath`, `keyPath` and `certPath` define the file path to the respective file that stores such information.
+**Declarative Configuration:**
 
 ```json
 {
-    "network": {
-        "ssl": {
-            "enabled": true,
-            "factory": {
-                "exportedName": "BasicSSLOptionsFactory",
-                "properties": {
-                    "caPath": "ca.pem",
-                    "keyPath": "key.pem",
-                    "certPath": "cert.pem",
-                    "rejectUnauthorized": false
-                }
-            }
+    "connectionStrategy": {
+        "asyncStart": false,
+        "reconnectMode": "ON",
+        "connectionRetry": {
+            "initialBackoffMillis": 1000,
+            "maxBackoffMillis": 60000,
+            "multiplier": 2,
+            "clusterConnectTimeoutMillis": 50000,
+            "jitter": 0.2
         }
     }
 }
 ```
 
-If these options are not enough for your application, you may write your own options factory and instruct the client
-to get the options from it, as explained below.
+**Programmatic Configuration:**
 
-**Writing an `SSLOptionsFactory`**
+```javascript
+var clientConfig = new Config.ClientConfig();
+var connectionRetryConfig = new Config.ConnectionRetryConfig();
+connectionRetryConfig.initialBackoffMillis = 1000;
+connectionRetryConfig.maxBackoffMillis = 60000;
+connectionRetryConfig.multiplier = 2;
+connectionRetryConfig.clusterConnectTimeoutMillis = 50000;
+connectionRetryConfig.jitter = 0.2;
 
-In order to use the full range of options provided to [`tls.connect`](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) of Node.js, you may write your own factory object.
+clientConfig.connectionStrategyConfig.connectionRetryConfig = connectionRetryConfig;
+```
 
-An example configuration is shown below.
+The following are configuration element descriptions:
 
-```json
-{
-    "network": {
-        "ssl": {
-            "enabled": true,
-            "factory": {
-                "path": "my_factory.js",
-                "exportedName": "SSLFactory",
-                "properties": {
-                    "caPath": "ca.pem",
-                    "keyPath": "key.pem",
-                    "certPath": "cert.pem",
-                    "keepOrder": true
-                }
-            }
-        }
+* `initialBackoffMillis`: Specifies how long to wait (backoff), in milliseconds, after the first failure before retrying. Its default value is `1000` ms. It must be non-negative.
+* `maxBackoffMillis`: Specifies the upper limit for the backoff in milliseconds. Its default value is `30000` ms. It must be non-negative.
+* `multiplier`: Factor to multiply the backoff after a failed retry. Its default value is `1`. It must be greater than or equal to `1`.
+* `clusterConnectTimeoutMillis`: Timeout value in milliseconds for the client to give up to connect to the current cluster. Its default value is `20000`.
+* `jitter`: Specifies by how much to randomize backoffs. Its default value is `0`. It must be in range `0` to `1`.
+
+A pseudo-code is as follows:
+
+```text
+begin_time = getCurrentTime()
+current_backoff_millis = INITIAL_BACKOFF_MILLIS
+while (tryConnect(connectionTimeout)) != SUCCESS) {
+    if (getCurrentTime() - begin_time >= CLUSTER_CONNECT_TIMEOUT_MILLIS) {
+        // Give up to connecting to the current cluster and switch to another if exists.
     }
+    Sleep(current_backoff_millis + UniformRandom(-JITTER * current_backoff_millis, JITTER * current_backoff_millis))
+    current_backoff = Min(current_backoff_millis * MULTIPLIER, MAX_BACKOFF_MILLIS)
 }
 ```
 
-
-An example of a factory, `my_factory.js`, is shown below.
-
-
-```javascript
-function SSLFactory() {
-}
-
-SSLFactory.prototype.init = function (properties) {
-    var promises = [];
-    var readFile = Promise.promisify(fs.readFile);
-    this.keepOrder = props.userDefinedProperty1;
-    var self = this;
-
-    promises.push(readFile(properties.caPath).then(function (data) {
-        self.ca = data;
-    }));
-    promises.push(readFile(properties.keyPath).then(function (data) {
-        self.key = data;
-    }));
-    promises.push(readFile(properties.certPath).then(function (data) {
-        self.cert = data;
-    }));
-
-    return Promise.all(promises).return();
-};
-
-SSLFactory.prototype.getSSLOptions = function () {
-    var sslOpts = {
-        ca: this.ca,
-        key: this.key,
-        cert: this.cert,
-        servername: 'foo.bar.com',
-        rejectUnauthorized: true
-    };
-    if (this.keepOrder) {
-        sslOpts.honorCipherOrder = true;
-    }
-    return sslOpts;
-};
-exports.SSLFactory = SSLFactory;
-```
-
-The client loads `MyFactory.js` at runtime and creates an instance of `SSLFactory`. It then calls the method `init` with
-the properties section in the JSON configuration file. Lastly, the client calls the method `getSSLOptions` of `SSLFactory` to create the `options` object.
-
-For information about the path resolution, see the [Loading Objects and Path Resolution section](#33-loading-objects-and-path-resolution).
-
-## 6.2. Credentials
-
-One of the key elements in Hazelcast security is the `Credentials` object, which can be used to carry all security attributes of the
-Hazelcast Node.js client to Hazelcast members. Then, Hazelcast members can authenticate the clients and perform access control
-checks on the client operations using this `Credentials` object.
-
-To use this feature, you need to
-* have a class implementing the [`Credentials`](https://docs.hazelcast.org/docs/latest/javadoc/com/hazelcast/security/Credentials.html) interface which contains the security attributes of your client
-* have a class implementing the [`LoginModule`](https://docs.oracle.com/javase/6/docs/api/javax/security/auth/spi/LoginModule.html?is-external=true) interface which uses the `Credentials` object during the authentication process
-* configure your Hazelcast member's security properties with respect to these classes before starting it. If you have started your member as described in the [Running Standalone JARs section](#1211-running-standalone-jars), see the [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath).
-
-[`UsernamePasswordCredentials`](https://docs.hazelcast.org/docs/latest/javadoc/com/hazelcast/security/UsernamePasswordCredentials.html), a basic implementation of the `Credentials` interface, is available in the Hazelcast `com.hazelcast.security` package.
-`UsernamePasswordCredentials` is used for default configuration during the authentication process of both members and clients. You can also use this class to carry the security attributes of your client.
-
-Hazelcast also has an abstract implementation of the `LoginModule` interface which is the `ClusterLoginModule` class in the `com.hazelcast.security` package.
-You can extend this class and do the authentication on the `onLogin()` method.
-
-Below is an example for the extension of abstract `ClusterLoginModule` class.
-On the `ClientLoginModule#onLogin()` method, we are doing a simple authentication against a hardcoded username and password just for illustrative purposes. You should carry out the authentication against a security service of your choice.
-
-```java
-import com.hazelcast.security.ClusterLoginModule;
-import com.hazelcast.security.UsernamePasswordCredentials;
-
-import javax.security.auth.login.FailedLoginException;
-import javax.security.auth.login.LoginException;
-
-public class ClientLoginModule extends ClusterLoginModule {
-
-  @Override
-  protected boolean onLogin() throws LoginException {
-      if (credentials instanceof UsernamePasswordCredentials) {
-          UsernamePasswordCredentials usernamePasswordCredentials = (UsernamePasswordCredentials) credentials;
-          String username = usernamePasswordCredentials.getUsername();
-          String password = usernamePasswordCredentials.getPassword();
-
-          if (username.equals("admin") && password.equals("password")) {
-              return true;
-          }
-          throw new FailedLoginException("Username or password doesn't match expected value.");
-      }
-      return false;
-  }
-
-  @Override
-  public boolean onCommit() {
-      return loginSucceeded;
-  }
-
-  @Override
-  protected boolean onAbort() {
-      return true;
-  }
-
-  @Override
-  protected boolean onLogout() {
-      return true;
-  }
-}
-```
-
-Finally, you can configure `hazelcast.xml` as follows to enable Hazelcast security, do mandatory authentication with `ClientLoginModule`
-and give the user with the name `admin` all the permissions over the map named `importantMap`.
-
-```xml
-<hazelcast>
-    <security enabled="true">
-        <client-login-modules>
-            <login-module class-name="com.company.ClientLoginModule" usage="REQUIRED"/>
-        </client-login-modules>
-        <client-permissions>
-            <map-permission name="importantMap" principal="admin">
-                <actions>
-                    <action>all</action>
-                </actions>
-            </map-permission>
-        </client-permissions>
-    </security>
-</hazelcast>
-```
-
-After successfully starting a Hazelcast member as described above, you need to implement `Portable` equivalent of the `UsernamePasswordCredentials`
-and register it to your client configuration.
-
-Below is the code for that.
-
-**user_pass_cred.js**
-```javascript
-function UsernamePasswordCredentials(username, password, endpoint) {
-    this.username = username;
-    this.password = Buffer.from(password, 'utf8');
-    this.endpoint = endpoint;
-}
-
-UsernamePasswordCredentials.prototype.readPortable = function (reader) {
-    this.username = reader.readUTF('principal');
-    this.endpoint = reader.readUTF('endpoint');
-    this.password = reader.readByteArray('pwd');
-};
-
-UsernamePasswordCredentials.prototype.writePortable = function (writer) {
-    writer.writeUTF('principal', this.username);
-    writer.writeUTF('endpoint', this.endpoint);
-    writer.writeByteArray('pwd', this.password);
-};
-
-UsernamePasswordCredentials.prototype.getFactoryId = function () {
-    return -1;
-};
-
-UsernamePasswordCredentials.prototype.getClassId = function () {
-    return 1;
-};
-
-exports.UsernamePasswordCredentials = UsernamePasswordCredentials;
-```
-
-And below is the `Factory` implementation for the `Portable` implementation of `UsernamePasswordCredentials`.
-
-**user_pass_cred_factory.js**
-```javascript
-var UsernamePasswordCredentials = require('./user_pass_cred').UsernamePasswordCredentials;
-
-function UsernamePasswordCredentialsFactory() {
-}
-
-UsernamePasswordCredentialsFactory.prototype.create = function (classId) {
-    if(classId === 1){
-        return new UsernamePasswordCredentials();
-    }
-    return null;
-};
-
-exports.UsernamePasswordCredentialsFactory = UsernamePasswordCredentialsFactory;
-```
-
-Now, you can start your client by registering the `Portable` factory and giving the credentials as follows.
-
-```javascript
-var Client = require('hazelcast-client').Client;
-var ClientConfig = require('hazelcast-client').Config.ClientConfig;
-
-var UsernamePasswordCredentials = require('./user_pass_cred').UsernamePasswordCredentials;
-var UsernamePasswordCredentialsFactory = require('./user_pass_cred_factory').UsernamePasswordCredentialsFactory;
-
-var config = new ClientConfig();
-config.serializationConfig.portableVersion = 1;
-config.serializationConfig.portableFactories[-1] = new UsernamePasswordCredentialsFactory();
-config.customCredentials = new UsernamePasswordCredentials('admin', 'password', '127.0.0.1');
-
-Client.newHazelcastClient(config).then(function (client) {
-    var map;
-    return client.getMap('importantMap').then(function (mp) {
-        map = mp;
-        return map.put('key', 'value');
-    }).then(function () {
-        return map.get('key');
-    }).then(function (value) {
-        console.log(value);
-        return client.shutdown();
-    });
-});
-```
-
-> NOTE: It is almost always a bad idea to write the credentials to wire in a clear-text format. Therefore, using TLS/SSL encryption is highly recommended while using the custom credentials as described in [TLS/SSL section]((#61-tlsssl)).
-
-With Hazelcast's extensible, `JAAS` based security features you can do much more than just authentication.
-See the [JAAS code sample](code_samples/jaas_sample) to learn how to perform access control checks on the client operations based on user groups.
-
-Also, see the [Security section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#security) of Hazelcast IMDG Reference Manual for more information.
-
+Note that, `tryConnect` above tries to connect to any member that the client knows, and for each connection we
+have a connection timeout; see the [Setting Connection Timeout](#54-setting-connection-timeout) section.
 
 # 7. Using Node.js Client with Hazelcast IMDG
 
@@ -1773,9 +1475,9 @@ This chapter provides information on how you can use Hazelcast IMDG's data struc
 
 ## 7.1. Node.js Client API Overview
 
-Most of the functions in the API return `Promise`. Therefore, you need to be familiar with the concept of promises to use the Node.js client. If not, you can learn about them using various online resources, e.g., the [Promise JS](https://www.promisejs.org/) website.
-
-Promises provide a better way of working with callbacks. You can chain asynchronous functions by the `then()` function of promise. Also, you can use `async/await`, if you use Node.js 8 and higher versions.
+Most of the functions in the API return Promises. Therefore, you need to be familiar with the concept of
+promises to use the Node.js client. If not, you can learn about them using various online resources.
+Also, you can use `async/await`.
 
 If you are ready to go, let's start to use Hazelcast Node.js client.
 
@@ -1785,7 +1487,7 @@ The following is an example on how to create a `ClientConfig` object and configu
 
 ```javascript
 var clientConfig = new Config.ClientConfig();
-clientConfig.groupConfig.name = 'dev';
+clientConfig.clusterName = 'dev';
 clientConfig.networkConfig.addresses.push('10.90.0.1', '10.90.0.2:5702');
 ```
 
@@ -1793,20 +1495,20 @@ The second step is initializing the `HazelcastClient` to be connected to the clu
 
 ```javascript
 Client.newHazelcastClient(clientConfig).then(function (client) {
-    // some operation
+    // Some operation
 });
 ```
 
-**This client object is your gateway to access all the Hazelcast distributed objects.**
+This client object is your gateway to access all the Hazelcast distributed objects.
 
 Let's create a map and populate it with some data, as shown below.
 
 ```javascript
 var map;
-// Get the Distributed Map from Cluster.
+// Get the Distributed Map from Cluster
 client.getMap('my-distributed-map').then(function (mp) {
     map = mp;
-    // Standard Put and Get.
+    // Standard Put and Get
     return map.put('key', 'value');
 }).then(function () {
     return map.get('key');
@@ -1830,32 +1532,41 @@ As the final step, if you are done with your client, you can shut it down as sho
 ## 7.2. Node.js Client Operation Modes
 
 The client has two operation modes because of the distributed nature of the data and cluster: smart and unisocket.
+Refer to the [Setting Smart Routing](#52-setting-smart-routing) section to see how to configure the client for
+different operation modes.
 
 ### 7.2.1. Smart Client
 
-In the smart mode, the clients connect to each cluster member. Since each data partition uses the well known and consistent hashing algorithm, each client can send an operation to the relevant cluster member, which increases the overall throughput and efficiency. Smart mode is the default mode.
+In the smart mode, the clients connect to each cluster member. Since each data partition uses the well-known and
+consistent hashing algorithm, each client can send an operation to the relevant cluster member,
+which increases the overall throughput and efficiency. Smart mode is the default mode.
 
 ### 7.2.2. Unisocket Client
 
-For some cases, the clients can be required to connect to a single member instead of each member in the cluster. Firewalls, security or some custom networking issues can be the reason for these cases.
+For some cases, the clients can be required to connect to a single member instead of each member in the cluster.
+Firewalls, security or some custom networking issues can be the reason for these cases.
 
-In the unisocket client mode, the client will only connect to one of the configured addresses. This single member will behave as a gateway to the other members. For any operation requested from the client, it will redirect the request to the relevant member and return the response back to the client returned from this member.
+In the unisocket client mode, the client will only connect to one of the configured addresses.
+This single member will behave as a gateway to the other members.
+For any operation requested from the client, it will redirect the request to the relevant member and return the
+response back to the client connected to this member.
 
 ## 7.3. Handling Failures
 
-There are two main failure cases you should be aware of. Below sections explain these and the configurations you can perform to achieve proper behavior.
+There are two main failure cases you should be aware of. Below sections explain these,
+and the configuration options you can use to achieve proper behavior.
 
 ### 7.3.1. Handling Client Connection Failure
 
-While the client is trying to connect initially to one of the members in the `ClientNetworkConfig.addressList`, all the members might not be available. Instead of giving up, throwing an error and stopping the client, the client will retry as many as `connectionAttemptLimit` times.
-
-You can configure `connectionAttemptLimit` for the number of times you want the client to retry connecting. See the [Setting Connection Attempt Limit section](#55-setting-connection-attempt-limit).
+While the client is trying to connect initially to one of the members in the `ClientNetworkConfig.addressList`, all the members might not be available.
+Instead of giving up, throwing an error and stopping the client, the client retries to connect as configured.
+This behavior is described in the [Configuring Client Connection Retry](#61-configuring-client-connection-retry) section.
 
 The client executes each operation through the already established connection to the cluster. If this connection(s) disconnects or drops, the client will try to reconnect as configured.
 
 ### 7.3.2. Handling Retry-able Operation Failure
 
-While sending the requests to the related members, the operations can fail due to various reasons. Read-only operations are retried by default. If you want to enable retrying for the other operations, you can set the `redoOperation` to `true`. See the [Enabling Redo Operation section](#53-enabling-redo-operation).
+While sending requests to cluster members, the operations may fail due to various reasons. Read-only operations are retried by default. If you want to enable retrying for non-read-only operations, you can set the `redoOperation` to `true`. See the [Enabling Redo Operation section](#53-enabling-redo-operation).
 
 You can set a timeout for retrying the operations sent to a member. This can be provided by using the property `hazelcast.client.invocation.timeout.seconds` in `ClientConfig.properties`. The client will retry an operation within this given period, of course, if it is a read-only operation or you enabled the `redoOperation` as stated in the above paragraph. This timeout value is important when there is a failure resulted by either of the following causes:
 
@@ -1867,7 +1578,7 @@ When a connection problem occurs, an operation is retried if it is certain that 
 
 ## 7.4. Using Distributed Data Structures
 
-Most of the distributed data structures are supported by the Node.js client. In this chapter, you will learn how to use these distributed data structures.
+Most of the distributed data structures available in IMDG are supported by the Node.js client. In this chapter, you will learn how to use these distributed data structures.
 
 ### 7.4.1. Using Map
 
@@ -1877,10 +1588,10 @@ A Map usage example is shown below.
 
 ```javascript
 var map;
-// Get the Distributed Map from Cluster.
+// Get the Distributed Map from Cluster
 hz.getMap('my-distributed-map').then(function (mp) {
     map = mp;
-    // Standard Put and Get.
+    // Standard Put and Get
     return map.put('key', 'value');
 }).then(function () {
     return map.get('key');
@@ -1904,7 +1615,7 @@ A MultiMap usage example is shown below.
 
 ```javascript
 var multiMap;
-// Get the Distributed MultiMap from Cluster.
+// Get the Distributed MultiMap from Cluster
 hz.getMultiMap('my-distributed-multimap').then(function (mmp) {
     multiMap = mmp;
     // Put values in the map against the same key
@@ -1920,7 +1631,7 @@ hz.getMultiMap('my-distributed-multimap').then(function (mmp) {
     for (value of values) {
         console.log(value);
     }
-    // remove specific key/value pair
+    // Remove specific key/value pair
     return multiMap.remove('my-key', 'value2');
 });
 ```
@@ -1939,7 +1650,7 @@ var map;
 hz.getReplicatedMap('my-replicated-map').then(function (rmp) {
     map = rmp;
     // Put and Get a value from the Replicated Map
-    // key/value replicated to all members
+    // Key/value replicated to all members
     return map.put('key', 'value');
 }).then(function (replacedValue) {
     console.log('replaced value = ' + replacedValue); // Will be null as its first update
@@ -1985,7 +1696,7 @@ hz.getQueue('my-distributed-queue').then(function (q) {
 
 Hazelcast Queue uses `ItemListener` to listen to the events that occur when the items are added to or removed from the Queue. See the [Item Listener section](#7523-item-listener) for information on how to create an item listener object and register it.
 
-## 7.4.5. Using Set
+### 7.4.5. Using Set
 
 Hazelcast Set (`ISet`) is a distributed set which does not allow duplicate elements. For details, see the [Set section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#set) in the Hazelcast IMDG Reference Manual.
 
@@ -1993,7 +1704,7 @@ A Set usage example is shown below.
 
 ```javascript
 var set;
-// Get the Distributed Set from Cluster.
+// Get the Distributed Set from Cluster
 hz.getSet('my-distributed-set').then(function (s) {
     set = s;
     // Add items to the set with duplicates
@@ -2018,7 +1729,7 @@ hz.getSet('my-distributed-set').then(function (s) {
 
 Hazelcast Set uses `ItemListener` to listen to the events that occur when the items are added to or removed from the Set. See the [Item Listener section](#7523-item-listener) for information on how to create an item listener object and register it.
 
-## 7.4.6. Using List
+### 7.4.6. Using List
 
 Hazelcast List (`IList`) is a distributed list which allows duplicate elements and preserves the order of elements. For details, see the [List section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#list) in the Hazelcast IMDG Reference Manual.
 
@@ -2026,7 +1737,7 @@ A List usage example is shown below.
 
 ```javascript
 var list;
-// Get the Distributed List from Cluster.
+// Get the Distributed List from Cluster
 hz.getList('my-distributed-list').then(function (l) {
     list = l;
     // Add elements to the list
@@ -2049,7 +1760,7 @@ hz.getList('my-distributed-list').then(function (l) {
 
 Hazelcast List uses `ItemListener` to listen to the events that occur when the items are added to or removed from the List. See the [Item Listener section](#7523-item-listener) for information on how to create an item listener object and register it.
 
-## 7.4.7. Using Ringbuffer
+### 7.4.7. Using Ringbuffer
 
 Hazelcast `Ringbuffer` is a replicated but not partitioned data structure that stores its data in a ring-like structure. You can think of it as a circular array with a given capacity. Each Ringbuffer has a tail and a head. The tail is where the items are added and the head is where the items are overwritten or expired. You can reach each element in a Ringbuffer using a sequence ID, which is mapped to the elements between the head and tail (inclusive) of the Ringbuffer. For details, see the [Ringbuffer section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#ringbuffer) in the Hazelcast IMDG Reference Manual.
 
@@ -2064,8 +1775,8 @@ hz.getRingbuffer('rb').then(function (buffer) {
 }).then(function () {
     return rb.add(200);
 }).then(function (value) {
-    // we start from the oldest item.
-    // if you want to start from the next item, call rb.tailSequence()+1
+    // We start from the oldest item.
+    // If you want to start from the next item, call rb.tailSequence()+1
     return rb.headSequence();
 }).then(function (sequence) {
     return rb.readOne(sequence).then(function (value) {
@@ -2077,7 +1788,7 @@ hz.getRingbuffer('rb').then(function (buffer) {
 });
 ```
 
-## 7.4.8. Using Reliable Topic
+### 7.4.8. Using Reliable Topic
 
 Hazelcast `ReliableTopic` is a distributed topic implementation backed up by the `Ringbuffer` data structure. For details, see the [Reliable Topic section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#reliable-topic) in the Hazelcast IMDG Reference Manual.
 
@@ -2099,68 +1810,44 @@ hz.getReliableTopic('my-distributed-topic').then(function (t) {
 
 Hazelcast Reliable Topic uses `MessageListener` to listen to the events that occur when a message is received. See the [Message Listener section](#7524-message-listener) for information on how to create a message listener object and register it.
 
-## 7.4.9. Using Lock
+#### 7.4.8.1 Configuring Reliable Topic
 
-Hazelcast Lock (`ILock`) is a distributed lock implementation. You can synchronize Hazelcast members and clients using a Lock. For details, see the [Lock section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#lock) in the Hazelcast IMDG Reference Manual.
+You may configure `ReliableTopic`s as the following:
 
-A Lock usage example is shown below.
+**Declarative Configuration:**
 
-```javascript
-var lock;
-// Get a distributed lock called "my-distributed-lock"
-hz.getLock('my-distributed-lock').then(function (l) {
-    lock = l;
-    // Now create a lock and execute some guarded code.
-    return lock.lock();
-}).then(function () {
-    // do something here
-}).finally(function () {
-    return lock.unlock();
-});
+```json
+{
+    "reliableTopics": [
+        {
+            "name": "rt1",
+            "readBatchSize": 35,
+            "overloadPolicy": "discard_newest"
+        }
+    ]
+}
 ```
 
-## 7.4.10. Using Atomic Long
-
-Hazelcast Atomic Long (`IAtomicLong`) is the distributed long which offers most of the operations such as `get`, `set`, `getAndSet`, `compareAndSet` and `incrementAndGet`. For details, see the [Atomic Long section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#iatomiclong) in the Hazelcast IMDG Reference Manual.
-
-An Atomic Long usage example is shown below.
+**Programmatic Configuration:**
 
 ```javascript
-var counter;
-// Get an Atomic Counter, we'll call it "counter"
-hz.getAtomicLong('counter').then(function (c) {
-    counter = c;
-    // Add and Get the "counter"
-    return counter.addAndGet(3);
-}).then(function (value) {
-    return counter.get();
-}).then(function (value) {
-    // Display the "counter" value
-    console.log('counter: ' + value);
-});
+var config = new Config.ClientConfig();
+
+var reliableTopicConfig = new Config.ReliableTopicConfig();
+reliableTopicConfig.name = 'rt1';
+reliableTopicConfig.readBatchSize = 35;
+reliableTopicConfig.overloadPolicy = Config.TopicOverloadPolicy.DISCARD_NEWEST;
+
+config.reliableTopicConfigs['rt1'] = reliableTopicConfig;
 ```
 
-## 7.4.11. Using Semaphore
+The following are the descriptions of configuration elements and attributes:
 
-Hazelcast Semaphore (`ISemaphore`) is a distributed semaphore implementation. For details, see the [Semaphore section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#isemaphore) in the Hazelcast IMDG Reference Manual.
+* `name`: Name of your Reliable Topic.
+* `readBatchSize`: Minimum number of messages that Reliable Topic tries to read in batches. Its default value is `10`.
+* `overloadPolicy`: Policy to handle an overloaded topic. Available values are `DISCARD_OLDEST`, `DISCARD_NEWEST`, `BLOCK` and `ERROR`. Its default value is `BLOCK`. See [Slow Consumers](https://docs.hazelcast.org/docs/latest/manual/html-single/#slow-consumers) for definitions of these policies.
 
-A Semaphore usage example is shown below.
-
-```javascript
-var semaphore;
-hazelcastClient.getSemaphore('mySemaphore').then(function (s) {
-    semaphore = s;
-    return semaphore.init(10);
-}).then(function () {
-    return semaphore.acquire(5);
-}).then(function () {
-    return semaphore.availablePermits();
-}).then(function (res) {
-    console.log(res); // 5
-});
-```
-
-## 7.4.12. Using PN Counter
+### 7.4.9. Using PN Counter
 
 Hazelcast `PNCounter` (Positive-Negative Counter) is a CRDT positive-negative counter implementation. It is an eventually consistent counter given there is no member failure. For details, see the [PN Counter section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#pn-counter) in the Hazelcast IMDG Reference Manual.
 
@@ -2188,9 +1875,9 @@ hz.getPNCounter('myPNCounter').then(function (counter) {
 });
 ```
 
-## 7.4.13. Using Flake ID Generator
+### 7.4.10. Using Flake ID Generator
 
-Hazelcast `FlakeIdGenerator` is used to generate cluster-wide unique identifiers. Generated identifiers are long primitive values and are k-ordered (roughly ordered). IDs are in the range from 0 to `2^63-1` (maximum signed long value). For details, see the [FlakeIdGenerator section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#flakeidgenerator) in the Hazelcast IMDG Reference Manual.
+Hazelcast `FlakeIdGenerator` is used to generate cluster-wide unique identifiers. Generated identifiers are long primitive values and are k-ordered (roughly ordered). IDs are in the range from `0` to `2^63-1` (maximum value for Java's `long` type). For details, see the [FlakeIdGenerator section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#flakeidgenerator) in the Hazelcast IMDG Reference Manual.
 
 A Flake ID Generator usage example is shown below.
 
@@ -2203,6 +1890,53 @@ hz.getFlakeIdGenerator('myFlakeIdGenerator').then(function (gen) {
     console.log('New id: ' + value.toString());
 });
 ```
+
+#### 7.4.10.1 Configuring Flake ID Generator
+
+You may configure `FlakeIdGenerator`s as the following:
+
+**Declarative Configuration:**
+
+```json
+{
+    "flakeIdGeneratorConfigs": [
+        {
+            "name": "flakeidgenerator",
+            "prefetchCount": 123,
+            "prefetchValidityMillis": 150000
+        }
+    ]
+}
+```
+> Note: Since Javascript cannot represent numbers greater than 2^53, you need to put long numbers in quotes as a string.
+
+**Programmatic Configuration:**
+
+```javascript
+var config = new Config.ClientConfig();
+var flakeIdGeneratorConfig = new Config.FlakeIdGeneratorConfig();
+flakeIdGeneratorConfig.name = 'flakeidgenerator';
+flakeIdGeneratorConfig.prefetchCount = 123;
+flakeIdGeneratorConfig.prefetchValidityMillis = 150000;
+
+config.flakeIdGeneratorConfigs['flakeidgenerator'] = flakeIdGeneratorConfig;
+```
+
+The following are the descriptions of configuration elements and attributes:
+
+* `name`: Name of your Flake ID Generator.
+* `prefetchCount`: Count of IDs which are pre-fetched on the background when one call to `FlakeIdGenerator.newId()` is made. Its value must be in the range `1` - `100,000`. Its default value is `100`.
+* `prefetchValidityMillis`: Specifies for how long the pre-fetched IDs can be used. After this time elapses, a new batch of IDs are fetched. Time unit is milliseconds. Its default value is `600,000` milliseconds (`10` minutes). The IDs contain a timestamp component, which ensures a rough global ordering of them. If an ID is assigned to an object that was created later, it will be out of order. If ordering is not important, set this value to `0`.
+
+### 7.4.11. Using Lock, Semaphore and Atomic Long
+
+Hazelcast IMDG 4.0 introduces CP concurrency primitives with respect to the [CAP principle](http://awoc.wolski.fi/dlib/big-data/Brewer_podc_keynote_2000.pdf), i.e., they always
+maintain [linearizability](https://aphyr.com/posts/313-strong-consistency-models) and prefer consistency to availability during network partitions and client or server failures.
+
+These new implementations are accessed using the [CP Subsystem](https://docs.hazelcast.org/docs/latest/manual/html-single/#cp-subsystem)
+which cannot be used with the Node.js client yet. We plan to implement support for the CP Subsystem in the upcoming 4.0 release.
+In the meantime, since there is no way to access old non-CP primitives using IMDG 4.x, we removed their implementations,
+code samples and documentations. They will be back once we implement them.
 
 ## 7.5. Distributed Events
 
@@ -2222,9 +1956,8 @@ The Membership Listener interface has functions that are invoked for the followi
 
 * `memberAdded`: A new member is added to the cluster.
 * `memberRemoved`: An existing member leaves the cluster.
-* `memberAttributeChanged`: An attribute of a member is changed. See the [Defining Member Attributes section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#defining-member-attributes) in the Hazelcast IMDG Reference Manual to learn about member attributes.
 
-For `memberAdded` and `memberRemoved` events, a `MembershipEvent` object is passed to the listener function.
+For these events, a `MembershipEvent` object is passed to the listener function.
 
 After you create the listener object, you can configure your cluster to include the membership listener. You can also add one or more membership listeners.
 
@@ -2232,25 +1965,31 @@ The following is a membership listener registration by using the `ClusterService
 
 ```javascript
 var membershipListener = {
-    memberAdded: function (membershipEvent) {
-        console.log('Member Added: The address is', member.address.toString());
+    memberAdded: function (event) {
+        console.log('Member Added: The address is', event.member.address.toString());
     },
 };
 client.clusterService.addMembershipListener(membershipListener);
 ```
 
-The `memberAttributeChanged` has its own type of event named as `MemberAttributeEvent`. When there is an attribute change on the member, this event is fired.
+Also, if you want to receive the list of available members when the client connects to cluster you may register an
+`InitialMembershipListener`. This listener receives an only-once `InitialMembershipEvent` when the member list becomes
+available. After the event has been received, the listener will receive the normal `MembershipEvent`s.
 
-See the following example.
+The following is an initial membership listener registration by using the `config.listeners.addMembershipListener()` function.
 
 ```javascript
-
 var membershipListener = {
-    memberAttributeChanged: function (memberAttributeEvent) {
-       console.log('Member Attribute Changed: The address is', memberAttributeEvent.member.address.toString());
+    init: function (event) {
+      console.log("Initial member list received -> " + event.members);
+    },
+    memberAdded: function (event) {
+        console.log('Member Added: The address is', event.member.address.toString());
     },
 };
-client.clusterService.addMembershipListener(membershipListener);
+
+var config = new Config.ClientConfig();
+config.listeners.addMembershipListener(membershipListener);
 ```
 
 #### 7.5.1.2. Distributed Object Listener
@@ -2272,9 +2011,9 @@ client.addDistributedObjectListener(function (distributedObjectEvent) {
     );
 }).then(function () {
     var mapname = 'test';
-    // this causes a created event
+    // This causes a created event
     client.getMap(mapname);
-    // this causes no event because map was already created
+    // This causes no event because map was already created
     client.getMap(mapname);
 });
 ```
@@ -2283,10 +2022,12 @@ client.addDistributedObjectListener(function (distributedObjectEvent) {
 
 The `LifecycleListener` interface notifies for the following events:
 
-* `starting`: A client is starting.
-* `started`: A client has started.
-* `shuttingDown`: A client is shutting down.
-* `shutdown`: A client’s shutdown has completed.
+* `STARTING`: The client is starting.
+* `STARTED`: The client has started.
+* `CONNECTED`: The client connected to a member.
+* `SHUTTING_DOWN`: The client is shutting down.
+* `DISCONNECTED`: The client disconnected from a member.
+* `SHUTDOWN`: The client has shutdown.
 
 The following is an example of the `LifecycleListener` that is added to the `ClientConfig` object and its output.
 
@@ -2304,21 +2045,27 @@ Client.newHazelcastClient(clientConfig).then(function (hazelcastClient) {
 **Output:**
 
 ```
-[DefaultLogger] INFO at LifecycleService: HazelcastClient is starting
-Lifecycle Event >>> starting
-[DefaultLogger] INFO at ConnectionAuthenticator: Connection to 10.216.1.43:5701 authenticated
-[DefaultLogger] INFO at ClusterService: Members received.
-[ Member {
-    address: Address { host: '10.216.1.43', port: 5701, type: 4 },
-    uuid: '7961eef2-940d-42dc-8036-2a29c5c9942c',
-    isLiteMember: false,
-    attributes: {} } ]
-[DefaultLogger] INFO at LifecycleService: HazelcastClient is started
-Lifecycle Event >>> started
-[DefaultLogger] INFO at LifecycleService: HazelcastClient is shuttingDown
-Lifecycle Event >>> shuttingDown
-[DefaultLogger] INFO at LifecycleService: HazelcastClient is shutdown
-Lifecycle Event >>> shutdown
+[DefaultLogger] INFO at LifecycleService: HazelcastClient is STARTING
+Lifecycle Event >>> STARTING
+[DefaultLogger] INFO at LifecycleService: HazelcastClient is STARTED
+Lifecycle Event >>> STARTED
+[DefaultLogger] INFO at ConnectionManager: Trying to connect to localhost:5701
+[DefaultLogger] INFO at LifecycleService: HazelcastClient is CONNECTED
+Lifecycle Event >>> CONNECTED
+[DefaultLogger] INFO at ConnectionManager: Authenticated with server 192.168.1.10:5701:8d69d670-fa8a-4278-a91f-b43875fccfe8, server version: 4.1-SNAPSHOT, local address: 127.0.0.1:59316
+[DefaultLogger] INFO at ClusterService:
+
+Members [1] {
+	Member [192.168.1.10]:5701 - 8d69d670-fa8a-4278-a91f-b43875fccfe8
+}
+
+[DefaultLogger] INFO at LifecycleService: HazelcastClient is SHUTTING_DOWN
+Lifecycle Event >>> SHUTTING_DOWN
+[DefaultLogger] INFO at ConnectionManager: Removed connection to endpoint: 192.168.1.10:5701:8d69d670-fa8a-4278-a91f-b43875fccfe8, connection: ClientConnection{alive=false, connectionId=0, remoteAddress=192.168.1.10:5701}
+[DefaultLogger] INFO at LifecycleService: HazelcastClient is DISCONNECTED
+Lifecycle Event >>> DISCONNECTED
+[DefaultLogger] INFO at LifecycleService: HazelcastClient is SHUTDOWN
+Lifecycle Event >>> SHUTDOWN
 ```
 
 ### 7.5.2. Listening for Distributed Data Structure Events
@@ -2623,7 +2370,7 @@ hazelcastClient.getMap('my-distributed-map').then(function (mp) {
 }).then(function () {
     return map.get('key');
 }).then(function (value) {
-    console.log(value); // processed
+    console.log(value); // Processed
 });
 ```
 
@@ -2713,7 +2460,7 @@ client.getMap('employee').then(function (mp) {
     var predicate = Predicates.and(Predicates.equal('active', true), Predicates.lessThan('age', 30));
     return map.valuesWithPredicate(predicate);
 }).then(function (employees) {
-    // some operations
+    // Some operations
 });
 ```
 
@@ -2731,7 +2478,7 @@ client.getMap('employee').then(function (mp) {
     map = mp;
     return map.valuesWithPredicate(new SqlPredicate('active AND age < 30'));
 }).then(function (employees) {
-    // some operations
+    // Some operations
 });
 ```
 
@@ -2901,7 +2648,7 @@ return hz.getMap('departmentsMap').then(function (map) {
         return [index, department];
     }));
 }).then(function () {
-    // The following query finds all the departments that have a person named "Peter" working in them.
+    // The following query finds all the departments that have a person named "Peter" working in them
     return departmentsMap.valuesWithPredicate(Predicates.equal('people[any].name', 'Peter'))
 }).then(function (departmentWithPeter) {
     departmentWithPeter.toArray().forEach(function (department) {
@@ -2989,7 +2736,7 @@ hazelcastClient.getMap('students').then(function (mp) {
     // Retrieve third page
     return map.valuesWithPredicate(pagingPredicate)
 }).then(function (values) {
-    // some operations
+    // Some operations
 ...
 
     // Set up next page
@@ -2998,7 +2745,7 @@ hazelcastClient.getMap('students').then(function (mp) {
     // Retrieve next page
     return map.valuesWithPredicate(pagingPredicate);
 }).then(function (values) {
-    // some operations
+    // Some operations
 });
 ```
 
@@ -3041,7 +2788,7 @@ hz.getMap('employees').then(function (mp) {
 }).then(function () {
     return map.aggregate(Aggregators.count());
 }).then(function (count) {
-    console.log('There are ' + count + ' employees.'); // There are 3 employees.
+    console.log('There are ' + count + ' employees.'); // There are 3 employees
     return map.aggregateWithPredicate(Aggregators.count(), Predicates.greaterThan('this', 25));
 }).then(function (count) {
     console.log('There are ' + count + ' employees older than 25.'); // There are 2 employees older than 25.
@@ -3072,7 +2819,7 @@ Client.newHazelcastClient().then(function (client) {
 }).then(function (mp) {
     mapC = mp;
 
-    // since map names are different, operation is manipulating
+    // Since map names are different, operation is manipulating
     // different entries, but the operation takes place on the
     // same member since the keys ('key1') are the same
     return mapA.put('key1', 'value1');
@@ -3081,7 +2828,7 @@ Client.newHazelcastClient().then(function (client) {
 }).then(function (res) {
     return mapC.remove('key1');
 }).then(function () {
-    // lock operation is still execute on the same member
+    // Lock operation is still execute on the same member
     // of the cluster since the key ("key1") is same
     return hazelcastClient.getLock('key1');
 }).then(function (l) {
@@ -3090,7 +2837,7 @@ Client.newHazelcastClient().then(function (client) {
 });
 ```
 
-When the keys are the same, entries are stored on the same member. However, we sometimes want to have the related entries stored on the same member, such as a customer and his/her order entries. We would have a customers map with `customerId` as the key and an orders map with `orderId` as the key. Since `customerId` and `orderId` are different keys, a customer and his/her orders may fall into different members in your cluster. So how can we have them stored on the same member? We create an affinity between the customer and orders. If we make them part of the same partition then these entries will be co-located. We achieve this by making `OrderKey`s `PartitionAware`.
+When the keys are the same, entries are stored on the same member. However, we sometimes want to have the related entries stored on the same member, such as a customer and their order entries. We would have a customers map with `customerId` as the key and an orders map with `orderId` as the key. Since `customerId` and `orderId` are different keys, a customer and their orders may fall into different members in your cluster. So how can we have them stored on the same member? We create an affinity between the customer and orders. If we make them part of the same partition then these entries will be co-located. We achieve this by making `OrderKey`s `PartitionAware`.
 
 ```javascript
 function OrderKey(orderId, customerId) {
@@ -3119,10 +2866,10 @@ Client.newHazelcastClient().then(function (client) {
 }).then(function (mp) {
     mapOrders = mp;
 
-    // create the customer entry with customer id = 1
+    // Create the customer entry with customer id = 1
     return mapCustomers.put(1, customer);
 }).then(function () {
-    // now create the orders for this customer
+    // Now create the orders for this customer
     return mapOrders.putAll([
         [new OrderKey(21, 1), order],
         [new OrderKey(22, 1), order],
@@ -3395,12 +3142,435 @@ cfg.customLogger = winstonAdapter;
 
 Note that it is not possible to configure custom logging via declarative configuration.
 
-# 8. Development and Testing
+## 7.10. Defining Client Labels
+
+Through the client labels, you can assign special roles for your clients and use these roles to perform some actions
+specific to those client connections.
+
+You can also group your clients using the client labels. These client groups can be blacklisted in the
+Hazelcast Management Center so that they can be prevented from connecting to a cluster.
+See the [related section](https://docs.hazelcast.org/docs/management-center/latest/manual/html/index.html#changing-cluster-client-filtering) in the Hazelcast Management Center Reference Manual for more information on this topic.
+
+Declaratively, you can define the client labels using the `clientLabels` configuration element. See the below example.
+
+```json
+{
+    "clientLabels": [
+        "role admin",
+        "region foo"
+    ]
+}
+```
+
+The equivalent programmatic approach is shown below.
+
+```javascript
+var config = new Config.ClientConfig();
+
+config.labels.add("role admin");
+config.labels.add("region foo");
+```
+
+## 7.11. Defining Instance Name
+
+Each client has a name associated with it. By default, it is set to `hz.client_${CLIENT_ID}`.
+`CLIENT_ID` starts from `0` and it is incremented by `1` for each new client. This id is incremented and set by the
+client, so it may not be unique between different clients used by different applications.
+
+Declaratively, you can set the client name using the `instanceName` configuration element.
+
+```json
+{
+    "instanceName": "blue_client_0"
+}
+```
+The equivalent programmatic approach is shown below.
+
+```javascript
+var config = new Config.ClientConfig();
+
+config.name = "blue_client_0";
+```
+
+## 7.12. Configuring Load Balancer
+
+`LoadBalancer` allows you to specify which cluster member to send next operation when queried.
+It is up to your implementation to use different load balancing policies.
+You should implement the `LoadBalancer` interface or extend the `AbstractLoadBalancer` class for that purpose.
+
+If it is a [smart client](#721-smart-client), only the operations that are not key-based are routed to the member
+that is returned by the `LoadBalancer`. If it is not a smart client, `LoadBalancer` is ignored.
+
+By default, client uses `RoundRobinLB` which picks each cluster member in turn. Also, the client provides
+`RandomLB` which picks the next member randomly as the name suggests. For the declarative configuration,
+you can use `roundRobin` or `random` configuration elements as the load balancer type.
+
+The following are example configurations.
+
+Declarative Configuration:
+```json
+{
+  "loadBalancer": {
+    "type": "roundRobin"
+  }
+}
+```
+
+Programmatic Configuration:
+```javascript
+var config = new Config.ClientConfig();
+config.loadBalancer = new RoundRobinLB();
+```
+
+# 8. Securing Client Connection
+
+This chapter describes the security features of Hazelcast Node.js client. These include using TLS/SSL for connections between members and between clients and members, mutual authentication and credentials. These security features require **Hazelcast IMDG Enterprise** edition.
+
+## 8.1. TLS/SSL
+
+One of the offers of Hazelcast is the TLS/SSL protocol which you can use to establish an encrypted communication across your cluster with key stores and trust stores.
+
+* A Java `keyStore` is a file that includes a private key and a public certificate. The equivalent of a key store is the combination of `key` and `cert` files at the Node.js client side.
+* A Java `trustStore` is a file that includes a list of certificates trusted by your application which is named as  "certificate authority". The equivalent of a trust store is a `ca` file at the Node.js client side.
+
+You should set `keyStore` and `trustStore` before starting the members. See the next section on setting `keyStore` and `trustStore` on the server side.
+
+### 8.1.1. TLS/SSL for Hazelcast Members
+
+Hazelcast allows you to encrypt socket level communication between Hazelcast members and between Hazelcast clients and members, for end to end encryption. To use it, see the [TLS/SSL for Hazelcast Members section](http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#tls-ssl-for-hazelcast-members).
+
+### 8.1.2. TLS/SSL for Hazelcast Node.js Clients
+
+TLS/SSL for the Hazelcast Node.js client can be configured using the `SSLConfig` class. In order to turn it on, `enabled` property of `SSLConfig` should be set to `true`:
+
+```javascript
+var clientConfig = new Config.ClientConfig();
+var sslConfig = new Config.SSLConfig();
+sslConfig.enabled = true;
+clientConfig.networkConfig.sslConfig = sslConfig;
+```
+
+`SSLConfig` object takes various SSL options defined in the [Node.js TLS Documentation](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback). You can set your custom options
+object to `sslConfig.sslOptions`.
+
+### 8.1.3. Mutual Authentication
+
+As explained above, Hazelcast members have key stores used to identify themselves (to other members) and Hazelcast clients have trust stores used to define which members they can trust.
+
+Using mutual authentication, the clients also have their key stores and members have their trust stores so that the members can know which clients they can trust.
+
+To enable mutual authentication, firstly, you need to set the following property on the server side in the `hazelcast.xml` file:
+
+```xml
+<network>
+    <ssl enabled="true">
+        <properties>
+            <property name="javax.net.ssl.mutualAuthentication">REQUIRED</property>
+        </properties>
+    </ssl>
+</network>
+```
+
+You can see the details of setting mutual authentication on the server side in the [Mutual Authentication section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#mutual-authentication) of the Hazelcast IMDG Reference Manual.
+
+At the Node.js client side, you need to supply an SSL `options` object to pass to
+[`tls.connect`](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) of Node.js.
+
+There are two ways to provide this object to the client:
+
+1. Using the built-in `BasicSSLOptionsFactory` bundled with the client.
+2. Writing an `SSLOptionsFactory`.
+
+Below subsections describe each way.
+
+**Using the Built-in `BasicSSLOptionsFactory`**
+
+Hazelcast Node.js client includes a utility factory class that creates the necessary `options` object out of the supplied
+properties. All you need to do is to specify your factory as `BasicSSLOptionsFactory` and provide the following options:
+
+- `caPath`
+- `keyPath`
+- `certPath`
+- `servername`
+- `rejectUnauthorized`
+- `ciphers`
+
+See [`tls.connect`](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) of Node.js for the descriptions of each option.
+
+> `caPath`, `keyPath` and `certPath` define the file path to the respective file that stores such information.
+
+```json
+{
+    "network": {
+        "ssl": {
+            "enabled": true,
+            "factory": {
+                "exportedName": "BasicSSLOptionsFactory",
+                "properties": {
+                    "caPath": "ca.pem",
+                    "keyPath": "key.pem",
+                    "certPath": "cert.pem",
+                    "rejectUnauthorized": false
+                }
+            }
+        }
+    }
+}
+```
+
+If these options are not enough for your application, you may write your own options factory and instruct the client
+to get the options from it, as explained below.
+
+**Writing an `SSLOptionsFactory`**
+
+In order to use the full range of options provided to [`tls.connect`](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) of Node.js, you may write your own factory object.
+
+An example configuration is shown below.
+
+```json
+{
+    "network": {
+        "ssl": {
+            "enabled": true,
+            "factory": {
+                "path": "my_factory.js",
+                "exportedName": "SSLFactory",
+                "properties": {
+                    "caPath": "ca.pem",
+                    "keyPath": "key.pem",
+                    "certPath": "cert.pem",
+                    "keepOrder": true
+                }
+            }
+        }
+    }
+}
+```
+
+An example of a factory, `my_factory.js`, is shown below.
+
+```javascript
+function SSLFactory() {
+}
+
+SSLFactory.prototype.init = function (properties) {
+    var promises = [];
+    var readFile = Promise.promisify(fs.readFile);
+    this.keepOrder = properties.userDefinedProperty1;
+    var self = this;
+
+    promises.push(readFile(properties.caPath).then(function (data) {
+        self.ca = data;
+    }));
+    promises.push(readFile(properties.keyPath).then(function (data) {
+        self.key = data;
+    }));
+    promises.push(readFile(properties.certPath).then(function (data) {
+        self.cert = data;
+    }));
+
+    return Promise.all(promises).return();
+};
+
+SSLFactory.prototype.getSSLOptions = function () {
+    var sslOpts = {
+        ca: this.ca,
+        key: this.key,
+        cert: this.cert,
+        servername: 'foo.bar.com',
+        rejectUnauthorized: true
+    };
+    if (this.keepOrder) {
+        sslOpts.honorCipherOrder = true;
+    }
+    return sslOpts;
+};
+exports.SSLFactory = SSLFactory;
+```
+
+The client loads `MyFactory.js` at runtime and creates an instance of `SSLFactory`. It then calls the method `init` with
+the properties section in the JSON configuration file. Lastly, the client calls the method `getSSLOptions` of `SSLFactory` to create the `options` object.
+
+For information about the path resolution, see the [Loading Objects and Path Resolution section](#33-loading-objects-and-path-resolution).
+
+## 8.2. Credentials
+
+One of the key elements in Hazelcast security is the `Credentials` object, which can be used to carry all security attributes of the
+Hazelcast Node.js client to Hazelcast members. Then, Hazelcast members can authenticate the clients and perform access control
+checks on the client operations using this `Credentials` object.
+
+To use this feature, you need to
+* have a class implementing the [`Credentials`](https://docs.hazelcast.org/docs/latest/javadoc/com/hazelcast/security/Credentials.html) interface which contains the security attributes of your client
+* have a class implementing the [`LoginModule`](https://docs.oracle.com/javase/8/docs/api/javax/security/auth/spi/LoginModule.html?is-external=true) interface which uses the `Credentials` object during the authentication process
+* configure your Hazelcast member's security properties with respect to these classes before starting it. If you have started your member as described in the [Running Standalone JARs section](#1211-running-standalone-jars), see the [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath).
+
+[`UsernamePasswordCredentials`](https://docs.hazelcast.org/docs/latest/javadoc/com/hazelcast/security/UsernamePasswordCredentials.html), a basic implementation of the `Credentials` interface, is available in the Hazelcast `com.hazelcast.security` package.
+`UsernamePasswordCredentials` is used for default configuration during the authentication process of both members and clients. You can also use this class to carry the security attributes of your client.
+
+Hazelcast also has an abstract implementation of the `LoginModule` interface which is the `ClusterLoginModule` class in the `com.hazelcast.security` package.
+You can extend this class and do the authentication on the `onLogin()` method.
+
+Below is an example for the extension of abstract `ClusterLoginModule` class.
+On the `ClientLoginModule#onLogin()` method, we are doing a simple authentication against a hardcoded username and password just for illustrative purposes. You should carry out the authentication against a security service of your choice.
+
+```java
+import com.hazelcast.security.ClusterLoginModule;
+import com.hazelcast.security.UsernamePasswordCredentials;
+
+import javax.security.auth.login.FailedLoginException;
+import javax.security.auth.login.LoginException;
+
+public class ClientLoginModule extends ClusterLoginModule {
+
+  @Override
+  protected boolean onLogin() throws LoginException {
+      if (credentials instanceof UsernamePasswordCredentials) {
+          UsernamePasswordCredentials usernamePasswordCredentials = (UsernamePasswordCredentials) credentials;
+          String username = usernamePasswordCredentials.getUsername();
+          String password = usernamePasswordCredentials.getPassword();
+
+          if (username.equals("admin") && password.equals("password")) {
+              return true;
+          }
+          throw new FailedLoginException("Username or password doesn't match expected value.");
+      }
+      return false;
+  }
+
+  @Override
+  public boolean onCommit() {
+      return loginSucceeded;
+  }
+
+  @Override
+  protected boolean onAbort() {
+      return true;
+  }
+
+  @Override
+  protected boolean onLogout() {
+      return true;
+  }
+}
+```
+
+Finally, you can configure `hazelcast.xml` as follows to enable Hazelcast security, do mandatory authentication with `ClientLoginModule`
+and give the user with the name `admin` all the permissions over the map named `importantMap`.
+
+```xml
+<hazelcast>
+    <security enabled="true">
+        <client-login-modules>
+            <login-module class-name="com.company.ClientLoginModule" usage="REQUIRED"/>
+        </client-login-modules>
+        <client-permissions>
+            <map-permission name="importantMap" principal="admin">
+                <actions>
+                    <action>all</action>
+                </actions>
+            </map-permission>
+        </client-permissions>
+    </security>
+</hazelcast>
+```
+
+After successfully starting a Hazelcast member as described above, you need to implement `Portable` equivalent of the `UsernamePasswordCredentials`
+and register it to your client configuration.
+
+Below is the code for that.
+
+**user_pass_cred.js**
+```javascript
+function UsernamePasswordCredentials(username, password, endpoint) {
+    this.username = username;
+    this.password = Buffer.from(password, 'utf8');
+    this.endpoint = endpoint;
+}
+
+UsernamePasswordCredentials.prototype.readPortable = function (reader) {
+    this.username = reader.readUTF('principal');
+    this.endpoint = reader.readUTF('endpoint');
+    this.password = reader.readByteArray('pwd');
+};
+
+UsernamePasswordCredentials.prototype.writePortable = function (writer) {
+    writer.writeUTF('principal', this.username);
+    writer.writeUTF('endpoint', this.endpoint);
+    writer.writeByteArray('pwd', this.password);
+};
+
+UsernamePasswordCredentials.prototype.getFactoryId = function () {
+    return -1;
+};
+
+UsernamePasswordCredentials.prototype.getClassId = function () {
+    return 1;
+};
+
+exports.UsernamePasswordCredentials = UsernamePasswordCredentials;
+```
+
+And below is the `Factory` implementation for the `Portable` implementation of `UsernamePasswordCredentials`.
+
+**user_pass_cred_factory.js**
+```javascript
+var UsernamePasswordCredentials = require('./user_pass_cred').UsernamePasswordCredentials;
+
+function UsernamePasswordCredentialsFactory() {
+}
+
+UsernamePasswordCredentialsFactory.prototype.create = function (classId) {
+    if(classId === 1){
+        return new UsernamePasswordCredentials();
+    }
+    return null;
+};
+
+exports.UsernamePasswordCredentialsFactory = UsernamePasswordCredentialsFactory;
+```
+
+Now, you can start your client by registering the `Portable` factory and giving the credentials as follows.
+
+```javascript
+var Client = require('hazelcast-client').Client;
+var ClientConfig = require('hazelcast-client').Config.ClientConfig;
+
+var UsernamePasswordCredentials = require('./user_pass_cred').UsernamePasswordCredentials;
+var UsernamePasswordCredentialsFactory = require('./user_pass_cred_factory').UsernamePasswordCredentialsFactory;
+
+var config = new ClientConfig();
+config.serializationConfig.portableVersion = 1;
+config.serializationConfig.portableFactories[-1] = new UsernamePasswordCredentialsFactory();
+config.customCredentials = new UsernamePasswordCredentials('admin', 'password', '127.0.0.1');
+
+Client.newHazelcastClient(config).then(function (client) {
+    var map;
+    return client.getMap('importantMap').then(function (mp) {
+        map = mp;
+        return map.put('key', 'value');
+    }).then(function () {
+        return map.get('key');
+    }).then(function (value) {
+        console.log(value);
+        return client.shutdown();
+    });
+});
+```
+
+> NOTE: It is almost always a bad idea to write the credentials to wire in a clear-text format. Therefore, using TLS/SSL encryption is highly recommended while using the custom credentials as described in [TLS/SSL section]((#81-tlsssl)).
+
+With Hazelcast's extensible, `JAAS` based security features you can do much more than just authentication.
+See the [JAAS code sample](code_samples/jaas_sample) to learn how to perform access control checks on the client operations based on user groups.
+
+Also, see the [Security section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#security) of Hazelcast IMDG Reference Manual for more information.
+
+
+# 9. Development and Testing
 
 Hazelcast Node.js client is developed using TypeScript. If you want to help with bug fixes, develop new features or
 tweak the implementation to your application's needs, you can follow the steps in this section.
 
-## 8.1. Building and Using Client From Sources
+## 9.1. Building and Using Client From Sources
 
 Follow the below steps to build and install Hazelcast Node.js client from its source:
 
@@ -3429,7 +3599,7 @@ If you are planning to contribute, please run the style checker, as shown below,
 npm run lint
 ```
 
-## 8.2. Testing
+## 9.2. Testing
 
 In order to test Hazelcast Node.js client locally, you will need the following:
 
@@ -3444,7 +3614,7 @@ npm test
 
 Test script automatically downloads `hazelcast-remote-controller` and Hazelcast IMDG. The script uses Maven to download those.
 
-# 9. Getting Help
+# 10. Getting Help
 
 You can use the following channels for your questions and development/usage issues:
 
@@ -3454,15 +3624,15 @@ You can use the following channels for your questions and development/usage issu
 * Our Google Groups directory: https://groups.google.com/forum/#!forum/hazelcast
 * Stack Overflow: https://stackoverflow.com/questions/tagged/hazelcast
 
-# 10. Contributing
+# 11. Contributing
 
-Besides your development contributions as explained in the [Development and Testing chapter](#8-development-and-testing) above, you can always open a pull request on this repository for your other requests such as documentation changes.
+Besides your development contributions as explained in the [Development and Testing chapter](#9-development-and-testing) above, you can always open a pull request on this repository for your other requests such as documentation changes.
 
-# 11. License
+# 12. License
 
 [Apache 2 License](https://github.com/hazelcast/hazelcast-nodejs-client/blob/master/LICENSE).
 
-# 12. Copyright
+# 13. Copyright
 
 Copyright (c) 2008-2020, Hazelcast, Inc. All Rights Reserved.
 

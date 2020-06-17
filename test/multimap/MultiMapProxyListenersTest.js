@@ -16,6 +16,7 @@
 
 var expect = require("chai").expect;
 var HazelcastClient = require("../../lib/index.js").Client;
+const Config = require("../../lib/index.js").Config;
 var Controller = require('./../RC');
 var Util = require('./../Util');
 
@@ -34,7 +35,9 @@ describe("MultiMap Proxy Listener", function () {
             cluster = response;
             return Controller.startMember(cluster.id);
         }).then(function () {
-            return HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
+            const cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
+            return HazelcastClient.newHazelcastClient(cfg).then(function (hazelcastClient) {
                 client = hazelcastClient;
             })
         });
@@ -52,7 +55,7 @@ describe("MultiMap Proxy Listener", function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     function Listener(eventName, doneCallback, expectedName, expectedKey, expectedValue, expectedOldValue,
@@ -76,7 +79,7 @@ describe("MultiMap Proxy Listener", function () {
     // Add tests
 
     it("listens for add with value excluded", function (done) {
-        var listener = new Listener("added", done, "test", "foo", undefined, undefined, undefined);
+        var listener = new Listener("added", done, "test", "foo", null, null, null);
 
         map.addEntryListener(listener, null, false).then(function () {
             map.put("foo", "bar");
@@ -85,7 +88,7 @@ describe("MultiMap Proxy Listener", function () {
 
 
     it("listens for add with value included", function (done) {
-        var listener = new Listener("added", done, "test", "foo", "bar", undefined, undefined);
+        var listener = new Listener("added", done, "test", "foo", "bar", null, null);
 
         map.addEntryListener(listener, null, true).then(function () {
             map.put("foo", "bar");
@@ -93,7 +96,7 @@ describe("MultiMap Proxy Listener", function () {
     });
 
     it("listens for add to specific key", function (done) {
-        var listener = new Listener("added", done, "test", "foo", undefined, undefined, undefined);
+        var listener = new Listener("added", done, "test", "foo", null, null, null);
 
         map.addEntryListener(listener, "foo", false).then(function () {
             map.put("foo", "bar");
@@ -119,7 +122,7 @@ describe("MultiMap Proxy Listener", function () {
     // Remove tests
 
     it("listens for remove with value excluded", function (done) {
-        var listener = new Listener("removed", done, "test", "foo", undefined, undefined, undefined);
+        var listener = new Listener("removed", done, "test", "foo", null, null, null);
 
         map.addEntryListener(listener, null, false).then(function () {
             return map.put("foo", "bar");
@@ -129,7 +132,7 @@ describe("MultiMap Proxy Listener", function () {
     });
 
     it("listens for remove with value included", function (done) {
-        var listener = new Listener("removed", done, "test", "foo", undefined, "bar", undefined);
+        var listener = new Listener("removed", done, "test", "foo", null, "bar", null);
 
         map.addEntryListener(listener, null, true).then(function () {
             return map.put("foo", "bar");
@@ -139,7 +142,7 @@ describe("MultiMap Proxy Listener", function () {
     });
 
     it("listens for remove on specific key", function (done) {
-        var listener = new Listener("added", done, "test", "foo", undefined, undefined, undefined);
+        var listener = new Listener("added", done, "test", "foo", null, null, null);
 
         map.addEntryListener(listener, "foo", false).then(function () {
             return map.put("foo", "bar");

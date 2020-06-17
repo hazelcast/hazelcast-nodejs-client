@@ -28,8 +28,9 @@ describe('Default serializers with live instance', function () {
     var client;
     var map;
 
-    function getClientConfig() {
+    function getClientConfig(clusterName) {
         var cfg = new Config.ClientConfig();
+        cfg.clusterName = clusterName;
         cfg.serializationConfig.portableFactories[10] = {
             create: function (classId) {
                 if (classId === 222) {
@@ -51,7 +52,7 @@ describe('Default serializers with live instance', function () {
             return RC.startMember(cluster.id);
         }).then(function (m) {
             member = m;
-            return Client.newHazelcastClient(getClientConfig());
+            return Client.newHazelcastClient(getClientConfig(cluster.id));
         }).then(function (cl) {
             client = cl;
             return client.getMap('test');
@@ -62,7 +63,7 @@ describe('Default serializers with live instance', function () {
 
     after(function () {
         client.shutdown();
-        return RC.shutdownCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('client can write and read two different serializable objects of the same factory', function () {
@@ -87,7 +88,7 @@ describe('Default serializers with live instance', function () {
         return map.putAll([['simpleportable', simplePortable], ['innerportable', innerPortable]]).then(function () {
             client.shutdown();
         }).then(function () {
-            return Client.newHazelcastClient(getClientConfig());
+            return Client.newHazelcastClient(getClientConfig(cluster.id));
         }).then(function (cl) {
             client = cl;
             return client.getMap('test');

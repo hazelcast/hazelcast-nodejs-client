@@ -15,33 +15,11 @@
   ~ limitations under the License.
   -->
 
-<hazelcast xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://www.hazelcast.com/schema/config hazelcast-config-3.9.xsd"
-           xmlns="http://www.hazelcast.com/schema/config">
-    <group>
-        <name>dev</name>
-        <password>dev-pass</password>
-    </group>
-    <management-center enabled="false">http://localhost:8080/mancenter</management-center>
+<hazelcast xmlns="http://www.hazelcast.com/schema/config"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://www.hazelcast.com/schema/config
+           http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
     <network>
-        <port auto-increment="true" port-count="100">5701</port>
-        <outbound-ports>
-            <!--
-            Allowed port range when connecting to other nodes.
-            0 or * means use system provided port.
-            -->
-            <ports>0</ports>
-        </outbound-ports>
-        <join>
-            <multicast enabled="true">
-                <multicast-group>224.7.7.7</multicast-group>
-                <multicast-port>54327</multicast-port>
-            </multicast>
-            <tcp-ip enabled="false">
-                <interface>127.0.0.1</interface>
-            </tcp-ip>
-        </join>
-        <public-address>127.0.0.1</public-address>
         <ssl enabled="true">
             <factory-class-name>
                 com.hazelcast.nio.ssl.ClasspathSSLContextFactory
@@ -59,5 +37,4 @@
             </properties>
         </ssl>
     </network>
-
 </hazelcast>

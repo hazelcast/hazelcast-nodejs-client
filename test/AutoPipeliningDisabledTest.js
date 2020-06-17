@@ -27,11 +27,12 @@ describe('AutoPipeliningDisabledTest', function () {
     let client;
     let map;
 
-    const createClient = () => {
+    const createClient = (clusterId) => {
         const cfg = new Config.ClientConfig();
+        cfg.clusterName = clusterId;
         cfg.properties['hazelcast.client.autopipelining.enabled'] = false;
         return HazelcastClient.newHazelcastClient(cfg);
-    }
+    };
 
     before(function () {
         this.timeout(32000);
@@ -39,7 +40,7 @@ describe('AutoPipeliningDisabledTest', function () {
             cluster = c;
             return Controller.startMember(cluster.id);
         }).then(_ => {
-            return createClient();
+            return createClient(cluster.id);
         }).then(c => {
             client = c;
         });
@@ -57,7 +58,7 @@ describe('AutoPipeliningDisabledTest', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     it('basic map operations work fine', function () {

@@ -17,7 +17,7 @@
 
 var IllegalStateError = require('../../').HazelcastErrors.IllegalStateError;
 
-var Address = require('../../lib/Address');
+var Address = require('../../lib/Address').Address;
 var sinon = require('sinon');
 var expect = require('chai').expect;
 var LoggingService = require('../../lib/logging/LoggingService').LoggingService;
@@ -37,6 +37,9 @@ describe('HazelcastCloudProvider Test', function () {
         expectedAddresses.set('10.0.0.1:5702', new Address('198.51.100.1', 5702));
         expectedAddresses.set('10.0.0.2:5701', new Address('198.51.100.2', 5701));
 
+    });
+
+    beforeEach(() => {
         var logger = new LoggingService(null, LogLevel.INFO).getLogger();
         hazelcastCloudDiscovery = new HazelcastCloudDiscovery();
         sinon.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes').callsFake(() => Promise.resolve(expectedAddresses));
@@ -45,7 +48,10 @@ describe('HazelcastCloudProvider Test', function () {
     });
 
     afterEach(function () {
-        HazelcastCloudDiscovery.prototype.discoverNodes.restore();
+        if (HazelcastCloudDiscovery.prototype.discoverNodes.restore
+            && HazelcastCloudDiscovery.prototype.discoverNodes.restore.sinon) {
+            HazelcastCloudDiscovery.prototype.discoverNodes.restore();
+        }
     });
 
 
@@ -56,6 +62,7 @@ describe('HazelcastCloudProvider Test', function () {
     });
 
     it('loadAddresses_whenErrorIsThrown', function () {
+        HazelcastCloudDiscovery.prototype.discoverNodes.restore();
         sinon.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes').callsFake(function () {
             return Promise.reject(new IllegalStateError('Expected exception'));
         });
@@ -63,6 +70,42 @@ describe('HazelcastCloudProvider Test', function () {
         return provider.loadAddresses().then((res) => {
             return expect(res).to.have.length(0);
         });
+    });
+
+    it('translate_whenAddressIsNull_thenReturnNull', function () {
+        return provider.translate(null).then((res) => {
+            return expect(res).to.be.null;
+        });
+    });
+
+    it('translate', function () {
+        return provider.translate('10.0.0.1:5701').then((res) => {
+            expect('198.51.100.1').to.equal(res.host);
+            expect(5701).to.equal(res.port);
+        });
+    });
+
+    it('refresh_and_translate', function () {
+        return provider.refresh().then(
+            provider.translate('10.0.0.1:5701').then((res) => {
+                    expect('198.51.100.1').to.equal(res.host);
+                    expect(5701).to.equal(res.port);
+                }));
+    });
+
+    it('translate_whenNotFound_thenReturnNull', function () {
+        var notAvailableAddress = new Address('127.0.0.3', 5701);
+        return provider.translate(notAvailableAddress).then((res) => {
+            return expect(res).to.be.null;
+        });
+    });
+
+    it('refresh_whenException_thenLogWarning', function () {
+        HazelcastCloudDiscovery.prototype.discoverNodes.restore();
+        sinon.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes').callsFake(function () {
+            return Promise.reject(new IllegalStateError('Expected exception'));
+        });
+        provider.refresh();
     });
 
 });

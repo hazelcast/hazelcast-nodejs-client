@@ -17,5 +17,4 @@
 export class ClusterDataFactoryHelper {
     static readonly FACTORY_ID = 0;
     static readonly ADDRESS_ID = 1;
-    static readonly VECTOR_CLOCK = 43;
 }

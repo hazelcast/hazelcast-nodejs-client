@@ -144,7 +144,7 @@ export class FloatSerializer implements Serializer {
 export class DateSerializer implements Serializer {
 
     getId(): number {
-        return -22;
+        return -25;
     }
 
     read(input: DataInput): any {
@@ -323,7 +323,7 @@ export class FloatArraySerializer implements Serializer {
 export class JavaClassSerializer implements Serializer {
 
     getId(): number {
-        return -21;
+        return -24;
     }
 
     read(input: DataInput): any {
@@ -338,7 +338,7 @@ export class JavaClassSerializer implements Serializer {
 export class LinkedListSerializer implements Serializer {
 
     getId(): number {
-        return -27;
+        return -30;
     }
 
     read(input: DataInput): any {
@@ -360,7 +360,7 @@ export class LinkedListSerializer implements Serializer {
 
 export class ArrayListSerializer extends LinkedListSerializer {
     getId(): number {
-        return -26;
+        return -29;
     }
 }
 

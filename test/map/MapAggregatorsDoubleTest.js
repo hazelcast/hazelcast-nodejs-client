@@ -16,11 +16,11 @@
 
 var Controller = require('../RC');
 var Client = require('../../').Client;
+var Config = require('../../.').Config;
 var Aggregators = require('../../').Aggregators;
 var Predicates = require('../../').Predicates;
 var _fillMap = require('../Util').fillMap;
 var expect = require('chai').expect;
-var Util = require('../Util');
 
 describe('MapAggregatorsDoubleTest', function () {
     var cluster;
@@ -32,7 +32,9 @@ describe('MapAggregatorsDoubleTest', function () {
             cluster = cl;
             return Controller.startMember(cluster.id);
         }).then(function () {
-            return Client.newHazelcastClient();
+            var cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
+            return Client.newHazelcastClient(cfg);
         }).then(function (cl) {
             client = cl;
             return client.getMap('aggregatorsMap');
@@ -43,11 +45,10 @@ describe('MapAggregatorsDoubleTest', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     beforeEach(function () {
-        Util.markServerVersionAtLeast(this, client, '3.8');
         return _fillMap(map, 50, 'key', 0);
     });
 

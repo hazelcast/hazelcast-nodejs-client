@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import ClientMessage = require('../ClientMessage');
 import {
     AuthenticationError,
     CallerNotMemberError,
@@ -23,10 +22,8 @@ import {
     ClassNotFoundError,
     ConcurrentModificationError,
     ConfigMismatchError,
-    ConfigurationError,
     ConsistencyLostError,
     DistributedObjectDestroyedError,
-    DuplicateInstanceNameError,
     HazelcastError,
     HazelcastInstanceNotActiveError,
     IllegalStateError,
@@ -37,7 +34,7 @@ import {
     NodeIdOutOfRangeError,
     PartitionMigratingError,
     QueryError,
-    QuorumError,
+    SplitBrainProtectionError,
     RetryableHazelcastError,
     RetryableIOError,
     StaleSequenceError,
@@ -53,7 +50,9 @@ import {
     HazelcastSerializationError,
 } from '../HazelcastError';
 import {ClientProtocolErrorCodes} from './ClientProtocolErrorCodes';
-import {ErrorCodec} from './ErrorCodec';
+import {ClientMessage} from '../ClientMessage';
+import {ErrorsCodec} from '../codec/builtin/ErrorsCodec';
+import {ErrorHolder} from './ErrorHolder';
 
 type ErrorFactory = (msg: string, cause: Error) => Error;
 
@@ -71,9 +70,7 @@ export class ClientErrorFactory {
         this.register(ClientProtocolErrorCodes.CLASS_NOT_FOUND, (m, c) => new ClassNotFoundError(m, c));
         this.register(ClientProtocolErrorCodes.CONCURRENT_MODIFICATION, (m, c) => new ConcurrentModificationError(m, c));
         this.register(ClientProtocolErrorCodes.CONFIG_MISMATCH, (m, c) => new ConfigMismatchError(m, c));
-        this.register(ClientProtocolErrorCodes.CONFIGURATION, (m, c) => new ConfigurationError(m, c));
         this.register(ClientProtocolErrorCodes.DISTRIBUTED_OBJECT_DESTROYED, (m, c) => new DistributedObjectDestroyedError(m, c));
-        this.register(ClientProtocolErrorCodes.DUPLICATE_INSTANCE_NAME, (m, c) => new DuplicateInstanceNameError(m, c));
         this.register(ClientProtocolErrorCodes.EOF, (m, c) => new IOError(m, c));
         this.register(ClientProtocolErrorCodes.HAZELCAST, (m, c) => new HazelcastError(m, c));
         this.register(ClientProtocolErrorCodes.HAZELCAST_INSTANCE_NOT_ACTIVE,
@@ -96,7 +93,7 @@ export class ClientErrorFactory {
         this.register(ClientProtocolErrorCodes.PARTITION_MIGRATING, (m, c) => new PartitionMigratingError(m, c));
         this.register(ClientProtocolErrorCodes.QUERY, (m, c) => new QueryError(m, c));
         this.register(ClientProtocolErrorCodes.QUERY_RESULT_SIZE_EXCEEDED, (m, c) => new QueryError(m, c));
-        this.register(ClientProtocolErrorCodes.QUORUM, (m, c) => new QuorumError(m, c));
+        this.register(ClientProtocolErrorCodes.SPLIT_BRAIN_PROTECTION, (m, c) => new SplitBrainProtectionError(m, c));
         this.register(ClientProtocolErrorCodes.RETRYABLE_HAZELCAST, (m, c) => new RetryableHazelcastError(m, c));
         this.register(ClientProtocolErrorCodes.RETRYABLE_IO, (m, c) => new RetryableIOError(m, c));
         this.register(ClientProtocolErrorCodes.SOCKET, (m, c) => new IOError(m, c));
@@ -116,17 +113,24 @@ export class ClientErrorFactory {
     }
 
     createErrorFromClientMessage(clientMessage: ClientMessage): Error {
-        const errorCodec = ErrorCodec.decode(clientMessage);
-        return this.createError(errorCodec.errorCode, errorCodec.className, errorCodec.message, null);
+        const errorHolders = ErrorsCodec.decode(clientMessage);
+        return this.createError(errorHolders, 0);
     }
 
-    createError(errorCode: number, className: string, message: string, cause: Error): Error {
-        const factoryFunc = this.codeToErrorConstructor.get(errorCode);
-        if (factoryFunc != null) {
-            return factoryFunc(message, cause);
-        } else {
-            return new UndefinedErrorCodeError(message, className);
+    createError(errorHolders: ErrorHolder[], errorHolderIdx: number): Error {
+        if (errorHolderIdx === errorHolders.length) {
+            return null;
         }
+
+        const errorHolder = errorHolders[errorHolderIdx];
+        const factoryFunc = this.codeToErrorConstructor.get(errorHolder.errorCode);
+        let error: Error;
+        if (factoryFunc != null) {
+            error = factoryFunc(errorHolder.message, this.createError(errorHolders, errorHolderIdx + 1));
+        } else {
+            error = new UndefinedErrorCodeError(errorHolder.message, errorHolder.className);
+        }
+        return error;
     }
 
     private register(code: number, errorFactory: ErrorFactory): void {

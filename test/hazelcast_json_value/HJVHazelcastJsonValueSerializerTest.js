@@ -34,6 +34,7 @@ describe('HazelcastJsonValue with HazelcastJsonValueSerializer', function () {
             return RC.startMember(cluster.id);
         }).then(function () {
             var config = new Config();
+            config.clusterName = cluster.id;
             config.serializationConfig
                 .jsonStringDeserializationPolicy = JsonStringDeserializationPolicy.NO_DESERIALIZATION;
             return Client.newHazelcastClient(config).then(function (hazelcastClient) {
@@ -54,7 +55,7 @@ describe('HazelcastJsonValue with HazelcastJsonValueSerializer', function () {
 
     after(function () {
         client.shutdown();
-        return RC.shutdownCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('storing JavaScript objects', function () {

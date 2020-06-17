@@ -39,34 +39,30 @@ describe('ConfigLocationTest', function () {
         //create a hazelcast-client.json at current working directory so we can be sure it is ignored.
         fs.writeFileSync(DEFAULT_JSON_LOCATION, '' +
             '{' +
-            '   "group": {' +
-            '       "name": "wrongName"' +
-            '   }' +
+            '   "clusterName": "wrongName"' +
             '}');
         process.env[ENV_VARIABLE_NAME] = path.join(__dirname, 'configurations/full.json');
         var configBuilder = new ConfigBuilder();
         return configBuilder.loadConfig().then(function () {
-            return expect(configBuilder.build().groupConfig.name).equals('hazel');
+            return expect(configBuilder.build().clusterName).equals('testCluster');
         });
     });
 
     it('Prefers default location json file over default config', function () {
         fs.writeFileSync(DEFAULT_JSON_LOCATION, '' +
             '{' +
-            '   "group": {' +
-            '       "name": "newName"' +
-            '   }' +
+            '   "clusterName": "newName"' +
             '}');
         var configBuilder = new ConfigBuilder();
         return configBuilder.loadConfig().then(function () {
-            return expect(configBuilder.build().groupConfig.name).equals('newName');
+            return expect(configBuilder.build().clusterName).equals('newName');
         });
     });
 
     it('Starts with default configuration if no config', function () {
         var configBuilder = new ConfigBuilder();
         return configBuilder.loadConfig().then(function () {
-            return expect(configBuilder.build().groupConfig.name).equals('dev');
+            return expect(configBuilder.build().clusterName).equals('dev');
         });
     });
 

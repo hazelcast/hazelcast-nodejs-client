@@ -33,61 +33,99 @@ import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {Data} from '../serialization/Data';
 import {ISet} from './ISet';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
-import ClientMessage = require('../ClientMessage');
+import {ClientMessage} from '../ClientMessage';
+import {UUID} from '../core/UUID';
 
 export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
 
     add(entry: E): Promise<boolean> {
-        return this.encodeInvoke<boolean>(SetAddCodec, this.toData(entry));
+        return this.encodeInvoke(SetAddCodec, this.toData(entry))
+            .then((clientMessage) => {
+                const response = SetAddCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     addAll(items: E[]): Promise<boolean> {
-        return this.encodeInvoke<boolean>(SetAddAllCodec, this.serializeList(items));
+        return this.encodeInvoke(SetAddAllCodec, this.serializeList(items))
+            .then((clientMessage) => {
+                const response = SetAddAllCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     toArray(): Promise<E[]> {
-        return this.encodeInvoke(SetGetAllCodec).then((items: Data[]) => {
-            return items.map((item) => {
-                return this.toObject(item);
+        return this.encodeInvoke(SetGetAllCodec)
+            .then((clientMessage) => {
+                const response = SetGetAllCodec.decodeResponse(clientMessage);
+                return response.response.map(this.toObject.bind(this));
             });
-        });
     }
 
     clear(): Promise<void> {
-        return this.encodeInvoke<void>(SetClearCodec);
+        return this.encodeInvoke(SetClearCodec)
+            .then(() => undefined);
     }
 
     contains(entry: E): Promise<boolean> {
-        return this.encodeInvoke<boolean>(SetContainsCodec, this.toData(entry));
+        return this.encodeInvoke(SetContainsCodec, this.toData(entry))
+            .then((clientMessage) => {
+                const response = SetContainsCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     containsAll(items: E[]): Promise<boolean> {
-        return this.encodeInvoke<boolean>(SetContainsAllCodec, this.serializeList(items));
+        return this.encodeInvoke(SetContainsAllCodec, this.serializeList(items))
+            .then((clientMessage) => {
+                const response = SetContainsAllCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     isEmpty(): Promise<boolean> {
-        return this.encodeInvoke<boolean>(SetIsEmptyCodec);
+        return this.encodeInvoke(SetIsEmptyCodec)
+            .then((clientMessage) => {
+                const response = SetIsEmptyCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     remove(entry: E): Promise<boolean> {
-        return this.encodeInvoke<boolean>(SetRemoveCodec, this.toData(entry));
+        return this.encodeInvoke(SetRemoveCodec, this.toData(entry))
+            .then((clientMessage) => {
+                const response = SetRemoveCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     removeAll(items: E[]): Promise<boolean> {
-        return this.encodeInvoke<boolean>(SetCompareAndRemoveAllCodec, this.serializeList(items));
+        return this.encodeInvoke(SetCompareAndRemoveAllCodec, this.serializeList(items))
+            .then((clientMessage) => {
+                const response = SetCompareAndRemoveAllCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     retainAll(items: E[]): Promise<boolean> {
-        return this.encodeInvoke<boolean>(SetCompareAndRetainAllCodec, this.serializeList(items));
+        return this.encodeInvoke(SetCompareAndRetainAllCodec, this.serializeList(items))
+            .then((clientMessage) => {
+                const response = SetCompareAndRetainAllCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     size(): Promise<number> {
-        return this.encodeInvoke<number>(SetSizeCodec);
+        return this.encodeInvoke(SetSizeCodec)
+            .then((clientMessage) => {
+                const response = SetSizeCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     addItemListener(listener: ItemListener<E>, includeValue: boolean = true): Promise<string> {
         const handler = (message: ClientMessage) => {
-            SetAddListenerCodec.handle(message, (item: Data, uuid: string, eventType: number) => {
+            SetAddListenerCodec.handle(message, (item: Data, uuid: UUID, eventType: number) => {
                 const responseObject = this.toObject(item);
                 const member = this.client.getClusterService().getMember(uuid);
                 const name = this.name;
@@ -119,10 +157,10 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
             encodeAddRequest(localOnly: boolean): ClientMessage {
                 return SetAddListenerCodec.encodeRequest(name, includeValue, localOnly);
             },
-            decodeAddResponse(msg: ClientMessage): string {
+            decodeAddResponse(msg: ClientMessage): UUID {
                 return SetAddListenerCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest(listenerId: string): ClientMessage {
+            encodeRemoveRequest(listenerId: UUID): ClientMessage {
                 return SetRemoveListenerCodec.encodeRequest(name, listenerId);
             },
         };

@@ -25,13 +25,14 @@ import {NoDataMemberInClusterError} from '../HazelcastError';
 import {randomInt} from '../Util';
 import {BaseProxy} from './BaseProxy';
 import {PNCounter} from './PNCounter';
-import Address = require('../Address');
+import {Address} from '../Address';
+import {Member} from '../core/Member';
 
 export class PNCounterProxy extends BaseProxy implements PNCounter {
-    private static readonly EMPTY_ARRAY: Address[] = [];
+    private static readonly EMPTY_ARRAY: Member[] = [];
     private lastObservedVectorClock: VectorClock = new VectorClock();
     private maximumReplicaCount: number = 0;
-    private currentTargetReplicaAddress: Address;
+    private currentTargetReplicaAddress: Member;
 
     get(): Promise<Long> {
         return this.invokeInternal(PNCounterProxy.EMPTY_ARRAY, null, PNCounterGetCodec);
@@ -80,8 +81,8 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
         return Promise.resolve();
     }
 
-    private invokeInternal(excludedAddresses: Address[], lastError: any, codec: any, ...codecArgs: any[]): Promise<Long> {
-        return this.getCRDTOperationTarget(excludedAddresses).then((target: Address) => {
+    private invokeInternal(excludedAddresses: Member[], lastError: any, codec: any, ...codecArgs: any[]): Promise<Long> {
+        return this.getCRDTOperationTarget(excludedAddresses).then((target) => {
             if (target == null) {
                 if (lastError) {
                     throw lastError;
@@ -103,24 +104,28 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
         });
     }
 
-    private encodeInvokeInternal<T>(target: Address, codec: any, ...codecArguments: any[]): Promise<T> {
-        return this.encodeInvokeOnAddress<T>(codec, target, ...codecArguments, this.lastObservedVectorClock.entrySet(), target);
+    private encodeInvokeInternal<T>(target: Member, codec: any, ...codecArguments: any[]): Promise<T> {
+        return this.encodeInvokeOnTarget(codec, target.uuid, ...codecArguments,
+            this.lastObservedVectorClock.entrySet(), target.uuid)
+            .then((clientMessage) => {
+                return codec.decodeResponse(clientMessage);
+            });
     }
 
-    private getCRDTOperationTarget(excludedAddresses: Address[]): Promise<Address> {
+    private getCRDTOperationTarget(excludedAddresses: Member[]): Promise<Member> {
         if (this.currentTargetReplicaAddress != null &&
             !excludedAddresses.some(this.currentTargetReplicaAddress.equals.bind(this.currentTargetReplicaAddress))) {
             return Promise.resolve(this.currentTargetReplicaAddress);
         } else {
-            return this.chooseTargetReplica(excludedAddresses).then((target: Address) => {
+            return this.chooseTargetReplica(excludedAddresses).then((target) => {
                 this.currentTargetReplicaAddress = target;
                 return target;
             });
         }
     }
 
-    private chooseTargetReplica(excludedAddresses: Address[]): Promise<Address> {
-        return this.getReplicaAddresses(excludedAddresses).then((replicaAddresses: Address[]) => {
+    private chooseTargetReplica(excludedAddresses: Member[]): Promise<Member> {
+        return this.getReplicaAddresses(excludedAddresses).then((replicaAddresses) => {
             if (replicaAddresses.length === 0) {
                 return null;
             }
@@ -128,13 +133,13 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
         });
     }
 
-    private getReplicaAddresses(excludedAddresses: Address[]): Promise<Address[]> {
+    private getReplicaAddresses(excludedAddresses: Member[]): Promise<Member[]> {
         const dataMembers = this.client.getClusterService().getMembers(MemberSelectors.DATA_MEMBER_SELECTOR);
         return this.getMaxConfiguredReplicaCount().then((replicaCount: number) => {
             const currentCount = Math.min(replicaCount, dataMembers.length);
-            const replicaAddresses: Address[] = [];
+            const replicaAddresses: Member[] = [];
             for (let i = 0; i < currentCount; i++) {
-                const memberAddress = dataMembers[i].address;
+                const memberAddress = dataMembers[i];
                 if (!excludedAddresses.some(memberAddress.equals.bind(memberAddress))) {
                     replicaAddresses.push(memberAddress);
                 }
@@ -147,10 +152,12 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
         if (this.maximumReplicaCount > 0) {
             return Promise.resolve(this.maximumReplicaCount);
         } else {
-            return this.encodeInvokeOnRandomTarget<number>(PNCounterGetConfiguredReplicaCountCodec).then((count: number) => {
-                this.maximumReplicaCount = count;
-                return this.maximumReplicaCount;
-            });
+            return this.encodeInvokeOnRandomTarget(PNCounterGetConfiguredReplicaCountCodec)
+                .then((clientMessage) => {
+                    const response = PNCounterGetConfiguredReplicaCountCodec.decodeResponse(clientMessage);
+                    this.maximumReplicaCount = response.response;
+                    return this.maximumReplicaCount;
+                });
         }
     }
 

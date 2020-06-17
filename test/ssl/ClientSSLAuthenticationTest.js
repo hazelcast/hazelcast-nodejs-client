@@ -25,7 +25,6 @@ var Config = require('../..').Config;
 var HzErrors = require('../..').HazelcastErrors;
 var markEnterprise = require('../Util').markEnterprise;
 var Path = require('path');
-var Util = require('../Util');
 
 describe('SSL Client Authentication Test', function () {
     var cluster;
@@ -56,15 +55,18 @@ describe('SSL Client Authentication Test', function () {
             cert: fs.readFileSync(Path.join(__dirname, cert))
         };
         var cfg = new Config.ClientConfig();
+        cfg.clusterName = cluster.id;
+        cfg.networkConfig.addresses.push('127.0.0.1:5701');
         cfg.networkConfig.sslConfig.enabled = true;
         cfg.networkConfig.sslConfig.sslOptions = sslOpts;
-        cfg.networkConfig.connectionAttemptLimit = 1;
-        cfg.networkConfig.connectionTimeout = 1000;
+        cfg.connectionStrategyConfig.connectionRetryConfig.clusterConnectTimeoutMillis = 1000;
         return cfg;
     }
 
     function createClientConfigWithSSLOptsUsingBasicSSLOptionsFactory(key, cert, ca) {
         var cfg = new Config.ClientConfig();
+        cfg.clusterName = cluster.id;
+        cfg.networkConfig.addresses.push('127.0.0.1:5701');
         cfg.networkConfig.sslConfig.enabled = true;
         cfg.networkConfig.sslConfig.sslOptionsFactoryConfig = {
             exportedName: 'BasicSSLOptionsFactory'
@@ -76,7 +78,7 @@ describe('SSL Client Authentication Test', function () {
             rejectUnauthorized: true,
             servername: 'foo.bar.com'
         };
-        cfg.networkConfig.connectionAttemptLimit = 1;
+        cfg.connectionStrategyConfig.connectionRetryConfig.clusterConnectTimeoutMillis = 1000;
         return cfg;
     }
 
@@ -93,11 +95,10 @@ describe('SSL Client Authentication Test', function () {
 
             before(function () {
                 markEnterprise(this);
-                Util.markServerVersionAtLeast(this, null, '3.8.1');
             });
 
             afterEach(function () {
-                return Controller.shutdownCluster(cluster.id);
+                return Controller.terminateCluster(cluster.id);
             });
 
             it('ma:required, they both know each other should connect', function () {

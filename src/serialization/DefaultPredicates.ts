@@ -382,8 +382,14 @@ export class PagingPredicate extends AbstractPredicate {
 
     constructor(internalPredicate: Predicate, pageSize: number, comparator: Comparator) {
         super();
-        this.internalPredicate = internalPredicate;
+        if (pageSize <= 0) {
+            throw new TypeError('Page size should be greater than 0!');
+        }
         this.pageSize = pageSize;
+        if (internalPredicate instanceof PagingPredicate) {
+            throw new TypeError('Nested paging predicate is not supported!');
+        }
+        this.internalPredicate = internalPredicate;
         this.comparatorObject = comparator;
     }
 
@@ -450,6 +456,18 @@ export class PagingPredicate extends AbstractPredicate {
         } else {
             throw new RangeError('Anchor index is not correct, expected: ' + page + 'found: ' + anchorCount);
         }
+    }
+
+    setAnchorList(anchorList: Array<[number, [any, any]]>): void {
+        this.anchorList = anchorList;
+    }
+
+    getPredicate(): Predicate {
+        return this.internalPredicate;
+    }
+
+    getAnchorList(): Array<[number, [any, any]]> {
+        return this.anchorList;
     }
 
     getPage(): number {

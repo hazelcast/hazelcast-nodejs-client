@@ -34,35 +34,61 @@ import Long = require('long');
 export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbuffer<E> {
 
     capacity(): Promise<Long> {
-        return this.encodeInvoke<Long>(RingbufferCapacityCodec);
+        return this.encodeInvoke(RingbufferCapacityCodec)
+            .then((clientMessage) => {
+                const response = RingbufferCapacityCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     size(): Promise<Long> {
-        return this.encodeInvoke<Long>(RingbufferSizeCodec);
+        return this.encodeInvoke(RingbufferSizeCodec)
+            .then((clientMessage) => {
+                const response = RingbufferSizeCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     tailSequence(): Promise<Long> {
-        return this.encodeInvoke<Long>(RingbufferTailSequenceCodec);
+        return this.encodeInvoke(RingbufferTailSequenceCodec)
+            .then((clientMessage) => {
+                const response = RingbufferTailSequenceCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     headSequence(): Promise<Long> {
-        return this.encodeInvoke<Long>(RingbufferHeadSequenceCodec);
+        return this.encodeInvoke(RingbufferHeadSequenceCodec)
+            .then((clientMessage) => {
+                const response = RingbufferHeadSequenceCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     remainingCapacity(): Promise<Long> {
-        return this.encodeInvoke<Long>(RingbufferRemainingCapacityCodec);
+        return this.encodeInvoke(RingbufferRemainingCapacityCodec)
+            .then((clientMessage) => {
+                const response = RingbufferRemainingCapacityCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     add(item: E, overflowPolicy: OverflowPolicy = OverflowPolicy.OVERWRITE): Promise<Long> {
-        return this.encodeInvoke<Long>(RingbufferAddCodec, overflowPolicy, this.toData(item));
+        return this.encodeInvoke(RingbufferAddCodec, overflowPolicy, this.toData(item))
+            .then((clientMessage) => {
+                const response = RingbufferAddCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     addAll(items: E[], overflowPolicy: OverflowPolicy = OverflowPolicy.OVERWRITE): Promise<Long> {
-        const dataList = items.map((item) => {
-            return this.toData(item);
-        });
+        const dataList = items.map(this.toData.bind(this));
 
-        return this.encodeInvoke<Long>(RingbufferAddAllCodec, dataList, overflowPolicy);
+        return this.encodeInvoke(RingbufferAddAllCodec, dataList, overflowPolicy)
+            .then((clientMessage) => {
+                const response = RingbufferAddAllCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     readOne(sequence: number | Long): Promise<E> {
@@ -70,7 +96,11 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbu
             throw new RangeError('Sequence number should not be less than zero, was: ' + sequence);
         }
 
-        return this.encodeInvoke<E>(RingbufferReadOneCodec, sequence);
+        return this.encodeInvoke(RingbufferReadOneCodec, sequence)
+            .then((clientMessage) => {
+                const response = RingbufferReadOneCodec.decodeResponse(clientMessage);
+                return this.toObject(response.response);
+            });
     }
 
     readMany(sequence: number | Long, minCount: number, maxCount: number, filter: any = null): Promise<ReadResultSet<E>> {
@@ -87,9 +117,11 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbu
             throw new RangeError('Min count ' + minCount + 'was larger than max count ' + maxCount);
         }
 
-        return this.encodeInvoke<any>(RingbufferReadManyCodec, sequence, minCount, maxCount, this.toData(filter))
-            .then<ReadResultSet<E>>((raw: any) => {
-                return new LazyReadResultSet(this.client.getSerializationService(), raw.readCount, raw.items, raw.itemSeqs);
+        return this.encodeInvoke(RingbufferReadManyCodec, sequence, minCount, maxCount, this.toData(filter))
+            .then((clientMessage) => {
+                const response = RingbufferReadManyCodec.decodeResponse(clientMessage);
+                return new LazyReadResultSet(this.client.getSerializationService(), response.readCount,
+                    response.items, response.itemSeqs);
             });
     }
 }

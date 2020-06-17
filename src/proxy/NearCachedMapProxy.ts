@@ -15,7 +15,6 @@
  */
 
 import * as Promise from 'bluebird';
-import {MapAddNearCacheEntryListenerCodec} from '../codec/MapAddNearCacheEntryListenerCodec';
 import {MapAddNearCacheInvalidationListenerCodec} from '../codec/MapAddNearCacheInvalidationListenerCodec';
 import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
 import {EventType} from '../core/EventType';
@@ -26,8 +25,8 @@ import {NearCache} from '../nearcache/NearCache';
 import {StaleReadDetectorImpl} from '../nearcache/StaleReadDetectorImpl';
 import {Data} from '../serialization/Data';
 import {MapProxy} from './MapProxy';
-import {BuildInfo} from '../BuildInfo';
-import ClientMessage = require('../ClientMessage');
+import {ClientMessage} from '../ClientMessage';
+import * as Long from 'long';
 
 export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
 
@@ -132,8 +131,8 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         return super.tryRemoveInternal(keyData, timeout).then<boolean>(this.invalidateCacheEntryAndReturn.bind(this, keyData));
     }
 
-    protected removeInternal(keyData: Data, value: V): Promise<V> {
-        return super.removeInternal(keyData, value).then<V>(this.invalidateCacheEntryAndReturn.bind(this, keyData));
+    protected removeInternal(keyData: Data, value: V): Promise<V | boolean> {
+        return super.removeInternal(keyData, value).then<V | boolean>(this.invalidateCacheEntryAndReturn.bind(this, keyData));
     }
 
     protected getAllInternal(partitionsToKeys: { [id: string]: any }, result: any[] = []): Promise<any[]> {
@@ -208,65 +207,23 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
 
     private addNearCacheInvalidationListener(): Promise<string> {
         const codec = this.createInvalidationListenerCodec(this.name, EventType.INVALIDATION);
-        if (this.supportsRepairableNearCache()) {
-            return this.createNearCacheEventHandler().then((handler) => {
-                return this.client.getListenerService().registerListener(codec, handler);
-            });
-        } else {
-            return this.client.getListenerService().registerListener(codec, this.createPre38NearCacheEventHandler());
-        }
+        return this.createNearCacheEventHandler().then((handler) => {
+            return this.client.getListenerService().registerListener(codec, handler);
+        });
     }
 
     private createInvalidationListenerCodec(name: string, flags: number): ListenerMessageCodec {
-        if (this.supportsRepairableNearCache()) {
-            return {
-                encodeAddRequest(localOnly: boolean): ClientMessage {
-                    return MapAddNearCacheInvalidationListenerCodec.encodeRequest(name, flags, localOnly);
+        return {
+            encodeAddRequest(localOnly: boolean): ClientMessage {
+                return MapAddNearCacheInvalidationListenerCodec.encodeRequest(name, flags, localOnly);
 
-                },
-                decodeAddResponse(msg: ClientMessage): string {
-                    return MapAddNearCacheInvalidationListenerCodec.decodeResponse(msg).response;
-                },
-                encodeRemoveRequest(listenerId: string): ClientMessage {
-                    return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
-                },
-            };
-        } else {
-            return {
-                encodeAddRequest(localOnly: boolean): ClientMessage {
-                    return MapAddNearCacheEntryListenerCodec.encodeRequest(name, flags, localOnly);
-                },
-                decodeAddResponse(msg: ClientMessage): string {
-                    return MapAddNearCacheEntryListenerCodec.decodeResponse(msg).response;
-                },
-                encodeRemoveRequest(listenerId: string): ClientMessage {
-                    return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
-                },
-            };
-        }
-    }
-
-    private supportsRepairableNearCache(): boolean {
-        return this.getConnectedServerVersion() >= BuildInfo.calculateServerVersion(3, 8, 0);
-    }
-
-    private createPre38NearCacheEventHandler(): Function {
-        const nearCache = this.nearCache;
-        const handle = function (keyData: Data): void {
-            if (keyData == null) {
-                nearCache.clear();
-            } else {
-                nearCache.invalidate(keyData);
-            }
-        };
-        const handleBatch = function (keys: Data[]): void {
-            keys.forEach((key: Data) => {
-                nearCache.invalidate(key);
-            });
-        };
-
-        return function (m: ClientMessage): void {
-            MapAddNearCacheEntryListenerCodec.handle(m, handle, handleBatch);
+            },
+            decodeAddResponse(msg: ClientMessage): UUID {
+                return MapAddNearCacheInvalidationListenerCodec.decodeResponse(msg).response;
+            },
+            encodeRemoveRequest(listenerId: UUID): ClientMessage {
+                return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
+            },
         };
     }
 
@@ -275,10 +232,10 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         return repairingTask.registerAndGetHandler(this.getName(), this.nearCache).then((repairingHandler) => {
             const staleReadDetector = new StaleReadDetectorImpl(repairingHandler, this.client.getPartitionService());
             this.nearCache.setStaleReadDetector(staleReadDetector);
-            const handle = function (key: Data, sourceUuid: string, partitionUuid: UUID, sequence: Long): void {
+            const handle = function (key: Data, sourceUuid: UUID, partitionUuid: UUID, sequence: Long): void {
                 repairingHandler.handle(key, sourceUuid, partitionUuid, sequence);
             };
-            const handleBatch = function (keys: Data[], sourceUuids: string[], partititonUuids: UUID[], sequences: Long[]): void {
+            const handleBatch = function (keys: Data[], sourceUuids: UUID[], partititonUuids: UUID[], sequences: Long[]): void {
                 repairingHandler.handleBatch(keys, sourceUuids, partititonUuids, sequences);
             };
 

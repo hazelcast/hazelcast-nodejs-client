@@ -1,9 +1,9 @@
-set HZ_VERSION="3.12.6"
-set HZ_TEST_VERSION="3.12.6"
+set HZ_VERSION="4.0.2-SNAPSHOT"
+set HZ_TEST_VERSION="4.0.2-SNAPSHOT"
 set HAZELCAST_TEST_VERSION=%HZ_TEST_VERSION%
 set HAZELCAST_VERSION=%HZ_VERSION%
 set HAZELCAST_ENTERPRISE_VERSION=%HZ_VERSION%
-set HAZELCAST_RC_VERSION="0.4-SNAPSHOT"
+set HAZELCAST_RC_VERSION="0.7-SNAPSHOT"
 set SNAPSHOT_REPO="https://oss.sonatype.org/content/repositories/snapshots"
 set RELEASE_REPO="http://repo1.maven.apache.org/maven2"
 set ENTERPRISE_RELEASE_REPO="https://repository.hazelcast.com/release/"
@@ -67,7 +67,7 @@ if defined HAZELCAST_ENTERPRISE_KEY (
     	echo hazelcast-enterprise-test.jar already exists, not downloading from maven.
     ) else (
     	echo Downloading: hazelcast enterprise test jar com.hazelcast:hazelcast-enterprise:%HAZELCAST_ENTERPRISE_VERSION%:jar:tests
-    	call mvn -q dependency:get -DrepoUrl=%TEST_REPO% -Dartifact=com.hazelcast:hazelcast-enterprise:%HAZELCAST_TEST_VERSION%:jar:tests -Ddest=hazelcast-enterprise-%HAZELCAST_TEST_VERSION%-tests.jar
+    	call mvn -q dependency:get -DrepoUrl=%ENTRERPRISE_TEST_REPO% -Dartifact=com.hazelcast:hazelcast-enterprise:%HAZELCAST_TEST_VERSION%:jar:tests -Ddest=hazelcast-enterprise-%HAZELCAST_TEST_VERSION%-tests.jar
     	if errorlevel 1 (
     		echo Failed download hazelcast enterprise test jar com.hazelcast:hazelcast-enterprise:%HAZELCAST_TEST_VERSION%:jar:tests
     		exit 1
@@ -91,7 +91,7 @@ if defined HAZELCAST_ENTERPRISE_KEY (
     echo Starting Remote Controller ... oss ...
 )
 
-start /min "hazelcast-remote-controller" cmd /c "java -Dhazelcast.enterprise.license.key=%HAZELCAST_ENTERPRISE_KEY% -cp %CLASSPATH% com.hazelcast.remotecontroller.Main> rc_stdout.txt 2>rc_stderr.txt"
+start /min "hazelcast-remote-controller" cmd /c "java -Dhazelcast.enterprise.license.key=%HAZELCAST_ENTERPRISE_KEY% -cp %CLASSPATH% com.hazelcast.remotecontroller.Main --use-simple-server> rc_stdout.txt 2>rc_stderr.txt"
 
 echo wait for Hazelcast to start ...
 ping -n 15 127.0.0.1 > nul

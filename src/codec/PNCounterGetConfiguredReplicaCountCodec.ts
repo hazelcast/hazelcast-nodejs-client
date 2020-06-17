@@ -14,44 +14,43 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
 import {BitsUtil} from '../BitsUtil';
-import {Data} from '../serialization/Data';
-import {PNCounterMessageType} from './PNCounterMessageType';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET} from '../ClientMessage';
+import {StringCodec} from './builtin/StringCodec';
 
-var REQUEST_TYPE = PNCounterMessageType.PNCOUNTER_GETCONFIGUREDREPLICACOUNT;
-var RESPONSE_TYPE = 102;
-var RETRYABLE = true;
+// hex: 0x1D0300
+const REQUEST_MESSAGE_TYPE = 1901312;
+// hex: 0x1D0301
+const RESPONSE_MESSAGE_TYPE = 1901313;
 
+const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
+
+export interface PNCounterGetConfiguredReplicaCountResponseParams {
+    response: number;
+}
 
 export class PNCounterGetConfiguredReplicaCountCodec {
-    static calculateSize(name: string) {
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        return dataSize;
-    }
+    static encodeRequest(name: string): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(true);
 
-    static encodeRequest(name: string) {
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.updateFrameLength();
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
+        clientMessage.addFrame(initialFrame);
+        clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);
+        clientMessage.setPartitionId(-1);
+
+        StringCodec.encode(clientMessage, name);
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        var parameters: any = {
-            'response': null
+    static decodeResponse(clientMessage: ClientMessage): PNCounterGetConfiguredReplicaCountResponseParams {
+        const initialFrame = clientMessage.nextFrame();
+
+        return {
+            response: FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
         };
-
-        if (clientMessage.isComplete()) {
-            return parameters;
-        }
-        parameters['response'] = clientMessage.readInt32();
-
-        return parameters;
     }
-
 }

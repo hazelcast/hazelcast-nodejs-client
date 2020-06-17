@@ -14,97 +14,64 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
 import {BitsUtil} from '../BitsUtil';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET} from '../ClientMessage';
+import * as Long from 'long';
+import {StringCodec} from './builtin/StringCodec';
 import {Data} from '../serialization/Data';
-import {MapMessageType} from './MapMessageType';
+import {DataCodec} from './builtin/DataCodec';
+import {CodecUtil} from './builtin/CodecUtil';
+import {ListMultiFrameCodec} from './builtin/ListMultiFrameCodec';
+import {LongArrayCodec} from './builtin/LongArrayCodec';
 
-var REQUEST_TYPE = MapMessageType.MAP_EVENTJOURNALREAD;
-var RESPONSE_TYPE = 115;
-var RETRYABLE = true;
+// hex: 0x014200
+const REQUEST_MESSAGE_TYPE = 82432;
+// hex: 0x014201
+const RESPONSE_MESSAGE_TYPE = 82433;
 
+const REQUEST_START_SEQUENCE_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const REQUEST_MIN_SIZE_OFFSET = REQUEST_START_SEQUENCE_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
+const REQUEST_MAX_SIZE_OFFSET = REQUEST_MIN_SIZE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const REQUEST_INITIAL_FRAME_SIZE = REQUEST_MAX_SIZE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const RESPONSE_READ_COUNT_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
+const RESPONSE_NEXT_SEQ_OFFSET = RESPONSE_READ_COUNT_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+
+export interface MapEventJournalReadResponseParams {
+    readCount: number;
+    items: Data[];
+    itemSeqs: Long[];
+    nextSeq: Long;
+}
 
 export class MapEventJournalReadCodec {
+    static encodeRequest(name: string, startSequence: Long, minSize: number, maxSize: number, predicate: Data, projection: Data): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(true);
 
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
+        FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_START_SEQUENCE_OFFSET, startSequence);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, REQUEST_MIN_SIZE_OFFSET, minSize);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, REQUEST_MAX_SIZE_OFFSET, maxSize);
+        clientMessage.addFrame(initialFrame);
+        clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);
+        clientMessage.setPartitionId(-1);
 
-    static calculateSize(name: string, startSequence: any, minSize: number, maxSize: number, predicate: Data, projection: Data) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.LONG_SIZE_IN_BYTES;
-        dataSize += BitsUtil.INT_SIZE_IN_BYTES;
-        dataSize += BitsUtil.INT_SIZE_IN_BYTES;
-        dataSize += BitsUtil.BOOLEAN_SIZE_IN_BYTES;
-        if (predicate !== null) {
-            dataSize += BitsUtil.calculateSizeData(predicate);
-        }
-        dataSize += BitsUtil.BOOLEAN_SIZE_IN_BYTES;
-        if (projection !== null) {
-            dataSize += BitsUtil.calculateSizeData(projection);
-        }
-        return dataSize;
-    }
-
-    static encodeRequest(name: string, startSequence: any, minSize: number, maxSize: number, predicate: Data, projection: Data) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, startSequence, minSize, maxSize, predicate, projection));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendLong(startSequence);
-        clientMessage.appendInt32(minSize);
-        clientMessage.appendInt32(maxSize);
-        clientMessage.appendBoolean(predicate === null);
-        if (predicate !== null) {
-            clientMessage.appendData(predicate);
-        }
-        clientMessage.appendBoolean(projection === null);
-        if (projection !== null) {
-            clientMessage.appendData(projection);
-        }
-        clientMessage.updateFrameLength();
+        StringCodec.encode(clientMessage, name);
+        CodecUtil.encodeNullable(clientMessage, predicate, DataCodec.encode);
+        CodecUtil.encodeNullable(clientMessage, projection, DataCodec.encode);
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        // Decode response from client message
-        var parameters: any = {
-            'readCount': null,
-            'items': null,
-            'itemSeqs': null
+    static decodeResponse(clientMessage: ClientMessage): MapEventJournalReadResponseParams {
+        const initialFrame = clientMessage.nextFrame();
+
+        return {
+            readCount: FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_READ_COUNT_OFFSET),
+            nextSeq: FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_NEXT_SEQ_OFFSET),
+            items: ListMultiFrameCodec.decode(clientMessage, DataCodec.decode),
+            itemSeqs: CodecUtil.decodeNullable(clientMessage, LongArrayCodec.decode),
         };
-
-        if (clientMessage.isComplete()) {
-            return parameters;
-        }
-        parameters['readCount'] = clientMessage.readInt32();
-
-
-        var itemsSize = clientMessage.readInt32();
-        var items: any = [];
-        for (var itemsIndex = 0; itemsIndex < itemsSize; itemsIndex++) {
-            var itemsItem: Data;
-            itemsItem = clientMessage.readData();
-            items.push(itemsItem);
-        }
-        parameters['items'] = items;
-
-
-        if (clientMessage.readBoolean() !== true) {
-
-            var itemSeqsSize = clientMessage.readInt32();
-            var itemSeqs: any = [];
-            for (var itemSeqsIndex = 0; itemSeqsIndex < itemSeqsSize; itemSeqsIndex++) {
-                var itemSeqsItem: any;
-                itemSeqsItem = clientMessage.readLong();
-                itemSeqs.push(itemSeqsItem);
-            }
-            parameters['itemSeqs'] = itemSeqs;
-        }
-
-        return parameters;
     }
-
-
 }

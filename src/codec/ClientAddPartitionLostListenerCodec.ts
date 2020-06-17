@@ -14,72 +14,62 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
-import Address = require('../Address');
+/*tslint:disable:max-line-length*/
 import {BitsUtil} from '../BitsUtil';
-import {AddressCodec} from './AddressCodec';
-import {Data} from '../serialization/Data';
-import {ClientMessageType} from './ClientMessageType';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET} from '../ClientMessage';
+import {UUID} from '../core/UUID';
+import {CodecUtil} from './builtin/CodecUtil';
 
-var REQUEST_TYPE = ClientMessageType.CLIENT_ADDPARTITIONLOSTLISTENER;
-var RESPONSE_TYPE = 104;
-var RETRYABLE = false;
+// hex: 0x000600
+const REQUEST_MESSAGE_TYPE = 1536;
+// hex: 0x000601
+const RESPONSE_MESSAGE_TYPE = 1537;
+// hex: 0x000602
+const EVENT_PARTITION_LOST_MESSAGE_TYPE = 1538;
 
+const REQUEST_LOCAL_ONLY_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const REQUEST_INITIAL_FRAME_SIZE = REQUEST_LOCAL_ONLY_OFFSET + BitsUtil.BOOLEAN_SIZE_IN_BYTES;
+const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
+const EVENT_PARTITION_LOST_PARTITION_ID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const EVENT_PARTITION_LOST_LOST_BACKUP_COUNT_OFFSET = EVENT_PARTITION_LOST_PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const EVENT_PARTITION_LOST_SOURCE_OFFSET = EVENT_PARTITION_LOST_LOST_BACKUP_COUNT_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+
+export interface ClientAddPartitionLostListenerResponseParams {
+    response: UUID;
+}
 
 export class ClientAddPartitionLostListenerCodec {
+    static encodeRequest(localOnly: boolean): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(false);
 
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
+        FixSizedTypesCodec.encodeBoolean(initialFrame.content, REQUEST_LOCAL_ONLY_OFFSET, localOnly);
+        clientMessage.addFrame(initialFrame);
+        clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);
+        clientMessage.setPartitionId(-1);
 
-    static calculateSize(localOnly: boolean) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.BOOLEAN_SIZE_IN_BYTES;
-        return dataSize;
-    }
-
-    static encodeRequest(localOnly: boolean) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(localOnly));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendBoolean(localOnly);
-        clientMessage.updateFrameLength();
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        // Decode response from client message
-        var parameters: any = {
-            'response': null
+    static decodeResponse(clientMessage: ClientMessage): ClientAddPartitionLostListenerResponseParams {
+        const initialFrame = clientMessage.nextFrame();
+
+        return {
+            response: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
         };
-
-        parameters['response'] = clientMessage.readString();
-
-        return parameters;
     }
 
-    static handle(clientMessage: ClientMessage, handleEventPartitionlost: any, toObjectFunction: (data: Data) => any = null) {
-
-        var messageType = clientMessage.getMessageType();
-        if (messageType === BitsUtil.EVENT_PARTITIONLOST && handleEventPartitionlost !== null) {
-            var messageFinished = false;
-            var partitionId: number = undefined;
-            if (!messageFinished) {
-                partitionId = clientMessage.readInt32();
-            }
-            var lostBackupCount: number = undefined;
-            if (!messageFinished) {
-                lostBackupCount = clientMessage.readInt32();
-            }
-            var source: Address = undefined;
-            if (!messageFinished) {
-
-                if (clientMessage.readBoolean() !== true) {
-                    source = AddressCodec.decode(clientMessage, toObjectFunction);
-                }
-            }
-            handleEventPartitionlost(partitionId, lostBackupCount, source);
+    static handle(clientMessage: ClientMessage, handlePartitionLostEvent: (partitionId: number, lostBackupCount: number, source: UUID) => void = null): void {
+        const messageType = clientMessage.getMessageType();
+        if (messageType === EVENT_PARTITION_LOST_MESSAGE_TYPE && handlePartitionLostEvent !== null) {
+            const initialFrame = clientMessage.nextFrame();
+            const partitionId = FixSizedTypesCodec.decodeInt(initialFrame.content, EVENT_PARTITION_LOST_PARTITION_ID_OFFSET);
+            const lostBackupCount = FixSizedTypesCodec.decodeInt(initialFrame.content, EVENT_PARTITION_LOST_LOST_BACKUP_COUNT_OFFSET);
+            const source = FixSizedTypesCodec.decodeUUID(initialFrame.content, EVENT_PARTITION_LOST_SOURCE_OFFSET);
+            handlePartitionLostEvent(partitionId, lostBackupCount, source);
+            return;
         }
     }
-
 }
