@@ -20,11 +20,10 @@ import {ClientGetDistributedObjectsCodec} from './codec/ClientGetDistributedObje
 import {ClientConfig} from './config/Config';
 import {ConfigBuilder} from './config/ConfigBuilder';
 import {DistributedObject} from './DistributedObject';
-import {Heartbeat} from './HeartbeatService';
-import {ClientConnectionManager} from './invocation/ClientConnectionManager';
+import {ClientConnectionManager} from './network/ClientConnectionManager';
 import {ClusterService} from './invocation/ClusterService';
 import {InvocationService} from './invocation/InvocationService';
-import {LifecycleEvent, LifecycleService} from './LifecycleService';
+import {LifecycleService} from './LifecycleService';
 import {ListenerService} from './ListenerService';
 import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
 import {LoggingService} from './logging/LoggingService';
@@ -32,30 +31,29 @@ import {RepairingTask} from './nearcache/RepairingTask';
 import {PartitionService} from './PartitionService';
 import {ClientErrorFactory} from './protocol/ErrorFactory';
 import {FlakeIdGenerator} from './proxy/FlakeIdGenerator';
-import {IAtomicLong} from './proxy/IAtomicLong';
 import {IList} from './proxy/IList';
-import {ILock} from './proxy/ILock';
 import {IMap} from './proxy/IMap';
 import {IQueue} from './proxy/IQueue';
 import {ReplicatedMap} from './proxy/ReplicatedMap';
 import {Ringbuffer} from './proxy/Ringbuffer';
-import {ISemaphore} from './proxy/ISemaphore';
 import {ISet} from './proxy/ISet';
 import {MultiMap} from './proxy/MultiMap';
 import {PNCounter} from './proxy/PNCounter';
-import {ProxyManager} from './proxy/ProxyManager';
+import {ProxyManager, NAMESPACE_SEPARATOR} from './proxy/ProxyManager';
 import {ITopic} from './proxy/topic/ITopic';
 import {SerializationService, SerializationServiceV1} from './serialization/SerializationService';
 import {AddressProvider} from './connection/AddressProvider';
 import {HazelcastCloudAddressProvider} from './discovery/HazelcastCloudAddressProvider';
-import {HazelcastCloudAddressTranslator} from './discovery/HazelcastCloudAddressTranslator';
-import {AddressTranslator} from './connection/AddressTranslator';
-import {DefaultAddressTranslator} from './connection/DefaultAddressTranslator';
 import {DefaultAddressProvider} from './connection/DefaultAddressProvider';
 import {HazelcastCloudDiscovery} from './discovery/HazelcastCloudDiscovery';
 import {Statistics} from './statistics/Statistics';
 import {NearCacheManager} from './nearcache/NearCacheManager';
 import {DistributedObjectListener} from './core/DistributedObjectListener';
+import {IllegalStateError} from './HazelcastError';
+import {LoadBalancer} from './LoadBalancer';
+import {RoundRobinLB} from './util/RoundRobinLB';
+import {ClusterViewListenerService} from './listener/ClusterViewListenerService';
+import {ClientMessage} from './ClientMessage';
 
 export default class HazelcastClient {
     private static CLIENT_ID = 0;
@@ -73,18 +71,17 @@ export default class HazelcastClient {
     private readonly lifecycleService: LifecycleService;
     private readonly proxyManager: ProxyManager;
     private readonly nearCacheManager: NearCacheManager;
-    private readonly heartbeat: Heartbeat;
     private readonly lockReferenceIdGenerator: LockReferenceIdGenerator;
     private readonly errorFactory: ClientErrorFactory;
     private readonly statistics: Statistics;
+    private readonly addressProvider: AddressProvider;
+    private readonly loadBalancer: LoadBalancer;
+    private readonly clusterViewListenerService: ClusterViewListenerService;
 
     private mapRepairingTask: RepairingTask;
 
-    constructor(config?: ClientConfig) {
-        if (config) {
-            this.config = config;
-        }
-
+    constructor(config: ClientConfig) {
+        this.config = config;
         if (config.getInstanceName() != null) {
             this.instanceName = config.getInstanceName();
         } else {
@@ -93,21 +90,21 @@ export default class HazelcastClient {
 
         this.loggingService = new LoggingService(this.config.customLogger,
             this.config.properties['hazelcast.logging.level'] as number);
-        this.invocationService = new InvocationService(this);
+        this.loadBalancer = this.initLoadBalancer();
         this.listenerService = new ListenerService(this);
         this.serializationService = new SerializationServiceV1(this, this.config.serializationConfig);
-        this.proxyManager = new ProxyManager(this);
         this.nearCacheManager = new NearCacheManager(this);
         this.partitionService = new PartitionService(this);
-        const addressProviders = this.createAddressProviders();
-        const addressTranslator = this.createAddressTranslator();
-        this.connectionManager = new ClientConnectionManager(this, addressTranslator, addressProviders);
+        this.addressProvider = this.createAddressProvider();
+        this.connectionManager = new ClientConnectionManager(this);
+        this.invocationService = new InvocationService(this);
+        this.proxyManager = new ProxyManager(this);
         this.clusterService = new ClusterService(this);
         this.lifecycleService = new LifecycleService(this);
-        this.heartbeat = new Heartbeat(this);
         this.lockReferenceIdGenerator = new LockReferenceIdGenerator();
         this.errorFactory = new ClientErrorFactory();
         this.statistics = new Statistics(this);
+        this.clusterViewListenerService = new ClusterViewListenerService(this);
     }
 
     /**
@@ -142,7 +139,7 @@ export default class HazelcastClient {
      * @returns {ClientInfo}
      */
     getLocalEndpoint(): ClientInfo {
-        return this.clusterService.getClientInfo();
+        return this.clusterService.getLocalClient();
     }
 
     /**
@@ -151,14 +148,38 @@ export default class HazelcastClient {
      */
     getDistributedObjects(): Promise<DistributedObject[]> {
         const clientMessage = ClientGetDistributedObjectsCodec.encodeRequest();
-        const toObjectFunc = this.getSerializationService().toObject.bind(this);
-        const proxyManager = this.proxyManager;
-        return this.invocationService.invokeOnRandomTarget(clientMessage).then(function (resp): any {
-            const response = ClientGetDistributedObjectsCodec.decodeResponse(resp, toObjectFunc).response;
-            return response.map((objectInfo: { [key: string]: any }) => {
-                return proxyManager.getOrCreateProxy(objectInfo.value, objectInfo.key, false).value();
+        let localDistributedObjects: Set<string>;
+        let responseMessage: ClientMessage;
+        return this.invocationService.invokeOnRandomTarget(clientMessage)
+            .then((resp) => {
+                responseMessage = resp;
+                return this.proxyManager.getDistributedObjects();
+            })
+            .then((distributedObjects) => {
+                localDistributedObjects = new Set<string>();
+                distributedObjects.forEach((obj) => {
+                    localDistributedObjects.add(obj.getServiceName() + NAMESPACE_SEPARATOR + obj.getName());
+                });
+
+                const newDistributedObjectInfos = ClientGetDistributedObjectsCodec.decodeResponse(responseMessage).response;
+                const createLocalProxiesPromise = newDistributedObjectInfos.map((doi) => {
+                    return this.proxyManager.getOrCreateProxy(doi.name, doi.serviceName, false)
+                        .then(() => localDistributedObjects.delete(doi.serviceName + NAMESPACE_SEPARATOR + doi.name));
+                });
+
+                return Promise.all(createLocalProxiesPromise);
+            })
+            .then(() => {
+                const destroyLocalProxiesPromises = new Array<Promise<void>>(localDistributedObjects.size);
+                let index = 0;
+                localDistributedObjects.forEach((namespace) => {
+                    destroyLocalProxiesPromises[index++] = this.proxyManager.destroyProxyLocally(namespace);
+                });
+                return Promise.all(destroyLocalProxiesPromises);
+            })
+            .then(() => {
+                return this.proxyManager.getDistributedObjects();
             });
-        });
     }
 
     /**
@@ -177,15 +198,6 @@ export default class HazelcastClient {
      */
     getSet<E>(name: string): Promise<ISet<E>> {
         return this.proxyManager.getOrCreateProxy(name, ProxyManager.SET_SERVICE) as Promise<ISet<E>>;
-    }
-
-    /**
-     * Returns the distributed lock instance with given name.
-     * @param name
-     * @returns {Promise<ILock>}
-     */
-    getLock(name: string): Promise<ILock> {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.LOCK_SERVICE) as Promise<ILock>;
     }
 
     /**
@@ -243,15 +255,6 @@ export default class HazelcastClient {
     }
 
     /**
-     * Returns the distributed atomic long instance with given name.
-     * @param name
-     * @returns {Promise<IAtomicLong>}
-     */
-    getAtomicLong(name: string): Promise<IAtomicLong> {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.ATOMICLONG_SERVICE) as Promise<IAtomicLong>;
-    }
-
-    /**
      * Returns the distributed flake ID generator instance with given name.
      * @param name
      * @returns {Promise<FlakeIdGenerator>}
@@ -267,15 +270,6 @@ export default class HazelcastClient {
      */
     getPNCounter(name: string): Promise<PNCounter> {
         return this.proxyManager.getOrCreateProxy(name, ProxyManager.PNCOUNTER_SERVICE) as Promise<PNCounter>;
-    }
-
-    /**
-     * Returns the distributed semaphore instance with given name.
-     * @param name
-     * @returns {Promise<ISemaphore>}
-     */
-    getSemaphore(name: string): Promise<ISemaphore> {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.SEMAPHORE_SERVICE) as Promise<ISemaphore>;
     }
 
     /**
@@ -317,10 +311,6 @@ export default class HazelcastClient {
 
     getClusterService(): ClusterService {
         return this.clusterService;
-    }
-
-    getHeartbeat(): Heartbeat {
-        return this.heartbeat;
     }
 
     getLifecycleService(): LifecycleService {
@@ -370,64 +360,105 @@ export default class HazelcastClient {
     }
 
     /**
-     * Shuts down this client instance.
+     * Returns the {@link AddressProvider} of the client.
      */
-    shutdown(): void {
-        this.lifecycleService.emitLifecycleEvent(LifecycleEvent.shuttingDown);
+    getAddressProvider(): AddressProvider {
+        return this.addressProvider;
+    }
+
+    getLoadBalancer(): LoadBalancer {
+        return this.loadBalancer;
+    }
+
+    doShutdown(): void {
         if (this.mapRepairingTask !== undefined) {
             this.mapRepairingTask.shutdown();
         }
         this.nearCacheManager.destroyAllNearCaches();
-        this.statistics.stop();
-        this.partitionService.shutdown();
-        this.heartbeat.cancel();
+        this.proxyManager.destroy();
         this.connectionManager.shutdown();
-        this.listenerService.shutdown();
         this.invocationService.shutdown();
-        this.lifecycleService.emitLifecycleEvent(LifecycleEvent.shutdown);
+        this.statistics.stop();
+    }
+
+    /**
+     * Shuts down this client instance.
+     */
+    shutdown(): void {
+        this.getLifecycleService().shutdown();
+    }
+
+    onClusterRestart(): void {
+        this.getLoggingService().getLogger()
+            .info('HazelcastClient', 'Clearing local state of the client, because of a cluster restart');
+        this.nearCacheManager.clearAllNearCaches();
+        this.clusterService.clearMemberListVersion();
+    }
+
+    public sendStateToCluster(): Promise<void> {
+        return this.proxyManager.createDistributedObjectsOnCluster();
     }
 
     private init(): Promise<HazelcastClient> {
-        return this.clusterService.start().then(() => {
-            return this.partitionService.initialize();
-        }).then(() => {
-            return this.heartbeat.start();
-        }).then(() => {
-            this.lifecycleService.emitLifecycleEvent(LifecycleEvent.started);
-        }).then(() => {
-            this.proxyManager.init();
-            this.listenerService.start();
-            this.statistics.start();
-            return this;
-        }).catch((e) => {
+        try {
+            this.lifecycleService.start();
+            const configuredMembershipListeners = this.config.listeners.getMembershipListeners();
+            this.clusterService.start(configuredMembershipListeners);
+            this.clusterViewListenerService.start();
+        } catch (e) {
             this.loggingService.getLogger().error('HazelcastClient', 'Client failed to start', e);
             throw e;
-        });
-    }
-
-    private createAddressTranslator(): AddressTranslator {
-        const cloudConfig = this.getConfig().networkConfig.cloudConfig;
-        if (cloudConfig.enabled) {
-            const urlEndpoint = HazelcastCloudDiscovery.createUrlEndpoint(this.getConfig().properties,
-                cloudConfig.discoveryToken);
-            return new HazelcastCloudAddressTranslator(urlEndpoint, this.getConnectionTimeoutMillis(),
-                this.loggingService.getLogger());
         }
-        return new DefaultAddressTranslator();
 
+        return this.connectionManager.start()
+            .then(() => {
+                const connectionStrategyConfig = this.config.connectionStrategyConfig;
+                if (!connectionStrategyConfig.asyncStart) {
+                    return this.clusterService.waitInitialMemberListFetched()
+                        .then(() => this.connectionManager.connectToAllClusterMembers());
+                }
+            })
+            .then(() => {
+                this.listenerService.start();
+                this.proxyManager.init();
+                this.loadBalancer.initLoadBalancer(this.clusterService, this.config);
+                this.statistics.start();
+                return this.sendStateToCluster();
+            })
+            .then(() => {
+                return this;
+            })
+            .catch((e) => {
+                this.loggingService.getLogger().error('HazelcastClient', 'Client failed to start', e);
+                throw e;
+            });
     }
 
-    private createAddressProviders(): AddressProvider[] {
+    private initLoadBalancer(): LoadBalancer {
+        let lb = this.config.loadBalancer;
+        if (lb == null) {
+            lb = new RoundRobinLB();
+        }
+        return lb;
+    }
+
+    private createAddressProvider(): AddressProvider {
         const networkConfig = this.getConfig().networkConfig;
-        const addressProviders: AddressProvider[] = [];
+
+        const addressListProvided = networkConfig.addresses.length !== 0;
+        const hazelcastCloudEnabled = networkConfig.cloudConfig.enabled;
+        if (addressListProvided && hazelcastCloudEnabled) {
+            throw new IllegalStateError('Only one discovery method can be enabled at a time. '
+                + 'Cluster members given explicitly: ' + addressListProvided
+                + ', hazelcast.cloud enabled: ' + hazelcastCloudEnabled);
+        }
 
         const cloudAddressProvider = this.initCloudAddressProvider();
         if (cloudAddressProvider != null) {
-            addressProviders.push(cloudAddressProvider);
+            return cloudAddressProvider;
         }
 
-        addressProviders.push(new DefaultAddressProvider(networkConfig, addressProviders.length === 0));
-        return addressProviders;
+        return new DefaultAddressProvider(networkConfig);
     }
 
     private initCloudAddressProvider(): HazelcastCloudAddressProvider {

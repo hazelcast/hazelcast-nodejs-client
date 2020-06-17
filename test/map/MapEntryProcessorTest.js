@@ -31,8 +31,9 @@ describe('Entry Processor', function () {
     var client;
     var map;
 
-    function _createConfig() {
+    function _createConfig(clusterName) {
         var cfg = new Config.ClientConfig();
+        cfg.clusterName = clusterName;
         cfg.serializationConfig.dataSerializableFactories[66] = new IdentifiedFactory();
         return cfg;
     }
@@ -42,7 +43,7 @@ describe('Entry Processor', function () {
             cluster = res;
             return Controller.startMember(cluster.id);
         }).then(function (member) {
-            var cfg = _createConfig();
+            var cfg = _createConfig(cluster.id);
             return Client.newHazelcastClient(cfg);
         }).then(function (cli) {
             client = cli;
@@ -51,7 +52,7 @@ describe('Entry Processor', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     beforeEach(function () {

@@ -65,7 +65,8 @@ export class BasicSSLOptionsFactory implements SSLOptionsFactory {
         this.rejectUnauthorized = getBooleanOrUndefined(properties.rejectUnauthorized);
         this.ciphers = getStringOrUndefined(properties.ciphers);
 
-        return Promise.all(promises).return();
+        return Promise.all(promises)
+            .then(() => undefined);
     }
 
     getSSLOptions(): any {

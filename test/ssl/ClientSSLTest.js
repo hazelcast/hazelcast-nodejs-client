@@ -20,7 +20,6 @@ var expect = chai.expect;
 var fs = require('fs');
 var Promise = require('bluebird');
 var path = require('path');
-var Util = require('../Util');
 
 var markEnterprise = require('../Util').markEnterprise;
 var Controller = require('./../RC');
@@ -37,20 +36,18 @@ describe("Client with SSL enabled", function () {
 
     beforeEach(function () {
         this.timeout(20000);
-        markEnterprise(this);
-        Util.markServerVersionAtLeast(this, null, '3.8.1');
+        //markEnterprise(this);
         serverConfig = fs.readFileSync(__dirname + '/hazelcast-ssl.xml', 'utf8');
     });
 
     afterEach(function () {
         this.timeout(20000);
-        markEnterprise(this);
-        Util.markServerVersionAtLeast(this, null, '3.8.1');
+        //markEnterprise(this);
         if (client) {
             client.shutdown();
             client = null;
         }
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     function createCluster(sConfig) {
@@ -66,7 +63,10 @@ describe("Client with SSL enabled", function () {
             .replace('[password]', 'password');
         return createCluster(sConfig).then(function () {
             var clientConfig = new Config.ClientConfig();
+            clientConfig.clusterName = cluster.id;
             clientConfig.networkConfig.sslConfig.enabled = true;
+            clientConfig.networkConfig.addresses.push('127.0.0.1:5701');
+            clientConfig.connectionStrategyConfig.connectionRetryConfig.clusterConnectTimeoutMillis = 1000;
             return expect(HazelcastClient.newHazelcastClient(clientConfig)).to.be.rejectedWith(Errors.IllegalStateError);
         })
     });
@@ -77,7 +77,9 @@ describe("Client with SSL enabled", function () {
             .replace('[password]', '123456');
         return createCluster(sConfig).then(function () {
             var clientConfig = new Config.ClientConfig();
+            clientConfig.clusterName = cluster.id;
             clientConfig.networkConfig.sslConfig.enabled = true;
+            clientConfig.networkConfig.addresses.push('127.0.0.1:5701');
             return HazelcastClient.newHazelcastClient(clientConfig);
         }).then(function (hazelcastClient) {
             client = hazelcastClient;

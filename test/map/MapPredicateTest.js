@@ -33,8 +33,9 @@ describe("Predicates", function () {
     var client;
     var map;
 
-    function _createConfig() {
+    function _createConfig(clusterName) {
         var cfg = new Config.ClientConfig();
+        cfg.clusterName = clusterName;
         cfg.serializationConfig.dataSerializableFactories[66] = new IdentifiedFactory();
         return cfg;
     }
@@ -49,7 +50,7 @@ describe("Predicates", function () {
             cluster = res;
             return Controller.startMember(cluster.id);
         }).then(function (member) {
-            return HazelcastClient.newHazelcastClient(_createConfig()).then(function (hazelcastClient) {
+            return HazelcastClient.newHazelcastClient(_createConfig(cluster.id)).then(function (hazelcastClient) {
                 client = hazelcastClient;
             });
         });
@@ -68,7 +69,7 @@ describe("Predicates", function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     function _fillMap(size) {

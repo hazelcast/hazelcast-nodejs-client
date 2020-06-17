@@ -25,9 +25,9 @@ function randomUInt(): number {
 }
 
 export class UuidUtil {
-    static generate(): UUID {
-        const mostS = new Long(randomUInt(), randomUInt(), true);
-        const leastS = new Long(randomUInt(), randomUInt(), true);
+    static generate(isUnsigned: boolean = true): UUID {
+        const mostS = new Long(randomUInt(), randomUInt(), isUnsigned);
+        const leastS = new Long(randomUInt(), randomUInt(), isUnsigned);
         return new UUID(mostS, leastS);
     }
 }

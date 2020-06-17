@@ -19,10 +19,10 @@ chai.use(require('chai-as-promised'));
 var expect = chai.expect;
 var Controller = require('../RC');
 var Client = require('../..').Client;
+const Config = require('../..').Config;
 var Errors = require('../..').HazelcastErrors;
 var fs = require('fs');
 var path = require('path');
-var Util = require('../Util');
 
 describe('PNCounterWithLiteMembersTest', function () {
 
@@ -35,7 +35,9 @@ describe('PNCounterWithLiteMembersTest', function () {
             cluster = cl;
             return Controller.startMember(cluster.id);
         }).then(function () {
-            return Client.newHazelcastClient();
+            const cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
+            return Client.newHazelcastClient(cfg);
         }).then(function (cl) {
             client = cl;
         });
@@ -43,11 +45,10 @@ describe('PNCounterWithLiteMembersTest', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     beforeEach(function () {
-        Util.markServerVersionAtLeast(this, client, '3.10');
         return client.getPNCounter('pncounter').then(function (counter) {
             pncounter = counter;
         });

@@ -14,9 +14,10 @@
   ~ limitations under the License.
   -->
 
-<hazelcast xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://www.hazelcast.com/schema/config hazelcast-config-3.2.xsd"
-           xmlns="http://www.hazelcast.com/schema/config">
+<hazelcast xmlns="http://www.hazelcast.com/schema/config"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://www.hazelcast.com/schema/config
+           http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
     <map name="mapstore-test">
         <map-store enabled="true">
             <class-name>com.hazelcast.client.test.SampleMapStore</class-name>

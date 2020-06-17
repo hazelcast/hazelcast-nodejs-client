@@ -52,6 +52,7 @@ describe('Listeners on reconnect', function () {
         }).then(function (m) {
             members[2] = m;
             var cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
             cfg.properties['hazelcast.client.heartbeat.interval'] = 1000;
             cfg.properties['hazelcast.client.heartbeat.timeout'] = 3000;
             cfg.networkConfig.smartRouting = isSmart;
@@ -67,8 +68,8 @@ describe('Listeners on reconnect', function () {
                         expect(entryEvent.name).to.equal('testmap');
                         expect(entryEvent.key).to.equal('keyx');
                         expect(entryEvent.value).to.equal('valx');
-                        expect(entryEvent.oldValue).to.be.undefined;
-                        expect(entryEvent.mergingValue).to.be.undefined;
+                        expect(entryEvent.oldValue).to.be.equal(null);
+                        expect(entryEvent.mergingValue).to.be.equal(null);
                         expect(entryEvent.member).to.not.be.equal(null);
                         done();
                     } catch (err) {
@@ -127,6 +128,7 @@ describe('Listeners on reconnect', function () {
             Controller.startMember(cluster.id).then(function (m) {
                 member = m;
                 var cfg = new Config.ClientConfig();
+                cfg.clusterName = cluster.id;
                 cfg.networkConfig.smartRouting = isSmart;
                 cfg.properties['hazelcast.client.heartbeat.interval'] = 1000;
                 return HazelcastClient.newHazelcastClient(cfg);
@@ -141,8 +143,8 @@ describe('Listeners on reconnect', function () {
                             expect(entryEvent.name).to.equal('testmap');
                             expect(entryEvent.key).to.equal('keyx');
                             expect(entryEvent.value).to.equal('valx');
-                            expect(entryEvent.oldValue).to.be.undefined;
-                            expect(entryEvent.mergingValue).to.be.undefined;
+                            expect(entryEvent.oldValue).to.be.equal(null);
+                            expect(entryEvent.mergingValue).to.be.equal(null);
                             expect(entryEvent.member).to.not.be.equal(null);
                             done();
                         } catch (err) {
@@ -158,6 +160,7 @@ describe('Listeners on reconnect', function () {
             }).then(function () {
                 return Util.promiseWaitMilliseconds(5000);
             }).then(function () {
+                console.log("here");
                 return map.put('keyx', 'valx');
             });
         });

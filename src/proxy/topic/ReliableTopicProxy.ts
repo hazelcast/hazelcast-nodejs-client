@@ -30,7 +30,6 @@ import {MessageListener} from './MessageListener';
 import {TopicOverloadPolicy} from './TopicOverloadPolicy';
 import Long = require('long');
 
-export const RINGBUFFER_PREFIX = '_hz_rb_';
 export const TOPIC_INITIAL_BACKOFF = 100;
 export const TOPIC_MAX_BACKOFF = 2000;
 
@@ -44,7 +43,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
 
     constructor(client: HazelcastClient, serviceName: string, name: string) {
         super(client, serviceName, name);
-        this.localAddress = client.getClusterService().getClientInfo().localAddress;
+        this.localAddress = client.getClusterService().getLocalClient().localAddress;
         const config = client.getConfig().getReliableTopicConfig(name);
         this.batchSize = config.readBatchSize;
         this.overloadPolicy = config.overloadPolicy;
@@ -52,10 +51,8 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         this.name = name;
     }
 
-    setRingbuffer(): Promise<void> {
-        return this.client.getRingbuffer<ReliableTopicMessage>(RINGBUFFER_PREFIX + this.name).then((buffer) => {
-            this.ringbuffer = buffer;
-        });
+    setRingbuffer(ringbuffer: Ringbuffer<ReliableTopicMessage>): void {
+        this.ringbuffer = ringbuffer;
     }
 
     addMessageListener(listener: MessageListener<E>): string {

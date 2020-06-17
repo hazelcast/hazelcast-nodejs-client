@@ -19,15 +19,16 @@ var path = require('path');
 var ConfigBuilder = require('../../').ConfigBuilder;
 var Config = require('../../').Config;
 var AddressHelper = require("../../lib/Util").AddressHelper;
+var ReconnectMode = require('../../lib/config/ConnectionStrategyConfig').ReconnectMode;
 
 describe('ConfigBuilder Test', function () {
-    var configFull;
+    var fullConfig;
 
     before(function () {
         var configBuilder = new ConfigBuilder();
         process.env['HAZELCAST_CLIENT_CONFIG'] = path.join(__dirname, 'configurations/full.json');
         return configBuilder.loadConfig().then(function () {
-            configFull = configBuilder.build();
+            fullConfig = configBuilder.build();
         });
     });
 
@@ -35,8 +36,37 @@ describe('ConfigBuilder Test', function () {
         delete process.env['HAZELCAST_CLIENT_CONFIG'];
     });
 
+    it('clusterName', function () {
+        expect(fullConfig.clusterName).to.equal('testCluster');
+    });
+
+    it('instanceName', function () {
+        expect(fullConfig.instanceName).to.equal('clientName');
+    });
+
+    it('clientLabels', function () {
+        var labels = fullConfig.labels;
+        expect(labels.size).to.equal(2);
+        expect(labels.has('label1')).to.be.true;
+        expect(labels.has('label2')).to.be.true;
+    });
+
+    it('connectionStrategy', function () {
+        var connectionStrategyConfig = fullConfig.connectionStrategyConfig;
+        expect(connectionStrategyConfig.asyncStart).to.be.true;
+        expect(connectionStrategyConfig.reconnectMode).to.equal(ReconnectMode.ASYNC);
+
+        var connectionRetryConfig = connectionStrategyConfig.connectionRetryConfig;
+        expect(connectionRetryConfig.initialBackoffMillis).to.equal(2000);
+        expect(connectionRetryConfig.maxBackoffMillis).to.equal(60000);
+        expect(connectionRetryConfig.multiplier).to.equal(3);
+        expect(connectionRetryConfig.clusterConnectTimeoutMillis).to.equal(5000);
+        expect(connectionRetryConfig.jitter).to.equal(0.5);
+
+    });
+
     it('networkConfig', function () {
-        var networkCfg = configFull.networkConfig;
+        var networkCfg = fullConfig.networkConfig;
 
         var addresses0 = AddressHelper.getSocketAddresses(networkCfg.addresses[0]);
         expect(addresses0[0].host).to.equal('127.0.0.9');
@@ -61,8 +91,6 @@ describe('ConfigBuilder Test', function () {
         expect(address1.port).to.equal(5702);
         expect(networkCfg.smartRouting).to.be.false;
         expect(networkCfg.connectionTimeout).to.equal(6000);
-        expect(networkCfg.connectionAttemptPeriod).to.equal(4000);
-        expect(networkCfg.connectionAttemptLimit).to.equal(3);
         expect(networkCfg.sslConfig.enabled).to.be.true;
         expect(networkCfg.sslConfig.sslOptions).to.be.null;
         expect(networkCfg.sslConfig.sslOptionsFactoryConfig.path).to.equal('path/to/file');
@@ -70,14 +98,8 @@ describe('ConfigBuilder Test', function () {
         expect(networkCfg.sslConfig.sslOptionsFactoryProperties['userDefinedProperty1']).to.equal('userDefinedValue');
     });
 
-    it('group', function () {
-        var groupCfg = configFull.groupConfig;
-        expect(groupCfg.name).to.equal('hazel');
-        expect(groupCfg.password).to.equal('cast');
-    });
-
     it('properties', function () {
-        var properties = configFull.properties;
+        var properties = fullConfig.properties;
         expect(properties['hazelcast.client.heartbeat.interval']).to.equal(1000);
         expect(properties['hazelcast.client.heartbeat.timeout']).to.equal(10000);
         expect(properties['hazelcast.client.invocation.retry.pause.millis']).to.equal(4000);
@@ -92,10 +114,11 @@ describe('ConfigBuilder Test', function () {
         expect(properties['hazelcast.client.autopipelining.enabled']).to.be.false;
         expect(properties['hazelcast.client.autopipelining.threshold.bytes']).to.equal(1024);
         expect(properties['hazelcast.client.socket.no.delay']).to.be.false;
+        expect(properties['hazelcast.client.shuffle.member.list']).to.be.false;
     });
 
     it('serialization', function () {
-        var serializationCfg = configFull.serializationConfig;
+        var serializationCfg = fullConfig.serializationConfig;
         expect(serializationCfg.defaultNumberType).to.equal('integer');
         expect(serializationCfg.isBigEndian).to.equal(false);
         expect(serializationCfg.portableVersion).to.equal(1);
@@ -120,7 +143,7 @@ describe('ConfigBuilder Test', function () {
     });
 
     it('nearCaches', function () {
-        var nearCacheConfigs = configFull.nearCacheConfigs;
+        var nearCacheConfigs = fullConfig.nearCacheConfigs;
         expect(nearCacheConfigs['nc-map'].name).to.equal('nc-map');
         expect(nearCacheConfigs['nc-map'].invalidateOnChange).to.be.false;
         expect(nearCacheConfigs['nc-map'].maxIdleSeconds).to.equal(2);
@@ -143,7 +166,7 @@ describe('ConfigBuilder Test', function () {
     });
 
     it('reliableTopics', function () {
-        var rtConfigs = configFull.reliableTopicConfigs;
+        var rtConfigs = fullConfig.reliableTopicConfigs;
         expect(rtConfigs['rt1'].name).to.equal('rt1');
         expect(rtConfigs['rt1'].readBatchSize).to.equal(35);
         expect(rtConfigs['rt1'].overloadPolicy).to.equal(Config.TopicOverloadPolicy.DISCARD_NEWEST);
@@ -154,15 +177,17 @@ describe('ConfigBuilder Test', function () {
     });
 
     it('listenerConfig', function () {
-        var listenerConfig = configFull.listenerConfigs;
-        expect(listenerConfig[0].exportedName).to.equal('listener');
-        expect(listenerConfig[0].path).to.equal('path/to/file');
-        expect(listenerConfig[1].exportedName).to.equal('listener2');
-        expect(listenerConfig[1].path).to.equal('path/to/file');
+        var listenerConfig = fullConfig.listenerConfigs;
+        expect(listenerConfig[0].type).to.equal('lifecycle');
+        expect(listenerConfig[0].importConfig.exportedName).to.equal('listener');
+        expect(listenerConfig[0].importConfig.path).to.equal('path/to/file');
+        expect(listenerConfig[1].type).to.equal('membership');
+        expect(listenerConfig[1].importConfig.exportedName).to.equal('listener2');
+        expect(listenerConfig[1].importConfig.path).to.equal('path/to/file');
     });
 
     it('flakeIdGeneratorConfigs', function () {
-        var flakeIdConfigs = configFull.flakeIdGeneratorConfigs;
+        var flakeIdConfigs = fullConfig.flakeIdGeneratorConfigs;
         expect(flakeIdConfigs['flakeid'].name).to.equal('flakeid');
         expect(flakeIdConfigs['flakeid'].prefetchCount).to.equal(123);
         expect(150000).to.be.equal(flakeIdConfigs['flakeid'].prefetchValidityMillis);
@@ -170,4 +195,9 @@ describe('ConfigBuilder Test', function () {
         expect(flakeIdConfigs['flakeid2'].prefetchCount).to.equal(1234);
         expect(1900000).to.be.equal(flakeIdConfigs['flakeid2'].prefetchValidityMillis);
     })
+
+    it('loadBalancer', function () {
+        var loadBalancer = fullConfig.loadBalancer;
+        expect(loadBalancer.constructor.name).to.equal('RandomLB');
+    });
 });

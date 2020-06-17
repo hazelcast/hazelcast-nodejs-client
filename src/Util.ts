@@ -22,7 +22,7 @@ import {JsonConfigLocator} from './config/JsonConfigLocator';
 import {Comparator} from './core/Comparator';
 import {IterationType} from './core/Predicate';
 import {PagingPredicate} from './serialization/DefaultPredicates';
-import Address = require('./Address');
+import {Address} from './Address';
 
 export function assertNotNull(v: any): void {
     assert.notEqual(v, null, 'Non null value expected.');
@@ -171,7 +171,11 @@ export function getBooleanOrUndefined(val: any): boolean {
 }
 
 export function tryGetEnum<T>(enumClass: any | { [index: string]: number }, str: string): T {
-    return enumClass[str.toUpperCase()] as any;
+    const result = enumClass[str.toUpperCase()];
+    if (result == null) {
+        throw new TypeError(str + ' is not a member of the enum ' + enumClass);
+    }
+    return result;
 }
 
 export function resolvePath(path: string): string {
@@ -339,4 +343,12 @@ export function getNodejsMajorVersion(): number {
     const versionString = process.version;
     const versions = versionString.split('.');
     return Number.parseInt(versions[0].substr(1));
+}
+
+export function pad(str: string, targetLength: number, padString: string): string {
+    if (str.length >= targetLength) {
+        return str;
+    } else {
+        return new Array(targetLength - str.length + 1).join(padString) + str;
+    }
 }

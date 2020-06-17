@@ -19,8 +19,7 @@ import {ClientNetworkConfig} from './ClientNetworkConfig';
 import {ConfigPatternMatcher} from './ConfigPatternMatcher';
 import {EvictionPolicy} from './EvictionPolicy';
 import {FlakeIdGeneratorConfig} from './FlakeIdGeneratorConfig';
-import {GroupConfig} from './GroupConfig';
-import {ImportConfig} from './ImportConfig';
+import {ImportConfig, ListenerImportConfig} from './ImportConfig';
 import {InMemoryFormat} from './InMemoryFormat';
 import {ListenerConfig} from './ListenerConfig';
 import {NearCacheConfig} from './NearCacheConfig';
@@ -33,6 +32,13 @@ import {LogLevel} from '..';
 import {ILogger} from '../logging/ILogger';
 import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy';
 import {StringSerializationPolicy} from './StringSerializationPolicy';
+import {ConnectionStrategyConfig, ReconnectMode} from './ConnectionStrategyConfig';
+import {LoadBalancer} from '../LoadBalancer';
+import {IndexConfig} from './IndexConfig';
+import {IndexType} from './IndexType';
+import {ConnectionRetryConfig} from './ConnectionRetryConfig';
+
+const DEFAULT_CLUSTER_NAME = 'dev';
 
 /**
  * Top level configuration object of Hazelcast client. Other configurations items are properties of this object.
@@ -54,22 +60,26 @@ export class ClientConfig {
         'hazelcast.client.autopipelining.enabled': true,
         'hazelcast.client.autopipelining.threshold.bytes': 8192,
         'hazelcast.client.socket.no.delay': true,
+        'hazelcast.client.shuffle.member.list': true,
     };
 
     /**
      * Name of this client instance.
      */
     instanceName: string;
-    groupConfig: GroupConfig = new GroupConfig();
     networkConfig: ClientNetworkConfig = new ClientNetworkConfig();
     customLogger: ILogger;
     customCredentials: any = null;
     listeners: ListenerConfig = new ListenerConfig();
-    listenerConfigs: ImportConfig[] = [];
+    listenerConfigs: ListenerImportConfig[] = [];
     serializationConfig: SerializationConfig = new SerializationConfig();
     reliableTopicConfigs: { [name: string]: ReliableTopicConfig } = {};
     nearCacheConfigs: { [name: string]: NearCacheConfig } = {};
     flakeIdGeneratorConfigs: { [name: string]: FlakeIdGeneratorConfig } = {};
+    connectionStrategyConfig: ConnectionStrategyConfig = new ConnectionStrategyConfig();
+    clusterName: string = DEFAULT_CLUSTER_NAME;
+    labels = new Set<string>();
+    loadBalancer: LoadBalancer;
 
     private configPatternMatcher = new ConfigPatternMatcher();
 
@@ -132,8 +142,6 @@ export {TopicOverloadPolicy};
 
 export {SerializationConfig};
 
-export {GroupConfig};
-
 export {ReliableTopicConfig};
 
 export {EvictionPolicy};
@@ -151,3 +159,13 @@ export {SSLConfig};
 export {JsonStringDeserializationPolicy};
 
 export {StringSerializationPolicy};
+
+export {IndexConfig};
+
+export {IndexType};
+
+export {ConnectionStrategyConfig};
+
+export {ReconnectMode};
+
+export {ConnectionRetryConfig};

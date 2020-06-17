@@ -21,7 +21,6 @@ var Aggregators = require('../../').Aggregators;
 var Predicates = require('../../').Predicates;
 var _fillMap = require('../Util').fillMap;
 var expect = require('chai').expect;
-var Util = require('../Util');
 
 describe('MapAggregatorsIntTest', function () {
     var cluster;
@@ -29,12 +28,13 @@ describe('MapAggregatorsIntTest', function () {
     var map;
 
     before(function () {
-        var cfg = new Config.ClientConfig();
-        cfg.serializationConfig.defaultNumberType = 'integer';
         return Controller.createCluster(null, null).then(function (cl) {
             cluster = cl;
             return Controller.startMember(cluster.id);
         }).then(function () {
+            const cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
+            cfg.serializationConfig.defaultNumberType = 'integer';
             return Client.newHazelcastClient(cfg);
         }).then(function (cl) {
             client = cl;
@@ -46,11 +46,10 @@ describe('MapAggregatorsIntTest', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     beforeEach(function () {
-        Util.markServerVersionAtLeast(this, client, '3.8');
         return _fillMap(map, 50, 'key', 0);
     });
 

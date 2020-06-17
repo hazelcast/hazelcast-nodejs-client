@@ -15,7 +15,7 @@
  */
 
 import HazelcastClient from '../HazelcastClient';
-import {ClientConnection} from '../invocation/ClientConnection';
+import {ClientConnection} from '../network/ClientConnection';
 import {Properties} from '../config/Properties';
 import {ClientStatisticsCodec} from '../codec/ClientStatisticsCodec';
 import * as Util from '../Util';
@@ -23,7 +23,8 @@ import {Task} from '../Util';
 import * as os from 'os';
 import {BuildInfo} from '../BuildInfo';
 import {ILogger} from '../logging/ILogger';
-import Address = require('../Address');
+import * as Long from 'long';
+import {Buffer} from 'safe-buffer';
 
 /**
  * This class is the main entry point for collecting and sending the client
@@ -37,9 +38,6 @@ export class Statistics {
     private static readonly PERIOD_SECONDS = 'hazelcast.client.statistics.period.seconds';
 
     private static readonly NEAR_CACHE_CATEGORY_PREFIX: string = 'nc.';
-    private static readonly FEATURE_SUPPORTED_SINCE_VERSION_STRING: string = '3.9';
-    private static readonly FEATURE_SUPPORTED_SINCE_VERSION: number = BuildInfo.calculateServerVersionFromString(
-        Statistics.FEATURE_SUPPORTED_SINCE_VERSION_STRING);
     private static readonly STAT_SEPARATOR: string = ',';
     private static readonly KEY_VALUE_SEPARATOR: string = '=';
     private static readonly ESCAPE_CHAR: string = '\\';
@@ -49,7 +47,6 @@ export class Statistics {
     private readonly properties: Properties;
     private readonly logger: ILogger;
     private client: HazelcastClient;
-    private ownerAddress: Address;
     private task: Task;
 
     constructor(clientInstance: HazelcastClient) {
@@ -94,57 +91,31 @@ export class Statistics {
      */
     schedulePeriodicStatisticsSendTask(periodSeconds: number): Task {
         return Util.scheduleWithRepetition(() => {
-            const ownerConnection: ClientConnection = this.getOwnerConnection();
-            if (ownerConnection == null) {
-                this.logger.trace('Statistics', 'Can not send client statistics to the server. No owner connection.');
+            const collectionTimestamp = Long.fromNumber(Date.now());
+
+            const connection = this.client.getConnectionManager().getRandomConnection();
+            if (connection == null) {
+                this.logger.trace('Statistics', 'Can not send client statistics to the server. No connection found.');
                 return;
             }
 
             const stats: string[] = [];
 
-            this.fillMetrics(stats, ownerConnection);
+            this.fillMetrics(stats, connection);
 
             this.addNearCacheStats(stats);
 
-            this.sendStats(stats.join(''), ownerConnection);
+            this.sendStats(collectionTimestamp, stats.join(''), connection);
         }, 0, periodSeconds * 1000);
     }
 
-    sendStats(newStats: string, ownerConnection: ClientConnection): void {
-        const request = ClientStatisticsCodec.encodeRequest(newStats);
-        this.logger.trace('Statistics', 'Trying to send statistics to ' +
-            this.client.getClusterService().ownerUuid + ' from ' + ownerConnection.getLocalAddress().toString());
-        this.client.getInvocationService().invokeOnConnection(ownerConnection, request).catch((err) => {
-            this.logger.trace('Statistics', 'Could not send stats ', err);
-        });
-    }
-
-    /**
-     * @return the owner connection to the server for the client only if the server supports the client statistics feature
-     */
-    private getOwnerConnection(): ClientConnection {
-        const connection = this.client.getClusterService().getOwnerConnection();
-        if (connection == null) {
-            return null;
-        }
-
-        const ownerConnectionAddress: Address = connection.getAddress();
-        const serverVersion: number = connection.getConnectedServerVersion();
-        if (serverVersion < Statistics.FEATURE_SUPPORTED_SINCE_VERSION) {
-
-            // do not print too many logs if connected to an old version server
-            if (this.ownerAddress == null || !ownerConnectionAddress.equals(this.ownerAddress)) {
-                this.logger.trace('Statistics', 'Client statistics can not be sent to server '
-                    + ownerConnectionAddress + ' since, connected '
-                    + 'owner server version is less than the minimum supported server version ' +
-                    Statistics.FEATURE_SUPPORTED_SINCE_VERSION_STRING);
-
-            }
-            // cache the last connected server address for decreasing the log prints
-            this.ownerAddress = ownerConnectionAddress;
-            return null;
-        }
-        return connection;
+    sendStats(collectionTimestamp: Long, newStats: string, connection: ClientConnection): void {
+        const request = ClientStatisticsCodec.encodeRequest(collectionTimestamp, newStats, Buffer.allocUnsafe(0));
+        this.client.getInvocationService()
+            .invokeOnConnection(connection, request)
+            .catch((err) => {
+                this.logger.trace('Statistics', 'Could not send stats ', err);
+            });
     }
 
     private registerMetrics(): void {
@@ -202,15 +173,14 @@ export class Statistics {
         this.addStat(stats, name, Statistics.EMPTY_STAT_VALUE, keyPrefix);
     }
 
-    private fillMetrics(stats: string[], ownerConnection: ClientConnection): void {
+    private fillMetrics(stats: string[], connection: ClientConnection): void {
         this.addStat(stats, 'lastStatisticsCollectionTime', Date.now());
         this.addStat(stats, 'enterprise', 'false');
-        this.addStat(stats, 'clientType', this.client.getClusterService().getClientInfo().type);
+        this.addStat(stats, 'clientType', this.client.getClusterService().getLocalClient().type);
         this.addStat(stats, 'clientVersion', BuildInfo.getClientVersion());
-        this.addStat(stats, 'clusterConnectionTimestamp', ownerConnection.getStartTime());
-        this.addStat(stats, 'clientAddress', ownerConnection.getLocalAddress().toString());
+        this.addStat(stats, 'clusterConnectionTimestamp', connection.getStartTime());
+        this.addStat(stats, 'clientAddress', connection.getLocalAddress().toString());
         this.addStat(stats, 'clientName', this.client.getName());
-        this.addStat(stats, 'credentials.principal', this.client.getConfig().groupConfig.name);
 
         for (const gaugeName in this.allGauges) {
             const gaugeValueFunc = this.allGauges[gaugeName];

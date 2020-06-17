@@ -14,74 +14,67 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
 import {BitsUtil} from '../BitsUtil';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET} from '../ClientMessage';
+import {StringCodec} from './builtin/StringCodec';
+import {UUID} from '../core/UUID';
 import {Data} from '../serialization/Data';
-import {SetMessageType} from './SetMessageType';
+import {DataCodec} from './builtin/DataCodec';
+import {CodecUtil} from './builtin/CodecUtil';
 
-var REQUEST_TYPE = SetMessageType.SET_ADDLISTENER;
-var RESPONSE_TYPE = 104;
-var RETRYABLE = false;
+// hex: 0x060B00
+const REQUEST_MESSAGE_TYPE = 396032;
+// hex: 0x060B01
+const RESPONSE_MESSAGE_TYPE = 396033;
+// hex: 0x060B02
+const EVENT_ITEM_MESSAGE_TYPE = 396034;
 
+const REQUEST_INCLUDE_VALUE_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const REQUEST_LOCAL_ONLY_OFFSET = REQUEST_INCLUDE_VALUE_OFFSET + BitsUtil.BOOLEAN_SIZE_IN_BYTES;
+const REQUEST_INITIAL_FRAME_SIZE = REQUEST_LOCAL_ONLY_OFFSET + BitsUtil.BOOLEAN_SIZE_IN_BYTES;
+const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
+const EVENT_ITEM_UUID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const EVENT_ITEM_EVENT_TYPE_OFFSET = EVENT_ITEM_UUID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
+
+export interface SetAddListenerResponseParams {
+    response: UUID;
+}
 
 export class SetAddListenerCodec {
+    static encodeRequest(name: string, includeValue: boolean, localOnly: boolean): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(false);
 
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
+        FixSizedTypesCodec.encodeBoolean(initialFrame.content, REQUEST_INCLUDE_VALUE_OFFSET, includeValue);
+        FixSizedTypesCodec.encodeBoolean(initialFrame.content, REQUEST_LOCAL_ONLY_OFFSET, localOnly);
+        clientMessage.addFrame(initialFrame);
+        clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);
+        clientMessage.setPartitionId(-1);
 
-    static calculateSize(name: string, includeValue: boolean, localOnly: boolean) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.BOOLEAN_SIZE_IN_BYTES;
-        dataSize += BitsUtil.BOOLEAN_SIZE_IN_BYTES;
-        return dataSize;
-    }
-
-    static encodeRequest(name: string, includeValue: boolean, localOnly: boolean) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, includeValue, localOnly));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendBoolean(includeValue);
-        clientMessage.appendBoolean(localOnly);
-        clientMessage.updateFrameLength();
+        StringCodec.encode(clientMessage, name);
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        // Decode response from client message
-        var parameters: any = {
-            'response': null
+    static decodeResponse(clientMessage: ClientMessage): SetAddListenerResponseParams {
+        const initialFrame = clientMessage.nextFrame();
+
+        return {
+            response: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
         };
-
-        parameters['response'] = clientMessage.readString();
-
-        return parameters;
     }
 
-    static handle(clientMessage: ClientMessage, handleEventItem: any, toObjectFunction: (data: Data) => any = null) {
-
-        var messageType = clientMessage.getMessageType();
-        if (messageType === BitsUtil.EVENT_ITEM && handleEventItem !== null) {
-            var messageFinished = false;
-            var item: Data = undefined;
-            if (!messageFinished) {
-
-                if (clientMessage.readBoolean() !== true) {
-                    item = clientMessage.readData();
-                }
-            }
-            var uuid: string = undefined;
-            if (!messageFinished) {
-                uuid = clientMessage.readString();
-            }
-            var eventType: number = undefined;
-            if (!messageFinished) {
-                eventType = clientMessage.readInt32();
-            }
-            handleEventItem(item, uuid, eventType);
+    static handle(clientMessage: ClientMessage, handleItemEvent: (item: Data, uuid: UUID, eventType: number) => void = null): void {
+        const messageType = clientMessage.getMessageType();
+        if (messageType === EVENT_ITEM_MESSAGE_TYPE && handleItemEvent !== null) {
+            const initialFrame = clientMessage.nextFrame();
+            const uuid = FixSizedTypesCodec.decodeUUID(initialFrame.content, EVENT_ITEM_UUID_OFFSET);
+            const eventType = FixSizedTypesCodec.decodeInt(initialFrame.content, EVENT_ITEM_EVENT_TYPE_OFFSET);
+            const item = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
+            handleItemEvent(item, uuid, eventType);
+            return;
         }
     }
-
 }

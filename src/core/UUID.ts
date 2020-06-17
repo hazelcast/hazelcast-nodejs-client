@@ -15,10 +15,12 @@
  */
 
 import * as Long from 'long';
+import {pad} from '../Util';
 
 export class UUID {
     readonly leastSignificant: Long;
     readonly mostSignificant: Long;
+    private cachedString: string;
 
     constructor(mostSig: Long, leastSig: Long) {
         this.mostSignificant = mostSig;
@@ -34,6 +36,9 @@ export class UUID {
 
     /* tslint:disable:no-bitwise */
     toString(): string {
+        if (this.cachedString) {
+            return this.cachedString;
+        }
         const mostHigh = this.mostSignificant.getHighBitsUnsigned(); // (32) 32 32 32
         const mostLow = this.mostSignificant.getLowBitsUnsigned(); // 32 (32) 32 32
         const leastHigh = this.leastSignificant.getHighBitsUnsigned(); // 32 32 (32) 32
@@ -43,7 +48,12 @@ export class UUID {
         const div2 = (mostLow >>> 16).toString(16);
         const div3 = (mostLow & ((1 << 16) - 1)).toString(16);
         const div4 = (leastHigh >>> 16).toString(16);
-        const div5 = (leastHigh & ((1 << 16) - 1)).toString(16) + leastLow.toString(16);
-        return div1 + '-' + div2 + '-' + div3 + '-' + div4 + '-' + div5;
+        const div5 = (leastHigh & ((1 << 16) - 1)).toString(16) + pad(leastLow.toString(16), 8, '0');
+        this.cachedString = pad(div1, 8, '0') + '-'
+            + pad(div2, 4, '0') + '-'
+            + pad(div3, 4, '0') + '-'
+            + pad(div4, 4, '0') + '-'
+            + pad(div5, 12, '0');
+        return this.cachedString;
     }
 }

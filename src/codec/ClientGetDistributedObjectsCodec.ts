@@ -14,53 +14,43 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
-import DistributedObjectInfoCodec = require('./DistributedObjectInfoCodec');
-import {Data} from '../serialization/Data';
-import {ClientMessageType} from './ClientMessageType';
+/*tslint:disable:max-line-length*/
+import {BitsUtil} from '../BitsUtil';
+import {ClientMessage, Frame, PARTITION_ID_OFFSET} from '../ClientMessage';
+import {DistributedObjectInfo} from '../DistributedObjectInfo';
+import {ListMultiFrameCodec} from './builtin/ListMultiFrameCodec';
+import {DistributedObjectInfoCodec} from './custom/DistributedObjectInfoCodec';
 
-var REQUEST_TYPE = ClientMessageType.CLIENT_GETDISTRIBUTEDOBJECTS;
-var RESPONSE_TYPE = 110;
-var RETRYABLE = false;
+// hex: 0x000800
+const REQUEST_MESSAGE_TYPE = 2048;
+// hex: 0x000801
+const RESPONSE_MESSAGE_TYPE = 2049;
 
+const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+
+export interface ClientGetDistributedObjectsResponseParams {
+    response: DistributedObjectInfo[];
+}
 
 export class ClientGetDistributedObjectsCodec {
+    static encodeRequest(): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(false);
 
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
+        clientMessage.addFrame(initialFrame);
+        clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);
+        clientMessage.setPartitionId(-1);
 
-    static calculateSize() {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        return dataSize;
-    }
-
-    static encodeRequest() {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize());
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.updateFrameLength();
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        // Decode response from client message
-        var parameters: any = {
-            'response': null
+    static decodeResponse(clientMessage: ClientMessage): ClientGetDistributedObjectsResponseParams {
+        // empty initial frame
+        clientMessage.nextFrame();
+
+        return {
+            response: ListMultiFrameCodec.decode(clientMessage, DistributedObjectInfoCodec.decode),
         };
-
-
-        var responseSize = clientMessage.readInt32();
-        var response: any = [];
-        for (var responseIndex = 0; responseIndex < responseSize; responseIndex++) {
-            var responseItem: any;
-            responseItem = DistributedObjectInfoCodec.decode(clientMessage, toObjectFunction);
-            response.push(responseItem);
-        }
-        parameters['response'] = response;
-
-        return parameters;
     }
-
-
 }

@@ -17,7 +17,7 @@
 var expect = require('chai').expect;
 var RC = require('../RC');
 var Client = require('../../').Client;
-var Util = require('../Util');
+var Config = require('../../').Config;
 
 describe('PNCounterBasicTest', function () {
 
@@ -30,7 +30,9 @@ describe('PNCounterBasicTest', function () {
             cluster = cl;
             return RC.startMember(cluster.id);
         }).then(function (member) {
-            return Client.newHazelcastClient();
+            const cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
+            return Client.newHazelcastClient(cfg);
         }).then(function (cl) {
             client = cl;
         });
@@ -38,11 +40,10 @@ describe('PNCounterBasicTest', function () {
 
     after(function () {
         client.shutdown();
-        return RC.shutdownCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     beforeEach(function () {
-        Util.markServerVersionAtLeast(this, client, '3.10');
         return client.getPNCounter('pncounter').then(function (counter) {
             pncounter = counter;
         })

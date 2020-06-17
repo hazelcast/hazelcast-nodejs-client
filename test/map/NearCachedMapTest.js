@@ -34,15 +34,16 @@ describe("NearCachedMap", function () {
 
             before(function () {
                 this.timeout(32000);
-                var cfg = new Config.ClientConfig();
-                var ncc = new Config.NearCacheConfig();
-                ncc.name = 'nc-map';
-                ncc.invalidateOnChange = invalidateOnChange;
-                cfg.nearCacheConfigs['ncc-map'] = ncc;
+                const cfg = new Config.ClientConfig();
                 return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_nearcache_batchinvalidation_false.xml', 'utf8')).then(function (res) {
                     cluster = res;
                     return Controller.startMember(cluster.id);
                 }).then(function (member) {
+                    cfg.clusterName = cluster.id;
+                    var ncc = new Config.NearCacheConfig();
+                    ncc.name = 'nc-map';
+                    ncc.invalidateOnChange = invalidateOnChange;
+                    cfg.nearCacheConfigs['ncc-map'] = ncc;
                     return HazelcastClient.newHazelcastClient(cfg).then(function (hazelcastClient) {
                         client1 = hazelcastClient;
                     });
@@ -71,7 +72,7 @@ describe("NearCachedMap", function () {
             after(function () {
                 client1.shutdown();
                 client2.shutdown();
-                return Controller.shutdownCluster(cluster.id);
+                return Controller.terminateCluster(cluster.id);
             });
 
             function getNearCacheStats(map) {

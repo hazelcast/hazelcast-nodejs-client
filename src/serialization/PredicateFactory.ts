@@ -18,7 +18,7 @@ import {Predicate} from '../core/Predicate';
 import {DataInput, DataOutput} from './Data';
 import {IdentifiedDataSerializable, IdentifiedDataSerializableFactory} from './Serializable';
 
-export const PREDICATE_FACTORY_ID = -32;
+export const PREDICATE_FACTORY_ID = -20;
 
 export abstract class AbstractPredicate implements Predicate {
 

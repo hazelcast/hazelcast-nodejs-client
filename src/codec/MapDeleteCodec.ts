@@ -14,42 +14,36 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
 import {BitsUtil} from '../BitsUtil';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, PARTITION_ID_OFFSET} from '../ClientMessage';
+import * as Long from 'long';
+import {StringCodec} from './builtin/StringCodec';
 import {Data} from '../serialization/Data';
-import {MapMessageType} from './MapMessageType';
+import {DataCodec} from './builtin/DataCodec';
 
-var REQUEST_TYPE = MapMessageType.MAP_DELETE;
-var RESPONSE_TYPE = 100;
-var RETRYABLE = false;
+// hex: 0x010900
+const REQUEST_MESSAGE_TYPE = 67840;
+// hex: 0x010901
+const RESPONSE_MESSAGE_TYPE = 67841;
 
+const REQUEST_THREAD_ID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const REQUEST_INITIAL_FRAME_SIZE = REQUEST_THREAD_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
 export class MapDeleteCodec {
+    static encodeRequest(name: string, key: Data, threadId: Long): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(false);
 
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
+        FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_THREAD_ID_OFFSET, threadId);
+        clientMessage.addFrame(initialFrame);
+        clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);
+        clientMessage.setPartitionId(-1);
 
-    static calculateSize(name: string, key: Data, threadId: any) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.calculateSizeData(key);
-        dataSize += BitsUtil.LONG_SIZE_IN_BYTES;
-        return dataSize;
-    }
-
-    static encodeRequest(name: string, key: Data, threadId: any) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, key, threadId));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendData(key);
-        clientMessage.appendLong(threadId);
-        clientMessage.updateFrameLength();
+        StringCodec.encode(clientMessage, name);
+        DataCodec.encode(clientMessage, key);
         return clientMessage;
     }
-
-// Empty decodeResponse(ClientMessage), this message has no parameters to decode
-
-
 }

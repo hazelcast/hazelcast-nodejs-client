@@ -42,11 +42,12 @@ describe('RepairingTask', function () {
     });
 
     after(function () {
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     function startClientWithReconciliationInterval(reconciliationInterval) {
         var cfg = new Config.ClientConfig();
+        cfg.clusterName = cluster.id;
         var nccConfig = new Config.NearCacheConfig();
         nccConfig.name = 'test';
         cfg.nearCacheConfigs['test'] = nccConfig;

@@ -17,6 +17,7 @@
 import * as Promise from 'bluebird';
 import HazelcastClient from '../HazelcastClient';
 import {BaseProxy} from './BaseProxy';
+import {ClientMessage} from '../ClientMessage';
 
 export class PartitionSpecificProxy extends BaseProxy {
 
@@ -27,7 +28,7 @@ export class PartitionSpecificProxy extends BaseProxy {
         this.partitionId = this.client.getPartitionService().getPartitionId(this.getPartitionKey());
     }
 
-    protected encodeInvoke<T>(codec: any, ...codecArguments: any[]): Promise<T> {
-        return this.encodeInvokeOnPartition<T>(codec, this.partitionId, ...codecArguments);
+    protected encodeInvoke(codec: any, ...codecArguments: any[]): Promise<ClientMessage> {
+        return this.encodeInvokeOnPartition(codec, this.partitionId, ...codecArguments);
     }
 }

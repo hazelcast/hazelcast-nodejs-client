@@ -18,7 +18,7 @@ import {TopicOverloadPolicy} from '../proxy/topic/TopicOverloadPolicy';
 
 export class ReliableTopicConfig {
     name: string = 'default';
-    readBatchSize: number = 25;
+    readBatchSize: number = 10;
     overloadPolicy: TopicOverloadPolicy = TopicOverloadPolicy.BLOCK;
 
     toString(): string {

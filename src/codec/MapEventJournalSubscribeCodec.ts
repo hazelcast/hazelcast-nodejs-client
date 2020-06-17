@@ -14,53 +14,47 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
 import {BitsUtil} from '../BitsUtil';
-import {Data} from '../serialization/Data';
-import {MapMessageType} from './MapMessageType';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET} from '../ClientMessage';
+import {StringCodec} from './builtin/StringCodec';
+import * as Long from 'long';
 
-var REQUEST_TYPE = MapMessageType.MAP_EVENTJOURNALSUBSCRIBE;
-var RESPONSE_TYPE = 125;
-var RETRYABLE = true;
+// hex: 0x014100
+const REQUEST_MESSAGE_TYPE = 82176;
+// hex: 0x014101
+const RESPONSE_MESSAGE_TYPE = 82177;
 
+const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const RESPONSE_OLDEST_SEQUENCE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
+const RESPONSE_NEWEST_SEQUENCE_OFFSET = RESPONSE_OLDEST_SEQUENCE_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
+
+export interface MapEventJournalSubscribeResponseParams {
+    oldestSequence: Long;
+    newestSequence: Long;
+}
 
 export class MapEventJournalSubscribeCodec {
+    static encodeRequest(name: string): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(true);
 
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
+        clientMessage.addFrame(initialFrame);
+        clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);
+        clientMessage.setPartitionId(-1);
 
-    static calculateSize(name: string) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        return dataSize;
-    }
-
-    static encodeRequest(name: string) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.updateFrameLength();
+        StringCodec.encode(clientMessage, name);
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        // Decode response from client message
-        var parameters: any = {
-            'oldestSequence': null,
-            'newestSequence': null
+    static decodeResponse(clientMessage: ClientMessage): MapEventJournalSubscribeResponseParams {
+        const initialFrame = clientMessage.nextFrame();
+
+        return {
+            oldestSequence: FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_OLDEST_SEQUENCE_OFFSET),
+            newestSequence: FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_NEWEST_SEQUENCE_OFFSET),
         };
-
-        if (clientMessage.isComplete()) {
-            return parameters;
-        }
-        parameters['oldestSequence'] = clientMessage.readLong();
-
-        parameters['newestSequence'] = clientMessage.readLong();
-
-        return parameters;
     }
-
-
 }

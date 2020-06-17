@@ -18,10 +18,10 @@ var chai = require('chai');
 chai.use(require('chai-as-promised'));
 var expect = require('chai').expect;
 var Client = require('../../.').Client;
+const Config = require('../../.').Config;
 var RC = require('./../RC');
 var Predicates = require('../../.').Predicates;
 var HazelcastJsonValue = require('../../.').HazelcastJsonValue;
-var Util = require('../Util');
 
 describe('HazelcastJsonValue query test', function () {
     var cluster;
@@ -30,12 +30,13 @@ describe('HazelcastJsonValue query test', function () {
     var object = { 'a': 1 };
 
     before(function () {
-        Util.markServerVersionAtLeast(this, null, '3.12');
         return RC.createCluster().then(function (response) {
             cluster = response;
             return RC.startMember(cluster.id);
         }).then(function () {
-            return Client.newHazelcastClient().then(function (hazelcastClient) {
+            const cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
+            return Client.newHazelcastClient(cfg).then(function (hazelcastClient) {
                 client = hazelcastClient;
             });
         });
@@ -56,7 +57,7 @@ describe('HazelcastJsonValue query test', function () {
             return;
         }
         client.shutdown();
-        return RC.shutdownCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('querying over JavaScript objects', function () {

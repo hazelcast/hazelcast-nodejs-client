@@ -42,95 +42,160 @@ import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {Data} from '../serialization/Data';
 import {IList} from './IList';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
-import ClientMessage = require('../ClientMessage');
+import {ClientMessage} from '../ClientMessage';
+import {UUID} from '../core/UUID';
 
 export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
 
     add(element: E): Promise<boolean> {
-        return this.encodeInvoke<boolean>(ListAddCodec, this.toData(element));
+        return this.encodeInvoke(ListAddCodec, this.toData(element))
+            .then((clientMessage) => {
+                const response = ListAddAllCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     addAll(elements: E[]): Promise<boolean> {
-        return this.encodeInvoke<boolean>(ListAddAllCodec, this.serializeList(elements));
+        return this.encodeInvoke(ListAddAllCodec, this.serializeList(elements))
+            .then((clientMessage) => {
+                const response = ListAddAllCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     addAllAt(index: number, elements: E[]): Promise<boolean> {
-        return this.encodeInvoke<boolean>(ListAddAllWithIndexCodec, index, this.serializeList(elements));
+        return this.encodeInvoke(ListAddAllWithIndexCodec, index, this.serializeList(elements))
+            .then((clientMessage) => {
+                const response = ListAddAllWithIndexCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     addAt(index: number, element: E): Promise<void> {
-        return this.encodeInvoke<void>(ListAddWithIndexCodec, index, this.toData(element));
+        return this.encodeInvoke(ListAddWithIndexCodec, index, this.toData(element))
+            .then(() => undefined);
     }
 
     clear(): Promise<void> {
-        return this.encodeInvoke<void>(ListClearCodec);
+        return this.encodeInvoke(ListClearCodec)
+            .then(() => undefined);
     }
 
     contains(entry: E): Promise<boolean> {
-        return this.encodeInvoke<boolean>(ListContainsCodec, this.toData(entry));
+        return this.encodeInvoke(ListContainsCodec, this.toData(entry))
+            .then((clientMessage) => {
+                const response = ListContainsCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     containsAll(elements: E[]): Promise<boolean> {
-        return this.encodeInvoke<boolean>(ListContainsAllCodec, this.serializeList(elements));
+        return this.encodeInvoke(ListContainsAllCodec, this.serializeList(elements))
+            .then((clientMessage) => {
+                const response = ListContainsAllCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     isEmpty(): Promise<boolean> {
-        return this.encodeInvoke<boolean>(ListIsEmptyCodec);
+        return this.encodeInvoke(ListIsEmptyCodec)
+            .then((clientMessage) => {
+                const response = ListIsEmptyCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     remove(entry: E): Promise<boolean> {
-        return this.encodeInvoke<boolean>(ListRemoveCodec, this.toData(entry));
+        return this.encodeInvoke(ListRemoveCodec, this.toData(entry))
+            .then((clientMessage) => {
+                const response = ListRemoveCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     removeAll(elements: E[]): Promise<boolean> {
-        return this.encodeInvoke<boolean>(ListCompareAndRemoveAllCodec, this.serializeList(elements));
+        return this.encodeInvoke(ListCompareAndRemoveAllCodec, this.serializeList(elements))
+            .then((clientMessage) => {
+                const response = ListCompareAndRemoveAllCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     retainAll(elements: E[]): Promise<boolean> {
-        return this.encodeInvoke<boolean>(ListCompareAndRetainAllCodec, this.serializeList(elements));
+        return this.encodeInvoke(ListCompareAndRetainAllCodec, this.serializeList(elements))
+            .then((clientMessage) => {
+                const response = ListCompareAndRetainAllCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     removeAt(index: number): Promise<E> {
-        return this.encodeInvoke<E>(ListRemoveWithIndexCodec, index);
+        return this.encodeInvoke(ListRemoveWithIndexCodec, index)
+            .then((clientMessage) => {
+                const response = ListRemoveWithIndexCodec.decodeResponse(clientMessage);
+                return this.toObject(response.response);
+            });
     }
 
     get(index: number): Promise<E> {
-        return this.encodeInvoke<E>(ListGetCodec, index);
+        return this.encodeInvoke(ListGetCodec, index)
+            .then((clientMessage) => {
+                const response = ListGetCodec.decodeResponse(clientMessage);
+                return this.toObject(response.response);
+            });
     }
 
     set(index: number, element: E): Promise<E> {
-        return this.encodeInvoke<E>(ListSetCodec, index, this.toData(element));
+        return this.encodeInvoke(ListSetCodec, index, this.toData(element))
+            .then((clientMessage) => {
+                const response = ListSetCodec.decodeResponse(clientMessage);
+                return this.toObject(response.response);
+            });
     }
 
     indexOf(element: E): Promise<number> {
-        return this.encodeInvoke<number>(ListIndexOfCodec, this.toData(element));
+        return this.encodeInvoke(ListIndexOfCodec, this.toData(element))
+            .then((clientMessage) => {
+                const response = ListIndexOfCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     lastIndexOf(element: E): Promise<number> {
-        return this.encodeInvoke<number>(ListLastIndexOfCodec, this.toData(element));
+        return this.encodeInvoke(ListLastIndexOfCodec, this.toData(element))
+            .then((clientMessage) => {
+                const response = ListLastIndexOfCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     size(): Promise<number> {
-        return this.encodeInvoke<number>(ListSizeCodec);
+        return this.encodeInvoke(ListSizeCodec)
+            .then((clientMessage) => {
+                const response = ListSizeCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     subList(start: number, end: number): Promise<ReadOnlyLazyList<E>> {
-        return this.encodeInvoke(ListSubCodec, start, end).then((encoded: Data[]) => {
-            return new ReadOnlyLazyList<E>(encoded, this.client.getSerializationService());
-        });
+        return this.encodeInvoke(ListSubCodec, start, end)
+            .then((clientMessage) => {
+                const response = ListSubCodec.decodeResponse(clientMessage);
+                return new ReadOnlyLazyList<E>(response.response, this.client.getSerializationService());
+            });
     }
 
     toArray(): Promise<E[]> {
-        return this.encodeInvoke(ListGetAllCodec).then((elements: Data[]) => {
-            return elements.map((element) => {
-                return this.toObject(element);
+        return this.encodeInvoke(ListGetAllCodec)
+            .then((clientMessage) => {
+                const response = ListGetAllCodec.decodeResponse(clientMessage);
+                return response.response.map<E>(this.toObject.bind(this));
             });
-        });
     }
 
     addItemListener(listener: ItemListener<E>, includeValue: boolean): Promise<string> {
         const listenerHandler = (message: ClientMessage) => {
-            ListAddListenerCodec.handle(message, (element: Data, uuid: string, eventType: number) => {
+            ListAddListenerCodec.handle(message, (element: Data, uuid: UUID, eventType: number) => {
                 const responseObject = element ? this.toObject(element) : null;
 
                 const member = this.client.getClusterService().getMember(uuid);
@@ -163,10 +228,10 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
             encodeAddRequest(localOnly: boolean): ClientMessage {
                 return ListAddListenerCodec.encodeRequest(name, includeValue, localOnly);
             },
-            decodeAddResponse(msg: ClientMessage): string {
+            decodeAddResponse(msg: ClientMessage): UUID {
                 return ListAddListenerCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest(listenerId: string): ClientMessage {
+            encodeRemoveRequest(listenerId: UUID): ClientMessage {
                 return ListRemoveListenerCodec.encodeRequest(name, listenerId);
             },
         };

@@ -16,11 +16,11 @@
 
 var expect = require("chai").expect;
 var HazelcastClient = require("../../lib/index.js").Client;
+const Config = require("../../lib/index.js").Config;
 var Controller = require('./../RC');
 var fs = require('fs');
 var _fillMap = require('../Util').fillMap;
 var promiseWaitMilliseconds = require('../Util').promiseWaitMilliseconds;
-var Util = require('../Util');
 
 describe('MapStore', function () {
     var cluster;
@@ -33,7 +33,9 @@ describe('MapStore', function () {
             cluster = res;
             return Controller.startMember(cluster.id);
         }).then(function (member) {
-            return HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
+            const cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
+            return HazelcastClient.newHazelcastClient(cfg).then(function (hazelcastClient) {
                 client = hazelcastClient;
             });
         });
@@ -53,7 +55,7 @@ describe('MapStore', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     it('loadAll with no arguments loads all keys', function () {
@@ -172,15 +174,14 @@ describe('MapStore', function () {
     });
 
     it('addEntryListener on map entryLoaded includeValue=true', function (done) {
-        Util.markServerVersionAtLeast(this, client, '3.11');
         var listenerObj = {
             loaded: function (entryEvent) {
                 try {
                     expect(entryEvent.name).to.equal('mapstore-test');
                     expect(entryEvent.key).to.equal('some-key');
                     expect(entryEvent.value).to.equal('some-value');
-                    expect(entryEvent.oldValue).to.be.undefined;
-                    expect(entryEvent.mergingValue).to.be.undefined;
+                    expect(entryEvent.oldValue).to.be.equal(null);
+                    expect(entryEvent.mergingValue).to.be.equal(null);
                     expect(entryEvent.member).to.not.be.equal(null);
                     done();
                 } catch (err) {

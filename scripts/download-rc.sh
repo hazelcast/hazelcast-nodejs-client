@@ -1,11 +1,11 @@
 #!/bin/sh
-HZ_VERSION="3.12.6"
-HZ_TEST_VERSION="3.12.6"
+HZ_VERSION="4.0.2-SNAPSHOT"
+HZ_TEST_VERSION="4.0.2-SNAPSHOT"
 HAZELCAST_TEST_VERSION=${HZ_TEST_VERSION}
 HAZELCAST_VERSION=${HZ_VERSION}
 HAZELCAST_ENTERPRISE_VERSION=${HZ_VERSION}
 HAZELCAST_ENTERPRISE_TEST_VERSION=${HZ_VERSION}
-HAZELCAST_RC_VERSION="0.4-SNAPSHOT"
+HAZELCAST_RC_VERSION="0.7-SNAPSHOT"
 SNAPSHOT_REPO="https://oss.sonatype.org/content/repositories/snapshots"
 RELEASE_REPO="http://repo1.maven.apache.org/maven2"
 ENTERPRISE_RELEASE_REPO="https://repository.hazelcast.com/release/"
@@ -69,7 +69,7 @@ if [ -n "${HAZELCAST_ENTERPRISE_KEY}" ]; then
         echo "hazelcast-enterprise-tests.jar already exists, not downloading from maven."
     else
         echo "Downloading: hazelcast enterprise test jar com.hazelcast:hazelcast-enterprise:${HAZELCAST_TEST_VERSION}:jar:tests"
-        mvn -q org.apache.maven.plugins:maven-dependency-plugin:2.8:get -DrepoUrl=${ENTERPRISE_REPO} -Dartifact=com.hazelcast:hazelcast-enterprise:${HAZELCAST_TEST_VERSION}:jar:tests -Ddest=hazelcast-enterprise-${HAZELCAST_TEST_VERSION}-tests.jar
+        mvn -q org.apache.maven.plugins:maven-dependency-plugin:2.8:get -DrepoUrl=${ENTRERPRISE_TEST_REPO} -Dartifact=com.hazelcast:hazelcast-enterprise:${HAZELCAST_TEST_VERSION}:jar:tests -Ddest=hazelcast-enterprise-${HAZELCAST_TEST_VERSION}-tests.jar
         if [ $? -ne 0 ]; then
             echo "Failed to download hazelcast enterprise test jar com.hazelcast:hazelcast-enterprise:${HAZELCAST_TEST_VERSION}:jar:tests"
             exit 1
@@ -93,7 +93,7 @@ else
     echo "Starting Remote Controller ... oss ..."
 fi
 
-nohup java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} -cp ${CLASSPATH}  com.hazelcast.remotecontroller.Main>rc_stdout.log 2>rc_stderr.log &
+nohup java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} -cp ${CLASSPATH}  com.hazelcast.remotecontroller.Main --use-simple-server>rc_stdout.log 2>rc_stderr.log &
 
 sleep 10
 

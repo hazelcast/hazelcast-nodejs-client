@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+
 var Statistics = require("../../lib/statistics/Statistics").Statistics;
 var expect = require('chai').expect;
 var BuildInfo = require('../../lib/BuildInfo').BuildInfo;
@@ -32,13 +33,13 @@ describe('Statistics with default period', function () {
     var map;
 
     before(function () {
-        TestUtil.markServerVersionAtLeast(this, null, '3.9.0');
         return RC.createCluster(null, null).then(function (res) {
             cluster = res;
         }).then(function () {
             return RC.startMember(cluster.id);
         }).then(function () {
             var cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
             var ncc = new Config.NearCacheConfig();
             ncc.name = 'nearCachedMap*';
             ncc.invalidateOnChange = false;
@@ -51,9 +52,8 @@ describe('Statistics with default period', function () {
     });
 
     after(function () {
-        TestUtil.markServerVersionAtLeast(this, null, '3.9.0');
         client.shutdown();
-        return RC.shutdownCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     beforeEach(function () {
@@ -86,9 +86,9 @@ describe('Statistics with default period', function () {
             expect(extractBooleanStatValue(stats, 'enterprise')).to.be.false;
             expect(extractStringStatValue(stats, 'clientType')).to.equal('NodeJS');
             expect(extractStringStatValue(stats, 'clientVersion')).to.equal(BuildInfo.getClientVersion());
-            var ownerConnection = client.getClusterService().getOwnerConnection();
-            expect(extractIntStatValue(stats, 'clusterConnectionTimestamp')).to.equal(ownerConnection.getStartTime());
-            expect(extractStringStatValue(stats, 'clientAddress')).to.equal(ownerConnection.getLocalAddress().toString());
+            const connection = client.getConnectionManager().getRandomConnection();
+            expect(extractIntStatValue(stats, 'clusterConnectionTimestamp')).to.equal(connection.getStartTime());
+            expect(extractStringStatValue(stats, 'clientAddress')).to.equal(connection.getLocalAddress().toString());
             expect(extractStringStatValue(stats, 'os.committedVirtualMemorySize')).to.equal('');
             expect(extractStringStatValue(stats, 'os.freeSwapSpaceSize')).to.equal('');
             expect(extractStringStatValue(stats, 'os.maxFileDescriptorCount')).to.equal('');
@@ -140,13 +140,13 @@ describe('Statistics with non-default period', function () {
     var client;
 
     before(function () {
-        TestUtil.markServerVersionAtLeast(this, null, '3.9.0');
         return RC.createCluster(null, null).then(function (res) {
             cluster = res;
         }).then(function () {
             return RC.startMember(cluster.id);
         }).then(function () {
             var cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
             cfg.properties['hazelcast.client.statistics.enabled'] = true;
             cfg.properties['hazelcast.client.statistics.period.seconds'] = 2;
             return Client.newHazelcastClient(cfg).then(function (cl) {
@@ -156,9 +156,8 @@ describe('Statistics with non-default period', function () {
     });
 
     after(function () {
-        TestUtil.markServerVersionAtLeast(this, null, '3.9.0');
         client.shutdown();
-        return RC.shutdownCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('should not change before period', function () {
@@ -193,13 +192,13 @@ describe('Statistics with negative period', function () {
     var cluster;
 
     before(function () {
-        TestUtil.markServerVersionAtLeast(this, null, '3.9.0');
         return RC.createCluster(null, null).then(function (res) {
             cluster = res;
         }).then(function () {
             return RC.startMember(cluster.id);
         }).then(function () {
             var cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
             cfg.properties['hazelcast.client.statistics.enabled'] = true;
             cfg.properties['hazelcast.client.statistics.period.seconds'] = -2;
             return Client.newHazelcastClient(cfg)
@@ -209,9 +208,8 @@ describe('Statistics with negative period', function () {
     });
 
     after(function () {
-        TestUtil.markServerVersionAtLeast(this, null, '3.9.0');
         client.shutdown();
-        return RC.shutdownCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('should be enabled via configuration', function () {
@@ -224,14 +222,15 @@ describe('Statistics with negative period', function () {
 });
 
 function getClientStatisticsFromServer(cluster, client) {
-    var clientUuid = client.getClusterService().uuid;
+    var clientUuid = client.getConnectionManager().getClientUuid();
     var script =
-        'clients=instance_0.getClientService().getConnectedClients().toArray()\n' +
-        'for(i=0;i<clients.length;i++) {\n' +
-        '   if (clients[i].getUuid().equals("' + clientUuid + '")) {\n' +
-        '       result=clients[i].getClientStatistics();\n' +
-        '       break;' +
-        '   }\n' +
+        'stats = instance_0.getOriginal().node.getClientEngine().getClientStatistics()\n' +
+        'keys = stats.keySet().toArray()\n' +
+        'for(i=0; i < keys.length; i++) {\n' +
+        '  if (keys[i].toString().equals("'+ clientUuid + '")) {\n' +
+        '    result = stats.get(keys[i]).clientAttributes()\n' +
+        '    break\n' +
+        '  }\n' +
         '}\n';
     return RC.executeOnController(cluster.id, script, 1).then(function (response) {
         if (response.result != null) {

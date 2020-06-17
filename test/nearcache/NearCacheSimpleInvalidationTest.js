@@ -31,6 +31,7 @@ describe('NearCacheSimpleInvalidation', function () {
 
     function createClientConfig() {
         var cfg = new Config.ClientConfig();
+        cfg.clusterName = cluster.id;
         var ncConfig = new Config.NearCacheConfig();
         ncConfig.name = mapName;
         cfg.nearCacheConfigs[mapName] = ncConfig;
@@ -52,7 +53,9 @@ describe('NearCacheSimpleInvalidation', function () {
                     return HazelcastClient.newHazelcastClient(createClientConfig());
                 }).then(function (cl) {
                     client = cl;
-                    return HazelcastClient.newHazelcastClient();
+                    const cfg = new Config.ClientConfig();
+                    cfg.clusterName = cluster.id;
+                    return HazelcastClient.newHazelcastClient(cfg);
                 }).then(function (cl) {
                     updaterClient = cl;
                 });
@@ -61,7 +64,7 @@ describe('NearCacheSimpleInvalidation', function () {
             after(function () {
                 client.shutdown();
                 updaterClient.shutdown();
-                return Controller.shutdownCluster(cluster.id);
+                return Controller.terminateCluster(cluster.id);
             });
 
             it('client observes outside invalidations', function () {

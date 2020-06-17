@@ -16,6 +16,8 @@
 
 var expect = require('chai').expect;
 var BuildInfo = require('../lib/BuildInfo').BuildInfo;
+var UuidUtil = require('../lib/util/UuidUtil').UuidUtil;
+
 var promiseLater = function (time, func) {
     if (func === undefined) {
         func = function () {
@@ -81,7 +83,7 @@ exports.markServerVersionAtLeast = function (_this, client, expectedVersion) {
     if (process.env['SERVER_VERSION']) {
         var actNumber = BuildInfo.calculateServerVersionFromString(process.env['SERVER_VERSION']);
     } else if (client != null) {
-        var actNumber = client.getClusterService().getOwnerConnection().getConnectedServerVersion();
+        var actNumber = client.getConnectionManager().getRandomConnection().getConnectedServerVersion();
     } else {
         return;
     }
@@ -103,11 +105,9 @@ exports.getRandomInt = function (lowerLim, upperLim) {
     return Math.floor(Math.random() * (upperLim - lowerLim)) + lowerLim;
 };
 
-exports.findMemberByAddress = function (client, address) {
-    return client.getClusterService().getMembers().find(function (m) {
-        return m.address.equals(address);
-    });
-};
-
 exports.promiseLater = promiseLater;
 exports.expectAlmostEqual = expectAlmostEqual;
+
+exports.randomString = function () {
+    return UuidUtil.generate().toString();
+};

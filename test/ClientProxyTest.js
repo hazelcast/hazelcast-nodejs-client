@@ -18,9 +18,10 @@ var Controller = require('./RC');
 var expect = require('chai').expect;
 
 var MapProxy = require('../lib/proxy/MapProxy').MapProxy;
-var ConnectionManager = require('../lib/invocation/ClientConnectionManager').ClientConnectionManager;
-var ClientConnection = require('../lib/invocation/ClientConnection').ClientConnection;
+var ConnectionManager = require('../lib/network/ClientConnectionManager').ClientConnectionManager;
+var ClientConnection = require('../lib/network/ClientConnection').ClientConnection;
 var HazelcastClient = require('../.').Client;
+var Config = require('../.').Config;
 var sinon = require('sinon');
 var assert = require('chai').assert;
 var sandbox = sinon.createSandbox();
@@ -32,15 +33,18 @@ describe('Generic proxy test', function () {
     var list;
 
     afterEach(function () {
-            sandbox.restore();
-            if (map && list) {
-                map.destroy();
-                list.destroy();
-                client.shutdown();
-                return Controller.shutdownCluster(cluster.id);
-            }
+        sandbox.restore();
+        if (map && list) {
+            return map.destroy()
+                .then(function () {
+                    return list.destroy();
+                })
+                .then(function () {
+                    client.shutdown();
+                    return Controller.terminateCluster(cluster.id);
+                });
         }
-    );
+    });
 
     it('Client without active connection should return unknown version', function () {
         var connectionManagerStub = sandbox.stub(ConnectionManager.prototype);
@@ -71,7 +75,9 @@ describe('Generic proxy test', function () {
             cluster = response;
             return Controller.startMember(cluster.id);
         }).then(function () {
-            return HazelcastClient.newHazelcastClient();
+            const config = new Config.ClientConfig();
+            config.clusterName = cluster.id;
+            return HazelcastClient.newHazelcastClient(config);
         }).then(function (res) {
             client = res;
             return client.getMap('Furkan').then(function (m) {
@@ -80,7 +86,8 @@ describe('Generic proxy test', function () {
             }).then(function (l) {
                 list = l;
                 expect(list.getServiceName()).to.be.equal('hz:impl:listService');
+                expect(map.getServiceName()).to.be.equal('hz:impl:mapService');
             });
         });
     });
-})
+});

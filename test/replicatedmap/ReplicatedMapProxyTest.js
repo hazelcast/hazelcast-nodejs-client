@@ -18,6 +18,7 @@
 
 var expect = require('chai').expect;
 var HazelcastClient = require('../../lib/index.js').Client;
+var Config = require('../../lib/index.js').Config;
 var Controller = require('./../RC');
 var Util = require('./../Util');
 var fs = require('fs');
@@ -39,7 +40,9 @@ describe('ReplicatedMap Proxy', function () {
             cluster = response;
             return Controller.startMember(cluster.id);
         }).then(function () {
-            return HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
+            const config = new Config.ClientConfig();
+            config.clusterName = cluster.id;
+            return HazelcastClient.newHazelcastClient(config).then(function (hazelcastClient) {
                 client = hazelcastClient;
             });
         });
@@ -57,7 +60,7 @@ describe('ReplicatedMap Proxy', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     it('puts one entry and gets one entry', function () {
@@ -107,13 +110,12 @@ describe('ReplicatedMap Proxy', function () {
             });
     });
 
-    // TODO(zemd): need to be verified separately due to strange NullPointerException from the server
-    // it('should not contain the key', function () {
-    //     return rm.containsKey('key')
-    //         .then(function (res) {
-    //             expect(res).to.equal(false);
-    //         });
-    // });
+    it('should not contain the key', function () {
+        return rm.containsKey('key')
+            .then(function (res) {
+                expect(res).to.equal(false);
+            });
+    });
 
     it('should contain the value', function () {
         return rm.put('key', 'value', ONE_HOUR)
@@ -284,8 +286,8 @@ describe('ReplicatedMap Proxy', function () {
                     expect(entryEvent.name).to.equal('test');
                     expect(entryEvent.key).to.equal('new-key');
                     expect(entryEvent.value).to.equal('value');
-                    expect(entryEvent.oldValue).to.be.undefined;
-                    expect(entryEvent.mergingValue).to.be.undefined;
+                    expect(entryEvent.oldValue).to.be.equal(null);
+                    expect(entryEvent.mergingValue).to.be.equal(null);
                     expect(entryEvent.member).to.not.be.equal(null);
                 } catch (err) {
                     error = err;
@@ -314,9 +316,9 @@ describe('ReplicatedMap Proxy', function () {
                 try {
                     expect(entryEvent.name).to.equal('test');
                     expect(entryEvent.key).to.equal('key-to-remove');
-                    expect(entryEvent.value).to.be.undefined;
+                    expect(entryEvent.value).to.be.equal(null);
                     expect(entryEvent.oldValue).to.equal('value');
-                    expect(entryEvent.mergingValue).to.be.undefined;
+                    expect(entryEvent.mergingValue).to.be.equal(null);
                     expect(entryEvent.member).to.not.be.equal(null);
                 } catch (err) {
                     error = err;
@@ -348,7 +350,7 @@ describe('ReplicatedMap Proxy', function () {
                     expect(entryEvent.key).to.equal('key-to-update');
                     expect(entryEvent.value).to.equal('value2');
                     expect(entryEvent.oldValue).to.equal('value1');
-                    expect(entryEvent.mergingValue).to.be.undefined;
+                    expect(entryEvent.mergingValue).to.be.equal(null);
                     expect(entryEvent.member).to.not.be.equal(null);
                 } catch (err) {
                     error = err;
@@ -419,8 +421,8 @@ describe('ReplicatedMap Proxy', function () {
                     expect(entryEvent.name).to.equal('test');
                     expect(entryEvent.key).to.equal('key1');
                     expect(entryEvent.value).to.equal('value');
-                    expect(entryEvent.oldValue).to.be.undefined;
-                    expect(entryEvent.mergingValue).to.be.undefined;
+                    expect(entryEvent.oldValue).to.be.equal(null);
+                    expect(entryEvent.mergingValue).to.be.equal(null);
                     expect(entryEvent.member).to.not.be.equal(null);
                 } catch (err) {
                     error = err;
@@ -455,8 +457,8 @@ describe('ReplicatedMap Proxy', function () {
                     expect(entryEvent.name).to.equal('test');
                     expect(entryEvent.key).to.equal('key10');
                     expect(entryEvent.value).to.equal('val10');
-                    expect(entryEvent.oldValue).to.be.undefined;
-                    expect(entryEvent.mergingValue).to.be.undefined;
+                    expect(entryEvent.oldValue).to.be.equal(null);
+                    expect(entryEvent.mergingValue).to.be.equal(null);
                     expect(entryEvent.member).to.not.be.equal(null);
                 } catch (err) {
                     error = err;
@@ -484,8 +486,8 @@ describe('ReplicatedMap Proxy', function () {
                     expect(entryEvent.name).to.equal('test');
                     expect(entryEvent.key).to.equal('key');
                     expect(entryEvent.value).to.be.equal('value');
-                    expect(entryEvent.oldValue).to.be.undefined;
-                    expect(entryEvent.mergingValue).to.be.undefined;
+                    expect(entryEvent.oldValue).to.be.equal(null);
+                    expect(entryEvent.mergingValue).to.be.equal(null);
                     expect(entryEvent.member).to.not.be.equal(null);
 
                 } catch (err) {

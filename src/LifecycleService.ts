@@ -15,36 +15,52 @@
  */
 
 import {EventEmitter} from 'events';
-import {ImportConfig} from './config/ImportConfig';
+import {ListenerImportConfig} from './config/ImportConfig';
 import HazelcastClient from './HazelcastClient';
 import * as Util from './Util';
 import {ILogger} from './logging/ILogger';
 
 /**
- * Lifecycle events.
+ * Lifecycle states.
  */
-export let LifecycleEvent = {
+export enum LifecycleState {
     /**
-     * events are emitted with this name.
+     * Fired when the client is starting.
      */
-    name: 'lifecycleEvent',
+    STARTING = 'STARTING',
+
     /**
-     * From creation of client to connected state.
+     * Fired when the client's start is completed.
      */
-    starting: 'starting',
+    STARTED = 'STARTED',
+
     /**
-     * Client is connected to cluster. Ready to use.
+     * Fired when the client is shutting down.
      */
-    started: 'started',
+    SHUTTING_DOWN = 'SHUTTING_DOWN',
+
     /**
-     * Disconnect initiated.
+     * Fired when the client's shut down is completed.
      */
-    shuttingDown: 'shuttingDown',
+    SHUTDOWN = 'SHUTDOWN',
+
     /**
-     * Disconnect completed gracefully.
+     * Fired when the client is connected to the member.
      */
-    shutdown: 'shutdown',
-};
+    CONNECTED = 'CONNECTED',
+
+    /**
+     * Fired when the client is disconnected from the member.
+     */
+    DISCONNECTED = 'DISCONNECTED',
+
+    /**
+     * Fired when the client is connected to a new cluster.
+     */
+    CHANGED_CLUSTER = 'CHANGED_CLUSTER',
+}
+
+const LIFECYCLE_EVENT_NAME = 'lifecycleEvent';
 
 /**
  * LifecycleService
@@ -59,35 +75,28 @@ export class LifecycleService extends EventEmitter {
         this.setMaxListeners(0);
         this.client = client;
         this.logger = this.client.getLoggingService().getLogger();
-        const listeners = client.getConfig().listeners.lifecycle;
+        const listeners = client.getConfig().listeners.lifecycleListeners;
         listeners.forEach((listener) => {
-            this.on(LifecycleEvent.name, listener);
+            this.on(LIFECYCLE_EVENT_NAME, listener);
         });
         const listenerConfigs = client.getConfig().listenerConfigs;
-        listenerConfigs.forEach((importConfig: ImportConfig) => {
-            const path = importConfig.path;
-            const exportedName = importConfig.exportedName;
-            const listener = Util.loadNameFromPath(path, exportedName);
-            this.on(LifecycleEvent.name, listener);
+        listenerConfigs.forEach((config: ListenerImportConfig) => {
+            if (config.type === 'lifecycle') {
+                const path = config.importConfig.path;
+                const exportedName = config.importConfig.exportedName;
+                const listener = Util.loadNameFromPath(path, exportedName);
+                this.on(LIFECYCLE_EVENT_NAME, listener);
+            }
         });
-        this.emitLifecycleEvent(LifecycleEvent.starting);
     }
 
     /**
      * Causes LifecycleService to emit given event to all registered listeners.
      * @param state
      */
-    emitLifecycleEvent(state: string): void {
-        if (!LifecycleEvent.hasOwnProperty(state)) {
-            throw new Error(state + ' is not a valid lifecycle event');
-        }
-        if (state === LifecycleEvent.started) {
-            this.active = true;
-        } else if (state === LifecycleEvent.shuttingDown) {
-            this.active = false;
-        }
+    emitLifecycleEvent(state: LifecycleState): void {
         this.logger.info('LifecycleService', 'HazelcastClient is ' + state);
-        this.emit(LifecycleEvent.name, state);
+        this.emit(LIFECYCLE_EVENT_NAME, state);
     }
 
     /**
@@ -96,5 +105,22 @@ export class LifecycleService extends EventEmitter {
      */
     isRunning(): boolean {
         return this.active;
+    }
+
+    public start(): void {
+        this.emitLifecycleEvent(LifecycleState.STARTING);
+        this.active = true;
+        this.emitLifecycleEvent(LifecycleState.STARTED);
+    }
+
+    public shutdown(): void {
+        if (!this.active) {
+            return;
+        }
+        this.active = false;
+
+        this.emitLifecycleEvent(LifecycleState.SHUTTING_DOWN);
+        this.client.doShutdown();
+        this.emitLifecycleEvent(LifecycleState.SHUTDOWN);
     }
 }

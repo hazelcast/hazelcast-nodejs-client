@@ -14,60 +14,31 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
 import {BitsUtil} from '../BitsUtil';
-import {ClientMessageType} from './ClientMessageType';
+import {ClientMessage, Frame, PARTITION_ID_OFFSET} from '../ClientMessage';
+import {EntryListCodec} from './builtin/EntryListCodec';
+import {StringCodec} from './builtin/StringCodec';
+import {ByteArrayCodec} from './builtin/ByteArrayCodec';
 
-var REQUEST_TYPE = ClientMessageType.CLIENT_DEPLOYCLASSES;
-var RESPONSE_TYPE = 100;
-var RETRYABLE = false;
+// hex: 0x000D00
+const REQUEST_MESSAGE_TYPE = 3328;
+// hex: 0x000D01
+const RESPONSE_MESSAGE_TYPE = 3329;
 
+const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
 export class ClientDeployClassesCodec {
+    static encodeRequest(classDefinitions: Array<[string, Buffer]>): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(false);
 
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
+        clientMessage.addFrame(initialFrame);
+        clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);
+        clientMessage.setPartitionId(-1);
 
-    static calculateSize(classDefinitions: any) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.INT_SIZE_IN_BYTES;
-
-        classDefinitions.forEach((classDefinitionsItem: any) => {
-            var key: string = classDefinitionsItem[0];
-            var val: any = classDefinitionsItem[1];
-            dataSize += BitsUtil.calculateSizeString(key);
-            dataSize += BitsUtil.INT_SIZE_IN_BYTES;
-            val.forEach((valItem: any) => {
-                dataSize += BitsUtil.BYTE_SIZE_IN_BYTES;
-            });
-        });
-        return dataSize;
-    }
-
-    static encodeRequest(classDefinitions: any) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(classDefinitions));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendInt32(classDefinitions.length);
-
-        classDefinitions.forEach((classDefinitionsItem: any) => {
-            var key: string = classDefinitionsItem[0];
-            var val: any = classDefinitionsItem[1];
-            clientMessage.appendString(key);
-            clientMessage.appendInt32(val.length);
-
-            val.forEach((valItem: any) => {
-                clientMessage.appendByte(valItem);
-            });
-
-        });
-
-        clientMessage.updateFrameLength();
+        EntryListCodec.encode(clientMessage, classDefinitions, StringCodec.encode, ByteArrayCodec.encode);
         return clientMessage;
     }
-
-// Empty decodeResponse(ClientMessage), this message has no parameters to decode
-
-
 }

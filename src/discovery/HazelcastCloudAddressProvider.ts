@@ -18,10 +18,12 @@ import {HazelcastCloudDiscovery} from './HazelcastCloudDiscovery';
 import {AddressProvider} from '../connection/AddressProvider';
 import * as Promise from 'bluebird';
 import {ILogger} from '../logging/ILogger';
+import {Address} from '../Address';
 
 export class HazelcastCloudAddressProvider implements AddressProvider {
     private readonly logger: ILogger;
     private readonly cloudDiscovery: HazelcastCloudDiscovery;
+    private privateToPublic: Map<string, Address> = new Map<string, Address>();
 
     constructor(endpointUrl: string, connectionTimeoutMillis: number, logger: ILogger) {
         this.cloudDiscovery = new HazelcastCloudDiscovery(endpointUrl, connectionTimeoutMillis);
@@ -35,6 +37,34 @@ export class HazelcastCloudAddressProvider implements AddressProvider {
             this.logger.warn('HazelcastCloudAddressProvider',
                 'Failed to load addresses from hazelcast.cloud : ' + e.message);
             return [];
+        });
+    }
+
+    translate(address: Address): Promise<Address> {
+        if (address == null) {
+            return Promise.resolve(null);
+        }
+        let publicAddress = this.privateToPublic.get(address.toString());
+        if (publicAddress != null) {
+            return Promise.resolve(publicAddress);
+        }
+
+        return this.refresh().then(() => {
+            publicAddress = this.privateToPublic.get(address.toString());
+            if (publicAddress != null) {
+                return publicAddress;
+            } else {
+                return null;
+            }
+        });
+    }
+
+    refresh(): Promise<void> {
+        return this.cloudDiscovery.discoverNodes().then((res) => {
+            this.privateToPublic = res;
+        }).catch((e) => {
+            this.logger.warn('HazelcastCloudAddressTranslator',
+                'Failed to load addresses from hazelcast.cloud : ' + e.message);
         });
     }
 }

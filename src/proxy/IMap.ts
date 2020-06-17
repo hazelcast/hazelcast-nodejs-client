@@ -16,12 +16,14 @@
 
 import * as Promise from 'bluebird';
 import {Aggregator} from '../aggregation/Aggregator';
-import {EntryView} from '../core/EntryView';
+import {SimpleEntryView} from '../core/SimpleEntryView';
 import {MapListener} from '../core/MapListener';
 import {Predicate} from '../core/Predicate';
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 import {DistributedObject} from '../DistributedObject';
 import {IdentifiedDataSerializable, Portable} from '../serialization/Serializable';
+import {IndexType} from '../config/IndexType';
+import {IndexConfig} from '../config/IndexConfig';
 
 export interface IMap<K, V> extends DistributedObject {
 
@@ -57,14 +59,55 @@ export interface IMap<K, V> extends DistributedObject {
     aggregateWithPredicate<R>(aggregator: Aggregator<R>, predicate: Predicate): Promise<R>;
 
     /**
-     * Adds an index to this map for the specified entries so that queries can run faster.
-     * @param attribute index attribute of value
-     * @param ordered `true` if index should be ordered, `false` otherwise.
+     * Adds an index to this map for the specified entries so
+     * that queries can run faster.
+     * <p>
+     * Let's say your map values are Employee objects.
+     * <pre>
+     *   class Employee implements Portable {
+     *     active: boolean = false;
+     *     age: number;
+     *     name: string = null;
+     *     // other fields
+     *
+     *     // portable implementation
+     *   }
+     * </pre>
+     * If you are querying your values mostly based on age and active then
+     * you may consider indexing these fields.
+     * <pre>
+     *   const imap = client.getMap('employees');
+     *   const ageIndex = new IndexConfig();
+     *   ageIndex.type = IndexType.SORTED;
+     *   ageIndex.addAttribute('age');
+     *   const activeIndex = new IndexConfig();
+     *   activeIndex.type = IndexType.HASH;
+     *   activeIndex.addAttribute('active');
+     *   imap.addIndex(ageIndex);  // Sorted index for range queries
+     *   imap.addIndex(activeIndex); // Hash index for equality predicates
+     * </pre>
+     * Index attribute should either have a getter method or be public.
+     * You should also make sure to add the indexes before adding
+     * entries to this map.
+     * <p>
+     * <b>Time to Index</b>
+     * <p>
+     * Indexing time is executed in parallel on each partition by operation threads. The Map
+     * is not blocked during this operation.
+     * <p>
+     * The time taken in proportional to the size of the Map and the number Members.
+     * <p>
+     * <b>Searches while indexes are being built</b>
+     * <p>
+     * Until the index finishes being created, any searches for the attribute will use a full Map scan,
+     * thus avoiding using a partially built index and returning incorrect results.
+     *
+     * @param indexConfig Index configuration.
      */
-    addIndex(attribute: string, ordered: boolean): Promise<void>;
+    addIndex(indexConfig: IndexConfig): Promise<void>;
 
     /**
-     * This method checks whether the map has an item asssociated with key
+     * This method checks whether the map has an item associated with key
      * @param key
      * @throws {RangeError} if key is undefined or null
      * @return `true` if the map contains the key, `false` otherwise.
@@ -119,9 +162,10 @@ export interface IMap<K, V> extends DistributedObject {
      * @param key
      * @param value
      * @throws {RangeError} if key is undefined or null
-     * @return value associated with key, `undefined` if the key did not exist before.
+     * @return value associated with key, `undefined` if the key did not exist before. If optional value is specified,
+     * a boolean representing whether or not entry is removed is returned.
      */
-    remove(key: K, value?: V): Promise<V>;
+    remove(key: K, value?: V): Promise<V | boolean>;
 
     /**
      * Removes specified key from map. Unlike {@link remove} this method does not return deleted value.
@@ -298,7 +342,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param key
      * @throws {RangeError} if key is null or undefined.
      */
-    getEntryView(key: K): Promise<EntryView<K, V>>;
+    getEntryView(key: K): Promise<SimpleEntryView<K, V>>;
 
     /**
      * Tries to acquire the lock for the specified key.

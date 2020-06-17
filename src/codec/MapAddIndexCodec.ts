@@ -14,41 +14,32 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
 import {BitsUtil} from '../BitsUtil';
-import {MapMessageType} from './MapMessageType';
+import {ClientMessage, Frame, PARTITION_ID_OFFSET} from '../ClientMessage';
+import {StringCodec} from './builtin/StringCodec';
+import {IndexConfig} from '../config/IndexConfig';
+import {IndexConfigCodec} from './custom/IndexConfigCodec';
 
-var REQUEST_TYPE = MapMessageType.MAP_ADDINDEX;
-var RESPONSE_TYPE = 100;
-var RETRYABLE = false;
+// hex: 0x012900
+const REQUEST_MESSAGE_TYPE = 76032;
+// hex: 0x012901
+const RESPONSE_MESSAGE_TYPE = 76033;
 
+const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
 export class MapAddIndexCodec {
+    static encodeRequest(name: string, indexConfig: IndexConfig): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(false);
 
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
+        clientMessage.addFrame(initialFrame);
+        clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);
+        clientMessage.setPartitionId(-1);
 
-    static calculateSize(name: string, attribute: string, ordered: boolean) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.calculateSizeString(attribute);
-        dataSize += BitsUtil.BOOLEAN_SIZE_IN_BYTES;
-        return dataSize;
-    }
-
-    static encodeRequest(name: string, attribute: string, ordered: boolean) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, attribute, ordered));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendString(attribute);
-        clientMessage.appendBoolean(ordered);
-        clientMessage.updateFrameLength();
+        StringCodec.encode(clientMessage, name);
+        IndexConfigCodec.encode(clientMessage, indexConfig);
         return clientMessage;
     }
-
-// Empty decodeResponse(ClientMessage), this message has no parameters to decode
-
-
 }

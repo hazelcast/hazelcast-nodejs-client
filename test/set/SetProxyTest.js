@@ -19,6 +19,7 @@ var Controller = require('./../RC');
 var Util = require('./../Util');
 
 var HazelcastClient = require("../../lib/index.js").Client;
+var Config = require("../../lib/index.js").Config;
 var ItemEventType = require('../../lib/core/ItemListener').ItemEventType;
 
 describe("Set Proxy", function () {
@@ -33,7 +34,9 @@ describe("Set Proxy", function () {
             cluster = response;
             return Controller.startMember(cluster.id);
         }).then(function () {
-            return HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
+            const config = new Config.ClientConfig();
+            config.clusterName = cluster.id;
+            return HazelcastClient.newHazelcastClient(config).then(function (hazelcastClient) {
                 client = hazelcastClient;
             });
         });
@@ -51,7 +54,7 @@ describe("Set Proxy", function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
 

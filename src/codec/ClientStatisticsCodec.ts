@@ -14,31 +14,36 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
 import {BitsUtil} from '../BitsUtil';
-import {ClientMessageType} from './ClientMessageType';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, PARTITION_ID_OFFSET} from '../ClientMessage';
+import * as Long from 'long';
+import {StringCodec} from './builtin/StringCodec';
+import {Buffer} from 'safe-buffer';
+import {ByteArrayCodec} from './builtin/ByteArrayCodec';
 
-var REQUEST_TYPE = ClientMessageType.CLIENT_STATISTICS;
-var RETRYABLE = false;
+// hex: 0x000C00
+const REQUEST_MESSAGE_TYPE = 3072;
+// hex: 0x000C01
+const RESPONSE_MESSAGE_TYPE = 3073;
 
+const REQUEST_TIMESTAMP_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const REQUEST_INITIAL_FRAME_SIZE = REQUEST_TIMESTAMP_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
 export class ClientStatisticsCodec {
-    static calculateSize(stats: string) {
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(stats);
-        return dataSize;
-    }
+    static encodeRequest(timestamp: Long, clientAttributes: string, metricsBlob: Buffer): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(false);
 
-    static encodeRequest(stats: string) {
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(stats));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(stats);
-        clientMessage.updateFrameLength();
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
+        FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_TIMESTAMP_OFFSET, timestamp);
+        clientMessage.addFrame(initialFrame);
+        clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);
+        clientMessage.setPartitionId(-1);
+
+        StringCodec.encode(clientMessage, clientAttributes);
+        ByteArrayCodec.encode(clientMessage, metricsBlob);
         return clientMessage;
     }
-
-// Empty decodeResponse(ClientMessage), this message has no parameters to decode
-
 }

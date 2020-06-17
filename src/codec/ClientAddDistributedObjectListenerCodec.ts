@@ -14,67 +14,61 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
 import {BitsUtil} from '../BitsUtil';
-import {Data} from '../serialization/Data';
-import {ClientMessageType} from './ClientMessageType';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET} from '../ClientMessage';
+import {UUID} from '../core/UUID';
+import {StringCodec} from './builtin/StringCodec';
 
-var REQUEST_TYPE = ClientMessageType.CLIENT_ADDDISTRIBUTEDOBJECTLISTENER;
-var RESPONSE_TYPE = 104;
-var RETRYABLE = false;
+// hex: 0x000900
+const REQUEST_MESSAGE_TYPE = 2304;
+// hex: 0x000901
+const RESPONSE_MESSAGE_TYPE = 2305;
+// hex: 0x000902
+const EVENT_DISTRIBUTED_OBJECT_MESSAGE_TYPE = 2306;
 
+const REQUEST_LOCAL_ONLY_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const REQUEST_INITIAL_FRAME_SIZE = REQUEST_LOCAL_ONLY_OFFSET + BitsUtil.BOOLEAN_SIZE_IN_BYTES;
+const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
+const EVENT_DISTRIBUTED_OBJECT_SOURCE_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+
+export interface ClientAddDistributedObjectListenerResponseParams {
+    response: UUID;
+}
 
 export class ClientAddDistributedObjectListenerCodec {
+    static encodeRequest(localOnly: boolean): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(false);
 
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
+        FixSizedTypesCodec.encodeBoolean(initialFrame.content, REQUEST_LOCAL_ONLY_OFFSET, localOnly);
+        clientMessage.addFrame(initialFrame);
+        clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);
+        clientMessage.setPartitionId(-1);
 
-    static calculateSize(localOnly: boolean) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.BOOLEAN_SIZE_IN_BYTES;
-        return dataSize;
-    }
-
-    static encodeRequest(localOnly: boolean) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(localOnly));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendBoolean(localOnly);
-        clientMessage.updateFrameLength();
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        // Decode response from client message
-        var parameters: any = {
-            'response': null
+    static decodeResponse(clientMessage: ClientMessage): ClientAddDistributedObjectListenerResponseParams {
+        const initialFrame = clientMessage.nextFrame();
+
+        return {
+            response: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
         };
-
-        parameters['response'] = clientMessage.readString();
-
-        return parameters;
     }
 
-    static handle(clientMessage: ClientMessage, handleEventDistributedobject: any, toObjectFunction: (data: Data) => any = null) {
-
-        var messageType = clientMessage.getMessageType();
-        if (messageType === BitsUtil.EVENT_DISTRIBUTEDOBJECT && handleEventDistributedobject !== null) {
-            var messageFinished = false;
-            var name: string = undefined;
-            if (!messageFinished) {
-                name = clientMessage.readString();
-            }
-            var serviceName: string = undefined;
-            if (!messageFinished) {
-                serviceName = clientMessage.readString();
-            }
-            var eventType: string = undefined;
-            if (!messageFinished) {
-                eventType = clientMessage.readString();
-            }
-            handleEventDistributedobject(name, serviceName, eventType);
+    static handle(clientMessage: ClientMessage, handleDistributedObjectEvent: (name: string, serviceName: string, eventType: string, source: UUID) => void = null): void {
+        const messageType = clientMessage.getMessageType();
+        if (messageType === EVENT_DISTRIBUTED_OBJECT_MESSAGE_TYPE && handleDistributedObjectEvent !== null) {
+            const initialFrame = clientMessage.nextFrame();
+            const source = FixSizedTypesCodec.decodeUUID(initialFrame.content, EVENT_DISTRIBUTED_OBJECT_SOURCE_OFFSET);
+            const name = StringCodec.decode(clientMessage);
+            const serviceName = StringCodec.decode(clientMessage);
+            const eventType = StringCodec.decode(clientMessage);
+            handleDistributedObjectEvent(name, serviceName, eventType, source);
+            return;
         }
     }
-
 }

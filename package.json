@@ -14,7 +14,6 @@
     "@types/node": "6.0.87",
     "chai": "4.1.2",
     "chai-as-promised": "7.1.1",
-    "hazelcast-remote-controller": "^1.0.0",
     "istanbul": "0.4.5",
     "jsonschema": "1.2.4",
     "mocha": "3.5.3",
@@ -23,6 +22,7 @@
     "remap-istanbul": "0.9.6",
     "rimraf": "2.6.2",
     "sinon": "4.0.0",
+    "thrift": "^0.9.3",
     "tslint": "5.7.0",
     "typescript": "2.5.2",
     "winston": "2.3.1"

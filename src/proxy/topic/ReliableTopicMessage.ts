@@ -17,9 +17,9 @@
 import * as Long from 'long';
 import {Data, DataInput, DataOutput} from '../../serialization/Data';
 import {IdentifiedDataSerializable, IdentifiedDataSerializableFactory} from '../../serialization/Serializable';
-import Address = require('../../Address');
+import {Address} from '../../Address';
 
-export const RELIABLE_TOPIC_MESSAGE_FACTORY_ID = -18;
+export const RELIABLE_TOPIC_MESSAGE_FACTORY_ID = -9;
 export const RELIABLE_TOPIC_CLASS_ID = 2;
 
 export class ReliableTopicMessage implements IdentifiedDataSerializable {

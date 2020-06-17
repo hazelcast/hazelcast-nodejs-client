@@ -44,7 +44,7 @@
                         "type": {
                             "enum": [
                                 "lifecycle",
-                                "map"
+                                "membership"
                             ]
                         }
                     }
@@ -73,24 +73,27 @@
         }
     },
     "properties": {
-        "group": {
-            "type": "object",
-            "required": [
-                "name",
-                "password"
-            ],
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                }
-            },
-            "additionalProperties": false
+        "clusterName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "instanceName": {
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "properties": {
             "$ref": "#/definitions/propertiesObject"
+        },
+        "clientLabels": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+                "type": "string"
+            }
         },
         "network": {
             "type": "object",
@@ -112,15 +115,20 @@
                     "minimum": 1000,
                     "default": 5000
                 },
-                "connectionAttemptPeriod": {
-                    "type": "number",
-                    "minimum": 1,
-                    "default": 3000
-                },
-                "connectionAttemptLimit": {
-                    "type": "number",
-                    "minimum": 0,
-                    "default": 2
+                "hazelcastCloud": {
+                    "type": "object",
+                    "properties": {
+                        "discoveryToken": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "enabled": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    }
                 },
                 "ssl": {
                     "type": "object",
@@ -128,6 +136,21 @@
                         "enabled": {
                             "type": "boolean",
                             "default": false
+                        },
+                        "sslOptions": {
+                            "anyOf": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "properties": {
+                                            "$ref": "#/definitions/propertiesObject"
+                                        }
+                                    }
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ]
                         },
                         "factory": {
                             "anyOf": [
@@ -141,8 +164,52 @@
                                             "$ref": "#/definitions/propertiesObject"
                                         }
                                     }
+                                },
+                                {
+                                    "type": "null"
                                 }
                             ]
+                        }
+                    }
+                }
+            }
+        },
+        "connectionStrategy": {
+            "type": "object",
+            "properties": {
+                "asyncStart": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "reconnectMode": {
+                    "enum": [
+                        "on",
+                        "off",
+                        "async"
+                    ]
+                },
+                "connectionRetry": {
+                    "type": "object",
+                    "properties": {
+                        "initialBackoffMillis": {
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "maxBackoffMillis": {
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "multiplier": {
+                            "type": "number",
+                            "minimum": 1
+                        },
+                        "clusterConnectTimeoutMillis": {
+                            "type": "number"
+                        },
+                        "jitter": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
                         }
                     }
                 }
@@ -300,6 +367,17 @@
                         ],
                         "default": "block"
                     }
+                }
+            }
+        },
+        "loadBalancer": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "enum": [
+                        "roundRobin",
+                        "random"
+                    ]
                 }
             }
         },

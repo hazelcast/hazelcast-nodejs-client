@@ -21,7 +21,6 @@ var Aggregators = require('../../').Aggregators;
 var Predicates = require('../../').Predicates;
 var Long = require('long');
 var expect = require('chai').expect;
-var Util = require('../Util');
 
 describe('MapAggregatorsLongTest', function () {
     var cluster;
@@ -30,12 +29,13 @@ describe('MapAggregatorsLongTest', function () {
     var entryCount = 50;
 
     before(function () {
-        var cfg = new Config.ClientConfig();
-        cfg.serializationConfig.defaultNumberType = 'long';
         return Controller.createCluster(null, null).then(function (cl) {
             cluster = cl;
             return Controller.startMember(cluster.id);
         }).then(function () {
+            const cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
+            cfg.serializationConfig.defaultNumberType = 'long';
             return Client.newHazelcastClient(cfg);
         }).then(function (cl) {
             client = cl;
@@ -47,11 +47,10 @@ describe('MapAggregatorsLongTest', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     beforeEach(function () {
-        Util.markServerVersionAtLeast(this, client, '3.8');
         var entries = [];
         for (var i = 0; i < entryCount; i++) {
             entries.push(['key' + i, Long.fromNumber(i)]);

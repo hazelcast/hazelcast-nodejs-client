@@ -16,6 +16,7 @@
 
 var expect = require("chai").expect;
 var HazelcastClient = require("../../lib/index.js").Client;
+const Config = require("../../lib/index.js").Config;
 var Controller = require('./../RC');
 var Util = require('./../Util');
 var Promise = require('bluebird');
@@ -33,7 +34,9 @@ describe("MultiMap Proxy", function () {
             cluster = response;
             return Controller.startMember(cluster.id);
         }).then(function () {
-            return HazelcastClient.newHazelcastClient().then(function (hazelcastClient) {
+            const cfg = new Config.ClientConfig();
+            cfg.clusterName = cluster.id;
+            return HazelcastClient.newHazelcastClient(cfg).then(function (hazelcastClient) {
                 client = hazelcastClient;
             })
         });
@@ -51,7 +54,7 @@ describe("MultiMap Proxy", function () {
 
     after(function () {
         client.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     it("adds and retrieves a single item", function () {

@@ -35,7 +35,7 @@ import {HazelcastError} from '../HazelcastError';
 
 export class AggregatorFactory implements IdentifiedDataSerializableFactory {
 
-    static readonly FACTORY_ID = -41;
+    static readonly FACTORY_ID = -29;
 
     static readonly BIG_DECIMAL_AVG = 0; // not implemented in node.js
     static readonly BIG_DECIMAL_SUM = 1; // not implemented in node.js

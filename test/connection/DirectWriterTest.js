@@ -22,7 +22,7 @@ const sinon = require('sinon');
 const expect = require('chai').expect;
 
 const DeferredPromise = require('../../lib/Util').DeferredPromise;
-const DirectWriter = require('../../lib/invocation/ClientConnection').DirectWriter;
+const DirectWriter = require('../../lib/network/ClientConnection').DirectWriter;
 
 describe('DirectWriter', function () {
 

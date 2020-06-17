@@ -34,7 +34,7 @@ describe('Heartbeat', function () {
     });
 
     afterEach(function () {
-        return RC.shutdownCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('client sends heartbeat periodically even when server continuously pushes messages', function () {
@@ -49,6 +49,7 @@ describe('Heartbeat', function () {
         var pushTask;
 
         var clientConfig = new Config.ClientConfig();
+        clientConfig.clusterName = cluster.id;
         clientConfig.properties['hazelcast.client.heartbeat.interval'] = 1000;
         return RC.startMember(cluster.id).then(function (m) {
             member = m;
@@ -84,6 +85,8 @@ describe('Heartbeat', function () {
         }).then(function () {
             clearInterval(pushTask);
             expect(connectionClosedEventCount).to.equal(0);
+            client1.shutdown();
+            client2.shutdown();
         });
     });
 });

@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-import Address = require('../Address');
+import {Address} from '../Address';
+import {UUID} from './UUID';
+import {MemberVersion} from './MemberVersion';
 
 export class Member {
     /**
@@ -24,34 +26,52 @@ export class Member {
     /**
      * Unique id of member in cluster.
      */
-    uuid: string;
+    uuid: UUID;
     /**
      * true if member is a lite member.
      */
-    isLiteMember: boolean;
-    attributes: { [id: string]: string };
+    liteMember: boolean;
+    attributes: Map<string, string>;
+    version: MemberVersion;
 
-    constructor(address: Address, uuid: string, isLiteMember = false, attributes: { [id: string]: string } = {}) {
+    constructor(address: Address, uuid: UUID, attributes: Map<string, string>, liteMember: boolean, version: MemberVersion) {
         this.address = address;
         this.uuid = uuid;
-        this.isLiteMember = isLiteMember;
         this.attributes = attributes;
+        this.liteMember = liteMember;
+        this.version = version;
     }
 
     equals(other: Member): boolean {
-        if (other === this) {
-            return true;
-        }
         if (other == null) {
             return false;
         }
-        if (other.address.equals(this.address) && other.uuid === this.uuid && other.isLiteMember === this.isLiteMember) {
-            return true;
+
+        if (!this.address.equals(other.address)) {
+            return false;
         }
-        return false;
+
+        return this.uuid != null ? this.uuid.equals(other.uuid) : other.uuid === null;
     }
 
     toString(): string {
-        return 'Member[ uuid: ' + this.uuid.toString() + ', address: ' + this.address.toString() + ']';
+        let memberStr = 'Member ['
+        + this.address.host
+        + ']:'
+        + this.address.port
+        + ' - '
+        + this.uuid.toString();
+        if (this.liteMember) {
+            memberStr += ' lite';
+        }
+        return memberStr;
+    }
+
+    id(): string {
+        let hashCode = this.address.toString();
+        if (this.uuid) {
+            hashCode += this.uuid.toString();
+        }
+        return hashCode;
     }
 }

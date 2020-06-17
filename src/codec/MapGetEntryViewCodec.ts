@@ -14,55 +14,54 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
 import {BitsUtil} from '../BitsUtil';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
+import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET} from '../ClientMessage';
+import * as Long from 'long';
+import {StringCodec} from './builtin/StringCodec';
 import {Data} from '../serialization/Data';
-import {EntryViewCodec} from './EntryViewCodec';
-import {MapMessageType} from './MapMessageType';
+import {DataCodec} from './builtin/DataCodec';
+import {SimpleEntryView} from '../core/SimpleEntryView';
+import {SimpleEntryViewCodec} from './custom/SimpleEntryViewCodec';
+import {CodecUtil} from './builtin/CodecUtil';
 
-var REQUEST_TYPE = MapMessageType.MAP_GETENTRYVIEW;
-var RESPONSE_TYPE = 111;
-var RETRYABLE = true;
+// hex: 0x011D00
+const REQUEST_MESSAGE_TYPE = 72960;
+// hex: 0x011D01
+const RESPONSE_MESSAGE_TYPE = 72961;
 
+const REQUEST_THREAD_ID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const REQUEST_INITIAL_FRAME_SIZE = REQUEST_THREAD_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
+const RESPONSE_MAX_IDLE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
+
+export interface MapGetEntryViewResponseParams {
+    response: SimpleEntryView<Data, Data>;
+    maxIdle: Long;
+}
 
 export class MapGetEntryViewCodec {
+    static encodeRequest(name: string, key: Data, threadId: Long): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(true);
 
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
+        FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_THREAD_ID_OFFSET, threadId);
+        clientMessage.addFrame(initialFrame);
+        clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);
+        clientMessage.setPartitionId(-1);
 
-    static calculateSize(name: string, key: Data, threadId: any) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.calculateSizeData(key);
-        dataSize += BitsUtil.LONG_SIZE_IN_BYTES;
-        return dataSize;
-    }
-
-    static encodeRequest(name: string, key: Data, threadId: any) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, key, threadId));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendData(key);
-        clientMessage.appendLong(threadId);
-        clientMessage.updateFrameLength();
+        StringCodec.encode(clientMessage, name);
+        DataCodec.encode(clientMessage, key);
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        // Decode response from client message
-        var parameters: any = {
-            'response': null
+    static decodeResponse(clientMessage: ClientMessage): MapGetEntryViewResponseParams {
+        const initialFrame = clientMessage.nextFrame();
+
+        return {
+            maxIdle: FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_MAX_IDLE_OFFSET),
+            response: CodecUtil.decodeNullable(clientMessage, SimpleEntryViewCodec.decode),
         };
-
-
-        if (clientMessage.readBoolean() !== true) {
-            parameters['response'] = EntryViewCodec.decode(clientMessage, toObjectFunction);
-        }
-
-        return parameters;
     }
-
-
 }

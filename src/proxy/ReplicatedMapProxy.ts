@@ -46,7 +46,9 @@ import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {MapEvent} from '../core/MapListener';
 /* tslint:enable:max-line-length */
 import Long = require('long');
-import ClientMessage = require('../ClientMessage');
+import {UUID} from '../core/UUID';
+import {ClientMessage} from '../ClientMessage';
+import * as SerializationUtil from '../serialization/SerializationUtil';
 
 export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements ReplicatedMap<K, V> {
 
@@ -57,47 +59,76 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         const valueData: Data = this.toData(value);
         const keyData: Data = this.toData(key);
 
-        return this.encodeInvokeOnKey<V>(ReplicatedMapPutCodec, keyData, keyData, valueData, ttl);
+        return this.encodeInvokeOnKey(ReplicatedMapPutCodec, keyData, keyData, valueData, ttl)
+            .then((clientMessage) => {
+                const response = ReplicatedMapPutCodec.decodeResponse(clientMessage);
+                return this.toObject(response.response);
+            });
     }
 
     clear(): Promise<void> {
-        return this.encodeInvokeOnRandomTarget<void>(ReplicatedMapClearCodec);
+        return this.encodeInvokeOnRandomTarget(ReplicatedMapClearCodec)
+            .then(() => undefined);
     }
 
     get(key: K): Promise<V> {
         assertNotNull(key);
 
         const keyData = this.toData(key);
-        return this.encodeInvokeOnKey<V>(ReplicatedMapGetCodec, keyData, keyData);
+        return this.encodeInvokeOnKey(ReplicatedMapGetCodec, keyData, keyData)
+            .then((clientMessage) => {
+                const response = ReplicatedMapGetCodec.decodeResponse(clientMessage);
+                return this.toObject(response.response);
+            });
     }
 
     containsKey(key: K): Promise<boolean> {
         assertNotNull(key);
 
         const keyData = this.toData(key);
-        return this.encodeInvokeOnKey<boolean>(ReplicatedMapContainsKeyCodec, keyData, keyData);
+        return this.encodeInvokeOnKey(ReplicatedMapContainsKeyCodec, keyData, keyData)
+            .then((clientMessage) => {
+                const response = ReplicatedMapContainsKeyCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     containsValue(value: V): Promise<boolean> {
         assertNotNull(value);
 
         const valueData = this.toData(value);
-        return this.encodeInvoke<boolean>(ReplicatedMapContainsValueCodec, valueData);
+        return this.encodeInvoke(ReplicatedMapContainsValueCodec, valueData)
+            .then((clientMessage) => {
+                const response = ReplicatedMapContainsValueCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     size(): Promise<number> {
-        return this.encodeInvoke<number>(ReplicatedMapSizeCodec);
+        return this.encodeInvoke(ReplicatedMapSizeCodec)
+            .then((clientMessage) => {
+                const response = ReplicatedMapSizeCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     isEmpty(): Promise<boolean> {
-        return this.encodeInvoke<boolean>(ReplicatedMapIsEmptyCodec);
+        return this.encodeInvoke(ReplicatedMapIsEmptyCodec)
+            .then((clientMessage) => {
+                const response = ReplicatedMapIsEmptyCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     remove(key: K): Promise<V> {
         assertNotNull(key);
 
         const keyData = this.toData(key);
-        return this.encodeInvokeOnKey<V>(ReplicatedMapRemoveCodec, keyData, keyData);
+        return this.encodeInvokeOnKey(ReplicatedMapRemoveCodec, keyData, keyData)
+            .then((clientMessage) => {
+                const response = ReplicatedMapRemoveCodec.decodeResponse(clientMessage);
+                return this.toObject(response.response);
+            });
     }
 
     putAll(pairs: Array<[K, V]>): Promise<void> {
@@ -111,32 +142,38 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
             entries.push([keyData, valueData]);
         }
 
-        return this.encodeInvokeOnRandomTarget<void>(ReplicatedMapPutAllCodec, entries);
+        return this.encodeInvokeOnRandomTarget(ReplicatedMapPutAllCodec, entries)
+            .then(() => undefined);
     }
 
     keySet(): Promise<K[]> {
         const toObject = this.toObject.bind(this);
-        return this.encodeInvoke<K[]>(ReplicatedMapKeySetCodec).then(function (keySet): K[] {
-            return keySet.map<K>(toObject);
-        });
+        return this.encodeInvoke(ReplicatedMapKeySetCodec)
+            .then((clientMessage) => {
+                const response = ReplicatedMapKeySetCodec.decodeResponse(clientMessage);
+                return response.response.map(toObject);
+            });
     }
 
     values(comparator?: ArrayComparator<V>): Promise<ReadOnlyLazyList<V>> {
-        const toObject = this.toObject.bind(this);
-        return this.encodeInvoke<Data[]>(ReplicatedMapValuesCodec).then((valuesData: Data[]) => {
-            if (comparator) {
-                const desValues = valuesData.map(toObject);
-                return new ReadOnlyLazyList(desValues.sort(comparator), this.client.getSerializationService());
-            }
-            return new ReadOnlyLazyList(valuesData, this.client.getSerializationService());
-        });
+        return this.encodeInvoke(ReplicatedMapValuesCodec)
+            .then((clientMessage) => {
+                const response = ReplicatedMapValuesCodec.decodeResponse(clientMessage);
+                const valuesData = response.response;
+                if (comparator) {
+                    const desValues = valuesData.map(this.toObject.bind(this));
+                    return new ReadOnlyLazyList(desValues.sort(comparator), this.client.getSerializationService());
+                }
+                return new ReadOnlyLazyList(valuesData, this.client.getSerializationService());
+            });
     }
 
     entrySet(): Promise<Array<[K, V]>> {
-        const toObject = this.toObject.bind(this);
-        return this.encodeInvoke(ReplicatedMapEntrySetCodec).then(function (entrySet: Array<[Data, Data]>): Array<[K, V]> {
-            return entrySet.map<[K, V]>((entry) => [toObject(entry[0]), toObject(entry[1])]);
-        });
+        return this.encodeInvoke(ReplicatedMapEntrySetCodec)
+            .then((clientMessage) => {
+                const response = ReplicatedMapEntrySetCodec.decodeResponse(clientMessage);
+                return SerializationUtil.deserializeEntryList(this.toObject.bind(this), response.response);
+            });
     }
 
     addEntryListenerToKeyWithPredicate(listener: EntryListener<K, V>, key: K, predicate: Predicate): Promise<string> {
@@ -164,7 +201,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         const toObject = this.toObject.bind(this);
         /* tslint:disable-next-line:no-shadowed-variable */
         const entryEventHandler = (key: K, value: V, oldValue: V, mergingValue: V,
-                                   event: number, uuid: string, numberOfAffectedEntries: number) => {
+                                   event: number, uuid: UUID, numberOfAffectedEntries: number) => {
             const member = this.client.getClusterService().getMember(uuid);
             const name = this.name;
 
@@ -226,10 +263,10 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
             encodeAddRequest(localOnly: boolean): ClientMessage {
                 return ReplicatedMapAddEntryListenerCodec.encodeRequest(name, localOnly);
             },
-            decodeAddResponse(msg: ClientMessage): string {
+            decodeAddResponse(msg: ClientMessage): UUID {
                 return ReplicatedMapAddEntryListenerCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest(listenerId: string): ClientMessage {
+            encodeRemoveRequest(listenerId: UUID): ClientMessage {
                 return ReplicatedMapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
             },
         };
@@ -240,10 +277,10 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
             encodeAddRequest(localOnly: boolean): ClientMessage {
                 return ReplicatedMapAddEntryListenerToKeyCodec.encodeRequest(name, keyData, localOnly);
             },
-            decodeAddResponse(msg: ClientMessage): string {
+            decodeAddResponse(msg: ClientMessage): UUID {
                 return ReplicatedMapAddEntryListenerToKeyCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest(listenerId: string): ClientMessage {
+            encodeRemoveRequest(listenerId: UUID): ClientMessage {
                 return ReplicatedMapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
             },
         };
@@ -254,10 +291,10 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
             encodeAddRequest(localOnly: boolean): ClientMessage {
                 return ReplicatedMapAddEntryListenerWithPredicateCodec.encodeRequest(name, predicateData, localOnly);
             },
-            decodeAddResponse(msg: ClientMessage): string {
+            decodeAddResponse(msg: ClientMessage): UUID {
                 return ReplicatedMapAddEntryListenerWithPredicateCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest(listenerId: string): ClientMessage {
+            encodeRemoveRequest(listenerId: UUID): ClientMessage {
                 return ReplicatedMapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
             },
         };
@@ -269,10 +306,10 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
                 return ReplicatedMapAddEntryListenerToKeyWithPredicateCodec.encodeRequest(name, keyData, predicateData,
                     localOnly);
             },
-            decodeAddResponse(msg: ClientMessage): string {
+            decodeAddResponse(msg: ClientMessage): UUID {
                 return ReplicatedMapAddEntryListenerToKeyWithPredicateCodec.decodeResponse(msg).response;
             },
-            encodeRemoveRequest(listenerId: string): ClientMessage {
+            encodeRemoveRequest(listenerId: UUID): ClientMessage {
                 return ReplicatedMapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
             },
         };

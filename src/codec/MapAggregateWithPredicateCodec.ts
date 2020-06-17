@@ -14,57 +14,47 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-import ClientMessage = require('../ClientMessage');
+/*tslint:disable:max-line-length*/
 import {BitsUtil} from '../BitsUtil';
+import {ClientMessage, Frame, PARTITION_ID_OFFSET} from '../ClientMessage';
+import {StringCodec} from './builtin/StringCodec';
 import {Data} from '../serialization/Data';
-import {MapMessageType} from './MapMessageType';
+import {DataCodec} from './builtin/DataCodec';
+import {CodecUtil} from './builtin/CodecUtil';
 
-var REQUEST_TYPE = MapMessageType.MAP_AGGREGATEWITHPREDICATE;
-var RESPONSE_TYPE = 105;
-var RETRYABLE = true;
+// hex: 0x013A00
+const REQUEST_MESSAGE_TYPE = 80384;
+// hex: 0x013A01
+const RESPONSE_MESSAGE_TYPE = 80385;
 
+const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+
+export interface MapAggregateWithPredicateResponseParams {
+    response: Data;
+}
 
 export class MapAggregateWithPredicateCodec {
+    static encodeRequest(name: string, aggregator: Data, predicate: Data): ClientMessage {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.setRetryable(true);
 
+        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
+        clientMessage.addFrame(initialFrame);
+        clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);
+        clientMessage.setPartitionId(-1);
 
-    static calculateSize(name: string, aggregator: Data, predicate: Data) {
-// Calculates the request payload size
-        var dataSize: number = 0;
-        dataSize += BitsUtil.calculateSizeString(name);
-        dataSize += BitsUtil.calculateSizeData(aggregator);
-        dataSize += BitsUtil.calculateSizeData(predicate);
-        return dataSize;
-    }
-
-    static encodeRequest(name: string, aggregator: Data, predicate: Data) {
-// Encode request into clientMessage
-        var clientMessage = ClientMessage.newClientMessage(this.calculateSize(name, aggregator, predicate));
-        clientMessage.setMessageType(REQUEST_TYPE);
-        clientMessage.setRetryable(RETRYABLE);
-        clientMessage.appendString(name);
-        clientMessage.appendData(aggregator);
-        clientMessage.appendData(predicate);
-        clientMessage.updateFrameLength();
+        StringCodec.encode(clientMessage, name);
+        DataCodec.encode(clientMessage, aggregator);
+        DataCodec.encode(clientMessage, predicate);
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage, toObjectFunction: (data: Data) => any = null) {
-        // Decode response from client message
-        var parameters: any = {
-            'response': null
+    static decodeResponse(clientMessage: ClientMessage): MapAggregateWithPredicateResponseParams {
+        // empty initial frame
+        clientMessage.nextFrame();
+
+        return {
+            response: CodecUtil.decodeNullable(clientMessage, DataCodec.decode),
         };
-
-        if (clientMessage.isComplete()) {
-            return parameters;
-        }
-
-        if (clientMessage.readBoolean() !== true) {
-            parameters['response'] = toObjectFunction(clientMessage.readData());
-        }
-
-        return parameters;
     }
-
-
 }

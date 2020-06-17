@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Address = require('./Address');
+import {Address} from './Address';
 import TopicOverloadPolicy = require('./proxy/topic/TopicOverloadPolicy');
 import * as Aggregators from './aggregation/Aggregators';
 import {ClientInfo} from './ClientInfo';
@@ -29,7 +29,6 @@ import {IMap} from './proxy/IMap';
 import {ReadResultSet} from './proxy/ringbuffer/ReadResultSet';
 import {ClassDefinitionBuilder} from './serialization/portable/ClassDefinitionBuilder';
 import {ClassDefinition, FieldDefinition} from './serialization/portable/ClassDefinition';
-import {MemberAttributeEvent, MemberAttributeOperationType} from './core/MemberAttributeEvent';
 import {EvictionPolicy} from './config/EvictionPolicy';
 import {InMemoryFormat} from './config/InMemoryFormat';
 import {ItemEvent, ItemEventType} from './core/ItemListener';
@@ -39,6 +38,10 @@ import {LogLevel} from './logging/LoggingService';
 import {JsonStringDeserializationPolicy} from './config/JsonStringDeserializationPolicy';
 import {HazelcastJsonValue} from './core/HazelcastJsonValue';
 import {StringSerializationPolicy} from './config/StringSerializationPolicy';
+import {RoundRobinLB} from './util/RoundRobinLB';
+import {RandomLB} from './util/RandomLB';
+import { LoadBalancer } from './LoadBalancer';
+import { AbstractLoadBalancer } from './util/AbstractLoadBalancer';
 
 export {
     HazelcastClient as Client,
@@ -57,8 +60,6 @@ export {
     FieldDefinition,
     ClassDefinition,
     ClassDefinitionBuilder,
-    MemberAttributeEvent,
-    MemberAttributeOperationType,
     EvictionPolicy,
     InMemoryFormat,
     ItemEvent,
@@ -69,4 +70,8 @@ export {
     JsonStringDeserializationPolicy,
     HazelcastJsonValue,
     StringSerializationPolicy,
+    LoadBalancer,
+    AbstractLoadBalancer,
+    RoundRobinLB,
+    RandomLB,
 };

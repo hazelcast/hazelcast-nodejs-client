@@ -51,10 +51,13 @@ describe('NearCachedMapStress', function () {
             cluster = res;
             return Controller.startMember(cluster.id);
         }).then(function (member) {
+            cfg.clusterName = cluster.id;
             return HazelcastClient.newHazelcastClient(cfg);
         }).then(function (cl) {
+            const config = new Config.ClientConfig();
+            config.clusterName = cluster.id;
             client1 = cl;
-            return HazelcastClient.newHazelcastClient();
+            return HazelcastClient.newHazelcastClient(config);
         }).then(function (cl) {
             validatingClient = cl;
         });
@@ -63,7 +66,7 @@ describe('NearCachedMapStress', function () {
     after(function () {
         client1.shutdown();
         validatingClient.shutdown();
-        return Controller.shutdownCluster(cluster.id);
+        return Controller.terminateCluster(cluster.id);
     });
 
     function completeOperation() {

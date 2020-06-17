@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import ClientMessage = require('./ClientMessage');
+import {ClientMessage} from './ClientMessage';
+import {UUID} from './core/UUID';
 
 export interface ListenerMessageCodec {
     encodeAddRequest: (localOnly: boolean) => ClientMessage;
-    decodeAddResponse: (msg: ClientMessage) => string;
-    encodeRemoveRequest: (listenerId: string) => ClientMessage;
+    decodeAddResponse: (msg: ClientMessage) => UUID;
+    encodeRemoveRequest: (listenerId: UUID) => ClientMessage;
 }
