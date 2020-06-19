@@ -37,7 +37,6 @@ import {EntryEvent} from './core/EntryListener';
 import {LogLevel} from './logging/LoggingService';
 import {JsonStringDeserializationPolicy} from './config/JsonStringDeserializationPolicy';
 import {HazelcastJsonValue} from './core/HazelcastJsonValue';
-import {StringSerializationPolicy} from './config/StringSerializationPolicy';
 import {RoundRobinLB} from './util/RoundRobinLB';
 import {RandomLB} from './util/RandomLB';
 import { LoadBalancer } from './LoadBalancer';
@@ -69,7 +68,6 @@ export {
     LogLevel,
     JsonStringDeserializationPolicy,
     HazelcastJsonValue,
-    StringSerializationPolicy,
     LoadBalancer,
     AbstractLoadBalancer,
     RoundRobinLB,

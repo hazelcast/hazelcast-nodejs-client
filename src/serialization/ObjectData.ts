@@ -31,15 +31,13 @@ const MASK_4BYTE = (1 << 32) - 1;
 export class ObjectDataOutput implements DataOutput {
     protected buffer: Buffer;
     protected bigEndian: boolean;
-    private standardUTF: boolean;
     private service: SerializationService;
     private pos: number;
 
-    constructor(service: SerializationService, isBigEndian: boolean, isStandardUTF: boolean) {
+    constructor(service: SerializationService, isBigEndian: boolean) {
         this.buffer = Buffer.allocUnsafe(OUTPUT_BUFFER_INITIAL_SIZE);
         this.service = service;
         this.bigEndian = isBigEndian;
-        this.standardUTF = isStandardUTF;
         this.pos = 0;
     }
 
@@ -196,11 +194,15 @@ export class ObjectDataOutput implements DataOutput {
     }
 
     writeUTF(val: string): void {
-        if (this.standardUTF) {
-            this.writeUTFStandard(val);
-        } else {
-            this.writeUTFLegacy(val);
+        const len = (val != null) ? Buffer.byteLength(val, 'utf8') : BitsUtil.NULL_ARRAY_LENGTH;
+        this.writeInt(len);
+        if (len === BitsUtil.NULL_ARRAY_LENGTH) {
+            return;
         }
+
+        this.ensureAvailable(len);
+        this.buffer.write(val, this.pos, this.pos + len, 'utf8');
+        this.pos += len;
     }
 
     writeUTFArray(val: string[]): void {
@@ -231,37 +233,6 @@ export class ObjectDataOutput implements DataOutput {
         if (len > 0) {
             const boundFunc = func.bind(this);
             arr.forEach(boundFunc);
-        }
-    }
-
-    private writeUTFStandard(val: string): void {
-        const len = (val != null) ? Buffer.byteLength(val, 'utf8') : BitsUtil.NULL_ARRAY_LENGTH;
-        this.writeInt(len);
-        if (len === BitsUtil.NULL_ARRAY_LENGTH) {
-            return;
-        }
-
-        this.ensureAvailable(len);
-        this.buffer.write(val, this.pos, this.pos + len, 'utf8');
-        this.pos += len;
-    }
-
-    private writeUTFLegacy(val: string): void {
-        const len = (val != null) ? val.length : BitsUtil.NULL_ARRAY_LENGTH;
-        this.writeInt(len);
-        this.ensureAvailable(len * 3);
-        for (let i = 0; i < len; i++) {
-            const ch = val.charCodeAt(i);
-            if (ch <= 0x007F) {
-                this.writeByte(ch);
-            } else if (ch <= 0x07FF) {
-                this.write(0xC0 | ch >> 6 & 0x1F);
-                this.write(0x80 | ch & 0x3F);
-            } else {
-                this.write(0xE0 | ch >> 12 & 0x0F);
-                this.write(0x80 | ch >> 6 & 0x3F);
-                this.write(0x80 | ch & 0x3F);
-            }
         }
     }
 }
@@ -324,16 +295,13 @@ export class ObjectDataInput implements DataInput {
     private offset: number;
     private service: SerializationService;
     private bigEndian: boolean;
-    private standardUTF: boolean;
     private pos: number;
 
-    constructor(buffer: Buffer, offset: number, serializationService: SerializationService,
-                isBigEndian: boolean, isStandardUTF: boolean) {
+    constructor(buffer: Buffer, offset: number, serializationService: SerializationService, isBigEndian: boolean) {
         this.buffer = buffer;
         this.offset = offset;
         this.service = serializationService;
         this.bigEndian = isBigEndian;
-        this.standardUTF = isStandardUTF;
         this.pos = this.offset;
     }
 
@@ -497,11 +465,19 @@ export class ObjectDataInput implements DataInput {
     }
 
     readUTF(pos?: number): string {
-        if (this.standardUTF) {
-            return this.readUTFStandard(pos);
-        } else {
-            return this.readUTFLegacy(pos);
+        const len = this.readInt(pos);
+        const readPos = this.addOrUndefined(pos, 4) || this.pos;
+        if (len === BitsUtil.NULL_ARRAY_LENGTH) {
+            return null;
         }
+
+        const result = this.buffer.toString('utf8', readPos, readPos + len);
+
+        if (pos === undefined) {
+            this.pos += len;
+        }
+
+        return result;
     }
 
     readUTFArray(pos?: number): string[] {
@@ -545,71 +521,6 @@ export class ObjectDataInput implements DataInput {
     private assertAvailable(numOfBytes: number, pos: number = this.pos): void {
         assert(pos >= 0);
         assert(pos + numOfBytes <= this.buffer.length);
-    }
-
-    private readUTFLegacy(pos?: number): string {
-        const len = this.readInt(pos);
-        let readingIndex = this.addOrUndefined(pos, 4);
-        if (len === BitsUtil.NULL_ARRAY_LENGTH) {
-            return null;
-        }
-        let result: string = '';
-        let leadingByte: number;
-        for (let i = 0; i < len; i++) {
-            let charCode: number;
-            leadingByte = this.readByte(readingIndex) & MASK_1BYTE;
-            readingIndex = this.addOrUndefined(readingIndex, 1);
-
-            const b = leadingByte & 0xFF;
-            switch (b >> 4) {
-                /* tslint:disable:no-switch-case-fall-through */
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                    charCode = leadingByte;
-                    break;
-                case 12:
-                case 13:
-                    const first = (b & 0x1F) << 6;
-                    const second = this.readByte(readingIndex) & 0x3F;
-                    readingIndex = this.addOrUndefined(readingIndex, 1);
-                    charCode = first | second;
-                    break;
-                case 14:
-                    const first2 = (b & 0x0F) << 12;
-                    const second2 = (this.readByte(readingIndex) & 0x3F) << 6;
-                    readingIndex = this.addOrUndefined(readingIndex, 1);
-                    const third2 = this.readByte(readingIndex) & 0x3F;
-                    readingIndex = this.addOrUndefined(readingIndex, 1);
-                    charCode = (first2 | second2 | third2);
-                    break;
-                default:
-                    throw new RangeError('Malformed UTF8 string');
-            }
-            result += String.fromCharCode(charCode);
-        }
-        return result;
-    }
-
-    private readUTFStandard(pos?: number): string {
-        const len = this.readInt(pos);
-        const readPos = this.addOrUndefined(pos, 4) || this.pos;
-        if (len === BitsUtil.NULL_ARRAY_LENGTH) {
-            return null;
-        }
-
-        const result = this.buffer.toString('utf8', readPos, readPos + len);
-
-        if (pos === undefined) {
-            this.pos += len;
-        }
-
-        return result;
     }
 
     private addOrUndefined(base: number, adder: number): number {
