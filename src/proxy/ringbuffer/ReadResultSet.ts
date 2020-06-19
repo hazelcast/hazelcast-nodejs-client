@@ -15,7 +15,7 @@
  */
 
 /**
- * ReadResultSet defines the result of a {@lin RingBuffer#readMany} operation.
+ * ReadResultSet defines the result of a {@link Ringbuffer.readMany} operation.
  */
 import * as Long from 'long';
 
@@ -24,7 +24,7 @@ export interface ReadResultSet<T> {
     /**
      * Returns the number of items that have been read before filtering.
      * <p>
-     * If no filter is set, then the readCount will be equal to {@link #size}. But if a filter is applied, it could be that items
+     * If no filter is set, then the readCount will be equal to {@link size}. But if a filter is applied, it could be that items
      * are read, but are filtered out. So if you are trying to make another read based on the ReadResultSet then you should
      * increment the sequence by readCount and not by size. Otherwise you will be re-reading the same filtered messages.
      *
