@@ -18,7 +18,6 @@
 
 const cm = require('../../../lib/ClientMessage');
 const expect = require('chai').expect;
-const Buffer = require('safe-buffer').Buffer;
 const Long = require('long');
 const CodecUtil = require('../../../lib/codec/builtin/CodecUtil').CodecUtil;
 

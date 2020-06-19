@@ -18,7 +18,6 @@
 
 const cm = require('../../../lib/ClientMessage');
 const expect = require('chai').expect;
-const Buffer = require('safe-buffer').Buffer;
 const Long = require('long');
 const HeapData = require('../../../lib/serialization/HeapData').HeapData;
 const UUID = require('../../../lib/core/UUID').UUID;

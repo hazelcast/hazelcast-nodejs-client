@@ -16,7 +16,6 @@
 
 import {BEGIN_FRAME, ClientMessage, END_FRAME} from '../../ClientMessage';
 import * as Long from 'long';
-import {Buffer} from 'safe-buffer';
 import {ByteArrayCodec} from './ByteArrayCodec';
 import {ListLongCodec} from './ListLongCodec';
 import {ListMultiFrameCodec} from './ListMultiFrameCodec';

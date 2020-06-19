@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-var Buffer = require('safe-buffer').Buffer;
-
 function AnIdentifiedDataSerializable(bool, b, c, d, s, f, i, l, str, booleans, bytes, chars, doubles, shorts, floats, ints
     , longs, strings, portable, identifiedDataSerializable, customStreamSerializable, customByteArraySerializableObject, data) {
     if (arguments.length === 0) return;

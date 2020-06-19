@@ -17,7 +17,6 @@
 import {ClientMessage, Frame} from '../../ClientMessage';
 import {UUID} from '../../core/UUID';
 import {BitsUtil} from '../../BitsUtil';
-import {Buffer} from 'safe-buffer';
 import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 
 export class ListUUIDCodec {

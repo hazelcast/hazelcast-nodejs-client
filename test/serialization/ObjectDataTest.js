@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-var Buffer = require('safe-buffer').Buffer;
 var expect = require('chai').expect;
 var Long = require('long');
 var ObjectData = require('../../lib/serialization/ObjectData');

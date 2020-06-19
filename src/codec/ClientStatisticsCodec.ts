@@ -20,7 +20,6 @@ import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
 import {ClientMessage, Frame, PARTITION_ID_OFFSET} from '../ClientMessage';
 import * as Long from 'long';
 import {StringCodec} from './builtin/StringCodec';
-import {Buffer} from 'safe-buffer';
 import {ByteArrayCodec} from './builtin/ByteArrayCodec';
 
 // hex: 0x000C00

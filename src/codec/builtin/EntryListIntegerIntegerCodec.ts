@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import {Buffer} from 'safe-buffer';
 import {BitsUtil} from '../../BitsUtil';
 import {ClientMessage, Frame} from '../../ClientMessage';
 import {FixSizedTypesCodec} from './FixSizedTypesCodec';
