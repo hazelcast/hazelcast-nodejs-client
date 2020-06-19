@@ -15,7 +15,6 @@
  */
 
 /* tslint:disable:no-bitwise */
-import {Buffer} from 'safe-buffer';
 import * as assert from 'assert';
 import * as Long from 'long';
 import {BitsUtil} from '../BitsUtil';

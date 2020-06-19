@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-var Buffer = require('safe-buffer').Buffer;
-
 function APortable(bool, b, c, d, s, f, i, l, str, p, booleans, bytes, chars, doubles, shorts, floats, ints, longs, strings,
                    portables, identifiedDataSerializable, customStreamSerializableObject, customByteArraySerializableObject, data) {
     if (arguments.length === 0) return;

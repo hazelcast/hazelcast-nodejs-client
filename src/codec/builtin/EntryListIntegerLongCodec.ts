@@ -16,7 +16,6 @@
 
 import {BitsUtil} from '../../BitsUtil';
 import {ClientMessage, Frame} from '../../ClientMessage';
-import {Buffer} from 'safe-buffer';
 import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 import * as Long from 'long';
 

@@ -16,7 +16,6 @@
 
 'use strict';
 
-const Buffer = require('safe-buffer').Buffer;
 const Socket = require('net').Socket;
 const sinon = require('sinon');
 const expect = require('chai').expect;

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-var Buffer = require('safe-buffer').Buffer;
 var fs = require('fs');
 var ObjectDataInput = require('../../lib/serialization/ObjectData').ObjectDataInput;
 var HeapData = require('../../lib/serialization/HeapData').HeapData;

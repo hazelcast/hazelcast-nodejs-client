@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import {Buffer} from 'safe-buffer';
 import {ClientMessage, Frame} from '../../ClientMessage';
 
 export class ByteArrayCodec {

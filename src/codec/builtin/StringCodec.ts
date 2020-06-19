@@ -15,7 +15,6 @@
  */
 
 import {ClientMessage, Frame} from '../../ClientMessage';
-import {Buffer} from 'safe-buffer';
 
 export class StringCodec {
     static encode(clientMessage: ClientMessage, value: string): void {

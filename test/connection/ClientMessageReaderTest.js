@@ -16,7 +16,6 @@
 
 'use strict';
 
-const Buffer = require('safe-buffer').Buffer;
 const expect = require('chai').expect;
 
 const ClientMessageReader = require('../../lib/network/ClientConnection').ClientMessageReader;

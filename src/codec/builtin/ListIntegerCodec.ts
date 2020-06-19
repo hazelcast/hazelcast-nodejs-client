@@ -16,7 +16,6 @@
 
 import {ClientMessage, Frame} from '../../ClientMessage';
 import {BitsUtil} from '../../BitsUtil';
-import {Buffer} from 'safe-buffer';
 import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 
 export class ListIntegerCodec {

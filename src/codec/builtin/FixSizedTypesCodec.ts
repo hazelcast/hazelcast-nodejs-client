@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import {Buffer} from 'safe-buffer';
 import * as Long from 'long';
 import {BitsUtil} from '../../BitsUtil';
 import {UUID} from '../../core/UUID';

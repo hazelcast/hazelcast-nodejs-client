@@ -24,7 +24,6 @@ const fs = require('fs');
 const http = require('http');
 const querystring = require('querystring');
 const DeferredPromise = require('../../lib/Util').DeferredPromise;
-const Buffer = require('safe-buffer').Buffer;
 
 describe('RestValueTest', function () {
 
