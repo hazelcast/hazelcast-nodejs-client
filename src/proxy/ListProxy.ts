@@ -194,7 +194,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
     }
 
     addItemListener(listener: ItemListener<E>, includeValue: boolean): Promise<string> {
-        const listenerHandler = (message: ClientMessage) => {
+        const listenerHandler = (message: ClientMessage): void => {
             ListAddListenerCodec.handle(message, (element: Data, uuid: UUID, eventType: number) => {
                 const responseObject = element ? this.toObject(element) : null;
 

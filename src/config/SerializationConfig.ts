@@ -19,13 +19,13 @@ import {ImportConfig} from './ImportConfig';
 import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy';
 
 export class SerializationConfig {
-    defaultNumberType: string = 'double';
-    isBigEndian: boolean = true;
+    defaultNumberType = 'double';
+    isBigEndian = true;
     dataSerializableFactories: { [id: number]: IdentifiedDataSerializableFactory } = {};
     dataSerializableFactoryConfigs: { [id: number]: ImportConfig } = {};
     portableFactories: { [id: number]: PortableFactory } = {};
     portableFactoryConfigs: { [id: number]: ImportConfig } = {};
-    portableVersion: number = 0;
+    portableVersion = 0;
     customSerializers: any[] = [];
     customSerializerConfigs: { [id: number]: ImportConfig } = {};
     globalSerializer: any = null;

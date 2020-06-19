@@ -30,7 +30,6 @@ import {
     MinAggregator,
     NumberAverageAggregator,
 } from './Aggregator';
-import {ILogger} from '../logging/ILogger';
 import {HazelcastError} from '../HazelcastError';
 
 export class AggregatorFactory implements IdentifiedDataSerializableFactory {

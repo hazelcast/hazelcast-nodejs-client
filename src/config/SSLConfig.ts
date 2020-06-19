@@ -26,7 +26,7 @@ export class SSLConfig {
     /**
      * If it is true, SSL is enabled.
      */
-    enabled: boolean = false;
+    enabled = false;
 
     /**
      * sslOptions is by default null which means the following default configuration

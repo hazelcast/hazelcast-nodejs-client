@@ -293,10 +293,9 @@ export class SerializationServiceV1 implements SerializationService {
 
     protected registerCustomSerializers(): void {
         const customSerializersArray: any[] = this.serializationConfig.customSerializers;
-        const self = this;
-        customSerializersArray.forEach(function (candidate): void {
-            self.assertValidCustomSerializer(candidate);
-            self.registerSerializer('!custom' + candidate.getId(), candidate);
+        customSerializersArray.forEach((candidate) => {
+            this.assertValidCustomSerializer(candidate);
+            this.registerSerializer('!custom' + candidate.getId(), candidate);
         });
         const customSerializerConfigs = this.serializationConfig.customSerializerConfigs;
         for (const typeId in customSerializerConfigs) {

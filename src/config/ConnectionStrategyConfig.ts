@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-import {ClientOfflineError} from '../HazelcastError';
 import {ConnectionRetryConfig} from './ConnectionRetryConfig';
-import * as HazelcastClient from '../HazelcastClient';
 
 /**
  * Reconnect options.
@@ -49,7 +47,7 @@ export class ConnectionStrategyConfig {
      * If set to false, {@link HazelcastClient.newHazelcastClient} will block until a cluster connection established and it's
      * ready to use client instance
      */
-    asyncStart: boolean = false;
+    asyncStart = false;
 
     /**
      * How a client reconnect to cluster after a disconnect can be configured. This parameter is used by default strategy and

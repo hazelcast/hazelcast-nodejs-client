@@ -39,7 +39,7 @@
         "coverage": "rimraf coverage && nyc node_modules/mocha/bin/_mocha -- --recursive --reporter-options mochaFile=report.xml --reporter mocha-junit-reporter",
         "pregenerate-docs": "rimraf docs",
         "generate-docs": "typedoc --out docs/ --exclude **/codec/**/* src/ --excludeExternals --ignoreCompilerErrors --excludePrivate",
-        "lint": "eslint . --ext .ts"
+        "lint": "eslint --ext .ts ."
     },
     "repository": {
         "type": "git",

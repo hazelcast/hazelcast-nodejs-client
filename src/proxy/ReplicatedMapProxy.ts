@@ -199,9 +199,8 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
     private addEntryListenerInternal(listener: EntryListener<K, V>, predicate: Predicate,
                                      key: K): Promise<string> {
         const toObject = this.toObject.bind(this);
-        /* tslint:disable-next-line:no-shadowed-variable */
         const entryEventHandler = (key: K, value: V, oldValue: V, mergingValue: V,
-                                   event: number, uuid: UUID, numberOfAffectedEntries: number) => {
+                                   event: number, uuid: UUID, numberOfAffectedEntries: number): void => {
             const member = this.client.getClusterService().getMember(uuid);
             const name = this.name;
 

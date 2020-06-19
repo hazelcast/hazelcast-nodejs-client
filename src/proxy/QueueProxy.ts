@@ -70,7 +70,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     addItemListener(listener: ItemListener<E>, includeValue: boolean): Promise<string> {
-        const handler = (message: ClientMessage) => {
+        const handler = (message: ClientMessage): void => {
             QueueAddListenerCodec.handle(message, (item: Data, uuid: UUID, eventType: number) => {
                 let responseObject: E;
                 if (item == null) {
@@ -150,7 +150,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
             });
     }
 
-    offer(item: E, time: number = 0): Promise<boolean> {
+    offer(item: E, time = 0): Promise<boolean> {
         const itemData = this.toData(item);
         return this.encodeInvoke(QueueOfferCodec, itemData, time)
             .then((clientMessage) => {
@@ -167,7 +167,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
             });
     }
 
-    poll(time: number = 0): Promise<E> {
+    poll(time = 0): Promise<E> {
         return this.encodeInvoke(QueuePollCodec, time)
             .then((clientMessage) => {
                 const response = QueuePollCodec.decodeResponse(clientMessage);

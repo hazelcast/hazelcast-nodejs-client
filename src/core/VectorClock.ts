@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-import {ClusterDataFactoryHelper} from '../ClusterDataFactoryHelper';
-import {DataInput, DataOutput} from '../serialization/Data';
-import {IdentifiedDataSerializable} from '../serialization/Serializable';
-
 export class VectorClock  {
 
     private replicaTimestamps = new Map<string, Long>();

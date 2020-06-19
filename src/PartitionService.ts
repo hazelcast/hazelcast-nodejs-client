@@ -22,7 +22,7 @@ import {ClientOfflineError} from './HazelcastError';
 
 class PartitionTable {
     connection: ClientConnection;
-    partitionStateVersion: number = -1;
+    partitionStateVersion = -1;
     partitions = new Map<number, UUID>();
 }
 
@@ -35,7 +35,7 @@ export class PartitionService {
 
     private client: HazelcastClient;
     private partitionTable = new PartitionTable();
-    private partitionCount: number = 0;
+    private partitionCount = 0;
     private logger: ILogger;
 
     constructor(client: HazelcastClient) {

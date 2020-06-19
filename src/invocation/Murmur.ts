@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-/* tslint:disable */
-var seed = 0x01000193;
+const seed = 0x01000193;
 
-function murmurhash3_32_gc(key: any) {
-    var remainder: any, bytes: any, h1: any, h1b: any, c1: any, c2: any, k1: any, i: any;
+export function murmur(key: any): number {
+    let h1: number, h1b: number, k1: number, i: number;
 
-    remainder = key.length & 3; // key.length % 4
-    bytes = key.length - remainder;
+    const remainder = key.length & 3; // key.length % 4
+    const bytes = key.length - remainder;
     h1 = seed;
-    c1 = 0xcc9e2d51;
-    c2 = 0x1b873593;
+    const c1 = 0xcc9e2d51;
+    const c2 = 0x1b873593;
     i = 0;
 
     while (i < bytes) {
@@ -50,9 +49,9 @@ function murmurhash3_32_gc(key: any) {
     switch (remainder) {
         case 3:
             k1 ^= (key.readUInt8(i + 2) & 0xff) << 16;
-        case 2:
+        case 2: /*eslint-disable-line no-fallthrough*/
             k1 ^= (key.readUInt8(i + 1) & 0xff) << 8;
-        case 1:
+        case 1: /*eslint-disable-line no-fallthrough*/
             k1 ^= (key.readUInt8(i) & 0xff);
 
             k1 = (((k1 & 0xffff) * c1) + ((((k1 >>> 16) * c1) & 0xffff) << 16)) & 0xffffffff;
@@ -69,10 +68,8 @@ function murmurhash3_32_gc(key: any) {
     h1 = ((((h1 & 0xffff) * 0xc2b2ae35) + ((((h1 >>> 16) * 0xc2b2ae35) & 0xffff) << 16))) & 0xffffffff;
     h1 ^= h1 >>> 16;
 
-    var result = h1 >>> 0;
+    const result = h1 >>> 0;
 
     // This simulates the 32 bit integer overflow to match Java implementation
     return result | 0;
 }
-
-export = murmurhash3_32_gc;

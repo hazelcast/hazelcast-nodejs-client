@@ -242,7 +242,7 @@ export class ClientConnectionManager extends EventEmitter {
         const connectionResolver: Promise.Resolver<ClientConnection> = DeferredPromise<ClientConnection>();
         this.pendingConnections.set(addressKey, connectionResolver);
 
-        const processResponseCallback = (msg: ClientMessage) => {
+        const processResponseCallback = (msg: ClientMessage): void => {
             this.client.getInvocationService().processResponse(msg);
         };
 

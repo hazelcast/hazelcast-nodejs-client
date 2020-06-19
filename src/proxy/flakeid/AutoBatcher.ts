@@ -60,7 +60,7 @@ export class AutoBatcher {
 
     private queue: Array<Promise.Resolver<Long>> = [];
     private batch: Batch;
-    private requestInFlight: boolean = false;
+    private requestInFlight = false;
     private supplier: () => Promise<any>;
     private emitter = new EventEmitter();
 

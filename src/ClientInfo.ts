@@ -32,7 +32,7 @@ export class ClientInfo {
     /**
      * Type of this client. It is always NodeJS.
      */
-    type: string = 'NodeJS';
+    type = 'NodeJS';
 
     /**
      * Name of the client.
