@@ -24,7 +24,7 @@ import * as Long from 'long';
 // hex: 0x000F00
 const REQUEST_MESSAGE_TYPE = 3840;
 // hex: 0x000F01
-const RESPONSE_MESSAGE_TYPE = 3841;
+// RESPONSE_MESSAGE_TYPE = 3841
 // hex: 0x000F02
 const EVENT_BACKUP_MESSAGE_TYPE = 3842;
 

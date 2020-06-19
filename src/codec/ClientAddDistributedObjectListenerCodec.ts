@@ -24,7 +24,7 @@ import {StringCodec} from './builtin/StringCodec';
 // hex: 0x000900
 const REQUEST_MESSAGE_TYPE = 2304;
 // hex: 0x000901
-const RESPONSE_MESSAGE_TYPE = 2305;
+// RESPONSE_MESSAGE_TYPE = 2305
 // hex: 0x000902
 const EVENT_DISTRIBUTED_OBJECT_MESSAGE_TYPE = 2306;
 

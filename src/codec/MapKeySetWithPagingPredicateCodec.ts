@@ -29,7 +29,7 @@ import {AnchorDataListHolderCodec} from './custom/AnchorDataListHolderCodec';
 // hex: 0x013400
 const REQUEST_MESSAGE_TYPE = 78848;
 // hex: 0x013401
-const RESPONSE_MESSAGE_TYPE = 78849;
+// RESPONSE_MESSAGE_TYPE = 78849
 
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 

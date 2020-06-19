@@ -19,8 +19,8 @@ import {BitsUtil} from '../BitsUtil';
 import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
 import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET} from '../ClientMessage';
 import {UUID} from '../core/UUID';
-import {CodecUtil} from './builtin/CodecUtil';
 import {StringCodec} from './builtin/StringCodec';
+import {CodecUtil} from './builtin/CodecUtil';
 import {ListMultiFrameCodec} from './builtin/ListMultiFrameCodec';
 import {Address} from '../Address';
 import {AddressCodec} from './custom/AddressCodec';
@@ -28,7 +28,7 @@ import {AddressCodec} from './custom/AddressCodec';
 // hex: 0x000100
 const REQUEST_MESSAGE_TYPE = 256;
 // hex: 0x000101
-const RESPONSE_MESSAGE_TYPE = 257;
+// RESPONSE_MESSAGE_TYPE = 257
 
 const REQUEST_UUID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_SERIALIZATION_VERSION_OFFSET = REQUEST_UUID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
