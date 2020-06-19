@@ -23,8 +23,8 @@ import {cancelRepetitionTask, scheduleWithRepetition, Task} from './Util';
 import {TargetDisconnectedError} from './HazelcastError';
 import {Invocation} from './invocation/InvocationService';
 
-const PROPERTY_HEARTBEAT_INTERVAL: string = 'hazelcast.client.heartbeat.interval';
-const PROPERTY_HEARTBEAT_TIMEOUT: string = 'hazelcast.client.heartbeat.timeout';
+const PROPERTY_HEARTBEAT_INTERVAL = 'hazelcast.client.heartbeat.interval';
+const PROPERTY_HEARTBEAT_TIMEOUT = 'hazelcast.client.heartbeat.timeout';
 
 /**
  * HeartbeatManager manager used by connection manager.

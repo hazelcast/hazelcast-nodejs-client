@@ -150,7 +150,7 @@ export class Statistics {
             this.allGauges[gaugeName] = gaugeFunc;
         } catch (e) {
             this.logger.warn('Statistics', 'Could not collect data for gauge ' + gaugeName + ' , it won\'t be registered', e);
-            this.allGauges[gaugeName] = () => Statistics.EMPTY_STAT_VALUE;
+            this.allGauges[gaugeName] = (): string => Statistics.EMPTY_STAT_VALUE;
         }
     }
 

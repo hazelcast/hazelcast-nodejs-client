@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ClientConfig, ClientNetworkConfig} from './config/Config';
+import {ClientConfig} from './config/Config';
 import {Cluster} from './core/Cluster';
 import {Member} from './core/Member';
 

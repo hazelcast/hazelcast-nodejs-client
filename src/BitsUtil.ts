@@ -16,27 +16,27 @@
 
 /* tslint:disable:no-bitwise */
 export class BitsUtil {
-    static BYTE_SIZE_IN_BYTES: number = 1;
-    static BOOLEAN_SIZE_IN_BYTES: number = 1;
-    static SHORT_SIZE_IN_BYTES: number = 2;
-    static CHAR_SIZE_IN_BYTES: number = 2;
-    static INT_SIZE_IN_BYTES: number = 4;
-    static FLOAT_SIZE_IN_BYTES: number = 4;
-    static LONG_SIZE_IN_BYTES: number = 8;
-    static DOUBLE_SIZE_IN_BYTES: number = 8;
+    static BYTE_SIZE_IN_BYTES = 1;
+    static BOOLEAN_SIZE_IN_BYTES = 1;
+    static SHORT_SIZE_IN_BYTES = 2;
+    static CHAR_SIZE_IN_BYTES = 2;
+    static INT_SIZE_IN_BYTES = 4;
+    static FLOAT_SIZE_IN_BYTES = 4;
+    static LONG_SIZE_IN_BYTES = 8;
+    static DOUBLE_SIZE_IN_BYTES = 8;
     static UUID_SIZE_IN_BYTES: number = BitsUtil.BOOLEAN_SIZE_IN_BYTES + 2 * BitsUtil.LONG_SIZE_IN_BYTES;
 
-    static BIG_ENDIAN: number = 2;
-    static LITTLE_ENDIAN: number = 1;
+    static BIG_ENDIAN = 2;
+    static LITTLE_ENDIAN = 1;
 
-    static BEGIN_FLAG: number = 0x80;
-    static END_FLAG: number = 0x40;
+    static BEGIN_FLAG = 0x80;
+    static END_FLAG = 0x40;
     static BEGIN_END_FLAG: number = BitsUtil.BEGIN_FLAG | BitsUtil.END_FLAG;
-    static LISTENER_FLAG: number = 0x01;
+    static LISTENER_FLAG = 0x01;
 
-    static NULL_ARRAY_LENGTH: number = -1;
+    static NULL_ARRAY_LENGTH = -1;
 
-    static FRAME_LENGTH_FIELD_OFFSET: number = 0;
+    static FRAME_LENGTH_FIELD_OFFSET = 0;
     static VERSION_FIELD_OFFSET: number = BitsUtil.FRAME_LENGTH_FIELD_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
     static FLAGS_FIELD_OFFSET: number = BitsUtil.VERSION_FIELD_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
     static TYPE_FIELD_OFFSET: number = BitsUtil.FLAGS_FIELD_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;

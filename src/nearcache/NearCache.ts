@@ -77,10 +77,10 @@ export class NearCacheImpl implements NearCache {
     private staleReadDetector: StaleReadDetector = AlwaysFreshStaleReadDetectorImpl.INSTANCE;
     private reservationCounter: Long = Long.ZERO;
 
-    private evictedCount: number = 0;
-    private expiredCount: number = 0;
-    private missCount: number = 0;
-    private hitCount: number = 0;
+    private evictedCount = 0;
+    private expiredCount = 0;
+    private missCount = 0;
+    private hitCount = 0;
     private creationTime = Date.now();
     private compareFunc: (x: DataRecord, y: DataRecord) => number;
     private ready: Promise.Resolver<void>;
@@ -250,7 +250,6 @@ export class NearCacheImpl implements NearCache {
         if (!this.isEvictionRequired()) {
             return;
         }
-        const internalSize = this.internalStore.size;
         if (this.recomputeEvictionPool() > 0) {
             return;
         } else {

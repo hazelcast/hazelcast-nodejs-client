@@ -25,5 +25,5 @@ export class ClientCloudConfig {
     /**
      * enabled true to use hazelcast.cloud
      */
-    enabled: boolean = false;
+    enabled = false;
 }

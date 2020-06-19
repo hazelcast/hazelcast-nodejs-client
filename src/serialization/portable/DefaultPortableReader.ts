@@ -30,16 +30,13 @@ export class DefaultPortableReader implements PortableReader {
 
     private offset: number;
     private finalPos: number;
-    private raw: boolean = false;
+    private raw = false;
 
     constructor(serializer: PortableSerializer, input: DataInput, classDefinition: ClassDefinition) {
         this.serializer = serializer;
         this.input = input;
         this.classDefinition = classDefinition;
-
-        this.finalPos = this.input.readInt();
-        const fieldCount = this.input.readInt();
-        this.offset = this.input.position();
+        this.initFinalPositionAndOffset();
     }
 
     getVersion(): number {
@@ -219,5 +216,15 @@ export class DefaultPortableReader implements PortableReader {
     private positionByField(fieldName: string, fieldType: FieldType): number {
         const definition = this.classDefinition.getField(fieldName);
         return this.positionByFieldDefinition(definition);
+    }
+
+    private initFinalPositionAndOffset(): void {
+        this.finalPos = this.input.readInt();
+        const fieldCount = this.input.readInt();
+        const expectedFieldCount = this.classDefinition.getFieldCount();
+        if (fieldCount !== expectedFieldCount) {
+            throw new IllegalStateError(`Field count[${fieldCount}] in stream does not match with class definition[${expectedFieldCount}]`);
+        }
+        this.offset = this.input.position();
     }
 }
