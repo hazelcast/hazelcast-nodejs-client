@@ -124,8 +124,6 @@ describe('ConfigBuilder Test', function () {
         expect(serializationCfg.portableVersion).to.equal(1);
         expect(serializationCfg.jsonStringDeserializationPolicy)
             .to.equal(Config.JsonStringDeserializationPolicy.NO_DESERIALIZATION);
-        expect(serializationCfg.stringSerializationPolicy)
-            .to.equal(Config.StringSerializationPolicy.LEGACY);
         expect(serializationCfg.dataSerializableFactoryConfigs[0].path).to.equal('path/to/file');
         expect(serializationCfg.dataSerializableFactoryConfigs[0].exportedName).to.equal('exportedName');
 

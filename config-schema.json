@@ -239,13 +239,6 @@
                     ],
                     "default": "eager"
                 },
-                "stringSerialization": {
-                    "enum": [
-                        "standard",
-                        "legacy"
-                    ],
-                    "default": "standard"
-                },
                 "isBigEndian": {
                     "type": "boolean",
                     "default": false

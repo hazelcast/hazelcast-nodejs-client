@@ -29,7 +29,6 @@ import {NearCacheConfig} from './NearCacheConfig';
 import {Properties} from './Properties';
 import {ReliableTopicConfig} from './ReliableTopicConfig';
 import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy';
-import {StringSerializationPolicy} from './StringSerializationPolicy';
 import {ReconnectMode} from './ConnectionStrategyConfig';
 import {RandomLB} from '../util/RandomLB';
 import {RoundRobinLB} from '../util/RoundRobinLB';
@@ -258,9 +257,6 @@ export class ConfigBuilder {
             } else if (key === 'jsonStringDeserializationPolicy') {
                 this.clientConfig.serializationConfig
                     .jsonStringDeserializationPolicy = tryGetEnum(JsonStringDeserializationPolicy, jsonObject[key]);
-            } else if (key === 'stringSerializationPolicy') {
-                this.clientConfig.serializationConfig
-                    .stringSerializationPolicy = tryGetEnum(StringSerializationPolicy, jsonObject[key]);
             }
         }
     }
