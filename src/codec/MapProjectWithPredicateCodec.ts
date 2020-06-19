@@ -25,7 +25,7 @@ import {ListMultiFrameCodec} from './builtin/ListMultiFrameCodec';
 // hex: 0x013C00
 const REQUEST_MESSAGE_TYPE = 80896;
 // hex: 0x013C01
-const RESPONSE_MESSAGE_TYPE = 80897;
+// RESPONSE_MESSAGE_TYPE = 80897
 
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 

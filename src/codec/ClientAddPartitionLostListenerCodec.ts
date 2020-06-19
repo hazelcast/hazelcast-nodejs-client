@@ -19,12 +19,11 @@ import {BitsUtil} from '../BitsUtil';
 import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
 import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET} from '../ClientMessage';
 import {UUID} from '../core/UUID';
-import {CodecUtil} from './builtin/CodecUtil';
 
 // hex: 0x000600
 const REQUEST_MESSAGE_TYPE = 1536;
 // hex: 0x000601
-const RESPONSE_MESSAGE_TYPE = 1537;
+// RESPONSE_MESSAGE_TYPE = 1537
 // hex: 0x000602
 const EVENT_PARTITION_LOST_MESSAGE_TYPE = 1538;
 
