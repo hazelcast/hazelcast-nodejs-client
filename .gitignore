@@ -34,4 +34,9 @@ docs/
 # Mac desktop service store files
 *.DS_Store
 
+
 package-lock.json
+
+# Coverage
+.nyc_output/*
+coverage
