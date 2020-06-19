@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import {Buffer} from 'safe-buffer';
 import * as Promise from 'bluebird';
 import * as net from 'net';
 import {EventEmitter} from 'events';

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-var Buffer = require('safe-buffer').Buffer;
 var Long = require('long');
 var AnInnerPortable = require('./AnInnerPortable');
 var AnIdentifiedDataSerializable = require('./AnIdentifiedDataSerializable');

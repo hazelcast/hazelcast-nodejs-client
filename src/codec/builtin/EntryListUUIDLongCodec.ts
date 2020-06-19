@@ -18,7 +18,6 @@ import {BitsUtil} from '../../BitsUtil';
 import {ClientMessage, Frame} from '../../ClientMessage';
 import {UUID} from '../../core/UUID';
 import * as Long from 'long';
-import {Buffer} from 'safe-buffer';
 import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 
 const ENTRY_SIZE_IN_BYTES = BitsUtil.UUID_SIZE_IN_BYTES + BitsUtil.LONG_SIZE_IN_BYTES;

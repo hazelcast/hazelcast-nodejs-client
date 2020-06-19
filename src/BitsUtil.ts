@@ -15,8 +15,6 @@
  */
 
 /* tslint:disable:no-bitwise */
-import {Buffer} from 'safe-buffer';
-
 export class BitsUtil {
     static BYTE_SIZE_IN_BYTES: number = 1;
     static BOOLEAN_SIZE_IN_BYTES: number = 1;

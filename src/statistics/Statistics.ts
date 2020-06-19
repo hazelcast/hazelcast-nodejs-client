@@ -24,7 +24,6 @@ import * as os from 'os';
 import {BuildInfo} from '../BuildInfo';
 import {ILogger} from '../logging/ILogger';
 import * as Long from 'long';
-import {Buffer} from 'safe-buffer';
 
 /**
  * This class is the main entry point for collecting and sending the client

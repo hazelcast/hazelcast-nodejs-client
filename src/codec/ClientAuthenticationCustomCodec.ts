@@ -21,7 +21,6 @@ import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET} 
 import {UUID} from '../core/UUID';
 import {CodecUtil} from './builtin/CodecUtil';
 import {StringCodec} from './builtin/StringCodec';
-import {Buffer} from 'safe-buffer';
 import {ByteArrayCodec} from './builtin/ByteArrayCodec';
 import {ListMultiFrameCodec} from './builtin/ListMultiFrameCodec';
 import {Address} from '../Address';

@@ -15,7 +15,6 @@
  */
 
 /* tslint:disable:no-bitwise */
-import {Buffer} from 'safe-buffer';
 import {BitsUtil} from './BitsUtil';
 import {ClientConnection} from './network/ClientConnection';
 import {FixSizedTypesCodec} from './codec/builtin/FixSizedTypesCodec';

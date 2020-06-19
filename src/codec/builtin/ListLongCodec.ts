@@ -17,7 +17,6 @@
 import {ClientMessage, Frame} from '../../ClientMessage';
 import * as Long from 'long';
 import {BitsUtil} from '../../BitsUtil';
-import {Buffer} from 'safe-buffer';
 import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 
 export class ListLongCodec {
