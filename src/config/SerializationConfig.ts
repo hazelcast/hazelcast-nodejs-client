@@ -17,7 +17,6 @@
 import {IdentifiedDataSerializableFactory, PortableFactory} from '../serialization/Serializable';
 import {ImportConfig} from './ImportConfig';
 import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy';
-import {StringSerializationPolicy} from './StringSerializationPolicy';
 
 export class SerializationConfig {
     defaultNumberType: string = 'double';
@@ -32,5 +31,4 @@ export class SerializationConfig {
     globalSerializer: any = null;
     globalSerializerConfig: ImportConfig = null;
     jsonStringDeserializationPolicy: JsonStringDeserializationPolicy = JsonStringDeserializationPolicy.EAGER;
-    stringSerializationPolicy: StringSerializationPolicy = StringSerializationPolicy.STANDARD;
 }

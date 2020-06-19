@@ -56,7 +56,6 @@ import {PREDICATE_FACTORY_ID, PredicateFactory} from './PredicateFactory';
 import {IdentifiedDataSerializableFactory} from './Serializable';
 import HazelcastClient from '../HazelcastClient';
 import {JsonStringDeserializationPolicy} from '../config/JsonStringDeserializationPolicy';
-import {StringSerializationPolicy} from '../config/StringSerializationPolicy';
 import {RestValueFactory, REST_VALUE_FACTORY_ID} from '../core/RestValue';
 
 export interface SerializationService {
@@ -83,13 +82,11 @@ export class SerializationServiceV1 implements SerializationService {
     private serializerNameToId: { [name: string]: number };
     private numberType: string;
     private serializationConfig: SerializationConfig;
-    private isStandardUTF: boolean;
     private client: HazelcastClient;
 
     constructor(client: HazelcastClient, serializationConfig: SerializationConfig) {
         this.client = client;
         this.serializationConfig = serializationConfig;
-        this.isStandardUTF = this.serializationConfig.stringSerializationPolicy === StringSerializationPolicy.STANDARD;
         this.registry = {};
         this.serializerNameToId = {};
         this.registerDefaultSerializers();
@@ -109,8 +106,7 @@ export class SerializationServiceV1 implements SerializationService {
         if (this.isData(object)) {
             return object as Data;
         }
-        const dataOutput: DataOutput =
-            new PositionalObjectDataOutput(this, this.serializationConfig.isBigEndian, this.isStandardUTF);
+        const dataOutput = new PositionalObjectDataOutput(this, this.serializationConfig.isBigEndian);
         const serializer = this.findSerializerFor(object);
         // Check if object is partition aware
         if (object != null && object.getPartitionKey) {
@@ -133,8 +129,7 @@ export class SerializationServiceV1 implements SerializationService {
             return data;
         }
         const serializer = this.findSerializerById(data.getType());
-        const dataInput =
-            new ObjectDataInput(data.toBuffer(), DATA_OFFSET, this, this.serializationConfig.isBigEndian, this.isStandardUTF);
+        const dataInput = new ObjectDataInput(data.toBuffer(), DATA_OFFSET, this, this.serializationConfig.isBigEndian);
         return serializer.read(dataInput);
     }
 

@@ -31,7 +31,6 @@ import {Statistics} from '../statistics/Statistics';
 import {LogLevel} from '..';
 import {ILogger} from '../logging/ILogger';
 import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy';
-import {StringSerializationPolicy} from './StringSerializationPolicy';
 import {ConnectionStrategyConfig, ReconnectMode} from './ConnectionStrategyConfig';
 import {LoadBalancer} from '../LoadBalancer';
 import {IndexConfig} from './IndexConfig';
@@ -157,8 +156,6 @@ export {FlakeIdGeneratorConfig};
 export {SSLConfig};
 
 export {JsonStringDeserializationPolicy};
-
-export {StringSerializationPolicy};
 
 export {IndexConfig};
 

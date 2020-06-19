@@ -52,7 +52,6 @@
         "defaultNumberType": "double",
         "isBigEndian": true,
         "jsonStringDeserializationPolicy": "eager",
-        "stringSerialization": "standard",
         "dataSerializableFactories": [],
         "portableFactories": [],
         "portableVersion": 0,
