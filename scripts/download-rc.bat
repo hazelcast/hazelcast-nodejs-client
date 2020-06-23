@@ -21,10 +21,10 @@ if errorlevel 1 (
 echo %HZ_TEST_VERSION% | findstr /r ".*-SNAPSHOT" >nul 2>&1
 if errorlevel 1 (
 	set TEST_REPO=%RELEASE_REPO%
-    set ENTRERPRISE_TEST_REPO=%ENTERPRISE_RELEASE_REPO%
+    set ENTERPRISE_TEST_REPO=%ENTERPRISE_RELEASE_REPO%
 ) else (
 	set TEST_REPO=%SNAPSHOT_REPO%
-    set ENTRERPRISE_TEST_REPO=%ENTERPRISE_SNAPSHOT_REPO%
+    set ENTERPRISE_TEST_REPO=%ENTERPRISE_SNAPSHOT_REPO%
 )
 
 if exist hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar (
@@ -67,7 +67,7 @@ if defined HAZELCAST_ENTERPRISE_KEY (
     	echo hazelcast-enterprise-test.jar already exists, not downloading from maven.
     ) else (
     	echo Downloading: hazelcast enterprise test jar com.hazelcast:hazelcast-enterprise:%HAZELCAST_ENTERPRISE_VERSION%:jar:tests
-    	call mvn -q dependency:get -DrepoUrl=%ENTRERPRISE_TEST_REPO% -Dartifact=com.hazelcast:hazelcast-enterprise:%HAZELCAST_TEST_VERSION%:jar:tests -Ddest=hazelcast-enterprise-%HAZELCAST_TEST_VERSION%-tests.jar
+    	call mvn -q dependency:get -DrepoUrl=%ENTERPRISE_TEST_REPO% -Dartifact=com.hazelcast:hazelcast-enterprise:%HAZELCAST_TEST_VERSION%:jar:tests -Ddest=hazelcast-enterprise-%HAZELCAST_TEST_VERSION%-tests.jar
     	if errorlevel 1 (
     		echo Failed download hazelcast enterprise test jar com.hazelcast:hazelcast-enterprise:%HAZELCAST_TEST_VERSION%:jar:tests
     		exit 1
