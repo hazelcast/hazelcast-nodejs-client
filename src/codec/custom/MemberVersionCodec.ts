@@ -44,9 +44,9 @@ export class MemberVersionCodec {
         clientMessage.nextFrame();
 
         const initialFrame = clientMessage.nextFrame();
-        const major: number = FixSizedTypesCodec.decodeByte(initialFrame.content, MAJOR_OFFSET);
-        const minor: number = FixSizedTypesCodec.decodeByte(initialFrame.content, MINOR_OFFSET);
-        const patch: number = FixSizedTypesCodec.decodeByte(initialFrame.content, PATCH_OFFSET);
+        const major = FixSizedTypesCodec.decodeByte(initialFrame.content, MAJOR_OFFSET);
+        const minor = FixSizedTypesCodec.decodeByte(initialFrame.content, MINOR_OFFSET);
+        const patch = FixSizedTypesCodec.decodeByte(initialFrame.content, PATCH_OFFSET);
 
         CodecUtil.fastForwardToEndFrame(clientMessage);
 

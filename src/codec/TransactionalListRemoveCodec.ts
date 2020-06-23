@@ -58,8 +58,9 @@ export class TransactionalListRemoveCodec {
     static decodeResponse(clientMessage: ClientMessage): TransactionalListRemoveResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as TransactionalListRemoveResponseParams;
+        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

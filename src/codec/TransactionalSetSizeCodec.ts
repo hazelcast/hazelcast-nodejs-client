@@ -55,8 +55,9 @@ export class TransactionalSetSizeCodec {
     static decodeResponse(clientMessage: ClientMessage): TransactionalSetSizeResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as TransactionalSetSizeResponseParams;
+        response.response = FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

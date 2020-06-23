@@ -50,8 +50,9 @@ export class ClientRemoveDistributedObjectListenerCodec {
     static decodeResponse(clientMessage: ClientMessage): ClientRemoveDistributedObjectListenerResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as ClientRemoveDistributedObjectListenerResponseParams;
+        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

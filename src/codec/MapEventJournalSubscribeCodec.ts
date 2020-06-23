@@ -52,9 +52,10 @@ export class MapEventJournalSubscribeCodec {
     static decodeResponse(clientMessage: ClientMessage): MapEventJournalSubscribeResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            oldestSequence: FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_OLDEST_SEQUENCE_OFFSET),
-            newestSequence: FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_NEWEST_SEQUENCE_OFFSET),
-        };
+        const response = {} as MapEventJournalSubscribeResponseParams;
+        response.oldestSequence = FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_OLDEST_SEQUENCE_OFFSET);
+        response.newestSequence = FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_NEWEST_SEQUENCE_OFFSET);
+
+        return response;
     }
 }

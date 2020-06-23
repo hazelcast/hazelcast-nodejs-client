@@ -49,8 +49,9 @@ export class ClientGetDistributedObjectsCodec {
         // empty initial frame
         clientMessage.nextFrame();
 
-        return {
-            response: ListMultiFrameCodec.decode(clientMessage, DistributedObjectInfoCodec.decode),
-        };
+        const response = {} as ClientGetDistributedObjectsResponseParams;
+        response.response = ListMultiFrameCodec.decode(clientMessage, DistributedObjectInfoCodec.decode);
+
+        return response;
     }
 }

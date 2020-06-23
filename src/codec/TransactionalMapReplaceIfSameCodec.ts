@@ -60,8 +60,9 @@ export class TransactionalMapReplaceIfSameCodec {
     static decodeResponse(clientMessage: ClientMessage): TransactionalMapReplaceIfSameResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as TransactionalMapReplaceIfSameResponseParams;
+        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

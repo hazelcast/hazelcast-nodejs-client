@@ -76,15 +76,16 @@ export class ClientAuthenticationCustomCodec {
     static decodeResponse(clientMessage: ClientMessage): ClientAuthenticationCustomResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            status: FixSizedTypesCodec.decodeByte(initialFrame.content, RESPONSE_STATUS_OFFSET),
-            memberUuid: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_MEMBER_UUID_OFFSET),
-            serializationVersion: FixSizedTypesCodec.decodeByte(initialFrame.content, RESPONSE_SERIALIZATION_VERSION_OFFSET),
-            partitionCount: FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_PARTITION_COUNT_OFFSET),
-            clusterId: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_CLUSTER_ID_OFFSET),
-            failoverSupported: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_FAILOVER_SUPPORTED_OFFSET),
-            address: CodecUtil.decodeNullable(clientMessage, AddressCodec.decode),
-            serverHazelcastVersion: StringCodec.decode(clientMessage),
-        };
+        const response = {} as ClientAuthenticationCustomResponseParams;
+        response.status = FixSizedTypesCodec.decodeByte(initialFrame.content, RESPONSE_STATUS_OFFSET);
+        response.memberUuid = FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_MEMBER_UUID_OFFSET);
+        response.serializationVersion = FixSizedTypesCodec.decodeByte(initialFrame.content, RESPONSE_SERIALIZATION_VERSION_OFFSET);
+        response.partitionCount = FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_PARTITION_COUNT_OFFSET);
+        response.clusterId = FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_CLUSTER_ID_OFFSET);
+        response.failoverSupported = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_FAILOVER_SUPPORTED_OFFSET);
+        response.address = CodecUtil.decodeNullable(clientMessage, AddressCodec.decode);
+        response.serverHazelcastVersion = StringCodec.decode(clientMessage);
+
+        return response;
     }
 }

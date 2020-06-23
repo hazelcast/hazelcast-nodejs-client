@@ -58,8 +58,9 @@ export class TransactionalSetRemoveCodec {
     static decodeResponse(clientMessage: ClientMessage): TransactionalSetRemoveResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as TransactionalSetRemoveResponseParams;
+        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

@@ -52,9 +52,10 @@ export class ClientLocalBackupListenerCodec {
     static decodeResponse(clientMessage: ClientMessage): ClientLocalBackupListenerResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as ClientLocalBackupListenerResponseParams;
+        response.response = FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 
     static handle(clientMessage: ClientMessage, handleBackupEvent: (sourceInvocationCorrelationId: Long) => void = null): void {

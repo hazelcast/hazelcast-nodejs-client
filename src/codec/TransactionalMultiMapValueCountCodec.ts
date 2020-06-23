@@ -58,8 +58,9 @@ export class TransactionalMultiMapValueCountCodec {
     static decodeResponse(clientMessage: ClientMessage): TransactionalMultiMapValueCountResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as TransactionalMultiMapValueCountResponseParams;
+        response.response = FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

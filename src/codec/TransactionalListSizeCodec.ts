@@ -55,8 +55,9 @@ export class TransactionalListSizeCodec {
     static decodeResponse(clientMessage: ClientMessage): TransactionalListSizeResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as TransactionalListSizeResponseParams;
+        response.response = FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

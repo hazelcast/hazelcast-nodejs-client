@@ -59,8 +59,9 @@ export class TransactionalMapKeySetWithPredicateCodec {
         // empty initial frame
         clientMessage.nextFrame();
 
-        return {
-            response: ListMultiFrameCodec.decode(clientMessage, DataCodec.decode),
-        };
+        const response = {} as TransactionalMapKeySetWithPredicateResponseParams;
+        response.response = ListMultiFrameCodec.decode(clientMessage, DataCodec.decode);
+
+        return response;
     }
 }

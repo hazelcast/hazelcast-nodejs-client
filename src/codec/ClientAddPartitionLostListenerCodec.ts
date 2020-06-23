@@ -55,9 +55,10 @@ export class ClientAddPartitionLostListenerCodec {
     static decodeResponse(clientMessage: ClientMessage): ClientAddPartitionLostListenerResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as ClientAddPartitionLostListenerResponseParams;
+        response.response = FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 
     static handle(clientMessage: ClientMessage, handlePartitionLostEvent: (partitionId: number, lostBackupCount: number, source: UUID) => void = null): void {

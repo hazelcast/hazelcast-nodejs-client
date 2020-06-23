@@ -55,8 +55,9 @@ export class ListAddAllWithIndexCodec {
     static decodeResponse(clientMessage: ClientMessage): ListAddAllWithIndexResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as ListAddAllWithIndexResponseParams;
+        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

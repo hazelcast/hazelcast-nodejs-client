@@ -59,8 +59,9 @@ export class TransactionalMultiMapRemoveEntryCodec {
     static decodeResponse(clientMessage: ClientMessage): TransactionalMultiMapRemoveEntryResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as TransactionalMultiMapRemoveEntryResponseParams;
+        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

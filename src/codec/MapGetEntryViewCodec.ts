@@ -59,9 +59,10 @@ export class MapGetEntryViewCodec {
     static decodeResponse(clientMessage: ClientMessage): MapGetEntryViewResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            maxIdle: FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_MAX_IDLE_OFFSET),
-            response: CodecUtil.decodeNullable(clientMessage, SimpleEntryViewCodec.decode),
-        };
+        const response = {} as MapGetEntryViewResponseParams;
+        response.maxIdle = FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_MAX_IDLE_OFFSET);
+        response.response = CodecUtil.decodeNullable(clientMessage, SimpleEntryViewCodec.decode);
+
+        return response;
     }
 }

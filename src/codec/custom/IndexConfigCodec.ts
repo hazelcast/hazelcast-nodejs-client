@@ -48,10 +48,11 @@ export class IndexConfigCodec {
         clientMessage.nextFrame();
 
         const initialFrame = clientMessage.nextFrame();
-        const type: number = FixSizedTypesCodec.decodeInt(initialFrame.content, TYPE_OFFSET);
-        const name: string = CodecUtil.decodeNullable(clientMessage, StringCodec.decode);
-        const attributes: string[] = ListMultiFrameCodec.decode(clientMessage, StringCodec.decode);
-        const bitmapIndexOptions: BitmapIndexOptions = CodecUtil.decodeNullable(clientMessage, BitmapIndexOptionsCodec.decode);
+        const type = FixSizedTypesCodec.decodeInt(initialFrame.content, TYPE_OFFSET);
+
+        const name = CodecUtil.decodeNullable(clientMessage, StringCodec.decode);
+        const attributes = ListMultiFrameCodec.decode(clientMessage, StringCodec.decode);
+        const bitmapIndexOptions = CodecUtil.decodeNullable(clientMessage, BitmapIndexOptionsCodec.decode);
 
         CodecUtil.fastForwardToEndFrame(clientMessage);
 

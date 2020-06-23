@@ -48,10 +48,11 @@ export class ErrorHolderCodec {
         clientMessage.nextFrame();
 
         const initialFrame = clientMessage.nextFrame();
-        const errorCode: number = FixSizedTypesCodec.decodeInt(initialFrame.content, ERROR_CODE_OFFSET);
-        const className: string = StringCodec.decode(clientMessage);
-        const message: string = CodecUtil.decodeNullable(clientMessage, StringCodec.decode);
-        const stackTraceElements: StackTraceElement[] = ListMultiFrameCodec.decode(clientMessage, StackTraceElementCodec.decode);
+        const errorCode = FixSizedTypesCodec.decodeInt(initialFrame.content, ERROR_CODE_OFFSET);
+
+        const className = StringCodec.decode(clientMessage);
+        const message = CodecUtil.decodeNullable(clientMessage, StringCodec.decode);
+        const stackTraceElements = ListMultiFrameCodec.decode(clientMessage, StackTraceElementCodec.decode);
 
         CodecUtil.fastForwardToEndFrame(clientMessage);
 

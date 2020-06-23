@@ -49,8 +49,9 @@ export class QueueSizeCodec {
     static decodeResponse(clientMessage: ClientMessage): QueueSizeResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as QueueSizeResponseParams;
+        response.response = FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

@@ -59,8 +59,9 @@ export class TransactionalMapRemoveCodec {
         // empty initial frame
         clientMessage.nextFrame();
 
-        return {
-            response: CodecUtil.decodeNullable(clientMessage, DataCodec.decode),
-        };
+        const response = {} as TransactionalMapRemoveResponseParams;
+        response.response = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
+
+        return response;
     }
 }

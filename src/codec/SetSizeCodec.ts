@@ -49,8 +49,9 @@ export class SetSizeCodec {
     static decodeResponse(clientMessage: ClientMessage): SetSizeResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as SetSizeResponseParams;
+        response.response = FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

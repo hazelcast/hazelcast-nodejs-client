@@ -51,8 +51,9 @@ export class MapValuesCodec {
         // empty initial frame
         clientMessage.nextFrame();
 
-        return {
-            response: ListMultiFrameCodec.decode(clientMessage, DataCodec.decode),
-        };
+        const response = {} as MapValuesResponseParams;
+        response.response = ListMultiFrameCodec.decode(clientMessage, DataCodec.decode);
+
+        return response;
     }
 }

@@ -51,8 +51,9 @@ export class MapEntrySetCodec {
         // empty initial frame
         clientMessage.nextFrame();
 
-        return {
-            response: EntryListCodec.decode(clientMessage, DataCodec.decode, DataCodec.decode),
-        };
+        const response = {} as MapEntrySetResponseParams;
+        response.response = EntryListCodec.decode(clientMessage, DataCodec.decode, DataCodec.decode);
+
+        return response;
     }
 }

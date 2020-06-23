@@ -58,8 +58,9 @@ export class TransactionalMapContainsKeyCodec {
     static decodeResponse(clientMessage: ClientMessage): TransactionalMapContainsKeyResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as TransactionalMapContainsKeyResponseParams;
+        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

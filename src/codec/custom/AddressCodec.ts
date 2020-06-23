@@ -43,8 +43,9 @@ export class AddressCodec {
         clientMessage.nextFrame();
 
         const initialFrame = clientMessage.nextFrame();
-        const port: number = FixSizedTypesCodec.decodeInt(initialFrame.content, PORT_OFFSET);
-        const host: string = StringCodec.decode(clientMessage);
+        const port = FixSizedTypesCodec.decodeInt(initialFrame.content, PORT_OFFSET);
+
+        const host = StringCodec.decode(clientMessage);
 
         CodecUtil.fastForwardToEndFrame(clientMessage);
 

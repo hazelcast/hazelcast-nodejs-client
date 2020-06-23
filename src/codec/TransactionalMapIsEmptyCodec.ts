@@ -55,8 +55,9 @@ export class TransactionalMapIsEmptyCodec {
     static decodeResponse(clientMessage: ClientMessage): TransactionalMapIsEmptyResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as TransactionalMapIsEmptyResponseParams;
+        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

@@ -51,8 +51,9 @@ export class ReplicatedMapEntrySetCodec {
         // empty initial frame
         clientMessage.nextFrame();
 
-        return {
-            response: EntryListCodec.decode(clientMessage, DataCodec.decode, DataCodec.decode),
-        };
+        const response = {} as ReplicatedMapEntrySetResponseParams;
+        response.response = EntryListCodec.decode(clientMessage, DataCodec.decode, DataCodec.decode);
+
+        return response;
     }
 }

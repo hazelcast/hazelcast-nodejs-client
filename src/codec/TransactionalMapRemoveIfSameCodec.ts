@@ -59,8 +59,9 @@ export class TransactionalMapRemoveIfSameCodec {
     static decodeResponse(clientMessage: ClientMessage): TransactionalMapRemoveIfSameResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as TransactionalMapRemoveIfSameResponseParams;
+        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

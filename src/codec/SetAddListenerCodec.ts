@@ -61,9 +61,10 @@ export class SetAddListenerCodec {
     static decodeResponse(clientMessage: ClientMessage): SetAddListenerResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as SetAddListenerResponseParams;
+        response.response = FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 
     static handle(clientMessage: ClientMessage, handleItemEvent: (item: Data, uuid: UUID, eventType: number) => void = null): void {

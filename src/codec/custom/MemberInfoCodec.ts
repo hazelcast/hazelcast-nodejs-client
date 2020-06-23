@@ -53,11 +53,12 @@ export class MemberInfoCodec {
         clientMessage.nextFrame();
 
         const initialFrame = clientMessage.nextFrame();
-        const uuid: UUID = FixSizedTypesCodec.decodeUUID(initialFrame.content, UUID_OFFSET);
-        const liteMember: boolean = FixSizedTypesCodec.decodeBoolean(initialFrame.content, LITE_MEMBER_OFFSET);
-        const address: Address = AddressCodec.decode(clientMessage);
-        const attributes: Map<string, string> = MapCodec.decode(clientMessage, StringCodec.decode, StringCodec.decode);
-        const version: MemberVersion = MemberVersionCodec.decode(clientMessage);
+        const uuid = FixSizedTypesCodec.decodeUUID(initialFrame.content, UUID_OFFSET);
+        const liteMember = FixSizedTypesCodec.decodeBoolean(initialFrame.content, LITE_MEMBER_OFFSET);
+
+        const address = AddressCodec.decode(clientMessage);
+        const attributes = MapCodec.decode(clientMessage, StringCodec.decode, StringCodec.decode);
+        const version = MemberVersionCodec.decode(clientMessage);
 
         CodecUtil.fastForwardToEndFrame(clientMessage);
 

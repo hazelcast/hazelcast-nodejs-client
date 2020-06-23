@@ -59,9 +59,10 @@ export class MapFetchWithQueryCodec {
         // empty initial frame
         clientMessage.nextFrame();
 
-        return {
-            results: ListMultiFrameCodec.decodeContainsNullable(clientMessage, DataCodec.decode),
-            iterationPointers: EntryListIntegerIntegerCodec.decode(clientMessage),
-        };
+        const response = {} as MapFetchWithQueryResponseParams;
+        response.results = ListMultiFrameCodec.decodeContainsNullable(clientMessage, DataCodec.decode);
+        response.iterationPointers = EntryListIntegerIntegerCodec.decode(clientMessage);
+
+        return response;
     }
 }

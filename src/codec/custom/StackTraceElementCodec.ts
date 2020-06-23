@@ -45,10 +45,11 @@ export class StackTraceElementCodec {
         clientMessage.nextFrame();
 
         const initialFrame = clientMessage.nextFrame();
-        const lineNumber: number = FixSizedTypesCodec.decodeInt(initialFrame.content, LINE_NUMBER_OFFSET);
-        const className: string = StringCodec.decode(clientMessage);
-        const methodName: string = StringCodec.decode(clientMessage);
-        const fileName: string = CodecUtil.decodeNullable(clientMessage, StringCodec.decode);
+        const lineNumber = FixSizedTypesCodec.decodeInt(initialFrame.content, LINE_NUMBER_OFFSET);
+
+        const className = StringCodec.decode(clientMessage);
+        const methodName = StringCodec.decode(clientMessage);
+        const fileName = CodecUtil.decodeNullable(clientMessage, StringCodec.decode);
 
         CodecUtil.fastForwardToEndFrame(clientMessage);
 

@@ -36,8 +36,9 @@ export class AnchorDataListHolderCodec {
     static decode(clientMessage: ClientMessage): AnchorDataListHolder {
         // begin frame
         clientMessage.nextFrame();
-        const anchorPageList: number[] = ListIntegerCodec.decode(clientMessage);
-        const anchorDataList: Array<[Data, Data]> = EntryListCodec.decode(clientMessage, DataCodec.decode, DataCodec.decode);
+
+        const anchorPageList = ListIntegerCodec.decode(clientMessage);
+        const anchorDataList = EntryListCodec.decode(clientMessage, DataCodec.decode, DataCodec.decode);
 
         CodecUtil.fastForwardToEndFrame(clientMessage);
 

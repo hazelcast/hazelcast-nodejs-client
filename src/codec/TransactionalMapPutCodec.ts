@@ -62,8 +62,9 @@ export class TransactionalMapPutCodec {
         // empty initial frame
         clientMessage.nextFrame();
 
-        return {
-            response: CodecUtil.decodeNullable(clientMessage, DataCodec.decode),
-        };
+        const response = {} as TransactionalMapPutResponseParams;
+        response.response = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
+
+        return response;
     }
 }

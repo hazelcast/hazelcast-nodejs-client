@@ -59,8 +59,9 @@ export class TransactionalMultiMapGetCodec {
         // empty initial frame
         clientMessage.nextFrame();
 
-        return {
-            response: ListMultiFrameCodec.decode(clientMessage, DataCodec.decode),
-        };
+        const response = {} as TransactionalMultiMapGetResponseParams;
+        response.response = ListMultiFrameCodec.decode(clientMessage, DataCodec.decode);
+
+        return response;
     }
 }
