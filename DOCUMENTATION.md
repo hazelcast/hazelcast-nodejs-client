@@ -1384,22 +1384,21 @@ As explained in the [TLS/SSL section](#61-tlsssl), Hazelcast members have key st
 
 ## 5.8. Enabling Hazelcast Cloud Discovery
 
-The purpose of Hazelcast Cloud Discovery is to provide the clients to use IP addresses provided by `hazelcast orchestrator`. To enable Hazelcast Cloud Discovery, specify a token for the `discoveryToken` field and set the `enabled` field to `true`.
-
-The following are example configurations.
+Node.js client can discover and connect to Hazelcast clusters running on [Hazelcast Cloud](https://cloud.hazelcast.com/).
+For this, provide authentication information as `GroupConfig`, enable `CloudConfig` and set your `discoveryToken` as shown below.
 
 **Declarative Configuration:**
 
 ```json
 {
  "group": {
-        "name": "hazel",
-        "password": "cast"
+        "name": "YOUR_CLUSTER_NAME",
+        "password": "YOUR_CLUSTER_PASSWORD"
     },
 
     "network": {
         "hazelcastCloud": {
-            "discoveryToken": "EXAMPLE_TOKEN",
+            "discoveryToken": "YOUR_CLUSTER_DISCOVERY_TOKEN",
             "enabled": true
         }
     }
@@ -1411,14 +1410,15 @@ The following are example configurations.
 
 ```javascript
 var clientConfig = new Config.ClientConfig();
-clientConfig.groupConfig.name = 'hazel';
-clientConfig.groupConfig.password = 'cast';
+clientConfig.groupConfig.name = 'YOUR_CLUSTER_NAME';
+clientConfig.groupConfig.password = 'YOUR_CLUSTER_PASSWORD';
 
 clientConfig.networkConfig.cloudConfig.enabled = true;
-clientConfig.networkConfig.cloudConfig.discoveryToken = 'EXAMPLE_TOKEN';
+clientConfig.networkConfig.cloudConfig.discoveryToken = 'YOUR_CLUSTER_DISCOVERY_TOKEN';
 ```
 
-To be able to connect to the provided IP addresses, you should use secure TLS/SSL connection between the client and members. Therefore, you should set an SSL configuration as described in the previous section.
+If you have enabled encryption for your cluster, you should also enable TLS/SSL configuration to secure communication between your 
+client and cluster members as described in the [TLS/SSL for Hazelcast Node.js Client section](#612-tlsssl-for-hazelcast-nodejs-clients).
 
 # 6. Securing Client Connection
 

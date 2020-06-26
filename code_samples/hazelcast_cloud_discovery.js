@@ -19,25 +19,29 @@ var ClientConfig = require('hazelcast-client').Config.ClientConfig;
 var fs = require('fs');
 var Path = require('path');
 
-
 function createClientConfigWithSSLOpts(key, cert, ca) {
-    var sslOpts = {
-        servername: 'Hazelcast-Inc',
+    var cfg = new ClientConfig();
+
+    // Set up group name and password for authentication
+    cfg.groupConfig.name = 'YOUR_CLUSTER_NAME';
+    cfg.groupConfig.password = 'YOUR_CLUSTER_PASSWORD';
+
+    // Enable Hazelcast Cloud configuration and set the token of your cluster.
+    cfg.networkConfig.cloudConfig.enabled = true;
+    cfg.networkConfig.cloudConfig.discoveryToken = 'YOUR_CLUSTER_DISCOVERY_TOKEN';
+
+    // If you have enabled encryption for your cluster, also configure TLS/SSL for the client.
+    // Otherwise, skip this step.
+    cfg.networkConfig.sslConfig.enabled = true;
+    cfg.networkConfig.sslConfig.sslOptions = {
+        servername: 'hazelcast.cloud',
         rejectUnauthorized: true,
         ca: fs.readFileSync(Path.join(__dirname, ca)),
         key: fs.readFileSync(Path.join(__dirname, key)),
-        cert: fs.readFileSync(Path.join(__dirname, cert))
+        cert: fs.readFileSync(Path.join(__dirname, cert)),
+        passphrase: 'YOUR_KEY_STORE_PASSWORD'
     };
-    var cfg = new ClientConfig();
-    cfg.networkConfig.sslOptions = sslOpts;
-    cfg.networkConfig.connectionAttemptLimit = 1000;
 
-    var token = 'EXAMPLE_TOKEN';
-
-    cfg.networkConfig.cloudConfig.enabled = true;
-    cfg.networkConfig.cloudConfig.discoveryToken = token;
-    cfg.groupConfig.name = 'hazel';
-    cfg.groupConfig.password = 'cast';
     return cfg;
 }
 
