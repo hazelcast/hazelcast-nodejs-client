@@ -241,4 +241,33 @@ describe("MultiMap Proxy", function () {
             expect(size).to.equal(0);
         });
     });
+
+    it('putAll with empty pairs', function () {
+        return map.putAll([])
+            .then(() => map.size())
+            .then(size => expect(size).to.equal(0));
+    });
+
+    it('putAll', function () {
+        Util.markServerVersionAtLeast(this, client, '4.1');
+        const pairs = [["a", [1]], ["b", [2, 22]], ["c", [3, 33, 333]]];
+        const checkValues = (expected, actual) => {
+            expect(actual.length).to.equal(expected.length);
+            expect(actual).to.have.members(expected);
+        }
+
+        return map.putAll(pairs)
+            .then(() => map.get("a"))
+            .then(values => {
+                checkValues([1], values.toArray());
+                return map.get("b");
+            })
+            .then(values => {
+                checkValues([2, 22], values.toArray())
+                return map.get("c");
+            })
+            .then(values => {
+                checkValues([3, 33, 333], values.toArray());
+            })
+    });
 });

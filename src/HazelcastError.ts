@@ -284,3 +284,10 @@ export class NodeIdOutOfRangeError extends HazelcastError {
         Object.setPrototypeOf(this, NodeIdOutOfRangeError.prototype);
     }
 }
+
+export class ReachedMaxSizeError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, ReachedMaxSizeError.prototype);
+    }
+}

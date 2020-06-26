@@ -75,14 +75,12 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         return super.evictInternal(key).then<boolean>(this.invalidateCacheEntryAndReturn.bind(this, key));
     }
 
-    protected putAllInternal(partitionsToKeysData: { [id: string]: Array<[Data, Data]> }): Promise<void> {
-        return super.putAllInternal(partitionsToKeysData).then(() => {
-            for (const partition in partitionsToKeysData) {
-                partitionsToKeysData[partition].forEach((entry: [Data, Data]) => {
-                    this.nearCache.invalidate(entry[0]);
-                });
-            }
-        });
+    protected finalizePutAll(partitionsToKeysData: { [id: string]: Array<[Data, Data]> }): void {
+        for (const partition in partitionsToKeysData) {
+            partitionsToKeysData[partition].forEach((entry: [Data, Data]) => {
+                this.nearCache.invalidate(entry[0]);
+            });
+        }
     }
 
     protected postDestroy(): Promise<void> {

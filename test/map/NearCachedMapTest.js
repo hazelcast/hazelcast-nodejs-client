@@ -233,14 +233,21 @@ describe("NearCachedMap", function () {
 
             it('loadAll invalidates the cache');
 
-            it('putAll invalidates entries', function () {
-                return map1.getAll(['key1', 'key2']).then(function () {
-                    return map1.putAll([
-                        ['key1', 'newVal1'],
-                        ['key2', 'newVal2']
-                    ]);
-                }).then(function () {
-                    return expectStats(map1, 0, 2, 0);
+            [true, false].forEach(function (shouldUsePutAll) {
+                it((shouldUsePutAll ? 'putAll' : 'setAll') + ' invalidates entries', function () {
+                    return map1.getAll(['key1', 'key2'])
+                        .then(() => {
+                            const entries = [
+                                ['key1', 'newVal1'],
+                                ['key2', 'newVal2']
+                            ];
+                            if (shouldUsePutAll) {
+                                return map1.putAll(entries);
+                            } else {
+                                return map1.setAll(entries);
+                            }
+                        })
+                        .then(() => expectStats(map1, 0, 2, 0));
                 });
             });
 
