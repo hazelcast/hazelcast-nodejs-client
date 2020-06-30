@@ -219,7 +219,6 @@ describe('MapProxy', function () {
                                 returnedCorrectly++;
                                 if (returnedCorrectly === 5) {
                                     done();
-
                                 }
                             } catch (e) {
                                 done(e);
