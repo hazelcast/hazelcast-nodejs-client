@@ -223,6 +223,7 @@ export class DefaultPortableReader implements PortableReader {
         const fieldCount = this.input.readInt();
         const expectedFieldCount = this.classDefinition.getFieldCount();
         if (fieldCount !== expectedFieldCount) {
+            // eslint-disable-next-line max-len
             throw new IllegalStateError(`Field count[${fieldCount}] in stream does not match with class definition[${expectedFieldCount}]`);
         }
         this.offset = this.input.position();
