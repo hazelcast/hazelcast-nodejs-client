@@ -37,5 +37,6 @@ module.exports = {
         ],
         'no-prototype-builtins': 0,
         'prefer-rest-params': 0,
+        'max-len': [2, 130, 4]
     }
 };
