@@ -49,9 +49,9 @@ export function murmur(key: any): number {
     switch (remainder) {
         case 3:
             k1 ^= (key.readUInt8(i + 2) & 0xff) << 16;
-        case 2: /*eslint-disable-line no-fallthrough*/
+        case 2: // eslint-disable-line no-fallthrough
             k1 ^= (key.readUInt8(i + 1) & 0xff) << 8;
-        case 1: /*eslint-disable-line no-fallthrough*/
+        case 1: // eslint-disable-line no-fallthrough
             k1 ^= (key.readUInt8(i) & 0xff);
 
             k1 = (((k1 & 0xffff) * c1) + ((((k1 >>> 16) * c1) & 0xffff) << 16)) & 0xffffffff;
