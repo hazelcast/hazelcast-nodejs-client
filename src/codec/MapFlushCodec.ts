@@ -22,7 +22,7 @@ import {StringCodec} from './builtin/StringCodec';
 // hex: 0x010A00
 const REQUEST_MESSAGE_TYPE = 68096;
 // hex: 0x010A01
-const RESPONSE_MESSAGE_TYPE = 68097;
+// RESPONSE_MESSAGE_TYPE = 68097
 
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 

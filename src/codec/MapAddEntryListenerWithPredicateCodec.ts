@@ -27,7 +27,7 @@ import {CodecUtil} from './builtin/CodecUtil';
 // hex: 0x011700
 const REQUEST_MESSAGE_TYPE = 71424;
 // hex: 0x011701
-const RESPONSE_MESSAGE_TYPE = 71425;
+// RESPONSE_MESSAGE_TYPE = 71425
 // hex: 0x011702
 const EVENT_ENTRY_MESSAGE_TYPE = 71426;
 
