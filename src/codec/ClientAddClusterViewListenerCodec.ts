@@ -27,7 +27,7 @@ import {UUID} from '../core/UUID';
 // hex: 0x000300
 const REQUEST_MESSAGE_TYPE = 768;
 // hex: 0x000301
-const RESPONSE_MESSAGE_TYPE = 769;
+// RESPONSE_MESSAGE_TYPE = 769
 // hex: 0x000302
 const EVENT_MEMBERS_VIEW_MESSAGE_TYPE = 770;
 // hex: 0x000303
