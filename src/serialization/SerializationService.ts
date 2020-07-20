@@ -370,9 +370,7 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     private defaultPartitionStrategy(obj: any): number {
-        /* tslint:disable:no-string-literal */
         if (obj == null || !obj['getPartitionHash']) {
-            /* tslint:enable:no-string-literal */
             return 0;
         } else {
             return obj.getPartitionHash();

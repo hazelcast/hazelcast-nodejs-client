@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-/* tslint:disable:no-bitwise */
 export class BitsUtil {
     static BYTE_SIZE_IN_BYTES = 1;
     static BOOLEAN_SIZE_IN_BYTES = 1;

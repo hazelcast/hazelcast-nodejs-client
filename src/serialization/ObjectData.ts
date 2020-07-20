@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-/* tslint:disable:no-bitwise */
 import * as assert from 'assert';
 import * as Long from 'long';
 import {BitsUtil} from '../BitsUtil';

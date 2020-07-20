@@ -679,7 +679,6 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         };
         for (const funcName in conversionTable) {
             if (listener[funcName]) {
-                /* tslint:disable:no-bitwise */
                 flags = flags | conversionTable[funcName];
             }
         }

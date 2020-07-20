@@ -56,10 +56,8 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     private lockReferenceIdGenerator: LockReferenceIdGenerator = this.client.getLockReferenceIdGenerator();
     private deserializeList = <X>(items: Data[]): X[] => {
         return items.map<X>(this.toObject.bind(this));
-        // tslint:disable-next-line:semicolon
     };
 
-    /*tslint:disable:member-ordering*/
     put(key: K, value: V): Promise<boolean> {
         const keyData = this.toData(key);
         const valueData = this.toData(value);
@@ -175,7 +173,6 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     addEntryListener(listener: EntryListener<K, V>, key?: K, includeValue = true): Promise<string> {
         const toObject = this.toObject.bind(this);
 
-        /* tslint:disable: no-shadowed-variable */
         const entryEventHandler = (keyData: Data, valueData: Data, oldValueData: Data, mergingValueData: Data, eventType: number,
                                    uuid: UUID, numberOfAffectedEntries: number): void => {
             const member = this.client.getClusterService().getMember(uuid);

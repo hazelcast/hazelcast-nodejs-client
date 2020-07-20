@@ -18,7 +18,6 @@ import {AbstractLoadBalancer} from './AbstractLoadBalancer';
 import {randomInt} from '../Util';
 import {Member} from '../core/Member';
 
-// tslint:disable-next-line:no-bitwise
 const INITIAL_SEED_CAP = 1 << 16;
 
 /**

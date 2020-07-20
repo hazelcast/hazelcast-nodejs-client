@@ -33,7 +33,6 @@ export class UUID {
         return other.mostSignificant.equals(this.mostSignificant) && other.leastSignificant.equals(this.leastSignificant);
     }
 
-    /* tslint:disable:no-bitwise */
     toString(): string {
         if (this.cachedString) {
             return this.cachedString;

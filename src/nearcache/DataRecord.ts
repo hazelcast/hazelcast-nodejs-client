@@ -55,7 +55,6 @@ export class DataRecord {
         this.status = DataRecord.READ_PERMITTED;
     }
 
-    /*tslint:disable:member-ordering*/
     public static lruComp(x: DataRecord, y: DataRecord): number {
         return x.lastAccessTime - y.lastAccessTime;
     }
