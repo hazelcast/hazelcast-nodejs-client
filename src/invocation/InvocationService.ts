@@ -151,8 +151,8 @@ export class InvocationService {
         this.connectionManager = hazelcastClient.getConnectionManager();
         this.partitionService = hazelcastClient.getPartitionService();
         this.logger = this.client.getLoggingService().getLogger();
-        this.smartRoutingEnabled = hazelcastClient.getConfig().networkConfig.smartRouting;
-        if (hazelcastClient.getConfig().networkConfig.smartRouting) {
+        this.smartRoutingEnabled = hazelcastClient.getConfig().network.smartRouting;
+        if (hazelcastClient.getConfig().network.smartRouting) {
             this.doInvoke = this.invokeSmart;
         } else {
             this.doInvoke = this.invokeNonSmart;

@@ -13,30 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
+const { Client } = require('hazelcast-client');
 
-Client.newHazelcastClient().then(function (hazelcastClient) {
-    var client = hazelcastClient;
-    var queue;
-    hazelcastClient.getQueue('people').then(function (q) {
-        queue = q;
-        return queue.put('Item1');
-    }).then(function () {
-        return queue.put('Item2');
-    }).then(function () {
-        return queue.peek();
-    }).then(function (item) {
-        console.log('Peeked item: ' + item + '. Item is not removed from queue.');
-        return queue.poll();
-    }).then(function (item) {
-        console.log('Retrieved item: ' + item + '. Item is removed from queue.');
-        return queue.poll();
-    }).then(function (item) {
-        console.log('Retrieved item: ' + item);
-        return client.shutdown();
-    });
-});
+(async () => {
+    try {
+        const client = await Client.newHazelcastClient();
+        const queue = await client.getQueue('my-distributed-queue');
 
+        await queue.put('Item1');
+        await queue.put('Item2');
 
+        let item = await queue.peek();
+        console.log(`Peeked item: ${item}. Item is not removed from queue`);
+        item = await queue.poll();
+        console.log(`Retrieved item: ${item}. Item is removed from queue`);
+        item = await queue.poll();
+        console.log(`Retrieved item: ${item}`);
 
+        client.shutdown();
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

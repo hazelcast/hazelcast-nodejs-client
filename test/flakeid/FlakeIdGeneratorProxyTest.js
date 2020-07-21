@@ -13,39 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-
-var expect = require('chai').expect;
-var HazelcastClient = require('../../.').Client;
-var Controller = require('./../RC');
-var Config = require('../../.').Config;
-var Util = require('./../Util');
-var Promise = require('bluebird');
-var Long = require('long');
+const expect = require('chai').expect;
+const HazelcastClient = require('../../.').Client;
+const RC = require('./../RC');
+const Util = require('./../Util');
+const Promise = require('bluebird');
+const Long = require('long');
 
 describe("FlakeIdGeneratorProxyTest", function () {
 
-    var FLAKE_ID_STEP = 1 << 16;
-    var SHORT_TERM_BATCH_SIZE = 3;
-    var SHORT_TERM_VALIDITY_MILLIS = 3000;
+    const FLAKE_ID_STEP = 1 << 16;
+    const SHORT_TERM_BATCH_SIZE = 3;
+    const SHORT_TERM_VALIDITY_MILLIS = 3000;
 
-    var cluster;
-    var client;
-    var flakeIdGenerator;
+    let cluster, client;
+    let flakeIdGenerator;
 
     before(function () {
-        return Controller.createCluster().then(function (response) {
+        return RC.createCluster().then(function (response) {
             cluster = response;
-            return Controller.startMember(cluster.id);
+            return RC.startMember(cluster.id);
         }).then(function () {
-            var cfg = new Config.ClientConfig();
-            cfg.clusterName = cluster.id;
-            var flakeConfig = new Config.FlakeIdGeneratorConfig();
-            flakeConfig.prefetchValidityMillis = SHORT_TERM_VALIDITY_MILLIS;
-            flakeConfig.prefetchCount = SHORT_TERM_BATCH_SIZE;
-            flakeConfig.name = 'shortterm';
-            cfg.flakeIdGeneratorConfigs['shortterm'] = flakeConfig;
-            return HazelcastClient.newHazelcastClient(cfg).then(function (hazelcastClient) {
+            return HazelcastClient.newHazelcastClient({
+                clusterName: cluster.id,
+                flakeIdGenerators: {
+                    'shortterm': {
+                        prefetchValidityMillis: SHORT_TERM_VALIDITY_MILLIS,
+                        prefetchCount: SHORT_TERM_BATCH_SIZE
+                    }
+                }
+            }).then(function (hazelcastClient) {
                 client = hazelcastClient;
             });
         });
@@ -57,7 +56,7 @@ describe("FlakeIdGeneratorProxyTest", function () {
 
     after(function () {
         client.shutdown();
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     function addToListFunction(l) {
@@ -76,9 +75,9 @@ describe("FlakeIdGeneratorProxyTest", function () {
     it('newId returns a unique long', function () {
         return client.getFlakeIdGenerator('test').then(function (idGenerator) {
             flakeIdGenerator = idGenerator;
-            var promise = Promise.resolve();
-            var idList = [];
-            for (var i = 0; i < 10; i++) {
+            let promise = Promise.resolve();
+            const idList = [];
+            for (let i = 0; i < 10; i++) {
                 promise = promise.then(function () {
                     return Promise.all([
                         flakeIdGenerator.newId().then(addToListFunction(idList)),
@@ -94,16 +93,17 @@ describe("FlakeIdGeneratorProxyTest", function () {
                 idList.sort(function (a, b) {
                     return (a.greaterThan(b) ? 1 : (a.lessThan(b) ? -1 : 0));
                 });
-                for (var i = 1; i < idList.length; i++) {
+                for (let i = 1; i < idList.length; i++) {
                     expect(idList[i]).to.be.instanceOf(Long);
-                    expect(idList[i - 1].equals(idList[i]), 'Expected ' + idList[i - 1] + ' ' + idList[i] + 'to be different.').to.be.false;
+                    expect(idList[i - 1].equals(idList[i]), 'Expected ' + idList[i - 1] + ' ' + idList[i] + 'to be different.')
+                        .to.be.false;
                 }
             });
         });
     });
 
     it('subsequent ids are from the same batch', function () {
-        var firstId;
+        let firstId;
         return client.getFlakeIdGenerator('test').then(function (idGenerator) {
             flakeIdGenerator = idGenerator;
             return flakeIdGenerator.newId()
@@ -116,7 +116,7 @@ describe("FlakeIdGeneratorProxyTest", function () {
     });
 
     it('ids are from new batch after validity period', function () {
-        var firstId;
+        let firstId;
         return client.getFlakeIdGenerator('shortterm').then(function (idGenerator) {
             flakeIdGenerator = idGenerator;
             return flakeIdGenerator.newId()
@@ -126,13 +126,14 @@ describe("FlakeIdGeneratorProxyTest", function () {
         }).then(function () {
             return flakeIdGenerator.newId();
         }).then(function (secondId) {
-            var borderId = firstId.add(FLAKE_ID_STEP * SHORT_TERM_BATCH_SIZE);
-            return expect(secondId.greaterThan(borderId), 'Expected ' + secondId + ' to be greater than ' + borderId).to.be.true;
+            const borderId = firstId.add(FLAKE_ID_STEP * SHORT_TERM_BATCH_SIZE);
+            return expect(secondId.greaterThan(borderId), 'Expected ' + secondId + ' to be greater than ' + borderId)
+                .to.be.true;
         });
     });
 
     it('ids are from new batch after prefetched ones are exhausted', function () {
-        var firstId;
+        let firstId;
         return client.getFlakeIdGenerator('shortterm').then(function (idGenerator) {
             flakeIdGenerator = idGenerator;
             return flakeIdGenerator.newId()
@@ -140,16 +141,16 @@ describe("FlakeIdGeneratorProxyTest", function () {
             firstId = id;
             return flakeIdGenerator.newId();
         }).then(function () {
-            //after this we exhausted the batch at hand
+            // after this we exhausted the batch at hand
             return flakeIdGenerator.newId();
         }).then(function () {
             return Util.promiseWaitMilliseconds(100);
         }).then(function () {
             return flakeIdGenerator.newId();
         }).then(function (secondId) {
-            var borderId = firstId.add(FLAKE_ID_STEP * SHORT_TERM_BATCH_SIZE);
-            return expect(secondId.greaterThan(borderId), 'Expected ' + secondId + ' to be greater than ' + borderId).to.be.true;
+            const borderId = firstId.add(FLAKE_ID_STEP * SHORT_TERM_BATCH_SIZE);
+            return expect(secondId.greaterThan(borderId), 'Expected ' + secondId + ' to be greater than ' + borderId)
+                .to.be.true;
         });
-        ;
     });
 });

@@ -17,7 +17,7 @@
 import * as Promise from 'bluebird';
 import {ClientInfo} from './ClientInfo';
 import {ClientGetDistributedObjectsCodec} from './codec/ClientGetDistributedObjectsCodec';
-import {ClientConfig} from './config/Config';
+import {ClientConfig, ClientConfigImpl} from './config/Config';
 import {ConfigBuilder} from './config/ConfigBuilder';
 import {DistributedObject} from './DistributedObject';
 import {ClientConnectionManager} from './network/ClientConnectionManager';
@@ -51,6 +51,8 @@ import {NearCacheManager} from './nearcache/NearCacheManager';
 import {DistributedObjectListener} from './core/DistributedObjectListener';
 import {IllegalStateError} from './HazelcastError';
 import {LoadBalancer} from './LoadBalancer';
+import {LoadBalancerType} from './config/LoadBalancerConfig';
+import {RandomLB} from './util/RandomLB';
 import {RoundRobinLB} from './util/RoundRobinLB';
 import {ClusterViewListenerService} from './listener/ClusterViewListenerService';
 import {ClientMessage} from './ClientMessage';
@@ -60,7 +62,7 @@ export default class HazelcastClient {
 
     private readonly instanceName: string;
     private readonly id: number = HazelcastClient.CLIENT_ID++;
-    private readonly config: ClientConfig = new ClientConfig();
+    private readonly config: ClientConfigImpl;
     private readonly loggingService: LoggingService;
     private readonly serializationService: SerializationService;
     private readonly invocationService: InvocationService;
@@ -80,19 +82,14 @@ export default class HazelcastClient {
 
     private mapRepairingTask: RepairingTask;
 
-    constructor(config: ClientConfig) {
+    constructor(config: ClientConfigImpl) {
         this.config = config;
-        if (config.getInstanceName() != null) {
-            this.instanceName = config.getInstanceName();
-        } else {
-            this.instanceName = 'hz.client_' + this.id;
-        }
-
+        this.instanceName = config.instanceName || 'hz.client_' + this.id;
         this.loggingService = new LoggingService(this.config.customLogger,
             this.config.properties['hazelcast.logging.level'] as number);
         this.loadBalancer = this.initLoadBalancer();
         this.listenerService = new ListenerService(this);
-        this.serializationService = new SerializationServiceV1(this, this.config.serializationConfig);
+        this.serializationService = new SerializationServiceV1(this.config.serialization);
         this.nearCacheManager = new NearCacheManager(this);
         this.partitionService = new PartitionService(this);
         this.addressProvider = this.createAddressProvider();
@@ -113,16 +110,10 @@ export default class HazelcastClient {
      * @returns a new client instance
      */
     public static newHazelcastClient(config?: ClientConfig): Promise<HazelcastClient> {
-        if (config == null) {
-            const configBuilder = new ConfigBuilder();
-            return configBuilder.loadConfig().then(() => {
-                const client = new HazelcastClient(configBuilder.build());
-                return client.init();
-            });
-        } else {
-            const client = new HazelcastClient(config);
-            return client.init();
-        }
+        const configBuilder = new ConfigBuilder(config);
+        const effectiveConfig = configBuilder.build();
+        const client = new HazelcastClient(effectiveConfig);
+        return client.init();
     }
 
     /**
@@ -273,11 +264,11 @@ export default class HazelcastClient {
     }
 
     /**
-     * Return configuration that this instance started with.
+     * Returns configuration that this instance started with.
      * Returned configuration object should not be modified.
-     * @returns {ClientConfig}
+     * @returns {ClientConfigImpl}
      */
-    getConfig(): ClientConfig {
+    getConfig(): ClientConfigImpl {
         return this.config;
     }
 
@@ -402,7 +393,7 @@ export default class HazelcastClient {
     private init(): Promise<HazelcastClient> {
         try {
             this.lifecycleService.start();
-            const configuredMembershipListeners = this.config.listeners.getMembershipListeners();
+            const configuredMembershipListeners = this.config.membershipListeners;
             this.clusterService.start(configuredMembershipListeners);
             this.clusterViewListenerService.start();
         } catch (e) {
@@ -412,7 +403,7 @@ export default class HazelcastClient {
 
         return this.connectionManager.start()
             .then(() => {
-                const connectionStrategyConfig = this.config.connectionStrategyConfig;
+                const connectionStrategyConfig = this.config.connectionStrategy;
                 if (!connectionStrategyConfig.asyncStart) {
                     return this.clusterService.waitInitialMemberListFetched()
                         .then(() => this.connectionManager.connectToAllClusterMembers());
@@ -435,18 +426,25 @@ export default class HazelcastClient {
     }
 
     private initLoadBalancer(): LoadBalancer {
-        let lb = this.config.loadBalancer;
+        let lb = this.config.loadBalancer.customLoadBalancer;
         if (lb == null) {
-            lb = new RoundRobinLB();
+            if (this.config.loadBalancer.type === LoadBalancerType.ROUND_ROBIN) {
+                lb = new RoundRobinLB();
+            } else if (this.config.loadBalancer.type === LoadBalancerType.RANDOM) {
+                lb = new RandomLB();
+            } else {
+                throw new IllegalStateError('Load balancer type ' + this.config.loadBalancer.type
+                    + ' is not supported.');
+            }
         }
         return lb;
     }
 
     private createAddressProvider(): AddressProvider {
-        const networkConfig = this.getConfig().networkConfig;
+        const networkConfig = this.getConfig().network;
 
-        const addressListProvided = networkConfig.addresses.length !== 0;
-        const hazelcastCloudEnabled = networkConfig.cloudConfig.enabled;
+        const addressListProvided = networkConfig.clusterMembers.length !== 0;
+        const hazelcastCloudEnabled = networkConfig.hazelcastCloud.enabled;
         if (addressListProvided && hazelcastCloudEnabled) {
             throw new IllegalStateError('Only one discovery method can be enabled at a time. '
                 + 'Cluster members given explicitly: ' + addressListProvided
@@ -462,7 +460,7 @@ export default class HazelcastClient {
     }
 
     private initCloudAddressProvider(): HazelcastCloudAddressProvider {
-        const cloudConfig = this.getConfig().networkConfig.cloudConfig;
+        const cloudConfig = this.getConfig().network.hazelcastCloud;
         if (cloudConfig.enabled) {
             const discoveryToken = cloudConfig.discoveryToken;
             const urlEndpoint = HazelcastCloudDiscovery.createUrlEndpoint(this.getConfig().properties, discoveryToken);
@@ -473,7 +471,7 @@ export default class HazelcastClient {
     }
 
     private getConnectionTimeoutMillis(): number {
-        const networkConfig = this.getConfig().networkConfig;
+        const networkConfig = this.getConfig().network;
         const connTimeout = networkConfig.connectionTimeout;
         return connTimeout === 0 ? Number.MAX_VALUE : connTimeout;
     }

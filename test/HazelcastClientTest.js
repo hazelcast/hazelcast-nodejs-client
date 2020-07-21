@@ -13,20 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require('chai').expect;
-var Config = require('../.').Config;
-var Controller = require('./RC');
-var HazelcastClient = require('../.').Client;
-var DeferredPromise = require('../lib/Util').DeferredPromise;
+const expect = require('chai').expect;
+const RC = require('./RC');
+const HazelcastClient = require('../.').Client;
+const DeferredPromise = require('../lib/Util').DeferredPromise;
 
-var dummyConfig = new Config.ClientConfig();
-dummyConfig.networkConfig.smartRouting = false;
-
-var smartConfig = new Config.ClientConfig();
-smartConfig.networkConfig.smartRouting = true;
-
-var configParams = [
+const dummyConfig = {
+    network: {
+        smartRouting: false
+    }
+};
+const smartConfig = {
+    network: {
+        smartRouting: true
+    }
+};
+const configParams = [
     dummyConfig,
     smartConfig
 ];
@@ -43,16 +47,15 @@ ManagedObjects.prototype.getObject = function (func, name) {
 };
 
 ManagedObjects.prototype.destroyAll = function () {
-    var promises = [];
+    const promises = [];
     this.managedObjects.forEach(function (obj) {
         promises.push(obj.destroy());
     });
-
     return Promise.all(promises);
 };
 
 ManagedObjects.prototype.destroy = function (name) {
-    var deferred = DeferredPromise();
+    const deferred = DeferredPromise();
     this.managedObjects.filter((el) => {
         if (el.getName() === name) {
             el.destroy().then(function () {
@@ -66,14 +69,12 @@ ManagedObjects.prototype.destroy = function (name) {
 configParams.forEach(function (cfg) {
     describe('HazelcastClient', function () {
         this.timeout(4000);
-        var cluster;
-        var client;
-        var managed;
+        let cluster, client, managed;
 
         before(function () {
-            return Controller.createCluster(null, null).then(function (res) {
+            return RC.createCluster(null, null).then(function (res) {
                 cluster = res;
-                return Controller.startMember(cluster.id);
+                return RC.startMember(cluster.id);
             }).then(function (member) {
                 cfg.clusterName = cluster.id;
                 return HazelcastClient.newHazelcastClient(cfg);
@@ -92,7 +93,7 @@ configParams.forEach(function (cfg) {
 
         after(function () {
             client.shutdown();
-            return Controller.terminateCluster(cluster.id);
+            return RC.terminateCluster(cluster.id);
         });
 
         it('getDistributedObject returns empty array when there is no distributed object', function () {
@@ -105,7 +106,7 @@ configParams.forEach(function (cfg) {
         });
 
         it('getLocalEndpoint returns correct info', function () {
-            var info = client.getLocalEndpoint();
+            const info = client.getLocalEndpoint();
             expect(info.localAddress.host).to.equal(client.getConnectionManager().getRandomConnection().localAddress.host);
             expect(info.localAddress.port).to.equal(client.getConnectionManager().getRandomConnection().localAddress.port);
             expect(info.uuid).to.deep.equal(client.getConnectionManager().getClientUuid());
@@ -119,7 +120,7 @@ configParams.forEach(function (cfg) {
             setTimeout(function () {
                 client.getDistributedObjects().then(function (distObjects) {
                     try {
-                        names = distObjects.map((o) => {
+                        const names = distObjects.map((o) => {
                             return o.getName();
                         });
                         expect(names).to.have.members(['map', 'set']);
@@ -140,7 +141,7 @@ configParams.forEach(function (cfg) {
                 managed.destroy('map1').then(function () {
                     client.getDistributedObjects().then(function (distObjects) {
                         try {
-                            var names = distObjects.map(function (o) {
+                            const names = distObjects.map(function (o) {
                                 return o.getName();
                             });
                             expect(names).to.have.members(['map2', 'map3']);

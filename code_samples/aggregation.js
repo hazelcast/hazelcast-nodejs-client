@@ -13,32 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
-var Aggregators = require('hazelcast-client').Aggregators;
-var Predicates = require('hazelcast-client').Predicates;
+const {
+    Client,
+    Aggregators,
+    Predicates
+} = require('hazelcast-client');
 
-Client.newHazelcastClient().then(function (hazelcastClient) {
-    var client = hazelcastClient;
-    var map;
-    hazelcastClient.getMap('person-age-map').then(function (mp) {
-        map = mp;
-        return map.putAll([
+(async () => {
+    try {
+        const client = await Client.newHazelcastClient();
+        const map = await client.getMap('person-age-map');
+
+        await map.putAll([
             ['Philip', 46],
             ['Elizabeth', 44],
             ['Henry', 13],
             ['Paige', 15]
-        ])
-    }).then(function () {
-        return map.aggregate(Aggregators.count());
-    }).then(function (count) {
-        console.log('There are ' + count + ' people.');
-        return map.aggregateWithPredicate(Aggregators.count(), Predicates.lessEqual('this', 18));
-    }).then(function (count) {
-        console.log('There are ' + count + ' children.');
-        return map.aggregate(Aggregators.numberAvg());
-    }).then(function (avgAge) {
-        console.log('Average age is ' + avgAge);
-        return client.shutdown();
-    });
-});
+        ]);
+
+        let count = await map.aggregate(Aggregators.count());
+        console.log(`There are ${count} people.`);
+        count = await map.aggregateWithPredicate(Aggregators.count(), Predicates.lessEqual('this', 18));
+        console.log(`There are ${count} children.`);
+        const avgAge = await map.aggregate(Aggregators.numberAvg());
+        console.log(`Average age is ${avgAge}`);
+
+        client.shutdown();
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

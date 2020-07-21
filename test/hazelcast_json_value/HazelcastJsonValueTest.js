@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require('chai').expect;
-var assert = require('assert');
-var HazelcastJsonValue = require('../../.').HazelcastJsonValue;
+const expect = require('chai').expect;
+const assert = require('assert');
+const HazelcastJsonValue = require('../../.').HazelcastJsonValue;
 
 describe('HazelcastJsonValue', function () {
     it('constructing HazelcastJsonValue with null or undefined', function () {

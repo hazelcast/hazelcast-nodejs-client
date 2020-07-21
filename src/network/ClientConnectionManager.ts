@@ -34,14 +34,12 @@ import {
     AddressHelper,
     cancelRepetitionTask,
     DeferredPromise,
-    loadNameFromPath,
     scheduleWithRepetition,
     shuffleArray,
     Task,
 } from '../Util';
 import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
 import {ILogger} from '../logging/ILogger';
-import {SSLOptionsFactory} from '../connection/SSLOptionsFactory';
 import {Address} from '../Address';
 import {HeartbeatManager} from '../HeartbeatManager';
 import {UuidUtil} from '../util/UuidUtil';
@@ -49,7 +47,7 @@ import {WaitStrategy} from './WaitStrategy';
 import {ReconnectMode} from '../config/ConnectionStrategyConfig';
 import {LoadBalancer} from '../LoadBalancer';
 import {UUID} from '../core/UUID';
-import {ClientConfig} from '../config/Config';
+import {ClientConfigImpl} from '../config/Config';
 import {LifecycleState} from '../LifecycleService';
 import {ClientMessage} from '../ClientMessage';
 import {BuildInfo} from '../BuildInfo';
@@ -127,15 +125,15 @@ export class ClientConnectionManager extends EventEmitter {
         super();
         this.client = client;
         this.loadBalancer = client.getLoadBalancer();
-        this.labels = Array.from(client.getConfig().labels);
+        this.labels = Array.from(client.getConfig().clientLabels);
         this.logger = this.client.getLoggingService().getLogger();
         this.connectionTimeoutMillis = this.initConnectionTimeoutMillis();
         this.heartbeatManager = new HeartbeatManager(client, this);
         this.authenticationTimeout = this.heartbeatManager.getHeartbeatTimeout();
         this.shuffleMemberList = client.getConfig().properties['hazelcast.client.shuffle.member.list'] as boolean;
-        this.isSmartRoutingEnabled = client.getConfig().networkConfig.smartRouting;
+        this.isSmartRoutingEnabled = client.getConfig().network.smartRouting;
         this.waitStrategy = this.initWaitStrategy(client.getConfig());
-        const connectionStrategyConfig = client.getConfig().connectionStrategyConfig;
+        const connectionStrategyConfig = client.getConfig().connectionStrategy;
         this.asyncStart = connectionStrategyConfig.asyncStart;
         this.reconnectMode = connectionStrategyConfig.reconnectMode;
     }
@@ -317,15 +315,15 @@ export class ClientConnectionManager extends EventEmitter {
         }
     }
 
-    private initWaitStrategy(config: ClientConfig): WaitStrategy {
-        const connectionStrategyConfig = config.connectionStrategyConfig;
-        const retryConfig = connectionStrategyConfig.connectionRetryConfig;
+    private initWaitStrategy(config: ClientConfigImpl): WaitStrategy {
+        const connectionStrategyConfig = config.connectionStrategy;
+        const retryConfig = connectionStrategyConfig.connectionRetry;
         return new WaitStrategy(retryConfig.initialBackoffMillis, retryConfig.maxBackoffMillis, retryConfig.multiplier,
             retryConfig.clusterConnectTimeoutMillis, retryConfig.jitter, this.logger);
     }
 
     private initConnectionTimeoutMillis(): number {
-        const networkConfig = this.client.getConfig().networkConfig;
+        const networkConfig = this.client.getConfig().network;
         const connTimeout = networkConfig.connectionTimeout;
         return connTimeout === 0 ? SET_TIMEOUT_MAX_DELAY : connTimeout;
     }
@@ -494,17 +492,15 @@ export class ClientConnectionManager extends EventEmitter {
     }
 
     private triggerConnect(translatedAddress: Address): Promise<net.Socket> {
-        if (this.client.getConfig().networkConfig.sslConfig.enabled) {
-            if (this.client.getConfig().networkConfig.sslConfig.sslOptions) {
-                const opts = this.client.getConfig().networkConfig.sslConfig.sslOptions;
+        if (this.client.getConfig().network.ssl.enabled) {
+            if (this.client.getConfig().network.ssl.sslOptions) {
+                const opts = this.client.getConfig().network.ssl.sslOptions;
                 return this.connectTLSSocket(translatedAddress, opts);
-            } else if (this.client.getConfig().networkConfig.sslConfig.sslOptionsFactoryConfig) {
-                const factoryConfig = this.client.getConfig().networkConfig.sslConfig.sslOptionsFactoryConfig;
-                const factoryProperties = this.client.getConfig().networkConfig.sslConfig.sslOptionsFactoryProperties;
-                let factory: SSLOptionsFactory;
-                if (factoryConfig.path) {
-                    factory = new (loadNameFromPath(factoryConfig.path, factoryConfig.exportedName))();
-                } else {
+            } else if (this.client.getConfig().network.ssl.sslOptionsFactory
+                       || this.client.getConfig().network.ssl.sslOptionsFactoryProperties) {
+                const factoryProperties = this.client.getConfig().network.ssl.sslOptionsFactoryProperties;
+                let factory = this.client.getConfig().network.ssl.sslOptionsFactory;
+                if (factory == null) {
                     factory = new BasicSSLOptionsFactory();
                 }
                 return factory.init(factoryProperties).then(() => {
@@ -512,7 +508,7 @@ export class ClientConnectionManager extends EventEmitter {
                 });
             } else {
                 // the default behavior when ssl is enabled
-                const opts = this.client.getConfig().networkConfig.sslConfig.sslOptions = {
+                const opts = this.client.getConfig().network.ssl.sslOptions = {
                     checkServerIdentity: (): any => null,
                     rejectUnauthorized: true,
                 };

@@ -21,11 +21,12 @@ import {QueryConstants} from '../core/Predicate';
  * {@link BitmapIndexOptions.uniqueKey unique key} values.
  */
 export enum UniqueKeyTransformation {
+
     /**
      * Extracted unique key value is interpreted as an object value.
      * Non-negative unique ID is assigned to every distinct object value.
      */
-    OBJECT = 0,
+    OBJECT = 'OBJECT',
 
     /**
      * Extracted unique key value is interpreted as a whole integer value of
@@ -33,14 +34,41 @@ export enum UniqueKeyTransformation {
      * long (if necessary) and unique non-negative ID is assigned to every
      * distinct value.
      */
-    LONG = 1,
+    LONG = 'LONG',
 
     /**
      * Extracted unique key value is interpreted as a whole integer value of
      * byte, short, int or long type. The extracted value is upcasted to
      * long (if necessary) and the resulting value is used directly as an ID.
      */
-    RAW = 2,
+    RAW = 'RAW',
+
+}
+
+export const uniqueKeyTransformationToId = (transformation: UniqueKeyTransformation): number => {
+    switch (transformation) {
+        case UniqueKeyTransformation.OBJECT:
+            return 0;
+        case UniqueKeyTransformation.LONG:
+            return 1;
+        case UniqueKeyTransformation.RAW:
+            return 2;
+        default:
+            throw new TypeError('Unexpected transformation value: ' + transformation);
+    }
+}
+
+export const uniqueKeyTransformationFromId = (transformationId: number): UniqueKeyTransformation => {
+    switch (transformationId) {
+        case 0:
+            return UniqueKeyTransformation.OBJECT;
+        case 1:
+            return UniqueKeyTransformation.LONG;
+        case 2:
+            return UniqueKeyTransformation.RAW;
+        default:
+            throw new TypeError('Unexpected transformation id: ' + transformationId);
+    }
 }
 
 const DEFAULT_UNIQUE_KEY = QueryConstants.KEY_ATTRIBUTE_NAME;
@@ -49,19 +77,27 @@ const DEFAULT_UNIQUE_KEY_TRANSFORMATION = UniqueKeyTransformation.OBJECT;
 /**
  * Configures indexing options specific to bitmap indexes.
  */
-export class BitmapIndexOptions {
+export interface BitmapIndexOptions {
+
     /**
      * Unique key attribute configured in this index config.
      * Defaults to {@code __key}. The unique key attribute is used as a source
      * of values which uniquely identify each entry being inserted into an index.
      */
-    uniqueKey: string;
+    uniqueKey?: string;
 
     /**
      * Unique key transformation configured in this index. Defaults
      * to {@link UniqueKeyTransformation.OBJECT OBJECT}. The transformation is
      * applied to every value extracted from unique key attribute.
      */
+    uniqueKeyTransformation?: UniqueKeyTransformation;
+
+}
+
+export class BitmapIndexOptionsImpl implements BitmapIndexOptions {
+
+    uniqueKey: string;
     uniqueKeyTransformation: UniqueKeyTransformation;
 
     constructor(uniqueKey: string = DEFAULT_UNIQUE_KEY,
@@ -76,4 +112,5 @@ export class BitmapIndexOptions {
             ', uniqueKeyTransformation: ' + this.uniqueKeyTransformation +
             ']';
     }
+
 }

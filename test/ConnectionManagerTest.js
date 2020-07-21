@@ -13,34 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var chai = require('chai');
+const chai = require('chai');
 chai.should();
 chai.use(require('chai-as-promised'));
-var expect = chai.expect;
+const expect = chai.expect;
+const net = require('net');
 
-var net = require('net');
-
-var Config = require('../.').Config;
-var Hazelcast = require('../.').Client;
-var Controller = require('./RC');
-var Errors = require('../').HazelcastErrors;
-var Address = require('../.').Address;
+const Controller = require('./RC');
+const HazelcastClient = require('../.').Client;
+const Errors = require('../').HazelcastErrors;
+const Address = require('../.').Address;
 
 describe('ConnectionManager', function () {
 
-    var cluster;
-    var member;
-    var client;
-    var testend;
-    var server;
+    let cluster, client;
+    let testend, server;
 
     before(function () {
         return Controller.createCluster(null, null).then(function (cl) {
             cluster = cl;
             return Controller.startMember(cluster.id);
-        }).then(function (m) {
-            member = m;
         });
     });
 
@@ -60,10 +54,9 @@ describe('ConnectionManager', function () {
         return Controller.terminateCluster(cluster.id);
     });
 
-
     function startUnresponsiveServer(port) {
         server = net.createServer(function (socket) {
-            //no-response
+            // no-response
         });
         server.listen(port);
     }
@@ -73,31 +66,34 @@ describe('ConnectionManager', function () {
     }
 
     it('gives up connecting after timeout', function () {
-        var timeoutTime = 1000;
-        var cfg = new Config.ClientConfig();
-        cfg.clusterName = cluster.id;
-        cfg.networkConfig.connectionTimeout = timeoutTime;
+        const timeoutTime = 1000;
         startUnresponsiveServer(9999);
-        return Hazelcast.newHazelcastClient(cfg).then(function (cl) {
+        return HazelcastClient.newHazelcastClient({
+            clusterName: cluster.id,
+            network: {
+                connectionTimeout: timeoutTime
+            }
+        }).then(function (cl) {
             client = cl;
-            return client.getConnectionManager().getOrConnect(new Address('localhost',9999));
+            return client.getConnectionManager().getOrConnect(new Address('localhost', 9999));
         }).should.eventually.be.rejected;
     });
 
     it('does not give up when timeout=0', function (done) {
         this.timeout(8000);
 
-        var timeoutTime = 0;
-        var cfg = new Config.ClientConfig();
-        cfg.clusterName = cluster.id;
-        cfg.networkConfig.connectionTimeout = timeoutTime;
+        const timeoutTime = 0;
         startUnresponsiveServer(9999);
-
-        var scheduled = setTimeout(function () {
+        const scheduled = setTimeout(function () {
             done();
-        }, 6000);//5000 is default timeout. client should still be trying.
+        }, 6000); // 5000 is default timeout. The client should be still trying
 
-        Hazelcast.newHazelcastClient(cfg).then(function (cl) {
+        HazelcastClient.newHazelcastClient({
+            clusterName: cluster.id,
+            network: {
+                connectionTimeout: timeoutTime
+            }
+        }).then(function (cl) {
             client = cl;
             return client.getConnectionManager().getOrConnect(new Address('localhost',9999));
         }).then(function (value) {
@@ -113,13 +109,20 @@ describe('ConnectionManager', function () {
 
     it('should throw IllegalStateError if there is an incompatible server', function () {
         client = null;
-        var timeoutTime = 100;
-        var cfg = new Config.ClientConfig();
-        cfg.networkConfig.connectionTimeout = timeoutTime;
-        cfg.networkConfig.addresses = ['127.0.0.1:9999'];
-        cfg.connectionStrategyConfig.connectionRetryConfig.clusterConnectTimeoutMillis = 2000;
+        const timeoutTime = 100;
         startUnresponsiveServer(9999);
-        return expect(Hazelcast.newHazelcastClient(cfg)).to.be.rejectedWith(Errors.IllegalStateError);
-    });
 
+        return expect(HazelcastClient.newHazelcastClient({
+            clusterName: cluster.id,
+            network: {
+                clusterMembers: ['127.0.0.1:9999'],
+                connectionTimeout: timeoutTime
+            },
+            connectionStrategy: {
+                connectionRetry: {
+                    clusterConnectTimeoutMillis: 2000
+                }
+            }
+        })).to.be.rejectedWith(Errors.IllegalStateError);
+    });
 });

@@ -15,7 +15,7 @@
  */
 
 import {AddressProvider} from './AddressProvider';
-import {ClientNetworkConfig} from '../config/ClientNetworkConfig';
+import {ClientNetworkConfigImpl} from '../config/ClientNetworkConfig';
 import * as Promise from 'bluebird';
 import {Address} from '../Address';
 
@@ -26,14 +26,14 @@ import {Address} from '../Address';
  */
 export class DefaultAddressProvider implements AddressProvider {
 
-    private networkConfig: ClientNetworkConfig;
+    private networkConfig: ClientNetworkConfigImpl;
 
-    constructor(networkConfig: ClientNetworkConfig) {
+    constructor(networkConfig: ClientNetworkConfigImpl) {
         this.networkConfig = networkConfig;
     }
 
     loadAddresses(): Promise<string[]> {
-        const addresses: string[] = this.networkConfig.addresses;
+        const addresses: string[] = this.networkConfig.clusterMembers;
         if (addresses.length === 0) {
             addresses.push('localhost');
         }

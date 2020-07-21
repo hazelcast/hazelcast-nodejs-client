@@ -13,78 +13,86 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
-var Predicates = require('hazelcast-client').Predicates;
-var Config = require('hazelcast-client').Config;
+const {
+    Client,
+    Predicates
+} = require('hazelcast-client');
 
-function User(username, age, active) {
-    this.username = username;
-    this.age = age;
-    this.active = active;
-}
-
-User.prototype.readPortable = function (reader) {
-    this.username = reader.readUTF('username');
-    this.age = reader.readInt('age');
-    this.active = reader.readBoolean('active');
-};
-
-User.prototype.writePortable = function (writer) {
-    writer.writeUTF('username', this.username);
-    writer.writeInt('age', this.age);
-    writer.writeBoolean('active', this.active);
-};
-
-User.prototype.getFactoryId = function () {
-    return 1;
-};
-
-User.prototype.getClassId = function () {
-    return 1;
-};
-
-function PortableFactory() {
-    // Constructor sample
-}
-
-PortableFactory.prototype.create = function (classId) {
-    if (classId === 1) {
-        return new User();
+class User {
+    constructor(username, age, active) {
+        this.username = username;
+        this.age = age;
+        this.active = active;
     }
-    return null;
-};
 
-function generateUsers(users) {
-    return users.put('Rod', new User('Rod', 19, true)).then(function () {
-        return users.put('Jane', new User('Jane', 20, true));
-    }).then(function () {
-        return users.put('Freddy', new User('Freddy', 23, true));
-    });
+    readPortable(input) {
+        this.username = input.readUTF('username');
+        this.age = input.readInt('age');
+        this.active = input.readBoolean('active');
+    }
+
+    writePortable(output) {
+        output.writeUTF('username', this.username);
+        output.writeInt('age', this.age);
+        output.writeBoolean('active', this.active);
+    }
+
+    getFactoryId() {
+        return 1;
+    }
+
+    getClassId() {
+        return 1;
+    }
 }
 
-var cfg = new Config.ClientConfig();
-cfg.serializationConfig.portableFactories[1] = new PortableFactory();
-// Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-Client.newHazelcastClient(cfg).then(function (hz) {
-    var users;
-    // Get a Distributed Map called "users"
-    hz.getMap('users').then(function (mp) {
-        users = mp;
+class PortableFactory {
+    create(classId) {
+        if (classId === 1) {
+            return new User();
+        }
+        return null;
+    }
+}
+
+async function generateUsers(usersMap) {
+    await usersMap.put('Rod', new User('Rod', 19, true));
+    await usersMap.put('Jane', new User('Jane', 20, true));
+    await usersMap.put('Freddy', new User('Freddy', 23, true));
+}
+
+(async () => {
+    try {
+        // Start the Hazelcast Client and connect to an already running
+        // Hazelcast Cluster on 127.0.0.1
+        const hz = await Client.newHazelcastClient({
+            serialization: {
+                portableFactories: {
+                    1: new PortableFactory()
+                }
+            }
+        });
+        const usersMap = await hz.getMap('users');
         // Add some users to the Distributed Map
-        return generateUsers(users)
-    }).then(function () {
-        // Create a Predicate
-        var criteriaQuery = Predicates.and(
+        await generateUsers(usersMap);
+        // Create a Predicate from a String (a SQL like Where clause)
+        const sqlQuery = Predicates.sql('active AND age BETWEEN (18 AND 21)');
+        // Creating the same Predicate as above but with a builder
+        const criteriaQuery = Predicates.and(
             Predicates.equal('active', true),
             Predicates.between('age', 18, 21)
         );
-        // Get result collections using the the Predicate
-        return users.valuesWithPredicate(criteriaQuery);
-    }).then(function (values) {
+        // Get result collections using the two different Predicates
+        const result1 = await usersMap.values(sqlQuery);
+        const result2 = await usersMap.values(criteriaQuery);
         // Print out the results
-        console.log(values.toArray());
-        // Shutdown this Hazelcast Client
+        console.log(result1.toArray());
+        console.log(result2.toArray());
+        // Shutdown this Hazelcast client
         hz.shutdown();
-    })
-});
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

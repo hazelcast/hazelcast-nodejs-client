@@ -13,38 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 'use strict';
 
-var expect = require('chai').expect;
-var HazelcastClient = require('../../lib/index.js').Client;
-var Config = require('../../lib/index.js').Config;
-var Controller = require('./../RC');
-var Util = require('./../Util');
-var fs = require('fs');
-var path = require('path');
-var Promise = require('bluebird');
-var Predicates = require('../../lib/index.js').Predicates;
+const expect = require('chai').expect;
+const fs = require('fs');
+const path = require('path');
+const Promise = require('bluebird');
+const RC = require('./../RC');
+const Client = require('../..').Client;
+const Predicates = require('../..').Predicates;
 
-describe('ReplicatedMap Proxy', function () {
+describe('ReplicatedMapProxyTest', function () {
 
-    var cluster;
-    var client;
-    var rm;
-    var ONE_HOUR = 3600000;
+    let cluster;
+    let client;
+    let rm;
+    const ONE_HOUR = 3600000;
 
     before(function () {
         this.timeout(10000);
-        var config = fs.readFileSync(path.join(__dirname, 'hazelcast_replicatedmap.xml'), 'utf8');
-        return Controller.createCluster(null, config).then(function (response) {
+        const config = fs.readFileSync(path.join(__dirname, 'hazelcast_replicatedmap.xml'), 'utf8');
+        return RC.createCluster(null, config).then(function (response) {
             cluster = response;
-            return Controller.startMember(cluster.id);
+            return RC.startMember(cluster.id);
         }).then(function () {
-            const config = new Config.ClientConfig();
-            config.clusterName = cluster.id;
-            return HazelcastClient.newHazelcastClient(config).then(function (hazelcastClient) {
-                client = hazelcastClient;
-            });
+            return Client.newHazelcastClient({ clusterName: cluster.id });
+        }).then(function (hazelcastClient) {
+            client = hazelcastClient;
         });
     });
 
@@ -60,7 +55,7 @@ describe('ReplicatedMap Proxy', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('puts one entry and gets one entry', function () {
@@ -246,7 +241,7 @@ describe('ReplicatedMap Proxy', function () {
     });
 
     it('returns values array sorted with custom comparator', function () {
-        var expectedArray = ['value3', 'value2', 'value1'];
+        const expectedArray = ['value3', 'value2', 'value1'];
         return rm.putAll([
             ['key2', 'value2'],
             ['key3', 'value3'],
@@ -277,11 +272,10 @@ describe('ReplicatedMap Proxy', function () {
     });
 
     it('addEntryListener should be fired on adding new key-value pair', function (done) {
-        var registrationId;
-
-        var listener = {
+        let registrationId;
+        const listener = {
             added: function (entryEvent) {
-                var error;
+                let error;
                 try {
                     expect(entryEvent.name).to.equal('test');
                     expect(entryEvent.key).to.equal('new-key');
@@ -305,14 +299,13 @@ describe('ReplicatedMap Proxy', function () {
                 registrationId = listenerId;
                 return rm.put('new-key', 'value', ONE_HOUR);
             });
-
     });
 
     it('addEntryListener listens to remove event', function (done) {
-        var registrationId;
-        var listener = {
+        let registrationId;
+        const listener = {
             removed: function (entryEvent) {
-                var error;
+                let error;
                 try {
                     expect(entryEvent.name).to.equal('test');
                     expect(entryEvent.key).to.equal('key-to-remove');
@@ -341,10 +334,10 @@ describe('ReplicatedMap Proxy', function () {
     });
 
     it('addEntryListener listens to updated event', function (done) {
-        var registrationId;
-        var listener = {
+        let registrationId;
+        const listener = {
             updated: function (entryEvent) {
-                var error;
+                let error;
                 try {
                     expect(entryEvent.name).to.equal('test');
                     expect(entryEvent.key).to.equal('key-to-update');
@@ -373,10 +366,10 @@ describe('ReplicatedMap Proxy', function () {
     });
 
     it('addEntryListener listens to clearedAll event', function (done) {
-        var registrationId;
-        var listener = {
+        let registrationId;
+        const listener = {
             mapCleared: function (mapEvent) {
-                var error;
+                let error;
                 try {
                     expect(mapEvent.name).to.equal('test');
                     expect(mapEvent.numberOfAffectedEntries).to.equal(4);
@@ -407,16 +400,15 @@ describe('ReplicatedMap Proxy', function () {
     });
 
     it('addEntryListenerToKey should be fired only for selected key', function (done) {
-        var listeners = [];
-
-        var listener1 = {
+        let listeners = [];
+        const listener1 = {
             added: function (entryEvent) {
                 done(new Error('This listener must not be fired'));
             }
         };
-        var listener2 = {
+        const listener2 = {
             added: function (entryEvent) {
-                var error;
+                let error;
                 try {
                     expect(entryEvent.name).to.equal('test');
                     expect(entryEvent.key).to.equal('key1');
@@ -449,10 +441,10 @@ describe('ReplicatedMap Proxy', function () {
     });
 
     it('addEntryListenerWithPredicate', function (done) {
-        var listenerId;
-        var listenerObject = {
+        let listenerId;
+        const listener = {
             added: function (entryEvent) {
-                var error;
+                let error;
                 try {
                     expect(entryEvent.name).to.equal('test');
                     expect(entryEvent.key).to.equal('key10');
@@ -470,7 +462,7 @@ describe('ReplicatedMap Proxy', function () {
 
             }
         };
-        rm.addEntryListenerWithPredicate(listenerObject, Predicates.sql('this == val10'))
+        rm.addEntryListenerWithPredicate(listener, Predicates.sql('this == val10'))
             .then(function (registrationId) {
                 listenerId = registrationId;
                 return rm.put('key10', 'val10', ONE_HOUR);
@@ -478,10 +470,10 @@ describe('ReplicatedMap Proxy', function () {
     });
 
     it('addEntryListenerToKeyWithPredicate', function (done) {
-        var listenerId;
-        var listenerObject = {
+        let listenerId;
+        const listenerObject = {
             added: function (entryEvent) {
-                var error;
+                let error;
                 try {
                     expect(entryEvent.name).to.equal('test');
                     expect(entryEvent.key).to.equal('key');

@@ -76,14 +76,16 @@ export interface IMap<K, V> extends DistributedObject {
      * you may consider indexing these fields.
      * <pre>
      *   const imap = client.getMap('employees');
-     *   const ageIndex = new IndexConfig();
-     *   ageIndex.type = IndexType.SORTED;
-     *   ageIndex.addAttribute('age');
-     *   const activeIndex = new IndexConfig();
-     *   activeIndex.type = IndexType.HASH;
-     *   activeIndex.addAttribute('active');
-     *   imap.addIndex(ageIndex);  // Sorted index for range queries
-     *   imap.addIndex(activeIndex); // Hash index for equality predicates
+     *   // Sorted index for range queries:
+     *   imap.addIndex({
+     *       type: 'SORTED',
+     *       attributes: ['age']
+     *   });
+     *   // Hash index for equality predicates:
+     *   imap.addIndex({
+     *       type: 'HASH',
+     *       attributes: ['active']
+     *   });
      * </pre>
      * Index attribute should either have a getter method or be public.
      * You should also make sure to add the indexes before adding

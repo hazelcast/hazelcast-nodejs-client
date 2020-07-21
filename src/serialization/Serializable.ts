@@ -18,6 +18,7 @@ import {DataInput, DataOutput} from './Data';
 import {PortableReader, PortableWriter} from './portable/PortableSerializer';
 
 export interface IdentifiedDataSerializable {
+
     readData(input: DataInput): any;
 
     writeData(output: DataOutput): void;
@@ -25,13 +26,17 @@ export interface IdentifiedDataSerializable {
     getFactoryId(): number;
 
     getClassId(): number;
+
 }
 
 export interface IdentifiedDataSerializableFactory {
+
     create(type: number): IdentifiedDataSerializable;
+
 }
 
 export interface Portable {
+
     getFactoryId(): number;
 
     getClassId(): number;
@@ -39,12 +44,23 @@ export interface Portable {
     writePortable(writer: PortableWriter): void;
 
     readPortable(reader: PortableReader): void;
+
 }
 
 export interface VersionedPortable extends Portable {
+
     getVersion(): number;
+
 }
 
 export interface PortableFactory {
+
     create(classId: number): Portable;
+
+}
+
+export interface CustomSerializable {
+
+    hzGetCustomId(): number;
+
 }

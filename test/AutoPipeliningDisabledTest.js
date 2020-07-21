@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 'use strict';
 
 const expect = require('chai').expect;
 const HazelcastClient = require('../.').Client;
-const Config = require('../.').Config;
 const Controller = require('./RC');
 
 describe('AutoPipeliningDisabledTest', function () {
@@ -28,10 +26,12 @@ describe('AutoPipeliningDisabledTest', function () {
     let map;
 
     const createClient = (clusterId) => {
-        const cfg = new Config.ClientConfig();
-        cfg.clusterName = clusterId;
-        cfg.properties['hazelcast.client.autopipelining.enabled'] = false;
-        return HazelcastClient.newHazelcastClient(cfg);
+        return HazelcastClient.newHazelcastClient({
+            clusterName: clusterId,
+            properties: {
+                ['hazelcast.client.autopipelining.enabled']: false
+            }
+        });
     };
 
     before(function () {

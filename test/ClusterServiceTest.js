@@ -13,17 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Controller = require('./RC');
-var expect = require('chai').expect;
-var HazelcastClient = require('../.').Client;
-var Config = require('../.').Config;
+const Controller = require('./RC');
+const expect = require('chai').expect;
+const HazelcastClient = require('../.').Client;
 
 describe('ClusterService', function () {
+
     this.timeout(25000);
-    var cluster;
-    var member1;
-    var client;
+    let cluster, member1, client;
 
     beforeEach(function () {
         return Controller.createCluster(null, null).then(function (res) {
@@ -31,11 +30,13 @@ describe('ClusterService', function () {
             return Controller.startMember(cluster.id);
         }).then(function (res) {
             member1 = res;
-            var cfg = new Config.ClientConfig();
-            cfg.clusterName = cluster.id;
-            cfg.properties['hazelcast.client.heartbeat.interval'] = 1000;
-            cfg.properties['hazelcast.client.heartbeat.timeout'] = 5000;
-            return HazelcastClient.newHazelcastClient(cfg);
+            return HazelcastClient.newHazelcastClient({
+                clusterName: cluster.id,
+                properties: {
+                    'hazelcast.client.heartbeat.interval': 1000,
+                    'hazelcast.client.heartbeat.timeout': 5000
+                }
+            });
         }).then(function (res) {
             client = res;
         });
@@ -47,10 +48,10 @@ describe('ClusterService', function () {
     });
 
     it('should know when a new member joins to cluster', function (done) {
-        var member2;
+        let member2;
 
-        var membershipListener = {
-            memberAdded: function (membershipEvent) {
+        const membershipListener = {
+            memberAdded: (membershipEvent) => {
                 expect(client.clusterService.getSize()).to.be.eq(2);
                 done();
             }
@@ -64,10 +65,10 @@ describe('ClusterService', function () {
     });
 
     it('should know when a member leaves cluster', function (done) {
-        var member2;
+        let member2;
 
-        var membershipListener = {
-            memberRemoved: function (membershipEvent) {
+        const membershipListener = {
+            memberRemoved: (membershipEvent) => {
                 expect(client.getClusterService().getSize()).to.be.eq(1);
                 done();
             }
@@ -82,14 +83,13 @@ describe('ClusterService', function () {
     });
 
     it('getMemberList returns correct list after a member is removed', function (done) {
-        var member2;
-        var member3;
+        let member2, member3;
 
-        var membershipListener = {
-            memberRemoved: function (membershipEvent) {
-                var remainingMemberList = client.getClusterService().getMemberList();
+        const membershipListener = {
+            memberRemoved: (membershipEvent) => {
+                const remainingMemberList = client.getClusterService().getMemberList();
                 expect(remainingMemberList).to.have.length(2);
-                var portList = remainingMemberList.map(function (member) {
+                const portList = remainingMemberList.map(function (member) {
                     return member.address.port;
                 });
                 expect(portList).to.have.members([member1.port, member3.port]);
@@ -109,16 +109,21 @@ describe('ClusterService', function () {
     });
 
     it('should throw when wrong host addresses given in config', function (done) {
-        var cfg = new Config.ClientConfig();
-        cfg.clusterName = cluster.id;
-        cfg.connectionStrategyConfig.connectionRetryConfig.clusterConnectTimeoutMillis = 2000;
-        cfg.networkConfig.addresses = [
-            '0.0.0.0:5709',
-            '0.0.0.1:5710'
-        ];
-
-        var falseStart = false;
-        HazelcastClient.newHazelcastClient(cfg).catch(function (err) {
+        let falseStart = false;
+        HazelcastClient.newHazelcastClient({
+            clusterName: cluster.id,
+            network: {
+                clusterMembers: [
+                    '0.0.0.0:5709',
+                    '0.0.0.1:5710'
+                ]
+            },
+            connectionStrategy: {
+                connectionRetry: {
+                    clusterConnectTimeoutMillis: 2000
+                }
+            }
+        }).catch(function (err) {
             done();
         }).then(function (client) {
             if (client) {
@@ -133,11 +138,14 @@ describe('ClusterService', function () {
     });
 
     it('should throw with wrong cluster name', function (done) {
-        var cfg = new Config.ClientConfig();
-        cfg.clusterName = 'wrong';
-        cfg.connectionStrategyConfig.connectionRetryConfig.clusterConnectTimeoutMillis = 2000;
-
-        HazelcastClient.newHazelcastClient(cfg).then(function (newClient) {
+        HazelcastClient.newHazelcastClient({
+            clusterName: 'wrong',
+            connectionStrategy: {
+                connectionRetry: {
+                    clusterConnectTimeoutMillis: 2000
+                }
+            }
+        }).then(function (newClient) {
             newClient.shutdown();
             done(new Error('Client falsely started with wrong cluster name'));
         }).catch(function (err) {

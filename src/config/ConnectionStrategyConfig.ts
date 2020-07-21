@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import {ConnectionRetryConfig} from './ConnectionRetryConfig';
+import {ConnectionRetryConfig, ConnectionRetryConfigImpl} from './ConnectionRetryConfig';
 
 /**
- * Reconnect options.
+ * Reconnect mode.
  */
 export enum ReconnectMode {
+
     /**
      * Prevent reconnect to cluster after a disconnect
      */
@@ -35,29 +36,41 @@ export enum ReconnectMode {
      * {@link ClientOfflineError}
      */
     ASYNC = 'ASYNC',
+
 }
 
 /**
  * Connection strategy configuration is used for setting custom strategies and configuring strategy parameters.
  */
-export class ConnectionStrategyConfig {
+export interface ConnectionStrategyConfig {
+
     /**
-     * Set true for non blocking {@link HazelcastClient.newHazelcastClient}. The client creation won't wait to
-     * connect to cluster. The client instance will throw exception until it connects to cluster and become ready.
-     * If set to false, {@link HazelcastClient.newHazelcastClient} will block until a cluster connection established and it's
-     * ready to use client instance
+     * Enables non-blocking start mode of {@link HazelcastClient.newHazelcastClient}.
+     * When set to `true`, the client creation will not wait to connect to cluster.
+     * The client instance will throw exceptions until it connects to cluster and becomes
+     * ready. If set to `false`, {@link HazelcastClient.newHazelcastClient} will block
+     * until a cluster connection established and it is ready to use the client instance.
+     * By default, set to `false`.
      */
+    asyncStart?: boolean;
+
+    /**
+     * Defines how a client reconnects to cluster after a disconnect. Available values
+     * are `ON`, `OFF` and `ASYNC`. By default, set to `ON`.
+     */
+    reconnectMode?: ReconnectMode;
+
+    /**
+     * Connection retry config to be used by the client.
+     */
+    connectionRetry?: ConnectionRetryConfig;
+
+}
+
+export class ConnectionStrategyConfigImpl implements ConnectionStrategyConfig {
+
     asyncStart = false;
-
-    /**
-     * How a client reconnect to cluster after a disconnect can be configured. This parameter is used by default strategy and
-     * custom implementations may ignore it if configured.
-     */
     reconnectMode: ReconnectMode = ReconnectMode.ON;
+    connectionRetry: ConnectionRetryConfigImpl = new ConnectionRetryConfigImpl();
 
-    /**
-     * Connection Retry Config is controls the period among the retries and when should a client gave up
-     * retrying. Exponential behaviour can be chosen or jitter can be added to wait periods.
-     */
-    connectionRetryConfig: ConnectionRetryConfig = new ConnectionRetryConfig();
 }

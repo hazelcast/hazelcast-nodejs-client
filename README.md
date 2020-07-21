@@ -44,7 +44,7 @@ The quickest way to start a single member cluster for development purposes is to
 [Docker images](https://hub.docker.com/r/hazelcast/hazelcast/).
 
 ```bash
-docker run -p 5701:5701 hazelcast/hazelcast:4.0.1
+docker run -p 5701:5701 hazelcast/hazelcast:4.0.2
 ```
 
 You can also use our ZIP or TAR [distributions](https://hazelcast.org/imdg/download/archives/#hazelcast-imdg)
@@ -80,6 +80,8 @@ console.log(value); // Outputs 'value'
 client.shutdown();
 ```
 
+> **NOTE: For the sake of brevity we are going to omit boilerplate parts in the above code snippet. Refer to the [Code Samples section](#16-code-samples) to see samples with the complete code.**
+
 If you are using Hazelcast IMDG and the Node.js client on the same machine, the default configuration should work
 out-of-the-box. However, you may need to configure the client to connect to cluster nodes that are running on
 different machines or to customize client properties.
@@ -87,25 +89,29 @@ different machines or to customize client properties.
 ### Configuration
 
 ```js
-const { Client, Config } = require('hazelcast-client');
-
-// Create a configuration object
-const clientConfig = new Config.ClientConfig();
-
-// Customize the client configuration
-clientConfig.clusterName = 'cluster-name';
-clientConfig.networkConfig.addresses.push('10.90.0.2:5701');
-clientConfig.networkConfig.addresses.push('10.90.0.3:5701');
+const { Client } = require('hazelcast-client');
 
 // Initialize the client with the given configuration
-const client = await Client.newHazelcastClient(clientConfig);
+const client = await Client.newHazelcastClient({
+    clusterName: 'cluster-name',
+    network: {
+        addresses: [
+            '10.90.0.2:5701',
+            '10.90.0.3:5701'
+        ]
+    },
+    lifecycleListeners: [
+        (state) => {
+            console.log('Lifecycle Event >>> ' + state);
+        }
+    ]
+});
 
 console.log('Connected to cluster');
 client.shutdown();
 ```
 
-You can also configure the client
-[declaratively](DOCUMENTATION.md#312-declarative-configuration-json) using a JSON file.
+Refer to [the documentation](DOCUMENTATION.md) to learn more about supported configuration options.
 
 ## Features
 

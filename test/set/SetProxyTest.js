@@ -13,39 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require("chai").expect;
-var Controller = require('./../RC');
-var Util = require('./../Util');
+const expect = require('chai').expect;
+const RC = require('./../RC');
+const Client = require('../..').Client;
+const ItemEventType = require('../..').ItemEventType;
 
-var HazelcastClient = require("../../lib/index.js").Client;
-var Config = require("../../lib/index.js").Config;
-var ItemEventType = require('../../lib/core/ItemListener').ItemEventType;
+describe('SetProxyTest', function () {
 
-describe("Set Proxy", function () {
-
-    var cluster;
-    var client;
-    var setInstance;
+    let cluster;
+    let client;
+    let setInstance;
 
     before(function () {
         this.timeout(10000);
-        return Controller.createCluster().then(function (response) {
+        return RC.createCluster().then(function (response) {
             cluster = response;
-            return Controller.startMember(cluster.id);
+            return RC.startMember(cluster.id);
         }).then(function () {
-            const config = new Config.ClientConfig();
-            config.clusterName = cluster.id;
-            return HazelcastClient.newHazelcastClient(config).then(function (hazelcastClient) {
-                client = hazelcastClient;
-            });
+            return Client.newHazelcastClient({ clusterName: cluster.id });
+        }).then(function (hazelcastClient) {
+            client = hazelcastClient;
         });
     });
 
     beforeEach(function () {
         return client.getSet('test').then(function (s) {
             setInstance = s;
-        })
+        });
     });
 
     afterEach(function () {
@@ -54,19 +50,18 @@ describe("Set Proxy", function () {
 
     after(function () {
         client.shutdown();
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
-
-    it("adds one item", function () {
+    it('adds one item', function () {
         return setInstance.add(1).then(function () {
             return setInstance.size().then(function (size) {
                 expect(size).to.equal(1);
             });
-        })
+        });
     });
 
-    it("adds all", function () {
+    it('adds all', function () {
         return setInstance.addAll([1, 2, 3]).then(function () {
             return setInstance.size().then(function (size) {
                 expect(size).to.equal(3);
@@ -74,8 +69,8 @@ describe("Set Proxy", function () {
         });
     });
 
-    it("toArray", function () {
-        var input = [1, 2, 3];
+    it('toArray', function () {
+        const input = [1, 2, 3];
         return setInstance.addAll(input).then(function () {
             return setInstance.toArray().then(function (all) {
                 expect(all.sort()).to.deep.equal(input);
@@ -83,8 +78,8 @@ describe("Set Proxy", function () {
         });
     });
 
-    it("contains", function () {
-        var input = [1, 2, 3];
+    it('contains', function () {
+        const input = [1, 2, 3];
         return setInstance.addAll(input).then(function () {
             return setInstance.contains(1).then(function (contains) {
                 expect(contains).to.be.true;
@@ -96,7 +91,7 @@ describe("Set Proxy", function () {
         });
     });
 
-    it("contains all", function () {
+    it('contains all', function () {
         return setInstance.addAll([1, 2, 3]).then(function () {
             return setInstance.containsAll([1, 2]).then(function (contains) {
                 expect(contains).to.be.true;
@@ -109,18 +104,18 @@ describe("Set Proxy", function () {
     });
 
 
-    it("is empty", function () {
+    it('is empty', function () {
         return setInstance.isEmpty().then(function (empty) {
             expect(empty).to.be.true;
             return setInstance.add(1);
         }).then(function () {
             return setInstance.isEmpty().then(function (empty) {
                 expect(empty).to.be.false;
-            })
-        })
+            });
+        });
     });
 
-    it("removes an entry", function () {
+    it('removes an entry', function () {
         return setInstance.addAll([1, 2, 3]).then(function () {
             return setInstance.remove(1)
         }).then(function () {
@@ -130,7 +125,7 @@ describe("Set Proxy", function () {
         });
     });
 
-    it("removes multiple entries", function () {
+    it('removes multiple entries', function () {
         return setInstance.addAll([1, 2, 3, 4]).then(function () {
             return setInstance.removeAll([1, 2]);
         }).then(function () {
@@ -140,7 +135,7 @@ describe("Set Proxy", function () {
         });
     });
 
-    it("retains multiple entries", function () {
+    it('retains multiple entries', function () {
         return setInstance.addAll([1, 2, 3, 4]).then(function () {
             return setInstance.retainAll([1, 2]);
         }).then(function () {
@@ -160,7 +155,7 @@ describe("Set Proxy", function () {
         });
     });
 
-    it("listens for added entry", function (done) {
+    it('listens for added entry', function (done) {
         this.timeout(5000);
         setInstance.addItemListener({
             itemAdded: function (itemEvent) {
@@ -177,7 +172,7 @@ describe("Set Proxy", function () {
         });
     });
 
-    it("listens for added and removed entry", function (done) {
+    it('listens for added and removed entry', function (done) {
         this.timeout(5000);
         setInstance.addItemListener({
             itemAdded: function (itemEvent) {
@@ -202,7 +197,7 @@ describe("Set Proxy", function () {
         });
     });
 
-    it("listens for removed entry", function (done) {
+    it('listens for removed entry', function (done) {
         this.timeout(5000);
         setInstance.addItemListener({
             itemRemoved: function (itemEvent) {
@@ -221,8 +216,7 @@ describe("Set Proxy", function () {
         });
     });
 
-
-    it("remove entry listener", function () {
+    it('remove entry listener', function () {
         this.timeout(5000);
         return setInstance.addItemListener({
             itemRemoved: function (itemEvent) {
@@ -236,8 +230,6 @@ describe("Set Proxy", function () {
             return setInstance.removeItemListener(registrationId);
         }).then(function (removed) {
             expect(removed).to.be.true;
-        })
+        });
     });
-
-
 });

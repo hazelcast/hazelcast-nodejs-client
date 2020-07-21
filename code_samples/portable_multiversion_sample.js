@@ -13,54 +13,56 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
 /*
  * This sample code demonstrates multiversion support of Portable serialization.
  * With multiversion support, you can have two clients that have different
- * versions of the same object, and Hazelcast will store both meta information and use the
- * correct one to serialize and deserialize portable objects depending on the client.
+ * versions of the same object, and Hazelcast will store both meta information
+ * and use the correct one to serialize and deserialize portable objects depending
+ * on the client.
  */
 
-var Client = require('hazelcast-client').Client;
-var Config = require('hazelcast-client').Config.ClientConfig;
+const { Client } = require('hazelcast-client');
 
 // Default (version 1) Employee class.
-function Employee(name, age) {
-    this.name = name;
-    this.age = age;
-}
-
-Employee.prototype.readPortable = function (reader) {
-    this.name = reader.readUTF('name');
-    this.age = reader.readInt('age');
-};
-
-Employee.prototype.writePortable = function (writer) {
-    writer.writeUTF('name', this.name);
-    writer.writeInt('age', this.age);
-};
-
-Employee.prototype.getFactoryId = function () {
-    return 1;
-};
-
-Employee.prototype.getClassId = function () {
-    return 1;
-};
-
-Employee.prototype.getVersion = function () {
-    return 1;
-};
-
-function PortableFactory() {
-}
-
-PortableFactory.prototype.create = function (classId) {
-    if (classId === 1) {
-        return new Employee();
+class Employee {
+    constructor(name, age) {
+        this.name = name;
+        this.age = age;
     }
-    return null;
-};
+
+    readPortable(input) {
+        this.name = input.readUTF('name');
+        this.age = input.readInt('age');
+    }
+
+    writePortable(output) {
+        output.writeUTF('name', this.name);
+        output.writeInt('age', this.age);
+    }
+
+    getFactoryId() {
+        return 1;
+    }
+
+    getClassId() {
+        return 1;
+    }
+
+    getVersion() {
+        return 1;
+    }
+}
+
+class PortableFactory {
+    create(classId) {
+        if (classId === 1) {
+            return new Employee();
+        }
+        return null;
+    }
+}
 
 /*
  * If you update the class by changing the type of one of the fields or by adding a new field,
@@ -69,173 +71,185 @@ PortableFactory.prototype.create = function (classId) {
  */
 
 // Version 2: Added new field manager name (string).
-function Employee2(name, age, manager) {
-    this.name = name;
-    this.age = age;
-    this.manager = manager;
-}
-
-Employee2.prototype.readPortable = function (reader) {
-    this.name = reader.readUTF('name');
-    this.age = reader.readInt('age');
-    this.manager = reader.readUTF('manager');
-};
-
-Employee2.prototype.writePortable = function (writer) {
-    writer.writeUTF('name', this.name);
-    writer.writeInt('age', this.age);
-    writer.writeUTF('manager', this.manager);
-};
-
-Employee2.prototype.getFactoryId = function () {
-    return 1;
-};
-
-Employee2.prototype.getClassId = function () {
-    return 1;
-};
-
-// It is necessary to implement this method for multiversion support to work.
-Employee2.prototype.getVersion = function () {
-    return 2; // Specifies version different than the global version.
-};
-
-function PortableFactory2() {
-}
-
-PortableFactory2.prototype.create = function (classId) {
-    if (classId === 1) {
-        return new Employee2();
+class Employee2 {
+    constructor(name, age, manager) {
+        this.name = name;
+        this.age = age;
+        this.manager = manager;
     }
-    return null;
-};
+
+    readPortable(input) {
+        this.name = input.readUTF('name');
+        this.age = input.readInt('age');
+        this.manager = input.readUTF('manager');
+    }
+
+    writePortable(output) {
+        output.writeUTF('name', this.name);
+        output.writeInt('age', this.age);
+        output.writeUTF('manager', this.manager);
+    }
+
+    getFactoryId() {
+        return 1;
+    }
+
+    getClassId() {
+        return 1;
+    }
+
+    // It is necessary to implement this method for multiversion support to work.
+    getVersion() {
+        // Specifies version different than the global version.
+        return 2;
+    }
+}
+
+class PortableFactory2 {
+    create(classId) {
+        if (classId === 1) {
+            return new Employee2();
+        }
+        return null;
+    }
+}
 
 /*
- * However, having a version that changes across incompatible field types such as int and String will cause
- * a type error as clients with older versions of the class tries to access it. We will demonstrate this below.
+ * However, having a version that changes across incompatible field types such as int and
+ * String will cause a type error as clients with older versions of the class tries to
+ * access it. We will demonstrate this below.
  */
 
-//Version 3 Employee class. Changed age field type from int to String. (Incompatible type change)
-function Employee3(name, age, manager) {
-    this.name = name;
-    this.age = age;
-    this.manager = manager;
-}
-
-Employee3.prototype.readPortable = function (reader) {
-    this.name = reader.readUTF('name');
-    this.age = reader.readUTF('age');
-    this.manager = reader.readUTF('manager');
-};
-
-Employee3.prototype.writePortable = function (writer) {
-    writer.writeUTF('name', this.name);
-    writer.writeUTF('age', this.age);
-    writer.writeUTF('manager', this.manager);
-};
-
-Employee3.prototype.getFactoryId = function () {
-    return 1;
-};
-
-Employee3.prototype.getClassId = function () {
-    return 1;
-};
-
-Employee3.prototype.getVersion = function () {
-    return 3;
-};
-
-function PortableFactory3() {
-}
-
-PortableFactory3.prototype.create = function (classId) {
-    if (classId === 1) {
-        return new Employee3();
+// Version 3 Employee class. Changed age field type from int to String.
+// (Incompatible type change)
+class Employee3 {
+    constructor(name, age, manager) {
+        this.name = name;
+        this.age = age;
+        this.manager = manager;
     }
-    return null;
-};
 
-// Let's now configure 3 clients with 3 different versions of Employee.
-var cfg = new Config();
-cfg.serializationConfig.portableFactories[1] = new PortableFactory();
+    readPortable(input) {
+        this.name = input.readUTF('name');
+        this.age = input.readUTF('age');
+        this.manager = input.readUTF('manager');
+    }
 
-var cfg2 = new Config();
-cfg2.serializationConfig.portableFactories[1] = new PortableFactory2();
+    writePortable(output) {
+        output.writeUTF('name', this.name);
+        output.writeUTF('age', this.age);
+        output.writeUTF('manager', this.manager);
+    }
 
-var cfg3 = new Config();
-cfg3.serializationConfig.portableFactories[1] = new PortableFactory3();
+    getFactoryId() {
+        return 1;
+    }
 
-var map, map2, map3;
-var client, client2, client3;
+    getClassId() {
+        return 1;
+    }
 
-Promise.all([
-        Client.newHazelcastClient(cfg),
-        Client.newHazelcastClient(cfg2),
-        Client.newHazelcastClient(cfg3)
-    ]
-).then(function (clients) {
-    /*
-     * Assume that a client joins a cluster with a newer version of a class.
-     * If you modified the class by adding a new field, the new client's put operations include that
-     * new field.
-     */
-    client = clients[0];
-    client2 = clients[1];
-    client3 = clients[2];
-    return Promise.all([
-        client.getMap('employee-map'),
-        client2.getMap('employee-map'),
-        client3.getMap('employee-map')
-    ]);
-}).then(function (maps) {
-    map = maps[0];
-    map2 = maps[1];
-    map3 = maps[2];
-    return map.clear();
-}).then(function () {
-    return map.put(0, new Employee('Jack', 28));
-}).then(function () {
-    return map2.put(1, new Employee2('Jane', 29, 'Josh'));
-}).then(function () {
-    return map.size();
-}).then(function (size) {
-    console.log('Map Size:', size);
-    return map.values();
-}).then(function (values) {
-    /*
-     * If this new client tries to get an object that was put from the older clients, it
-     * gets null for the newly added field.
-     */
-    values.toArray().forEach(function (value) {
-        console.log(value);
-    });
-    return map2.values();
-}).then(function (values) {
-    values.toArray().forEach(function (value) {
-        console.log(value);
-    });
-    // Let's try now to put a version 3 Employee object to the map and see what happens.
-    return map3.put(2, new Employee3('Joe', '30', 'Mary'));
-}).then(function () {
-    return map.size();
-}).then(function (size) {
-    console.log('Map Size:', size);
-    /*
-     * As clients with incompatible versions of the class try to access each other, a HazelcastSerializationError
-     * is raised (caused by a TypeError).
-     */
-    return map.get(2).catch(function (err) {
-        // Client that has class with int type age field tries to read Employee3 object with String age field.
-        console.log('Failed due to:', err.message);
-    });
-}).then(function () {
-    return map3.get(0).catch(function (err) {
-        // Client that has class with String type age field tries to read Employee object with int age field.
-        console.log('Failed due to:', err.message);
-    });
-}).then(function () {
-    client.shutdown();
-    client2.shutdown();
-    client3.shutdown();
-});
+    getVersion() {
+        return 3;
+    }
+}
+
+class PortableFactory3 {
+    create(classId) {
+        if (classId === 1) {
+            return new Employee3();
+        }
+        return null;
+    }
+}
+
+(async () => {
+    try {
+        // Let's now configure 3 clients with 3 different versions of Employee.
+        const cfg = {
+            serialization: {
+                portableFactories: {
+                    1: new PortableFactory()
+                }
+            }
+        };
+        const cfg2 = {
+            serialization: {
+                portableFactories: {
+                    1: new PortableFactory2()
+                }
+            }
+        };
+        const cfg3 = {
+            serialization: {
+                portableFactories: {
+                    1: new PortableFactory3()
+                }
+            }
+        };
+
+        const client = await Client.newHazelcastClient(cfg);
+        const client2 = await Client.newHazelcastClient(cfg2);
+        const client3 = await Client.newHazelcastClient(cfg3);
+
+        /*
+         * Assume that a client joins a cluster with a newer version of a class.
+         * If you modified the class by adding a new field, the new client's put
+         * operations include that new field.
+         */
+        const map = await client.getMap('employee-map');
+        const map2 = await client2.getMap('employee-map');
+        const map3 = await client3.getMap('employee-map');
+
+        await map.put(0, new Employee('Jack', 28));
+        await map2.put(1, new Employee2('Jane', 29, 'Josh'));
+
+        let size = await map.size();
+        console.log('Map size:', size);
+        let values = await map.values();
+        /*
+         * If this new client tries to get an object that was put from the older
+         * clients, it gets `null` for the newly added field.
+         */
+        for (const value of values) {
+            console.log(value);
+        }
+        values = await map2.values();
+        for (const value of values) {
+            console.log(value);
+        }
+
+        /*
+         * Let's try now to put a version 3 Employee object to the map and see
+         * what happens.
+         */
+        await map3.put(2, new Employee3('Joe', '30', 'Mary'));
+        size = await map.size();
+        console.log('Map size:', size);
+
+        /*
+         * As clients with incompatible versions of the class try to access each
+         * other, a HazelcastSerializationError is raised (caused by a TypeError).
+         */
+        try {
+            await map.get(2);
+        } catch (err) {
+            // Client that has class with int type age field tries to read Employee3
+            // object with string `age` field.
+            console.log('Failed due to:', err.message);
+        }
+        try {
+            await map3.get(0);
+        } catch (err) {
+            // Client that has class with String type age field tries to read
+            // Employee object with int `age` field.
+            console.log('Failed due to:', err.message);
+        }
+
+        client.shutdown();
+        client2.shutdown();
+        client3.shutdown();
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

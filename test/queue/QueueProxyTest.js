@@ -13,45 +13,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var chai = require('chai');
-var expect = chai.expect;
-var chaiAsPromised = require('chai-as-promised');
+const chai = require('chai');
+const expect = chai.expect;
+const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
-var Controller = require('./../RC');
-var Util = require('./../Util');
-var Promise = require('bluebird');
-var fs = require('fs');
+const RC = require('./../RC');
+const Util = require('./../Util');
+const Promise = require('bluebird');
+const fs = require('fs');
 
-var HazelcastClient = require('../../').Client;
-var Config = require('../../').Config;
-var ItemEventType = require('../../').ItemEventType;
+const HazelcastClient = require('../../').Client;
+const ItemEventType = require('../../').ItemEventType;
 
-describe("Queue Proxy", function () {
+describe('QueueProxyTest', function () {
 
-    var cluster;
-    var client;
-    var queue;
-    var serverConfig;
+    let cluster;
+    let client;
+    let queue;
 
     before(function () {
         this.timeout(10000);
-        return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_queue.xml', 'utf8')).then(function (response) {
-            cluster = response;
-            return Controller.startMember(cluster.id);
-        }).then(function () {
-            const config = new Config.ClientConfig();
-            config.clusterName = cluster.id;
-            return HazelcastClient.newHazelcastClient(config).then(function (hazelcastClient) {
+        return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_queue.xml', 'utf8'))
+            .then(function (response) {
+                cluster = response;
+                return RC.startMember(cluster.id);
+            })
+            .then(function () {
+                return HazelcastClient.newHazelcastClient({ clusterName: cluster.id });
+            }).then(function (hazelcastClient) {
                 client = hazelcastClient;
             });
-        });
     });
 
     beforeEach(function () {
         return client.getQueue('ClientQueueTest').then(function (q) {
             queue = q;
-            return _offerToQueue(10);
+            return offerToQueue(10);
         });
     });
 
@@ -59,12 +58,12 @@ describe("Queue Proxy", function () {
         return queue.destroy();
     });
 
-    function _offerToQueue(size, prefix) {
+    function offerToQueue(size, prefix) {
         if (prefix == null) {
             prefix = '';
         }
-        var promises = [];
-        for (var i = 0; i < size; i++) {
+        const promises = [];
+        for (let i = 0; i < size; i++) {
             promises.push(queue.offer(prefix + 'item' + i));
         }
         return Promise.all(promises);
@@ -72,7 +71,7 @@ describe("Queue Proxy", function () {
 
     after(function () {
         client.shutdown();
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('size', function () {
@@ -102,7 +101,7 @@ describe("Queue Proxy", function () {
     });
 
     it('add throws if queue is full', function () {
-        return _offerToQueue(5, 'new').then(function () {
+        return offerToQueue(5, 'new').then(function () {
             return expect(queue.add('excess_item')).to.eventually.rejected;
         });
     });
@@ -197,7 +196,7 @@ describe("Queue Proxy", function () {
     });
 
     it('drainTo', function () {
-        var dummyArr = ['dummy_item'];
+        const dummyArr = ['dummy_item'];
         return queue.drainTo(dummyArr).then(function () {
             expect(dummyArr).to.have.lengthOf(11);
             expect(dummyArr).to.include.members(['item0', 'dummy_item', 'item3', 'item9']);
@@ -205,7 +204,7 @@ describe("Queue Proxy", function () {
     });
 
     it('drainTo with max elements', function () {
-        var dummyArr = ['dummy_item'];
+        const dummyArr = ['dummy_item'];
         return queue.drainTo(dummyArr, 2).then(function () {
             expect(dummyArr).to.have.lengthOf(3);
             expect(dummyArr).to.include.members(['item0', 'dummy_item', 'item1']);
@@ -244,7 +243,7 @@ describe("Queue Proxy", function () {
     });
 
     it('addAll', function () {
-        var values = ['a', 'b', 'c'];
+        const values = ['a', 'b', 'c'];
         return queue.addAll(values).then(function (retVal) {
             expect(retVal).to.be.true;
             return queue.toArray();
@@ -254,21 +253,21 @@ describe("Queue Proxy", function () {
     });
 
     it('containsAll true', function () {
-        var values = ['item0', 'item1'];
+        const values = ['item0', 'item1'];
         return queue.containsAll(values).then(function (ret) {
             return expect(ret).to.be.true;
         });
     });
 
     it('containsAll true', function () {
-        var values = ['item0', 'item_absent'];
+        const values = ['item0', 'item_absent'];
         return queue.containsAll(values).then(function (ret) {
             return expect(ret).to.be.false;
         });
     });
 
     it('containsAll true', function () {
-        var values = [];
+        const values = [];
         return queue.containsAll(values).then(function (ret) {
             return expect(ret).to.be.true;
         });
@@ -283,7 +282,7 @@ describe("Queue Proxy", function () {
     });
 
     it('removeAll', function () {
-        var cand = ['item1', 'item2'];
+        const cand = ['item1', 'item2'];
         return queue.removeAll(cand).then(function (retVal) {
             return expect(retVal).to.be.true;
         }).then(function () {
@@ -294,7 +293,7 @@ describe("Queue Proxy", function () {
     });
 
     it('retainAll changes queue', function () {
-        var retains = ['item1', 'item2'];
+        const retains = ['item1', 'item2'];
         return queue.retainAll(retains).then(function (r) {
             return expect(r).to.be.true;
         }).then(function () {
@@ -306,7 +305,7 @@ describe("Queue Proxy", function () {
 
 
     it('retainAll does not change queue', function () {
-        var retains;
+        let retains;
         return queue.toArray().then(function (r) {
             retains = r;
             return queue.retainAll(r);

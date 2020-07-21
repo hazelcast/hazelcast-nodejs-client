@@ -16,6 +16,8 @@ This folder contains an extensive collection of Hazelcast Node.js Client code sa
 
 **hazelcast-cloud-discovery.js** — Usage of cloud discovery.
 
+**identified_data_serializable.js** — Creating and adding `IdentifiedDataSerializableFactory` to serialization configuration.
+
 **lifecycle_listener.js** — Listening to lifecycle events of the Hazelcast instance.
 
 **list.js** — Usage of distributed list.

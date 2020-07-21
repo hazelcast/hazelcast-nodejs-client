@@ -13,31 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
-// Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-Client.newHazelcastClient().then(function (hz) {
-    var multiMap;
-    // Get the Distributed MultiMap from Cluster.
-    hz.getMultiMap('my-distributed-multimap').then(function (mmp) {
-        multiMap = mmp;
+const { Client } = require('hazelcast-client');
+
+(async () => {
+    try {
+        // Start the Hazelcast Client and connect to an already running
+        // Hazelcast Cluster on 127.0.0.1
+        const hz = await Client.newHazelcastClient();
+        // Get the Distributed MultiMap from Cluster
+        const multiMap = await hz.getMap('my-distributed-multimap');
         // Put values in the map against the same key
-        return multiMap.put('my-key', 'value1');
-    }).then(function () {
-        return multiMap.put('my-key', 'value2');
-    }).then(function () {
-        return multiMap.put('my-key', 'value3');
-    }).then(function () {
-        // Print out all the values for associated with key called "my-key"
-        return multiMap.get('my-key')
-    }).then(function (values) {
-        for (value of values) {
+        await multiMap.put('my-key', 'value1');
+        await multiMap.put('my-key', 'value2');
+        await multiMap.put('my-key', 'value3');
+        // Print out all the values for associated with key called 'my-key'
+        const values = await multiMap.get('my-key');
+        for (const value of values) {
             console.log(value);
         }
         // remove specific key/value pair
-        return multiMap.remove('my-key', 'value2');
-    }).then(function () {
+        await multiMap.remove('my-key', 'value2');
         // Shutdown this Hazelcast client
         hz.shutdown();
-    });
-});
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

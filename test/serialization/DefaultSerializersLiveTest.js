@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('../../.').Client;
-var Config = require('../../.').Config;
-var RC = require('../RC');
-var expect = require('chai').expect;
-var RestValue = require('../../lib/core/RestValue').RestValue;
+const Client = require('../../.').Client;
+const RC = require('../RC');
+const expect = require('chai').expect;
+const RestValue = require('../../lib/core/RestValue').RestValue;
 
-describe('Default serializers with live instance', function () {
-    var cluster;
-    var client;
-    var map;
+describe('DefaultSerializersLiveTest', function () {
+
+    let cluster, client;
+    let map;
 
     before(function () {
         return RC.createCluster(null, null).then(function (res) {
@@ -31,9 +31,7 @@ describe('Default serializers with live instance', function () {
         }).then(function () {
             return RC.startMember(cluster.id);
         }).then(function () {
-            var config = new Config.ClientConfig();
-            config.clusterName = cluster.id;
-            return Client.newHazelcastClient(config);
+            return Client.newHazelcastClient({ clusterName: cluster.id });
         }).then(function (cl) {
             client = cl;
             return client.getMap('test').then(function (mp) {
@@ -47,7 +45,7 @@ describe('Default serializers with live instance', function () {
         return RC.terminateCluster(cluster.id);
     });
 
-    function _generateGet(key) {
+    function generateGet(key) {
         return 'var StringArray = Java.type("java.lang.String[]");' +
             'function foo() {' +
             '   var map = instance_0.getMap("' + map.getName() + '");' +
@@ -63,7 +61,7 @@ describe('Default serializers with live instance', function () {
 
     it('string', function () {
         return map.put('testStringKey', 'testStringValue').then(function () {
-            return RC.executeOnController(cluster.id, _generateGet('testStringKey'), 1);
+            return RC.executeOnController(cluster.id, generateGet('testStringKey'), 1);
         }).then(function (response) {
             return expect(response.result.toString()).to.equal('testStringValue');
         })
@@ -71,7 +69,7 @@ describe('Default serializers with live instance', function () {
 
     it('utf8 sample string test', function () {
         return map.put('key', 'Iñtërnâtiônàlizætiøn').then(function () {
-            return RC.executeOnController(cluster.id, _generateGet('key'), 1);
+            return RC.executeOnController(cluster.id, generateGet('key'), 1);
         }).then(function (response) {
             return expect(response.result.toString()).to.equal('Iñtërnâtiônàlizætiøn');
         });
@@ -79,7 +77,7 @@ describe('Default serializers with live instance', function () {
 
     it('number', function () {
         return map.put('a', 23).then(function () {
-            return RC.executeOnController(cluster.id, _generateGet('a'), 1);
+            return RC.executeOnController(cluster.id, generateGet('a'), 1);
         }).then(function (response) {
             return expect(Number.parseInt(response.result.toString())).to.equal(23);
         })
@@ -87,7 +85,7 @@ describe('Default serializers with live instance', function () {
 
     it('array', function () {
         return map.put('a', ['a', 'v', 'vg']).then(function () {
-            return RC.executeOnController(cluster.id, _generateGet('a'), 1);
+            return RC.executeOnController(cluster.id, generateGet('a'), 1);
         }).then(function (response) {
             return expect(response.result.toString()).to.equal(['a', 'v', 'vg'].toString());
         })
@@ -119,7 +117,7 @@ describe('Default serializers with live instance', function () {
 
     it('emoji string test on RC', function () {
         return map.put('key', '1⚐中💦2😭‍🙆😔5').then(function () {
-            return RC.executeOnController(cluster.id, _generateGet('key'), 1);
+            return RC.executeOnController(cluster.id, generateGet('key'), 1);
         }).then(function (response) {
             return expect(response.result.toString()).to.equal('1⚐中💦2😭‍🙆😔5');
         });
@@ -127,7 +125,7 @@ describe('Default serializers with live instance', function () {
 
     it('utf8 characters test on RC', function () {
         return map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}').then(function () {
-            return RC.executeOnController(cluster.id, _generateGet('key'), 1);
+            return RC.executeOnController(cluster.id, generateGet('key'), 1);
         }).then(function (response) {
             return expect(response.result.toString()).to.equal('\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
         });
@@ -135,19 +133,19 @@ describe('Default serializers with live instance', function () {
 
     it('utf8 characters test on RC with surrogates', function () {
         return map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\uD834\uDF06').then(function () {
-            return RC.executeOnController(cluster.id, _generateGet('key'), 1);
+            return RC.executeOnController(cluster.id, generateGet('key'), 1);
         }).then(function (response) {
             return expect(response.result.toString()).to.equal('\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
         });
     });
 
     it('rest value', function () {
-        // Making sure that the object is properly de-serialized at the server
-        var restValue = new RestValue();
+        // Make sure that the object is properly de-serialized at the server
+        const restValue = new RestValue();
         restValue.value = '{\'test\':\'data\'}';
         restValue.contentType = 'text/plain';
 
-        var script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
+        const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
             'var restValue = map.get("key");\n' +
             'var contentType = restValue.getContentType();\n' +
             'var value = restValue.getValue();\n' +
@@ -160,7 +158,7 @@ describe('Default serializers with live instance', function () {
                 return RC.executeOnController(cluster.id, script, 1);
             })
             .then(function (response) {
-                var result = JSON.parse(response.result.toString());
+                const result = JSON.parse(response.result.toString());
                 expect(result.contentType).to.equal(restValue.contentType);
                 expect(result.value).to.equal(restValue.value);
             });

@@ -13,25 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
-// Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-Client.newHazelcastClient().then(function (hz) {
-    var map;
-    // Get the Distributed Map from Cluster.
-    hz.getMap('my-distributed-map').then(function (mp) {
-        map = mp;
-        // Standard Put and Get.
-        return map.put('key', 'value');
-    }).then(function () {
-        return map.get('key');
-    }).then(function (val) {
+const { Client } = require('hazelcast-client');
+
+(async () => {
+    try {
+        // Start the Hazelcast Client and connect to an already running
+        // Hazelcast Cluster on 127.0.0.1
+        const hz = await Client.newHazelcastClient();
+        // Get the Distributed Map from Cluster
+        const map = await hz.getMap('my-distributed-map');
+        // Standard Put and Get
+        await map.put('key', 'value');
+        await map.get('key');
         // Concurrent Map methods, optimistic updating
-        return map.putIfAbsent('somekey', 'somevalue');
-    }).then(function () {
-        return map.replace('key', 'value', 'newvalue');
-    }).then(function (value) {
+        await map.putIfAbsent('somekey', 'somevalue');
+        await map.replace('key', 'value', 'newvalue');
         // Shutdown this Hazelcast client
         hz.shutdown();
-    });
-});
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

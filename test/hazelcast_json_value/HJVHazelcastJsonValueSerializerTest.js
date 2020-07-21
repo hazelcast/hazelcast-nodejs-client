@@ -13,31 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require('chai').expect;
-var Client = require('../../.').Client;
-var Config = require('../../.').Config.ClientConfig;
-var RC = require('./../RC');
-var HazelcastJsonValue = require('../../.').HazelcastJsonValue;
-var JsonStringDeserializationPolicy = require('../../.').JsonStringDeserializationPolicy;
+const expect = require('chai').expect;
+const Client = require('../../.').Client;
+const RC = require('./../RC');
+const HazelcastJsonValue = require('../../.').HazelcastJsonValue;
+const JsonStringDeserializationPolicy = require('../../.').JsonStringDeserializationPolicy;
 
 describe('HazelcastJsonValue with HazelcastJsonValueSerializer', function () {
-    var cluster;
-    var client;
-    var map;
-    var object = { 'a': 1 };
-    var hzJsonValue = new HazelcastJsonValue(JSON.stringify(object));
+
+    let cluster, client;
+    let map;
+    const object = { 'a': 1 };
+    const hzJsonValue = new HazelcastJsonValue(JSON.stringify(object));
 
     before(function () {
         return RC.createCluster().then(function (response) {
             cluster = response;
             return RC.startMember(cluster.id);
         }).then(function () {
-            var config = new Config();
-            config.clusterName = cluster.id;
-            config.serializationConfig
-                .jsonStringDeserializationPolicy = JsonStringDeserializationPolicy.NO_DESERIALIZATION;
-            return Client.newHazelcastClient(config).then(function (hazelcastClient) {
+            return Client.newHazelcastClient({
+                clusterName: cluster.id,
+                serialization: {
+                    jsonStringDeserializationPolicy: JsonStringDeserializationPolicy.NO_DESERIALIZATION
+                }
+            }).then(function (hazelcastClient) {
                 client = hazelcastClient;
             });
         });
@@ -79,16 +80,14 @@ describe('HazelcastJsonValue with HazelcastJsonValueSerializer', function () {
     });
 
     it('storing invalid Json strings', function () {
-        var invalidString = '{a}';
-        var hzJsonValueInvalid = new HazelcastJsonValue(invalidString);
+        const invalidString = '{a}';
+        const hzJsonValueInvalid = new HazelcastJsonValue(invalidString);
         return map.put(1, hzJsonValueInvalid).then(function () {
             return map.get(1);
         }).then(function (value) {
             expect(value).to.be.an.instanceof(HazelcastJsonValue);
             expect(value).to.be.deep.equal(hzJsonValueInvalid);
-            expect(function () {
-                JSON.parse(value.toString())
-            }).to.throw(SyntaxError);
+            expect(() => JSON.parse(value.toString())).to.throw(SyntaxError);
         });
     });
 });

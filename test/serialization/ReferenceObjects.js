@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Long = require('long');
-var AnInnerPortable = require('./AnInnerPortable');
-var AnIdentifiedDataSerializable = require('./AnIdentifiedDataSerializable');
-var APortable = require('./APortable');
-var CustomByteArraySerializable = require('./CustomSerializable').CustomByteArraySerializable;
-var CustomStreamSerializable = require('./CustomSerializable').CustomStreamSerializable;
-var HeapData = require('../../lib/serialization/HeapData').HeapData;
+const Long = require('long');
+const AnInnerPortable = require('./AnInnerPortable');
+const AnIdentifiedDataSerializable = require('./AnIdentifiedDataSerializable');
+const APortable = require('./APortable');
+const CustomByteArraySerializable = require('./CustomSerializable').CustomByteArraySerializable;
+const CustomStreamSerializable = require('./CustomSerializable').CustomStreamSerializable;
+const HeapData = require('../../lib/serialization/HeapData').HeapData;
 
-var to = {};
+const to = {};
 to.aNULL = null;
 to.aBoolean = true;
 to.aByte = 113;
@@ -32,17 +33,16 @@ to.aShort = -500;
 to.aFloat = 900.5678;
 to.anInteger = 56789;
 to.aLong = Long.fromNumber(-50992225);
-to.aString = ''; //TODO
+to.aString = '';
 
-for (var ci = 0; ci < 65535; ci++) {
+for (let ci = 0; ci < 65535; ci++) {
     if (!(ci >= 55296 && ci < 57344)) {
         to.aString += String.fromCharCode(ci);
     }
 }
-for (var ci = 65535 - to.aString.length; ci > 0; ci--) {
+for (let ci = 65535 - to.aString.length; ci > 0; ci--) {
     to.aString += String.fromCharCode(0);
 }
-
 
 to.booleans = [true, false, true];
 to.bytes = [112, 4, -1, 4, 112, -35, 43];
@@ -61,14 +61,19 @@ to.aCustomByteArraySerializable = new CustomByteArraySerializable(to.anInteger, 
 
 exports.aData = new HeapData(Buffer.from('111313123131313131'));
 
-to.AnIdentifiedDataSerializable = new AnIdentifiedDataSerializable(to.aBoolean, to.aByte, to.aCharacter, to.aDouble, to.aShort
-    , to.aFloat, to.anInteger, to.aLong, to.aString, to.booleans, to.bytes, to.chars, to.doubles, to.shorts, to.floats
-    , to.ints, to.longs, to.Strings, to.AnInnerPortable, null, to.aCustomStreamSerializable, to.aCustomByteArraySerializable,
-    exports.aData);
-to.APortable = new APortable(to.aBoolean, to.aByte, to.aCharacter, to.aDouble, to.aShort, to.aFloat, to.anInteger, to.aLong,
-    to.aString, to.AnInnerPortable, to.booleans, to.bytes, to.chars, to.doubles, to.shorts, to.floats, to.ints, to.longs,
-    to.Strings, exports.portables, to.AnIdentifiedDataSerializable, to.aCustomStreamSerializable, to.aCustomByteArraySerializable,
-    exports.aData);
+to.AnIdentifiedDataSerializable = new AnIdentifiedDataSerializable(
+    to.aBoolean, to.aByte, to.aCharacter, to.aDouble, to.aShort, to.aFloat,
+    to.anInteger, to.aLong, to.aString, to.booleans, to.bytes, to.chars, to.doubles,
+    to.shorts, to.floats, to.ints, to.longs, to.Strings, to.AnInnerPortable, null,
+    to.aCustomStreamSerializable, to.aCustomByteArraySerializable, exports.aData
+);
+to.APortable = new APortable(
+    to.aBoolean, to.aByte, to.aCharacter, to.aDouble, to.aShort, to.aFloat,
+    to.anInteger, to.aLong, to.aString, to.AnInnerPortable, to.booleans, to.bytes,
+    to.chars, to.doubles, to.shorts, to.floats, to.ints, to.longs, to.Strings,
+    exports.portables, to.AnIdentifiedDataSerializable, to.aCustomStreamSerializable,
+    to.aCustomByteArraySerializable, exports.aData
+);
 to.aDate = new Date(Date.UTC(1990, 2, 1, 0, 0, 0, 0));
 to.aClass = 'java.math.BigDecimal';
 
@@ -84,6 +89,5 @@ exports.PORTABLE_CLASS_ID = 1;
 exports.INNER_PORTABLE_CLASS_ID = 2;
 exports.IDENTIFIED_DATA_SERIALIZABLE_FACTORY_ID = 1;
 exports.IDENTIFIED_DATA_SERIALIZABLE_CLASS_ID = 1;
-exports.CUSTOM_BYTE_ARRAY_SERILAZABLE_ID = 2;
-exports.CUSTOM_STREAM_SERILAZABLE_ID = 1;
-
+exports.CUSTOM_BYTE_ARRAY_SERIALIZABLE_ID = 2;
+exports.CUSTOM_STREAM_SERIALIZABLE_ID = 1;

@@ -13,55 +13,77 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var RC = require('../RC');
-var HazelcastClient = require('../../').Client;
-var expect = require('chai').expect;
-var Config = require('../../').Config;
-var fs = require('fs');
-var Long = require('long');
-var Util = require('../Util');
-var DeferredPromise = require('../../lib/Util').DeferredPromise;
+const RC = require('../RC');
+const HazelcastClient = require('../../').Client;
+const expect = require('chai').expect;
+const fs = require('fs');
+const Long = require('long');
+const Util = require('../Util');
+const DeferredPromise = require('../../lib/Util').DeferredPromise;
 
 describe('LostInvalidation', function () {
     this.timeout(30000);
 
-    var cluster;
-    var member;
-    var client;
-    var modifyingClient;
+    let cluster;
+    let member;
+    let client;
+    let modifyingClient;
 
-    var entryCount = 1000;
-    var mapName = 'ncmap';
+    const entryCount = 1000;
+    const mapName = 'ncmap';
 
-    function createConfig() {
-        var cfg = new Config.ClientConfig();
-        cfg.clusterName = cluster.id;
-        var ncConfig = new Config.NearCacheConfig();
-        ncConfig.name = mapName;
-        cfg.nearCacheConfigs[mapName] = ncConfig;
-        cfg.properties['hazelcast.invalidation.reconciliation.interval.seconds'] = 1;
-        cfg.properties['hazelcast.invalidation.min.reconciliation.interval.seconds'] = 1;
-        cfg.properties['hazelcast.invalidation.max.tolerated.miss.count'] = 2;
-        return cfg;
+    function blockInvalidationEvents(client, nearCachedMap, notifyAfterNumberOfEvents) {
+        const listenerId = nearCachedMap.invalidationListenerId;
+        const clientRegistrationKey = client.getListenerService().activeRegistrations
+            .get(listenerId).get(client.getConnectionManager().getRandomConnection());
+        const correlationId = clientRegistrationKey.correlationId;
+        const handler = client.getInvocationService().eventHandlers[correlationId].handler;
+        const deferred = DeferredPromise();
+        let numberOfBlockedInvalidations = 0;
+        client.getInvocationService().eventHandlers[correlationId].handler = function () {
+            numberOfBlockedInvalidations++;
+            if (notifyAfterNumberOfEvents !== undefined && notifyAfterNumberOfEvents === numberOfBlockedInvalidations) {
+                deferred.resolve();
+            }
+        };
+        return {
+            handler,
+            correlationId,
+            notificationHandler: deferred.promise
+        };
+    }
+
+    function unblockInvalidationEvents(client, metadata) {
+        client.getInvocationService().eventHandlers[metadata.correlationId].handler = metadata.handler;
     }
 
     before(function () {
-        return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_eventual_nearcache.xml', 'utf8')).then(function (resp) {
-            cluster = resp;
-            return RC.startMember(cluster.id);
-        }).then(function (m) {
-            member = m;
-        });
+        return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_eventual_nearcache.xml', 'utf8'))
+            .then(function (resp) {
+                cluster = resp;
+                return RC.startMember(cluster.id);
+            })
+            .then(function (m) {
+                member = m;
+            });
     });
 
     beforeEach(function () {
-        return HazelcastClient.newHazelcastClient(createConfig()).then(function (resp) {
+        return HazelcastClient.newHazelcastClient({
+            clusterName: cluster.id,
+            nearCaches: {
+                [mapName]: {}
+            },
+            properties: {
+                'hazelcast.invalidation.reconciliation.interval.seconds': 1,
+                'hazelcast.invalidation.min.reconciliation.interval.seconds': 1,
+                'hazelcast.invalidation.max.tolerated.miss.count': 2
+            }
+        }).then(function (resp) {
             client = resp;
-
-            const cfg = new Config.ClientConfig();
-            cfg.clusterName = cluster.id;
-            return HazelcastClient.newHazelcastClient(cfg);
+            return HazelcastClient.newHazelcastClient({ clusterName: cluster.id });
         }).then(function (resp) {
             modifyingClient = resp;
         });
@@ -77,10 +99,12 @@ describe('LostInvalidation', function () {
     });
 
     it('client eventually receives an update for which the invalidation event was dropped', function () {
-        var key = 'key';
-        var value = 'val';
-        var updatedval = 'updatedval';
-        var invalidationHandlerStub;
+        const key = 'key';
+        const value = 'val';
+        const updatedval = 'updatedval';
+        let map;
+        let invalidationHandlerStub;
+
         return client.getMap(mapName).then(function (mp) {
             map = mp;
             return Util.promiseWaitMilliseconds(100)
@@ -108,30 +132,31 @@ describe('LostInvalidation', function () {
     });
 
     it('lost invalidation stress test', function () {
-        var invalidationHandlerStub;
-        var map;
-        var entries = [];
+        let invalidationHandlerStub;
+        let map;
+        let entries = [];
+
         return client.getMap(mapName).then(function (mp) {
             map = mp;
             return Util.promiseWaitMilliseconds(100);
         }).then(function (resp) {
             invalidationHandlerStub = blockInvalidationEvents(client, map);
-            for (var i = 0; i < entryCount; i++) {
+            for (let i = 0; i < entryCount; i++) {
                 entries.push([i, i]);
             }
             return modifyingClient.getMap(mapName);
         }).then(function (mp) {
             return mp.putAll(entries);
         }).then(function () {
-            var requestedKeys = [];
-            for (var i = 0; i < entryCount; i++) {
+            const requestedKeys = [];
+            for (let i = 0; i < entryCount; i++) {
                 requestedKeys.push(i);
             }
-            //populate near cache
+            // populate near cache
             return map.getAll(requestedKeys);
         }).then(function () {
             entries = [];
-            for (var i = 0; i < entryCount; i++) {
+            for (let i = 0; i < entryCount; i++) {
                 entries.push([i, i + entryCount]);
             }
             return modifyingClient.getMap(mapName);
@@ -141,9 +166,9 @@ describe('LostInvalidation', function () {
             unblockInvalidationEvents(client, invalidationHandlerStub);
             return Util.promiseWaitMilliseconds(2000);
         }).then(function () {
-            var promises = [];
-            for (var i = 0; i < entryCount; i++) {
-                var promise = (function (key) {
+            const promises = [];
+            for (let i = 0; i < entryCount; i++) {
+                const promise = (function (key) {
                     return map.get(key).then((val) => {
                         return expect(val).to.equal(key + entryCount);
                     });
@@ -153,24 +178,4 @@ describe('LostInvalidation', function () {
             return Promise.all(promises);
         });
     });
-
-    function blockInvalidationEvents(client, nearCachedMap, notifyAfterNumberOfEvents) {
-        var listenerId = nearCachedMap.invalidationListenerId;
-        var clientRegistrationKey = client.getListenerService().activeRegistrations.get(listenerId).get(client.getConnectionManager().getRandomConnection());
-        var correlationId = clientRegistrationKey.correlationId;
-        var handler = client.getInvocationService().eventHandlers[correlationId].handler;
-        var numberOfBlockedInvalidations = 0;
-        var deferred = DeferredPromise();
-        client.getInvocationService().eventHandlers[correlationId].handler = function () {
-            numberOfBlockedInvalidations++;
-            if (notifyAfterNumberOfEvents !== undefined && notifyAfterNumberOfEvents === numberOfBlockedInvalidations) {
-                deferred.resolve();
-            }
-        };
-        return {handler: handler, correlationId: correlationId, notificationHandler: deferred.promise};
-    }
-
-    function unblockInvalidationEvents(client, metadata) {
-        client.getInvocationService().eventHandlers[metadata.correlationId].handler = metadata.handler;
-    }
 });

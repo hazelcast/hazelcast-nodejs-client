@@ -18,18 +18,46 @@
  * Type of the index.
  */
 export enum IndexType {
+
     /**
      * Sorted index. Can be used with equality and range predicates.
      */
-    SORTED = 0,
+    SORTED = 'SORTED',
 
     /**
      * Hash index. Can be used with equality predicates.
      */
-    HASH = 1,
+    HASH = 'HASH',
 
     /**
      * Bitmap index. Can be used with equality predicates.
      */
-    BITMAP = 2,
+    BITMAP = 'BITMAP',
+
+}
+
+export const indexTypeToId = (type: IndexType): number => {
+    switch (type) {
+        case IndexType.SORTED:
+            return 0;
+        case IndexType.HASH:
+            return 1;
+        case IndexType.BITMAP:
+            return 2;
+        default:
+            throw new TypeError('Unexpected type value: ' + type);
+    }
+}
+
+export const indexTypeFromId = (typeId: number): IndexType => {
+    switch (typeId) {
+        case 0:
+            return IndexType.SORTED;
+        case 1:
+            return IndexType.HASH;
+        case 2:
+            return IndexType.BITMAP;
+        default:
+            throw new TypeError('Unexpected type id: ' + typeId);
+    }
 }

@@ -19,18 +19,23 @@ import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
 import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame, DEFAULT_FLAGS} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
-import {BitmapIndexOptions} from '../../config/BitmapIndexOptions';
 import {StringCodec} from '../builtin/StringCodec';
+import {
+    uniqueKeyTransformationToId,
+    uniqueKeyTransformationFromId,
+    BitmapIndexOptionsImpl,
+} from '../../config/BitmapIndexOptions';
 
 const UNIQUE_KEY_TRANSFORMATION_OFFSET = 0;
 const INITIAL_FRAME_SIZE = UNIQUE_KEY_TRANSFORMATION_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
 export class BitmapIndexOptionsCodec {
-    static encode(clientMessage: ClientMessage, bitmapIndexOptions: BitmapIndexOptions): void {
+    static encode(clientMessage: ClientMessage, bitmapIndexOptions: BitmapIndexOptionsImpl): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());
 
         const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE, DEFAULT_FLAGS);
-        FixSizedTypesCodec.encodeInt(initialFrame.content, UNIQUE_KEY_TRANSFORMATION_OFFSET, bitmapIndexOptions.uniqueKeyTransformation);
+        const transformationId = uniqueKeyTransformationToId(bitmapIndexOptions.uniqueKeyTransformation);
+        FixSizedTypesCodec.encodeInt(initialFrame.content, UNIQUE_KEY_TRANSFORMATION_OFFSET, transformationId);
         clientMessage.addFrame(initialFrame);
 
         StringCodec.encode(clientMessage, bitmapIndexOptions.uniqueKey);
@@ -38,17 +43,17 @@ export class BitmapIndexOptionsCodec {
         clientMessage.addFrame(END_FRAME.copy());
     }
 
-    static decode(clientMessage: ClientMessage): BitmapIndexOptions {
+    static decode(clientMessage: ClientMessage): BitmapIndexOptionsImpl {
         // begin frame
         clientMessage.nextFrame();
 
         const initialFrame = clientMessage.nextFrame();
-        const uniqueKeyTransformation = FixSizedTypesCodec.decodeInt(initialFrame.content, UNIQUE_KEY_TRANSFORMATION_OFFSET);
-
+        const transformationId = FixSizedTypesCodec.decodeInt(initialFrame.content, UNIQUE_KEY_TRANSFORMATION_OFFSET);
         const uniqueKey = StringCodec.decode(clientMessage);
 
         CodecUtil.fastForwardToEndFrame(clientMessage);
 
-        return new BitmapIndexOptions(uniqueKey, uniqueKeyTransformation);
+        const transformation = uniqueKeyTransformationFromId(transformationId);
+        return new BitmapIndexOptionsImpl(uniqueKey, transformation);
     }
 }

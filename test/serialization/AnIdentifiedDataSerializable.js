@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-function AnIdentifiedDataSerializable(bool, b, c, d, s, f, i, l, str, booleans, bytes, chars, doubles, shorts, floats, ints
-    , longs, strings, portable, identifiedDataSerializable, customStreamSerializable, customByteArraySerializableObject, data) {
+function AnIdentifiedDataSerializable(bool, b, c, d, s, f, i, l, str, booleans, bytes, chars,
+                                      doubles, shorts, floats, ints, longs, strings, portable,
+                                      identifiedDataSerializable, customStreamSerializable,
+                                      customByteArraySerializableObject, data) {
     if (arguments.length === 0) return;
     this.bool = bool;
     this.b = b;
@@ -42,7 +44,7 @@ function AnIdentifiedDataSerializable(bool, b, c, d, s, f, i, l, str, booleans, 
     this.bytesOffset = bytes.slice(1, 3);
     this.strChars = str.split('');
     this.strBytes = Buffer.alloc(this.str.length);
-    for (var i = 0; i < str.length; i++) {
+    for (let i = 0; i < str.length; i++) {
         this.strBytes[i] = this.strChars[i].charCodeAt(0);
     }
     this.unsignedByte = 137;
@@ -100,7 +102,7 @@ AnIdentifiedDataSerializable.prototype.readData = function (dataInput) {
     dataInput.readCopy(this.bytesOffset, 2);
     this.strSize = dataInput.readInt();
     this.strChars = [];
-    for (var j = 0; j < this.strSize; j++) {
+    for (let j = 0; j < this.strSize; j++) {
         this.strChars[j] = dataInput.readChar();
     }
     this.strBytes = Buffer.alloc(this.strSize);
@@ -147,7 +149,7 @@ AnIdentifiedDataSerializable.prototype.writeData = function (dataOutput) {
     dataOutput.writeLongArray(this.longsNull);
     dataOutput.writeUTFArray(this.stringsNull);
 
-    var byteSize = this.bytes.length;
+    const byteSize = this.bytes.length;
     dataOutput.write(byteSize);
     dataOutput.write(this.bytes);
     dataOutput.write(this.bytes[1]);

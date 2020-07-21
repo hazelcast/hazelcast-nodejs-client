@@ -15,15 +15,25 @@
  */
 
 /**
- *  hazelcast.cloud configuration to let the client connect the cluster via hazelcast.cloud
+ * Hazelcast Cloud configuration.
  */
-export class ClientCloudConfig {
+export interface ClientCloudConfig {
+
     /**
-     * hazelcast.cloud discoveryToken of your cluster
+     * Discovery token of your cluster.
      */
+    discoveryToken?: string;
+
+    /**
+     * If it is true, cloud discovery is enabled.
+     */
+    enabled?: boolean;
+
+}
+
+export class ClientCloudConfigImpl implements ClientCloudConfig {
+
     discoveryToken: string = null;
-    /**
-     * enabled true to use hazelcast.cloud
-     */
     enabled = false;
+
 }

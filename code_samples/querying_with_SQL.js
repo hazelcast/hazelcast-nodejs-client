@@ -13,22 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
-var Predicates = require('hazelcast-client').Predicates;
+const {
+    Client,
+    Predicates
+} = require('hazelcast-client');
 
-function Customer(name, active, age) {
-    this.name = name;
-    this.active = active;
-    this.age = age;
+class Customer {
+    constructor(name, active, age) {
+        this.name = name;
+        this.active = active;
+        this.age = age;
+    }
 }
 
-Client.newHazelcastClient().then(function (client) {
-    var personMap;
-    client.getMap('personMap').then(function (mp) {
-        personMap = mp;
+(async () => {
+    try {
+        const client = await Client.newHazelcastClient();
+        const personMap = await client.getMap('personMap');
 
-        return personMap.putAll([
+        await personMap.putAll([
             ['1', new Customer('Peter', true, 36)],
             ['2', new Customer('John', false, 40)],
             ['3', new Customer('Roger', true, 20)],
@@ -37,13 +42,15 @@ Client.newHazelcastClient().then(function (client) {
             ['6', new Customer('Ragnar', true, 30)],
             ['7', new Customer('Hilary', true, 19)],
         ]);
-    }).then(function () {
+
         const predicate = new Predicates.sql('active AND age < 30');
-        return personMap.valuesWithPredicate(predicate);
-    }).then(function (values) {
-        values.toArray().forEach(function (value) {
-            console.log(value);
-        });
-        return client.shutdown();
-    });
-});
+        const persons = await personMap.valuesWithPredicate(predicate);
+        for (const person of persons) {
+            console.log(person);
+        }
+
+        client.shutdown();
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

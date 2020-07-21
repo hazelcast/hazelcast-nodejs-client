@@ -13,74 +13,86 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var chai = require('chai');
+const chai = require('chai');
 chai.use(require('chai-as-promised'));
-var expect = chai.expect;
-var fs = require('fs');
-var Promise = require('bluebird');
-var path = require('path');
+const expect = chai.expect;
+const fs = require('fs');
 
-var markEnterprise = require('../Util').markEnterprise;
-var Controller = require('./../RC');
+const markEnterprise = require('../Util').markEnterprise;
+const RC = require('./../RC');
 
-var HazelcastClient = require("../../").Client;
-var Errors = require('../..').HazelcastErrors;
-var Config = require('../..').Config;
+const HazelcastClient = require("../../").Client;
+const Errors = require('../..').HazelcastErrors;
 
-describe("Client with SSL enabled", function () {
+describe('ClientSSLTest', function () {
 
-    var cluster;
-    var client;
-    var serverConfig;
+    let cluster;
+    let client;
+    let serverConfig;
+
+    before(function () {
+        markEnterprise(this);
+    });
 
     beforeEach(function () {
         this.timeout(20000);
-        //markEnterprise(this);
         serverConfig = fs.readFileSync(__dirname + '/hazelcast-ssl.xml', 'utf8');
     });
 
     afterEach(function () {
         this.timeout(20000);
-        //markEnterprise(this);
         if (client) {
             client.shutdown();
             client = null;
         }
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     function createCluster(sConfig) {
-        return Controller.createCluster(null, sConfig).then(function (response) {
+        return RC.createCluster(null, sConfig).then(function (response) {
             cluster = response;
-            return Controller.startMember(cluster.id);
+            return RC.startMember(cluster.id);
         });
     }
 
     it('should not be able to connect to the server with invalid certificate', function () {
-        var sConfig = serverConfig
+        const sConfig = serverConfig
             .replace('[serverCertificate]', 'com/hazelcast/nio/ssl-mutual-auth/server1.keystore')
             .replace('[password]', 'password');
         return createCluster(sConfig).then(function () {
-            var clientConfig = new Config.ClientConfig();
-            clientConfig.clusterName = cluster.id;
-            clientConfig.networkConfig.sslConfig.enabled = true;
-            clientConfig.networkConfig.addresses.push('127.0.0.1:5701');
-            clientConfig.connectionStrategyConfig.connectionRetryConfig.clusterConnectTimeoutMillis = 1000;
-            return expect(HazelcastClient.newHazelcastClient(clientConfig)).to.be.rejectedWith(Errors.IllegalStateError);
+            return expect(HazelcastClient.newHazelcastClient({
+                clusterName: cluster.id,
+                network: {
+                    clusterMembers: ['127.0.0.1:5701'],
+                    ssl: {
+                        enabled: true
+                    }
+                },
+                connectionStrategy: {
+                    connectionRetry: {
+                        clusterConnectTimeoutMillis: 1000
+                    }
+                }
+            })).to.be.rejectedWith(Errors.IllegalStateError);
         })
     });
 
     it('should be able to connect to the server with valid certificate', function () {
-        var sConfig = serverConfig
+        const sConfig = serverConfig
             .replace('[serverCertificate]', 'com/hazelcast/nio/ssl/letsencrypt.jks')
             .replace('[password]', '123456');
         return createCluster(sConfig).then(function () {
-            var clientConfig = new Config.ClientConfig();
-            clientConfig.clusterName = cluster.id;
-            clientConfig.networkConfig.sslConfig.enabled = true;
-            clientConfig.networkConfig.addresses.push('127.0.0.1:5701');
-            return HazelcastClient.newHazelcastClient(clientConfig);
+            return HazelcastClient.newHazelcastClient({
+                clusterName: cluster.id,
+                network: {
+                    clusterMembers: ['127.0.0.1:5701'],
+                    ssl: {
+                        enabled: true
+                    }
+                }
+            });
         }).then(function (hazelcastClient) {
             client = hazelcastClient;
             return expect(client.lifecycleService.isRunning()).to.be.true;

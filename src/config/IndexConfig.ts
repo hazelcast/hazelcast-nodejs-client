@@ -15,8 +15,7 @@
  */
 
 import {IndexType} from './IndexType';
-import {BitmapIndexOptions} from './BitmapIndexOptions';
-import {IndexUtil} from '../util/IndexUtil';
+import {BitmapIndexOptions, BitmapIndexOptionsImpl} from './BitmapIndexOptions';
 
 /**
  * Configuration of an index. Hazelcast support two types of indexes: sorted index and hash index.
@@ -28,30 +27,43 @@ import {IndexUtil} from '../util/IndexUtil';
  *
  * @see {@link IndexType}
  */
-export class IndexConfig {
+export interface IndexConfig {
+
+    /**
+     * Name of the index.
+     */
+    name?: string;
+
+    /**
+     * Type of the index. By default, set to `SORTED`.
+     */
+    type?: IndexType;
+
+    /**
+     * Indexed attributes.
+     */
+    attributes?: string[];
+
+    /**
+     * Bitmap index options.
+     */
+    bitmapIndexOptions?: BitmapIndexOptions;
+
+}
+
+export class IndexConfigImpl implements IndexConfig {
+
     /**
      * Default index type.
      */
     public static readonly DEFAULT_TYPE = IndexType.SORTED;
 
-    /**
-     * Name of the index.
-     */
     name: string;
-
-    /**
-     * Type of the index.
-     */
-    type: IndexType = IndexConfig.DEFAULT_TYPE;
-
-    /**
-     * Indexed attributes.
-     */
+    type: IndexType = IndexConfigImpl.DEFAULT_TYPE;
     attributes: string[] = [];
+    bitmapIndexOptions: BitmapIndexOptionsImpl;
 
-    bitmapIndexOptions: BitmapIndexOptions;
-
-    constructor(name?: string, type?: IndexType, attributes?: string[], bitmapIndexOptions?: BitmapIndexOptions) {
+    constructor(name?: string, type?: IndexType, attributes?: string[], bitmapIndexOptions?: BitmapIndexOptionsImpl) {
         if (name) {
             this.name = name;
         }
@@ -63,15 +75,10 @@ export class IndexConfig {
         if (attributes) {
             this.attributes = attributes;
         }
+
         if (bitmapIndexOptions) {
             this.bitmapIndexOptions = bitmapIndexOptions;
         }
-    }
-
-    addAttribute(attribute: string): IndexConfig {
-        IndexUtil.validateAttribute(this, attribute);
-        this.attributes.push(attribute);
-        return this;
     }
 
     toString(): string {
@@ -89,4 +96,5 @@ export class IndexConfig {
             ', bitmapIndexOptions: ' + bitmapIndexOptions +
             ']';
     }
+
 }

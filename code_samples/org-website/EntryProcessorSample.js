@@ -13,59 +13,63 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
-var Config = require('hazelcast-client').Config;
+const { Client } = require('hazelcast-client');
 
-function IdentifiedEntryProcessor(value) {
-    // Constructor function
-}
-
-IdentifiedEntryProcessor.prototype.readData = function (inp) {
-};
-
-IdentifiedEntryProcessor.prototype.writeData = function (outp) {
-};
-
-IdentifiedEntryProcessor.prototype.getFactoryId = function () {
-    return 1;
-};
-
-IdentifiedEntryProcessor.prototype.getClassId = function () {
-    return 9;
-};
-
-function EntryProcessorDataSerializableFactory() {
-
-}
-
-EntryProcessorDataSerializableFactory.prototype.create = function (type) {
-    if (type === 1) {
-        return new IdentifiedEntryProcessor();
+class IdentifiedEntryProcessor {
+    constructor(value) {
+        // Constructor function
     }
-    return null;
-};
 
-var cfg = new Config.ClientConfig();
-cfg.serializationConfig.dataSerializableFactories[1] = new EntryProcessorDataSerializableFactory();
-// Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-Client.newHazelcastClient(cfg).then(function (hz) {
-    var map;
-    // Get the Distributed Map from Cluster.
-    hz.getMap('my-distributed-map').then(function (mp) {
-        map = mp;
+    readData(input) {
+    }
+
+    writeData(output) {
+    }
+
+    getFactoryId() {
+        return 1;
+    }
+
+    getClassId() {
+        return 9;
+    }
+}
+
+class EntryProcessorDataSerializableFactory() {
+    create(type) {
+        if (type === 1) {
+            return new IdentifiedEntryProcessor();
+        }
+        return null;
+    }
+}
+
+(async () => {
+    try {
+        // Start the Hazelcast Client and connect to an already running
+        // Hazelcast Cluster on 127.0.0.1
+        const hz = await Client.newHazelcastClient({
+            serialization: {
+                dataSerializableFactories: {
+                    1: new EntryProcessorDataSerializableFactory()
+                }
+            }
+        });
+        // Get the Distributed Map from Cluster
+        const map = hz.getMap('my-distributed-map');
         // Put the double value of 0 into the Distributed Map
-        return map.put('key', 0);
-    }).then(function () {
-        // Run the IdentifiedEntryProcessor class on the Hazelcast Cluster Member holding the key called "key"
-        return map.executeOnKey('key', new IdentifiedEntryProcessor());
-    }).then(function () {
-        // Show that the IdentifiedEntryProcessor updated the value.
-        return map.get('key');
-    }).then(function (value) {
+        await map.put('key', 0);
+        // Run the IdentifiedEntryProcessor class on the Cluster Member
+        // holding the key called 'key'
+        await map.executeOnKey('key', new IdentifiedEntryProcessor());
+        // Show that the IdentifiedEntryProcessor updated the value
+        const value = await map.get('key');
         console.log(value);
-        // Shutdown the Hazelcast Cluster Member
+        // Shutdown this Hazelcast client
         hz.shutdown();
-    })
-});
-
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

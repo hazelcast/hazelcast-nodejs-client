@@ -18,7 +18,7 @@
 import {BitsUtil} from '../BitsUtil';
 import {ClientMessage, Frame, PARTITION_ID_OFFSET} from '../ClientMessage';
 import {StringCodec} from './builtin/StringCodec';
-import {IndexConfig} from '../config/IndexConfig';
+import {IndexConfigImpl} from '../config/IndexConfig';
 import {IndexConfigCodec} from './custom/IndexConfigCodec';
 
 // hex: 0x012900
@@ -29,7 +29,7 @@ const REQUEST_MESSAGE_TYPE = 76032;
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
 export class MapAddIndexCodec {
-    static encodeRequest(name: string, indexConfig: IndexConfig): ClientMessage {
+    static encodeRequest(name: string, indexConfig: IndexConfigImpl): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(false);
 

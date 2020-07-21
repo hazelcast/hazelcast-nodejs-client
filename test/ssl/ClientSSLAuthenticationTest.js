@@ -13,97 +13,113 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var chai = require("chai");
-var expect = chai.expect;
-var fs = require('fs');
-var chaiAsPromised = require("chai-as-promised");
+const chai = require("chai");
+const expect = chai.expect;
+const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
-var Client = require("../../.").Client;
-var Controller = require('./../RC');
-var Config = require('../..').Config;
-var HzErrors = require('../..').HazelcastErrors;
-var markEnterprise = require('../Util').markEnterprise;
-var Path = require('path');
+const fs = require('fs');
+const path = require('path');
 
-describe('SSL Client Authentication Test', function () {
-    var cluster;
-    var member;
+const Client = require("../../.").Client;
+const RC = require('./../RC');
+const Errors = require('../..').HazelcastErrors;
+const markEnterprise = require('../Util').markEnterprise;
 
-    var maRequiredXML = __dirname + '/hazelcast-ma-required.xml';
-    var maOptionalXML = __dirname + '/hazelcast-ma-optional.xml';
+describe('ClientSSLAuthenticationTest', function () {
+
+    let cluster;
+
+    const maRequiredXML = __dirname + '/hazelcast-ma-required.xml';
+    const maOptionalXML = __dirname + '/hazelcast-ma-optional.xml';
 
     before(function () {
         markEnterprise(this);
     });
 
     function createMemberWithXML(serverXML) {
-        return Controller.createCluster(null, fs.readFileSync(serverXML, 'utf8')).then(function (cl) {
+        return RC.createCluster(null, fs.readFileSync(serverXML, 'utf8')).then(function (cl) {
             cluster = cl;
-            return Controller.startMember(cluster.id);
-        }).then(function (m) {
-            member = m;
+            return RC.startMember(cluster.id);
         });
     }
 
-    function createClientConfigWithSSLOptsUsingProgrammaticConfiguration(key, cert, ca) {
-        var sslOpts = {
-            servername: 'foo.bar.com',
-            rejectUnauthorized: true,
-            ca: fs.readFileSync(Path.join(__dirname, ca)),
-            key: fs.readFileSync(Path.join(__dirname, key)),
-            cert: fs.readFileSync(Path.join(__dirname, cert))
+    function createClientConfigWithBasicSSLOptionsFactory(key, cert, ca) {
+        return {
+            clusterName: cluster.id,
+            network: {
+                clusterMembers: ['127.0.0.1:5701'],
+                ssl: {
+                    enabled: true,
+                    sslOptionsFactoryProperties: {
+                        servername: 'foo.bar.com',
+                        rejectUnauthorized: true,
+                        caPath: path.resolve(__dirname, ca),
+                        keyPath: path.resolve(__dirname, key),
+                        certPath: path.resolve(__dirname, cert)
+                    }
+                }
+            },
+            connectionStrategy: {
+                connectionRetry: {
+                    clusterConnectTimeoutMillis: 1000
+                }
+            }
         };
-        var cfg = new Config.ClientConfig();
-        cfg.clusterName = cluster.id;
-        cfg.networkConfig.addresses.push('127.0.0.1:5701');
-        cfg.networkConfig.sslConfig.enabled = true;
-        cfg.networkConfig.sslConfig.sslOptions = sslOpts;
-        cfg.connectionStrategyConfig.connectionRetryConfig.clusterConnectTimeoutMillis = 1000;
-        return cfg;
     }
 
-    function createClientConfigWithSSLOptsUsingBasicSSLOptionsFactory(key, cert, ca) {
-        var cfg = new Config.ClientConfig();
-        cfg.clusterName = cluster.id;
-        cfg.networkConfig.addresses.push('127.0.0.1:5701');
-        cfg.networkConfig.sslConfig.enabled = true;
-        cfg.networkConfig.sslConfig.sslOptionsFactoryConfig = {
-            exportedName: 'BasicSSLOptionsFactory'
-        };
-        cfg.networkConfig.sslConfig.sslOptionsFactoryProperties = {
-            caPath: Path.resolve(__dirname, ca),
-            keyPath: Path.resolve(__dirname, key),
-            certPath: Path.resolve(__dirname, cert),
+    function createClientConfigWithSSLOpts(key, cert, ca) {
+        const sslOpts = {
+            servername: 'foo.bar.com',
             rejectUnauthorized: true,
-            servername: 'foo.bar.com'
+            ca: fs.readFileSync(path.join(__dirname, ca)),
+            key: fs.readFileSync(path.join(__dirname, key)),
+            cert: fs.readFileSync(path.join(__dirname, cert))
         };
-        cfg.connectionStrategyConfig.connectionRetryConfig.clusterConnectTimeoutMillis = 1000;
-        return cfg;
+        return {
+            clusterName: cluster.id,
+            network: {
+                clusterMembers: ['127.0.0.1:5701'],
+                ssl: {
+                    enabled: true,
+                    sslOptions: sslOpts
+                }
+            },
+            connectionStrategy: {
+                connectionRetry: {
+                    clusterConnectTimeoutMillis: 1000
+                }
+            }
+        };
     }
 
     [false, true].forEach(function (value) {
+        let createClientConfigFn;
+        let title;
         if (value) {
-            var createClientConfigWithSSLOpts = createClientConfigWithSSLOptsUsingBasicSSLOptionsFactory;
-            var title = 'via BasicSSLOptionsFactory';
+            createClientConfigFn = createClientConfigWithBasicSSLOptionsFactory;
+            title = 'via BasicSSLOptionsFactory';
         } else {
-            var createClientConfigWithSSLOpts = createClientConfigWithSSLOptsUsingProgrammaticConfiguration;
-            var title = 'via programmatic configuration';
+            createClientConfigFn = createClientConfigWithSSLOpts;
+            title = 'via programmatic configuration';
         }
 
         describe(title, function () {
 
-            before(function () {
-                markEnterprise(this);
+            beforeEach(function () {
+                this.timeout(10000);
             });
 
             afterEach(function () {
-                return Controller.terminateCluster(cluster.id);
+                return RC.terminateCluster(cluster.id);
             });
 
             it('ma:required, they both know each other should connect', function () {
                 return createMemberWithXML(maRequiredXML).then(function () {
-                    return Client.newHazelcastClient(createClientConfigWithSSLOpts('./client1-key.pem', './client1-cert.pem', './server1-cert.pem'));
+                    return Client.newHazelcastClient(createClientConfigFn(
+                        './client1-key.pem', './client1-cert.pem', './server1-cert.pem'
+                    ));
                 }).then(function (client) {
                     client.shutdown();
                 });
@@ -111,28 +127,33 @@ describe('SSL Client Authentication Test', function () {
 
             it('ma:required, server knows client, client does not know server should fail', function () {
                 return createMemberWithXML(maRequiredXML).then(function () {
-                    return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('./client1-key.pem', './client1-cert.pem', './server2-cert.pem')))
-                        .to.be.rejectedWith(HzErrors.IllegalStateError);
+                    return expect(Client.newHazelcastClient(createClientConfigFn(
+                        './client1-key.pem', './client1-cert.pem', './server2-cert.pem'
+                    ))).to.be.rejectedWith(Errors.IllegalStateError);
                 });
             });
 
             it('ma:required, server does not know client, client knows server should fail', function () {
                 return createMemberWithXML(maRequiredXML).then(function () {
-                    return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('./client2-key.pem', './client2-cert.pem',
-                        './server1-cert.pem'))).to.be.rejectedWith(HzErrors.IllegalStateError);
+                    return expect(Client.newHazelcastClient(createClientConfigFn(
+                        './client2-key.pem', './client2-cert.pem', './server1-cert.pem'
+                    ))).to.be.rejectedWith(Errors.IllegalStateError);
                 });
             });
 
             it('ma:required, neither one knows the other should fail', function () {
                 return createMemberWithXML(maRequiredXML).then(function () {
-                    return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('./client2-key.pem', './client2-cert.pem',
-                        './server2-cert.pem'))).to.be.rejectedWith(HzErrors.IllegalStateError);
+                    return expect(Client.newHazelcastClient(createClientConfigFn(
+                        './client2-key.pem', './client2-cert.pem', './server2-cert.pem'
+                    ))).to.be.rejectedWith(Errors.IllegalStateError);
                 });
             });
 
             it('ma:optional, they both know each other should connect', function () {
                 return createMemberWithXML(maOptionalXML).then(function () {
-                    return Client.newHazelcastClient(createClientConfigWithSSLOpts('./client1-key.pem', './client1-cert.pem', './server1-cert.pem'));
+                    return Client.newHazelcastClient(createClientConfigFn(
+                        './client1-key.pem', './client1-cert.pem', './server1-cert.pem'
+                    ));
                 }).then(function (client) {
                     client.shutdown();
                 });
@@ -140,25 +161,27 @@ describe('SSL Client Authentication Test', function () {
 
             it('ma:optional, server knows client, client does not know server should fail', function () {
                 return createMemberWithXML(maOptionalXML).then(function () {
-                    return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('./client1-key.pem', './client1-cert.pem', './server2-cert.pem')))
-                        .to.be.rejectedWith(HzErrors.IllegalStateError);
+                    return expect(Client.newHazelcastClient(createClientConfigFn(
+                        './client1-key.pem', './client1-cert.pem', './server2-cert.pem'
+                    ))).to.be.rejectedWith(Errors.IllegalStateError);
                 });
             });
 
             it('ma:optional, server does not know client, client knows server should fail', function () {
                 return createMemberWithXML(maOptionalXML).then(function () {
-                    return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('./client2-key.pem', './client2-cert.pem', './server1-cert.pem')))
-                        .to.be.rejectedWith(HzErrors.IllegalStateError);
+                    return expect(Client.newHazelcastClient(createClientConfigFn(
+                        './client2-key.pem', './client2-cert.pem', './server1-cert.pem'
+                    ))).to.be.rejectedWith(Errors.IllegalStateError);
                 });
             });
 
             it('ma:optional, neither knows the other should fail', function () {
                 return createMemberWithXML(maOptionalXML).then(function () {
-                    return expect(Client.newHazelcastClient(createClientConfigWithSSLOpts('./client2-key.pem', './client2-cert.pem', './server2-cert.pem')))
-                        .to.be.rejectedWith(HzErrors.IllegalStateError);
+                    return expect(Client.newHazelcastClient(createClientConfigFn(
+                        './client2-key.pem', './client2-cert.pem', './server2-cert.pem'
+                    ))).to.be.rejectedWith(Errors.IllegalStateError);
                 });
             });
         });
     });
-
 });

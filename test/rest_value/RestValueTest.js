@@ -17,12 +17,11 @@
 'use strict';
 
 const expect = require('chai').expect;
-const HazelcastClient = require('../../lib').Client;
-const Config = require('../../lib').Config;
-const Controller = require('../RC');
 const fs = require('fs');
 const http = require('http');
 const querystring = require('querystring');
+const Client = require('../../lib').Client;
+const RC = require('../RC');
 const DeferredPromise = require('../../lib/Util').DeferredPromise;
 
 describe('RestValueTest', function () {
@@ -33,15 +32,13 @@ describe('RestValueTest', function () {
 
     before(function () {
         this.timeout(32000);
-        return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_rest.xml', 'utf8'))
+        return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_rest.xml', 'utf8'))
             .then(c => {
                 cluster = c;
-                return Controller.startMember(cluster.id);
+                return RC.startMember(cluster.id);
             }).then(m => {
                 member = m;
-                const config = new Config.ClientConfig();
-                config.clusterName = cluster.id;
-                return HazelcastClient.newHazelcastClient(config);
+                return Client.newHazelcastClient({ clusterName: cluster.id });
             }).then(c => {
                 client = c;
             });
@@ -49,7 +46,7 @@ describe('RestValueTest', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('client should receive REST events from server as RestValue', function (done) {

@@ -13,33 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
-var Config = require('hazelcast-client').Config;
-var cfg = new Config.ClientConfig();
+const { Client } = require('hazelcast-client');
 
-function GlobalSerializer() {
-    // Constructor function
+class GlobalSerializer {
+    getId() {
+        return 20;
+    }
+
+    read(input) {
+        // return MyFavoriteSerializer.deserialize(input.readByteArray());
+    }
+
+    write(output, obj) {
+        // output.writeByteArray(MyFavoriteSerializer.serialize(obj))
+    }
 }
 
-GlobalSerializer.prototype.getId = function () {
-    return 20;
-};
+(async () => {
+    try {
+        // Start the Hazelcast Client and connect to an already running
+        // Hazelcast Cluster on 127.0.0.1
+        const hz = await Client.newHazelcastClient({
+            serialization: {
+                globalSerializer: new GlobalSerializer()
+            }
+        });
+        // GlobalSerializer will serialize/deserialize all non-builtin types
 
-GlobalSerializer.prototype.read = function (input) {
-    // return MyFavoriteSerializer.deserialize(input.readByteArray());
-};
-
-GlobalSerializer.prototype.write = function (output, obj) {
-    // output.writeByteArray(MyFavoriteSerializer.serialize(obj))
-};
-
-cfg.serializationConfig.globalSerializer = new GlobalSerializer();
-// Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-Client.newHazelcastClient(cfg).then(function (hz) {
-    // GlobalSerializer will serialize/deserialize all non-builtin types
-    hz.shutdown();
-});
-
-
-
+        // Shutdown this Hazelcast client
+        hz.shutdown();
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

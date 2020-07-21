@@ -223,8 +223,8 @@ npm install hazelcast-client --save
 
 ## 1.4. Basic Configuration
 
-If you are using Hazelcast IMDG and Node.js Client on the same computer, generally the default configuration should be fine. This is great for
-trying out the client. However, if you run the client on a different computer than any of the cluster members, you may
+If you are using Hazelcast IMDG and Node.js Client on the same machine, generally the default configuration should be fine. This is great for
+trying out the client. However, if you run the client on a different machine than any of the cluster members, you may
 need to do some simple configurations such as specifying the member addresses.
 
 The Hazelcast IMDG members and clients have their own configuration options. You may need to reflect some member side configurations on the client side to properly connect to the cluster.
@@ -296,94 +296,55 @@ These configuration elements are enough for most connection scenarios. Now we wi
 
 ### 1.4.2. Configuring Hazelcast Node.js Client
 
-There are two ways to configure a Hazelcast Node.js client:
+To configure your Hazelcast Node.js client you need to create a config object and set the appropriate options. Then you can
+supply this object to your client at the startup. The structure of the config object is similar to the `hazelcast.xml` configuration file used when configuring the member. It is done this way to make it easier to transfer Hazelcast skills to multiple platforms.
 
-* Programmatically
-* Declaratively (JSON)
-
-This section describes some network configuration settings to cover common use cases in connecting the client to a cluster. See the [Configuration Overview section](#3-configuration-overview)
-and the following sections for information about detailed network configurations and/or additional features of Hazelcast Node.js client configuration.
-
-An easy way to configure your Hazelcast Node.js client is to create a `ClientConfig` object and set the appropriate options. Then you can
-supply this object to your client at the startup. This is the programmatic configuration approach. Another way to configure your client, which is the declarative approach, is to provide a `hazelcast-client.json` file. This is similar to the `hazelcast.xml` approach
-in configuring the member. Note that `hazelcast-client.json` is a JSON file whereas the member configuration is XML based. Although these
-two formats are different, you will realize that the names of configuration parameters are the same for both the client and member.
-It is done this way to make it easier to transfer Hazelcast skills to multiple platforms.
-
-Once you embedded `hazelcast-client` to your Node.js project, you may follow any of programmatic or declarative configuration approaches.
-We will provide both ways for each configuration option in this section. Pick one way and stick to it.
-
-**Programmatic Configuration:**
+This section describes some network configuration settings to cover common use cases in connecting the client to a cluster. See the [Configuration Overview section](#3-configuration-overview) and the following sections for information about detailed network configurations and/or additional features of Hazelcast Node.js client configuration.
 
 You need to create a `ClientConfig` object and adjust its properties. Then you can pass this object to the client when starting it.
 
 ```javascript
-let Client = require('hazelcast-client').Client;
-let Config = require('hazelcast-client').Config;
-let config = new Config.ClientConfig();
-Client.newHazelcastClient(config).then(function(client) {
-    // Some operations
+const { Client } = require('hazelcast-client');
+
+// ...
+
+const client = await Client.newHazelcastClient({
+    clusterName: 'name of your cluster'
 });
+// Some operations
 ```
 
-**Declarative Configuration:**
+It's also possible to omit the config object in order to use the default settings.
 
-Hazelcast Node.js client looks for a `hazelcast-client.json` in the current working directory unless you provide a configuration object
-at the startup. If you intend to configure your client using a configuration file, then place a `hazelcast-client.json` in the directory
-of your application's entry point.
+```javascript
+const client = await Client.newHazelcastClient();
+// Some operations
+```
 
-If you prefer to keep your `hazelcast-client.json` file somewhere else, you can override the environment variable `HAZELCAST_CLIENT_CONFIG`
-with the location of your config file. In this case, the client uses the configuration file specified in the environment variable.
-
-For the structure of `hazelcast-client.json`, see the [hazelcast-client-full.json file](hazelcast-client-full.json). You
-can use only the relevant parts of the file in your `hazelcast-client.json` and remove the rest. The default configuration is used for any
-part you do not explicitly set in the `hazelcast-client.json` file.
-
----
-
-If you run the Hazelcast IMDG members in a different server than the client, you most probably have configured the members' ports and cluster
-names as explained in the previous section. If you did, then you need to make certain changes to the network settings of your client.
+If you run the Hazelcast IMDG members on a different server than the client, you most probably have configured the members' ports and cluster names as explained in the previous section. If you did, then you need to make certain changes to the network settings of your client.
 
 #### 1.4.2.1. Cluster Name Setting
 
 You need to provide the name of the cluster, if it is defined on the server side, to which you want the client to connect.
 
-**Programmatic Configuration:**
-
 ```javascript
-let cfg = new Config.ClientConfig();
-cfg.clusterName = 'name of your cluster';
-```
-
-**Declarative Configuration:**
-
-```json
-{
-    "clusterName": "name of your cluster"
-}
+const cfg = {
+    clusterName: 'name of your cluster'
+};
 ```
 
 #### 1.4.2.2. Network Settings
 
 You need to provide the IP address and port of at least one member in your cluster, so the client can find it.
 
-**Programmatic Configuration:**
-
 ```javascript
-let cfg = new Config.ClientConfig();
-cfg.networkConfig.addresses.push('some-ip-address:port');
-```
-
-**Declarative Configuration:**
-
-```json
-{
-    "network": {
-        "clusterMembers": [
-            "some-ip-address:port"
+const cfg = {
+    networkConfig: {
+        addresses: [
+            'some-ip-address:port'
         ]
     }
-}
+};
 ```
 
 ## 1.5. Basic Usage
@@ -394,15 +355,23 @@ distributed map in the Node.js client.
 The following example first creates a programmatic configuration object. Then, it starts a client.
 
 ```javascript
-let Client = require('hazelcast-client').Client;
-let Config = require('hazelcast-client').Config;
-let config = new Config.ClientConfig(); // We create a config for illustrative purposes.
-                                        // We do not adjust this config. Therefore it has default settings.
+const { Client } = require('hazelcast-client').Client;
 
-Client.newHazelcastClient(config).then(function(client) {
-    console.log(client.getLocalEndpoint()); // Connects and prints some information about this client
-});
+(async () => {
+    try {
+        // Connect to Hazelcast cluster
+        const client = await Client.newHazelcastClient();
+        // Print some information about this client
+        console.log(client.getLocalEndpoint());
+
+        client.shutdown();
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();
 ```
+
+> **NOTE: For the sake of brevity we are going to omit boilerplate parts, like `require` or the root `async` function, in the later code snippets. Refer to the [Code Samples section](#16-code-samples) to see samples with the complete code.**
 
 This should print logs about the cluster members and information about the client itself such as the client type, UUID and address.
 
@@ -411,27 +380,28 @@ This should print logs about the cluster members and information about the clien
 [DefaultLogger] INFO at LifecycleService: HazelcastClient is STARTED
 [DefaultLogger] INFO at ConnectionManager: Trying to connect to localhost:5701
 [DefaultLogger] INFO at LifecycleService: HazelcastClient is CONNECTED
-[DefaultLogger] INFO at ConnectionManager: Authenticated with server 192.168.1.10:5701:01bda57b-b987-448c-ac7f-6c0e4e8dd675, server version: 4.1-SNAPSHOT, local address: 127.0.0.1:54528
+[DefaultLogger] INFO at ConnectionManager: Authenticated with server 172.17.0.2:5701:255e4c83-cc19-445e-b7e1-9084ee423767, server version: 4.0.2, local address: 127.0.0.1:53988
 [DefaultLogger] INFO at ClusterService:
 
 Members [1] {
-	Member [192.168.1.10]:5701 - 01bda57b-b987-448c-ac7f-6c0e4e8dd675
+	Member [172.17.0.2]:5701 - 255e4c83-cc19-445e-b7e1-9084ee423767
 }
 
 ClientInfo {
   type: 'NodeJS',
-  uuid:
-   UUID {
-     mostSignificant: Long { low: -798352083, high: 92336003, unsigned: false },
-     leastSignificant: Long { low: -763619649, high: 328743032, unsigned: false } },
-  localAddress:
-   Address {
-     host: '127.0.0.1',
-     port: 54528,
-     type: 4,
-     addrStr: '127.0.0.1:54528' },
+  uuid: UUID {
+    mostSignificant: Long { low: 20157807, high: 1081410737, unsigned: false },
+    leastSignificant: Long { low: 314555559, high: 1465580554, unsigned: false }
+  },
+  localAddress: Address {
+    host: '127.0.0.1',
+    port: 53988,
+    type: 4,
+    addrStr: '127.0.0.1:53988'
+  },
   labels: Set {},
-  name: 'hz.client_0' }
+  name: 'hz.client_0'
+}
 ```
 
 Congratulations! You just started a Hazelcast Node.js client.
@@ -440,32 +410,21 @@ Congratulations! You just started a Hazelcast Node.js client.
 
 Let's manipulate a distributed map on a cluster using the client.
 
-Save the following file as `IT.js` and run it using `node IT.js`.
+Save the following file as `it.js` and run it using `node it.js`.
 
-**IT.js**
+**it.js**
 ```javascript
-let Client = require('hazelcast-client').Client;
-let Config = require('hazelcast-client').Config;
-let config = new Config.ClientConfig();
+const client = await Client.newHazelcastClient();
 
-Client.newHazelcastClient(config).then(function (client) {
-    var personnelMap;
-    return client.getMap('personnelMap').then(function (mp) {
-        personnelMap = mp;
-        return personnelMap.put('Alice', 'IT');
-    }).then(function () {
-        return personnelMap.put('Bob', 'IT');
-    }).then(function () {
-        return personnelMap.put('Clark', 'IT');
-    }).then(function () {
-        console.log("Added IT personnel. Logging all known personnel");
-        return personnelMap.entrySet();
-    }).then(function (allPersonnel) {
-        allPersonnel.forEach(function (person) {
-            console.log(person[0] + ' is in ' + person[1] + ' department');
-        });
-        return client.shutdown();
-    });
+const personnelMap = await client.getMap('personnelMap');
+await personnelMap.put('Alice', 'IT');
+await personnelMap.put('Bob', 'IT');
+await personnelMap.put('Clark', 'IT');
+console.log('Added IT personnel. Logging all known personnel');
+
+const allPersonnel = await personnelMap.entrySet();
+allPersonnel.forEach(function (person) {
+    console.log(`${person[0]} is in ${person[1]} department`);
 });
 ```
 
@@ -480,33 +439,22 @@ Bob is in IT department
 
 You see this example puts all the IT personnel into a cluster-wide `personnelMap` and then prints all the known personnel.
 
-Now create a `Sales.js` file as shown below and run it using `node Sales.js`.
+Now create a `sales.js` file as shown below and run it using `node sales.js`.
 
 **Sales.js**
 
 ```javascript
-let Client = require('hazelcast-client').Client;
-let Config = require('hazelcast-client').Config;
-let config = new Config.ClientConfig();
+const client = await Client.newHazelcastClient();
 
-Client.newHazelcastClient(config).then(function (client) {
-    var personnelMap;
-    return client.getMap('personnelMap').then(function (mp) {
-        personnelMap = mp;
-        return personnelMap.put('Denise', 'Sales');
-    }).then(function () {
-        return personnelMap.put('Erwing', 'Sales');
-    }).then(function () {
-        return personnelMap.put('Faith', 'Sales');
-    }).then(function () {
-        console.log("Added Sales personnel. Logging all known personnel");
-        return personnelMap.entrySet();
-    }).then(function (allPersonnel) {
-        allPersonnel.forEach(function (person) {
-            console.log(person[0] + ' is in ' + person[1] + ' department');
-        });
-        return client.shutdown();
-    });
+const personnelMap = await client.getMap('personnelMap');
+await personnelMap.put('Denise', 'Sales');
+await personnelMap.put('Erwing', 'Sales');
+await personnelMap.put('Faith', 'Sales');
+console.log('Added Sales personnel. Logging all known personnel');
+
+const allPersonnel = await personnelMap.entrySet();
+allPersonnel.forEach(function (person) {
+    console.log(`${person[0]} is in ${person[1]} department`);
 });
 ```
 
@@ -530,6 +478,7 @@ That is because our map lives in the cluster and no matter which client we use, 
 See the Hazelcast Node.js [code samples](https://github.com/hazelcast/hazelcast-nodejs-client/tree/master/code_samples) for more examples.
 
 You can also see the Hazelcast Node.js [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/).
+
 
 # 2. Features
 
@@ -576,150 +525,28 @@ Hazelcast Node.js client supports the following data structures and features:
 * Connection Strategy
 * Connection Retry
 
+
 # 3. Configuration Overview
 
-This chapter describes the options to configure your Node.js client and explains how you can import multiple configurations
-and how you should set paths and exported names for the client to load objects.
+This chapter describes the options to configure your Node.js client.
 
 ## 3.1. Configuration Options
 
-You can configure the Hazelcast Node.js client declaratively (JSON) or programmatically (API).
-
-### 3.1.1. Programmatic Configuration
-
-For programmatic configuration of the Hazelcast Node.js client, just instantiate a `ClientConfig` object and configure the
-desired aspects. An example is shown below.
+For configuration of the Hazelcast Node.js client, just instantiate a config object and configure the desired aspects. An example is shown below.
 
 ```javascript
-var Config = require('hazelcast-client').Config;
-var cfg = new Config.ClientConfig();
-cfg.networkConfig.addresses.push('127.0.0.1:5701');
-HazelcastClient.newHazelcastClient(cfg).then(function (client) {
-    // Some operations
-});
-```
-
-See the `ClientConfig` class documentation at [Hazelcast Node.js Client API Docs](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs) for details.
-
-### 3.1.2. Declarative Configuration (JSON)
-
-If the client is not supplied with a programmatic configuration at the time of initialization, it will look for a configuration file named `hazelcast-client.json`. If this file exists, then the configuration is loaded from it. Otherwise, the client will start with the default configuration. The following are the places that the client looks for a `hazelcast-client.json` in the given order:
-
-1. Environment variable: The client first looks for the environment variable `HAZELCAST_CLIENT_CONFIG`. If it exists,
-the client looks for the configuration file in the specified location.
-2. Current working directory: If there is no environment variable set, the client tries to load `hazelcast-client.json`
-from the current working directory.
-3. Default configuration: If all of the above methods fail, the client starts with the default configuration.
-The default configuration is programmatic. If you want to override the default configuration declaratively, you need to create
-a `hazelcast-client.json` file in your working directory. To get an idea about the structure of this configuration file, see [hazelcast-client-default.json](hazelcast-client-default.json) and [hazelcast-client-full.json](hazelcast-client-full.json).
-
-Following is a sample JSON configuration file:
-
-```json
-{
-    "clusterName": "hzCluster",
-    "properties": {
-        "hazelcast.client.heartbeat.timeout": 10000,
-        "hazelcast.client.invocation.retry.pause.millis": 4000,
-        "hazelcast.client.invocation.timeout.millis": 180000,
-        "hazelcast.invalidation.reconciliation.interval.seconds": 50,
-        "hazelcast.invalidation.max.tolerated.miss.count": 15,
-        "hazelcast.invalidation.min.reconciliation.interval.seconds": 60
-    },
-    "network": {
-        "clusterMembers": [
-            "127.0.0.1:5701"
-        ],
-        "smartRouting": true,
-        "connectionTimeout": 6000
-    }
-}
-```
-
-In the following chapters you will learn the description of all elements included in a JSON configuration file used to configure Hazelcast Node.js client.
-
-## 3.2. Importing Multiple Configurations
-
-You can compose the declarative configuration of your Node.js client from multiple declarative
-configuration snippets. In order to compose a declarative configuration, you can use the `import` element to load
-different declarative configuration files.
-
-Let's assume you have the following two configurations:
-
-`cluster-name-config.json`:
-
-```json
-{
-    "clusterName": "hzCluster"
-}
-```
-
-`network-config.json`:
-
-```json
-{
-    "network": {
-        "clusterMembers": [
-            "127.0.0.10:4001",
-            "127.0.0.11:4001"
+const cfg = {
+    networkConfig: {
+        addresses: [
+            '127.0.0.1:5701'
         ]
     }
-}
+};
+const client = await Client.newHazelcastClient(cfg);
+// Some operations
 ```
 
-To get your example client configuration out of the above two, use the `import` element as
-shown below.
-
-```json
-{
-    "import": [
-        "cluster-name-config.json",
-        "network-config.json"
-    ]
-}
-```
-
-> Note: Use `import` element on top level of JSON hierarchy.
-
-## 3.3. Loading Objects and Path Resolution
-
-For configuration elements that require you to specify a code piece, you will need to specify the path to the
-code and name of the exported element that you want the client to use. This configuration is set as follows:
-
-```json
-{
-    "path": "path/to/file",
-    "exportedName": "MyObject"
-}
-```
-
-In the above configuration, `path` shows the address to the file that you want the client to load. Unless this is an
-absolute path, it is relative to the location of `hazelcast-config.json` file.
-
-In Javascript, you can define and export as many objects as you want in a single file. Above configuration element
-is designed to load only one specified object from a file (`MyObject`). Therefore, `exportedName` specifies the name of desired object.
-
-Let's say your project's directory structure is as follows:
-
-    my_app/
-    my_app/index.js
-    my_app/factory_utils.js
-    my_app/hazelcast-client.json
-    my_app/node_modules/
-    my_app/node_modules/hazelcast-client
-
-In the `factory_utils.js` file, you have multiple exported functions:
-
-```javascript
-exports.utilityFunction = function() {...}
-exports.MySSLFactory = function() {...}
-```
-
-In order to load `MySSLFactory` in your SSL configuration, you should set `path` and `exportedName` as `factory_utils.js`
-and `MySSLFactory`, respectively.
-
-If you have only one export as the default export from `factory_utils.js`, just skip the `exportedName` property and
-the client will load the default export from the file.
+In the following chapters you will learn the description of all options supported by Hazelcast Node.js client.
 
 
 # 4. Serialization
@@ -735,7 +562,7 @@ Hazelcast serializes all your objects before sending them to the server. The `bo
 | string  | String                              |
 | Long    | Long                                |
 
-> Note: A `number` type is serialized as `Double` by default. You can configure this behavior using the `SerializationConfig.defaultNumberType` method.
+> **NOTE: A `number` type is serialized as `Double` by default. You can configure this behavior using the `serialization.defaultNumberType` config option.**
 
 Arrays of the above types can be serialized as `boolean[]`, `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `long[]` and `string[]` for the Java server side, respectively.
 
@@ -743,7 +570,7 @@ Arrays of the above types can be serialized as `boolean[]`, `byte[]`, `short[]`,
 
 When Hazelcast Node.js client serializes an object:
 
-1. It first checks whether the object is null.
+1. It first checks whether the object is `null`.
 
 2. If the above check fails, then it checks if it is an instance of `IdentifiedDataSerializable`.
 
@@ -757,89 +584,73 @@ When Hazelcast Node.js client serializes an object:
 
 7. If the above check fails, then the Node.js client uses `JSON Serialization` by default.
 
-However, `JSON Serialization` is not the best way of serialization in terms of performance and interoperability between the clients in different languages. If you want the serialization to work faster or you use the clients in different languages, Hazelcast offers its own native serialization methods, such as [`IdentifiedDataSerializable` Serialization](#41-identifieddataserializable-serialization) and [`Portable` Serialization](#42-portable-serialization).
+However, `JSON Serialization` may be not the best way of serialization in terms of performance and interoperability between the clients in different languages. If you want the serialization to work faster or you use the clients in different languages, Hazelcast offers its own native serialization methods, such as [`IdentifiedDataSerializable` Serialization](#41-identifieddataserializable-serialization) and [`Portable` Serialization](#42-portable-serialization).
 
-Or, if you want to use your own serialization method, you can use a [Custom Serialization](#43-custom-serialization).
+Or, if you want to use your own serialization method, you can use [Custom Serialization](#43-custom-serialization).
 
-> **NOTE: Hazelcast Node.js client is a TypeScript-based project but JavaScript does not have interfaces. Therefore,
- some interfaces are given to the user by using the TypeScript files that have `.ts` extension. In this guide, implementing an interface means creating an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as `an instance of the interface`. You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or GitHub repository for a required interface.**
+> **NOTE: Hazelcast Node.js client is a TypeScript-based project but JavaScript does not have interfaces. Therefore, some interfaces are given to the user by using the TypeScript files that have `.ts` extension. In this guide, implementing an interface means creating an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as `an instance of the interface`. You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or GitHub repository for a required interface.**
 
 ## 4.1. IdentifiedDataSerializable Serialization
 
 For a faster serialization of objects, Hazelcast recommends to implement the `IdentifiedDataSerializable` interface. The following is an example of an object implementing this interface:
 
 ```javascript
-function Employee(id, name) {
-    this.id = id;
-    this.name = name;
+class Employee {
+    constructor(id, name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    readData(input) {
+        this.id = input.readInt();
+        this.name = input.readUTF();
+    }
+
+    writeData(output) {
+        output.writeInt(this.id);
+        output.writeUTF(this.name);
+    }
+
+    getFactoryId() {
+        return 1000;
+    }
+
+    getClassId() {
+        return 100;
+    }
 }
-
-Employee.prototype.readData = function (input) {
-    this.id = input.readInt();
-    this.name = input.readUTF();
-};
-
-Employee.prototype.writeData = function (output) {
-    output.writeInt(this.id);
-    output.writeUTF(this.name);
-};
-
-Employee.prototype.getFactoryId = function () {
-    return 1000;
-};
-
-Employee.prototype.getClassId = function () {
-    return 100;
-};
-
-Employee.prototype.getClassId = function () {
-    return this.classId;
-};
 ```
 
-The `IdentifiedDataSerializable` interface uses `getClassId()` and `getFactoryId()` to reconstitute the object. To complete the implementation, `IdentifiedDataSerializableFactory` should also be implemented and registered into `SerializationConfig` which can be accessed from `Config.serializationConfig`. The factory's responsibility is to return an instance of the right `IdentifiedDataSerializable` object, given the `classId`.
+> **NOTE: Refer to the following [API Documentation section](http://hazelcast.github.io/hazelcast-nodejs-client/api/4.0.0/docs/modules/_serialization_data_.html) to understand methods available on the `input`/`output` objects.**
+
+The `IdentifiedDataSerializable` interface uses `getClassId()` and `getFactoryId()` to reconstitute the object. To complete the implementation, `IdentifiedDataSerializableFactory` should also be implemented and put into the `serialization.dataSerializableFactories` config option. The factory's responsibility is to return an instance of the right `IdentifiedDataSerializable` object, given the `classId`.
 
 A sample `IdentifiedDataSerializableFactory` could be implemented as follows:
 
 ```javascript
-function SampleDataSerializableFactory() {
-    // Constructor function
-}
-
-SampleDataSerializableFactory.prototype.create = function (type) {
-    if (type === 100) {
-        return new Employee();
+class SampleDataSerializableFactory {
+    create(type) {
+        if (type === 100) {
+            return new Employee();
+        }
+        return null;
     }
-    return null;
+}
+```
+
+The last step is to register the `IdentifiedDataSerializableFactory` in the config.
+
+```javascript
+const cfg = {
+    serialization: {
+        dataSerializableFactories: {
+            1000: new SampleDataSerializableFactory()
+        }
+    }
 };
 ```
 
-The last step is to register the `IdentifiedDataSerializableFactory` to the `SerializationConfig`.
-
-**Programmatic Configuration:**
-
-```javascript
-var config = new Config.ClientConfig();
-config.serializationConfig.dataSerializableFactories[1000] = new SampleDataSerializableFactory();
-```
-
-**Declarative Configuration:**
-
-```json
-{
-    "serialization": {
-        "dataSerializableFactories": [
-            {
-                "path": "factory.js",
-                "exportedName": "SampleDataSerializableFactory",
-                "factoryId": 1000
-            }
-        ]
-    }
-}
-```
-
-Note that the ID that is passed to the `SerializationConfig` is same as the `factoryId` that the `Employee` object returns.
+Note that the key used in the `serialization.dataSerializableFactories` option is the same as the `factoryId` that the `Employee` object returns.
 
 ## 4.2. Portable Serialization
 
@@ -858,32 +669,34 @@ Also note that portable serialization is totally language independent and is use
 A sample portable implementation of a `Customer` class looks like the following:
 
 ```javascript
-function Customer(name, id, lastOrder) {
-    this.name = name;
-    this.id = id;
-    this.lastOrder = lastOrder;
-    this.classId = 1;
+class Customer {
+    constructor(name, id, lastOrder) {
+        this.name = name;
+        this.id = id;
+        this.lastOrder = lastOrder;
+        this.classId = 1;
+    }
+
+    readPortable(input) {
+        this.name = input.readUTF('name');
+        this.id = input.readInt('id');
+        this.lastOrder = input.readLong('lastOrder').toNumber();
+    }
+
+    writePortable(output) {
+        output.writeUTF('name', this.name);
+        output.writeInt('id', this.id);
+        output.writeLong('lastOrder', Long.fromNumber(this.lastOrder));
+    }
+
+    getFactoryId() {
+        return PortableFactory.factoryId;
+    }
+
+    getClassId() {
+        return this.classId;
+    }
 }
-
-Customer.prototype.readPortable = function (reader) {
-    this.name = reader.readUTF('name');
-    this.id = reader.readInt('id');
-    this.lastOrder = reader.readLong('lastOrder').toNumber();
-};
-
-Customer.prototype.writePortable = function (writer) {
-    writer.writeUTF('name', this.name);
-    writer.writeInt('id', this.id);
-    writer.writeLong('lastOrder', Long.fromNumber(this.lastOrder));
-};
-
-Customer.prototype.getFactoryId = function () {
-    return PortableFactory.factoryId;
-};
-
-Customer.prototype.getClassId = function () {
-    return this.classId;
-};
 ```
 
 Similar to `IdentifiedDataSerializable`, a `Portable` object must provide `classId` and `factoryId`. The factory object will be used to create the `Portable` object given the `classId`.
@@ -891,45 +704,29 @@ Similar to `IdentifiedDataSerializable`, a `Portable` object must provide `class
 A sample `PortableFactory` could be implemented as follows:
 
 ```javascript
-function PortableFactory() {
-    // Constructor function
-}
-
-PortableFactory.prototype.create = function (classId) {
-    if (classId === 1) {
-        return new Customer();
+class PortableFactory {
+    create(classId) {
+        if (classId === 1) {
+            return new Customer();
+        }
+        return null;
     }
-    return null;
+}
+```
+
+The last step is to register the `PortableFactory` in the config.
+
+```javascript
+const cfg = {
+    serialization: {
+        portableFactories: {
+            1: new PortableFactory()
+        }
+    }
 };
 ```
 
-The last step is to register the `PortableFactory` to the `SerializationConfig`.
-
-**Programmatic Configuration:**
-
-```javascript
-var config = new Config.ClientConfig();
-config.serializationConfig.portableFactories[1] = new PortableFactory();
-```
-
-**Declarative Configuration:**
-
-```json
-{
-    "serialization": {
-        "portableFactories": [
-            {
-                "path": "factory.js",
-                "exportedName": "PortableFactory",
-                "factoryId": 1
-            }
-        ]
-    }
-}
-```
-
-Note that the ID that is passed to the `SerializationConfig` is same as the `factoryId` that `Customer` object returns.
-
+Note that the ID that the key used in the `serialization.portableFactories` option is the same as the `factoryId` that the `Customer` object returns.
 
 ### 4.2.1. Versioning for Portable Serialization
 
@@ -937,66 +734,67 @@ More than one version of the same class may need to be serialized and deserializ
 
 Portable serialization supports versioning. It is a global versioning, meaning that all portable classes that are serialized through a client get the globally configured portable version.
 
-You can declare the version in the `hazelcast-client.json` configuration file using the `portableVersion` element, as shown below.
+You can declare the version using the `serialization.portableVersion` option, as shown below.
 
-```json
-{
-    "serialization": {
-        "portableVersion": 0
+```javascript
+const cfg = {
+    serialization: {
+        portableVersion: 0
     }
 }
 ```
 
-If you update the class by changing the type of one of the fields or by adding a new field, it is a good idea to upgrade the version of the class, rather than sticking to the global version specified in the `hazelcast-client.json` file.
-In the Node.js client, you can achieve this by simply adding the `getVersion()` method to your class’s implementation of `Portable`, and setting the `ClassVersion` to be different than the default global version.
+If you update the class by changing the type of one of the fields or by adding a new field, it is a good idea to upgrade the version of the class, rather than sticking to the global version specified in the configuration. In the Node.js client, you can achieve this by simply adding the `getVersion()` method to your class’s implementation of `Portable`, and setting the `ClassVersion` to be different than the default global version.
 
 > **NOTE: If you do not use the `getVersion()` method in your `Portable` implementation, it will have the global version, by default.**
 
-Here is an example implementation of creating a version 2 for the Foo class:
+Here is an example implementation of creating a version 2 for the `Foo` class:
 
 ```javascript
-function Foo(foo, foo2) {
-    this.foo = foo;
-    this.foo2 = foo2;
+class Foo {
+    constructor(foo, foo2) {
+        this.foo = foo;
+        this.foo2 = foo2;
+    }
+
+    readPortable(input) {
+        this.foo = input.readUTF('foo');
+        this.foo2 = input.readUTF('foo2');
+    }
+
+    writePortable(output) {
+        output.writeUTF('foo', this.foo);
+        output.writeUTF('foo2', this.foo2);
+    }
+
+    getFactoryId() {
+        return 1;
+    }
+
+    getClassId() {
+        return 1;
+    }
+
+    getVersion() {
+        return 2;
+    }
 }
-
-Foo.prototype.getFactoryId = function () {
-    return 1;
-};
-
-Foo.prototype.getClassId = function () {
-    return 1;
-};
-
-Foo.prototype.getVersion = function () {
-    return 2;
-};
-
-Foo.prototype.readPortable = function (reader) {
-    this.foo = reader.readUTF('foo');
-    this.foo2 = reader.readUTF('foo2');
-};
-
-Foo.prototype.writePortable = function (writer) {
-    writer.writeUTF('foo', this.foo);
-    writer.writeUTF('foo2', this.foo2);
-};
 ```
 
 You should consider the following when you perform versioning:
 
 - It is important to change the version whenever an update is performed in the serialized fields of a class, for example by incrementing the version.
-- If a client performs a Portable deserialization on a field and then that Portable is updated by removing that field on the cluster side, this may lead to problems such as a TypeError being thrown when an older version of the client tries to access the removed field.
+- If a client performs a Portable deserialization on a field and then that `Portable` is updated by removing that field on the cluster side, this may lead to problems such as a `TypeError` being thrown when an older version of the client tries to access the removed field.
 - Portable serialization does not use reflection and hence, fields in the class and in the serialized content are not automatically mapped. Field renaming is a simpler process. Also, since the class ID is stored, renaming the Portable does not lead to problems.
-- Types of fields need to be updated carefully. Hazelcast performs basic type upgradings, such as `int` to `float`.
+- Types of fields need to be updated carefully. Hazelcast performs basic type upgrades, such as `int` to `float`.
 
 #### Example Portable Versioning Scenarios:
 
 Assume that a new client joins to the cluster with a class that has been modified and class's version has been upgraded due to this modification.
 
-If you modified the class by adding a new field, the new client’s put operations include that new field. If this new client tries to get an object that was put from the older clients, it gets null for the newly added field.
+If you modified the class by adding a new field, the new client’s put operations include that new field. If the new client tries to get an object that was put from the older clients, it gets `null` for the newly added field.
 
-If you modified the class by removing a field, the old clients get null for the objects that are put by the new client.
+If you modified the class by removing a field, the old clients get `null` for the objects that are put by the new client.
 
 If you modified the class by changing the type of a field to an incompatible type (such as from `int` to `String`), a `TypeError` is generated as the client tries accessing an object with the older version of the class. The same applies if a client with the old version tries to access a new version object.
 
@@ -1009,68 +807,55 @@ Hazelcast lets you plug a custom serializer to be used for serialization of obje
 Let's say you have an object `CustomSerializable` and you would like to customize the serialization, since you may want to use an external serializer for only one object.
 
 ```javascript
-function CustomSerializable(value) {
-    this.value = value;
-}
+class CustomSerializable {
+    constructor(value) {
+        this.value = value;
+    }
 
-CustomSerializable.prototype.hzGetCustomId = function () {
-    return 10;
-};
+    hzGetCustomId() {
+        return 10;
+    }
+}
 ```
 
-Let's say your custom `CustomSerializer` will serialize `CustomSerializable`.
+Note that the `hzGetCustomId()` should return type id of the `CustomSerializable`.
+
+Now you need to implement acustom `CustomSerializer` which will will serialize `CustomSerializable`.
 
 ```javascript
-function CustomSerializer() {
-    // Constructor function
+class CustomSerializer {
+    getId() {
+        return 10;
+    }
+
+    read(input) {
+        const len = input.readInt();
+        let str = '';
+        for (let i = 0; i < len; i++) {
+            str = str + String.fromCharCode(input.readInt());
+        }
+        return new CustomSerializable(str);
+    }
+
+    write(output, obj) {
+        output.writeInt(obj.value.length);
+        for (let i = 0; i < obj.value.length; i++) {
+            output.writeInt(obj.value.charCodeAt(i));
+        }
+    }
 }
-
-CustomSerializer.prototype.getId = function () {
-    return 10;
-};
-
-CustomSerializer.prototype.write = function (output, t) {
-    output.writeInt(t.value.length);
-    for (var i = 0; i < t.value.length; i++) {
-        output.writeInt(t.value.charCodeAt(i));
-    }
-};
-
-CustomSerializer.prototype.read = function (reader) {
-    var len = reader.readInt();
-    var str = '';
-    for (var i = 0; i < len; i++) {
-        str = str + String.fromCharCode(reader.readInt());
-    }
-    return new CustomSerializable(str);
-};
 ```
 
 Note that the serializer `id` must be unique as Hazelcast will use it to lookup the `CustomSerializer` while it deserializes the object. Now the last required step is to register the `CustomSerializer` to the configuration.
 
-**Programmatic Configuration:**
-
 ```javascript
-var config = new Config.ClientConfig();
-config.serializationConfig.customSerializers.push(new CustomSerializer());
-```
-
-**Declarative Configuration:**
-
-```json
-{
-    "serialization": {
-        "defaultNumberType": "integer",
-        "isBigEndian": false,
-        "serializers": [
-            {
-                "path": "custom.js",
-                "exportedName": "CustomSerializer",
-                "typeId": 10
-            }
+const cfg ={
+    serialization: {
+        customSerializers: [
+            10: new CustomSerializer()
         ]
     }
-}
+};
 ```
 
 From now on, Hazelcast will use `CustomSerializer` to serialize `CustomSerializable` objects.
@@ -1089,21 +874,19 @@ By default, JSON serialization is used if the object is not `IdentifiedDataSeria
 A sample global serializer that integrates with a third party serializer is shown below.
 
 ```javascript
-function GlobalSerializer() {
-    // Constructor function
+class GlobalSerializer {
+    getId() {
+        return 20;
+    }
+
+    read(input) {
+        return MyFavoriteSerializer.deserialize(input.readByteArray());
+    }
+
+    write(output, obj) {
+        output.writeByteArray(MyFavoriteSerializer.serialize(obj));
+    }
 }
-
-GlobalSerializer.prototype.getId = function () {
-    return 20;
-};
-
-GlobalSerializer.prototype.read = function (input) {
-    return MyFavoriteSerializer.deserialize(input.readByteArray());
-};
-
-GlobalSerializer.prototype.write = function (output, obj) {
-    output.writeByteArray(MyFavoriteSerializer.serialize(obj))
-};
 ```
 
 You should register the global serializer in the configuration.
@@ -1111,86 +894,51 @@ You should register the global serializer in the configuration.
 **Programmatic Configuration:**
 
 ```javascript
-config.serializationConfig.globalSerializer = new GlobalSerializer();
-```
-
-**Declarative Configuration:**
-
-```json
-{
-    "serialization": {
-        "defaultNumberType": "integer",
-        "isBigEndian": false,
-        "globalSerializer": {
-            "path": "global_serializer.js",
-            "exportedName": "MyFavoriteSerializer"
-        }
+const cfg = {
+    serialization: {
+        globalSerializer: new GlobalSerializer()
     }
-}
+};
 ```
 
 ## 4.5. JSON Serialization
 
-If the Hazelcast Node.js client cannot find a suitable serializer for an object, it uses `JSON Serialization` by default. With `JSON Serialization`, objects
-are converted to JSON strings and transmitted to the Hazelcast members as such.
+If the Hazelcast Node.js client cannot find a suitable serializer for an object, it uses `JSON Serialization` by default. With `JSON Serialization`, objects are converted to JSON strings and transmitted to the Hazelcast members as such.
 
-When the Hazelcast Node.js client retrieves a JSON serialized data from a member, it parses the JSON string and returns the object represented by that
-string to the user. However, you may want to defer the string parsing and work with the raw JSON strings.
+When the Hazelcast Node.js client retrieves a JSON serialized data from a member, it parses the JSON string and returns the object represented by that string to the user. However, you may want to defer the string parsing and work with the raw JSON strings.
 
 For this purpose, you can configure your client to return `HazelcastJsonValue` objects when it retrieves a JSON serialized data from a member.
 
-`HazelcastJsonValue` is a lightweight wrapper around the JSON strings. You may get the JSON string representation of the object using the `toString` method.
+`HazelcastJsonValue` is a lightweight wrapper around the raw JSON strings. You may get the JSON string representation of the object using the `toString()` method.
 
 Below is the configuration required to return `HazelcastJsonValue` objects instead of JavaScript objects.
 
 **Programmatic Configuration:**
 
 ```javascript
-config.serializationConfig.jsonStringDeserializationPolicy = JsonStringDeserializationPolicy.NO_DESERIALIZATION;
-```
-
-**Declarative Configuration:**
-
-```json
-{
-    "serialization": {
-        "jsonStringDeserializationPolicy": "no_deserialization"
+const cfg = {
+    serialization: {
+        jsonStringDeserializationPolicy = 'NO_DESERIALIZATION'
     }
-}
+};
 ```
+
 
 # 5. Setting Up Client Network
 
-All network related configuration of Hazelcast Node.js client is performed via the `network` element in the declarative configuration file, or in the object `ClientNetworkConfig` when using programmatic configuration. Let's first give the examples for these two approaches. Then we will look at its sub-elements and attributes.
+All network related configuration of Hazelcast Node.js client is performed via the `network` element in the configuration. Let's first give the examples for these two approaches. Then we will look at its sub-elements and attributes.
 
-**Declarative Configuration:**
-
-Here is an example of configuring the network for Node.js Client declaratively.
-
-```json
-{
-    "network": {
-        "clusterMembers": [
-            "10.1.1.21",
-            "10.1.1.22:5703"
-        ],
-        "smartRouting": true,
-        "redoOperation": true,
-        "connectionTimeout": 6000
-    }
-}
-```
-
-**Programmatic Configuration:**
-
-Here is an example of configuring the network for Node.js Client programmatically.
+Here is an example of configuring the network for Hazelcast Node.js client.
 
 ```javascript
-var clientConfig = new Config.ClientConfig();
-clientConfig.networkConfig.addresses.push('10.1.1.21', '10.1.1.22:5703');
-clientConfig.networkConfig.smartRouting = true;
-clientConfig.networkConfig.redoOperation = true;
-clientConfig.networkConfig.connectionTimeout = 6000;
+const cfg = {
+    network: {
+        addresses: ['10.1.1.21', '10.1.1.22:5703'],
+        smartRouting: true,
+        redoOperation: true,
+        connectionTimeout: 6000
+    }
+};
 ```
 
 ## 5.1. Providing Member Addresses
@@ -1199,52 +947,31 @@ Address list is the initial list of cluster addresses which the client will conn
 list to find an alive member. Although it may be enough to give only one address of a member in the cluster
 (since all members communicate with each other), it is recommended that you give the addresses for all the members.
 
-**Declarative Configuration:**
-
-```json
-{
-    "network": {
-        "clusterMembers": [
+```javascript
+const cfg = {
+    network: {
+        addresses: [
             "10.1.1.21",
             "10.1.1.22:5703"
         ]
     }
-}
+};
 ```
 
-**Programmatic Configuration:**
-
-```javascript
-var clientConfig = new Config.ClientConfig();
-clientConfig.networkConfig.addresses.push('10.1.1.21', '10.1.1.22:5703');
-```
-
-If the port part is omitted, then 5701, 5702 and 5703 will be tried in a random order.
+If the port part is omitted, then `5701`, `5702` and `5703` ports will be tried in a random order.
 
 You can specify multiple addresses with or without the port information as seen above. The provided list is shuffled and tried in a random order. Its default value is `localhost`.
 
 ## 5.2. Setting Smart Routing
 
-Smart routing defines whether the client mode is smart or unisocket. See the [Node.js Client Operation Modes section](#72-nodejs-client-operation-modes)
-for the description of smart and unisocket modes.
-
-The following are example configurations.
-
-**Declarative Configuration:**
-
-```json
-{
-    "network": {
-        "smartRouting": true
-    }
-}
-```
-
-**Programmatic Configuration:**
+Smart routing defines whether the client mode is smart or unisocket. See the [Node.js Client Operation Modes section](#72-nodejs-client-operation-modes) for the description of smart and unisocket modes.
 
 ```javascript
-var clientConfig = new Config.ClientConfig();
-clientConfig.networkConfig.smartRouting = true;
+const cfg = {
+    network: {
+        smartRouting: true
+    }
+};
 ```
 
 Its default value is `true` (smart client mode).
@@ -1253,21 +980,12 @@ Its default value is `true` (smart client mode).
 
 It enables/disables redo-able operations. While sending the requests to the related members, the operations can fail due to various reasons. Read-only operations are retried by default. If you want to enable retry for the other operations, you can set the `redoOperation` to `true`.
 
-**Declarative Configuration:**
-
-```json
-{
-    "network": {
-        "redoOperation": true
-    }
-}
-```
-
-**Programmatic Configuration:**
-
 ```javascript
-var clientConfig = new Config.ClientConfig();
-clientConfig.networkConfig.redoOperation = true;
+const cfg = {
+    network: {
+        redoOperation: true
+    }
+};
 ```
 
 Its default value is `false` (disabled).
@@ -1276,23 +994,12 @@ Its default value is `false` (disabled).
 
 Connection timeout is the timeout value in milliseconds for the members to accept the client connection requests.
 
-The following are the example configurations.
-
-**Declarative Configuration:**
-
-```json
-{
-    "network": {
-        "connectionTimeout": 6000
-    }
-}
-```
-
-**Programmatic Configuration:**
-
 ```javascript
-var clientConfig = new Config.ClientConfig();
-clientConfig.networkConfig.connectionTimeout = 6000;
+const cfg = {
+    network: {
+        connectionTimeout: 6000
+    }
+};
 ```
 
 Its default value is `5000` milliseconds.
@@ -1308,45 +1015,27 @@ As explained in the [TLS/SSL section](#81-tlsssl), Hazelcast members have key st
 
 The purpose of [Hazelcast Cloud](https://cloud.hazelcast.com/) Discovery is to provide the clients to use IP addresses provided by Hazelcast orchestrator. To enable Hazelcast Cloud Discovery, specify a token for the `discoveryToken` field and set the `enabled` field to `true`.
 
-The following are example configurations.
-
-**Declarative Configuration:**
-
-```json
-{
-    "clusterName": "hzCluster",
-    "network": {
-        "hazelcastCloud": {
-            "discoveryToken": "EXAMPLE_TOKEN",
-            "enabled": true
+```javascript
+const cfg = {
+    clusterName: 'hzCluster',
+    network: {
+        cloudConfig: {
+            discoveryToken: 'EXAMPLE_TOKEN',
+            enabled: true
         }
     }
-}
-```
-
-**Programmatic Configuration:**
-
-```javascript
-var clientConfig = new Config.ClientConfig();
-clientConfig.clusterName = 'hzCluster';
-
-clientConfig.networkConfig.cloudConfig.enabled = true;
-clientConfig.networkConfig.cloudConfig.discoveryToken = 'EXAMPLE_TOKEN';
+};
 ```
 
 To be able to connect to the provided IP addresses, you should use secure TLS/SSL connection between the client and members. Therefore, you should set an SSL configuration as described in the previous section.
+
 
 # 6. Client Connection Strategy
 
 Node.js client can be configured to connect to a cluster in an async manner during the client start and reconnecting
 after a cluster disconnect. Both of these options are configured via `ClientConnectionStrategyConfig`.
 
-You can configure the client’s starting mode as async or sync using the configuration element `asyncStart`.
-When it is set to `true` (async), the behavior of `Client.newHazelcastClient()` call changes.
-It resolves a client instance without waiting to establish a cluster connection. In this case, the client rejects
-any network dependent operation with `ClientOfflineError` immediately until it connects to the cluster. If it is `false`,
-the call is not resolved and the client is not created until a connection with the cluster is established.
-Its default value is `false` (sync).
+You can configure the client’s starting mode as async or sync using the configuration element `asyncStart`. When it is set to `true` (async), the behavior of `Client.newHazelcastClient()` call changes. It resolves a client instance without waiting to establish a cluster connection. In this case, the client rejects any network dependent operation with `ClientOfflineError` immediately until it connects to the cluster. If it is `false`, the call is not resolved and the client is not created until a connection with the cluster is established. Its default value is `false` (sync).
 
 You can also configure how the client reconnects to the cluster after a disconnection. This is configured using the
 configuration element `reconnectMode`; it has three options:
@@ -1357,66 +1046,35 @@ configuration element `reconnectMode`; it has three options:
 
 Its default value is `ON`.
 
-The example declarative and programmatic configurations below show how to configure a Node.js client’s starting and reconnecting modes.
-
-**Declarative Configuration:**
-
-```json
-{
-    "connectionStrategy": {
-        "asyncStart": false,
-        "reconnectMode": "ON"
-    }
-}
-```
-
-**Programmatic Configuration:**
+The example configuration below show how to configure a Node.js client’s starting and reconnecting modes.
 
 ```javascript
-var clientConfig = new Config.ClientConfig();
-
-clientConfig.connectionStrategyConfig.asyncStart = false;
-clientConfig.connectionStrategyConfig.reconnectMode = Config.ReconnectMode.ON;
+const cfg = {
+    connectionStrategy: {
+        asyncStart: false,
+        reconnectMode: 'ON'
+    }
+};
 ```
 
 ## 6.1. Configuring Client Connection Retry
 
-When client is disconnected from the cluster, it searches for new connections to reconnect.
-You can configure the frequency of the reconnection attempts and client shutdown behavior using
-`ConnectionRetryConfig` (programmatical approach) or `connectionRetry` element (declarative approach).
-
-Below are the example configurations for each.
-
-**Declarative Configuration:**
-
-```json
-{
-    "connectionStrategy": {
-        "asyncStart": false,
-        "reconnectMode": "ON",
-        "connectionRetry": {
-            "initialBackoffMillis": 1000,
-            "maxBackoffMillis": 60000,
-            "multiplier": 2,
-            "clusterConnectTimeoutMillis": 50000,
-            "jitter": 0.2
-        }
-    }
-}
-```
-
-**Programmatic Configuration:**
+When the client is disconnected from the cluster, it searches for new connections to reconnect. You can configure the frequency of the reconnection attempts and client shutdown behavior using the `connectionStrategy.connectionRetry` configuration option.
 
 ```javascript
-var clientConfig = new Config.ClientConfig();
-var connectionRetryConfig = new Config.ConnectionRetryConfig();
-connectionRetryConfig.initialBackoffMillis = 1000;
-connectionRetryConfig.maxBackoffMillis = 60000;
-connectionRetryConfig.multiplier = 2;
-connectionRetryConfig.clusterConnectTimeoutMillis = 50000;
-connectionRetryConfig.jitter = 0.2;
-
-clientConfig.connectionStrategyConfig.connectionRetryConfig = connectionRetryConfig;
+const cfg = {
+    connectionStrategy: {
+        asyncStart: false,
+        reconnectMode: 'ON',
+        connectionRetry: {
+            initialBackoffMillis: 1000,
+            maxBackoffMillis: 60000,
+            multiplier: 2,
+            clusterConnectTimeoutMillis: 50000,
+            jitter: 0.2
+        }
+    }
+};
 ```
 
 The following are configuration element descriptions:
@@ -1441,8 +1099,8 @@ while (tryConnect(connectionTimeout)) != SUCCESS) {
 }
 ```
 
-Note that, `tryConnect` above tries to connect to any member that the client knows, and for each connection we
-have a connection timeout; see the [Setting Connection Timeout](#54-setting-connection-timeout) section.
+Note that, `tryConnect` above tries to connect to any member that the client knows, and for each connection we have a connection timeout; see the [Setting Connection Timeout](#54-setting-connection-timeout) section.
+
 
 # 7. Using Node.js Client with Hazelcast IMDG
 
@@ -1450,28 +1108,24 @@ This chapter provides information on how you can use Hazelcast IMDG's data struc
 
 ## 7.1. Node.js Client API Overview
 
-Most of the functions in the API return Promises. Therefore, you need to be familiar with the concept of
-promises to use the Node.js client. If not, you can learn about them using various online resources.
-Also, you can use `async/await`.
+Most of the functions in the API return Promises. Therefore, you need to be familiar with the concept of promises to use the Node.js client. If not, you can learn about them using various online resources. Also, you can use async/await.
 
 If you are ready to go, let's start to use Hazelcast Node.js client.
 
-The first step is the configuration. You can configure the Node.js client declaratively or programmatically. We will use the programmatic approach throughout this chapter. See the [Programmatic Configuration section](#311-programmatic-configuration) for details.
+The first step is the configuration. See the [Programmatic Configuration section](#311-programmatic-configuration) for details.
 
 The following is an example on how to create a `ClientConfig` object and configure it programmatically:
 
-```javascript
-var clientConfig = new Config.ClientConfig();
-clientConfig.clusterName = 'dev';
-clientConfig.networkConfig.addresses.push('10.90.0.1', '10.90.0.2:5702');
-```
-
-The second step is initializing the `HazelcastClient` to be connected to the cluster:
+The fist step is to define configuration and initialize the `HazelcastClient` to be connected to the cluster:
 
 ```javascript
-Client.newHazelcastClient(clientConfig).then(function (client) {
-    // Some operation
+const client = await Client.newHazelcastClient({
+    clusterName: 'dev',
+    network: {
+        addresses: ['10.90.0.1', '10.90.0.2:5702']
+    }
 });
+// Some operation
 ```
 
 This client object is your gateway to access all the Hazelcast distributed objects.
@@ -1479,63 +1133,41 @@ This client object is your gateway to access all the Hazelcast distributed objec
 Let's create a map and populate it with some data, as shown below.
 
 ```javascript
-var map;
-// Get the Distributed Map from Cluster
-client.getMap('my-distributed-map').then(function (mp) {
-    map = mp;
-    // Standard Put and Get
-    return map.put('key', 'value');
-}).then(function () {
-    return map.get('key');
-}).then(function (val) {
-    // Concurrent Map methods, optimistic updating
-    return map.putIfAbsent('somekey', 'somevalue');
-}).then(function () {
-    return map.replace('key', 'value', 'newvalue');
-});
+// Get a Map called 'my-distributed-map'
+const map = await client.getMap('my-distributed-map');
+// Write and read some data
+await map.put('key', 'value');
+const val = await map.get('key');
 ```
 
 As the final step, if you are done with your client, you can shut it down as shown below. This will release all the used resources and close connections to the cluster.
 
 ```javascript
 ...
-.then(function () {
-    client.shutdown();
-});
+client.shutdown();
 ```
 
 ## 7.2. Node.js Client Operation Modes
 
-The client has two operation modes because of the distributed nature of the data and cluster: smart and unisocket.
-Refer to the [Setting Smart Routing](#52-setting-smart-routing) section to see how to configure the client for
-different operation modes.
+The client has two operation modes because of the distributed nature of the data and cluster: smart and unisocket. Refer to the [Setting Smart Routing](#52-setting-smart-routing) section to see how to configure the client for different operation modes.
 
 ### 7.2.1. Smart Client
 
-In the smart mode, the clients connect to each cluster member. Since each data partition uses the well-known and
-consistent hashing algorithm, each client can send an operation to the relevant cluster member,
-which increases the overall throughput and efficiency. Smart mode is the default mode.
+In the smart mode, the clients connect to each cluster member. Since each data partition uses the well-known and consistent hashing algorithm, each client can send an operation to the relevant cluster member, which increases the overall throughput and efficiency. Smart mode is the default mode.
 
 ### 7.2.2. Unisocket Client
 
-For some cases, the clients can be required to connect to a single member instead of each member in the cluster.
-Firewalls, security or some custom networking issues can be the reason for these cases.
+For some cases, the clients can be required to connect to a single member instead of each member in the cluster. Firewalls, security or some custom networking issues can be the reason for these cases.
 
-In the unisocket client mode, the client will only connect to one of the configured addresses.
-This single member will behave as a gateway to the other members.
-For any operation requested from the client, it will redirect the request to the relevant member and return the
-response back to the client connected to this member.
+In the unisocket client mode, the client will only connect to one of the configured addresses. This single member will behave as a gateway to the other members. For any operation requested from the client, it will redirect the request to the relevant member and return the response back to the client connected to this member.
 
 ## 7.3. Handling Failures
 
-There are two main failure cases you should be aware of. Below sections explain these,
-and the configuration options you can use to achieve proper behavior.
+There are two main failure cases you should be aware of. Below sections explain these, and the configuration options you can use to achieve proper behavior.
 
 ### 7.3.1. Handling Client Connection Failure
 
-While the client is trying to connect initially to one of the members in the `ClientNetworkConfig.addressList`, all the members might not be available.
-Instead of giving up, throwing an error and stopping the client, the client retries to connect as configured.
-This behavior is described in the [Configuring Client Connection Retry](#61-configuring-client-connection-retry) section.
+While the client is trying to connect initially to one of the members for the `network.addresses` array, all the members might not be available. Instead of giving up, throwing an error and stopping the client, the client retries to connect as configured. This behavior is described in the [Configuring Client Connection Retry](#61-configuring-client-connection-retry) section.
 
 The client executes each operation through the already established connection to the cluster. If this connection(s) disconnects or drops, the client will try to reconnect as configured.
 
@@ -1543,7 +1175,7 @@ The client executes each operation through the already established connection to
 
 While sending requests to cluster members, the operations may fail due to various reasons. Read-only operations are retried by default. If you want to enable retrying for non-read-only operations, you can set the `redoOperation` to `true`. See the [Enabling Redo Operation section](#53-enabling-redo-operation).
 
-You can set a timeout for retrying the operations sent to a member. This can be provided by using the property `hazelcast.client.invocation.timeout.seconds` in `ClientConfig.properties`. The client will retry an operation within this given period, of course, if it is a read-only operation or you enabled the `redoOperation` as stated in the above paragraph. This timeout value is important when there is a failure resulted by either of the following causes:
+You can set a timeout for retrying the operations sent to a member. This can be provided by using the property `hazelcast.client.invocation.timeout.seconds` in the `properties` option. The client will retry an operation within this given period, of course, if it is a read-only operation or you enabled the `redoOperation` as stated in the above paragraph. This timeout value is important when there is a failure resulted by either of the following causes:
 
 * Member throws an exception.
 * Connection between the client and member is closed.
@@ -1562,20 +1194,14 @@ Hazelcast Map (`IMap`) is a distributed map. Through the Node.js client, you can
 A Map usage example is shown below.
 
 ```javascript
-var map;
-// Get the Distributed Map from Cluster
-hz.getMap('my-distributed-map').then(function (mp) {
-    map = mp;
-    // Standard Put and Get
-    return map.put('key', 'value');
-}).then(function () {
-    return map.get('key');
-}).then(function (val) {
-    // Concurrent Map methods, optimistic updating
-    return map.putIfAbsent('somekey', 'somevalue');
-}).then(function () {
-    return map.replace('key', 'value', 'newvalue');
-});
+// Get a Map called 'my-distributed-map'
+const map = await client.getMap('my-distributed-map');
+// Run Put and Get operations
+await map.put('key', 'value');
+const val = await map.get('key');
+// Run concurrent Map operations (optimistic updates)
+await map.putIfAbsent('somekey', 'somevalue');
+await map.replace('key', 'value', 'newvalue');
 ```
 
 Hazelcast Map supports a Near Cache for remotely stored entries to increase the performance of read operations. See the [Near Cache section](#782-near-cache) for a detailed explanation of the Near Cache feature and its configuration.
@@ -1589,26 +1215,19 @@ Hazelcast `MultiMap` is a distributed and specialized map where you can store mu
 A MultiMap usage example is shown below.
 
 ```javascript
-var multiMap;
-// Get the Distributed MultiMap from Cluster
-hz.getMultiMap('my-distributed-multimap').then(function (mmp) {
-    multiMap = mmp;
-    // Put values in the map against the same key
-    return multiMap.put('my-key', 'value1');
-}).then(function () {
-    return multiMap.put('my-key', 'value2');
-}).then(function () {
-    return multiMap.put('my-key', 'value3');
-}).then(function () {
-    // Print out all the values for associated with key called "my-key"
-    return multiMap.get('my-key')
-}).then(function (values) {
-    for (value of values) {
-        console.log(value);
-    }
-    // Remove specific key/value pair
-    return multiMap.remove('my-key', 'value2');
-});
+// Get a MultiMap called 'my-distributed-multimap'
+const multiMap = await client.getMultiMap('my-distributed-multimap');
+// Put values in the map against the same key
+await multiMap.put('my-key', 'value1');
+await multiMap.put('my-key', 'value2');
+await multiMap.put('my-key', 'value3');
+// Read and print out all the values for associated with key called 'my-key'
+const values = await multiMap.get('my-key')
+for (value of values) {
+    console.log(value);
+}
+// Remove specific key/value pair
+await multiMap.remove('my-key', 'value2');
 ```
 
 Hazelcast MultiMap uses `EntryListener` to listen to the events that occur when the entries are added to or removed from the MultiMap. See the [Entry Listener section](#7522-entry-listener) for information on how to create an entry listener object and register it.
@@ -1620,20 +1239,16 @@ Hazelcast `ReplicatedMap` is a distributed key-value data structure where the da
 A Replicated Map usage example is shown below.
 
 ```javascript
-var map;
-// Get a Replicated Map called "my-replicated-map"
-hz.getReplicatedMap('my-replicated-map').then(function (rmp) {
-    map = rmp;
-    // Put and Get a value from the Replicated Map
-    // Key/value replicated to all members
-    return map.put('key', 'value');
-}).then(function (replacedValue) {
-    console.log('replaced value = ' + replacedValue); // Will be null as its first update
-    return map.get('key');
-}).then(function (value) {
-    // The value is retrieved from a random member in the cluster
-    console.log('value for key = ' + value);
-});
+// Get a ReplicatedMap called 'my-replicated-map'
+const map = await client.getReplicatedMap('my-replicated-map');
+// Put and get a value from the Replicated Map
+// (key/value is replicated to all members)
+const replacedValue = await map.put('key', 'value');
+// Will print 'replaced value = null' as it's the first update
+console.log('replaced value = ' + replacedValue);
+const value = map.get('key');
+// The value is retrieved from a random member in the cluster
+console.log('value = ' + value);
 ```
 
 Hazelcast Replicated Map uses `EntryListener` to listen to the events that occur when the entries are added to, updated in or evicted/removed from the Replicated Map. See the [Entry Listener section](#7522-entry-listener) for information on how to create an entry listener object and register it.
@@ -1645,28 +1260,19 @@ Hazelcast Queue (`IQueue`) is a distributed queue which enables all cluster memb
 A Queue usage example is shown below.
 
 ```javascript
-var queue;
-// Get a Blocking Queue called "my-distributed-queue"
-hz.getQueue('my-distributed-queue').then(function (q) {
-    queue = q;
-    // Offer a String into the Distributed Queue
-    return queue.offer('item');
-}).then(function () {
-    // Poll the Distributed Queue and return the String
-    return queue.poll();
-}).then(function () {
-    // Timed blocking Operations
-    return queue.offer('anotheritem', 500);
-}).then(function () {
-    return queue.poll(5000);
-}).then(function () {
-    // Indefinitely blocking Operations
-    return queue.put('yetanotheritem');
-}).then(function () {
-    return queue.take();
-}).then(function (value) {
-    console.log(value);
-});
+// Get a Queue called 'my-distributed-queue'
+const queue = await client.getQueue('my-distributed-queue');
+// Offer a string into the Queue
+await queue.offer('item');
+// Poll the Queue and return the string
+let item = queue.poll();
+// Timed-restricted operations
+await queue.offer('anotheritem', 500);
+await queue.poll(5000);
+// Indefinitely-waiting operations
+await queue.put('yetanotheritem');
+const value = queue.take();
+console.log(value);
 ```
 
 Hazelcast Queue uses `ItemListener` to listen to the events that occur when the items are added to or removed from the Queue. See the [Item Listener section](#7523-item-listener) for information on how to create an item listener object and register it.
@@ -1678,28 +1284,18 @@ Hazelcast Set (`ISet`) is a distributed set which does not allow duplicate eleme
 A Set usage example is shown below.
 
 ```javascript
-var set;
-// Get the Distributed Set from Cluster
-hz.getSet('my-distributed-set').then(function (s) {
-    set = s;
-    // Add items to the set with duplicates
-    return set.add('item1');
-}).then(function () {
-    return set.add('item1');
-}).then(function () {
-    return set.add('item2');
-}).then(function () {
-    return set.add('item2');
-}).then(function () {
-    return set.add('item2');
-}).then(function () {
-    return set.add('item3');
-}).then(function () {
-    // Get the items. Note that there are no duplicates
-    return set.toArray();
-}).then(function (values) {
-    console.log(values);
-});
+// Get a Set called 'my-distributed-set'
+const set = await client.getSet('my-distributed-set');
+// Add items to the Set with duplicates
+await set.add('item1');
+await set.add('item1');
+await set.add('item2');
+await set.add('item2');
+await set.add('item2');
+await set.add('item3');
+// Get the items. Note that there are no duplicates
+const values = await set.toArray();
+console.log(values);
 ```
 
 Hazelcast Set uses `ItemListener` to listen to the events that occur when the items are added to or removed from the Set. See the [Item Listener section](#7523-item-listener) for information on how to create an item listener object and register it.
@@ -1711,26 +1307,19 @@ Hazelcast List (`IList`) is a distributed list which allows duplicate elements a
 A List usage example is shown below.
 
 ```javascript
-var list;
-// Get the Distributed List from Cluster
-hz.getList('my-distributed-list').then(function (l) {
-    list = l;
-    // Add elements to the list
-    return list.add('item1');
-}).then(function () {
-    return list.add('item2');
-}).then(function () {
-    //Remove the first element
-    return list.removeAt(0);
-}).then(function (value) {
-    console.log(value);
-    // There is only one element left
-    return list.size();
-}).then(function (len) {
-    console.log(len);
-    // Clear the list
-    return list.clear();
-});
+// Get a List called 'my-distributed-list'
+const list = await client.getList('my-distributed-list');
+// Add elements to the list
+await list.add('item1');
+await list.add('item2');
+// Remove the first element
+const value = await list.removeAt(0);
+console.log(value);
+// There is only one element left
+const len = await list.size();
+console.log(len);
+// Clear the list
+await list.clear();
 ```
 
 Hazelcast List uses `ItemListener` to listen to the events that occur when the items are added to or removed from the List. See the [Item Listener section](#7523-item-listener) for information on how to create an item listener object and register it.
@@ -1742,25 +1331,18 @@ Hazelcast `Ringbuffer` is a replicated but not partitioned data structure that s
 A Ringbuffer usage example is shown below.
 
 ```javascript
-var rb;
-// Get a Ringbuffer called "rb"
-hz.getRingbuffer('rb').then(function (buffer) {
-    rb = buffer;
-    return rb.add(100);
-}).then(function () {
-    return rb.add(200);
-}).then(function (value) {
-    // We start from the oldest item.
-    // If you want to start from the next item, call rb.tailSequence()+1
-    return rb.headSequence();
-}).then(function (sequence) {
-    return rb.readOne(sequence).then(function (value) {
-        console.log(value);
-        return rb.readOne(sequence.add(1));
-    }).then(function (value) {
-        console.log(value);
-    });
-});
+// Get a Ringbuffer called 'my-distributed-ringbuffer'
+const rb = await client.getRingbuffer('my-distributed-ringbuffer');
+// Add some elements to the Ringbuffer
+await rb.add(100);
+await rb.add(200);
+// We start from the oldest item.
+// If you want to start from the next item, call rb.tailSequence()+1
+const sequence = await rb.headSequence();
+let value = await rb.readOne(sequence);
+console.log(value);
+value = await rb.readOne(sequence.add(1));
+console.log(value);
 ```
 
 ### 7.4.8. Using Reliable Topic
@@ -1770,17 +1352,14 @@ Hazelcast `ReliableTopic` is a distributed topic implementation backed up by the
 A Reliable Topic usage example is shown below.
 
 ```javascript
-var topic;
-// Get a Topic called "my-distributed-topic"
-hz.getReliableTopic('my-distributed-topic').then(function (t) {
-    topic = t;
-    // Add a Listener to the Topic
-    topic.addMessageListener(function (message) {
-        console.log(message);
-    });
-    // Publish a message to the Topic
-    return topic.publish('Hello to distributed world');
+// Get a Topic called 'my-distributed-topic'
+const topic = await client.getReliableTopic('my-distributed-topic');
+// Add a Listener to the Topic
+topic.addMessageListener((message) => {
+    console.log(message);
 });
+// Publish a message to the Topic
+await topic.publish('Hello to the distributed world!');
 ```
 
 Hazelcast Reliable Topic uses `MessageListener` to listen to the events that occur when a message is received. See the [Message Listener section](#7524-message-listener) for information on how to create a message listener object and register it.
@@ -1789,36 +1368,20 @@ Hazelcast Reliable Topic uses `MessageListener` to listen to the events that occ
 
 You may configure `ReliableTopic`s as the following:
 
-**Declarative Configuration:**
-
-```json
-{
-    "reliableTopics": [
-        {
-            "name": "rt1",
-            "readBatchSize": 35,
-            "overloadPolicy": "discard_newest"
-        }
-    ]
-}
-```
-
-**Programmatic Configuration:**
-
 ```javascript
-var config = new Config.ClientConfig();
-
-var reliableTopicConfig = new Config.ReliableTopicConfig();
-reliableTopicConfig.name = 'rt1';
-reliableTopicConfig.readBatchSize = 35;
-reliableTopicConfig.overloadPolicy = Config.TopicOverloadPolicy.DISCARD_NEWEST;
-
-config.reliableTopicConfigs['rt1'] = reliableTopicConfig;
+const cfg = {
+    reliableTopics: {
+        'rt1': {
+            readBatchSize: 35,
+            overloadPolicy: 'DISCARD_NEWEST'
+        }
+    }
+};
 ```
 
 The following are the descriptions of configuration elements and attributes:
 
-* `name`: Name of your Reliable Topic.
+* key (`rt1` in the above example): Name of your Reliable Topic.
 * `readBatchSize`: Minimum number of messages that Reliable Topic tries to read in batches. Its default value is `10`.
 * `overloadPolicy`: Policy to handle an overloaded topic. Available values are `DISCARD_OLDEST`, `DISCARD_NEWEST`, `BLOCK` and `ERROR`. Its default value is `BLOCK`. See [Slow Consumers](https://docs.hazelcast.org/docs/latest/manual/html-single/#slow-consumers) for definitions of these policies.
 
@@ -1829,25 +1392,23 @@ Hazelcast `PNCounter` (Positive-Negative Counter) is a CRDT positive-negative co
 A PN Counter usage example is shown below.
 
 ```javascript
-var pnCounter;
-hz.getPNCounter('myPNCounter').then(function (counter) {
-    pnCounter = counter;
-    return pnCounter.get();
-}).then(function (value) {
-    console.log('Counter started with value ' + value); // 0
-    return pnCounter.addAndGet(5);
-}).then(function (value) {
-    console.log('Value after operation is ' + value); // 5
-    return pnCounter.getAndAdd(2);
-}).then(function (value) {
-    console.log('Value before operation was ' + value); // 5
-    return pnCounter.get();
-}).then(function (value) {
-    console.log('New value is ' + value); // 7
-    return pnCounter.decrementAndGet();
-}).then(function (value) {
-    console.log('Decremented counter by one. New value is ' + value); // 6
-});
+// Get a Topic called 'my-pn-counter'
+const pnCounter = await client.getPNCounter('my-pn-counter');
+// Get the current value
+let value = await pnCounter.get();
+console.log('Counter started with value ' + value); // 0
+
+// Increment and get
+value = await pnCounter.addAndGet(5);
+console.log('Value after operation is ' + value); // 5
+// Get and increment
+value = await pnCounter.getAndAdd(2);
+console.log('Value before operation was ' + value); // 5
+
+value = await pnCounter.get();
+console.log('New value is ' + value); // 7
+value = await pnCounter.decrementAndGet();
+console.log('Decremented counter by one. New value is ' + value); // 6
 ```
 
 ### 7.4.10. Using Flake ID Generator
@@ -1857,61 +1418,40 @@ Hazelcast `FlakeIdGenerator` is used to generate cluster-wide unique identifiers
 A Flake ID Generator usage example is shown below.
 
 ```javascript
-var flakeIdGenerator;
-hz.getFlakeIdGenerator('myFlakeIdGenerator').then(function (gen) {
-    flakeIdGenerator = gen;
-    return flakeIdGenerator.newId();
-}).then(function (value) {
-    console.log('New id: ' + value.toString());
-});
+// Get a Topic called 'my-flake-id-generator'
+const flakeIdGenerator = await client.getFlakeIdGenerator('my-flake-id-generator');
+// Generate an id
+const id = flakeIdGenerator.newId();
+console.log('New id: ' + id.toString());
 ```
 
 #### 7.4.10.1 Configuring Flake ID Generator
 
 You may configure `FlakeIdGenerator`s as the following:
 
-**Declarative Configuration:**
-
-```json
-{
-    "flakeIdGeneratorConfigs": [
-        {
-            "name": "flakeidgenerator",
-            "prefetchCount": 123,
-            "prefetchValidityMillis": 150000
-        }
-    ]
-}
-```
-> Note: Since Javascript cannot represent numbers greater than 2^53, you need to put long numbers in quotes as a string.
-
-**Programmatic Configuration:**
-
 ```javascript
-var config = new Config.ClientConfig();
-var flakeIdGeneratorConfig = new Config.FlakeIdGeneratorConfig();
-flakeIdGeneratorConfig.name = 'flakeidgenerator';
-flakeIdGeneratorConfig.prefetchCount = 123;
-flakeIdGeneratorConfig.prefetchValidityMillis = 150000;
-
-config.flakeIdGeneratorConfigs['flakeidgenerator'] = flakeIdGeneratorConfig;
+const cfg = {
+    flakeIdGenerators: {
+        'flakeidgenerator': {
+            prefetchCount: 123,
+            prefetchValidityMillis: 150000
+        }
+    }
+};
 ```
+> **NOTE: Since JavaScript's `number` type cannot represent numbers greater than `2^53` without precision loss, you need to put long numbers in quotes as a string.**
 
 The following are the descriptions of configuration elements and attributes:
 
-* `name`: Name of your Flake ID Generator.
+* key (`flakeidgenerator` in the above example): Name of your Flake ID Generator.
 * `prefetchCount`: Count of IDs which are pre-fetched on the background when one call to `FlakeIdGenerator.newId()` is made. Its value must be in the range `1` - `100,000`. Its default value is `100`.
 * `prefetchValidityMillis`: Specifies for how long the pre-fetched IDs can be used. After this time elapses, a new batch of IDs are fetched. Time unit is milliseconds. Its default value is `600,000` milliseconds (`10` minutes). The IDs contain a timestamp component, which ensures a rough global ordering of them. If an ID is assigned to an object that was created later, it will be out of order. If ordering is not important, set this value to `0`.
 
 ### 7.4.11. Using Lock, Semaphore and Atomic Long
 
-Hazelcast IMDG 4.0 introduces CP concurrency primitives with respect to the [CAP principle](http://awoc.wolski.fi/dlib/big-data/Brewer_podc_keynote_2000.pdf), i.e., they always
-maintain [linearizability](https://aphyr.com/posts/313-strong-consistency-models) and prefer consistency to availability during network partitions and client or server failures.
+Hazelcast IMDG 4.0 introduces CP concurrency primitives with respect to the [CAP principle](http://awoc.wolski.fi/dlib/big-data/Brewer_podc_keynote_2000.pdf), i.e., they always maintain [linearizability](https://aphyr.com/posts/313-strong-consistency-models) and prefer consistency to availability during network partitions and client or server failures.
 
-These new implementations are accessed using the [CP Subsystem](https://docs.hazelcast.org/docs/latest/manual/html-single/#cp-subsystem)
-which cannot be used with the Node.js client yet. We plan to implement support for the CP Subsystem in the upcoming 4.0 release.
-In the meantime, since there is no way to access old non-CP primitives using IMDG 4.x, we removed their implementations,
-code samples and documentations. They will be back once we implement them.
+These new implementations are accessed using the [CP Subsystem](https://docs.hazelcast.org/docs/latest/manual/html-single/#cp-subsystem) which cannot be used with the Node.js client yet. We plan to implement support for the CP Subsystem in the upcoming 4.0 release of Hazelcast Node.js client. In the meantime, since there is no way to access old non-CP primitives using IMDG 4.x, we removed their implementations, code samples and documentations. They will be back once we implement them.
 
 ## 7.5. Distributed Events
 
@@ -1927,7 +1467,7 @@ You can add event listeners to a Hazelcast Node.js client. You can configure the
 
 #### 7.5.1.1. Membership Listener
 
-The Membership Listener interface has functions that are invoked for the following events.
+The Membership Listener interface has methods that are invoked for the following events.
 
 * `memberAdded`: A new member is added to the cluster.
 * `memberRemoved`: An existing member leaves the cluster.
@@ -1939,22 +1479,22 @@ After you create the listener object, you can configure your cluster to include 
 The following is a membership listener registration by using the `ClusterService.addMembershipListener()` function.
 
 ```javascript
-var membershipListener = {
-    memberAdded: function (event) {
+const membershipListener = {
+    memberAdded: (event) => {
         console.log('Member Added: The address is', event.member.address.toString());
     },
 };
-client.clusterService.addMembershipListener(membershipListener);
+client.getClusterService().addMembershipListener(membershipListener);
 ```
 
 Also, if you want to receive the list of available members when the client connects to cluster you may register an
 `InitialMembershipListener`. This listener receives an only-once `InitialMembershipEvent` when the member list becomes
 available. After the event has been received, the listener will receive the normal `MembershipEvent`s.
 
-The following is an initial membership listener registration by using the `config.listeners.addMembershipListener()` function.
+The following is an initial membership listener registration by using the `config.membershipListeners` config option.
 
 ```javascript
-var membershipListener = {
+const membershipListener = {
     init: function (event) {
       console.log("Initial member list received -> " + event.members);
     },
@@ -1962,14 +1502,14 @@ var membershipListener = {
         console.log('Member Added: The address is', event.member.address.toString());
     },
 };
-
-var config = new Config.ClientConfig();
-config.listeners.addMembershipListener(membershipListener);
+const cfg = {
+    membershipListeners: [membershipListener]
+};
 ```
 
 #### 7.5.1.2. Distributed Object Listener
 
-The events for distributed objects are invoked when they are created and destroyed in the cluster. After the events, a listener callback function is called. The type of the callback function should be `DistributedObjectListener`. The parameter of the function is `DistributedObjectEvent` including following fields:
+The events for distributed objects are invoked when they are created and destroyed in the cluster. After the events, a listener callback function is called. The interface of the callback function should be `DistributedObjectListener`. The parameter of the function is `DistributedObjectEvent` including following fields:
 
 * `serviceName`: Service name of the distributed object.
 * `objectName`: Name of the distributed object.
@@ -1978,19 +1518,18 @@ The events for distributed objects are invoked when they are created and destroy
 The following is an example of adding a `DistributedObjectListener`.
 
 ```javascript
-client.addDistributedObjectListener(function (distributedObjectEvent) {
+await client.addDistributedObjectListener((event) => {
     console.log('Distributed object event >>> ',
-        distributedObjectEvent.serviceName,
-        distributedObjectEvent.objectName,
-        distributedObjectEvent.eventType
+        event.serviceName,
+        event.objectName,
+        event.eventType
     );
-}).then(function () {
-    var mapname = 'test';
-    // This causes a created event
-    client.getMap(mapname);
-    // This causes no event because map was already created
-    client.getMap(mapname);
 });
+const mapname = 'test';
+// This causes a created event
+await client.getMap(mapname);
+// This causes no event because map was already created
+await client.getMap(mapname);
 ```
 
 #### 7.5.1.3. Lifecycle Listener
@@ -2004,17 +1543,18 @@ The `LifecycleListener` interface notifies for the following events:
 * `DISCONNECTED`: The client disconnected from a member.
 * `SHUTDOWN`: The client has shutdown.
 
-The following is an example of the `LifecycleListener` that is added to the `ClientConfig` object and its output.
+The following is an example of the `LifecycleListener` that is added to the config object and its output.
 
 ```javascript
-var clientConfig = new Config.ClientConfig();
-clientConfig.listeners.addLifecycleListener(function (state) {
+const lifecycleListener = (state) => {
     console.log('Lifecycle Event >>> ' + state);
-});
+};
+const cfg = {
+    lifecycleListeners: [lifecycleListener]
+};
 
-Client.newHazelcastClient(clientConfig).then(function (hazelcastClient) {
-    hazelcastClient.shutdown();
-});
+const client = await Client.newHazelcastClient(cfg);
+client.shutdown();
 ```
 
 **Output:**
@@ -2047,12 +1587,11 @@ Lifecycle Event >>> SHUTDOWN
 
 You can add event listeners to the distributed data structures.
 
-> **NOTE: Hazelcast Node.js client is a TypeScript-based project but JavaScript does not have interfaces. Therefore,
-  some interfaces are given to the user by using the TypeScript files that have `.ts` extension. In this guide, implementing an interface means creating an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as `an instance of the interface`. You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or GitHub repository for a required interface.**
+> **NOTE: Hazelcast Node.js client is a TypeScript-based project but JavaScript does not have interfaces. Therefore, some interfaces are given to the user by using the TypeScript files that have `.ts` extension. In this guide, implementing an interface means creating an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as "an instance of the interface". You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or GitHub repository for the required interface.**
 
 #### 7.5.2.1. Map Listener
 
-The Map Listener is used by the Hazelcast `Map`.
+The Map Listener is used by the Hazelcast Map (`IMap`).
 
 You can listen to map-wide or entry-based events by using the functions in the `MapListener` interface. Every function type in this interface is one of the `EntryEventListener` and `MapEventListener` types. To listen to these events, you need to implement the relevant `EntryEventListener` and `MapEventListener` functions in the `MapListener` interface.
 
@@ -2061,38 +1600,41 @@ An entry-based event is fired after the operations that affect a specific entry.
 See the following example.
 
 ```javascript
-var entryEventListener = {
-    added: function (entryEvent) {
-        console.log('Entry Added:', entryEvent.key, '-->', entryEvent.value); // Entry Added: 1 --> My new entry
+const entryEventListener = {
+    added: (entryEvent) => {
+        console.log('Entry added:', entryEvent.key, '-->', entryEvent.value);
     }
 };
-map.addEntryListener(entryEventListener, undefined, true).then(function () {
-    return map.put('1', 'My new entry');
-});
+
+await map.addEntryListener(entryEventListener, undefined, true);
+await map.put('1', 'My new entry');
+// Prints:
+// Entry added: 1 --> My new entry
 ```
+
+The second argument in the `addEntryListener` method is `key`. It stands for the key to listen for. When it is set to `undefined` (or omitted, which is the same), the listener will be fired for all entries in the Map.
+
+The third argument in the `addEntryListener` method is `includeValue`. It is a boolean parameter, and if it is `true`, the entry event contains the entry value.
 
 A map-wide event is fired as a result of a map-wide operation. For example, `IMap.clear()` or `IMap.evictAll()`. You should use the `MapEventListener` type to listen to these events. A `MapEvent` object is passed to the listener function.
 
 See the following example.
 
 ```javascript
-var mapEventListener = {
-    mapCleared: function (mapEvent) {
-        console.log('Map Cleared:', mapEvent.numberOfAffectedEntries); // Map Cleared: 3
+const mapEventListener = {
+    mapCleared: (mapEvent) => {
+        console.log('Map cleared:', mapEvent.numberOfAffectedEntries);
     }
 };
-map.addEntryListener(mapEventListener).then(function () {
-    return map.put('1', 'Muhammad Ali');
-}).then(function () {
-    return map.put('2', 'Mike Tyson');
-}).then(function () {
-    return map.put('3', 'Joe Louis');
-}).then(function () {
-    return map.clear();
-});
-```
+await map.addEntryListener(mapEventListener);
 
-As you see, there is a parameter in the `addEntryListener` function: `includeValue`. It is a boolean parameter, and if it is `true`, the map event contains the entry value.
+await map.put('1', 'Muhammad Ali');
+await map.put('2', 'Mike Tyson');
+await map.put('3', 'Joe Louis');
+await map.clear();
+// Prints:
+// Map cleared: 3
+```
 
 #### 7.5.2.2. Entry Listener
 
@@ -2103,38 +1645,43 @@ You can listen to map-wide or entry-based events by using the functions in the `
 An entry-based event is fired after the operations that affect a specific entry. For example, `MultiMap.put()`, `MultiMap.remove()`. You should use the `EntryEventListener` type to listen to these events. An `EntryEvent` object is passed to the listener function.
 
 ```javascript
-var entryEventListener = {
-    added: function (entryEvent) {
-        console.log('Entry Added:', entryEvent.key, '-->', entryEvent.value); // Entry Added: 1 --> My new entry
+const entryEventListener = {
+    added: (entryEvent) => {
+        console.log('Entry added:', entryEvent.key, '-->', entryEvent.value);
     }
 };
-return mmp.addEntryListener(entryEventListener, undefined, true).then(function () {
-    return mmp.put('1', 'My new entry');
-});
+await mmp.addEntryListener(entryEventListener, undefined, true);
+
+await mmp.put('1', 'My new entry');
+// Prints:
+// Entry Added: 1 --> My new entry
 ```
+
+The second argument in the `addEntryListener` method is `key`. It stands for the key to listen for. When it is set to `undefined` (or omitted, which is the same), the listener will be fired for all entries in the MultiMap or Replicated Map.
+
+The third argument in the `addEntryListener` method is `includeValue`. It is a boolean parameter, and if it is `true`, the entry event contains the entry value.
 
 A map-wide event is fired as a result of a map-wide operation. For example, `MultiMap.clear()`. You should use the `MapEventListener` type to listen to these events. A `MapEvent` object is passed to the listener function.
 
 See the following example.
 
 ```javascript
-var mapEventListener = {
-    mapCleared: function (mapEvent) {
-        console.log('Map Cleared:', mapEvent.numberOfAffectedEntries); // Map Cleared: 1
+const mapEventListener = {
+    mapCleared: (mapEvent) => {
+        console.log('Map cleared:', mapEvent.numberOfAffectedEntries);
     }
 };
-mmp.addEntryListener(mapEventListener).then(function () {
-    return mmp.put('1', 'Muhammad Ali');
-}).then(function () {
-    return mmp.put('1', 'Mike Tyson');
-}).then(function () {
-    return mmp.put('1', 'Joe Louis');
-}).then(function () {
-    return mmp.clear();
-});
+await mmp.addEntryListener(mapEventListener);
+
+await mmp.put('1', 'Muhammad Ali');
+await mmp.put('1', 'Mike Tyson');
+await mmp.put('1', 'Joe Louis');
+await mmp.clear();
+// Prints:
+// Map cleared: 1
 ```
 
-Note that all functions in the `EntryListener` interface is not supported by MultiMap and Replicated Map. See the following headings to see supported listener functions for each data structure.
+Note that some methods in the `EntryListener` interface are not supported by MultiMap and Replicated Map. See the following headings to see supported listener methods for each data structure.
 
 **Entry Listener Functions Supported by MultiMap**
 
@@ -2150,8 +1697,6 @@ Note that all functions in the `EntryListener` interface is not supported by Mul
 - `evicted`
 - `mapCleared`
 
-As you see, there is a parameter in the `addEntryListener` function: `includeValue`. It is a boolean parameter, and if it is `true`, the entry event contains the entry value.
-
 #### 7.5.2.3. Item Listener
 
 The Item Listener is used by the Hazelcast `Queue`, `Set` and `List`.
@@ -2161,44 +1706,42 @@ You can listen to item events by implementing the functions in the `ItemListener
 The following is an example of item listener object and its registration to the `Set`. It also applies to `Queue` and `List`.
 
 ```javascript
-var itemListener = {
-    itemAdded: function (itemEvent) {
-        console.log('Item Added:', itemEvent.item); // Item Added: Item1
+const itemListener = {
+    itemAdded: (itemEvent) => {
+        console.log('Item added:', itemEvent.item);
     },
-    itemRemoved: function (itemEvent) {
-        console.log('Item Removed:', itemEvent.item); // Item Removed: Item1
+    itemRemoved: (itemEvent) => {
+        console.log('Item removed:', itemEvent.item);
     }
 };
-return set.addItemListener(itemListener, true).then(function () {
-    return set.add('Item1');
-}).then(function () {
-    return set.remove('Item1');
-});
+await set.addItemListener(itemListener, true);
+
+await set.add('Item1');
+// Prints:
+// Item added: Item1
+await set.remove('Item1');
+// Prints:
+// Item removed: Item1
 ```
 
-As you see, there is a parameter in the `addItemListener` function: `includeValue`. It is a boolean parameter, and if it is `true`, the item event contains the item value.
+The second argument in the `addItemListener` function is `includeValue`. It is a boolean parameter, and if it is `true`, the item event contains the item value.
 
 #### 7.5.2.4. Message Listener
 
-The Message Listener is used by the Hazelcast `Reliable Topic`.
+The Message Listener is used by the Hazelcast `ReliableTopic`.
 
 You can listen to message events. To listen to these events, you need to implement the `MessageListener` function to which a `Message` object is passed.
 
 See the following example.
 
 ```javascript
-topic.addMessageListener(function (message) {
-    console.log(message.messageObject);
+topic.addMessageListener((message) => {
+    console.log('Message received:', message.messageObject);
 });
 
-var movie = {
-    title: 'The Prestige',
-    year: '2006',
-    runtime: '130 min',
-    director: 'Christopher Nolan',
-    imdbRating: '8.5'
-}
-topic.publish(movie);
+topic.publish('Message1');
+// Prints:
+// Message received: Message1
 ```
 
 ## 7.6. Distributed Computing
@@ -2209,7 +1752,7 @@ This chapter explains how you can use Hazelcast IMDG's entry processor implement
 
 Hazelcast supports entry processing. An entry processor is a function that executes your code on a map entry in an atomic way.
 
-An entry processor is a good option if you perform bulk processing on an `IMap`. Usually you perform a loop of keys -- executing `IMap.get(key)`, mutating the value and finally putting the entry back in the map using `IMap.put(key,value)`. If you perform this process from a client or from a member where the keys do not exist, you effectively perform two network hops for each update: the first to retrieve the data and the second to update the mutated value.
+An entry processor is a good option if you perform bulk processing on an `IMap`. Usually you perform a loop of keys -- executing `IMap.get(key)`, mutating the value and finally putting the entry back in the map using `IMap.put(key, value)`. If you perform this process from a client or from a member where the keys do not exist, you effectively perform two network hops for each update: the first to retrieve the data and the second to update the mutated value.
 
 If you are doing the process described above, you should consider using entry processors. An entry processor executes a read and updates upon the member where the data resides. This eliminates the costly network hops described above.
 
@@ -2227,35 +1770,39 @@ The `IMap` interface provides the following functions for entry processing:
 
 In the Node.js client, an `EntryProcessor` should be `IdentifiedDataSerializable` or `Portable` because the server should be able to deserialize it to process.
 
-The following is an example for `EntryProcessor` which is `IdentifiedDataSerializable`.
+The following is an example for `EntryProcessor` which is an `IdentifiedDataSerializable`.
 
 ```javascript
-function IdentifiedEntryProcessor(value) {
-    this.value = value;
+class IdentifiedEntryProcessor {
+    constructor(value) {
+        this.value = value;
+    }
+
+    readData(input) {
+        this.value = input.readUTF();
+    }
+
+    writeData(output) {
+        output.writeUTF(this.value);
+    }
+
+    getFactoryId() {
+        return 5;
+    }
+
+    getClassId() {
+        return 1;
+    }
 }
-
-IdentifiedEntryProcessor.prototype.readData = function (inp) {
-    this.value = inp.readUTF();
-};
-
-IdentifiedEntryProcessor.prototype.writeData = function (outp) {
-    outp.writeUTF(this.value);
-};
-
-IdentifiedEntryProcessor.prototype.getFactoryId = function () {
-    return 5;
-};
-
-IdentifiedEntryProcessor.prototype.getClassId = function () {
-    return 1;
-};
 ```
 
 Now, you need to make sure that the Hazelcast member recognizes the entry processor. For this, you need to implement the Java equivalent of your entry processor and its factory, and create your own compiled class or JAR files. For adding your own compiled class or JAR files to the server's `CLASSPATH`, see the [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath).
 
-The following is the Java equivalent of the entry processor in Node.js client given above:
+The following is the Java counterpart of the entry processor in Node.js client given above:
 
 ```java
+package com.example;
+
 import com.hazelcast.map.AbstractEntryProcessor;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
@@ -2263,9 +1810,12 @@ import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 import java.io.IOException;
 import java.util.Map;
 
-public class IdentifiedEntryProcessor extends AbstractEntryProcessor<String, String> implements IdentifiedDataSerializable {
-     static final int CLASS_ID = 1;
-     private String value;
+public class IdentifiedEntryProcessor
+        extends AbstractEntryProcessor<String, String>
+        implements IdentifiedDataSerializable {
+
+    static final int CLASS_ID = 1;
+    private String value;
 
     public IdentifiedEntryProcessor() {
     }
@@ -2298,13 +1848,18 @@ public class IdentifiedEntryProcessor extends AbstractEntryProcessor<String, Str
 }
 ```
 
+Notice the `process` method which contains processor's logic.
+
 You can implement the above processor’s factory as follows:
 
 ```java
+package com.example;
+
 import com.hazelcast.nio.serialization.DataSerializableFactory;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 
 public class IdentifiedFactory implements DataSerializableFactory {
+
     public static final int FACTORY_ID = 5;
 
      @Override
@@ -2324,29 +1879,28 @@ Now you need to configure the `hazelcast.xml` to add your factory as shown below
     <serialization>
         <data-serializable-factories>
             <data-serializable-factory factory-id="5">
-                IdentifiedFactory
+                com.example.IdentifiedFactory
             </data-serializable-factory>
         </data-serializable-factories>
     </serialization>
 </hazelcast>
 ```
 
-The code that runs on the entries is implemented in Java on the server side. The client side entry processor is used to specify which entry processor should be called. For more details about the Java implementation of the entry processor, see the [Entry Processor section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#entry-processor) in the Hazelcast IMDG Reference Manual.
+In this example the code that runs on the entries is implemented in Java on the server side. The client side entry processor is used to specify which entry processor should be called. For more details about the Java implementation of the entry processor, see the [Entry Processor section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#entry-processor) in the Hazelcast IMDG Reference Manual.
 
 After the above implementations and configuration are done and you start the server where your library is added to its `CLASSPATH`, you can use the entry processor in the `IMap` functions. See the following example.
 
 ```javascript
-var map;
-hazelcastClient.getMap('my-distributed-map').then(function (mp) {
-    map = mp;
-    return map.put('key', 'not-processed');
-}).then(function () {
-    return map.executeOnKey('key', new IdentifiedEntryProcessor('processed'));
-}).then(function () {
-    return map.get('key');
-}).then(function (value) {
-    console.log(value); // Processed
-});
+const map = await client.getMap('my-distributed-map');
+await map.put('key', 'not-processed');
+
+// Run the entry processor
+await map.executeOnKey('key', new IdentifiedEntryProcessor('processed'));
+
+const value = await map.get('key');
+// Prints:
+// processed
+console.log(value);
 ```
 
 ## 7.7. Distributed Query
@@ -2385,42 +1939,44 @@ Hazelcast offers the following ways for distributed query purposes:
 
 #### 7.7.1.1. Employee Map Query Example
 
-Assume that you have an `employee` map containing the values of `Employee` objects, as coded below.
+Assume that you have an `employee` map containing the values of `Employee` objects, as shown below.
 
 ```javascript
-function Employee(name, age, active, salary) {
-    this.name = name;
-    this.age = age;
-    this.active = active;
-    this.salary = salary;
-}
+class Employee {
+    constructor(name, age, active, salary) {
+        this.name = name;
+        this.age = age;
+        this.active = active;
+        this.salary = salary;
+    }
 
-Employee.prototype.getClassId = function () {
-    return 1;
-}
+    readPortable(input) {
+        this.name = input.readUTF();
+        this.age = input.readInt();
+        this.active = input.readBoolean();
+        this.salary = input.readDouble();
+    }
 
-Employee.prototype.getFactoryId = function () {
-    return 1;
-}
+    writePortable(output) {
+        output.writeUTF(this.name);
+        output.writeInt(this.age);
+        output.writeBoolean(this.active);
+        output.writeDouble(this.salary);
+    }
 
-Employee.prototype.readPortable = function (reader) {
-    this.name = reader.readUTF();
-    this.age = reader.readInt();
-    this.active = reader.readBoolean();
-    this.salary = reader.readDouble();
-}
+    getClassId() {
+        return 1;
+    }
 
-Employee.prototype.writePortable = function (writer) {
-    writer.writeUTF(this.name);
-    writer.writeInt(this.age);
-    writer.writeBoolean(this.active);
-    writer.writeDouble(this.salary);
+    getFactoryId() {
+        return 1;
+    }
 }
 ```
 
-Note that `Employee` is a `Portable` object. As portable types are not deserialized on the server side for querying, you don't need to implement its Java equivalent on the server side.
+Note that `Employee` is a `Portable` object. As portable types are not deserialized on the server side for querying, you do not need to implement its Java counterpart on the server side.
 
-For the non-portable types, you need to implement its Java equivalent and its serializable factory on the server side for server to reconstitute the objects from binary formats. In this case before starting the server, you need to compile the Employee and related factory classes with server's CLASSPATH and add them to the user-lib directory in the extracted hazelcast-<version>.zip (or tar).  See the [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath).
+For the non-portable types, you need to implement its Java counterpart and its serializable factory on the server side for server to reconstitute the objects from binary formats. In this case before starting the server, you need to compile the Employee and related factory classes with server's CLASSPATH and add them to the user-lib directory in the extracted hazelcast-<version>.zip (or tar).  See the [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath).
 
 > **NOTE: Querying with `Portable` object is faster as compared to `IdentifiedDataSerializable`.**
 
@@ -2429,32 +1985,36 @@ For the non-portable types, you need to implement its Java equivalent and its se
 You can combine predicates by using the `and`, `or` and `not` operators, as shown in the below example.
 
 ```javascript
-var map;
-client.getMap('employee').then(function (mp) {
-    map = mp;
-    var predicate = Predicates.and(Predicates.equal('active', true), Predicates.lessThan('age', 30));
-    return map.valuesWithPredicate(predicate);
-}).then(function (employees) {
-    // Some operations
-});
+const { Predicates } = require('hazelcast-client');
+// ...
+const map = await client.getMap('employee');
+// Define the predicate
+const predicate = Predicates.and(
+    Predicates.equal('active', true),
+    Predicates.lessThan('age', 30)
+);
+// Run the query
+const employees = await map.valuesWithPredicate(predicate);
+// Some operations
 ```
 
-In the above example code, `predicate` verifies whether the entry is active and its `age` value is less than 30. This `predicate` is applied to the `employee` map using the `map.valuesWithPredicate(predicate)` method. This method sends the predicate to all cluster members and merges the results coming from them.
+In the above example code, `predicate` verifies whether the entry is active and its `age` value is less than `30`. This `predicate` is applied to the `employee` map using the `map.valuesWithPredicate(predicate)` method. This method sends the predicate to all cluster members and merges the results coming from them.
 
-> **NOTE: Predicates can also be applied to `keySet` and `entrySet` of the Hazelcast IMDG's distributed map.**
+> **NOTE: Predicates can also be applied to `keySet` and `entrySet` methods of the Hazelcast IMDG's distributed map.**
 
 #### 7.7.1.3. Querying with SQL
 
-`SqlPredicate` takes the regular SQL `where` clause. See the following example:
+You can query with SQL by using the `SqlPredicate` class. Its constructor takes the regular SQL `where` clause, as shown in the below example.
 
 ```javascript
-var map;
-client.getMap('employee').then(function (mp) {
-    map = mp;
-    return map.valuesWithPredicate(new SqlPredicate('active AND age < 30'));
-}).then(function (employees) {
-    // Some operations
-});
+const { SqlPredicate } = require('hazelcast-client');
+// ...
+const map = await client.getMap('employee');
+// Define the predicate
+const predicate = new SqlPredicate('active AND age < 30');
+// Run the query
+const employees = await map.valuesWithPredicate(predicate);
+// Some operations
 ```
 
 ##### Supported SQL Syntax
@@ -2488,106 +2048,99 @@ client.getMap('employee').then(function (mp) {
 
 The `%` (percentage sign) is the placeholder for multiple characters, an `_` (underscore) is the placeholder for only one character.
 
-- `name LIKE 'Jo%'` (true for 'Joe', 'Josh', 'Joseph' etc.)
-- `name LIKE 'Jo_'` (true for 'Joe'; false for 'Josh')
-- `name NOT LIKE 'Jo_'` (true for 'Josh'; false for 'Joe')
-- `name LIKE 'J_s%'` (true for 'Josh', 'Joseph'; false 'John', 'Joe')
+- `name LIKE 'Jo%'` (`true` for `Joe`, `Josh`, `Joseph`, etc.)
+- `name LIKE 'Jo_'` (`true` for `Joe`; `false` for `Josh`)
+- `name NOT LIKE 'Jo_'` (`true` for `Josh`; `false` for `Joe`)
+- `name LIKE 'J_s%'` (`true` for `Josh`, `Joseph`; `false` for `John`, `Joe`)
 
 **ILIKE:** `<attribute> [NOT] ILIKE 'expression'`
 
 ILIKE is similar to the LIKE predicate but in a case-insensitive manner.
 
-- `name ILIKE 'Jo%'` (true for 'Joe', 'joe', 'jOe','Josh','joSH', etc.)
-- `name ILIKE 'Jo_'` (true for 'Joe' or 'jOE'; false for 'Josh')
+- `name ILIKE 'Jo%'` (`true` for `Joe`, `joe`, `jOe`, `Josh`, `joSH`, etc.)
+- `name ILIKE 'Jo_'` (`true` for `Joe` or `jOE`; `false` for `Josh`)
 
 **REGEX:** `<attribute> [NOT] REGEX 'expression'`
 
-- `name REGEX 'abc-.*'` (true for 'abc-123'; false for 'abx-123')
+- `name REGEX 'abc-.*'` (`true` for `abc-123`; `false` for `abx-123`)
 
 ##### Querying Examples with Predicates
 
-You can use the `__key` attribute to perform a predicated search for the entry keys. See the following example:
+You can use the `__key` attribute to perform a predicated search for the entry keys, as shown in the below example.
 
 ```javascript
-var personMap;
-client.getMap('persons').then(function (mp) {
-    personMap = mp;
-    return personMap.put('Alice', 35);
-}).then(function () {
-    return personMap.put('Andy', 37);
-}).then(function () {
-    return personMap.put('Bob', 22);
-}).then(function () {
-    var predicate = new Predicates.sql('__key like A%');
-    return personMap.valuesWithPredicate(predicate);
-}).then(function (startingWithA) {
-    console.log(startingWithA.get(0)); // 35
-});
+const personMap = await client.getMap('persons');
+// Generate some data
+await personMap.put('Alice', 35);
+await personMap.put('Andy', 37);
+await personMap.put('Bob', 22);
+// Run the query
+// The following is an equialent of `new SqlPredicate('__key like A%')`
+const predicate = new Predicates.sql('__key like A%');
+const startingWithA = await personMap.valuesWithPredicate(predicate);
+// Prints:
+// 35
+console.log(startingWithA.get(0));
 ```
 
-In this example, the code creates a list with the values whose keys start with the letter "A”.
+In this example, the code creates a list with the values whose keys start with the letter `A`. Note that the returned object is an instance of `ReadOnlyLazyList` class.
 
 You can use the `this` attribute to perform a predicated search for entry values. See the following example:
 
 ```javascript
-var personMap;
-return client.getMap('persons').then(function (mp) {
-    personMap = mp;
-    return personMap.put('Alice', 35);
-}).then(function () {
-    return personMap.put('Andy', 37);
-}).then(function () {
-    return personMap.put('Bob', 22);
-}).then(function () {
-    var predicate = new Predicates.greaterEqual('this', 27);
-    return personMap.valuesWithPredicate(predicate);
-}).then(function (olderThan27) {
-    console.log(olderThan27.get(0), olderThan27.get(1)); // 35 37
-});
+const personMap = await client.getMap('persons');
+// Generate some data
+await personMap.put('Alice', 35);
+await personMap.put('Andy', 37);
+await personMap.put('Bob', 22);
+// Run the query
+const predicate = new Predicates.greaterEqual('this', 27);
+const olderThan27 = await return personMap.valuesWithPredicate(predicate);
+// Prints:
+// 35 37
+console.log(olderThan27.get(0), olderThan27.get(1));
 ```
 
-In this example, the code creates a list with the values greater than or equal to "27".
+In this example, the code creates a list with the values greater than or equal to `27`.
 
 #### 7.7.1.4. Querying with JSON Strings
 
-You can query the JSON strings stored inside your Hazelcast clusters. To query a JSON string, you can
-use `HazelcastJsonValue` or JavaScript objects.
+You can query the JSON strings stored inside your Hazelcast clusters. To query a JSON string, you can use `HazelcastJsonValue` or plain JavaScript objects.
 
-`HazelcastJsonValue` objects can be used both as keys and values in the distributed data structures.
-Then, it is possible to query these objects using the query methods explained in this section.
+`HazelcastJsonValue` objects can be used both as keys and values in the distributed data structures. Then, it is possible to query these objects using the query methods explained in this section.
 
 ```javascript
-var personMap;
-var person1 = '{ "name": "John", "age": 35 }';
-var person2 = '{ "name": "Jane", "age": 24 }';
-var person3 = '{ "name": "Trey", "age": 17 }';
+const {
+    SqlPredicate,
+    HazelcastJsonValue
+} = require('hazelcast-client');
+// ...
 
-return hz.getMap('personsMap').then(function (map) {
-    personMap = map;
-    return personMap.put(1, new HazelcastJsonValue(person1));
-}).then(function () {
-    return personMap.put(2, new HazelcastJsonValue(person2));
-}).then(function () {
-    return personMap.put(3, new HazelcastJsonValue(person3));
-}).then(function () {
-    return personMap.valuesWithPredicate(Predicates.lessThan('age', 21));
-}).then(function (personsUnder21) {
-    personsUnder21.toArray().forEach(function (person) {
-        console.log(person);
-    });
+const personMap = await client.getMap('personsMap');
+// Generate some data
+const person1 = '{ "name": "John", "age": 35 }';
+const person2 = '{ "name": "Jane", "age": 24 }';
+const person3 = '{ "name": "Trey", "age": 17 }';
+await personMap.put(1, new HazelcastJsonValue(person1));
+await personMap.put(2, new HazelcastJsonValue(person2));
+await personMap.put(3, new HazelcastJsonValue(person3));
+// Run the query
+const personsUnder21 = await personMap.valuesWithPredicate(Predicates.lessThan('age', 21));
+// Prints:
+// HazelcastJsonValue { jsonString: '{ "name": "Trey", "age": 17 }' }
+for (const person of personsUnder21) {
+    console.log(person);
 });
 ```
 
-When running the queries, Hazelcast treats values extracted from the JSON documents as Java types so they can be compared with the query attribute.
-JSON specification defines five primitive types to be used in the JSON documents: `number`, `string`, `true`, `false` and `null`.
-The `string`, `true`/`false` and `null` types are treated as `String`, `boolean` and `null`, respectively. `Number` values treated as `long`s if they can be represented by a `long`.
-Otherwise, `number`s are treated as `double`s.
+When running the queries, Hazelcast treats values extracted from the JSON documents as Java types so they can be compared with the query attribute. JSON specification defines five primitive types to be used in the JSON documents: `number`, `string`, `true`, `false` and `null`. The `string`, `true`/`false` and `null` types are treated as `String`, `boolean` and `null`, respectively. `Number` values treated as `long`s if they can be represented by a `long`. Otherwise, `number`s are treated as `double`s.
+
+`HazelcastJsonValue` is a lightweight wrapper around your JSON strings. It is used merely as a way to indicate that the contained string should be treated as a valid JSON value. Hazelcast does not check the validity of JSON strings put into to maps. Putting an invalid JSON string in a map is permissible. However, in that case whether such an entry is going to be returned or not from a query is not defined.
 
 It is possible to query nested attributes and arrays in JSON documents. The query syntax is the same as querying other Hazelcast objects using the `Predicate`s.
 
 ```javascript
-var departmentsMap;
-var departments = [
+const departments = [
     {
         departmentId: 1,
         room: 'alpha',
@@ -2617,64 +2170,54 @@ var departments = [
         ]
     }
 ];
-return hz.getMap('departmentsMap').then(function (map) {
-    departmentsMap = map;
-    return departmentsMap.putAll(departments.map(function (department, index) {
-        return [index, department];
-    }));
-}).then(function () {
-    // The following query finds all the departments that have a person named "Peter" working in them
-    return departmentsMap.valuesWithPredicate(Predicates.equal('people[any].name', 'Peter'))
-}).then(function (departmentWithPeter) {
-    departmentWithPeter.toArray().forEach(function (department) {
-        console.log(department);
-    });
+const departmentsMap = await client.getMap('departmentsMap');
+await departmentsMap.putAll(departments.map((department, index) => {
+    return [index, department];
+}));
+// Run the query which finds all the departments that have a person named "Peter"
+const departmentsWithPeter =
+    await departmentsMap.valuesWithPredicate(Predicates.equal('people[any].name', 'Peter'))
+// Prints the first department
+for (const department of departmentsWithPeter) {
+    console.log(department);
 });
 ```
 
-`HazelcastJsonValue` is a lightweight wrapper around your JSON strings. It is used merely as a way to indicate that the contained string should be treated as a valid JSON value.
-Hazelcast does not check the validity of JSON strings put into to maps. Putting an invalid JSON string in a map is permissible.
-However, in that case whether such an entry is going to be returned or not from a query is not defined.
-
 ##### Querying with HazelcastJsonValue Objects
 
-If the Hazelcast Node.js client cannot find a suitable serializer for an object, it uses `JSON Serialization`.
+If the Hazelcast Node.js client cannot find a suitable serializer for an object, it uses JSON Serialization.
 
-This means that, you can run queries over your JavaScript objects if they are serialized as JSON strings. However, when the results
-of your query are ready, they are parsed from JSON strings and returned to you as JavaScript objects.
+This means that, you can run queries over your JavaScript objects if they are serialized as JSON strings. However, when the results of your query are ready, they are parsed from JSON strings and returned to you as JavaScript objects.
 
-For the purposes of your application, you may want to get rid of the parsing and just work with the raw JSON strings using `HazelcastJsonValue` objects. Then, you can configure your client to do so
-as described in the [JSON Serialization](#45-json-serialization) section.
+For the purposes of your application, you may want to get rid of the parsing and just work with the raw JSON strings using `HazelcastJsonValue` objects. Then, you can configure your client to do so as described in the [JSON Serialization](#45-json-serialization) section.
 
 ```javascript
-var config = new Config();
-config.serializationConfig.jsonStringDeserializationPolicy = JsonStringDeserializationPolicy.NO_DESERIALIZATION;
+const client = await Client.newHazelcastClient({
+    serialization: {
+        jsonStringDeserializationPolicy: 'NO_DESERIALIZATION'
+    }
+});
 
-Client.newHazelcastClient(config).then(function (hz) {
-    var moviesMap;
-    var movies = [
-        [1, new HazelcastJsonValue('{ "name": "The Dark Knight", "rating": 9.1 }')],
-        [2, new HazelcastJsonValue('{ "name": "Inception", "rating": 8.8 }')],
-        [3, new HazelcastJsonValue('{ "name": "The Prestige", "rating": 8.5 }')]
-    ];
-    return hz.getMap('moviesMap').then(function (map) {
-        moviesMap = map;
-        return moviesMap.putAll(movies);
-    }).then(function () {
-        return moviesMap.valuesWithPredicate(Predicates.greaterEqual('rating', 8.8));
-    }).then(function (highRatedMovies) {
-        highRatedMovies.toArray().forEach(function (movie) {
-            console.log(movie.toString());
-        });
-        return hz.shutdown();
-    });
+const moviesMap = await client.getMap('moviesMap');
+// Generate some data
+const movies = [
+    [1, new HazelcastJsonValue('{ "name": "The Dark Knight", "rating": 9.1 }')],
+    [2, new HazelcastJsonValue('{ "name": "Inception", "rating": 8.8 }')],
+    [3, new HazelcastJsonValue('{ "name": "The Prestige", "rating": 8.5 }')]
+];
+await moviesMap.putAll(movies);
+// Run the query
+const highRatedMovies =
+    await moviesMap.valuesWithPredicate(Predicates.greaterEqual('rating', 8.8));
+// Prints the first two movies
+for (const movie of highRatedMovies) {
+    console.log(movie.toString());
 });
 ```
 
 ##### Metadata Creation for JSON Querying
 
-Hazelcast stores a metadata object per JSON serialized object stored. This metadata object is created every time a JSON serialized object is put into an `IMap`.
-Metadata is later used to speed up the query operations. Metadata creation is on by default. Depending on your application’s needs, you may want to turn off the metadata creation to decrease the put latency and increase the throughput.
+Hazelcast stores a metadata object per JSON serialized object stored. This metadata object is created every time a JSON serialized object is put into an `IMap`. Metadata is later used to speed up the query operations. Metadata creation is on by default. Depending on your application’s needs, you may want to turn off the metadata creation to decrease the put latency and increase the throughput.
 
 You can configure this using `metadata-policy` element for the map configuration on the member side as follows:
 
@@ -2698,39 +2241,30 @@ You can configure this using `metadata-policy` element for the map configuration
 The Node.js client provides paging for defined predicates. With its `PagingPredicate` object, you can get a list of keys, values or entries page by page by filtering them with predicates and giving the size of the pages. Also, you can sort the entries by specifying comparators.
 
 ```javascript
-var map;
-hazelcastClient.getMap('students').then(function (mp) {
-    map = mp;
-
-    var greaterEqual = Predicates.greaterEqual('age', 18);
-    var pagingPredicate = Predicates.paging(greaterEqual, 5);
-
-// Set page to retrieve third page
-    pagingPredicate.setPage(3);
-
-    // Retrieve third page
-    return map.valuesWithPredicate(pagingPredicate)
-}).then(function (values) {
-    // Some operations
-...
-
-    // Set up next page
-    pagingPredicate.nextPage();
-
-    // Retrieve next page
-    return map.valuesWithPredicate(pagingPredicate);
-}).then(function (values) {
-    // Some operations
-});
+const map = await client.getMap('students');
+// Define the paging predicate
+const greaterEqual = Predicates.greaterEqual('age', 18);
+const pagingPredicate = Predicates.paging(greaterEqual, 5);
+// Set page to retrieve the third page
+pagingPredicate.setPage(3);
+// Retrieve third page
+let values = await map.valuesWithPredicate(pagingPredicate);
+// Some operations
+// ...
+// Set up next page
+pagingPredicate.nextPage();
+// Retrieve the next page
+values = await map.valuesWithPredicate(pagingPredicate);
+// Some operations
 ```
 
-If you want to sort the result before paging, you need to specify a comparator object that implements the `Comparator` interface. Also, this comparator object should be one of `IdentifiedDataSerializable` or `Portable`. After implementing this object in Node.js, you need to implement the Java equivalent of it and its factory. The Java equivalent of the comparator should implement `java.util.Comparator`. Note that the `compare` function of `Comparator` on the Java side is the equivalent of the `sort` function of `Comparator` on the Node.js side. When you implement the `Comparator` and its factory, you can add them to the `CLASSPATH` of the server side.  See the [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath).
+If you want to sort the result before paging, you need to specify a comparator object that implements the `Comparator` interface. Also, this comparator object should be one of `IdentifiedDataSerializable` or `Portable`. After implementing this object in Node.js, you need to implement the Java counterpart of it and its factory. The Java counterpart of the comparator should implement `java.util.Comparator`. Note that the `compare` function of `Comparator` on the Java side is the counterpart of the `sort` function of `Comparator` on the Node.js side. When you implement the `Comparator` and its factory, you can add them to the `CLASSPATH` of the server side. See the [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath).
 
 Also, you can access a specific page more easily with the help of the `setPage` function. This way, if you make a query for the 100th page, for example, it will get all 100 pages at once instead of reaching the 100th page one by one using the `nextPage` function.
 
 ### 7.7.2. Fast-Aggregations
 
-Fast-Aggregations feature provides some aggregate functions, such as `sum`, `average`, `max`, and `min`, on top of Hazelcast `IMap` entries. Their performance is perfect since they run in parallel for each partition and are highly optimized for speed and low memory consumption.
+Fast-Aggregations feature provides some aggregate functions, such as `sum`, `average`, `max`, and `min`, on top of Hazelcast `IMap` entries. Their performance is high since they run in parallel for each partition and are highly optimized for speed and low memory consumption.
 
 The `Aggregators` object provides a wide variety of built-in aggregators. The full list is presented below:
 
@@ -2752,25 +2286,32 @@ You can use these aggregators with the `IMap.aggregate()` and `IMap.aggregateWit
 See the following example.
 
 ```javascript
-var map;
-hz.getMap('employees').then(function (mp) {
-    map = mp;
-    return map.putAll([
-        ['John Stiles', 23],
-        ['Judy Doe', 29],
-        ['Richard Miles', 38],
-    ]);
-}).then(function () {
-    return map.aggregate(Aggregators.count());
-}).then(function (count) {
-    console.log('There are ' + count + ' employees.'); // There are 3 employees
-    return map.aggregateWithPredicate(Aggregators.count(), Predicates.greaterThan('this', 25));
-}).then(function (count) {
-    console.log('There are ' + count + ' employees older than 25.'); // There are 2 employees older than 25.
-    return map.aggregate(Aggregators.numberAvg());
-}).then(function (avgAge) {
-    console.log('Average age is ' + avgAge); // Average age is 30
-});
+const { Aggregators } = require('hazelcast-client');
+// ...
+const map = await client.getMap('employees');
+// Generate some data
+await map.putAll([
+    ['John Stiles', 23],
+    ['Judy Doe', 29],
+    ['Richard Miles', 38],
+]);
+
+// Run count aggregate
+let count = await map.aggregate(Aggregators.count());
+// Prints:
+// There are 3 employees
+console.log('There are ' + count + ' employees');
+// Run count aggregate with a predicate
+count = await map.aggregateWithPredicate(Aggregators.count(), Predicates.greaterThan('this', 25));
+// Prints:
+// There are 2 employees older than 25
+console.log('There are ' + count + ' employees older than 25');
+
+// Run avg aggregate
+const avgAge = await map.aggregate(Aggregators.numberAvg());
+// Prints:
+// Average age is 30
+console.log('Average age is ' + avgAge);
 ```
 
 ## 7.8. Performance
@@ -2782,82 +2323,58 @@ Partition Aware ensures that the related entries exist on the same member. If th
 Hazelcast has a standard way of finding out which member owns/manages each key object. The following operations are routed to the same member, since all of them are operating based on the same key `'key1'`.
 
 ```javascript
-Client.newHazelcastClient().then(function (client) {
-    hazelcastClient = client;
-    return hazelcastClient.getMap('mapA')
-}).then(function (mp) {
-    mapA = mp;
-    return hazelcastClient.getMap('mapB');
-}).then(function (mp) {
-    mapB = mp;
-    return hazelcastClient.getMap('mapC');
-}).then(function (mp) {
-    mapC = mp;
+const mapA = await client.getMap('mapA');
+const mapB = await client.getMap('mapB');
+const mapC = await client.getMap('mapC');
 
-    // Since map names are different, operation is manipulating
-    // different entries, but the operation takes place on the
-    // same member since the keys ('key1') are the same
-    return mapA.put('key1', 'value1');
-}).then(function () {
-    return mapB.get('key1');
-}).then(function (res) {
-    return mapC.remove('key1');
-}).then(function () {
-    // Lock operation is still execute on the same member
-    // of the cluster since the key ("key1") is same
-    return hazelcastClient.getLock('key1');
-}).then(function (l) {
-    lock = l;
-    return lock.lock();
-});
+// Since map names are different, operation is manipulating
+// different entries, but the operation takes place on the
+// same member since the keys ('key1') are the same
+await mapA.put('key1', 'value1');
+const res = await mapB.get('key1');
+await mapC.remove('key1');
+// Lock operation is executed on the same member
+// of the cluster since the key ("key1") is same
+await mapA.lock('key1');
 ```
 
-When the keys are the same, entries are stored on the same member. However, we sometimes want to have the related entries stored on the same member, such as a customer and their order entries. We would have a customers map with `customerId` as the key and an orders map with `orderId` as the key. Since `customerId` and `orderId` are different keys, a customer and their orders may fall into different members in your cluster. So how can we have them stored on the same member? We create an affinity between the customer and orders. If we make them part of the same partition then these entries will be co-located. We achieve this by making `OrderKey`s `PartitionAware`.
+When the keys are the same, entries are stored on the same member. However, we sometimes want to have the related entries, such as a customer and their order entries, stored on the same member even if they are stored in different maps and have different keys.
+
+Let's consider a `customers` map with `customerId` as the key and an `orders` map with `orderId` as the key. Since `customerId` and `orderId` are different keys, a customer and their orders may fall into different members in your cluster. So how can we have them stored on the same member? We create an affinity between the customer and orders. If we make them part of the same partition then these entries will be co-located. We achieve this by making `OrderKey`s `PartitionAware`.
 
 ```javascript
-function OrderKey(orderId, customerId) {
-    this.orderId = orderId;
-    this.customerId = customerId;
+class OrderKey {
+    constructor(orderId, customerId) {
+        this.orderId = orderId;
+        this.customerId = customerId;
+    }
+
+    getPartitionKey() {
+        return this.customerId;
+    }
 }
-
-OrderKey.prototype.getPartitionKey = function () {
-    return this.customerId;
-};
 ```
 
-Notice that `OrderKey` implements `PartitionAware` interface and that `getPartitionKey()` returns the `customerId`. This will make sure that the `Customer` entry and its `Order`s will be stored on the same member.
+Notice that `OrderKey` implements `PartitionAware` interface and that `getPartitionKey()` method returns the `customerId`. This will make sure that the `Customer` entry and its `Order`s will be stored on the same member.
 
 ```javascript
-var hazelcastClient;
-var mapCustomers;
-var mapOrders;
-
-Client.newHazelcastClient().then(function (client) {
-    hazelcastClient = client;
-    return hazelcastClient.getMap('customers')
-}).then(function (mp) {
-    mapCustomers = mp;
-    return hazelcastClient.getMap('orders');
-}).then(function (mp) {
-    mapOrders = mp;
-
-    // Create the customer entry with customer id = 1
-    return mapCustomers.put(1, customer);
-}).then(function () {
-    // Now create the orders for this customer
-    return mapOrders.putAll([
-        [new OrderKey(21, 1), order],
-        [new OrderKey(22, 1), order],
-        [new OrderKey(23, 1), order]
-    ]);
-});
+const customersMap = await client.getMap('customers');
+const ordersMap = await client.getMap('orders');
+// Create the customer entry with customer id = 1
+await customersMap.put(1, customer);
+// Now create orders for this customer
+await ordersMap.putAll([
+    [new OrderKey(21, 1), order],
+    [new OrderKey(22, 1), order],
+    [new OrderKey(23, 1), order]
+]);
 ```
 
 For more details, see the [PartitionAware section](https://docs.hazelcast.org/docs/latest/manual/html-single/#partitionaware) in the Hazelcast IMDG Reference Manual.
 
 ### 7.8.2. Near Cache
 
-Map entries in Hazelcast are partitioned across the cluster members. Hazelcast clients do not have local data at all. Suppose you read the key `k` a number of times from a Hazelcast client and `k` is owned by a member in your cluster. Then each `map.get(k)` will be a remote operation, which creates a lot of network trips. If you have a map that is mostly read, then you should consider creating a local Near Cache, so that reads are sped up and less network traffic is created.
+Map entries in Hazelcast are partitioned across the cluster members. Hazelcast clients do not have local data at all. Suppose you read the key `k` a number of times from a Hazelcast client and `k` is owned by a member in your cluster. Then each `map.get('k')` will be a remote operation, which creates a lot of network trips. If you have a map that is mostly read, then you should consider creating a local Near Cache, so that reads are sped up and less network traffic is created.
 
 These benefits do not come for free, please consider the following trade-offs:
 
@@ -2873,41 +2390,21 @@ Near Cache is highly recommended for maps that are mostly read.
 
 The following snippets show how a Near Cache is configured in the Node.js client, presenting all available values for each element:
 
-**Declarative Configuration:**
-
-```
-{
-    "nearCaches": [
-        {
-            "name": "mostlyReadMap",
-            "invalidateOnChange": (false|true),
-            "timeToLiveSeconds": (0..Number.MAX_SAFE_INTEGER),
-            "maxIdleSeconds": (0..Number.MAX_SAFE_INTEGER),
-            "inMemoryFormat": "(object|binary)",
-            "evictionPolicy": "lru|lfu|random|none",
-            "evictionMaxSize": (0..Number.MAX_SAFE_INTEGER),
-            "evictionSamplingCount": (0..Number.MAX_SAFE_INTEGER),
-            "evictionSamplingPoolSize": (0..Number.MAX_SAFE_INTEGER),
-        }
-    ]
-}
-```
-
-**Programmatic Configuration:**
-
 ```javascript
-var nearCacheConfig = new Config.NearCacheConfig();
-nearCacheConfig.name = 'mostlyReadMap';
-nearCacheConfig.invalidateOnChange = (false|true);
-nearCacheConfig.timeToLiveSeconds = (0..Number.MAX_SAFE_INTEGER);
-nearCacheConfig.maxIdleSeconds = (0..Number.MAX_SAFE_INTEGER);
-nearCacheConfig.inMemoryFormat= (InMemoryFormat.OBJECT|InMemoryFormat.BINARY);
-nearCacheConfig.evictionPolicy = (EvictionPolicy.LRU|EvictionPolicy.LFU|EvictionPolicy.RANDOM|EvictionPolicy.NONE);
-nearCacheConfig.evictionMaxSize = (0..Number.MAX_SAFE_INTEGER);
-nearCacheConfig.evictionSamplingCount = (0..Number.MAX_SAFE_INTEGER);
-nearCacheConfig.evictionSamplingPoolSize = (0..Number.MAX_SAFE_INTEGER);
-
-cfg.nearCacheConfigs['mostlyReadMap'] = nearCacheConfig;
+const cfg = {
+    nearCaches: {
+        'mostlyReadMap': {
+            invalidateOnChange: false,
+            maxIdleSeconds: 2,
+            inMemoryFormat: 'OBJECT',
+            timeToLiveSeconds: 3,
+            evictionPolicy: "lru",
+            evictionMaxSize: 3000,
+            evictionSamplingCount: 4,
+            evictionSamplingPoolSize: 8
+        }
+    }
+};
 ```
 
 Following are the descriptions of all configuration elements:
@@ -2916,53 +2413,37 @@ Following are the descriptions of all configuration elements:
   - `BINARY`: Data will be stored in serialized binary format (default value).
   - `OBJECT`: Data will be stored in deserialized form.
 
-- `invalidateOnChange`: Specifies whether the cached entries are evicted when the entries are updated or removed in members. Its default value is true.
+- `invalidateOnChange`: Specifies whether the cached entries are evicted when the entries are updated or removed in members. Its default value is `true`.
 
-- `timeToLiveSeconds`: Maximum number of seconds for each entry to stay in the Near Cache. Entries that are older than this period are automatically evicted from the Near Cache. Regardless of the eviction policy used, `timeToLiveSeconds` still applies. Any integer between 0 and `Number.MAX_SAFE_INTEGER`. 0 means infinite. Its default value is 0.
+- `timeToLiveSeconds`: Maximum number of seconds for each entry to stay in the Near Cache. Entries that are older than this period are automatically evicted from the Near Cache. Regardless of the eviction policy used, `timeToLiveSeconds` still applies. Any integer between `0` and `Number.MAX_SAFE_INTEGER`. Its default value is `0` (means infinite).
 
-- `maxIdleSeconds`: Maximum number of seconds each entry can stay in the Near Cache as untouched (not read). Entries that are not read more than this period are removed from the Near Cache. Any integer between 0 and `Number.MAX_SAFE_INTEGER`. 0 means infinite. Its default value is 0.
+- `maxIdleSeconds`: Maximum number of seconds each entry can stay in the Near Cache as untouched (not read). Entries that are not read more than this period are removed from the Near Cache. Any integer between `0` and `Number.MAX_SAFE_INTEGER`. Its default value is `0` (means infinite).
 
 - `evictionPolicy`: Eviction policy configuration. Available values are as follows:
   - `LRU`: Least Recently Used (default value).
   - `LFU`: Least Frequently Used.
-  - `NONE`: No items are evicted and the `evictionMaxSize` property is ignored. You still can combine it with `timeToLiveSeconds` and `maxIdleSeconds` to evict items from the Near Cache.
   - `RANDOM`: A random item is evicted.
+  - `NONE`: No items are evicted and the `evictionMaxSize` property is ignored. You still can combine it with `timeToLiveSeconds` and `maxIdleSeconds` to evict items from the Near Cache.
 
-- `evictionMaxSize`: Maximum number of entries kept in the memory before eviction kicks in.
-- `evictionSamplingCount`: Number of random entries that are evaluated to see if some of them are already expired. If there are expired entries, those are removed and there is no need for eviction.
-- `evictionSamplingPoolSize`: Size of the pool for eviction candidates. The pool is kept sorted according to eviction policy. The entry with the highest score is evicted.
+- `evictionMaxSize`: Maximum number of entries kept in the memory before eviction kicks in. Its default value is `Number.MAX_SAFE_INTEGER`.
+- `evictionSamplingCount`: Number of random entries that are evaluated to see if some of them are already expired. If there are expired entries, those are removed and there is no need for eviction. Its default value is `8`.
+- `evictionSamplingPoolSize`: Size of the pool for eviction candidates. The pool is kept sorted according to eviction policy. The entry with the highest score is evicted. Its default value is `16`.
 
 #### 7.8.2.2. Near Cache Example for Map
 
 The following is an example configuration for a Near Cache defined in the `mostlyReadMap` map. According to this configuration, the entries are stored as `OBJECT`'s in this Near Cache and eviction starts when the count of entries reaches `5000`; entries are evicted based on the `LRU` (Least Recently Used) policy. In addition, when an entry is updated or removed on the member side, it is eventually evicted on the client side.
 
-**Declarative Configuration:**
-
-```
-{
-    "nearCaches": [
-        {
-            "name": "mostlyReadMap",
-            "inMemoryFormat": "object",
-            "invalidateOnChange": true,
-            "evictionPolicy": "lru",
-            "evictionMaxSize": 5000,
-        }
-    ]
-}
-```
-
-**Programmatic Configuration:**
-
 ```javascript
-var nearCacheConfig = new Config.NearCacheConfig();
-nearCacheConfig.name = "mostlyReadMap";
-nearCacheConfig.inMemoryFormat= InMemoryFormat.OBJECT;
-nearCacheConfig.invalidateOnChange = true;
-nearCacheConfig.evictionPolicy = EvictionPolicy.LRU;
-nearCacheConfig.evictionMaxSize = 5000;
-
-cfg.nearCacheConfigs['mostlyReadMap'] = nearCacheConfig;
+const cfg = {
+    nearCaches: {
+        'mostlyReadMap': {
+            inMemoryFormat: 'OBJECT',
+            invalidateOnChange: true,
+            evictionPolicy: 'LRU',
+            evictionMaxSize: 5000,
+        }
+    }
+};
 ```
 
 #### 7.8.2.3. Near Cache Eviction
@@ -2983,7 +2464,6 @@ Expiration means the eviction of expired records. A record is expired:
 
 The actual expiration is performed when a record is accessed: it is checked if the record is expired or not. If it is expired, it is evicted and `undefined` is returned as the value to the caller.
 
-
 #### 7.8.2.5. Near Cache Invalidation
 
 Invalidation is the process of removing an entry from the Near Cache when its value is updated or it is removed from the original map (to prevent stale reads). See the [Near Cache Invalidation section](https://docs.hazelcast.org/docs/latest/manual/html-single/#near-cache-invalidation) in the Hazelcast IMDG Reference Manual.
@@ -2994,7 +2474,7 @@ Near Caches are invalidated by invalidation events. Invalidation events can be l
 
 To solve this problem, Hazelcast provides eventually consistent behavior for Map Near Caches by detecting invalidation losses. After detection of an invalidation loss, stale data will be made unreachable and Near Cache’s `get` calls to that data will be directed to underlying Map to fetch the fresh data.
 
-You can configure eventual consistency with the `ClientConfig.properties` below:
+You can configure eventual consistency with entries of the `properties` config option as described below:
 
 - `hazelcast.invalidation.max.tolerated.miss.count`: Default value is `10`. If missed invalidation count is bigger than this value, relevant cached data will be made unreachable.
 
@@ -3004,7 +2484,7 @@ You can configure eventual consistency with the `ClientConfig.properties` below:
 
 Hazelcast Node.js client performs automated pipelining of operations. It means that the library pushes all operations into an internal queue and tries to send them in batches. This reduces the count of executed `Socket.write()` calls and significantly improves throughtput for read operations.
 
-You can configure automated operation pipelining with the `ClientConfig.properties` below:
+You can configure automated operation pipelining with entries of the `properties` config option as described below:
 
 - `hazelcast.client.autopipelining.enabled`: Default value is `true`. Turns automated pipelining feature on/off. If your application does only writes operations, like `IMap.set()`, you can try disabling automated pipelining to get a slightly better throughtput.
 
@@ -3016,19 +2496,7 @@ You can configure automated operation pipelining with the `ClientConfig.properti
 
 You can monitor your clients using Hazelcast Management Center.
 
-As a prerequisite, you need to enable the client statistics before starting your clients. This can be done by setting the `hazelcast.client.statistics.enabled` system property to `true` on the **member** as the following:
-
-```xml
-<hazelcast>
-    ...
-    <properties>
-        <property name="hazelcast.client.statistics.enabled">true</property>
-    </properties>
-    ...
-</hazelcast>
-```
-
-Also, you need to enable the client statistics in the Node.js client. There are two properties related to client statistics:
+As a prerequisite, you need to enable the client statistics in the Node.js client. There are two entries supported by the `properties` config option which are related to client statistics:
 
 - `hazelcast.client.statistics.enabled`: If set to `true`, it enables collecting the client statistics and sending them to the cluster. When it is `true` you can monitor the clients that are connected to your Hazelcast cluster, using Hazelcast Management Center. Its default value is `false`.
 
@@ -3036,49 +2504,45 @@ Also, you need to enable the client statistics in the Node.js client. There are 
 
 You can enable client statistics and set a non-default period in seconds as follows:
 
-**Declarative Configuration:**
-
-```json
-{
-    "properties": {
-        "hazelcast.client.statistics.enabled": true,
-        "hazelcast.client.statistics.period.seconds": 4
-    }
-}
-```
-
-**Programmatic Configuration:**
-
 ```javascript
-var config = new Config.ClientConfig();
-config.properties['hazelcast.client.statistics.enabled'] = true;
-config.properties['hazelcast.client.statistics.period.seconds'] = 4;
+const cfg = {
+    properties: {
+        'hazelcast.client.statistics.enabled': true,
+        'hazelcast.client.statistics.period.seconds': 4
+    }
+};
 ```
 
 After enabling the client statistics, you can monitor your clients using Hazelcast Management Center. Please refer to the [Monitoring Clients section](https://docs.hazelcast.org/docs/management-center/latest/manual/html/index.html#monitoring-clients) in the Hazelcast Management Center Reference Manual for more information on the client statistics.
 
 ### 7.9.2. Logging Configuration
 
- By default, Hazelcast Node.js client uses a default logger which logs to the `stdout` with the `INFO` log level. You can change the log level using the `'hazelcast.logging.level'` property of the `ClientConfig.properties`.
+ By default, Hazelcast Node.js client uses a default logger which logs to the `stdout` with the `INFO` log level. You can change the log level using the `hazelcast.logging.level` entry of the `properties` config option.
 
 Below is an example of the logging configuration with the `OFF` log level which disables logging.
 
 ```javascript
-cfg.properties['hazelcast.logging.level'] = LogLevel.OFF;
+const cfg = {
+    properties: {
+        'hazelcast.logging.level': 'OFF'
+    }
+};
 ```
 
- You can also implement a custom logger depending on your needs. Your custom logger must have `log`, `error`, `warn`, `info`, `debug`, `trace` methods. After implementing it, you can use your custom logger using the `customLogger` property of `ClientConfig`
+ You can also implement a custom logger depending on your needs. Your custom logger must have `log`, `error`, `warn`, `info`, `debug`, `trace` methods. After implementing it, you can use your custom logger using the `customLogger` config option.
 
 See the following for a custom logger example.
 
 ```javascript
-var winstonAdapter = {
-    logger: new (winston.Logger)({
+const winstonAdapter = {
+    logger: winston.createLogger({
+        level: 'info',
         transports: [
-            new (winston.transports.Console)()
+            new winston.transports.Console({
+                format: winston.format.simple()
+            })
         ]
     }),
-
     levels: [
         'error',
         'warn',
@@ -3086,116 +2550,80 @@ var winstonAdapter = {
         'debug',
         'silly'
     ],
-
     log: function (level, objectName, message, furtherInfo) {
         this.logger.log(this.levels[level], objectName + ': ' + message, furtherInfo);
     },
-
     error: function (objectName, message, furtherInfo) {
         this.log(LogLevel.ERROR, objectName, message, furtherInfo);
     },
-
     warn: function (objectName, message, furtherInfo) {
         this.log(LogLevel.WARN, objectName, message, furtherInfo);
     },
-
     info: function (objectName, message, furtherInfo) {
         this.log(LogLevel.INFO, objectName, message, furtherInfo);
     },
-
     debug: function (objectName, message, furtherInfo) {
         this.log(LogLevel.DEBUG, objectName, message, furtherInfo);
     },
-
     trace: function (objectName, message, furtherInfo) {
         this.log(LogLevel.TRACE, objectName, message, furtherInfo);
     }
-
 };
-cfg.customLogger = winstonAdapter;
+const cfg = {
+    customLogger: winstonAdapter
+};
 ```
-
-Note that it is not possible to configure custom logging via declarative configuration.
 
 ## 7.10. Defining Client Labels
 
 Through the client labels, you can assign special roles for your clients and use these roles to perform some actions
 specific to those client connections.
 
-You can also group your clients using the client labels. These client groups can be blacklisted in the
-Hazelcast Management Center so that they can be prevented from connecting to a cluster.
-See the [related section](https://docs.hazelcast.org/docs/management-center/latest/manual/html/index.html#changing-cluster-client-filtering) in the Hazelcast Management Center Reference Manual for more information on this topic.
+You can also group your clients using the client labels. These client groups can be blacklisted in Hazelcast Management Center so that they can be prevented from connecting to a cluster. See the [related section](https://docs.hazelcast.org/docs/management-center/latest/manual/html/index.html#changing-cluster-client-filtering) in the Hazelcast Management Center Reference Manual for more information on this topic.
 
-Declaratively, you can define the client labels using the `clientLabels` configuration element. See the below example.
-
-```json
-{
-    "clientLabels": [
-        "role admin",
-        "region foo"
-    ]
-}
-```
-
-The equivalent programmatic approach is shown below.
+You can define the client labels using the `clientLabels` config option. See the below example.
 
 ```javascript
-var config = new Config.ClientConfig();
-
-config.labels.add("role admin");
-config.labels.add("region foo");
+const cfg = {
+    clientLabels: [
+        'role admin',
+        'region foo'
+    ]
+};
 ```
 
 ## 7.11. Defining Instance Name
 
-Each client has a name associated with it. By default, it is set to `hz.client_${CLIENT_ID}`.
-`CLIENT_ID` starts from `0` and it is incremented by `1` for each new client. This id is incremented and set by the
-client, so it may not be unique between different clients used by different applications.
+Each client has a name associated with it. By default, it is set to `hz.client_${CLIENT_ID}`. Here `CLIENT_ID` starts from `0` and it is incremented by `1` for each new client. This id is incremented and set by the client, so it may not be unique between different clients used by different applications.
 
-Declaratively, you can set the client name using the `instanceName` configuration element.
-
-```json
-{
-    "instanceName": "blue_client_0"
-}
-```
-The equivalent programmatic approach is shown below.
+You can set the client name using the `instanceName` configuration element.
 
 ```javascript
-var config = new Config.ClientConfig();
-
-config.name = "blue_client_0";
+const cfg = {
+    instanceName: 'blue_client_0'
+};
 ```
 
 ## 7.12. Configuring Load Balancer
 
-`LoadBalancer` allows you to specify which cluster member to send next operation when queried.
-It is up to your implementation to use different load balancing policies.
-You should implement the `LoadBalancer` interface or extend the `AbstractLoadBalancer` class for that purpose.
+Load Balancer configuration allows you to specify which cluster member to send next operation when queried.
 
 If it is a [smart client](#721-smart-client), only the operations that are not key-based are routed to the member
 that is returned by the `LoadBalancer`. If it is not a smart client, `LoadBalancer` is ignored.
 
-By default, client uses `RoundRobinLB` which picks each cluster member in turn. Also, the client provides
-`RandomLB` which picks the next member randomly as the name suggests. For the declarative configuration,
-you can use `roundRobin` or `random` configuration elements as the load balancer type.
+By default, client uses round robin Load Balancer which picks each cluster member in turn. Also, the client provides random Load Balancer which picks the next member randomly as the name suggests. You can use one of them by specifying `ROUND_ROBIN` or `RANDOM` value on the `loadBalancer.type` config option.
 
 The following are example configurations.
 
-Declarative Configuration:
-```json
-{
-  "loadBalancer": {
-    "type": "roundRobin"
+```javascript
+const cfg = {
+  loadBalancer: {
+    type: 'RANDOM'
   }
-}
+};
 ```
 
-Programmatic Configuration:
-```javascript
-var config = new Config.ClientConfig();
-config.loadBalancer = new RoundRobinLB();
-```
+You can also provide a custom Load Balancer implementation to use different load balancing policies. To do so, you should implement the `LoadBalancer` interface or extend the `AbstractLoadBalancer` class for that purpose and provide the Load Balancer object into the `loadBalancer.customLoadBalancer` config option.
 
 # 8. Securing Client Connection
 
@@ -3216,17 +2644,19 @@ Hazelcast allows you to encrypt socket level communication between Hazelcast mem
 
 ### 8.1.2. TLS/SSL for Hazelcast Node.js Clients
 
-TLS/SSL for the Hazelcast Node.js client can be configured using the `SSLConfig` class. In order to turn it on, `enabled` property of `SSLConfig` should be set to `true`:
+TLS/SSL for the Hazelcast Node.js client can be configured using the `SSLConfig` class. In order to turn it on, `enabled` property of the `network.ssl` config option should be set to `true`:
 
 ```javascript
-var clientConfig = new Config.ClientConfig();
-var sslConfig = new Config.SSLConfig();
-sslConfig.enabled = true;
-clientConfig.networkConfig.sslConfig = sslConfig;
+const cfg = {
+    network: {
+        ssl: {
+            enabled: true
+        }
+    }
+};
 ```
 
-`SSLConfig` object takes various SSL options defined in the [Node.js TLS Documentation](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback). You can set your custom options
-object to `sslConfig.sslOptions`.
+SSL config takes various SSL options defined in the [Node.js TLS Documentation](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback). You can set your custom options object to `network.ssl.sslOptions`.
 
 ### 8.1.3. Mutual Authentication
 
@@ -3248,8 +2678,7 @@ To enable mutual authentication, firstly, you need to set the following property
 
 You can see the details of setting mutual authentication on the server side in the [Mutual Authentication section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#mutual-authentication) of the Hazelcast IMDG Reference Manual.
 
-At the Node.js client side, you need to supply an SSL `options` object to pass to
-[`tls.connect`](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) of Node.js.
+At the Node.js client side, you need to supply an SSL `options` object to pass to [`tls.connect`](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) of Node.js.
 
 There are two ways to provide this object to the client:
 
@@ -3272,25 +2701,22 @@ properties. All you need to do is to specify your factory as `BasicSSLOptionsFac
 
 See [`tls.connect`](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) of Node.js for the descriptions of each option.
 
-> `caPath`, `keyPath` and `certPath` define the file path to the respective file that stores such information.
+> **NOTE: `caPath`, `keyPath` and `certPath` define the file path to the respective file that stores such information.**
 
-```json
-{
-    "network": {
-        "ssl": {
-            "enabled": true,
-            "factory": {
-                "exportedName": "BasicSSLOptionsFactory",
-                "properties": {
-                    "caPath": "ca.pem",
-                    "keyPath": "key.pem",
-                    "certPath": "cert.pem",
-                    "rejectUnauthorized": false
-                }
+```javascript
+const cfg = {
+    network: {
+        ssl: {
+            enabled: true,
+            sslOptionsFactoryProperties: {
+                caPath: 'ca.pem',
+                keyPath: 'key.pem',
+                certPath: 'cert.pem',
+                rejectUnauthorized: false
             }
         }
     }
-}
+};
 ```
 
 If these options are not enough for your application, you may write your own options factory and instruct the client
@@ -3302,93 +2728,79 @@ In order to use the full range of options provided to [`tls.connect`](https://no
 
 An example configuration is shown below.
 
-```json
-{
-    "network": {
-        "ssl": {
-            "enabled": true,
-            "factory": {
-                "path": "my_factory.js",
-                "exportedName": "SSLFactory",
-                "properties": {
-                    "caPath": "ca.pem",
-                    "keyPath": "key.pem",
-                    "certPath": "cert.pem",
-                    "keepOrder": true
-                }
+```javascript
+const readFile = util.promisify(fs.readFile);
+
+class SSLFactory {
+    async init(properties) {
+        const promises = [];
+        this.keepOrder = properties.userDefinedProperty1;
+        const self = this;
+
+        promises.push(readFile(properties.caPath).then((data) => {
+            self.ca = data;
+        }));
+        promises.push(readFile(properties.keyPath).then((data) => {
+            self.key = data;
+        }));
+        promises.push(readFile(properties.certPath).then((data) => {
+            self.cert = data;
+        }));
+
+        return Promise.all(promises);
+    }
+
+    getSSLOptions() {
+        const sslOpts = {
+            ca: this.ca,
+            key: this.key,
+            cert: this.cert,
+            servername: 'foo.bar.com',
+            rejectUnauthorized: true
+        };
+        if (this.keepOrder) {
+            sslOpts.honorCipherOrder = true;
+        }
+        return sslOpts;
+    }
+}
+
+const cfg = {
+    network: {
+        ssl: {
+            enabled: true,
+            sslOptionsFactory: new SSLFactory(),
+            sslOptionsFactoryProperties: {
+                caPath: 'ca.pem',
+                keyPath: 'key.pem',
+                certPath: 'cert.pem',
+                keepOrder: true
             }
         }
     }
-}
+};
 ```
 
-An example of a factory, `my_factory.js`, is shown below.
-
-```javascript
-function SSLFactory() {
-}
-
-SSLFactory.prototype.init = function (properties) {
-    var promises = [];
-    var readFile = Promise.promisify(fs.readFile);
-    this.keepOrder = properties.userDefinedProperty1;
-    var self = this;
-
-    promises.push(readFile(properties.caPath).then(function (data) {
-        self.ca = data;
-    }));
-    promises.push(readFile(properties.keyPath).then(function (data) {
-        self.key = data;
-    }));
-    promises.push(readFile(properties.certPath).then(function (data) {
-        self.cert = data;
-    }));
-
-    return Promise.all(promises).return();
-};
-
-SSLFactory.prototype.getSSLOptions = function () {
-    var sslOpts = {
-        ca: this.ca,
-        key: this.key,
-        cert: this.cert,
-        servername: 'foo.bar.com',
-        rejectUnauthorized: true
-    };
-    if (this.keepOrder) {
-        sslOpts.honorCipherOrder = true;
-    }
-    return sslOpts;
-};
-exports.SSLFactory = SSLFactory;
-```
-
-The client loads `MyFactory.js` at runtime and creates an instance of `SSLFactory`. It then calls the method `init` with
-the properties section in the JSON configuration file. Lastly, the client calls the method `getSSLOptions` of `SSLFactory` to create the `options` object.
-
-For information about the path resolution, see the [Loading Objects and Path Resolution section](#33-loading-objects-and-path-resolution).
+The client calls the method `init` with the properties section defined in the configuration. Then the client calls the method `getSSLOptions` of `SSLFactory` to create the `options` object.
 
 ## 8.2. Credentials
 
-One of the key elements in Hazelcast security is the `Credentials` object, which can be used to carry all security attributes of the
-Hazelcast Node.js client to Hazelcast members. Then, Hazelcast members can authenticate the clients and perform access control
-checks on the client operations using this `Credentials` object.
+One of the key elements in Hazelcast security is the `Credentials` object, which can be used to carry all security attributes of the Hazelcast Node.js client to Hazelcast members. Then, Hazelcast members can authenticate the clients and perform access control checks on the client operations using this `Credentials` object.
 
 To use this feature, you need to
 * have a class implementing the [`Credentials`](https://docs.hazelcast.org/docs/latest/javadoc/com/hazelcast/security/Credentials.html) interface which contains the security attributes of your client
 * have a class implementing the [`LoginModule`](https://docs.oracle.com/javase/8/docs/api/javax/security/auth/spi/LoginModule.html?is-external=true) interface which uses the `Credentials` object during the authentication process
 * configure your Hazelcast member's security properties with respect to these classes before starting it. If you have started your member as described in the [Running Standalone JARs section](#1211-running-standalone-jars), see the [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath).
 
-[`UsernamePasswordCredentials`](https://docs.hazelcast.org/docs/latest/javadoc/com/hazelcast/security/UsernamePasswordCredentials.html), a basic implementation of the `Credentials` interface, is available in the Hazelcast `com.hazelcast.security` package.
-`UsernamePasswordCredentials` is used for default configuration during the authentication process of both members and clients. You can also use this class to carry the security attributes of your client.
+[`UsernamePasswordCredentials`](https://docs.hazelcast.org/docs/latest/javadoc/com/hazelcast/security/UsernamePasswordCredentials.html), a basic implementation of the `Credentials` interface, is available in the Hazelcast `com.hazelcast.security` package. `UsernamePasswordCredentials` is used for default configuration during the authentication process of both members and clients. You can also use this class to carry the security attributes of your client.
 
-Hazelcast also has an abstract implementation of the `LoginModule` interface which is the `ClusterLoginModule` class in the `com.hazelcast.security` package.
-You can extend this class and do the authentication on the `onLogin()` method.
+Hazelcast also has an abstract implementation of the `LoginModule` interface which is the `ClusterLoginModule` class in the `com.hazelcast.security` package. You can extend this class and do the authentication on the `onLogin()` method.
 
-Below is an example for the extension of abstract `ClusterLoginModule` class.
-On the `ClientLoginModule#onLogin()` method, we are doing a simple authentication against a hardcoded username and password just for illustrative purposes. You should carry out the authentication against a security service of your choice.
+Below is an example for the extension of abstract `ClusterLoginModule` class. On the `ClientLoginModule#onLogin()` method, we are doing a simple authentication against a hardcoded username and password just for illustrative purposes. You should carry out the authentication against a security service of your choice.
 
 ```java
+package com.example;
+
 import com.hazelcast.security.ClusterLoginModule;
 import com.hazelcast.security.UsernamePasswordCredentials;
 
@@ -3429,14 +2841,13 @@ public class ClientLoginModule extends ClusterLoginModule {
 }
 ```
 
-Finally, you can configure `hazelcast.xml` as follows to enable Hazelcast security, do mandatory authentication with `ClientLoginModule`
-and give the user with the name `admin` all the permissions over the map named `importantMap`.
+Finally, you can configure `hazelcast.xml` as follows to enable Hazelcast security, do mandatory authentication with `ClientLoginModule` and give the user with the name `admin` all the permissions over the map named `importantMap`.
 
 ```xml
 <hazelcast>
     <security enabled="true">
         <client-login-modules>
-            <login-module class-name="com.company.ClientLoginModule" usage="REQUIRED"/>
+            <login-module class-name="com.example.ClientLoginModule" usage="REQUIRED"/>
         </client-login-modules>
         <client-permissions>
             <map-permission name="importantMap" principal="admin">
@@ -3449,38 +2860,39 @@ and give the user with the name `admin` all the permissions over the map named `
 </hazelcast>
 ```
 
-After successfully starting a Hazelcast member as described above, you need to implement `Portable` equivalent of the `UsernamePasswordCredentials`
-and register it to your client configuration.
+After successfully starting a Hazelcast member as described above, you need to implement `Portable` equivalent of the `UsernamePasswordCredentials` and register it to your client configuration.
 
 Below is the code for that.
 
 **user_pass_cred.js**
 ```javascript
-function UsernamePasswordCredentials(username, password, endpoint) {
-    this.username = username;
-    this.password = Buffer.from(password, 'utf8');
-    this.endpoint = endpoint;
+class UsernamePasswordCredentials {
+    constructor(username, password, endpoint) {
+        this.username = username;
+        this.password = Buffer.from(password, 'utf8');
+        this.endpoint = endpoint;
+    }
+
+    readPortable = function (input) {
+        this.username = input.readUTF('principal');
+        this.endpoint = input.readUTF('endpoint');
+        this.password = input.readByteArray('pwd');
+    }
+
+    writePortable(output) {
+        output.writeUTF('principal', this.username);
+        output.writeUTF('endpoint', this.endpoint);
+        output.writeByteArray('pwd', this.password);
+    }
+
+    getFactoryId() {
+        return -1;
+    }
+
+    getClassId() {
+        return 1;
+    }
 }
-
-UsernamePasswordCredentials.prototype.readPortable = function (reader) {
-    this.username = reader.readUTF('principal');
-    this.endpoint = reader.readUTF('endpoint');
-    this.password = reader.readByteArray('pwd');
-};
-
-UsernamePasswordCredentials.prototype.writePortable = function (writer) {
-    writer.writeUTF('principal', this.username);
-    writer.writeUTF('endpoint', this.endpoint);
-    writer.writeByteArray('pwd', this.password);
-};
-
-UsernamePasswordCredentials.prototype.getFactoryId = function () {
-    return -1;
-};
-
-UsernamePasswordCredentials.prototype.getClassId = function () {
-    return 1;
-};
 
 exports.UsernamePasswordCredentials = UsernamePasswordCredentials;
 ```
@@ -3489,17 +2901,16 @@ And below is the `Factory` implementation for the `Portable` implementation of `
 
 **user_pass_cred_factory.js**
 ```javascript
-var UsernamePasswordCredentials = require('./user_pass_cred').UsernamePasswordCredentials;
+const { UsernamePasswordCredentials } = require('./user_pass_cred');
 
-function UsernamePasswordCredentialsFactory() {
-}
-
-UsernamePasswordCredentialsFactory.prototype.create = function (classId) {
-    if(classId === 1){
-        return new UsernamePasswordCredentials();
+class UsernamePasswordCredentialsFactory() {
+    create(classId) {
+        if (classId === 1) {
+            return new UsernamePasswordCredentials();
+        }
+        return null;
     }
-    return null;
-};
+}
 
 exports.UsernamePasswordCredentialsFactory = UsernamePasswordCredentialsFactory;
 ```
@@ -3507,32 +2918,24 @@ exports.UsernamePasswordCredentialsFactory = UsernamePasswordCredentialsFactory;
 Now, you can start your client by registering the `Portable` factory and giving the credentials as follows.
 
 ```javascript
-var Client = require('hazelcast-client').Client;
-var ClientConfig = require('hazelcast-client').Config.ClientConfig;
+const { UsernamePasswordCredentials } = require('./user_pass_cred');
+const { UsernamePasswordCredentialsFactory } = require('./user_pass_cred_factory');
 
-var UsernamePasswordCredentials = require('./user_pass_cred').UsernamePasswordCredentials;
-var UsernamePasswordCredentialsFactory = require('./user_pass_cred_factory').UsernamePasswordCredentialsFactory;
+const cfg = {
+    serialization: {
+        portableVersion: 1,
+        portableFactories: {
+            [-1]: new UsernamePasswordCredentialsFactory()
+        }
+    },
+    customCredentials: new UsernamePasswordCredentials('admin', 'password', '127.0.0.1')
+};
 
-var config = new ClientConfig();
-config.serializationConfig.portableVersion = 1;
-config.serializationConfig.portableFactories[-1] = new UsernamePasswordCredentialsFactory();
-config.customCredentials = new UsernamePasswordCredentials('admin', 'password', '127.0.0.1');
-
-Client.newHazelcastClient(config).then(function (client) {
-    var map;
-    return client.getMap('importantMap').then(function (mp) {
-        map = mp;
-        return map.put('key', 'value');
-    }).then(function () {
-        return map.get('key');
-    }).then(function (value) {
-        console.log(value);
-        return client.shutdown();
-    });
-});
+const client = await Client.newHazelcastClient(cfg);
+// Some operations
 ```
 
-> NOTE: It is almost always a bad idea to write the credentials to wire in a clear-text format. Therefore, using TLS/SSL encryption is highly recommended while using the custom credentials as described in [TLS/SSL section]((#81-tlsssl)).
+> **NOTE: It is almost always a bad idea to write the credentials to wire in a clear-text format. Therefore, using TLS/SSL encryption is highly recommended while using the custom credentials as described in [TLS/SSL section]((#81-tlsssl)).**
 
 With Hazelcast's extensible, `JAAS` based security features you can do much more than just authentication.
 See the [JAAS code sample](code_samples/jaas_sample) to learn how to perform access control checks on the client operations based on user groups.
@@ -3542,8 +2945,7 @@ Also, see the [Security section](https://docs.hazelcast.org/docs/latest/manual/h
 
 # 9. Development and Testing
 
-Hazelcast Node.js client is developed using TypeScript. If you want to help with bug fixes, develop new features or
-tweak the implementation to your application's needs, you can follow the steps in this section.
+Hazelcast Node.js client is developed using TypeScript. If you want to help with bug fixes, develop new features or tweak the implementation to your application's needs, you can follow the steps in this section.
 
 ## 9.1. Building and Using Client From Sources
 
@@ -3554,14 +2956,13 @@ Follow the below steps to build and install Hazelcast Node.js client from its so
 there may be vulnerabilities reported due to `devDependencies`. In that case, run `npm audit fix` to automatically install any compatible updates to vulnerable dependencies.
 3. Run `npm run compile` to compile TypeScript files to JavaScript.
 
-At this point you have all the runnable code (`.js`) and type declarations (`.d.ts`) in the `lib` directory. You may create a link to this module so that your local
-applications can depend on your local copy of Hazelcast Node.js client. In order to create a link, run the below command:
+At this point you have all the runnable code (`.js`) and type declarations (`.d.ts`) in the `lib` directory. You may create a link to this module so that your local applications can depend on your local copy of Hazelcast Node.js client. In order to create a link, run the below command:
 
 ```
 npm link
 ```
 
-This will create a global link to this module in your computer. Whenever you need to depend on this module from another
+This will create a global link to this module in your machine. Whenever you need to depend on this module from another
 local project, run the below command:
 
 ```
@@ -3578,7 +2979,7 @@ npm run lint
 
 In order to test Hazelcast Node.js client locally, you will need the following:
 
-* Java 6 or newer
+* Java 8 or newer
 * Maven
 
 Following command starts the tests:

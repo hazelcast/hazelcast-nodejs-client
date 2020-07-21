@@ -13,29 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Controller = require('../RC');
-var Client = require('../../').Client;
-var Config = require('../../.').Config;
-var Aggregators = require('../../').Aggregators;
-var Predicates = require('../../').Predicates;
-var _fillMap = require('../Util').fillMap;
-var expect = require('chai').expect;
+const RC = require('../RC');
+const Client = require('../../').Client;
+const Aggregators = require('../../').Aggregators;
+const Predicates = require('../../').Predicates;
+const fillMap = require('../Util').fillMap;
+const expect = require('chai').expect;
 
 describe('MapAggregatorsIntTest', function () {
-    var cluster;
-    var client;
-    var map;
+
+    let cluster, client;
+    let map;
 
     before(function () {
-        return Controller.createCluster(null, null).then(function (cl) {
+        return RC.createCluster(null, null).then(function (cl) {
             cluster = cl;
-            return Controller.startMember(cluster.id);
+            return RC.startMember(cluster.id);
         }).then(function () {
-            const cfg = new Config.ClientConfig();
-            cfg.clusterName = cluster.id;
-            cfg.serializationConfig.defaultNumberType = 'integer';
-            return Client.newHazelcastClient(cfg);
+            return Client.newHazelcastClient({
+                clusterName: cluster.id,
+                serialization: {
+                    defaultNumberType: 'integer'
+                }
+            });
         }).then(function (cl) {
             client = cl;
             return client.getMap('aggregatorsMap');
@@ -46,11 +48,11 @@ describe('MapAggregatorsIntTest', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     beforeEach(function () {
-        return _fillMap(map, 50, 'key', 0);
+        return fillMap(map, 50, 'key', 0);
     });
 
     afterEach(function () {
@@ -70,9 +72,10 @@ describe('MapAggregatorsIntTest', function () {
     });
 
     it('intAvg with predicate', function () {
-        return map.aggregateWithPredicate(Aggregators.integerAvg(), Predicates.greaterEqual('this', 47)).then(function (avg) {
-            return expect(avg).to.equal(48);
-        });
+        return map.aggregateWithPredicate(Aggregators.integerAvg(), Predicates.greaterEqual('this', 47))
+            .then(function (avg) {
+                return expect(avg).to.equal(48);
+            });
     });
 
     it('intSum', function () {
@@ -88,9 +91,10 @@ describe('MapAggregatorsIntTest', function () {
     });
 
     it('intSum with predicate', function () {
-        return map.aggregateWithPredicate(Aggregators.integerSum(), Predicates.greaterEqual('this', 47)).then(function (sum) {
-            return expect(sum.toNumber()).to.equal(144);
-        });
+        return map.aggregateWithPredicate(Aggregators.integerSum(), Predicates.greaterEqual('this', 47))
+            .then(function (sum) {
+                return expect(sum.toNumber()).to.equal(144);
+            });
     });
 
 
@@ -107,8 +111,9 @@ describe('MapAggregatorsIntTest', function () {
     });
 
     it('fixedPointSum with predicate', function () {
-        return map.aggregateWithPredicate(Aggregators.fixedPointSum(), Predicates.greaterEqual('this', 47)).then(function (sum) {
-            return expect(sum.toNumber()).to.equal(144);
-        });
+        return map.aggregateWithPredicate(Aggregators.fixedPointSum(), Predicates.greaterEqual('this', 47))
+            .then(function (sum) {
+                return expect(sum.toNumber()).to.equal(144);
+            });
     });
 });

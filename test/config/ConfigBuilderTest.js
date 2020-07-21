@@ -13,27 +13,60 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require('chai').expect;
-var path = require('path');
-var ConfigBuilder = require('../../').ConfigBuilder;
-var Config = require('../../').Config;
-var AddressHelper = require("../../lib/Util").AddressHelper;
-var ReconnectMode = require('../../lib/config/ConnectionStrategyConfig').ReconnectMode;
+const expect = require('chai').expect;
+const path = require('path');
+const Config = require('../..').Config;
+const ConfigBuilder = require('../../lib/config/ConfigBuilder').ConfigBuilder;
+const AddressHelper = require('../../lib/Util').AddressHelper;
+const ReconnectMode = require('../../lib/config/ConnectionStrategyConfig').ReconnectMode;
 
-describe('ConfigBuilder Test', function () {
-    var fullConfig;
+describe('ConfigBuilderTest', function () {
+
+    let fullConfig;
+    const lifecycleListener = () => {};
+    const membershipListener = {
+        memberAdded: () => {},
+        memberRemoved: () => {}
+    };
+    const dataSerializableFactory = {
+        factoryId: 1,
+        create: () => {}
+    };
+    const portableFactory = {
+        factoryId: 2,
+        create: () => {}
+    };
+    const customSerializer = {
+        getId: () => 3,
+        hzGetCustomId: () => 3
+    };
+    customSerializer.typeId = 3;
+    const globalSerializer = () => {};
+    const customLoadBalancer = {
+        initLoadBalancer: () => {},
+        next: () => {}
+    };
 
     before(function () {
-        var configBuilder = new ConfigBuilder();
-        process.env['HAZELCAST_CLIENT_CONFIG'] = path.join(__dirname, 'configurations/full.json');
-        return configBuilder.loadConfig().then(function () {
-            fullConfig = configBuilder.build();
-        });
-    });
-
-    after(function () {
-        delete process.env['HAZELCAST_CLIENT_CONFIG'];
+        const inputConfig = require(path.join(__dirname, 'configurations/full.json'));
+        inputConfig.lifecycleListeners = [
+            lifecycleListener
+        ];
+        inputConfig.membershipListeners = [
+            membershipListener
+        ];
+        inputConfig.serialization.dataSerializableFactories = {
+            1: dataSerializableFactory
+        };
+        inputConfig.serialization.portableFactories = {
+            2: portableFactory
+        };
+        inputConfig.serialization.customSerializers = [customSerializer];
+        inputConfig.serialization.globalSerializer = globalSerializer;
+        inputConfig.loadBalancer.customLoadBalancer = customLoadBalancer;
+        fullConfig = new ConfigBuilder(inputConfig).build();
     });
 
     it('clusterName', function () {
@@ -45,30 +78,29 @@ describe('ConfigBuilder Test', function () {
     });
 
     it('clientLabels', function () {
-        var labels = fullConfig.labels;
-        expect(labels.size).to.equal(2);
-        expect(labels.has('label1')).to.be.true;
-        expect(labels.has('label2')).to.be.true;
+        const labels = fullConfig.clientLabels;
+        expect(labels.length).to.equal(2);
+        expect(labels.includes('label1')).to.be.true;
+        expect(labels.includes('label2')).to.be.true;
     });
 
     it('connectionStrategy', function () {
-        var connectionStrategyConfig = fullConfig.connectionStrategyConfig;
+        const connectionStrategyConfig = fullConfig.connectionStrategy;
         expect(connectionStrategyConfig.asyncStart).to.be.true;
         expect(connectionStrategyConfig.reconnectMode).to.equal(ReconnectMode.ASYNC);
 
-        var connectionRetryConfig = connectionStrategyConfig.connectionRetryConfig;
+        const connectionRetryConfig = connectionStrategyConfig.connectionRetry;
         expect(connectionRetryConfig.initialBackoffMillis).to.equal(2000);
         expect(connectionRetryConfig.maxBackoffMillis).to.equal(60000);
         expect(connectionRetryConfig.multiplier).to.equal(3);
         expect(connectionRetryConfig.clusterConnectTimeoutMillis).to.equal(5000);
         expect(connectionRetryConfig.jitter).to.equal(0.5);
-
     });
 
-    it('networkConfig', function () {
-        var networkCfg = fullConfig.networkConfig;
+    it('network', function () {
+        const networkCfg = fullConfig.network;
 
-        var addresses0 = AddressHelper.getSocketAddresses(networkCfg.addresses[0]);
+        const addresses0 = AddressHelper.getSocketAddresses(networkCfg.clusterMembers[0]);
         expect(addresses0[0].host).to.equal('127.0.0.9');
         expect(addresses0[0].port).to.equal(5701);
         expect(addresses0[1].host).to.equal('127.0.0.9');
@@ -77,29 +109,29 @@ describe('ConfigBuilder Test', function () {
         expect(addresses0[2].port).to.equal(5703);
         expect(addresses0.length).to.equal(3);
 
-        var addresses1 = AddressHelper.getSocketAddresses(networkCfg.addresses[1]);
+        const addresses1 = AddressHelper.getSocketAddresses(networkCfg.clusterMembers[1]);
         expect(addresses1[0].host).to.equal('127.0.0.2');
         expect(addresses1[0].port).to.equal(5702);
         expect(addresses1.length).to.equal(1);
 
-
-        var address0 = AddressHelper.createAddressFromString(networkCfg.addresses[0]);
-        var address1 = AddressHelper.createAddressFromString(networkCfg.addresses[1]);
+        const address0 = AddressHelper.createAddressFromString(networkCfg.clusterMembers[0]);
+        const address1 = AddressHelper.createAddressFromString(networkCfg.clusterMembers[1]);
         expect(address0.host).to.equal('127.0.0.9');
         expect(address0.port).to.be.undefined;
         expect(address1.host).to.equal('127.0.0.2');
         expect(address1.port).to.equal(5702);
         expect(networkCfg.smartRouting).to.be.false;
         expect(networkCfg.connectionTimeout).to.equal(6000);
-        expect(networkCfg.sslConfig.enabled).to.be.true;
-        expect(networkCfg.sslConfig.sslOptions).to.be.null;
-        expect(networkCfg.sslConfig.sslOptionsFactoryConfig.path).to.equal('path/to/file');
-        expect(networkCfg.sslConfig.sslOptionsFactoryConfig.exportedName).to.equal('exportedName');
-        expect(networkCfg.sslConfig.sslOptionsFactoryProperties['userDefinedProperty1']).to.equal('userDefinedValue');
+        expect(networkCfg.ssl.enabled).to.be.true;
+        expect(networkCfg.ssl.sslOptions).to.be.not.null;
+        expect(networkCfg.ssl.sslOptions.ca).to.equal('ca.pem');
+        expect(networkCfg.ssl.sslOptions.cert).to.equal('cert.pem');
+        expect(networkCfg.ssl.sslOptions.key).to.equal('key.pem');
+        expect(networkCfg.ssl.sslOptions.servername).to.equal('foo.bar.com');
     });
 
     it('properties', function () {
-        var properties = fullConfig.properties;
+        const properties = fullConfig.properties;
         expect(properties['hazelcast.client.heartbeat.interval']).to.equal(1000);
         expect(properties['hazelcast.client.heartbeat.timeout']).to.equal(10000);
         expect(properties['hazelcast.client.invocation.retry.pause.millis']).to.equal(4000);
@@ -118,30 +150,28 @@ describe('ConfigBuilder Test', function () {
     });
 
     it('serialization', function () {
-        var serializationCfg = fullConfig.serializationConfig;
+        const serializationCfg = fullConfig.serialization;
+
         expect(serializationCfg.defaultNumberType).to.equal('integer');
         expect(serializationCfg.isBigEndian).to.equal(false);
         expect(serializationCfg.portableVersion).to.equal(1);
         expect(serializationCfg.jsonStringDeserializationPolicy)
             .to.equal(Config.JsonStringDeserializationPolicy.NO_DESERIALIZATION);
-        expect(serializationCfg.dataSerializableFactoryConfigs[0].path).to.equal('path/to/file');
-        expect(serializationCfg.dataSerializableFactoryConfigs[0].exportedName).to.equal('exportedName');
 
-        expect(serializationCfg.portableFactoryConfigs[1].path).to.equal('path/to/file');
-        expect(serializationCfg.portableFactoryConfigs[1].exportedName).to.equal('exportedName');
+        expect(Object.keys(serializationCfg.dataSerializableFactories).length).to.equal(1);
+        expect(serializationCfg.dataSerializableFactories['1']).to.equal(dataSerializableFactory);
 
-        expect(serializationCfg.globalSerializerConfig.exportedName).to.equal('exportedName');
-        expect(serializationCfg.globalSerializerConfig.path).to.equal('path/to/file');
+        expect(Object.keys(serializationCfg.portableFactories).length).to.equal(1);
+        expect(serializationCfg.portableFactories['2']).to.equal(portableFactory);
 
-        expect(serializationCfg.customSerializerConfigs[2].exportedName).to.equal('CustomSerializer1');
-        expect(serializationCfg.customSerializerConfigs[2].path).to.equal('path/to/custom');
+        expect(serializationCfg.customSerializers.length).to.equal(1);
+        expect(serializationCfg.customSerializers[0]).to.equal(customSerializer);
 
-        expect(serializationCfg.customSerializerConfigs[3].exportedName).to.equal('CustomSerializer2');
-        expect(serializationCfg.customSerializerConfigs[3].path).to.equal('path/to/custom');
+        expect(serializationCfg.globalSerializer).to.equal(globalSerializer);
     });
 
     it('nearCaches', function () {
-        var nearCacheConfigs = fullConfig.nearCacheConfigs;
+        const nearCacheConfigs = fullConfig.nearCaches;
         expect(nearCacheConfigs['nc-map'].name).to.equal('nc-map');
         expect(nearCacheConfigs['nc-map'].invalidateOnChange).to.be.false;
         expect(nearCacheConfigs['nc-map'].maxIdleSeconds).to.equal(2);
@@ -164,7 +194,7 @@ describe('ConfigBuilder Test', function () {
     });
 
     it('reliableTopics', function () {
-        var rtConfigs = fullConfig.reliableTopicConfigs;
+        const rtConfigs = fullConfig.reliableTopics;
         expect(rtConfigs['rt1'].name).to.equal('rt1');
         expect(rtConfigs['rt1'].readBatchSize).to.equal(35);
         expect(rtConfigs['rt1'].overloadPolicy).to.equal(Config.TopicOverloadPolicy.DISCARD_NEWEST);
@@ -174,18 +204,20 @@ describe('ConfigBuilder Test', function () {
         expect(rtConfigs['rt2'].overloadPolicy).to.equal(Config.TopicOverloadPolicy.DISCARD_NEWEST);
     });
 
-    it('listenerConfig', function () {
-        var listenerConfig = fullConfig.listenerConfigs;
-        expect(listenerConfig[0].type).to.equal('lifecycle');
-        expect(listenerConfig[0].importConfig.exportedName).to.equal('listener');
-        expect(listenerConfig[0].importConfig.path).to.equal('path/to/file');
-        expect(listenerConfig[1].type).to.equal('membership');
-        expect(listenerConfig[1].importConfig.exportedName).to.equal('listener2');
-        expect(listenerConfig[1].importConfig.path).to.equal('path/to/file');
+    it('lifecycleListeners', function () {
+        const listenerConfig = fullConfig.lifecycleListeners;
+        expect(listenerConfig.length).to.equal(1);
+        expect(listenerConfig[0]).to.equal(lifecycleListener);
     });
 
-    it('flakeIdGeneratorConfigs', function () {
-        var flakeIdConfigs = fullConfig.flakeIdGeneratorConfigs;
+    it('membershipListeners', function () {
+        const listenerConfig = fullConfig.membershipListeners;
+        expect(listenerConfig.length).to.equal(1);
+        expect(listenerConfig[0]).to.equal(membershipListener);
+    });
+
+    it('flakeIdGenerators', function () {
+        const flakeIdConfigs = fullConfig.flakeIdGenerators;
         expect(flakeIdConfigs['flakeid'].name).to.equal('flakeid');
         expect(flakeIdConfigs['flakeid'].prefetchCount).to.equal(123);
         expect(150000).to.be.equal(flakeIdConfigs['flakeid'].prefetchValidityMillis);
@@ -195,7 +227,8 @@ describe('ConfigBuilder Test', function () {
     })
 
     it('loadBalancer', function () {
-        var loadBalancer = fullConfig.loadBalancer;
-        expect(loadBalancer.constructor.name).to.equal('RandomLB');
+        const loadBalancer = fullConfig.loadBalancer;
+        expect(loadBalancer.type).to.equal(Config.LoadBalancerType.RANDOM);
+        expect(loadBalancer.customLoadBalancer).to.equal(customLoadBalancer);
     });
 });

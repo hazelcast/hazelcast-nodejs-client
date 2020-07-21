@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 'use strict';
 
 const chai = require('chai');
@@ -22,8 +21,7 @@ chai.use(chaiAsPromised);
 
 const expect = require('chai').expect;
 const Client = require('../../.').Client;
-const Config = require('../../.').Config;
-const Controller = require('../RC');
+const RC = require('../RC');
 const TestUtil = require('../Util');
 const Errors = require('../../.').HazelcastErrors;
 const Util = require('../../lib/Util');
@@ -33,75 +31,72 @@ const LifecycleState = require('../../lib/LifecycleService').LifecycleState;
 describe('ConnectionStrategyTest', function () {
 
     this.timeout(32000);
+    let cluster, client;
 
-    let cluster;
-    let client;
-
-
-    beforeEach(function () {
+    beforeEach(() => {
         client = null;
         cluster = null;
     });
 
-    afterEach(function () {
+    afterEach(() => {
         if (client != null) {
             client.shutdown();
         }
-
         if (cluster != null) {
-            return Controller.terminateCluster(cluster.id);
+            return RC.terminateCluster(cluster.id);
         }
     });
 
     it('client with async start throws when there is no cluster', function () {
-        const config = new Config.ClientConfig();
-        config.connectionStrategyConfig.asyncStart = true;
-
-        return Client.newHazelcastClient(config)
-            .then((c) => {
-                client = c;
-                return expect(client.getMap(TestUtil.randomString())).to.be.rejectedWith(Errors.ClientOfflineError);
-            });
+        return Client.newHazelcastClient({
+            connectionStrategy: {
+                asyncStart: true
+            }
+        }).then((c) => {
+            client = c;
+            return expect(client.getMap(TestUtil.randomString())).to.be.rejectedWith(Errors.ClientOfflineError);
+        });
     });
 
     it('client with async start throws after shutdown when there is no cluster', function () {
-        const config = new Config.ClientConfig();
-        config.connectionStrategyConfig.asyncStart = true;
-
-        return Client.newHazelcastClient(config)
-            .then((c) => {
-                client = c;
-                client.shutdown();
-                return expect(client.getMap(TestUtil.randomString())).to.be.rejectedWith(Errors.ClientNotActiveError);
-            })
+        return Client.newHazelcastClient({
+            connectionStrategy: {
+                asyncStart: true
+            }
+        }).then((c) => {
+            client = c;
+            client.shutdown();
+            return expect(client.getMap(TestUtil.randomString())).to.be.rejectedWith(Errors.ClientNotActiveError);
+        })
     });
 
     it('client with async start connects to cluster', function () {
-        const config = new Config.ClientConfig();
-
-        config.networkConfig.addresses.push('localhost:5701');
-
+        const config = {
+            network: {
+                clusterMembers: ['localhost:5701']
+            },
+            lifecycleListeners: [],
+            connectionStrategy: {
+                asyncStart: true
+            }
+        };
         const connected = Util.DeferredPromise();
-        config.listeners.addLifecycleListener((state) => {
+        config.lifecycleListeners.push((state) => {
             if (state === LifecycleState.CONNECTED) {
                 connected.resolve();
             }
         });
 
-        config.connectionStrategyConfig.asyncStart = true;
-
-        return Controller.createCluster(null, null)
+        return RC.createCluster(null, null)
             .then((c) => {
-               cluster = c;
-               config.clusterName = cluster.id;
-
-               return Client.newHazelcastClient(config);
+                cluster = c;
+                config.clusterName = cluster.id;
+                return Client.newHazelcastClient(config);
             })
             .then((c) => {
-               client = c;
-
+                client = c;
                 expect(client.getLifecycleService().isRunning()).to.be.true;
-                return Controller.startMember(cluster.id);
+                return RC.startMember(cluster.id);
             })
             .then(() => {
                 return connected.promise;
@@ -112,26 +107,28 @@ describe('ConnectionStrategyTest', function () {
     });
 
     it('client with OFF reconnect mode does not reconnect when the member dies and another starts', function () {
-        const config = new Config.ClientConfig();
-
-        config.connectionStrategyConfig.reconnectMode = ReconnectMode.OFF;
-        config.connectionStrategyConfig.connectionRetryConfig.clusterConnectTimeoutMillis = Number.MAX_SAFE_INTEGER;
-
+        const config = {
+            lifecycleListeners: [],
+            connectionStrategy: {
+                reconnectMode: ReconnectMode.OFF,
+                connectionRetry: {
+                    clusterConnectTimeoutMillis: Number.MAX_SAFE_INTEGER
+                }
+            }
+        };
         const shutdown = Util.DeferredPromise();
-        config.listeners.addLifecycleListener((state) => {
+        config.lifecycleListeners.push((state) => {
             if (state === LifecycleState.SHUTDOWN) {
                 shutdown.resolve();
             }
         });
 
-        let map;
-        let member;
-
-        return Controller.createCluster(null, null)
+        let map, member;
+        return RC.createCluster(null, null)
             .then((c) => {
                 cluster = c;
                 config.clusterName = cluster.id;
-                return Controller.startMember(cluster.id);
+                return RC.startMember(cluster.id);
             })
             .then((m) => {
                 member = m;
@@ -147,41 +144,43 @@ describe('ConnectionStrategyTest', function () {
                 return map.put(1, 5);
             })
             .then(() => {
-                return Controller.shutdownMember(cluster.id, member.uuid);
+                return RC.shutdownMember(cluster.id, member.uuid);
             })
             .then(() => {
-                return Controller.startMember(cluster.id);
+                return RC.startMember(cluster.id);
             })
             .then(() => {
                 return shutdown.promise;
             })
             .then(() => {
                 return expect(map.put(1, 5)).to.be.rejectedWith(Errors.ClientNotActiveError);
-            })
+            });
     });
 
     it('client with ASYNC reconnect mode reconnects when the member dies and another starts ', function () {
-        const config = new Config.ClientConfig();
-
-        config.connectionStrategyConfig.reconnectMode = ReconnectMode.ASYNC;
-        config.connectionStrategyConfig.connectionRetryConfig.clusterConnectTimeoutMillis = Number.MAX_SAFE_INTEGER;
-
+        const config = {
+            lifecycleListeners: [],
+            connectionStrategy: {
+                reconnectMode: ReconnectMode.ASYNC,
+                connectionRetry: {
+                    clusterConnectTimeoutMillis: Number.MAX_SAFE_INTEGER
+                }
+            }
+        };
         const disconnected = Util.DeferredPromise();
         const reconnected = Util.DeferredPromise();
-        config.listeners.addLifecycleListener((state) => {
+        config.lifecycleListeners.push((state) => {
             if (state === LifecycleState.DISCONNECTED) {
                 disconnected.resolve();
             }
         });
 
-        let member;
-        let map;
-
-        return Controller.createCluster(null, null)
+        let member, map;
+        return RC.createCluster(null, null)
             .then((c) => {
                 cluster = c;
                 config.clusterName = cluster.id;
-                return Controller.startMember(cluster.id);
+                return RC.startMember(cluster.id);
             })
             .then((m) => {
                 member = m;
@@ -193,12 +192,11 @@ describe('ConnectionStrategyTest', function () {
             })
             .then((m) => {
                 map = m;
-
                 // No exception at this point
                 return map.put(1, 5);
             })
             .then(() => {
-                return Controller.shutdownMember(cluster.id, member.uuid);
+                return RC.shutdownMember(cluster.id, member.uuid);
             })
             .then(() => {
                 return disconnected.promise;
@@ -212,28 +210,26 @@ describe('ConnectionStrategyTest', function () {
                         reconnected.resolve();
                     }
                 });
-
-                return Controller.startMember(cluster.id);
+                return RC.startMember(cluster.id);
             })
             .then((m) => {
                 return reconnected.promise;
             })
             .then(() => {
                 expect(client.getLifecycleService().isRunning()).to.be.true;
-
                 return map.put(1, 2);
             })
     });
 
     it('client with async start should should reject get partition specific proxy calls when there is no cluster', function () {
-        const config = new Config.ClientConfig();
-        config.connectionStrategyConfig.asyncStart = true;
-
-        return Client.newHazelcastClient(config)
-            .then((c) => {
-                client = c;
-                return expect(client.getList(TestUtil.randomString())).to.be.rejectedWith(Errors.ClientOfflineError);
-            });
+        return Client.newHazelcastClient({
+            connectionStrategy: {
+                asyncStart: true
+            }
+        }).then((c) => {
+            client = c;
+            return expect(client.getList(TestUtil.randomString())).to.be.rejectedWith(Errors.ClientOfflineError);
+        });
     });
 
 });

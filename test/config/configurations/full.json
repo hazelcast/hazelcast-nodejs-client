@@ -31,13 +31,11 @@
         "connectionTimeout": 6000,
         "ssl": {
             "enabled": true,
-            "sslOptions": null,
-            "factory": {
-                "path": "path/to/file",
-                "exportedName": "exportedName",
-                "properties": {
-                    "userDefinedProperty1": "userDefinedValue"
-                }
+            "sslOptions": {
+                "ca": "ca.pem",
+                "cert": "cert.pem",
+                "key": "key.pem",
+                "servername": "foo.bar.com"
             }
         },
         "hazelcastCloud": {
@@ -56,57 +54,24 @@
             "jitter": 0.5
         }
     },
-    "listeners": [
-        {
-            "type": "lifecycle",
-            "path": "path/to/file",
-            "exportedName": "listener"
-        },
-        {
-            "type": "membership",
-            "path": "path/to/file",
-            "exportedName": "listener2"
-        }
-    ],
     "serialization": {
         "defaultNumberType": "integer",
         "isBigEndian": false,
-        "dataSerializableFactories": [
-            {
-                "path": "path/to/file",
-                "exportedName": "exportedName",
-                "factoryId": 0
-            }
-        ],
-        "portableFactories": [
-            {
-                "path": "path/to/file",
-                "exportedName": "exportedName",
-                "factoryId": 1
-            }
-        ],
         "portableVersion": 1,
-        "globalSerializer": {
-            "path": "path/to/file",
-            "exportedName": "exportedName"
-        },
-        "serializers": [
-            {
-                "path": "path/to/custom",
-                "exportedName": "CustomSerializer1",
-                "typeId": 2
-            },
-            {
-                "path": "path/to/custom",
-                "exportedName": "CustomSerializer2",
-                "typeId": 3
-            }
-        ],
         "jsonStringDeserializationPolicy": "no_deserialization"
     },
-    "nearCaches": [
-        {
-            "name": "nc-map",
+    "nearCaches": {
+        "nc-map": {
+            "invalidateOnChange": false,
+            "maxIdleSeconds": 2,
+            "inMemoryFormat": "object",
+            "timeToLiveSeconds": 3,
+            "evictionPolicy": "lru",
+            "evictionMaxSize": 3000,
+            "evictionSamplingCount": 4,
+            "evictionSamplingPoolSize": 8
+        },
+        "nc-map2": {
             "invalidateOnChange": false,
             "maxIdleSeconds": 2,
             "inMemoryFormat": "object",
@@ -116,35 +81,28 @@
             "evictionSamplingCount": 4,
             "evictionSamplingPoolSize": 8
         }
-    ],
-    "reliableTopics": [
-        {
-            "name": "rt1",
+    },
+    "reliableTopics": {
+        "rt1": {
             "readBatchSize": 35,
             "overloadPolicy": "discard_newest"
         },
-        {
-            "name": "rt2",
+        "rt2": {
             "readBatchSize": 15,
             "overloadPolicy": "discard_newest"
         }
-    ],
-    "flakeIdGeneratorConfigs": [
-        {
-            "name": "flakeid",
+    },
+    "flakeIdGenerators": {
+        "flakeid": {
             "prefetchCount": 123,
             "prefetchValidityMillis": 150000
         },
-        {
-            "name": "flakeid2",
+        "flakeid2": {
             "prefetchCount": 1234,
             "prefetchValidityMillis": 1900000
         }
-    ],
+    },
     "loadBalancer": {
         "type": "random"
-    },
-    "import": [
-        "near-cache.json"
-    ]
+    }
 }
