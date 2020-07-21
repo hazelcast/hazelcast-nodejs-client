@@ -18,25 +18,25 @@ import {EvictionPolicy} from './EvictionPolicy';
 import {InMemoryFormat} from './InMemoryFormat';
 
 export class NearCacheConfig {
-    name: string = 'default';
+    name = 'default';
     /**
      * 'true' to invalidate entries when they are changed in cluster,
      * 'false' to invalidate entries only when they are accessed.
      */
-    invalidateOnChange: boolean = true;
+    invalidateOnChange = true;
     /**
      * Max number of seconds that an entry can stay in the cache until it is acceessed
      */
-    maxIdleSeconds: number = 0;
+    maxIdleSeconds = 0;
     inMemoryFormat: InMemoryFormat = InMemoryFormat.BINARY;
     /**
      * Maximum number of seconds that an entry can stay in cache.
      */
-    timeToLiveSeconds: number = 0;
+    timeToLiveSeconds = 0;
     evictionPolicy: EvictionPolicy = EvictionPolicy.NONE;
     evictionMaxSize: number = Number.MAX_SAFE_INTEGER;
-    evictionSamplingCount: number = 8;
-    evictionSamplingPoolSize: number = 16;
+    evictionSamplingCount = 8;
+    evictionSamplingPoolSize = 16;
 
     toString(): string {
         return 'NearCacheConfig[' +

@@ -49,7 +49,7 @@ export interface ReplicatedMap<K, V> extends DistributedObject {
      *
      * If this map permits null values, then a return value of null does not
      * necessarily indicate that the map contains no mapping for the key; it's also
-     * possible that the map explicitly maps the key to null. The #containsKey
+     * possible that the map explicitly maps the key to null. The {@link containsKey}
      * operation may be used to distinguish these two cases. This message is
      * idempotent.
      *

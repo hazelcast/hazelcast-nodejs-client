@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-/* tslint:disable:no-bitwise */
 import * as Long from 'long';
 import {UUID} from '../core/UUID';
 
@@ -25,7 +24,7 @@ function randomUInt(): number {
 }
 
 export class UuidUtil {
-    static generate(isUnsigned: boolean = true): UUID {
+    static generate(isUnsigned = true): UUID {
         const mostS = new Long(randomUInt(), randomUInt(), isUnsigned);
         const leastS = new Long(randomUInt(), randomUInt(), isUnsigned);
         return new UUID(mostS, leastS);

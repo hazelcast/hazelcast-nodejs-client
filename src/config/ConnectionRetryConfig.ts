@@ -22,22 +22,22 @@ export class ConnectionRetryConfig {
     /**
      * How long to wait after the first failure before retrying. Must be non-negative.
      */
-    initialBackoffMillis: number = 1000;
+    initialBackoffMillis = 1000;
 
     /**
      * When backoff reaches this upper bound, it does not increase any more. Must be non-negative.
      */
-    maxBackoffMillis: number = 30000;
+    maxBackoffMillis = 30000;
 
     /**
      * Timeout value in milliseconds for the client to give up to connect to the current cluster.
      */
-    clusterConnectTimeoutMillis: number = 20000;
+    clusterConnectTimeoutMillis = 20000;
 
     /**
      * Factor with which to multiply backoff after a failed retry. Must be greater than or equal to 1.
      */
-    multiplier: number = 1;
+    multiplier = 1;
 
     /**
      * By how much to randomize backoffs.
@@ -45,5 +45,5 @@ export class ConnectionRetryConfig {
      * Random(-jitter * current_backoff, jitter * current_backoff)
      * It must be in range [0.0, 1.0].
      */
-    jitter: number = 0;
+    jitter = 0;
 }

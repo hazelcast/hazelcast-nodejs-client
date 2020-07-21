@@ -96,7 +96,7 @@ export class ClusterViewListenerService {
     }
 
     private createClusterViewEventHandler(connection: ClientConnection): (msg: ClientMessage) => void {
-        return (clientMessage: ClientMessage) => {
+        return (clientMessage: ClientMessage): void => {
             ClientAddClusterViewListenerCodec.handle(clientMessage,
                 this.clusterService.handleMembersViewEvent.bind(this.clusterService),
                 (version: number, partitions: Array<[UUID, number[]]>) => {

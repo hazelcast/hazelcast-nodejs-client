@@ -376,7 +376,7 @@ export class PagingPredicate extends AbstractPredicate {
     private internalPredicate: Predicate;
     private pageSize: number;
     private comparatorObject: Comparator;
-    private page: number = 0;
+    private page = 0;
     private iterationType: IterationType = IterationType.ENTRY;
     private anchorList: Array<[number, [any, any]]> = [];
 

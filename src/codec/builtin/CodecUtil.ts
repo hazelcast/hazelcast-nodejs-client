@@ -51,7 +51,7 @@ export class CodecUtil {
     /**
      * Returns whether the next frame is {@link NULL_FRAME} or not.
      * If it is a {@link NULL_FRAME}, this method consumes the iterator
-     * by calling {@link ClientMessage#nextFrame} once to skip the {@link NULL_FRAME}.
+     * by calling {@link ClientMessage.nextFrame} once to skip the {@link NULL_FRAME}.
      */
     static nextFrameIsNullFrame(clientMessage: ClientMessage): boolean {
         const isNull = clientMessage.peekNextFrame().isNullFrame();

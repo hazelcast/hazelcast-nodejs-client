@@ -19,9 +19,6 @@ import * as Long from 'long';
 import * as Promise from 'bluebird';
 import * as Path from 'path';
 import {JsonConfigLocator} from './config/JsonConfigLocator';
-import {Comparator} from './core/Comparator';
-import {IterationType} from './core/Predicate';
-import {PagingPredicate} from './serialization/DefaultPredicates';
 import {Address} from './Address';
 
 export function assertNotNull(v: any): void {
@@ -47,7 +44,7 @@ export function shuffleArray<T>(array: T[]): void {
     }
 }
 
-export function assertNotNegative(v: number, message: string = 'The value cannot be negative.'): void {
+export function assertNotNegative(v: number, message = 'The value cannot be negative.'): void {
     assert(v >= 0, message);
 }
 
@@ -67,43 +64,6 @@ export function getType(obj: any): string {
 
 export function enumFromString<T>(enumType: any, value: string): T {
     return enumType[value];
-}
-
-export function getSortedQueryResultSet(list: any[], predicate: PagingPredicate): any[] {
-    if (list.length === 0) {
-        return list;
-    }
-    let comparatorObject = predicate.getComparator();
-    if (comparatorObject == null) {
-        comparatorObject = createComparator(predicate.getIterationType());
-    }
-    list.sort(comparatorObject.sort.bind(comparatorObject));
-    const nearestAnchorEntry = (predicate == null) ? null : predicate.getNearestAnchorEntry();
-    const nearestPage = nearestAnchorEntry[0];
-    const page = predicate.getPage();
-    const pageSize = predicate.getPageSize();
-    const begin = pageSize * (page - nearestPage - 1);
-    const size = list.length;
-    if (begin > size) {
-        return [];
-    }
-    let end = begin + pageSize;
-    if (end > size) {
-        end = size;
-    }
-
-    setAnchor(list, predicate, nearestPage);
-    const iterationType = predicate.getIterationType();
-    return list.slice(begin, end).map(function (item): any {
-        switch (iterationType) {
-            case IterationType.ENTRY:
-                return item;
-            case IterationType.KEY:
-                return item[0];
-            case IterationType.VALUE:
-                return item[1];
-        }
-    });
 }
 
 export function copyObjectShallow<T>(obj: T): T {
@@ -189,11 +149,11 @@ export function resolvePath(path: string): string {
 }
 
 export function loadNameFromPath(path: string, exportedName: string): any {
-    const requirePath = require(resolvePath(path));
+    const requirePath = require(resolvePath(path)); /*eslint-disable-line @typescript-eslint/no-var-requires*/
     if (exportedName === undefined) {
         return requirePath;
     } else {
-        return require(resolvePath(path))[exportedName];
+        return requirePath[exportedName];
     }
 }
 
@@ -269,38 +229,6 @@ export function randomInt(upperBound: number): number {
     return Math.floor(Math.random() * upperBound);
 }
 
-function createComparator(iterationType: IterationType): Comparator {
-    const object: Comparator = {
-        sort(a: [any, any], b: [any, any]): number {
-            return 0;
-        },
-    };
-    switch (iterationType) {
-        case IterationType.KEY:
-            object.sort = (e1: [any, any], e2: [any, any]) => e1[0] < e2[0] ? -1 : +(e1[0] > e2[0]);
-            break;
-        case IterationType.ENTRY:
-            object.sort = (e1: [any, any], e2: [any, any]) => e1[1] < e2[1] ? -1 : +(e1[1] > e2[1]);
-            break;
-        case IterationType.VALUE:
-            object.sort = (e1: [any, any], e2: [any, any]) => e1[1] < e2[1] ? -1 : +(e1[1] > e2[1]);
-            break;
-    }
-    return object;
-}
-
-function setAnchor(list: any[], predicate: PagingPredicate, nearestPage: number): void {
-    assert(list.length > 0);
-    const size = list.length;
-    const pageSize = predicate.getPageSize();
-    const page = predicate.getPage();
-    for (let i = pageSize; i <= size && nearestPage < page; i += pageSize) {
-        const anchor = list[i - 1];
-        nearestPage++;
-        predicate.setAnchor(nearestPage, anchor);
-    }
-}
-
 export class Task {
     intervalId: NodeJS.Timer;
     timeoutId: NodeJS.Timer;
@@ -343,12 +271,4 @@ export function getNodejsMajorVersion(): number {
     const versionString = process.version;
     const versions = versionString.split('.');
     return Number.parseInt(versions[0].substr(1));
-}
-
-export function pad(str: string, targetLength: number, padString: string): string {
-    if (str.length >= targetLength) {
-        return str;
-    } else {
-        return new Array(targetLength - str.length + 1).join(padString) + str;
-    }
 }

@@ -18,7 +18,6 @@ import * as Promise from 'bluebird';
 import {BuildInfo} from '../BuildInfo';
 import HazelcastClient from '../HazelcastClient';
 import {Data} from '../serialization/Data';
-import {Address} from '../Address';
 import {ClientMessage} from '../ClientMessage';
 import {UUID} from '../core/UUID';
 

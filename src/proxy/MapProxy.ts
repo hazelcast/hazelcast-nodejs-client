@@ -249,7 +249,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             });
     }
 
-    put(key: K, value: V, ttl: number = -1): Promise<V> {
+    put(key: K, value: V, ttl = -1): Promise<V> {
         assertNotNull(key);
         assertNotNull(value);
         const keyData: Data = this.toData(key);
@@ -358,7 +358,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             .then(() => undefined);
     }
 
-    lock(key: K, ttl: number = -1): Promise<void> {
+    lock(key: K, ttl = -1): Promise<void> {
         assertNotNull(key);
         const keyData = this.toData(key);
         return this.encodeInvokeOnKey(MapLockCodec, keyData, keyData, 0, ttl, 0)
@@ -397,7 +397,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             });
     }
 
-    loadAll(keys: K[] = null, replaceExistingValues: boolean = true): Promise<void> {
+    loadAll(keys: K[] = null, replaceExistingValues = true): Promise<void> {
         if (keys == null) {
             return this.encodeInvokeOnRandomTarget(MapLoadAllCodec, replaceExistingValues)
                 .then(() => undefined);
@@ -409,7 +409,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         }
     }
 
-    putIfAbsent(key: K, value: V, ttl: number = -1): Promise<V> {
+    putIfAbsent(key: K, value: V, ttl = -1): Promise<V> {
         assertNotNull(key);
         assertNotNull(value);
         const keyData = this.toData(key);
@@ -417,7 +417,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.putIfAbsentInternal(keyData, valueData, ttl);
     }
 
-    putTransient(key: K, value: V, ttl: number = -1): Promise<void> {
+    putTransient(key: K, value: V, ttl = -1): Promise<void> {
         assertNotNull(key);
         assertNotNull(value);
         const keyData = this.toData(key);
@@ -443,7 +443,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.replaceIfSameInternal(keyData, oldValueData, newValueData);
     }
 
-    set(key: K, value: V, ttl: number = -1): Promise<void> {
+    set(key: K, value: V, ttl = -1): Promise<void> {
         assertNotNull(key);
         assertNotNull(value);
         const keyData = this.toData(key);
@@ -484,7 +484,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             .then(() => undefined);
     }
 
-    tryLock(key: K, timeout: number = 0, lease: number = -1): Promise<boolean> {
+    tryLock(key: K, timeout = 0, lease = -1): Promise<boolean> {
         assertNotNull(key);
         const keyData = this.toData(key);
         return this.encodeInvokeOnKey(MapTryLockCodec, keyData, keyData, 0, lease, timeout, 0)
@@ -508,7 +508,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.tryRemoveInternal(keyData, timeout);
     }
 
-    addEntryListener(listener: MapListener<K, V>, key: K, includeValue: boolean = false): Promise<string> {
+    addEntryListener(listener: MapListener<K, V>, key: K, includeValue = false): Promise<string> {
         return this.addEntryListenerInternal(listener, undefined, key, includeValue);
     }
 
@@ -679,14 +679,12 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         };
         for (const funcName in conversionTable) {
             if (listener[funcName]) {
-                /* tslint:disable:no-bitwise */
                 flags = flags | conversionTable[funcName];
             }
         }
         const toObject = this.toObject.bind(this);
-        const entryEventHandler = (
-            /* tslint:disable-next-line:no-shadowed-variable */
-            key: K, value: V, oldValue: V, mergingValue: V, eventType: number, uuid: UUID, numberOfAffectedEntries: number) => {
+        const entryEventHandler = (key: K, value: V, oldValue: V, mergingValue: V, eventType: number,
+                                   uuid: UUID, numberOfAffectedEntries: number): void => {
             const member = this.client.getClusterService().getMember(uuid);
             const name = this.name;
 

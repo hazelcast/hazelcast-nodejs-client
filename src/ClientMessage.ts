@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-/* tslint:disable:no-bitwise */
 import {BitsUtil} from './BitsUtil';
 import {ClientConnection} from './network/ClientConnection';
 import {FixSizedTypesCodec} from './codec/builtin/FixSizedTypesCodec';
@@ -252,7 +251,6 @@ export class ClientMessage {
             frameLengthAndFlags.writeInt32LE(currentFrame.content.length + SIZE_OF_FRAME_LENGTH_AND_FLAGS, 0);
 
             if (isLastFrame) {
-                // tslint:disable-next-line:no-bitwise
                 frameLengthAndFlags.writeUInt16LE(currentFrame.flags | IS_FINAL_FLAG, BitsUtil.INT_SIZE_IN_BYTES);
             } else {
                 frameLengthAndFlags.writeUInt16LE(currentFrame.flags, BitsUtil.INT_SIZE_IN_BYTES);

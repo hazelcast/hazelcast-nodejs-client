@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/*tslint:disable:max-line-length*/
+/* eslint-disable max-len */
 import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
 import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame, DEFAULT_FLAGS} from '../../ClientMessage';

@@ -24,10 +24,10 @@ export class ClassDefinitionBuilder {
 
     private fieldDefinitions: FieldDefinition[] = [];
 
-    private index: number = 0;
+    private index = 0;
     private done: boolean;
 
-    constructor(factoryId: number, classId: number, version: number = 0) {
+    constructor(factoryId: number, classId: number, version = 0) {
         this.factoryId = factoryId;
         this.classId = classId;
         this.version = version;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/*tslint:disable:max-line-length*/
+/* eslint-disable max-len */
 import {ClientMessage, BEGIN_FRAME, END_FRAME} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
 import {StringCodec} from '../builtin/StringCodec';

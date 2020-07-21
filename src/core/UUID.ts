@@ -15,7 +15,6 @@
  */
 
 import * as Long from 'long';
-import {pad} from '../Util';
 
 export class UUID {
     readonly leastSignificant: Long;
@@ -34,7 +33,6 @@ export class UUID {
         return other.mostSignificant.equals(this.mostSignificant) && other.leastSignificant.equals(this.leastSignificant);
     }
 
-    /* tslint:disable:no-bitwise */
     toString(): string {
         if (this.cachedString) {
             return this.cachedString;
@@ -48,12 +46,12 @@ export class UUID {
         const div2 = (mostLow >>> 16).toString(16);
         const div3 = (mostLow & ((1 << 16) - 1)).toString(16);
         const div4 = (leastHigh >>> 16).toString(16);
-        const div5 = (leastHigh & ((1 << 16) - 1)).toString(16) + pad(leastLow.toString(16), 8, '0');
-        this.cachedString = pad(div1, 8, '0') + '-'
-            + pad(div2, 4, '0') + '-'
-            + pad(div3, 4, '0') + '-'
-            + pad(div4, 4, '0') + '-'
-            + pad(div5, 12, '0');
+        const div5 = (leastHigh & ((1 << 16) - 1)).toString(16) + leastLow.toString(16).padStart(8, '0');
+        this.cachedString = div1.padStart(8, '0') + '-'
+            + div2.padStart(4, '0') + '-'
+            + div3.padStart(4, '0') + '-'
+            + div4.padStart(4, '0') + '-'
+            + div5.padStart(12, '0');
         return this.cachedString;
     }
 }

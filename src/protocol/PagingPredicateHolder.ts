@@ -16,7 +16,6 @@
 
 import {AnchorDataListHolder} from './AnchorDataListHolder';
 import {Data} from '../serialization/Data';
-import {Predicate} from '../core/Predicate';
 import {SerializationService} from '../serialization/SerializationService';
 import {PagingPredicate} from '../serialization/DefaultPredicates';
 

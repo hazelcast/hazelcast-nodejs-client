@@ -64,7 +64,7 @@ export class HazelcastCloudDiscovery {
             path: url.path,
         };
 
-        let dataAsAString: string = '';
+        let dataAsAString = '';
         get(endpointUrlOptions, (res: IncomingMessage) => {
             res.setEncoding('utf8');
             res.on('data', (chunk) => {

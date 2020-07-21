@@ -22,7 +22,6 @@ import {Predicate} from '../core/Predicate';
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 import {DistributedObject} from '../DistributedObject';
 import {IdentifiedDataSerializable, Portable} from '../serialization/Serializable';
-import {IndexType} from '../config/IndexType';
 import {IndexConfig} from '../config/IndexConfig';
 
 export interface IMap<K, V> extends DistributedObject {

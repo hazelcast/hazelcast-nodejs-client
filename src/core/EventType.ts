@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-/* tslint:disable:no-bitwise */
 export enum EventType {
     ADDED = 1 << 0,
     REMOVED = 1 << 1,

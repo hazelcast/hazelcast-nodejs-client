@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import {MembershipEvent} from './MembershipEvent';
-import {InitialMembershipListener} from './InitialMembershipListener';
 import {Member} from './Member';
 
 /**

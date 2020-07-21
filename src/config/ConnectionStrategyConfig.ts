@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-import {ClientOfflineError} from '../HazelcastError';
 import {ConnectionRetryConfig} from './ConnectionRetryConfig';
-import * as HazelcastClient from '../HazelcastClient';
 
 /**
  * Reconnect options.
@@ -44,12 +42,12 @@ export enum ReconnectMode {
  */
 export class ConnectionStrategyConfig {
     /**
-     * Set true for non blocking {@link HazelcastClient#newHazelcastClient}. The client creation won't wait to
+     * Set true for non blocking {@link HazelcastClient.newHazelcastClient}. The client creation won't wait to
      * connect to cluster. The client instance will throw exception until it connects to cluster and become ready.
-     * If set to false, {@link HazelcastClient#newHazelcastClient} will block until a cluster connection established and it's
+     * If set to false, {@link HazelcastClient.newHazelcastClient} will block until a cluster connection established and it's
      * ready to use client instance
      */
-    asyncStart: boolean = false;
+    asyncStart = false;
 
     /**
      * How a client reconnect to cluster after a disconnect can be configured. This parameter is used by default strategy and
