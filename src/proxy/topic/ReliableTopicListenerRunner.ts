@@ -26,12 +26,12 @@ import {ILogger} from '../../logging/ILogger';
 
 export class ReliableTopicListenerRunner<E> {
 
-    public sequenceNumber: number = 0;
+    public sequenceNumber = 0;
     private listener: MessageListener<E>;
     private ringbuffer: Ringbuffer<ReliableTopicMessage>;
     private batchSize: number;
     private serializationService: SerializationService;
-    private cancelled: boolean = false;
+    private cancelled = false;
     private logger: ILogger;
     private proxy: ReliableTopicProxy<E>;
     private listenerId: string;

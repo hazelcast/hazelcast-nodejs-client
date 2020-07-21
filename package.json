@@ -1,63 +1,62 @@
 {
-  "name": "hazelcast-client",
-  "version": "3.12.3",
-  "description": "Hazelcast - open source In-Memory Data Grid - client for NodeJS",
-  "main": "lib/index.js",
-  "dependencies": {
-    "bluebird": "3.5.4",
-    "long": "3.2.0"
-  },
-  "devDependencies": {
-    "@types/bluebird": "3.5.21",
-    "@types/long": "3.0.32",
-    "@types/node": "6.0.87",
-    "chai": "4.1.2",
-    "chai-as-promised": "7.1.1",
-    "istanbul": "0.4.5",
-    "jsonschema": "1.2.4",
-    "mocha": "3.5.3",
-    "mocha-junit-reporter": "1.18.0",
-    "mousse": "0.3.1",
-    "remap-istanbul": "0.9.6",
-    "rimraf": "2.6.2",
-    "sinon": "4.0.0",
-    "thrift": "^0.9.3",
-    "tslint": "5.7.0",
-    "typescript": "2.5.2",
-    "winston": "2.3.1"
-  },
-  "engines": {
-    "node": ">=8"
-  },
-  "scripts": {
-    "clean": "rimraf lib typings *.jar *.log",
-    "compile": "tsc",
-    "pretest": "node download-remote-controller.js",
-    "test": "mocha --recursive --reporter-options mochaFile=report.xml --reporter mocha-junit-reporter",
-    "precoverage": "node download-remote-controller.js",
-    "coverage": "rimraf coverage && istanbul cover --root lib/ --include-all-sources node_modules/mocha/bin/_mocha -- --recursive --reporter-options mochaFile=report.xml --reporter mocha-junit-reporter",
-    "coverage-without-codecs": "rimraf coverage && istanbul cover -x **/codec/**/* --root lib/ --include-all-sources node_modules/mocha/bin/_mocha -- --recursive --reporter spec",
-    "postcoverage": "remap-istanbul -i coverage/coverage.json -o coverage/cobertura-coverage.xml -t cobertura && remap-istanbul -i coverage/coverage.json -o coverage -t html",
-    "pregenerate-docs": "rimraf docs",
-    "generate-docs": "typedoc --out docs/ --exclude **/codec/**/* src/ --excludeExternals --ignoreCompilerErrors --excludePrivate",
-    "lint": "tslint --project tsconfig.json -t stylish"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/hazelcast/hazelcast-nodejs-client.git"
-  },
-  "keywords": [
-    "hazelcast",
-    "nodejs",
-    "node",
-    "client",
-    "data",
-    "grid"
-  ],
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/hazelcast/hazelcast-nodejs-client/issues"
-  },
-  "homepage": "https://github.com/hazelcast/hazelcast-nodejs-client#readme",
-  "typings": "./lib/index"
+    "name": "hazelcast-client",
+    "version": "4.0.0",
+    "description": "Hazelcast - open source In-Memory Data Grid - client for Node.js",
+    "main": "lib/index.js",
+    "dependencies": {
+        "bluebird": "3.7.2",
+        "long": "4.0.0"
+    },
+    "devDependencies": {
+        "@types/bluebird": "^3.5.32",
+        "@types/long": "^4.0.1",
+        "@types/node": "^8.10.60",
+        "@typescript-eslint/eslint-plugin": "^2.34.0",
+        "@typescript-eslint/parser": "^2.34.0",
+        "chai": "^4.2.0",
+        "chai-as-promised": "^7.1.1",
+        "eslint": "^6.8.0",
+        "jsonschema": "^1.2.6",
+        "mocha": "^7.2.0",
+        "mocha-junit-reporter": "^1.23.3",
+        "mousse": "^0.3.1",
+        "nyc": "^15.1.0",
+        "rimraf": "^3.0.2",
+        "sinon": "^9.0.2",
+        "thrift": "^0.12.0",
+        "typescript": "^3.9.5",
+        "winston": "^3.2.1"
+    },
+    "engines": {
+        "node": ">=8"
+    },
+    "scripts": {
+        "clean": "rimraf lib *.jar *.log",
+        "compile": "tsc",
+        "pretest": "node download-remote-controller.js",
+        "test": "mocha --recursive",
+        "precoverage": "node download-remote-controller.js",
+        "coverage": "rimraf coverage && nyc node_modules/mocha/bin/_mocha -- --recursive --reporter-options mochaFile=report.xml --reporter mocha-junit-reporter",
+        "pregenerate-docs": "rimraf docs",
+        "generate-docs": "typedoc --out docs/ --exclude **/codec/**/* src/ --excludeExternals --ignoreCompilerErrors --excludePrivate",
+        "lint": "eslint --ext .ts ."
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hazelcast/hazelcast-nodejs-client.git"
+    },
+    "keywords": [
+        "hazelcast",
+        "nodejs",
+        "node",
+        "client",
+        "data",
+        "grid"
+    ],
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/hazelcast/hazelcast-nodejs-client/issues"
+    },
+    "homepage": "https://github.com/hazelcast/hazelcast-nodejs-client#readme",
+    "typings": "./lib/index"
 }

@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-/*tslint:disable:max-line-length*/
+/* eslint-disable max-len */
 import {BitsUtil} from '../BitsUtil';
+import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
 import {ClientMessage, Frame, PARTITION_ID_OFFSET} from '../ClientMessage';
 import {StringCodec} from './builtin/StringCodec';
 import {EntryListCodec} from './builtin/EntryListCodec';
@@ -27,14 +28,16 @@ const REQUEST_MESSAGE_TYPE = 76800;
 // hex: 0x012C01
 // RESPONSE_MESSAGE_TYPE = 76801
 
-const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const REQUEST_TRIGGER_MAP_LOADER_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+const REQUEST_INITIAL_FRAME_SIZE = REQUEST_TRIGGER_MAP_LOADER_OFFSET + BitsUtil.BOOLEAN_SIZE_IN_BYTES;
 
 export class MapPutAllCodec {
-    static encodeRequest(name: string, entries: Array<[Data, Data]>): ClientMessage {
+    static encodeRequest(name: string, entries: Array<[Data, Data]>, triggerMapLoader: boolean): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(false);
 
         const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
+        FixSizedTypesCodec.encodeBoolean(initialFrame.content, REQUEST_TRIGGER_MAP_LOADER_OFFSET, triggerMapLoader);
         clientMessage.addFrame(initialFrame);
         clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);
         clientMessage.setPartitionId(-1);

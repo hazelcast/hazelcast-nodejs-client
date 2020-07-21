@@ -24,7 +24,7 @@ export interface Cluster {
      * Adds MembershipListener to listen for membership updates.
      * <p>
      * The addMembershipListener method returns a register ID. This ID is needed to remove the MembershipListener using the
-     * {@link #removeMembershipListener} method.
+     * {@link removeMembershipListener} method.
      * <p>
      * If the MembershipListener implements the {@link InitialMembershipListener} interface, it will also receive
      * the {@link InitialMembershipEvent}.
@@ -34,7 +34,7 @@ export interface Cluster {
      * @param listener membership listener
      * @return the registration ID
      * @throws AssertionError if listener is null
-     * @see #removeMembershipListener
+     * @see {@link removeMembershipListener}
      */
     addMembershipListener(listener: MembershipListener): UUID;
 
@@ -48,7 +48,7 @@ export interface Cluster {
      * @param registrationId the registrationId of MembershipListener to remove
      * @return true if the registration is removed, false otherwise
      * @throws AssertionError if the registration ID is null
-     * @see #addMembershipListener
+     * @see {@link addMembershipListener}
      */
     removeMembershipListener(registrationId: UUID): boolean;
 

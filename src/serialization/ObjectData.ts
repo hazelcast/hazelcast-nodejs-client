@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-/* tslint:disable:no-bitwise */
 import * as assert from 'assert';
 import * as Long from 'long';
 import {BitsUtil} from '../BitsUtil';
@@ -24,8 +23,6 @@ import {SerializationService} from './SerializationService';
 
 const OUTPUT_BUFFER_INITIAL_SIZE = HEAP_DATA_OVERHEAD + BitsUtil.LONG_SIZE_IN_BYTES;
 const MASK_1BYTE = (1 << 8) - 1;
-const MASK_2BYTE = (1 << 16) - 1;
-const MASK_4BYTE = (1 << 32) - 1;
 
 export class ObjectDataOutput implements DataOutput {
     protected buffer: Buffer;

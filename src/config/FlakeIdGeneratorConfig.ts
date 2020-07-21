@@ -18,7 +18,7 @@ export class FlakeIdGeneratorConfig {
     /**
      * Sets the name for this config.
      */
-    name: string = 'default';
+    name = 'default';
 
     /**
      * Sets how many IDs are pre-fetched on the background when a new flake id is requested
@@ -26,7 +26,7 @@ export class FlakeIdGeneratorConfig {
      *
      * prefetch count should be in the range 1..100,000.
      */
-    prefetchCount: number = 100;
+    prefetchCount = 100;
 
     /**
      * Sets for how long the pre-fetched IDs can be used. If this time elapses, a new batch of IDs will be
@@ -38,7 +38,7 @@ export class FlakeIdGeneratorConfig {
      *
      * Set to the desired ID validity or 0 for unlimited.
      */
-    prefetchValidityMillis: number = 600000;
+    prefetchValidityMillis = 600000;
 
     toString(): string {
         return 'FlakeIdGeneratorConfig[' +

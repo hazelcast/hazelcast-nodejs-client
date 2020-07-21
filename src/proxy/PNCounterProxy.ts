@@ -25,13 +25,12 @@ import {NoDataMemberInClusterError} from '../HazelcastError';
 import {randomInt} from '../Util';
 import {BaseProxy} from './BaseProxy';
 import {PNCounter} from './PNCounter';
-import {Address} from '../Address';
 import {Member} from '../core/Member';
 
 export class PNCounterProxy extends BaseProxy implements PNCounter {
     private static readonly EMPTY_ARRAY: Member[] = [];
     private lastObservedVectorClock: VectorClock = new VectorClock();
-    private maximumReplicaCount: number = 0;
+    private maximumReplicaCount = 0;
     private currentTargetReplicaAddress: Member;
 
     get(): Promise<Long> {

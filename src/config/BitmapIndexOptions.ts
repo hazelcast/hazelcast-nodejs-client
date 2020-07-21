@@ -18,7 +18,7 @@ import {QueryConstants} from '../core/Predicate';
 
 /**
  * Defines an assortment of transformations which can be applied to
- * {@link BitmapIndexOptions#uniqueKey unique key} values.
+ * {@link BitmapIndexOptions.uniqueKey unique key} values.
  */
 export enum UniqueKeyTransformation {
     /**
@@ -59,7 +59,7 @@ export class BitmapIndexOptions {
 
     /**
      * Unique key transformation configured in this index. Defaults
-     * to {@link UniqueKeyTransformation#OBJECT OBJECT}. The transformation is
+     * to {@link UniqueKeyTransformation.OBJECT OBJECT}. The transformation is
      * applied to every value extracted from unique key attribute.
      */
     uniqueKeyTransformation: UniqueKeyTransformation;

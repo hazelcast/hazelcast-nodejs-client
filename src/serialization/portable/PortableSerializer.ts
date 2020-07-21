@@ -24,7 +24,6 @@ import {ClassDefinition, FieldType} from './ClassDefinition';
 import {DefaultPortableWriter} from './DefaultPortableWriter';
 import * as Long from 'long';
 import {SerializationConfig} from '../../config/SerializationConfig';
-import * as Path from 'path';
 import {HazelcastSerializationError} from '../../HazelcastError';
 import * as Util from '../../Util';
 

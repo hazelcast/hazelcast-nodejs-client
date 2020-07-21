@@ -47,7 +47,7 @@ describe('ClientMessageFramingTest', function () {
 
     beforeEach(function () {
         buffer = Buffer.allocUnsafe(20);
-        message = new cm.ClientMessage.createForEncode();
+        message = cm.ClientMessage.createForEncode();
         message.addFrame(new cm.Frame(buffer));
     });
 

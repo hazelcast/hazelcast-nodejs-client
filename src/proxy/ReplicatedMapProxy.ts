@@ -17,7 +17,7 @@
 import * as Promise from 'bluebird';
 import {ReplicatedMapAddEntryListenerCodec} from '../codec/ReplicatedMapAddEntryListenerCodec';
 import {ReplicatedMapAddEntryListenerToKeyCodec} from '../codec/ReplicatedMapAddEntryListenerToKeyCodec';
-/* tslint:disable:max-line-length */
+// eslint-disable-next-line max-len
 import {ReplicatedMapAddEntryListenerToKeyWithPredicateCodec} from '../codec/ReplicatedMapAddEntryListenerToKeyWithPredicateCodec';
 import {ReplicatedMapAddEntryListenerWithPredicateCodec} from '../codec/ReplicatedMapAddEntryListenerWithPredicateCodec';
 import {ReplicatedMapClearCodec} from '../codec/ReplicatedMapClearCodec';
@@ -44,7 +44,6 @@ import {ArrayComparator} from '../util/ArrayComparator';
 import {ReplicatedMap} from './ReplicatedMap';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {MapEvent} from '../core/MapListener';
-/* tslint:enable:max-line-length */
 import Long = require('long');
 import {UUID} from '../core/UUID';
 import {ClientMessage} from '../ClientMessage';
@@ -199,9 +198,8 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
     private addEntryListenerInternal(listener: EntryListener<K, V>, predicate: Predicate,
                                      key: K): Promise<string> {
         const toObject = this.toObject.bind(this);
-        /* tslint:disable-next-line:no-shadowed-variable */
         const entryEventHandler = (key: K, value: V, oldValue: V, mergingValue: V,
-                                   event: number, uuid: UUID, numberOfAffectedEntries: number) => {
+                                   event: number, uuid: UUID, numberOfAffectedEntries: number): void => {
             const member = this.client.getClusterService().getMember(uuid);
             const name = this.name;
 

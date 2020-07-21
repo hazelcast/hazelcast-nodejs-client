@@ -17,8 +17,7 @@
 import * as Promise from 'bluebird';
 import * as fs from 'fs';
 import * as Path from 'path';
-import {LoggingService, LogLevel} from '../logging/LoggingService';
-import {ConfigBuilder} from './ConfigBuilder';
+import {LogLevel} from '../logging/LoggingService';
 import {DeferredPromise} from '../Util';
 import {DefaultLogger} from '../logging/DefaultLogger';
 
@@ -35,7 +34,6 @@ export class JsonConfigLocator {
             if (loaded) {
                 return;
             }
-            // tslint:disable-next-line
             return this.loadFromWorkingDirectory().then((loaded: boolean) => {
                 if (loaded) {
                     return;
@@ -48,9 +46,9 @@ export class JsonConfigLocator {
         const envVariableLocation = process.env[JsonConfigLocator.ENV_VARIABLE_NAME];
         if (envVariableLocation) {
             const loadLocation = Path.resolve(envVariableLocation);
-            this.logger.trace('ConfigBuilder', 'Loading config from ' + envVariableLocation);
-            return this.loadPath(envVariableLocation).then((buffer: Buffer) => {
-                this.configLocation = envVariableLocation;
+            this.logger.trace('ConfigBuilder', 'Loading config from ' + loadLocation);
+            return this.loadPath(loadLocation).then((buffer: Buffer) => {
+                this.configLocation = loadLocation;
                 this.buffer = buffer;
                 return true;
             });

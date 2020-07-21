@@ -34,19 +34,19 @@ export class ClientNetworkConfig {
     /**
      * Timeout value in millis for nodes to accept client connection requests.
      */
-    connectionTimeout: number = 5000;
+    connectionTimeout = 5000;
 
     /**
      * true if redo operations are enabled (not implemented yet)
      */
-    redoOperation: boolean = false;
+    redoOperation = false;
 
     /**
      * If true, client will behave as smart client instead of dummy client. Smart client sends key based operations
      * to owner of the keys. Dummy client sends all operations to a single node. See http://docs.hazelcast.org to
      * learn about smart/dummy client.
      */
-    smartRouting: boolean = true;
+    smartRouting = true;
 
     /**
      * SSL configuration.

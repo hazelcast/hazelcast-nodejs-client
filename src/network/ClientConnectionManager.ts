@@ -70,8 +70,8 @@ const BINARY_PROTOCOL_VERSION = Buffer.from('CP2');
 enum ClientState {
     /**
      * Clients start with this state. Once a client connects to a cluster,
-     * it directly switches to {@link #INITIALIZED_ON_CLUSTER} instead of
-     * {@link #CONNECTED_TO_CLUSTER} because on startup a client has no
+     * it directly switches to {@link INITIALIZED_ON_CLUSTER} instead of
+     * {@link CONNECTED_TO_CLUSTER} because on startup a client has no
      * local state to send to the cluster.
      */
     INITIAL = 0,
@@ -87,7 +87,7 @@ enum ClientState {
      * When a client sends its local state to the cluster it has connected,
      * it switches to this state. When a client loses all connections to
      * the current cluster and connects to a new cluster, its state goes
-     * back to {@link #CONNECTED_TO_CLUSTER}.
+     * back to {@link CONNECTED_TO_CLUSTER}.
      * <p>
      * Invocations are allowed in this state.
      */
@@ -242,7 +242,7 @@ export class ClientConnectionManager extends EventEmitter {
         const connectionResolver: Promise.Resolver<ClientConnection> = DeferredPromise<ClientConnection>();
         this.pendingConnections.set(addressKey, connectionResolver);
 
-        const processResponseCallback = (msg: ClientMessage) => {
+        const processResponseCallback = (msg: ClientMessage): void => {
             this.client.getInvocationService().processResponse(msg);
         };
 

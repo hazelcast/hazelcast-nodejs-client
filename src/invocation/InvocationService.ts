@@ -78,7 +78,7 @@ export class Invocation {
      */
     deferred: Promise.Resolver<ClientMessage>;
 
-    invokeCount: number = 0;
+    invokeCount = 0;
 
     /**
      * If this is an event listener registration, handler should be set to the function to be called on events.
@@ -89,7 +89,7 @@ export class Invocation {
     /**
      * True if this invocation is urgent (can be invoked even in the client is in the disconnected state), false otherwise.
      */
-    urgent: boolean = false;
+    urgent = false;
 
     constructor(client: HazelcastClient, request: ClientMessage) {
         this.client = client;

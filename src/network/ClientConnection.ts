@@ -42,7 +42,7 @@ export class PipelinedWriter extends EventEmitter {
     private readonly socket: net.Socket;
     private queue: OutputQueueItem[] = [];
     private error: Error;
-    private scheduled: boolean = false;
+    private scheduled = false;
     // coalescing threshold in bytes
     private readonly threshold: number;
 
@@ -151,9 +151,9 @@ export class DirectWriter extends EventEmitter {
 export class ClientMessageReader {
 
     private chunks: Buffer[] = [];
-    private chunksTotalSize: number = 0;
-    private frameSize: number = 0;
-    private flags: number = 0;
+    private chunksTotalSize = 0;
+    private frameSize = 0;
+    private flags = 0;
     private clientMessage: ClientMessage = null;
 
     append(buffer: Buffer): void {
@@ -162,7 +162,7 @@ export class ClientMessageReader {
     }
 
     read(): ClientMessage {
-        while (true) {
+        for (;;) {
             if (this.readFrame()) {
                 if (this.clientMessage.endFrame.isFinalFrame()) {
                     const message = this.clientMessage;

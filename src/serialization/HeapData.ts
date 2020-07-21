@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import murmur = require('../invocation/Murmur');
+import {murmur} from '../invocation/Murmur';
 import {Data} from './Data';
 
-export const PARTITION_HASH_OFFSET: number = 0;
-export const TYPE_OFFSET: number = 4;
-export const DATA_OFFSET: number = 8;
+export const PARTITION_HASH_OFFSET = 0;
+export const TYPE_OFFSET = 4;
+export const DATA_OFFSET = 8;
 export const HEAP_DATA_OVERHEAD: number = DATA_OFFSET;
 
 export class HeapData implements Data {

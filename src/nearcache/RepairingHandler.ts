@@ -81,7 +81,7 @@ export class RepairingHandler {
         }
     }
 
-    checkOrRepairSequence(partitionId: number, nextSequence: Long, viaAntiEntropy: boolean = false): void {
+    checkOrRepairSequence(partitionId: number, nextSequence: Long, viaAntiEntropy = false): void {
         const metadata = this.getMetadataContainer(partitionId);
         const current = metadata.getSequence();
         if (current.greaterThanOrEqual(nextSequence)) {

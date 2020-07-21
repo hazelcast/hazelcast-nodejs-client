@@ -26,7 +26,7 @@ describe('Logging Test', function () {
     var client;
 
     var winstonAdapter = {
-        logger: new (winston.Logger)({
+        logger: winston.createLogger({
             transports: [
                 new (winston.transports.Console)()
             ]
@@ -90,9 +90,10 @@ describe('Logging Test', function () {
 
     it('winston should emit logging event', function () {
         var loggingHappened = false;
-        winstonAdapter.logger.on('logging', function (transport, level, msg, meta) {
+        winstonAdapter.logger.transports[0].on('logged', function (transport, level, msg, meta) {
             loggingHappened = true;
         });
+
         var cfg = new Config.ClientConfig();
         cfg.clusterName = cluster.id;
         cfg.customLogger = winstonAdapter;
@@ -163,9 +164,8 @@ describe('Logging Test', function () {
         cfg.properties['hazelcast.logging.level'] = LogLevel.TRACE;
         return HazelcastClient.newHazelcastClient(cfg).then(function (cl) {
             client = cl;
-            return sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'INFO');
-            return sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'DEBUG');
-            return sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'TRACE');
+            sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'INFO');
+            sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'TRACE');
         });
     });
 });

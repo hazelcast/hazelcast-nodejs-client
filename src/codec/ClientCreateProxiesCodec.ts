@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/*tslint:disable:max-line-length*/
+/* eslint-disable max-len */
 import {BitsUtil} from '../BitsUtil';
 import {ClientMessage, Frame, PARTITION_ID_OFFSET} from '../ClientMessage';
 import {EntryListCodec} from './builtin/EntryListCodec';
