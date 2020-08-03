@@ -57,6 +57,7 @@ export interface SerializationConfig {
      */
     customSerializers?: Array<Serializer<CustomSerializable>>;
 
+    // TODO global serializer doesn't need id field
     /**
      * Defines the global serializer. This serializer is registered as a fallback serializer
      * to handle all other objects if a serializer cannot be located for them.

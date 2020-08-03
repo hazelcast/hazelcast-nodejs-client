@@ -26,9 +26,9 @@ import {HazelcastJsonValue} from '../core/HazelcastJsonValue';
 export interface Serializer<T = any> {
 
     /**
-     * Returns type id.
+     * Type id.
      */
-    getId(): number;
+    id: number;
 
     /**
      * Deserializes input data into an object.
@@ -49,9 +49,7 @@ export interface Serializer<T = any> {
 
 export class StringSerializer implements Serializer {
 
-    getId(): number {
-        return -11;
-    }
+    id = -11;
 
     read(input: DataInput): any {
         return input.readUTF();
@@ -64,9 +62,7 @@ export class StringSerializer implements Serializer {
 
 export class DoubleSerializer implements Serializer {
 
-    getId(): number {
-        return -10;
-    }
+    id = -10;
 
     read(input: DataInput): any {
         return input.readDouble();
@@ -79,9 +75,7 @@ export class DoubleSerializer implements Serializer {
 
 export class BooleanSerializer implements Serializer {
 
-    getId(): number {
-        return -4;
-    }
+    id = -4;
 
     read(input: DataInput): any {
         return input.readBoolean();
@@ -96,9 +90,7 @@ export const NULL_TYPE_ID = 0;
 
 export class NullSerializer implements Serializer {
 
-    getId(): number {
-        return NULL_TYPE_ID;
-    }
+    id = NULL_TYPE_ID;
 
     read(input: DataInput): any {
         return null;
@@ -111,9 +103,7 @@ export class NullSerializer implements Serializer {
 
 export class ShortSerializer implements Serializer {
 
-    getId(): number {
-        return -6;
-    }
+    id = -6;
 
     read(input: DataInput): any {
         return input.readShort();
@@ -126,9 +116,7 @@ export class ShortSerializer implements Serializer {
 
 export class IntegerSerializer implements Serializer {
 
-    getId(): number {
-        return -7;
-    }
+    id = -7;
 
     read(input: DataInput): any {
         return input.readInt();
@@ -141,9 +129,7 @@ export class IntegerSerializer implements Serializer {
 
 export class LongSerializer implements Serializer {
 
-    getId(): number {
-        return -8;
-    }
+    id = -8;
 
     read(input: DataInput): any {
         return input.readLong();
@@ -156,9 +142,7 @@ export class LongSerializer implements Serializer {
 
 export class FloatSerializer implements Serializer {
 
-    getId(): number {
-        return -9;
-    }
+    id = -9;
 
     read(input: DataInput): any {
         return input.readFloat();
@@ -171,9 +155,7 @@ export class FloatSerializer implements Serializer {
 
 export class DateSerializer implements Serializer {
 
-    getId(): number {
-        return -25;
-    }
+    id = -25;
 
     read(input: DataInput): any {
         return new Date(input.readLong().toNumber());
@@ -186,9 +168,7 @@ export class DateSerializer implements Serializer {
 
 export class BooleanArraySerializer implements Serializer {
 
-    getId(): number {
-        return -13;
-    }
+    id = -13;
 
     read(input: DataInput): any {
         return input.readBooleanArray();
@@ -201,9 +181,7 @@ export class BooleanArraySerializer implements Serializer {
 
 export class ShortArraySerializer implements Serializer {
 
-    getId(): number {
-        return -15;
-    }
+    id = -15;
 
     read(input: DataInput): any {
         return input.readShortArray();
@@ -216,9 +194,7 @@ export class ShortArraySerializer implements Serializer {
 
 export class IntegerArraySerializer implements Serializer {
 
-    getId(): number {
-        return -16;
-    }
+    id = -16;
 
     read(input: DataInput): any {
         return input.readIntArray();
@@ -231,9 +207,7 @@ export class IntegerArraySerializer implements Serializer {
 
 export class LongArraySerializer implements Serializer {
 
-    getId(): number {
-        return -17;
-    }
+    id = -17;
 
     read(input: DataInput): any {
         return input.readLongArray();
@@ -246,9 +220,7 @@ export class LongArraySerializer implements Serializer {
 
 export class DoubleArraySerializer implements Serializer {
 
-    getId(): number {
-        return -19;
-    }
+    id = -19;
 
     read(input: DataInput): any {
         return input.readDoubleArray();
@@ -261,9 +233,7 @@ export class DoubleArraySerializer implements Serializer {
 
 export class StringArraySerializer implements Serializer {
 
-    getId(): number {
-        return -20;
-    }
+    id = -20;
 
     read(input: DataInput): any {
         return input.readUTFArray();
@@ -276,9 +246,7 @@ export class StringArraySerializer implements Serializer {
 
 export class ByteSerializer implements Serializer {
 
-    getId(): number {
-        return -3;
-    }
+    id = -3;
 
     read(input: DataInput): any {
         return input.readByte();
@@ -291,9 +259,7 @@ export class ByteSerializer implements Serializer {
 
 export class ByteArraySerializer implements Serializer {
 
-    getId(): number {
-        return -12;
-    }
+    id = -12;
 
     read(input: DataInput): any {
         return input.readByteArray();
@@ -306,9 +272,7 @@ export class ByteArraySerializer implements Serializer {
 
 export class CharSerializer implements Serializer {
 
-    getId(): number {
-        return -5;
-    }
+    id = -5;
 
     read(input: DataInput): any {
         return input.readChar();
@@ -321,9 +285,7 @@ export class CharSerializer implements Serializer {
 
 export class CharArraySerializer implements Serializer {
 
-    getId(): number {
-        return -14;
-    }
+    id = -14;
 
     read(input: DataInput): any {
         return input.readCharArray();
@@ -335,9 +297,8 @@ export class CharArraySerializer implements Serializer {
 }
 
 export class FloatArraySerializer implements Serializer {
-    getId(): number {
-        return -18;
-    }
+
+    id = -18;
 
     read(input: DataInput): any {
         return input.readFloatArray();
@@ -350,9 +311,7 @@ export class FloatArraySerializer implements Serializer {
 
 export class JavaClassSerializer implements Serializer {
 
-    getId(): number {
-        return -24;
-    }
+    id = -24;
 
     read(input: DataInput): any {
         return input.readUTF();
@@ -365,9 +324,7 @@ export class JavaClassSerializer implements Serializer {
 
 export class LinkedListSerializer implements Serializer {
 
-    getId(): number {
-        return -30;
-    }
+    id = -30;
 
     read(input: DataInput): any {
         const size = input.readInt();
@@ -382,25 +339,22 @@ export class LinkedListSerializer implements Serializer {
     }
 
     write(output: DataOutput, object: any): void {
-        // NULL method
+        // no-op
     }
 }
 
 export class ArrayListSerializer extends LinkedListSerializer {
-    getId(): number {
-        return -29;
-    }
+
+    id = -29;
 }
 
 export class IdentifiedDataSerializableSerializer implements Serializer {
+
+    id = -2;
     private factories: { [id: number]: IdentifiedDataSerializableFactory };
 
     constructor(factories: { [id: number]: IdentifiedDataSerializableFactory }) {
         this.factories = factories;
-    }
-
-    getId(): number {
-        return -2;
     }
 
     read(input: DataInput): any {
@@ -428,9 +382,8 @@ export class IdentifiedDataSerializableSerializer implements Serializer {
 }
 
 export class JsonSerializer implements Serializer {
-    getId(): number {
-        return -130;
-    }
+
+    id = -130;
 
     read(input: DataInput): any {
         return JSON.parse(input.readUTF());

@@ -27,8 +27,8 @@ class TimeOfDay {
 }
 
 class CustomSerializer {
-    getId() {
-        return 42;
+    constructor() {
+        this.id = 42;
     }
 
     write(output, timeofday) {

@@ -25,8 +25,8 @@ class CustomSerializable {
 }
 
 class CustomSerializer {
-    getId() {
-        return 10;
+    constructor() {
+        this.id = 10;
     }
 
     read(input) {

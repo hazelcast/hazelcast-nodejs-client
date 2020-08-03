@@ -109,7 +109,7 @@ export class SerializationServiceV1 implements SerializationService {
         } else {
             dataOutput.writeIntBE(this.calculatePartitionHash(object, partitioningStrategy));
         }
-        dataOutput.writeIntBE(serializer.getId());
+        dataOutput.writeIntBE(serializer.id);
         serializer.write(dataOutput, object);
         return new HeapData(dataOutput.toBuffer());
     }
@@ -128,7 +128,7 @@ export class SerializationServiceV1 implements SerializationService {
 
     writeObject(out: DataOutput, object: any): void {
         const serializer = this.findSerializerFor(object);
-        out.writeInt(serializer.getId());
+        out.writeInt(serializer.id);
         serializer.write(out, object);
     }
 
@@ -142,11 +142,11 @@ export class SerializationServiceV1 implements SerializationService {
         if (this.serializerNameToId[name]) {
             throw new RangeError('Given serializer name is already in the registry.');
         }
-        if (this.registry[serializer.getId()]) {
+        if (this.registry[serializer.id]) {
             throw new RangeError('Given serializer id is already in the registry.');
         }
-        this.serializerNameToId[name] = serializer.getId();
-        this.registry[serializer.getId()] = serializer;
+        this.serializerNameToId[name] = serializer.id;
+        this.registry[serializer.id] = serializer;
     }
 
     /**
@@ -283,7 +283,7 @@ export class SerializationServiceV1 implements SerializationService {
         for (const key in customSerializers) {
             const candidate = customSerializers[key];
             this.assertValidCustomSerializer(candidate);
-            this.registerSerializer('!custom' + candidate.getId(), candidate);
+            this.registerSerializer('!custom' + candidate.id, candidate);
         }
     }
 
@@ -297,17 +297,16 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     protected assertValidCustomSerializer(candidate: any): void {
-        const fGetId = 'getId';
+        const idProp = 'id';
         const fRead = 'read';
         const fWrite = 'write';
-        if (
-            typeof candidate[fGetId] !== 'function' ||
-            typeof candidate[fRead] !== 'function' ||
-            typeof candidate[fWrite] !== 'function'
-        ) {
-            throw new TypeError('Custom serializer should have ' + fGetId + ', ' + fRead + ' and ' + fWrite + ' methods.');
+        if (typeof candidate[idProp] !== 'number') {
+            throw new TypeError('Custom serializer should have ' + idProp + ' property.');
         }
-        const typeId = candidate[fGetId]();
+        if (typeof candidate[fRead] !== 'function' || typeof candidate[fWrite] !== 'function') {
+            throw new TypeError('Custom serializer should have ' + fRead + ' and ' + fWrite + ' methods.');
+        }
+        const typeId = candidate[idProp];
         if (!Number.isInteger(typeId) || typeId < 1) {
             throw new TypeError('Custom serializer should have its typeId greater than or equal to 1.');
         }

@@ -18,8 +18,8 @@
 const { Client } = require('hazelcast-client');
 
 class GlobalSerializer {
-    getId() {
-        return 20;
+    constructor() {
+        this.id = 20;
     }
 
     read(input) {

@@ -821,8 +821,8 @@ Now you need to implement acustom `CustomSerializer` which will will serialize `
 
 ```javascript
 class CustomSerializer {
-    getId() {
-        return 10;
+    constructor() {
+        this.id = 10;
     }
 
     read(input) {
@@ -872,8 +872,8 @@ A sample global serializer that integrates with a third party serializer is show
 
 ```javascript
 class GlobalSerializer {
-    getId() {
-        return 20;
+    constructor() {
+        this.id = 20;
     }
 
     read(input) {
@@ -1822,7 +1822,7 @@ public class IdentifiedEntryProcessor
     }
 
      @Override
-    public int getId() {
+    public int getClassId() {
         return CLASS_ID;
     }
 
