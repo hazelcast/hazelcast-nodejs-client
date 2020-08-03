@@ -25,6 +25,8 @@ class User {
         this.username = username;
         this.age = age;
         this.active = active;
+        this.factoryId = 1;
+        this.classId = 1;
     }
 
     readPortable(reader) {
@@ -37,14 +39,6 @@ class User {
         writer.writeUTF('username', this.username);
         writer.writeInt('age', this.age);
         writer.writeBoolean('active', this.active);
-    }
-
-    getFactoryId() {
-        return 1;
-    }
-
-    getClassId() {
-        return 1;
     }
 }
 

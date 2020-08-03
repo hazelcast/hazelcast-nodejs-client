@@ -97,13 +97,13 @@ export class PortableContext {
         return classDefinition;
     }
 
-    lookupOrRegisterClassDefinition(p: Portable): ClassDefinition {
-        const portableVersion = this.getClassVersion(p);
-        let cd = this.lookupClassDefinition(p.getFactoryId(), p.getClassId(), portableVersion);
+    lookupOrRegisterClassDefinition(portable: Portable): ClassDefinition {
+        const portableVersion = this.getClassVersion(portable);
+        let cd = this.lookupClassDefinition(portable.factoryId, portable.classId, portableVersion);
         if (cd == null) {
-            const writer = new ClassDefinitionWriter(this, new ClassDefinitionBuilder(p.getFactoryId(), p.getClassId(),
-                portableVersion));
-            p.writePortable(writer);
+            const writer = new ClassDefinitionWriter(this,
+                new ClassDefinitionBuilder(portable.factoryId, portable.classId, portableVersion));
+            portable.writePortable(writer);
             cd = writer.registerAndGet();
         }
         return cd;
@@ -127,11 +127,11 @@ export class PortableContext {
     }
 
     getClassVersion(portable: VersionedPortable | Portable): number {
-        if ((portable as VersionedPortable).getVersion) {
-            if ((portable as VersionedPortable).getVersion() < 0) {
+        if (typeof (portable as VersionedPortable).version === 'number') {
+            if ((portable as VersionedPortable).version < 0) {
                 throw new RangeError('Version cannot be negative!');
             }
-            return (portable as VersionedPortable).getVersion();
+            return (portable as VersionedPortable).version;
         } else {
             return this.version;
         }

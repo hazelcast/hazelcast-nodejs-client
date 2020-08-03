@@ -23,6 +23,8 @@ class Customer {
         this.name = name;
         this.id = id;
         this.lastOrder = lastOrder;
+        this.factoryId = 1;
+        this.classId = 1;
     }
 
     readPortable(reader) {
@@ -35,14 +37,6 @@ class Customer {
         writer.writeUTF('name', this.name);
         writer.writeInt('id', this.id);
         writer.writeLong('lastOrder', Long.fromNumber(this.lastOrder));
-    }
-
-    getFactoryId() {
-        return 1;
-    }
-
-    getClassId() {
-        return 1;
     }
 }
 

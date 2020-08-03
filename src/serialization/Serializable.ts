@@ -37,9 +37,9 @@ export interface IdentifiedDataSerializableFactory {
 
 export interface Portable {
 
-    getFactoryId(): number;
+    factoryId: number;
 
-    getClassId(): number;
+    classId: number;
 
     writePortable(writer: PortableWriter): void;
 
@@ -49,7 +49,7 @@ export interface Portable {
 
 export interface VersionedPortable extends Portable {
 
-    getVersion(): number;
+    version: number;
 
 }
 

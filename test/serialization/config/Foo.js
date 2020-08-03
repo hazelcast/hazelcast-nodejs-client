@@ -17,14 +17,8 @@
 
 function Foo(foo) {
     this.foo = foo;
-}
-
-Foo.prototype.getClassId = function () {
-    return 1;
-}
-
-Foo.prototype.getFactoryId = function () {
-    return 1;
+    this.factoryId = 1;
+    this.classId = 1;
 }
 
 Foo.prototype.writePortable = function (portableWriter) {

@@ -599,6 +599,8 @@ class Employee {
     constructor(id, name) {
         this.id = id;
         this.name = name;
+        this.factoryId = 1000;
+        this.classId = 100;
     }
 
     readData(input) {
@@ -610,20 +612,12 @@ class Employee {
         output.writeInt(this.id);
         output.writeUTF(this.name);
     }
-
-    getFactoryId() {
-        return 1000;
-    }
-
-    getClassId() {
-        return 100;
-    }
 }
 ```
 
 > **NOTE: Refer to `DataInput`/`DataOutput` interfaces in the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) to understand methods available on the `input`/`output` objects.**
 
-The `IdentifiedDataSerializable` interface uses `getClassId()` and `getFactoryId()` to reconstitute the object. To complete the implementation, `IdentifiedDataSerializableFactory` should also be implemented and put into the `serialization.dataSerializableFactories` config option. The factory's responsibility is to return an instance of the right `IdentifiedDataSerializable` object, given the `classId`.
+The `IdentifiedDataSerializable` interface uses `classId` and `factoryId` properties to reconstitute the object. To complete the implementation, `IdentifiedDataSerializableFactory` should also be implemented and put into the `serialization.dataSerializableFactories` config option. The factory's responsibility is to return an instance of the right `IdentifiedDataSerializable` object, given the `classId`.
 
 A sample `IdentifiedDataSerializableFactory` could be implemented as follows:
 
@@ -674,6 +668,7 @@ class Customer {
         this.name = name;
         this.id = id;
         this.lastOrder = lastOrder;
+        this.factoryId = 1;
         this.classId = 1;
     }
 
@@ -687,14 +682,6 @@ class Customer {
         writer.writeUTF('name', this.name);
         writer.writeInt('id', this.id);
         writer.writeLong('lastOrder', Long.fromNumber(this.lastOrder));
-    }
-
-    getFactoryId() {
-        return PortableFactory.factoryId;
-    }
-
-    getClassId() {
-        return this.classId;
     }
 }
 ```
@@ -757,6 +744,9 @@ class Foo {
     constructor(foo, foo2) {
         this.foo = foo;
         this.foo2 = foo2;
+        this.factoryId = 1;
+        this.classId = 1;
+        this.version = 2;
     }
 
     readPortable(reader) {
@@ -767,18 +757,6 @@ class Foo {
     writePortable(writer) {
         writer.writeUTF('foo', this.foo);
         writer.writeUTF('foo2', this.foo2);
-    }
-
-    getFactoryId() {
-        return 1;
-    }
-
-    getClassId() {
-        return 1;
-    }
-
-    getVersion() {
-        return 2;
     }
 }
 ```
@@ -1774,6 +1752,8 @@ The following is an example for `EntryProcessor` which is an `IdentifiedDataSeri
 class IdentifiedEntryProcessor {
     constructor(value) {
         this.value = value;
+        this.factoryId = 5;
+        this.classId = 1;
     }
 
     readData(input) {
@@ -1782,14 +1762,6 @@ class IdentifiedEntryProcessor {
 
     writeData(output) {
         output.writeUTF(this.value);
-    }
-
-    getFactoryId() {
-        return 5;
-    }
-
-    getClassId() {
-        return 1;
     }
 }
 ```
@@ -1818,27 +1790,27 @@ public class IdentifiedEntryProcessor
     public IdentifiedEntryProcessor() {
     }
 
-     @Override
+    @Override
     public int getFactoryId() {
         return IdentifiedFactory.FACTORY_ID;
     }
 
-     @Override
+    @Override
     public int getClassId() {
         return CLASS_ID;
     }
 
-     @Override
+    @Override
     public void writeData(ObjectDataOutput out) throws IOException {
         out.writeUTF(value);
     }
 
-     @Override
+    @Override
     public void readData(ObjectDataInput in) throws IOException {
         value = in.readUTF();
     }
 
-     @Override
+    @Override
     public Object process(Map.Entry<String, String> entry) {
         entry.setValue(value);
         return value;
@@ -1946,6 +1918,8 @@ class Employee {
         this.age = age;
         this.active = active;
         this.salary = salary;
+        this.factoryId = 1;
+        this.classId = 1;
     }
 
     readPortable(reader) {
@@ -1960,14 +1934,6 @@ class Employee {
         writer.writeInt(this.age);
         writer.writeBoolean(this.active);
         writer.writeDouble(this.salary);
-    }
-
-    getClassId() {
-        return 1;
-    }
-
-    getFactoryId() {
-        return 1;
     }
 }
 ```
@@ -2869,6 +2835,8 @@ class UsernamePasswordCredentials {
         this.username = username;
         this.password = Buffer.from(password, 'utf8');
         this.endpoint = endpoint;
+        this.factoryId = -1;
+        this.classId = 1;
     }
 
     readPortable(reader) {
@@ -2881,14 +2849,6 @@ class UsernamePasswordCredentials {
         writer.writeUTF('principal', this.username);
         writer.writeUTF('endpoint', this.endpoint);
         writer.writeByteArray('pwd', this.password);
-    }
-
-    getFactoryId() {
-        return -1;
-    }
-
-    getClassId() {
-        return 1;
     }
 }
 

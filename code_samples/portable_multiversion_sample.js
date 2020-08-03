@@ -30,6 +30,9 @@ class Employee {
     constructor(name, age) {
         this.name = name;
         this.age = age;
+        this.factoryId = 1;
+        this.classId = 1;
+        this.version = 1;
     }
 
     readPortable(reader) {
@@ -40,18 +43,6 @@ class Employee {
     writePortable(writer) {
         writer.writeUTF('name', this.name);
         writer.writeInt('age', this.age);
-    }
-
-    getFactoryId() {
-        return 1;
-    }
-
-    getClassId() {
-        return 1;
-    }
-
-    getVersion() {
-        return 1;
     }
 }
 
@@ -76,6 +67,10 @@ class Employee2 {
         this.name = name;
         this.age = age;
         this.manager = manager;
+        this.factoryId = 1;
+        this.classId = 1;
+        // Specify version different than the global version.
+        this.version = 2;
     }
 
     readPortable(reader) {
@@ -88,20 +83,6 @@ class Employee2 {
         writer.writeUTF('name', this.name);
         writer.writeInt('age', this.age);
         writer.writeUTF('manager', this.manager);
-    }
-
-    getFactoryId() {
-        return 1;
-    }
-
-    getClassId() {
-        return 1;
-    }
-
-    // It is necessary to implement this method for multiversion support to work.
-    getVersion() {
-        // Specifies version different than the global version.
-        return 2;
     }
 }
 
@@ -127,6 +108,9 @@ class Employee3 {
         this.name = name;
         this.age = age;
         this.manager = manager;
+        this.factoryId = 1;
+        this.classId = 1;
+        this.version = 3;
     }
 
     readPortable(reader) {
@@ -139,18 +123,6 @@ class Employee3 {
         writer.writeUTF('name', this.name);
         writer.writeUTF('age', this.age);
         writer.writeUTF('manager', this.manager);
-    }
-
-    getFactoryId() {
-        return 1;
-    }
-
-    getClassId() {
-        return 1;
-    }
-
-    getVersion() {
-        return 3;
     }
 }
 

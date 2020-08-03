@@ -71,8 +71,8 @@ export class PortableSerializer implements Serializer {
     }
 
     write(output: PositionalDataOutput, object: Portable): void {
-        output.writeInt(object.getFactoryId());
-        output.writeInt(object.getClassId());
+        output.writeInt(object.factoryId);
+        output.writeInt(object.classId);
 
         this.writeObject(output, object);
     }

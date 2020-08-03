@@ -21,7 +21,7 @@ const Promise = require('bluebird');
 const Client = require('../../.').Client;
 const RC = require('../RC');
 const SimplePortable = require('./PortableObjects').SimplePortable;
-const InnerPortable = require('./PortableObjects').InnerPortableObject;
+const InnerPortable = require('./PortableObjects').InnerPortable;
 
 describe('PortableSerializersLiveTest', function () {
 

@@ -103,15 +103,9 @@ IDataSerializableFactory.prototype.create = function (type) {
 
 function Portable(val) {
     this.val = val;
+    this.factoryId = 2;
+    this.classId = 22;
 }
-
-Portable.prototype.getClassId = function () {
-    return 22;
-};
-
-Portable.prototype.getFactoryId = function () {
-    return 2;
-};
 
 Portable.prototype.readPortable = function (reader) {
     this.val = reader.readInt('val');

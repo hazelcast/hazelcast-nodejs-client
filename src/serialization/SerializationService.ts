@@ -228,7 +228,8 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     protected isPortableSerializable(obj: any): boolean {
-        return (obj.readPortable && obj.writePortable && obj.getFactoryId && obj.getClassId);
+        return (obj.readPortable && obj.writePortable
+            && typeof obj.factoryId === 'number' && typeof obj.classId === 'number');
     }
 
     protected registerDefaultSerializers(): void {
