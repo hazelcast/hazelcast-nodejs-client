@@ -17,11 +17,8 @@
 
 function Musician(name) {
     this.name = name;
+    this.hzCustomId = 10;
 }
-
-Musician.prototype.hzGetCustomId = function () {
-    return 10;
-};
 
 function MusicianSerializer() {
 }

@@ -71,7 +71,6 @@ export class AggregatorFactory implements IdentifiedDataSerializableFactory {
         this.idToConstructor[AggregatorFactory.MAX] = MaxAggregator;
         this.idToConstructor[AggregatorFactory.MIN] = MinAggregator;
         this.idToConstructor[AggregatorFactory.NUMBER_AVG] = NumberAverageAggregator;
-
     }
 
     create(type: number): IdentifiedDataSerializable {

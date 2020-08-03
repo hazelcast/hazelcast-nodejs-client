@@ -22,10 +22,7 @@ class TimeOfDay {
         this.hour = hour;
         this.minute = minute;
         this.second = second;
-    }
-
-    hzGetCustomId() {
-        return 42;
+        this.hzCustomId = 42;
     }
 }
 

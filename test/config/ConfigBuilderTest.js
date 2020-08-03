@@ -31,19 +31,15 @@ describe('ConfigBuilderTest', function () {
         memberRemoved: () => {}
     };
     const dataSerializableFactory = {
-        factoryId: 1,
         create: () => {}
     };
     const portableFactory = {
-        factoryId: 2,
         create: () => {}
     };
     const customSerializer = {
-        getId: () => 3,
-        hzGetCustomId: () => 3
+        getId: () => 3
     };
-    customSerializer.typeId = 3;
-    const globalSerializer = () => {};
+    const globalSerializer = {};
     const customLoadBalancer = {
         initLoadBalancer: () => {},
         next: () => {}

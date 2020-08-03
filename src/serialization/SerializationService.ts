@@ -214,7 +214,7 @@ export class SerializationServiceV1 implements SerializationService {
 
     protected lookupCustomSerializer(obj: any): Serializer {
         if (this.isCustomSerializable(obj)) {
-            return this.findSerializerById(obj.hzGetCustomId());
+            return this.findSerializerById(obj.hzCustomId);
         }
         return null;
     }
@@ -314,8 +314,8 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     protected isCustomSerializable(object: any): boolean {
-        const prop = 'hzGetCustomId';
-        return (object[prop] && typeof object[prop] === 'function' && object[prop]() >= 1);
+        const prop = 'hzCustomId';
+        return (typeof object[prop] === 'number' && object[prop] >= 1);
     }
 
     protected findSerializerByName(name: string, isArray: boolean): Serializer {

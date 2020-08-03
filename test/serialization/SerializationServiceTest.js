@@ -155,13 +155,10 @@ GlobalSerializer.prototype.write = function (outp, obj) {
 
 function CustomObject(val) {
     this.val = val;
+    this.hzCustomId = 44;
     // Put a reference to self so json serializer cannot be used. Make sure global serializer is used in test.
     this.self = this;
 }
-
-CustomObject.prototype.hzGetCustomId = function () {
-    return 44;
-};
 
 function CustomSerializer() {
 }

@@ -61,6 +61,9 @@ export interface PortableFactory {
 
 export interface CustomSerializable {
 
-    hzGetCustomId(): number;
+    /**
+     * Custom serializable id. Should match custom serializer's id.
+     */
+    hzCustomId: number;
 
 }

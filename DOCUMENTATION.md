@@ -810,15 +810,12 @@ Let's say you have an object `CustomSerializable` and you would like to customiz
 class CustomSerializable {
     constructor(value) {
         this.value = value;
-    }
-
-    hzGetCustomId() {
-        return 10;
+        this.hzCustomId = 10;
     }
 }
 ```
 
-Note that the `hzGetCustomId()` should return type id of the `CustomSerializable`.
+Note that the `hzCustomId` property should return type id of the `CustomSerializable`.
 
 Now you need to implement acustom `CustomSerializer` which will will serialize `CustomSerializable`.
 
