@@ -37,7 +37,7 @@ class IdentifiedEntryProcessor {
     }
 }
 
-class EntryProcessorDataSerializableFactory() {
+class EntryProcessorDataSerializableFactory {
     create(type) {
         if (type === 1) {
             return new IdentifiedEntryProcessor();
