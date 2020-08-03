@@ -88,9 +88,7 @@ describe('BinaryCompatibilityTest', function () {
         };
         cfg.customSerializers = [
             {
-                getId: function () {
-                    return ReferenceObjects.CUSTOM_BYTE_ARRAY_SERIALIZABLE_ID;
-                },
+                id: ReferenceObjects.CUSTOM_BYTE_ARRAY_SERIALIZABLE_ID,
                 write: function (out, object) {
                     out.writeInt(8);
                     out.writeInt(object.i);
@@ -104,9 +102,7 @@ describe('BinaryCompatibilityTest', function () {
                 }
             },
             {
-                getId: function () {
-                    return ReferenceObjects.CUSTOM_STREAM_SERIALIZABLE_ID;
-                },
+                id: ReferenceObjects.CUSTOM_STREAM_SERIALIZABLE_ID,
                 write: function (out, object) {
                     out.writeInt(object.int);
                     out.writeFloat(object.float);

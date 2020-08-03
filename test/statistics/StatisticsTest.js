@@ -62,7 +62,7 @@ function extractIntStatValue(stats, statName) {
     return Number.parseInt(extractStringStatValue(stats, statName));
 }
 
-describe('Statistics with default period', function () {
+describe('StatisticsTest (default period)', function () {
 
     let cluster;
     let client;
@@ -174,7 +174,7 @@ describe('Statistics with default period', function () {
     });
 });
 
-describe('Statistics with non-default period', function () {
+describe('StatisticsTest (non-default period)', function () {
 
     let cluster;
     let client;
@@ -229,7 +229,7 @@ describe('Statistics with non-default period', function () {
     });
 });
 
-describe('Statistics with negative period', function () {
+describe('StatisticsTest (negative period)', function () {
 
     let client;
     let cluster;
