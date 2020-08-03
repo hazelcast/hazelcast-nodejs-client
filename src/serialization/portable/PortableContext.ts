@@ -68,7 +68,7 @@ export class PortableContext {
                 fieldFactoryId = input.readInt();
                 fieldClassId = input.readInt();
 
-                // TODO: what there's a null inner Portable field
+                // TODO: what if there's a null inner Portable field
                 if (register) {
                     fieldVersion = input.readInt();
                     this.readClassDefinitionFromInput(input, fieldFactoryId, fieldClassId, fieldVersion);
@@ -78,7 +78,7 @@ export class PortableContext {
                 fieldFactoryId = input.readInt();
                 fieldClassId = input.readInt();
 
-                // TODO: what there's a null inner Portable field
+                // TODO: what if there's a null inner Portable field
                 if (k > 0) {
                     const p = input.readInt();
                     input.position(p);

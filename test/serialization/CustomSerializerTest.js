@@ -34,9 +34,7 @@ describe('CustomSerializerTest', function () {
         const cfg = new SerializationConfigImpl();
         cfg.customSerializers = [
             {
-                getId: function () {
-                    return 10;
-                },
+                id: 10,
                 write: function (out, emp) {
                     out.writeUTF(emp.surname);
                 },

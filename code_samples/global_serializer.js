@@ -34,9 +34,7 @@ selfReferringObject.self = selfReferringObject;
                 globalSerializer: {
                     mousseSerialize: mousse.serialize,
                     mousseDeserialize: mousse.deserialize,
-                    getId: function () {
-                        return 10;
-                    },
+                    id: 10,
                     write: function (output, obj) {
                         output.writeUTF(this.mousseSerialize(obj))
                     },

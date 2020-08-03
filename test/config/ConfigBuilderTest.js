@@ -37,7 +37,7 @@ describe('ConfigBuilderTest', function () {
         create: () => {}
     };
     const customSerializer = {
-        getId: () => 3
+        id: 3
     };
     const globalSerializer = {};
     const customLoadBalancer = {

@@ -23,9 +23,7 @@ function Musician(name) {
 function MusicianSerializer() {
 }
 
-MusicianSerializer.prototype.getId = function () {
-    return 10;
-}
+MusicianSerializer.prototype.id = 10;
 
 MusicianSerializer.prototype.write = function (objectDataOutput, object) {
     objectDataOutput.writeInt(object.name.length);

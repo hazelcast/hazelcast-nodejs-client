@@ -139,9 +139,7 @@ function AnyObject(val) {
 function GlobalSerializer() {
 }
 
-GlobalSerializer.prototype.getId = function () {
-    return 33;
-};
+GlobalSerializer.prototype.id = 33;
 
 GlobalSerializer.prototype.read = function (inp) {
     const obj = new AnyObject();
@@ -163,9 +161,7 @@ function CustomObject(val) {
 function CustomSerializer() {
 }
 
-CustomSerializer.prototype.getId = function () {
-    return 44;
-};
+CustomSerializer.prototype.id = 44;
 
 CustomSerializer.prototype.read = function (reader) {
     const obj = new CustomObject();
