@@ -400,6 +400,7 @@ export class JsonSerializer implements Serializer {
 }
 
 export class HazelcastJsonValueSerializer extends JsonSerializer {
+
     read(input: DataInput): HazelcastJsonValue {
         return new HazelcastJsonValue(input.readUTF());
     }

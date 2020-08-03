@@ -22,16 +22,16 @@ class UsernamePasswordCredentials {
         this.endpoint = endpoint;
     }
 
-    readPortable(input) {
-        this.username = input.readUTF('username');
-        this.endpoint = input.readUTF('password');
-        this.password = input.readUTF('endpoint');
+    readPortable(reader) {
+        this.username = reader.readUTF('username');
+        this.endpoint = reader.readUTF('password');
+        this.password = reader.readUTF('endpoint');
     }
 
-    writePortable(output) {
-        output.writeUTF('username', this.username);
-        output.writeUTF('password', this.password);
-        output.writeUTF('endpoint', this.endpoint);
+    writePortable(writer) {
+        writer.writeUTF('username', this.username);
+        writer.writeUTF('password', this.password);
+        writer.writeUTF('endpoint', this.endpoint);
     }
 
     getFactoryId() {

@@ -27,16 +27,16 @@ class User {
         this.active = active;
     }
 
-    readPortable(input) {
-        this.username = input.readUTF('username');
-        this.age = input.readInt('age');
-        this.active = input.readBoolean('active');
+    readPortable(reader) {
+        this.username = reader.readUTF('username');
+        this.age = reader.readInt('age');
+        this.active = reader.readBoolean('active');
     }
 
-    writePortable(output) {
-        output.writeUTF('username', this.username);
-        output.writeInt('age', this.age);
-        output.writeBoolean('active', this.active);
+    writePortable(writer) {
+        writer.writeUTF('username', this.username);
+        writer.writeInt('age', this.age);
+        writer.writeBoolean('active', this.active);
     }
 
     getFactoryId() {

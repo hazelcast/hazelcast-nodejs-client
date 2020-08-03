@@ -621,7 +621,7 @@ class Employee {
 }
 ```
 
-> **NOTE: Refer to the following [API Documentation section](http://hazelcast.github.io/hazelcast-nodejs-client/api/4.0.0/docs/modules/_serialization_data_.html) to understand methods available on the `input`/`output` objects.**
+> **NOTE: Refer to `DataInput`/`DataOutput` interfaces in the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) to understand methods available on the `input`/`output` objects.**
 
 The `IdentifiedDataSerializable` interface uses `getClassId()` and `getFactoryId()` to reconstitute the object. To complete the implementation, `IdentifiedDataSerializableFactory` should also be implemented and put into the `serialization.dataSerializableFactories` config option. The factory's responsibility is to return an instance of the right `IdentifiedDataSerializable` object, given the `classId`.
 
@@ -677,16 +677,16 @@ class Customer {
         this.classId = 1;
     }
 
-    readPortable(input) {
-        this.name = input.readUTF('name');
-        this.id = input.readInt('id');
-        this.lastOrder = input.readLong('lastOrder').toNumber();
+    readPortable(reader) {
+        this.name = reader.readUTF('name');
+        this.id = reader.readInt('id');
+        this.lastOrder = reader.readLong('lastOrder').toNumber();
     }
 
-    writePortable(output) {
-        output.writeUTF('name', this.name);
-        output.writeInt('id', this.id);
-        output.writeLong('lastOrder', Long.fromNumber(this.lastOrder));
+    writePortable(writer) {
+        writer.writeUTF('name', this.name);
+        writer.writeInt('id', this.id);
+        writer.writeLong('lastOrder', Long.fromNumber(this.lastOrder));
     }
 
     getFactoryId() {
@@ -698,6 +698,8 @@ class Customer {
     }
 }
 ```
+
+> **NOTE: Refer to `PortableReader`/`PortableWriter` interfaces in the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) to understand methods available on the `reader`/`writer` objects.**
 
 Similar to `IdentifiedDataSerializable`, a `Portable` object must provide `classId` and `factoryId`. The factory object will be used to create the `Portable` object given the `classId`.
 
@@ -757,14 +759,14 @@ class Foo {
         this.foo2 = foo2;
     }
 
-    readPortable(input) {
-        this.foo = input.readUTF('foo');
-        this.foo2 = input.readUTF('foo2');
+    readPortable(reader) {
+        this.foo = reader.readUTF('foo');
+        this.foo2 = reader.readUTF('foo2');
     }
 
-    writePortable(output) {
-        output.writeUTF('foo', this.foo);
-        output.writeUTF('foo2', this.foo2);
+    writePortable(writer) {
+        writer.writeUTF('foo', this.foo);
+        writer.writeUTF('foo2', this.foo2);
     }
 
     getFactoryId() {
@@ -1946,18 +1948,18 @@ class Employee {
         this.salary = salary;
     }
 
-    readPortable(input) {
-        this.name = input.readUTF();
-        this.age = input.readInt();
-        this.active = input.readBoolean();
-        this.salary = input.readDouble();
+    readPortable(reader) {
+        this.name = reader.readUTF();
+        this.age = reader.readInt();
+        this.active = reader.readBoolean();
+        this.salary = reader.readDouble();
     }
 
-    writePortable(output) {
-        output.writeUTF(this.name);
-        output.writeInt(this.age);
-        output.writeBoolean(this.active);
-        output.writeDouble(this.salary);
+    writePortable(writer) {
+        writer.writeUTF(this.name);
+        writer.writeInt(this.age);
+        writer.writeBoolean(this.active);
+        writer.writeDouble(this.salary);
     }
 
     getClassId() {
@@ -2869,16 +2871,16 @@ class UsernamePasswordCredentials {
         this.endpoint = endpoint;
     }
 
-    readPortable = function (input) {
-        this.username = input.readUTF('principal');
-        this.endpoint = input.readUTF('endpoint');
-        this.password = input.readByteArray('pwd');
+    readPortable(reader) {
+        this.username = reader.readUTF('principal');
+        this.endpoint = reader.readUTF('endpoint');
+        this.password = reader.readByteArray('pwd');
     }
 
-    writePortable(output) {
-        output.writeUTF('principal', this.username);
-        output.writeUTF('endpoint', this.endpoint);
-        output.writeByteArray('pwd', this.password);
+    writePortable(writer) {
+        writer.writeUTF('principal', this.username);
+        writer.writeUTF('endpoint', this.endpoint);
+        writer.writeByteArray('pwd', this.password);
     }
 
     getFactoryId() {

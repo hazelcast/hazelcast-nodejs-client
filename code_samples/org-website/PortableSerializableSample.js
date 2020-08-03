@@ -25,16 +25,16 @@ class Customer {
         this.lastOrder = lastOrder;
     }
 
-    readPortable(input) {
-        this.name = input.readUTF('name');
-        this.id = input.readInt('id');
-        this.lastOrder = input.readLong('lastOrder').toNumber();
+    readPortable(reader) {
+        this.name = reader.readUTF('name');
+        this.id = reader.readInt('id');
+        this.lastOrder = reader.readLong('lastOrder').toNumber();
     }
 
-    writePortable(output) {
-        output.writeUTF('name', this.name);
-        output.writeInt('id', this.id);
-        output.writeLong('lastOrder', Long.fromNumber(this.lastOrder));
+    writePortable(writer) {
+        writer.writeUTF('name', this.name);
+        writer.writeInt('id', this.id);
+        writer.writeLong('lastOrder', Long.fromNumber(this.lastOrder));
     }
 
     getFactoryId() {
