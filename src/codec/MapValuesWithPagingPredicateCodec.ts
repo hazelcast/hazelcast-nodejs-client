@@ -57,9 +57,10 @@ export class MapValuesWithPagingPredicateCodec {
         // empty initial frame
         clientMessage.nextFrame();
 
-        return {
-            response: ListMultiFrameCodec.decode(clientMessage, DataCodec.decode),
-            anchorDataList: AnchorDataListHolderCodec.decode(clientMessage),
-        };
+        const response = {} as MapValuesWithPagingPredicateResponseParams;
+        response.response = ListMultiFrameCodec.decode(clientMessage, DataCodec.decode);
+        response.anchorDataList = AnchorDataListHolderCodec.decode(clientMessage);
+
+        return response;
     }
 }

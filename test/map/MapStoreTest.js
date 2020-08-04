@@ -21,6 +21,7 @@ var Controller = require('./../RC');
 var fs = require('fs');
 var _fillMap = require('../Util').fillMap;
 var promiseWaitMilliseconds = require('../Util').promiseWaitMilliseconds;
+const Util = require('../Util');
 
 describe('MapStore', function () {
     var cluster;
@@ -194,9 +195,58 @@ describe('MapStore', function () {
             .then(function () {
                 return map.put('some-key', 'some-value', 100)
             }).then(function () {
-                return promiseWaitMilliseconds(2000);
-            }).then(function () {
-                return map.get('some-key');
+            return promiseWaitMilliseconds(2000);
+        }).then(function () {
+            return map.get('some-key');
+        });
+    });
+
+    it('listener contains old value after putAll', function (done) {
+        let listenerId;
+        const listener = {
+            updated: event => {
+                map.removeEntryListener(listenerId)
+                    .then(() => {
+                        if (event.oldValue === "1") {
+                            done();
+                        } else {
+                            done(new Error("Old value for the received event does not match with expected value! " +
+                                "Expected: 1, received: " + event.oldValue));
+                        }
+                    });
+            },
+        }
+        map.evictAll()
+            .then(() => map.put("1", "1"))
+            .then(() => map.addEntryListener(listener, null, true))
+            .then(id => {
+                listenerId = id;
+                return map.putAll([["1", "2"]]);
+            });
+    });
+
+    it('listener does not contain old value after setAll', function (done) {
+        Util.markServerVersionAtLeast(this, client, '4.1');
+        let listenerId;
+        const listener = {
+            added: event => {
+                map.removeEntryListener(listenerId)
+                    .then(() => {
+                        if (event.oldValue == null) {
+                            done();
+                        } else {
+                            done(new Error("Old value for the received event does not match with expected value! " +
+                                "Expected: null, received: " + event.oldValue));
+                        }
+                    });
+            },
+        }
+        map.evictAll()
+            .then(() => map.put("1", "1"))
+            .then(() => map.addEntryListener(listener, null, true))
+            .then(id => {
+                listenerId = id;
+                return map.setAll([["1", "2"]]);
             });
     });
 });

@@ -50,8 +50,9 @@ export class RingbufferCapacityCodec {
     static decodeResponse(clientMessage: ClientMessage): RingbufferCapacityResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as RingbufferCapacityResponseParams;
+        response.response = FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

@@ -19,10 +19,9 @@ import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
 import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame, DEFAULT_FLAGS} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
-import * as Long from 'long';
+import {SimpleEntryView} from '../../core/SimpleEntryView';
 import {Data} from '../../serialization/Data';
 import {DataCodec} from '../builtin/DataCodec';
-import {SimpleEntryView} from '../../core/SimpleEntryView';
 
 const COST_OFFSET = 0;
 const CREATION_TIME_OFFSET = COST_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
@@ -64,18 +63,19 @@ export class SimpleEntryViewCodec {
         clientMessage.nextFrame();
 
         const initialFrame = clientMessage.nextFrame();
-        const cost: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, COST_OFFSET);
-        const creationTime: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, CREATION_TIME_OFFSET);
-        const expirationTime: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, EXPIRATION_TIME_OFFSET);
-        const hits: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, HITS_OFFSET);
-        const lastAccessTime: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, LAST_ACCESS_TIME_OFFSET);
-        const lastStoredTime: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, LAST_STORED_TIME_OFFSET);
-        const lastUpdateTime: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, LAST_UPDATE_TIME_OFFSET);
-        const version: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, VERSION_OFFSET);
-        const ttl: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, TTL_OFFSET);
-        const maxIdle: Long = FixSizedTypesCodec.decodeLong(initialFrame.content, MAX_IDLE_OFFSET);
-        const key: Data = DataCodec.decode(clientMessage);
-        const value: Data = DataCodec.decode(clientMessage);
+        const cost = FixSizedTypesCodec.decodeLong(initialFrame.content, COST_OFFSET);
+        const creationTime = FixSizedTypesCodec.decodeLong(initialFrame.content, CREATION_TIME_OFFSET);
+        const expirationTime = FixSizedTypesCodec.decodeLong(initialFrame.content, EXPIRATION_TIME_OFFSET);
+        const hits = FixSizedTypesCodec.decodeLong(initialFrame.content, HITS_OFFSET);
+        const lastAccessTime = FixSizedTypesCodec.decodeLong(initialFrame.content, LAST_ACCESS_TIME_OFFSET);
+        const lastStoredTime = FixSizedTypesCodec.decodeLong(initialFrame.content, LAST_STORED_TIME_OFFSET);
+        const lastUpdateTime = FixSizedTypesCodec.decodeLong(initialFrame.content, LAST_UPDATE_TIME_OFFSET);
+        const version = FixSizedTypesCodec.decodeLong(initialFrame.content, VERSION_OFFSET);
+        const ttl = FixSizedTypesCodec.decodeLong(initialFrame.content, TTL_OFFSET);
+        const maxIdle = FixSizedTypesCodec.decodeLong(initialFrame.content, MAX_IDLE_OFFSET);
+
+        const key = DataCodec.decode(clientMessage);
+        const value = DataCodec.decode(clientMessage);
 
         CodecUtil.fastForwardToEndFrame(clientMessage);
 

@@ -67,11 +67,12 @@ export class MapEventJournalReadCodec {
     static decodeResponse(clientMessage: ClientMessage): MapEventJournalReadResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            readCount: FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_READ_COUNT_OFFSET),
-            nextSeq: FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_NEXT_SEQ_OFFSET),
-            items: ListMultiFrameCodec.decode(clientMessage, DataCodec.decode),
-            itemSeqs: CodecUtil.decodeNullable(clientMessage, LongArrayCodec.decode),
-        };
+        const response = {} as MapEventJournalReadResponseParams;
+        response.readCount = FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_READ_COUNT_OFFSET);
+        response.nextSeq = FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_NEXT_SEQ_OFFSET);
+        response.items = ListMultiFrameCodec.decode(clientMessage, DataCodec.decode);
+        response.itemSeqs = CodecUtil.decodeNullable(clientMessage, LongArrayCodec.decode);
+
+        return response;
     }
 }

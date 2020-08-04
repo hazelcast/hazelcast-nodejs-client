@@ -50,8 +50,9 @@ export class RingbufferHeadSequenceCodec {
     static decodeResponse(clientMessage: ClientMessage): RingbufferHeadSequenceResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as RingbufferHeadSequenceResponseParams;
+        response.response = FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

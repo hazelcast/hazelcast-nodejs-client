@@ -19,8 +19,8 @@ import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
 import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame, DEFAULT_FLAGS} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
-import {StringCodec} from '../builtin/StringCodec';
 import {Address} from '../../Address';
+import {StringCodec} from '../builtin/StringCodec';
 
 const PORT_OFFSET = 0;
 const INITIAL_FRAME_SIZE = PORT_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
@@ -43,8 +43,9 @@ export class AddressCodec {
         clientMessage.nextFrame();
 
         const initialFrame = clientMessage.nextFrame();
-        const port: number = FixSizedTypesCodec.decodeInt(initialFrame.content, PORT_OFFSET);
-        const host: string = StringCodec.decode(clientMessage);
+        const port = FixSizedTypesCodec.decodeInt(initialFrame.content, PORT_OFFSET);
+
+        const host = StringCodec.decode(clientMessage);
 
         CodecUtil.fastForwardToEndFrame(clientMessage);
 

@@ -57,9 +57,10 @@ export class MapEntriesWithPagingPredicateCodec {
         // empty initial frame
         clientMessage.nextFrame();
 
-        return {
-            response: EntryListCodec.decode(clientMessage, DataCodec.decode, DataCodec.decode),
-            anchorDataList: AnchorDataListHolderCodec.decode(clientMessage),
-        };
+        const response = {} as MapEntriesWithPagingPredicateResponseParams;
+        response.response = EntryListCodec.decode(clientMessage, DataCodec.decode, DataCodec.decode);
+        response.anchorDataList = AnchorDataListHolderCodec.decode(clientMessage);
+
+        return response;
     }
 }

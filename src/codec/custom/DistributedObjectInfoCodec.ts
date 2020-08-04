@@ -33,8 +33,9 @@ export class DistributedObjectInfoCodec {
     static decode(clientMessage: ClientMessage): DistributedObjectInfo {
         // begin frame
         clientMessage.nextFrame();
-        const serviceName: string = StringCodec.decode(clientMessage);
-        const name: string = StringCodec.decode(clientMessage);
+
+        const serviceName = StringCodec.decode(clientMessage);
+        const name = StringCodec.decode(clientMessage);
 
         CodecUtil.fastForwardToEndFrame(clientMessage);
 

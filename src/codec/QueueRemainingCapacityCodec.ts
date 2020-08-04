@@ -49,8 +49,9 @@ export class QueueRemainingCapacityCodec {
     static decodeResponse(clientMessage: ClientMessage): QueueRemainingCapacityResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as QueueRemainingCapacityResponseParams;
+        response.response = FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

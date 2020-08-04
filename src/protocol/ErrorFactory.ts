@@ -48,6 +48,7 @@ import {
     UndefinedErrorCodeError,
     UnsupportedOperationError,
     HazelcastSerializationError,
+    ReachedMaxSizeError,
 } from '../HazelcastError';
 import {ClientProtocolErrorCodes} from './ClientProtocolErrorCodes';
 import {ClientMessage} from '../ClientMessage';
@@ -94,6 +95,7 @@ export class ClientErrorFactory {
         this.register(ClientProtocolErrorCodes.QUERY, (m, c) => new QueryError(m, c));
         this.register(ClientProtocolErrorCodes.QUERY_RESULT_SIZE_EXCEEDED, (m, c) => new QueryError(m, c));
         this.register(ClientProtocolErrorCodes.SPLIT_BRAIN_PROTECTION, (m, c) => new SplitBrainProtectionError(m, c));
+        this.register(ClientProtocolErrorCodes.REACHED_MAX_SIZE, (m, c) => new ReachedMaxSizeError(m, c));
         this.register(ClientProtocolErrorCodes.RETRYABLE_HAZELCAST, (m, c) => new RetryableHazelcastError(m, c));
         this.register(ClientProtocolErrorCodes.RETRYABLE_IO, (m, c) => new RetryableIOError(m, c));
         this.register(ClientProtocolErrorCodes.SOCKET, (m, c) => new IOError(m, c));

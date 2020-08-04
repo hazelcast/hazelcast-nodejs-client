@@ -58,9 +58,10 @@ export class MapFetchNearCacheInvalidationMetadataCodec {
         // empty initial frame
         clientMessage.nextFrame();
 
-        return {
-            namePartitionSequenceList: EntryListCodec.decode(clientMessage, StringCodec.decode, EntryListIntegerLongCodec.decode),
-            partitionUuidList: EntryListIntegerUUIDCodec.decode(clientMessage),
-        };
+        const response = {} as MapFetchNearCacheInvalidationMetadataResponseParams;
+        response.namePartitionSequenceList = EntryListCodec.decode(clientMessage, StringCodec.decode, EntryListIntegerLongCodec.decode);
+        response.partitionUuidList = EntryListIntegerUUIDCodec.decode(clientMessage);
+
+        return response;
     }
 }

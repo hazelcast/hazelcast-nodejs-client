@@ -59,9 +59,10 @@ export class TopicAddMessageListenerCodec {
     static decodeResponse(clientMessage: ClientMessage): TopicAddMessageListenerResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as TopicAddMessageListenerResponseParams;
+        response.response = FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 
     static handle(clientMessage: ClientMessage, handleTopicEvent: (item: Data, publishTime: Long, uuid: UUID) => void = null): void {

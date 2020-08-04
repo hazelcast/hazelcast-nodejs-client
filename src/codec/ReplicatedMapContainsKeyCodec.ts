@@ -52,8 +52,9 @@ export class ReplicatedMapContainsKeyCodec {
     static decodeResponse(clientMessage: ClientMessage): ReplicatedMapContainsKeyResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as ReplicatedMapContainsKeyResponseParams;
+        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

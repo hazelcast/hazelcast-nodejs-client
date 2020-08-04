@@ -52,8 +52,9 @@ export class ReplicatedMapRemoveEntryListenerCodec {
     static decodeResponse(clientMessage: ClientMessage): ReplicatedMapRemoveEntryListenerResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as ReplicatedMapRemoveEntryListenerResponseParams;
+        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

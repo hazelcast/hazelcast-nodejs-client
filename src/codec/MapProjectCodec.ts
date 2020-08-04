@@ -52,8 +52,9 @@ export class MapProjectCodec {
         // empty initial frame
         clientMessage.nextFrame();
 
-        return {
-            response: ListMultiFrameCodec.decodeContainsNullable(clientMessage, DataCodec.decode),
-        };
+        const response = {} as MapProjectResponseParams;
+        response.response = ListMultiFrameCodec.decodeContainsNullable(clientMessage, DataCodec.decode);
+
+        return response;
     }
 }

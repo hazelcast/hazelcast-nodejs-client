@@ -49,8 +49,9 @@ export class ReplicatedMapIsEmptyCodec {
     static decodeResponse(clientMessage: ClientMessage): ReplicatedMapIsEmptyResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as ReplicatedMapIsEmptyResponseParams;
+        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

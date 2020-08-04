@@ -258,20 +258,11 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     putAll(pairs: Array<[K, V]>): Promise<void> {
-        const partitionService = this.client.getPartitionService();
-        const partitionsToKeys: { [id: string]: any } = {};
-        let pair: [K, V];
-        let pairId: string;
-        for (pairId in pairs) {
-            pair = pairs[pairId];
-            const keyData = this.toData(pair[0]);
-            const pId: number = partitionService.getPartitionId(keyData);
-            if (!partitionsToKeys[pId]) {
-                partitionsToKeys[pId] = [];
-            }
-            partitionsToKeys[pId].push([keyData, this.toData(pair[1])]);
-        }
-        return this.putAllInternal(partitionsToKeys);
+        return this.putAllInternal(pairs, true);
+    }
+
+    setAll(pairs: Array<[K, V]>): Promise<void> {
+        return this.putAllInternal(pairs, false);
     }
 
     get(key: K): Promise<V> {
@@ -540,17 +531,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             });
     }
 
-    protected putAllInternal(partitionsToKeysData: { [id: string]: Array<[Data, Data]> }): Promise<void> {
-        const partitionPromises: Array<Promise<void>> = [];
-        for (const partition in partitionsToKeysData) {
-            partitionPromises.push(
-                this.encodeInvokeOnPartition(MapPutAllCodec, Number(partition), partitionsToKeysData[partition])
-                    .then(() => undefined),
-            );
-        }
-        return Promise.all(partitionPromises).then(function (): any {
-            return;
-        });
+    protected finalizePutAll(partitionsToKeys: { [id: string]: Array<[Data, Data]> }): void {
+        // No-op
     }
 
     protected getInternal(keyData: Data): Promise<V> {
@@ -660,6 +642,29 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                 const response = MapTryRemoveCodec.decodeResponse(clientMessage);
                 return response.response;
             });
+    }
+
+    private putAllInternal(pairs: Array<[K, V]>, triggerMapLoader: boolean): Promise<void> {
+        const partitionService = this.client.getPartitionService();
+        const partitionsToKeys: { [id: number]: Array<[Data, Data]> } = {};
+        for (const pair of pairs) {
+            const keyData = this.toData(pair[0]);
+            const pId: number = partitionService.getPartitionId(keyData);
+            if (!partitionsToKeys[pId]) {
+                partitionsToKeys[pId] = [];
+            }
+            partitionsToKeys[pId].push([keyData, this.toData(pair[1])]);
+        }
+
+        const partitionPromises: Array<Promise<void>> = [];
+        for (const partition in partitionsToKeys) {
+            partitionPromises.push(
+                this.encodeInvokeOnPartition(MapPutAllCodec, Number(partition), partitionsToKeys[partition], triggerMapLoader)
+                    .then(() => this.finalizePutAll(partitionsToKeys)),
+            );
+        }
+        return Promise.all(partitionPromises)
+            .then(() => undefined);
     }
 
     private addEntryListenerInternal(

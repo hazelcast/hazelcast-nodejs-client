@@ -202,36 +202,43 @@ describe('MapProxy', function () {
                 });
             });
 
-            it('putAll', function (done) {
-                var arr = [
-                    ['pa_k0', 'pa_v0'],
-                    ['pa_k1', 'pa_v1'],
-                    ['pa_k2', 'pa_v2'],
-                    ['pa_k3', 'pa_v3'],
-                    ['pa_k4', 'pa_v4']
-                ];
-                var returnedCorrectly = 0;
-                var verify = function (expected) {
-                    return function (val) {
-                        try {
-                            expect(val).to.equal(expected);
-                            returnedCorrectly++;
-                            if (returnedCorrectly === 5) {
-                                done();
-
+            [true, false].forEach(function (shouldUsePutAll) {
+                it(shouldUsePutAll ? 'putAll' : 'setAll', function (done) {
+                    var arr = [
+                        ['pa_k0', 'pa_v0'],
+                        ['pa_k1', 'pa_v1'],
+                        ['pa_k2', 'pa_v2'],
+                        ['pa_k3', 'pa_v3'],
+                        ['pa_k4', 'pa_v4']
+                    ];
+                    var returnedCorrectly = 0;
+                    var verify = function (expected) {
+                        return function (val) {
+                            try {
+                                expect(val).to.equal(expected);
+                                returnedCorrectly++;
+                                if (returnedCorrectly === 5) {
+                                    done();
+                                }
+                            } catch (e) {
+                                done(e);
                             }
-                        } catch (e) {
-                            done(e);
-                        }
+                        };
                     };
-                };
-                map.putAll(arr).then(function () {
-                    map.get(arr[0][0]).then(verify(arr[0][1]));
-                    map.get(arr[1][0]).then(verify(arr[1][1]));
-                    map.get(arr[2][0]).then(verify(arr[2][1]));
-                    map.get(arr[3][0]).then(verify(arr[3][1]));
-                    map.get(arr[4][0]).then(verify(arr[4][1]));
-                })
+                    var promise;
+                    if (shouldUsePutAll) {
+                        promise = map.putAll(arr);
+                    } else {
+                        promise = map.setAll(arr);
+                    }
+                    promise.then(function () {
+                        map.get(arr[0][0]).then(verify(arr[0][1]));
+                        map.get(arr[1][0]).then(verify(arr[1][1]));
+                        map.get(arr[2][0]).then(verify(arr[2][1]));
+                        map.get(arr[3][0]).then(verify(arr[3][1]));
+                        map.get(arr[4][0]).then(verify(arr[4][1]));
+                    })
+                });
             });
 
             it('getAll', function () {
