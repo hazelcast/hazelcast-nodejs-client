@@ -19,11 +19,10 @@ import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
 import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame, DEFAULT_FLAGS} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
+import {IndexConfig} from '../../config/IndexConfig';
 import {StringCodec} from '../builtin/StringCodec';
 import {ListMultiFrameCodec} from '../builtin/ListMultiFrameCodec';
-import {BitmapIndexOptions} from '../../config/BitmapIndexOptions';
 import {BitmapIndexOptionsCodec} from './BitmapIndexOptionsCodec';
-import {IndexConfig} from '../../config/IndexConfig';
 
 const TYPE_OFFSET = 0;
 const INITIAL_FRAME_SIZE = TYPE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;

@@ -19,11 +19,10 @@ import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
 import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame, DEFAULT_FLAGS} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
+import {ErrorHolder} from '../../protocol/ErrorHolder';
 import {StringCodec} from '../builtin/StringCodec';
-import {StackTraceElement} from '../../protocol/StackTraceElement';
 import {ListMultiFrameCodec} from '../builtin/ListMultiFrameCodec';
 import {StackTraceElementCodec} from './StackTraceElementCodec';
-import {ErrorHolder} from '../../protocol/ErrorHolder';
 
 const ERROR_CODE_OFFSET = 0;
 const INITIAL_FRAME_SIZE = ERROR_CODE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;

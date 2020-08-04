@@ -18,10 +18,9 @@
 import {ClientMessage, BEGIN_FRAME, END_FRAME} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
 import {ListIntegerCodec} from '../builtin/ListIntegerCodec';
+import {AnchorDataListHolder} from '../../protocol/AnchorDataListHolder';
 import {EntryListCodec} from '../builtin/EntryListCodec';
 import {DataCodec} from '../builtin/DataCodec';
-import {Data} from '../../serialization/Data';
-import {AnchorDataListHolder} from '../../protocol/AnchorDataListHolder';
 
 export class AnchorDataListHolderCodec {
     static encode(clientMessage: ClientMessage, anchorDataListHolder: AnchorDataListHolder): void {

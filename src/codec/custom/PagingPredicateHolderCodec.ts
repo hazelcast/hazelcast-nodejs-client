@@ -19,11 +19,9 @@ import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
 import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame, DEFAULT_FLAGS} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
-import {AnchorDataListHolder} from '../../protocol/AnchorDataListHolder';
-import {AnchorDataListHolderCodec} from './AnchorDataListHolderCodec';
-import {Data} from '../../serialization/Data';
-import {DataCodec} from '../builtin/DataCodec';
 import {PagingPredicateHolder} from '../../protocol/PagingPredicateHolder';
+import {AnchorDataListHolderCodec} from './AnchorDataListHolderCodec';
+import {DataCodec} from '../builtin/DataCodec';
 
 const PAGE_SIZE_OFFSET = 0;
 const PAGE_OFFSET = PAGE_SIZE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;

@@ -19,14 +19,11 @@ import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
 import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame, DEFAULT_FLAGS} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
-import {UUID} from '../../core/UUID';
-import {Address} from '../../Address';
+import {MemberInfo} from '../../core/MemberInfo';
 import {AddressCodec} from './AddressCodec';
 import {MapCodec} from '../builtin/MapCodec';
 import {StringCodec} from '../builtin/StringCodec';
-import {MemberVersion} from '../../core/MemberVersion';
 import {MemberVersionCodec} from './MemberVersionCodec';
-import {MemberInfo} from '../../core/MemberInfo';
 
 const UUID_OFFSET = 0;
 const LITE_MEMBER_OFFSET = UUID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;

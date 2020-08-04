@@ -19,10 +19,9 @@ import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
 import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame, DEFAULT_FLAGS} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
-import * as Long from 'long';
+import {SimpleEntryView} from '../../core/SimpleEntryView';
 import {Data} from '../../serialization/Data';
 import {DataCodec} from '../builtin/DataCodec';
-import {SimpleEntryView} from '../../core/SimpleEntryView';
 
 const COST_OFFSET = 0;
 const CREATION_TIME_OFFSET = COST_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
