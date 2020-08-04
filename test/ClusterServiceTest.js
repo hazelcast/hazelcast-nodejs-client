@@ -19,7 +19,7 @@ const Controller = require('./RC');
 const expect = require('chai').expect;
 const HazelcastClient = require('../.').Client;
 
-describe('ClusterService', function () {
+describe('ClusterServiceTest', function () {
 
     this.timeout(25000);
     let cluster, member1, client;
@@ -48,8 +48,6 @@ describe('ClusterService', function () {
     });
 
     it('should know when a new member joins to cluster', function (done) {
-        let member2;
-
         const membershipListener = {
             memberAdded: (membershipEvent) => {
                 expect(client.clusterService.getSize()).to.be.eq(2);
@@ -59,9 +57,7 @@ describe('ClusterService', function () {
 
         client.clusterService.addMembershipListener(membershipListener);
 
-        Controller.startMember(cluster.id).then(function (res) {
-            member2 = res;
-        });
+        Controller.startMember(cluster.id).catch(done);
     });
 
     it('should know when a member leaves cluster', function (done) {
@@ -79,7 +75,7 @@ describe('ClusterService', function () {
         Controller.startMember(cluster.id).then(function (res) {
             member2 = res;
             Controller.shutdownMember(cluster.id, member2.uuid);
-        });
+        }).catch(done);
     });
 
     it('getMemberList returns correct list after a member is removed', function (done) {
@@ -105,7 +101,7 @@ describe('ClusterService', function () {
         }).then(function (res) {
             member3 = res;
             Controller.shutdownMember(cluster.id, member2.uuid);
-        });
+        }).catch(done);
     });
 
     it('should throw when wrong host addresses given in config', function (done) {
@@ -132,7 +128,7 @@ describe('ClusterService', function () {
             }
         }).then(function () {
             if (falseStart) {
-                done(Error('Client falsely started with wrong addresses'));
+                done(new Error('Client falsely started with wrong addresses'));
             }
         });
     });
@@ -152,5 +148,4 @@ describe('ClusterService', function () {
             done();
         });
     });
-})
-;
+});
