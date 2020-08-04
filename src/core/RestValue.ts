@@ -21,16 +21,11 @@ export const REST_VALUE_FACTORY_ID = -25;
 export const REST_VALUE_CLASS_ID = 1;
 
 export class RestValue implements IdentifiedDataSerializable {
+
+    factoryId = REST_VALUE_FACTORY_ID;
+    classId = REST_VALUE_CLASS_ID;
     value: string;
     contentType: string;
-
-    getClassId(): number {
-        return REST_VALUE_CLASS_ID;
-    }
-
-    getFactoryId(): number {
-        return REST_VALUE_FACTORY_ID;
-    }
 
     readData(input: DataInput): any {
         this.value = input.readUTF();

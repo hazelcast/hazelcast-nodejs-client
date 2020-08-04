@@ -19,13 +19,13 @@ import {PortableReader, PortableWriter} from './portable/PortableSerializer';
 
 export interface IdentifiedDataSerializable {
 
+    factoryId: number;
+
+    classId: number;
+
     readData(input: DataInput): any;
 
     writeData(output: DataOutput): void;
-
-    getFactoryId(): number;
-
-    getClassId(): number;
 
 }
 
@@ -41,9 +41,9 @@ export interface Portable {
 
     classId: number;
 
-    writePortable(writer: PortableWriter): void;
-
     readPortable(reader: PortableReader): void;
+
+    writePortable(writer: PortableWriter): void;
 
 }
 

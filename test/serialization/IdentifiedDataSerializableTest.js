@@ -42,6 +42,9 @@ describe('IdentifiedDataSerializableTest', function () {
         this.floats = floats;
         this.doubles = doubles;
         this.strings = strings;
+
+        this.factoryId = 1;
+        this.classId = 1;
     };
 
     IdentifiedDataClass.prototype.readData = function (inp) {
@@ -86,14 +89,6 @@ describe('IdentifiedDataSerializableTest', function () {
         outp.writeFloatArray(this.floats);
         outp.writeDoubleArray(this.doubles);
         outp.writeUTFArray(this.strings);
-    };
-
-    IdentifiedDataClass.prototype.getFactoryId = function () {
-        return 1;
-    };
-
-    IdentifiedDataClass.prototype.getClassId = function () {
-        return 1;
     };
 
     const identifiedFactory = {

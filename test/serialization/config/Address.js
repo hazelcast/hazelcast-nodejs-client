@@ -20,15 +20,9 @@ function Address(street, zipCode, city, state) {
     this.zipCode = zipCode;
     this.city = city;
     this.state = state;
+    this.factoryId = 1;
+    this.classId = 1;
 }
-
-Address.prototype.getClassId = function () {
-    return 1;
-};
-
-Address.prototype.getFactoryId = function () {
-    return 1;
-};
 
 Address.prototype.writeData = function (objectDataOutput) {
     objectDataOutput.writeUTF(this.street);

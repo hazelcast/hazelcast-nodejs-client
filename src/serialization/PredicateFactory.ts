@@ -17,20 +17,18 @@
 import {Predicate} from '../core/Predicate';
 import {DataInput, DataOutput} from './Data';
 import {IdentifiedDataSerializable, IdentifiedDataSerializableFactory} from './Serializable';
+import { IllegalStateError } from '../HazelcastError';
 
 export const PREDICATE_FACTORY_ID = -20;
 
 export abstract class AbstractPredicate implements Predicate {
 
+    abstract classId: number;
+    factoryId = PREDICATE_FACTORY_ID;
+
     abstract readData(input: DataInput): any;
 
     abstract writeData(output: DataOutput): void;
-
-    getFactoryId(): number {
-        return PREDICATE_FACTORY_ID;
-    }
-
-    abstract getClassId(): number;
 }
 
 export class PredicateFactory implements IdentifiedDataSerializableFactory {
@@ -39,8 +37,14 @@ export class PredicateFactory implements IdentifiedDataSerializableFactory {
 
     constructor(allPredicates: any) {
         for (const pred in allPredicates) {
-            // TODO accessing getClassId from prototype of uninitialized member function is not elegant.
-            this.idToConstructorMap[(allPredicates[pred].prototype as any).getClassId()] = allPredicates[pred];
+            if (allPredicates[pred] == null) {
+                throw new IllegalStateError('Predicate class expected.');
+            }
+            const classId = allPredicates[pred].CLASS_ID;
+            if (typeof classId !== 'number') {
+                throw new IllegalStateError('Predicate class does not have CLASS_ID property.');
+            }
+            this.idToConstructorMap[classId] = allPredicates[pred];
         }
     }
 

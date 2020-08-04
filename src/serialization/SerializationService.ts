@@ -224,7 +224,8 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     protected isIdentifiedDataSerializable(obj: any): boolean {
-        return (obj.readData && obj.writeData && obj.getClassId && obj.getFactoryId);
+        return (obj.readData && obj.writeData
+            && typeof obj.factoryId === 'number' && typeof obj.classId === 'number');
     }
 
     protected isPortableSerializable(obj: any): boolean {

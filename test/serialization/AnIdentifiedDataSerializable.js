@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
 function AnIdentifiedDataSerializable(bool, b, c, d, s, f, i, l, str, booleans, bytes, chars,
                                       doubles, shorts, floats, ints, longs, strings, portable,
@@ -54,15 +55,10 @@ function AnIdentifiedDataSerializable(bool, b, c, d, s, f, i, l, str, booleans, 
     this.customStreamSerializableObject = customStreamSerializable;
     this.customByteArraySerializableObject = customByteArraySerializableObject;
     this.data = data;
+
+    this.factoryId = 1;
+    this.classId = 1;
 }
-
-AnIdentifiedDataSerializable.prototype.getFactoryId = function () {
-    return 1;
-};
-
-AnIdentifiedDataSerializable.prototype.getClassId = function () {
-    return 1;
-};
 
 AnIdentifiedDataSerializable.prototype.readData = function (dataInput) {
     this.bool = dataInput.readBoolean();

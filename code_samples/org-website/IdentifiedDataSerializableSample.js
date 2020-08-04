@@ -21,6 +21,8 @@ class Employee {
     constructor(id, name) {
         this.id = id;
         this.name = name;
+        this.factoryId = 1000;
+        this.classId = 100;
     }
 
     readData(input) {
@@ -31,14 +33,6 @@ class Employee {
     writeData(output) {
         output.writeInt(this.id);
         output.writeUTF(this.name);
-    }
-
-    getFactoryId() {
-        return 1000;
-    }
-
-    getClassId() {
-        return 100;
     }
 }
 

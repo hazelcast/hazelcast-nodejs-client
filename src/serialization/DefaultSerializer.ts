@@ -375,8 +375,8 @@ export class IdentifiedDataSerializableSerializer implements Serializer {
 
     write(output: DataOutput, object: IdentifiedDataSerializable): void {
         output.writeBoolean(true);
-        output.writeInt(object.getFactoryId());
-        output.writeInt(object.getClassId());
+        output.writeInt(object.factoryId);
+        output.writeInt(object.classId);
         object.writeData(output);
     }
 }

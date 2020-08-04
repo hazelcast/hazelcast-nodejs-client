@@ -74,6 +74,8 @@ describe('SerializationServiceTest', function () {
 
 function IDataSerializable(val) {
     this.val = val;
+    this.factoryId = 1;
+    this.classId = 11;
 }
 
 IDataSerializable.prototype.readData = function (input) {
@@ -82,14 +84,6 @@ IDataSerializable.prototype.readData = function (input) {
 
 IDataSerializable.prototype.writeData = function (output) {
     output.writeInt(this.val);
-};
-
-IDataSerializable.prototype.getClassId = function () {
-    return 11;
-};
-
-IDataSerializable.prototype.getFactoryId = function () {
-    return 1;
 };
 
 function IDataSerializableFactory() {

@@ -21,6 +21,8 @@ import {IdentifiedDataSerializable} from './serialization/Serializable';
 
 export class Address implements IdentifiedDataSerializable {
 
+    factoryId = ClusterDataFactoryHelper.FACTORY_ID;
+    classId = ClusterDataFactoryHelper.ADDRESS_ID;
     host: string;
     port: number;
     type: number;
@@ -45,14 +47,6 @@ export class Address implements IdentifiedDataSerializable {
         output.writeInt(this.port);
         output.writeByte(this.type);
         output.writeUTF(this.host);
-    }
-
-    getFactoryId(): number {
-        return ClusterDataFactoryHelper.FACTORY_ID;
-    }
-
-    getClassId(): number {
-        return ClusterDataFactoryHelper.ADDRESS_ID;
     }
 
     equals(other: Address): boolean {

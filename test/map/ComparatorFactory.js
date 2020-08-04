@@ -13,26 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
 function noop() {
-    //NO-OP
+    // no-op
 }
 
 function ReverseValueComparator() {
-    //Empty
+    this.factoryId = 1;
+    this.classId = 1;
 }
 
 ReverseValueComparator.prototype.readData = noop;
 
 ReverseValueComparator.prototype.writeData = noop;
-
-ReverseValueComparator.prototype.getFactoryId = function () {
-    return 1;
-};
-
-ReverseValueComparator.prototype.getClassId = function () {
-    return 1;
-};
 
 ReverseValueComparator.prototype.sort = function (o1, o2) {
     return o2[1] - o1[1];

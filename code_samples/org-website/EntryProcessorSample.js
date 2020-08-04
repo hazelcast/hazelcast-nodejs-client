@@ -19,21 +19,14 @@ const { Client } = require('hazelcast-client');
 
 class IdentifiedEntryProcessor {
     constructor(value) {
-        // Constructor function
+        this.factoryId = 1;
+        this.classId = 9;
     }
 
     readData(input) {
     }
 
     writeData(output) {
-    }
-
-    getFactoryId() {
-        return 1;
-    }
-
-    getClassId() {
-        return 9;
     }
 }
 

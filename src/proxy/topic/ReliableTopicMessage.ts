@@ -23,6 +23,9 @@ export const RELIABLE_TOPIC_MESSAGE_FACTORY_ID = -9;
 export const RELIABLE_TOPIC_CLASS_ID = 2;
 
 export class ReliableTopicMessage implements IdentifiedDataSerializable {
+
+    factoryId = RELIABLE_TOPIC_MESSAGE_FACTORY_ID;
+    classId = RELIABLE_TOPIC_CLASS_ID;
     publishTime: Long;
     publisherAddress: Address;
     payload: Data;
@@ -37,14 +40,6 @@ export class ReliableTopicMessage implements IdentifiedDataSerializable {
         output.writeLong(this.publishTime);
         output.writeObject(this.publisherAddress);
         output.writeData(this.payload);
-    }
-
-    getFactoryId(): number {
-        return RELIABLE_TOPIC_MESSAGE_FACTORY_ID;
-    }
-
-    getClassId(): number {
-        return RELIABLE_TOPIC_CLASS_ID;
     }
 }
 

@@ -26,8 +26,8 @@ const {
 // comparator in order to sort entries. So the same class should be registered
 // to Hazelcast server instance.
 const comparator = {
-    getFactoryId: () => 1,
-    getClassId: () => 10,
+    factoryId: 1,
+    classId: 10,
     // This comparator sorts entries according to their keys
     // in reverse alphabetical order.
     sort: (a, b) => {

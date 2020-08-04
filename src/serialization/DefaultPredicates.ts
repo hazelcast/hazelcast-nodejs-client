@@ -22,6 +22,9 @@ import {AbstractPredicate} from './PredicateFactory';
 
 export class SqlPredicate extends AbstractPredicate {
 
+    static CLASS_ID = 0;
+
+    classId = SqlPredicate.CLASS_ID;
     private sql: string;
 
     constructor(sql: string) {
@@ -36,14 +39,13 @@ export class SqlPredicate extends AbstractPredicate {
     writeData(output: DataOutput): void {
         output.writeUTF(this.sql);
     }
-
-    getClassId(): number {
-        return 0;
-    }
 }
 
 export class AndPredicate extends AbstractPredicate {
 
+    static CLASS_ID = 1;
+
+    classId = AndPredicate.CLASS_ID;
     private predicates: Predicate[];
 
     constructor(...predicates: Predicate[]) {
@@ -65,14 +67,13 @@ export class AndPredicate extends AbstractPredicate {
             output.writeObject(pred);
         });
     }
-
-    getClassId(): number {
-        return 1;
-    }
 }
 
 export class BetweenPredicate extends AbstractPredicate {
 
+    static CLASS_ID = 2;
+
+    classId = BetweenPredicate.CLASS_ID;
     private field: string;
     private from: any;
     private to: any;
@@ -95,14 +96,13 @@ export class BetweenPredicate extends AbstractPredicate {
         output.writeObject(this.to);
         output.writeObject(this.from);
     }
-
-    getClassId(): number {
-        return 2;
-    }
 }
 
 export class EqualPredicate extends AbstractPredicate {
 
+    static CLASS_ID = 3;
+
+    classId = EqualPredicate.CLASS_ID;
     private field: string;
     private value: any;
 
@@ -121,14 +121,13 @@ export class EqualPredicate extends AbstractPredicate {
         output.writeUTF(this.field);
         output.writeObject(this.value);
     }
-
-    getClassId(): number {
-        return 3;
-    }
 }
 
 export class GreaterLessPredicate extends AbstractPredicate {
 
+    static CLASS_ID = 4;
+
+    classId = GreaterLessPredicate.CLASS_ID;
     private field: string;
     private value: any;
     private equal: boolean;
@@ -156,14 +155,13 @@ export class GreaterLessPredicate extends AbstractPredicate {
         output.writeBoolean(this.equal);
         output.writeBoolean(this.less);
     }
-
-    getClassId(): number {
-        return 4;
-    }
 }
 
 export class LikePredicate extends AbstractPredicate {
 
+    static CLASS_ID = 5;
+
+    classId = LikePredicate.CLASS_ID;
     private field: string;
     private expr: string;
 
@@ -183,19 +181,20 @@ export class LikePredicate extends AbstractPredicate {
         output.writeUTF(this.field);
         output.writeUTF(this.expr);
     }
-
-    getClassId(): number {
-        return 5;
-    }
 }
 
 export class ILikePredicate extends LikePredicate {
-    getClassId(): number {
-        return 6;
-    }
+
+    static CLASS_ID = 6;
+
+    classId = ILikePredicate.CLASS_ID;
 }
 
 export class InPredicate extends AbstractPredicate {
+
+    static CLASS_ID = 7;
+
+    classId = InPredicate.CLASS_ID;
     private field: string;
     private values: any[];
 
@@ -222,14 +221,13 @@ export class InPredicate extends AbstractPredicate {
             output.writeObject(val);
         });
     }
-
-    getClassId(): number {
-        return 7;
-    }
 }
 
 export class InstanceOfPredicate extends AbstractPredicate {
 
+    static CLASS_ID = 8;
+
+    classId = InstanceOfPredicate.CLASS_ID;
     private className: string;
 
     constructor(className: string) {
@@ -245,19 +243,20 @@ export class InstanceOfPredicate extends AbstractPredicate {
     writeData(output: DataOutput): void {
         output.writeUTF(this.className);
     }
-
-    getClassId(): number {
-        return 8;
-    }
 }
 
 export class NotEqualPredicate extends EqualPredicate {
-    getClassId(): number {
-        return 9;
-    }
+
+    static CLASS_ID = 9;
+
+    classId = NotEqualPredicate.CLASS_ID;
 }
 
 export class NotPredicate extends AbstractPredicate {
+
+    static CLASS_ID = 10;
+
+    classId = NotPredicate.CLASS_ID;
     private pred: Predicate;
 
     constructor(pred: Predicate) {
@@ -273,14 +272,13 @@ export class NotPredicate extends AbstractPredicate {
     writeData(output: DataOutput): void {
         output.writeObject(this.pred);
     }
-
-    getClassId(): number {
-        return 10;
-    }
 }
 
 export class OrPredicate extends AbstractPredicate {
 
+    static CLASS_ID = 11;
+
+    classId = OrPredicate.CLASS_ID;
     private preds: Predicate[];
 
     constructor(...preds: Predicate[]) {
@@ -303,13 +301,13 @@ export class OrPredicate extends AbstractPredicate {
             output.writeObject(pred);
         });
     }
-
-    getClassId(): number {
-        return 11;
-    }
 }
 
 export class RegexPredicate extends AbstractPredicate {
+
+    static CLASS_ID = 12;
+
+    classId = RegexPredicate.CLASS_ID;
     private field: string;
     private regex: string;
 
@@ -329,50 +327,46 @@ export class RegexPredicate extends AbstractPredicate {
         output.writeUTF(this.field);
         output.writeUTF(this.regex);
     }
-
-    getClassId(): number {
-        return 12;
-    }
 }
 
 export class FalsePredicate extends AbstractPredicate {
 
+    static CLASS_ID = 13;
+
+    classId = FalsePredicate.CLASS_ID;
     static INSTANCE: FalsePredicate = new FalsePredicate();
 
     readData(input: DataInput): any {
-        // Empty method
+        // no-op
     }
 
     writeData(output: DataOutput): any {
-        // Empty method
-    }
-
-    getClassId(): number {
-        return 13;
+        // no-op
     }
 }
 
 export class TruePredicate extends AbstractPredicate {
 
+    static CLASS_ID = 14;
+
+    classId = TruePredicate.CLASS_ID;
     static INSTANCE: TruePredicate = new TruePredicate();
 
     readData(input: DataInput): any {
-        // Empty method
+        // no-op
     }
 
     writeData(output: DataOutput): any {
-        // Empty method
-    }
-
-    getClassId(): number {
-        return 14;
+        // no-op
     }
 }
 
 export class PagingPredicate extends AbstractPredicate {
 
     private static NULL_ANCHOR: [number, [any, any]] = [-1, null];
+    static CLASS_ID = 15;
 
+    classId = PagingPredicate.CLASS_ID;
     private internalPredicate: Predicate;
     private pageSize: number;
     private comparatorObject: Comparator;
@@ -421,10 +415,6 @@ export class PagingPredicate extends AbstractPredicate {
             output.writeObject(anchorEntry[1][0]);
             output.writeObject(anchorEntry[1][1]);
         });
-    }
-
-    getClassId(): number {
-        return 15;
     }
 
     setIterationType(iterationType: IterationType): void {
