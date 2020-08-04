@@ -18,6 +18,10 @@
 import {BitsUtil} from '../BitsUtil';
 import {ClientMessage, Frame, PARTITION_ID_OFFSET} from '../ClientMessage';
 import {StringCodec} from './builtin/StringCodec';
+import {EntryListCodec} from './builtin/EntryListCodec';
+import {DataCodec} from './builtin/DataCodec';
+import {ListDataCodec} from './builtin/ListDataCodec';
+import {Data} from '../serialization/Data';
 
 // hex: 0x021700
 const REQUEST_MESSAGE_TYPE = 136960;
