@@ -61,8 +61,9 @@ export class MultiMapTryLockCodec {
     static decodeResponse(clientMessage: ClientMessage): MultiMapTryLockResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as MultiMapTryLockResponseParams;
+        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

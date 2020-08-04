@@ -57,8 +57,9 @@ export class MapTryRemoveCodec {
     static decodeResponse(clientMessage: ClientMessage): MapTryRemoveResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as MapTryRemoveResponseParams;
+        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

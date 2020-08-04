@@ -50,8 +50,9 @@ export class ClientRemovePartitionLostListenerCodec {
     static decodeResponse(clientMessage: ClientMessage): ClientRemovePartitionLostListenerResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as ClientRemovePartitionLostListenerResponseParams;
+        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

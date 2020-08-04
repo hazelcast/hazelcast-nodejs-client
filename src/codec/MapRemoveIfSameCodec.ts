@@ -56,8 +56,9 @@ export class MapRemoveIfSameCodec {
     static decodeResponse(clientMessage: ClientMessage): MapRemoveIfSameResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as MapRemoveIfSameResponseParams;
+        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

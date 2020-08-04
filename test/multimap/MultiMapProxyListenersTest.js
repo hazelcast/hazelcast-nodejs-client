@@ -18,7 +18,7 @@ var expect = require("chai").expect;
 var HazelcastClient = require("../../lib/index.js").Client;
 const Config = require("../../lib/index.js").Config;
 var Controller = require('./../RC');
-var Util = require('./../Util');
+const Util = require('./../Util');
 
 describe("MultiMap Proxy Listener", function () {
 
@@ -208,5 +208,26 @@ describe("MultiMap Proxy Listener", function () {
         });
     });
 
+    it('fires event for each pair of putAll', function (done) {
+        Util.markServerVersionAtLeast(this, client, '4.1');
+        let expectedEventCount = 3;
+        const listener = (key, values) => {
+            return {
+                added: event => {
+                    expect(event.key).to.equal(key);
+                    expect(values).to.include(event.value);
+                    expectedEventCount--;
+                    if (expectedEventCount === 0) {
+                        done();
+                    } else if (expectedEventCount < 0) {
+                        done(new Error('Received too many events'));
+                    }
+                }
+            }
+        }
 
+        map.addEntryListener(listener('a', [1]), 'a')
+            .then(() => map.addEntryListener(listener('b', [2, 22]), 'b'))
+            .then(() => map.putAll([['a', [1]], ['b', [2, 22]]]));
+    });
 });

@@ -52,8 +52,9 @@ export class MultiMapContainsValueCodec {
     static decodeResponse(clientMessage: ClientMessage): MultiMapContainsValueResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as MultiMapContainsValueResponseParams;
+        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

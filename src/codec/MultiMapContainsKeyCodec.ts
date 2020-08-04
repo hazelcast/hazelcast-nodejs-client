@@ -55,8 +55,9 @@ export class MultiMapContainsKeyCodec {
     static decodeResponse(clientMessage: ClientMessage): MultiMapContainsKeyResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as MultiMapContainsKeyResponseParams;
+        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

@@ -53,8 +53,9 @@ export class SetCompareAndRetainAllCodec {
     static decodeResponse(clientMessage: ClientMessage): SetCompareAndRetainAllResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as SetCompareAndRetainAllResponseParams;
+        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

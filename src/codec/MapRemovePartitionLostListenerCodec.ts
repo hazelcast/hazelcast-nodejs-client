@@ -52,8 +52,9 @@ export class MapRemovePartitionLostListenerCodec {
     static decodeResponse(clientMessage: ClientMessage): MapRemovePartitionLostListenerResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as MapRemovePartitionLostListenerResponseParams;
+        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

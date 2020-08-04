@@ -50,8 +50,9 @@ export class MapRemoveInterceptorCodec {
     static decodeResponse(clientMessage: ClientMessage): MapRemoveInterceptorResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as MapRemoveInterceptorResponseParams;
+        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 }

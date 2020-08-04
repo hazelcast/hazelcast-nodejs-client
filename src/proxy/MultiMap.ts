@@ -186,4 +186,17 @@ export interface MultiMap<K, V> extends DistributedObject {
      * @param key key to be unlocked.
      */
     forceUnlock(key: K): Promise<void>;
+
+    /**
+     * Stores the given key, value array pairs in the MultiMap.
+     * <p>
+     * The behaviour of this operation is undefined if the specified pairs are modified
+     * while this operation is in progress.
+     * <p>
+     * No atomicity guarantees are given. It could be that in case of failure
+     * some of the key/value-pairs get written, while others are not.
+     * <p>
+     * @param pairs key, value array pairs
+     */
+    putAll(pairs: Array<[K, V[]]>): Promise<void>;
 }

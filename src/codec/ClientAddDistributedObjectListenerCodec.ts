@@ -54,9 +54,10 @@ export class ClientAddDistributedObjectListenerCodec {
     static decodeResponse(clientMessage: ClientMessage): ClientAddDistributedObjectListenerResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
-        return {
-            response: FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET),
-        };
+        const response = {} as ClientAddDistributedObjectListenerResponseParams;
+        response.response = FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
+
+        return response;
     }
 
     static handle(clientMessage: ClientMessage, handleDistributedObjectEvent: (name: string, serviceName: string, eventType: string, source: UUID) => void = null): void {

@@ -19,11 +19,10 @@ import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
 import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame, DEFAULT_FLAGS} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
+import {IndexConfig} from '../../config/IndexConfig';
 import {StringCodec} from '../builtin/StringCodec';
 import {ListMultiFrameCodec} from '../builtin/ListMultiFrameCodec';
-import {BitmapIndexOptions} from '../../config/BitmapIndexOptions';
 import {BitmapIndexOptionsCodec} from './BitmapIndexOptionsCodec';
-import {IndexConfig} from '../../config/IndexConfig';
 
 const TYPE_OFFSET = 0;
 const INITIAL_FRAME_SIZE = TYPE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
@@ -48,10 +47,11 @@ export class IndexConfigCodec {
         clientMessage.nextFrame();
 
         const initialFrame = clientMessage.nextFrame();
-        const type: number = FixSizedTypesCodec.decodeInt(initialFrame.content, TYPE_OFFSET);
-        const name: string = CodecUtil.decodeNullable(clientMessage, StringCodec.decode);
-        const attributes: string[] = ListMultiFrameCodec.decode(clientMessage, StringCodec.decode);
-        const bitmapIndexOptions: BitmapIndexOptions = CodecUtil.decodeNullable(clientMessage, BitmapIndexOptionsCodec.decode);
+        const type = FixSizedTypesCodec.decodeInt(initialFrame.content, TYPE_OFFSET);
+
+        const name = CodecUtil.decodeNullable(clientMessage, StringCodec.decode);
+        const attributes = ListMultiFrameCodec.decode(clientMessage, StringCodec.decode);
+        const bitmapIndexOptions = CodecUtil.decodeNullable(clientMessage, BitmapIndexOptionsCodec.decode);
 
         CodecUtil.fastForwardToEndFrame(clientMessage);
 

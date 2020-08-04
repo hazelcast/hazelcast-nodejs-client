@@ -51,8 +51,9 @@ export class QueueIteratorCodec {
         // empty initial frame
         clientMessage.nextFrame();
 
-        return {
-            response: ListMultiFrameCodec.decode(clientMessage, DataCodec.decode),
-        };
+        const response = {} as QueueIteratorResponseParams;
+        response.response = ListMultiFrameCodec.decode(clientMessage, DataCodec.decode);
+
+        return response;
     }
 }

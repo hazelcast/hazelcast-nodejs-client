@@ -51,8 +51,9 @@ export class MapAddInterceptorCodec {
         // empty initial frame
         clientMessage.nextFrame();
 
-        return {
-            response: StringCodec.decode(clientMessage),
-        };
+        const response = {} as MapAddInterceptorResponseParams;
+        response.response = StringCodec.decode(clientMessage);
+
+        return response;
     }
 }

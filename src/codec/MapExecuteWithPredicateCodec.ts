@@ -53,8 +53,9 @@ export class MapExecuteWithPredicateCodec {
         // empty initial frame
         clientMessage.nextFrame();
 
-        return {
-            response: EntryListCodec.decode(clientMessage, DataCodec.decode, DataCodec.decode),
-        };
+        const response = {} as MapExecuteWithPredicateResponseParams;
+        response.response = EntryListCodec.decode(clientMessage, DataCodec.decode, DataCodec.decode);
+
+        return response;
     }
 }

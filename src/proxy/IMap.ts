@@ -136,9 +136,68 @@ export interface IMap<K, V> extends DistributedObject {
 
     /**
      * Puts all key value pairs from this array to the map as key -> value mappings.
+     * <p>
+     * The behaviour of this operation is undefined if the specified pairs are modified
+     * while this operation is in progress.
+     *
+     * <p><b>Interactions with the map store</b>
+     * <p>
+     * For each element not found in memory
+     * MapLoader#load(Object) is invoked to load the value from
+     * the map store backing the map, which may come at a significant
+     * performance cost. Exceptions thrown by load fail the operation
+     * and are propagated to the caller. The elements which were added
+     * before the exception was thrown will remain in the map, the rest
+     * will not be added.
+     * <p>
+     * If write-through persistence mode is configured,
+     * MapStore#store(Object, Object) is invoked for each element
+     * before the element is added in memory, which may come at a
+     * significant performance cost. Exceptions thrown by store fail the
+     * operation and are propagated to the caller. The elements which
+     * were added before the exception was thrown will remain in the map,
+     * the rest will not be added.
+     * <p>
+     * If write-behind persistence mode is configured with
+     * write-coalescing turned off,
+     * this call may be rejected with {@link ReachedMaxSizeError}
+     * if the write-behind queue has reached its per-node maximum
+     * capacity.
+     *
      * @param pairs
      */
     putAll(pairs: Array<[K, V]>): Promise<void>;
+
+    /**
+     * Puts all key value pairs from this array to the map as key -> value mappings without loading
+     * non-existing elements from map store (which is more efficient than {@link putAll}).
+     * <p>
+     * This method breaks the contract of EntryListener.
+     * EntryEvent of all the updated entries will have null oldValue even if they exist previously.
+     * <p>
+     * The behaviour of this operation is undefined if the specified pairs are modified
+     * while this operation is in progress.
+     *
+     * <p><b>Interactions with the map store</b>
+     * <p>
+     * If write-through persistence mode is configured,
+     * MapStore#store(Object, Object) is invoked for each element
+     * before the element is added in memory, which may come at a
+     * significant performance cost. Exceptions thrown by store fail the
+     * operation and are propagated to the caller. The elements which
+     * were added before the exception was thrown will remain in the map,
+     * the rest will not be added.
+     * <p>
+     * If write-behind persistence mode is configured with
+     * write-coalescing turned off,
+     * this call may be rejected with {@link ReachedMaxSizeError}
+     * if the write-behind queue has reached its per-node maximum
+     * capacity.
+     *
+     * @param pairs
+     * @requires Hazelcast IMDG 4.1
+     */
+    setAll(pairs: Array<[K, V]>): Promise<void>;
 
     /**
      * Retrieves the value associated with given key.

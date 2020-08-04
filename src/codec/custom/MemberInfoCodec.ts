@@ -14,19 +14,16 @@
  * limitations under the License.
  */
 
-/*tslint:disable:max-line-length*/
+/* eslint-disable max-len */
 import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
 import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame, DEFAULT_FLAGS} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
-import {UUID} from '../../core/UUID';
-import {Address} from '../../Address';
+import {MemberInfo} from '../../core/MemberInfo';
 import {AddressCodec} from './AddressCodec';
 import {MapCodec} from '../builtin/MapCodec';
 import {StringCodec} from '../builtin/StringCodec';
-import {MemberVersion} from '../../core/MemberVersion';
 import {MemberVersionCodec} from './MemberVersionCodec';
-import {MemberInfo} from '../../core/MemberInfo';
 
 const UUID_OFFSET = 0;
 const LITE_MEMBER_OFFSET = UUID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
@@ -53,11 +50,12 @@ export class MemberInfoCodec {
         clientMessage.nextFrame();
 
         const initialFrame = clientMessage.nextFrame();
-        const uuid: UUID = FixSizedTypesCodec.decodeUUID(initialFrame.content, UUID_OFFSET);
-        const liteMember: boolean = FixSizedTypesCodec.decodeBoolean(initialFrame.content, LITE_MEMBER_OFFSET);
-        const address: Address = AddressCodec.decode(clientMessage);
-        const attributes: Map<string, string> = MapCodec.decode(clientMessage, StringCodec.decode, StringCodec.decode);
-        const version: MemberVersion = MemberVersionCodec.decode(clientMessage);
+        const uuid = FixSizedTypesCodec.decodeUUID(initialFrame.content, UUID_OFFSET);
+        const liteMember = FixSizedTypesCodec.decodeBoolean(initialFrame.content, LITE_MEMBER_OFFSET);
+
+        const address = AddressCodec.decode(clientMessage);
+        const attributes = MapCodec.decode(clientMessage, StringCodec.decode, StringCodec.decode);
+        const version = MemberVersionCodec.decode(clientMessage);
 
         CodecUtil.fastForwardToEndFrame(clientMessage);
 

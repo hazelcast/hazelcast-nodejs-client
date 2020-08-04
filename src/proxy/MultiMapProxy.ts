@@ -50,6 +50,7 @@ import {MapEvent} from '../core/MapListener';
 import {ClientMessage} from '../ClientMessage';
 import {UUID} from '../core/UUID';
 import * as SerializationUtil from '../serialization/SerializationUtil';
+import {MultiMapPutAllCodec} from '../codec/MultiMapPutAllCodec';
 
 export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
 
@@ -262,6 +263,40 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     forceUnlock(key: K): Promise<void> {
         const keyData = this.toData(key);
         return this.encodeInvokeOnKey(MultiMapForceUnlockCodec, keyData, keyData, this.nextSequence())
+            .then(() => undefined);
+    }
+
+    putAll(pairs: Array<[K, V[]]>): Promise<void> {
+        if (pairs.length === 0) {
+            return Promise.resolve();
+        }
+
+        const dataPairs: Array<[Data, Data[]]> = [];
+        for (const pair of pairs) {
+            const valuesData = SerializationUtil.serializeList(this.toData.bind(this), pair[1]);
+            dataPairs.push([this.toData(pair[0]), valuesData]);
+        }
+
+        const partitionService = this.client.getPartitionService();
+        const partitionToDataPairs = new Map<number, Array<[Data, Data[]]>>();
+
+        for (const dataPair of dataPairs) {
+            const partitionId = partitionService.getPartitionId(dataPair[0]);
+            let partitionedDataPairs = partitionToDataPairs.get(partitionId);
+            if (partitionedDataPairs == null) {
+                partitionedDataPairs = [];
+                partitionToDataPairs.set(partitionId, partitionedDataPairs);
+            }
+
+            partitionedDataPairs.push(dataPair);
+        }
+
+        const partitionPromises: Array<Promise<ClientMessage>> = [];
+        partitionToDataPairs.forEach((pair, partitionId) => {
+           partitionPromises.push(this.encodeInvokeOnPartition(MultiMapPutAllCodec, partitionId, pair));
+        });
+
+        return Promise.all(partitionPromises)
             .then(() => undefined);
     }
 

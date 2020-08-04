@@ -61,8 +61,9 @@ export class MapPutWithMaxIdleCodec {
         // empty initial frame
         clientMessage.nextFrame();
 
-        return {
-            response: CodecUtil.decodeNullable(clientMessage, DataCodec.decode),
-        };
+        const response = {} as MapPutWithMaxIdleResponseParams;
+        response.response = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
+
+        return response;
     }
 }
