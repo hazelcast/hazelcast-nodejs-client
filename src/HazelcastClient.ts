@@ -86,7 +86,7 @@ export default class HazelcastClient {
         this.config = config;
         this.instanceName = config.instanceName || 'hz.client_' + this.id;
         this.loggingService = new LoggingService(this.config.customLogger,
-            this.config.properties['hazelcast.logging.level'] as number);
+            this.config.properties['hazelcast.logging.level'] as string);
         this.loadBalancer = this.initLoadBalancer();
         this.listenerService = new ListenerService(this);
         this.serializationService = new SerializationServiceV1(this.config.serialization);

@@ -16,26 +16,16 @@
 
 import {Property} from '../config/Properties';
 import {DefaultLogger} from './DefaultLogger';
-import {ILogger} from './ILogger';
-
-/**
- * Log level for built-in or custom logger.
- */
-export enum LogLevel {
-    OFF = -1,
-    ERROR = 0,
-    WARN = 1,
-    INFO = 2,
-    DEBUG = 3,
-    TRACE = 4,
-}
+import {ILogger, LogLevel} from './ILogger';
+import {enumFromString} from '../Util';
 
 export class LoggingService {
 
     private readonly logger: ILogger;
 
-    constructor(customLogger: ILogger, logLevel: number) {
+    constructor(customLogger: ILogger, level: string) {
         if (customLogger == null) {
+            const logLevel = enumFromString<LogLevel>(LogLevel, level);
             this.logger = new DefaultLogger(logLevel);
         } else if (this.isLogger(customLogger)) {
             this.logger = customLogger;

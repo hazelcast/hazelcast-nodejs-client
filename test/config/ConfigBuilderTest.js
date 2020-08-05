@@ -134,7 +134,7 @@ describe('ConfigBuilderTest', function () {
         expect(properties['hazelcast.invalidation.reconciliation.interval.seconds']).equal(50);
         expect(properties['hazelcast.invalidation.max.tolerated.miss.count']).to.equal(15);
         expect(properties['hazelcast.invalidation.min.reconciliation.interval.seconds']).to.equal(60);
-        expect(properties['hazelcast.logging.level']).to.be.equal(3);
+        expect(properties['hazelcast.logging.level']).to.be.equal('OFF');
         expect(properties['hazelcast.client.autopipelining.enabled']).to.be.false;
         expect(properties['hazelcast.client.autopipelining.threshold.bytes']).to.equal(1024);
         expect(properties['hazelcast.client.socket.no.delay']).to.be.false;

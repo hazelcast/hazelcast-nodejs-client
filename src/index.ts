@@ -32,7 +32,7 @@ import {InMemoryFormat} from './config/InMemoryFormat';
 import {ItemEvent, ItemEventType} from './core/ItemListener';
 import {MapEvent} from './core/MapListener';
 import {EntryEvent} from './core/EntryListener';
-import {LogLevel} from './logging/LoggingService';
+import {LogLevel} from './logging/ILogger';
 import {JsonStringDeserializationPolicy} from './config/JsonStringDeserializationPolicy';
 import {HazelcastJsonValue} from './core/HazelcastJsonValue';
 import {RoundRobinLB} from './util/RoundRobinLB';
