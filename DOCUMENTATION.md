@@ -2035,8 +2035,7 @@ await personMap.put('Alice', 35);
 await personMap.put('Andy', 37);
 await personMap.put('Bob', 22);
 // Run the query
-// The following is an equialent of `new SqlPredicate('__key like A%')`
-const predicate = new Predicates.sql('__key like A%');
+const predicate = Predicates.sql('__key like A%');
 const startingWithA = await personMap.valuesWithPredicate(predicate);
 // Prints:
 // 35
@@ -2054,7 +2053,7 @@ await personMap.put('Alice', 35);
 await personMap.put('Andy', 37);
 await personMap.put('Bob', 22);
 // Run the query
-const predicate = new Predicates.greaterEqual('this', 27);
+const predicate = Predicates.greaterEqual('this', 27);
 const olderThan27 = await return personMap.valuesWithPredicate(predicate);
 // Prints:
 // 35 37

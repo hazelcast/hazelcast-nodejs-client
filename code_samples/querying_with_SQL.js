@@ -43,7 +43,7 @@ class Customer {
             ['7', new Customer('Hilary', true, 19)],
         ]);
 
-        const predicate = new Predicates.sql('active AND age < 30');
+        const predicate = Predicates.sql('active AND age < 30');
         const persons = await personMap.valuesWithPredicate(predicate);
         for (const person of persons) {
             console.log(person);
