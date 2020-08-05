@@ -125,7 +125,7 @@ export class ClientConnectionManager extends EventEmitter {
         super();
         this.client = client;
         this.loadBalancer = client.getLoadBalancer();
-        this.labels = Array.from(client.getConfig().clientLabels);
+        this.labels = client.getConfig().clientLabels;
         this.logger = this.client.getLoggingService().getLogger();
         this.connectionTimeoutMillis = this.initConnectionTimeoutMillis();
         this.heartbeatManager = new HeartbeatManager(client, this);

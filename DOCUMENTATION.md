@@ -340,7 +340,7 @@ You need to provide the IP address and port of at least one member in your clust
 ```javascript
 const cfg = {
     networkConfig: {
-        addresses: [
+        clusterMembers: [
             'some-ip-address:port'
         ]
     }
@@ -537,7 +537,7 @@ For configuration of the Hazelcast Node.js client, just instantiate a config obj
 ```javascript
 const cfg = {
     networkConfig: {
-        addresses: [
+        clusterMembers: [
             '127.0.0.1:5701'
         ]
     }
@@ -933,7 +933,7 @@ Here is an example of configuring the network for Hazelcast Node.js client.
 ```javascript
 const cfg = {
     network: {
-        addresses: ['10.1.1.21', '10.1.1.22:5703'],
+        clusterMembers: ['10.1.1.21', '10.1.1.22:5703'],
         smartRouting: true,
         redoOperation: true,
         connectionTimeout: 6000
@@ -950,7 +950,7 @@ list to find an alive member. Although it may be enough to give only one address
 ```javascript
 const cfg = {
     network: {
-        addresses: [
+        clusterMembers: [
             "10.1.1.21",
             "10.1.1.22:5703"
         ]
@@ -1122,7 +1122,7 @@ The fist step is to define configuration and initialize the `HazelcastClient` to
 const client = await Client.newHazelcastClient({
     clusterName: 'dev',
     network: {
-        addresses: ['10.90.0.1', '10.90.0.2:5702']
+        clusterMembers: ['10.90.0.1', '10.90.0.2:5702']
     }
 });
 // Some operation

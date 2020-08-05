@@ -95,7 +95,7 @@ const { Client } = require('hazelcast-client');
 const client = await Client.newHazelcastClient({
     clusterName: 'cluster-name',
     network: {
-        addresses: [
+        clusterMembers: [
             '10.90.0.2:5701',
             '10.90.0.3:5701'
         ]
