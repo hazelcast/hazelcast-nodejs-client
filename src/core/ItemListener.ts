@@ -41,7 +41,10 @@ export type ItemEventListener<E> = (itemEvent: ItemEvent<E>) => void;
 /**
  * IQueue, ISet, IList item event.
  */
-export class ItemEvent<E> {
+/**
+ * IQueue, ISet, IList item event.
+ */
+export interface ItemEvent<E> {
 
     /**
      * The name of the data structure for this event.
@@ -63,6 +66,15 @@ export class ItemEvent<E> {
      */
     member: Member;
 
+}
+
+export class ItemEventImpl<E> implements ItemEvent<E> {
+
+    name: string;
+    item: E;
+    eventType: ItemEventType;
+    member: Member;
+
     constructor(name: string, itemEventType: ItemEventType, item: E, member: Member) {
         this.name = name;
         this.eventType = itemEventType;
@@ -74,18 +86,39 @@ export class ItemEvent<E> {
 
 /**
  * Item event type.
- * TODO change to string
  */
 export enum ItemEventType {
 
     /**
      * Item was added.
      */
-    ADDED = 1,
+    ADDED = 'ADDED',
 
     /**
      * Item was removed.
      */
-    REMOVED = 2,
+    REMOVED = 'REMOVED',
 
+}
+
+export const itemEventTypeToId = (type: ItemEventType): number => {
+    switch (type) {
+        case ItemEventType.ADDED:
+            return 1;
+        case ItemEventType.REMOVED:
+            return 2;
+        default:
+            throw new TypeError('Unexpected type value: ' + type);
+    }
+}
+
+export const itemEventTypeFromId = (typeId: number): ItemEventType => {
+    switch (typeId) {
+        case 1:
+            return ItemEventType.ADDED;
+        case 2:
+            return ItemEventType.REMOVED;
+        default:
+            throw new TypeError('Unexpected type id: ' + typeId);
+    }
 }
