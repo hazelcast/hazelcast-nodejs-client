@@ -18,6 +18,10 @@ import {Property} from '../config/Properties';
 import {DefaultLogger} from './DefaultLogger';
 import {ILogger} from './ILogger';
 
+/**
+ * Log level for built-in or custom logger.
+ * TODO change to string
+ */
 export enum LogLevel {
     OFF = -1,
     ERROR = 0,

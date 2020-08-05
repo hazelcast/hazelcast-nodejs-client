@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+/**
+ * Overflow policy for Ringbuffer operations.
+ * TODO change to string
+ */
 export enum OverflowPolicy {
     OVERWRITE = 0,
     FAIL = 1,

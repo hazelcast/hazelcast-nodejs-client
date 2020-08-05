@@ -17,15 +17,24 @@
 import {Member} from './Member';
 
 /**
- * Item listener for IQueue, ISet, IList.
+ * Item event listener for IQueue, ISet, IList.
  */
 export interface ItemListener<E> {
+
+    /**
+     * Triggered when an item is added.
+     */
     itemAdded?: ItemEventListener<E>;
+
+    /**
+     * Triggered when an item is removed.
+     */
     itemRemoved?: ItemEventListener<E>;
+
 }
 
 /**
- * A type which is used for item events.
+ * Item event hander function.
  */
 export type ItemEventListener<E> = (itemEvent: ItemEvent<E>) => void;
 
@@ -43,6 +52,7 @@ export class ItemEvent<E> {
      * The value of the item event.
      */
     item: E;
+
     /**
      * The event type.
      */
@@ -62,7 +72,20 @@ export class ItemEvent<E> {
 
 }
 
+/**
+ * Item event type.
+ * TODO change to string
+ */
 export enum ItemEventType {
+
+    /**
+     * Item was added.
+     */
     ADDED = 1,
+
+    /**
+     * Item was removed.
+     */
     REMOVED = 2,
+
 }
