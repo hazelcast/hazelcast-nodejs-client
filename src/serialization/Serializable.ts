@@ -17,48 +17,118 @@
 import {DataInput, DataOutput} from './Data';
 import {PortableReader, PortableWriter} from './portable/PortableSerializer';
 
+/**
+ * Defines interface for objects with IdentifiedDataSerializable
+ * serialization support.
+ */
 export interface IdentifiedDataSerializable {
 
+    /**
+     * Factory id of the object.
+     */
     factoryId: number;
 
+    /**
+     * Class id of the object.
+     */
     classId: number;
 
-    readData(input: DataInput): any;
+    /**
+     * Reads fields of the object from the binary representation.
+     *
+     * @param input read helper
+     */
+    readData(input: DataInput): void;
 
+    /**
+     * Writes fields of the object into the binary representation.
+     *
+     * @param output write helper
+     */
     writeData(output: DataOutput): void;
 
 }
 
+/**
+ * Factory responsible for creation of read
+ * {@link IdentifiedDataSerializable} objects.
+ */
 export interface IdentifiedDataSerializableFactory {
 
-    create(type: number): IdentifiedDataSerializable;
+    /**
+     * Returns an instance of the right {@link IdentifiedDataSerializable} object,
+     * given the classId.
+     *
+     * @param classId class id
+     * @returns object for further initialization
+     */
+    create(classId: number): IdentifiedDataSerializable;
 
 }
 
+/**
+ * Defines interface for objects with Portable serialization support.
+ */
 export interface Portable {
 
+    /**
+     * Factory id of the portable object.
+     */
     factoryId: number;
 
+    /**
+     * Class id of the portable object.
+     */
     classId: number;
 
+    /**
+     * Reads fields of the portable object from the binary representation.
+     *
+     * @param reader read helper
+     */
     readPortable(reader: PortableReader): void;
 
+    /**
+     * Writes fields of the portable object into the binary representation.
+     *
+     * @param writer write helper
+     */
     writePortable(writer: PortableWriter): void;
 
 }
 
+/**
+ * Defines interface for Portable serialization with multiversion support.
+ */
 export interface VersionedPortable extends Portable {
 
+    /**
+     * Version of the portable object.
+     */
     version: number;
 
 }
 
+/**
+ * Factory responsible for creation of read
+ * {@link Portable} objects.
+ */
 export interface PortableFactory {
 
+    /**
+     * Returns an instance of the right {@link Portable} object,
+     * given the classId.
+     *
+     * @param classId class id
+     * @returns object for further initialization
+     */
     create(classId: number): Portable;
 
 }
 
+/**
+ * Defines interface for objects with custom serialization support.
+ */
 export interface CustomSerializable {
 
     /**
