@@ -17,23 +17,27 @@
 import {Member} from './Member';
 
 /**
- * Membership event fired when a new member is added to the cluster and/or when a member leaves the cluster
- * or when there is a member attribute change.
+ * Membership event fired when a new member is added to the cluster and/or
+ * when a member leaves the cluster or when there is a member attribute change.
  */
 export class MembershipEvent {
+
     /**
-     * the removed or added member.
+     * Removed or added member.
      */
     member: Member;
 
     /**
-     * the membership event type.
+     * Members list at the moment after this event.
      */
-    eventType: number;
+    members: Member[];
 
-    /**
-     * the members at the moment after this event.
-     */
+}
+
+export class MembershipEventImpl implements MembershipEvent {
+
+    member: Member;
+    eventType: MemberEvent;
     members: Member[];
 
     constructor(member: Member, eventType: number, members: Member[]) {
@@ -41,5 +45,12 @@ export class MembershipEvent {
         this.eventType = eventType;
         this.members = members;
     }
+
+}
+
+export enum MemberEvent {
+
+    ADDED = 1,
+    REMOVED = 2,
 
 }

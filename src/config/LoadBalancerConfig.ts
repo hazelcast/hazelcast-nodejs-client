@@ -17,7 +17,7 @@
 import {LoadBalancer} from '../LoadBalancer';
 
 /**
- * Defines {@link LoadBalancer} implementation used by the client.
+ * Defines {@link LoadBalancer} type used by the client.
  */
 export enum LoadBalancerType {
 

@@ -57,11 +57,6 @@ export interface ItemEvent<E> {
     item: E;
 
     /**
-     * The event type.
-     */
-    eventType: ItemEventType;
-
-    /**
      * The member that fired this event.
      */
     member: Member;
@@ -84,30 +79,9 @@ export class ItemEventImpl<E> implements ItemEvent<E> {
 
 }
 
-/**
- * Item event type.
- */
 export enum ItemEventType {
 
-    /**
-     * Item was added.
-     */
-    ADDED = 'ADDED',
+    ADDED = 1,
+    REMOVED = 2,
 
-    /**
-     * Item was removed.
-     */
-    REMOVED = 'REMOVED',
-
-}
-
-export const itemEventTypeFromId = (typeId: number): ItemEventType => {
-    switch (typeId) {
-        case 1:
-            return ItemEventType.ADDED;
-        case 2:
-            return ItemEventType.REMOVED;
-        default:
-            throw new TypeError('Unexpected type id: ' + typeId);
-    }
 }

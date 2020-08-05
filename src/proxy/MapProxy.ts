@@ -73,7 +73,7 @@ import {IterationType, Predicate} from '../core/Predicate';
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {Data} from '../serialization/Data';
-import {PagingPredicate} from '../serialization/DefaultPredicates';
+import {PagingPredicateImpl} from '../serialization/DefaultPredicates';
 import {IdentifiedDataSerializable, Portable} from '../serialization/Serializable';
 import * as SerializationUtil from '../serialization/SerializationUtil';
 import {assertArray, assertNotNull} from '../Util';
@@ -162,7 +162,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         assertNotNull(predicate);
 
         const toObject = this.toObject.bind(this);
-        if (predicate instanceof PagingPredicate) {
+        if (predicate instanceof PagingPredicateImpl) {
             predicate.setIterationType(IterationType.ENTRY);
             const serializationService = this.client.getSerializationService();
             const pagingPredicateHolder = PagingPredicateHolder.of(predicate, serializationService);
@@ -186,7 +186,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         assertNotNull(predicate);
 
         const toObject = this.toObject.bind(this);
-        if (predicate instanceof PagingPredicate) {
+        if (predicate instanceof PagingPredicateImpl) {
             predicate.setIterationType(IterationType.KEY);
             const serializationService = this.client.getSerializationService();
             const pagingPredicateHolder = PagingPredicateHolder.of(predicate, serializationService);
@@ -208,7 +208,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 
     valuesWithPredicate(predicate: Predicate): Promise<ReadOnlyLazyList<V>> {
         assertNotNull(predicate);
-        if (predicate instanceof PagingPredicate) {
+        if (predicate instanceof PagingPredicateImpl) {
             predicate.setIterationType(IterationType.VALUE);
             const serializationService = this.client.getSerializationService();
             const pagingPredicateHolder = PagingPredicateHolder.of(predicate, serializationService);
@@ -817,7 +817,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     private checkNotPagingPredicate(v: Predicate): void {
-        if (v instanceof PagingPredicate) {
+        if (v instanceof PagingPredicateImpl) {
             throw new RangeError('Paging predicate is not supported.');
         }
     }

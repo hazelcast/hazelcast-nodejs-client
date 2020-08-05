@@ -20,7 +20,6 @@ import {ILogger} from './ILogger';
 
 /**
  * Log level for built-in or custom logger.
- * TODO change to string
  */
 export enum LogLevel {
     OFF = -1,
@@ -47,8 +46,9 @@ export class LoggingService {
 
     isLogger(loggingProperty: Property): loggingProperty is ILogger {
         loggingProperty = (loggingProperty as ILogger);
-        return loggingProperty.log !== undefined && loggingProperty.error !== undefined && loggingProperty.warn !== undefined &&
-            loggingProperty.info !== undefined && loggingProperty.debug !== undefined && loggingProperty.trace !== undefined;
+        return loggingProperty.log !== undefined && loggingProperty.error !== undefined
+            && loggingProperty.warn !== undefined && loggingProperty.info !== undefined
+            && loggingProperty.debug !== undefined && loggingProperty.trace !== undefined;
     }
 
     getLogger(): ILogger {

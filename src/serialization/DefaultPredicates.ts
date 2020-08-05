@@ -15,7 +15,7 @@
  */
 
 import {Comparator} from '../core/Comparator';
-import {IterationType, Predicate} from '../core/Predicate';
+import {IterationType, Predicate, PagingPredicate} from '../core/Predicate';
 import {enumFromString} from '../Util';
 import {DataInput, DataOutput} from './Data';
 import {IdentifiedDataSerializable} from './Serializable';
@@ -373,12 +373,12 @@ export class TruePredicate extends AbstractPredicate {
     }
 }
 
-export class PagingPredicate extends AbstractPredicate {
+export class PagingPredicateImpl extends AbstractPredicate implements PagingPredicate {
 
     private static NULL_ANCHOR: [number, [any, any]] = [-1, null];
     static CLASS_ID = 15;
 
-    classId = PagingPredicate.CLASS_ID;
+    classId = PagingPredicateImpl.CLASS_ID;
     private internalPredicate: Predicate;
     private pageSize: number;
     private comparatorObject: Comparator;
@@ -392,8 +392,8 @@ export class PagingPredicate extends AbstractPredicate {
             throw new TypeError('Page size should be greater than 0!');
         }
         this.pageSize = pageSize;
-        if (internalPredicate instanceof PagingPredicate) {
-            throw new TypeError('Nested paging predicate is not supported!');
+        if (internalPredicate instanceof PagingPredicateImpl) {
+            throw new TypeError('Nested paging predicates are not supported!');
         }
         this.internalPredicate = internalPredicate;
         this.comparatorObject = comparator;
@@ -420,7 +420,7 @@ export class PagingPredicate extends AbstractPredicate {
         output.writeObject(this.comparatorObject);
         output.writeInt(this.page);
         output.writeInt(this.pageSize);
-        output.writeUTF(IterationType[this.iterationType]);
+        output.writeUTF(this.iterationType);
         output.writeInt(this.anchorList.length);
         this.anchorList.forEach(function (anchorEntry: [number, [any, any]]): void {
             output.writeInt(anchorEntry[0]);
@@ -484,7 +484,7 @@ export class PagingPredicate extends AbstractPredicate {
     getNearestAnchorEntry(): [number, [any, any]] {
         const anchorCount = this.anchorList.length;
         if (this.page === 0 || anchorCount === 0) {
-            return PagingPredicate.NULL_ANCHOR;
+            return PagingPredicateImpl.NULL_ANCHOR;
         }
         let anchoredEntry: [number, [any, any]];
         if (this.page < anchorCount) {
@@ -525,7 +525,7 @@ const allPredicates: Array<PredicateConstructor> = [
     RegexPredicate,
     FalsePredicate,
     TruePredicate,
-    PagingPredicate,
+    PagingPredicateImpl,
 ];
 
 const idToConstructorMap: { [id: number]: PredicateConstructor } = {};

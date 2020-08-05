@@ -23,7 +23,7 @@ import {IllegalStateError, TargetDisconnectedError} from '../HazelcastError';
 import {MemberSelector} from '../core/MemberSelector';
 import {assertNotNull, DeferredPromise} from '../Util';
 import {MembershipListener} from '../core/MembershipListener';
-import {MembershipEvent} from '../core/MembershipEvent';
+import {MembershipEventImpl, MemberEvent} from '../core/MembershipEvent';
 import {UuidUtil} from '../util/UuidUtil';
 import {ILogger} from '../logging/ILogger';
 import {UUID} from '../core/UUID';
@@ -32,11 +32,6 @@ import {InitialMembershipListener} from '../core/InitialMembershipListener';
 import {InitialMembershipEvent} from '../core/InitialMembershipEvent';
 import {MemberInfo} from '../core/MemberInfo';
 import {Cluster} from '../core/Cluster';
-
-export enum MemberEvent {
-    ADDED = 1,
-    REMOVED = 2,
-}
 
 class MemberListSnapshot {
     version: number;
@@ -203,7 +198,7 @@ export class ClusterService implements Cluster {
         }
     }
 
-    private fireEvents(events: MembershipEvent[]): void {
+    private fireEvents(events: MembershipEventImpl[]): void {
         for (const event of events) {
             this.listeners.forEach((listener) => {
                 if (event.eventType === MemberEvent.ADDED && listener.memberAdded) {
@@ -232,7 +227,7 @@ export class ClusterService implements Cluster {
         });
     }
 
-    private detectMembershipEvents(prevMembers: Member[], currentMembers: Member[]): MembershipEvent[] {
+    private detectMembershipEvents(prevMembers: Member[], currentMembers: Member[]): MembershipEventImpl[] {
         const newMembers = new Array<Member>();
 
         const deadMembers = new Map<string, Member>();
@@ -246,12 +241,12 @@ export class ClusterService implements Cluster {
             }
         }
 
-        const events = new Array<MembershipEvent>(deadMembers.size + newMembers.length);
+        const events = new Array<MembershipEventImpl>(deadMembers.size + newMembers.length);
         let index = 0;
 
         // removal events should be added before added events
         deadMembers.forEach((member) => {
-            events[index++] = new MembershipEvent(member, MemberEvent.REMOVED, currentMembers);
+            events[index++] = new MembershipEventImpl(member, MemberEvent.REMOVED, currentMembers);
             const connection: ClientConnection = this.connectionManager.getConnection(member.uuid);
             if (connection != null) {
                 connection.close(null, new TargetDisconnectedError('The client has closed the connection to this ' +
@@ -260,7 +255,7 @@ export class ClusterService implements Cluster {
         });
 
         for (const member of newMembers) {
-            events[index++] = new MembershipEvent(member, MemberEvent.ADDED, currentMembers);
+            events[index++] = new MembershipEventImpl(member, MemberEvent.ADDED, currentMembers);
         }
 
         if (events.length !== 0) {
