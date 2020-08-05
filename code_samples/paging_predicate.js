@@ -23,21 +23,30 @@ const {
 // This comparator is both a comparator and an IdentifiedDataSerializable.
 // Note that a comparator should be a serializable object (IdentifiedDataSerializable
 // or Portable) because Hazelcast members should be able to deserialize the
-// comparator in order to sort entries. So the same class should be registered
+// comparator in order to sort entries. So, the same class should be registered
 // to Hazelcast server instance.
-const comparator = {
-    factoryId: 1,
-    classId: 10,
+class Comparator {
+    constructor() {
+        this.factoryId = 1;
+        this.classId = 10;
+    }
+
     // This comparator sorts entries according to their keys
     // in reverse alphabetical order.
-    sort: (a, b) => {
+    sort(a, b) {
         if (a[0] > b[0]) return -1;
         if (a[0] < b[0]) return 1;
         return 0;
-    },
-    readData: () => {},
-    writeData: () => {}
-};
+    }
+
+    readData() {
+        // no-op
+    }
+
+    writeData() {
+        // no-op
+    }
+}
 
 (async () => {
     try {
@@ -45,8 +54,11 @@ const comparator = {
             serialization: {
                 // We register our comparator object as IdentifiedDataSerializable
                 dataSerializableFactories: {
-                    1: {
-                        create: () => comparator
+                    1: (classId) => {
+                        if (classId === 10) {
+                            return new Comparator();
+                        }
+                        return null;
                     }
                 }
             }
@@ -60,7 +72,7 @@ const comparator = {
         const mapSize = await map.size();
         console.log(`Added ${mapSize} elements`);
 
-        const predicate = Predicates.paging(Predicates.alwaysTrue(), 2, comparator);
+        const predicate = Predicates.paging(Predicates.alwaysTrue(), 2, new Comparator());
 
         predicate.setPage(0);
         let values = await map.valuesWithPredicate(predicate);

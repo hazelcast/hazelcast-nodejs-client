@@ -50,21 +50,13 @@ export interface IdentifiedDataSerializable {
 }
 
 /**
- * Factory responsible for creation of read
- * {@link IdentifiedDataSerializable} objects.
+ * Should return an instance of the right {@link IdentifiedDataSerializable} object,
+ * given the `classId`.
+ *
+ * @param classId class id
+ * @returns object for further initialization
  */
-export interface IdentifiedDataSerializableFactory {
-
-    /**
-     * Returns an instance of the right {@link IdentifiedDataSerializable} object,
-     * given the classId.
-     *
-     * @param classId class id
-     * @returns object for further initialization
-     */
-    create(classId: number): IdentifiedDataSerializable;
-
-}
+export type IdentifiedDataSerializableFactory = (classId: number) => IdentifiedDataSerializable;
 
 /**
  * Defines interface for objects with Portable serialization support.
@@ -110,21 +102,13 @@ export interface VersionedPortable extends Portable {
 }
 
 /**
- * Factory responsible for creation of read
- * {@link Portable} objects.
+ * Should return an instance of the right {@link Portable} object,
+ * given the classId.
+ *
+ * @param classId class id
+ * @returns object for further initialization
  */
-export interface PortableFactory {
-
-    /**
-     * Returns an instance of the right {@link Portable} object,
-     * given the classId.
-     *
-     * @param classId class id
-     * @returns object for further initialization
-     */
-    create(classId: number): Portable;
-
-}
+export type PortableFactory = (classId: number) => Portable;
 
 /**
  * Defines interface for objects with custom serialization support.

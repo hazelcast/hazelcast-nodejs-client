@@ -38,14 +38,11 @@ Address.prototype.readData = function (objectDataInput) {
     this.state = objectDataInput.readUTF();
 };
 
-function MyIdentifiedFactory() {
-}
-
-MyIdentifiedFactory.prototype.create = function (type) {
-    if (type === 1) {
+function myIdentifiedFactory(classId) {
+    if (classId === 1) {
         return new Address();
     }
 }
 
-exports.MyIdentifiedFactory = MyIdentifiedFactory;
+exports.myIdentifiedFactory = myIdentifiedFactory;
 exports.Address = Address;

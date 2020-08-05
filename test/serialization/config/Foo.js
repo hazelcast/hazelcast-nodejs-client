@@ -29,14 +29,11 @@ Foo.prototype.readPortable = function (portableReader) {
     this.foo = portableReader.readUTF('foo');
 }
 
-function MyPortableFactory() {
-}
-
-MyPortableFactory.prototype.create = function (type) {
+function myPortableFactory(type) {
     if (type === 1) {
         return new Foo();
     }
 }
 
-exports.MyPortableFactory = MyPortableFactory;
+exports.myPortableFactory = myPortableFactory;
 exports.Foo = Foo;

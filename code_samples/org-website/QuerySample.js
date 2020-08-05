@@ -42,13 +42,11 @@ class User {
     }
 }
 
-class PortableFactory {
-    create(classId) {
-        if (classId === 1) {
-            return new User();
-        }
-        return null;
+function portableFactory(classId) {
+    if (classId === 1) {
+        return new User();
     }
+    return null;
 }
 
 async function generateUsers(usersMap) {
@@ -64,7 +62,7 @@ async function generateUsers(usersMap) {
         const hz = await Client.newHazelcastClient({
             serialization: {
                 portableFactories: {
-                    1: new PortableFactory()
+                    1: portableFactory
                 }
             }
         });

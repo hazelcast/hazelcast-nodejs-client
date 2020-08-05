@@ -17,16 +17,15 @@
 import * as Long from 'long';
 import {DataInput, DataOutput} from '../serialization/Data';
 import {IdentifiedDataSerializable} from '../serialization/Serializable';
-import {AggregatorFactory} from './AggregatorFactory';
+import * as AggregatorFactory from './AggregatorFactory';
 
-export interface Aggregator<R> {
-
+export interface Aggregator<R> extends IdentifiedDataSerializable {
 }
 
-export abstract class AbstractAggregator<R> implements IdentifiedDataSerializable, Aggregator<R> {
+export abstract class AbstractAggregator<R> implements Aggregator<R> {
 
     abstract classId: number;
-    factoryId = AggregatorFactory.FACTORY_ID;
+    factoryId = AggregatorFactory.AGGREGATOR_FACTORY_ID;
     protected attributePath: string;
 
     constructor(attributePath?: string) {

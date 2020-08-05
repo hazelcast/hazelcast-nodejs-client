@@ -106,7 +106,8 @@ export class Invocation {
     }
 
     shouldRetry(err: Error): boolean {
-        if (this.connection != null && (err instanceof IOError || err instanceof TargetDisconnectedError)) {
+        if (this.connection != null
+                && (err instanceof IOError || err instanceof TargetDisconnectedError)) {
             return false;
         }
 
@@ -117,7 +118,9 @@ export class Invocation {
             return false;
         }
 
-        if (err instanceof IOError || err instanceof HazelcastInstanceNotActiveError || err instanceof RetryableHazelcastError) {
+        if (err instanceof IOError
+                || err instanceof HazelcastInstanceNotActiveError
+                || err instanceof RetryableHazelcastError) {
             return true;
         }
 
@@ -157,8 +160,10 @@ export class InvocationService {
         } else {
             this.doInvoke = this.invokeNonSmart;
         }
-        this.invocationRetryPauseMillis = this.client.getConfig().properties[PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS] as number;
-        this.invocationTimeoutMillis = this.client.getConfig().properties[PROPERTY_INVOCATION_TIMEOUT_MILLIS] as number;
+        this.invocationRetryPauseMillis =
+            this.client.getConfig().properties[PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS] as number;
+        this.invocationTimeoutMillis =
+            this.client.getConfig().properties[PROPERTY_INVOCATION_TIMEOUT_MILLIS] as number;
         this.isShutdown = false;
     }
 

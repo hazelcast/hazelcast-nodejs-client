@@ -29,15 +29,13 @@ describe('PortableSerializationTest', function () {
 
     function createSerializationService(Ctor) {
         const cfg = new SerializationConfigImpl();
-        cfg.portableFactories[10] = {
-            create: function (classId) {
-                if (classId === 111) {
-                    return new Ctor();
-                } else if (classId === 222) {
-                    return new InnerPortable();
-                } else if (classId === 21) {
-                    return new SimplePortableV3();
-                }
+        cfg.portableFactories[10] = (classId) => {
+            if (classId === 111) {
+                return new Ctor();
+            } else if (classId === 222) {
+                return new InnerPortable();
+            } else if (classId === 21) {
+                return new SimplePortableV3();
             }
         };
         return new SerializationServiceV1(cfg);

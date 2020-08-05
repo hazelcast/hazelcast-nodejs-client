@@ -70,22 +70,20 @@ describe('BinaryCompatibilityTest', function () {
 
     function createSerializationService(isBigEndian, defaultNumberType) {
         const cfg = new SerializationConfigImpl();
-        cfg.portableFactories[ReferenceObjects.PORTABLE_FACTORY_ID] = {
-            create: function (classId) {
+        cfg.portableFactories[ReferenceObjects.PORTABLE_FACTORY_ID] =
+            (classId) => {
                 if (classId === ReferenceObjects.INNER_PORTABLE_CLASS_ID) {
                     return new AnInnerPortable();
                 } else if (classId === ReferenceObjects.PORTABLE_CLASS_ID) {
                     return new APortable();
                 }
-            }
-        };
-        cfg.dataSerializableFactories[ReferenceObjects.IDENTIFIED_DATA_SERIALIZABLE_FACTORY_ID] = {
-            create: function (type) {
-                if (type === ReferenceObjects.IDENTIFIED_DATA_SERIALIZABLE_CLASS_ID) {
+            };
+        cfg.dataSerializableFactories[ReferenceObjects.IDENTIFIED_DATA_SERIALIZABLE_FACTORY_ID] =
+            (classId) => {
+                if (classId === ReferenceObjects.IDENTIFIED_DATA_SERIALIZABLE_CLASS_ID) {
                     return new AnIdentifiedDataSerializable();
                 }
-            }
-        };
+            };
         cfg.customSerializers = [
             {
                 id: ReferenceObjects.CUSTOM_BYTE_ARRAY_SERIALIZABLE_ID,

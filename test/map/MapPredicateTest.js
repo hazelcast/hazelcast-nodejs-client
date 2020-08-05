@@ -23,7 +23,7 @@ const fs = require('fs');
 const RC = require('./../RC');
 const HazelcastClient = require('../..').Client;
 const Predicates = require('../..').Predicates;
-const IdentifiedFactory = require('../javaclasses/IdentifiedFactory');
+const identifiedFactory = require('../javaclasses/IdentifiedFactory');
 const CustomComparator = require('../javaclasses/CustomComparator');
 
 describe('MapPredicateTest', function () {
@@ -48,7 +48,7 @@ describe('MapPredicateTest', function () {
                     clusterName: cluster.id,
                     serialization: {
                         dataSerializableFactories: {
-                            66: new IdentifiedFactory()
+                            66: identifiedFactory
                         }
                     }
                 })

@@ -17,14 +17,14 @@
 
 const { Client } = require('hazelcast-client');
 const { UsernamePasswordCredentials } = require('./user_pass_cred');
-const { UsernamePasswordCredentialsFactory } = require('./user_pass_cred_factory');
+const { usernamePasswordCredentialsFactory } = require('./user_pass_cred_factory');
 
 (async () => {
     try {
         const adminClient = await Client.newHazelcastClient({
             serialization: {
                 portableFactories: {
-                    1: new UsernamePasswordCredentialsFactory()
+                    1: usernamePasswordCredentialsFactory
                 }
             },
             customCredentials: new UsernamePasswordCredentials('admin', 'password1', '127.0.0.1')

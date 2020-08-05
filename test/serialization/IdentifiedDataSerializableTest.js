@@ -91,11 +91,9 @@ describe('IdentifiedDataSerializableTest', function () {
         outp.writeUTFArray(this.strings);
     };
 
-    const identifiedFactory = {
-        create: function (type) {
-            if (type === 1) {
-                return new IdentifiedDataClass();
-            }
+    const identifiedFactory = (classId) => {
+        if (classId === 1) {
+            return new IdentifiedDataClass();
         }
     };
 

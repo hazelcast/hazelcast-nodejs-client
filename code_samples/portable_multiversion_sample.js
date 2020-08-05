@@ -46,13 +46,11 @@ class Employee {
     }
 }
 
-class PortableFactory {
-    create(classId) {
-        if (classId === 1) {
-            return new Employee();
-        }
-        return null;
+function portableFactory(classId) {
+    if (classId === 1) {
+        return new Employee();
     }
+    return null;
 }
 
 /*
@@ -86,13 +84,11 @@ class Employee2 {
     }
 }
 
-class PortableFactory2 {
-    create(classId) {
-        if (classId === 1) {
-            return new Employee2();
-        }
-        return null;
+function portableFactory2(classId) {
+    if (classId === 1) {
+        return new Employee2();
     }
+    return null;
 }
 
 /*
@@ -126,13 +122,11 @@ class Employee3 {
     }
 }
 
-class PortableFactory3 {
-    create(classId) {
-        if (classId === 1) {
-            return new Employee3();
-        }
-        return null;
+function portableFactory3(classId) {
+    if (classId === 1) {
+        return new Employee3();
     }
+    return null;
 }
 
 (async () => {
@@ -141,21 +135,21 @@ class PortableFactory3 {
         const cfg = {
             serialization: {
                 portableFactories: {
-                    1: new PortableFactory()
+                    1: portableFactory
                 }
             }
         };
         const cfg2 = {
             serialization: {
                 portableFactories: {
-                    1: new PortableFactory2()
+                    1: portableFactory2
                 }
             }
         };
         const cfg3 = {
             serialization: {
                 portableFactories: {
-                    1: new PortableFactory3()
+                    1: portableFactory3
                 }
             }
         };

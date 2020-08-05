@@ -36,21 +36,17 @@ class Employee {
     }
 }
 
-class SampleDataSerializableFactory {
-    create(type) {
-        if (type === 100) {
-            return new Employee();
-        }
-        return null;
-    }
-}
-
 (async () => {
     try {
         const client = await Client.newHazelcastClient({
             serialization: {
                 dataSerializableFactories: {
-                    1000: new SampleDataSerializableFactory()
+                    1000: (classId) => {
+                        if (classId === 100) {
+                            return new Employee();
+                        }
+                        return null;
+                    }
                 }
             }
         });

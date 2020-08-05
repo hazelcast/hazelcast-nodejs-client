@@ -26,15 +26,13 @@ describe('NestedPortableVersionTest', function () {
     it('compatible versions', function () {
         const sc = new SerializationConfigImpl();
         sc.portableVersion = 6;
-        sc.portableFactories[1] = {
-            create: function (classId) {
-                if (classId === 1) {
-                    return new Parent();
-                } else if (classId === 2) {
-                    return new Child();
-                }
-                return null;
+        sc.portableFactories[1] = (classId) => {
+            if (classId === 1) {
+                return new Parent();
+            } else if (classId === 2) {
+                return new Child();
             }
+            return null;
         };
 
         const ss1 = new SerializationServiceV1(sc);

@@ -16,7 +16,7 @@
 
 import * as Long from 'long';
 import {Data, DataInput, DataOutput} from '../../serialization/Data';
-import {IdentifiedDataSerializable, IdentifiedDataSerializableFactory} from '../../serialization/Serializable';
+import {IdentifiedDataSerializable} from '../../serialization/Serializable';
 import {Address} from '../../Address';
 
 export const RELIABLE_TOPIC_MESSAGE_FACTORY_ID = -9;
@@ -43,11 +43,9 @@ export class ReliableTopicMessage implements IdentifiedDataSerializable {
     }
 }
 
-export class ReliableTopicMessageFactory implements IdentifiedDataSerializableFactory {
-    create(type: number): IdentifiedDataSerializable {
-        if (type === RELIABLE_TOPIC_CLASS_ID) {
-            return new ReliableTopicMessage();
-        }
-        return null;
+export function reliableTopicMessageFactory(classId: number): IdentifiedDataSerializable {
+    if (classId === RELIABLE_TOPIC_CLASS_ID) {
+        return new ReliableTopicMessage();
     }
+    return null;
 }

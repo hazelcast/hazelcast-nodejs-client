@@ -18,7 +18,19 @@ import {Comparator} from '../core/Comparator';
 import {IterationType, Predicate} from '../core/Predicate';
 import {enumFromString} from '../Util';
 import {DataInput, DataOutput} from './Data';
-import {AbstractPredicate} from './PredicateFactory';
+import {IdentifiedDataSerializable} from './Serializable';
+
+export const PREDICATE_FACTORY_ID = -20;
+
+abstract class AbstractPredicate implements Predicate {
+
+    abstract classId: number;
+    factoryId = PREDICATE_FACTORY_ID;
+
+    abstract readData(input: DataInput): any;
+
+    abstract writeData(output: DataOutput): void;
+}
 
 export class SqlPredicate extends AbstractPredicate {
 
@@ -27,7 +39,7 @@ export class SqlPredicate extends AbstractPredicate {
     classId = SqlPredicate.CLASS_ID;
     private sql: string;
 
-    constructor(sql: string) {
+    constructor(sql?: string) {
         super();
         this.sql = sql;
     }
@@ -63,8 +75,8 @@ export class AndPredicate extends AbstractPredicate {
 
     writeData(output: DataOutput): void {
         output.writeInt(this.predicates.length);
-        this.predicates.forEach(function (pred: Predicate): void {
-            output.writeObject(pred);
+        this.predicates.forEach(function (predicate: Predicate): void {
+            output.writeObject(predicate);
         });
     }
 }
@@ -78,7 +90,7 @@ export class BetweenPredicate extends AbstractPredicate {
     private from: any;
     private to: any;
 
-    constructor(field: string, from: any, to: any) {
+    constructor(field?: string, from?: any, to?: any) {
         super();
         this.field = field;
         this.from = from;
@@ -106,7 +118,7 @@ export class EqualPredicate extends AbstractPredicate {
     private field: string;
     private value: any;
 
-    constructor(field: string, value: any) {
+    constructor(field?: string, value?: any) {
         super();
         this.field = field;
         this.value = value;
@@ -133,7 +145,7 @@ export class GreaterLessPredicate extends AbstractPredicate {
     private equal: boolean;
     private less: boolean;
 
-    constructor(field: string, value: any, equal: boolean, less: boolean) {
+    constructor(field?: string, value?: any, equal?: boolean, less?: boolean) {
         super();
         this.field = field;
         this.value = value;
@@ -165,7 +177,7 @@ export class LikePredicate extends AbstractPredicate {
     private field: string;
     private expr: string;
 
-    constructor(field: string, expr: string) {
+    constructor(field?: string, expr?: string) {
         super();
         this.field = field;
         this.expr = expr;
@@ -198,7 +210,7 @@ export class InPredicate extends AbstractPredicate {
     private field: string;
     private values: any[];
 
-    constructor(field: string, ...values: any[]) {
+    constructor(field?: string, ...values: any[]) {
         super();
         this.field = field;
         this.values = values;
@@ -230,7 +242,7 @@ export class InstanceOfPredicate extends AbstractPredicate {
     classId = InstanceOfPredicate.CLASS_ID;
     private className: string;
 
-    constructor(className: string) {
+    constructor(className?: string) {
         super();
         this.className = className;
     }
@@ -257,20 +269,20 @@ export class NotPredicate extends AbstractPredicate {
     static CLASS_ID = 10;
 
     classId = NotPredicate.CLASS_ID;
-    private pred: Predicate;
+    private predicate: Predicate;
 
-    constructor(pred: Predicate) {
+    constructor(predicate?: Predicate) {
         super();
-        this.pred = pred;
+        this.predicate = predicate;
     }
 
     readData(input: DataInput): any {
-        this.pred = input.readObject();
+        this.predicate = input.readObject();
         return this;
     }
 
     writeData(output: DataOutput): void {
-        output.writeObject(this.pred);
+        output.writeObject(this.predicate);
     }
 }
 
@@ -279,26 +291,26 @@ export class OrPredicate extends AbstractPredicate {
     static CLASS_ID = 11;
 
     classId = OrPredicate.CLASS_ID;
-    private preds: Predicate[];
+    private predicates: Predicate[];
 
-    constructor(...preds: Predicate[]) {
+    constructor(...predicates: Predicate[]) {
         super();
-        this.preds = preds;
+        this.predicates = predicates;
     }
 
     readData(input: DataInput): any {
         const s = input.readInt();
-        this.preds = [];
+        this.predicates = [];
         for (let i = 0; i < s; i++) {
-            this.preds.push(input.readObject());
+            this.predicates.push(input.readObject());
         }
         return this;
     }
 
     writeData(output: DataOutput): void {
-        output.writeInt(this.preds.length);
-        this.preds.forEach(function (pred: Predicate): void {
-            output.writeObject(pred);
+        output.writeInt(this.predicates.length);
+        this.predicates.forEach(function (predicate: Predicate): void {
+            output.writeObject(predicate);
         });
     }
 }
@@ -311,7 +323,7 @@ export class RegexPredicate extends AbstractPredicate {
     private field: string;
     private regex: string;
 
-    constructor(field: string, regex: string) {
+    constructor(field?: string, regex?: string) {
         super();
         this.field = field;
         this.regex = regex;
@@ -374,7 +386,7 @@ export class PagingPredicate extends AbstractPredicate {
     private iterationType: IterationType = IterationType.ENTRY;
     private anchorList: Array<[number, [any, any]]> = [];
 
-    constructor(internalPredicate: Predicate, pageSize: number, comparator: Comparator) {
+    constructor(internalPredicate?: Predicate, pageSize?: number, comparator?: Comparator) {
         super();
         if (pageSize <= 0) {
             throw new TypeError('Page size should be greater than 0!');
@@ -444,7 +456,8 @@ export class PagingPredicate extends AbstractPredicate {
         } else if (page === anchorCount) {
             this.anchorList.push(anchorEntry);
         } else {
-            throw new RangeError('Anchor index is not correct, expected: ' + page + 'found: ' + anchorCount);
+            throw new RangeError('Anchor index is not correct, expected: '
+                + page + 'found: ' + anchorCount);
         }
     }
 
@@ -488,5 +501,42 @@ export class PagingPredicate extends AbstractPredicate {
 
     getComparator(): Comparator {
         return this.comparatorObject;
+    }
+}
+
+interface PredicateConstructor {
+    new (): Predicate;
+    CLASS_ID: number;
+}
+
+const allPredicates: Array<PredicateConstructor> = [
+    SqlPredicate,
+    AndPredicate,
+    BetweenPredicate,
+    EqualPredicate,
+    GreaterLessPredicate,
+    LikePredicate,
+    ILikePredicate,
+    InPredicate,
+    InstanceOfPredicate,
+    NotEqualPredicate,
+    NotPredicate,
+    OrPredicate,
+    RegexPredicate,
+    FalsePredicate,
+    TruePredicate,
+    PagingPredicate,
+];
+
+const idToConstructorMap: { [id: number]: PredicateConstructor } = {};
+for (const predicate of allPredicates) {
+    idToConstructorMap[predicate.CLASS_ID] = predicate;
+}
+
+export function predicateFactory(classId: number): IdentifiedDataSerializable {
+    if (idToConstructorMap[classId]) {
+        return new idToConstructorMap[classId]();
+    } else {
+        throw new RangeError(`There is no default predicate with id ${classId}.`);
     }
 }

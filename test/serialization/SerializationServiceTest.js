@@ -19,59 +19,6 @@ const expect = require('chai').expect;
 const SerializationService = require('../../lib/serialization/SerializationService').SerializationServiceV1;
 const SerializationConfigImpl = require('../../lib/config/SerializationConfig').SerializationConfigImpl;
 
-describe('SerializationServiceTest', function () {
-
-    it('should use data serializable factory', function () {
-        const serializationConfig = new SerializationConfigImpl();
-        serializationConfig.dataSerializableFactories[1] = new IDataSerializableFactory();
-
-        const serializationService = new SerializationService(serializationConfig);
-
-        const data = serializationService.toData(new IDataSerializable(3));
-        const object = serializationService.toObject(data);
-
-        expect(object.val).to.equal(3);
-    });
-
-    it('should use portable factory', function () {
-        const serializationConfig = new SerializationConfigImpl();
-        serializationConfig.portableFactories[2] = new PortableFactory();
-
-        const serializationService = new SerializationService(serializationConfig);
-
-        const data = serializationService.toData(new Portable(3));
-        const object = serializationService.toObject(data);
-
-        expect(object.val).to.equal(3);
-    });
-
-    it('should use custom serializer', function () {
-        const serializationConfig = new SerializationConfigImpl();
-        serializationConfig.customSerializers.push(new CustomSerializer());
-
-        const serializationService = new SerializationService(serializationConfig);
-
-        const data = serializationService.toData(new CustomObject(3));
-        const object = serializationService.toObject(data);
-
-        expect(object.val).to.equal(3);
-        expect(object.self).to.equal(object);
-    });
-
-    it('should use global serializer', function () {
-        const serializationConfig = new SerializationConfigImpl();
-        serializationConfig.globalSerializer = new GlobalSerializer();
-
-        const serializationService = new SerializationService(serializationConfig);
-
-        const data = serializationService.toData(new AnyObject(3));
-        const object = serializationService.toObject(data);
-
-        expect(object.val).to.equal(3);
-        expect(object.self).to.equal(object);
-    });
-});
-
 function IDataSerializable(val) {
     this.val = val;
     this.factoryId = 1;
@@ -86,14 +33,11 @@ IDataSerializable.prototype.writeData = function (output) {
     output.writeInt(this.val);
 };
 
-function IDataSerializableFactory() {
-}
-
-IDataSerializableFactory.prototype.create = function (type) {
-    if (type === 11) {
+function idataSerializableFactory(classId) {
+    if (classId === 11) {
         return new IDataSerializable();
     }
-};
+}
 
 function Portable(val) {
     this.val = val;
@@ -109,14 +53,11 @@ Portable.prototype.writePortable = function (writer) {
     writer.writeInt('val', this.val);
 };
 
-function PortableFactory() {
-}
-
-PortableFactory.prototype.create = function (classId) {
+function portableFactory(classId) {
     if (classId === 22) {
         return new Portable();
     }
-};
+}
 
 function AnyObject(val) {
     this.val = val;
@@ -161,7 +102,55 @@ CustomSerializer.prototype.write = function (writer, obj) {
     writer.writeInt(obj.val);
 };
 
-exports.IDataSerializableFactory = IDataSerializableFactory;
-exports.PortableFactory = PortableFactory;
-exports.GlobalSerializer = GlobalSerializer;
-exports.CustomSerializer = CustomSerializer;
+describe('SerializationServiceTest', function () {
+
+    it('should use data serializable factory', function () {
+        const serializationConfig = new SerializationConfigImpl();
+        serializationConfig.dataSerializableFactories[1] = idataSerializableFactory;
+
+        const serializationService = new SerializationService(serializationConfig);
+
+        const data = serializationService.toData(new IDataSerializable(3));
+        const object = serializationService.toObject(data);
+
+        expect(object.val).to.equal(3);
+    });
+
+    it('should use portable factory', function () {
+        const serializationConfig = new SerializationConfigImpl();
+        serializationConfig.portableFactories[2] = portableFactory;
+
+        const serializationService = new SerializationService(serializationConfig);
+
+        const data = serializationService.toData(new Portable(3));
+        const object = serializationService.toObject(data);
+
+        expect(object.val).to.equal(3);
+    });
+
+    it('should use custom serializer', function () {
+        const serializationConfig = new SerializationConfigImpl();
+        serializationConfig.customSerializers.push(new CustomSerializer());
+
+        const serializationService = new SerializationService(serializationConfig);
+
+        const data = serializationService.toData(new CustomObject(3));
+        const object = serializationService.toObject(data);
+
+        expect(object.val).to.equal(3);
+        expect(object.self).to.equal(object);
+    });
+
+    it('should use global serializer', function () {
+        const serializationConfig = new SerializationConfigImpl();
+        serializationConfig.globalSerializer = new GlobalSerializer();
+
+        const serializationService = new SerializationService(serializationConfig);
+
+        const data = serializationService.toData(new AnyObject(3));
+        const object = serializationService.toObject(data);
+
+        expect(object.val).to.equal(3);
+        expect(object.self).to.equal(object);
+    });
+});

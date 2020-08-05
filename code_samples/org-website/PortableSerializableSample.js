@@ -40,13 +40,11 @@ class Customer {
     }
 }
 
-class PortableFactory {
-    create(classId) {
-        if (classId === 1) {
-            return new Customer();
-        }
-        return null;
+function portableFactory(classId) {
+    if (classId === 1) {
+        return new Customer();
     }
+    return null;
 }
 
 (async () => {
@@ -56,7 +54,7 @@ class PortableFactory {
         const hz = await Client.newHazelcastClient({
             serialization: {
                 portableFactories: {
-                    1: new PortableFactory()
+                    1: portableFactory
                 }
             }
         });

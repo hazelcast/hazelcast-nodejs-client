@@ -87,11 +87,11 @@ export class PortableSerializer implements Serializer {
     }
 
     private createNewPortableInstance(factoryId: number, classId: number): Portable {
-        const factory = this.factories[factoryId];
-        if (factory == null) {
+        const factoryFn = this.factories[factoryId];
+        if (factoryFn == null) {
             throw new HazelcastSerializationError(`There is no suitable portable factory for ${factoryId}.`);
         }
-        const portable: Portable = factory.create(classId);
+        const portable: Portable = factoryFn(classId);
         if (portable == null) {
             throw new HazelcastSerializationError(`Could not create Portable for class-id: ${classId}`);
         }

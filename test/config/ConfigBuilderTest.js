@@ -30,12 +30,8 @@ describe('ConfigBuilderTest', function () {
         memberAdded: () => {},
         memberRemoved: () => {}
     };
-    const dataSerializableFactory = {
-        create: () => {}
-    };
-    const portableFactory = {
-        create: () => {}
-    };
+    const dataSerializableFactory = () => {};
+    const portableFactory = () => {};
     const customSerializer = {
         id: 3
     };

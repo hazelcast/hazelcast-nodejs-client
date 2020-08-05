@@ -617,18 +617,16 @@ class Employee {
 
 > **NOTE: Refer to `DataInput`/`DataOutput` interfaces in the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) to understand methods available on the `input`/`output` objects.**
 
-The `IdentifiedDataSerializable` interface uses `classId` and `factoryId` properties to reconstitute the object. To complete the implementation, `IdentifiedDataSerializableFactory` should also be implemented and put into the `serialization.dataSerializableFactories` config option. The factory's responsibility is to return an instance of the right `IdentifiedDataSerializable` object, given the `classId`.
+The `IdentifiedDataSerializable` interface uses `classId` and `factoryId` properties to reconstitute the object. To complete the implementation, `IdentifiedDataSerializableFactory` factory function should also be implemented and put into the `serialization.dataSerializableFactories` config option. The factory's responsibility is to return an instance of the right `IdentifiedDataSerializable` object, given the `classId`.
 
-A sample `IdentifiedDataSerializableFactory` could be implemented as follows:
+A sample `IdentifiedDataSerializableFactory` function could be implemented as follows:
 
 ```javascript
-class SampleDataSerializableFactory {
-    create(type) {
-        if (type === 100) {
-            return new Employee();
-        }
-        return null;
+function sampleDataSerializableFactory(classId) {
+    if (classId === 100) {
+        return new Employee();
     }
+    return null;
 }
 ```
 
@@ -638,7 +636,7 @@ The last step is to register the `IdentifiedDataSerializableFactory` in the conf
 const cfg = {
     serialization: {
         dataSerializableFactories: {
-            1000: new SampleDataSerializableFactory()
+            1000: sampleDataSerializableFactory
         }
     }
 };
@@ -688,18 +686,16 @@ class Customer {
 
 > **NOTE: Refer to `PortableReader`/`PortableWriter` interfaces in the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) to understand methods available on the `reader`/`writer` objects.**
 
-Similar to `IdentifiedDataSerializable`, a `Portable` object must provide `classId` and `factoryId`. The factory object will be used to create the `Portable` object given the `classId`.
+Similar to `IdentifiedDataSerializable`, a `Portable` object must provide `classId` and `factoryId`. The factory function will be used to create the `Portable` object given the `classId`.
 
-A sample `PortableFactory` could be implemented as follows:
+A sample `PortableFactory` function could be implemented as follows:
 
 ```javascript
-class PortableFactory {
-    create(classId) {
-        if (classId === 1) {
-            return new Customer();
-        }
-        return null;
+function portableFactory(classId) {
+    if (classId === 1) {
+        return new Customer();
     }
+    return null;
 }
 ```
 
@@ -709,7 +705,7 @@ The last step is to register the `PortableFactory` in the config.
 const cfg = {
     serialization: {
         portableFactories: {
-            1: new PortableFactory()
+            1: portableFactory
         }
     }
 };
@@ -1832,7 +1828,7 @@ public class IdentifiedFactory implements DataSerializableFactory {
 
     public static final int FACTORY_ID = 5;
 
-     @Override
+    @Override
     public IdentifiedDataSerializable create(int typeId) {
         if (typeId == IdentifiedEntryProcessor.CLASS_ID) {
             return new IdentifiedEntryProcessor();
@@ -2861,29 +2857,27 @@ And below is the `Factory` implementation for the `Portable` implementation of `
 ```javascript
 const { UsernamePasswordCredentials } = require('./user_pass_cred');
 
-class UsernamePasswordCredentialsFactory() {
-    create(classId) {
-        if (classId === 1) {
-            return new UsernamePasswordCredentials();
-        }
-        return null;
+function usernamePasswordCredentialsFactory(classId) {
+    if (classId === 1) {
+        return new UsernamePasswordCredentials();
     }
+    return null;
 }
 
-exports.UsernamePasswordCredentialsFactory = UsernamePasswordCredentialsFactory;
+exports.usernamePasswordCredentialsFactory = usernamePasswordCredentialsFactory;
 ```
 
 Now, you can start your client by registering the `Portable` factory and giving the credentials as follows.
 
 ```javascript
 const { UsernamePasswordCredentials } = require('./user_pass_cred');
-const { UsernamePasswordCredentialsFactory } = require('./user_pass_cred_factory');
+const { usernamePasswordCredentialsFactory } = require('./user_pass_cred_factory');
 
 const cfg = {
     serialization: {
         portableVersion: 1,
         portableFactories: {
-            [-1]: new UsernamePasswordCredentialsFactory()
+            [-1]: usernamePasswordCredentialsFactory
         }
     },
     customCredentials: new UsernamePasswordCredentials('admin', 'password', '127.0.0.1')

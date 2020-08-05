@@ -364,11 +364,11 @@ export class IdentifiedDataSerializableSerializer implements Serializer {
         }
         const factoryId = input.readInt();
         const classId = input.readInt();
-        const factory = this.factories[factoryId];
-        if (!factory) {
+        const factoryFn = this.factories[factoryId];
+        if (!factoryFn) {
             throw new RangeError('There is no Identified Data Serializer factory with id ' + factoryId + '.');
         }
-        const object = factory.create(classId);
+        const object = factoryFn(classId);
         object.readData(input);
         return object;
     }
