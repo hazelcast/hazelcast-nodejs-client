@@ -101,17 +101,6 @@ export enum ItemEventType {
 
 }
 
-export const itemEventTypeToId = (type: ItemEventType): number => {
-    switch (type) {
-        case ItemEventType.ADDED:
-            return 1;
-        case ItemEventType.REMOVED:
-            return 2;
-        default:
-            throw new TypeError('Unexpected type value: ' + type);
-    }
-}
-
 export const itemEventTypeFromId = (typeId: number): ItemEventType => {
     switch (typeId) {
         case 1:

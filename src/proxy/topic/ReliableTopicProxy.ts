@@ -130,7 +130,6 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
                 throw new TopicOverloadError('Failed to publish message: ' + reliableTopicMessage +
                     ' on topic: ' + this.getName());
             }
-
             return null;
         });
     }
