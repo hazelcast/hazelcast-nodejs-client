@@ -25,10 +25,18 @@ export const REST_VALUE_CLASS_ID = 1;
  */
 export class RestValue implements IdentifiedDataSerializable {
 
+    /**
+     * Wrapped value.
+     */
+    value: string;
+
+    /**
+     * HTTP Content-Type specified for the value.
+     */
+    contentType: string;
+
     factoryId = REST_VALUE_FACTORY_ID;
     classId = REST_VALUE_CLASS_ID;
-    value: string;
-    contentType: string;
 
     readData(input: DataInput): any {
         this.value = input.readUTF();

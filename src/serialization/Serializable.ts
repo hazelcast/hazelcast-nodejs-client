@@ -18,7 +18,7 @@ import {DataInput, DataOutput} from './Data';
 import {PortableReader, PortableWriter} from './portable/PortableSerializer';
 
 /**
- * Defines interface for objects with IdentifiedDataSerializable
+ * Interface for objects with IdentifiedDataSerializable
  * serialization support.
  */
 export interface IdentifiedDataSerializable {
@@ -50,8 +50,9 @@ export interface IdentifiedDataSerializable {
 }
 
 /**
- * Should return an instance of the right {@link IdentifiedDataSerializable} object,
- * given the `classId`.
+ * Factory function for {@link IdentifiedDataSerializable}. Should return
+ * an instance of the right {@link IdentifiedDataSerializable} object, given
+ * the matching `classId`.
  *
  * @param classId class id
  * @returns object for further initialization
@@ -59,7 +60,7 @@ export interface IdentifiedDataSerializable {
 export type IdentifiedDataSerializableFactory = (classId: number) => IdentifiedDataSerializable;
 
 /**
- * Defines interface for objects with Portable serialization support.
+ * Interface for objects with Portable serialization support.
  */
 export interface Portable {
 
@@ -90,7 +91,7 @@ export interface Portable {
 }
 
 /**
- * Defines interface for Portable serialization with multiversion support.
+ * Interface for Portable serialization with multiversion support.
  */
 export interface VersionedPortable extends Portable {
 
@@ -102,8 +103,9 @@ export interface VersionedPortable extends Portable {
 }
 
 /**
- * Should return an instance of the right {@link Portable} object,
- * given the classId.
+ * Factory function for {@link Portable}. Should return
+ * an instance of the right {@link Portable} object, given
+ * the matching `classId`.
  *
  * @param classId class id
  * @returns object for further initialization
@@ -111,7 +113,7 @@ export interface VersionedPortable extends Portable {
 export type PortableFactory = (classId: number) => Portable;
 
 /**
- * Defines interface for objects with custom serialization support.
+ * Interface for objects with custom serialization support.
  */
 export interface CustomSerializable {
 

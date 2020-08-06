@@ -53,5 +53,3 @@ export class DefaultLogger implements ILogger {
         this.log(LogLevel.TRACE, objectName, message, furtherInfo);
     }
 }
-
-

@@ -18,7 +18,7 @@ import {EntryListener} from './EntryListener';
 import {Member} from './Member';
 
 /**
- * Map or entry listener.
+ * Map or entry level event listener.
  */
 export interface MapListener<K, V> extends EntryListener<K, V> {
 }

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
 function InnerPortable(p1, p2) {
     this.p1 = p1;
