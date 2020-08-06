@@ -13,33 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require('chai').expect;
+const expect = require('chai').expect;
+const ClientConfigImpl = require('../../lib/config/Config').ClientConfigImpl;
+const HazelcastCloudDiscovery = require('../../lib/discovery/HazelcastCloudDiscovery').HazelcastCloudDiscovery;
 
-var HazelcastCloudDiscovery = require('../../lib/discovery/HazelcastCloudDiscovery').HazelcastCloudDiscovery;
-var ClientConfig = require('../../').Config.ClientConfig;
-
-describe('Hazelcast ClientCloudConfig Test', function () {
+describe('HazelcastClientCloudConfigTest', function () {
 
     it('defaultCloudUrlEndpoint', function () {
-        var config = new ClientConfig();
+        const config = new ClientConfigImpl();
+        const token = 'TOKEN';
+        config.network.hazelcastCloud.discoveryToken = token;
 
-        var token = 'TOKEN';
-        config.networkConfig.cloudConfig.discoveryToken = token;
-
-        var urlEndpoint = HazelcastCloudDiscovery.createUrlEndpoint(config.properties, token);
+        const urlEndpoint = HazelcastCloudDiscovery.createUrlEndpoint(config.properties, token);
 
         expect(urlEndpoint).to.be.equal('https://coordinator.hazelcast.cloud/cluster/discovery?token=TOKEN');
     });
 
     it('customCloudUrlEndpoint', function () {
-        var config = new ClientConfig();
-
-        var token = 'TOKEN';
-        config.networkConfig.cloudConfig.discoveryToken = token;
+        const config = new ClientConfigImpl();
+        const token = 'TOKEN';
+        config.network.hazelcastCloud.discoveryToken = token;
         config.properties['hazelcast.client.cloud.url'] = 'https://custom';
 
-        var urlEndpoint = HazelcastCloudDiscovery.createUrlEndpoint(config.properties, token);
+        const urlEndpoint = HazelcastCloudDiscovery.createUrlEndpoint(config.properties, token);
 
         expect(urlEndpoint).to.be.equal('https://custom/cluster/discovery?token=TOKEN');
     });

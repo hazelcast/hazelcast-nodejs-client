@@ -19,8 +19,6 @@ import TopicOverloadPolicy = require('./proxy/topic/TopicOverloadPolicy');
 import * as Aggregators from './aggregation/Aggregators';
 import {ClientInfo} from './ClientInfo';
 import * as Config from './config/Config';
-import {ConfigBuilder} from './config/ConfigBuilder';
-import {ImportConfig} from './config/ImportConfig';
 import * as Predicates from './core/Predicate';
 import {IterationType} from './core/Predicate';
 import HazelcastClient from './HazelcastClient';
@@ -39,13 +37,12 @@ import {JsonStringDeserializationPolicy} from './config/JsonStringDeserializatio
 import {HazelcastJsonValue} from './core/HazelcastJsonValue';
 import {RoundRobinLB} from './util/RoundRobinLB';
 import {RandomLB} from './util/RandomLB';
-import { LoadBalancer } from './LoadBalancer';
-import { AbstractLoadBalancer } from './util/AbstractLoadBalancer';
+import {LoadBalancer} from './LoadBalancer';
+import {AbstractLoadBalancer} from './util/AbstractLoadBalancer';
 
 export {
     HazelcastClient as Client,
     Config,
-    ConfigBuilder,
     ClientInfo,
     IMap,
     Address,
@@ -55,7 +52,6 @@ export {
     ReadResultSet,
     IterationType,
     Aggregators,
-    ImportConfig,
     FieldDefinition,
     ClassDefinition,
     ClassDefinitionBuilder,

@@ -18,7 +18,6 @@ import * as assert from 'assert';
 import * as Long from 'long';
 import * as Promise from 'bluebird';
 import * as Path from 'path';
-import {JsonConfigLocator} from './config/JsonConfigLocator';
 import {Address} from './Address';
 
 export function assertNotNull(v: any): void {
@@ -139,22 +138,8 @@ export function tryGetEnum<T>(enumClass: any | { [index: string]: number }, str:
 }
 
 export function resolvePath(path: string): string {
-    let basePath: string;
-    if (process.env[JsonConfigLocator.ENV_VARIABLE_NAME]) {
-        basePath = Path.dirname(process.env[JsonConfigLocator.ENV_VARIABLE_NAME]);
-    } else {
-        basePath = process.cwd();
-    }
+    const basePath = process.cwd();
     return Path.resolve(basePath, path);
-}
-
-export function loadNameFromPath(path: string, exportedName: string): any {
-    const requirePath = require(resolvePath(path)); /*eslint-disable-line @typescript-eslint/no-var-requires*/
-    if (exportedName === undefined) {
-        return requirePath;
-    } else {
-        return requirePath[exportedName];
-    }
 }
 
 export class AddressHelper {
@@ -205,18 +190,6 @@ export class AddressHelper {
         return new Address(host, port);
     }
 
-}
-
-export function mergeJson(base: any, other: any): void {
-    for (const key in other) {
-        if (Array.isArray(base[key]) && Array.isArray(other[key])) {
-            base[key] = base[key].concat(other[key]);
-        } else if (typeof base[key] === 'object' && typeof other[key] === 'object') {
-            mergeJson(base[key], other[key]);
-        } else {
-            base[key] = other[key];
-        }
-    }
 }
 
 /**

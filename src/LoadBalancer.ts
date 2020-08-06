@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ClientConfig} from './config/Config';
+import {ClientConfigImpl} from './config/Config';
 import {Cluster} from './core/Cluster';
 import {Member} from './core/Member';
 
@@ -34,7 +34,7 @@ export interface LoadBalancer {
      * @param cluster the Cluster this LoadBalancer uses to select members from.
      * @param config  the ClientConfig.
      */
-    initLoadBalancer(cluster: Cluster, config: ClientConfig): void;
+    initLoadBalancer(cluster: Cluster, config: ClientConfigImpl): void;
 
     /**
      * Returns the next member to route to.

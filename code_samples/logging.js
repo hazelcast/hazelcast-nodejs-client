@@ -13,21 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var winston = require('winston');
-var Config = require('hazelcast-client').Config;
-var HazelcastClient = require('hazelcast-client').Client;
-var LogLevel = require('hazelcast-client').LogLevel;
+const {
+    Client,
+    LogLevel
+} = require('hazelcast-client');
+const winston = require('winston');
 
-var cfg = new Config.ClientConfig();
-
-var winstonAdapter = {
-    logger: new (winston.Logger)({
+const winstonAdapter = {
+    logger: winston.createLogger({
+        level: 'info',
         transports: [
-            new (winston.transports.Console)()
+            new winston.transports.Console({
+                format: winston.format.simple()
+            })
         ]
     }),
-
     levels: [
         'error',
         'warn',
@@ -35,33 +37,34 @@ var winstonAdapter = {
         'debug',
         'silly'
     ],
-
     log: function (level, objectName, message, furtherInfo) {
         this.logger.log(this.levels[level], objectName + ': ' + message, furtherInfo);
     },
-
     error: function (objectName, message, furtherInfo) {
         this.log(LogLevel.ERROR, objectName, message, furtherInfo);
     },
-
     warn: function (objectName, message, furtherInfo) {
         this.log(LogLevel.WARN, objectName, message, furtherInfo);
     },
-
     info: function (objectName, message, furtherInfo) {
         this.log(LogLevel.INFO, objectName, message, furtherInfo);
     },
-
     debug: function (objectName, message, furtherInfo) {
         this.log(LogLevel.DEBUG, objectName, message, furtherInfo);
     },
-
     trace: function (objectName, message, furtherInfo) {
         this.log(LogLevel.TRACE, objectName, message, furtherInfo);
     }
 };
-cfg.customLogger = winstonAdapter;
 
-HazelcastClient.newHazelcastClient(cfg).then(function (client) {
-    client.shutdown();
-});
+(async () => {
+    try {
+        const client = await Client.newHazelcastClient({
+            customLogger: winstonAdapter
+        });
+
+        client.shutdown();
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

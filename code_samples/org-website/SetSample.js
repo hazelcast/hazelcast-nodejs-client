@@ -13,33 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
-// Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-Client.newHazelcastClient().then(function (hz) {
-    var set;
-    // Get the Distributed Set from Cluster.
-    hz.getSet('my-distributed-set').then(function (s) {
-        set = s;
+const { Client } = require('hazelcast-client');
+
+(async () => {
+    try {
+        // Start the Hazelcast Client and connect to an already running
+        // Hazelcast Cluster on 127.0.0.1
+        const hz = await Client.newHazelcastClient();
+        // Get the Distributed Set from Cluster
+        const set = await hz.getSet('my-distributed-set');
         // Add items to the set with duplicates
-        return set.add('item1');
-    }).then(function () {
-        return set.add('item1');
-    }).then(function () {
-        return set.add('item2');
-    }).then(function () {
-        return set.add('item2');
-    }).then(function () {
-        return set.add('item2');
-    }).then(function () {
-        return set.add('item3');
-    }).then(function () {
+        await set.add('item1');
+        await set.add('item1');
+        await set.add('item2');
+        await set.add('item2');
+        await set.add('item2');
+        await set.add('item3');
         // Get the items. Note that there are no duplicates
-        return set.toArray();
-    }).then(function (values) {
-        console.log(values);
-    }).then(function () {
+        const items = await set.toArray();
+        console.log(items);
         // Shutdown this Hazelcast client
         hz.shutdown();
-    });
-});
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

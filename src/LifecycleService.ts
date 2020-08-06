@@ -15,15 +15,14 @@
  */
 
 import {EventEmitter} from 'events';
-import {ListenerImportConfig} from './config/ImportConfig';
 import HazelcastClient from './HazelcastClient';
-import * as Util from './Util';
 import {ILogger} from './logging/ILogger';
 
 /**
  * Lifecycle states.
  */
 export enum LifecycleState {
+
     /**
      * Fired when the client is starting.
      */
@@ -58,6 +57,7 @@ export enum LifecycleState {
      * Fired when the client is connected to a new cluster.
      */
     CHANGED_CLUSTER = 'CHANGED_CLUSTER',
+
 }
 
 const LIFECYCLE_EVENT_NAME = 'lifecycleEvent';
@@ -75,18 +75,9 @@ export class LifecycleService extends EventEmitter {
         this.setMaxListeners(0);
         this.client = client;
         this.logger = this.client.getLoggingService().getLogger();
-        const listeners = client.getConfig().listeners.lifecycleListeners;
+        const listeners = client.getConfig().lifecycleListeners;
         listeners.forEach((listener) => {
             this.on(LIFECYCLE_EVENT_NAME, listener);
-        });
-        const listenerConfigs = client.getConfig().listenerConfigs;
-        listenerConfigs.forEach((config: ListenerImportConfig) => {
-            if (config.type === 'lifecycle') {
-                const path = config.importConfig.path;
-                const exportedName = config.importConfig.exportedName;
-                const listener = Util.loadNameFromPath(path, exportedName);
-                this.on(LIFECYCLE_EVENT_NAME, listener);
-            }
         });
     }
 

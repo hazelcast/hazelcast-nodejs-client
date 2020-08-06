@@ -13,32 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require("chai").expect;
-var HazelcastClient = require("../../lib/index.js").Client;
-const Config = require("../../lib/index.js").Config;
-var Controller = require('./../RC');
-var Util = require('./../Util');
-var Promise = require('bluebird');
+const expect = require('chai').expect;
+const Promise = require('bluebird');
+const RC = require('./../RC');
+const Client = require('../..').Client;
+const Util = require('../Util');
 
-describe("MultiMap Proxy", function () {
+describe('MultiMapProxyTest', function () {
 
-    var cluster;
-    var client;
-
-    var map;
+    let cluster;
+    let client;
+    let map;
 
     before(function () {
         this.timeout(10000);
-        return Controller.createCluster().then(function (response) {
+        return RC.createCluster().then(function (response) {
             cluster = response;
-            return Controller.startMember(cluster.id);
+            return RC.startMember(cluster.id);
         }).then(function () {
-            const cfg = new Config.ClientConfig();
-            cfg.clusterName = cluster.id;
-            return HazelcastClient.newHazelcastClient(cfg).then(function (hazelcastClient) {
-                client = hazelcastClient;
-            })
+            return Client.newHazelcastClient({
+                clusterName: cluster.id
+            });
+        }).then(function (hazelcastClient) {
+            client = hazelcastClient;
         });
     });
 
@@ -54,10 +53,10 @@ describe("MultiMap Proxy", function () {
 
     after(function () {
         client.shutdown();
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
-    it("adds and retrieves a single item", function () {
+    it('adds and retrieves a single item', function () {
         return map.put(1, 1).then(function () {
             return map.get(1);
         }).then(function (values) {
@@ -65,7 +64,7 @@ describe("MultiMap Proxy", function () {
         });
     });
 
-    it("adds and retrieves multiple items", function () {
+    it('adds and retrieves multiple items', function () {
         return map.put(1, 1).then(function () {
             return map.put(1, 2);
         }).then(function () {
@@ -75,7 +74,7 @@ describe("MultiMap Proxy", function () {
         });
     });
 
-    it("reports change after put", function () {
+    it('reports change after put', function () {
         return map.put(1, 1).then(function () {
             return map.put(1, 2);
         }).then(function (changed) {
@@ -83,7 +82,7 @@ describe("MultiMap Proxy", function () {
         });
     });
 
-    it("reports no change after put", function () {
+    it('reports no change after put', function () {
         return map.put(1, 1).then(function () {
             return map.put(1, 1);
         }).then(function (changed) {
@@ -91,8 +90,8 @@ describe("MultiMap Proxy", function () {
         });
     });
 
-    it("adds and removes a single entry", function () {
-        var puts = [map.put(1, 1), map.put(1, 3), map.put(1, 5)];
+    it('adds and removes a single entry', function () {
+        const puts = [map.put(1, 1), map.put(1, 3), map.put(1, 5)];
         return Promise.all(puts).then(function () {
             return map.remove(1, 3);
         }).then(function () {
@@ -102,7 +101,7 @@ describe("MultiMap Proxy", function () {
         });
     });
 
-    it("reports change after remove", function () {
+    it('reports change after remove', function () {
         return map.put(1, 1).then(function () {
             return map.remove(1, 1);
         }).then(function (removed) {
@@ -110,7 +109,7 @@ describe("MultiMap Proxy", function () {
         });
     });
 
-    it("reports no change after remove", function () {
+    it('reports no change after remove', function () {
         return map.put(1, 1).then(function () {
             return map.remove(1, 2);
         }).then(function (removed) {
@@ -118,8 +117,8 @@ describe("MultiMap Proxy", function () {
         });
     });
 
-    it("removes all values from key", function () {
-        var puts = [map.put(1, 1), map.put(1, 3), map.put(1, 5)];
+    it('removes all values from key', function () {
+        const puts = [map.put(1, 1), map.put(1, 3), map.put(1, 5)];
         return Promise.all(puts).then(function () {
             return map.removeAll(1);
         }).then(function (oldValues) {
@@ -130,8 +129,8 @@ describe("MultiMap Proxy", function () {
         });
     });
 
-    it("returns a key set", function () {
-        var puts = [map.put(1, 1), map.put(2, 3), map.put(3, 5)];
+    it('returns a key set', function () {
+        const puts = [map.put(1, 1), map.put(2, 3), map.put(3, 5)];
         return Promise.all(puts).then(function () {
             return map.keySet();
         }).then(function (keySet) {
@@ -139,8 +138,8 @@ describe("MultiMap Proxy", function () {
         });
     });
 
-    it("returns all values", function () {
-        var puts = [map.put(1, 1), map.put(2, 3), map.put(3, 5)];
+    it('returns all values', function () {
+        const puts = [map.put(1, 1), map.put(2, 3), map.put(3, 5)];
         return Promise.all(puts).then(function () {
             return map.values();
         }).then(function (values) {
@@ -148,29 +147,26 @@ describe("MultiMap Proxy", function () {
         });
     });
 
-    it("returns entry set", function () {
-        var puts = [map.put(1, 1), map.put(2, 3), map.put(3, 5)];
+    it('returns entry set', function () {
+        const puts = [map.put(1, 1), map.put(2, 3), map.put(3, 5)];
         return Promise.all(puts).then(function () {
             return map.entrySet();
         }).then(function (entrySet) {
-            var initialValue = {};
-
-            var entries = entrySet.reduce(function (obj, tuple) {
+            const initialValue = {};
+            const entries = entrySet.reduce(function (obj, tuple) {
                 obj[tuple[0]] = tuple[1];
                 return obj;
             }, initialValue);
-
-            var expected = {
+            const expected = {
                 1: 1,
                 2: 3,
                 3: 5
             };
-
             expect(entries).to.deep.equal(expected);
         });
     });
 
-    it("contains a key", function () {
+    it('contains a key', function () {
         return map.put(1, 1).then(function () {
             return map.containsKey(1);
         }).then(function (contains) {
@@ -178,7 +174,7 @@ describe("MultiMap Proxy", function () {
         });
     });
 
-    it("does not contain a key", function () {
+    it('does not contain a key', function () {
         return map.put(1, 1).then(function () {
             return map.containsKey(4);
         }).then(function (contains) {
@@ -186,8 +182,8 @@ describe("MultiMap Proxy", function () {
         });
     });
 
-    it("contains a value", function () {
-        var puts = [map.put(1, 2), map.put(1, 3), map.put(3, 5)];
+    it('contains a value', function () {
+        const puts = [map.put(1, 2), map.put(1, 3), map.put(3, 5)];
         return Promise.all(puts).then(function () {
             return map.containsValue(3);
         }).then(function (contains) {
@@ -195,8 +191,8 @@ describe("MultiMap Proxy", function () {
         });
     });
 
-    it("contains an entry", function () {
-        var puts = [map.put(1, 2), map.put(1, 3), map.put(3, 5)];
+    it('contains an entry', function () {
+        const puts = [map.put(1, 2), map.put(1, 3), map.put(3, 5)];
         return Promise.all(puts).then(function () {
             return map.containsEntry(1, 3);
         }).then(function (contains) {
@@ -204,8 +200,8 @@ describe("MultiMap Proxy", function () {
         });
     });
 
-    it("does not contain an entry", function () {
-        var puts = [map.put(1, 2), map.put(1, 3), map.put(3, 5)];
+    it('does not contain an entry', function () {
+        const puts = [map.put(1, 2), map.put(1, 3), map.put(3, 5)];
         return Promise.all(puts).then(function () {
             return map.containsEntry(1, 5);
         }).then(function (contains) {
@@ -213,8 +209,8 @@ describe("MultiMap Proxy", function () {
         });
     });
 
-    it("returns correct size", function () {
-        var puts = [map.put(1, 1), map.put(1, 3), map.put(3, 5)];
+    it('returns correct size', function () {
+        const puts = [map.put(1, 1), map.put(1, 3), map.put(3, 5)];
         return Promise.all(puts).then(function () {
             return map.size();
         }).then(function (size) {
@@ -222,8 +218,8 @@ describe("MultiMap Proxy", function () {
         });
     });
 
-    it("returns correct value count", function () {
-        var puts = [map.put(1, 1), map.put(1, 3), map.put(3, 5)];
+    it('returns correct value count', function () {
+        const puts = [map.put(1, 1), map.put(1, 3), map.put(3, 5)];
         return Promise.all(puts).then(function () {
             return map.valueCount(1);
         }).then(function (valueCount) {
@@ -231,8 +227,8 @@ describe("MultiMap Proxy", function () {
         });
     });
 
-    it("clears", function () {
-        var puts = [map.put(1, 1), map.put(1, 3), map.put(3, 5)];
+    it('clears', function () {
+        const puts = [map.put(1, 1), map.put(1, 3), map.put(3, 5)];
         return Promise.all(puts).then(function () {
             return map.clear();
         }).then(function () {

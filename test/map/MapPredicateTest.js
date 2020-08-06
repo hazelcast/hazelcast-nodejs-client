@@ -13,32 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require("chai").expect;
-var HazelcastClient = require("../..").Client;
-var Config = require('../..').Config;
-var Predicates = require("../..").Predicates;
-var assert = require('assert');
-var Promise = require("bluebird");
-var Controller = require('./../RC');
-var Util = require('./../Util');
-var fs = require('fs');
+const expect = require('chai').expect;
+const assert = require('assert');
+const Promise = require('bluebird');
+const fs = require('fs');
 
-var IdentifiedFactory = require('../javaclasses/IdentifiedFactory');
-var CustomComparator = require('../javaclasses/CustomComparator');
+const RC = require('./../RC');
+const HazelcastClient = require('../..').Client;
+const Predicates = require('../..').Predicates;
+const IdentifiedFactory = require('../javaclasses/IdentifiedFactory');
+const CustomComparator = require('../javaclasses/CustomComparator');
 
-describe("Predicates", function () {
+describe('MapPredicateTest', function () {
 
-    var cluster;
-    var client;
-    var map;
-
-    function _createConfig(clusterName) {
-        var cfg = new Config.ClientConfig();
-        cfg.clusterName = clusterName;
-        cfg.serializationConfig.dataSerializableFactories[66] = new IdentifiedFactory();
-        return cfg;
-    }
+    let cluster;
+    let client;
+    let map;
 
     function createReverseValueComparator() {
         return new CustomComparator(1, Predicates.IterationType.ENTRY);
@@ -46,20 +38,30 @@ describe("Predicates", function () {
 
     before(function () {
         this.timeout(32000);
-        return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_identifiedfactory.xml', 'utf8')).then(function (res) {
-            cluster = res;
-            return Controller.startMember(cluster.id);
-        }).then(function (member) {
-            return HazelcastClient.newHazelcastClient(_createConfig(cluster.id)).then(function (hazelcastClient) {
+        return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_identifiedfactory.xml', 'utf8'))
+            .then(function (res) {
+                cluster = res;
+                return RC.startMember(cluster.id);
+            })
+            .then(function (member) {
+                return HazelcastClient.newHazelcastClient({
+                    clusterName: cluster.id,
+                    serialization: {
+                        dataSerializableFactories: {
+                            66: new IdentifiedFactory()
+                        }
+                    }
+                })
+            })
+            .then(function (hazelcastClient) {
                 client = hazelcastClient;
             });
-        });
     });
 
     beforeEach(function () {
         return client.getMap('test').then(function (mp) {
             map = mp;
-            return _fillMap();
+            return fillMap();
         });
     });
 
@@ -69,15 +71,15 @@ describe("Predicates", function () {
 
     after(function () {
         client.shutdown();
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
-    function _fillMap(size) {
-        if (size == void 0) {
+    function fillMap(size) {
+        if (size === undefined) {
             size = 50;
         }
-        var promises = [];
-        for (var i = 0; i < size; i++) {
+        const promises = [];
+        for (let i = 0; i < size; i++) {
             promises.push(map.put('key' + i, i));
         }
         return Promise.all(promises);
@@ -118,6 +120,7 @@ describe("Predicates", function () {
     });
 
     it('Like', function () {
+        let localMap;
         return client.getMap('likePredMap').then(function (mp) {
             localMap = mp;
             return localMap.put('temp', 'tempval');
@@ -131,7 +134,7 @@ describe("Predicates", function () {
     });
 
     it('ILike', function () {
-        var localMap;
+        let localMap;
         return client.getMap('likePredMap').then(function (mp) {
             localMap = mp;
             return localMap.putAll([['temp', 'tempval'], ['TEMP', 'TEMPVAL']]);
@@ -149,12 +152,12 @@ describe("Predicates", function () {
     });
 
     it('InstanceOf', function () {
-        var assertionList = Array.apply(null, {length: 50}).map(Number.call, Number);
+        const assertionList = Array.apply(null, {length: 50}).map(Number.call, Number);
         return testPredicate(Predicates.instanceOf('java.lang.Double'), assertionList);
     });
 
     it('NotEqual', function () {
-        var assertionList = Array.apply(null, {length: 49}).map(Number.call, Number);
+        const assertionList = Array.apply(null, {length: 49}).map(Number.call, Number);
         return testPredicate(Predicates.notEqual('this', 49), assertionList);
     });
 
@@ -163,7 +166,10 @@ describe("Predicates", function () {
     });
 
     it('Or', function () {
-        return testPredicate(Predicates.or(Predicates.greaterEqual('this', 49), Predicates.lessEqual('this', 0)), [0, 49]);
+        return testPredicate(
+            Predicates.or(Predicates.greaterEqual('this', 49), Predicates.lessEqual('this', 0)),
+            [0, 49]
+        );
     });
 
     it('Between', function () {
@@ -175,6 +181,7 @@ describe("Predicates", function () {
     });
 
     it('Regex', function () {
+        let localMap;
         return client.getMap('regexMap').then(function (mp) {
             localMap = mp;
             return localMap.putAll([['06', 'ankara'], ['07', 'antalya']])
@@ -192,47 +199,47 @@ describe("Predicates", function () {
     });
 
     it('True', function () {
-        var assertionList = Array.apply(null, {length: 50}).map(Number.call, Number);
+        const assertionList = Array.apply(null, {length: 50}).map(Number.call, Number);
         return testPredicate(Predicates.alwaysTrue(), assertionList);
     });
 
     it('Paging with reverse comparator should have elements in reverse order', function () {
-        var paging = Predicates.paging(Predicates.lessThan('this', 10), 3, createReverseValueComparator());
+        const paging = Predicates.paging(Predicates.lessThan('this', 10), 3, createReverseValueComparator());
         return testPredicate(paging, [9, 8, 7], true);
     });
 
     it('Paging first page should have first two items', function () {
-        var paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
+        const paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
         return testPredicate(paging, [40, 41]);
     });
 
     it('Paging nextPage should have 3rd and 4th items', function () {
-        var paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
+        const paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
         paging.nextPage();
 
         return testPredicate(paging, [42, 43]);
     });
 
     it('Paging fourth page should have 7th and 8th items', function () {
-        var paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
+        const paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
         paging.setPage(4);
 
         return testPredicate(paging, [48, 49]);
     });
 
     it('Paging #getPage should return approprate value', function () {
-        var paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
+        const paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
         paging.setPage(4);
         return expect(paging.getPage()).to.equal(4);
     });
 
     it('Paging #getPageSize should return 2', function () {
-        var paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
+        const paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
         return expect(paging.getPageSize()).to.equal(2);
     });
 
     it('Paging previousPage', function () {
-        var paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
+        const paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
         paging.setPage(4);
         paging.previousPage();
 
@@ -240,7 +247,7 @@ describe("Predicates", function () {
     });
 
     it('Get 4th page, then previous page', function () {
-        var paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
+        const paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
         paging.setPage(4);
         return map.valuesWithPredicate(paging).then(function () {
             paging.previousPage();
@@ -249,7 +256,7 @@ describe("Predicates", function () {
     });
 
     it('Get 3rd page, then next page', function () {
-        var paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
+        const paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
         paging.setPage(3);
         return map.valuesWithPredicate(paging).then(function () {
             paging.nextPage();
@@ -258,26 +265,26 @@ describe("Predicates", function () {
     });
 
     it('Get 10th page (which does not exist) should return empty list', function () {
-        var paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
+        const paging = Predicates.paging(Predicates.greaterEqual('this', 40), 2);
         paging.setPage(10);
 
         return testPredicate(paging, []);
     });
 
     it('Last page has only one element although page size is 2', function () {
-        var paging = Predicates.paging(Predicates.greaterEqual('this', 41), 2);
+        const paging = Predicates.paging(Predicates.greaterEqual('this', 41), 2);
         paging.setPage(4);
 
         return testPredicate(paging, [49]);
     });
 
     it('There is no element satisfying paging predicate returns empty array', function () {
-        var paging = Predicates.paging(Predicates.lessThan('this', 0), 2);
+        const paging = Predicates.paging(Predicates.lessThan('this', 0), 2);
         return testPredicate(paging, []);
     });
 
     it('Null inner predicate in PagingPredicate does not filter out items, only does paging', function () {
-        var paging = Predicates.paging(null, 2);
+        const paging = Predicates.paging(null, 2);
         return testPredicate(paging, [0, 1]);
     });
 });

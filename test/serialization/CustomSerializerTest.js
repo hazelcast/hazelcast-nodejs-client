@@ -13,42 +13,50 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Config = require('../../.').Config;
-var SerializationService = require('../../lib/serialization/SerializationService');
-var expect = require('chai').expect;
-describe('Custom Serializer', function () {
-    var service;
+const expect = require('chai').expect;
+const SerializationServiceV1 = require('../../lib/serialization/SerializationService').SerializationServiceV1;
+const SerializationConfigImpl = require('../../lib/config/SerializationConfig').SerializationConfigImpl;
 
-    function CustomObject(surname) {
-        this.surname = surname;
+describe('CustomSerializerTest', function () {
+
+    let service;
+
+    class CustomObject {
+        constructor(surname) {
+            this.surname = surname;
+        }
+
+        hzGetCustomId() {
+            return 10;
+        }
     }
 
-    CustomObject.prototype.hzGetCustomId = function () {
-        return 10;
-    };
     before(function () {
-        var cfg = new Config.ClientConfig();
-        cfg.serializationConfig.customSerializers.push({
-            getId: function () {
-                return 10;
-            },
-            write: function (out, emp) {
-                out.writeUTF(emp.surname);
-            },
-            read: function (inp) {
-                var obj = new CustomObject();
-                obj.surname = inp.readUTF();
-                return obj;
+        const cfg = new SerializationConfigImpl();
+        cfg.customSerializers = [
+            {
+                getId: function () {
+                    return 10;
+                },
+                write: function (out, emp) {
+                    out.writeUTF(emp.surname);
+                },
+                read: function (inp) {
+                    const obj = new CustomObject();
+                    obj.surname = inp.readUTF();
+                    return obj;
+                }
             }
-        });
-        service = new SerializationService.SerializationServiceV1(undefined, cfg.serializationConfig);
+        ];
+        service = new SerializationServiceV1(cfg);
     });
 
     it('write-read', function () {
-        var emp = new CustomObject('iman');
-        var serialized = service.toData(emp);
-        var deserialized = service.toObject(serialized);
+        const emp = new CustomObject('iman');
+        const serialized = service.toData(emp);
+        const deserialized = service.toObject(serialized);
         return expect(deserialized).to.deep.equal(emp);
     });
 });

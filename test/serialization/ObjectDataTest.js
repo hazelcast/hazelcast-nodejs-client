@@ -13,16 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require('chai').expect;
-var Long = require('long');
-var ObjectData = require('../../lib/serialization/ObjectData');
-var ODInp = ObjectData.ObjectDataInput;
-var ODOut = ObjectData.ObjectDataOutput;
+const expect = require('chai').expect;
+const Long = require('long');
+
+const ObjectData = require('../../lib/serialization/ObjectData');
+const ODInp = ObjectData.ObjectDataInput;
+const ODOut = ObjectData.ObjectDataOutput;
 
 describe('ObjectData Test', function () {
 
-    var out = new ODOut(null, true);
+    const out = new ODOut(null, true);
     before(function () {
         out.write(15);
         out.write(Buffer.from(['t'.charCodeAt(0), 'e'.charCodeAt(0), 's'.charCodeAt(0), 't'.charCodeAt(0)]));
@@ -55,7 +57,7 @@ describe('ObjectData Test', function () {
     });
 
     it('read', function () {
-        var inp = new ODInp(out.toBuffer(), 0, null, true);
+        const inp = new ODInp(out.toBuffer(), 0, null, true);
         expect(inp.read()).to.equal(15);
         expect(inp.read()).to.equal('t'.charCodeAt(0));
         expect(inp.read()).to.equal('e'.charCodeAt(0));
@@ -65,7 +67,7 @@ describe('ObjectData Test', function () {
         expect(inp.readBooleanArray()).to.deep.equal([true, false, false, true, true]);
         expect(inp.readByte()).to.equal(255);
         expect(inp.readByteArray()).to.deep.equal([0, 1, 255]);
-        var readBytes = [];
+        const readBytes = [];
         readBytes.push(inp.readByte());
         readBytes.push(inp.readByte());
         readBytes.push(inp.readByte());
@@ -102,20 +104,20 @@ describe('ObjectData Test', function () {
     });
 
     it('read from pos', function () {
-        var inp = new ODInp(out.toBuffer(), 0, null, true);
+        const inp = new ODInp(out.toBuffer(), 0, null, true);
         inp.read();
         expect(inp.read(0)).to.equal(15);
     });
 
     it('position', function () {
-        var inp = new ODInp(out.toBuffer(), 0, null, true);
+        const inp = new ODInp(out.toBuffer(), 0, null, true);
         inp.read();
         inp.position(0);
         expect(inp.read()).to.equal(15);
     });
 
     it('non integer position does not affect', function () {
-        var inp = new ODInp(out.toBuffer(), 0, null, true);
+        const inp = new ODInp(out.toBuffer(), 0, null, true);
         inp.read();
         inp.position(0.5);
         expect(inp.read()).to.equal('t'.charCodeAt(0));

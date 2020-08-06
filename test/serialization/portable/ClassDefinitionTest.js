@@ -13,26 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require('chai').expect;
-var assert = require('chai').assert;
-var CD = require('../../../').ClassDefinition;
-var FD = require('../../../').FieldDefinition;
-var FT = require('../../../').FieldDefinition;
+const expect = require('chai').expect;
+const { ClassDefinition, FieldDefinition } = require('../../../');
 
 describe('ClassDefinitionTest', function () {
-    var a = new CD(1, 2, 3);
 
-    it('getFieldType():firstField should be type of FT.INT.', function () {
-        a.addFieldDefinition(new FD(0, 'firstField', FT.INT, 10, 10));
-        var type = a.getFieldType('firstField');
-        expect(type).equal(FT.INT);
+    const a = new ClassDefinition(1, 2, 3);
+
+    it('getFieldType():firstField should be type of FD.INT.', function () {
+        a.addFieldDefinition(new FieldDefinition(0, 'firstField', FieldDefinition.INT, 10, 10));
+        const type = a.getFieldType('firstField');
+        expect(type).equal(FieldDefinition.INT);
     });
 
-    it('getFieldType():secondField should be type of FT.STRING.', function () {
-        a.addFieldDefinition(new FD(1, 'secondField', FT.CHAR_ARRAY, 11, 11));
-        var type = a.getFieldType('secondField');
-        expect(type).equal(FT.CHAR_ARRAY);
+    it('getFieldType():secondField should be type of FD.STRING.', function () {
+        a.addFieldDefinition(new FieldDefinition(1, 'secondField', FieldDefinition.CHAR_ARRAY, 11, 11));
+        const type = a.getFieldType('secondField');
+        expect(type).equal(FieldDefinition.CHAR_ARRAY);
     });
 
     it('getFieldType():thirdField should be null because we will not add it. (It does not exist.)', function () {
@@ -41,12 +40,12 @@ describe('ClassDefinitionTest', function () {
 
 
     it('hasField():field was added so it should be return true.', function () {
-        a.addFieldDefinition(new FD(2, 'aField', FT.INT, 10, 10));
+        a.addFieldDefinition(new FieldDefinition(2, 'aField', FieldDefinition.INT, 10, 10));
         expect(a.hasField('aField')).to.be.true;
     });
 
     it('hasField():field was not added so it should be return false.', function () {
-        var res = a.hasField('anotherField');
+        const res = a.hasField('anotherField');
         expect(res).to.be.false;
     });
 
@@ -67,24 +66,23 @@ describe('ClassDefinitionTest', function () {
     });
 
     it('equals():When parameter passed is not a ClassDefinitionObject.', function () {
-        var a1 = new CD();
-        var b1 = new FD();
-        var res = a1.equals(b1);
+        const a1 = new ClassDefinition();
+        const b1 = new FieldDefinition();
+        const res = a1.equals(b1);
         expect(res).to.equal(false);
     });
 
     it('equals():When one of the fields (or more) is not matched with the parameter.', function () {
-        var a1 = new CD(1, 3, 4);
-        var b1 = new CD(1, 3, 6);
-        var res = a1.equals(b1);
+        const a1 = new ClassDefinition(1, 3, 4);
+        const b1 = new ClassDefinition(1, 3, 6);
+        const res = a1.equals(b1);
         expect(res).to.equal(false);
     });
 
     it('equals():When parameter is equal.', function () {
-        var a1 = new CD(1, 3, 6);
-        var b1 = new CD(1, 3, 6);
-        var res = a1.equals(b1);
+        const a1 = new ClassDefinition(1, 3, 6);
+        const b1 = new ClassDefinition(1, 3, 6);
+        const res = a1.equals(b1);
         expect(res).to.equal(true);
     });
-
 });

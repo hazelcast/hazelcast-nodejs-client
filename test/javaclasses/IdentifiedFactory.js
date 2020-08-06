@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var IdentifiedEntryProcessor = require('./IdentifiedEntryProcessor');
-var DistortInvalidationMetadataEntryProcessor = require('./DistortInvalidationMetadataEntryProcessor');
-var CustomComparator = require('./CustomComparator');
-var PrefixFilter = require('./PrefixFilter');
+const IdentifiedEntryProcessor = require('./IdentifiedEntryProcessor');
+const DistortInvalidationMetadataEntryProcessor = require('./DistortInvalidationMetadataEntryProcessor');
+const CustomComparator = require('./CustomComparator');
+const PrefixFilter = require('./PrefixFilter');
 
 function IdentifiedFactory() {
 }

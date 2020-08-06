@@ -13,51 +13,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
 /**
  * JSON serialization is not capable if handling circular references.
  * We will use Mousse serializer to serialize our self referring objects.
  */
-var mousse = require('mousse');
-var Client = require('hazelcast-client').Client;
-var Config = require('hazelcast-client').Config;
-var cfg = new Config.ClientConfig();
-cfg.serializationConfig.globalSerializer = {
-    mousseSerialize: mousse.serialize,
-    mousseDeserialize: mousse.deserialize,
-    getId: function () {
-        return 10;
-    },
-    write: function (out, obj) {
-        out.writeUTF(this.mousseSerialize(obj))
-    },
-    read: function (inp) {
-        var representation = inp.readUTF();
-        return this.mousseDeserialize(representation).then(function (obj) {
-            return obj;
-        });
-    }
-};
+const mousse = require('mousse');
+const { Client } = require('hazelcast-client');
 
-var selfReferringObject = {
+const selfReferringObject = {
     value: 10
 };
 selfReferringObject.self = selfReferringObject;
 
-Client.newHazelcastClient(cfg).then(function (client) {
-    var map;
-    client.getMap('objects').then(function (mp) {
-        map = mp;
-        return map.put(1, selfReferringObject);
-    }).then(function () {
-        return map.get(1);
-    }).then(function (obj) {
+(async () => {
+    try {
+        const client = await Client.newHazelcastClient({
+            serialization: {
+                globalSerializer: {
+                    mousseSerialize: mousse.serialize,
+                    mousseDeserialize: mousse.deserialize,
+                    getId: function () {
+                        return 10;
+                    },
+                    write: function (output, obj) {
+                        output.writeUTF(this.mousseSerialize(obj))
+                    },
+                    read: function (input) {
+                        const representation = input.readUTF();
+                        return this.mousseDeserialize(representation).then(function (obj) {
+                            return obj;
+                        });
+                    }
+                }
+            }
+        });
+
+        const map = await client.getMap('objects');
+        await map.put(1, selfReferringObject);
+
+        const obj = await map.get(1);
         console.log(obj);
         console.log(obj.self);
         console.log(obj.self.self);
+
         client.shutdown();
-    })
-});
-
-
-
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

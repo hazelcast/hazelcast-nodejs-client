@@ -13,13 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-export interface ImportConfig {
-    path: string;
-    exportedName: string;
-}
+const expect = require('chai').expect;
+const path = require('path');
+const Util = require('../../lib/Util');
 
-export interface ListenerImportConfig {
-    importConfig: ImportConfig;
-    type: string;
-}
+describe('ResolvePath Test', function () {
+    it('Util.resolvePath test', function () {
+        expect(Util.resolvePath('.')).to.equal(process.cwd());
+        expect(Util.resolvePath('filename')).to.equal(path.join(process.cwd(), 'filename'));
+        expect(Util.resolvePath('..')).to.equal(path.join(process.cwd(), '..'));
+    })
+});

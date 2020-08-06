@@ -13,14 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require('chai').expect;
-var SerializationService = require('../../lib/serialization/SerializationService');
-var Config = require('../../.').Config;
-var Long = require('long');
-var Util = require('../Util');
-describe('Identified Data Serializable', function () {
-    var IdentifiedDataClass = function (a_byte, a_boolean, a_character, a_short, an_integer, a_long, a_float, a_double, a_string, bytes, booleans, chars, shorts, integers, longs, floats, doubles, strings) {
+const Long = require('long');
+const { SerializationConfigImpl } = require('../../lib/config/SerializationConfig');
+const { SerializationServiceV1 } = require('../../lib/serialization/SerializationService');
+const Util = require('../Util');
+
+describe('IdentifiedDataSerializableTest', function () {
+    const IdentifiedDataClass = function (a_byte, a_boolean, a_character, a_short, an_integer,
+                                          a_long, a_float, a_double, a_string, bytes, booleans,
+                                          chars, shorts, integers, longs, floats, doubles, strings) {
         this.a_byte = a_byte;
         this.a_boolean = a_boolean;
         this.a_character = a_character;
@@ -93,7 +96,7 @@ describe('Identified Data Serializable', function () {
         return 1;
     };
 
-    var identifiedFactory = {
+    const identifiedFactory = {
         create: function (type) {
             if (type === 1) {
                 return new IdentifiedDataClass();
@@ -101,18 +104,22 @@ describe('Identified Data Serializable', function () {
         }
     };
 
-    var service;
+    let service;
 
     it('serialize deserialize identified data serializable', function () {
-        var cfg = new Config.ClientConfig();
-        cfg.serializationConfig.dataSerializableFactories[1] = identifiedFactory;
-        service = new SerializationService.SerializationServiceV1(undefined, cfg.serializationConfig);
-        var dd = new IdentifiedDataClass(99, true, 'a', 23, 54375456, Long.fromBits(243534, 43543654), 24.1, 32435.6533,
-            'hazelcast', [99, 100, 101], [true, false, false, true], ['a', 'b', 'v'], [12, 545, 23, 6], [325, 6547656, 345],
-            [Long.fromNumber(342534654), Long.fromNumber(-3215243654), Long.fromNumber(123123)], [233.2, 65.88, 657.345],
-            [43645.325, 887.56756], ['hazelcast', 'ankara', 'istanbul', 'london', 'palo alto']);
-        var serialized = service.toData(dd);
-        var deserialized = service.toObject(serialized);
+        const cfg = new SerializationConfigImpl();
+        cfg.dataSerializableFactories[1] = identifiedFactory;
+        service = new SerializationServiceV1(cfg);
+        const dd = new IdentifiedDataClass(
+            99, true, 'a', 23, 54375456, Long.fromBits(243534, 43543654), 24.1, 32435.6533,
+            'hazelcast', [99, 100, 101], [true, false, false, true],
+            ['a', 'b', 'v'], [12, 545, 23, 6], [325, 6547656, 345],
+            [Long.fromNumber(342534654), Long.fromNumber(-3215243654), Long.fromNumber(123123)],
+            [233.2, 65.88, 657.345], [43645.325, 887.56756],
+            ['hazelcast', 'ankara', 'istanbul', 'london', 'palo alto']
+        );
+        const serialized = service.toData(dd);
+        const deserialized = service.toObject(serialized);
 
         Util.expectAlmostEqual(deserialized, dd);
     });

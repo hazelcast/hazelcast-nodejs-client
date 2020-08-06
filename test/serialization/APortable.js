@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-function APortable(bool, b, c, d, s, f, i, l, str, p, booleans, bytes, chars, doubles, shorts, floats, ints, longs, strings,
-                   portables, identifiedDataSerializable, customStreamSerializableObject, customByteArraySerializableObject, data) {
+function APortable(bool, b, c, d, s, f, i, l, str, p, booleans, bytes, chars,
+                   doubles, shorts, floats, ints, longs, strings, portables,
+                   identifiedDataSerializable, customStreamSerializableObject,
+                   customByteArraySerializableObject, data) {
     if (arguments.length === 0) return;
     this.bool = bool;
     this.b = b;
@@ -44,11 +46,9 @@ function APortable(bool, b, c, d, s, f, i, l, str, p, booleans, bytes, chars, do
     this.bytesOffset = bytes.slice(1, 3);
     this.strChars = str.split('');
     this.strBytes = Buffer.alloc(this.str.length);
-    for (var i = 0; i < str.length; i++) {
+    for (let i = 0; i < str.length; i++) {
         this.strBytes[i] = this.strChars[i].charCodeAt(0);
     }
-    unsignedByte = 137;
-    unsignedShort = 32867;
 
     this.identifiedDataSerializableObject = identifiedDataSerializable;
     this.portableObject = p;
@@ -99,7 +99,7 @@ APortable.prototype.readPortable = function (reader) {
     this.longsNull = reader.readLongArray("lsNull");
     this.stringsNull = reader.readUTFArray("strsNull");
 
-    var dataInput = reader.getRawDataInput();
+    const dataInput = reader.getRawDataInput();
 
     this.bool = dataInput.readBoolean();
     this.b = dataInput.readByte();
@@ -136,9 +136,9 @@ APortable.prototype.readPortable = function (reader) {
     dataInput.readCopy(this.bytesFully, this.byteSize);
     this.bytesOffset = Buffer.alloc(2);
     dataInput.readCopy(this.bytesOffset, 2);
-    var strSize = dataInput.readInt();
+    const strSize = dataInput.readInt();
     this.strChars = Buffer.alloc(strSize);
-    for (var j = 0; j < strSize; j++) {
+    for (let j = 0; j < strSize; j++) {
         this.strChars[j] = dataInput.readChar();
     }
     this.strBytes = Buffer.alloc(strSize);
@@ -154,7 +154,8 @@ APortable.prototype.readPortable = function (reader) {
     this.data = dataInput.readData();
 };
 
-APortable.prototype.writeData = function () {
-    //TODO
+APortable.prototype.writeData = function (writer) {
+    // no-op
 };
+
 module.exports = APortable;

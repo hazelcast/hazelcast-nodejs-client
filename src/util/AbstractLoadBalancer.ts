@@ -17,7 +17,7 @@
 import {LoadBalancer} from '../LoadBalancer';
 import {InitialMembershipListener} from '../core/InitialMembershipListener';
 import {Cluster} from '../core/Cluster';
-import {ClientConfig} from '../config/Config';
+import {ClientConfigImpl} from '../config/Config';
 import {InitialMembershipEvent} from '../core/InitialMembershipEvent';
 import {MembershipEvent} from '../core/MembershipEvent';
 import {Member} from '../core/Member';
@@ -28,7 +28,7 @@ export abstract class AbstractLoadBalancer implements LoadBalancer, InitialMembe
 
     public abstract next(): Member;
 
-    public initLoadBalancer(cluster: Cluster, config: ClientConfig): void {
+    public initLoadBalancer(cluster: Cluster, config: ClientConfigImpl): void {
         this.cluster = cluster;
         cluster.addMembershipListener(this);
     }

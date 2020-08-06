@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Controller = require('./RC');
-var expect = require('chai').expect;
-var HazelcastClient = require('../.').Client;
-var Config = require('../.').Config;
-var Util = require('./Util');
+const Controller = require('./RC');
+const expect = require('chai').expect;
+const HazelcastClient = require('../.').Client;
+const Util = require('./Util');
 
 describe('Lost connection', function () {
-    var cluster;
-    var oldMember;
-    var client;
+
+    let cluster, oldMember, client;
+
     before(function () {
         return Controller.createCluster(null, null).then(function (res) {
             cluster = res;
@@ -32,11 +32,13 @@ describe('Lost connection', function () {
         }).then(function (m) {
             oldMember = m;
         }).then(function () {
-            var cfg = new Config.ClientConfig();
-            cfg.clusterName = cluster.id;
-            cfg.properties['hazelcast.client.heartbeat.interval'] = 500;
-            cfg.properties['hazelcast.client.heartbeat.timeout'] = 2000;
-            return HazelcastClient.newHazelcastClient(cfg);
+            return HazelcastClient.newHazelcastClient({
+                clusterName: cluster.id,
+                properties: {
+                    'hazelcast.client.heartbeat.interval': 500,
+                    'hazelcast.client.heartbeat.timeout': 2000
+                }
+            });
         }).then(function (cl) {
             client = cl;
         });
@@ -49,9 +51,9 @@ describe('Lost connection', function () {
 
     it('M2 starts, M1 goes down, client connects to M2', function (done) {
         this.timeout(32000);
-        var newMember;
-        var membershipListener = {
-            memberAdded: function (membershipEvent) {
+        let newMember;
+        const membershipListener = {
+            memberAdded: (membershipEvent) => {
                 Controller.shutdownMember(cluster.id, oldMember.uuid).then(function () {
                     return Util.promiseWaitMilliseconds(4000);
                 }).then(function () {

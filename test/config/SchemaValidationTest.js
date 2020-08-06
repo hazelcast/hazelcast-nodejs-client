@@ -13,33 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require('chai').expect;
-var validate = require('jsonschema').validate;
-var fs = require('fs');
-var path = require('path');
+const expect = require('chai').expect;
+const validate = require('jsonschema').validate;
+const fs = require('fs');
+const path = require('path');
 
 describe('SchemaValidationTest', function () {
 
-    var schema;
+    let schema;
 
     before(function () {
         schema = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../config-schema.json'), 'utf8'));
     });
 
     function validateCandidate(candidate) {
-        var candidateJson = JSON.parse(candidate);
+        const candidateJson = JSON.parse(candidate);
         return validate(candidateJson, schema, {nestedErrors: true});
     }
 
     it('hazelcast-client-full.json passes validation', function () {
-        var fulljson = fs.readFileSync(path.resolve(__dirname, 'configurations/full.json'), 'utf8');
+        const fulljson = fs.readFileSync(path.resolve(__dirname, 'configurations/full.json'), 'utf8');
         expect(validateCandidate(fulljson).valid).to.be.true;
     });
 
     it('invalid configuration is caught by the validator', function () {
-        var invalidJson = fs.readFileSync(path.resolve(__dirname, 'configurations/invalid.json'), 'utf8');
+        const invalidJson = fs.readFileSync(path.resolve(__dirname, 'configurations/invalid.json'), 'utf8');
         expect(validateCandidate(invalidJson).errors[0]).to.exist.with.property('message', 'must have a minimum value of 1000');
     });
 });
-

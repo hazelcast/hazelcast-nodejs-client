@@ -13,60 +13,63 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require('chai').expect;
-var fs = require('fs');
+const expect = require('chai').expect;
+const fs = require('fs');
 
-var DeferredPromise = require('../../lib/Util').DeferredPromise;
-var getRandomInt = require('../Util').getRandomInt;
-var Controller = require('../RC');
-
-var Config = require('../../.').Config;
-var HazelcastClient = require('../../.').Client;
+const DeferredPromise = require('../../lib/Util').DeferredPromise;
+const getRandomInt = require('../Util').getRandomInt;
+const RC = require('../RC');
+const HazelcastClient = require('../../.').Client;
 
 describe('NearCachedMapStress', function () {
 
-    var cluster;
-    var client1;
-    var validatingClient;
-    var numberOfEntries = 1000;
-    var mapName = 'stressncmap';
-    var runningOperations = 0;
-    var completedOperations = 0;
-    var concurrencyLevel = 32;
-    var totalNumOperations = 100000;
-    var completedDeferred = DeferredPromise();
-    var putPercent = 15;
-    var removePercent = 20;
-    var getPercent = 100 - putPercent - removePercent;
-    var totalGetOperations = 0;
+    let cluster, client1;
+    let validatingClient;
+    let runningOperations = 0;
+    let completedOperations = 0;
+    let totalGetOperations = 0;
+    const numberOfEntries = 1000;
+    const mapName = 'stressncmap';
+    const concurrencyLevel = 32;
+    const totalNumOperations = 100000;
+    const completedDeferred = DeferredPromise();
+    const putPercent = 15;
+    const removePercent = 20;
+    const getPercent = 100 - putPercent - removePercent;
 
     before(function () {
-        var cfg = new Config.ClientConfig();
-        var ncc = new Config.NearCacheConfig();
-        ncc.name = mapName;
-        ncc.invalidateOnChange = true;
-        cfg.nearCacheConfigs[mapName] = ncc;
-        return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_nearcache_batchinvalidation_false.xml', 'utf8')).then(function (res) {
-            cluster = res;
-            return Controller.startMember(cluster.id);
-        }).then(function (member) {
-            cfg.clusterName = cluster.id;
-            return HazelcastClient.newHazelcastClient(cfg);
-        }).then(function (cl) {
-            const config = new Config.ClientConfig();
-            config.clusterName = cluster.id;
-            client1 = cl;
-            return HazelcastClient.newHazelcastClient(config);
-        }).then(function (cl) {
-            validatingClient = cl;
-        });
+        const cfg = {
+            nearCaches: {
+                [mapName]: {
+                    invalidateOnChange: true
+                }
+            }
+        };
+
+        return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_nearcache_batchinvalidation_false.xml', 'utf8'))
+            .then(function (res) {
+                cluster = res;
+                return RC.startMember(cluster.id);
+            })
+            .then(function (member) {
+                cfg.clusterName = cluster.id;
+                return HazelcastClient.newHazelcastClient(cfg);
+            })
+            .then(function (cl) {
+                client1 = cl;
+                return HazelcastClient.newHazelcastClient({ clusterName: cluster.id });
+            })
+            .then(function (cl) {
+                validatingClient = cl;
+            });
     });
 
     after(function () {
         client1.shutdown();
         validatingClient.shutdown();
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     function completeOperation() {
@@ -79,7 +82,7 @@ describe('NearCachedMapStress', function () {
 
     it('stress test with put, get and remove', function (done) {
         this.timeout(120000);
-        var map;
+        let map;
         client1.getMap(mapName).then(function (mp) {
             map = mp;
             (function innerOperation() {
@@ -90,7 +93,7 @@ describe('NearCachedMapStress', function () {
                     setTimeout(innerOperation, 1);
                 } else {
                     runningOperations++;
-                    var op = getRandomInt(0, 100);
+                    const op = getRandomInt(0, 100);
                     if (op < putPercent) {
                         map.put(getRandomInt(0, numberOfEntries), getRandomInt(0, 10000)).then(completeOperation);
                     } else if (op < putPercent + removePercent) {
@@ -104,14 +107,13 @@ describe('NearCachedMapStress', function () {
             })();
         });
 
-
         completedDeferred.promise.then(function () {
-            var p = [];
-            //Value correctness check
-            for (var i = 0; i < numberOfEntries; i++) {
+            const p = [];
+            // Value correctness check
+            for (let i = 0; i < numberOfEntries; i++) {
                 (function () {
-                    var key = i;
-                    var promise = validatingClient.getMap(mapName).then(function (mp) {
+                    const key = i;
+                    const promise = validatingClient.getMap(mapName).then(function (mp) {
                         return mp.get(key);
                     }).then(function (expected) {
                         return client1.getMap(mapName).then(function (mp) {
@@ -123,9 +125,9 @@ describe('NearCachedMapStress', function () {
                     p.push(promise);
                 })();
             }
-            //Near cache usage check
+            // Near cache usage check
             Promise.all(p).then(function () {
-                var stats;
+                let stats;
                 client1.getMap(mapName).then(function (mp) {
                     stats = mp.nearCache.getStatistics();
                     expect(stats.hitCount + stats.missCount).to.equal(totalGetOperations + numberOfEntries);

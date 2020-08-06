@@ -13,31 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
+const { Client } = require('hazelcast-client');
 
-Client.newHazelcastClient().then(function (hazelcastClient) {
-    var client = hazelcastClient;
-    var list;
-    hazelcastClient.getList('people').then(function (l) {
-        list = l;
-        return list.add('John');
-    }).then(function (value) {
-        console.log('Added John.');
-        return list.add('Jane', 1);
-    }).then(function () {
-        console.log('Added Jane to index 1.');
-        return list.add('Thomas');
-    }).then(function () {
-        console.log('Added Thomas.');
-        return list.remove('Jane');
-    }).then(function (value) {
-        console.log('Removed Jane.');
-        return list.removeAt(1);
-    }).then(function (value) {
-        console.log('Removed ' + value);
-        return client.shutdown();
-    });
-});
+(async () => {
+    try {
+        const client = await Client.newHazelcastClient();
 
+        const list = await client.getList('people');
+        await list.add('John');
+        console.log('Added John');
+        await list.add('Jane', 1);
+        console.log('Added Jane to index 1');
+        await list.add('Thomas');
+        console.log('Added Thomas');
+        await list.remove('Jane');
+        console.log('Removed Jane');
+        const removedItem = await list.removeAt(1);
+        console.log('Removed', removedItem);
 
+        client.shutdown();
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

@@ -13,46 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
-var ClientConfig = require('hazelcast-client').Config.ClientConfig;
-var fs = require('fs');
-var Path = require('path');
+const { Client } = require('hazelcast-client');
+const path = require('path');
 
-// TODO test this sample with the Hazelcast Cloud
-function createClientConfigWithSSLOpts(key, cert, ca) {
-    var sslOpts = {
-        servername: 'Hazelcast-Inc',
-        rejectUnauthorized: true,
-        ca: fs.readFileSync(Path.join(__dirname, ca)),
-        key: fs.readFileSync(Path.join(__dirname, key)),
-        cert: fs.readFileSync(Path.join(__dirname, cert))
-    };
-    var cfg = new ClientConfig();
-    cfg.networkConfig.sslConfig.sslOptions = sslOpts;
+(async () => {
+    try {
+        const cfg = {
+            clusterName: 'hazelcast',
+            network: {
+                hazelcastCloud: {
+                    discoveryToken: 'EXAMPLE_TOKEN'
+                },
+                ssl: {
+                    enabled: true,
+                    sslOptionsFactoryProperties: {
+                        servername: 'Hazelcast-Inc',
+                        rejectUnauthorized: true,
+                        caPath: path.resolve(__dirname, './ca.pem'),
+                        keyPath: path.resolve(__dirname, './key.pem'),
+                        certPath: path.resolve(__dirname, './cert.pem')
+                    }
+                }
+            }
+        };
+        const client = await Client.newHazelcastClient(cfg);
 
-    var token = 'EXAMPLE_TOKEN';
+        const map = await client.getMap('testMap');
+        await map.put('key', 'value');
+        const value = await map.get('key');
+        console.log(value);
 
-    cfg.networkConfig.cloudConfig.enabled = true;
-    cfg.networkConfig.cloudConfig.discoveryToken = token;
-    cfg.clusterName = 'hazelcast';
-    return cfg;
-}
-
-var cfg = createClientConfigWithSSLOpts('./key.pem', './cert.pem', './ca.pem');
-
-Client.newHazelcastClient(cfg).then(function (client) {
-    var map;
-    client.getMap("testMap").then(function (mp) {
-        map = mp;
-        return map.put('key', 'value');
-    }).then(function () {
-        return map.get('key');
-    }).then((res) => {
-        console.log(res);
         client.shutdown();
-    });
-});
-
-
-
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

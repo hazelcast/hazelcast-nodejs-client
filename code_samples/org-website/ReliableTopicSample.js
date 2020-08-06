@@ -13,23 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
-// Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-Client.newHazelcastClient().then(function (hz) {
-    var topic;
-    // Get a Topic called "my-distributed-topic"
-    hz.getReliableTopic('my-distributed-topic').then(function (t) {
-        topic = t;
+const { Client } = require('hazelcast-client');
+
+(async () => {
+    try {
+        // Start the Hazelcast Client and connect to an already running
+        // Hazelcast Cluster on 127.0.0.1
+        const hz = await Client.newHazelcastClient();
+        // Get a Topic called 'my-distributed-topic'
+        const topic = await hz.getReliableTopic('my-distributed-topic');
         // Add a Listener to the Topic
-        topic.addMessageListener(function (message) {
+        topic.addMessageListener((message) => {
             console.log(message);
         });
         // Publish a message to the Topic
-        return topic.publish('Hello to distributed world');
-    }).then(function () {
+        await topic.publish('Hello to distributed world');
         // Shutdown this Hazelcast Client
         hz.shutdown();
-    });
-
-});
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

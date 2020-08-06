@@ -7,8 +7,7 @@
                 "cert": "cert.pem",
                 "key": "key.pem",
                 "servername": "foo.bar.com"
-            },
-            "factory": null
+            }
         }
     }
 }

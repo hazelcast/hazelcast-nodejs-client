@@ -13,23 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
+const { Client } = require('hazelcast-client');
 
-Client.newHazelcastClient().then(function (hazelcastClient) {
-    var client = hazelcastClient;
-    var set;
-    hazelcastClient.getSet('my-distributed-set').then(function (s) {
-        set = s;
-        return set.add('key');
-    }).then(function () {
-        console.log('"key" is added to the set.');
-        return set.contains('key');
-    }).then(function (contains) {
-        console.log(contains);
-        return set.size();
-    }).then(function (val) {
-        console.log('Number of elements in the set: ' + val);
-        return client.shutdown();
-    });
-});
+(async () => {
+    try {
+        const client = await Client.newHazelcastClient();
+        const set = await client.getSet('my-distributed-set');
+
+        // Add the same item multiple times
+        await set.add('key');
+        await set.add('key');
+        await set.add('key');
+
+        console.log('Item \'key\' is added to the set.');
+        const contains = await set.contains('key');
+        console.log('Set contains item \'key\':', contains);
+        const size = await set.size();
+        console.log('Set size:', size);
+
+        client.shutdown();
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

@@ -13,22 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('../../.').Client;
-const Config = require('../../.').Config;
-var Controller = require('../RC');
-var expect = require('chai').expect;
-var Promise = require('bluebird');
+const Client = require('../../.').Client;
+const RC = require('../RC');
+const expect = require('chai').expect;
+const Promise = require('bluebird');
 
 describe('Map Partition Aware', function () {
 
-    var cluster;
-    var numOfEntries = 10000;
-    var memberCount = 3;
-    var members = [];
-    var client;
-    var map;
-    var mapName = 'testMap';
+    let cluster, client;
+    const numOfEntries = 10000;
+    const memberCount = 3;
+    let members = [];
+    const mapName = 'testMap';
+    let map;
 
     function PartitionAwareKey(key, partitionKey) {
         this.key = key;
@@ -47,9 +46,9 @@ describe('Map Partition Aware', function () {
             'result=""+getLocalMapStats();';
     }
 
-    function _fillMap(map, size) {
-        var entryList = [];
-        for (var i = 0; i < size; i++) {
+    function fillMap(map, size) {
+        const entryList = [];
+        for (let i = 0; i < size; i++) {
             entryList.push([new PartitionAwareKey('' + i, 'specificKey'), '' + Math.random()]);
         }
         return map.putAll(entryList);
@@ -58,17 +57,15 @@ describe('Map Partition Aware', function () {
     before(function () {
         expect(memberCount, 'This test should have at least 2 members.').to.be.at.least(2);
         this.timeout(30000);
-        return Controller.createCluster(null, null).then(function (c) {
+        return RC.createCluster(null, null).then(function (c) {
             cluster = c;
-            for (var i = 0; i < memberCount; i++) {
-                members.push(Controller.startMember(cluster.id));
+            for (let i = 0; i < memberCount; i++) {
+                members.push(RC.startMember(cluster.id));
             }
             return Promise.all(members);
         }).then(function (m) {
             members = m;
-            const cfg = new Config.ClientConfig();
-            cfg.clusterName = cluster.id;
-            return Client.newHazelcastClient(cfg);
+            return Client.newHazelcastClient({ clusterName: cluster.id });
         }).then(function (cl) {
             client = cl;
         });
@@ -77,7 +74,7 @@ describe('Map Partition Aware', function () {
     after(function () {
         this.timeout(30000);
         client.shutdown();
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     beforeEach(function () {
@@ -92,25 +89,26 @@ describe('Map Partition Aware', function () {
 
     it('put', function () {
         this.timeout(15000);
-        return _fillMap(map, numOfEntries).then(function (newVal) {
-            var promises = members.map(function (member, index) {
-                return Controller.executeOnController(cluster.id, getLocalMapStats(index), 1);
+        return fillMap(map, numOfEntries).then(function (newVal) {
+            const promises = members.map(function (member, index) {
+                return RC.executeOnController(cluster.id, getLocalMapStats(index), 1);
             });
             return Promise.all(promises);
         }).then(function (stats) {
-            var entriesPerMember = stats.map(function (item) {
+            const entriesPerMember = stats.map(function (item) {
                 return Number(item.result);
             });
-            var expectedArray = [numOfEntries];
-            for (var i = 0; i < memberCount - 1; i++) {
+            const expectedArray = [numOfEntries];
+            for (let i = 0; i < memberCount - 1; i++) {
                 expectedArray.push(0);
             }
-            return expect(entriesPerMember, 'One member should have all of the entries. The rest will have 0 entries.').to.have.members(expectedArray);
+            return expect(entriesPerMember, 'One member should have all of the entries. The rest will have 0 entries.')
+                .to.have.members(expectedArray);
         });
     });
 
     it('get', function () {
-        var key = new PartitionAwareKey('key', 'partKey');
+        const key = new PartitionAwareKey('key', 'partKey');
         return map.put(key, 'value').then(function () {
             return map.get(key);
         }).then(function (val) {

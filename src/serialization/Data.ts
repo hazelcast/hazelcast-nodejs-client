@@ -53,7 +53,7 @@ export interface Data {
     hasPartitionHash(): boolean;
 
     /**
-     * Returns hashcode for this data
+     * Returns hash code for this data
      */
     hashCode(): number;
 
@@ -66,7 +66,11 @@ export interface Data {
 
 }
 
+/**
+ * Defines interface for output data writer.
+ */
 export interface DataOutput {
+
     clear(): void;
 
     isBigEndian(): boolean;
@@ -124,9 +128,11 @@ export interface DataOutput {
     writeUTFArray(val: string[]): void;
 
     writeZeroBytes(count: number): void;
+
 }
 
 export interface PositionalDataOutput extends DataOutput {
+
     pwrite(position: number, byte: number | Buffer): void;
 
     pwriteBoolean(position: number, val: boolean): void;
@@ -146,9 +152,14 @@ export interface PositionalDataOutput extends DataOutput {
     pwriteLong(position: number, long: Long): void;
 
     pwriteShort(position: number, short: number): void;
+
 }
 
+/**
+ * Defines interface for input data reader.
+ */
 export interface DataInput {
+
     isBigEndian(): boolean;
 
     position(newPosition?: number): number;
@@ -202,4 +213,5 @@ export interface DataInput {
     reset(): void;
 
     skipBytes(count: number): void;
+
 }

@@ -13,18 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var RC = require('./RC');
-var HazelcastClient = require('../.').Client;
-var Config = require('../.').Config;
-var expect = require('chai').expect;
-var Util = require('./Util');
-
+const RC = require('./RC');
+const HazelcastClient = require('../.').Client;
+const expect = require('chai').expect;
+const Util = require('./Util');
 
 [true, false].forEach(function (isSmartService) {
     describe('ListenerService[smart=' + isSmartService + ']', function () {
-        var cluster;
-        var client;
+        let cluster, client;
 
         before(function () {
             return RC.createCluster(null, null).then(function (res) {
@@ -36,10 +34,12 @@ var Util = require('./Util');
         });
 
         beforeEach(function () {
-            var cfg = new Config.ClientConfig();
-            cfg.clusterName = cluster.id;
-            cfg.networkConfig.smartRouting = isSmartService;
-            return HazelcastClient.newHazelcastClient(cfg).then(function (c) {
+            return HazelcastClient.newHazelcastClient({
+                clusterName: cluster.id,
+                network: {
+                    smartRouting: isSmartService
+                }
+            }).then(function (c) {
                 client = c;
             });
         });
@@ -53,7 +53,7 @@ var Util = require('./Util');
         });
 
         it('listener is invoked when a new object is created', function (done) {
-            var listenerId;
+            let listenerId;
             client.addDistributedObjectListener(function (distributedObjectEvent) {
                 expect(distributedObjectEvent.objectName).to.eq('mapToListen');
                 expect(distributedObjectEvent.serviceName).to.eq('hz:impl:mapService');
@@ -68,8 +68,7 @@ var Util = require('./Util');
         });
 
         it('listener is invoked when an object is removed[smart=' + isSmartService + ']', function (done) {
-            var map;
-            var listenerId;
+            let map, listenerId;
             client.addDistributedObjectListener(function (distributedObjectEvent) {
                 if (distributedObjectEvent.eventType === 'destroyed' && distributedObjectEvent.objectName === 'mapToRemove') {
                     expect(distributedObjectEvent.objectName).to.eq('mapToRemove');
@@ -103,5 +102,4 @@ var Util = require('./Util');
             });
         });
     });
-
 });

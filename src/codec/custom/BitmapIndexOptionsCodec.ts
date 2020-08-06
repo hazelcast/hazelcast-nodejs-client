@@ -19,14 +19,14 @@ import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
 import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame, DEFAULT_FLAGS} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
-import {BitmapIndexOptions} from '../../config/BitmapIndexOptions';
+import {InternalBitmapIndexOptions} from '../../config/BitmapIndexOptions';
 import {StringCodec} from '../builtin/StringCodec';
 
 const UNIQUE_KEY_TRANSFORMATION_OFFSET = 0;
 const INITIAL_FRAME_SIZE = UNIQUE_KEY_TRANSFORMATION_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
 export class BitmapIndexOptionsCodec {
-    static encode(clientMessage: ClientMessage, bitmapIndexOptions: BitmapIndexOptions): void {
+    static encode(clientMessage: ClientMessage, bitmapIndexOptions: InternalBitmapIndexOptions): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());
 
         const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE, DEFAULT_FLAGS);
@@ -38,7 +38,7 @@ export class BitmapIndexOptionsCodec {
         clientMessage.addFrame(END_FRAME.copy());
     }
 
-    static decode(clientMessage: ClientMessage): BitmapIndexOptions {
+    static decode(clientMessage: ClientMessage): InternalBitmapIndexOptions {
         // begin frame
         clientMessage.nextFrame();
 
@@ -49,6 +49,6 @@ export class BitmapIndexOptionsCodec {
 
         CodecUtil.fastForwardToEndFrame(clientMessage);
 
-        return new BitmapIndexOptions(uniqueKey, uniqueKeyTransformation);
+        return new InternalBitmapIndexOptions(uniqueKey, uniqueKeyTransformation);
     }
 }

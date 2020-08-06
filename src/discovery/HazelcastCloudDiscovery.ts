@@ -37,11 +37,11 @@ export class HazelcastCloudDiscovery {
     private static readonly PUBLIC_ADDRESS_PROPERTY = 'public-address';
 
     private readonly endpointUrl: string;
-    private readonly connectionTimeoutInMillis: number;
+    private readonly connectionTimeoutMillis: number;
 
     constructor(endpointUrl: string, connectionTimeoutInMillis: number) {
         this.endpointUrl = endpointUrl;
-        this.connectionTimeoutInMillis = connectionTimeoutInMillis;
+        this.connectionTimeoutMillis = connectionTimeoutInMillis;
     }
 
     public static createUrlEndpoint(properties: Properties, cloudToken: string): string {
@@ -62,6 +62,7 @@ export class HazelcastCloudDiscovery {
         const endpointUrlOptions = {
             host: url.host,
             path: url.path,
+            timeout: this.connectionTimeoutMillis,
         };
 
         let dataAsAString = '';

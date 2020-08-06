@@ -15,34 +15,113 @@
  */
 
 import {TopicOverloadPolicy} from '../proxy/topic/TopicOverloadPolicy';
-import {ClientNetworkConfig} from './ClientNetworkConfig';
+import {ClientNetworkConfig, ClientNetworkConfigImpl} from './ClientNetworkConfig';
 import {ConfigPatternMatcher} from './ConfigPatternMatcher';
 import {EvictionPolicy} from './EvictionPolicy';
-import {FlakeIdGeneratorConfig} from './FlakeIdGeneratorConfig';
-import {ImportConfig, ListenerImportConfig} from './ImportConfig';
+import {FlakeIdGeneratorConfig, FlakeIdGeneratorConfigImpl} from './FlakeIdGeneratorConfig';
 import {InMemoryFormat} from './InMemoryFormat';
-import {ListenerConfig} from './ListenerConfig';
-import {NearCacheConfig} from './NearCacheConfig';
+import {MembershipListener} from '../core/MembershipListener';
+import {LifecycleState} from '../LifecycleService';
+import {NearCacheConfig, NearCacheConfigImpl} from './NearCacheConfig';
 import {SSLConfig} from './SSLConfig';
 import {Properties} from './Properties';
-import {ReliableTopicConfig} from './ReliableTopicConfig';
-import {SerializationConfig} from './SerializationConfig';
+import {ReliableTopicConfig, ReliableTopicConfigImpl} from './ReliableTopicConfig';
+import {SerializationConfig, SerializationConfigImpl} from './SerializationConfig';
 import {Statistics} from '../statistics/Statistics';
 import {LogLevel} from '..';
 import {ILogger} from '../logging/ILogger';
 import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy';
-import {ConnectionStrategyConfig, ReconnectMode} from './ConnectionStrategyConfig';
-import {LoadBalancer} from '../LoadBalancer';
+import {ConnectionStrategyConfig, ConnectionStrategyConfigImpl, ReconnectMode} from './ConnectionStrategyConfig';
+import {LoadBalancerType, LoadBalancerConfig, LoadBalancerConfigImpl} from './LoadBalancerConfig';
 import {IndexConfig} from './IndexConfig';
 import {IndexType} from './IndexType';
 import {ConnectionRetryConfig} from './ConnectionRetryConfig';
 
-const DEFAULT_CLUSTER_NAME = 'dev';
-
 /**
- * Top level configuration object of Hazelcast client. Other configurations items are properties of this object.
+ * Top level configuration object of Hazelcast client.
+ * Other configurations items are properties of this object.
  */
-export class ClientConfig {
+export interface ClientConfig {
+
+    /**
+     * Name of the cluster to connect to. By default, set to `dev`.
+     */
+    clusterName?: string;
+
+    /**
+     * Name of the client instance. By default, set to `hz.client_${CLIENT_ID}`, where
+     * `CLIENT_ID` starts from `0` and it is incremented by `1` for each new client.
+     */
+    instanceName?: string;
+
+    /**
+     * Labels for the client to be sent to the cluster.
+     */
+    clientLabels?: string[];
+
+    /**
+     * Network config of the client.
+     */
+    network?: ClientNetworkConfig;
+
+    /**
+     * Connection strategy config of the client.
+     */
+    connectionStrategy?: ConnectionStrategyConfig;
+
+    /**
+     * Load balancer config for the client.
+     */
+    loadBalancer?: LoadBalancerConfig;
+
+    /**
+     * Lifecycle listeners to be attached to the client.
+     */
+    lifecycleListeners?: Array<(state: LifecycleState) => void>;
+
+    /**
+     * Membership listeners to be attached to the client.
+     */
+    membershipListeners?: MembershipListener[];
+
+    /**
+     * User-defined serialization config for the client.
+     */
+    serialization?: SerializationConfig;
+
+    /**
+     * Near Cache config for the client.
+     */
+    nearCaches?: { [name: string]: NearCacheConfig };
+
+    /**
+     * Configs for ReliableTopics.
+     */
+    reliableTopics?: { [name: string]: ReliableTopicConfig };
+
+    /**
+     * Configs for FlakeIdGenerators.
+     */
+    flakeIdGenerators?: { [name: string]: FlakeIdGeneratorConfig };
+
+    /**
+     * Custom logger implementation for the client.
+     */
+    customLogger?: ILogger;
+
+    /**
+     * Custom credentials to be used as a part of authentication on the cluster.
+     */
+    customCredentials?: any;
+
+    /**
+     * User-defined properties.
+     */
+    properties?: Properties;
+
+}
+
+export class ClientConfigImpl implements ClientConfig {
 
     properties: Properties = {
         'hazelcast.client.heartbeat.interval': 5000,
@@ -62,23 +141,20 @@ export class ClientConfig {
         'hazelcast.client.shuffle.member.list': true,
     };
 
-    /**
-     * Name of this client instance.
-     */
     instanceName: string;
-    networkConfig: ClientNetworkConfig = new ClientNetworkConfig();
-    customLogger: ILogger;
+    network = new ClientNetworkConfigImpl();
+    customLogger: ILogger = null;
     customCredentials: any = null;
-    listeners: ListenerConfig = new ListenerConfig();
-    listenerConfigs: ListenerImportConfig[] = [];
-    serializationConfig: SerializationConfig = new SerializationConfig();
-    reliableTopicConfigs: { [name: string]: ReliableTopicConfig } = {};
-    nearCacheConfigs: { [name: string]: NearCacheConfig } = {};
-    flakeIdGeneratorConfigs: { [name: string]: FlakeIdGeneratorConfig } = {};
-    connectionStrategyConfig: ConnectionStrategyConfig = new ConnectionStrategyConfig();
-    clusterName: string = DEFAULT_CLUSTER_NAME;
-    labels = new Set<string>();
-    loadBalancer: LoadBalancer;
+    lifecycleListeners: Array<(state: LifecycleState) => void> = [];
+    membershipListeners: MembershipListener[] = [];
+    serialization = new SerializationConfigImpl();
+    reliableTopics: { [name: string]: ReliableTopicConfigImpl } = {};
+    nearCaches: { [name: string]: NearCacheConfigImpl } = {};
+    flakeIdGenerators: { [name: string]: FlakeIdGeneratorConfigImpl } = {};
+    connectionStrategy = new ConnectionStrategyConfigImpl();
+    clusterName = 'dev';
+    clientLabels: string[] = [];
+    loadBalancer = new LoadBalancerConfigImpl();
 
     private configPatternMatcher = new ConfigPatternMatcher();
 
@@ -86,20 +162,20 @@ export class ClientConfig {
         return this.instanceName;
     }
 
-    getReliableTopicConfig(name: string): ReliableTopicConfig {
-        const matching = this.lookupByPattern<ReliableTopicConfig>(this.reliableTopicConfigs, name);
-        let config: ReliableTopicConfig;
+    getReliableTopicConfig(name: string): ReliableTopicConfigImpl {
+        const matching = this.lookupByPattern<ReliableTopicConfigImpl>(this.reliableTopics, name);
+        let config: ReliableTopicConfigImpl;
         if (matching != null) {
             config = matching.clone();
         } else {
-            config = new ReliableTopicConfig();
+            config = new ReliableTopicConfigImpl();
         }
         config.name = name;
         return config;
     }
 
-    getNearCacheConfig(name: string): NearCacheConfig {
-        const matching = this.lookupByPattern<NearCacheConfig>(this.nearCacheConfigs, name);
+    getNearCacheConfig(name: string): NearCacheConfigImpl {
+        const matching = this.lookupByPattern<NearCacheConfigImpl>(this.nearCaches, name);
         if (matching == null) {
             return null;
         }
@@ -108,13 +184,14 @@ export class ClientConfig {
         return config;
     }
 
-    getFlakeIdGeneratorConfig(name: string): FlakeIdGeneratorConfig {
-        const matching: FlakeIdGeneratorConfig = this.lookupByPattern<FlakeIdGeneratorConfig>(this.flakeIdGeneratorConfigs, name);
-        let config: FlakeIdGeneratorConfig;
+    getFlakeIdGeneratorConfig(name: string): FlakeIdGeneratorConfigImpl {
+        const matching: FlakeIdGeneratorConfigImpl =
+            this.lookupByPattern<FlakeIdGeneratorConfigImpl>(this.flakeIdGenerators, name);
+        let config: FlakeIdGeneratorConfigImpl;
         if (matching != null) {
             config = matching.clone();
         } else {
-            config = new FlakeIdGeneratorConfig();
+            config = new FlakeIdGeneratorConfigImpl();
         }
         config.name = name;
         return config;
@@ -135,34 +212,22 @@ export class ClientConfig {
     }
 }
 
-export {ClientNetworkConfig};
-
-export {TopicOverloadPolicy};
-
-export {SerializationConfig};
-
-export {ReliableTopicConfig};
-
-export {EvictionPolicy};
-
-export {InMemoryFormat};
-
-export {NearCacheConfig};
-
-export {ImportConfig};
-
-export {FlakeIdGeneratorConfig};
-
-export {SSLConfig};
-
-export {JsonStringDeserializationPolicy};
-
-export {IndexConfig};
-
-export {IndexType};
-
-export {ConnectionStrategyConfig};
-
-export {ReconnectMode};
-
-export {ConnectionRetryConfig};
+export {
+    ClientNetworkConfig,
+    TopicOverloadPolicy,
+    SerializationConfig,
+    ReliableTopicConfig,
+    EvictionPolicy,
+    InMemoryFormat,
+    NearCacheConfig,
+    FlakeIdGeneratorConfig,
+    SSLConfig,
+    JsonStringDeserializationPolicy,
+    IndexConfig,
+    IndexType,
+    ConnectionStrategyConfig,
+    ReconnectMode,
+    ConnectionRetryConfig,
+    LoadBalancerConfig,
+    LoadBalancerType,
+};

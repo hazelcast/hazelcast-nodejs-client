@@ -13,24 +13,60 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
+const Statistics = require("../../lib/statistics/Statistics").Statistics;
+const expect = require('chai').expect;
+const BuildInfo = require('../../lib/BuildInfo').BuildInfo;
 
-var Statistics = require("../../lib/statistics/Statistics").Statistics;
-var expect = require('chai').expect;
-var BuildInfo = require('../../lib/BuildInfo').BuildInfo;
+const RC = require('../RC');
+const Client = require('../../').Client;
+const TestUtil = require('../Util');
+const Util = require('../../lib/Util');
+const os = require('os');
 
-var RC = require('../RC');
-var Client = require('../../').Client;
-var TestUtil = require('../Util');
-var Util = require('../../lib/Util');
-var Config = require('../../').Config;
-var os = require('os');
+function getClientStatisticsFromServer(cluster, client) {
+    const clientUuid = client.getConnectionManager().getClientUuid();
+    const script =
+        'stats = instance_0.getOriginal().node.getClientEngine().getClientStatistics()\n' +
+        'keys = stats.keySet().toArray()\n' +
+        'for(i=0; i < keys.length; i++) {\n' +
+        '  if (keys[i].toString().equals("'+ clientUuid + '")) {\n' +
+        '    result = stats.get(keys[i]).clientAttributes()\n' +
+        '    break\n' +
+        '  }\n' +
+        '}\n';
+    return RC.executeOnController(cluster.id, script, 1).then(function (response) {
+        if (response.result != null) {
+            return response.result.toString();
+        }
+        return null;
+    });
+}
+
+function extractStringStatValue(stats, statName) {
+    const re = new RegExp(statName + '=(.*?)(?:,|$)');
+    const matches = stats.match(re);
+    return matches[1];
+}
+
+function extractFloatStatValue(stats, statName) {
+    return Number.parseFloat(extractStringStatValue(stats, statName));
+}
+
+function extractBooleanStatValue(stats, statName) {
+    return 'true' === extractStringStatValue(stats, statName);
+}
+
+function extractIntStatValue(stats, statName) {
+    return Number.parseInt(extractStringStatValue(stats, statName));
+}
 
 describe('Statistics with default period', function () {
 
-    var cluster;
-    var client;
-    var map;
+    let cluster;
+    let client;
+    let map;
 
     before(function () {
         return RC.createCluster(null, null).then(function (res) {
@@ -38,14 +74,17 @@ describe('Statistics with default period', function () {
         }).then(function () {
             return RC.startMember(cluster.id);
         }).then(function () {
-            var cfg = new Config.ClientConfig();
-            cfg.clusterName = cluster.id;
-            var ncc = new Config.NearCacheConfig();
-            ncc.name = 'nearCachedMap*';
-            ncc.invalidateOnChange = false;
-            cfg.nearCacheConfigs['nearCachedMap*'] = ncc;
-            cfg.properties['hazelcast.client.statistics.enabled'] = true;
-            return Client.newHazelcastClient(cfg).then(function (cl) {
+            return Client.newHazelcastClient({
+                clusterName: cluster.id,
+                nearCaches: {
+                    'nearCachedMap*': {
+                        invalidateOnChange: false
+                    }
+                },
+                properties: {
+                    'hazelcast.client.statistics.enabled': true
+                }
+            }).then(function (cl) {
                 client = cl;
             })
         });
@@ -65,6 +104,11 @@ describe('Statistics with default period', function () {
     afterEach(function () {
         return map.destroy();
     });
+
+    function contains(base, search) {
+        const firstIndex = base.indexOf(search);
+        return firstIndex > -1 && firstIndex == base.lastIndexOf(search);
+    }
 
     it('should be enabled via configuration', function () {
         return TestUtil.promiseWaitMilliseconds(1000).then(function () {
@@ -121,23 +165,19 @@ describe('Statistics with default period', function () {
         }).then(function () {
             return getClientStatisticsFromServer(cluster, client);
         }).then(function (stats) {
-            var nearCacheStats = 'nc.' + map.getName();
+            const nearCacheStats = 'nc.' + map.getName();
             expect(contains(stats, nearCacheStats + '.hits=1')).to.be.true;
             expect(contains(stats, nearCacheStats + '.creationTime=')).to.be.true;
             expect(contains(stats, nearCacheStats + '.misses=1')).to.be.true;
             expect(contains(stats, nearCacheStats + '.ownedEntryCount=1')).to.be.true;
         });
     });
-
-    function contains(base, search) {
-        var firstIndex = base.indexOf(search);
-        return firstIndex > -1 && firstIndex == base.lastIndexOf(search);
-    }
 });
 
 describe('Statistics with non-default period', function () {
-    var cluster;
-    var client;
+
+    let cluster;
+    let client;
 
     before(function () {
         return RC.createCluster(null, null).then(function (res) {
@@ -145,11 +185,13 @@ describe('Statistics with non-default period', function () {
         }).then(function () {
             return RC.startMember(cluster.id);
         }).then(function () {
-            var cfg = new Config.ClientConfig();
-            cfg.clusterName = cluster.id;
-            cfg.properties['hazelcast.client.statistics.enabled'] = true;
-            cfg.properties['hazelcast.client.statistics.period.seconds'] = 2;
-            return Client.newHazelcastClient(cfg).then(function (cl) {
+            return Client.newHazelcastClient({
+                clusterName: cluster.id,
+                properties: {
+                    'hazelcast.client.statistics.enabled': true,
+                    'hazelcast.client.statistics.period.seconds': 2
+                }
+            }).then(function (cl) {
                 client = cl;
             });
         });
@@ -161,7 +203,7 @@ describe('Statistics with non-default period', function () {
     });
 
     it('should not change before period', function () {
-        var stats1;
+        let stats1;
         return TestUtil.promiseWaitMilliseconds(1000).then(function () {
             return getClientStatisticsFromServer(cluster, client);
         }).then(function (st) {
@@ -173,7 +215,7 @@ describe('Statistics with non-default period', function () {
     });
 
     it('should change after period', function () {
-        var stats1;
+        let stats1;
         return TestUtil.promiseWaitMilliseconds(1000).then(function () {
             return getClientStatisticsFromServer(cluster, client);
         }).then(function (st) {
@@ -188,8 +230,9 @@ describe('Statistics with non-default period', function () {
 });
 
 describe('Statistics with negative period', function () {
-    var client;
-    var cluster;
+
+    let client;
+    let cluster;
 
     before(function () {
         return RC.createCluster(null, null).then(function (res) {
@@ -197,11 +240,13 @@ describe('Statistics with negative period', function () {
         }).then(function () {
             return RC.startMember(cluster.id);
         }).then(function () {
-            var cfg = new Config.ClientConfig();
-            cfg.clusterName = cluster.id;
-            cfg.properties['hazelcast.client.statistics.enabled'] = true;
-            cfg.properties['hazelcast.client.statistics.period.seconds'] = -2;
-            return Client.newHazelcastClient(cfg)
+            return Client.newHazelcastClient({
+                clusterName: cluster.id,
+                properties: {
+                    'hazelcast.client.statistics.enabled': true,
+                    'hazelcast.client.statistics.period.seconds': -2
+                }
+            });
         }).then(function (cl) {
             client = cl;
         });
@@ -220,40 +265,3 @@ describe('Statistics with negative period', function () {
         });
     });
 });
-
-function getClientStatisticsFromServer(cluster, client) {
-    var clientUuid = client.getConnectionManager().getClientUuid();
-    var script =
-        'stats = instance_0.getOriginal().node.getClientEngine().getClientStatistics()\n' +
-        'keys = stats.keySet().toArray()\n' +
-        'for(i=0; i < keys.length; i++) {\n' +
-        '  if (keys[i].toString().equals("'+ clientUuid + '")) {\n' +
-        '    result = stats.get(keys[i]).clientAttributes()\n' +
-        '    break\n' +
-        '  }\n' +
-        '}\n';
-    return RC.executeOnController(cluster.id, script, 1).then(function (response) {
-        if (response.result != null) {
-            return response.result.toString();
-        }
-        return null;
-    });
-}
-
-function extractStringStatValue(stats, statName) {
-    var re = new RegExp(statName + '=(.*?)(?:,|$)');
-    var matches = stats.match(re);
-    return matches[1];
-}
-
-function extractFloatStatValue(stats, statName) {
-    return Number.parseFloat(extractStringStatValue(stats, statName));
-}
-
-function extractBooleanStatValue(stats, statName) {
-    return 'true' === extractStringStatValue(stats, statName);
-}
-
-function extractIntStatValue(stats, statName) {
-    return Number.parseInt(extractStringStatValue(stats, statName));
-}

@@ -13,36 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Controller = require('../RC');
-var Client = require('../..').Client;
-var Config = require('../..').Config;
-var fs = require('fs');
-var IdentifiedFactory = require('../javaclasses/IdentifiedFactory');
-var DistortInvalidationMetadataEntryProcessor = require('../javaclasses/DistortInvalidationMetadataEntryProcessor');
-var Promise = require('bluebird');
-var expect = require('chai').expect;
+const expect = require('chai').expect;
+const fs = require('fs');
+const Promise = require('bluebird');
+const RC = require('../RC');
+const Client = require('../..').Client;
+
+const IdentifiedFactory = require('../javaclasses/IdentifiedFactory');
+const DistortInvalidationMetadataEntryProcessor = require('../javaclasses/DistortInvalidationMetadataEntryProcessor');
 
 describe('Invalidation metadata distortion', function () {
 
-    var cluster;
-    var member;
-    var client;
-    var validationClient;
-    var mapName = 'nc-map';
-    var mapSize = 10;
+    let cluster;
+    let client;
+    let validationClient;
+    const mapName = 'nc-map';
+    const mapSize = 10;
 
     before(function () {
-        return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_eventual_nearcache.xml', 'utf8')).then(function (cl) {
-            cluster = cl;
-            return Controller.startMember(cluster.id);
-        }).then(function (mem) {
-            member = mem;
-        });
+        return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_eventual_nearcache.xml', 'utf8'))
+            .then(function (cl) {
+                cluster = cl;
+                return RC.startMember(cluster.id);
+            });
     });
 
     after(function () {
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     afterEach(function () {
@@ -51,15 +50,19 @@ describe('Invalidation metadata distortion', function () {
     });
 
     function createConfig(withNearCache) {
-        var cfg = new Config.ClientConfig();
-        cfg.clusterName = cluster.id;
+        const cfg = {
+            clusterName: cluster.id,
+            nearCaches: {},
+            serialization: {
+                defaultNumberType: 'integer',
+                dataSerializableFactories: {
+                    66: new IdentifiedFactory()
+                }
+            }
+        };
         if (withNearCache) {
-            var ncc = new Config.NearCacheConfig();
-            ncc.name = mapName;
-            cfg.nearCacheConfigs[mapName] = ncc;
+            cfg.nearCaches[mapName] = {};
         }
-        cfg.serializationConfig.defaultNumberType = "integer";
-        cfg.serializationConfig.dataSerializableFactories[66] = new IdentifiedFactory();
         return cfg;
     }
 
@@ -75,23 +78,25 @@ describe('Invalidation metadata distortion', function () {
 
     it('lost invalidation', function (done) {
         this.timeout(13000);
-        var stopTest = false;
-        var map;
-        var populatePromises = [];
-        var ignoredKey = mapSize;
+        let stopTest = false;
+        let map;
+        const populatePromises = [];
+        const ignoredKey = mapSize;
         client.getMap(mapName).then(function (mp) {
             map = mp;
-            for (var i = 0; i < mapSize; i++) {
+            for (let i = 0; i < mapSize; i++) {
                 populatePromises.push(map.put(i, i));
             }
             populatePromises.push(map.put(ignoredKey, ignoredKey));
         }).then(function () {
             return Promise.all(populatePromises).then(function () {
-                map.executeOnKey(ignoredKey, new DistortInvalidationMetadataEntryProcessor(mapName, mapSize, 5)).then(function () {
-                    stopTest = true;
-                }).catch(function (err) {
-                    done(err);
-                });
+                map.executeOnKey(ignoredKey, new DistortInvalidationMetadataEntryProcessor(mapName, mapSize, 5))
+                    .then(function () {
+                        stopTest = true;
+                    })
+                    .catch(function (err) {
+                        done(err);
+                    });
                 setTimeout(populateNearCacheAndCompare, 100);
             })
         });
@@ -109,20 +114,20 @@ describe('Invalidation metadata distortion', function () {
 
         function populateNearCacheAndCompare() {
             if (!stopTest) {
-                var promises = [];
-                for (var i = 0; i < mapSize; i++) {
+                const promises = [];
+                for (let i = 0; i < mapSize; i++) {
                     promises.push(map.get(i));
                 }
                 Promise.all(promises).then(function () {
                     setTimeout(populateNearCacheAndCompare, 0);
                 });
             } else {
-                var comparisonPromises = [];
-                for (var i = 0; i < mapSize; i++) {
+                const comparisonPromises = [];
+                for (let i = 0; i < mapSize; i++) {
                     comparisonPromises.push(compareActualAndExpected(map, validationClient.getMap(mapName), i));
                 }
                 Promise.all(comparisonPromises).then(() => {
-                    done()
+                    done();
                 }).catch(done);
             }
         }

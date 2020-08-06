@@ -17,24 +17,72 @@
 import {EvictionPolicy} from './EvictionPolicy';
 import {InMemoryFormat} from './InMemoryFormat';
 
-export class NearCacheConfig {
-    name = 'default';
+/**
+ * Near Cache configuration to be used by the client for the specified IMap.
+ */
+export interface NearCacheConfig {
+
     /**
-     * 'true' to invalidate entries when they are changed in cluster,
-     * 'false' to invalidate entries only when they are accessed.
+     * Enables cluster-assisted invalidate on change behavior. When set to `true`,
+     * entries are invalidated when they are changed in cluster. By default, set to `true`.
      */
+    invalidateOnChange?: boolean;
+
+    /**
+     * Maximum number of seconds that an entry can stay in the Near Cache until
+     * it is accessed. By default, set to `0`.
+     */
+    maxIdleSeconds?: number;
+
+    /**
+     * Specifies in which format data will be stored in the Near Cache. Available values
+     * are `OBJECT` and `BINARY`. By default, set to `BINARY`.
+     */
+    inMemoryFormat?: InMemoryFormat;
+
+    /**
+     * Maximum number of seconds that an entry can stay in cache. By default, set to `0`.
+     */
+    timeToLiveSeconds?: number;
+
+    /**
+     * Defines eviction policy configuration. Available values are `LRU`, `LFU`, `NONE`
+     * and `RANDOM`. By default, set to `LRU`.
+     */
+    evictionPolicy?: EvictionPolicy;
+
+    /**
+     * Defines maximum number of entries kept in the memory before eviction kicks in.
+     * By default, set to `Number.MAX_SAFE_INTEGER`.
+     */
+    evictionMaxSize?: number;
+
+    /**
+     * Number of random entries that are evaluated to see if some of them are already
+     * expired. By default, set to `8`.
+     */
+    evictionSamplingCount?: number;
+
+    /**
+     * Size of the pool for eviction candidates. The pool is kept sorted according to
+     * the eviction policy. By default, set to `16`.
+     */
+    evictionSamplingPoolSize?: number;
+
+}
+
+export class NearCacheConfigImpl implements NearCacheConfig {
+
+    /**
+     * Name of the IMap backed by the Near Cache.
+     */
+    name: string;
     invalidateOnChange = true;
-    /**
-     * Max number of seconds that an entry can stay in the cache until it is acceessed
-     */
     maxIdleSeconds = 0;
-    inMemoryFormat: InMemoryFormat = InMemoryFormat.BINARY;
-    /**
-     * Maximum number of seconds that an entry can stay in cache.
-     */
+    inMemoryFormat = InMemoryFormat.BINARY;
     timeToLiveSeconds = 0;
-    evictionPolicy: EvictionPolicy = EvictionPolicy.NONE;
-    evictionMaxSize: number = Number.MAX_SAFE_INTEGER;
+    evictionPolicy = EvictionPolicy.LRU;
+    evictionMaxSize = Number.MAX_SAFE_INTEGER;
     evictionSamplingCount = 8;
     evictionSamplingPoolSize = 16;
 
@@ -49,9 +97,10 @@ export class NearCacheConfig {
             'maxIdleSeconds: ' + this.maxIdleSeconds + ']';
     }
 
-    clone(): NearCacheConfig {
-        const other = new NearCacheConfig();
+    clone(): NearCacheConfigImpl {
+        const other = new NearCacheConfigImpl();
         Object.assign(other, this);
         return other;
     }
+
 }

@@ -16,20 +16,20 @@
 
 import {ConnectionOptions} from 'tls';
 import {Properties} from './Properties';
-import {ImportConfig} from './ImportConfig';
+import {SSLOptionsFactory} from '../connection/SSLOptionsFactory';
 
 /**
  * SSL configuration.
  */
-export class SSLConfig {
+export interface SSLConfig {
 
     /**
      * If it is true, SSL is enabled.
      */
-    enabled = false;
+    enabled?: boolean;
 
     /**
-     * sslOptions is by default null which means the following default configuration
+     * Default SSL options are empty which means the following default configuration
      * is used while connecting to the server.
      *
      * {
@@ -37,18 +37,27 @@ export class SSLConfig {
      *   rejectUnauthorized: true,
      * };
      *
-     * If you want to override the default behavior, you can write your own connection sslOptions.
+     * If you want to override the default behavior, you can define your own options.
      */
+    sslOptions?: ConnectionOptions;
+
+    /**
+     * SSL options factory. If you don't specify it, BasicSSLOptionsFactory is used by default.
+     */
+    sslOptionsFactory?: SSLOptionsFactory;
+
+    /**
+     * The properties to be set for SSL options.
+     */
+    sslOptionsFactoryProperties?: Properties;
+
+}
+
+export class SSLConfigImpl implements SSLConfig {
+
+    enabled = false;
     sslOptions: ConnectionOptions = null;
-
-    /**
-     * sslOptionsFactoryConfig is config for ssl options factory. If you don't specify the path, BasicSSLOptionsFactory is used
-     * by default.
-     */
-    sslOptionsFactoryConfig: ImportConfig = null;
-
-    /**
-     * sslOptionsFactoryProperties is the properties to be set for ssl options.
-     */
+    sslOptionsFactory: SSLOptionsFactory = null;
     sslOptionsFactoryProperties: Properties = null;
+
 }

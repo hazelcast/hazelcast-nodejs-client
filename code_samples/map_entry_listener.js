@@ -13,37 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
-var listener = {
-    added: function (entryEvent) {
-        console.log('added key: ' + entryEvent.key + ', new value: ' + entryEvent.value
-            + ', old value: ' + entryEvent.oldValue);
-    },
-    removed: function (entryEvent) {
-        console.log('removed key: ' + entryEvent.key + ', new value: ' + entryEvent.value
-            + ', old value: ' + entryEvent.oldValue);
-    }
-};
+const { Client } = require('hazelcast-client');
 
-var pushNotification = function (map, key, value) {
-    return map.put(key, value);
-};
+(async () => {
+    try {
+        const client = await Client.newHazelcastClient();
+        const map = await client.getMap('notifications');
 
-var removeNotification = function (map, key) {
-    return map.remove(key);
-};
+        const listener = {
+            added: (entryEvent) => {
+                console.log('Added key: ' + entryEvent.key
+                    + ', new value: ' + entryEvent.value
+                    + ', old value: ' + entryEvent.oldValue);
+            },
+            removed: (entryEvent) => {
+                console.log('Removed key: ' + entryEvent.key
+                    + ', new value: ' + entryEvent.value
+                    + ', old value: ' + entryEvent.oldValue);
+            }
+        };
+        await map.addEntryListener(listener, undefined, true);
 
-Client.newHazelcastClient().then(function (client) {
-    var map;
-    client.getMap('notifications').then(function (mp) {
-        map = mp;
-        return map.addEntryListener(listener, undefined, true);
-    }).then(function () {
-        return pushNotification(map, 1, 'new-value');
-    }).then(function () {
-        return removeNotification(map, 1);
-    }).then(function () {
+        await map.put(1, 'new-value');
+        await map.remove(1);
+
         client.shutdown();
-    });
-});
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

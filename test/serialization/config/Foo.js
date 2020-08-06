@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+'use strict';
 
 function Foo(foo) {
     this.foo = foo;
@@ -36,7 +36,6 @@ Foo.prototype.readPortable = function (portableReader) {
 }
 
 function MyPortableFactory() {
-
 }
 
 MyPortableFactory.prototype.create = function (type) {

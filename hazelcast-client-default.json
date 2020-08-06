@@ -32,8 +32,7 @@
             "factory": null
         },
         "hazelcastCloud": {
-            "discoveryToken": null,
-            "enabled": false
+            "discoveryToken": null
         }
     },
     "connectionStrategy": {

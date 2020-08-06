@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
+/**
+ * In-memory format for Near Cache.
+ */
 export enum InMemoryFormat {
-    /**
-     * Objects are in native JS objects
-     */
-    OBJECT,
 
     /**
-     * Objects are in serialized form
+     * Objects are in native JS objects.
      */
-    BINARY,
+    OBJECT = 'OBJECT',
+
+    /**
+     * Objects are in serialized form.
+     */
+    BINARY = 'BINARY',
+
 }

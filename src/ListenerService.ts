@@ -37,7 +37,7 @@ export class ListenerService {
     constructor(client: HazelcastClient) {
         this.client = client;
         this.logger = this.client.getLoggingService().getLogger();
-        this.isSmartService = this.client.getConfig().networkConfig.smartRouting;
+        this.isSmartService = this.client.getConfig().network.smartRouting;
         this.activeRegistrations = new Map();
         this.userRegistrationKeyInformation = new Map();
     }

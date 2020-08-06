@@ -13,30 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var chai = require('chai');
+const chai = require('chai');
 chai.use(require('chai-as-promised'));
-var expect = require('chai').expect;
-var Client = require('../../.').Client;
-const Config = require('../../.').Config;
-var RC = require('./../RC');
-var Predicates = require('../../.').Predicates;
-var HazelcastJsonValue = require('../../.').HazelcastJsonValue;
+const expect = require('chai').expect;
+const Client = require('../../.').Client;
+const RC = require('./../RC');
+const Predicates = require('../../.').Predicates;
+const HazelcastJsonValue = require('../../.').HazelcastJsonValue;
 
 describe('HazelcastJsonValue query test', function () {
-    var cluster;
-    var client;
-    var map;
-    var object = { 'a': 1 };
+
+    let cluster, client;
+    let map;
+    const object = { 'a': 1 };
 
     before(function () {
         return RC.createCluster().then(function (response) {
             cluster = response;
             return RC.startMember(cluster.id);
         }).then(function () {
-            const cfg = new Config.ClientConfig();
-            cfg.clusterName = cluster.id;
-            return Client.newHazelcastClient(cfg).then(function (hazelcastClient) {
+            return Client.newHazelcastClient({
+                clusterName: cluster.id
+            }).then(function (hazelcastClient) {
                 client = hazelcastClient;
             });
         });
@@ -61,7 +61,7 @@ describe('HazelcastJsonValue query test', function () {
     });
 
     it('querying over JavaScript objects', function () {
-        var objects = [
+        const objects = [
             [0, {'a': 1}],
             [1, {'a': 3}]
         ];
@@ -73,7 +73,7 @@ describe('HazelcastJsonValue query test', function () {
     });
 
     it('querying over nested attributes', function () {
-        var objects = [
+        const objects = [
             [0, {'a': 1, 'b': {'c': 1}}],
             [1, {'a': 3, 'b': {'c': 3}}]
         ];
@@ -85,7 +85,7 @@ describe('HazelcastJsonValue query test', function () {
     });
 
     it('querying over keys', function () {
-        var hzJsonValue2 = new HazelcastJsonValue('{ "a": 3 }');
+        const hzJsonValue2 = new HazelcastJsonValue('{ "a": 3 }');
         return map.put(object, 1).then(function () {
             return map.put(hzJsonValue2, 2);
         }).then(function () {
@@ -96,8 +96,8 @@ describe('HazelcastJsonValue query test', function () {
     });
 
     it('querying nested attributes over keys', function () {
-        var object1 = {'a': 1, 'b': {'c': 1}};
-        var object2 = {'a': 1, 'b': {'c': 3}};
+        const object1 = {'a': 1, 'b': {'c': 1}};
+        const object2 = {'a': 1, 'b': {'c': 3}};
         return map.put(object1, 1).then(function () {
             return map.put(object2, 2);
         }).then(function () {

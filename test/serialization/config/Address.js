@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
 function Address(street, zipCode, city, state) {
     this.street = street;
@@ -44,7 +45,6 @@ Address.prototype.readData = function (objectDataInput) {
 };
 
 function MyIdentifiedFactory() {
-
 }
 
 MyIdentifiedFactory.prototype.create = function (type) {

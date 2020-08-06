@@ -15,35 +15,57 @@
  */
 
 /**
+ * Connection retry config controls the period among connection establish retries
+ * and defines when the client should give up retrying. Supports exponential behaviour
+ * with jitter for wait periods.
+ */
+export interface ConnectionRetryConfig {
+
+    /**
+     * Defines wait period in millisecond after the first failure before retrying.
+     * Must be non-negative. By default, set to `1000`.
+     */
+    initialBackoffMillis?: number;
+
+    /**
+     * Defines an upper bound for the backoff interval in milliseconds. Must be
+     * non-negative. By default, set to `30000` (30 seconds).
+     */
+    maxBackoffMillis?: number;
+
+    /**
+     * Defines timeout value in milliseconds for the client to give up a connection
+     * attempt to the cluster. Must be non-negative. By default, set to `20000`
+     * (20 seconds).
+     */
+    clusterConnectTimeoutMillis?: number;
+
+    /**
+     * Defines the factor with which to multiply backoff after a failed retry.
+     * Must be greater than or equal to `1`. By default, set to `1`.
+     */
+    multiplier?: number;
+
+    /**
+     * Defines how much to randomize backoffs. At each iteration the calculated
+     * back-off is randomized via following method in pseudo-code
+     * `Random(-jitter * current_backoff, jitter * current_backoff)`.
+     * Must be in range `[0.0, 1.0]`. By default, set to `0` (no randomization).
+     */
+    jitter?: number;
+
+}
+
+/**
  * Connection Retry Config is controls the period among the retries and when should a client gave up
  * retrying. Exponential behaviour can be chosen or jitter can be added to wait periods.
  */
-export class ConnectionRetryConfig {
-    /**
-     * How long to wait after the first failure before retrying. Must be non-negative.
-     */
+export class ConnectionRetryConfigImpl implements ConnectionRetryConfig {
+
     initialBackoffMillis = 1000;
-
-    /**
-     * When backoff reaches this upper bound, it does not increase any more. Must be non-negative.
-     */
     maxBackoffMillis = 30000;
-
-    /**
-     * Timeout value in milliseconds for the client to give up to connect to the current cluster.
-     */
     clusterConnectTimeoutMillis = 20000;
-
-    /**
-     * Factor with which to multiply backoff after a failed retry. Must be greater than or equal to 1.
-     */
     multiplier = 1;
-
-    /**
-     * By how much to randomize backoffs.
-     * At each iteration calculated back-off is randomized via following method
-     * Random(-jitter * current_backoff, jitter * current_backoff)
-     * It must be in range [0.0, 1.0].
-     */
     jitter = 0;
+
 }

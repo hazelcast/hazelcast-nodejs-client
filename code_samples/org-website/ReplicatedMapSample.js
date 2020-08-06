@@ -13,24 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
-// Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-Client.newHazelcastClient().then(function (hz) {
-    var map;
-    // Get a Replicated Map called "my-replicated-map"
-    hz.getReplicatedMap('my-replicated-map').then(function (rmp) {
-        map = rmp;
+const { Client } = require('hazelcast-client');
+
+(async () => {
+    try {
+        // Start the Hazelcast Client and connect to an already running
+        // Hazelcast Cluster on 127.0.0.1
+        const hz = await Client.newHazelcastClient();
+        // Get a Replicated Map called 'my-replicated-map'
+        const map = await hz.getReplicatedMap('my-replicated-map');
         // Put and Get a value from the Replicated Map
-        // key/value replicated to all members
-        return map.put('key', 'value');
-    }).then(function (replacedValue) {
-        console.log('replaced value = ' + replacedValue); // Will be null as its first update
-        return map.get('key');
-    }).then(function (value) {
+        // (key/value is replicated to all members)
+        const replacedValue = await map.put('key', 'value');
+        // Will print 'Replaced value: null' as it's the first update
+        console.log('Replaced value:', replacedValue);
+        const value = await map.get('key');
         // The value is retrieved from a random member in the cluster
-        console.log('value for key = ' + value);
-        // Shutdown this Hazelcast Client
+        console.log('Value for key:', value);
+        // Shutdown this Hazelcast client
         hz.shutdown();
-    });
-});
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

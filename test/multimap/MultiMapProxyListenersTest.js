@@ -13,33 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require("chai").expect;
-var HazelcastClient = require("../../lib/index.js").Client;
-const Config = require("../../lib/index.js").Config;
-var Controller = require('./../RC');
+const expect = require("chai").expect;
+const HazelcastClient = require("../../lib/index.js").Client;
+const RC = require('./../RC');
 const Util = require('./../Util');
 
 describe("MultiMap Proxy Listener", function () {
 
     this.timeout(10000);
-
-    var cluster;
-    var client;
-
-    var map;
+    let cluster;
+    let client;
+    let map;
 
     before(function () {
         this.timeout(10000);
-        return Controller.createCluster().then(function (response) {
+        return RC.createCluster().then(function (response) {
             cluster = response;
-            return Controller.startMember(cluster.id);
+            return RC.startMember(cluster.id);
         }).then(function () {
-            const cfg = new Config.ClientConfig();
-            cfg.clusterName = cluster.id;
-            return HazelcastClient.newHazelcastClient(cfg).then(function (hazelcastClient) {
-                client = hazelcastClient;
-            })
+            return HazelcastClient.newHazelcastClient({ clusterName: cluster.id });
+        }).then(function (hazelcastClient) {
+            client = hazelcastClient;
         });
     });
 
@@ -55,12 +51,11 @@ describe("MultiMap Proxy Listener", function () {
 
     after(function () {
         client.shutdown();
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     function Listener(eventName, doneCallback, expectedName, expectedKey, expectedValue, expectedOldValue,
                       expectedMergingValue) {
-
         this[eventName] = function (entryEvent) {
             try {
                 expect(entryEvent.name).to.equal(expectedName);
@@ -79,7 +74,7 @@ describe("MultiMap Proxy Listener", function () {
     // Add tests
 
     it("listens for add with value excluded", function (done) {
-        var listener = new Listener("added", done, "test", "foo", null, null, null);
+        const listener = new Listener("added", done, "test", "foo", null, null, null);
 
         map.addEntryListener(listener, null, false).then(function () {
             map.put("foo", "bar");
@@ -88,7 +83,7 @@ describe("MultiMap Proxy Listener", function () {
 
 
     it("listens for add with value included", function (done) {
-        var listener = new Listener("added", done, "test", "foo", "bar", null, null);
+        const listener = new Listener("added", done, "test", "foo", "bar", null, null);
 
         map.addEntryListener(listener, null, true).then(function () {
             map.put("foo", "bar");
@@ -96,7 +91,7 @@ describe("MultiMap Proxy Listener", function () {
     });
 
     it("listens for add to specific key", function (done) {
-        var listener = new Listener("added", done, "test", "foo", null, null, null);
+        const listener = new Listener("added", done, "test", "foo", null, null, null);
 
         map.addEntryListener(listener, "foo", false).then(function () {
             map.put("foo", "bar");
@@ -104,7 +99,7 @@ describe("MultiMap Proxy Listener", function () {
     });
 
     it("does not react to add on the wrong key", function (done) {
-        var listener = {
+        const listener = {
             added: function () {
                 done("Reacted to update on the wrong key");
             }
@@ -122,7 +117,7 @@ describe("MultiMap Proxy Listener", function () {
     // Remove tests
 
     it("listens for remove with value excluded", function (done) {
-        var listener = new Listener("removed", done, "test", "foo", null, null, null);
+        const listener = new Listener("removed", done, "test", "foo", null, null, null);
 
         map.addEntryListener(listener, null, false).then(function () {
             return map.put("foo", "bar");
@@ -132,7 +127,7 @@ describe("MultiMap Proxy Listener", function () {
     });
 
     it("listens for remove with value included", function (done) {
-        var listener = new Listener("removed", done, "test", "foo", null, "bar", null);
+        const listener = new Listener("removed", done, "test", "foo", null, "bar", null);
 
         map.addEntryListener(listener, null, true).then(function () {
             return map.put("foo", "bar");
@@ -142,7 +137,7 @@ describe("MultiMap Proxy Listener", function () {
     });
 
     it("listens for remove on specific key", function (done) {
-        var listener = new Listener("added", done, "test", "foo", null, null, null);
+        const listener = new Listener("added", done, "test", "foo", null, null, null);
 
         map.addEntryListener(listener, "foo", false).then(function () {
             return map.put("foo", "bar");
@@ -152,7 +147,7 @@ describe("MultiMap Proxy Listener", function () {
     });
 
     it("does not react to remove on the wrong key", function (done) {
-        var listener = {
+        const listener = {
             added: function () {
                 done("Reacted to update on the wrong key");
             }
@@ -173,7 +168,7 @@ describe("MultiMap Proxy Listener", function () {
 
     it("listens for clear", function (done) {
         this.timeout(10000);
-        var listener = {
+        const listener = {
             mapCleared: function (mapEvent) {
                 try {
                     expect(mapEvent.name).to.be.equal("test");
@@ -213,7 +208,7 @@ describe("MultiMap Proxy Listener", function () {
         let expectedEventCount = 3;
         const listener = (key, values) => {
             return {
-                added: event => {
+                added: (event) => {
                     expect(event.key).to.equal(key);
                     expect(values).to.include(event.value);
                     expectedEventCount--;
@@ -224,7 +219,7 @@ describe("MultiMap Proxy Listener", function () {
                     }
                 }
             }
-        }
+        };
 
         map.addEntryListener(listener('a', [1]), 'a')
             .then(() => map.addEntryListener(listener('b', [2, 22]), 'b'))

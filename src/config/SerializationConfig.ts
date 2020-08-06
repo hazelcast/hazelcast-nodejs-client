@@ -14,21 +14,71 @@
  * limitations under the License.
  */
 
-import {IdentifiedDataSerializableFactory, PortableFactory} from '../serialization/Serializable';
-import {ImportConfig} from './ImportConfig';
+import {
+    IdentifiedDataSerializableFactory,
+    PortableFactory,
+    CustomSerializable,
+} from '../serialization/Serializable';
+import {Serializer} from '../serialization/DefaultSerializer';
 import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy';
 
-export class SerializationConfig {
+/**
+ * User-defined serialization config for the client.
+ */
+export interface SerializationConfig {
+
+    /**
+     * Defines how the `number` type is represented on the cluster side. By default, it is serialized as `Double`.
+     */
+    defaultNumberType?: string;
+
+    /**
+     * Defines if big-endian is used as the byte order for the serialization. By default, set to `true`.
+     */
+    isBigEndian?: boolean;
+
+    /**
+     * Defines IdentifiedDataSerializableFactory serialization factories.
+     */
+    dataSerializableFactories?: { [id: number]: IdentifiedDataSerializableFactory };
+
+    /**
+     * Defines Portable serialization factories.
+     */
+    portableFactories?: { [id: number]: PortableFactory };
+
+    /**
+     * Defines portable version number. By default, set to `0`.
+     */
+    portableVersion?: number;
+
+    /**
+     * Defines Custom serializers.
+     */
+    customSerializers?: Array<Serializer<CustomSerializable>>;
+
+    /**
+     * Defines the global serializer. This serializer is registered as a fallback serializer
+     * to handle all other objects if a serializer cannot be located for them.
+     */
+    globalSerializer?: Serializer;
+
+    /**
+     * Defines JSON deserialization policy. By default, set to `eager`.
+     */
+    jsonStringDeserializationPolicy?: JsonStringDeserializationPolicy;
+
+}
+
+export class SerializationConfigImpl implements SerializationConfig {
+
     defaultNumberType = 'double';
     isBigEndian = true;
     dataSerializableFactories: { [id: number]: IdentifiedDataSerializableFactory } = {};
-    dataSerializableFactoryConfigs: { [id: number]: ImportConfig } = {};
     portableFactories: { [id: number]: PortableFactory } = {};
-    portableFactoryConfigs: { [id: number]: ImportConfig } = {};
     portableVersion = 0;
-    customSerializers: any[] = [];
-    customSerializerConfigs: { [id: number]: ImportConfig } = {};
-    globalSerializer: any = null;
-    globalSerializerConfig: ImportConfig = null;
+    customSerializers: Array<Serializer<CustomSerializable>> = [];
+    globalSerializer: Serializer = null;
     jsonStringDeserializationPolicy: JsonStringDeserializationPolicy = JsonStringDeserializationPolicy.EAGER;
+
 }
