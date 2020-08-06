@@ -58,8 +58,11 @@ export class ItemEvent<E> {
      */
     member: Member;
 
-    constructor(name: string, item: E, member: Member) {
+    eventType: ItemEventType;
+
+    constructor(name: string, eventType: ItemEventType, item: E, member: Member) {
         this.name = name;
+        this.eventType = eventType;
         this.item = item;
         this.member = member;
     }

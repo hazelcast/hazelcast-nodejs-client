@@ -200,7 +200,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
 
                 const member = this.client.getClusterService().getMember(uuid);
                 const name = this.name;
-                const itemEvent = new ItemEvent(name, responseObject, member);
+                const itemEvent = new ItemEvent(name, eventType, responseObject, member);
 
                 if (eventType === ItemEventType.ADDED && listener.itemAdded) {
                     listener.itemAdded.apply(null, [itemEvent]);
