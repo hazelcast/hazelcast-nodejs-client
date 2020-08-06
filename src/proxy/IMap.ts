@@ -106,7 +106,7 @@ export interface IMap<K, V> extends DistributedObject {
     addIndex(indexConfig: IndexConfig): Promise<void>;
 
     /**
-     * This method checks whether the map has an item associated with key
+     * Returns `true` if this map has an item associated with key.
      * @param key
      * @throws {RangeError} if key is undefined or null
      * @return `true` if the map contains the key, `false` otherwise.
@@ -114,7 +114,7 @@ export interface IMap<K, V> extends DistributedObject {
     containsKey(key: K): Promise<boolean>;
 
     /**
-     * This method return true if this map has key(s) associated with given value
+     * Returns `true` if this map has key(s) associated with given value.
      * @param value
      * @throws {RangeError} if value is undefined or null
      * @return `true` if the map has key or keys associated with given value.

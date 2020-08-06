@@ -19,7 +19,7 @@ import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
 import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame, DEFAULT_FLAGS} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
-import {SimpleEntryView} from '../../core/SimpleEntryView';
+import {SimpleEntryViewImpl} from '../../core/SimpleEntryView';
 import {Data} from '../../serialization/Data';
 import {DataCodec} from '../builtin/DataCodec';
 
@@ -36,7 +36,7 @@ const MAX_IDLE_OFFSET = TTL_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 const INITIAL_FRAME_SIZE = MAX_IDLE_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
 export class SimpleEntryViewCodec {
-    static encode(clientMessage: ClientMessage, simpleEntryView: SimpleEntryView<Data, Data>): void {
+    static encode(clientMessage: ClientMessage, simpleEntryView: SimpleEntryViewImpl<Data, Data>): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());
 
         const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE, DEFAULT_FLAGS);
@@ -58,7 +58,7 @@ export class SimpleEntryViewCodec {
         clientMessage.addFrame(END_FRAME.copy());
     }
 
-    static decode(clientMessage: ClientMessage): SimpleEntryView<Data, Data> {
+    static decode(clientMessage: ClientMessage): SimpleEntryViewImpl<Data, Data> {
         // begin frame
         clientMessage.nextFrame();
 
@@ -79,6 +79,6 @@ export class SimpleEntryViewCodec {
 
         CodecUtil.fastForwardToEndFrame(clientMessage);
 
-        return new SimpleEntryView<Data, Data>(key, value, cost, creationTime, expirationTime, hits, lastAccessTime, lastStoredTime, lastUpdateTime, version, ttl, maxIdle);
+        return new SimpleEntryViewImpl<Data, Data>(key, value, cost, creationTime, expirationTime, hits, lastAccessTime, lastStoredTime, lastUpdateTime, version, ttl, maxIdle);
     }
 }

@@ -22,7 +22,7 @@ import * as Long from 'long';
 import {StringCodec} from './builtin/StringCodec';
 import {Data} from '../serialization/Data';
 import {DataCodec} from './builtin/DataCodec';
-import {SimpleEntryView} from '../core/SimpleEntryView';
+import {SimpleEntryViewImpl} from '../core/SimpleEntryView';
 import {SimpleEntryViewCodec} from './custom/SimpleEntryViewCodec';
 import {CodecUtil} from './builtin/CodecUtil';
 
@@ -36,7 +36,7 @@ const REQUEST_INITIAL_FRAME_SIZE = REQUEST_THREAD_ID_OFFSET + BitsUtil.LONG_SIZE
 const RESPONSE_MAX_IDLE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
 export interface MapGetEntryViewResponseParams {
-    response: SimpleEntryView<Data, Data>;
+    response: SimpleEntryViewImpl<Data, Data>;
     maxIdle: Long;
 }
 

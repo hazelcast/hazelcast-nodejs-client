@@ -105,16 +105,16 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbu
             });
     }
 
-    readMany(sequence: number | Long, minCount: number, maxCount: number, filter: any = null): Promise<ReadResultSet<E>> {
-
+    readMany(sequence: number | Long,
+             minCount: number,
+             maxCount: number,
+             filter: any = null): Promise<ReadResultSet<E>> {
         if (Long.fromValue(sequence).lessThan(0)) {
             throw new RangeError('Sequence number should not be less than zero, was: ' + sequence);
         }
-
         if (minCount < 0) {
             throw new RangeError('Min count should not be less than zero, was: ' + sequence);
         }
-
         if (minCount > maxCount) {
             throw new RangeError('Min count ' + minCount + 'was larger than max count ' + maxCount);
         }

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
+import * as Long from 'long';
+
 /**
  * ReadResultSet defines the result of a {@link Ringbuffer.readMany} operation.
  */
-import * as Long from 'long';
-
 export interface ReadResultSet<T> {
 
     /**
