@@ -70,7 +70,7 @@ import {EventType} from '../core/EventType';
 import {SimpleEntryView} from '../core/SimpleEntryView';
 import {MapEvent, MapListener} from '../core/MapListener';
 import {IterationType, Predicate} from '../core/Predicate';
-import {ReadOnlyLazyListImpl} from '../core/ReadOnlyLazyList';
+import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {Data} from '../serialization/Data';
 import {PagingPredicateImpl} from '../serialization/DefaultPredicates';
@@ -206,7 +206,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         }
     }
 
-    valuesWithPredicate(predicate: Predicate): Promise<ReadOnlyLazyListImpl<V>> {
+    valuesWithPredicate(predicate: Predicate): Promise<ReadOnlyLazyList<V>> {
         assertNotNull(predicate);
         if (predicate instanceof PagingPredicateImpl) {
             predicate.setIterationType(IterationType.VALUE);
@@ -216,14 +216,14 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                 .then((clientMessage) => {
                     const response = MapValuesWithPagingPredicateCodec.decodeResponse(clientMessage);
                     predicate.setAnchorList(response.anchorDataList.asAnchorList(serializationService));
-                    return new ReadOnlyLazyListImpl(response.response, serializationService);
+                    return new ReadOnlyLazyList(response.response, serializationService);
                 });
         } else {
             const predicateData = this.toData(predicate);
             return this.encodeInvokeOnRandomTarget(MapValuesWithPredicateCodec, predicateData)
                 .then((clientMessage) => {
                     const response = MapValuesWithPredicateCodec.decodeResponse(clientMessage);
-                    return new ReadOnlyLazyListImpl(response.response, this.client.getSerializationService());
+                    return new ReadOnlyLazyList(response.response, this.client.getSerializationService());
                 });
         }
     }
@@ -442,11 +442,11 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.setInternal(keyData, valueData, ttl);
     }
 
-    values(): Promise<ReadOnlyLazyListImpl<V>> {
+    values(): Promise<ReadOnlyLazyList<V>> {
         return this.encodeInvokeOnRandomTarget(MapValuesCodec)
             .then((clientMessage) => {
                 const response = MapValuesCodec.decodeResponse(clientMessage);
-                return new ReadOnlyLazyListImpl(response.response, this.client.getSerializationService());
+                return new ReadOnlyLazyList(response.response, this.client.getSerializationService());
             });
     }
 
