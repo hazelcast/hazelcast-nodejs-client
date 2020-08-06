@@ -599,6 +599,7 @@ class Employee {
     constructor(id, name) {
         this.id = id;
         this.name = name;
+        // IdentifiedDataSerializable interface properties:
         this.factoryId = 1000;
         this.classId = 100;
     }
@@ -666,6 +667,7 @@ class Customer {
         this.name = name;
         this.id = id;
         this.lastOrder = lastOrder;
+        // Portable interface properties:
         this.factoryId = 1;
         this.classId = 1;
     }
@@ -729,9 +731,9 @@ const cfg = {
 }
 ```
 
-If you update the class by changing the type of one of the fields or by adding a new field, it is a good idea to upgrade the version of the class, rather than sticking to the global version specified in the configuration. In the Node.js client, you can achieve this by simply adding the `getVersion()` method to your class’s implementation of `Portable`, and setting the `ClassVersion` to be different than the default global version.
+If you update the class by changing the type of one of the fields or by adding a new field, it is a good idea to upgrade the version of the class, rather than sticking to the global version specified in the configuration. In the Node.js client, you can achieve this by simply adding the `version` property to your implementation of `Portable`, and setting the `version` to be different than the default global version.
 
-> **NOTE: If you do not use the `getVersion()` method in your `Portable` implementation, it will have the global version, by default.**
+> **NOTE: If you do not use the `version` property in your `Portable` implementation, it will have the global version, by default.**
 
 Here is an example implementation of creating a version 2 for the `Foo` class:
 
@@ -740,6 +742,7 @@ class Foo {
     constructor(foo, foo2) {
         this.foo = foo;
         this.foo2 = foo2;
+        // VersionedPortable interface properties:
         this.factoryId = 1;
         this.classId = 1;
         this.version = 2;
@@ -786,6 +789,7 @@ Let's say you have an object `CustomSerializable` and you would like to customiz
 class CustomSerializable {
     constructor(value) {
         this.value = value;
+        // CustomSerializable interface properties:
         this.hzCustomId = 10;
     }
 }
@@ -798,6 +802,7 @@ Now you need to implement a custom `Serializer` which will serialize `CustomSeri
 ```javascript
 class CustomSerializer {
     constructor() {
+        // Serializer interface properties:
         this.id = 10;
     }
 
@@ -849,6 +854,7 @@ A sample global serializer that integrates with a third party serializer is show
 ```javascript
 class GlobalSerializer {
     constructor() {
+        // Serializer interface properties:
         this.id = 20;
     }
 
@@ -2306,7 +2312,7 @@ class OrderKey {
     constructor(orderId, customerId) {
         this.orderId = orderId;
         this.customerId = customerId;
-        // PartitionAware requires partitionKey property
+        // PartitionAware interface properties:
         this.partitionKey = customerId;
     }
 }
