@@ -20,6 +20,9 @@ import {DataInput, DataOutput} from '../serialization/Data';
 export const REST_VALUE_FACTORY_ID = -25;
 export const REST_VALUE_CLASS_ID = 1;
 
+/**
+ * Wrapper for values stored via IMDG REST API.
+ */
 export class RestValue implements IdentifiedDataSerializable {
 
     factoryId = REST_VALUE_FACTORY_ID;

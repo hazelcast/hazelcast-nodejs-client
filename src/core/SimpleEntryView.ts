@@ -19,7 +19,7 @@ import * as Long from 'long';
 /**
  * Represents a view of a map entry.
  */
-export interface SimpleEntryView<K, V> {
+export class SimpleEntryView<K, V> {
 
     /**
      * Key of the entry.
@@ -79,23 +79,6 @@ export interface SimpleEntryView<K, V> {
     /**
      * Last set max idle time in milliseconds.
      */
-    maxIdle: Long;
-
-}
-
-export class SimpleEntryViewImpl<K, V> implements SimpleEntryView<K, V> {
-
-    key: K;
-    value: V;
-    cost: Long;
-    creationTime: Long;
-    expirationTime: Long;
-    hits: Long;
-    lastAccessTime: Long;
-    lastStoredTime: Long;
-    lastUpdateTime: Long;
-    version: Long;
-    ttl: Long;
     maxIdle: Long;
 
     constructor(key: K, value: V, cost: Long, creationTime: Long,

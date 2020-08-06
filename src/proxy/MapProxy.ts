@@ -67,7 +67,7 @@ import {MapValuesCodec} from '../codec/MapValuesCodec';
 import {MapValuesWithPagingPredicateCodec} from '../codec/MapValuesWithPagingPredicateCodec';
 import {MapValuesWithPredicateCodec} from '../codec/MapValuesWithPredicateCodec';
 import {EventType} from '../core/EventType';
-import {SimpleEntryViewImpl} from '../core/SimpleEntryView';
+import {SimpleEntryView} from '../core/SimpleEntryView';
 import {MapEvent, MapListener} from '../core/MapListener';
 import {IterationType, Predicate} from '../core/Predicate';
 import {ReadOnlyLazyListImpl} from '../core/ReadOnlyLazyList';
@@ -450,7 +450,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             });
     }
 
-    getEntryView(key: K): Promise<SimpleEntryViewImpl<K, V>> {
+    getEntryView(key: K): Promise<SimpleEntryView<K, V>> {
         assertNotNull(key);
         const keyData = this.toData(key);
         return this.encodeInvokeOnKey(MapGetEntryViewCodec, keyData, keyData, 0)
@@ -461,7 +461,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                     return null;
                 }
 
-                return new SimpleEntryViewImpl<K, V>(this.toObject(dataEntryView.key), this.toObject(dataEntryView.value),
+                return new SimpleEntryView<K, V>(this.toObject(dataEntryView.key), this.toObject(dataEntryView.value),
                     dataEntryView.cost, dataEntryView.creationTime, dataEntryView.expirationTime, dataEntryView.hits,
                     dataEntryView.lastAccessTime, dataEntryView.lastStoredTime, dataEntryView.lastUpdateTime,
                     dataEntryView.version, dataEntryView.ttl, response.maxIdle);

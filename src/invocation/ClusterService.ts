@@ -79,10 +79,10 @@ export class ClusterService implements Cluster {
     }
 
     /**
-     * Returns a collection of the members that satisfy the given {@link MemberSelector}.
+     * Returns an array of the members that satisfy the given {@link MemberSelector}.
      *
      * @param selector {@link MemberSelector} instance to filter members to return
-     * @return members that satisfy the given {@link MemberSelector}.
+     * @return members that satisfy the given selector.
      */
     public getMembers(selector?: MemberSelector): Member[] {
         const members = this.getMemberList();
