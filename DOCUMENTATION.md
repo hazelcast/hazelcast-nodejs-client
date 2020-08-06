@@ -793,7 +793,7 @@ class CustomSerializable {
 
 Note that the `hzCustomId` property should return type id of the `CustomSerializable`.
 
-Now you need to implement acustom `CustomSerializer` which will will serialize `CustomSerializable`.
+Now you need to implement a custom `Serializer` which will serialize `CustomSerializable` objects.
 
 ```javascript
 class CustomSerializer {

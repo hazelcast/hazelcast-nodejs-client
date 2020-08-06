@@ -144,7 +144,7 @@ export class IndexUtil {
         newConfig.bitmapIndexOptions = new InternalBitmapIndexOptions();
         newConfig.type = indexType;
 
-        let name = indexName == null ? mapName + '_' + this.getIndexTypeName(indexType) : null;
+        let name = indexName == null ? mapName + '_' + this.indexTypeToName(indexType) : null;
         for (const normalizedAttributeName of normalizedAttributeNames) {
             this.validateAttribute(indexName, normalizedAttributeName)
             newConfig.attributes.push(normalizedAttributeName);
@@ -162,7 +162,7 @@ export class IndexUtil {
         return newConfig;
     }
 
-    private static getIndexTypeName(indexType: IndexType): string {
+    private static indexTypeToName(indexType: IndexType): string {
         switch (indexType) {
             case IndexType.SORTED:
                 return 'sorted';
