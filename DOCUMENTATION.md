@@ -2306,15 +2306,13 @@ class OrderKey {
     constructor(orderId, customerId) {
         this.orderId = orderId;
         this.customerId = customerId;
-    }
-
-    getPartitionKey() {
-        return this.customerId;
+        // PartitionAware requires partitionKey property
+        this.partitionKey = customerId;
     }
 }
 ```
 
-Notice that `OrderKey` implements `PartitionAware` interface and that `getPartitionKey()` method returns the `customerId`. This will make sure that the `Customer` entry and its `Order`s will be stored on the same member.
+Notice that `OrderKey` implements `PartitionAware` interface and that `partitionKey` property contains the `customerId`. This will make sure that the `Customer` entry and its `Order`s will be stored on the same member.
 
 ```javascript
 const customersMap = await client.getMap('customers');

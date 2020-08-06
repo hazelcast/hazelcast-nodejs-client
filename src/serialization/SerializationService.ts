@@ -100,8 +100,8 @@ export class SerializationServiceV1 implements SerializationService {
         const dataOutput = new PositionalObjectDataOutput(this, this.serializationConfig.isBigEndian);
         const serializer = this.findSerializerFor(object);
         // Check if object is partition aware
-        if (object != null && object.getPartitionKey) {
-            const partitionKey = object.getPartitionKey();
+        if (object != null && object.partitionKey != null) {
+            const partitionKey = object.partitionKey;
             const serializedPartitionKey = this.toData(partitionKey);
             dataOutput.writeIntBE(this.calculatePartitionHash(serializedPartitionKey, partitioningStrategy));
         } else {

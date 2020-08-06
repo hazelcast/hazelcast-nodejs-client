@@ -20,7 +20,7 @@ const RC = require('../RC');
 const expect = require('chai').expect;
 const Promise = require('bluebird');
 
-describe('Map Partition Aware', function () {
+describe('MapPartitionAwareTest', function () {
 
     let cluster, client;
     const numOfEntries = 10000;
@@ -33,10 +33,6 @@ describe('Map Partition Aware', function () {
         this.key = key;
         this.partitionKey = partitionKey;
     }
-
-    PartitionAwareKey.prototype.getPartitionKey = function () {
-        return this.partitionKey;
-    };
 
     function getLocalMapStats(serverInstance) {
         return 'function getLocalMapStats() {' +
