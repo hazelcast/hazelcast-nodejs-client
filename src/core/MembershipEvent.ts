@@ -20,7 +20,7 @@ import {Member} from './Member';
  * Membership event fired when a new member is added to the cluster and/or
  * when a member leaves the cluster or when there is a member attribute change.
  */
-export class MembershipEvent {
+export interface MembershipEvent {
 
     /**
      * Removed or added member.
@@ -40,7 +40,7 @@ export class MembershipEventImpl implements MembershipEvent {
     eventType: MemberEvent;
     members: Member[];
 
-    constructor(member: Member, eventType: number, members: Member[]) {
+    constructor(member: Member, eventType: MemberEvent, members: Member[]) {
         this.member = member;
         this.eventType = eventType;
         this.members = members;
