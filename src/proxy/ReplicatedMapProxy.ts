@@ -36,7 +36,7 @@ import {ReplicatedMapValuesCodec} from '../codec/ReplicatedMapValuesCodec';
 import {EventType} from '../core/EventType';
 import {EntryEvent, EntryListener} from '../core/EntryListener';
 import {Predicate} from '../core/Predicate';
-import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
+import {ReadOnlyLazyListImpl} from '../core/ReadOnlyLazyList';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {Data} from '../serialization/Data';
 import {assertNotNull} from '../Util';
@@ -154,16 +154,16 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
             });
     }
 
-    values(comparator?: ArrayComparator<V>): Promise<ReadOnlyLazyList<V>> {
+    values(comparator?: ArrayComparator<V>): Promise<ReadOnlyLazyListImpl<V>> {
         return this.encodeInvoke(ReplicatedMapValuesCodec)
             .then((clientMessage) => {
                 const response = ReplicatedMapValuesCodec.decodeResponse(clientMessage);
                 const valuesData = response.response;
                 if (comparator) {
                     const desValues = valuesData.map(this.toObject.bind(this));
-                    return new ReadOnlyLazyList(desValues.sort(comparator), this.client.getSerializationService());
+                    return new ReadOnlyLazyListImpl(desValues.sort(comparator), this.client.getSerializationService());
                 }
-                return new ReadOnlyLazyList(valuesData, this.client.getSerializationService());
+                return new ReadOnlyLazyListImpl(valuesData, this.client.getSerializationService());
             });
     }
 

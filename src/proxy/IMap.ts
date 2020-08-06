@@ -34,7 +34,6 @@ export interface IMap<K, V> extends DistributedObject {
      * engine they run on the Query infrastructure. Their performance is tens to hundreds times better due to the fact
      * that they run in parallel for each partition and are highly optimized for speed and low memory consumption.
      *
-     * @requires Hazelcast 3.8
      * @param aggregator aggregator to aggregate the entries with
      * @param <R> type of the result
      * @return the result of the given type
@@ -49,7 +48,6 @@ export interface IMap<K, V> extends DistributedObject {
      * engine they run on the Query infrastructure. Their performance is tens to hundreds times better due to the fact
      * that they run in parallel for each partition and are highly optimized for speed and low memory consumption.
      *
-     * @requires Hazelcast 3.8
      * @param aggregator aggregator to aggregate the entries with
      * @param predicate predicate to filter the entries with
      * @param <R> type of the result

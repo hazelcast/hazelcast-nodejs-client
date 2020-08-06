@@ -43,13 +43,12 @@ export interface ReadResultSet<T> {
     get(index: number): T;
 
     /**
-     * Return the sequence number for the item at the given index.
+     * Returns the sequence number for the item at the given index.
      * The method throws if there are no sequences available.
      * This can happen when the cluster version is lower than 3.9.
      *
      * @param index
      * @throws UnsupportedOperationError if server version is 3.8 or lower.
-     * @requires Hazelcast 3.9
      * @returns the sequence number for the ringbuffer item
      *          undefined if the index is out of bounds.
      */

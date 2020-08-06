@@ -37,7 +37,7 @@ import {ListSetCodec} from '../codec/ListSetCodec';
 import {ListSizeCodec} from '../codec/ListSizeCodec';
 import {ListSubCodec} from '../codec/ListSubCodec';
 import {ItemEventImpl, ItemEventType, ItemListener} from '../core/ItemListener';
-import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
+import {ReadOnlyLazyListImpl} from '../core/ReadOnlyLazyList';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {Data} from '../serialization/Data';
 import {IList} from './IList';
@@ -177,11 +177,11 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
             });
     }
 
-    subList(start: number, end: number): Promise<ReadOnlyLazyList<E>> {
+    subList(start: number, end: number): Promise<ReadOnlyLazyListImpl<E>> {
         return this.encodeInvoke(ListSubCodec, start, end)
             .then((clientMessage) => {
                 const response = ListSubCodec.decodeResponse(clientMessage);
-                return new ReadOnlyLazyList<E>(response.response, this.client.getSerializationService());
+                return new ReadOnlyLazyListImpl<E>(response.response, this.client.getSerializationService());
             });
     }
 

@@ -24,7 +24,7 @@ import {MultiMapTryLockCodec} from '../codec/MultiMapTryLockCodec';
 import {MultiMapUnlockCodec} from '../codec/MultiMapUnlockCodec';
 import {EventType} from '../core/EventType';
 import {EntryEvent, EntryListener} from '../core/EntryListener';
-import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
+import {ReadOnlyLazyListImpl} from '../core/ReadOnlyLazyList';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {LockReferenceIdGenerator} from '../LockReferenceIdGenerator';
 import {Data} from '../serialization/Data';
@@ -69,12 +69,12 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
             });
     }
 
-    get(key: K): Promise<ReadOnlyLazyList<V>> {
+    get(key: K): Promise<ReadOnlyLazyListImpl<V>> {
         const keyData = this.toData(key);
         return this.encodeInvokeOnKey(MultiMapGetCodec, keyData, keyData, 1)
             .then((clientMessage) => {
                 const response = MultiMapGetCodec.decodeResponse(clientMessage);
-                return new ReadOnlyLazyList<V>(response.response, this.client.getSerializationService());
+                return new ReadOnlyLazyListImpl<V>(response.response, this.client.getSerializationService());
             });
     }
 
@@ -88,12 +88,12 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
             });
     }
 
-    removeAll(key: K): Promise<ReadOnlyLazyList<V>> {
+    removeAll(key: K): Promise<ReadOnlyLazyListImpl<V>> {
         const keyData = this.toData(key);
         return this.encodeInvokeOnKey(MultiMapRemoveCodec, keyData, keyData, 1)
             .then((clientMessage) => {
                 const response = MultiMapRemoveCodec.decodeResponse(clientMessage);
-                return new ReadOnlyLazyList<V>(response.response, this.client.getSerializationService());
+                return new ReadOnlyLazyListImpl<V>(response.response, this.client.getSerializationService());
             });
     }
 
@@ -105,11 +105,11 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
             });
     }
 
-    values(): Promise<ReadOnlyLazyList<V>> {
+    values(): Promise<ReadOnlyLazyListImpl<V>> {
         return this.encodeInvokeOnRandomTarget(MultiMapValuesCodec)
             .then((clientMessage) => {
                 const response = MultiMapValuesCodec.decodeResponse(clientMessage);
-                return new ReadOnlyLazyList<V>(response.response, this.client.getSerializationService());
+                return new ReadOnlyLazyListImpl<V>(response.response, this.client.getSerializationService());
             });
     }
 

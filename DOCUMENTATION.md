@@ -2042,7 +2042,7 @@ const startingWithA = await personMap.valuesWithPredicate(predicate);
 console.log(startingWithA.get(0));
 ```
 
-In this example, the code creates a list with the values whose keys start with the letter `A`. Note that the returned object is an instance of `ReadOnlyLazyList` class.
+In this example, the code creates a list with the values whose keys start with the letter `A`. Note that the returned object is an instance of `ReadOnlyLazyList` interface.
 
 You can use the `this` attribute to perform a predicated search for entry values. See the following example:
 
