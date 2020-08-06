@@ -13,20 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
+const { Client } = require('hazelcast-client');
 
-Client.newHazelcastClient().then(function (hazelcastClient) {
-    var client = hazelcastClient;
-    var pnCounter;
-    hazelcastClient.getPNCounter('counter').then(function (counter) {
-        pnCounter = counter;
-        return pnCounter.addAndGet(5);
-    }).then(function (val) {
-        console.log('Added 5 to `counter`. Current value is ' + val);
-        return pnCounter.decrementAndGet();
-    }).then(function (val) {
-        console.log('Decremented `counter`. Current value is ' + val);
-        return client.shutdown();
-    });
-});
+(async () => {
+    try {
+        const client = await Client.newHazelcastClient();
+
+        const pnCounter = await client.getPNCounter('counter');
+        let value = await pnCounter.addAndGet(5);
+        console.log('Incremented counter by 5. Current value is', value.toNumber());
+        value = await pnCounter.decrementAndGet();
+        console.log('Decremented counter. Current value is', value.toNumber());
+
+        client.shutdown();
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

@@ -13,17 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
+const { Client } = require('hazelcast-client');
 
-Client.newHazelcastClient().then(function (hazelcastClient) {
-    var client = hazelcastClient;
-    var flakeIdGenerator;
-    hazelcastClient.getFlakeIdGenerator('generator').then(function (gen) {
-        flakeIdGenerator = gen;
-        return flakeIdGenerator.newId();
-    }).then(function (value) {
-        console.log('New id: ' + value.toString());
-        return client.shutdown();
-    });
-});
+(async () => {
+    try {
+        const client = await Client.newHazelcastClient();
+
+        const flakeIdGenerator = await client.getFlakeIdGenerator('generator');
+        const id = await flakeIdGenerator.newId();
+        console.log('Generated id:', id.toString());
+
+        client.shutdown();
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

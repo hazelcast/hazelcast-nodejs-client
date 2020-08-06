@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require('chai').expect;
-
-var Util = require("../lib/Util");
-var TestUtil = require('./Util');
+const expect = require('chai').expect;
+const Util = require("../lib/Util");
+const TestUtil = require('./Util');
 
 describe('Repetition Task', function () {
 
     it('should be cancelled before timeout', function () {
-        var counter = 0;
-        var task = Util.scheduleWithRepetition(function () {
+        let counter = 0;
+        const task = Util.scheduleWithRepetition(function () {
             counter++;
         }, 50, 75);
 
@@ -38,8 +38,8 @@ describe('Repetition Task', function () {
     });
 
     it('should be cancelled after timeout', function () {
-        var counter = 0;
-        var task = Util.scheduleWithRepetition(function () {
+        let counter = 0;
+        const task = Util.scheduleWithRepetition(function () {
             counter++;
         }, 50, 75);
 
@@ -54,8 +54,8 @@ describe('Repetition Task', function () {
     });
 
     it('should be cancelled after interval', function () {
-        var counter = 0;
-        var task = Util.scheduleWithRepetition(function () {
+        let counter = 0;
+        const task = Util.scheduleWithRepetition(function () {
             counter++;
         }, 50, 75);
 
@@ -70,8 +70,7 @@ describe('Repetition Task', function () {
     });
 
     it('should not throw when cancelled twice', function () {
-        var task = Util.scheduleWithRepetition(function () {
-        }, 100, 200);
+        const task = Util.scheduleWithRepetition(() => {}, 100, 200);
 
         Util.cancelRepetitionTask(task);
         Util.cancelRepetitionTask(task);

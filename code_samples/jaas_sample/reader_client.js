@@ -13,30 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
-var Config = require('hazelcast-client').Config.ClientConfig;
+const { Client } = require('hazelcast-client');
+const { UsernamePasswordCredentials } = require('./user_pass_cred');
+const { UsernamePasswordCredentialsFactory } = require('./user_pass_cred_factory');
 
-var UsernamePasswordCredentials = require('./user_pass_cred').UsernamePasswordCredentials;
-var UsernamePasswordCredentialsFactory = require('./user_pass_cred_factory').UsernamePasswordCredentialsFactory;
+(async () => {
+    try {
+        const readerClient = await Client.newHazelcastClient({
+            serialization: {
+                portableFactories: {
+                    1: new UsernamePasswordCredentialsFactory()
+                }
+            },
+            customCredentials: new UsernamePasswordCredentials('reader', 'password2', '127.0.0.1')
+        });
+        console.log('Admin client connected');
 
-var readerClientConfig = new Config();
-
-readerClientConfig.serializationConfig.portableFactories[1] = new UsernamePasswordCredentialsFactory();
-readerClientConfig.customCredentials = new UsernamePasswordCredentials('reader', 'password2', '127.0.0.1');
-
-Client.newHazelcastClient(readerClientConfig).then(function (readerClient) {
-    console.log('Reader client connected');
-    var readerMap;
-    return readerClient.getMap('importantReaderMap').then(function (map) {
+        const readerMap = await readerClient.getMap('importantReaderMap');
         console.log('Reader can create a map');
-        readerMap = map;
-        return readerMap.get('someKey');
-    }).then(function (value) {
-        console.log('Reader can read from map: ' + value);
-        return readerMap.put('anotherKey', 'anotherValue'); // Should reject
-    }).catch(function (err) {
-        console.log('Reader cannot put to map. Reason: ' + err);
-        return readerClient.shutdown();
-    });
-});
+        const value = await readerMap.get('someKey');
+        console.log('Reader can read from map:', value);
+        try {
+            await readerMap.put('anotherKey', 'anotherValue'); // Should reject
+        } catch(err) {
+            console.log('Reader cannot put to map. Reason:', err);
+        }
+
+        readerClient.shutdown();
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

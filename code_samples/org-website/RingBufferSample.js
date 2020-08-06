@@ -13,29 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
-// Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-Client.newHazelcastClient().then(function (hz) {
-    var rb;
-    // Get a Ringbuffer called "rb"
-    hz.getRingbuffer('rb').then(function (buffer) {
-        rb = buffer;
-        return rb.add(100);
-    }).then(function () {
-        return rb.add(200);
-    }).then(function (value) {
-        // we start from the oldest item.
-        // if you want to start from the next item, call rb.tailSequence()+1
-        return rb.headSequence();
-    }).then(function (sequence) {
-        return rb.readOne(sequence).then(function (value) {
-            console.log(value);
-            return rb.readOne(sequence.add(1));
-        }).then(function (value) {
-            console.log(value);
-            // Shutdown this Hazelcast Client
-            hz.shutdown();
-        });
-    });
-});
+const { Client } = require('hazelcast-client');
+
+(async () => {
+    try {
+        // Start the Hazelcast Client and connect to an already running
+        // Hazelcast Cluster on 127.0.0.1
+        const hz = await Client.newHazelcastClient();
+        // Get a Ringbuffer called 'rb'
+        const rb = await hz.getRingbuffer('rb');
+        await rb.add(100);
+        let value = await rb.add(200);
+        // We start from the oldest item. If you want to start from
+        // the next item, call rb.tailSequence()+1
+        const sequence = await rb.headSequence();
+        value = await rb.readOne(sequence);
+        console.log('Head value:', value);
+        value = await rb.readOne(sequence.add(1));
+        console.log('Next value:', value);
+        // Shutdown this Hazelcast client
+        hz.shutdown();
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

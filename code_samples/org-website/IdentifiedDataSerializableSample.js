@@ -13,49 +13,60 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
-var Config = require('hazelcast-client').Config;
+const { Client } = require('hazelcast-client');
 
-function Employee(id, name) {
-    this.id = id;
-    this.name = name;
-}
-
-Employee.prototype.readData = function (input) {
-    this.id = input.readInt();
-    this.name = input.readUTF();
-};
-
-Employee.prototype.writeData = function (output) {
-    output.writeInt(this.id);
-    output.writeUTF(this.name);
-};
-
-Employee.prototype.getFactoryId = function () {
-    return 1000;
-};
-
-Employee.prototype.getClassId = function () {
-    return 100;
-};
-
-function SampleDataSerializableFactory() {
-    // Constructor function
-}
-
-SampleDataSerializableFactory.prototype.create = function (type) {
-    if (type === 100) {
-        return new Employee();
+class Employee {
+    constructor(id, name) {
+        this.id = id;
+        this.name = name;
     }
-    return null;
-};
 
-var cfg = new Config.ClientConfig();
-cfg.serializationConfig.dataSerializableFactories[1000] = new SampleDataSerializableFactory();
-// Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-Client.newHazelcastClient(cfg).then(function (hz) {
-    // Employee can be used here
-    hz.shutdown();
-});
+    readData(input) {
+        this.id = input.readInt();
+        this.name = input.readUTF();
+    }
 
+    writeData(output) {
+        output.writeInt(this.id);
+        output.writeUTF(this.name);
+    }
+
+    getFactoryId() {
+        return 1000;
+    }
+
+    getClassId() {
+        return 100;
+    }
+}
+
+class SampleDataSerializableFactory {
+    create(type) {
+        if (type === 100) {
+            return new Employee();
+        }
+        return null;
+    }
+}
+
+(async () => {
+    try {
+        // Start the Hazelcast Client and connect to an already running
+        // Hazelcast Cluster on 127.0.0.1
+        const hz = await Client.newHazelcastClient({
+            serialization: {
+                dataSerializableFactories: {
+                    1000: new SampleDataSerializableFactory()
+                }
+            }
+        });
+        // Employee can be used here
+
+        // Shutdown this Hazelcast client
+        hz.shutdown();
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

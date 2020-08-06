@@ -1,0 +1,7 @@
+{
+    "network": {
+        "hazelcastCloud": {
+            "discoveryToken": "EXAMPLE_TOKEN"
+        }
+    }
+}

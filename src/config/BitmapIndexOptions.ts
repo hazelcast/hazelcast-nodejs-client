@@ -21,6 +21,7 @@ import {QueryConstants} from '../core/Predicate';
  * {@link BitmapIndexOptions.uniqueKey unique key} values.
  */
 export enum UniqueKeyTransformation {
+
     /**
      * Extracted unique key value is interpreted as an object value.
      * Non-negative unique ID is assigned to every distinct object value.
@@ -41,7 +42,10 @@ export enum UniqueKeyTransformation {
      * long (if necessary) and the resulting value is used directly as an ID.
      */
     RAW = 2,
+
 }
+
+export type UniqueKeyTransformationStrings = keyof typeof UniqueKeyTransformation;
 
 const DEFAULT_UNIQUE_KEY = QueryConstants.KEY_ATTRIBUTE_NAME;
 const DEFAULT_UNIQUE_KEY_TRANSFORMATION = UniqueKeyTransformation.OBJECT;
@@ -49,19 +53,31 @@ const DEFAULT_UNIQUE_KEY_TRANSFORMATION = UniqueKeyTransformation.OBJECT;
 /**
  * Configures indexing options specific to bitmap indexes.
  */
-export class BitmapIndexOptions {
+export interface BitmapIndexOptions {
+
     /**
      * Unique key attribute configured in this index config.
      * Defaults to {@code __key}. The unique key attribute is used as a source
      * of values which uniquely identify each entry being inserted into an index.
      */
-    uniqueKey: string;
+    uniqueKey?: string;
 
     /**
-     * Unique key transformation configured in this index. Defaults
-     * to {@link UniqueKeyTransformation.OBJECT OBJECT}. The transformation is
-     * applied to every value extracted from unique key attribute.
+     * Unique key transformation configured in this index. The transformation is
+     * applied to every value extracted from unique key attribute. Defaults
+     * to `OBJECT`. Available values are `OBJECT`, `LONG`, and `RAW`.
      */
+    uniqueKeyTransformation?: UniqueKeyTransformationStrings;
+
+}
+
+/**
+ * Follows the shape of {@link BitmapIndexOptions}, but doesn't implement it due
+ * to the `uniqueKeyTransformation` enum field.
+ */
+export class InternalBitmapIndexOptions {
+
+    uniqueKey: string;
     uniqueKeyTransformation: UniqueKeyTransformation;
 
     constructor(uniqueKey: string = DEFAULT_UNIQUE_KEY,
@@ -76,4 +92,5 @@ export class BitmapIndexOptions {
             ', uniqueKeyTransformation: ' + this.uniqueKeyTransformation +
             ']';
     }
+
 }

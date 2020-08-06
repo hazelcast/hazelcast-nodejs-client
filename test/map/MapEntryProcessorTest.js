@@ -13,54 +13,55 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require('chai').expect;
-var Client = require('../../').Client;
-var Config = require('../../.').Config;
-var Predicates = require('../../.').Predicates;
-var Controller = require('../RC');
-var fs = require('fs');
-var _fillMap = require('../Util').fillMap;
+const expect = require('chai').expect;
+const Client = require('../../').Client;
+const Predicates = require('../../.').Predicates;
+const RC = require('../RC');
+const fs = require('fs');
+const fillMap = require('../Util').fillMap;
 
-var IdentifiedFactory = require('../javaclasses/IdentifiedFactory');
-var IdentifiedEntryProcessor = require('../javaclasses/IdentifiedEntryProcessor');
+const IdentifiedFactory = require('../javaclasses/IdentifiedFactory');
+const IdentifiedEntryProcessor = require('../javaclasses/IdentifiedEntryProcessor');
 
 describe('Entry Processor', function () {
-    var MAP_SIZE = 1000;
-    var cluster;
-    var client;
-    var map;
 
-    function _createConfig(clusterName) {
-        var cfg = new Config.ClientConfig();
-        cfg.clusterName = clusterName;
-        cfg.serializationConfig.dataSerializableFactories[66] = new IdentifiedFactory();
-        return cfg;
-    }
+    const MAP_SIZE = 1000;
+    let cluster, client;
+    let map;
 
     before(function () {
-        return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_identifiedfactory.xml', 'utf8')).then(function (res) {
-            cluster = res;
-            return Controller.startMember(cluster.id);
-        }).then(function (member) {
-            var cfg = _createConfig(cluster.id);
-            return Client.newHazelcastClient(cfg);
-        }).then(function (cli) {
-            client = cli;
-        });
+        return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_identifiedfactory.xml', 'utf8'))
+            .then(function (res) {
+                cluster = res;
+                return RC.startMember(cluster.id);
+            })
+            .then(function (member) {
+                return Client.newHazelcastClient({
+                    clusterName: cluster.id,
+                    serialization: {
+                        dataSerializableFactories: {
+                            66: new IdentifiedFactory()
+                        }
+                    }
+                });
+            })
+            .then(function (cli) {
+                client = cli;
+            });
     });
 
     after(function () {
         client.shutdown();
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     beforeEach(function () {
         return client.getMap('map-to-be-processed').then(function (mp) {
             map = mp;
-            return _fillMap(map, MAP_SIZE, '', '');
+            return fillMap(map, MAP_SIZE, '', '');
         });
-
     });
 
     afterEach(function () {
@@ -90,21 +91,24 @@ describe('Entry Processor', function () {
 
     it('executeOnEntries with predicate should modify entries', function () {
         this.timeout(4000);
-        return map.executeOnEntries(new IdentifiedEntryProcessor('processed'), Predicates.regex('this', '^[01]$')).then(function () {
-            return map.getAll(["0", "1", "2"]);
-        }).then(function (entries) {
-            return expect(entries).to.deep.have.members([['0', 'processed'], ['1', 'processed'], ['2', '2']]);
-        });
+        return map.executeOnEntries(new IdentifiedEntryProcessor('processed'), Predicates.regex('this', '^[01]$'))
+            .then(function () {
+                return map.getAll(["0", "1", "2"]);
+            })
+            .then(function (entries) {
+                return expect(entries).to.deep.have.members([['0', 'processed'], ['1', 'processed'], ['2', '2']]);
+            });
     });
 
     it('executeOnEntries with predicate should return modified entries', function () {
         this.timeout(4000);
-        return map.executeOnEntries(new IdentifiedEntryProcessor('processed'), Predicates.regex('this', '^[01]$')).then(function (entries) {
-            expect(entries).to.have.lengthOf(2);
-            expect(entries.every(function (entry) {
-                return entry[1] == 'processed';
-            })).to.be.true;
-        });
+        return map.executeOnEntries(new IdentifiedEntryProcessor('processed'), Predicates.regex('this', '^[01]$'))
+            .then(function (entries) {
+                expect(entries).to.have.lengthOf(2);
+                expect(entries.every(function (entry) {
+                    return entry[1] == 'processed';
+                })).to.be.true;
+            });
     });
 
     it('executeOnKey should return modified value', function () {
@@ -125,9 +129,10 @@ describe('Entry Processor', function () {
 
     it('executeOnKeys should return modified entries', function () {
         this.timeout(4000);
-        return map.executeOnKeys(['4', '5'], new IdentifiedEntryProcessor('processed')).then(function (entries) {
-            return expect(entries).to.deep.have.members([['4', 'processed'], ['5', 'processed']]);
-        });
+        return map.executeOnKeys(['4', '5'], new IdentifiedEntryProcessor('processed'))
+            .then(function (entries) {
+                return expect(entries).to.deep.have.members([['4', 'processed'], ['5', 'processed']]);
+            });
     });
 
     it('executeOnKeys should modify the entries', function () {

@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require('chai').expect;
-var Long = require('long');
-var Config = require('../../.').Config;
-var SerializationService = require('../../lib/serialization/SerializationService');
-var Predicates = require('../../.').Predicates;
-var RestValue = require('../../lib/core/RestValue').RestValue;
+const expect = require('chai').expect;
+const Long = require('long');
+const SerializationServiceV1 = require('../../lib/serialization/SerializationService').SerializationServiceV1;
+const SerializationConfigImpl = require('../../lib/config/SerializationConfig').SerializationConfigImpl;
+const Predicates = require('../../.').Predicates;
+const RestValue = require('../../lib/core/RestValue').RestValue;
 
-describe('Default serializers Test', function () {
+describe('DefaultSerializersTest', function () {
 
-    var restValue = new RestValue();
+    const restValue = new RestValue();
     restValue.value = '{"test":"data"}';
     restValue.contentType = 'text/plain';
 
-    var parameters = [
+    const parameters = [
         14,
         545.3,
         1 << 63,
@@ -70,15 +71,15 @@ describe('Default serializers Test', function () {
 
     parameters.forEach(function (obj) {
         it('type: ' + typeof obj + ', isArray: ' + Array.isArray(obj) + ', value: ' + JSON.stringify(obj), function () {
-                var serializationConfig = new Config.ClientConfig().serializationConfig;
-                var serializationService = new SerializationService.SerializationServiceV1(undefined, serializationConfig);
-                var serialized = serializationService.toData(obj);
+                const config = new SerializationConfigImpl();
+                const serializationService = new SerializationServiceV1(config);
+                const serialized = serializationService.toData(obj);
                 expect(serializationService.toObject(serialized)).to.deep.equal(obj);
             }
         );
     });
 
-    var defaultNumberTypes = [
+    const defaultNumberTypes = [
         'double',
         'short',
         'integer',
@@ -88,30 +89,28 @@ describe('Default serializers Test', function () {
 
     defaultNumberTypes.forEach(function (type) {
         it('convert default number type: ' + type, function () {
+            let num = 56;
             if (type === 'long') {
-                var num = Long.fromNumber(56);
-            } else {
-                var num = 56;
+                num = Long.fromNumber(56);
             }
-            var serializationConfig = new Config.ClientConfig().serializationConfig;
-            serializationConfig.defaultNumberType = type;
-            var serializationService = new SerializationService.SerializationServiceV1(undefined, serializationConfig);
-            var serialized = serializationService.toData(num);
+            const config = new SerializationConfigImpl();
+            config.defaultNumberType = type;
+            const serializationService = new SerializationServiceV1(config);
+            const serialized = serializationService.toData(num);
             expect(serializationService.toObject(serialized)).to.deep.equal(num);
         })
     });
 
     defaultNumberTypes.forEach(function (type) {
         it('convert array of default number type: ' + type, function () {
+            let nums = [56, 101];
             if (type === 'long') {
-                var nums = [Long.fromNumber(56), Long.fromNumber(101)];
-            } else {
-                var nums = [56, 101];
+                nums = [Long.fromNumber(56), Long.fromNumber(101)];
             }
-            var serializationConfig = new Config.ClientConfig().serializationConfig;
-            serializationConfig.defaultNumberType = type;
-            var serializationService = new SerializationService.SerializationServiceV1(undefined, serializationConfig);
-            var serialized = serializationService.toData(nums);
+            const config = new SerializationConfigImpl();
+            config.defaultNumberType = type;
+            const serializationService = new SerializationServiceV1(config);
+            const serialized = serializationService.toData(nums);
             expect(serializationService.toObject(serialized)).to.deep.equal(nums);
         })
     });

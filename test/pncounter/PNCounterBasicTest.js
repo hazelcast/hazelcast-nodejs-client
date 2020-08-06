@@ -13,26 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require('chai').expect;
-var RC = require('../RC');
-var Client = require('../../').Client;
-var Config = require('../../').Config;
+const expect = require('chai').expect;
+const RC = require('../RC');
+const Client = require('../../').Client;
 
 describe('PNCounterBasicTest', function () {
 
-    var cluster;
-    var client;
-    var pncounter;
+    let cluster;
+    let client;
+    let pnCounter;
 
     before(function () {
         return RC.createCluster(null, null).then(function (cl) {
             cluster = cl;
             return RC.startMember(cluster.id);
         }).then(function (member) {
-            const cfg = new Config.ClientConfig();
-            cfg.clusterName = cluster.id;
-            return Client.newHazelcastClient(cfg);
+            return Client.newHazelcastClient({ clusterName: cluster.id });
         }).then(function (cl) {
             client = cl;
         });
@@ -45,60 +43,60 @@ describe('PNCounterBasicTest', function () {
 
     beforeEach(function () {
         return client.getPNCounter('pncounter').then(function (counter) {
-            pncounter = counter;
-        })
+            pnCounter = counter;
+        });
     });
 
     afterEach(function () {
-        return pncounter.destroy();
+        return pnCounter.destroy();
     });
 
     function testPNCounterMethod(promise, returnVal, postOperation) {
         return promise.then(function (value) {
             expect(value.toNumber()).to.equal(returnVal);
-            return pncounter.get();
+            return pnCounter.get();
         }).then(function (value) {
             return expect(value.toNumber()).to.equal(postOperation);
         });
     }
 
     it('get', function () {
-        return pncounter.getAndAdd(4).then(function (value) {
-            return pncounter.get();
+        return pnCounter.getAndAdd(4).then(function (value) {
+            return pnCounter.get();
         }).then(function (value) {
             return expect(value.toNumber()).to.equal(4);
         });
     });
 
     it('getAndAdd', function () {
-        return testPNCounterMethod(pncounter.getAndAdd(3), 0, 3);
+        return testPNCounterMethod(pnCounter.getAndAdd(3), 0, 3);
     });
 
     it('addAndGet', function () {
-        return testPNCounterMethod(pncounter.addAndGet(3), 3, 3);
+        return testPNCounterMethod(pnCounter.addAndGet(3), 3, 3);
     });
 
     it('getAndSubtract', function () {
-        return testPNCounterMethod(pncounter.getAndSubtract(3), 0, -3);
+        return testPNCounterMethod(pnCounter.getAndSubtract(3), 0, -3);
     });
 
     it('subtractAndGet', function () {
-        return testPNCounterMethod(pncounter.subtractAndGet(3), -3, -3);
+        return testPNCounterMethod(pnCounter.subtractAndGet(3), -3, -3);
     });
 
     it('decrementAndGet', function () {
-        return testPNCounterMethod(pncounter.decrementAndGet(3), -1, -1);
+        return testPNCounterMethod(pnCounter.decrementAndGet(3), -1, -1);
     });
 
     it('incrementAndGet', function () {
-        return testPNCounterMethod(pncounter.incrementAndGet(), 1, 1);
+        return testPNCounterMethod(pnCounter.incrementAndGet(), 1, 1);
     });
 
     it('getAndDecrement', function () {
-        return testPNCounterMethod(pncounter.getAndDecrement(), 0, -1);
+        return testPNCounterMethod(pnCounter.getAndDecrement(), 0, -1);
     });
 
     it('getAndIncrement', function () {
-        return testPNCounterMethod(pncounter.getAndIncrement(), 0, 1);
+        return testPNCounterMethod(pnCounter.getAndIncrement(), 0, 1);
     });
 });

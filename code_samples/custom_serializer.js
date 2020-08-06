@@ -13,32 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
-var Config = require('hazelcast-client').Config;
-var cfg = new Config.ClientConfig();
+const { Client } = require('hazelcast-client');
 
-function TimeOfDay(hour, minute, second) {
-    this.hour = hour;
-    this.minute = minute;
-    this.second = second;
+class TimeOfDay {
+    constructor(hour, minute, second) {
+        this.hour = hour;
+        this.minute = minute;
+        this.second = second;
+    }
+
+    hzGetCustomId() {
+        return 42;
+    }
 }
 
-TimeOfDay.prototype.hzGetCustomId = function () {
-    return 42;
-};
-
-var CustomSerializer = {
-    getId: function () {
+class CustomSerializer {
+    getId() {
         return 42;
-    },
-    write: function (out, timeofday) {
-        var secondPoint = (timeofday.hour * 60 + timeofday.minute) * 60 + timeofday.second;
-        out.writeInt(secondPoint);
-    },
-    read: function (inp) {
-        var obj = new TimeOfDay();
-        var unit = inp.readInt();
+    }
+
+    write(output, timeofday) {
+        const secondPoint = (timeofday.hour * 60 + timeofday.minute) * 60 + timeofday.second;
+        output.writeInt(secondPoint);
+    }
+
+    read(input) {
+        const obj = new TimeOfDay();
+        let unit = input.readInt();
         obj.second = unit % 60;
         unit = (unit - obj.second) / 60;
         obj.minute = unit % 60;
@@ -47,29 +50,35 @@ var CustomSerializer = {
         obj.customDeserialized = true;
         return obj;
     }
+}
+
+const giveInformation = (timeofday) => {
+    console.log('-------------------');
+    console.log('Custom deserialized:', !!(timeofday.customDeserialized));
+    console.log('Hour:', timeofday.hour);
+    console.log('Minute:', timeofday.minute);
+    console.log('Second:', timeofday.second);
+    console.log('-------------------');
 };
 
-var giveInformation = function (timeofday) {
-    console.log('-------------------');
-    console.log('Custom deserialized: ' + !!(timeofday.customDeserialized));
-    console.log('Hour: ' + timeofday.hour);
-    console.log('Minute: ' + timeofday.minute);
-    console.log('Second: ' + timeofday.second);
-    console.log('-------------------');
-};
+(async () => {
+    try {
+        const client = await Client.newHazelcastClient({
+            serialization: {
+                customSerializers: [new CustomSerializer()]
+            }
+        });
 
-cfg.serializationConfig.customSerializers.push(CustomSerializer);
-Client.newHazelcastClient(cfg).then(function (client) {
-    var map;
-    var t = new TimeOfDay(5, 32, 59);
-    giveInformation(t);
-    client.getMap('time').then(function (mp) {
-        map = mp;
-        return map.put(1, t)
-    }).then(function () {
-        return map.get(1);
-    }).then(function (deserialized) {
+        const t = new TimeOfDay(5, 32, 59);
+        giveInformation(t);
+
+        const map = await client.getMap('time');
+        await map.put(1, t);
+        const deserialized = await map.get(1);
         giveInformation(deserialized);
+
         client.shutdown();
-    });
-});
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

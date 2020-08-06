@@ -13,15 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Config = require('hazelcast-client').Config;
-var HazelcastClient = require('hazelcast-client').Client;
+const { Client } = require('hazelcast-client');
 
+(async () => {
+    try {
+        const client = await Client.newHazelcastClient({
+            network: {
+                ssl: {
+                    enabled: true
+                }
+            }
+        });
+        console.log('The client is authenticated using SSL');
 
-var cfg = new Config.ClientConfig();
-cfg.networkConfig.sslConfig.enabled = true;
-
-HazelcastClient.newHazelcastClient(cfg).then(function (client) {
-    console.log('This client is authenticated using SSL.');
-    client.shutdown();
-});
+        client.shutdown();
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

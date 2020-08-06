@@ -19,7 +19,7 @@ import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
 import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame, DEFAULT_FLAGS} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
-import {IndexConfig} from '../../config/IndexConfig';
+import {InternalIndexConfig} from '../../config/IndexConfig';
 import {StringCodec} from '../builtin/StringCodec';
 import {ListMultiFrameCodec} from '../builtin/ListMultiFrameCodec';
 import {BitmapIndexOptionsCodec} from './BitmapIndexOptionsCodec';
@@ -28,7 +28,7 @@ const TYPE_OFFSET = 0;
 const INITIAL_FRAME_SIZE = TYPE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
 export class IndexConfigCodec {
-    static encode(clientMessage: ClientMessage, indexConfig: IndexConfig): void {
+    static encode(clientMessage: ClientMessage, indexConfig: InternalIndexConfig): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());
 
         const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE, DEFAULT_FLAGS);
@@ -42,7 +42,7 @@ export class IndexConfigCodec {
         clientMessage.addFrame(END_FRAME.copy());
     }
 
-    static decode(clientMessage: ClientMessage): IndexConfig {
+    static decode(clientMessage: ClientMessage): InternalIndexConfig {
         // begin frame
         clientMessage.nextFrame();
 
@@ -55,6 +55,6 @@ export class IndexConfigCodec {
 
         CodecUtil.fastForwardToEndFrame(clientMessage);
 
-        return new IndexConfig(name, type, attributes, bitmapIndexOptions);
+        return new InternalIndexConfig(name, type, attributes, bitmapIndexOptions);
     }
 }

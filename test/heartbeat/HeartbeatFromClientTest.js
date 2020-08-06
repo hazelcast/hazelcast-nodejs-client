@@ -13,21 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var RC = require('../RC');
-var HazelcastClient = require('../../').Client;
-var expect = require('chai').expect;
-var Config = require('../../').Config;
-var Util = require('../Util');
-var fs = require('fs');
+const RC = require('../RC');
+const HazelcastClient = require('../../').Client;
+const expect = require('chai').expect;
+const Util = require('../Util');
+const fs = require('fs');
 
 describe('Heartbeat', function () {
-    this.timeout(30000);
 
-    var cluster;
+    this.timeout(30000);
+    let cluster;
 
     beforeEach(function () {
-        var serverConfig = fs.readFileSync(__dirname + '/short-heartbeat.xml', 'utf8');
+        const serverConfig = fs.readFileSync(__dirname + '/short-heartbeat.xml', 'utf8');
         return RC.createCluster(null, serverConfig).then(function (resp) {
             cluster = resp;
         });
@@ -38,21 +38,21 @@ describe('Heartbeat', function () {
     });
 
     it('client sends heartbeat periodically even when server continuously pushes messages', function () {
-        var MAP_NAME = 'testmap';
-        var member;
-        var client1;
-        var client2;
-        var connectionClosedEventCount = 0;
+        const MAP_NAME = 'testmap';
+        let client1, client2;
+        let connectionClosedEventCount = 0;
 
-        var mapFromClient1;
-        var mapFromClient2;
-        var pushTask;
+        let mapFromClient1;
+        let mapFromClient2;
+        let pushTask;
 
-        var clientConfig = new Config.ClientConfig();
-        clientConfig.clusterName = cluster.id;
-        clientConfig.properties['hazelcast.client.heartbeat.interval'] = 1000;
+        const clientConfig = {
+            clusterName: cluster.id,
+            properties: {
+                'hazelcast.client.heartbeat.interval': 1000
+            }
+        };
         return RC.startMember(cluster.id).then(function (m) {
-            member = m;
             return HazelcastClient.newHazelcastClient(clientConfig);
         }).then(function (c) {
             client1 = c;
@@ -67,21 +67,21 @@ describe('Heartbeat', function () {
             mapFromClient1 = m;
             return mapFromClient1.addEntryListener({
                 added: function () {
-                    //no-op
+                    // no-op
                 },
                 updated: function () {
-                    //no-op
+                    // no-op
                 }
             })
         }).then(function () {
             return client2.getMap(MAP_NAME);
         }).then(function (m) {
-            var counter = 0;
+            let counter = 0;
             mapFromClient2 = m;
             pushTask = setInterval(function () {
                 mapFromClient2.put('testkey', counter++);
             }, 1000);
-            return Util.promiseLater(15000, function () {});
+            return Util.promiseLater(15000, () => {});
         }).then(function () {
             clearInterval(pushTask);
             expect(connectionClosedEventCount).to.equal(0);

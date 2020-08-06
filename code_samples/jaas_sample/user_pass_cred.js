@@ -13,31 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-function UsernamePasswordCredentials(username, password, endpoint) {
-    this.username = username;
-    this.password = password;
-    this.endpoint = endpoint;
+class UsernamePasswordCredentials {
+    constructor(username, password, endpoint) {
+        this.username = username;
+        this.password = password;
+        this.endpoint = endpoint;
+    }
+
+    readPortable(input) {
+        this.username = input.readUTF('username');
+        this.endpoint = input.readUTF('password');
+        this.password = input.readUTF('endpoint');
+    }
+
+    writePortable(output) {
+        output.writeUTF('username', this.username);
+        output.writeUTF('password', this.password);
+        output.writeUTF('endpoint', this.endpoint);
+    }
+
+    getFactoryId() {
+        return 1;
+    }
+
+    getClassId() {
+        return 1;
+    }
 }
-
-UsernamePasswordCredentials.prototype.readPortable = function (reader) {
-    this.username = reader.readUTF('username');
-    this.endpoint = reader.readUTF('password');
-    this.password = reader.readUTF('endpoint');
-};
-
-UsernamePasswordCredentials.prototype.writePortable = function (writer) {
-    writer.writeUTF('username', this.username);
-    writer.writeUTF('password', this.password);
-    writer.writeUTF('endpoint', this.endpoint);
-};
-
-UsernamePasswordCredentials.prototype.getFactoryId = function () {
-    return 1;
-};
-
-UsernamePasswordCredentials.prototype.getClassId = function () {
-    return 1;
-};
 
 exports.UsernamePasswordCredentials = UsernamePasswordCredentials;

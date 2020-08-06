@@ -13,31 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Controller = require('../../RC');
-var expect = require('chai').expect;
-var path = require('path');
+const expect = require('chai').expect;
+const RC = require('../../RC');
+const Client = require('../../../').Client;
+const { MyPortableFactory, Foo } = require('./Foo');
+const { MyIdentifiedFactory, Address } = require('./Address');
 
-var Client = require('../../../').Client;
-var Foo = require('./Foo').Foo;
-var Address = require('./Address').Address;
-const ConfigBuilder = require('../../../').ConfigBuilder;
+describe('FactoriesTest', function () {
 
-describe('Factories', function () {
-    var cluster;
-    var client;
+    let cluster;
+    let client;
 
     before(function () {
-        process.env['HAZELCAST_CLIENT_CONFIG'] = path.join(__dirname, 'customserializer.json');
-        return Controller.createCluster(null, null).then(function (cl) {
+        return RC.createCluster(null, null).then(function (cl) {
             cluster = cl;
-            return Controller.startMember(cluster.id);
+            return RC.startMember(cluster.id);
         });
     });
 
     after(function () {
-        delete process.env['HAZELCAST_CLIENT_CONFIG'];
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     afterEach(function () {
@@ -46,17 +43,25 @@ describe('Factories', function () {
         }
     });
 
-    it('should be configured declaratively', function () {
-        const configBuilder = new ConfigBuilder();
-        return configBuilder.loadConfig()
-            .then(() => {
-                const cfg = configBuilder.build();
-                cfg.clusterName = cluster.id;
-                return Client.newHazelcastClient(cfg);
-            })
+    function createConfig(clusterName) {
+        return {
+            clusterName,
+            serialization: {
+                dataSerializableFactories: {
+                    1: new MyIdentifiedFactory()
+                },
+                portableFactories: {
+                    1: new MyPortableFactory()
+                }
+            }
+        };
+    }
+
+    it('should be configured programmatically', function () {
+        return Client.newHazelcastClient(createConfig(cluster.id))
             .then(function (cl) {
                 client = cl;
-                var map;
+                let map;
                 return client.getMap('furkan').then(function (mp) {
                     map = mp;
                     return map.put('foo', new Foo("elma"));

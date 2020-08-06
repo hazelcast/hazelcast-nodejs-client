@@ -67,7 +67,7 @@ export class ClusterService implements Cluster {
 
     constructor(client: HazelcastClient) {
         this.client = client;
-        this.labels = new Set(client.getConfig().labels);
+        this.labels = new Set(client.getConfig().clientLabels);
         this.logger = client.getLoggingService().getLogger();
         this.connectionManager = client.getConnectionManager();
     }

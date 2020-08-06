@@ -13,41 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require("chai").expect;
-var HazelcastClient = require("../../lib/index.js").Client;
-const Config = require("../../lib/index.js").Config;
-var Controller = require('./../RC');
-var fs = require('fs');
-var _fillMap = require('../Util').fillMap;
-var promiseWaitMilliseconds = require('../Util').promiseWaitMilliseconds;
+const expect = require("chai").expect;
+const fs = require('fs');
+const HazelcastClient = require("../../lib/index.js").Client;
+const RC = require('./../RC');
+const fillMap = require('../Util').fillMap;
+const promiseWaitMilliseconds = require('../Util').promiseWaitMilliseconds;
 const Util = require('../Util');
 
 describe('MapStore', function () {
-    var cluster;
-    var client;
-    var map;
+
+    let cluster;
+    let client;
+    let map;
 
     before(function () {
         this.timeout(32000);
-        return Controller.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_mapstore.xml', 'utf8')).then(function (res) {
-            cluster = res;
-            return Controller.startMember(cluster.id);
-        }).then(function (member) {
-            const cfg = new Config.ClientConfig();
-            cfg.clusterName = cluster.id;
-            return HazelcastClient.newHazelcastClient(cfg).then(function (hazelcastClient) {
+        return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_mapstore.xml', 'utf8'))
+            .then(function (res) {
+                cluster = res;
+                return RC.startMember(cluster.id);
+            })
+            .then(function (member) {
+                return HazelcastClient.newHazelcastClient({ clusterName: cluster.id });
+            })
+            .then(function (hazelcastClient) {
                 client = hazelcastClient;
             });
-        });
     });
 
     beforeEach(function () {
         return client.getMap('mapstore-test').then(function (mp) {
             map = mp;
-            return _fillMap(map);
+            return fillMap(map);
         });
-
     });
 
     afterEach(function () {
@@ -56,11 +57,11 @@ describe('MapStore', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('loadAll with no arguments loads all keys', function () {
-        return _fillMap(map).then(function () {
+        return fillMap(map).then(function () {
             return map.evictAll();
         }).then(function () {
             return map.loadAll();
@@ -175,7 +176,7 @@ describe('MapStore', function () {
     });
 
     it('addEntryListener on map entryLoaded includeValue=true', function (done) {
-        var listenerObj = {
+        const listener = {
             loaded: function (entryEvent) {
                 try {
                     expect(entryEvent.name).to.equal('mapstore-test');
@@ -191,7 +192,7 @@ describe('MapStore', function () {
             }
         };
 
-        map.addEntryListener(listenerObj, undefined, true)
+        map.addEntryListener(listener, undefined, true)
             .then(function () {
                 return map.put('some-key', 'some-value', 100)
             }).then(function () {

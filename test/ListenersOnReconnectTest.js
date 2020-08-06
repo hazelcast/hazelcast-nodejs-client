@@ -13,21 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Controller = require('./RC');
-var expect = require('chai').expect;
-var HazelcastClient = require('../.').Client;
-var Config = require('../.').Config;
-var Util = require('./Util');
-var Promise = require('bluebird');
+const Controller = require('./RC');
+const expect = require('chai').expect;
+const HazelcastClient = require('../.').Client;
+const Util = require('./Util');
+const Promise = require('bluebird');
 
-describe('Listeners on reconnect', function () {
+describe('ListenersOnReconnectTest', function () {
 
     this.timeout(40000);
-    var client;
-    var members = [];
-    var cluster;
-    var map;
+    let client;
+    const members = [];
+    let cluster;
+    let map;
 
     beforeEach(function () {
         return Controller.createCluster(null, null).then(function (cl) {
@@ -42,7 +42,7 @@ describe('Listeners on reconnect', function () {
         });
     });
 
-    function closeTwoMembersOfThreeAndTestListener(done, isSmart, membersToClose, turnoffMember) {
+    function closeTwoMembersOutOfThreeAndTestListener(done, isSmart, membersToClose, turnoffMember) {
         Controller.startMember(cluster.id).then(function (m) {
             members[0] = m;
             return Controller.startMember(cluster.id);
@@ -51,19 +51,23 @@ describe('Listeners on reconnect', function () {
             return Controller.startMember(cluster.id);
         }).then(function (m) {
             members[2] = m;
-            var cfg = new Config.ClientConfig();
-            cfg.clusterName = cluster.id;
-            cfg.properties['hazelcast.client.heartbeat.interval'] = 1000;
-            cfg.properties['hazelcast.client.heartbeat.timeout'] = 3000;
-            cfg.networkConfig.smartRouting = isSmart;
-            return HazelcastClient.newHazelcastClient(cfg);
+            return HazelcastClient.newHazelcastClient({
+                clusterName: cluster.id,
+                network: {
+                    smartRouting: isSmart
+                },
+                properties: {
+                    'hazelcast.client.heartbeat.interval': 1000,
+                    'hazelcast.client.heartbeat.timeout': 3000
+                }
+            });
         }).then(function (cl) {
             client = cl;
             return client.getMap('testmap');
         }).then(function (mp) {
             map = mp;
-            var listenerObject = {
-                added: function (entryEvent) {
+            const listener = {
+                added: (entryEvent) => {
                     try {
                         expect(entryEvent.name).to.equal('testmap');
                         expect(entryEvent.key).to.equal('keyx');
@@ -77,7 +81,7 @@ describe('Listeners on reconnect', function () {
                     }
                 }
             };
-            return map.addEntryListener(listenerObject, 'keyx', true);
+            return map.addEntryListener(listener, 'keyx', true);
         }).then(function () {
             return Promise.all([
                 turnoffMember(cluster.id, members[membersToClose[0]].uuid),
@@ -100,45 +104,49 @@ describe('Listeners on reconnect', function () {
          */
 
         it('kill two members [1,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOfThreeAndTestListener(done, isSmart, [1, 2], Controller.terminateMember);
+            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [1, 2], Controller.terminateMember);
         });
 
         it('kill two members [0,1], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOfThreeAndTestListener(done, isSmart, [0, 1], Controller.terminateMember);
+            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 1], Controller.terminateMember);
         });
 
         it('kill two members [0,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOfThreeAndTestListener(done, isSmart, [0, 2], Controller.terminateMember);
+            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 2], Controller.terminateMember);
         });
 
         it('shutdown two members [1,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOfThreeAndTestListener(done, isSmart, [1, 2], Controller.shutdownMember);
+            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [1, 2], Controller.shutdownMember);
         });
 
         it('shutdown two members [0,1], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOfThreeAndTestListener(done, isSmart, [0, 1], Controller.shutdownMember);
+            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 1], Controller.shutdownMember);
         });
 
         it('shutdown two members [0,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOfThreeAndTestListener(done, isSmart, [0, 2], Controller.shutdownMember);
+            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 2], Controller.shutdownMember);
         });
 
         it('restart member, listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            var member;
+            let member;
             Controller.startMember(cluster.id).then(function (m) {
                 member = m;
-                var cfg = new Config.ClientConfig();
-                cfg.clusterName = cluster.id;
-                cfg.networkConfig.smartRouting = isSmart;
-                cfg.properties['hazelcast.client.heartbeat.interval'] = 1000;
-                return HazelcastClient.newHazelcastClient(cfg);
+                return HazelcastClient.newHazelcastClient({
+                    clusterName: cluster.id,
+                    network: {
+                        smartRouting: isSmart
+                    },
+                    properties: {
+                        'hazelcast.client.heartbeat.interval': 1000
+                    }
+                });
             }).then(function (cl) {
                 client = cl;
                 return client.getMap('testmap');
             }).then(function (mp) {
                 map = mp;
-                var listenerObject = {
-                    added: function (entryEvent) {
+                const listener = {
+                    added: (entryEvent) => {
                         try {
                             expect(entryEvent.name).to.equal('testmap');
                             expect(entryEvent.key).to.equal('keyx');
@@ -152,7 +160,7 @@ describe('Listeners on reconnect', function () {
                         }
                     }
                 };
-                return map.addEntryListener(listenerObject, 'keyx', true);
+                return map.addEntryListener(listener, 'keyx', true);
             }).then(function () {
                 return Controller.terminateMember(cluster.id, member.uuid);
             }).then(function () {
@@ -160,7 +168,6 @@ describe('Listeners on reconnect', function () {
             }).then(function () {
                 return Util.promiseWaitMilliseconds(5000);
             }).then(function () {
-                console.log("here");
                 return map.put('keyx', 'valx');
             });
         });

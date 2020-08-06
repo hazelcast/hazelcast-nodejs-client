@@ -20,6 +20,7 @@ import {MembershipEvent} from './MembershipEvent';
  * Cluster membership listener.
  */
 export interface MembershipListener {
+
     /**
      * Invoked when a new member is added to the cluster.
      * @param {MembershipEvent} membership event
@@ -31,4 +32,5 @@ export interface MembershipListener {
      * @param {MembershipEvent} membership event when an existing member leaves the cluster
      */
     memberRemoved(membership: MembershipEvent): void;
+
 }

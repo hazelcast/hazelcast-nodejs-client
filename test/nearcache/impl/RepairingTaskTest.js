@@ -13,25 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('../../../').Client;
-var Config = require('../../../').Config;
-var Controller = require('../../RC');
-var chai = require('chai');
-var expect = chai.expect;
+const Client = require('../../../').Client;
+const RC = require('../../RC');
+const chai = require('chai');
+const expect = chai.expect;
 
 describe('RepairingTask', function () {
 
-    var cluster;
-    var member;
-    var client;
+    let cluster;
+    let client;
 
     before(function () {
-        return Controller.createCluster(null, null).then(function (cl) {
+        return RC.createCluster(null, null).then(function (cl) {
             cluster = cl;
-            return Controller.startMember(cluster.id);
-        }).then(function (me) {
-            member = me;
+            return RC.startMember(cluster.id);
         });
     });
 
@@ -42,17 +39,19 @@ describe('RepairingTask', function () {
     });
 
     after(function () {
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
-    function startClientWithReconciliationInterval(reconciliationInterval) {
-        var cfg = new Config.ClientConfig();
-        cfg.clusterName = cluster.id;
-        var nccConfig = new Config.NearCacheConfig();
-        nccConfig.name = 'test';
-        cfg.nearCacheConfigs['test'] = nccConfig;
-        cfg.properties['hazelcast.invalidation.reconciliation.interval.seconds'] = reconciliationInterval;
-        return Client.newHazelcastClient(cfg).then(function (cl) {
+    function startClientWithReconciliationInterval(interval) {
+        return Client.newHazelcastClient({
+            clusterName: cluster.id,
+            nearCaches: {
+                'test': {}
+            },
+            properties: {
+                'hazelcast.invalidation.reconciliation.interval.seconds': interval
+            }
+        }).then(function (cl) {
             client = cl;
         });
     }

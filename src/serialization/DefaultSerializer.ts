@@ -18,8 +18,34 @@ import Long = require('long');
 import {BitsUtil} from '../BitsUtil';
 import {DataInput, DataOutput} from './Data';
 import {IdentifiedDataSerializable, IdentifiedDataSerializableFactory} from './Serializable';
-import {Serializer} from './SerializationService';
 import {HazelcastJsonValue} from '../core/HazelcastJsonValue';
+
+/**
+ * Defines common interface for default and custom serializers.
+ */
+export interface Serializer<T = any> {
+
+    /**
+     * Returns type id.
+     */
+    getId(): number;
+
+    /**
+     * Deserializes input data into an object.
+     *
+     * @param input input data reader
+     */
+    read(input: DataInput): T;
+
+    /**
+     * Serializes an object into binary data.
+     *
+     * @param output output data writer
+     * @param object object to be serialized
+     */
+    write(output: DataOutput, object: T): void;
+
+}
 
 export class StringSerializer implements Serializer {
 
@@ -66,10 +92,12 @@ export class BooleanSerializer implements Serializer {
     }
 }
 
+export const NULL_TYPE_ID = 0;
+
 export class NullSerializer implements Serializer {
 
     getId(): number {
-        return 0;
+        return NULL_TYPE_ID;
     }
 
     read(input: DataInput): any {

@@ -13,25 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require('chai').expect;
-var sinon = require('sinon');
-var winston = require('winston');
-var Config = require('../.').Config;
-var Controller = require('./RC');
-var HazelcastClient = require('../.').Client;
-var LogLevel = require('../.').LogLevel;
+const expect = require('chai').expect;
+const sinon = require('sinon');
+const winston = require('winston');
+const Controller = require('./RC');
+const HazelcastClient = require('../.').Client;
+const LogLevel = require('../.').LogLevel;
+
 describe('Logging Test', function () {
-    var cluster;
-    var client;
 
-    var winstonAdapter = {
+    let cluster, client;
+
+    const winstonAdapter = {
         logger: winston.createLogger({
             transports: [
-                new (winston.transports.Console)()
+                new winston.transports.Console()
             ]
         }),
-
         levels: [
             'error',
             'warn',
@@ -39,27 +39,21 @@ describe('Logging Test', function () {
             'debug',
             'silly'
         ],
-
         log: function (level, objectName, message, furtherInfo) {
             this.logger.log(this.levels[level], objectName + ' ' + message, furtherInfo);
         },
-
         error: function (objectName, message, furtherInfo) {
             this.log(LogLevel.ERROR, objectName, message, furtherInfo);
         },
-
         debug: function (objectName, message, furtherInfo) {
             this.log(LogLevel.DEBUG, objectName, message, furtherInfo);
         },
-
         warn: function (objectName, message, furtherInfo) {
             this.log(LogLevel.WARN, objectName, message, furtherInfo);
         },
-
         info: function (objectName, message, furtherInfo) {
             this.log(LogLevel.INFO, objectName, message, furtherInfo);
         },
-
         trace: function (objectName, message, furtherInfo) {
             this.log(LogLevel.TRACE, objectName, message, furtherInfo);
         }
@@ -89,80 +83,88 @@ describe('Logging Test', function () {
     });
 
     it('winston should emit logging event', function () {
-        var loggingHappened = false;
+        let loggingHappened = false;
         winstonAdapter.logger.transports[0].on('logged', function (transport, level, msg, meta) {
             loggingHappened = true;
         });
 
-        var cfg = new Config.ClientConfig();
-        cfg.clusterName = cluster.id;
-        cfg.customLogger = winstonAdapter;
-        return HazelcastClient.newHazelcastClient(cfg).then(function (hz) {
+        return HazelcastClient.newHazelcastClient({
+            clusterName: cluster.id,
+            customLogger: winstonAdapter
+        }).then(function (hz) {
             client = hz;
             return expect(loggingHappened).to.be.true;
         });
     });
 
     it('no logging', function () {
-        var cfg = new Config.ClientConfig();
-        cfg.clusterName = cluster.id;
-        cfg.properties['hazelcast.logging.level'] = LogLevel.OFF;
-        return HazelcastClient.newHazelcastClient(cfg).then(function (hz) {
+        return HazelcastClient.newHazelcastClient({
+            clusterName: cluster.id,
+            properties: {
+                'hazelcast.logging.level': LogLevel.OFF
+            }
+        }).then(function (hz) {
             client = hz;
             return sinon.assert.notCalled(console.log);
         });
     });
 
     it('default logging in case of empty property', function () {
-        var cfg = new Config.ClientConfig();
-        cfg.clusterName = cluster.id;
-        return HazelcastClient.newHazelcastClient(cfg).then(function (hz) {
+        return HazelcastClient.newHazelcastClient({
+            clusterName: cluster.id
+        }).then(function (hz) {
             client = hz;
             return sinon.assert.called(console.log);
         });
     });
 
     it('default logging in case of default property', function () {
-        var cfg = new Config.ClientConfig();
-        cfg.clusterName = cluster.id;
-        cfg.properties['hazelcast.logging.level'] = LogLevel.INFO;
-        return HazelcastClient.newHazelcastClient(cfg).then(function (hz) {
+        return HazelcastClient.newHazelcastClient({
+            clusterName: cluster.id,
+            properties: {
+                'hazelcast.logging.level': LogLevel.INFO
+            }
+        }).then(function (hz) {
             client = hz;
             return sinon.assert.called(console.log);
         });
     });
 
     it('error in case of unknown property value', function () {
-        var cfg = new Config.ClientConfig();
-        cfg.clusterName = cluster.id;
-        cfg.customLogger = 'unknw';
-        return expect(HazelcastClient.newHazelcastClient.bind(this, cfg)).to.throw(Error);
+        return expect(HazelcastClient.newHazelcastClient.bind(this, {
+            clusterName: cluster.id,
+            customLogger: 'unknw'
+        })).to.throw(Error);
     });
 
     it('default logging, default level', function () {
-        var cfg = new Config.ClientConfig();
-        cfg.clusterName = cluster.id;
-        return HazelcastClient.newHazelcastClient(cfg).then(function (cl) {
+        return HazelcastClient.newHazelcastClient({
+            clusterName: cluster.id
+        }).then(function (cl) {
             client = cl;
             return sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'INFO');
         });
     });
 
     it('default logging, error level', function () {
-        var cfg = new Config.ClientConfig();
-        cfg.clusterName = cluster.id;
-        cfg.properties['hazelcast.logging.level'] = LogLevel.ERROR;
-        return HazelcastClient.newHazelcastClient(cfg).then(function (cl) {
+        return HazelcastClient.newHazelcastClient({
+            clusterName: cluster.id,
+            properties: {
+                'hazelcast.logging.level': LogLevel.ERROR
+            }
+        }).then(function (cl) {
             client = cl;
             return sinon.assert.notCalled(console.log);
         });
     });
 
     it('default logging, trace level', function () {
-        var cfg = new Config.ClientConfig();
-        cfg.clusterName = cluster.id;
-        cfg.properties['hazelcast.logging.level'] = LogLevel.TRACE;
-        return HazelcastClient.newHazelcastClient(cfg).then(function (cl) {
+        return HazelcastClient.newHazelcastClient({
+            clusterName: cluster.id,
+            properties: {
+                'hazelcast.logging.level': LogLevel.TRACE
+            }
+        }).then(function (cl) {
             client = cl;
             sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'INFO');
             sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'TRACE');

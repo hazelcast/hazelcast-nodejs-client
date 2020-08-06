@@ -13,34 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require("chai").expect;
-var HazelcastClient = require('../../').Client;
-const Config = require('../../').Config;
-var Controller = require('./../RC');
-var Util = require('./../Util');
-var fs = require('fs');
-var PrefixFilter = require('../javaclasses/PrefixFilter');
-var Promise = require('bluebird');
+const expect = require("chai").expect;
+const HazelcastClient = require('../../').Client;
+const RC = require('./../RC');
+const Util = require('./../Util');
+const fs = require('fs');
+const PrefixFilter = require('../javaclasses/PrefixFilter');
+const Promise = require('bluebird');
 
 describe("Ringbuffer Proxy", function () {
 
-    var cluster;
-    var client;
-    var rb;
+    let cluster;
+    let client;
+    let rb;
 
     before(function () {
         this.timeout(10000);
-        var config = fs.readFileSync(__dirname + '/hazelcast_ringbuffer.xml', 'utf8');
-        return Controller.createCluster(null, config).then(function (response) {
+        const config = fs.readFileSync(__dirname + '/hazelcast_ringbuffer.xml', 'utf8');
+        return RC.createCluster(null, config).then(function (response) {
             cluster = response;
-            return Controller.startMember(cluster.id);
+            return RC.startMember(cluster.id);
         }).then(function () {
-            const cfg = new Config.ClientConfig();
-            cfg.clusterName = cluster.id;
-            return HazelcastClient.newHazelcastClient(cfg).then(function (hazelcastClient) {
-                client = hazelcastClient;
-            });
+            return HazelcastClient.newHazelcastClient({ clusterName: cluster.id });
+        }).then(function (hazelcastClient) {
+            client = hazelcastClient;
         });
     });
 
@@ -56,7 +54,7 @@ describe("Ringbuffer Proxy", function () {
 
     after(function () {
         client.shutdown();
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it("adds one item and reads back", function () {
@@ -106,7 +104,7 @@ describe("Ringbuffer Proxy", function () {
     });
 
     it("correctly reports head sequence", function () {
-        var limitedCapacity;
+        let limitedCapacity;
         return client.getRingbuffer("capacity").then(function (buffer) {
             limitedCapacity = buffer;
             return limitedCapacity.addAll([1, 2, 3, 4, 5]);
@@ -118,7 +116,7 @@ describe("Ringbuffer Proxy", function () {
     });
 
     it("correctly reports remaining capacity", function () {
-        var ttl = client.getRingbuffer("ttl-cap").then(function (buffer) {
+        let ttl = client.getRingbuffer("ttl-cap").then(function (buffer) {
             ttl = buffer;
             return ttl.addAll([1, 2]);
         }).then(function () {
@@ -130,8 +128,7 @@ describe("Ringbuffer Proxy", function () {
 
     it("correctly reports total capacity", function () {
         return client.getRingbuffer("ttl-cap").then(function (buffer) {
-            ttl = buffer;
-            return ttl.capacity();
+            return buffer.capacity();
         }).then(function (capacity) {
             expect(capacity.toNumber()).to.equal(5);
         });

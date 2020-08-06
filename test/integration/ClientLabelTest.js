@@ -18,15 +18,12 @@
 
 const expect = require('chai').expect;
 const Client = require('../../.').Client;
-const Config = require('../../.').Config;
 const Controller = require('../RC');
 
 describe('ClientLabelTest', function () {
 
     this.timeout(32000);
-
-    let cluster;
-    let client;
+    let cluster, client;
 
     before(function () {
         return Controller.createCluster(null, null)
@@ -44,26 +41,21 @@ describe('ClientLabelTest', function () {
         return Controller.terminateCluster(cluster.id);
     });
 
-
     it('labels should be received on member side', function () {
-        const config = new Config.ClientConfig();
-        config.clusterName = cluster.id;
-        config.labels.add("testLabel");
+        return Client.newHazelcastClient({
+            clusterName: cluster.id,
+            clientLabels: ['testLabel']
+        }).then((c) => {
+            client = c;
 
-        return Client.newHazelcastClient(config)
-            .then((c) => {
-                client = c;
+            const script = 'var client = instance_0.getClientService().getConnectedClients().iterator().next();\n' +
+                'result = client.getLabels().iterator().next();\n';
 
-                const script = 'var client = instance_0.getClientService().getConnectedClients().iterator().next();\n' +
-                    'result = client.getLabels().iterator().next();\n';
-
-                return Controller.executeOnController(cluster.id, script, 1);
-            })
-            .then((res) => {
-                expect(res.result).to.not.be.null;
-
-                expect(res.result.toString()).to.equal('testLabel');
-            });
+            return Controller.executeOnController(cluster.id, script, 1);
+        }).then((res) => {
+            expect(res.result).to.not.be.null;
+            expect(res.result.toString()).to.equal('testLabel');
+        });
     });
 
 });

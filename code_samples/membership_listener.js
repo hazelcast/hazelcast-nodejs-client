@@ -13,23 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
+const { Client } = require('hazelcast-client');
 
-Client.newHazelcastClient().then(function (client) {
+(async () => {
+    try {
+        const client = await Client.newHazelcastClient();
 
-    // when a member is added and removed or its attribute is changed, member events are invoked.
-    var membershipListener = {
-        memberAdded: function (membershipEvent) {
-            console.log('Member Added:', membershipEvent.member.address);
-        },
-        memberRemoved: function (membershipEvent) {
-            console.log('Member Removed:', membershipEvent.member.address);
-        },
-        memberAttributeChanged: function (memberAttributeEvent) {
-            console.log('Member Attribute Changed:', memberAttributeEvent.member.address);
+        const membershipListener = {
+            memberAdded: (event) => {
+                console.log('Member Added:', event.member.address);
+            },
+            memberRemoved: (event) => {
+                console.log('Member Removed:', event.member.address);
+            }
         }
+        // When a member is added and removed, the listener will be triggered
+        client.getClusterService().addMembershipListener(membershipListener);
+    } catch (err) {
+        console.error('Error occurred:', err);
     }
-
-    client.clusterService.addMembershipListener(membershipListener);
-});
+})();

@@ -14,42 +14,58 @@
  * limitations under the License.
  */
 
-import {ClientCloudConfig} from './ClientCloudConfig';
-import {SSLConfig} from './SSLConfig';
+import {ClientCloudConfig, ClientCloudConfigImpl} from './ClientCloudConfig';
+import {SSLConfig, SSLConfigImpl} from './SSLConfig';
 
 /**
  * Network configuration.
  */
-export class ClientNetworkConfig {
-    /**
-     * Array of candidate addresses that client will use to establish initial connection.
-     */
-    addresses: string[] = [];
+export interface ClientNetworkConfig {
 
     /**
-     * hazelcast.cloud configuration to let the client connect the cluster via hazelcast.cloud
+     * Array of member candidate addresses that client will use to establish initial connection.
+     * By default, set to `['127.0.0.1']`.
      */
-    cloudConfig: ClientCloudConfig = new ClientCloudConfig();
+    clusterMembers?: string[];
 
     /**
-     * Timeout value in millis for nodes to accept client connection requests.
+     * Hazelcast Cloud configuration to let the client connect the cluster in cloud.
      */
-    connectionTimeout = 5000;
+    hazelcastCloud?: ClientCloudConfig;
 
     /**
-     * true if redo operations are enabled (not implemented yet)
+     * Timeout value in milliseconds for nodes to accept client connection requests.
+     * By default, set to `5000`.
      */
-    redoOperation = false;
+    connectionTimeout: number;
+
+    // TODO not implemented yet
+    /**
+     * Enables redo operations behavior.
+     */
+    redoOperation?: boolean;
 
     /**
-     * If true, client will behave as smart client instead of dummy client. Smart client sends key based operations
-     * to owner of the keys. Dummy client sends all operations to a single node. See http://docs.hazelcast.org to
-     * learn about smart/dummy client.
+     * Enables smart mode for the client instead of unisocket client. Smart clients
+     * send key based operations to owner of the keys. Unisocket clients send all
+     * operations to a single node. By default, set to `true`.
      */
-    smartRouting = true;
+    smartRouting?: boolean;
 
     /**
      * SSL configuration.
      */
-    sslConfig: SSLConfig = new SSLConfig();
+    ssl?: SSLConfig;
+
+}
+
+export class ClientNetworkConfigImpl implements ClientNetworkConfig {
+
+    clusterMembers: string[] = [];
+    hazelcastCloud: ClientCloudConfigImpl = new ClientCloudConfigImpl();
+    connectionTimeout = 5000;
+    redoOperation = false;
+    smartRouting = true;
+    ssl: SSLConfigImpl = new SSLConfigImpl();
+
 }

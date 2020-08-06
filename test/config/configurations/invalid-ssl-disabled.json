@@ -3,7 +3,7 @@
         "ssl": {
             "enabled": false,
             "sslOptions": {},
-            "factory": {}
+            "sslOptionsFactory": {}
         }
     }
 }

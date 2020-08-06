@@ -13,38 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var chai = require('chai');
-var chaiAsPromised = require('chai-as-promised');
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
-var expect = chai.expect;
-var Config = require('../../.').Config;
-var Controller = require('../RC');
-var HazelcastClient = require('../../.').Client;
-var DataRecord = require('../../lib/nearcache/DataRecord').DataRecord;
-var NearCacheImpl = require('../../lib/nearcache/NearCache').NearCacheImpl;
-var EvictionPolicy = Config.EvictionPolicy;
-var promiseLater = require('../Util').promiseLater;
-var SerializationService = require('../../lib/serialization/SerializationService').SerializationServiceV1;
-describe('NearCacheImpl', function () {
-    var cluster;
-    var client;
+const expect = chai.expect;
 
-    var invalidateOnChange = [false, true];
-    var ttls = [0, 1];
-    var evictionPolicy = [EvictionPolicy.LFU, EvictionPolicy.LRU, EvictionPolicy.RANDOM, EvictionPolicy.NONE];
+const DataRecord = require('../../lib/nearcache/DataRecord').DataRecord;
+const NearCacheImpl = require('../../lib/nearcache/NearCache').NearCacheImpl;
+const { Config } = require('../..');
+const EvictionPolicy = Config.EvictionPolicy;
+const SerializationService = require('../../lib/serialization/SerializationService').SerializationServiceV1;
+const { NearCacheConfigImpl } = require('../../lib/config/NearCacheConfig');
+const { SerializationConfigImpl } = require('../../lib/config/SerializationConfig');
+const promiseLater = require('../Util').promiseLater;
 
-    var testConfigs = [];
+describe('NearCacheTest', function () {
 
+    const invalidateOnChange = [false, true];
+    const ttls = [0, 1];
+    const evictionPolicy = [EvictionPolicy.LFU, EvictionPolicy.LRU, EvictionPolicy.RANDOM, EvictionPolicy.NONE];
+    const testConfigs = [];
     evictionPolicy.forEach(function (evictionPolicy) {
         invalidateOnChange.forEach(function (ioc) {
             ttls.forEach(function (ttl) {
-                var ncc = new Config.NearCacheConfig();
-                ncc.invalidateOnChange = ioc;
-                ncc.timeToLiveSeconds = ttl;
-                ncc.evictionMaxSize = 100;
-                ncc.evictionPolicy = evictionPolicy;
-                testConfigs.push(ncc);
+                const testConfig = new NearCacheConfigImpl();
+                testConfig.invalidateOnChange = ioc;
+                testConfig.timeToLiveSeconds = ttl;
+                testConfig.evictionMaxSize = 100;
+                testConfig.evictionPolicy = evictionPolicy;
+                testConfigs.push(testConfig);
             });
         });
     });
@@ -58,31 +57,26 @@ describe('NearCacheImpl', function () {
             equals(other) {
                 return this.val === other.val;
             }
-        }
+        };
     }
 
-    before(function () {
-        return Controller.createCluster(null, null).then(function (res) {
-            cluster = res;
-            return Controller.startMember(cluster.id);
-        }).then(function () {
-            const cfg = new Config.ClientConfig();
-            cfg.clusterName = cluster.id;
-            return HazelcastClient.newHazelcastClient(cfg);
-        }).then(function (cl) {
-            client = cl;
-        });
-    });
+    function createSerializationService() {
+        const cfg = new SerializationConfigImpl();
+        return new SerializationService(cfg);
+    }
 
-    after(function () {
-        client.shutdown();
-        return Controller.terminateCluster(cluster.id);
-    });
+    function promiseBefore(boundaryInSec, func) {
+        return promiseLater(boundaryInSec * 250, func);
+    }
+
+    function promiseAfter(boundaryInSec, func) {
+        return promiseLater(boundaryInSec * 1500, func);
+    }
 
     describe('CacheRecord', function () {
 
         it('does not expire if ttl is 0', function (done) {
-            var rec = new DataRecord(ds('key'), 'value', undefined, 0);
+            const rec = new DataRecord(ds('key'), 'value', undefined, 0);
             setTimeout(function () {
                 if (rec.isExpired()) {
                     done(new Error('Unlimited ttl record expired'));
@@ -93,7 +87,7 @@ describe('NearCacheImpl', function () {
         });
 
         it('expires after ttl', function (done) {
-            var rec = new DataRecord(ds('key'), 'value', undefined, 1);
+            const rec = new DataRecord(ds('key'), 'value', undefined, 1);
             setTimeout(function () {
                 if (rec.isExpired()) {
                     done();
@@ -104,7 +98,7 @@ describe('NearCacheImpl', function () {
         });
 
         it('does not expire before ttl', function (done) {
-            var rec = new DataRecord(ds('key'), 'value', undefined, 10);
+            const rec = new DataRecord(ds('key'), 'value', undefined, 10);
             setTimeout(function () {
                 if (rec.isExpired()) {
                     done(new Error('Record expired before ttl'));
@@ -116,7 +110,7 @@ describe('NearCacheImpl', function () {
 
         it('expires after maxIdleSeconds', function (done) {
             this.timeout(4000);
-            var rec = new DataRecord(ds('key'), 'value', undefined, 100);
+            const rec = new DataRecord(ds('key'), 'value', undefined, 100);
             setTimeout(function () {
                 if (rec.isExpired(1)) {
                     done();
@@ -127,7 +121,7 @@ describe('NearCacheImpl', function () {
         });
 
         it('does not expire while active', function (done) {
-            var rec = new DataRecord(ds('key'), 'value', undefined, 100);
+            const rec = new DataRecord(ds('key'), 'value', undefined, 100);
             setTimeout(function () {
                 rec.setAccessTime();
                 if (rec.isExpired(1)) {
@@ -142,14 +136,12 @@ describe('NearCacheImpl', function () {
     testConfigs.forEach(function (testConfig) {
 
         describe(testConfig.toString(), function () {
-
-            var nearCache;
+            let nearCache;
 
             beforeEach(function () {
                 nearCache = new NearCacheImpl(testConfig, createSerializationService());
                 nearCache.setReady();
             });
-
 
             it('simple put/get', function () {
                 nearCache.put(ds('key'), 'val');
@@ -158,7 +150,6 @@ describe('NearCacheImpl', function () {
                 });
             });
 
-
             it('returns undefined for non existing value', function () {
                 return nearCache.get(ds('random')).then(() => {
                     return expect(nearCache.getStatistics().missCount).to.equal(1);
@@ -166,53 +157,58 @@ describe('NearCacheImpl', function () {
             });
 
             it('record does not expire if ttl is 0', function () {
-                if (nearCache.timeToLiveSeconds != 0) {
+                if (nearCache.timeToLiveSeconds !== 0) {
                     this.skip();
                 }
                 nearCache.put(ds('key'), 'val');
-                return expect(promiseAfter(testConfig.timeToLiveSeconds, nearCache.get.bind(nearCache, ds('key')))).to.eventually.equal('val');
+                return expect(promiseAfter(testConfig.timeToLiveSeconds, nearCache.get.bind(nearCache, ds('key'))))
+                    .to.eventually.equal('val');
             });
 
             it('ttl expire', function () {
-                if (nearCache.timeToLiveSeconds == 0) {
+                if (nearCache.timeToLiveSeconds === 0) {
                     this.skip();
                 }
                 nearCache.put(ds('key'), 'val');
-                return expect(promiseAfter(testConfig.timeToLiveSeconds, nearCache.get.bind(nearCache, ds('key')))).to.eventually.be.undefined;
+                return expect(promiseAfter(testConfig.timeToLiveSeconds, nearCache.get.bind(nearCache, ds('key'))))
+                    .to.eventually.be.undefined;
             });
 
             it('ttl does not expire early', function () {
                 nearCache.put(ds('key'), 'val');
-                return expect(promiseBefore(testConfig.timeToLiveSeconds, nearCache.get.bind(nearCache, ds('key')))).to.eventually.equal('val');
+                return expect(promiseBefore(testConfig.timeToLiveSeconds, nearCache.get.bind(nearCache, ds('key'))))
+                    .to.eventually.equal('val');
             });
 
             it('evicted after maxIdleSeconds', function () {
-                if (nearCache.maxIdleSeconds == 0) {
+                if (nearCache.maxIdleSeconds === 0) {
                     this.skip();
                 }
                 nearCache.put(ds('key'), 'val');
-                return expect(promiseAfter(testConfig.maxIdleSeconds, nearCache.get.bind(nearCache, ds('key')))).to.eventually.be.undefined;
+                return expect(promiseAfter(testConfig.maxIdleSeconds, nearCache.get.bind(nearCache, ds('key'))))
+                    .to.eventually.be.undefined;
             });
 
             it('not evicted after maxIdleSeconds if maxIdleSeconds is 0(unlimited)', function () {
-                if (nearCache.maxIdleSeconds != 0) {
+                if (nearCache.maxIdleSeconds !== 0) {
                     this.skip();
                 }
                 nearCache.put(ds('key'), 'val');
-                return expect(promiseAfter(testConfig.maxIdleSeconds, nearCache.get.bind(nearCache, ds('key')))).to.eventually.equal('val');
+                return expect(promiseAfter(testConfig.maxIdleSeconds, nearCache.get.bind(nearCache, ds('key'))))
+                    .to.eventually.equal('val');
             });
 
             it('not evicted before maxIdleSeconds', function () {
                 nearCache.put(ds('key'), 'val');
-                return expect(promiseBefore(testConfig.maxIdleSeconds, nearCache.get.bind(nearCache, ds('key')))).to.eventually.equal('val');
+                return expect(promiseBefore(testConfig.maxIdleSeconds, nearCache.get.bind(nearCache, ds('key'))))
+                    .to.eventually.equal('val');
             });
 
             it('evicts entries after eviction max size is reached', function () {
-                if (nearCache.evictionPolicy == EvictionPolicy.NONE) {
+                if (nearCache.evictionPolicy === EvictionPolicy.NONE) {
                     this.skip();
                 }
-                var i;
-                for (i = 0; i < nearCache.evictionMaxSize + 1; i++) {
+                for (let i = 0; i < nearCache.evictionMaxSize + 1; i++) {
                     nearCache.put(ds('k' + i), 'v' + i);
                 }
                 expect(nearCache.getStatistics().evictedCount).to.equal(1);
@@ -223,8 +219,7 @@ describe('NearCacheImpl', function () {
                 if (nearCache.evictionPolicy === EvictionPolicy.NONE || nearCache.timeToLiveSeconds === 0) {
                     this.skip();
                 }
-                var i;
-                for (i = 0; i < nearCache.evictionMaxSize; i++) {
+                for (let i = 0; i < nearCache.evictionMaxSize; i++) {
                     nearCache.put(ds('k' + i), 'v' + i);
                 }
                 promiseAfter(nearCache.timeToLiveSeconds, function () {
@@ -245,33 +240,19 @@ describe('NearCacheImpl', function () {
     describe('InMemory format', function () {
 
         it('Object', function () {
-            var nearCacheConfig = new Config.NearCacheConfig();
+            const nearCacheConfig = new NearCacheConfigImpl();
             nearCacheConfig.inMemoryFormat = Config.InMemoryFormat.OBJECT;
-            var nearCache = new NearCacheImpl(nearCacheConfig, createSerializationService());
+            const nearCache = new NearCacheImpl(nearCacheConfig, createSerializationService());
             nearCache.put(ds('k'), 'v');
             expect(nearCache.internalStore.get(ds('k')).value).to.be.a('string');
         });
 
         it('Binary', function () {
-            var nearCacheConfig = new Config.NearCacheConfig();
+            const nearCacheConfig = new NearCacheConfigImpl();
             nearCacheConfig.inMemoryFormat = Config.InMemoryFormat.BINARY;
-            var nearCache = new NearCacheImpl(nearCacheConfig, createSerializationService());
+            const nearCache = new NearCacheImpl(nearCacheConfig, createSerializationService());
             nearCache.put(ds('k'), 'v');
             expect(nearCache.internalStore.get(ds('k')).value).to.not.be.a('string');
         });
     });
-
-    function createSerializationService() {
-        var cfg = new Config.ClientConfig().serializationConfig;
-        return new SerializationService(undefined, cfg);
-    }
-
-    function promiseBefore(boundaryInSec, func) {
-        return promiseLater(boundaryInSec * 250, func);
-    }
-
-    function promiseAfter(boundaryInSec, func) {
-        return promiseLater(boundaryInSec * 1500, func);
-    }
-
 });

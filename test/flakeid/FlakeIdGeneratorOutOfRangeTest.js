@@ -13,62 +13,62 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-
-var chai = require('chai');
+const chai = require('chai');
 chai.use(require('chai-as-promised'));
-var expect = chai.expect;
-var HazelcastClient = require('../../.').Client;
-var Config = require('../../.').Config;
-var Err = require('../../.').HazelcastErrors;
-var Controller = require('./../RC');
-var Util = require('../Util');
+const expect = chai.expect;
+const HazelcastClient = require('../../.').Client;
+const Errors = require('../../.').HazelcastErrors;
+const RC = require('./../RC');
+const Util = require('../Util');
 
 describe("FlakeIdGeneratorOutOfRangeTest", function () {
 
-    var cluster;
-    var client;
-    var flakeIdGenerator;
+    let cluster, client;
+    let flakeIdGenerator;
 
     afterEach(function () {
         return flakeIdGenerator.destroy().then(function () {
             client.shutdown();
-            return Controller.terminateCluster(cluster.id);
+            return RC.terminateCluster(cluster.id);
         });
     });
 
     function assignOverflowedNodeId(clusterId, instanceNum) {
-        var script =
+        const script =
             'function assignOverflowedNodeId() {' +
             '   instance_' + instanceNum + '.getCluster().getLocalMember().setMemberListJoinVersion(100000);' +
             '   return instance_' + instanceNum + '.getCluster().getLocalMember().getMemberListJoinVersion();' +
             '}' +
             'result=""+assignOverflowedNodeId();';
-        return Controller.executeOnController(clusterId, script, 1);
+        return RC.executeOnController(clusterId, script, 1);
     }
 
-    for (var repeat = 0; repeat < 10; repeat++) {
+    for (let repeat = 0; repeat < 10; repeat++) {
         it('newId succeeds as long as there is one suitable member in the cluster (repeat: ' + repeat + '/10)', function () {
             this.timeout(30000);
-            return Controller.createCluster().then(function (response) {
+            return RC.createCluster().then(function (response) {
                 cluster = response;
-                return Controller.startMember(cluster.id);
+                return RC.startMember(cluster.id);
             }).then(function () {
-                return Controller.startMember(cluster.id);
+                return RC.startMember(cluster.id);
             }).then(function () {
                 return assignOverflowedNodeId(cluster.id, Util.getRandomInt(0, 2));
             }).then(function () {
-                var cfg = new Config.ClientConfig();
-                cfg.networkConfig.smartRouting = false;
-                cfg.clusterName = cluster.id;
-                return HazelcastClient.newHazelcastClient(cfg);
+                return HazelcastClient.newHazelcastClient({
+                    clusterName: cluster.id,
+                    network: {
+                        smartRouting: false
+                    }
+                });
             }).then(function (value) {
                 client = value;
                 return client.getFlakeIdGenerator('test');
             }).then(function (idGenerator) {
                 flakeIdGenerator = idGenerator;
-                var promise = Promise.resolve();
-                for (var i = 0; i < 100; i++) {
+                let promise = Promise.resolve();
+                for (let i = 0; i < 100; i++) {
                     promise = promise.then(function () {
                         return flakeIdGenerator.newId();
                     });
@@ -80,25 +80,25 @@ describe("FlakeIdGeneratorOutOfRangeTest", function () {
 
     it('throws NodeIdOutOfRangeError when there is no server with a join id smaller than 2^16', function () {
         this.timeout(20000);
-        return Controller.createCluster().then(function (response) {
+        return RC.createCluster().then(function (response) {
             cluster = response;
-            return Controller.startMember(cluster.id);
+            return RC.startMember(cluster.id);
         }).then(function () {
-            return Controller.startMember(cluster.id);
+            return RC.startMember(cluster.id);
         }).then(function () {
             return assignOverflowedNodeId(cluster.id, 0);
         }).then(function () {
             return assignOverflowedNodeId(cluster.id, 1);
         }).then(function () {
-            const cfg = new Config.ClientConfig();
-            cfg.clusterName = cluster.id;
-            return HazelcastClient.newHazelcastClient(cfg);
+            return HazelcastClient.newHazelcastClient({
+                clusterName: cluster.id
+            });
         }).then(function (cl) {
             client = cl;
             return client.getFlakeIdGenerator('test');
         }).then(function (idGenerator) {
             flakeIdGenerator = idGenerator;
-            return expect(flakeIdGenerator.newId(flakeIdGenerator)).to.be.rejectedWith(Err.HazelcastError);
+            return expect(flakeIdGenerator.newId(flakeIdGenerator)).to.be.rejectedWith(Errors.HazelcastError);
         });
     });
 });

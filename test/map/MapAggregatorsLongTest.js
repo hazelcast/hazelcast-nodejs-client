@@ -13,30 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Controller = require('../RC');
-var Client = require('../../').Client;
-var Config = require('../../.').Config;
-var Aggregators = require('../../').Aggregators;
-var Predicates = require('../../').Predicates;
-var Long = require('long');
-var expect = require('chai').expect;
+const RC = require('../RC');
+const Client = require('../../').Client;
+const Aggregators = require('../../').Aggregators;
+const Predicates = require('../../').Predicates;
+const Long = require('long');
+const expect = require('chai').expect;
 
 describe('MapAggregatorsLongTest', function () {
-    var cluster;
-    var client;
-    var map;
-    var entryCount = 50;
+
+    let cluster, client;
+    let map;
+    const entryCount = 50;
 
     before(function () {
-        return Controller.createCluster(null, null).then(function (cl) {
+        return RC.createCluster(null, null).then(function (cl) {
             cluster = cl;
-            return Controller.startMember(cluster.id);
+            return RC.startMember(cluster.id);
         }).then(function () {
-            const cfg = new Config.ClientConfig();
-            cfg.clusterName = cluster.id;
-            cfg.serializationConfig.defaultNumberType = 'long';
-            return Client.newHazelcastClient(cfg);
+            return Client.newHazelcastClient({
+                clusterName: cluster.id,
+                serialization: {
+                    defaultNumberType: 'long'
+                }
+            });
         }).then(function (cl) {
             client = cl;
             return client.getMap('aggregatorsMap');
@@ -47,12 +49,12 @@ describe('MapAggregatorsLongTest', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     beforeEach(function () {
-        var entries = [];
-        for (var i = 0; i < entryCount; i++) {
+        const entries = [];
+        for (let i = 0; i < entryCount; i++) {
             entries.push(['key' + i, Long.fromNumber(i)]);
         }
         return map.putAll(entries);
@@ -75,9 +77,10 @@ describe('MapAggregatorsLongTest', function () {
     });
 
     it('longAvg with predicate', function () {
-        return map.aggregateWithPredicate(Aggregators.longAvg(), Predicates.greaterEqual('this', Long.fromNumber(47))).then(function (avg) {
-            return expect(avg).to.equal(48);
-        });
+        return map.aggregateWithPredicate(Aggregators.longAvg(), Predicates.greaterEqual('this', Long.fromNumber(47)))
+            .then(function (avg) {
+                return expect(avg).to.equal(48);
+            });
     });
 
     it('longSum', function () {
@@ -93,8 +96,9 @@ describe('MapAggregatorsLongTest', function () {
     });
 
     it('longSum with predicate', function () {
-        return map.aggregateWithPredicate(Aggregators.longSum(), Predicates.greaterEqual('this', Long.fromNumber(47))).then(function (sum) {
-            return expect(sum.toNumber()).to.equal(144);
-        });
+        return map.aggregateWithPredicate(Aggregators.longSum(), Predicates.greaterEqual('this', Long.fromNumber(47)))
+            .then(function (sum) {
+                return expect(sum.toNumber()).to.equal(144);
+            });
     });
 });

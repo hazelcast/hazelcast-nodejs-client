@@ -13,33 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
+const { Client } = require('hazelcast-client');
 
-Client.newHazelcastClient().then(function (hazelcastClient) {
-    var client = hazelcastClient;
-    var map;
-    hazelcastClient.getMap('my-distributed-map').then(function (mp) {
-        map = mp;
-        return map.put('key', 'value');
-    }).then(function () {
-        return map.get('key');
-    }).then(function (val) {
-        console.log(val);
+(async () => {
+    try {
+        const client = await Client.newHazelcastClient();
+        const map = await client.getMap('my-distributed-map');
 
-        return map.remove('key');
-    }).then(function () {
-        return map.put('disappearing-key', 'this string will disappear after ttl', 1000);
-    }).then(function (value) {
-        return map.get('disappearing-key');
-    }).then(function (value) {
-        console.log(value);
+        await map.put('key', 'value');
+        const value = await map.get('key');
+        console.log('Plain value:', value);
+        await map.remove('key');
 
-        setTimeout(function () {
-            map.get('disappearing-key').then(function (value) {
-                console.log(value);
-                return client.shutdown();
-            });
-        }, 1000)
-    });
-});
+        await map.put('disappearing-key', 'this string will disappear after TTL', 1000);
+        let disappearingValue = await map.get('disappearing-key');
+        console.log('Disappearing value:', disappearingValue);
+
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        disappearingValue = await map.get('disappearing-key');
+        console.log('Disappeared value:', disappearingValue);
+
+        client.shutdown();
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

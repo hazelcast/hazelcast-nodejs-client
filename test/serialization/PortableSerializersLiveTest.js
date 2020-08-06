@@ -13,36 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('../../.').Client;
-var Config = require('../../.').Config;
-var RC = require('../RC');
-var expect = require('chai').expect;
-var SimplePortable = require('./PortableObjects').SimplePortable;
-var InnerPortable = require('./PortableObjects').InnerPortableObject;
-var Promise = require('bluebird');
+const expect = require('chai').expect;
+const Promise = require('bluebird');
 
-describe('Default serializers with live instance', function () {
-    var cluster;
-    var member;
-    var client;
-    var map;
+const Client = require('../../.').Client;
+const RC = require('../RC');
+const SimplePortable = require('./PortableObjects').SimplePortable;
+const InnerPortable = require('./PortableObjects').InnerPortableObject;
+
+describe('PortableSerializersLiveTest', function () {
+
+    let cluster, client;
+    let map;
 
     function getClientConfig(clusterName) {
-        var cfg = new Config.ClientConfig();
-        cfg.clusterName = clusterName;
-        cfg.serializationConfig.portableFactories[10] = {
-            create: function (classId) {
-                if (classId === 222) {
-                    return new InnerPortable();
-                } else if (classId === 21) {
-                    return new SimplePortable();
-                } else {
-                    return null;
+        return {
+            clusterName,
+            serialization: {
+                portableFactories: {
+                    10: {
+                        create: function (classId) {
+                            if (classId === 222) {
+                                return new InnerPortable();
+                            } else if (classId === 21) {
+                                return new SimplePortable();
+                            } else {
+                                return null;
+                            }
+                        }
+                    }
                 }
             }
         };
-        return cfg;
     }
 
     before(function () {
@@ -51,7 +55,6 @@ describe('Default serializers with live instance', function () {
         }).then(function () {
             return RC.startMember(cluster.id);
         }).then(function (m) {
-            member = m;
             return Client.newHazelcastClient(getClientConfig(cluster.id));
         }).then(function (cl) {
             client = cl;
@@ -67,8 +70,8 @@ describe('Default serializers with live instance', function () {
     });
 
     it('client can write and read two different serializable objects of the same factory', function () {
-        var simplePortable = new SimplePortable('atext');
-        var innerPortable = new InnerPortable('str1', 'str2');
+        const simplePortable = new SimplePortable('atext');
+        const innerPortable = new InnerPortable('str1', 'str2');
         return map.put('simpleportable', simplePortable).then(function () {
             return map.put('innerportable', innerPortable);
         }).then(function () {
@@ -83,8 +86,8 @@ describe('Default serializers with live instance', function () {
     });
 
     it('client can read two different serializable objects of the same factory (written by another client)', function () {
-        var simplePortable = new SimplePortable('atext');
-        var innerPortable = new InnerPortable('str1', 'str2');
+        const simplePortable = new SimplePortable('atext');
+        const innerPortable = new InnerPortable('str1', 'str2');
         return map.putAll([['simpleportable', simplePortable], ['innerportable', innerPortable]]).then(function () {
             client.shutdown();
         }).then(function () {

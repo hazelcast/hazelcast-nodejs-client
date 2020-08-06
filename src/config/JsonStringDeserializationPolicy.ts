@@ -19,16 +19,18 @@
  * deserialization type of the JSON strings.
  */
 export enum JsonStringDeserializationPolicy {
+
     /**
      * JSON strings are parsed and returned
      * as JavaScript objects.
      */
-    EAGER,
+    EAGER = 'EAGER',
 
     /**
      * Raw JSON strings are returned around a
      * lightweight {@link HazelcastJsonValue}
      * wrapper.
      */
-    NO_DESERIALIZATION,
+    NO_DESERIALIZATION = 'NO_DESERIALIZATION',
+
 }

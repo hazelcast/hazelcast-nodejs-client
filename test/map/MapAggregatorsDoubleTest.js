@@ -13,28 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Controller = require('../RC');
-var Client = require('../../').Client;
-var Config = require('../../.').Config;
-var Aggregators = require('../../').Aggregators;
-var Predicates = require('../../').Predicates;
-var _fillMap = require('../Util').fillMap;
-var expect = require('chai').expect;
+const RC = require('../RC');
+const Client = require('../../').Client;
+const Aggregators = require('../../').Aggregators;
+const Predicates = require('../../').Predicates;
+const fillMap = require('../Util').fillMap;
+const expect = require('chai').expect;
 
 describe('MapAggregatorsDoubleTest', function () {
-    var cluster;
-    var client;
-    var map;
+
+    let cluster, client;
+    let map;
 
     before(function () {
-        return Controller.createCluster(null, null).then(function (cl) {
+        return RC.createCluster(null, null).then(function (cl) {
             cluster = cl;
-            return Controller.startMember(cluster.id);
+            return RC.startMember(cluster.id);
         }).then(function () {
-            var cfg = new Config.ClientConfig();
-            cfg.clusterName = cluster.id;
-            return Client.newHazelcastClient(cfg);
+            return Client.newHazelcastClient({ clusterName: cluster.id });
         }).then(function (cl) {
             client = cl;
             return client.getMap('aggregatorsMap');
@@ -45,11 +43,11 @@ describe('MapAggregatorsDoubleTest', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     beforeEach(function () {
-        return _fillMap(map, 50, 'key', 0);
+        return fillMap(map, 50, 'key', 0);
     });
 
     afterEach(function () {
@@ -69,9 +67,10 @@ describe('MapAggregatorsDoubleTest', function () {
     });
 
     it('count with predicate', function () {
-        return map.aggregateWithPredicate(Aggregators.count(), Predicates.greaterEqual('this', 1)).then(function (count) {
-            return expect(count.toNumber()).to.equal(49);
-        });
+        return map.aggregateWithPredicate(Aggregators.count(), Predicates.greaterEqual('this', 1))
+            .then(function (count) {
+                return expect(count.toNumber()).to.equal(49);
+            });
     });
 
     it('doubleAvg', function () {
@@ -87,9 +86,10 @@ describe('MapAggregatorsDoubleTest', function () {
     });
 
     it('doubleAvg with predicate', function () {
-        return map.aggregateWithPredicate(Aggregators.doubleAvg(), Predicates.greaterEqual('this', 47)).then(function (avg) {
-            return expect(avg).to.equal(48);
-        });
+        return map.aggregateWithPredicate(Aggregators.doubleAvg(), Predicates.greaterEqual('this', 47))
+            .then(function (avg) {
+                return expect(avg).to.equal(48);
+            });
     });
 
     it('doubleSum', function () {
@@ -105,9 +105,10 @@ describe('MapAggregatorsDoubleTest', function () {
     });
 
     it('doubleSum with predicate', function () {
-        return map.aggregateWithPredicate(Aggregators.doubleSum(), Predicates.greaterEqual('this', 47)).then(function (avg) {
-            return expect(avg).to.equal(144);
-        });
+        return map.aggregateWithPredicate(Aggregators.doubleSum(), Predicates.greaterEqual('this', 47))
+            .then(function (avg) {
+                return expect(avg).to.equal(144);
+            });
     });
 
     it('floatingPointSum', function () {
@@ -123,9 +124,10 @@ describe('MapAggregatorsDoubleTest', function () {
     });
 
     it('floatingPointSum with predicate', function () {
-        return map.aggregateWithPredicate(Aggregators.floatingPointSum(), Predicates.greaterEqual('this', 47)).then(function (sum) {
-            return expect(sum).to.equal(144);
-        });
+        return map.aggregateWithPredicate(Aggregators.floatingPointSum(), Predicates.greaterEqual('this', 47))
+            .then(function (sum) {
+                return expect(sum).to.equal(144);
+            });
     });
 
     it('numberAvg', function () {
@@ -141,9 +143,10 @@ describe('MapAggregatorsDoubleTest', function () {
     });
 
     it('numberAvg with predicate', function () {
-        return map.aggregateWithPredicate(Aggregators.numberAvg(), Predicates.greaterEqual('this', 47)).then(function (avg) {
-            return expect(avg).to.equal(48);
-        });
+        return map.aggregateWithPredicate(Aggregators.numberAvg(), Predicates.greaterEqual('this', 47))
+            .then(function (avg) {
+                return expect(avg).to.equal(48);
+            });
     });
 
     it('max', function () {
@@ -159,9 +162,10 @@ describe('MapAggregatorsDoubleTest', function () {
     });
 
     it('max with predicate', function () {
-        return map.aggregateWithPredicate(Aggregators.max(), Predicates.lessEqual('this', 3)).then(function (avg) {
-            return expect(avg).to.equal(3);
-        });
+        return map.aggregateWithPredicate(Aggregators.max(), Predicates.lessEqual('this', 3))
+            .then(function (avg) {
+                return expect(avg).to.equal(3);
+            });
     });
 
     it('min', function () {
@@ -177,8 +181,9 @@ describe('MapAggregatorsDoubleTest', function () {
     });
 
     it('min with predicate', function () {
-        return map.aggregateWithPredicate(Aggregators.min(), Predicates.greaterEqual('this', 3)).then(function (avg) {
-            return expect(avg).to.equal(3);
-        });
+        return map.aggregateWithPredicate(Aggregators.min(), Predicates.greaterEqual('this', 3))
+            .then(function (avg) {
+                return expect(avg).to.equal(3);
+            });
     });
 });

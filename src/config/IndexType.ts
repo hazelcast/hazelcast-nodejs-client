@@ -18,6 +18,7 @@
  * Type of the index.
  */
 export enum IndexType {
+
     /**
      * Sorted index. Can be used with equality and range predicates.
      */
@@ -32,4 +33,7 @@ export enum IndexType {
      * Bitmap index. Can be used with equality predicates.
      */
     BITMAP = 2,
+
 }
+
+export type IndexTypeStrings = keyof typeof IndexType;

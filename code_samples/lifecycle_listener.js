@@ -13,15 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var HazelcastClient = require('hazelcast-client').Client;
-var Config = require('hazelcast-client').Config;
-var cfg = new Config.ClientConfig();
+const { Client } = require('hazelcast-client');
 
-cfg.listeners.addLifecycleListener(function (state) {
-    console.log('Lifecycle Event >>> ' + state);
-});
+(async () => {
+    try {
+        const client = await Client.newHazelcastClient({
+            lifecycleListeners: [
+                (state) => {
+                    console.log('Lifecycle Event >>>', state);
+                }
+            ]
+        });
 
-HazelcastClient.newHazelcastClient(cfg).then(function (hazelcastClient) {
-    hazelcastClient.shutdown();
-});
+        client.shutdown();
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

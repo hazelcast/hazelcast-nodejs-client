@@ -13,35 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require('chai').expect;
-var BuildInfo = require('../lib/BuildInfo').BuildInfo;
-var UuidUtil = require('../lib/util/UuidUtil').UuidUtil;
+const expect = require('chai').expect;
+const BuildInfo = require('../lib/BuildInfo').BuildInfo;
+const UuidUtil = require('../lib/util/UuidUtil').UuidUtil;
 
-var promiseLater = function (time, func) {
+const promiseLater = function (time, func) {
     if (func === undefined) {
-        func = function () {
-        };
+        func = () => {};
     }
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve) {
         setTimeout(function () {
             resolve(func());
         }, time);
     });
 };
 
-var expectAlmostEqual = function (actual, expected) {
+const expectAlmostEqual = function (actual, expected) {
     if (expected === null) {
         return expect(actual).to.equal(expected);
     }
-    var typeExpected = typeof expected;
+    const typeExpected = typeof expected;
     if (typeExpected === 'number') {
         return expect(actual).to.be.closeTo(expected, 0.0001);
     }
     if (typeExpected === 'object') {
         return (function () {
-            var membersEqual = true;
-            for (var i in expected) {
+            let membersEqual = true;
+            for (const i in expected) {
                 if (expectAlmostEqual(actual[i], expected[i])) {
                     membersEqual = false;
                     break;
@@ -63,8 +63,8 @@ exports.fillMap = function (map, size, keyPrefix, valuePrefix) {
     if (valuePrefix == void 0) {
         valuePrefix = 'val';
     }
-    var entries = [];
-    for (var i = 0; i < size; i++) {
+    const entries = [];
+    for (let i = 0; i < size; i++) {
         entries.push([keyPrefix + i, valuePrefix + i]);
     }
     return map.putAll(entries);
@@ -80,14 +80,15 @@ exports.markEnterprise = function (_this) {
 };
 
 exports.markServerVersionAtLeast = function (_this, client, expectedVersion) {
+    let actNumber;
     if (process.env['SERVER_VERSION']) {
-        var actNumber = BuildInfo.calculateServerVersionFromString(process.env['SERVER_VERSION']);
+        actNumber = BuildInfo.calculateServerVersionFromString(process.env['SERVER_VERSION']);
     } else if (client != null) {
-        var actNumber = client.getConnectionManager().getRandomConnection().getConnectedServerVersion();
+        actNumber = client.getConnectionManager().getRandomConnection().getConnectedServerVersion();
     } else {
         return;
     }
-    var expNumber = BuildInfo.calculateServerVersionFromString(expectedVersion);
+    const expNumber = BuildInfo.calculateServerVersionFromString(expectedVersion);
     if (actNumber === BuildInfo.UNKNOWN_VERSION_ID || actNumber < expNumber) {
         _this.skip();
     }

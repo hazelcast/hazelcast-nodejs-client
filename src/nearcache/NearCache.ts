@@ -17,7 +17,7 @@
 import * as Long from 'long';
 import {EvictionPolicy} from '../config/EvictionPolicy';
 import {InMemoryFormat} from '../config/InMemoryFormat';
-import {NearCacheConfig} from '../config/NearCacheConfig';
+import {NearCacheConfigImpl} from '../config/NearCacheConfig';
 import {DataKeyedHashMap} from '../DataStoreHashMap';
 import {Data} from '../serialization/Data';
 import {SerializationService} from '../serialization/SerializationService';
@@ -85,7 +85,7 @@ export class NearCacheImpl implements NearCache {
     private compareFunc: (x: DataRecord, y: DataRecord) => number;
     private ready: Promise.Resolver<void>;
 
-    constructor(nearCacheConfig: NearCacheConfig, serializationService: SerializationService) {
+    constructor(nearCacheConfig: NearCacheConfigImpl, serializationService: SerializationService) {
         this.serializationService = serializationService;
         this.name = nearCacheConfig.name;
         this.invalidateOnChange = nearCacheConfig.invalidateOnChange;

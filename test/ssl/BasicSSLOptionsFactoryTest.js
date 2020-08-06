@@ -13,27 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var chai = require("chai");
-var expect = chai.expect;
-var Path = require('path');
-var HazelcastError = require('../..').HazelcastErrors.HazelcastError;
-var BasicSSLOptionsFactory = require('../../lib/connection/BasicSSLOptionsFactory').BasicSSLOptionsFactory;
+const chai = require("chai");
+const expect = chai.expect;
+const path = require('path');
+const HazelcastError = require('../..').HazelcastErrors.HazelcastError;
+const BasicSSLOptionsFactory = require('../../lib/connection/BasicSSLOptionsFactory').BasicSSLOptionsFactory;
 
 describe('BasicSSLOptionsFactoryTest', function () {
 
     it('factory creates sslOptions object with all supported fields', function () {
-        var options = {
+        const options = {
             servername: 'foo.bar.com',
             rejectUnauthorized: true,
-            caPath: Path.join(__dirname, './server1-cert.pem'),
-            keyPath: Path.join(__dirname, './client1-key.pem'),
-            certPath: Path.join(__dirname, './client1-cert.pem'),
+            caPath: path.join(__dirname, './server1-cert.pem'),
+            keyPath: path.join(__dirname, './client1-key.pem'),
+            certPath: path.join(__dirname, './client1-cert.pem'),
             ciphers: 'cipherliststring'
         };
-        var factory = new BasicSSLOptionsFactory();
+        const factory = new BasicSSLOptionsFactory();
         return factory.init(options).then(function () {
-            var optsObject = factory.getSSLOptions();
+            const optsObject = factory.getSSLOptions();
             expect(optsObject.servername).to.equal('foo.bar.com');
             expect(optsObject.rejectUnauthorized).to.be.true;
             expect(optsObject.ca).to.be.instanceOf(Buffer);
@@ -44,7 +45,7 @@ describe('BasicSSLOptionsFactoryTest', function () {
     });
 
     it('BasicSSLOptionsFactory throws when provided with non-object properties', function () {
-        var factory = new BasicSSLOptionsFactory();
+        const factory = new BasicSSLOptionsFactory();
         return expect(factory.init.bind(factory, 3)).to.throw(HazelcastError);
-    })
+    });
 });

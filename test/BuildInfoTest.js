@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var BuildInfo = require('../lib/BuildInfo').BuildInfo;
-var assert = require('chai').assert;
+const BuildInfo = require('../lib/BuildInfo').BuildInfo;
+const assert = require('chai').assert;
 
 describe('BuildInfo', function () {
     it('version calculation test', function () {

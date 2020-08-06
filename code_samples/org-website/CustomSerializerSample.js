@@ -13,48 +13,56 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
-var Config = require('hazelcast-client').Config;
+const { Client } = require('hazelcast-client');
 
-function CustomSerializable(value) {
-    this.value = value;
+class CustomSerializable {
+    constructor(value) {
+        this.value = value;
+    }
+
+    hzGetCustomId() {
+        return 10;
+    }
 }
 
-CustomSerializable.prototype.hzGetCustomId = function () {
-    return 10;
-};
+class CustomSerializer {
+    getId() {
+        return 10;
+    }
 
-function CustomSerializer() {
-    //Constructor function
+    read(input) {
+        const len = input.readInt();
+        let str = '';
+        for (let i = 0; i < len; i++) {
+            str = str + String.fromCharCode(input.readInt());
+        }
+        return new CustomSerializable(str);
+    }
+
+    write(output, obj) {
+        output.writeInt(obj.value.length);
+        for (let i = 0; i < obj.value.length; i++) {
+            output.writeInt(obj.value.charCodeAt(i));
+        }
+    }
 }
 
-CustomSerializer.prototype.getId = function () {
-    return 10;
-};
+(async () => {
+    try {
+        // Start the Hazelcast Client and connect to an already running
+        // Hazelcast Cluster on 127.0.0.1
+        const hz = await Client.newHazelcastClient({
+            serialization: {
+                customSerializers: [new CustomSerializer()]
+            }
+        });
+        // CustomSerializer will serialize/deserialize CustomSerializable objects
 
-CustomSerializer.prototype.write = function (output, t) {
-    output.writeInt(t.value.length);
-    for (var i = 0; i < t.value.length; i++) {
-        output.writeInt(t.value.charCodeAt(i));
+        // Shutdown this Hazelcast client
+        hz.shutdown();
+    } catch (err) {
+        console.error('Error occurred:', err);
     }
-};
-
-CustomSerializer.prototype.read = function (reader) {
-    var len = reader.readInt();
-    var str = '';
-    for (var i = 0; i < len; i++) {
-        str = str + String.fromCharCode(reader.readInt());
-    }
-    return new CustomSerializable(str);
-};
-
-var cfg = new Config.ClientConfig();
-cfg.serializationConfig.customSerializers.push(new CustomSerializer());
-
-// Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-Client.newHazelcastClient(cfg).then(function (hz) {
-    //CustomSerializer will serialize/deserialize CustomSerializable objects
-    hz.shutdown();
-});
-
+})();

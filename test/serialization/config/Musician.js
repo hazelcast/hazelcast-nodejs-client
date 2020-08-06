@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
 function Musician(name) {
     this.name = name;
@@ -23,25 +24,23 @@ Musician.prototype.hzGetCustomId = function () {
 };
 
 function MusicianSerializer() {
-
 }
 
 MusicianSerializer.prototype.getId = function () {
     return 10;
 }
 
-
 MusicianSerializer.prototype.write = function (objectDataOutput, object) {
     objectDataOutput.writeInt(object.name.length);
-    for (var i = 0; i < object.name.length; i++) {
+    for (let i = 0; i < object.name.length; i++) {
         objectDataOutput.writeInt(object.name.charCodeAt(i));
     }
 }
 
 MusicianSerializer.prototype.read = function (objectDataInput) {
-    var len = objectDataInput.readInt();
-    var name = '';
-    for (var i = 0; i < len; i++) {
+    const len = objectDataInput.readInt();
+    let name = '';
+    for (let i = 0; i < len; i++) {
         name = name + String.fromCharCode(objectDataInput.readInt());
     }
     return new Musician(name);

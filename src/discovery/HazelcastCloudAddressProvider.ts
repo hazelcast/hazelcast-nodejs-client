@@ -21,6 +21,7 @@ import {ILogger} from '../logging/ILogger';
 import {Address} from '../Address';
 
 export class HazelcastCloudAddressProvider implements AddressProvider {
+
     private readonly logger: ILogger;
     private readonly cloudDiscovery: HazelcastCloudDiscovery;
     private privateToPublic: Map<string, Address> = new Map<string, Address>();

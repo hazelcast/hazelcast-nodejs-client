@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var thrift = require('thrift');
-var RemoteController = require('./RemoteController');
+const thrift = require('thrift');
+const RemoteController = require('./RemoteController');
 
 function HzRemoteController(host, port) {
+    const transport = thrift.TBufferedTransport();
+    const protocol =  thrift.TBinaryProtocol();
 
-    var transport = thrift.TBufferedTransport();
-    var protocol =  thrift.TBinaryProtocol();
-
-    var connection = thrift.createConnection('localhost', 9701, {
+    const connection = thrift.createConnection('localhost', 9701, {
         transport: transport,
         protocol: protocol
     });

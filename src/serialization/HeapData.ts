@@ -16,6 +16,7 @@
 
 import {murmur} from '../invocation/Murmur';
 import {Data} from './Data';
+import {NULL_TYPE_ID} from './DefaultSerializer';
 
 export const PARTITION_HASH_OFFSET = 0;
 export const TYPE_OFFSET = 4;
@@ -28,9 +29,8 @@ export class HeapData implements Data {
 
     constructor(buffer: Buffer) {
         if (buffer != null && buffer.length > 0 && buffer.length < HEAP_DATA_OVERHEAD) {
-            throw new RangeError('Data should be either empty or should contain more than ' + HEAP_DATA_OVERHEAD
-                + ' bytes! -> '
-                + buffer);
+            throw new RangeError('Data should be either empty or should contain more than '
+                + HEAP_DATA_OVERHEAD + ' bytes! -> ' + buffer);
         }
         this.payload = buffer;
     }
@@ -47,8 +47,7 @@ export class HeapData implements Data {
      */
     public getType(): number {
         if (this.totalSize() === 0) {
-            // TODO serialization null type
-            return 0;
+            return NULL_TYPE_ID;
         }
         return this.payload.readIntBE(TYPE_OFFSET, 4);
     }

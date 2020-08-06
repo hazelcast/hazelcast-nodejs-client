@@ -13,37 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
-var Config = require('hazelcast-client').Config;
+const { Client } = require('hazelcast-client');
 
-function createConfig() {
-    var cfg = new Config.ClientConfig();
+(async () => {
+    try {
+        const client = await Client.newHazelcastClient({
+            nearCaches: {
+                // Enable near cache with all defaults
+                'nearCachedMap': {}
+            },
+            properties: {
+                'hazelcast.client.statistics.enabled': true,
+                'hazelcast.client.statistics.period.seconds': 2
+            }
+        });
+        const ncMap = await client.getMap('nearCachedMap');
 
-    var nearCacheConfig = new Config.NearCacheConfig();
-    cfg.nearCacheConfigs['nearCachedMap'] = nearCacheConfig;
-    cfg.properties['hazelcast.client.statistics.enabled'] = true;
-    cfg.properties['hazelcast.client.statistics.period.seconds'] = 2;
-    return cfg;
-}
+        // Warm up the near cache
+        await ncMap.put('key1', 'value1');
+        await ncMap.get('key1');
+        await ncMap.get('key1');
+        await ncMap.get('key1');
 
-Client.newHazelcastClient(createConfig()).then(function (client) {
-    var ncMap;
-    return client.getMap('nearCachedMap').then(function (map) {
-        ncMap = map;
-        return ncMap.put('key1', 'value1');
-    }).then(function () {
-        return ncMap.get('key1');
-    }).then(function () {
-        return ncMap.get('key1');
-    }).then(function () {
-        return ncMap.get('key1');
-    }).then(function () {
-        // At this point, we have 1 near cache miss, 2 near cache hits as client near cache statistics.
-        // Sleep more than statistics collection time and keep client running. Then, you can see the statistics
-        // at the Management center.
-        setTimeout(function () {
-            client.shutdown();
-        }, 60000);
-    });
-});
+        // At this point, we have 1 near cache miss, 2 near cache hits
+        // in client's near cache statistics. Sleep more than statistics
+        // collection time and keep client running. Then, you should see
+        // the statistics in Hazelcast Management Center
+        await new Promise((resolve) => setTimeout(resolve, 60000));
+        client.shutdown();
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

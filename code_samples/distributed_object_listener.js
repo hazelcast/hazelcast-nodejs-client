@@ -13,27 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var Client = require('hazelcast-client').Client;
-Client.newHazelcastClient().then(function (client) {
-    return client.addDistributedObjectListener(function (serviceName, name, event) {
-        console.log('Distributed object event >>> ' + JSON.stringify({
-            serviceName: serviceName,
-            name: name,
-            event: event
-        }));
-    }).then(function () {
-        var map;
-        var mapname = 'test';
+const { Client } = require('hazelcast-client');
 
-        // this causes a created event
-        return client.getMap(mapname).then(function (mp) {
-            map = mp;
-            // this causes no event because map was already created
-            return client.getMap(mapname);
-        }).then(function () {
-            // this causes a destroyed event
-            return map.destroy();
+(async () => {
+    try {
+        const client = await Client.newHazelcastClient();
+
+        client.addDistributedObjectListener((event) => {
+            console.log('Distributed object event >>>', event);
         });
-    });
-});
+
+        const mapname = 'test';
+        // This causes a 'created' event
+        let map = await client.getMap(mapname);
+        // This causes no event because map was already created
+        map = await client.getMap(mapname);
+        // This causes a 'destroyed' event
+        await map.destroy();
+
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        client.shutdown();
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

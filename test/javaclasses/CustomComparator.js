@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var IterationType = require('../../lib/').IterationType;
+const IterationType = require('../../lib/').IterationType;
 
 /**
- *
  * @param type
  *          0 -> lexicographical order
  *          1 -> reverse lexicographical
@@ -48,8 +48,8 @@ CustomComparator.prototype.readData = function (inp) {
 };
 
 CustomComparator.prototype.sort = function (e1, e2) {
-    var str1;
-    var str2;
+    let str1;
+    let str2;
     switch (this.iterationType) {
         case IterationType.KEY:
             str1 = e1[0].toString();

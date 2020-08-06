@@ -13,29 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var HazelcastClient = require('../.').Client;
-var Config = require('../.').Config;
-var Controller = require('./RC');
-var expect = require('chai').expect;
-var DeferredPromise = require('../lib/Util').DeferredPromise;
-var MemberAttributeOperationType = require('../.').MemberAttributeOperationType;
-var MemberEvent = require('../lib/invocation/ClusterService').MemberEvent;
+const HazelcastClient = require('../.').Client;
+const Controller = require('./RC');
+const expect = require('chai').expect;
+const DeferredPromise = require('../lib/Util').DeferredPromise;
+const MemberEvent = require('../lib/invocation/ClusterService').MemberEvent;
 
 describe('MembershipListener', function () {
+
     this.timeout(20000);
-    var cluster;
-    var member;
-    var client;
+    let cluster, client;
+
     beforeEach(function () {
         return Controller.createCluster(null, null).then(function (res) {
             cluster = res;
             return Controller.startMember(cluster.id)
         }).then(function (res) {
-            member = res;
-            const config = new Config.ClientConfig();
-            config.clusterName = cluster.id;
-            return HazelcastClient.newHazelcastClient(config);
+            return HazelcastClient.newHazelcastClient({
+                clusterName: cluster.id
+            });
         }).then(function (res) {
             client = res;
         });
@@ -47,11 +45,11 @@ describe('MembershipListener', function () {
     });
 
     it('sees member added event', function () {
-        var newMember;
-        var listenerCalledResolver = DeferredPromise();
+        let newMember;
+        const listenerCalledResolver = DeferredPromise();
 
-        var membershipListener = {
-            memberAdded: function (membershipEvent) {
+        const membershipListener = {
+            memberAdded: (membershipEvent) => {
                 listenerCalledResolver.resolve(membershipEvent);
             }
         };
@@ -69,19 +67,17 @@ describe('MembershipListener', function () {
     });
 
     it('sees member added event and other listener\'s event ', function () {
-        var newMember;
-        var err = undefined;
-        var listenerCalledResolver = DeferredPromise();
-        var listenedSecondListener = false;
+        let newMember;
+        const listenerCalledResolver = DeferredPromise();
+        let listenedSecondListener = false;
 
-        var membershipListener = {
-            memberAdded: function (membershipEvent) {
+        const membershipListener = {
+            memberAdded: (membershipEvent) => {
                 listenerCalledResolver.resolve(membershipEvent);
             }
         };
-
-        var membershipListener2 = {
-            memberAdded: function (membershipEvent) {
+        const membershipListener2 = {
+            memberAdded: (membershipEvent) => {
                 listenedSecondListener = true;
             }
         };
@@ -102,11 +98,11 @@ describe('MembershipListener', function () {
     });
 
     it('if same listener is added twice, gets same event twice', function () {
-        var newMember;
-        var counter = 0;
+        let newMember;
+        let counter = 0;
 
-        var membershipListener = {
-            memberAdded: function () {
+        const membershipListener = {
+            memberAdded: (membershipEvent) => {
                 counter++;
             }
         };
@@ -120,15 +116,14 @@ describe('MembershipListener', function () {
     });
 
     it('sees member removed event', function () {
-        var newMember;
-        var listenerCalledResolver = DeferredPromise();
+        let newMember;
+        const listenerCalledResolver = DeferredPromise();
 
-        var membershipListener = {
-            memberRemoved: function (membershipEvent) {
+        const membershipListener = {
+            memberRemoved: (membershipEvent) => {
                 listenerCalledResolver.resolve(membershipEvent);
             }
         };
-
         client.clusterService.addMembershipListener(membershipListener);
 
         return Controller.startMember(cluster.id).then(function (res) {

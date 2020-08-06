@@ -17,12 +17,16 @@
 import {AggregatorFactory} from '../aggregation/AggregatorFactory';
 import {ClusterDataFactory} from '../ClusterDataFactory';
 import {ClusterDataFactoryHelper} from '../ClusterDataFactoryHelper';
-import {SerializationConfig} from '../config/SerializationConfig';
-import {RELIABLE_TOPIC_MESSAGE_FACTORY_ID, ReliableTopicMessageFactory} from '../proxy/topic/ReliableTopicMessage';
+import {SerializationConfigImpl} from '../config/SerializationConfig';
+import {
+    RELIABLE_TOPIC_MESSAGE_FACTORY_ID,
+    ReliableTopicMessageFactory,
+} from '../proxy/topic/ReliableTopicMessage';
 import * as Util from '../Util';
 import {Data, DataInput, DataOutput} from './Data';
 import * as DefaultPredicates from './DefaultPredicates';
 import {
+    Serializer,
     BooleanArraySerializer,
     BooleanSerializer,
     ByteArraySerializer,
@@ -53,11 +57,11 @@ import {ObjectDataInput, PositionalObjectDataOutput} from './ObjectData';
 import {PortableSerializer} from './portable/PortableSerializer';
 import {PREDICATE_FACTORY_ID, PredicateFactory} from './PredicateFactory';
 import {IdentifiedDataSerializableFactory} from './Serializable';
-import HazelcastClient from '../HazelcastClient';
 import {JsonStringDeserializationPolicy} from '../config/JsonStringDeserializationPolicy';
 import {RestValueFactory, REST_VALUE_FACTORY_ID} from '../core/RestValue';
 
 export interface SerializationService {
+
     toData(object: any, paritioningStrategy?: any): Data;
 
     toObject(data: Data): any;
@@ -65,26 +69,16 @@ export interface SerializationService {
     writeObject(out: DataOutput, object: any): void;
 
     readObject(inp: DataInput): any;
-}
 
-export interface Serializer {
-    getId(): number;
-
-    read(input: DataInput): any;
-
-    write(output: DataOutput, object: any): void;
 }
 
 export class SerializationServiceV1 implements SerializationService {
 
     private registry: { [id: number]: Serializer };
     private serializerNameToId: { [name: string]: number };
-    private numberType: string;
-    private serializationConfig: SerializationConfig;
-    private client: HazelcastClient;
+    private serializationConfig: SerializationConfigImpl;
 
-    constructor(client: HazelcastClient, serializationConfig: SerializationConfig) {
-        this.client = client;
+    constructor(serializationConfig: SerializationConfigImpl) {
         this.serializationConfig = serializationConfig;
         this.registry = {};
         this.serializerNameToId = {};
@@ -276,13 +270,6 @@ export class SerializationServiceV1 implements SerializationService {
         for (const id in this.serializationConfig.dataSerializableFactories) {
             factories[id] = this.serializationConfig.dataSerializableFactories[id];
         }
-        const factoryConfigs = this.serializationConfig.dataSerializableFactoryConfigs;
-        for (const id in factoryConfigs) {
-            const path = factoryConfigs[id].path;
-            const exportedName = factoryConfigs[id].exportedName;
-            const factoryConstructor = Util.loadNameFromPath(path, exportedName);
-            factories[id] = new factoryConstructor();
-        }
         factories[PREDICATE_FACTORY_ID] = new PredicateFactory(DefaultPredicates);
         factories[RELIABLE_TOPIC_MESSAGE_FACTORY_ID] = new ReliableTopicMessageFactory();
         factories[ClusterDataFactoryHelper.FACTORY_ID] = new ClusterDataFactory();
@@ -292,30 +279,16 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     protected registerCustomSerializers(): void {
-        const customSerializersArray: any[] = this.serializationConfig.customSerializers;
-        customSerializersArray.forEach((candidate) => {
+        const customSerializers = this.serializationConfig.customSerializers;
+        for (const key in customSerializers) {
+            const candidate = customSerializers[key];
             this.assertValidCustomSerializer(candidate);
             this.registerSerializer('!custom' + candidate.getId(), candidate);
-        });
-        const customSerializerConfigs = this.serializationConfig.customSerializerConfigs;
-        for (const typeId in customSerializerConfigs) {
-            const serializerConfig = customSerializerConfigs[typeId];
-            const customSerializer = new (Util.loadNameFromPath(serializerConfig.path, serializerConfig.exportedName))();
-            this.registerSerializer('!custom' + typeId, customSerializer);
         }
     }
 
     protected registerGlobalSerializer(): void {
-        let candidate: any = null;
-        if (this.serializationConfig.globalSerializerConfig != null) {
-            const exportedName = this.serializationConfig.globalSerializerConfig.exportedName;
-            const path = this.serializationConfig.globalSerializerConfig.path;
-            const serializerFactory = Util.loadNameFromPath(path, exportedName);
-            candidate = new serializerFactory();
-        }
-        if (candidate == null) {
-            candidate = this.serializationConfig.globalSerializer;
-        }
+        const candidate: any = this.serializationConfig.globalSerializer;
         if (candidate == null) {
             return;
         }

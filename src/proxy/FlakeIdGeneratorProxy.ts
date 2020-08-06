@@ -17,7 +17,7 @@
 import * as Promise from 'bluebird';
 import * as Long from 'long';
 import {FlakeIdGeneratorNewIdBatchCodec} from '../codec/FlakeIdGeneratorNewIdBatchCodec';
-import {FlakeIdGeneratorConfig} from '../config/FlakeIdGeneratorConfig';
+import {FlakeIdGeneratorConfigImpl} from '../config/FlakeIdGeneratorConfig';
 import HazelcastClient from '../HazelcastClient';
 import {BaseProxy} from './BaseProxy';
 import {AutoBatcher, Batch} from './flakeid/AutoBatcher';
@@ -26,7 +26,7 @@ import {FlakeIdGenerator} from './FlakeIdGenerator';
 export class FlakeIdGeneratorProxy extends BaseProxy implements FlakeIdGenerator {
 
     private autoBatcher: AutoBatcher;
-    private config: FlakeIdGeneratorConfig;
+    private config: FlakeIdGeneratorConfigImpl;
 
     constructor(client: HazelcastClient, serviceName: string, name: string) {
         super(client, serviceName, name);

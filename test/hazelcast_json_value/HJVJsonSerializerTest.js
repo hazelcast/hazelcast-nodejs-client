@@ -13,30 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var chai = require('chai');
+const chai = require('chai');
 chai.use(require('chai-as-promised'));
-var expect = require('chai').expect;
-var Client = require('../../.').Client;
-const Config = require('../../.').Config;
-var RC = require('./../RC');
-var HazelcastJsonValue = require('../../.').HazelcastJsonValue;
+const expect = require('chai').expect;
+const Client = require('../../.').Client;
+const RC = require('./../RC');
+const HazelcastJsonValue = require('../../.').HazelcastJsonValue;
 
 describe('HazelcastJsonValue with JsonSerializer', function () {
-    var cluster;
-    var client;
-    var map;
-    var object = { 'a': 1 };
-    var hzJsonValue = new HazelcastJsonValue(JSON.stringify(object));
+
+    let cluster, client;
+    let map;
+    const object = { 'a': 1 };
+    const hzJsonValue = new HazelcastJsonValue(JSON.stringify(object));
 
     before(function () {
         return RC.createCluster().then(function (response) {
             cluster = response;
             return RC.startMember(cluster.id);
         }).then(function () {
-            const cfg = new Config.ClientConfig();
-            cfg.clusterName = cluster.id;
-            return Client.newHazelcastClient(cfg).then(function (hazelcastClient) {
+            return Client.newHazelcastClient({
+                clusterName: cluster.id
+            }).then(function (hazelcastClient) {
                 client = hazelcastClient;
             });
         });
@@ -74,7 +74,7 @@ describe('HazelcastJsonValue with JsonSerializer', function () {
     });
 
     it('storing invalid Json strings', function () {
-        var invalidString = '{a}';
+        const invalidString = '{a}';
         return map.put(1, new HazelcastJsonValue(invalidString)).then(function () {
             return expect(map.get(1)).to.be.rejectedWith(SyntaxError);
         });

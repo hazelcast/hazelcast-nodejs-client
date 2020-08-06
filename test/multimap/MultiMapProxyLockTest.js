@@ -13,37 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require("chai").expect;
-var HazelcastClient = require("../../lib/index.js").Client;
-const Config = require("../../lib/index.js").Config;
-var Controller = require('./../RC');
-var Util = require('./../Util');
-var Promise = require('bluebird');
+const expect = require('chai').expect;
+const Promise = require('bluebird');
+const RC = require('./../RC');
+const Client = require('../..').Client;
 
-describe("MultiMap Proxy Lock", function () {
+describe('MultiMapProxyLockTest', function () {
 
-    var cluster;
-    var clientOne;
-    var clientTwo;
+    let cluster;
+    let clientOne;
+    let clientTwo;
 
-    var mapOne;
-    var mapTwo;
+    let mapOne;
+    let mapTwo;
 
     before(function () {
         this.timeout(10000);
-        return Controller.createCluster().then(function (response) {
+        return RC.createCluster().then(function (response) {
             cluster = response;
-            return Controller.startMember(cluster.id);
+            return RC.startMember(cluster.id);
         }).then(function () {
-            const cfg = new Config.ClientConfig();
-            cfg.clusterName = cluster.id;
+            const cfg = { clusterName: cluster.id };
             return Promise.all([
-                HazelcastClient.newHazelcastClient(cfg).then(function (hazelcastClient) {
-                    clientOne = hazelcastClient;
+                Client.newHazelcastClient(cfg).then(function (client) {
+                    clientOne = client;
                 }),
-                HazelcastClient.newHazelcastClient(cfg).then(function (hazelcastClient) {
-                    clientTwo = hazelcastClient;
+                Client.newHazelcastClient(cfg).then(function (client) {
+                    clientTwo = client;
                 })
             ]);
         });
@@ -65,13 +63,13 @@ describe("MultiMap Proxy Lock", function () {
     after(function () {
         clientOne.shutdown();
         clientTwo.shutdown();
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
 
-    it("locks and unlocks", function () {
+    it('locks and unlocks', function () {
         this.timeout(10000);
-        var startTime = Date.now();
+        const startTime = Date.now();
         return mapOne.put(1, 2).then(function () {
             return mapOne.lock(1);
         }).then(function () {
@@ -80,23 +78,23 @@ describe("MultiMap Proxy Lock", function () {
             }, 1000);
             return mapTwo.lock(1)
         }).then(function () {
-            var elapsed = Date.now() - startTime;
+            const elapsed = Date.now() - startTime;
             expect(elapsed).to.be.greaterThan(995);
         });
     });
 
-    it("unlocks after lease expired", function () {
+    it('unlocks after lease expired', function () {
         this.timeout(10000);
-        var startTime = Date.now();
+        const startTime = Date.now();
         return mapOne.lock(1, 1000).then(function () {
             return mapTwo.lock(1);
         }).then(function () {
-            var elapsed = Date.now() - startTime;
+            const elapsed = Date.now() - startTime;
             expect(elapsed).to.be.greaterThan(995);
         });
     });
 
-    it("gives up attempt to lock after timeout is exceeded", function () {
+    it('gives up attempt to lock after timeout is exceeded', function () {
         this.timeout(10000);
         return mapOne.lock(1).then(function () {
             return mapTwo.tryLock(1, 1000);
@@ -105,42 +103,40 @@ describe("MultiMap Proxy Lock", function () {
         });
     });
 
-    it("acquires lock before timeout is exceeded", function () {
+    it('acquires lock before timeout is exceeded', function () {
         this.timeout(10000);
-        var startTime = Date.now();
+        const startTime = Date.now();
         return mapOne.lock(1, 1000).then(function () {
             return mapTwo.tryLock(1, 2000);
         }).then(function (acquired) {
-            var elapsed = Date.now() - startTime;
+            const elapsed = Date.now() - startTime;
             expect(acquired).to.be.true;
             expect(elapsed).to.be.greaterThan(995);
         })
     });
 
-    it("acquires the lock before timeout and unlocks after lease expired", function () {
+    it('acquires the lock before timeout and unlocks after lease expired', function () {
         this.timeout(10000);
-        var startTime = Date.now();
+        const startTime = Date.now();
         return mapOne.lock(1, 1000).then(function () {
             return mapTwo.tryLock(1, 2000, 1000);
         }).then(function () {
-            var elapsed = Date.now() - startTime;
+            const elapsed = Date.now() - startTime;
             expect(elapsed).to.be.greaterThan(995);
             return mapOne.lock(1, 2000);
         }).then(function () {
-            var elapsed = Date.now() - startTime;
+            const elapsed = Date.now() - startTime;
             expect(elapsed).to.be.greaterThan(995);
         });
-
     });
 
-    it("correctly reports lock status when unlocked", function () {
+    it('correctly reports lock status when unlocked', function () {
         return mapOne.isLocked(1).then(function (locked) {
             expect(locked).to.be.false;
         });
     });
 
-
-    it("correctly reports lock status when locked", function () {
+    it('correctly reports lock status when locked', function () {
         return mapOne.lock(1).then(function () {
             return mapOne.isLocked(1);
         }).then(function (locked) {
@@ -151,7 +147,7 @@ describe("MultiMap Proxy Lock", function () {
         });
     });
 
-    it("force unlocks", function () {
+    it('force unlocks', function () {
         return mapOne.lock(1).then(function () {
             return mapOne.lock(1);
         }).then(function () {
@@ -169,6 +165,4 @@ describe("MultiMap Proxy Lock", function () {
             expect(locked).to.be.false;
         });
     });
-
-
 });
