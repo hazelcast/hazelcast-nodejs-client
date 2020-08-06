@@ -926,7 +926,7 @@ const cfg = {
 
 # 5. Setting Up Client Network
 
-Main parts of network related configuration for Hazelcast Node.js client is performed via the `network` configuration option.
+Main parts of network related configuration for Hazelcast Node.js client may be tuned via the `network` configuration option.
 
 Here is an example of configuring the network for Hazelcast Node.js client.
 

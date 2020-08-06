@@ -30,7 +30,6 @@ describe('ConfigBuilderHazelcastCloudTest', function () {
 
     it('hazelcastCloud_full', function () {
         const config = loadJson('configurations/full.json');
-        expect(config.network.hazelcastCloud.enabled).to.be.false;
         expect(config.network.hazelcastCloud.discoveryToken).to.be.equal('EXAMPLE_TOKEN');
     });
 
@@ -40,13 +39,11 @@ describe('ConfigBuilderHazelcastCloudTest', function () {
 
     it('hazelcastCloud_defaults', function () {
         const clientConfig = new ClientConfigImpl();
-        expect(clientConfig.network.hazelcastCloud.enabled).to.be.false;
         expect(clientConfig.network.hazelcastCloud.discoveryToken).to.be.null;
     });
 
     it('hazelcastCloud_enabled', function () {
         const config = loadJson('configurations/cloud-enabled.json');
-        expect(config.network.hazelcastCloud.enabled).to.be.true;
         expect(config.network.hazelcastCloud.discoveryToken).to.be.equal('EXAMPLE_TOKEN');
     });
 });

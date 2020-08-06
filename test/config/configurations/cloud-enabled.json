@@ -1,8 +1,7 @@
 {
     "network": {
         "hazelcastCloud": {
-            "discoveryToken": "EXAMPLE_TOKEN",
-            "enabled": true
+            "discoveryToken": "EXAMPLE_TOKEN"
         }
     }
 }

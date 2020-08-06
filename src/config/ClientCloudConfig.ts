@@ -24,16 +24,10 @@ export interface ClientCloudConfig {
      */
     discoveryToken?: string;
 
-    /**
-     * If it is true, cloud discovery is enabled.
-     */
-    enabled?: boolean;
-
 }
 
 export class ClientCloudConfigImpl implements ClientCloudConfig {
 
     discoveryToken: string = null;
-    enabled = false;
 
 }

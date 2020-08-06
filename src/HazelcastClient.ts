@@ -444,11 +444,11 @@ export default class HazelcastClient {
         const networkConfig = this.getConfig().network;
 
         const addressListProvided = networkConfig.clusterMembers.length !== 0;
-        const hazelcastCloudEnabled = networkConfig.hazelcastCloud.enabled;
-        if (addressListProvided && hazelcastCloudEnabled) {
+        const hazelcastCloudToken = networkConfig.hazelcastCloud.discoveryToken;
+        if (addressListProvided && hazelcastCloudToken != null) {
             throw new IllegalStateError('Only one discovery method can be enabled at a time. '
                 + 'Cluster members given explicitly: ' + addressListProvided
-                + ', hazelcast.cloud enabled: ' + hazelcastCloudEnabled);
+                + ', hazelcastCloud enabled');
         }
 
         const cloudAddressProvider = this.initCloudAddressProvider();
@@ -461,8 +461,8 @@ export default class HazelcastClient {
 
     private initCloudAddressProvider(): HazelcastCloudAddressProvider {
         const cloudConfig = this.getConfig().network.hazelcastCloud;
-        if (cloudConfig.enabled) {
-            const discoveryToken = cloudConfig.discoveryToken;
+        const discoveryToken = cloudConfig.discoveryToken;
+        if (discoveryToken != null) {
             const urlEndpoint = HazelcastCloudDiscovery.createUrlEndpoint(this.getConfig().properties, discoveryToken);
             return new HazelcastCloudAddressProvider(urlEndpoint, this.getConnectionTimeoutMillis(),
                 this.loggingService.getLogger());

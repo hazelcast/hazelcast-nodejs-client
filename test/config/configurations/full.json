@@ -39,8 +39,7 @@
             }
         },
         "hazelcastCloud": {
-            "discoveryToken": "EXAMPLE_TOKEN",
-            "enabled": false
+            "discoveryToken": "EXAMPLE_TOKEN"
         }
     },
     "connectionStrategy": {

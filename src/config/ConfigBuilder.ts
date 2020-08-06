@@ -142,10 +142,6 @@ export class ConfigBuilder {
     }
 
     private handleHazelcastCloud(jsonObject: any): void {
-        const cloudConfigEnabled = tryGetBoolean(jsonObject.enabled);
-        if (cloudConfigEnabled) {
-            this.effectiveConfig.network.hazelcastCloud.enabled = cloudConfigEnabled;
-        }
         for (const key in jsonObject) {
             if (key === 'discoveryToken') {
                 this.effectiveConfig.network.hazelcastCloud.discoveryToken = tryGetString(jsonObject[key]);

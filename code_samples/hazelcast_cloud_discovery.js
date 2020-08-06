@@ -24,7 +24,6 @@ const path = require('path');
             clusterName: 'hazelcast',
             network: {
                 hazelcastCloud: {
-                    enabled: true,
                     discoveryToken: 'EXAMPLE_TOKEN'
                 },
                 ssl: {
