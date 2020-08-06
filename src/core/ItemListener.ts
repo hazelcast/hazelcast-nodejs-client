@@ -41,10 +41,7 @@ export type ItemEventListener<E> = (itemEvent: ItemEvent<E>) => void;
 /**
  * IQueue, ISet, IList item event.
  */
-/**
- * IQueue, ISet, IList item event.
- */
-export interface ItemEvent<E> {
+export class ItemEvent<E> {
 
     /**
      * The name of the data structure for this event.
@@ -61,18 +58,8 @@ export interface ItemEvent<E> {
      */
     member: Member;
 
-}
-
-export class ItemEventImpl<E> implements ItemEvent<E> {
-
-    name: string;
-    item: E;
-    eventType: ItemEventType;
-    member: Member;
-
-    constructor(name: string, itemEventType: ItemEventType, item: E, member: Member) {
+    constructor(name: string, item: E, member: Member) {
         this.name = name;
-        this.eventType = itemEventType;
         this.item = item;
         this.member = member;
     }

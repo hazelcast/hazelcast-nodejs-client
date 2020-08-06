@@ -36,7 +36,7 @@ import {ListRemoveWithIndexCodec} from '../codec/ListRemoveWithIndexCodec';
 import {ListSetCodec} from '../codec/ListSetCodec';
 import {ListSizeCodec} from '../codec/ListSizeCodec';
 import {ListSubCodec} from '../codec/ListSubCodec';
-import {ItemEventImpl, ItemEventType, ItemListener} from '../core/ItemListener';
+import {ItemEvent, ItemEventType, ItemListener} from '../core/ItemListener';
 import {ReadOnlyLazyListImpl} from '../core/ReadOnlyLazyList';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {Data} from '../serialization/Data';
@@ -200,7 +200,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
 
                 const member = this.client.getClusterService().getMember(uuid);
                 const name = this.name;
-                const itemEvent = new ItemEventImpl(name, eventType, responseObject, member);
+                const itemEvent = new ItemEvent(name, responseObject, member);
 
                 if (eventType === ItemEventType.ADDED && listener.itemAdded) {
                     listener.itemAdded.apply(null, [itemEvent]);

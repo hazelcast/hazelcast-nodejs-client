@@ -35,7 +35,7 @@ import {QueueRemoveCodec} from '../codec/QueueRemoveCodec';
 import {QueueRemoveListenerCodec} from '../codec/QueueRemoveListenerCodec';
 import {QueueSizeCodec} from '../codec/QueueSizeCodec';
 import {QueueTakeCodec} from '../codec/QueueTakeCodec';
-import {ItemEventImpl, ItemEventType, ItemListener} from '../core/ItemListener';
+import {ItemEvent, ItemEventType, ItemListener} from '../core/ItemListener';
 import {IllegalStateError} from '../HazelcastError';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {Data} from '../serialization/Data';
@@ -81,7 +81,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
 
                 const member = this.client.getClusterService().getMember(uuid);
                 const name = this.name;
-                const itemEvent = new ItemEventImpl(name, eventType, responseObject, member);
+                const itemEvent = new ItemEvent(name, responseObject, member);
 
                 if (eventType === ItemEventType.ADDED && listener.itemAdded) {
                     listener.itemAdded.apply(null, [itemEvent]);
