@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {IndexConfig, IndexConfigImpl} from '../config/IndexConfig';
+import {IndexConfig, InternalIndexConfig} from '../config/IndexConfig';
 import {IndexType} from '../config/IndexType';
-import {UniqueKeyTransformation, BitmapIndexOptionsImpl} from '../config/BitmapIndexOptions';
+import {UniqueKeyTransformation, InternalBitmapIndexOptions} from '../config/BitmapIndexOptions';
 import {tryGetEnum} from '../Util';
 
 /**
@@ -39,7 +39,7 @@ export class IndexUtil {
      * @return Normalized index config.
      * @throws TypeError If index configuration is invalid.
      */
-    static validateAndNormalize(mapName: string, config: IndexConfig): IndexConfigImpl {
+    static validateAndNormalize(mapName: string, config: IndexConfig): InternalIndexConfig {
         // Validate attributes
         const originalAttributeNames = config.attributes;
 
@@ -51,7 +51,7 @@ export class IndexUtil {
             throw new TypeError('Index cannot have more than ' + MAX_ATTRIBUTES + ' attributes: ' + config);
         }
 
-        let type = IndexConfigImpl.DEFAULT_TYPE;
+        let type = InternalIndexConfig.DEFAULT_TYPE;
         if (config.type) {
             type = tryGetEnum(IndexType, config.type);
         }
@@ -139,12 +139,12 @@ export class IndexUtil {
     private static buildNormalizedConfig(mapName: string,
                                          indexType: IndexType,
                                          indexName: string,
-                                         normalizedAttributeNames: string[]): IndexConfigImpl {
-        const newConfig = new IndexConfigImpl();
-        newConfig.bitmapIndexOptions = new BitmapIndexOptionsImpl();
+                                         normalizedAttributeNames: string[]): InternalIndexConfig {
+        const newConfig = new InternalIndexConfig();
+        newConfig.bitmapIndexOptions = new InternalBitmapIndexOptions();
         newConfig.type = indexType;
 
-        let name = indexName == null ? mapName + '_' + indexType.toLowerCase() : null;
+        let name = indexName == null ? mapName + '_' + this.getIndexTypeName(indexType) : null;
         for (const normalizedAttributeName of normalizedAttributeNames) {
             this.validateAttribute(indexName, normalizedAttributeName)
             newConfig.attributes.push(normalizedAttributeName);
@@ -160,6 +160,19 @@ export class IndexUtil {
         newConfig.name = indexName;
 
         return newConfig;
+    }
+
+    private static getIndexTypeName(indexType: IndexType): string {
+        switch (indexType) {
+            case IndexType.SORTED:
+                return 'sorted';
+            case IndexType.HASH:
+                return 'hash';
+            case IndexType.BITMAP:
+                return 'bitmap';
+            default:
+                throw new TypeError('Unsupported index type: ' + indexType);
+        }
     }
 
 }

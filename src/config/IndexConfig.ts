@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {IndexType} from './IndexType';
-import {BitmapIndexOptions, BitmapIndexOptionsImpl} from './BitmapIndexOptions';
+import {IndexType, IndexTypeStrings} from './IndexType';
+import {BitmapIndexOptions, InternalBitmapIndexOptions} from './BitmapIndexOptions';
 
 /**
  * Configuration of an index. Hazelcast support two types of indexes: sorted index and hash index.
@@ -35,9 +35,10 @@ export interface IndexConfig {
     name?: string;
 
     /**
-     * Type of the index. By default, set to `SORTED`.
+     * Type of the index. By default, set to `SORTED`. Available values
+     * are `SORTED`, `HASH`, and `BITMAP`.
      */
-    type?: IndexType;
+    type?: IndexTypeStrings;
 
     /**
      * Indexed attributes.
@@ -51,7 +52,11 @@ export interface IndexConfig {
 
 }
 
-export class IndexConfigImpl implements IndexConfig {
+/**
+ * Follows the shape of {@link IndexConfig}, but doesn't implement it due
+ * to the `type` enum field.
+ */
+export class InternalIndexConfig {
 
     /**
      * Default index type.
@@ -59,11 +64,14 @@ export class IndexConfigImpl implements IndexConfig {
     public static readonly DEFAULT_TYPE = IndexType.SORTED;
 
     name: string;
-    type: IndexType = IndexConfigImpl.DEFAULT_TYPE;
+    type: IndexType = InternalIndexConfig.DEFAULT_TYPE;
     attributes: string[] = [];
-    bitmapIndexOptions: BitmapIndexOptionsImpl;
+    bitmapIndexOptions: InternalBitmapIndexOptions;
 
-    constructor(name?: string, type?: IndexType, attributes?: string[], bitmapIndexOptions?: BitmapIndexOptionsImpl) {
+    constructor(name?: string,
+                type?: IndexType,
+                attributes?: string[],
+                bitmapIndexOptions?: InternalBitmapIndexOptions) {
         if (name) {
             this.name = name;
         }
