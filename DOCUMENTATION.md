@@ -1013,15 +1013,14 @@ As explained in the [TLS/SSL section](#81-tlsssl), Hazelcast members have key st
 
 ## 5.6. Enabling Hazelcast Cloud Discovery
 
-The purpose of [Hazelcast Cloud](https://cloud.hazelcast.com/) Discovery is to provide the clients to use IP addresses provided by Hazelcast orchestrator. To enable Hazelcast Cloud Discovery, specify a token for the `discoveryToken` field and set the `enabled` field to `true`.
+The purpose of [Hazelcast Cloud](https://cloud.hazelcast.com/) Discovery is to provide the clients to use IP addresses provided by Hazelcast orchestrator. To enable Hazelcast Cloud Discovery, specify a token for the `discoveryToken` option.
 
 ```javascript
 const cfg = {
     clusterName: 'hzCluster',
     network: {
-        cloudConfig: {
-            discoveryToken: 'EXAMPLE_TOKEN',
-            enabled: true
+        hazelcastCloud: {
+            discoveryToken: 'EXAMPLE_TOKEN'
         }
     }
 };
