@@ -27,8 +27,8 @@ import {UUID} from '../core/UUID';
 export class BaseProxy {
 
     protected client: HazelcastClient;
-    protected name: string;
-    protected serviceName: string;
+    protected readonly name: string;
+    protected readonly serviceName: string;
 
     constructor(client: HazelcastClient, serviceName: string, name: string) {
         this.client = client;

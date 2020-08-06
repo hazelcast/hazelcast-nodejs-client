@@ -48,7 +48,6 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         this.batchSize = config.readBatchSize;
         this.overloadPolicy = config.overloadPolicy;
         this.serializationService = client.getSerializationService();
-        this.name = name;
     }
 
     setRingbuffer(ringbuffer: Ringbuffer<ReliableTopicMessage>): void {
@@ -73,13 +72,11 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
 
     removeMessageListener(id: string): boolean {
         const runner = this.runners[id];
-
         if (!runner) {
             return false;
         }
 
         runner.cancel();
-
         delete this.runners[id];
 
         return true;
@@ -114,7 +111,6 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
             const runner = this.runners[k];
             runner.cancel();
         }
-
         return this.ringbuffer.destroy();
     }
 
@@ -141,9 +137,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
     }
 
     private addWithBackoff(reliableTopicMessage: ReliableTopicMessage): Promise<void> {
-
         let resolve: Function;
-
         const promise = new Promise<void>(function (): void {
             resolve = arguments[0];
         });
@@ -157,16 +151,13 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         this.ringbuffer.add(message, OverflowPolicy.FAIL).then((seq: Long) => {
             if (seq.toNumber() === -1) {
                 let newDelay = delay *= 2;
-
                 if (newDelay > TOPIC_MAX_BACKOFF) {
                     newDelay = TOPIC_MAX_BACKOFF;
                 }
-
                 this.trySendMessage(message, newDelay, resolve);
             } else {
                 resolve();
             }
-
         });
     }
 
