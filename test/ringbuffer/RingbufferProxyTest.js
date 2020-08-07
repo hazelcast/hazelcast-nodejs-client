@@ -111,6 +111,8 @@ describe('RingbufferProxyTest', function () {
         const items = await rb.readMany(0, 1, 3, new PrefixFilter('prefixed'));
         expect(items.get(0)).to.equal('prefixedItem2');
         expect(items.get(1)).to.equal('prefixedItem3');
+        expect(items.getReadCount()).to.equal(3);
+        expect(items.size()).to.equal(2);
     });
 
     it('readMany reads newer items when sequence is no longer available', async function () {
@@ -119,6 +121,7 @@ describe('RingbufferProxyTest', function () {
         expect(items.get(0)).to.equal(3);
         expect(items.get(1)).to.equal(4);
         expect(items.getReadCount()).to.equal(2);
+        expect(items.size()).to.equal(2);
         expect(items.getNextSequenceToReadFrom().toNumber()).to.equal(4);
     });
 
