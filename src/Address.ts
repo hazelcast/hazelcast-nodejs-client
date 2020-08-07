@@ -15,12 +15,14 @@
  */
 
 import * as net from 'net';
-import {ClusterDataFactoryHelper} from './ClusterDataFactoryHelper';
+import {CLUSTER_DATA_FACTORY_ID, CLUSTER_DATA_ADDRESS_CLASS_ID} from './ClusterDataFactory';
 import {DataInput, DataOutput} from './serialization/Data';
 import {IdentifiedDataSerializable} from './serialization/Serializable';
 
 export class Address implements IdentifiedDataSerializable {
 
+    factoryId = CLUSTER_DATA_FACTORY_ID;
+    classId = CLUSTER_DATA_ADDRESS_CLASS_ID;
     host: string;
     port: number;
     type: number;
@@ -45,14 +47,6 @@ export class Address implements IdentifiedDataSerializable {
         output.writeInt(this.port);
         output.writeByte(this.type);
         output.writeUTF(this.host);
-    }
-
-    getFactoryId(): number {
-        return ClusterDataFactoryHelper.FACTORY_ID;
-    }
-
-    getClassId(): number {
-        return ClusterDataFactoryHelper.ADDRESS_ID;
     }
 
     equals(other: Address): boolean {

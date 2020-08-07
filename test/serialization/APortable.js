@@ -56,15 +56,10 @@ function APortable(bool, b, c, d, s, f, i, l, str, p, booleans, bytes, chars,
     this.customByteArraySerializableObject = customByteArraySerializableObject;
 
     this.data = data;
+
+    this.factoryId = 1;
+    this.classId = 1;
 }
-
-APortable.prototype.getClassId = function () {
-    return 1;
-};
-
-APortable.prototype.getFactoryId = function () {
-    return 1;
-};
 
 APortable.prototype.readPortable = function (reader) {
     this.bool = reader.readBoolean("bool");

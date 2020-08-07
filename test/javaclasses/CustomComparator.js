@@ -27,15 +27,9 @@ const IterationType = require('../../lib/').IterationType;
 function CustomComparator(type, iterationType) {
     this.type = type;
     this.iterationType = iterationType;
+    this.factoryId = 66;
+    this.classId = 2;
 }
-
-CustomComparator.prototype.getFactoryId = function () {
-    return 66;
-};
-
-CustomComparator.prototype.getClassId = function () {
-    return 2;
-};
 
 CustomComparator.prototype.writeData = function (outp) {
     outp.writeInt(this.type);

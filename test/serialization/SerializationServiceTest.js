@@ -19,11 +19,94 @@ const expect = require('chai').expect;
 const SerializationService = require('../../lib/serialization/SerializationService').SerializationServiceV1;
 const SerializationConfigImpl = require('../../lib/config/SerializationConfig').SerializationConfigImpl;
 
+function IDataSerializable(val) {
+    this.val = val;
+    this.factoryId = 1;
+    this.classId = 11;
+}
+
+IDataSerializable.prototype.readData = function (input) {
+    this.val = input.readInt();
+};
+
+IDataSerializable.prototype.writeData = function (output) {
+    output.writeInt(this.val);
+};
+
+function idataSerializableFactory(classId) {
+    if (classId === 11) {
+        return new IDataSerializable();
+    }
+}
+
+function Portable(val) {
+    this.val = val;
+    this.factoryId = 2;
+    this.classId = 22;
+}
+
+Portable.prototype.readPortable = function (reader) {
+    this.val = reader.readInt('val');
+};
+
+Portable.prototype.writePortable = function (writer) {
+    writer.writeInt('val', this.val);
+};
+
+function portableFactory(classId) {
+    if (classId === 22) {
+        return new Portable();
+    }
+}
+
+function AnyObject(val) {
+    this.val = val;
+    // Put a reference to self so json serializer cannot be used. Make sure global serializer is used in test.
+    this.self = this;
+}
+
+function GlobalSerializer() {
+}
+
+GlobalSerializer.prototype.id = 33;
+
+GlobalSerializer.prototype.read = function (inp) {
+    const obj = new AnyObject();
+    obj.val = inp.readInt();
+    return obj;
+};
+
+GlobalSerializer.prototype.write = function (outp, obj) {
+    outp.writeInt(obj.val);
+};
+
+function CustomObject(val) {
+    this.val = val;
+    this.hzCustomId = 44;
+    // Put a reference to self so json serializer cannot be used. Make sure global serializer is used in test.
+    this.self = this;
+}
+
+function CustomSerializer() {
+}
+
+CustomSerializer.prototype.id = 44;
+
+CustomSerializer.prototype.read = function (reader) {
+    const obj = new CustomObject();
+    obj.val = reader.readInt();
+    return obj;
+};
+
+CustomSerializer.prototype.write = function (writer, obj) {
+    writer.writeInt(obj.val);
+};
+
 describe('SerializationServiceTest', function () {
 
     it('should use data serializable factory', function () {
         const serializationConfig = new SerializationConfigImpl();
-        serializationConfig.dataSerializableFactories[1] = new IDataSerializableFactory();
+        serializationConfig.dataSerializableFactories[1] = idataSerializableFactory;
 
         const serializationService = new SerializationService(serializationConfig);
 
@@ -35,7 +118,7 @@ describe('SerializationServiceTest', function () {
 
     it('should use portable factory', function () {
         const serializationConfig = new SerializationConfigImpl();
-        serializationConfig.portableFactories[2] = new PortableFactory();
+        serializationConfig.portableFactories[2] = portableFactory;
 
         const serializationService = new SerializationService(serializationConfig);
 
@@ -71,116 +154,3 @@ describe('SerializationServiceTest', function () {
         expect(object.self).to.equal(object);
     });
 });
-
-function IDataSerializable(val) {
-    this.val = val;
-}
-
-IDataSerializable.prototype.readData = function (input) {
-    this.val = input.readInt();
-};
-
-IDataSerializable.prototype.writeData = function (output) {
-    output.writeInt(this.val);
-};
-
-IDataSerializable.prototype.getClassId = function () {
-    return 11;
-};
-
-IDataSerializable.prototype.getFactoryId = function () {
-    return 1;
-};
-
-function IDataSerializableFactory() {
-}
-
-IDataSerializableFactory.prototype.create = function (type) {
-    if (type === 11) {
-        return new IDataSerializable();
-    }
-};
-
-function Portable(val) {
-    this.val = val;
-}
-
-Portable.prototype.getClassId = function () {
-    return 22;
-};
-
-Portable.prototype.getFactoryId = function () {
-    return 2;
-};
-
-Portable.prototype.readPortable = function (reader) {
-    this.val = reader.readInt('val');
-};
-
-Portable.prototype.writePortable = function (writer) {
-    writer.writeInt('val', this.val);
-};
-
-function PortableFactory() {
-}
-
-PortableFactory.prototype.create = function (classId) {
-    if (classId === 22) {
-        return new Portable();
-    }
-};
-
-function AnyObject(val) {
-    this.val = val;
-    // Put a reference to self so json serializer cannot be used. Make sure global serializer is used in test.
-    this.self = this;
-}
-
-function GlobalSerializer() {
-}
-
-GlobalSerializer.prototype.getId = function () {
-    return 33;
-};
-
-GlobalSerializer.prototype.read = function (inp) {
-    const obj = new AnyObject();
-    obj.val = inp.readInt();
-    return obj;
-};
-
-GlobalSerializer.prototype.write = function (outp, obj) {
-    outp.writeInt(obj.val);
-};
-
-function CustomObject(val) {
-    this.val = val;
-    // Put a reference to self so json serializer cannot be used. Make sure global serializer is used in test.
-    this.self = this;
-}
-
-CustomObject.prototype.hzGetCustomId = function () {
-    return 44;
-};
-
-function CustomSerializer() {
-}
-
-CustomSerializer.prototype.getId = function () {
-    return 44;
-};
-
-CustomSerializer.prototype.read = function (reader) {
-    const obj = new CustomObject();
-    obj.val = reader.readInt();
-    return obj;
-};
-
-CustomSerializer.prototype.write = function (writer, obj) {
-    writer.writeInt(obj.val);
-};
-
-exports.IDataSerializableFactory = IDataSerializableFactory;
-exports.PortableFactory = PortableFactory;
-exports.GlobalSerializer = GlobalSerializer;
-exports.CustomSerializer = CustomSerializer;

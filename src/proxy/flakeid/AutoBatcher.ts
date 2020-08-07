@@ -22,7 +22,6 @@ import {DeferredPromise} from '../../Util';
 export class Batch {
     private nextIdLong: Long;
     private increment: Long;
-    private batchSize: number;
     private invalidSince: number;
     private firstInvalidId: Long;
 

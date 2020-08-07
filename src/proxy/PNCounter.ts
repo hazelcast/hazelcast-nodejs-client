@@ -52,8 +52,6 @@ import {DistributedObject} from '../DistributedObject';
  * The CRDT state is kept entirely on non-lite (data) members. If there
  * aren't any and the methods here are invoked, they will
  * fail with a `NoDataMemberInClusterError`.
- *
- * @requires Hazelcast 3.10
  */
 export interface PNCounter extends DistributedObject {
     /**

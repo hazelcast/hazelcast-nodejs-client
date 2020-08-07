@@ -14,7 +14,32 @@
  * limitations under the License.
  */
 
+/**
+ * Overflow policy for Ringbuffer and Reliable Topic operations.
+ */
 export enum OverflowPolicy {
-    OVERWRITE = 0,
-    FAIL = 1,
+
+    /**
+     * The new item will overwrite the oldest one regardless of the
+     * configured time-to-live.
+     */
+    OVERWRITE = 'OVERWRITE',
+
+    /**
+     * Add operations will keep failing until an oldest item in this
+     * ringbuffer will reach its time-to-live.
+     */
+    FAIL = 'FAIL',
+
+}
+
+export const overflowPolicyToId = (type: OverflowPolicy): number => {
+    switch (type) {
+        case OverflowPolicy.OVERWRITE:
+            return 0;
+        case OverflowPolicy.FAIL:
+            return 1;
+        default:
+            throw new TypeError('Unexpected type value: ' + type);
+    }
 }

@@ -34,7 +34,6 @@ export interface IMap<K, V> extends DistributedObject {
      * engine they run on the Query infrastructure. Their performance is tens to hundreds times better due to the fact
      * that they run in parallel for each partition and are highly optimized for speed and low memory consumption.
      *
-     * @requires Hazelcast 3.8
      * @param aggregator aggregator to aggregate the entries with
      * @param <R> type of the result
      * @return the result of the given type
@@ -49,7 +48,6 @@ export interface IMap<K, V> extends DistributedObject {
      * engine they run on the Query infrastructure. Their performance is tens to hundreds times better due to the fact
      * that they run in parallel for each partition and are highly optimized for speed and low memory consumption.
      *
-     * @requires Hazelcast 3.8
      * @param aggregator aggregator to aggregate the entries with
      * @param predicate predicate to filter the entries with
      * @param <R> type of the result
@@ -108,7 +106,7 @@ export interface IMap<K, V> extends DistributedObject {
     addIndex(indexConfig: IndexConfig): Promise<void>;
 
     /**
-     * This method checks whether the map has an item associated with key
+     * Returns `true` if this map has an item associated with key.
      * @param key
      * @throws {RangeError} if key is undefined or null
      * @return `true` if the map contains the key, `false` otherwise.
@@ -116,7 +114,7 @@ export interface IMap<K, V> extends DistributedObject {
     containsKey(key: K): Promise<boolean>;
 
     /**
-     * This method return true if this map has key(s) associated with given value
+     * Returns `true` if this map has key(s) associated with given value.
      * @param value
      * @throws {RangeError} if value is undefined or null
      * @return `true` if the map has key or keys associated with given value.

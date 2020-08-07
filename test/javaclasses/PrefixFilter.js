@@ -13,9 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
 function PrefixFilter(prefix) {
     this.prefix = prefix;
+    this.factoryId = 66;
+    this.classId = 4;
 }
 
 PrefixFilter.prototype.readData = function (inp) {
@@ -24,14 +27,6 @@ PrefixFilter.prototype.readData = function (inp) {
 
 PrefixFilter.prototype.writeData = function (outp) {
     outp.writeUTF(this.prefix);
-};
-
-PrefixFilter.prototype.getFactoryId = function () {
-    return 66;
-};
-
-PrefixFilter.prototype.getClassId = function () {
-    return 4;
 };
 
 module.exports = PrefixFilter;

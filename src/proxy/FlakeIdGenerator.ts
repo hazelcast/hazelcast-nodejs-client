@@ -35,8 +35,6 @@
  * member with join version smaller than 2^16 in the cluster. The remedy is to restart the cluster:
  * nodeId will be assigned from zero again. Uniqueness after the restart will be preserved thanks to
  * the timestamp component.
- *
- * @requires Hazelcast 3.10
  */
 import * as Promise from 'bluebird';
 import * as Long from 'long';

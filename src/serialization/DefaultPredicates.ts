@@ -15,16 +15,31 @@
  */
 
 import {Comparator} from '../core/Comparator';
-import {IterationType, Predicate} from '../core/Predicate';
+import {IterationType, Predicate, PagingPredicate} from '../core/Predicate';
 import {enumFromString} from '../Util';
 import {DataInput, DataOutput} from './Data';
-import {AbstractPredicate} from './PredicateFactory';
+import {IdentifiedDataSerializable} from './Serializable';
+
+export const PREDICATE_FACTORY_ID = -20;
+
+abstract class AbstractPredicate implements Predicate {
+
+    abstract classId: number;
+    factoryId = PREDICATE_FACTORY_ID;
+
+    abstract readData(input: DataInput): any;
+
+    abstract writeData(output: DataOutput): void;
+}
 
 export class SqlPredicate extends AbstractPredicate {
 
+    static CLASS_ID = 0;
+
+    classId = SqlPredicate.CLASS_ID;
     private sql: string;
 
-    constructor(sql: string) {
+    constructor(sql?: string) {
         super();
         this.sql = sql;
     }
@@ -36,14 +51,13 @@ export class SqlPredicate extends AbstractPredicate {
     writeData(output: DataOutput): void {
         output.writeUTF(this.sql);
     }
-
-    getClassId(): number {
-        return 0;
-    }
 }
 
 export class AndPredicate extends AbstractPredicate {
 
+    static CLASS_ID = 1;
+
+    classId = AndPredicate.CLASS_ID;
     private predicates: Predicate[];
 
     constructor(...predicates: Predicate[]) {
@@ -61,23 +75,22 @@ export class AndPredicate extends AbstractPredicate {
 
     writeData(output: DataOutput): void {
         output.writeInt(this.predicates.length);
-        this.predicates.forEach(function (pred: Predicate): void {
-            output.writeObject(pred);
+        this.predicates.forEach(function (predicate: Predicate): void {
+            output.writeObject(predicate);
         });
-    }
-
-    getClassId(): number {
-        return 1;
     }
 }
 
 export class BetweenPredicate extends AbstractPredicate {
 
+    static CLASS_ID = 2;
+
+    classId = BetweenPredicate.CLASS_ID;
     private field: string;
     private from: any;
     private to: any;
 
-    constructor(field: string, from: any, to: any) {
+    constructor(field?: string, from?: any, to?: any) {
         super();
         this.field = field;
         this.from = from;
@@ -95,18 +108,17 @@ export class BetweenPredicate extends AbstractPredicate {
         output.writeObject(this.to);
         output.writeObject(this.from);
     }
-
-    getClassId(): number {
-        return 2;
-    }
 }
 
 export class EqualPredicate extends AbstractPredicate {
 
+    static CLASS_ID = 3;
+
+    classId = EqualPredicate.CLASS_ID;
     private field: string;
     private value: any;
 
-    constructor(field: string, value: any) {
+    constructor(field?: string, value?: any) {
         super();
         this.field = field;
         this.value = value;
@@ -121,20 +133,19 @@ export class EqualPredicate extends AbstractPredicate {
         output.writeUTF(this.field);
         output.writeObject(this.value);
     }
-
-    getClassId(): number {
-        return 3;
-    }
 }
 
 export class GreaterLessPredicate extends AbstractPredicate {
 
+    static CLASS_ID = 4;
+
+    classId = GreaterLessPredicate.CLASS_ID;
     private field: string;
     private value: any;
     private equal: boolean;
     private less: boolean;
 
-    constructor(field: string, value: any, equal: boolean, less: boolean) {
+    constructor(field?: string, value?: any, equal?: boolean, less?: boolean) {
         super();
         this.field = field;
         this.value = value;
@@ -156,18 +167,17 @@ export class GreaterLessPredicate extends AbstractPredicate {
         output.writeBoolean(this.equal);
         output.writeBoolean(this.less);
     }
-
-    getClassId(): number {
-        return 4;
-    }
 }
 
 export class LikePredicate extends AbstractPredicate {
 
+    static CLASS_ID = 5;
+
+    classId = LikePredicate.CLASS_ID;
     private field: string;
     private expr: string;
 
-    constructor(field: string, expr: string) {
+    constructor(field?: string, expr?: string) {
         super();
         this.field = field;
         this.expr = expr;
@@ -183,23 +193,24 @@ export class LikePredicate extends AbstractPredicate {
         output.writeUTF(this.field);
         output.writeUTF(this.expr);
     }
-
-    getClassId(): number {
-        return 5;
-    }
 }
 
 export class ILikePredicate extends LikePredicate {
-    getClassId(): number {
-        return 6;
-    }
+
+    static CLASS_ID = 6;
+
+    classId = ILikePredicate.CLASS_ID;
 }
 
 export class InPredicate extends AbstractPredicate {
+
+    static CLASS_ID = 7;
+
+    classId = InPredicate.CLASS_ID;
     private field: string;
     private values: any[];
 
-    constructor(field: string, ...values: any[]) {
+    constructor(field?: string, ...values: any[]) {
         super();
         this.field = field;
         this.values = values;
@@ -222,17 +233,16 @@ export class InPredicate extends AbstractPredicate {
             output.writeObject(val);
         });
     }
-
-    getClassId(): number {
-        return 7;
-    }
 }
 
 export class InstanceOfPredicate extends AbstractPredicate {
 
+    static CLASS_ID = 8;
+
+    classId = InstanceOfPredicate.CLASS_ID;
     private className: string;
 
-    constructor(className: string) {
+    constructor(className?: string) {
         super();
         this.className = className;
     }
@@ -245,75 +255,75 @@ export class InstanceOfPredicate extends AbstractPredicate {
     writeData(output: DataOutput): void {
         output.writeUTF(this.className);
     }
-
-    getClassId(): number {
-        return 8;
-    }
 }
 
 export class NotEqualPredicate extends EqualPredicate {
-    getClassId(): number {
-        return 9;
-    }
+
+    static CLASS_ID = 9;
+
+    classId = NotEqualPredicate.CLASS_ID;
 }
 
 export class NotPredicate extends AbstractPredicate {
-    private pred: Predicate;
 
-    constructor(pred: Predicate) {
+    static CLASS_ID = 10;
+
+    classId = NotPredicate.CLASS_ID;
+    private predicate: Predicate;
+
+    constructor(predicate?: Predicate) {
         super();
-        this.pred = pred;
+        this.predicate = predicate;
     }
 
     readData(input: DataInput): any {
-        this.pred = input.readObject();
+        this.predicate = input.readObject();
         return this;
     }
 
     writeData(output: DataOutput): void {
-        output.writeObject(this.pred);
-    }
-
-    getClassId(): number {
-        return 10;
+        output.writeObject(this.predicate);
     }
 }
 
 export class OrPredicate extends AbstractPredicate {
 
-    private preds: Predicate[];
+    static CLASS_ID = 11;
 
-    constructor(...preds: Predicate[]) {
+    classId = OrPredicate.CLASS_ID;
+    private predicates: Predicate[];
+
+    constructor(...predicates: Predicate[]) {
         super();
-        this.preds = preds;
+        this.predicates = predicates;
     }
 
     readData(input: DataInput): any {
         const s = input.readInt();
-        this.preds = [];
+        this.predicates = [];
         for (let i = 0; i < s; i++) {
-            this.preds.push(input.readObject());
+            this.predicates.push(input.readObject());
         }
         return this;
     }
 
     writeData(output: DataOutput): void {
-        output.writeInt(this.preds.length);
-        this.preds.forEach(function (pred: Predicate): void {
-            output.writeObject(pred);
+        output.writeInt(this.predicates.length);
+        this.predicates.forEach(function (predicate: Predicate): void {
+            output.writeObject(predicate);
         });
-    }
-
-    getClassId(): number {
-        return 11;
     }
 }
 
 export class RegexPredicate extends AbstractPredicate {
+
+    static CLASS_ID = 12;
+
+    classId = RegexPredicate.CLASS_ID;
     private field: string;
     private regex: string;
 
-    constructor(field: string, regex: string) {
+    constructor(field?: string, regex?: string) {
         super();
         this.field = field;
         this.regex = regex;
@@ -329,50 +339,46 @@ export class RegexPredicate extends AbstractPredicate {
         output.writeUTF(this.field);
         output.writeUTF(this.regex);
     }
-
-    getClassId(): number {
-        return 12;
-    }
 }
 
 export class FalsePredicate extends AbstractPredicate {
 
+    static CLASS_ID = 13;
+
+    classId = FalsePredicate.CLASS_ID;
     static INSTANCE: FalsePredicate = new FalsePredicate();
 
     readData(input: DataInput): any {
-        // Empty method
+        // no-op
     }
 
     writeData(output: DataOutput): any {
-        // Empty method
-    }
-
-    getClassId(): number {
-        return 13;
+        // no-op
     }
 }
 
 export class TruePredicate extends AbstractPredicate {
 
+    static CLASS_ID = 14;
+
+    classId = TruePredicate.CLASS_ID;
     static INSTANCE: TruePredicate = new TruePredicate();
 
     readData(input: DataInput): any {
-        // Empty method
+        // no-op
     }
 
     writeData(output: DataOutput): any {
-        // Empty method
-    }
-
-    getClassId(): number {
-        return 14;
+        // no-op
     }
 }
 
-export class PagingPredicate extends AbstractPredicate {
+export class PagingPredicateImpl extends AbstractPredicate implements PagingPredicate {
 
     private static NULL_ANCHOR: [number, [any, any]] = [-1, null];
+    static CLASS_ID = 15;
 
+    classId = PagingPredicateImpl.CLASS_ID;
     private internalPredicate: Predicate;
     private pageSize: number;
     private comparatorObject: Comparator;
@@ -380,14 +386,14 @@ export class PagingPredicate extends AbstractPredicate {
     private iterationType: IterationType = IterationType.ENTRY;
     private anchorList: Array<[number, [any, any]]> = [];
 
-    constructor(internalPredicate: Predicate, pageSize: number, comparator: Comparator) {
+    constructor(internalPredicate?: Predicate, pageSize?: number, comparator?: Comparator) {
         super();
         if (pageSize <= 0) {
             throw new TypeError('Page size should be greater than 0!');
         }
         this.pageSize = pageSize;
-        if (internalPredicate instanceof PagingPredicate) {
-            throw new TypeError('Nested paging predicate is not supported!');
+        if (internalPredicate instanceof PagingPredicateImpl) {
+            throw new TypeError('Nested paging predicates are not supported!');
         }
         this.internalPredicate = internalPredicate;
         this.comparatorObject = comparator;
@@ -414,7 +420,7 @@ export class PagingPredicate extends AbstractPredicate {
         output.writeObject(this.comparatorObject);
         output.writeInt(this.page);
         output.writeInt(this.pageSize);
-        output.writeUTF(IterationType[this.iterationType]);
+        output.writeUTF(this.iterationType);
         output.writeInt(this.anchorList.length);
         this.anchorList.forEach(function (anchorEntry: [number, [any, any]]): void {
             output.writeInt(anchorEntry[0]);
@@ -423,13 +429,7 @@ export class PagingPredicate extends AbstractPredicate {
         });
     }
 
-    getClassId(): number {
-        return 15;
-    }
 
-    setIterationType(iterationType: IterationType): void {
-        this.iterationType = iterationType;
-    }
 
     nextPage(): PagingPredicate {
         this.page++;
@@ -446,30 +446,6 @@ export class PagingPredicate extends AbstractPredicate {
         return this;
     }
 
-    setAnchor(page: number, anchor: [any, any]): void {
-        const anchorEntry: [number, [any, any]] = [page, anchor];
-        const anchorCount = this.anchorList.length;
-        if (page < anchorCount) {
-            this.anchorList[page] = anchorEntry;
-        } else if (page === anchorCount) {
-            this.anchorList.push(anchorEntry);
-        } else {
-            throw new RangeError('Anchor index is not correct, expected: ' + page + 'found: ' + anchorCount);
-        }
-    }
-
-    setAnchorList(anchorList: Array<[number, [any, any]]>): void {
-        this.anchorList = anchorList;
-    }
-
-    getPredicate(): Predicate {
-        return this.internalPredicate;
-    }
-
-    getAnchorList(): Array<[number, [any, any]]> {
-        return this.anchorList;
-    }
-
     getPage(): number {
         return this.page;
     }
@@ -478,10 +454,14 @@ export class PagingPredicate extends AbstractPredicate {
         return this.pageSize;
     }
 
-    getNearestAnchorEntry(): [number, [any, any]] {
+    getComparator(): Comparator {
+        return this.comparatorObject;
+    }
+
+    getAnchor(): [number, [any, any]] {
         const anchorCount = this.anchorList.length;
         if (this.page === 0 || anchorCount === 0) {
-            return PagingPredicate.NULL_ANCHOR;
+            return PagingPredicateImpl.NULL_ANCHOR;
         }
         let anchoredEntry: [number, [any, any]];
         if (this.page < anchorCount) {
@@ -492,11 +472,61 @@ export class PagingPredicate extends AbstractPredicate {
         return anchoredEntry;
     }
 
+    getPredicate(): Predicate {
+        return this.internalPredicate;
+    }
+
+    getAnchorList(): Array<[number, [any, any]]> {
+        return this.anchorList;
+    }
+
+    setAnchorList(anchorList: Array<[number, [any, any]]>): void {
+        this.anchorList = anchorList;
+    }
+
     getIterationType(): IterationType {
         return this.iterationType;
     }
 
-    getComparator(): Comparator {
-        return this.comparatorObject;
+    setIterationType(iterationType: IterationType): void {
+        this.iterationType = iterationType;
+    }
+
+}
+
+interface PredicateConstructor {
+    new (): Predicate;
+    CLASS_ID: number;
+}
+
+const allPredicates: Array<PredicateConstructor> = [
+    SqlPredicate,
+    AndPredicate,
+    BetweenPredicate,
+    EqualPredicate,
+    GreaterLessPredicate,
+    LikePredicate,
+    ILikePredicate,
+    InPredicate,
+    InstanceOfPredicate,
+    NotEqualPredicate,
+    NotPredicate,
+    OrPredicate,
+    RegexPredicate,
+    FalsePredicate,
+    TruePredicate,
+    PagingPredicateImpl,
+];
+
+const idToConstructorMap: { [id: number]: PredicateConstructor } = {};
+for (const predicate of allPredicates) {
+    idToConstructorMap[predicate.CLASS_ID] = predicate;
+}
+
+export function predicateFactory(classId: number): IdentifiedDataSerializable {
+    if (idToConstructorMap[classId]) {
+        return new idToConstructorMap[classId]();
+    } else {
+        throw new RangeError(`There is no default predicate with id ${classId}.`);
     }
 }

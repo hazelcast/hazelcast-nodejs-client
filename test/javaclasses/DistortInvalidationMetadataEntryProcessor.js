@@ -18,6 +18,8 @@ function DistortInvalidationMetadataEntryProcessor(mapName, mapSize, duration) {
     this.mapSize = mapSize;
     this.mapName = mapName;
     this.duration = duration;
+    this.factoryId = 66;
+    this.classId = 3;
 }
 
 DistortInvalidationMetadataEntryProcessor.prototype.readData = function (inp) {
@@ -30,14 +32,6 @@ DistortInvalidationMetadataEntryProcessor.prototype.writeData = function (outp) 
     outp.writeUTF(this.mapName);
     outp.writeInt(this.mapSize);
     outp.writeInt(this.duration);
-};
-
-DistortInvalidationMetadataEntryProcessor.prototype.getFactoryId = function () {
-    return 66;
-};
-
-DistortInvalidationMetadataEntryProcessor.prototype.getClassId = function () {
-    return 3;
 };
 
 module.exports = DistortInvalidationMetadataEntryProcessor;

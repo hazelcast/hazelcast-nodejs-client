@@ -26,10 +26,7 @@ describe('CustomSerializerTest', function () {
     class CustomObject {
         constructor(surname) {
             this.surname = surname;
-        }
-
-        hzGetCustomId() {
-            return 10;
+            this.hzCustomId = 10;
         }
     }
 
@@ -37,9 +34,7 @@ describe('CustomSerializerTest', function () {
         const cfg = new SerializationConfigImpl();
         cfg.customSerializers = [
             {
-                getId: function () {
-                    return 10;
-                },
+                id: 10,
                 write: function (out, emp) {
                     out.writeUTF(emp.surname);
                 },

@@ -19,9 +19,9 @@ const HazelcastClient = require('../.').Client;
 const Controller = require('./RC');
 const expect = require('chai').expect;
 const DeferredPromise = require('../lib/Util').DeferredPromise;
-const MemberEvent = require('../lib/invocation/ClusterService').MemberEvent;
+const MemberEvent = require('../lib/core/MembershipEvent').MemberEvent;
 
-describe('MembershipListener', function () {
+describe('MembershipListenerTest', function () {
 
     this.timeout(20000);
     let cluster, client;
@@ -98,7 +98,6 @@ describe('MembershipListener', function () {
     });
 
     it('if same listener is added twice, gets same event twice', function () {
-        let newMember;
         let counter = 0;
 
         const membershipListener = {
@@ -110,7 +109,6 @@ describe('MembershipListener', function () {
         client.clusterService.addMembershipListener(membershipListener);
 
         return Controller.startMember(cluster.id).then(function (m) {
-            newMember = m;
             expect(counter).to.equal(2);
         });
     });

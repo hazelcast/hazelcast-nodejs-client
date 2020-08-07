@@ -36,8 +36,13 @@ export class ReliableTopicListenerRunner<E> {
     private proxy: ReliableTopicProxy<E>;
     private listenerId: string;
 
-    constructor(listenerId: string, listener: MessageListener<E>, ringbuffer: Ringbuffer<ReliableTopicMessage>,
-                batchSize: number, serializationService: SerializationService, logger: ILogger, proxy: ReliableTopicProxy<E>) {
+    constructor(listenerId: string,
+                listener: MessageListener<E>,
+                ringbuffer: Ringbuffer<ReliableTopicMessage>,
+                batchSize: number,
+                serializationService: SerializationService,
+                logger: ILogger,
+                proxy: ReliableTopicProxy<E>) {
         this.listenerId = listenerId;
         this.listener = listener;
         this.ringbuffer = ringbuffer;
@@ -48,46 +53,47 @@ export class ReliableTopicListenerRunner<E> {
     }
 
     public next(): void {
-
         if (this.cancelled) {
             return;
         }
 
-        this.ringbuffer.readMany(this.sequenceNumber, 1, this.batchSize).then((result: ReadResultSet<ReliableTopicMessage>) => {
-            if (!this.cancelled) {
-                for (let i = 0; i < result.size(); i++) {
-                    const msg = new Message<E>();
-                    const item = result.get(i);
-                    msg.messageObject = this.serializationService.toObject(item.payload);
-                    msg.publisher = item.publisherAddress;
-                    msg.publishingTime = item.publishTime;
-                    setImmediate(this.listener, msg);
-                    this.sequenceNumber++;
-                }
-                setImmediate(this.next.bind(this));
-            }
-        }).catch((e) => {
-            let message: string;
-            if (e instanceof StaleSequenceError) {
-                this.ringbuffer.headSequence().then((seq: Long) => {
-                    const newSequence = seq.toNumber();
-
-                    message = 'Topic "' + this.proxy.getName() + '" ran into a stale sequence. ' +
-                        ' Jumping from old sequence ' + this.sequenceNumber + ' to new sequence ' + newSequence;
-                    this.logger.warn('ReliableTopicListenerRunner', message);
-
-                    this.sequenceNumber = newSequence;
+        this.ringbuffer.readMany(this.sequenceNumber, 1, this.batchSize)
+            .then((result: ReadResultSet<ReliableTopicMessage>) => {
+                if (!this.cancelled) {
+                    for (let i = 0; i < result.size(); i++) {
+                        const msg = new Message<E>();
+                        const item = result.get(i);
+                        msg.messageObject = this.serializationService.toObject(item.payload);
+                        msg.publisher = item.publisherAddress;
+                        msg.publishingTime = item.publishTime;
+                        setImmediate(this.listener, msg);
+                        this.sequenceNumber++;
+                    }
                     setImmediate(this.next.bind(this));
-                });
+                }
+            })
+            .catch((e) => {
+                let message: string;
+                if (e instanceof StaleSequenceError) {
+                    this.ringbuffer.headSequence().then((seq: Long) => {
+                        const newSequence = seq.toNumber();
 
-                return;
-            }
+                        message = 'Topic "' + this.proxy.getName() + '" ran into a stale sequence. ' +
+                            ' Jumping from old sequence ' + this.sequenceNumber + ' to new sequence ' + newSequence;
+                        this.logger.warn('ReliableTopicListenerRunner', message);
 
-            message = 'Listener of topic "' + this.proxy.getName() + '" caught an exception, terminating listener. ' + e;
-            this.logger.warn('ReliableTopicListenerRunner', message);
+                        this.sequenceNumber = newSequence;
+                        setImmediate(this.next.bind(this));
+                    });
 
-            this.proxy.removeMessageListener(this.listenerId);
-        });
+                    return;
+                }
+
+                message = 'Listener of topic "' + this.proxy.getName() + '" caught an exception, terminating listener. ' + e;
+                this.logger.warn('ReliableTopicListenerRunner', message);
+
+                this.proxy.removeMessageListener(this.listenerId);
+            });
     }
 
     public cancel(): void {

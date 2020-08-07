@@ -17,9 +17,11 @@
 import {AnchorDataListHolder} from './AnchorDataListHolder';
 import {Data} from '../serialization/Data';
 import {SerializationService} from '../serialization/SerializationService';
-import {PagingPredicate} from '../serialization/DefaultPredicates';
+import {PagingPredicateImpl} from '../serialization/DefaultPredicates';
+import {iterationTypeToId} from '../core/Predicate';
 
 export class PagingPredicateHolder {
+
     anchorDataListHolder: AnchorDataListHolder;
     predicateData: Data;
     comparatorData: Data;
@@ -39,15 +41,15 @@ export class PagingPredicateHolder {
         this.partitionKeyData = partitionKeyData;
     }
 
-    static of(predicate: PagingPredicate, serializationService: SerializationService): PagingPredicateHolder {
+    static of(predicate: PagingPredicateImpl, serializationService: SerializationService): PagingPredicateHolder {
         if (predicate == null) {
             return null;
         }
-
         return this.buildHolder(serializationService, predicate);
     }
 
-    private static buildHolder(serializationService: SerializationService, predicate: PagingPredicate): PagingPredicateHolder {
+    private static buildHolder(serializationService: SerializationService,
+                               predicate: PagingPredicateImpl): PagingPredicateHolder {
         const anchorList = predicate.getAnchorList();
         const anchorDataList = new Array<[Data, Data]>(anchorList.length);
         const pageList = new Array<number>(anchorList.length);
@@ -56,13 +58,15 @@ export class PagingPredicateHolder {
             const item = anchorList[i];
             pageList[i] = item[0];
             const anchorEntry = item[1];
-            anchorDataList[i] = [serializationService.toData(anchorEntry[0]), serializationService.toData(anchorEntry[1])];
+            anchorDataList[i] =
+                [serializationService.toData(anchorEntry[0]), serializationService.toData(anchorEntry[1])];
         }
 
         const anchorDataListHolder = new AnchorDataListHolder(pageList, anchorDataList);
         const predicateData = serializationService.toData(predicate.getPredicate());
         const comparatorData = serializationService.toData(predicate.getComparator());
-        return new PagingPredicateHolder(anchorDataListHolder, predicateData, comparatorData, predicate.getPageSize(),
-            predicate.getPage(), predicate.getIterationType().valueOf(), null);
+        const iterationTypeId = iterationTypeToId(predicate.getIterationType());
+        return new PagingPredicateHolder(anchorDataListHolder, predicateData, comparatorData,
+            predicate.getPageSize(), predicate.getPage(), iterationTypeId, null);
     }
 }

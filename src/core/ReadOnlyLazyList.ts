@@ -35,7 +35,11 @@ class ReadOnlyLazyListIterator<T> implements Iterator<T> {
 
 }
 
-export class ReadOnlyLazyList<T> implements Iterable<T> {
+/**
+ * Represents a list of values with lazy deserialization.
+ */
+export class ReadOnlyLazyList<T> {
+
     private internalArray: any[];
     private serializationService: SerializationService;
 
@@ -44,6 +48,12 @@ export class ReadOnlyLazyList<T> implements Iterable<T> {
         this.serializationService = serializationService;
     }
 
+    /**
+     * Returns list's element at the specified index.
+     *
+     * @param index element's index
+     * @returns element
+     */
     get(index: number): T {
         const dataOrObject = this.internalArray[index];
         if (dataOrObject == null) {
@@ -58,18 +68,33 @@ export class ReadOnlyLazyList<T> implements Iterable<T> {
         }
     }
 
+    /**
+     * Returns the size of the list.
+     */
     size(): number {
         return this.internalArray.length;
     }
 
+    /**
+     * Returns an iterator for elements in the list.
+     */
     values(): Iterator<T> {
         return new ReadOnlyLazyListIterator(this);
     }
 
+    /**
+     * Returns a slice of the list.
+     *
+     * @param start The beginning of the specified portion of the list (inclusive).
+     * @param end The end of the specified portion of the list (exclusive).
+     */
     slice(start: number, end?: number): ReadOnlyLazyList<T> {
         return new ReadOnlyLazyList<T>(this.internalArray.slice(start, end), this.serializationService);
     }
 
+    /**
+     * Returns an array that contains all elements of this list in proper sequence.
+     */
     toArray(): T[] {
         const arr: T[] = [];
         const iterator = this.values();

@@ -29,6 +29,7 @@ import {HazelcastSerializationError} from '../../HazelcastError';
 
 export class PortableSerializer implements Serializer {
 
+    id = -1;
     private portableContext: PortableContext;
     private factories: { [id: number]: PortableFactory };
     private service: SerializationService;
@@ -37,10 +38,6 @@ export class PortableSerializer implements Serializer {
         this.service = service;
         this.portableContext = new PortableContext(this.service, serializationConfig.portableVersion);
         this.factories = serializationConfig.portableFactories;
-    }
-
-    getId(): number {
-        return -1;
     }
 
     read(input: DataInput): any {
@@ -74,8 +71,8 @@ export class PortableSerializer implements Serializer {
     }
 
     write(output: PositionalDataOutput, object: Portable): void {
-        output.writeInt(object.getFactoryId());
-        output.writeInt(object.getClassId());
+        output.writeInt(object.factoryId);
+        output.writeInt(object.classId);
 
         this.writeObject(output, object);
     }
@@ -90,11 +87,11 @@ export class PortableSerializer implements Serializer {
     }
 
     private createNewPortableInstance(factoryId: number, classId: number): Portable {
-        const factory = this.factories[factoryId];
-        if (factory == null) {
+        const factoryFn = this.factories[factoryId];
+        if (factoryFn == null) {
             throw new HazelcastSerializationError(`There is no suitable portable factory for ${factoryId}.`);
         }
-        const portable: Portable = factory.create(classId);
+        const portable: Portable = factoryFn(classId);
         if (portable == null) {
             throw new HazelcastSerializationError(`Could not create Portable for class-id: ${classId}`);
         }

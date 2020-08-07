@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import {LogLevel} from './LoggingService';
-import {ILogger} from './ILogger';
+import {ILogger, LogLevel} from './ILogger';
 
 export class DefaultLogger implements ILogger {
+
     private readonly level: number;
 
-    constructor(level: number) {
+    constructor(level: LogLevel) {
         this.level = level;
     }
 

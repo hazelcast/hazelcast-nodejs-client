@@ -28,7 +28,6 @@ import {Properties} from './Properties';
 import {ReliableTopicConfig, ReliableTopicConfigImpl} from './ReliableTopicConfig';
 import {SerializationConfig, SerializationConfigImpl} from './SerializationConfig';
 import {Statistics} from '../statistics/Statistics';
-import {LogLevel} from '..';
 import {ILogger} from '../logging/ILogger';
 import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy';
 import {ConnectionStrategyConfig, ConnectionStrategyConfigImpl, ReconnectMode} from './ConnectionStrategyConfig';
@@ -134,7 +133,7 @@ export class ClientConfigImpl implements ClientConfig {
         'hazelcast.invalidation.reconciliation.interval.seconds': 60,
         'hazelcast.invalidation.max.tolerated.miss.count': 10,
         'hazelcast.invalidation.min.reconciliation.interval.seconds': 30,
-        'hazelcast.logging.level': LogLevel.INFO,
+        'hazelcast.logging.level': 'INFO',
         'hazelcast.client.autopipelining.enabled': true,
         'hazelcast.client.autopipelining.threshold.bytes': 8192,
         'hazelcast.client.socket.no.delay': true,

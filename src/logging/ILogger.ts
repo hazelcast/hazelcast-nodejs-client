@@ -14,7 +14,19 @@
  * limitations under the License.
  */
 
-import {LogLevel} from './LoggingService';
+/**
+ * Log level for built-in or custom logger.
+ */
+export enum LogLevel {
+
+    OFF = -1,
+    ERROR = 0,
+    WARN = 1,
+    INFO = 2,
+    DEBUG = 3,
+    TRACE = 4,
+
+}
 
 /**
  * The Hazelcast logging interface.

@@ -17,14 +17,8 @@
 
 function Foo(foo) {
     this.foo = foo;
-}
-
-Foo.prototype.getClassId = function () {
-    return 1;
-}
-
-Foo.prototype.getFactoryId = function () {
-    return 1;
+    this.factoryId = 1;
+    this.classId = 1;
 }
 
 Foo.prototype.writePortable = function (portableWriter) {
@@ -35,14 +29,11 @@ Foo.prototype.readPortable = function (portableReader) {
     this.foo = portableReader.readUTF('foo');
 }
 
-function MyPortableFactory() {
-}
-
-MyPortableFactory.prototype.create = function (type) {
+function myPortableFactory(type) {
     if (type === 1) {
         return new Foo();
     }
 }
 
-exports.MyPortableFactory = MyPortableFactory;
+exports.myPortableFactory = myPortableFactory;
 exports.Foo = Foo;

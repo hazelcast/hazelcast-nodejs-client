@@ -73,8 +73,8 @@ export class ClassDefinitionWriter implements PortableWriter {
                 + 'registering class definition!');
         }
         const version = this.context.getClassVersion(portable);
-        const nestedClassDef = this.createNestedClassDef(portable, new ClassDefinitionBuilder(portable.getFactoryId(),
-            portable.getClassId(), version));
+        const nestedClassDef = this.createNestedClassDef(portable,
+            new ClassDefinitionBuilder(portable.factoryId, portable.classId, version));
         this.builder.addPortableField(fieldName, nestedClassDef);
     }
 
@@ -128,17 +128,17 @@ export class ClassDefinitionWriter implements PortableWriter {
             throw new HazelcastSerializationError('Cannot write null portable array without explicitly '
                 + 'registering class definition!');
         }
-        const p = portables[0];
-        const classId = p.getClassId();
+        const portable = portables[0];
+        const classId = portable.classId;
         for (let i = 1; i < portables.length; i++) {
-            if (portables[i].getClassId() !== classId) {
+            if (portables[i].classId !== classId) {
                 throw new RangeError('Detected different class-ids in portable array!');
             }
         }
 
-        const version = this.context.getClassVersion(p);
-        const nestedClassDef = this.createNestedClassDef(p, new ClassDefinitionBuilder(p.getFactoryId(), p.getClassId(),
-            version));
+        const version = this.context.getClassVersion(portable);
+        const nestedClassDef = this.createNestedClassDef(portable,
+            new ClassDefinitionBuilder(portable.factoryId, portable.classId, version));
         this.builder.addPortableArrayField(fieldName, nestedClassDef);
     }
 

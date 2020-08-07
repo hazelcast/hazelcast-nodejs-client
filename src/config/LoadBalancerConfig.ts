@@ -17,17 +17,17 @@
 import {LoadBalancer} from '../LoadBalancer';
 
 /**
- * Defines {@link LoadBalancer} implementation used by the client.
+ * Defines {@link LoadBalancer} type used by the client.
  */
 export enum LoadBalancerType {
 
     /**
-     * This implementation picks the next member randomly.
+     * This type of load balancer picks the next member randomly.
      */
     RANDOM = 'RANDOM',
 
     /**
-     * This implementation picks each cluster member in turn.
+     * This type of load balancer picks each cluster member in turn.
      */
     ROUND_ROBIN = 'ROUND_ROBIN',
 
@@ -46,7 +46,7 @@ export interface LoadBalancerConfig {
 
     /**
      * Custom load balancer implementation for the client. When this option is in use,
-     * `loadBalancerType` setting is ignored.
+     * `type` option is ignored.
      */
     customLoadBalancer?: LoadBalancer;
 

@@ -23,7 +23,7 @@ import {IllegalStateError, TargetDisconnectedError} from '../HazelcastError';
 import {MemberSelector} from '../core/MemberSelector';
 import {assertNotNull, DeferredPromise} from '../Util';
 import {MembershipListener} from '../core/MembershipListener';
-import {MembershipEvent} from '../core/MembershipEvent';
+import {MembershipEvent, MemberEvent} from '../core/MembershipEvent';
 import {UuidUtil} from '../util/UuidUtil';
 import {ILogger} from '../logging/ILogger';
 import {UUID} from '../core/UUID';
@@ -32,11 +32,6 @@ import {InitialMembershipListener} from '../core/InitialMembershipListener';
 import {InitialMembershipEvent} from '../core/InitialMembershipEvent';
 import {MemberInfo} from '../core/MemberInfo';
 import {Cluster} from '../core/Cluster';
-
-export enum MemberEvent {
-    ADDED = 1,
-    REMOVED = 2,
-}
 
 class MemberListSnapshot {
     version: number;
@@ -84,10 +79,10 @@ export class ClusterService implements Cluster {
     }
 
     /**
-     * Returns a collection of the members that satisfy the given {@link MemberSelector}.
+     * Returns an array of the members that satisfy the given {@link MemberSelector}.
      *
      * @param selector {@link MemberSelector} instance to filter members to return
-     * @return members that satisfy the given {@link MemberSelector}.
+     * @return members that satisfy the given selector.
      */
     public getMembers(selector?: MemberSelector): Member[] {
         const members = this.getMemberList();

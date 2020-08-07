@@ -23,36 +23,28 @@ class Customer {
         this.name = name;
         this.id = id;
         this.lastOrder = lastOrder;
+        this.factoryId = 1;
+        this.classId = 1;
     }
 
-    readPortable(input) {
-        this.name = input.readUTF('name');
-        this.id = input.readInt('id');
-        this.lastOrder = input.readLong('lastOrder').toNumber();
+    readPortable(reader) {
+        this.name = reader.readUTF('name');
+        this.id = reader.readInt('id');
+        this.lastOrder = reader.readLong('lastOrder').toNumber();
     }
 
-    writePortable(output) {
-        output.writeUTF('name', this.name);
-        output.writeInt('id', this.id);
-        output.writeLong('lastOrder', Long.fromNumber(this.lastOrder));
-    }
-
-    getFactoryId() {
-        return 1;
-    }
-
-    getClassId() {
-        return 1;
+    writePortable(writer) {
+        writer.writeUTF('name', this.name);
+        writer.writeInt('id', this.id);
+        writer.writeLong('lastOrder', Long.fromNumber(this.lastOrder));
     }
 }
 
-class PortableFactory {
-    create(classId) {
-        if (classId === 1) {
-            return new Customer();
-        }
-        return null;
+function portableFactory(classId) {
+    if (classId === 1) {
+        return new Customer();
     }
+    return null;
 }
 
 (async () => {
@@ -62,7 +54,7 @@ class PortableFactory {
         const hz = await Client.newHazelcastClient({
             serialization: {
                 portableFactories: {
-                    1: new PortableFactory()
+                    1: portableFactory
                 }
             }
         });

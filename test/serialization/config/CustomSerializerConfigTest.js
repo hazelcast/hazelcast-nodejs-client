@@ -51,7 +51,7 @@ describe('CustomSerializerConfigTest', function () {
         return Client.newHazelcastClient(createConfig(cluster.id))
             .then(function (cl) {
                 client = cl;
-                expect(client.getSerializationService().findSerializerFor(musician).getId()).to.be.equal(10);
+                expect(client.getSerializationService().findSerializerFor(musician).id).to.be.equal(10);
                 let map;
                 return client.getMap('musicians').then(function (mp) {
                     map = mp;

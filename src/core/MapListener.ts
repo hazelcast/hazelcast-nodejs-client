@@ -18,13 +18,13 @@ import {EntryListener} from './EntryListener';
 import {Member} from './Member';
 
 /**
- * An interface which is used to get notified upon a map or an entry event.
+ * Map or entry level event listener.
  */
 export interface MapListener<K, V> extends EntryListener<K, V> {
 }
 
 /**
- * A type which is used for map events.
+ * Map event hander function.
  */
 export type MapEventListener<K, V> = (mapEvent: MapEvent) => void;
 
@@ -37,6 +37,7 @@ export class MapEvent {
      * The name of the map for this event.
      */
     name: string;
+
     /**
      * Number of entries affected by this event.
      */
@@ -52,4 +53,5 @@ export class MapEvent {
         this.numberOfAffectedEntries = numberOfAffectedEntries;
         this.member = member;
     }
+
 }

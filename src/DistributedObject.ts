@@ -16,10 +16,15 @@
 
 import * as Promise from 'bluebird';
 
+/**
+ * Base interface for distributed objects.
+ */
 export interface DistributedObject {
+
     /**
      * Returns the key of the partition that this DistributedObject is assigned to.
-     * For a partitioned data structure, the returned value will not be null, but otherwise undefined.
+     * For a partitioned data structure, the returned value will not be `null`,
+     * but otherwise `undefined`.
      */
     getPartitionKey(): string;
 
@@ -38,4 +43,5 @@ export interface DistributedObject {
      * Clears all resources taken for this object.
      */
     destroy(): Promise<void>;
+
 }

@@ -21,6 +21,8 @@ class Employee {
     constructor(id, name) {
         this.id = id;
         this.name = name;
+        this.factoryId = 1000;
+        this.classId = 100;
     }
 
     readData(input) {
@@ -32,23 +34,6 @@ class Employee {
         output.writeInt(this.id);
         output.writeUTF(this.name);
     }
-
-    getFactoryId() {
-        return 1000;
-    }
-
-    getClassId() {
-        return 100;
-    }
-}
-
-class SampleDataSerializableFactory {
-    create(type) {
-        if (type === 100) {
-            return new Employee();
-        }
-        return null;
-    }
 }
 
 (async () => {
@@ -56,7 +41,12 @@ class SampleDataSerializableFactory {
         const client = await Client.newHazelcastClient({
             serialization: {
                 dataSerializableFactories: {
-                    1000: new SampleDataSerializableFactory()
+                    1000: (classId) => {
+                        if (classId === 100) {
+                            return new Employee();
+                        }
+                        return null;
+                    }
                 }
             }
         });

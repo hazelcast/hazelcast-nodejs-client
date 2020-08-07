@@ -16,6 +16,8 @@
 
 function IdentifiedEntryProcessor(value) {
     this.value = value;
+    this.factoryId = 66;
+    this.classId = 1;
 }
 
 IdentifiedEntryProcessor.prototype.readData = function (inp) {
@@ -24,14 +26,6 @@ IdentifiedEntryProcessor.prototype.readData = function (inp) {
 
 IdentifiedEntryProcessor.prototype.writeData = function (outp) {
     outp.writeUTF(this.value);
-};
-
-IdentifiedEntryProcessor.prototype.getFactoryId = function () {
-    return 66;
-};
-
-IdentifiedEntryProcessor.prototype.getClassId = function () {
-    return 1;
 };
 
 module.exports = IdentifiedEntryProcessor;

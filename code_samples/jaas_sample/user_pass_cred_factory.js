@@ -17,13 +17,11 @@
 
 const UsernamePasswordCredentials = require('./user_pass_cred');
 
-class UsernamePasswordCredentialsFactory {
-    create(classId) {
-        if (classId === 1) {
-            return new UsernamePasswordCredentials();
-        }
-        return null;
+function usernamePasswordCredentialsFactory(classId) {
+    if (classId === 1) {
+        return new UsernamePasswordCredentials();
     }
+    return null;
 }
 
-exports.UsernamePasswordCredentialsFactory = UsernamePasswordCredentialsFactory;
+exports.usernamePasswordCredentialsFactory = usernamePasswordCredentialsFactory;

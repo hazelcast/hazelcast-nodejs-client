@@ -17,50 +17,109 @@
 import {DataInput, DataOutput} from './Data';
 import {PortableReader, PortableWriter} from './portable/PortableSerializer';
 
+/**
+ * Interface for objects with IdentifiedDataSerializable
+ * serialization support.
+ */
 export interface IdentifiedDataSerializable {
 
-    readData(input: DataInput): any;
+    /**
+     * Factory id of the object.
+     */
+    factoryId: number;
 
+    /**
+     * Class id of the object.
+     */
+    classId: number;
+
+    /**
+     * Reads fields of the object from the binary representation.
+     *
+     * @param input read helper
+     */
+    readData(input: DataInput): void;
+
+    /**
+     * Writes fields of the object into the binary representation.
+     *
+     * @param output write helper
+     */
     writeData(output: DataOutput): void;
 
-    getFactoryId(): number;
-
-    getClassId(): number;
-
 }
 
-export interface IdentifiedDataSerializableFactory {
+/**
+ * Factory function for {@link IdentifiedDataSerializable}. Should return
+ * an instance of the right {@link IdentifiedDataSerializable} object, given
+ * the matching `classId`.
+ *
+ * @param classId class id
+ * @returns object for further initialization
+ */
+export type IdentifiedDataSerializableFactory = (classId: number) => IdentifiedDataSerializable;
 
-    create(type: number): IdentifiedDataSerializable;
-
-}
-
+/**
+ * Interface for objects with Portable serialization support.
+ */
 export interface Portable {
 
-    getFactoryId(): number;
+    /**
+     * Factory id of the portable object.
+     */
+    factoryId: number;
 
-    getClassId(): number;
+    /**
+     * Class id of the portable object.
+     */
+    classId: number;
 
-    writePortable(writer: PortableWriter): void;
-
+    /**
+     * Reads fields of the portable object from the binary representation.
+     *
+     * @param reader read helper
+     */
     readPortable(reader: PortableReader): void;
 
+    /**
+     * Writes fields of the portable object into the binary representation.
+     *
+     * @param writer write helper
+     */
+    writePortable(writer: PortableWriter): void;
+
 }
 
+/**
+ * Interface for Portable serialization with multiversion support.
+ */
 export interface VersionedPortable extends Portable {
 
-    getVersion(): number;
+    /**
+     * Version of the portable object.
+     */
+    version: number;
 
 }
 
-export interface PortableFactory {
+/**
+ * Factory function for {@link Portable}. Should return
+ * an instance of the right {@link Portable} object, given
+ * the matching `classId`.
+ *
+ * @param classId class id
+ * @returns object for further initialization
+ */
+export type PortableFactory = (classId: number) => Portable;
 
-    create(classId: number): Portable;
-
-}
-
+/**
+ * Interface for objects with custom serialization support.
+ */
 export interface CustomSerializable {
 
-    hzGetCustomId(): number;
+    /**
+     * Custom serializable id. Should match custom serializer's id.
+     */
+    hzCustomId: number;
 
 }

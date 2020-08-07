@@ -30,38 +30,27 @@ class Employee {
     constructor(name, age) {
         this.name = name;
         this.age = age;
+        this.factoryId = 1;
+        this.classId = 1;
+        this.version = 1;
     }
 
-    readPortable(input) {
-        this.name = input.readUTF('name');
-        this.age = input.readInt('age');
+    readPortable(reader) {
+        this.name = reader.readUTF('name');
+        this.age = reader.readInt('age');
     }
 
-    writePortable(output) {
-        output.writeUTF('name', this.name);
-        output.writeInt('age', this.age);
-    }
-
-    getFactoryId() {
-        return 1;
-    }
-
-    getClassId() {
-        return 1;
-    }
-
-    getVersion() {
-        return 1;
+    writePortable(writer) {
+        writer.writeUTF('name', this.name);
+        writer.writeInt('age', this.age);
     }
 }
 
-class PortableFactory {
-    create(classId) {
-        if (classId === 1) {
-            return new Employee();
-        }
-        return null;
+function portableFactory(classId) {
+    if (classId === 1) {
+        return new Employee();
     }
+    return null;
 }
 
 /*
@@ -76,42 +65,30 @@ class Employee2 {
         this.name = name;
         this.age = age;
         this.manager = manager;
+        this.factoryId = 1;
+        this.classId = 1;
+        // Specify version different than the global version.
+        this.version = 2;
     }
 
-    readPortable(input) {
-        this.name = input.readUTF('name');
-        this.age = input.readInt('age');
-        this.manager = input.readUTF('manager');
+    readPortable(reader) {
+        this.name = reader.readUTF('name');
+        this.age = reader.readInt('age');
+        this.manager = reader.readUTF('manager');
     }
 
-    writePortable(output) {
-        output.writeUTF('name', this.name);
-        output.writeInt('age', this.age);
-        output.writeUTF('manager', this.manager);
-    }
-
-    getFactoryId() {
-        return 1;
-    }
-
-    getClassId() {
-        return 1;
-    }
-
-    // It is necessary to implement this method for multiversion support to work.
-    getVersion() {
-        // Specifies version different than the global version.
-        return 2;
+    writePortable(writer) {
+        writer.writeUTF('name', this.name);
+        writer.writeInt('age', this.age);
+        writer.writeUTF('manager', this.manager);
     }
 }
 
-class PortableFactory2 {
-    create(classId) {
-        if (classId === 1) {
-            return new Employee2();
-        }
-        return null;
+function portableFactory2(classId) {
+    if (classId === 1) {
+        return new Employee2();
     }
+    return null;
 }
 
 /*
@@ -127,40 +104,29 @@ class Employee3 {
         this.name = name;
         this.age = age;
         this.manager = manager;
+        this.factoryId = 1;
+        this.classId = 1;
+        this.version = 3;
     }
 
-    readPortable(input) {
-        this.name = input.readUTF('name');
-        this.age = input.readUTF('age');
-        this.manager = input.readUTF('manager');
+    readPortable(reader) {
+        this.name = reader.readUTF('name');
+        this.age = reader.readUTF('age');
+        this.manager = reader.readUTF('manager');
     }
 
-    writePortable(output) {
-        output.writeUTF('name', this.name);
-        output.writeUTF('age', this.age);
-        output.writeUTF('manager', this.manager);
-    }
-
-    getFactoryId() {
-        return 1;
-    }
-
-    getClassId() {
-        return 1;
-    }
-
-    getVersion() {
-        return 3;
+    writePortable(writer) {
+        writer.writeUTF('name', this.name);
+        writer.writeUTF('age', this.age);
+        writer.writeUTF('manager', this.manager);
     }
 }
 
-class PortableFactory3 {
-    create(classId) {
-        if (classId === 1) {
-            return new Employee3();
-        }
-        return null;
+function portableFactory3(classId) {
+    if (classId === 1) {
+        return new Employee3();
     }
+    return null;
 }
 
 (async () => {
@@ -169,21 +135,21 @@ class PortableFactory3 {
         const cfg = {
             serialization: {
                 portableFactories: {
-                    1: new PortableFactory()
+                    1: portableFactory
                 }
             }
         };
         const cfg2 = {
             serialization: {
                 portableFactories: {
-                    1: new PortableFactory2()
+                    1: portableFactory2
                 }
             }
         };
         const cfg3 = {
             serialization: {
                 portableFactories: {
-                    1: new PortableFactory3()
+                    1: portableFactory3
                 }
             }
         };

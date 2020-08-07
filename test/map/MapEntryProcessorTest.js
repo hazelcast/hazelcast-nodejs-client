@@ -22,7 +22,7 @@ const RC = require('../RC');
 const fs = require('fs');
 const fillMap = require('../Util').fillMap;
 
-const IdentifiedFactory = require('../javaclasses/IdentifiedFactory');
+const identifiedFactory = require('../javaclasses/IdentifiedFactory');
 const IdentifiedEntryProcessor = require('../javaclasses/IdentifiedEntryProcessor');
 
 describe('Entry Processor', function () {
@@ -42,7 +42,7 @@ describe('Entry Processor', function () {
                     clusterName: cluster.id,
                     serialization: {
                         dataSerializableFactories: {
-                            66: new IdentifiedFactory()
+                            66: identifiedFactory
                         }
                     }
                 });

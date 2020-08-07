@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {IdentifiedDataSerializable, IdentifiedDataSerializableFactory} from '../serialization/Serializable';
+import {IdentifiedDataSerializable} from '../serialization/Serializable';
 import {
     Aggregator,
     CountAggregator,
@@ -32,54 +32,47 @@ import {
 } from './Aggregator';
 import {HazelcastError} from '../HazelcastError';
 
-export class AggregatorFactory implements IdentifiedDataSerializableFactory {
+export const AGGREGATOR_FACTORY_ID = -29;
 
-    static readonly FACTORY_ID = -29;
+// export const BIG_DECIMAL_AVG = 0; // not implemented in node.js
+// export const BIG_DECIMAL_SUM = 1; // not implemented in node.js
+// export const BIG_INT_AVG = 2; // not implemented in node.js
+// export const BIG_INT_SUM = 3; // not implemented in node.js
+export const COUNT = 4;
+// export const DISTINCT = 5; // returns java serializable, not usable in node.js
+export const DOUBLE_AVG = 6;
+export const DOUBLE_SUM = 7;
+export const FIXED_SUM = 8;
+export const FLOATING_POINT_SUM = 9;
+export const INT_AVG = 10;
+export const INT_SUM = 11;
+export const LONG_AVG = 12;
+export const LONG_SUM = 13;
+export const MAX = 14;
+export const MIN = 15;
+export const NUMBER_AVG = 16;
+// export const MAX_BY = 17; // needs object to implement Java's Comparable interface
+// export const MIN_BY = 18; // needs object to implement Java's Comparable interface
 
-    static readonly BIG_DECIMAL_AVG = 0; // not implemented in node.js
-    static readonly BIG_DECIMAL_SUM = 1; // not implemented in node.js
-    static readonly BIG_INT_AVG = 2; // not implemented in node.js
-    static readonly BIG_INT_SUM = 3; // not implemented in node.js
-    static readonly COUNT = 4;
-    static readonly DISTINCT = 5; // returns java serializable, not usable in node.js
-    static readonly DOUBLE_AVG = 6;
-    static readonly DOUBLE_SUM = 7;
-    static readonly FIXED_SUM = 8;
-    static readonly FLOATING_POINT_SUM = 9;
-    static readonly INT_AVG = 10;
-    static readonly INT_SUM = 11;
-    static readonly LONG_AVG = 12;
-    static readonly LONG_SUM = 13;
-    static readonly MAX = 14;
-    static readonly MIN = 15;
-    static readonly NUMBER_AVG = 16;
-    static readonly MAX_BY = 17; // needs object to implement Java's Comparable interface
-    static readonly MIN_BY = 18; // needs object to implement Java's Comparable interface
+const idToConstructor: { [id: number]: new () => Aggregator<any> } = {
+    [COUNT]: CountAggregator,
+    [DOUBLE_AVG]: DoubleAverageAggregator,
+    [DOUBLE_SUM]: DoubleSumAggregator,
+    [FIXED_SUM]: FixedPointSumAggregator,
+    [FLOATING_POINT_SUM]: FloatingPointSumAggregator,
+    [INT_AVG]: IntegerAverageAggregator,
+    [INT_SUM]: IntegerSumAggregator,
+    [LONG_AVG]: LongAverageAggregator,
+    [LONG_SUM]: LongSumAggregator,
+    [MAX]: MaxAggregator,
+    [MIN]: MinAggregator,
+    [NUMBER_AVG]: NumberAverageAggregator,
+};
 
-    private idToConstructor: { [id: number]: Aggregator<any> } = {};
-
-    constructor() {
-        this.idToConstructor[AggregatorFactory.COUNT] = CountAggregator;
-        this.idToConstructor[AggregatorFactory.DOUBLE_AVG] = DoubleAverageAggregator;
-        this.idToConstructor[AggregatorFactory.DOUBLE_SUM] = DoubleSumAggregator;
-        this.idToConstructor[AggregatorFactory.FIXED_SUM] = FixedPointSumAggregator;
-        this.idToConstructor[AggregatorFactory.FLOATING_POINT_SUM] = FloatingPointSumAggregator;
-        this.idToConstructor[AggregatorFactory.INT_AVG] = IntegerAverageAggregator;
-        this.idToConstructor[AggregatorFactory.INT_SUM] = IntegerSumAggregator;
-        this.idToConstructor[AggregatorFactory.LONG_AVG] = LongAverageAggregator;
-        this.idToConstructor[AggregatorFactory.LONG_SUM] = LongSumAggregator;
-        this.idToConstructor[AggregatorFactory.MAX] = MaxAggregator;
-        this.idToConstructor[AggregatorFactory.MIN] = MinAggregator;
-        this.idToConstructor[AggregatorFactory.NUMBER_AVG] = NumberAverageAggregator;
-
+export function aggregatorFactory(classId: number): IdentifiedDataSerializable {
+    try {
+        return new idToConstructor[classId]();
+    } catch (e) {
+        throw new HazelcastError('There is no known aggregator with type id ' + classId, e);
     }
-
-    create(type: number): IdentifiedDataSerializable {
-        try {
-            return (new (this.idToConstructor[type] as FunctionConstructor)()) as any;
-        } catch (e) {
-            throw new HazelcastError('There is no known aggregator with type id ' + type, e);
-        }
-    }
-
 }

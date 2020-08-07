@@ -599,6 +599,9 @@ class Employee {
     constructor(id, name) {
         this.id = id;
         this.name = name;
+        // IdentifiedDataSerializable interface properties:
+        this.factoryId = 1000;
+        this.classId = 100;
     }
 
     readData(input) {
@@ -610,31 +613,21 @@ class Employee {
         output.writeInt(this.id);
         output.writeUTF(this.name);
     }
-
-    getFactoryId() {
-        return 1000;
-    }
-
-    getClassId() {
-        return 100;
-    }
 }
 ```
 
-> **NOTE: Refer to the following [API Documentation section](http://hazelcast.github.io/hazelcast-nodejs-client/api/4.0.0/docs/modules/_serialization_data_.html) to understand methods available on the `input`/`output` objects.**
+> **NOTE: Refer to `DataInput`/`DataOutput` interfaces in the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) to understand methods available on the `input`/`output` objects.**
 
-The `IdentifiedDataSerializable` interface uses `getClassId()` and `getFactoryId()` to reconstitute the object. To complete the implementation, `IdentifiedDataSerializableFactory` should also be implemented and put into the `serialization.dataSerializableFactories` config option. The factory's responsibility is to return an instance of the right `IdentifiedDataSerializable` object, given the `classId`.
+The `IdentifiedDataSerializable` interface uses `classId` and `factoryId` properties to reconstitute the object. To complete the implementation, `IdentifiedDataSerializableFactory` factory function should also be implemented and put into the `serialization.dataSerializableFactories` config option. The factory's responsibility is to return an instance of the right `IdentifiedDataSerializable` object, given the `classId`.
 
-A sample `IdentifiedDataSerializableFactory` could be implemented as follows:
+A sample `IdentifiedDataSerializableFactory` function could be implemented as follows:
 
 ```javascript
-class SampleDataSerializableFactory {
-    create(type) {
-        if (type === 100) {
-            return new Employee();
-        }
-        return null;
+function sampleDataSerializableFactory(classId) {
+    if (classId === 100) {
+        return new Employee();
     }
+    return null;
 }
 ```
 
@@ -644,7 +637,7 @@ The last step is to register the `IdentifiedDataSerializableFactory` in the conf
 const cfg = {
     serialization: {
         dataSerializableFactories: {
-            1000: new SampleDataSerializableFactory()
+            1000: sampleDataSerializableFactory
         }
     }
 };
@@ -674,43 +667,37 @@ class Customer {
         this.name = name;
         this.id = id;
         this.lastOrder = lastOrder;
+        // Portable interface properties:
+        this.factoryId = 1;
         this.classId = 1;
     }
 
-    readPortable(input) {
-        this.name = input.readUTF('name');
-        this.id = input.readInt('id');
-        this.lastOrder = input.readLong('lastOrder').toNumber();
+    readPortable(reader) {
+        this.name = reader.readUTF('name');
+        this.id = reader.readInt('id');
+        this.lastOrder = reader.readLong('lastOrder').toNumber();
     }
 
-    writePortable(output) {
-        output.writeUTF('name', this.name);
-        output.writeInt('id', this.id);
-        output.writeLong('lastOrder', Long.fromNumber(this.lastOrder));
-    }
-
-    getFactoryId() {
-        return PortableFactory.factoryId;
-    }
-
-    getClassId() {
-        return this.classId;
+    writePortable(writer) {
+        writer.writeUTF('name', this.name);
+        writer.writeInt('id', this.id);
+        writer.writeLong('lastOrder', Long.fromNumber(this.lastOrder));
     }
 }
 ```
 
-Similar to `IdentifiedDataSerializable`, a `Portable` object must provide `classId` and `factoryId`. The factory object will be used to create the `Portable` object given the `classId`.
+> **NOTE: Refer to `PortableReader`/`PortableWriter` interfaces in the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) to understand methods available on the `reader`/`writer` objects.**
 
-A sample `PortableFactory` could be implemented as follows:
+Similar to `IdentifiedDataSerializable`, a `Portable` object must provide `classId` and `factoryId`. The factory function will be used to create the `Portable` object given the `classId`.
+
+A sample `PortableFactory` function could be implemented as follows:
 
 ```javascript
-class PortableFactory {
-    create(classId) {
-        if (classId === 1) {
-            return new Customer();
-        }
-        return null;
+function portableFactory(classId) {
+    if (classId === 1) {
+        return new Customer();
     }
+    return null;
 }
 ```
 
@@ -720,7 +707,7 @@ The last step is to register the `PortableFactory` in the config.
 const cfg = {
     serialization: {
         portableFactories: {
-            1: new PortableFactory()
+            1: portableFactory
         }
     }
 };
@@ -744,9 +731,9 @@ const cfg = {
 }
 ```
 
-If you update the class by changing the type of one of the fields or by adding a new field, it is a good idea to upgrade the version of the class, rather than sticking to the global version specified in the configuration. In the Node.js client, you can achieve this by simply adding the `getVersion()` method to your class’s implementation of `Portable`, and setting the `ClassVersion` to be different than the default global version.
+If you update the class by changing the type of one of the fields or by adding a new field, it is a good idea to upgrade the version of the class, rather than sticking to the global version specified in the configuration. In the Node.js client, you can achieve this by simply adding the `version` property to your implementation of `Portable`, and setting the `version` to be different than the default global version.
 
-> **NOTE: If you do not use the `getVersion()` method in your `Portable` implementation, it will have the global version, by default.**
+> **NOTE: If you do not use the `version` property in your `Portable` implementation, it will have the global version, by default.**
 
 Here is an example implementation of creating a version 2 for the `Foo` class:
 
@@ -755,28 +742,20 @@ class Foo {
     constructor(foo, foo2) {
         this.foo = foo;
         this.foo2 = foo2;
+        // VersionedPortable interface properties:
+        this.factoryId = 1;
+        this.classId = 1;
+        this.version = 2;
     }
 
-    readPortable(input) {
-        this.foo = input.readUTF('foo');
-        this.foo2 = input.readUTF('foo2');
+    readPortable(reader) {
+        this.foo = reader.readUTF('foo');
+        this.foo2 = reader.readUTF('foo2');
     }
 
-    writePortable(output) {
-        output.writeUTF('foo', this.foo);
-        output.writeUTF('foo2', this.foo2);
-    }
-
-    getFactoryId() {
-        return 1;
-    }
-
-    getClassId() {
-        return 1;
-    }
-
-    getVersion() {
-        return 2;
+    writePortable(writer) {
+        writer.writeUTF('foo', this.foo);
+        writer.writeUTF('foo2', this.foo2);
     }
 }
 ```
@@ -810,22 +789,21 @@ Let's say you have an object `CustomSerializable` and you would like to customiz
 class CustomSerializable {
     constructor(value) {
         this.value = value;
-    }
-
-    hzGetCustomId() {
-        return 10;
+        // CustomSerializable interface properties:
+        this.hzCustomId = 10;
     }
 }
 ```
 
-Note that the `hzGetCustomId()` should return type id of the `CustomSerializable`.
+Note that the `hzCustomId` property should return type id of the `CustomSerializable`.
 
-Now you need to implement acustom `CustomSerializer` which will will serialize `CustomSerializable`.
+Now you need to implement a custom `Serializer` which will serialize `CustomSerializable` objects.
 
 ```javascript
 class CustomSerializer {
-    getId() {
-        return 10;
+    constructor() {
+        // Serializer interface properties:
+        this.id = 10;
     }
 
     read(input) {
@@ -875,8 +853,9 @@ A sample global serializer that integrates with a third party serializer is show
 
 ```javascript
 class GlobalSerializer {
-    getId() {
-        return 20;
+    constructor() {
+        // Serializer interface properties:
+        this.id = 20;
     }
 
     read(input) {
@@ -1775,6 +1754,8 @@ The following is an example for `EntryProcessor` which is an `IdentifiedDataSeri
 class IdentifiedEntryProcessor {
     constructor(value) {
         this.value = value;
+        this.factoryId = 5;
+        this.classId = 1;
     }
 
     readData(input) {
@@ -1783,14 +1764,6 @@ class IdentifiedEntryProcessor {
 
     writeData(output) {
         output.writeUTF(this.value);
-    }
-
-    getFactoryId() {
-        return 5;
-    }
-
-    getClassId() {
-        return 1;
     }
 }
 ```
@@ -1819,27 +1792,27 @@ public class IdentifiedEntryProcessor
     public IdentifiedEntryProcessor() {
     }
 
-     @Override
+    @Override
     public int getFactoryId() {
         return IdentifiedFactory.FACTORY_ID;
     }
 
-     @Override
-    public int getId() {
+    @Override
+    public int getClassId() {
         return CLASS_ID;
     }
 
-     @Override
+    @Override
     public void writeData(ObjectDataOutput out) throws IOException {
         out.writeUTF(value);
     }
 
-     @Override
+    @Override
     public void readData(ObjectDataInput in) throws IOException {
         value = in.readUTF();
     }
 
-     @Override
+    @Override
     public Object process(Map.Entry<String, String> entry) {
         entry.setValue(value);
         return value;
@@ -1861,7 +1834,7 @@ public class IdentifiedFactory implements DataSerializableFactory {
 
     public static final int FACTORY_ID = 5;
 
-     @Override
+    @Override
     public IdentifiedDataSerializable create(int typeId) {
         if (typeId == IdentifiedEntryProcessor.CLASS_ID) {
             return new IdentifiedEntryProcessor();
@@ -1947,28 +1920,22 @@ class Employee {
         this.age = age;
         this.active = active;
         this.salary = salary;
+        this.factoryId = 1;
+        this.classId = 1;
     }
 
-    readPortable(input) {
-        this.name = input.readUTF();
-        this.age = input.readInt();
-        this.active = input.readBoolean();
-        this.salary = input.readDouble();
+    readPortable(reader) {
+        this.name = reader.readUTF();
+        this.age = reader.readInt();
+        this.active = reader.readBoolean();
+        this.salary = reader.readDouble();
     }
 
-    writePortable(output) {
-        output.writeUTF(this.name);
-        output.writeInt(this.age);
-        output.writeBoolean(this.active);
-        output.writeDouble(this.salary);
-    }
-
-    getClassId() {
-        return 1;
-    }
-
-    getFactoryId() {
-        return 1;
+    writePortable(writer) {
+        writer.writeUTF(this.name);
+        writer.writeInt(this.age);
+        writer.writeBoolean(this.active);
+        writer.writeDouble(this.salary);
     }
 }
 ```
@@ -2074,8 +2041,7 @@ await personMap.put('Alice', 35);
 await personMap.put('Andy', 37);
 await personMap.put('Bob', 22);
 // Run the query
-// The following is an equialent of `new SqlPredicate('__key like A%')`
-const predicate = new Predicates.sql('__key like A%');
+const predicate = Predicates.sql('__key like A%');
 const startingWithA = await personMap.valuesWithPredicate(predicate);
 // Prints:
 // 35
@@ -2093,7 +2059,7 @@ await personMap.put('Alice', 35);
 await personMap.put('Andy', 37);
 await personMap.put('Bob', 22);
 // Run the query
-const predicate = new Predicates.greaterEqual('this', 27);
+const predicate = Predicates.greaterEqual('this', 27);
 const olderThan27 = await return personMap.valuesWithPredicate(predicate);
 // Prints:
 // 35 37
@@ -2346,15 +2312,13 @@ class OrderKey {
     constructor(orderId, customerId) {
         this.orderId = orderId;
         this.customerId = customerId;
-    }
-
-    getPartitionKey() {
-        return this.customerId;
+        // PartitionAware interface properties:
+        this.partitionKey = customerId;
     }
 }
 ```
 
-Notice that `OrderKey` implements `PartitionAware` interface and that `getPartitionKey()` method returns the `customerId`. This will make sure that the `Customer` entry and its `Order`s will be stored on the same member.
+Notice that `OrderKey` implements `PartitionAware` interface and that `partitionKey` property contains the `customerId`. This will make sure that the `Customer` entry and its `Order`s will be stored on the same member.
 
 ```javascript
 const customersMap = await client.getMap('customers');
@@ -2870,26 +2834,20 @@ class UsernamePasswordCredentials {
         this.username = username;
         this.password = Buffer.from(password, 'utf8');
         this.endpoint = endpoint;
+        this.factoryId = -1;
+        this.classId = 1;
     }
 
-    readPortable = function (input) {
-        this.username = input.readUTF('principal');
-        this.endpoint = input.readUTF('endpoint');
-        this.password = input.readByteArray('pwd');
+    readPortable(reader) {
+        this.username = reader.readUTF('principal');
+        this.endpoint = reader.readUTF('endpoint');
+        this.password = reader.readByteArray('pwd');
     }
 
-    writePortable(output) {
-        output.writeUTF('principal', this.username);
-        output.writeUTF('endpoint', this.endpoint);
-        output.writeByteArray('pwd', this.password);
-    }
-
-    getFactoryId() {
-        return -1;
-    }
-
-    getClassId() {
-        return 1;
+    writePortable(writer) {
+        writer.writeUTF('principal', this.username);
+        writer.writeUTF('endpoint', this.endpoint);
+        writer.writeByteArray('pwd', this.password);
     }
 }
 
@@ -2902,29 +2860,27 @@ And below is the `Factory` implementation for the `Portable` implementation of `
 ```javascript
 const { UsernamePasswordCredentials } = require('./user_pass_cred');
 
-class UsernamePasswordCredentialsFactory() {
-    create(classId) {
-        if (classId === 1) {
-            return new UsernamePasswordCredentials();
-        }
-        return null;
+function usernamePasswordCredentialsFactory(classId) {
+    if (classId === 1) {
+        return new UsernamePasswordCredentials();
     }
+    return null;
 }
 
-exports.UsernamePasswordCredentialsFactory = UsernamePasswordCredentialsFactory;
+exports.usernamePasswordCredentialsFactory = usernamePasswordCredentialsFactory;
 ```
 
 Now, you can start your client by registering the `Portable` factory and giving the credentials as follows.
 
 ```javascript
 const { UsernamePasswordCredentials } = require('./user_pass_cred');
-const { UsernamePasswordCredentialsFactory } = require('./user_pass_cred_factory');
+const { usernamePasswordCredentialsFactory } = require('./user_pass_cred_factory');
 
 const cfg = {
     serialization: {
         portableVersion: 1,
         portableFactories: {
-            [-1]: new UsernamePasswordCredentialsFactory()
+            [-1]: usernamePasswordCredentialsFactory
         }
     },
     customCredentials: new UsernamePasswordCredentials('admin', 'password', '127.0.0.1')
