@@ -22,13 +22,11 @@ import {DeferredPromise} from '../../Util';
 export class Batch {
     private nextIdLong: Long;
     private increment: Long;
-    private batchSize: number;
     private invalidSince: number;
     private firstInvalidId: Long;
 
     constructor(validityMillis: number, base: Long, increment: Long, batchSize: number) {
         this.nextIdLong = base;
-        this.batchSize = batchSize;
         this.increment = increment;
         this.firstInvalidId = base.add(this.increment.multiply(batchSize));
         if (validityMillis > 0) {

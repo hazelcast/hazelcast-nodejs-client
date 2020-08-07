@@ -30,13 +30,11 @@ class IdentifiedEntryProcessor {
     }
 }
 
-class EntryProcessorDataSerializableFactory {
-    create(type) {
-        if (type === 1) {
-            return new IdentifiedEntryProcessor();
-        }
-        return null;
+function entryProcessorDataSerializableFactory(classId) {
+    if (classId === 1) {
+        return new IdentifiedEntryProcessor();
     }
+    return null;
 }
 
 (async () => {
@@ -46,7 +44,7 @@ class EntryProcessorDataSerializableFactory {
         const hz = await Client.newHazelcastClient({
             serialization: {
                 dataSerializableFactories: {
-                    1: new EntryProcessorDataSerializableFactory()
+                    1: entryProcessorDataSerializableFactory
                 }
             }
         });

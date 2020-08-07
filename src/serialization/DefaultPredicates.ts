@@ -448,19 +448,6 @@ export class PagingPredicateImpl extends AbstractPredicate implements PagingPred
         return this;
     }
 
-    setAnchor(page: number, anchor: [any, any]): void {
-        const anchorEntry: [number, [any, any]] = [page, anchor];
-        const anchorCount = this.anchorList.length;
-        if (page < anchorCount) {
-            this.anchorList[page] = anchorEntry;
-        } else if (page === anchorCount) {
-            this.anchorList.push(anchorEntry);
-        } else {
-            throw new RangeError('Anchor index is not correct, expected: '
-                + page + 'found: ' + anchorCount);
-        }
-    }
-
     setAnchorList(anchorList: Array<[number, [any, any]]>): void {
         this.anchorList = anchorList;
     }
