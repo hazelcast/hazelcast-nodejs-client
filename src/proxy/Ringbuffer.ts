@@ -30,16 +30,18 @@ export interface Ringbuffer<E> extends DistributedObject {
     /**
      * Returns the number of the items in this ringbuffer.
      *
-     * If time-to-live was NOT configured for this ringbuffer,
-     * the size will always be equal to the capacity after the first loop is completed
-     * around the ring. This is because no items are getting removed and are overwritten instead.
+     * If time-to-live was NOT configured for this ringbuffer, the size will
+     * always be equal to the capacity after the first loop is completed around
+     * the ring. This is because no items are getting removed and are
+     * overwritten instead.
      *
      * @return size of this ringbuffer.
      */
     size(): Promise<Long>;
 
     /**
-     * Returns the tail sequence. The tail is the side of the ringbuffer at which the items are added.
+     * Returns the tail sequence. The tail is the side of the ringbuffer
+     * at which the items are added.
      *
      * The initial value of the tail sequence is -1.
      *
@@ -48,7 +50,8 @@ export interface Ringbuffer<E> extends DistributedObject {
     tailSequence(): Promise<Long>;
 
     /**
-     * Returns the head sequence. The head is the side of the ringbuffer where the oldest items are found.
+     * Returns the head sequence. The head is the side of the ringbuffer
+     * where the oldest items are found.
      *
      * If the ringbuffer is empty, the head will be one more than the tail.
      *
@@ -64,19 +67,22 @@ export interface Ringbuffer<E> extends DistributedObject {
      *
      * If the time-to-live was NOT set in the configuration,
      * the remaining capacity will always be equal to the capacity.
+     *
      * @return remaining capacity of this ringbuffer.
      */
     remainingCapacity(): Promise<Long>;
 
     /**
-     * Adds an item to the tail of this ringbuffer. Overflow policy determines what will happen
-     * if there is no space left in this ringbuffer. If `OVERWRITE` was passed,
-     * the new item will overwrite the oldest one regardless of the configured time-to-live.
+     * Adds an item to the tail of this ringbuffer. Overflow policy determines
+     * what will happen if there is no space left in this ringbuffer.
+     * If `OVERWRITE` was passed, the new item will overwrite the oldest one
+     * regardless of the configured time-to-live.
      *
-     * In the case when `FAIL` was specified the add operation will keep failing until an oldest item in this
-     * ringbuffer will reach its time-to-live.
+     * In the case when `FAIL` was specified the add operation will keep failing
+     * until an oldest item in this Ringbuffer will reach its time-to-live.
      *
-     * The returned value is the sequence number of the added item. You can read the added item using this number.
+     * The returned value is the sequence number of the added item. You can
+     * read the added item using this number.
      *
      * @param item the item to add.
      * @param overflowPolicy overflow policy to be used.
@@ -86,10 +92,13 @@ export interface Ringbuffer<E> extends DistributedObject {
     add(item: E, overflowPolicy?: OverflowPolicy): Promise<Long>;
 
     /**
-     * Adds all items in the specified array to the tail of this buffer. The behavior of this method is essentially
-     * the same as the one of the `add` method.
+     * Adds all items in the specified array to the tail of this buffer.
+     * The behavior of this method is essentially the same as the one of
+     * the `add` method.
      *
-     * The method does not guarantee that the inserted items will have contiguous sequence numbers.
+     * The method does not guarantee that the inserted items will have
+     * contiguous sequence numbers.
+     *
      * @param items items to be added
      * @param overflowPolicy overflow policy to be used
      * @return the sequence number of the last written item from the specified array
@@ -103,10 +112,9 @@ export interface Ringbuffer<E> extends DistributedObject {
      * this call will not return a response until an item is added.
      * If it is more than that, an error will be thrown.
      *
-     *
-     * Unlike queue's `take`, this method does not remove an item from the ringbuffer. This means that the same item
-     * can be read by multiple processes.
-     *
+     * Unlike queue's `take`, this method does not remove an item from the
+     * Ringbuffer. This means that the same item can be read by multiple
+     * processes.
      *
      * @param sequence the sequence number of the item to read.
      * @return the item that was read.
@@ -118,23 +126,33 @@ export interface Ringbuffer<E> extends DistributedObject {
     readOne(sequence: number | Long): Promise<E>;
 
     /**
-     * Reads a batch of items from this ringbuffer.
-     * If the number of available items starting at `sequence` is smaller than `maxCount`,
-     * then this method will not wait for more items to arrive.
-     * Instead, available items will be returned.
+     * Reads a batch of items from the Ringbuffer. If the number of available
+     * items starting at `sequence` is smaller than `maxCount`, then this
+     * method will not wait for more items to arrive. Instead, available
+     * items will be returned.
      *
-     * If there are less items available than `minCount`, then this call will not return a response until
-     * a necessary number of items becomes available.
+     * If there are less items available than `minCount`, then this call will
+     * not return a response until a necessary number of items becomes available.
      *
-     * @param sequence sequence number of the first item to be read.
+     * If `startSequence` is smaller than the smallest sequence still available
+     * in the Ringbuffer {@link headSequence}, then the smallest available
+     * sequence will be used as the start sequence and the minimum/maximum
+     * number of items will be attempted to be read from there on.
+     *
+     * If `startSequence` is bigger than the last available sequence in the
+     * Ringbuffer {@link tailSequence}, then the last available sequence
+     * plus one will be used as the start sequence and the call will block
+     * until further items become available and it can read at least the
+     * minimum number of items.
+     *
+     * @param startSequence sequence number of the first item to be read.
      * @param minCount minimum number of items to be read.
      * @param maxCount maximum number of items to be read.
      * @throws `RangeError` if startSequence is smaller than 0
-     *                      or if startSequence larger than {@link tailSequence}
      *                      or if minCount smaller than 0
      *                      or if minCount larger than maxCount,
-     *                      or if maxCount larger than the capacity of the ringbuffer
+     *                      or if maxCount larger than the capacity of the Ringbuffer
      *                      or if maxCount larger than 1000 (to prevent overload)
      */
-    readMany(sequence: number | Long, minCount: number, maxCount: number): Promise<ReadResultSet<E>>;
+    readMany(startSequence: number | Long, minCount: number, maxCount: number): Promise<ReadResultSet<E>>;
 }

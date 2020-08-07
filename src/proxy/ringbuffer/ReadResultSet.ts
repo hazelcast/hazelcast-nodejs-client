@@ -16,6 +16,8 @@
 
 import * as Long from 'long';
 
+export const SEQUENCE_UNAVAILABLE = -1;
+
 /**
  * ReadResultSet defines the result of a {@link Ringbuffer.readMany} operation.
  */
@@ -23,14 +25,14 @@ export interface ReadResultSet<T> {
 
     /**
      * Returns the number of items that have been read before filtering.
-     * <p>
-     * If no filter is set, then the readCount will be equal to {@link size}.
+     *
+     * If no filter is set, then the readCount will be equal to `size`.
      * But if a filter is applied, it could be that items are read, but are
      * filtered out. So if you are trying to make another read based on the
      * ReadResultSet then you should increment the sequence by readCount and
      * not by size. Otherwise you will be re-reading the same filtered messages.
      *
-     * @return the number of items read (including the filtered ones).
+     * @returns the number of items read (including the filtered ones).
      */
     getReadCount(): number;
 
@@ -45,10 +47,8 @@ export interface ReadResultSet<T> {
     /**
      * Returns the sequence number for the item at the given index.
      * The method throws if there are no sequences available.
-     * This can happen when the cluster version is lower than 3.9.
      *
      * @param index
-     * @throws UnsupportedOperationError if server version is 3.8 or lower.
      * @returns the sequence number for the ringbuffer item
      *          undefined if the index is out of bounds.
      */
@@ -56,8 +56,34 @@ export interface ReadResultSet<T> {
 
     /**
      * Returns the result set size.
+     *
      * @returns the result set size
      */
     size(): number;
+
+    /**
+     * Returns the sequence of the item following the last read item. This
+     * sequence can then be used to read items following the ones returned by
+     * this result set.
+     *
+     * Usually this sequence is equal to the sequence used to retrieve this
+     * result set incremented by the {@link getReadCount()}. In cases when the
+     * reader tolerates lost items, this is not the case.
+     *
+     * For instance, if the reader requests an item with a stale sequence (one
+     * which has already been overwritten), the read will jump to the oldest
+     * sequence and read from there.
+     *
+     * Similarly, if the reader requests an item in the future (e.g. because
+     * the partition was lost and the reader was unaware of this), the read
+     * method will jump back to the newest available sequence.
+     * Because of these jumps and only in the case when the reader is loss
+     * tolerant, the next sequence must be retrieved using this method.
+     * A return value of `SEQUENCE_UNAVAILABLE` (`-1`) means that the
+     * information is not available.
+     *
+     * @returns the sequence of the item following the last item in the result set
+     */
+    getNextSequenceToReadFrom(): Long;
 
 }

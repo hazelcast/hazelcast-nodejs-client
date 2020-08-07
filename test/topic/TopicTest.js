@@ -164,7 +164,6 @@ describe('TopicTest', function () {
     });
 
     it('continues operating when stale sequence is reached', function (done) {
-        this.skip();
         let topic;
         let ringbuffer;
         clientOne.getReliableTopic('stale').then(function (t) {
@@ -172,8 +171,8 @@ describe('TopicTest', function () {
             return topic.getRingbuffer();
         }).then(function (rb) {
             ringbuffer = rb;
-            topic.addMessageListener(function (e) {
-                if (e.messageObject === 20) {
+            topic.addMessageListener(function (m) {
+                if (m.messageObject === 20) {
                     done();
                 }
             });

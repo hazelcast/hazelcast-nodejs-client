@@ -105,25 +105,25 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbu
             });
     }
 
-    readMany(sequence: number | Long,
+    readMany(startSequence: number | Long,
              minCount: number,
              maxCount: number,
              filter: any = null): Promise<ReadResultSet<E>> {
-        if (Long.fromValue(sequence).lessThan(0)) {
-            throw new RangeError('Sequence number should not be less than zero, was: ' + sequence);
+        if (Long.fromValue(startSequence).lessThan(0)) {
+            throw new RangeError('Sequence number should not be less than zero, was: ' + startSequence);
         }
         if (minCount < 0) {
-            throw new RangeError('Min count should not be less than zero, was: ' + sequence);
+            throw new RangeError('Min count should not be less than zero, was: ' + startSequence);
         }
         if (minCount > maxCount) {
             throw new RangeError('Min count ' + minCount + 'was larger than max count ' + maxCount);
         }
 
-        return this.encodeInvoke(RingbufferReadManyCodec, sequence, minCount, maxCount, this.toData(filter))
+        return this.encodeInvoke(RingbufferReadManyCodec, startSequence, minCount, maxCount, this.toData(filter))
             .then((clientMessage) => {
                 const response = RingbufferReadManyCodec.decodeResponse(clientMessage);
                 return new LazyReadResultSet(this.client.getSerializationService(), response.readCount,
-                    response.items, response.itemSeqs);
+                    response.items, response.itemSeqs, response.nextSeq);
             });
     }
 }
