@@ -25,36 +25,28 @@ class User {
         this.username = username;
         this.age = age;
         this.active = active;
+        this.factoryId = 1;
+        this.classId = 1;
     }
 
-    readPortable(input) {
-        this.username = input.readUTF('username');
-        this.age = input.readInt('age');
-        this.active = input.readBoolean('active');
+    readPortable(reader) {
+        this.username = reader.readUTF('username');
+        this.age = reader.readInt('age');
+        this.active = reader.readBoolean('active');
     }
 
-    writePortable(output) {
-        output.writeUTF('username', this.username);
-        output.writeInt('age', this.age);
-        output.writeBoolean('active', this.active);
-    }
-
-    getFactoryId() {
-        return 1;
-    }
-
-    getClassId() {
-        return 1;
+    writePortable(writer) {
+        writer.writeUTF('username', this.username);
+        writer.writeInt('age', this.age);
+        writer.writeBoolean('active', this.active);
     }
 }
 
-class PortableFactory {
-    create(classId) {
-        if (classId === 1) {
-            return new User();
-        }
-        return null;
+function portableFactory(classId) {
+    if (classId === 1) {
+        return new User();
     }
+    return null;
 }
 
 async function generateUsers(usersMap) {
@@ -70,7 +62,7 @@ async function generateUsers(usersMap) {
         const hz = await Client.newHazelcastClient({
             serialization: {
                 portableFactories: {
-                    1: new PortableFactory()
+                    1: portableFactory
                 }
             }
         });

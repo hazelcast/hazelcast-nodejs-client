@@ -21,7 +21,7 @@ const Promise = require('bluebird');
 const RC = require('../RC');
 const Client = require('../..').Client;
 
-const IdentifiedFactory = require('../javaclasses/IdentifiedFactory');
+const identifiedFactory = require('../javaclasses/IdentifiedFactory');
 const DistortInvalidationMetadataEntryProcessor = require('../javaclasses/DistortInvalidationMetadataEntryProcessor');
 
 describe('Invalidation metadata distortion', function () {
@@ -56,7 +56,7 @@ describe('Invalidation metadata distortion', function () {
             serialization: {
                 defaultNumberType: 'integer',
                 dataSerializableFactories: {
-                    66: new IdentifiedFactory()
+                    66: identifiedFactory
                 }
             }
         };

@@ -17,18 +17,13 @@
 
 function Musician(name) {
     this.name = name;
+    this.hzCustomId = 10;
 }
-
-Musician.prototype.hzGetCustomId = function () {
-    return 10;
-};
 
 function MusicianSerializer() {
 }
 
-MusicianSerializer.prototype.getId = function () {
-    return 10;
-}
+MusicianSerializer.prototype.id = 10;
 
 MusicianSerializer.prototype.write = function (objectDataOutput, object) {
     objectDataOutput.writeInt(object.name.length);

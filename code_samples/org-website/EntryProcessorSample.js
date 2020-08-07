@@ -19,7 +19,8 @@ const { Client } = require('hazelcast-client');
 
 class IdentifiedEntryProcessor {
     constructor(value) {
-        // Constructor function
+        this.factoryId = 1;
+        this.classId = 9;
     }
 
     readData(input) {
@@ -27,23 +28,13 @@ class IdentifiedEntryProcessor {
 
     writeData(output) {
     }
-
-    getFactoryId() {
-        return 1;
-    }
-
-    getClassId() {
-        return 9;
-    }
 }
 
-class EntryProcessorDataSerializableFactory() {
-    create(type) {
-        if (type === 1) {
-            return new IdentifiedEntryProcessor();
-        }
-        return null;
+function entryProcessorDataSerializableFactory(classId) {
+    if (classId === 1) {
+        return new IdentifiedEntryProcessor();
     }
+    return null;
 }
 
 (async () => {
@@ -53,7 +44,7 @@ class EntryProcessorDataSerializableFactory() {
         const hz = await Client.newHazelcastClient({
             serialization: {
                 dataSerializableFactories: {
-                    1: new EntryProcessorDataSerializableFactory()
+                    1: entryProcessorDataSerializableFactory
                 }
             }
         });

@@ -21,7 +21,7 @@ const Promise = require('bluebird');
 const Client = require('../../.').Client;
 const RC = require('../RC');
 const SimplePortable = require('./PortableObjects').SimplePortable;
-const InnerPortable = require('./PortableObjects').InnerPortableObject;
+const InnerPortable = require('./PortableObjects').InnerPortable;
 
 describe('PortableSerializersLiveTest', function () {
 
@@ -33,15 +33,13 @@ describe('PortableSerializersLiveTest', function () {
             clusterName,
             serialization: {
                 portableFactories: {
-                    10: {
-                        create: function (classId) {
-                            if (classId === 222) {
-                                return new InnerPortable();
-                            } else if (classId === 21) {
-                                return new SimplePortable();
-                            } else {
-                                return null;
-                            }
+                    10: (classId) => {
+                        if (classId === 222) {
+                            return new InnerPortable();
+                        } else if (classId === 21) {
+                            return new SimplePortable();
+                        } else {
+                            return null;
                         }
                     }
                 }

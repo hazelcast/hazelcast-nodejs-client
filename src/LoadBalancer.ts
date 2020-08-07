@@ -28,6 +28,7 @@ import {Member} from './core/Member';
  * <p>
  */
 export interface LoadBalancer {
+
     /**
      * Initializes the LoadBalancer.
      *
@@ -39,7 +40,8 @@ export interface LoadBalancer {
     /**
      * Returns the next member to route to.
      *
-     * @return Returns the next member or null if no member is available
+     * @return Returns the next member or `null` if no member is available
      */
     next(): Member;
+
 }

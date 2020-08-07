@@ -24,7 +24,7 @@ import {RingbufferReadOneCodec} from '../../codec/RingbufferReadOneCodec';
 import {RingbufferRemainingCapacityCodec} from '../../codec/RingbufferRemainingCapacityCodec';
 import {RingbufferSizeCodec} from '../../codec/RingbufferSizeCodec';
 import {RingbufferTailSequenceCodec} from '../../codec/RingbufferTailSequenceCodec';
-import {OverflowPolicy} from '../../core/OverflowPolicy';
+import {OverflowPolicy, overflowPolicyToId} from '../../core/OverflowPolicy';
 import {Ringbuffer} from '../Ringbuffer';
 import {PartitionSpecificProxy} from '../PartitionSpecificProxy';
 import {LazyReadResultSet} from './LazyReadResultSet';
@@ -74,7 +74,8 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbu
     }
 
     add(item: E, overflowPolicy: OverflowPolicy = OverflowPolicy.OVERWRITE): Promise<Long> {
-        return this.encodeInvoke(RingbufferAddCodec, overflowPolicy, this.toData(item))
+        const policyId = overflowPolicyToId(overflowPolicy);
+        return this.encodeInvoke(RingbufferAddCodec, policyId, this.toData(item))
             .then((clientMessage) => {
                 const response = RingbufferAddCodec.decodeResponse(clientMessage);
                 return response.response;
@@ -82,9 +83,10 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbu
     }
 
     addAll(items: E[], overflowPolicy: OverflowPolicy = OverflowPolicy.OVERWRITE): Promise<Long> {
+        const policyId = overflowPolicyToId(overflowPolicy);
         const dataList = items.map(this.toData.bind(this));
 
-        return this.encodeInvoke(RingbufferAddAllCodec, dataList, overflowPolicy)
+        return this.encodeInvoke(RingbufferAddAllCodec, dataList, policyId)
             .then((clientMessage) => {
                 const response = RingbufferAddAllCodec.decodeResponse(clientMessage);
                 return response.response;
@@ -103,16 +105,16 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbu
             });
     }
 
-    readMany(sequence: number | Long, minCount: number, maxCount: number, filter: any = null): Promise<ReadResultSet<E>> {
-
+    readMany(sequence: number | Long,
+             minCount: number,
+             maxCount: number,
+             filter: any = null): Promise<ReadResultSet<E>> {
         if (Long.fromValue(sequence).lessThan(0)) {
             throw new RangeError('Sequence number should not be less than zero, was: ' + sequence);
         }
-
         if (minCount < 0) {
             throw new RangeError('Min count should not be less than zero, was: ' + sequence);
         }
-
         if (minCount > maxCount) {
             throw new RangeError('Min count ' + minCount + 'was larger than max count ' + maxCount);
         }

@@ -15,10 +15,10 @@
  */
 
 /**
- * DistributedObjectListener notifies when a DistributedObject
+ * Distributed object listener notifies when a distributed object
  * is created or destroyed cluster-wide.
  */
-export type DistributedObjectListener = (distributedObjectListener: DistributedObjectEvent) => void;
+export type DistributedObjectListener = (event: DistributedObjectEvent) => void;
 
 /**
  * DistributedObjectEvent is fired when a DistributedObject
@@ -46,4 +46,5 @@ export class DistributedObjectEvent {
         this.serviceName = serviceName;
         this.objectName = objectName;
     }
+
 }

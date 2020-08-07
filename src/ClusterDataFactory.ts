@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-import {ClusterDataFactoryHelper} from './ClusterDataFactoryHelper';
-import {IdentifiedDataSerializable, IdentifiedDataSerializableFactory} from './serialization/Serializable';
+import {IdentifiedDataSerializable} from './serialization/Serializable';
 import {Address} from './Address';
 
-export class ClusterDataFactory implements IdentifiedDataSerializableFactory {
+export const CLUSTER_DATA_FACTORY_ID = 0;
+export const CLUSTER_DATA_ADDRESS_CLASS_ID = 1;
 
-    create(type: number): IdentifiedDataSerializable {
-        if (type === ClusterDataFactoryHelper.ADDRESS_ID) {
-            return new Address();
-        }
-
-        return null;
+export function clusterDataFactory(classId: number): IdentifiedDataSerializable {
+    if (classId === CLUSTER_DATA_ADDRESS_CLASS_ID) {
+        return new Address();
     }
+    return null;
 }

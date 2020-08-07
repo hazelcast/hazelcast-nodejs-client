@@ -14,23 +14,29 @@
  * limitations under the License.
  */
 
-import {IdentifiedDataSerializable, IdentifiedDataSerializableFactory} from '../serialization/Serializable';
+import {IdentifiedDataSerializable} from '../serialization/Serializable';
 import {DataInput, DataOutput} from '../serialization/Data';
 
 export const REST_VALUE_FACTORY_ID = -25;
 export const REST_VALUE_CLASS_ID = 1;
 
+/**
+ * Wrapper for values stored via IMDG REST API.
+ */
 export class RestValue implements IdentifiedDataSerializable {
+
+    /**
+     * Wrapped value.
+     */
     value: string;
+
+    /**
+     * HTTP Content-Type specified for the value.
+     */
     contentType: string;
 
-    getClassId(): number {
-        return REST_VALUE_CLASS_ID;
-    }
-
-    getFactoryId(): number {
-        return REST_VALUE_FACTORY_ID;
-    }
+    factoryId = REST_VALUE_FACTORY_ID;
+    classId = REST_VALUE_CLASS_ID;
 
     readData(input: DataInput): any {
         this.value = input.readUTF();
@@ -43,11 +49,9 @@ export class RestValue implements IdentifiedDataSerializable {
     }
 }
 
-export class RestValueFactory implements IdentifiedDataSerializableFactory {
-    create(type: number): IdentifiedDataSerializable {
-        if (type === REST_VALUE_CLASS_ID) {
-            return new RestValue();
-        }
-        return null;
+export function restValueFactory(classId: number): IdentifiedDataSerializable {
+    if (classId === REST_VALUE_CLASS_ID) {
+        return new RestValue();
     }
+    return null;
 }

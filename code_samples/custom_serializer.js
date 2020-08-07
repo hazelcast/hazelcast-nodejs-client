@@ -22,16 +22,13 @@ class TimeOfDay {
         this.hour = hour;
         this.minute = minute;
         this.second = second;
-    }
-
-    hzGetCustomId() {
-        return 42;
+        this.hzCustomId = 42;
     }
 }
 
 class CustomSerializer {
-    getId() {
-        return 42;
+    constructor() {
+        this.id = 42;
     }
 
     write(output, timeofday) {

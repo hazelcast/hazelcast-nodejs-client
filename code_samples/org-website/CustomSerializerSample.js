@@ -20,16 +20,13 @@ const { Client } = require('hazelcast-client');
 class CustomSerializable {
     constructor(value) {
         this.value = value;
-    }
-
-    hzGetCustomId() {
-        return 10;
+        this.hzCustomId = 10;
     }
 }
 
 class CustomSerializer {
-    getId() {
-        return 10;
+    constructor() {
+        this.id = 10;
     }
 
     read(input) {

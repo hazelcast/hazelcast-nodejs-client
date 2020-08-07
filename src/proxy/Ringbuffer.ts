@@ -73,7 +73,7 @@ export interface Ringbuffer<E> extends DistributedObject {
      * if there is no space left in this ringbuffer. If `OVERWRITE` was passed,
      * the new item will overwrite the oldest one regardless of the configured time-to-live.
      *
-     * In the case when FAIL was specified the add operation will keep failing until an oldest item in this
+     * In the case when `FAIL` was specified the add operation will keep failing until an oldest item in this
      * ringbuffer will reach its time-to-live.
      *
      * The returned value is the sequence number of the added item. You can read the added item using this number.

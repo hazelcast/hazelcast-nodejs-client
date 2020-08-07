@@ -16,23 +16,75 @@
 
 import * as Long from 'long';
 
+/**
+ * Represents a view of a map entry.
+ */
 export class SimpleEntryView<K, V> {
+
+    /**
+     * Key of the entry.
+     */
     key: K;
+
+    /**
+     * Value of the entry.
+     */
     value: V;
+
+    /**
+     * Cost (in bytes) of the entry.
+     */
     cost: Long;
+
+    /**
+     * Creation time of the entry.
+     */
     creationTime: Long;
+
+    /**
+     * Expiration time of the entry.
+     */
     expirationTime: Long;
+
+    /**
+     * Number of hits of the entry.
+     */
     hits: Long;
+
+    /**
+     * Last access time for the entry.
+     */
     lastAccessTime: Long;
+
+    /**
+     * Last time the value was flushed to mapstore.
+     */
     lastStoredTime: Long;
+
+    /**
+     * Last time the value was updated.
+     */
     lastUpdateTime: Long;
+
+    /**
+     * Version of the entry.
+     */
     version: Long;
+
+    /**
+     * Last set time-to-live in milliseconds.
+     */
     ttl: Long;
+
+    /**
+     * Last set max idle time in milliseconds.
+     */
     maxIdle: Long;
 
-    constructor(key: K, value: V, cost: Long, creationTime: Long, expirationTime: Long, hits: Long, lastAccessTime: Long,
-                lastStoredTime: Long, lastUpdateTime: Long, version: Long, ttl: Long,
-                maxIdle: Long) {
+    constructor(key: K, value: V, cost: Long, creationTime: Long,
+                expirationTime: Long, hits: Long, lastAccessTime: Long,
+                lastStoredTime: Long, lastUpdateTime: Long, version: Long,
+                ttl: Long, maxIdle: Long) {
         this.key = key;
         this.value = value;
         this.cost = cost;
@@ -46,4 +98,5 @@ export class SimpleEntryView<K, V> {
         this.ttl = ttl;
         this.maxIdle = maxIdle;
     }
+
 }

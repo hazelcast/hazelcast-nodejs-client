@@ -22,7 +22,7 @@ const Controller = require('./RC');
 const HazelcastClient = require('../.').Client;
 const LogLevel = require('../.').LogLevel;
 
-describe('Logging Test', function () {
+describe('LoggingTest', function () {
 
     let cluster, client;
 
@@ -101,7 +101,7 @@ describe('Logging Test', function () {
         return HazelcastClient.newHazelcastClient({
             clusterName: cluster.id,
             properties: {
-                'hazelcast.logging.level': LogLevel.OFF
+                'hazelcast.logging.level': 'OFF'
             }
         }).then(function (hz) {
             client = hz;
@@ -122,7 +122,7 @@ describe('Logging Test', function () {
         return HazelcastClient.newHazelcastClient({
             clusterName: cluster.id,
             properties: {
-                'hazelcast.logging.level': LogLevel.INFO
+                'hazelcast.logging.level': 'INFO'
             }
         }).then(function (hz) {
             client = hz;
@@ -150,7 +150,7 @@ describe('Logging Test', function () {
         return HazelcastClient.newHazelcastClient({
             clusterName: cluster.id,
             properties: {
-                'hazelcast.logging.level': LogLevel.ERROR
+                'hazelcast.logging.level': 'ERROR'
             }
         }).then(function (cl) {
             client = cl;
@@ -162,7 +162,7 @@ describe('Logging Test', function () {
         return HazelcastClient.newHazelcastClient({
             clusterName: cluster.id,
             properties: {
-                'hazelcast.logging.level': LogLevel.TRACE
+                'hazelcast.logging.level': 'TRACE'
             }
         }).then(function (cl) {
             client = cl;

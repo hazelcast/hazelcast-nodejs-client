@@ -23,14 +23,16 @@ export interface MembershipListener {
 
     /**
      * Invoked when a new member is added to the cluster.
-     * @param {MembershipEvent} membership event
+     *
+     * @param {MembershipEvent} event event object
      */
-    memberAdded(membership: MembershipEvent): void;
+    memberAdded(event: MembershipEvent): void;
 
     /**
      * Invoked when an existing member leaves the cluster.
-     * @param {MembershipEvent} membership event when an existing member leaves the cluster
+     *
+     * @param {MembershipEvent} event event object
      */
-    memberRemoved(membership: MembershipEvent): void;
+    memberRemoved(event: MembershipEvent): void;
 
 }

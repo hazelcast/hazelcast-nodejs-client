@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-import {AggregatorFactory} from '../aggregation/AggregatorFactory';
-import {ClusterDataFactory} from '../ClusterDataFactory';
-import {ClusterDataFactoryHelper} from '../ClusterDataFactoryHelper';
+import {AGGREGATOR_FACTORY_ID, aggregatorFactory} from '../aggregation/AggregatorFactory';
+import {CLUSTER_DATA_FACTORY_ID, clusterDataFactory} from '../ClusterDataFactory';
 import {SerializationConfigImpl} from '../config/SerializationConfig';
 import {
     RELIABLE_TOPIC_MESSAGE_FACTORY_ID,
-    ReliableTopicMessageFactory,
+    reliableTopicMessageFactory,
 } from '../proxy/topic/ReliableTopicMessage';
 import * as Util from '../Util';
 import {Data, DataInput, DataOutput} from './Data';
-import * as DefaultPredicates from './DefaultPredicates';
 import {
     Serializer,
     BooleanArraySerializer,
@@ -55,10 +53,10 @@ import {
 import {DATA_OFFSET, HeapData} from './HeapData';
 import {ObjectDataInput, PositionalObjectDataOutput} from './ObjectData';
 import {PortableSerializer} from './portable/PortableSerializer';
-import {PREDICATE_FACTORY_ID, PredicateFactory} from './PredicateFactory';
+import {PREDICATE_FACTORY_ID, predicateFactory} from './DefaultPredicates';
 import {IdentifiedDataSerializableFactory} from './Serializable';
 import {JsonStringDeserializationPolicy} from '../config/JsonStringDeserializationPolicy';
-import {RestValueFactory, REST_VALUE_FACTORY_ID} from '../core/RestValue';
+import {REST_VALUE_FACTORY_ID, restValueFactory} from '../core/RestValue';
 
 export interface SerializationService {
 
@@ -102,14 +100,14 @@ export class SerializationServiceV1 implements SerializationService {
         const dataOutput = new PositionalObjectDataOutput(this, this.serializationConfig.isBigEndian);
         const serializer = this.findSerializerFor(object);
         // Check if object is partition aware
-        if (object != null && object.getPartitionKey) {
-            const partitionKey = object.getPartitionKey();
+        if (object != null && object.partitionKey != null) {
+            const partitionKey = object.partitionKey;
             const serializedPartitionKey = this.toData(partitionKey);
             dataOutput.writeIntBE(this.calculatePartitionHash(serializedPartitionKey, partitioningStrategy));
         } else {
             dataOutput.writeIntBE(this.calculatePartitionHash(object, partitioningStrategy));
         }
-        dataOutput.writeIntBE(serializer.getId());
+        dataOutput.writeIntBE(serializer.id);
         serializer.write(dataOutput, object);
         return new HeapData(dataOutput.toBuffer());
     }
@@ -128,7 +126,7 @@ export class SerializationServiceV1 implements SerializationService {
 
     writeObject(out: DataOutput, object: any): void {
         const serializer = this.findSerializerFor(object);
-        out.writeInt(serializer.getId());
+        out.writeInt(serializer.id);
         serializer.write(out, object);
     }
 
@@ -142,11 +140,11 @@ export class SerializationServiceV1 implements SerializationService {
         if (this.serializerNameToId[name]) {
             throw new RangeError('Given serializer name is already in the registry.');
         }
-        if (this.registry[serializer.getId()]) {
+        if (this.registry[serializer.id]) {
             throw new RangeError('Given serializer id is already in the registry.');
         }
-        this.serializerNameToId[name] = serializer.getId();
-        this.registry[serializer.getId()] = serializer;
+        this.serializerNameToId[name] = serializer.id;
+        this.registry[serializer.id] = serializer;
     }
 
     /**
@@ -214,7 +212,7 @@ export class SerializationServiceV1 implements SerializationService {
 
     protected lookupCustomSerializer(obj: any): Serializer {
         if (this.isCustomSerializable(obj)) {
-            return this.findSerializerById(obj.hzGetCustomId());
+            return this.findSerializerById(obj.hzCustomId);
         }
         return null;
     }
@@ -224,11 +222,13 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     protected isIdentifiedDataSerializable(obj: any): boolean {
-        return (obj.readData && obj.writeData && obj.getClassId && obj.getFactoryId);
+        return (obj.readData && obj.writeData
+            && typeof obj.factoryId === 'number' && typeof obj.classId === 'number');
     }
 
     protected isPortableSerializable(obj: any): boolean {
-        return (obj.readPortable && obj.writePortable && obj.getFactoryId && obj.getClassId);
+        return (obj.readPortable && obj.writePortable
+            && typeof obj.factoryId === 'number' && typeof obj.classId === 'number');
     }
 
     protected registerDefaultSerializers(): void {
@@ -270,11 +270,11 @@ export class SerializationServiceV1 implements SerializationService {
         for (const id in this.serializationConfig.dataSerializableFactories) {
             factories[id] = this.serializationConfig.dataSerializableFactories[id];
         }
-        factories[PREDICATE_FACTORY_ID] = new PredicateFactory(DefaultPredicates);
-        factories[RELIABLE_TOPIC_MESSAGE_FACTORY_ID] = new ReliableTopicMessageFactory();
-        factories[ClusterDataFactoryHelper.FACTORY_ID] = new ClusterDataFactory();
-        factories[AggregatorFactory.FACTORY_ID] = new AggregatorFactory();
-        factories[REST_VALUE_FACTORY_ID] = new RestValueFactory();
+        factories[PREDICATE_FACTORY_ID] = predicateFactory;
+        factories[RELIABLE_TOPIC_MESSAGE_FACTORY_ID] = reliableTopicMessageFactory;
+        factories[CLUSTER_DATA_FACTORY_ID] = clusterDataFactory;
+        factories[AGGREGATOR_FACTORY_ID] = aggregatorFactory;
+        factories[REST_VALUE_FACTORY_ID] = restValueFactory;
         this.registerSerializer('identified', new IdentifiedDataSerializableSerializer(factories));
     }
 
@@ -283,7 +283,7 @@ export class SerializationServiceV1 implements SerializationService {
         for (const key in customSerializers) {
             const candidate = customSerializers[key];
             this.assertValidCustomSerializer(candidate);
-            this.registerSerializer('!custom' + candidate.getId(), candidate);
+            this.registerSerializer('!custom' + candidate.id, candidate);
         }
     }
 
@@ -297,25 +297,24 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     protected assertValidCustomSerializer(candidate: any): void {
-        const fGetId = 'getId';
+        const idProp = 'id';
         const fRead = 'read';
         const fWrite = 'write';
-        if (
-            typeof candidate[fGetId] !== 'function' ||
-            typeof candidate[fRead] !== 'function' ||
-            typeof candidate[fWrite] !== 'function'
-        ) {
-            throw new TypeError('Custom serializer should have ' + fGetId + ', ' + fRead + ' and ' + fWrite + ' methods.');
+        if (typeof candidate[idProp] !== 'number') {
+            throw new TypeError('Custom serializer should have ' + idProp + ' property.');
         }
-        const typeId = candidate[fGetId]();
+        if (typeof candidate[fRead] !== 'function' || typeof candidate[fWrite] !== 'function') {
+            throw new TypeError('Custom serializer should have ' + fRead + ' and ' + fWrite + ' methods.');
+        }
+        const typeId = candidate[idProp];
         if (!Number.isInteger(typeId) || typeId < 1) {
             throw new TypeError('Custom serializer should have its typeId greater than or equal to 1.');
         }
     }
 
     protected isCustomSerializable(object: any): boolean {
-        const prop = 'hzGetCustomId';
-        return (object[prop] && typeof object[prop] === 'function' && object[prop]() >= 1);
+        const prop = 'hzCustomId';
+        return (typeof object[prop] === 'number' && object[prop] >= 1);
     }
 
     protected findSerializerByName(name: string, isArray: boolean): Serializer {

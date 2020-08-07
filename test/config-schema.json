@@ -1,6 +1,5 @@
 {
     "$schema": "http://json-schema.org/schema#",
-    "id": "https://github.com/hazelcast/hazelcast-nodejs-client/blob/schema/config-schema.json",
     "title": "Hazelcast Node.js Client Configuration",
     "type": "object",
     "definitions": {

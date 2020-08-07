@@ -18,8 +18,8 @@
 const expect = require('chai').expect;
 const RC = require('../../RC');
 const Client = require('../../../').Client;
-const { MyPortableFactory, Foo } = require('./Foo');
-const { MyIdentifiedFactory, Address } = require('./Address');
+const { myPortableFactory, Foo } = require('./Foo');
+const { myIdentifiedFactory, Address } = require('./Address');
 
 describe('FactoriesTest', function () {
 
@@ -48,10 +48,10 @@ describe('FactoriesTest', function () {
             clusterName,
             serialization: {
                 dataSerializableFactories: {
-                    1: new MyIdentifiedFactory()
+                    1: myIdentifiedFactory
                 },
                 portableFactories: {
-                    1: new MyPortableFactory()
+                    1: myPortableFactory
                 }
             }
         };
