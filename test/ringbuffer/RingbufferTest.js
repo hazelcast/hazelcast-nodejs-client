@@ -18,12 +18,11 @@
 const expect = require("chai").expect;
 const HazelcastClient = require('../../').Client;
 const RC = require('./../RC');
-const Util = require('./../Util');
 const fs = require('fs');
 const PrefixFilter = require('../javaclasses/PrefixFilter');
 const Promise = require('bluebird');
 
-describe("Ringbuffer Proxy", function () {
+describe("RingbufferTest", function () {
 
     let cluster;
     let client;
@@ -45,7 +44,7 @@ describe("Ringbuffer Proxy", function () {
     beforeEach(function () {
         return client.getRingbuffer('test').then(function (buffer) {
             rb = buffer;
-        })
+        });
     });
 
     afterEach(function () {
@@ -62,7 +61,7 @@ describe("Ringbuffer Proxy", function () {
             return rb.readOne(sequence).then(function (item) {
                 expect(item).to.equal(1);
             });
-        })
+        });
     });
 
     it("adds multiple items and reads them back one by one", function () {
@@ -72,7 +71,7 @@ describe("Ringbuffer Proxy", function () {
             ]).then(function (items) {
                 expect(items).to.deep.equal([1, 2, 3]);
             });
-        })
+        });
     });
 
     it("reads all items at once", function () {
@@ -82,8 +81,9 @@ describe("Ringbuffer Proxy", function () {
                 expect(items.get(1)).to.equal(2);
                 expect(items.get(2)).to.equal(3);
                 expect(items.getReadCount()).to.equal(3);
+                expect(items.getNextSequenceToReadFrom().toNumber()).to.equal(3);
             });
-        })
+        });
     });
 
     it("readMany with filter filters the results", function () {
@@ -92,7 +92,7 @@ describe("Ringbuffer Proxy", function () {
                 expect(items.get(0)).to.equal('prefixedItem2');
                 expect(items.get(1)).to.equal('prefixedItem3');
             });
-        })
+        });
     });
 
     it("correctly reports tail sequence", function () {
@@ -100,7 +100,7 @@ describe("Ringbuffer Proxy", function () {
             return rb.tailSequence().then(function (sequence) {
                 expect(sequence.toNumber()).to.equal(2);
             });
-        })
+        });
     });
 
     it("correctly reports head sequence", function () {
@@ -112,7 +112,7 @@ describe("Ringbuffer Proxy", function () {
             return limitedCapacity.headSequence().then(function (sequence) {
                 expect(sequence.toNumber()).to.equal(2);
             });
-        })
+        });
     });
 
     it("correctly reports remaining capacity", function () {
@@ -123,7 +123,7 @@ describe("Ringbuffer Proxy", function () {
             return ttl.remainingCapacity().then(function (rc) {
                 expect(rc.toNumber()).to.equal(3);
             });
-        })
+        });
     });
 
     it("correctly reports total capacity", function () {
@@ -139,6 +139,6 @@ describe("Ringbuffer Proxy", function () {
             return rb.size().then(function (size) {
                 expect(size.toNumber()).to.equal(2);
             });
-        })
+        });
     });
 });

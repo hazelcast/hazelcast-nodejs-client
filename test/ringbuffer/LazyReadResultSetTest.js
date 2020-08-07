@@ -22,16 +22,12 @@ const Errors = require('../..').HazelcastErrors;
 describe('LazyReadResultSetTest', function () {
 
     const mockSerializationService = {
-        toObject: function (x) {
-            return x + 100;
-        },
-        isData: function (x) {
-            return x < 3;
-        }
+        toObject: (x) => x + 100,
+        isData: (x) => x < 3
     };
 
     it('get', function () {
-        const set = new LazyReadResultSet(mockSerializationService, 4, [1, 2, 3, 4], [11, 12, 13, 14]);
+        const set = new LazyReadResultSet(mockSerializationService, 4, [1, 2, 3, 4], [11, 12, 13, 14], 15);
         expect(set.get(0)).to.equal(101);
         expect(set.get(1)).to.equal(102);
         expect(set.get(2)).to.equal(3);
@@ -41,15 +37,11 @@ describe('LazyReadResultSetTest', function () {
         expect(set.getSequence(2)).to.equal(13);
         expect(set.getSequence(3)).to.equal(14);
         expect(set.getReadCount()).to.equal(4);
-    });
-
-    it('getSequence throws UnsupportedOperationError when there is no info', function () {
-        const set = new LazyReadResultSet(mockSerializationService, 4, [1, 2, 3, 4]);
-        expect(set.getSequence.bind(set, 2)).to.throw(Errors.UnsupportedOperationError);
+        expect(set.getNextSequenceToReadFrom()).to.equal(15);
     });
 
     it('get returns undefined for out of range index', function () {
-        const set = new LazyReadResultSet(mockSerializationService, 4, [1, 2, 3, 4], [11, 12, 13, 14]);
+        const set = new LazyReadResultSet(mockSerializationService, 4, [1, 2, 3, 4], [11, 12, 13, 14], 15);
         expect(set.get(4)).to.be.undefined;
     });
 });
