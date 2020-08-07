@@ -429,9 +429,7 @@ export class PagingPredicateImpl extends AbstractPredicate implements PagingPred
         });
     }
 
-    setIterationType(iterationType: IterationType): void {
-        this.iterationType = iterationType;
-    }
+
 
     nextPage(): PagingPredicate {
         this.page++;
@@ -448,18 +446,6 @@ export class PagingPredicateImpl extends AbstractPredicate implements PagingPred
         return this;
     }
 
-    setAnchorList(anchorList: Array<[number, [any, any]]>): void {
-        this.anchorList = anchorList;
-    }
-
-    getPredicate(): Predicate {
-        return this.internalPredicate;
-    }
-
-    getAnchorList(): Array<[number, [any, any]]> {
-        return this.anchorList;
-    }
-
     getPage(): number {
         return this.page;
     }
@@ -468,7 +454,11 @@ export class PagingPredicateImpl extends AbstractPredicate implements PagingPred
         return this.pageSize;
     }
 
-    getNearestAnchorEntry(): [number, [any, any]] {
+    getComparator(): Comparator {
+        return this.comparatorObject;
+    }
+
+    getAnchor(): [number, [any, any]] {
         const anchorCount = this.anchorList.length;
         if (this.page === 0 || anchorCount === 0) {
             return PagingPredicateImpl.NULL_ANCHOR;
@@ -482,13 +472,26 @@ export class PagingPredicateImpl extends AbstractPredicate implements PagingPred
         return anchoredEntry;
     }
 
+    getPredicate(): Predicate {
+        return this.internalPredicate;
+    }
+
+    getAnchorList(): Array<[number, [any, any]]> {
+        return this.anchorList;
+    }
+
+    setAnchorList(anchorList: Array<[number, [any, any]]>): void {
+        this.anchorList = anchorList;
+    }
+
     getIterationType(): IterationType {
         return this.iterationType;
     }
 
-    getComparator(): Comparator {
-        return this.comparatorObject;
+    setIterationType(iterationType: IterationType): void {
+        this.iterationType = iterationType;
     }
+
 }
 
 interface PredicateConstructor {

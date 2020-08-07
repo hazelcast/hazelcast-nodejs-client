@@ -42,16 +42,11 @@ export interface Predicate extends IdentifiedDataSerializable {
 }
 
 /**
- * Specifies conditions for pagination-based iteration over a Map.
+ * This interface is a special Predicate which helps to get a page-by-page
+ * result of a query. It can be constructed with a page-size, an inner
+ * predicate for filtering, and a comparator for sorting.
  */
 export interface PagingPredicate extends Predicate {
-
-    /**
-     * Sets type for the iteration.
-     *
-     * @param iterationType iteration type
-     */
-    setIterationType(iterationType: IterationType): void;
 
     /**
      * Sets the page value to next page.
@@ -64,6 +59,11 @@ export interface PagingPredicate extends Predicate {
     previousPage(): PagingPredicate;
 
     /**
+     * Returns the current page value.
+     */
+    getPage(): number;
+
+    /**
      * Sets the current page value.
      *
      * @param page page number
@@ -71,29 +71,18 @@ export interface PagingPredicate extends Predicate {
     setPage(page: number): PagingPredicate;
 
     /**
-     * Returns wrapped predicate.
-     */
-    getPredicate(): Predicate;
-
-    /**
-     * Returns the current page value.
-     */
-    getPage(): number;
-
-    /**
      * Returns the page size.
      */
     getPageSize(): number;
 
     /**
-     * Retrieve the anchor object which is the last value object on the previous page.
+     * Retrieve the anchor object which is the last value object on the
+     * previous page.
+     *
+     * Note: This method will return "null" anchor on the first page of the query
+     * result or if the predicate was not applied for the previous page number.
      */
-    getNearestAnchorEntry(): [number, [any, any]];
-
-    /**
-     * Sets type for the iteration.
-     */
-    getIterationType(): IterationType;
+    getAnchor(): [number, [any, any]];
 
     /**
      * Returns the comparator used by this predicate (if any).
