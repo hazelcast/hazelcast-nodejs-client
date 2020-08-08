@@ -151,8 +151,7 @@ export interface Ringbuffer<E> extends DistributedObject {
      * @throws `RangeError` if startSequence is smaller than 0
      *                      or if minCount smaller than 0
      *                      or if minCount larger than maxCount,
-     *                      or if maxCount larger than the capacity of the Ringbuffer
-     *                      or if maxCount larger than 1000 (to prevent overload)
+     *                      or if maxCount larger than `1000` (to prevent overload)
      */
     readMany(startSequence: number | Long, minCount: number, maxCount: number): Promise<ReadResultSet<E>>;
 }

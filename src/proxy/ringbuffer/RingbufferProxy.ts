@@ -33,6 +33,8 @@ import Long = require('long');
 
 export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbuffer<E> {
 
+    private static MAX_BATCH_SIZE = 1000;
+
     capacity(): Promise<Long> {
         return this.encodeInvoke(RingbufferCapacityCodec)
             .then((clientMessage) => {
@@ -116,7 +118,10 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbu
             throw new RangeError('Min count should not be less than zero, was: ' + startSequence);
         }
         if (minCount > maxCount) {
-            throw new RangeError('Min count ' + minCount + 'was larger than max count ' + maxCount);
+            throw new RangeError('Min count ' + minCount + ' was larger than max count ' + maxCount);
+        }
+        if (maxCount > RingbufferProxy.MAX_BATCH_SIZE) {
+            throw new RangeError('Max count can not be larger than ' + RingbufferProxy.MAX_BATCH_SIZE);
         }
 
         return this.encodeInvoke(RingbufferReadManyCodec, startSequence, minCount, maxCount, this.toData(filter))

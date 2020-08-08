@@ -91,8 +91,12 @@ describe('RingbufferProxyTest', function () {
         expect(() => rb.readMany(0, -1)).to.throw(RangeError);
     });
 
-    it('readMany throws on min count great than max count', function () {
+    it('readMany throws on min count greater than max count', function () {
         expect(() => rb.readMany(0, 2, 1)).to.throw(RangeError);
+    });
+
+    it('readMany throws on too large max count', function () {
+        expect(() => rb.readMany(0, 1, 1001)).to.throw(RangeError);
     });
 
     it('readMany reads all items at once', async function () {
