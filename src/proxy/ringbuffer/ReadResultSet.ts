@@ -40,17 +40,16 @@ export interface ReadResultSet<T> {
      * Gets the item at the given index.
      *
      * @param index
-     * @returns the found item or undefined if the index is out of bounds
+     * @returns the found item or `undefined` if the index is out of bounds
      */
     get(index: number): T;
 
     /**
      * Returns the sequence number for the item at the given index.
-     * The method throws if there are no sequences available.
      *
      * @param index
      * @returns the sequence number for the ringbuffer item
-     *          undefined if the index is out of bounds.
+     *          or `undefined` if the index is out of bounds.
      */
     getSequence(index: number): Long;
 
