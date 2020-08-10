@@ -29,6 +29,7 @@ import {ReliableTopicMessage} from './ReliableTopicMessage';
 import {ReliableTopicListenerRunner} from './ReliableTopicListenerRunner';
 import {MessageListener} from './MessageListener';
 import {TopicOverloadPolicy} from './TopicOverloadPolicy';
+import {ClientConfigImpl} from '../../config/Config';
 import Long = require('long');
 
 /** @internal */
@@ -48,7 +49,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
     constructor(client: HazelcastClient, serviceName: string, name: string) {
         super(client, serviceName, name);
         this.localAddress = client.getClusterService().getLocalClient().localAddress;
-        const config = client.getConfig().getReliableTopicConfig(name);
+        const config = (client.getConfig() as ClientConfigImpl).getReliableTopicConfig(name);
         this.batchSize = config.readBatchSize;
         this.overloadPolicy = config.overloadPolicy;
         this.serializationService = client.getSerializationService();

@@ -135,7 +135,7 @@ export class ClientConnectionManager extends EventEmitter {
         this.authenticationTimeout = this.heartbeatManager.getHeartbeatTimeout();
         this.shuffleMemberList = client.getConfig().properties['hazelcast.client.shuffle.member.list'] as boolean;
         this.isSmartRoutingEnabled = client.getConfig().network.smartRouting;
-        this.waitStrategy = this.initWaitStrategy(client.getConfig());
+        this.waitStrategy = this.initWaitStrategy(client.getConfig() as ClientConfigImpl);
         const connectionStrategyConfig = client.getConfig().connectionStrategy;
         this.asyncStart = connectionStrategyConfig.asyncStart;
         this.reconnectMode = connectionStrategyConfig.reconnectMode;
@@ -321,8 +321,8 @@ export class ClientConnectionManager extends EventEmitter {
     private initWaitStrategy(config: ClientConfigImpl): WaitStrategy {
         const connectionStrategyConfig = config.connectionStrategy;
         const retryConfig = connectionStrategyConfig.connectionRetry;
-        return new WaitStrategy(retryConfig.initialBackoffMillis, retryConfig.maxBackoffMillis, retryConfig.multiplier,
-            retryConfig.clusterConnectTimeoutMillis, retryConfig.jitter, this.logger);
+        return new WaitStrategy(retryConfig.initialBackoffMillis, retryConfig.maxBackoffMillis,
+            retryConfig.multiplier, retryConfig.clusterConnectTimeoutMillis, retryConfig.jitter, this.logger);
     }
 
     private initConnectionTimeoutMillis(): number {

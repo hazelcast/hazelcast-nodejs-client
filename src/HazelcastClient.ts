@@ -271,7 +271,7 @@ export default class HazelcastClient {
      * Returned configuration object should not be modified.
      * @returns {ClientConfig} configuration object
      */
-    getConfig(): ClientConfigImpl {
+    getConfig(): ClientConfig {
         return this.config;
     }
 
@@ -470,7 +470,7 @@ export default class HazelcastClient {
     }
 
     private createAddressProvider(): AddressProvider {
-        const networkConfig = this.getConfig().network;
+        const networkConfig = this.config.network;
 
         const addressListProvided = networkConfig.clusterMembers.length !== 0;
         const hazelcastCloudToken = networkConfig.hazelcastCloud.discoveryToken;
