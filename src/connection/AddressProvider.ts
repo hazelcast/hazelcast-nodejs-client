@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Promise from 'bluebird';
 import {Address} from '../Address';
 
 /**
  * Provides initial addresses for client to find and connect to a node &
- * Translates given address if necessary when connecting a service
+ * Translates given address if necessary when connecting a service.
+ * @internal
  */
 export interface AddressProvider {
 

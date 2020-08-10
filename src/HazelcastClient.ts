@@ -21,6 +21,7 @@ import {ClientConfig, ClientConfigImpl} from './config/Config';
 import {ConfigBuilder} from './config/ConfigBuilder';
 import {DistributedObject} from './DistributedObject';
 import {ClientConnectionManager} from './network/ClientConnectionManager';
+import {Cluster} from './core/Cluster';
 import {ClusterService} from './invocation/ClusterService';
 import {InvocationService} from './invocation/InvocationService';
 import {LifecycleService, LifecycleServiceImpl} from './LifecycleService';
@@ -28,7 +29,7 @@ import {ListenerService} from './ListenerService';
 import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
 import {LoggingService} from './logging/LoggingService';
 import {RepairingTask} from './nearcache/RepairingTask';
-import {PartitionService} from './PartitionService';
+import {PartitionService, PartitionServiceImpl} from './PartitionService';
 import {ClientErrorFactory} from './protocol/ErrorFactory';
 import {FlakeIdGenerator} from './proxy/FlakeIdGenerator';
 import {IList} from './proxy/IList';
@@ -58,6 +59,7 @@ import {ClusterViewListenerService} from './listener/ClusterViewListenerService'
 import {ClientMessage} from './ClientMessage';
 
 export default class HazelcastClient {
+
     private static CLIENT_ID = 0;
 
     private readonly instanceName: string;
@@ -68,7 +70,7 @@ export default class HazelcastClient {
     private readonly invocationService: InvocationService;
     private readonly listenerService: ListenerService;
     private readonly connectionManager: ClientConnectionManager;
-    private readonly partitionService: PartitionService;
+    private readonly partitionService: PartitionServiceImpl;
     private readonly clusterService: ClusterService;
     private readonly lifecycleService: LifecycleServiceImpl;
     private readonly proxyManager: ProxyManager;
@@ -82,6 +84,7 @@ export default class HazelcastClient {
 
     private mapRepairingTask: RepairingTask;
 
+    /** @internal */
     constructor(config: ClientConfigImpl) {
         this.config = config;
         this.instanceName = config.instanceName || 'hz.client_' + this.id;
@@ -91,7 +94,7 @@ export default class HazelcastClient {
         this.listenerService = new ListenerService(this);
         this.serializationService = new SerializationServiceV1(this.config.serialization);
         this.nearCacheManager = new NearCacheManager(this);
-        this.partitionService = new PartitionService(this);
+        this.partitionService = new PartitionServiceImpl(this);
         this.addressProvider = this.createAddressProvider();
         this.connectionManager = new ClientConnectionManager(this);
         this.invocationService = new InvocationService(this);
@@ -109,7 +112,7 @@ export default class HazelcastClient {
      * @param config Default {@link ClientConfig} is used when this parameter is absent.
      * @returns a new client instance
      */
-    public static newHazelcastClient(config?: ClientConfig): Promise<HazelcastClient> {
+    static newHazelcastClient(config?: ClientConfig): Promise<HazelcastClient> {
         const configBuilder = new ConfigBuilder(config);
         const effectiveConfig = configBuilder.build();
         const client = new HazelcastClient(effectiveConfig);
@@ -129,7 +132,7 @@ export default class HazelcastClient {
      * Gathers information of this local client.
      * @returns {ClientInfo}
      */
-    getLocalEndpoint(): ClientInfo {
+     getLocalEndpoint(): ClientInfo {
         return this.clusterService.getLocalClient();
     }
 
@@ -266,48 +269,69 @@ export default class HazelcastClient {
     /**
      * Returns configuration that this instance started with.
      * Returned configuration object should not be modified.
-     * @returns {ClientConfigImpl}
+     * @returns {ClientConfig} configuration object
      */
     getConfig(): ClientConfigImpl {
         return this.config;
     }
 
-    getSerializationService(): SerializationService {
-        return this.serializationService;
-    }
-
-    getInvocationService(): InvocationService {
-        return this.invocationService;
-    }
-
-    getListenerService(): ListenerService {
-        return this.listenerService;
-    }
-
-    getConnectionManager(): ClientConnectionManager {
-        return this.connectionManager;
-    }
-
-    getPartitionService(): PartitionService {
-        return this.partitionService;
-    }
-
-    getProxyManager(): ProxyManager {
-        return this.proxyManager;
-    }
-
-    getNearCacheManager(): NearCacheManager {
-        return this.nearCacheManager;
-    }
-
-    getClusterService(): ClusterService {
+    /**
+     * Returns the Cluster to which this client is connected.
+     */
+    getCluster(): Cluster {
         return this.clusterService;
     }
 
+    /**
+     * Returns the lifecycle service for this client.
+     */
     getLifecycleService(): LifecycleService {
         return this.lifecycleService;
     }
 
+    /**
+     * Returns the partition service of this client.
+     */
+    getPartitionService(): PartitionService {
+        return this.partitionService;
+    }
+
+    /** @internal */
+    getSerializationService(): SerializationService {
+        return this.serializationService;
+    }
+
+    /** @internal */
+    getInvocationService(): InvocationService {
+        return this.invocationService;
+    }
+
+    /** @internal */
+    getListenerService(): ListenerService {
+        return this.listenerService;
+    }
+
+    /** @internal */
+    getConnectionManager(): ClientConnectionManager {
+        return this.connectionManager;
+    }
+
+    /** @internal */
+    getProxyManager(): ProxyManager {
+        return this.proxyManager;
+    }
+
+    /** @internal */
+    getNearCacheManager(): NearCacheManager {
+        return this.nearCacheManager;
+    }
+
+    /** @internal */
+    getClusterService(): ClusterService {
+        return this.clusterService;
+    }
+
+    /** @internal */
     getRepairingTask(): RepairingTask {
         if (this.mapRepairingTask == null) {
             this.mapRepairingTask = new RepairingTask(this);
@@ -315,13 +339,14 @@ export default class HazelcastClient {
         return this.mapRepairingTask;
     }
 
+    /** @internal */
     getLoggingService(): LoggingService {
         return this.loggingService;
     }
 
     /**
      * Registers a distributed object listener to cluster.
-     * @param listenerFunc Callback function will be called with following arguments.
+     * @param listener Callback function will be called with following arguments.
      * <ul>
      *     <li>service name</li>
      *     <li>distributed object name</li>
@@ -342,25 +367,27 @@ export default class HazelcastClient {
         return this.proxyManager.removeDistributedObjectListener(listenerId);
     }
 
+    /** @internal */
     getLockReferenceIdGenerator(): LockReferenceIdGenerator {
         return this.lockReferenceIdGenerator;
     }
 
+    /** @internal */
     getErrorFactory(): ClientErrorFactory {
         return this.errorFactory;
     }
 
-    /**
-     * Returns the {@link AddressProvider} of the client.
-     */
+    /** @internal */
     getAddressProvider(): AddressProvider {
         return this.addressProvider;
     }
 
+    /** @internal */
     getLoadBalancer(): LoadBalancer {
         return this.loadBalancer;
     }
 
+    /** @internal */
     doShutdown(): void {
         if (this.mapRepairingTask !== undefined) {
             this.mapRepairingTask.shutdown();
@@ -379,6 +406,7 @@ export default class HazelcastClient {
         this.getLifecycleService().shutdown();
     }
 
+    /** @internal */
     onClusterRestart(): void {
         this.getLoggingService().getLogger()
             .info('HazelcastClient', 'Clearing local state of the client, because of a cluster restart');
@@ -386,7 +414,8 @@ export default class HazelcastClient {
         this.clusterService.clearMemberListVersion();
     }
 
-    public sendStateToCluster(): Promise<void> {
+    /** @internal */
+    sendStateToCluster(): Promise<void> {
         return this.proxyManager.createDistributedObjectsOnCluster();
     }
 

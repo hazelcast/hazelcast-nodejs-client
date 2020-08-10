@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {ILogger} from '../logging/ILogger';
 import * as Promise from 'bluebird';
 
+/** @internal */
 export class WaitStrategy {
+
     private readonly initialBackoffMillis: number;
     private readonly maxBackoffMillis: number;
     private readonly multiplier: number;
@@ -28,8 +31,12 @@ export class WaitStrategy {
     private currentBackoffMillis: number;
     private clusterConnectAttemptBegin: number;
 
-    constructor(initialBackoffMillis: number, maxBackoffMillis: number, multiplier: number, clusterConnectTimeoutMillis: number,
-                jitter: number, logger: ILogger) {
+    constructor(initialBackoffMillis: number,
+                maxBackoffMillis: number,
+                multiplier: number,
+                clusterConnectTimeoutMillis: number,
+                jitter: number,
+                logger: ILogger) {
         this.initialBackoffMillis = initialBackoffMillis;
         this.maxBackoffMillis = maxBackoffMillis;
         this.multiplier = multiplier;

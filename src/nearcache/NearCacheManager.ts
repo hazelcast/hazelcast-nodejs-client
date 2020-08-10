@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {NearCache, NearCacheImpl} from './NearCache';
 import {SerializationService} from '../serialization/SerializationService';
 import HazelcastClient from '../HazelcastClient';
 
+/** @internal */
 export class NearCacheManager {
 
     protected readonly serializationService: SerializationService;

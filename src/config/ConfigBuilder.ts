@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {HazelcastError} from '../HazelcastError';
 import {TopicOverloadPolicy} from '../proxy/topic/TopicOverloadPolicy';
@@ -30,6 +31,7 @@ import {LoadBalancerType} from './LoadBalancerConfig';
 
 /**
  * Responsible for user-defined config validation. Builds the effective config with necessary defaults.
+ * @internal
  */
 export class ConfigBuilder {
 

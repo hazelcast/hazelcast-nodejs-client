@@ -59,7 +59,7 @@ import {IdentifiedDataSerializableFactory} from './Serializable';
 import {JsonStringDeserializationPolicy} from '../config/JsonStringDeserializationPolicy';
 import {REST_VALUE_FACTORY_ID, restValueFactory} from '../core/RestValue';
 
-/** @intenal */
+/** @internal */
 export interface SerializationService {
 
     toData(object: any, partitioningStrategy?: any): Data;
@@ -72,7 +72,7 @@ export interface SerializationService {
 
 }
 
-/** @intenal */
+/** @internal */
 export class SerializationServiceV1 implements SerializationService {
 
     private registry: { [id: number]: Serializer };

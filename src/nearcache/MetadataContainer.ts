@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Long from 'long';
 import {UUID} from '../core/UUID';
 
+/** @internal */
 export class MetadataContainer {
+
     private sequence: Long = Long.fromNumber(0);
     private staleSequence: Long = Long.fromNumber(0);
     private missedSequenceCount: Long = Long.fromNumber(0);

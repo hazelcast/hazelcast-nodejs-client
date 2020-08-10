@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {HazelcastCloudDiscovery} from './HazelcastCloudDiscovery';
 import {AddressProvider} from '../connection/AddressProvider';
@@ -20,6 +21,7 @@ import * as Promise from 'bluebird';
 import {ILogger} from '../logging/ILogger';
 import {Address} from '../Address';
 
+/** @internal */
 export class HazelcastCloudAddressProvider implements AddressProvider {
 
     private readonly logger: ILogger;

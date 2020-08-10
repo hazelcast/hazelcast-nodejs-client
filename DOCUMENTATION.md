@@ -2744,7 +2744,7 @@ const cfg = {
 };
 ```
 
-The client calls the method `init` with the properties section defined in the configuration. Then the client calls the method `getSSLOptions` of `SSLFactory` to create the `options` object.
+The client calls the `init()` method with the `properties` configuration option. Then the client calls the method `getSSLOptions` of `SSLFactory` to create the `options` object.
 
 ## 8.2. Credentials
 

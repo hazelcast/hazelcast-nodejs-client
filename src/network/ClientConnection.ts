@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Promise from 'bluebird';
 import * as net from 'net';
@@ -37,6 +38,7 @@ interface OutputQueueItem {
     resolver: Promise.Resolver<void>;
 }
 
+/** @internal */
 export class PipelinedWriter extends EventEmitter {
 
     private readonly socket: net.Socket;
@@ -127,6 +129,7 @@ export class PipelinedWriter extends EventEmitter {
     }
 }
 
+/** @internal */
 export class DirectWriter extends EventEmitter {
 
     private readonly socket: net.Socket;
@@ -148,6 +151,7 @@ export class DirectWriter extends EventEmitter {
     }
 }
 
+/** @internal */
 export class ClientMessageReader {
 
     private chunks: Buffer[] = [];
@@ -235,6 +239,7 @@ export class ClientMessageReader {
     }
 }
 
+/** @internal */
 export class FragmentedClientMessageHandler {
     private readonly fragmentedMessages = new Map<number, ClientMessage>();
 
@@ -259,6 +264,7 @@ export class FragmentedClientMessageHandler {
     }
 }
 
+/** @internal */
 export class ClientConnection {
     private readonly connectionId: number;
     private remoteAddress: Address;
@@ -271,7 +277,6 @@ export class ClientConnection {
     private closedTime: number;
     private closedReason: string;
     private closedCause: Error;
-    private connectedServerVersionString: string;
     private connectedServerVersion: number;
     private readonly socket: net.Socket;
     private readonly writer: PipelinedWriter | DirectWriter;
@@ -291,7 +296,6 @@ export class ClientConnection {
         this.localAddress = new Address(socket.localAddress, socket.localPort);
         this.lastReadTimeMillis = 0;
         this.closedTime = 0;
-        this.connectedServerVersionString = null;
         this.connectedServerVersion = BuildInfo.UNKNOWN_VERSION_ID;
         this.writer = enablePipelining ? new PipelinedWriter(socket, pipeliningThreshold) : new DirectWriter(socket);
         this.writer.on('write', () => {
@@ -338,7 +342,6 @@ export class ClientConnection {
     }
 
     setConnectedServerVersion(versionString: string): void {
-        this.connectedServerVersionString = versionString;
         this.connectedServerVersion = BuildInfo.calculateServerVersionFromString(versionString);
     }
 

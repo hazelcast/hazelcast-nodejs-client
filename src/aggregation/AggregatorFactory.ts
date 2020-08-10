@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {IdentifiedDataSerializable} from '../serialization/Serializable';
 import {
@@ -32,24 +33,37 @@ import {
 } from './Aggregator';
 import {HazelcastError} from '../HazelcastError';
 
+/** @internal */
 export const AGGREGATOR_FACTORY_ID = -29;
 
 // export const BIG_DECIMAL_AVG = 0; // not implemented in node.js
 // export const BIG_DECIMAL_SUM = 1; // not implemented in node.js
 // export const BIG_INT_AVG = 2; // not implemented in node.js
 // export const BIG_INT_SUM = 3; // not implemented in node.js
+/** @internal */
 export const COUNT = 4;
 // export const DISTINCT = 5; // returns java serializable, not usable in node.js
+/** @internal */
 export const DOUBLE_AVG = 6;
+/** @internal */
 export const DOUBLE_SUM = 7;
+/** @internal */
 export const FIXED_SUM = 8;
+/** @internal */
 export const FLOATING_POINT_SUM = 9;
+/** @internal */
 export const INT_AVG = 10;
+/** @internal */
 export const INT_SUM = 11;
+/** @internal */
 export const LONG_AVG = 12;
+/** @internal */
 export const LONG_SUM = 13;
+/** @internal */
 export const MAX = 14;
+/** @internal */
 export const MIN = 15;
+/** @internal */
 export const NUMBER_AVG = 16;
 // export const MAX_BY = 17; // needs object to implement Java's Comparable interface
 // export const MIN_BY = 18; // needs object to implement Java's Comparable interface
@@ -69,6 +83,7 @@ const idToConstructor: { [id: number]: new () => Aggregator<any> } = {
     [NUMBER_AVG]: NumberAverageAggregator,
 };
 
+/** @internal */
 export function aggregatorFactory(classId: number): IdentifiedDataSerializable {
     try {
         return new idToConstructor[classId]();

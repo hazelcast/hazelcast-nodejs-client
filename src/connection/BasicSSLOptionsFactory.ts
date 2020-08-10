@@ -21,6 +21,9 @@ import {HazelcastError} from '../HazelcastError';
 import {getBooleanOrUndefined, getStringOrUndefined, resolvePath} from '../Util';
 import {SSLOptionsFactory} from './SSLOptionsFactory';
 
+/**
+ * Default implementation of {@link SSLOptionsFactory}.
+ */
 export class BasicSSLOptionsFactory implements SSLOptionsFactory {
 
     private servername: string;

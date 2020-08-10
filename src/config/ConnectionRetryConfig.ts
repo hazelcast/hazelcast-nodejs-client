@@ -59,6 +59,7 @@ export interface ConnectionRetryConfig {
 /**
  * Connection Retry Config is controls the period among the retries and when should a client gave up
  * retrying. Exponential behaviour can be chosen or jitter can be added to wait periods.
+ * @internal
  */
 export class ConnectionRetryConfigImpl implements ConnectionRetryConfig {
 

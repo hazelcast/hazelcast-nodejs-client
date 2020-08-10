@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {
     AuthenticationError,
@@ -57,6 +58,7 @@ import {ErrorHolder} from './ErrorHolder';
 
 type ErrorFactory = (msg: string, cause: Error) => Error;
 
+/** @internal */
 export class ClientErrorFactory {
 
     private codeToErrorConstructor: Map<number, ErrorFactory> = new Map();

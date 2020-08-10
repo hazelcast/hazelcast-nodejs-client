@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Long from 'long';
 import {UUID} from '../core/UUID';
 import {Data} from '../serialization/Data';
 
+/** @internal */
 export class DataRecord {
 
     static readonly NOT_RESERVED = Long.NEG_ONE;

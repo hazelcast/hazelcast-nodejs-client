@@ -33,6 +33,7 @@ export enum OverflowPolicy {
 
 }
 
+/** @internal */
 export const overflowPolicyToId = (type: OverflowPolicy): number => {
     switch (type) {
         case OverflowPolicy.OVERWRITE:

@@ -16,8 +16,18 @@
 
 import * as Long from 'long';
 
+/**
+ * Represents UUIDs used by Hazelcast client. A UUID represents a 128-bit value.
+ */
 export class UUID {
+
+    /**
+     * Stands for the least significant 64 bits of the UUID.
+     */
     readonly leastSignificant: Long;
+    /**
+     * Stands for the most significant 64 bits of the UUID.
+     */
     readonly mostSignificant: Long;
     private cachedString: string;
 
@@ -26,6 +36,7 @@ export class UUID {
         this.leastSignificant = leastSig;
     }
 
+    /** @internal */
     equals(other: UUID): boolean {
         if (other == null) {
             return false;

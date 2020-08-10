@@ -67,6 +67,7 @@ export interface ConnectionStrategyConfig {
 
 }
 
+/** @internal */
 export class ConnectionStrategyConfigImpl implements ConnectionStrategyConfig {
 
     asyncStart = false;

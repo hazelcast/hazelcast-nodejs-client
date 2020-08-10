@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as assert from 'assert';
 import * as Long from 'long';
@@ -20,6 +21,7 @@ import HazelcastClient from '../HazelcastClient';
 import {MetadataFetcher} from './MetadataFetcher';
 import {NearCache} from './NearCache';
 import {RepairingHandler} from './RepairingHandler';
+import {PartitionServiceImpl} from '../PartitionService';
 import * as Promise from 'bluebird';
 import {ILogger} from '../logging/ILogger';
 import {UUID} from '../core/UUID';
@@ -28,6 +30,7 @@ const PROPERTY_MAX_RECONCILIATION_INTERVAL_SECONDS = 'hazelcast.invalidation.rec
 const PROPERTY_MIN_RECONCILIATION_INTERVAL_SECONDS = 'hazelcast.invalidation.min.reconciliation.interval.seconds';
 const PROPERTY_MAX_TOLERATED_MISS_COUNT = 'hazelcast.invalidation.max.tolerated.miss.count';
 
+/** @internal */
 export class RepairingTask {
 
     private antientropyTaskHandle: any;
@@ -61,7 +64,8 @@ export class RepairingTask {
             return Promise.resolve(handler);
         }
 
-        handler = new RepairingHandler(objectName, this.client.getPartitionService(), nearCache, this.localUuid);
+        handler = new RepairingHandler(
+            objectName, this.client.getPartitionService() as PartitionServiceImpl, nearCache, this.localUuid);
         return this.metadataFetcher.initHandler(handler).then(() => {
             this.handlers.set(objectName, handler);
             if (this.antientropyTaskHandle === undefined) {

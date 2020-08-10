@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {ClientConnection} from '../network/ClientConnection';
 import * as Promise from 'bluebird';
@@ -50,8 +51,10 @@ const INITIAL_MEMBERS_TIMEOUT_IN_MILLIS = 120 * 1000; // 120 seconds
 
 /**
  * Manages the relationship of this client with the cluster.
+ * @internal
  */
 export class ClusterService implements Cluster {
+
     private client: HazelcastClient;
     private memberListSnapshot: MemberListSnapshot = EMPTY_SNAPSHOT;
     private listeners: Map<string, MembershipListener> = new Map();
@@ -92,7 +95,7 @@ export class ClusterService implements Cluster {
 
         const selectedMembers: Member[] = [];
         members.forEach((member) => {
-            if (selector.select(member)) {
+            if (selector(member)) {
                 selectedMembers.push(member);
             }
         });

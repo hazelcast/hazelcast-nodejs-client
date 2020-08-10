@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Promise from 'bluebird';
 import {EventEmitter} from 'events';
@@ -48,7 +49,7 @@ import {ReconnectMode} from '../config/ConnectionStrategyConfig';
 import {LoadBalancer} from '../LoadBalancer';
 import {UUID} from '../core/UUID';
 import {ClientConfigImpl} from '../config/Config';
-import {LifecycleState} from '../LifecycleService';
+import {LifecycleState, LifecycleServiceImpl} from '../LifecycleService';
 import {ClientMessage} from '../ClientMessage';
 import {BuildInfo} from '../BuildInfo';
 import {ClientAuthenticationCustomCodec} from '../codec/ClientAuthenticationCustomCodec';
@@ -56,6 +57,7 @@ import {ClientAuthenticationCodec, ClientAuthenticationResponseParams} from '../
 import {AuthenticationStatus} from '../protocol/AuthenticationStatus';
 import {Invocation} from '../invocation/InvocationService';
 import {Member} from '../core/Member';
+import {PartitionServiceImpl} from '../PartitionService';
 
 const CONNECTION_REMOVED_EVENT_NAME = 'connectionRemoved';
 const CONNECTION_ADDED_EVENT_NAME = 'connectionAdded';
@@ -94,6 +96,7 @@ enum ClientState {
 
 /**
  * Maintains connections between the client and members of the cluster.
+ * @internal
  */
 export class ClientConnectionManager extends EventEmitter {
 
@@ -437,7 +440,7 @@ export class ClientConnectionManager extends EventEmitter {
     }
 
     private emitLifecycleEvent(state: LifecycleState): void {
-        this.client.getLifecycleService().emitLifecycleEvent(state);
+        (this.client.getLifecycleService() as LifecycleServiceImpl).emitLifecycleEvent(state);
     }
 
     private getPossibleMemberAddresses(): Promise<Address[]> {
@@ -728,7 +731,7 @@ export class ClientConnectionManager extends EventEmitter {
     }
 
     private checkPartitionCount(newPartitionCount: number): void {
-        const partitionService = this.client.getPartitionService();
+        const partitionService = this.client.getPartitionService() as PartitionServiceImpl;
         if (!partitionService.checkAndSetPartitionCount(newPartitionCount)) {
             throw new ClientNotAllowedInClusterError('Client can not work with this cluster because it has a different ' +
                 'partition count. Expected partition count: ' + partitionService.getPartitionCount() +

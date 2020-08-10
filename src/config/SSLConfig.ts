@@ -53,6 +53,7 @@ export interface SSLConfig {
 
 }
 
+/** @internal */
 export class SSLConfigImpl implements SSLConfig {
 
     enabled = false;

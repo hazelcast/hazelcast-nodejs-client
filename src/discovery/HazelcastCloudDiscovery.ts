@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {AddressHelper, DeferredPromise} from '../Util';
 import {get} from 'https';
@@ -25,8 +26,10 @@ import {Address} from '../Address';
 /**
  * Discovery service that discover nodes via hazelcast.cloud
  * https://coordinator.hazelcast.cloud/cluster/discovery?token=<TOKEN>
+ * @internal
  */
 export class HazelcastCloudDiscovery {
+
     /**
      * Internal client property to change base url of cloud discovery endpoint.
      * Used for testing cloud discovery.

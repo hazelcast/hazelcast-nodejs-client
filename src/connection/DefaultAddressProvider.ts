@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {AddressProvider} from './AddressProvider';
 import {ClientNetworkConfigImpl} from '../config/ClientNetworkConfig';
@@ -21,8 +22,8 @@ import {Address} from '../Address';
 
 /**
  * Default address provider of Hazelcast.
- *
  * Loads addresses from the Hazelcast configuration.
+ * @internal
  */
 export class DefaultAddressProvider implements AddressProvider {
 

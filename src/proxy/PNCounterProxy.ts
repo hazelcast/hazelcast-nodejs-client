@@ -20,7 +20,7 @@ import * as Long from 'long';
 import {PNCounterAddCodec} from '../codec/PNCounterAddCodec';
 import {PNCounterGetCodec} from '../codec/PNCounterGetCodec';
 import {PNCounterGetConfiguredReplicaCountCodec} from '../codec/PNCounterGetConfiguredReplicaCountCodec';
-import {MemberSelectors} from '../core/MemberSelectors';
+import * as MemberSelectors from '../core/MemberSelectors';
 import {VectorClock} from '../core/VectorClock';
 import {NoDataMemberInClusterError} from '../HazelcastError';
 import {randomInt} from '../Util';
@@ -135,7 +135,7 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
     }
 
     private getReplicaAddresses(excludedAddresses: Member[]): Promise<Member[]> {
-        const dataMembers = this.client.getClusterService().getMembers(MemberSelectors.DATA_MEMBER_SELECTOR);
+        const dataMembers = this.client.getClusterService().getMembers(MemberSelectors.dataMemberSelector);
         return this.getMaxConfiguredReplicaCount().then((replicaCount: number) => {
             const currentCount = Math.min(replicaCount, dataMembers.length);
             const replicaAddresses: Member[] = [];

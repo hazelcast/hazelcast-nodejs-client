@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 const seed = 0x01000193;
 
+/** @internal */
 export function murmur(key: any): number {
     let h1: number, h1b: number, k1: number, i: number;
 

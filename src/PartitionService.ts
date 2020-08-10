@@ -20,18 +20,48 @@ import {ClientConnection} from './network/ClientConnection';
 import {UUID} from './core/UUID';
 import {ClientOfflineError} from './HazelcastError';
 
+/**
+ * Partition service for Hazelcast clients. Allows to retrieve information
+ * about the partition count, the partition owner or the partitionId of a key.
+ */
+export interface PartitionService {
+
+    /**
+     * Returns UUID of owner member for a given partition id.
+     *
+     * @param partitionId partition id
+     * @return UUID of the owner of the partition
+     *         or `undefined` if a partition is not assigned yet
+     */
+    getPartitionOwner(partitionId: number): UUID;
+
+    /**
+     * Returns partition count of the connected cluster.
+     * If partition table is not fetched yet, this method returns `0`.
+     *
+     * @return the partition count
+     */
+    getPartitionCount(): number;
+
+    /**
+     * Computes the partition id for a given key.
+     *
+     * @param key
+     * @returns the partition id.
+     * @throws ClientOfflineError if the partition table has not arrived yet.
+     */
+    getPartitionId(key: any): number;
+
+}
+
 class PartitionTable {
     connection: ClientConnection;
     partitionStateVersion = -1;
     partitions = new Map<number, UUID>();
 }
 
-/**
- * Partition service for Hazelcast clients.
- *
- * Allows to retrieve information about the partition count, the partition owner or the partitionId of a key.
- */
-export class PartitionService {
+/** @internal */
+export class PartitionServiceImpl implements PartitionService {
 
     private client: HazelcastClient;
     private partitionTable = new PartitionTable();
@@ -46,8 +76,8 @@ export class PartitionService {
     /**
      * The partitions can be empty on the response, client will not apply the empty partition table.
      */
-    public handlePartitionViewEvent(connection: ClientConnection, partitions: Array<[UUID, number[]]>,
-                                    partitionStateVersion: number): void {
+    handlePartitionViewEvent(connection: ClientConnection, partitions: Array<[UUID, number[]]>,
+                             partitionStateVersion: number): void {
         this.logger.debug('PartitionService',
             'Handling new partition table with partitionStateVersion: ' + partitionStateVersion);
         if (!this.shouldBeApplied(connection, partitions, partitionStateVersion, this.partitionTable)) {
@@ -59,21 +89,11 @@ export class PartitionService {
         this.partitionTable.partitions = newPartitions;
     }
 
-    /**
-     * @param partitionId
-     * @return the owner of the partition or `undefined` if a partition is not assigned yet
-     */
-    public getPartitionOwner(partitionId: number): UUID {
+    getPartitionOwner(partitionId: number): UUID {
         return this.getPartitions().get(partitionId);
     }
 
-    /**
-     * Computes the partition id for a given key.
-     * @param key
-     * @returns the partition id.
-     * @throws ClientOfflineError if the partition table is not arrived yet.
-     */
-    public getPartitionId(key: any): number {
+    getPartitionId(key: any): number {
         if (this.partitionCount === 0) {
             // Partition count can not be zero for the sync mode.
             // On the sync mode, we are waiting for the first connection to be established.
@@ -90,12 +110,7 @@ export class PartitionService {
         return Math.abs(partitionHash) % this.partitionCount;
     }
 
-    /**
-     * If partition table is not fetched yet, this method returns zero
-     *
-     * @return the partition count
-     */
-    public getPartitionCount(): number {
+    getPartitionCount(): number {
         return this.partitionCount;
     }
 
@@ -104,7 +119,7 @@ export class PartitionService {
      * @return true if partition count can be set for the first time, or it is equal to
      * one that is already available, returns false otherwise
      */
-    public checkAndSetPartitionCount(newPartitionCount: number): boolean {
+    checkAndSetPartitionCount(newPartitionCount: number): boolean {
         if (this.partitionCount === 0) {
             this.partitionCount = newPartitionCount;
             return true;

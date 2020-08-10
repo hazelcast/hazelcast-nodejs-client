@@ -19,22 +19,32 @@ import {UUID} from './UUID';
 import {MemberVersion} from './MemberVersion';
 
 export class Member {
+
     /**
      * Network address of member.
      */
     address: Address;
+
     /**
      * Unique id of member in cluster.
      */
     uuid: UUID;
+
     /**
      * true if member is a lite member.
      */
     liteMember: boolean;
+
+    /** @internal */
     attributes: Map<string, string>;
+    /** @internal */
     version: MemberVersion;
 
-    constructor(address: Address, uuid: UUID, attributes: Map<string, string>, liteMember: boolean, version: MemberVersion) {
+    /** @internal */
+    constructor(address: Address, uuid: UUID,
+                attributes: Map<string, string>,
+                liteMember: boolean,
+                version: MemberVersion) {
         this.address = address;
         this.uuid = uuid;
         this.attributes = attributes;
@@ -42,15 +52,14 @@ export class Member {
         this.version = version;
     }
 
+    /** @internal */
     equals(other: Member): boolean {
         if (other == null) {
             return false;
         }
-
         if (!this.address.equals(other.address)) {
             return false;
         }
-
         return this.uuid != null ? this.uuid.equals(other.uuid) : other.uuid === null;
     }
 
@@ -67,6 +76,7 @@ export class Member {
         return memberStr;
     }
 
+    /** @internal */
     id(): string {
         let hashCode = this.address.toString();
         if (this.uuid) {
