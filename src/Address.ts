@@ -19,14 +19,20 @@ import {CLUSTER_DATA_FACTORY_ID, CLUSTER_DATA_ADDRESS_CLASS_ID} from './ClusterD
 import {DataInput, DataOutput} from './serialization/Data';
 import {IdentifiedDataSerializable} from './serialization/Serializable';
 
+/**
+ * Represents a network address (e.g. of the client or a cluster member).
+ */
 export class Address implements IdentifiedDataSerializable {
 
+    /** @internal */
     factoryId = CLUSTER_DATA_FACTORY_ID;
+    /** @internal */
     classId = CLUSTER_DATA_ADDRESS_CLASS_ID;
     host: string;
     port: number;
     type: number;
     // memoization for toString()
+    /** @internal */
     private addrStr: string;
 
     constructor(host?: string, port?: number) {
@@ -36,6 +42,7 @@ export class Address implements IdentifiedDataSerializable {
         this.addrStr = this.toStringInternal();
     }
 
+    /** @internal */
     readData(input: DataInput): any {
         this.port = input.readInt();
         this.type = input.readByte();
@@ -43,12 +50,14 @@ export class Address implements IdentifiedDataSerializable {
         this.addrStr = this.toStringInternal();
     }
 
+    /** @internal */
     writeData(output: DataOutput): void {
         output.writeInt(this.port);
         output.writeByte(this.type);
         output.writeUTF(this.host);
     }
 
+    /** @internal */
     equals(other: Address): boolean {
         if (other === this) {
             return true;

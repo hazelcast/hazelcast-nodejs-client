@@ -17,6 +17,9 @@
 import Long = require('long');
 import {Address} from '../../Address';
 
+/**
+ * Message of Reliable Topic.
+ */
 export class Message<T> {
     messageObject: T;
     publisher: Address;

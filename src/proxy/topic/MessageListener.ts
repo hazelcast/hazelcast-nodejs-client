@@ -13,6 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {Message} from './Message';
 
+/**
+ * Message listener for Reliable Topic.
+ */
 export type MessageListener<E> = (message: Message<E>) => void;

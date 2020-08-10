@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {Comparator} from '../core/Comparator';
 import {IterationType, Predicate, PagingPredicate} from '../core/Predicate';
@@ -20,8 +21,10 @@ import {enumFromString} from '../Util';
 import {DataInput, DataOutput} from './Data';
 import {IdentifiedDataSerializable} from './Serializable';
 
+/** @internal */
 export const PREDICATE_FACTORY_ID = -20;
 
+/** @internal */
 abstract class AbstractPredicate implements Predicate {
 
     abstract classId: number;
@@ -32,6 +35,7 @@ abstract class AbstractPredicate implements Predicate {
     abstract writeData(output: DataOutput): void;
 }
 
+/** @internal */
 export class SqlPredicate extends AbstractPredicate {
 
     static CLASS_ID = 0;
@@ -53,6 +57,7 @@ export class SqlPredicate extends AbstractPredicate {
     }
 }
 
+/** @internal */
 export class AndPredicate extends AbstractPredicate {
 
     static CLASS_ID = 1;
@@ -81,6 +86,7 @@ export class AndPredicate extends AbstractPredicate {
     }
 }
 
+/** @internal */
 export class BetweenPredicate extends AbstractPredicate {
 
     static CLASS_ID = 2;
@@ -110,6 +116,7 @@ export class BetweenPredicate extends AbstractPredicate {
     }
 }
 
+/** @internal */
 export class EqualPredicate extends AbstractPredicate {
 
     static CLASS_ID = 3;
@@ -135,6 +142,7 @@ export class EqualPredicate extends AbstractPredicate {
     }
 }
 
+/** @internal */
 export class GreaterLessPredicate extends AbstractPredicate {
 
     static CLASS_ID = 4;
@@ -169,6 +177,7 @@ export class GreaterLessPredicate extends AbstractPredicate {
     }
 }
 
+/** @internal */
 export class LikePredicate extends AbstractPredicate {
 
     static CLASS_ID = 5;
@@ -195,6 +204,7 @@ export class LikePredicate extends AbstractPredicate {
     }
 }
 
+/** @internal */
 export class ILikePredicate extends LikePredicate {
 
     static CLASS_ID = 6;
@@ -202,6 +212,7 @@ export class ILikePredicate extends LikePredicate {
     classId = ILikePredicate.CLASS_ID;
 }
 
+/** @internal */
 export class InPredicate extends AbstractPredicate {
 
     static CLASS_ID = 7;
@@ -235,6 +246,7 @@ export class InPredicate extends AbstractPredicate {
     }
 }
 
+/** @internal */
 export class InstanceOfPredicate extends AbstractPredicate {
 
     static CLASS_ID = 8;
@@ -257,6 +269,7 @@ export class InstanceOfPredicate extends AbstractPredicate {
     }
 }
 
+/** @internal */
 export class NotEqualPredicate extends EqualPredicate {
 
     static CLASS_ID = 9;
@@ -264,6 +277,7 @@ export class NotEqualPredicate extends EqualPredicate {
     classId = NotEqualPredicate.CLASS_ID;
 }
 
+/** @internal */
 export class NotPredicate extends AbstractPredicate {
 
     static CLASS_ID = 10;
@@ -286,6 +300,7 @@ export class NotPredicate extends AbstractPredicate {
     }
 }
 
+/** @internal */
 export class OrPredicate extends AbstractPredicate {
 
     static CLASS_ID = 11;
@@ -315,6 +330,7 @@ export class OrPredicate extends AbstractPredicate {
     }
 }
 
+/** @internal */
 export class RegexPredicate extends AbstractPredicate {
 
     static CLASS_ID = 12;
@@ -341,6 +357,7 @@ export class RegexPredicate extends AbstractPredicate {
     }
 }
 
+/** @internal */
 export class FalsePredicate extends AbstractPredicate {
 
     static CLASS_ID = 13;
@@ -357,6 +374,7 @@ export class FalsePredicate extends AbstractPredicate {
     }
 }
 
+/** @internal */
 export class TruePredicate extends AbstractPredicate {
 
     static CLASS_ID = 14;
@@ -373,6 +391,7 @@ export class TruePredicate extends AbstractPredicate {
     }
 }
 
+/** @internal */
 export class PagingPredicateImpl extends AbstractPredicate implements PagingPredicate {
 
     private static NULL_ANCHOR: [number, [any, any]] = [-1, null];
@@ -428,8 +447,6 @@ export class PagingPredicateImpl extends AbstractPredicate implements PagingPred
             output.writeObject(anchorEntry[1][1]);
         });
     }
-
-
 
     nextPage(): PagingPredicate {
         this.page++;
@@ -523,6 +540,7 @@ for (const predicate of allPredicates) {
     idToConstructorMap[predicate.CLASS_ID] = predicate;
 }
 
+/** @internal */
 export function predicateFactory(classId: number): IdentifiedDataSerializable {
     if (idToConstructorMap[classId]) {
         return new idToConstructorMap[classId]();

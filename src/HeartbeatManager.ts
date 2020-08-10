@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {ClientPingCodec} from './codec/ClientPingCodec';
 import HazelcastClient from './HazelcastClient';
@@ -28,6 +29,7 @@ const PROPERTY_HEARTBEAT_TIMEOUT = 'hazelcast.client.heartbeat.timeout';
 
 /**
  * HeartbeatManager manager used by connection manager.
+ * @internal
  */
 export class HeartbeatManager {
     private client: HazelcastClient;

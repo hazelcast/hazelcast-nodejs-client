@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Promise from 'bluebird';
 import * as Long from 'long';
@@ -27,6 +28,7 @@ import {BaseProxy} from './BaseProxy';
 import {PNCounter} from './PNCounter';
 import {Member} from '../core/Member';
 
+/** @internal */
 export class PNCounterProxy extends BaseProxy implements PNCounter {
     private static readonly EMPTY_ARRAY: Member[] = [];
     private lastObservedVectorClock: VectorClock = new VectorClock();

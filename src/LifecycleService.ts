@@ -63,9 +63,26 @@ export enum LifecycleState {
 const LIFECYCLE_EVENT_NAME = 'lifecycleEvent';
 
 /**
- * LifecycleService
+ * LifecycleService of the client.
  */
-export class LifecycleService extends EventEmitter {
+export interface LifecycleService {
+
+    /**
+     * Returns the active state of the client.
+     * @returns {boolean}
+     */
+    isRunning(): boolean;
+
+    /**
+     * Shuts down the client.
+     */
+    shutdown(): void;
+
+}
+
+/** @internal */
+export class LifecycleServiceImpl extends EventEmitter implements LifecycleService {
+
     private active: boolean;
     private client: HazelcastClient;
     private logger: ILogger;
@@ -98,13 +115,13 @@ export class LifecycleService extends EventEmitter {
         return this.active;
     }
 
-    public start(): void {
+    start(): void {
         this.emitLifecycleEvent(LifecycleState.STARTING);
         this.active = true;
         this.emitLifecycleEvent(LifecycleState.STARTED);
     }
 
-    public shutdown(): void {
+    shutdown(): void {
         if (!this.active) {
             return;
         }

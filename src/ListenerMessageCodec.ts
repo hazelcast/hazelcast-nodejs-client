@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {ClientMessage} from './ClientMessage';
 import {UUID} from './core/UUID';
 
+/** @internal */
 export interface ListenerMessageCodec {
     encodeAddRequest: (localOnly: boolean) => ClientMessage;
     decodeAddResponse: (msg: ClientMessage) => UUID;

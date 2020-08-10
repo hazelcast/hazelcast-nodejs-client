@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Promise from 'bluebird';
 import {ClientAddDistributedObjectListenerCodec} from '../codec/ClientAddDistributedObjectListenerCodec';
@@ -43,10 +44,13 @@ import {ClientCreateProxiesCodec} from '../codec/ClientCreateProxiesCodec';
 import {BaseProxy} from './BaseProxy';
 import {Ringbuffer} from './Ringbuffer';
 
+/** @internal */
 export const NAMESPACE_SEPARATOR = '/';
 const RINGBUFFER_PREFIX = '_hz_rb_';
 
+/** @internal */
 export class ProxyManager {
+
     public static readonly MAP_SERVICE: string = 'hz:impl:mapService';
     public static readonly SET_SERVICE: string = 'hz:impl:setService';
     public static readonly LOCK_SERVICE: string = 'hz:impl:lockService';

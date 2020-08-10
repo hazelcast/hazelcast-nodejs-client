@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {BitsUtil} from './BitsUtil';
 import {ClientConnection} from './network/ClientConnection';
@@ -20,10 +21,13 @@ import {FixSizedTypesCodec} from './codec/builtin/FixSizedTypesCodec';
 
 const MESSAGE_TYPE_OFFSET = 0;
 const CORRELATION_ID_OFFSET = MESSAGE_TYPE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
+/** @internal */
 export const RESPONSE_BACKUP_ACKS_OFFSET = CORRELATION_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
+/** @internal */
 export const PARTITION_ID_OFFSET = CORRELATION_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 const FRAGMENTATION_ID_OFFSET = 0;
 
+/** @internal */
 export const DEFAULT_FLAGS = 0;
 const BEGIN_FRAGMENT_FLAG = 1 << 15;
 const END_FRAGMENT_FLAG = 1 << 14;
@@ -34,8 +38,10 @@ const END_DATA_STRUCTURE_FLAG = 1 << 11;
 const IS_NULL_FLAG = 1 << 10;
 const IS_EVENT_FLAG = 1 << 9;
 
+/** @internal */
 export const SIZE_OF_FRAME_LENGTH_AND_FLAGS = BitsUtil.INT_SIZE_IN_BYTES + BitsUtil.SHORT_SIZE_IN_BYTES;
 
+/** @internal */
 export class Frame {
     content: Buffer;
     flags: number;
@@ -105,10 +111,14 @@ export class Frame {
     }
 }
 
+/** @internal */
 export const NULL_FRAME = new Frame(Buffer.allocUnsafe(0), IS_NULL_FLAG);
+/** @internal */
 export const BEGIN_FRAME = new Frame(Buffer.allocUnsafe(0), BEGIN_DATA_STRUCTURE_FLAG);
+/** @internal */
 export const END_FRAME = new Frame(Buffer.allocUnsafe(0), END_DATA_STRUCTURE_FLAG);
 
+/** @internal */
 export class ClientMessage {
     startFrame: Frame;
     endFrame: Frame;

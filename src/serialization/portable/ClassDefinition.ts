@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {deepEqual} from 'assert';
 
+/** @internal */
 export class ClassDefinition {
     private factoryId: number;
     private classId: number;
@@ -94,6 +96,7 @@ export class ClassDefinition {
     }
 }
 
+/** @internal */
 export class FieldDefinition {
     private readonly index: number;
     private readonly fieldName: string;
@@ -136,6 +139,7 @@ export class FieldDefinition {
     }
 }
 
+/** @internal */
 export enum FieldType {
     PORTABLE = 0,
     BYTE = 1,

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Promise from 'bluebird';
 import {MapAddNearCacheInvalidationListenerCodec} from '../codec/MapAddNearCacheInvalidationListenerCodec';
@@ -28,6 +29,7 @@ import {MapProxy} from './MapProxy';
 import {ClientMessage} from '../ClientMessage';
 import * as Long from 'long';
 
+/** @intenal */
 export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
 
     private nearCache: NearCache;

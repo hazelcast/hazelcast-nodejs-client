@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {IndexConfig, InternalIndexConfig} from '../config/IndexConfig';
 import {IndexType} from '../config/IndexType';
@@ -29,6 +30,7 @@ const MAX_ATTRIBUTES = 255;
  */
 const THIS_PATTERN = new RegExp('^this\\.');
 
+/** @internal */
 export class IndexUtil {
 
     /**

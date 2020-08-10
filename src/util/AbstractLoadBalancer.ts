@@ -22,6 +22,9 @@ import {InitialMembershipEvent} from '../core/InitialMembershipEvent';
 import {MembershipEvent} from '../core/MembershipEvent';
 import {Member} from '../core/Member';
 
+/**
+ * Abstract Load Balancer to be used in built-in and user-provided implementations.
+ */
 export abstract class AbstractLoadBalancer implements LoadBalancer, InitialMembershipListener {
     private members: Member[];
     private cluster: Cluster;
@@ -37,10 +40,12 @@ export abstract class AbstractLoadBalancer implements LoadBalancer, InitialMembe
         this.setMembers();
     }
 
+    /** @internal */
     public memberAdded(membership: MembershipEvent): void {
         this.setMembers();
     }
 
+    /** @internal */
     public memberRemoved(membership: MembershipEvent): void {
         this.setMembers();
     }

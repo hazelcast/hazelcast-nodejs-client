@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as assert from 'assert';
 import * as Long from 'long';
@@ -20,18 +21,22 @@ import * as Promise from 'bluebird';
 import * as Path from 'path';
 import {Address} from './Address';
 
+/** @internal */
 export function assertNotNull(v: any): void {
     assert.notEqual(v, null, 'Non null value expected.');
 }
 
+/** @internal */
 export function assertArray(x: any): void {
     assert(Array.isArray(x), 'Should be array.');
 }
 
+/** @internal */
 export function assertString(v: any): void {
     assert(typeof v === 'string', 'String value expected.');
 }
 
+/** @internal */
 export function shuffleArray<T>(array: T[]): void {
     let randomIndex: number;
     let temp: T;
@@ -43,10 +48,12 @@ export function shuffleArray<T>(array: T[]): void {
     }
 }
 
+/** @internal */
 export function assertNotNegative(v: number, message = 'The value cannot be negative.'): void {
     assert(v >= 0, message);
 }
 
+/** @internal */
 export function getType(obj: any): string {
     assertNotNull(obj);
     if (Long.isLong(obj)) {
@@ -61,10 +68,12 @@ export function getType(obj: any): string {
     }
 }
 
+/** @internal */
 export function enumFromString<T>(enumType: any, value: string): T {
     return enumType[value];
 }
 
+/** @internal */
 export function copyObjectShallow<T>(obj: T): T {
     if (obj === undefined || obj === null) {
         return obj;
@@ -81,6 +90,7 @@ export function copyObjectShallow<T>(obj: T): T {
     assert(false, 'Object should be undefined or type of object.');
 }
 
+/** @internal */
 export function tryGetBoolean(val: any): boolean {
     if (typeof val === 'boolean') {
         return val;
@@ -89,6 +99,7 @@ export function tryGetBoolean(val: any): boolean {
     }
 }
 
+/** @internal */
 export function tryGetNumber(val: any): number {
     if (typeof val === 'number') {
         return val;
@@ -97,6 +108,7 @@ export function tryGetNumber(val: any): number {
     }
 }
 
+/** @internal */
 export function tryGetArray(val: any): any[] {
     if (Array.isArray(val)) {
         return val;
@@ -105,6 +117,7 @@ export function tryGetArray(val: any): any[] {
     }
 }
 
+/** @internal */
 export function tryGetString(val: any): string {
     if (typeof val === 'string') {
         return val;
@@ -113,6 +126,7 @@ export function tryGetString(val: any): string {
     }
 }
 
+/** @internal */
 export function getStringOrUndefined(val: any): string {
     try {
         return tryGetString(val);
@@ -121,6 +135,7 @@ export function getStringOrUndefined(val: any): string {
     }
 }
 
+/** @internal */
 export function getBooleanOrUndefined(val: any): boolean {
     try {
         return tryGetBoolean(val);
@@ -129,6 +144,7 @@ export function getBooleanOrUndefined(val: any): boolean {
     }
 }
 
+/** @internal */
 export function tryGetEnum<T>(enumClass: any | { [index: string]: number }, str: string): T {
     const result = enumClass[str.toUpperCase()];
     if (result == null) {
@@ -137,12 +153,15 @@ export function tryGetEnum<T>(enumClass: any | { [index: string]: number }, str:
     return result;
 }
 
+/** @internal */
 export function resolvePath(path: string): string {
     const basePath = process.cwd();
     return Path.resolve(basePath, path);
 }
 
+/** @internal */
 export class AddressHelper {
+
     private static readonly MAX_PORT_TRIES: number = 3;
     private static readonly INITIAL_FIRST_PORT: number = 5701;
 
@@ -197,17 +216,21 @@ export class AddressHelper {
  * Upper bound should be an integer.
  * @param upperBound
  * @returns A random integer between [0-upperBound)
+ * @internal
  */
 export function randomInt(upperBound: number): number {
     return Math.floor(Math.random() * upperBound);
 }
 
+/** @internal */
 export class Task {
     intervalId: NodeJS.Timer;
     timeoutId: NodeJS.Timer;
 }
 
-export function scheduleWithRepetition(callback: (...args: any[]) => void, initialDelay: number,
+/** @internal */
+export function scheduleWithRepetition(callback: (...args: any[]) => void,
+                                       initialDelay: number,
                                        periodMillis: number): Task {
     const task = new Task();
     task.timeoutId = setTimeout(function (): void {
@@ -218,6 +241,7 @@ export function scheduleWithRepetition(callback: (...args: any[]) => void, initi
     return task;
 }
 
+/** @internal */
 export function cancelRepetitionTask(task: Task): void {
     if (task.intervalId != null) {
         clearInterval(task.intervalId);
@@ -226,6 +250,7 @@ export function cancelRepetitionTask(task: Task): void {
     }
 }
 
+/** @internal */
 export function DeferredPromise<T>(): Promise.Resolver<T> {
     let resolve: any;
     let reject: any;
@@ -240,6 +265,7 @@ export function DeferredPromise<T>(): Promise.Resolver<T> {
     } as Promise.Resolver<T>;
 }
 
+/** @internal */
 export function getNodejsMajorVersion(): number {
     const versionString = process.version;
     const versions = versionString.split('.');

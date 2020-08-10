@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Promise from 'bluebird';
 import {OverflowPolicy} from '../../core/OverflowPolicy';
@@ -30,9 +31,12 @@ import {MessageListener} from './MessageListener';
 import {TopicOverloadPolicy} from './TopicOverloadPolicy';
 import Long = require('long');
 
+/** @internal */
 export const TOPIC_INITIAL_BACKOFF = 100;
+/** @internal */
 export const TOPIC_MAX_BACKOFF = 2000;
 
+/** @internal */
 export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
     private ringbuffer: Ringbuffer<ReliableTopicMessage>;
     private readonly localAddress: Address;

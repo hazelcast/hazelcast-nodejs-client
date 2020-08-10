@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {PortableWriter} from './PortableSerializer';
 import {ClassDefinition} from './ClassDefinition';
@@ -22,6 +23,7 @@ import * as Long from 'long';
 import {ClassDefinitionBuilder} from './ClassDefinitionBuilder';
 import {HazelcastSerializationError} from '../../HazelcastError';
 
+/** @internal */
 export class ClassDefinitionWriter implements PortableWriter {
     private context: PortableContext;
     private builder: ClassDefinitionBuilder;

@@ -23,7 +23,7 @@ import {DistributedObject} from './DistributedObject';
 import {ClientConnectionManager} from './network/ClientConnectionManager';
 import {ClusterService} from './invocation/ClusterService';
 import {InvocationService} from './invocation/InvocationService';
-import {LifecycleService} from './LifecycleService';
+import {LifecycleService, LifecycleServiceImpl} from './LifecycleService';
 import {ListenerService} from './ListenerService';
 import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
 import {LoggingService} from './logging/LoggingService';
@@ -70,7 +70,7 @@ export default class HazelcastClient {
     private readonly connectionManager: ClientConnectionManager;
     private readonly partitionService: PartitionService;
     private readonly clusterService: ClusterService;
-    private readonly lifecycleService: LifecycleService;
+    private readonly lifecycleService: LifecycleServiceImpl;
     private readonly proxyManager: ProxyManager;
     private readonly nearCacheManager: NearCacheManager;
     private readonly lockReferenceIdGenerator: LockReferenceIdGenerator;
@@ -97,7 +97,7 @@ export default class HazelcastClient {
         this.invocationService = new InvocationService(this);
         this.proxyManager = new ProxyManager(this);
         this.clusterService = new ClusterService(this);
-        this.lifecycleService = new LifecycleService(this);
+        this.lifecycleService = new LifecycleServiceImpl(this);
         this.lockReferenceIdGenerator = new LockReferenceIdGenerator();
         this.errorFactory = new ClientErrorFactory();
         this.statistics = new Statistics(this);

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Promise from 'bluebird';
 import {QueueAddAllCodec} from '../codec/QueueAddAllCodec';
@@ -44,6 +45,7 @@ import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {ClientMessage} from '../ClientMessage';
 import {UUID} from '../core/UUID';
 
+/** @internal */
 export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
 
     add(item: E): Promise<boolean> {

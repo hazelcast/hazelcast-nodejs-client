@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-export enum TopicOverloadPolicy {
+/**
+ * Overload policy for Reliable Topic.
+ */
+ export enum TopicOverloadPolicy {
 
     /**
      * Using this policy, a message that has not expired can be overwritten.

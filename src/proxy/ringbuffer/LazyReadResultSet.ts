@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Long from 'long';
 import {UnsupportedOperationError} from '../../HazelcastError';
@@ -20,6 +21,7 @@ import {Data} from '../../serialization/Data';
 import {SerializationService, SerializationServiceV1} from '../../serialization/SerializationService';
 import {ReadResultSet} from './ReadResultSet';
 
+/** @internal */
 export class LazyReadResultSet<T> implements ReadResultSet<T> {
     private readCount: number;
     private items: any[];

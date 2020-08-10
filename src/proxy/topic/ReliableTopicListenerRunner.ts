@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {ReadResultSet} from '../../';
 import {StaleSequenceError} from '../../HazelcastError';
@@ -24,6 +25,7 @@ import {Message} from './Message';
 import {MessageListener} from './MessageListener';
 import {ILogger} from '../../logging/ILogger';
 
+/** @internal */
 export class ReliableTopicListenerRunner<E> {
 
     public sequenceNumber = 0;

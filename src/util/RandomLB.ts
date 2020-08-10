@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {AbstractLoadBalancer} from './AbstractLoadBalancer';
 import {Member} from '../core/Member';
@@ -20,6 +21,7 @@ import {randomInt} from '../Util';
 
 /**
  * A {@link LoadBalancer} that selects a random member to route to.
+ * @internal
  */
 export class RandomLB extends AbstractLoadBalancer {
     next(): Member {

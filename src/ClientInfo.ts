@@ -17,6 +17,9 @@
 import {Address} from './Address';
 import {UUID} from './core/UUID';
 
+/**
+ * Local information of the client.
+ */
 export class ClientInfo {
 
     /**

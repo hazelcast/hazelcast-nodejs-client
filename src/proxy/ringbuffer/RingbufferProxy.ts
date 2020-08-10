@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Promise from 'bluebird';
 import {RingbufferAddAllCodec} from '../../codec/RingbufferAddAllCodec';
@@ -31,6 +32,7 @@ import {LazyReadResultSet} from './LazyReadResultSet';
 import {ReadResultSet} from './ReadResultSet';
 import Long = require('long');
 
+/** @internal */
 export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbuffer<E> {
 
     capacity(): Promise<Long> {

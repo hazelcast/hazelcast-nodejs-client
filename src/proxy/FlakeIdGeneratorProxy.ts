@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Promise from 'bluebird';
 import * as Long from 'long';
@@ -23,6 +24,7 @@ import {BaseProxy} from './BaseProxy';
 import {AutoBatcher, Batch} from './flakeid/AutoBatcher';
 import {FlakeIdGenerator} from './FlakeIdGenerator';
 
+/** @internal */
 export class FlakeIdGeneratorProxy extends BaseProxy implements FlakeIdGenerator {
 
     private autoBatcher: AutoBatcher;

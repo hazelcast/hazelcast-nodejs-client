@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {Data} from './serialization/Data';
 
+/** @internal */
 export class DataKeyedHashMap<T> {
 
     size: number;
