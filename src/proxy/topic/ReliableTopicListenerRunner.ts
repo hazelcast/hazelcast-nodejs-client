@@ -15,7 +15,11 @@
  */
 
 import {ReadResultSet} from '../../';
-import {InvocationTimeoutError} from '../../HazelcastError';
+import {
+    InvocationTimeoutError,
+    ClientNotActiveError,
+    ClientOfflineError
+} from '../../HazelcastError';
 import {SerializationService} from '../../serialization/SerializationService';
 import {Ringbuffer} from '../Ringbuffer';
 import {ReliableTopicMessage} from './ReliableTopicMessage';
@@ -26,7 +30,7 @@ import {ILogger} from '../../logging/ILogger';
 
 export class ReliableTopicListenerRunner<E> {
 
-    public sequenceNumber = 0;
+    sequenceNumber = 0;
     private listener: MessageListener<E>;
     private ringbuffer: Ringbuffer<ReliableTopicMessage>;
     private batchSize: number;
@@ -52,7 +56,7 @@ export class ReliableTopicListenerRunner<E> {
         this.logger = logger;
     }
 
-    public next(): void {
+    next(): void {
         if (this.cancelled) {
             return;
         }
@@ -65,9 +69,13 @@ export class ReliableTopicListenerRunner<E> {
 
                 const nextSeq = result.getNextSequenceToReadFrom().toNumber();
                 const lostCount = nextSeq - result.getReadCount() - this.sequenceNumber;
+                // If messages were lost, behave as a non-loss tolerant listener
                 if (lostCount !== 0) {
-                    this.logger.trace('ReliableTopicListenerRunner', 'Listener of topic: ' + this.proxy.getName()
-                        + ' lost ' + lostCount + ' messages');
+                    this.logger.warn('ReliableTopicListenerRunner', 'Terminating listener of topic: '
+                        + this.proxy.getName() + '. Reason: The listener was too slow lost or the retention'
+                        + ' period of the message has been violated. ' + lostCount + ' messages lost.');
+                    this.proxy.removeMessageListener(this.listenerId);
+                    return;
                 }
 
                 for (let i = 0; i < result.size(); i++) {
@@ -86,14 +94,12 @@ export class ReliableTopicListenerRunner<E> {
                 if (this.handleInternalError(err)) {
                     this.scheduleNext();
                 } else {
-                    this.logger.warn('ReliableTopicListenerRunner', 'Listener of topic: ' + this.proxy.getName()
-                        + ' caught an exception, terminating listener. ' + err);
                     this.proxy.removeMessageListener(this.listenerId);
                 }
             });
     }
 
-    public cancel(): void {
+    cancel(): void {
         this.cancelled = true;
     }
 
@@ -106,6 +112,17 @@ export class ReliableTopicListenerRunner<E> {
             this.logger.trace('ReliableTopicListenerRunner', 'Listener of topic: ' + this.proxy.getName()
                 + ' timed out. Continuing from last known sequence: ' + this.sequenceNumber);
             return true;
+        } else if (err instanceof ClientOfflineError) {
+            this.logger.trace('ReliableTopicListenerRunner', 'Listener of topic: ' + this.proxy.getName()
+                + ' got error: ' + err + '. Continuing from last known sequence: ' + this.sequenceNumber);
+            return true;
+        } else if (err instanceof ClientNotActiveError) {
+            this.logger.trace('ReliableTopicListenerRunner', 'Terminating listener of topic: '
+                + this.proxy.getName() + '. Reason: HazelcastClient is shutting down.');
+            return false;
+        } else {
+            this.logger.warn('ReliableTopicListenerRunner', 'Listener of topic: ' + this.proxy.getName()
+                + ' caught an exception, terminating listener. ' + err);
         }
         return false;
     }
