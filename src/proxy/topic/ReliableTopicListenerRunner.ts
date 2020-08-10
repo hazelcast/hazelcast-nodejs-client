@@ -72,7 +72,7 @@ export class ReliableTopicListenerRunner<E> {
                 // If messages were lost, behave as a non-loss tolerant listener
                 if (lostCount !== 0) {
                     this.logger.warn('ReliableTopicListenerRunner', 'Terminating listener of topic: '
-                        + this.proxy.getName() + '. Reason: The listener was too slow lost or the retention'
+                        + this.proxy.getName() + '. Reason: The listener was too slow or the retention'
                         + ' period of the message has been violated. ' + lostCount + ' messages lost.');
                     this.proxy.removeMessageListener(this.listenerId);
                     return;
