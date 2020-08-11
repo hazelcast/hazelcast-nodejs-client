@@ -1,5 +1,5 @@
 /**
- * The following test validates correctness of
+ * The following file is used to validates correctness of
  * declarations (.d.ts) of the client library
  * produced by TypeScript compiler.
  */
