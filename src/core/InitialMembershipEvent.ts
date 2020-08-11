@@ -17,15 +17,16 @@
 import {Member} from './Member';
 
 /**
- * An event that is sent when a {@link InitialMembershipListener} registers itself on a cluster. For more
- * information, see the {@link InitialMembershipListener}.
+ * An event that is sent when a {@link InitialMembershipListener} registers itself on a cluster.
  *
  * @see MembershipListener
  * @see MembershipEvent
  */
 export class InitialMembershipEvent {
+
     members: Member[];
 
+    /** @internal */
     constructor(members: Member[]) {
         this.members = members;
     }

@@ -69,4 +69,4 @@ class AlwaysFreshStaleReadDetectorImpl implements StaleReadDetector {
 }
 
 /** @internal */
-export const ALWAYS_FRESH_DETECTOR = new AlwaysFreshStaleReadDetectorImpl();
+export const alwaysFreshDetector = new AlwaysFreshStaleReadDetectorImpl();

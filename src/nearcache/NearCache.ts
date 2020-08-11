@@ -24,7 +24,7 @@ import {Data} from '../serialization/Data';
 import {SerializationService} from '../serialization/SerializationService';
 import {DeferredPromise, shuffleArray} from '../Util';
 import {DataRecord} from './DataRecord';
-import {StaleReadDetector, ALWAYS_FRESH_DETECTOR} from './StaleReadDetector';
+import {StaleReadDetector, alwaysFreshDetector} from './StaleReadDetector';
 import * as Promise from 'bluebird';
 
 /** @internal */
@@ -77,7 +77,7 @@ export class NearCacheImpl implements NearCache {
     private evictionSamplingCount: number;
     private evictionSamplingPoolSize: number;
     private evictionCandidatePool: DataRecord[];
-    private staleReadDetector: StaleReadDetector = ALWAYS_FRESH_DETECTOR;
+    private staleReadDetector: StaleReadDetector = alwaysFreshDetector;
     private reservationCounter: Long = Long.ZERO;
 
     private evictedCount = 0;
@@ -305,7 +305,7 @@ export class NearCacheImpl implements NearCache {
     }
 
     private initInvalidationMetadata(dr: DataRecord): void {
-        if (this.staleReadDetector === ALWAYS_FRESH_DETECTOR) {
+        if (this.staleReadDetector === alwaysFreshDetector) {
             return;
         }
         const partitionId = this.staleReadDetector.getPartitionId(dr.key);

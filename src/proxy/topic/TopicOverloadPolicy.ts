@@ -17,7 +17,7 @@
 /**
  * Overload policy for Reliable Topic.
  */
- export enum TopicOverloadPolicy {
+export enum TopicOverloadPolicy {
 
     /**
      * Using this policy, a message that has not expired can be overwritten.

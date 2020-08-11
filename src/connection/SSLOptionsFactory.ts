@@ -18,7 +18,7 @@ import * as Promise from 'bluebird';
 import {Properties} from '../config/Properties';
 
 /**
- * Base interface for built-in and user-provided SSL options factory.
+ * Base interface for built-in and user-provided SSL options factories.
  */
 export interface SSLOptionsFactory {
 

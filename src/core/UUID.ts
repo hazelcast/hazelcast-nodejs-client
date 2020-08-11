@@ -29,6 +29,7 @@ export class UUID {
      * Stands for the most significant 64 bits of the UUID.
      */
     readonly mostSignificant: Long;
+    /** @internal */
     private cachedString: string;
 
     constructor(mostSig: Long, leastSig: Long) {

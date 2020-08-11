@@ -64,8 +64,8 @@ export class RepairingTask {
             return Promise.resolve(handler);
         }
 
-        handler = new RepairingHandler(
-            objectName, this.client.getPartitionService() as PartitionServiceImpl, nearCache, this.localUuid);
+        const partitionService = this.client.getPartitionService() as PartitionServiceImpl;
+        handler = new RepairingHandler(objectName, partitionService, nearCache, this.localUuid);
         return this.metadataFetcher.initHandler(handler).then(() => {
             this.handlers.set(objectName, handler);
             if (this.antientropyTaskHandle === undefined) {
