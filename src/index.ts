@@ -34,6 +34,7 @@ import {JsonStringDeserializationPolicy} from './config/JsonStringDeserializatio
 import {HazelcastJsonValue} from './core/HazelcastJsonValue';
 import {LoadBalancer} from './LoadBalancer';
 import {AbstractLoadBalancer} from './util/AbstractLoadBalancer';
+import {FieldType} from './serialization/portable/ClassDefinition';
 
 export {
     HazelcastClient as Client,
@@ -57,4 +58,5 @@ export {
     HazelcastJsonValue,
     LoadBalancer,
     AbstractLoadBalancer,
+    FieldType,
 };

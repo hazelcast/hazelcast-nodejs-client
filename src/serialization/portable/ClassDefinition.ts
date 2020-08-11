@@ -139,7 +139,9 @@ export class FieldDefinition {
     }
 }
 
-/** @internal */
+/**
+ * Portable field type.
+ */
 export enum FieldType {
     PORTABLE = 0,
     BYTE = 1,
