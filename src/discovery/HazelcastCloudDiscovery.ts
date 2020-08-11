@@ -21,7 +21,7 @@ import {IncomingMessage} from 'http';
 import * as Promise from 'bluebird';
 import {Properties} from '../config/Properties';
 import * as URL from 'url';
-import {Address} from '../Address';
+import {AddressImpl} from '../Address';
 
 /**
  * Discovery service that discover nodes via hazelcast.cloud
@@ -52,14 +52,14 @@ export class HazelcastCloudDiscovery {
         return cloudBaseUrl + this.CLOUD_URL_PATH + cloudToken;
     }
 
-    discoverNodes(): Promise<Map<string, Address>> {
+    discoverNodes(): Promise<Map<string, AddressImpl>> {
         return this.callService().catch((e) => {
             throw e;
         });
     }
 
-    callService(): Promise<Map<string, Address>> {
-        const deferred = DeferredPromise<Map<string, Address>>();
+    callService(): Promise<Map<string, AddressImpl>> {
+        const deferred = DeferredPromise<Map<string, AddressImpl>>();
 
         const url = URL.parse(this.endpointUrl);
         const endpointUrlOptions = {
@@ -85,10 +85,10 @@ export class HazelcastCloudDiscovery {
         return deferred.promise;
     }
 
-    private parseResponse(data: string): Map<string, Address> {
+    private parseResponse(data: string): Map<string, AddressImpl> {
         const jsonValue = JSON.parse(data);
 
-        const privateToPublicAddresses: Map<string, Address> = new Map<string, Address>();
+        const privateToPublicAddresses: Map<string, AddressImpl> = new Map<string, AddressImpl>();
         for (const value of jsonValue) {
             const privateAddress = value[HazelcastCloudDiscovery.PRIVATE_ADDRESS_PROPERTY];
             const publicAddress = value[HazelcastCloudDiscovery.PUBLIC_ADDRESS_PROPERTY];

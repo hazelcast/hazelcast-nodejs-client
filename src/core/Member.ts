@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import {Address} from '../Address';
+import {Address, AddressImpl} from '../Address';
 import {UUID} from './UUID';
 import {MemberVersion} from './MemberVersion';
 
-export class Member {
+export interface Member {
 
     /**
      * Network address of member.
@@ -31,17 +31,28 @@ export class Member {
     uuid: UUID;
 
     /**
-     * true if member is a lite member.
+     * Lite member flag.
      */
     liteMember: boolean;
 
-    /** @internal */
+    /**
+     * Returns string representation of this member.
+     */
+    toString(): string;
+
+}
+
+/** @internal */
+export class MemberImpl implements Member {
+
+    address: AddressImpl;
+    uuid: UUID;
+    liteMember: boolean;
     attributes: Map<string, string>;
-    /** @internal */
     version: MemberVersion;
 
-    /** @internal */
-    constructor(address: Address, uuid: UUID,
+    constructor(address: AddressImpl,
+                uuid: UUID,
                 attributes: Map<string, string>,
                 liteMember: boolean,
                 version: MemberVersion) {
@@ -52,8 +63,7 @@ export class Member {
         this.version = version;
     }
 
-    /** @internal */
-    equals(other: Member): boolean {
+    equals(other: MemberImpl): boolean {
         if (other == null) {
             return false;
         }
@@ -76,7 +86,6 @@ export class Member {
         return memberStr;
     }
 
-    /** @internal */
     id(): string {
         let hashCode = this.address.toString();
         if (this.uuid) {

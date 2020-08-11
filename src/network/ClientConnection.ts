@@ -23,7 +23,7 @@ import {BuildInfo} from '../BuildInfo';
 import HazelcastClient from '../HazelcastClient';
 import {IOError} from '../HazelcastError';
 import {DeferredPromise} from '../Util';
-import {Address} from '../Address';
+import {AddressImpl} from '../Address';
 import {UUID} from '../core/UUID';
 import {ILogger} from '../logging/ILogger';
 import {ClientMessage, Frame, SIZE_OF_FRAME_LENGTH_AND_FLAGS} from '../ClientMessage';
@@ -267,9 +267,9 @@ export class FragmentedClientMessageHandler {
 /** @internal */
 export class ClientConnection {
     private readonly connectionId: number;
-    private remoteAddress: Address;
+    private remoteAddress: AddressImpl;
     private remoteUuid: UUID;
-    private readonly localAddress: Address;
+    private readonly localAddress: AddressImpl;
     private lastReadTimeMillis: number;
     private lastWriteTimeMillis: number;
     private readonly client: HazelcastClient;
@@ -284,7 +284,7 @@ export class ClientConnection {
     private readonly logger: ILogger;
     private readonly fragmentedMessageHandler: FragmentedClientMessageHandler;
 
-    constructor(client: HazelcastClient, remoteAddress: Address, socket: net.Socket, connectionId: number) {
+    constructor(client: HazelcastClient, remoteAddress: AddressImpl, socket: net.Socket, connectionId: number) {
         const enablePipelining = client.getConfig().properties[PROPERTY_PIPELINING_ENABLED] as boolean;
         const pipeliningThreshold = client.getConfig().properties[PROPERTY_PIPELINING_THRESHOLD] as number;
         const noDelay = client.getConfig().properties[PROPERTY_NO_DELAY] as boolean;
@@ -293,7 +293,7 @@ export class ClientConnection {
         this.client = client;
         this.socket = socket;
         this.remoteAddress = remoteAddress;
-        this.localAddress = new Address(socket.localAddress, socket.localPort);
+        this.localAddress = new AddressImpl(socket.localAddress, socket.localPort);
         this.lastReadTimeMillis = 0;
         this.closedTime = 0;
         this.connectedServerVersion = BuildInfo.UNKNOWN_VERSION_ID;
@@ -311,7 +311,7 @@ export class ClientConnection {
      * Returns the address of local port that is associated with this connection.
      * @returns
      */
-    getLocalAddress(): Address {
+    getLocalAddress(): AddressImpl {
         return this.localAddress;
     }
 
@@ -319,11 +319,11 @@ export class ClientConnection {
      * Returns the address of remote node that is associated with this connection.
      * @returns
      */
-    getRemoteAddress(): Address {
+    getRemoteAddress(): AddressImpl {
         return this.remoteAddress;
     }
 
-    setRemoteAddress(address: Address): void {
+    setRemoteAddress(address: AddressImpl): void {
         this.remoteAddress = address;
     }
 

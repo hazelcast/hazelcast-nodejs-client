@@ -19,7 +19,7 @@ import * as assert from 'assert';
 import * as Long from 'long';
 import * as Promise from 'bluebird';
 import * as Path from 'path';
-import {Address} from './Address';
+import {AddressImpl} from './Address';
 
 /** @internal */
 export function assertNotNull(v: any): void {
@@ -165,7 +165,7 @@ export class AddressHelper {
     private static readonly MAX_PORT_TRIES: number = 3;
     private static readonly INITIAL_FIRST_PORT: number = 5701;
 
-    static getSocketAddresses(address: string): Address[] {
+    static getSocketAddresses(address: string): AddressImpl[] {
         const addressHolder = this.createAddressFromString(address, -1);
         let possiblePort = addressHolder.port;
         let maxPortTryCount = 1;
@@ -174,16 +174,16 @@ export class AddressHelper {
             possiblePort = AddressHelper.INITIAL_FIRST_PORT;
         }
 
-        const addresses: Address[] = [];
+        const addresses: AddressImpl[] = [];
 
         for (let i = 0; i < maxPortTryCount; i++) {
-            addresses.push(new Address(addressHolder.host, possiblePort + i));
+            addresses.push(new AddressImpl(addressHolder.host, possiblePort + i));
         }
 
         return addresses;
     }
 
-    static createAddressFromString(address: string, defaultPort?: number): Address {
+    static createAddressFromString(address: string, defaultPort?: number): AddressImpl {
         const indexBracketStart = address.indexOf('[');
         const indexBracketEnd = address.indexOf(']', indexBracketStart);
         const indexColon = address.indexOf(':');
@@ -206,7 +206,7 @@ export class AddressHelper {
         } else {
             host = address;
         }
-        return new Address(host, port);
+        return new AddressImpl(host, port);
     }
 
 }

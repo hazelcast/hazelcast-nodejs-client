@@ -19,7 +19,7 @@ import * as Promise from 'bluebird';
 import {OverflowPolicy} from '../../core/OverflowPolicy';
 import HazelcastClient from '../../HazelcastClient';
 import {TopicOverloadError} from '../../HazelcastError';
-import {Address} from '../../index';
+import {AddressImpl} from '../../Address';
 import {SerializationService} from '../../serialization/SerializationService';
 import {UuidUtil} from '../../util/UuidUtil';
 import {BaseProxy} from '../BaseProxy';
@@ -40,7 +40,7 @@ export const TOPIC_MAX_BACKOFF = 2000;
 /** @internal */
 export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
     private ringbuffer: Ringbuffer<ReliableTopicMessage>;
-    private readonly localAddress: Address;
+    private readonly localAddress: AddressImpl;
     private readonly batchSize: number;
     private readonly runners: { [key: string]: ReliableTopicListenerRunner<E> } = {};
     private readonly serializationService: SerializationService;
@@ -48,7 +48,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
 
     constructor(client: HazelcastClient, serviceName: string, name: string) {
         super(client, serviceName, name);
-        this.localAddress = client.getClusterService().getLocalClient().localAddress;
+        this.localAddress = client.getClusterService().getLocalClient().localAddress as AddressImpl;
         const config = (client.getConfig() as ClientConfigImpl).getReliableTopicConfig(name);
         this.batchSize = config.readBatchSize;
         this.overloadPolicy = config.overloadPolicy;

@@ -18,7 +18,7 @@
 import * as Long from 'long';
 import {Data, DataInput, DataOutput} from '../../serialization/Data';
 import {IdentifiedDataSerializable} from '../../serialization/Serializable';
-import {Address} from '../../Address';
+import {AddressImpl} from '../../Address';
 
 /** @internal */
 export const RELIABLE_TOPIC_MESSAGE_FACTORY_ID = -9;
@@ -31,7 +31,7 @@ export class ReliableTopicMessage implements IdentifiedDataSerializable {
     factoryId = RELIABLE_TOPIC_MESSAGE_FACTORY_ID;
     classId = RELIABLE_TOPIC_CLASS_ID;
     publishTime: Long;
-    publisherAddress: Address;
+    publisherAddress: AddressImpl;
     payload: Data;
 
     readData(input: DataInput): any {

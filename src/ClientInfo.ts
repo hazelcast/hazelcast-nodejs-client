@@ -46,4 +46,5 @@ export class ClientInfo {
      * Set of all labels of this client.
      */
     labels: Set<string>;
+
 }

@@ -18,7 +18,7 @@
 import {AddressProvider} from './AddressProvider';
 import {ClientNetworkConfigImpl} from '../config/ClientNetworkConfig';
 import * as Promise from 'bluebird';
-import {Address} from '../Address';
+import {AddressImpl} from '../Address';
 
 /**
  * Default address provider of Hazelcast.
@@ -42,7 +42,7 @@ export class DefaultAddressProvider implements AddressProvider {
         return Promise.resolve(addresses);
     }
 
-    translate(address: Address): Promise<Address> {
+    translate(address: AddressImpl): Promise<AddressImpl> {
         return Promise.resolve(address);
     }
 }

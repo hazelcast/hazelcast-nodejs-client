@@ -19,14 +19,14 @@ import {HazelcastCloudDiscovery} from './HazelcastCloudDiscovery';
 import {AddressProvider} from '../connection/AddressProvider';
 import * as Promise from 'bluebird';
 import {ILogger} from '../logging/ILogger';
-import {Address} from '../Address';
+import {AddressImpl} from '../Address';
 
 /** @internal */
 export class HazelcastCloudAddressProvider implements AddressProvider {
 
     private readonly logger: ILogger;
     private readonly cloudDiscovery: HazelcastCloudDiscovery;
-    private privateToPublic: Map<string, Address> = new Map<string, Address>();
+    private privateToPublic: Map<string, AddressImpl> = new Map<string, AddressImpl>();
 
     constructor(endpointUrl: string, connectionTimeoutMillis: number, logger: ILogger) {
         this.cloudDiscovery = new HazelcastCloudDiscovery(endpointUrl, connectionTimeoutMillis);
@@ -43,7 +43,7 @@ export class HazelcastCloudAddressProvider implements AddressProvider {
         });
     }
 
-    translate(address: Address): Promise<Address> {
+    translate(address: AddressImpl): Promise<AddressImpl> {
         if (address == null) {
             return Promise.resolve(null);
         }

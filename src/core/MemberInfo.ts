@@ -15,20 +15,20 @@
  */
 /** @ignore *//** */
 
-import {Address} from '../Address';
+import {AddressImpl} from '../Address';
 import {UUID} from './UUID';
 import {MemberVersion} from './MemberVersion';
 
 /** @internal */
 export class MemberInfo {
 
-    address: Address;
+    address: AddressImpl;
     uuid: UUID;
     liteMember: boolean;
     attributes: Map<string, string>;
     version: MemberVersion;
 
-    constructor(address: Address,
+    constructor(address: AddressImpl,
                 uuid: UUID,
                 attributes: Map<string, string>,
                 liteMember: boolean,
