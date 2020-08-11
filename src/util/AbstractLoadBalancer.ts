@@ -23,7 +23,8 @@ import {MembershipEvent} from '../core/MembershipEvent';
 import {Member} from '../core/Member';
 
 /**
- * Abstract Load Balancer to be used in built-in and user-provided implementations.
+ * Abstract Load Balancer to be used in built-in and user-provided
+ * {@link LoadBalancer} implementations.
  */
 export abstract class AbstractLoadBalancer implements LoadBalancer, InitialMembershipListener {
 
