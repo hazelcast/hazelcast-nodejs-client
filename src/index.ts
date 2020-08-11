@@ -26,7 +26,7 @@ import {IMap} from './proxy/IMap';
 import {ReadResultSet} from './proxy/ringbuffer/ReadResultSet';
 import {EvictionPolicy} from './config/EvictionPolicy';
 import {InMemoryFormat} from './config/InMemoryFormat';
-import {ItemEvent, ItemEventType} from './core/ItemListener';
+import {ItemEvent} from './core/ItemListener';
 import {MapEvent} from './core/MapListener';
 import {EntryEvent} from './core/EntryListener';
 import {LogLevel} from './logging/ILogger';
@@ -50,7 +50,6 @@ export {
     EvictionPolicy,
     InMemoryFormat,
     ItemEvent,
-    ItemEventType,
     MapEvent,
     EntryEvent,
     LogLevel,
