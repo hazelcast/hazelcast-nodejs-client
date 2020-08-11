@@ -15,7 +15,11 @@
  */
 
 import {ReadResultSet} from '../../';
-import {StaleSequenceError} from '../../HazelcastError';
+import {
+    InvocationTimeoutError,
+    ClientNotActiveError,
+    ClientOfflineError
+} from '../../HazelcastError';
 import {SerializationService} from '../../serialization/SerializationService';
 import {Ringbuffer} from '../Ringbuffer';
 import {ReliableTopicMessage} from './ReliableTopicMessage';
@@ -26,7 +30,7 @@ import {ILogger} from '../../logging/ILogger';
 
 export class ReliableTopicListenerRunner<E> {
 
-    public sequenceNumber = 0;
+    sequenceNumber = 0;
     private listener: MessageListener<E>;
     private ringbuffer: Ringbuffer<ReliableTopicMessage>;
     private batchSize: number;
@@ -52,52 +56,68 @@ export class ReliableTopicListenerRunner<E> {
         this.logger = logger;
     }
 
-    public next(): void {
+    next(): void {
         if (this.cancelled) {
             return;
         }
 
         this.ringbuffer.readMany(this.sequenceNumber, 1, this.batchSize)
             .then((result: ReadResultSet<ReliableTopicMessage>) => {
-                if (!this.cancelled) {
-                    for (let i = 0; i < result.size(); i++) {
-                        const msg = new Message<E>();
-                        const item = result.get(i);
-                        msg.messageObject = this.serializationService.toObject(item.payload);
-                        msg.publisher = item.publisherAddress;
-                        msg.publishingTime = item.publishTime;
-                        setImmediate(this.listener, msg);
-                        this.sequenceNumber++;
-                    }
-                    setImmediate(this.next.bind(this));
-                }
-            })
-            .catch((e) => {
-                let message: string;
-                if (e instanceof StaleSequenceError) {
-                    this.ringbuffer.headSequence().then((seq: Long) => {
-                        const newSequence = seq.toNumber();
-
-                        message = 'Topic "' + this.proxy.getName() + '" ran into a stale sequence. ' +
-                            ' Jumping from old sequence ' + this.sequenceNumber + ' to new sequence ' + newSequence;
-                        this.logger.warn('ReliableTopicListenerRunner', message);
-
-                        this.sequenceNumber = newSequence;
-                        setImmediate(this.next.bind(this));
-                    });
-
+                if (this.cancelled) {
                     return;
                 }
 
-                message = 'Listener of topic "' + this.proxy.getName() + '" caught an exception, terminating listener. ' + e;
-                this.logger.warn('ReliableTopicListenerRunner', message);
+                const nextSeq = result.getNextSequenceToReadFrom().toNumber();
+                const lostCount = nextSeq - result.getReadCount() - this.sequenceNumber;
+                // If messages were lost, behave as a loss tolerant listener
+                if (lostCount !== 0) {
+                    this.logger.warn('ReliableTopicListenerRunner', 'Listener of topic: '
+                        + this.proxy.getName() + ' lost ' + lostCount + ' messages.');
+                }
 
-                this.proxy.removeMessageListener(this.listenerId);
+                for (let i = 0; i < result.size(); i++) {
+                    const msg = new Message<E>();
+                    const item = result.get(i);
+                    msg.messageObject = this.serializationService.toObject(item.payload);
+                    msg.publisher = item.publisherAddress;
+                    msg.publishingTime = item.publishTime;
+                    process.nextTick(this.listener, msg);
+                }
+
+                this.sequenceNumber = nextSeq;
+                this.next();
+            })
+            .catch((err) => {
+                if (this.handleInternalError(err)) {
+                    this.next();
+                } else {
+                    this.proxy.removeMessageListener(this.listenerId);
+                }
             });
     }
 
-    public cancel(): void {
+    cancel(): void {
         this.cancelled = true;
+    }
+
+    private handleInternalError(err: Error): boolean {
+        if (err instanceof InvocationTimeoutError) {
+            this.logger.trace('ReliableTopicListenerRunner', 'Listener of topic: ' + this.proxy.getName()
+                + ' timed out. Continuing from last known sequence: ' + this.sequenceNumber);
+            return true;
+        } else if (err instanceof ClientOfflineError) {
+            this.logger.trace('ReliableTopicListenerRunner', 'Listener of topic: ' + this.proxy.getName()
+                + ' got error: ' + err + '. Continuing from last known sequence: ' + this.sequenceNumber);
+            return true;
+        } else if (err instanceof ClientNotActiveError) {
+            this.logger.trace('ReliableTopicListenerRunner', 'Terminating listener of topic: '
+                + this.proxy.getName() + '. Reason: HazelcastClient is shutting down.');
+            return false;
+        } else {
+            this.logger.warn('ReliableTopicListenerRunner', 'Listener of topic: ' + this.proxy.getName()
+                + ' caught an exception, terminating listener. ' + err);
+        }
+        return false;
     }
 
 }

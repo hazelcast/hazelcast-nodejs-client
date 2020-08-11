@@ -112,8 +112,8 @@ export class Invocation {
         }
 
         if (this.uuid != null && err instanceof TargetNotMemberError) {
-            // when invocation send to a specific member
-            // if target is no longer a member, we should not retry
+            // when invocation is sent to a specific member
+            // and target is no longer a member, we should not retry
             // note that this exception could come from the server
             return false;
         }
@@ -136,12 +136,12 @@ export class Invocation {
  * Sends requests to appropriate nodes. Resolves waiting promises with responses.
  */
 export class InvocationService {
+
     doInvoke: (invocation: Invocation) => void;
     private correlationCounter = 1;
     private eventHandlers: { [id: number]: Invocation } = {};
     private pending: { [id: number]: Invocation } = {};
     private client: HazelcastClient;
-    private smartRoutingEnabled: boolean;
     private readonly invocationRetryPauseMillis: number;
     private readonly invocationTimeoutMillis: number;
     private logger: ILogger;
@@ -154,7 +154,6 @@ export class InvocationService {
         this.connectionManager = hazelcastClient.getConnectionManager();
         this.partitionService = hazelcastClient.getPartitionService();
         this.logger = this.client.getLoggingService().getLogger();
-        this.smartRoutingEnabled = hazelcastClient.getConfig().network.smartRouting;
         if (hazelcastClient.getConfig().network.smartRouting) {
             this.doInvoke = this.invokeSmart;
         } else {
@@ -391,7 +390,9 @@ export class InvocationService {
     }
 
     /**
-     * Determines if an error is retryable. The given invocation is rejected with approprate error if the error is not retryable.
+     * Determines if an error is retryable. The given invocation is rejected with
+     * appropriate error if the error is not retryable.
+     *
      * @param invocation
      * @param error
      * @returns `true` if invocation is rejected, `false` otherwise
@@ -409,8 +410,8 @@ export class InvocationService {
 
         if (invocation.deadline < Date.now()) {
             this.logger.trace('InvocationService', 'Error will not be retried because invocation timed out');
-            invocation.deferred.reject(new InvocationTimeoutError('Invocation ' + invocation.request.getCorrelationId() + ')'
-                + ' reached its deadline.', error));
+            invocation.deferred.reject(new InvocationTimeoutError('Invocation '
+                + invocation.request.getCorrelationId() + ') reached its deadline.', error));
             return true;
         }
     }

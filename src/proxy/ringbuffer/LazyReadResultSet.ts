@@ -15,22 +15,28 @@
  */
 
 import * as Long from 'long';
-import {UnsupportedOperationError} from '../../HazelcastError';
 import {Data} from '../../serialization/Data';
 import {SerializationService, SerializationServiceV1} from '../../serialization/SerializationService';
 import {ReadResultSet} from './ReadResultSet';
 
 export class LazyReadResultSet<T> implements ReadResultSet<T> {
+
     private readCount: number;
     private items: any[];
     private itemSeqs: Long[];
+    private nextSeq: Long;
     private serializationService: SerializationService;
 
-    constructor(serializationService: SerializationService, readCount: number, items: Data[], itemSeqs: Long[]) {
+    constructor(serializationService: SerializationService,
+                readCount: number,
+                items: Data[],
+                itemSeqs: Long[],
+                nextSeq: Long) {
         this.serializationService = serializationService;
         this.readCount = readCount;
         this.items = items;
         this.itemSeqs = itemSeqs;
+        this.nextSeq = nextSeq;
     }
 
     getReadCount(): number {
@@ -52,14 +58,15 @@ export class LazyReadResultSet<T> implements ReadResultSet<T> {
     }
 
     getSequence(index: number): Long {
-        if (this.itemSeqs == null) {
-            throw new UnsupportedOperationError('Sequence IDs are not available when the cluster version is lower than 3.9');
-        }
         return this.itemSeqs[index];
     }
 
     size(): number {
         return this.items.length;
+    }
+
+    getNextSequenceToReadFrom(): Long {
+        return this.nextSeq;
     }
 
 }
