@@ -6,11 +6,11 @@
     "types": "lib/index.d.ts",
     "dependencies": {
         "bluebird": "3.7.2",
-        "long": "4.0.0"
+        "@types/bluebird": "3.5.32",
+        "long": "4.0.0",
+        "@types/long": "4.0.1"
     },
     "devDependencies": {
-        "@types/bluebird": "^3.5.32",
-        "@types/long": "^4.0.1",
         "@types/node": "^8.10.60",
         "@typescript-eslint/eslint-plugin": "^2.34.0",
         "@typescript-eslint/parser": "^2.34.0",
