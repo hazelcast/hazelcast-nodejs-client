@@ -41,7 +41,7 @@
         "precoverage": "node download-remote-controller.js",
         "coverage": "rimraf coverage && nyc node_modules/mocha/bin/_mocha -- --recursive --reporter-options mochaFile=report.xml --reporter mocha-junit-reporter",
         "pregenerate-docs": "rimraf docs",
-        "generate-docs": "typedoc --out docs/ --exclude 'src/codec/**/*.ts' src/ --excludeNotExported --excludeExternals --stripInternal --ignoreCompilerErrors --excludePrivate --excludeProtected",
+        "generate-docs": "typedoc --options typedoc.json",
         "lint": "eslint --ext .ts ."
     },
     "repository": {

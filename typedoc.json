@@ -1,0 +1,11 @@
+{
+    "out": "docs/",
+    "inputFiles": "src/",
+    "exclude": "src/codec/**/*.ts",
+    "excludeNotExported": true,
+    "excludeExternals": true,
+    "stripInternal": true,
+    "ignoreCompilerErrors": true,
+    "excludePrivate": true,
+    "excludeProtected": true
+}

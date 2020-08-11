@@ -9,6 +9,7 @@ scripts/
 src/
 test/
 tsconfig.json
+typedoc.json
 .editorconfig
 .eslintignore
 .eslintrc.js
