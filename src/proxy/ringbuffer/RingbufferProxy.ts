@@ -33,7 +33,7 @@ import Long = require('long');
 
 export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbuffer<E> {
 
-    private static MAX_BATCH_SIZE = 1000;
+    private static readonly MAX_BATCH_SIZE = 1000;
 
     capacity(): Promise<Long> {
         return this.encodeInvoke(RingbufferCapacityCodec)

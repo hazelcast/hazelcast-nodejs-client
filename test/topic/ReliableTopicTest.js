@@ -18,7 +18,6 @@
 const expect = require('chai').expect;
 const fs = require('fs');
 const Long = require('long');
-const Promise = require('bluebird');
 
 const RC = require('./../RC');
 const { Client } = require('../..');
