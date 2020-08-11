@@ -32,10 +32,12 @@ const REQUEST_FROM_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_TO_OFFSET = REQUEST_FROM_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_TO_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+/** @internal */
 export interface ListSubResponseParams {
     response: Data[];
 }
 
+/** @internal */
 export class ListSubCodec {
     static encodeRequest(name: string, from: number, to: number): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

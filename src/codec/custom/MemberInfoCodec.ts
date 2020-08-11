@@ -29,6 +29,7 @@ const UUID_OFFSET = 0;
 const LITE_MEMBER_OFFSET = UUID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
 const INITIAL_FRAME_SIZE = LITE_MEMBER_OFFSET + BitsUtil.BOOLEAN_SIZE_IN_BYTES;
 
+/** @internal */
 export class MemberInfoCodec {
     static encode(clientMessage: ClientMessage, memberInfo: MemberInfo): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());

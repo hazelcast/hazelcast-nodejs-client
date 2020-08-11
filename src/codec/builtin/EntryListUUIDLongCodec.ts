@@ -22,6 +22,7 @@ import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 
 const ENTRY_SIZE_IN_BYTES = BitsUtil.UUID_SIZE_IN_BYTES + BitsUtil.LONG_SIZE_IN_BYTES;
 
+/** @internal */
 export class EntryListUUIDLongCodec {
     static encode(clientMessage: ClientMessage, entries: Array<[UUID, Long]>): void {
         const entryCount = entries.length;

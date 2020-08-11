@@ -26,6 +26,7 @@ const REQUEST_MESSAGE_TYPE = 1280;
 
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+/** @internal */
 export class ClientDestroyProxyCodec {
     static encodeRequest(name: string, serviceName: string): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

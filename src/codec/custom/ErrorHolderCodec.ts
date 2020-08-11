@@ -27,6 +27,7 @@ import {StackTraceElementCodec} from './StackTraceElementCodec';
 const ERROR_CODE_OFFSET = 0;
 const INITIAL_FRAME_SIZE = ERROR_CODE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+/** @internal */
 export class ErrorHolderCodec {
     static encode(clientMessage: ClientMessage, errorHolder: ErrorHolder): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());

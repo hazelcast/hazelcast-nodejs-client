@@ -18,6 +18,7 @@ import {ClientMessage, Frame} from '../../ClientMessage';
 import {BitsUtil} from '../../BitsUtil';
 import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 
+/** @internal */
 export class ListIntegerCodec {
     static encode(clientMessage: ClientMessage, list: number[]): void {
         const itemCount = list.length;

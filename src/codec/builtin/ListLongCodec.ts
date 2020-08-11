@@ -19,6 +19,7 @@ import * as Long from 'long';
 import {BitsUtil} from '../../BitsUtil';
 import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 
+/** @internal */
 export class ListLongCodec {
     static encode(clientMessage: ClientMessage, list: Long[]): void {
         const itemCount = list.length;

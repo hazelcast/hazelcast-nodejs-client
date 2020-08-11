@@ -31,6 +31,7 @@ const REQUEST_MESSAGE_TYPE = 136704;
 const REQUEST_THREAD_ID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_THREAD_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
+/** @internal */
 export class MultiMapDeleteCodec {
     static encodeRequest(name: string, key: Data, threadId: Long): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

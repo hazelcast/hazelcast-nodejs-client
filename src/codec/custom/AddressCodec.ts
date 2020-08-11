@@ -19,14 +19,15 @@ import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../BitsUtil';
 import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame, DEFAULT_FLAGS} from '../../ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
-import {Address} from '../../Address';
+import {AddressImpl} from '../../Address';
 import {StringCodec} from '../builtin/StringCodec';
 
 const PORT_OFFSET = 0;
 const INITIAL_FRAME_SIZE = PORT_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+/** @internal */
 export class AddressCodec {
-    static encode(clientMessage: ClientMessage, address: Address): void {
+    static encode(clientMessage: ClientMessage, address: AddressImpl): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());
 
         const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE, DEFAULT_FLAGS);
@@ -38,7 +39,7 @@ export class AddressCodec {
         clientMessage.addFrame(END_FRAME.copy());
     }
 
-    static decode(clientMessage: ClientMessage): Address {
+    static decode(clientMessage: ClientMessage): AddressImpl {
         // begin frame
         clientMessage.nextFrame();
 
@@ -49,6 +50,6 @@ export class AddressCodec {
 
         CodecUtil.fastForwardToEndFrame(clientMessage);
 
-        return new Address(host, port);
+        return new AddressImpl(host, port);
     }
 }

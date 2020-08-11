@@ -20,6 +20,7 @@ import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 
 const ENTRY_SIZE_IN_BYTES = BitsUtil.INT_SIZE_IN_BYTES + BitsUtil.INT_SIZE_IN_BYTES;
 
+/** @internal */
 export class EntryListIntegerIntegerCodec {
     static encode(clientMessage: ClientMessage, entries: Array<[number, number]>): void {
         const entryCount = entries.length;

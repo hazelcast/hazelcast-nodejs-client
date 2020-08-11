@@ -19,6 +19,7 @@ import {UUID} from '../../core/UUID';
 import {BitsUtil} from '../../BitsUtil';
 import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 
+/** @internal */
 export class ListUUIDCodec {
     static encode(clientMessage: ClientMessage, list: UUID[]): void {
         const itemCount = list.length;

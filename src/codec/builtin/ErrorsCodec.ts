@@ -24,6 +24,7 @@ import {ErrorHolderCodec} from '../custom/ErrorHolderCodec';
 
 export const EXCEPTION_MESSAGE_TYPE = 0;
 
+/** @internal */
 export class ErrorsCodec {
     static decode(clientMessage: ClientMessage): ErrorHolder[] {
         // initial frame

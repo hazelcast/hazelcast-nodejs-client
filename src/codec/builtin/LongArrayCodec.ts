@@ -18,6 +18,7 @@ import {ClientMessage} from '../../ClientMessage';
 import * as Long from 'long';
 import {ListLongCodec} from './ListLongCodec';
 
+/** @internal */
 export class LongArrayCodec {
     static encode(clientMessage: ClientMessage, array: Long[]): void {
         ListLongCodec.encode(clientMessage, array);

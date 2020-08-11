@@ -35,10 +35,12 @@ const REQUEST_REFERENCE_ID_OFFSET = REQUEST_TIMEOUT_OFFSET + BitsUtil.LONG_SIZE_
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_REFERENCE_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
+/** @internal */
 export interface MultiMapTryLockResponseParams {
     response: boolean;
 }
 
+/** @internal */
 export class MultiMapTryLockCodec {
     static encodeRequest(name: string, key: Data, threadId: Long, lease: Long, timeout: Long, referenceId: Long): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

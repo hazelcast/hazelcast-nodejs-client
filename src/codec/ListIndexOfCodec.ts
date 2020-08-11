@@ -30,10 +30,12 @@ const REQUEST_MESSAGE_TYPE = 332800;
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
+/** @internal */
 export interface ListIndexOfResponseParams {
     response: number;
 }
 
+/** @internal */
 export class ListIndexOfCodec {
     static encodeRequest(name: string, value: Data): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

@@ -39,10 +39,12 @@ const EVENT_ENTRY_EVENT_TYPE_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN
 const EVENT_ENTRY_UUID_OFFSET = EVENT_ENTRY_EVENT_TYPE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const EVENT_ENTRY_NUMBER_OF_AFFECTED_ENTRIES_OFFSET = EVENT_ENTRY_UUID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
 
+/** @internal */
 export interface MultiMapAddEntryListenerToKeyResponseParams {
     response: UUID;
 }
 
+/** @internal */
 export class MultiMapAddEntryListenerToKeyCodec {
     static encodeRequest(name: string, key: Data, includeValue: boolean, localOnly: boolean): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

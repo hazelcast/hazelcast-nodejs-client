@@ -38,6 +38,7 @@ const REQUEST_INITIAL_FRAME_SIZE = REQUEST_MAX_SIZE_OFFSET + BitsUtil.INT_SIZE_I
 const RESPONSE_READ_COUNT_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 const RESPONSE_NEXT_SEQ_OFFSET = RESPONSE_READ_COUNT_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+/** @internal */
 export interface MapEventJournalReadResponseParams {
     readCount: number;
     items: Data[];
@@ -45,6 +46,7 @@ export interface MapEventJournalReadResponseParams {
     nextSeq: Long;
 }
 
+/** @internal */
 export class MapEventJournalReadCodec {
     static encodeRequest(name: string, startSequence: Long, minSize: number, maxSize: number, predicate: Data, projection: Data): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

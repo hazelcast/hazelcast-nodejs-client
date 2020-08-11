@@ -26,6 +26,7 @@ const MINOR_OFFSET = MAJOR_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 const PATCH_OFFSET = MINOR_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 const INITIAL_FRAME_SIZE = PATCH_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
+/** @internal */
 export class MemberVersionCodec {
     static encode(clientMessage: ClientMessage, memberVersion: MemberVersion): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());

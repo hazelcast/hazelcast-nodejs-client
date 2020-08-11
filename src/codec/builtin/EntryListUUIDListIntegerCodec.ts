@@ -20,6 +20,7 @@ import {ListIntegerCodec} from './ListIntegerCodec';
 import {ListUUIDCodec} from './ListUUIDCodec';
 import {ListMultiFrameCodec} from './ListMultiFrameCodec';
 
+/** @internal */
 export class EntryListUUIDListIntegerCodec {
     static encode(clientMessage: ClientMessage, entries: Array<[UUID, number[]]>): void {
         const entryCount = entries.length;
