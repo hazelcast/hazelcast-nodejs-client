@@ -2694,7 +2694,7 @@ An example configuration is shown below.
 ```javascript
 const readFile = util.promisify(fs.readFile);
 
-class SSLFactory {
+class SSLOptionsFactory {
     async init(properties) {
         const promises = [];
         this.keepOrder = properties.userDefinedProperty1;
@@ -2732,7 +2732,7 @@ const cfg = {
     network: {
         ssl: {
             enabled: true,
-            sslOptionsFactory: new SSLFactory(),
+            sslOptionsFactory: new SSLOptionsFactory(),
             sslOptionsFactoryProperties: {
                 caPath: 'ca.pem',
                 keyPath: 'key.pem',
@@ -2744,7 +2744,7 @@ const cfg = {
 };
 ```
 
-The client calls the `init()` method with the `properties` configuration option. Then the client calls the method `getSSLOptions` of `SSLFactory` to create the `options` object.
+The client calls the `init()` method with the `properties` configuration option. Then the client calls the `getSSLOptions()` method of `SSLOptionsFactory` to create the `options` object.
 
 ## 8.2. Credentials
 
