@@ -58,30 +58,57 @@ import {RoundRobinLB} from './util/RoundRobinLB';
 import {ClusterViewListenerService} from './listener/ClusterViewListenerService';
 import {ClientMessage} from './ClientMessage';
 
+/**
+ * Hazelcast client instance. When you want to use Hazelcast's distributed
+ * data structures, you must first create a client instance. Multiple
+ * instances can be created on a single Node.js process.
+ *
+ * Client instances should be shut down explicitly.
+ */
 export default class HazelcastClient {
 
+    /** @internal */
     private static CLIENT_ID = 0;
 
+    /** @internal */
     private readonly instanceName: string;
+    /** @internal */
     private readonly id: number = HazelcastClient.CLIENT_ID++;
+    /** @internal */
     private readonly config: ClientConfigImpl;
+    /** @internal */
     private readonly loggingService: LoggingService;
+    /** @internal */
     private readonly serializationService: SerializationService;
+    /** @internal */
     private readonly invocationService: InvocationService;
+    /** @internal */
     private readonly listenerService: ListenerService;
+    /** @internal */
     private readonly connectionManager: ClientConnectionManager;
+    /** @internal */
     private readonly partitionService: PartitionServiceImpl;
+    /** @internal */
     private readonly clusterService: ClusterService;
+    /** @internal */
     private readonly lifecycleService: LifecycleServiceImpl;
+    /** @internal */
     private readonly proxyManager: ProxyManager;
+    /** @internal */
     private readonly nearCacheManager: NearCacheManager;
+    /** @internal */
     private readonly lockReferenceIdGenerator: LockReferenceIdGenerator;
+    /** @internal */
     private readonly errorFactory: ClientErrorFactory;
+    /** @internal */
     private readonly statistics: Statistics;
+    /** @internal */
     private readonly addressProvider: AddressProvider;
+    /** @internal */
     private readonly loadBalancer: LoadBalancer;
+    /** @internal */
     private readonly clusterViewListenerService: ClusterViewListenerService;
-
+    /** @internal */
     private mapRepairingTask: RepairingTask;
 
     /** @internal */
@@ -419,6 +446,7 @@ export default class HazelcastClient {
         return this.proxyManager.createDistributedObjectsOnCluster();
     }
 
+    /** @internal */
     private init(): Promise<HazelcastClient> {
         try {
             this.lifecycleService.start();
@@ -454,6 +482,7 @@ export default class HazelcastClient {
             });
     }
 
+    /** @internal */
     private initLoadBalancer(): LoadBalancer {
         let lb = this.config.loadBalancer.customLoadBalancer;
         if (lb == null) {
@@ -469,6 +498,7 @@ export default class HazelcastClient {
         return lb;
     }
 
+    /** @internal */
     private createAddressProvider(): AddressProvider {
         const networkConfig = this.config.network;
 
@@ -488,6 +518,7 @@ export default class HazelcastClient {
         return new DefaultAddressProvider(networkConfig);
     }
 
+    /** @internal */
     private initCloudAddressProvider(): HazelcastCloudAddressProvider {
         const cloudConfig = this.getConfig().network.hazelcastCloud;
         const discoveryToken = cloudConfig.discoveryToken;
@@ -499,6 +530,7 @@ export default class HazelcastClient {
         return null;
     }
 
+    /** @internal */
     private getConnectionTimeoutMillis(): number {
         const networkConfig = this.getConfig().network;
         const connTimeout = networkConfig.connectionTimeout;
