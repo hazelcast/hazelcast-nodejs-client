@@ -99,6 +99,7 @@ export interface DataOutput {
 
     writeChars(chars: string): void;
 
+    /** @internal */
     writeData(data: Data): void;
 
     writeDouble(double: number): void;
@@ -181,6 +182,7 @@ export interface DataInput {
 
     readCharArray(pos?: number): string[];
 
+    /** @internal */
     readData(pos?: number): Data;
 
     readDouble(pos?: number): number;
