@@ -63,7 +63,8 @@ export enum LifecycleState {
 const LIFECYCLE_EVENT_NAME = 'lifecycleEvent';
 
 /**
- * LifecycleService of the client.
+ * Lifecycle service for Hazelcast clients. Allows to determine lifecycle
+ * state of the client and shut it down.
  */
 export interface LifecycleService {
 
