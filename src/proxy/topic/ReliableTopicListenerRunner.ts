@@ -88,11 +88,11 @@ export class ReliableTopicListenerRunner<E> {
                 }
 
                 this.sequenceNumber = nextSeq;
-                this.scheduleNext();
+                this.next();
             })
             .catch((err) => {
                 if (this.handleInternalError(err)) {
-                    this.scheduleNext();
+                    this.next();
                 } else {
                     this.proxy.removeMessageListener(this.listenerId);
                 }
@@ -101,10 +101,6 @@ export class ReliableTopicListenerRunner<E> {
 
     cancel(): void {
         this.cancelled = true;
-    }
-
-    private scheduleNext(): void {
-        setImmediate(this.next.bind(this));
     }
 
     private handleInternalError(err: Error): boolean {
