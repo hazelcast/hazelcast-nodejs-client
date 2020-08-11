@@ -4,7 +4,7 @@
  * produced by TypeScript compiler.
  */
 
-import { Client } from '../lib';
+import { Client } from '../../lib';
 
 (async () => {
     const client = await Client.newHazelcastClient();
