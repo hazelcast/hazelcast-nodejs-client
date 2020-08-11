@@ -35,6 +35,8 @@ import {HazelcastJsonValue} from './core/HazelcastJsonValue';
 import {LoadBalancer} from './LoadBalancer';
 import {AbstractLoadBalancer} from './util/AbstractLoadBalancer';
 import {FieldType} from './serialization/portable/ClassDefinition';
+import {SSLOptionsFactory} from './connection/SSLOptionsFactory';
+import {BasicSSLOptionsFactory} from './connection/BasicSSLOptionsFactory';
 
 export {
     HazelcastClient as Client,
@@ -58,4 +60,6 @@ export {
     LoadBalancer,
     AbstractLoadBalancer,
     FieldType,
+    SSLOptionsFactory,
+    BasicSSLOptionsFactory,
 };
