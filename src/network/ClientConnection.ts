@@ -249,18 +249,14 @@ export class FragmentedClientMessageHandler {
         clientMessage.dropFragmentationFrame();
         if (fragmentationFrame.hasBeginFragmentFlag()) {
             this.fragmentedMessages.set(fragmentationId, clientMessage);
-        } else if (fragmentationFrame.hasEndFragmentFlag()) {
-            const mergedMessage = this.mergeIntoExistingClientMessage(fragmentationId, clientMessage);
-            callback(mergedMessage);
         } else {
-            this.mergeIntoExistingClientMessage(fragmentationId, clientMessage);
+            const existingMessage = this.fragmentedMessages.get(fragmentationId);
+            existingMessage.merge(clientMessage);
+            if (fragmentationFrame.hasEndFragmentFlag()) {
+                callback(existingMessage);
+                this.fragmentedMessages.delete(fragmentationId);
+            }
         }
-    }
-
-    private mergeIntoExistingClientMessage(fragmentationId: number, clientMessage: ClientMessage): ClientMessage {
-        const existingMessage = this.fragmentedMessages.get(fragmentationId);
-        existingMessage.merge(clientMessage);
-        return existingMessage;
     }
 }
 
