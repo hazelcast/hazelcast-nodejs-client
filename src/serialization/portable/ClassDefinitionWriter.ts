@@ -15,13 +15,12 @@
  */
 /** @ignore *//** */
 
-import {PortableWriter} from './PortableSerializer';
+import {Portable, PortableWriter} from '../Portable';
 import {ClassDefinition} from './ClassDefinition';
 import {PortableContext} from './PortableContext';
-import {Portable} from '../Serializable';
 import * as Long from 'long';
 import {ClassDefinitionBuilder} from './ClassDefinitionBuilder';
-import {HazelcastSerializationError} from '../../HazelcastError';
+import {HazelcastSerializationError} from '../../core';
 
 /** @internal */
 export class ClassDefinitionWriter implements PortableWriter {

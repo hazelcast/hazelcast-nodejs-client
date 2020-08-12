@@ -38,7 +38,7 @@
  */
 import * as Promise from 'bluebird';
 import * as Long from 'long';
-import {DistributedObject} from '../DistributedObject';
+import {DistributedObject} from '../core/DistributedObject';
 
 export interface FlakeIdGenerator extends DistributedObject {
 

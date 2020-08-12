@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Address, AddressImpl} from '../Address';
+import {Address, AddressImpl} from './Address';
 import {UUID} from './UUID';
 import {MemberVersion} from './MemberVersion';
 

@@ -17,10 +17,16 @@
 
 const expect = require('chai').expect;
 const path = require('path');
-const Config = require('../..').Config;
-const ConfigBuilder = require('../../lib/config/ConfigBuilder').ConfigBuilder;
-const AddressHelper = require('../../lib/Util').AddressHelper;
-const ReconnectMode = require('../../lib/config/ConnectionStrategyConfig').ReconnectMode;
+const {
+    EvictionPolicy,
+    JsonStringDeserializationPolicy,
+    LoadBalancerType,
+    InMemoryFormat,
+    TopicOverloadPolicy,
+} = require('../..');
+const { ConfigBuilder } = require('../../lib/config/ConfigBuilder');
+const { AddressHelper } = require('../../lib/util/Util');
+const { ReconnectMode } = require('../../lib/config/ConnectionStrategyConfig');
 
 describe('ConfigBuilderTest', function () {
 
@@ -148,7 +154,7 @@ describe('ConfigBuilderTest', function () {
         expect(serializationCfg.isBigEndian).to.equal(false);
         expect(serializationCfg.portableVersion).to.equal(1);
         expect(serializationCfg.jsonStringDeserializationPolicy)
-            .to.equal(Config.JsonStringDeserializationPolicy.NO_DESERIALIZATION);
+            .to.equal(JsonStringDeserializationPolicy.NO_DESERIALIZATION);
 
         expect(Object.keys(serializationCfg.dataSerializableFactories).length).to.equal(1);
         expect(serializationCfg.dataSerializableFactories['1']).to.equal(dataSerializableFactory);
@@ -167,9 +173,9 @@ describe('ConfigBuilderTest', function () {
         expect(nearCacheConfigs['nc-map'].name).to.equal('nc-map');
         expect(nearCacheConfigs['nc-map'].invalidateOnChange).to.be.false;
         expect(nearCacheConfigs['nc-map'].maxIdleSeconds).to.equal(2);
-        expect(nearCacheConfigs['nc-map'].inMemoryFormat).to.equal(Config.InMemoryFormat.OBJECT);
+        expect(nearCacheConfigs['nc-map'].inMemoryFormat).to.equal(InMemoryFormat.OBJECT);
         expect(nearCacheConfigs['nc-map'].timeToLiveSeconds).to.equal(3);
-        expect(nearCacheConfigs['nc-map'].evictionPolicy).to.equal(Config.EvictionPolicy.LRU);
+        expect(nearCacheConfigs['nc-map'].evictionPolicy).to.equal(EvictionPolicy.LRU);
         expect(nearCacheConfigs['nc-map'].evictionMaxSize).to.equal(3000);
         expect(nearCacheConfigs['nc-map'].evictionSamplingCount).to.equal(4);
         expect(nearCacheConfigs['nc-map'].evictionSamplingPoolSize).to.equal(8);
@@ -177,9 +183,9 @@ describe('ConfigBuilderTest', function () {
         expect(nearCacheConfigs['nc-map2'].name).to.equal('nc-map2');
         expect(nearCacheConfigs['nc-map2'].invalidateOnChange).to.be.false;
         expect(nearCacheConfigs['nc-map2'].maxIdleSeconds).to.equal(2);
-        expect(nearCacheConfigs['nc-map2'].inMemoryFormat).to.equal(Config.InMemoryFormat.OBJECT);
+        expect(nearCacheConfigs['nc-map2'].inMemoryFormat).to.equal(InMemoryFormat.OBJECT);
         expect(nearCacheConfigs['nc-map2'].timeToLiveSeconds).to.equal(3);
-        expect(nearCacheConfigs['nc-map2'].evictionPolicy).to.equal(Config.EvictionPolicy.LRU);
+        expect(nearCacheConfigs['nc-map2'].evictionPolicy).to.equal(EvictionPolicy.LRU);
         expect(nearCacheConfigs['nc-map2'].evictionMaxSize).to.equal(3000);
         expect(nearCacheConfigs['nc-map2'].evictionSamplingCount).to.equal(4);
         expect(nearCacheConfigs['nc-map2'].evictionSamplingPoolSize).to.equal(8);
@@ -189,11 +195,11 @@ describe('ConfigBuilderTest', function () {
         const rtConfigs = fullConfig.reliableTopics;
         expect(rtConfigs['rt1'].name).to.equal('rt1');
         expect(rtConfigs['rt1'].readBatchSize).to.equal(35);
-        expect(rtConfigs['rt1'].overloadPolicy).to.equal(Config.TopicOverloadPolicy.DISCARD_NEWEST);
+        expect(rtConfigs['rt1'].overloadPolicy).to.equal(TopicOverloadPolicy.DISCARD_NEWEST);
 
         expect(rtConfigs['rt2'].name).to.equal('rt2');
         expect(rtConfigs['rt2'].readBatchSize).to.equal(15);
-        expect(rtConfigs['rt2'].overloadPolicy).to.equal(Config.TopicOverloadPolicy.DISCARD_NEWEST);
+        expect(rtConfigs['rt2'].overloadPolicy).to.equal(TopicOverloadPolicy.DISCARD_NEWEST);
     });
 
     it('lifecycleListeners', function () {
@@ -220,7 +226,7 @@ describe('ConfigBuilderTest', function () {
 
     it('loadBalancer', function () {
         const loadBalancer = fullConfig.loadBalancer;
-        expect(loadBalancer.type).to.equal(Config.LoadBalancerType.RANDOM);
+        expect(loadBalancer.type).to.equal(LoadBalancerType.RANDOM);
         expect(loadBalancer.customLoadBalancer).to.equal(customLoadBalancer);
     });
 });

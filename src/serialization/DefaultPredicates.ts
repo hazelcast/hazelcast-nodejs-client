@@ -17,7 +17,7 @@
 
 import {Comparator} from '../core/Comparator';
 import {IterationType, Predicate, PagingPredicate} from '../core/Predicate';
-import {enumFromString} from '../Util';
+import {enumFromString} from '../util/Util';
 import {DataInput, DataOutput} from './Data';
 import {IdentifiedDataSerializable} from './Serializable';
 

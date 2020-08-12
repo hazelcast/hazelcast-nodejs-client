@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
+import * as Long from 'long';
 import * as Promise from 'bluebird';
-import {EntryListener} from '../core/EntryListener';
-import {Predicate} from '../core/Predicate';
-import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
-import {DistributedObject} from '../DistributedObject';
-import {ListComparator} from '../core/Comparator';
-import Long = require('long');
+import {EntryListener} from './EntryListener';
+import {
+    DistributedObject,
+    ListComparator,
+    Predicate,
+    ReadOnlyLazyList
+} from '../core';
 
 export interface ReplicatedMap<K, V> extends DistributedObject {
     /**

@@ -15,18 +15,17 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect, assert } = require('chai');
 const sinon = require('sinon');
-const assert = require('chai').assert;
 const sandbox = sinon.createSandbox();
 
-const Controller = require('./RC');
-const MapProxy = require('../lib/proxy/MapProxy').MapProxy;
-const ConnectionManager = require('../lib/network/ClientConnectionManager').ClientConnectionManager;
-const ClientConnection = require('../lib/network/ClientConnection').ClientConnection;
-const HazelcastClient = require('../.').Client;
+const RC = require('./RC');
+const { Client } = require('../.');
+const { MapProxy } = require('../lib/proxy/MapProxy');
+const { ClientConnectionManager } = require('../lib/network/ClientConnectionManager');
+const { ClientConnection } = require('../lib/network/ClientConnection');
 
-describe('Generic proxy test', function () {
+describe('ClientProxyTest', function () {
 
     let cluster, client, map, list;
 
@@ -39,15 +38,15 @@ describe('Generic proxy test', function () {
                 })
                 .then(function () {
                     client.shutdown();
-                    return Controller.terminateCluster(cluster.id);
+                    return RC.terminateCluster(cluster.id);
                 });
         }
     });
 
     it('Client without active connection should return unknown version', function () {
-        const connectionManagerStub = sandbox.stub(ConnectionManager.prototype);
+        const connectionManagerStub = sandbox.stub(ClientConnectionManager.prototype);
         connectionManagerStub.getActiveConnections.returns({});
-        const clientStub = sandbox.stub(HazelcastClient.prototype);
+        const clientStub = sandbox.stub(Client.prototype);
         clientStub.getConnectionManager.returns(connectionManagerStub);
 
         const mapProxy = new MapProxy(clientStub, 'mockMapService', 'mockMap');
@@ -57,11 +56,11 @@ describe('Generic proxy test', function () {
     it('Client with a 3.7 server connection should return the version', function () {
         const connectionStub = sandbox.stub(ClientConnection.prototype);
         connectionStub.getConnectedServerVersion.returns('30700');
-        const connectionManagerStub = sandbox.stub(ConnectionManager.prototype);
+        const connectionManagerStub = sandbox.stub(ClientConnectionManager.prototype);
         connectionManagerStub.getActiveConnections.returns({
             'localhost': connectionStub
         });
-        const clientStub = sandbox.stub(HazelcastClient.prototype);
+        const clientStub = sandbox.stub(Client.prototype);
         clientStub.getConnectionManager.returns(connectionManagerStub);
 
         const mapProxy = new MapProxy(clientStub, 'mockMapService', 'mockMap');
@@ -69,11 +68,11 @@ describe('Generic proxy test', function () {
     });
 
     it('Proxies with the same name should be different for different services', function () {
-        return Controller.createCluster().then(function (response) {
+        return RC.createCluster().then(function (response) {
             cluster = response;
-            return Controller.startMember(cluster.id);
+            return RC.startMember(cluster.id);
         }).then(function () {
-            return HazelcastClient.newHazelcastClient({
+            return Client.newHazelcastClient({
                 clusterName: cluster.id
             });
         }).then(function (res) {

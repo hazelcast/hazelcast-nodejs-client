@@ -18,9 +18,9 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const winston = require('winston');
-const Controller = require('./RC');
-const HazelcastClient = require('../.').Client;
-const LogLevel = require('../.').LogLevel;
+const RC = require('./RC');
+const { Client } = require('../.');
+const { LogLevel } = require('../.');
 
 describe('LoggingTest', function () {
 
@@ -60,14 +60,14 @@ describe('LoggingTest', function () {
     };
 
     before(function () {
-        return Controller.createCluster(null, null).then(function (res) {
+        return RC.createCluster(null, null).then(function (res) {
             cluster = res;
-            return Controller.startMember(cluster.id);
+            return RC.startMember(cluster.id);
         });
     });
 
     after(function () {
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     beforeEach(function () {
@@ -88,7 +88,7 @@ describe('LoggingTest', function () {
             loggingHappened = true;
         });
 
-        return HazelcastClient.newHazelcastClient({
+        return Client.newHazelcastClient({
             clusterName: cluster.id,
             customLogger: winstonAdapter
         }).then(function (hz) {
@@ -98,7 +98,7 @@ describe('LoggingTest', function () {
     });
 
     it('no logging', function () {
-        return HazelcastClient.newHazelcastClient({
+        return Client.newHazelcastClient({
             clusterName: cluster.id,
             properties: {
                 'hazelcast.logging.level': 'OFF'
@@ -110,7 +110,7 @@ describe('LoggingTest', function () {
     });
 
     it('default logging in case of empty property', function () {
-        return HazelcastClient.newHazelcastClient({
+        return Client.newHazelcastClient({
             clusterName: cluster.id
         }).then(function (hz) {
             client = hz;
@@ -119,7 +119,7 @@ describe('LoggingTest', function () {
     });
 
     it('default logging in case of default property', function () {
-        return HazelcastClient.newHazelcastClient({
+        return Client.newHazelcastClient({
             clusterName: cluster.id,
             properties: {
                 'hazelcast.logging.level': 'INFO'
@@ -131,14 +131,14 @@ describe('LoggingTest', function () {
     });
 
     it('error in case of unknown property value', function () {
-        return expect(HazelcastClient.newHazelcastClient.bind(this, {
+        return expect(Client.newHazelcastClient.bind(this, {
             clusterName: cluster.id,
             customLogger: 'unknw'
         })).to.throw(Error);
     });
 
     it('default logging, default level', function () {
-        return HazelcastClient.newHazelcastClient({
+        return Client.newHazelcastClient({
             clusterName: cluster.id
         }).then(function (cl) {
             client = cl;
@@ -147,7 +147,7 @@ describe('LoggingTest', function () {
     });
 
     it('default logging, error level', function () {
-        return HazelcastClient.newHazelcastClient({
+        return Client.newHazelcastClient({
             clusterName: cluster.id,
             properties: {
                 'hazelcast.logging.level': 'ERROR'
@@ -159,7 +159,7 @@ describe('LoggingTest', function () {
     });
 
     it('default logging, trace level', function () {
-        return HazelcastClient.newHazelcastClient({
+        return Client.newHazelcastClient({
             clusterName: cluster.id,
             properties: {
                 'hazelcast.logging.level': 'TRACE'

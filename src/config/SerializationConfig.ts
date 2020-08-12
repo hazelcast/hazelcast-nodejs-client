@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-import {
-    IdentifiedDataSerializableFactory,
-    PortableFactory,
-    CustomSerializable,
-} from '../serialization/Serializable';
-import {Serializer} from '../serialization/DefaultSerializer';
+import {IdentifiedDataSerializableFactory, CustomSerializable} from '../serialization/Serializable';
+import {PortableFactory} from '../serialization/Portable';
+import {Serializer} from '../serialization/Serializable';
 import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy';
 
 /**

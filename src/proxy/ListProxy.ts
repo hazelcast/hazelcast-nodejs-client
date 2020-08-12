@@ -37,14 +37,16 @@ import {ListRemoveWithIndexCodec} from '../codec/ListRemoveWithIndexCodec';
 import {ListSetCodec} from '../codec/ListSetCodec';
 import {ListSizeCodec} from '../codec/ListSizeCodec';
 import {ListSubCodec} from '../codec/ListSubCodec';
-import {ItemEvent, ItemEventType, ItemListener} from '../core/ItemListener';
-import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
-import {ListenerMessageCodec} from '../ListenerMessageCodec';
+import {ItemEvent, ItemEventType, ItemListener} from './ItemListener';
+import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
 import {Data} from '../serialization/Data';
 import {IList} from './IList';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
-import {ClientMessage} from '../ClientMessage';
-import {UUID} from '../core/UUID';
+import {ClientMessage} from '../protocol/ClientMessage';
+import {
+    ReadOnlyLazyList,
+    UUID
+} from '../core';
 
 /** @internal */
 export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {

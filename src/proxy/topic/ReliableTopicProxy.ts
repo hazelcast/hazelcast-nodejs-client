@@ -15,22 +15,22 @@
  */
 /** @ignore *//** */
 
+import * as Long from 'long';
 import * as Promise from 'bluebird';
-import {OverflowPolicy} from '../../core/OverflowPolicy';
-import HazelcastClient from '../../HazelcastClient';
-import {TopicOverloadError} from '../../HazelcastError';
-import {AddressImpl} from '../../Address';
+import {OverflowPolicy} from '../OverflowPolicy';
+import {HazelcastClient} from '../../HazelcastClient';
+import {TopicOverloadError} from '../../core';
+import {AddressImpl} from '../../core/Address';
 import {SerializationService} from '../../serialization/SerializationService';
 import {UuidUtil} from '../../util/UuidUtil';
 import {BaseProxy} from '../BaseProxy';
 import {Ringbuffer} from '../Ringbuffer';
-import {ITopic} from './ITopic';
+import {ITopic} from '../ITopic';
 import {ReliableTopicMessage} from './ReliableTopicMessage';
 import {ReliableTopicListenerRunner} from './ReliableTopicListenerRunner';
-import {MessageListener} from './MessageListener';
-import {TopicOverloadPolicy} from './TopicOverloadPolicy';
+import {MessageListener} from '../MessageListener';
+import {TopicOverloadPolicy} from '../TopicOverloadPolicy';
 import {ClientConfigImpl} from '../../config/Config';
-import Long = require('long');
 
 /** @internal */
 export const TOPIC_INITIAL_BACKOFF = 100;
@@ -75,14 +75,14 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         return listenerId;
     }
 
-    removeMessageListener(id: string): boolean {
-        const runner = this.runners[id];
+    removeMessageListener(listenerId: string): boolean {
+        const runner = this.runners[listenerId];
         if (!runner) {
             return false;
         }
 
         runner.cancel();
-        delete this.runners[id];
+        delete this.runners[listenerId];
 
         return true;
     }

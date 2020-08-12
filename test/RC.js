@@ -15,10 +15,10 @@
  */
 'use strict';
 
-const RemoteController = require('./remote_controller/Controller');
-const DeferredPromise = require('../lib/Util').DeferredPromise;
+const RC = require('./remote_controller/Controller');
+const { DeferredPromise } = require('../lib/util/Util');
 
-const controller = new RemoteController('localhost', 9701);
+const controller = new RC('localhost', 9701);
 
 function createCluster(hzVersion, config) {
     const deferred = DeferredPromise();

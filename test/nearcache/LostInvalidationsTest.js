@@ -16,12 +16,11 @@
 'use strict';
 
 const RC = require('../RC');
-const HazelcastClient = require('../../').Client;
+const Client = require('../../').Client;
 const expect = require('chai').expect;
 const fs = require('fs');
-const Long = require('long');
 const Util = require('../Util');
-const DeferredPromise = require('../../lib/Util').DeferredPromise;
+const { DeferredPromise } = require('../../lib/util/Util');
 
 describe('LostInvalidation', function () {
     this.timeout(30000);
@@ -71,7 +70,7 @@ describe('LostInvalidation', function () {
     });
 
     beforeEach(function () {
-        return HazelcastClient.newHazelcastClient({
+        return Client.newHazelcastClient({
             clusterName: cluster.id,
             nearCaches: {
                 [mapName]: {}
@@ -83,7 +82,7 @@ describe('LostInvalidation', function () {
             }
         }).then(function (resp) {
             client = resp;
-            return HazelcastClient.newHazelcastClient({ clusterName: cluster.id });
+            return Client.newHazelcastClient({ clusterName: cluster.id });
         }).then(function (resp) {
             modifyingClient = resp;
         });

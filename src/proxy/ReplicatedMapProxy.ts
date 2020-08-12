@@ -15,6 +15,13 @@
  */
 
 import * as Promise from 'bluebird';
+import * as Long from 'long';
+import {
+    Predicate,
+    ReadOnlyLazyList,
+    ListComparator,
+    UUID
+} from '../core';
 import {ReplicatedMapAddEntryListenerCodec} from '../codec/ReplicatedMapAddEntryListenerCodec';
 import {ReplicatedMapAddEntryListenerToKeyCodec} from '../codec/ReplicatedMapAddEntryListenerToKeyCodec';
 // eslint-disable-next-line max-len
@@ -33,21 +40,16 @@ import {ReplicatedMapRemoveCodec} from '../codec/ReplicatedMapRemoveCodec';
 import {ReplicatedMapRemoveEntryListenerCodec} from '../codec/ReplicatedMapRemoveEntryListenerCodec';
 import {ReplicatedMapSizeCodec} from '../codec/ReplicatedMapSizeCodec';
 import {ReplicatedMapValuesCodec} from '../codec/ReplicatedMapValuesCodec';
-import {EventType} from '../core/EventType';
-import {EntryEvent, EntryListener} from '../core/EntryListener';
-import {Predicate} from '../core/Predicate';
-import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
-import {ListenerMessageCodec} from '../ListenerMessageCodec';
+import {EventType} from './EventType';
+import {EntryEvent, EntryListener} from './EntryListener';
+import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
 import {Data} from '../serialization/Data';
-import {assertNotNull} from '../Util';
-import {ListComparator} from '../core/Comparator';
+import {assertNotNull} from '../util/Util';
 import {ReplicatedMap} from './ReplicatedMap';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
-import {MapEvent} from '../core/MapListener';
-import Long = require('long');
-import {UUID} from '../core/UUID';
-import {ClientMessage} from '../ClientMessage';
-import * as SerializationUtil from '../serialization/SerializationUtil';
+import {MapEvent} from './MapListener';
+import {ClientMessage} from '../protocol/ClientMessage';
+import {deserializeEntryList} from '../serialization/SerializationUtil';
 
 export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements ReplicatedMap<K, V> {
 
@@ -171,7 +173,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         return this.encodeInvoke(ReplicatedMapEntrySetCodec)
             .then((clientMessage) => {
                 const response = ReplicatedMapEntrySetCodec.decodeResponse(clientMessage);
-                return SerializationUtil.deserializeEntryList(this.toObject.bind(this), response.response);
+                return deserializeEntryList(this.toObject.bind(this), response.response);
             });
     }
 

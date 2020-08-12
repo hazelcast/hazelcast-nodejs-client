@@ -18,7 +18,7 @@
 import * as Long from 'long';
 import {Data} from '../../serialization/Data';
 import {SerializationService, SerializationServiceV1} from '../../serialization/SerializationService';
-import {ReadResultSet} from './ReadResultSet';
+import {ReadResultSet} from '../../core';
 
 /** @internal */
 export class LazyReadResultSet<T> implements ReadResultSet<T> {

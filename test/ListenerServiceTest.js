@@ -15,13 +15,13 @@
  */
 'use strict';
 
-const RC = require('./RC');
-const HazelcastClient = require('../.').Client;
 const expect = require('chai').expect;
+const RC = require('./RC');
+const { Client } = require('../.');
 const Util = require('./Util');
 
 [true, false].forEach(function (isSmartService) {
-    describe('ListenerService[smart=' + isSmartService + ']', function () {
+    describe('ListenerServiceTest[smart=' + isSmartService + ']', function () {
         let cluster, client;
 
         before(function () {
@@ -34,7 +34,7 @@ const Util = require('./Util');
         });
 
         beforeEach(function () {
-            return HazelcastClient.newHazelcastClient({
+            return Client.newHazelcastClient({
                 clusterName: cluster.id,
                 network: {
                     smartRouting: isSmartService

@@ -18,8 +18,8 @@
 
 const expect = require('chai').expect;
 
-const ClientMessageReader = require('../../lib/network/ClientConnection').ClientMessageReader;
-const cm = require('../../lib/ClientMessage');
+const { ClientMessageReader } = require('../../lib/network/ClientConnection');
+const cm = require('../../lib/protocol/ClientMessage');
 const headerSize = cm.SIZE_OF_FRAME_LENGTH_AND_FLAGS;
 
 describe('ClientMessageReader', function () {

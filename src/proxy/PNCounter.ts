@@ -16,7 +16,7 @@
 
 import * as Promise from 'bluebird';
 import * as Long from 'long';
-import {DistributedObject} from '../DistributedObject';
+import {DistributedObject} from '../core/DistributedObject';
 
 /**
  * PN (Positive-Negative) CRDT counter.

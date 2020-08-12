@@ -15,13 +15,37 @@
  */
 
 import * as Promise from 'bluebird';
-import {DistributedObject} from '../../DistributedObject';
+import {DistributedObject} from '../core';
 import {MessageListener} from './MessageListener';
 
 export interface ITopic<E> extends DistributedObject {
+
+    /**
+     * Subscribes to this topic. When a message is published, the
+     * the given MessageListener is called.
+     *
+     * More than one message listener can be added on one instance.
+     *
+     * @param listener the MessageListener to add
+     * @return registration ID
+     */
     addMessageListener(listener: MessageListener<E>): string;
 
-    removeMessageListener(id: string): boolean;
+    /**
+     * Stops receiving messages for the given message listener.
+     *
+     * If the given listener already removed, this method does nothing.
+     *
+     * @param listenerId listener registration ID
+     * @return `true` if registration is removed, `false` otherwise
+     */
+    removeMessageListener(listenerId: string): boolean;
 
+    /**
+     * Publishes the message to all subscribers of this topic.
+     *
+     * @param message the message to publish to all subscribers of this topic
+     */
     publish(message: E): Promise<void>;
+
 }

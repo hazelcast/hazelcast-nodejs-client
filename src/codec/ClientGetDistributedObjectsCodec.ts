@@ -15,9 +15,9 @@
  */
 
 /* eslint-disable max-len */
-import {BitsUtil} from '../BitsUtil';
-import {ClientMessage, Frame, PARTITION_ID_OFFSET} from '../ClientMessage';
-import {DistributedObjectInfo} from '../DistributedObjectInfo';
+import {BitsUtil} from '../util/BitsUtil';
+import {ClientMessage, Frame, PARTITION_ID_OFFSET} from '../protocol/ClientMessage';
+import {DistributedObjectInfo} from '../core/DistributedObjectInfo';
 import {ListMultiFrameCodec} from './builtin/ListMultiFrameCodec';
 import {DistributedObjectInfoCodec} from './custom/DistributedObjectInfoCodec';
 

@@ -23,8 +23,8 @@ export class ConfigPatternMatcher {
      * @param configPatterns
      * @param itemName
      * @throws
-     * @returns `null` if there is no matching pattern
-     *          the best matching pattern otherwis
+     * @returns `null` if there is no matching pattern;
+     *          the best matching pattern otherwise
      */
     matches(configPatterns: string[], itemName: string): string {
         let bestMatchingPoint = -1;

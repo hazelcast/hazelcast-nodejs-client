@@ -15,8 +15,8 @@
  */
 /** @ignore *//** */
 
-import {ListenerMessageCodec} from '../ListenerMessageCodec';
-import {ClientMessage} from '../ClientMessage';
+import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
+import {ClientMessage} from '../protocol/ClientMessage';
 
 /** @internal */
 export class RegistrationKey {

@@ -15,8 +15,8 @@
  */
 
 import * as Promise from 'bluebird';
-import {ItemListener} from '../core/ItemListener';
-import {DistributedObject} from '../DistributedObject';
+import {ItemListener} from './ItemListener';
+import {DistributedObject} from '../core';
 
 export interface ISet<E> extends DistributedObject {
     /**

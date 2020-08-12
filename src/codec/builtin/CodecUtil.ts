@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ClientMessage, Frame, NULL_FRAME} from '../../ClientMessage';
+import {ClientMessage, Frame, NULL_FRAME} from '../../protocol/ClientMessage';
 
 /** @internal */
 export class CodecUtil {

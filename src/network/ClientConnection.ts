@@ -18,15 +18,17 @@
 import * as Promise from 'bluebird';
 import * as net from 'net';
 import {EventEmitter} from 'events';
-import {BitsUtil} from '../BitsUtil';
+import {BitsUtil} from '../util/BitsUtil';
 import {BuildInfo} from '../BuildInfo';
-import HazelcastClient from '../HazelcastClient';
-import {IOError} from '../HazelcastError';
-import {DeferredPromise} from '../Util';
-import {AddressImpl} from '../Address';
-import {UUID} from '../core/UUID';
+import {HazelcastClient} from '../HazelcastClient';
+import {AddressImpl, IOError, UUID} from '../core';
+import {DeferredPromise} from '../util/Util';
 import {ILogger} from '../logging/ILogger';
-import {ClientMessage, Frame, SIZE_OF_FRAME_LENGTH_AND_FLAGS} from '../ClientMessage';
+import {
+    ClientMessage,
+    Frame,
+    SIZE_OF_FRAME_LENGTH_AND_FLAGS
+} from '../protocol/ClientMessage';
 
 const FROZEN_ARRAY = Object.freeze([]) as OutputQueueItem[];
 const PROPERTY_PIPELINING_ENABLED = 'hazelcast.client.autopipelining.enabled';

@@ -31,7 +31,7 @@ import {
     MinAggregator,
     NumberAverageAggregator,
 } from './Aggregator';
-import {HazelcastError} from '../HazelcastError';
+import {HazelcastError} from '../core';
 
 /** @internal */
 export const AGGREGATOR_FACTORY_ID = -29;

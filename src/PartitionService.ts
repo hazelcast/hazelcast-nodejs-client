@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-import HazelcastClient from './HazelcastClient';
+import {HazelcastClient} from './HazelcastClient';
 import {ILogger} from './logging/ILogger';
 import {ClientConnection} from './network/ClientConnection';
-import {UUID} from './core/UUID';
-import {ClientOfflineError} from './HazelcastError';
+import {ClientOfflineError, UUID} from './core';
 
 /**
  * Partition service for Hazelcast clients. Allows to retrieve information

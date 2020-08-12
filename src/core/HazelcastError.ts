@@ -21,6 +21,9 @@ export interface HazelcastErrorConstructor {
     new(message: string, cause?: Error): HazelcastError;
 }
 
+/**
+ * Base class for all specific errors thrown by Hazelcast client.
+ */
 export class HazelcastError extends Error {
 
     cause: Error;

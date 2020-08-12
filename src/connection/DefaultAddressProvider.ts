@@ -18,7 +18,7 @@
 import {AddressProvider} from './AddressProvider';
 import {ClientNetworkConfigImpl} from '../config/ClientNetworkConfig';
 import * as Promise from 'bluebird';
-import {AddressImpl} from '../Address';
+import {AddressImpl} from '../core/Address';
 
 /**
  * Default address provider of Hazelcast.

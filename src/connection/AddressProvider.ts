@@ -16,7 +16,7 @@
 /** @ignore *//** */
 
 import * as Promise from 'bluebird';
-import {AddressImpl} from '../Address';
+import {AddressImpl} from '../core/Address';
 
 /**
  * Provides initial addresses for client to find and connect to a node &

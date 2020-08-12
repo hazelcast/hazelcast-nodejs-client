@@ -16,18 +16,18 @@
 
 'use strict';
 
-const cm = require('../../../lib/ClientMessage');
 const expect = require('chai').expect;
 const Long = require('long');
-const CodecUtil = require('../../../lib/codec/builtin/CodecUtil').CodecUtil;
 
-const ClientMessage = cm.ClientMessage;
-const Frame = cm.Frame;
-const BEGIN_FRAME = cm.BEGIN_FRAME;
-const END_FRAME = cm.END_FRAME;
+const {
+    ClientMessage,
+    Frame,
+    BEGIN_FRAME,
+    END_FRAME
+} = require('../../../lib/protocol/ClientMessage');
+const { CodecUtil } = require('../../../lib/codec/builtin/CodecUtil');
 
-
-describe('ClientMessage', function () {
+describe('ClientMessageTest', function () {
     it('should be encoded and decoded', function () {
         const cmEncode = ClientMessage.createForEncode();
 

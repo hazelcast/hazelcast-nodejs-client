@@ -18,7 +18,7 @@
 import * as Long from 'long';
 import {Data, DataInput, DataOutput} from '../../serialization/Data';
 import {IdentifiedDataSerializable} from '../../serialization/Serializable';
-import {AddressImpl} from '../../Address';
+import {AddressImpl} from '../../core';
 
 /** @internal */
 export const RELIABLE_TOPIC_MESSAGE_FACTORY_ID = -9;

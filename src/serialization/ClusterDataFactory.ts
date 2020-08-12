@@ -13,28 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
-import Long = require('long');
-import {Address} from '../../Address';
+import {IdentifiedDataSerializable} from './Serializable';
+import {AddressImpl} from '../core/Address';
 
-/**
- * Message of Reliable Topic.
- */
-export class Message<T> {
+/** @internal */
+export const CLUSTER_DATA_FACTORY_ID = 0;
+/** @internal */
+export const CLUSTER_DATA_ADDRESS_CLASS_ID = 1;
 
-    /**
-     * Published message.
-     */
-    messageObject: T;
-
-    /**
-     * Address of the member that published the message.
-     */
-    publisher: Address;
-
-    /**
-     * Time when the message was published (Epoch time).
-     */
-    publishingTime: Long;
-
+/** @internal */
+export function clusterDataFactory(classId: number): IdentifiedDataSerializable {
+    if (classId === CLUSTER_DATA_ADDRESS_CLASS_ID) {
+        return new AddressImpl();
+    }
+    return null;
 }

@@ -17,7 +17,7 @@
 
 import * as Promise from 'bluebird';
 import {EventEmitter} from 'events';
-import HazelcastClient from '../HazelcastClient';
+import {HazelcastClient} from '../HazelcastClient';
 import {
     AuthenticationError,
     ClientNotActiveError,
@@ -27,7 +27,11 @@ import {
     IllegalStateError,
     InvalidConfigurationError,
     IOError,
-} from '../HazelcastError';
+    UUID,
+    LoadBalancer,
+    AddressImpl,
+    MemberImpl
+} from '../core';
 import {ClientConnection} from './ClientConnection';
 import * as net from 'net';
 import * as tls from 'tls';
@@ -38,25 +42,24 @@ import {
     scheduleWithRepetition,
     shuffleArray,
     Task,
-} from '../Util';
+} from '../util/Util';
 import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
 import {ILogger} from '../logging/ILogger';
-import {AddressImpl} from '../Address';
-import {HeartbeatManager} from '../HeartbeatManager';
+import {HeartbeatManager} from './HeartbeatManager';
 import {UuidUtil} from '../util/UuidUtil';
 import {WaitStrategy} from './WaitStrategy';
 import {ReconnectMode} from '../config/ConnectionStrategyConfig';
-import {LoadBalancer} from '../LoadBalancer';
-import {UUID} from '../core/UUID';
 import {ClientConfigImpl} from '../config/Config';
 import {LifecycleState, LifecycleServiceImpl} from '../LifecycleService';
-import {ClientMessage} from '../ClientMessage';
+import {ClientMessage} from '../protocol/ClientMessage';
 import {BuildInfo} from '../BuildInfo';
 import {ClientAuthenticationCustomCodec} from '../codec/ClientAuthenticationCustomCodec';
-import {ClientAuthenticationCodec, ClientAuthenticationResponseParams} from '../codec/ClientAuthenticationCodec';
+import {
+    ClientAuthenticationCodec,
+    ClientAuthenticationResponseParams
+} from '../codec/ClientAuthenticationCodec';
 import {AuthenticationStatus} from '../protocol/AuthenticationStatus';
 import {Invocation} from '../invocation/InvocationService';
-import {MemberImpl} from '../core/Member';
 import {PartitionServiceImpl} from '../PartitionService';
 
 const CONNECTION_REMOVED_EVENT_NAME = 'connectionRemoved';

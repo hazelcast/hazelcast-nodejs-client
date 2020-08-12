@@ -16,9 +16,9 @@
 /** @ignore *//** */
 
 import * as Promise from 'bluebird';
-import HazelcastClient from '../HazelcastClient';
+import {HazelcastClient} from '../HazelcastClient';
 import {BaseProxy} from './BaseProxy';
-import {ClientMessage} from '../ClientMessage';
+import {ClientMessage} from '../protocol/ClientMessage';
 
 /** @internal */
 export class PartitionSpecificProxy extends BaseProxy {

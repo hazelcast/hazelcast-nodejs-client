@@ -18,10 +18,10 @@
 const expect = require('chai').expect;
 const fs = require('fs');
 
-const DeferredPromise = require('../../lib/Util').DeferredPromise;
-const getRandomInt = require('../Util').getRandomInt;
 const RC = require('../RC');
-const HazelcastClient = require('../../.').Client;
+const Client = require('../../.').Client;
+const { DeferredPromise } = require('../../lib/util/Util');
+const { getRandomInt } = require('../Util');
 
 describe('NearCachedMapStress', function () {
 
@@ -55,11 +55,11 @@ describe('NearCachedMapStress', function () {
             })
             .then(function (member) {
                 cfg.clusterName = cluster.id;
-                return HazelcastClient.newHazelcastClient(cfg);
+                return Client.newHazelcastClient(cfg);
             })
             .then(function (cl) {
                 client1 = cl;
-                return HazelcastClient.newHazelcastClient({ clusterName: cluster.id });
+                return Client.newHazelcastClient({ clusterName: cluster.id });
             })
             .then(function (cl) {
                 validatingClient = cl;

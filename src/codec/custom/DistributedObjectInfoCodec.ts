@@ -15,10 +15,10 @@
  */
 
 /* eslint-disable max-len */
-import {ClientMessage, BEGIN_FRAME, END_FRAME} from '../../ClientMessage';
+import {ClientMessage, BEGIN_FRAME, END_FRAME} from '../../protocol/ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
 import {StringCodec} from '../builtin/StringCodec';
-import {DistributedObjectInfo} from '../../DistributedObjectInfo';
+import {DistributedObjectInfo} from '../../core/DistributedObjectInfo';
 
 /** @internal */
 export class DistributedObjectInfoCodec {

@@ -15,14 +15,14 @@
  */
 /** @ignore *//** */
 
-import HazelcastClient from '../HazelcastClient';
+import {HazelcastClient} from '../HazelcastClient';
 import {ClientConnectionManager} from '../network/ClientConnectionManager';
 import {PartitionServiceImpl} from '../PartitionService';
 import {ClusterService} from '../invocation/ClusterService';
 import {ILogger} from '../logging/ILogger';
 import {ClientConnection} from '../network/ClientConnection';
 import {ClientAddClusterViewListenerCodec} from '../codec/ClientAddClusterViewListenerCodec';
-import {ClientMessage} from '../ClientMessage';
+import {ClientMessage} from '../protocol/ClientMessage';
 import {UUID} from '../core/UUID';
 import {Invocation} from '../invocation/InvocationService';
 

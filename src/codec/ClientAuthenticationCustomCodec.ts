@@ -15,14 +15,14 @@
  */
 
 /* eslint-disable max-len */
-import {BitsUtil} from '../BitsUtil';
+import {BitsUtil} from '../util/BitsUtil';
 import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
-import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET} from '../ClientMessage';
+import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET} from '../protocol/ClientMessage';
 import {UUID} from '../core/UUID';
 import {StringCodec} from './builtin/StringCodec';
 import {ByteArrayCodec} from './builtin/ByteArrayCodec';
 import {ListMultiFrameCodec} from './builtin/ListMultiFrameCodec';
-import {AddressImpl} from '../Address';
+import {AddressImpl} from '../core/Address';
 import {AddressCodec} from './custom/AddressCodec';
 import {CodecUtil} from './builtin/CodecUtil';
 

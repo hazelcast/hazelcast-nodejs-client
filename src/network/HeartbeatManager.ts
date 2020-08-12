@@ -15,14 +15,14 @@
  */
 /** @ignore *//** */
 
-import {ClientPingCodec} from './codec/ClientPingCodec';
-import HazelcastClient from './HazelcastClient';
-import {ClientConnection} from './network/ClientConnection';
-import {ILogger} from './logging/ILogger';
-import {ClientConnectionManager} from './network/ClientConnectionManager';
-import {cancelRepetitionTask, scheduleWithRepetition, Task} from './Util';
-import {TargetDisconnectedError} from './HazelcastError';
-import {Invocation} from './invocation/InvocationService';
+import {ClientPingCodec} from '../codec/ClientPingCodec';
+import {HazelcastClient} from '../HazelcastClient';
+import {ClientConnection} from './ClientConnection';
+import {ILogger} from '../logging/ILogger';
+import {ClientConnectionManager} from './ClientConnectionManager';
+import {cancelRepetitionTask, scheduleWithRepetition, Task} from '../util/Util';
+import {TargetDisconnectedError} from '../core';
+import {Invocation} from '../invocation/InvocationService';
 
 const PROPERTY_HEARTBEAT_INTERVAL = 'hazelcast.client.heartbeat.interval';
 const PROPERTY_HEARTBEAT_TIMEOUT = 'hazelcast.client.heartbeat.timeout';
@@ -32,6 +32,7 @@ const PROPERTY_HEARTBEAT_TIMEOUT = 'hazelcast.client.heartbeat.timeout';
  * @internal
  */
 export class HeartbeatManager {
+
     private client: HazelcastClient;
     private connectionManager: ClientConnectionManager;
     private readonly heartbeatTimeout: number;
@@ -51,7 +52,8 @@ export class HeartbeatManager {
      * Starts sending periodic heartbeat operations.
      */
     public start(): void {
-        this.timer = scheduleWithRepetition(this.heartbeatFunction.bind(this), this.heartbeatInterval, this.heartbeatInterval);
+        this.timer = scheduleWithRepetition(
+            this.heartbeatFunction.bind(this), this.heartbeatInterval, this.heartbeatInterval);
     }
 
     /**

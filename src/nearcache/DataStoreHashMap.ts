@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import {Data} from './serialization/Data';
+import {Data} from '../serialization/Data';
 
 /** @internal */
 export class DataKeyedHashMap<T> {

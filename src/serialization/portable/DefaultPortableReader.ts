@@ -16,12 +16,12 @@
 /** @ignore *//** */
 
 import * as Long from 'long';
-import {BitsUtil} from '../../BitsUtil';
-import {IllegalStateError} from '../../HazelcastError';
+import {BitsUtil} from '../../util/BitsUtil';
+import {IllegalStateError} from '../../core';
 import {DataInput} from '../Data';
-import {Portable} from '../Serializable';
-import {ClassDefinition, FieldDefinition, FieldType} from './ClassDefinition';
-import {PortableReader, PortableSerializer} from './PortableSerializer';
+import {Portable, PortableReader, FieldType} from '../Portable';
+import {ClassDefinition, FieldDefinition} from './ClassDefinition';
+import {PortableSerializer} from './PortableSerializer';
 
 /** @internal */
 export class DefaultPortableReader implements PortableReader {

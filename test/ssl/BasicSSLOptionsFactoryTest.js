@@ -18,8 +18,7 @@
 const chai = require("chai");
 const expect = chai.expect;
 const path = require('path');
-const HazelcastError = require('../..').HazelcastErrors.HazelcastError;
-const BasicSSLOptionsFactory = require('../../lib/connection/BasicSSLOptionsFactory').BasicSSLOptionsFactory;
+const { HazelcastError, BasicSSLOptionsFactory } = require('../..');
 
 describe('BasicSSLOptionsFactoryTest', function () {
 

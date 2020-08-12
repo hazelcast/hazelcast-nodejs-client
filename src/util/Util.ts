@@ -19,7 +19,7 @@ import * as assert from 'assert';
 import * as Long from 'long';
 import * as Promise from 'bluebird';
 import * as Path from 'path';
-import {AddressImpl} from './Address';
+import {AddressImpl} from '../core/Address';
 
 /** @internal */
 export function assertNotNull(v: any): void {
@@ -263,11 +263,4 @@ export function DeferredPromise<T>(): Promise.Resolver<T> {
         reject,
         promise,
     } as Promise.Resolver<T>;
-}
-
-/** @internal */
-export function getNodejsMajorVersion(): number {
-    const versionString = process.version;
-    const versions = versionString.split('.');
-    return Number.parseInt(versions[0].substr(1));
 }

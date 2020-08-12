@@ -15,18 +15,8 @@
  */
 /** @ignore *//** */
 
-import {IdentifiedDataSerializable} from './serialization/Serializable';
-import {AddressImpl} from './Address';
+/**
+ * Public API re-exports.
+ */
 
-/** @internal */
-export const CLUSTER_DATA_FACTORY_ID = 0;
-/** @internal */
-export const CLUSTER_DATA_ADDRESS_CLASS_ID = 1;
-
-/** @internal */
-export function clusterDataFactory(classId: number): IdentifiedDataSerializable {
-    if (classId === CLUSTER_DATA_ADDRESS_CLASS_ID) {
-        return new AddressImpl();
-    }
-    return null;
-}
+export * from './ILogger';

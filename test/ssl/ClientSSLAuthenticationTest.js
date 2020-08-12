@@ -22,9 +22,8 @@ chai.use(chaiAsPromised);
 const fs = require('fs');
 const path = require('path');
 
-const Client = require("../../.").Client;
 const RC = require('./../RC');
-const Errors = require('../..').HazelcastErrors;
+const { Client, IllegalStateError } = require("../../.");
 const markEnterprise = require('../Util').markEnterprise;
 
 describe('ClientSSLAuthenticationTest', function () {
@@ -129,7 +128,7 @@ describe('ClientSSLAuthenticationTest', function () {
                 return createMemberWithXML(maRequiredXML).then(function () {
                     return expect(Client.newHazelcastClient(createClientConfigFn(
                         './client1-key.pem', './client1-cert.pem', './server2-cert.pem'
-                    ))).to.be.rejectedWith(Errors.IllegalStateError);
+                    ))).to.be.rejectedWith(IllegalStateError);
                 });
             });
 
@@ -137,7 +136,7 @@ describe('ClientSSLAuthenticationTest', function () {
                 return createMemberWithXML(maRequiredXML).then(function () {
                     return expect(Client.newHazelcastClient(createClientConfigFn(
                         './client2-key.pem', './client2-cert.pem', './server1-cert.pem'
-                    ))).to.be.rejectedWith(Errors.IllegalStateError);
+                    ))).to.be.rejectedWith(IllegalStateError);
                 });
             });
 
@@ -145,7 +144,7 @@ describe('ClientSSLAuthenticationTest', function () {
                 return createMemberWithXML(maRequiredXML).then(function () {
                     return expect(Client.newHazelcastClient(createClientConfigFn(
                         './client2-key.pem', './client2-cert.pem', './server2-cert.pem'
-                    ))).to.be.rejectedWith(Errors.IllegalStateError);
+                    ))).to.be.rejectedWith(IllegalStateError);
                 });
             });
 
@@ -163,7 +162,7 @@ describe('ClientSSLAuthenticationTest', function () {
                 return createMemberWithXML(maOptionalXML).then(function () {
                     return expect(Client.newHazelcastClient(createClientConfigFn(
                         './client1-key.pem', './client1-cert.pem', './server2-cert.pem'
-                    ))).to.be.rejectedWith(Errors.IllegalStateError);
+                    ))).to.be.rejectedWith(IllegalStateError);
                 });
             });
 
@@ -171,7 +170,7 @@ describe('ClientSSLAuthenticationTest', function () {
                 return createMemberWithXML(maOptionalXML).then(function () {
                     return expect(Client.newHazelcastClient(createClientConfigFn(
                         './client2-key.pem', './client2-cert.pem', './server1-cert.pem'
-                    ))).to.be.rejectedWith(Errors.IllegalStateError);
+                    ))).to.be.rejectedWith(IllegalStateError);
                 });
             });
 
@@ -179,7 +178,7 @@ describe('ClientSSLAuthenticationTest', function () {
                 return createMemberWithXML(maOptionalXML).then(function () {
                     return expect(Client.newHazelcastClient(createClientConfigFn(
                         './client2-key.pem', './client2-cert.pem', './server2-cert.pem'
-                    ))).to.be.rejectedWith(Errors.IllegalStateError);
+                    ))).to.be.rejectedWith(IllegalStateError);
                 });
             });
         });

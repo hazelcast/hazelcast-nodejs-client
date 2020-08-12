@@ -15,15 +15,14 @@
  */
 'use strict';
 
-const Statistics = require("../../lib/statistics/Statistics").Statistics;
 const expect = require('chai').expect;
-const BuildInfo = require('../../lib/BuildInfo').BuildInfo;
+const os = require('os');
 
 const RC = require('../RC');
 const Client = require('../../').Client;
+const { BuildInfo } = require('../../lib/BuildInfo');
+const  {Statistics } = require("../../lib/statistics/Statistics");
 const TestUtil = require('../Util');
-const Util = require('../../lib/Util');
-const os = require('os');
 
 function getClientStatisticsFromServer(cluster, client) {
     const clientUuid = client.getConnectionManager().getClientUuid();
@@ -137,11 +136,7 @@ describe('StatisticsTest (default period)', function () {
             expect(extractStringStatValue(stats, 'os.freeSwapSpaceSize')).to.equal('');
             expect(extractStringStatValue(stats, 'os.maxFileDescriptorCount')).to.equal('');
             expect(extractStringStatValue(stats, 'os.openFileDescriptorCount')).to.equal('');
-            if (Util.getNodejsMajorVersion() >= 6) {
-                expect(extractIntStatValue(stats, 'os.processCpuTime')).to.greaterThan(1000);
-            } else {
-                expect(extractStringStatValue(stats, 'os.processCpuTime')).to.equal('');
-            }
+            expect(extractIntStatValue(stats, 'os.processCpuTime')).to.greaterThan(1000);
             expect(extractFloatStatValue(stats, 'os.systemLoadAverage')).to.be.greaterThan(0);
             expect(extractIntStatValue(stats, 'os.totalPhysicalMemorySize')).to.equal(os.totalmem());
             expect(extractStringStatValue(stats, 'os.totalSwapSpaceSize')).to.equal('');

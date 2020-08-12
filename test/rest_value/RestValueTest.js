@@ -22,7 +22,7 @@ const http = require('http');
 const querystring = require('querystring');
 const Client = require('../../lib').Client;
 const RC = require('../RC');
-const DeferredPromise = require('../../lib/Util').DeferredPromise;
+const { DeferredPromise } = require('../../lib/util/Util');
 
 describe('RestValueTest', function () {
 

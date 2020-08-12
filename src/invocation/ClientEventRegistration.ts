@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import {ListenerMessageCodec} from '../ListenerMessageCodec';
+import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
 import {ClientConnection} from '../network/ClientConnection';
 import {UUID} from '../core/UUID';
 
