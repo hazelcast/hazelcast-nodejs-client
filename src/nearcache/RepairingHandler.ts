@@ -13,24 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Long from 'long';
 import {UUID} from '../core/UUID';
-import {PartitionService} from '../PartitionService';
+import {PartitionServiceImpl} from '../PartitionService';
 import {Data} from '../serialization/Data';
 import {MetadataContainer} from './MetadataContainer';
 import {NearCache} from './NearCache';
 
+/** @internal */
 export class RepairingHandler {
 
     private readonly nearCache: NearCache;
     private readonly partitionCount: number;
-    private readonly partitionService: PartitionService;
+    private readonly partitionService: PartitionServiceImpl;
     private readonly localUuid: UUID;
     private readonly name: string;
     private containers: MetadataContainer[];
 
-    constructor(name: string, partitionService: PartitionService, nearCache: NearCache, localUuid: UUID) {
+    constructor(name: string, partitionService: PartitionServiceImpl, nearCache: NearCache, localUuid: UUID) {
         this.nearCache = nearCache;
         this.name = name;
         this.partitionService = partitionService;

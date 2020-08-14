@@ -19,7 +19,7 @@ import {EntryListener} from '../core/EntryListener';
 import {Predicate} from '../core/Predicate';
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 import {DistributedObject} from '../DistributedObject';
-import {ArrayComparator} from '../util/ArrayComparator';
+import {ListComparator} from '../core/Comparator';
 import Long = require('long');
 
 export interface ReplicatedMap<K, V> extends DistributedObject {
@@ -119,9 +119,10 @@ export interface ReplicatedMap<K, V> extends DistributedObject {
     keySet(): Promise<K[]>;
 
     /**
+     * @param comparator optional ListComparator function to sort the returned elements.
      * @return a list of values contained in this map.
      */
-    values(comparator?: ArrayComparator<V>): Promise<ReadOnlyLazyList<V>>;
+    values(comparator?: ListComparator<V>): Promise<ReadOnlyLazyList<V>>;
 
     /**
      * @return Returns entries as an array of key-value pairs.

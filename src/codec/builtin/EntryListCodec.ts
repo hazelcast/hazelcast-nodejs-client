@@ -17,6 +17,7 @@
 import {BEGIN_FRAME, ClientMessage, END_FRAME, NULL_FRAME} from '../../ClientMessage';
 import {CodecUtil} from './CodecUtil';
 
+/** @internal */
 export class EntryListCodec {
     static encode<K, V>(clientMessage: ClientMessage, entries: Array<[K, V]>,
                         keyEncoder: (msg: ClientMessage, key: K) => void,

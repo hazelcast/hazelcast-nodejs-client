@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 const clientVersion = require('../package.json').version;
 
+/** @internal */
 export class BuildInfo {
 
     public static readonly UNKNOWN_VERSION_ID = -1;

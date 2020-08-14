@@ -58,8 +58,10 @@ export class ItemEvent<E> {
      */
     member: Member;
 
+    /** @internal */
     eventType: ItemEventType;
 
+    /** @internal */
     constructor(name: string, eventType: ItemEventType, item: E, member: Member) {
         this.name = name;
         this.eventType = eventType;
@@ -69,6 +71,7 @@ export class ItemEvent<E> {
 
 }
 
+/** @internal */
 export enum ItemEventType {
 
     ADDED = 1,

@@ -16,8 +16,8 @@
 'use strict';
 
 const expect = require('chai').expect;
-const Address = require('../../lib/Address').Address;
-const HazelcastCloudDiscovery = require('../../lib/discovery/HazelcastCloudDiscovery').HazelcastCloudDiscovery;
+const { AddressImpl } = require('../../lib/Address');
+const { HazelcastCloudDiscovery } = require('../../lib/discovery/HazelcastCloudDiscovery');
 
 describe('HazelcastCloudDiscoveryTest', function () {
 
@@ -30,10 +30,10 @@ describe('HazelcastCloudDiscoveryTest', function () {
         const privateToPublicAddresses = hazelcastCloudDiscovery.parseResponse(response);
 
         expect(privateToPublicAddresses.size).to.equal(2);
-        expect(new Address('10.113.44.139', 31115))
-            .to.deep.equal(privateToPublicAddresses.get(new Address('100.96.5.1', 31115).toString()));
-        expect(new Address('10.113.44.130', 31115))
-            .to.deep.equal(privateToPublicAddresses.get(new Address('100.96.4.2', 31115).toString()));
+        expect(new AddressImpl('10.113.44.139', 31115))
+            .to.deep.equal(privateToPublicAddresses.get(new AddressImpl('100.96.5.1', 31115).toString()));
+        expect(new AddressImpl('10.113.44.130', 31115))
+            .to.deep.equal(privateToPublicAddresses.get(new AddressImpl('100.96.4.2', 31115).toString()));
     });
 
     it('should parse response with different port on private address', function () {
@@ -43,9 +43,9 @@ describe('HazelcastCloudDiscoveryTest', function () {
         const privateToPublicAddresses = hazelcastCloudDiscovery.parseResponse(response);
 
         expect(privateToPublicAddresses.size).to.equal(2);
-        expect(new Address('10.113.44.139', 31115))
-            .to.deep.equal(privateToPublicAddresses.get(new Address('100.96.5.1', 5701).toString()));
-        expect(new Address('10.113.44.130', 31115))
-            .to.deep.equal(privateToPublicAddresses.get(new Address('100.96.4.2', 5701).toString()));
+        expect(new AddressImpl('10.113.44.139', 31115))
+            .to.deep.equal(privateToPublicAddresses.get(new AddressImpl('100.96.5.1', 5701).toString()));
+        expect(new AddressImpl('10.113.44.130', 31115))
+            .to.deep.equal(privateToPublicAddresses.get(new AddressImpl('100.96.4.2', 5701).toString()));
     });
 });

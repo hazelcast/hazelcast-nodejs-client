@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as assert from 'assert';
 import * as Long from 'long';
@@ -24,6 +25,7 @@ import {SerializationService} from './SerializationService';
 const OUTPUT_BUFFER_INITIAL_SIZE = HEAP_DATA_OVERHEAD + BitsUtil.LONG_SIZE_IN_BYTES;
 const MASK_1BYTE = (1 << 8) - 1;
 
+/** @internal */
 export class ObjectDataOutput implements DataOutput {
     protected buffer: Buffer;
     protected bigEndian: boolean;
@@ -233,6 +235,7 @@ export class ObjectDataOutput implements DataOutput {
     }
 }
 
+/** @internal */
 export class PositionalObjectDataOutput extends ObjectDataOutput implements PositionalDataOutput {
     pwrite(position: number, byte: number | Buffer): void {
         if (Buffer.isBuffer(byte)) {
@@ -285,6 +288,7 @@ export class PositionalObjectDataOutput extends ObjectDataOutput implements Posi
     }
 }
 
+/** @internal */
 export class ObjectDataInput implements DataInput {
 
     private buffer: Buffer;

@@ -33,11 +33,13 @@ const REQUEST_MESSAGE_TYPE = 79360;
 
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+/** @internal */
 export interface MapEntriesWithPagingPredicateResponseParams {
     response: Array<[Data, Data]>;
     anchorDataList: AnchorDataListHolder;
 }
 
+/** @internal */
 export class MapEntriesWithPagingPredicateCodec {
     static encodeRequest(name: string, predicate: PagingPredicateHolder): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

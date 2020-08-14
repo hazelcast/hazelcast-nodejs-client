@@ -25,6 +25,7 @@ import {StringCodec} from '../builtin/StringCodec';
 const LINE_NUMBER_OFFSET = 0;
 const INITIAL_FRAME_SIZE = LINE_NUMBER_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+/** @internal */
 export class StackTraceElementCodec {
     static encode(clientMessage: ClientMessage, stackTraceElement: StackTraceElement): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());

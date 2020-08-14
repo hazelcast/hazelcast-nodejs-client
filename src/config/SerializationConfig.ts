@@ -70,6 +70,7 @@ export interface SerializationConfig {
 
 }
 
+/** @internal */
 export class SerializationConfigImpl implements SerializationConfig {
 
     defaultNumberType = 'double';

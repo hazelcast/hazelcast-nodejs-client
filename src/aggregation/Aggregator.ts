@@ -19,9 +19,13 @@ import {DataInput, DataOutput} from '../serialization/Data';
 import {IdentifiedDataSerializable} from '../serialization/Serializable';
 import * as AggregatorFactory from './AggregatorFactory';
 
+/**
+ * Base interface for all aggregators.
+ */
 export interface Aggregator<R> extends IdentifiedDataSerializable {
 }
 
+/** @internal */
 export abstract class AbstractAggregator<R> implements Aggregator<R> {
 
     abstract classId: number;
@@ -37,6 +41,7 @@ export abstract class AbstractAggregator<R> implements Aggregator<R> {
     abstract writeData(output: DataOutput): void;
 }
 
+/** @internal */
 export class CountAggregator extends AbstractAggregator<Long> {
 
     classId = AggregatorFactory.COUNT;
@@ -54,6 +59,7 @@ export class CountAggregator extends AbstractAggregator<Long> {
     }
 }
 
+/** @internal */
 export class DoubleAverageAggregator extends AbstractAggregator<number> {
 
     classId = AggregatorFactory.DOUBLE_AVG;
@@ -71,6 +77,7 @@ export class DoubleAverageAggregator extends AbstractAggregator<number> {
     }
 }
 
+/** @internal */
 export class DoubleSumAggregator extends AbstractAggregator<number> {
 
     classId = AggregatorFactory.DOUBLE_SUM;
@@ -86,6 +93,7 @@ export class DoubleSumAggregator extends AbstractAggregator<number> {
     }
 }
 
+/** @internal */
 export class NumberAverageAggregator extends AbstractAggregator<number> {
 
     classId = AggregatorFactory.NUMBER_AVG;
@@ -103,6 +111,7 @@ export class NumberAverageAggregator extends AbstractAggregator<number> {
     }
 }
 
+/** @internal */
 export class FixedPointSumAggregator extends AbstractAggregator<Long> {
 
     classId = AggregatorFactory.FIXED_SUM;
@@ -118,6 +127,7 @@ export class FixedPointSumAggregator extends AbstractAggregator<Long> {
     }
 }
 
+/** @internal */
 export class FloatingPointSumAggregator extends AbstractAggregator<number> {
 
     classId = AggregatorFactory.FLOATING_POINT_SUM;
@@ -133,6 +143,7 @@ export class FloatingPointSumAggregator extends AbstractAggregator<number> {
     }
 }
 
+/** @internal */
 export class MaxAggregator<R> extends AbstractAggregator<R> {
 
     classId = AggregatorFactory.MAX;
@@ -148,6 +159,7 @@ export class MaxAggregator<R> extends AbstractAggregator<R> {
     }
 }
 
+/** @internal */
 export class MinAggregator<R> extends AbstractAggregator<R> {
 
     classId = AggregatorFactory.MIN;
@@ -163,6 +175,7 @@ export class MinAggregator<R> extends AbstractAggregator<R> {
     }
 }
 
+/** @internal */
 export class IntegerAverageAggregator extends AbstractAggregator<number> {
 
     classId = AggregatorFactory.INT_AVG;
@@ -180,6 +193,7 @@ export class IntegerAverageAggregator extends AbstractAggregator<number> {
     }
 }
 
+/** @internal */
 export class IntegerSumAggregator extends AbstractAggregator<Long> {
 
     classId = AggregatorFactory.INT_SUM;
@@ -195,6 +209,7 @@ export class IntegerSumAggregator extends AbstractAggregator<Long> {
     }
 }
 
+/** @internal */
 export class LongAverageAggregator extends AbstractAggregator<number> {
 
     classId = AggregatorFactory.LONG_AVG;
@@ -212,6 +227,7 @@ export class LongAverageAggregator extends AbstractAggregator<number> {
     }
 }
 
+/** @internal */
 export class LongSumAggregator extends AbstractAggregator<Long> {
 
     classId = AggregatorFactory.LONG_SUM;

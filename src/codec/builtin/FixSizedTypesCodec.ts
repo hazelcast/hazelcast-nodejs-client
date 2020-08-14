@@ -18,6 +18,7 @@ import * as Long from 'long';
 import {BitsUtil} from '../../BitsUtil';
 import {UUID} from '../../core/UUID';
 
+/** @internal */
 export class FixSizedTypesCodec {
     static encodeInt(buffer: Buffer, offset: number, value: number): void {
         buffer.writeInt32LE(value, offset);

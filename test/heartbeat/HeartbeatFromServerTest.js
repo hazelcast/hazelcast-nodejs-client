@@ -16,13 +16,13 @@
 'use strict';
 
 const RC = require('../RC');
-const HazelcastClient = require('../../').Client;
 const Util = require('../Util');
-const DeferredPromise = require('../../lib/Util').DeferredPromise;
-const Address = require('../../').Address;
-const TargetDisconnectedError = require('../../lib/HazelcastError').TargetDisconnectedError;
+const { Client } = require('../../');
+const { DeferredPromise } = require('../../lib/Util');
+const { AddressImpl } = require('../../lib/Address');
+const { TargetDisconnectedError } = require('../../lib/HazelcastError');
 
-describe('Heartbeat', function () {
+describe('HeartbeatFromServerTest', function () {
 
     this.timeout(50000);
     let cluster;
@@ -60,7 +60,7 @@ describe('Heartbeat', function () {
         let client;
         const memberAddedPromise = new DeferredPromise();
         RC.startMember(cluster.id).then(function () {
-            return HazelcastClient.newHazelcastClient({
+            return Client.newHazelcastClient({
                 clusterName: cluster.id,
                 properties: {
                     'hazelcast.client.heartbeat.interval': 500,
@@ -72,7 +72,7 @@ describe('Heartbeat', function () {
         }).then(function () {
             const membershipListener = {
                 memberAdded: function (membershipEvent) {
-                    const address = new Address(membershipEvent.member.address.host, membershipEvent.member.address.port);
+                    const address = new AddressImpl(membershipEvent.member.address.host, membershipEvent.member.address.port);
                     warmUpConnectionToAddressWithRetry(client, address);
                     memberAddedPromise.resolve();
                 }
@@ -100,7 +100,7 @@ describe('Heartbeat', function () {
             });
 
             return memberAddedPromise.promise.then(function () {
-                simulateHeartbeatLost(client, new Address(member2.host, member2.port), 2000);
+                simulateHeartbeatLost(client, new AddressImpl(member2.host, member2.port), 2000);
             });
         }).catch(done);
     });
@@ -110,7 +110,7 @@ describe('Heartbeat', function () {
         let member2;
         const memberAddedPromise = new DeferredPromise();
         RC.startMember(cluster.id).then(function (m) {
-            return HazelcastClient.newHazelcastClient({
+            return Client.newHazelcastClient({
                 clusterName: cluster.id,
                 properties: {
                     'hazelcast.client.heartbeat.interval': 500,
@@ -131,7 +131,7 @@ describe('Heartbeat', function () {
             member2 = resp;
             return memberAddedPromise.promise;
         }).then(function () {
-            return warmUpConnectionToAddressWithRetry(client, new Address(member2.host, member2.port), 3);
+            return warmUpConnectionToAddressWithRetry(client, new AddressImpl(member2.host, member2.port), 3);
         }).then(() => {
             client.getConnectionManager().once('connectionRemoved', function (connection) {
                 const remoteAddress = connection.getRemoteAddress();
@@ -156,7 +156,7 @@ describe('Heartbeat', function () {
                         + member2.host + ':' + member2.port));
                 }
             });
-            simulateHeartbeatLost(client, new Address(member2.host, member2.port), 2000);
+            simulateHeartbeatLost(client, new AddressImpl(member2.host, member2.port), 2000);
         }).catch(done);
     });
 });

@@ -19,6 +19,7 @@ import {Data} from '../../serialization/Data';
 import {ListMultiFrameCodec} from './ListMultiFrameCodec';
 import {DataCodec} from './DataCodec';
 
+/** @internal */
 export class ListDataCodec {
     static encode(clientMessage: ClientMessage, list: Data[]): void {
         ListMultiFrameCodec.encode(clientMessage, list, DataCodec.encode);

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Long from 'long';
 import {UUID} from '../core/UUID';
@@ -23,6 +24,7 @@ function randomUInt(): number {
     return Math.floor(Math.random() * INT_BOUND);
 }
 
+/** @internal */
 export class UuidUtil {
     static generate(isUnsigned = true): UUID {
         const mostS = new Long(randomUInt(), randomUInt(), isUnsigned);

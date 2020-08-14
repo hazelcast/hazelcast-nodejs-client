@@ -17,6 +17,7 @@
 import {BEGIN_FRAME, ClientMessage, END_FRAME, NULL_FRAME} from '../../ClientMessage';
 import {CodecUtil} from './CodecUtil';
 
+/** @internal */
 export class ListMultiFrameCodec {
     static encode<T>(clientMessage: ClientMessage, list: T[], encoder: (msg: ClientMessage, value: T) => void): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());

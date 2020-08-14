@@ -81,6 +81,7 @@ export class SimpleEntryView<K, V> {
      */
     maxIdle: Long;
 
+    /** @internal */
     constructor(key: K, value: V, cost: Long, creationTime: Long,
                 expirationTime: Long, hits: Long, lastAccessTime: Long,
                 lastStoredTime: Long, lastUpdateTime: Long, version: Long,

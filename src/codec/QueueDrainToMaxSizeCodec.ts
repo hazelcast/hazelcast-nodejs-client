@@ -31,10 +31,12 @@ const REQUEST_MESSAGE_TYPE = 199168;
 const REQUEST_MAX_SIZE_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_MAX_SIZE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+/** @internal */
 export interface QueueDrainToMaxSizeResponseParams {
     response: Data[];
 }
 
+/** @internal */
 export class QueueDrainToMaxSizeCodec {
     static encodeRequest(name: string, maxSize: number): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

@@ -16,7 +16,9 @@
 
 import * as Long from 'long';
 
+/** @internal */
 export interface Data {
+
     /**
      * Returns serialized representation in a buffer
      */
@@ -67,7 +69,7 @@ export interface Data {
 }
 
 /**
- * Defines interface for output data writer.
+ * Output write helper for {@link IdentifiedDataSerializable} objects.
  */
 export interface DataOutput {
 
@@ -97,6 +99,7 @@ export interface DataOutput {
 
     writeChars(chars: string): void;
 
+    /** @internal */
     writeData(data: Data): void;
 
     writeDouble(double: number): void;
@@ -131,6 +134,7 @@ export interface DataOutput {
 
 }
 
+/** @internal */
 export interface PositionalDataOutput extends DataOutput {
 
     pwrite(position: number, byte: number | Buffer): void;
@@ -156,7 +160,7 @@ export interface PositionalDataOutput extends DataOutput {
 }
 
 /**
- * Defines interface for input data reader.
+ * Input read helper for {@link IdentifiedDataSerializable} objects.
  */
 export interface DataInput {
 
@@ -178,6 +182,7 @@ export interface DataInput {
 
     readCharArray(pos?: number): string[];
 
+    /** @internal */
     readData(pos?: number): Data;
 
     readDouble(pos?: number): number;

@@ -3,13 +3,14 @@
     "version": "4.0.0",
     "description": "Hazelcast - open source In-Memory Data Grid - client for Node.js",
     "main": "lib/index.js",
+    "types": "lib/index.d.ts",
     "dependencies": {
         "bluebird": "3.7.2",
-        "long": "4.0.0"
+        "@types/bluebird": "3.5.32",
+        "long": "4.0.0",
+        "@types/long": "4.0.1"
     },
     "devDependencies": {
-        "@types/bluebird": "^3.5.32",
-        "@types/long": "^4.0.1",
         "@types/node": "^8.10.60",
         "@typescript-eslint/eslint-plugin": "^2.34.0",
         "@typescript-eslint/parser": "^2.34.0",
@@ -24,6 +25,7 @@
         "rimraf": "^3.0.2",
         "sinon": "^9.0.2",
         "thrift": "^0.12.0",
+        "typedoc": "^0.18.0",
         "typescript": "^3.9.5",
         "winston": "^3.2.1"
     },
@@ -35,10 +37,11 @@
         "compile": "tsc",
         "pretest": "node download-remote-controller.js",
         "test": "mocha --recursive",
+        "validate-user-code": "tsc --build test/user_code/tsconfig.json",
         "precoverage": "node download-remote-controller.js",
         "coverage": "rimraf coverage && nyc node_modules/mocha/bin/_mocha -- --recursive --reporter-options mochaFile=report.xml --reporter mocha-junit-reporter",
         "pregenerate-docs": "rimraf docs",
-        "generate-docs": "typedoc --out docs/ --exclude **/codec/**/* src/ --excludeExternals --ignoreCompilerErrors --excludePrivate",
+        "generate-docs": "typedoc --options typedoc.json",
         "lint": "eslint --ext .ts ."
     },
     "repository": {
@@ -57,6 +60,5 @@
     "bugs": {
         "url": "https://github.com/hazelcast/hazelcast-nodejs-client/issues"
     },
-    "homepage": "https://github.com/hazelcast/hazelcast-nodejs-client#readme",
-    "typings": "./lib/index"
+    "homepage": "https://github.com/hazelcast/hazelcast-nodejs-client#readme"
 }

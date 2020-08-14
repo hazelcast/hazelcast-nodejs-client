@@ -17,8 +17,24 @@
 import Long = require('long');
 import {Address} from '../../Address';
 
+/**
+ * Message of Reliable Topic.
+ */
 export class Message<T> {
+
+    /**
+     * Published message.
+     */
     messageObject: T;
+
+    /**
+     * Address of the member that published the message.
+     */
     publisher: Address;
+
+    /**
+     * Time when the message was published (Epoch time).
+     */
     publishingTime: Long;
+
 }

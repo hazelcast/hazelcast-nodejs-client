@@ -45,10 +45,12 @@ const EVENT_I_MAP_INVALIDATION_SOURCE_UUID_OFFSET = PARTITION_ID_OFFSET + BitsUt
 const EVENT_I_MAP_INVALIDATION_PARTITION_UUID_OFFSET = EVENT_I_MAP_INVALIDATION_SOURCE_UUID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
 const EVENT_I_MAP_INVALIDATION_SEQUENCE_OFFSET = EVENT_I_MAP_INVALIDATION_PARTITION_UUID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
 
+/** @internal */
 export interface MapAddNearCacheInvalidationListenerResponseParams {
     response: UUID;
 }
 
+/** @internal */
 export class MapAddNearCacheInvalidationListenerCodec {
     static encodeRequest(name: string, listenerFlags: number, localOnly: boolean): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

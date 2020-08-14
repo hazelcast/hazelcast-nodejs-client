@@ -13,25 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Promise from 'bluebird';
 import * as Long from 'long';
 import {PNCounterAddCodec} from '../codec/PNCounterAddCodec';
 import {PNCounterGetCodec} from '../codec/PNCounterGetCodec';
 import {PNCounterGetConfiguredReplicaCountCodec} from '../codec/PNCounterGetConfiguredReplicaCountCodec';
-import {MemberSelectors} from '../core/MemberSelectors';
+import * as MemberSelectors from '../core/MemberSelectors';
 import {VectorClock} from '../core/VectorClock';
 import {NoDataMemberInClusterError} from '../HazelcastError';
 import {randomInt} from '../Util';
 import {BaseProxy} from './BaseProxy';
 import {PNCounter} from './PNCounter';
-import {Member} from '../core/Member';
+import {MemberImpl} from '../core/Member';
 
+/** @internal */
 export class PNCounterProxy extends BaseProxy implements PNCounter {
-    private static readonly EMPTY_ARRAY: Member[] = [];
+    private static readonly EMPTY_ARRAY: MemberImpl[] = [];
     private lastObservedVectorClock: VectorClock = new VectorClock();
     private maximumReplicaCount = 0;
-    private currentTargetReplicaAddress: Member;
+    private currentTargetReplicaAddress: MemberImpl;
 
     get(): Promise<Long> {
         return this.invokeInternal(PNCounterProxy.EMPTY_ARRAY, null, PNCounterGetCodec);
@@ -80,7 +82,7 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
         return Promise.resolve();
     }
 
-    private invokeInternal(excludedAddresses: Member[], lastError: any, codec: any, ...codecArgs: any[]): Promise<Long> {
+    private invokeInternal(excludedAddresses: MemberImpl[], lastError: any, codec: any, ...codecArgs: any[]): Promise<Long> {
         return this.getCRDTOperationTarget(excludedAddresses).then((target) => {
             if (target == null) {
                 if (lastError) {
@@ -103,7 +105,7 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
         });
     }
 
-    private encodeInvokeInternal<T>(target: Member, codec: any, ...codecArguments: any[]): Promise<T> {
+    private encodeInvokeInternal<T>(target: MemberImpl, codec: any, ...codecArguments: any[]): Promise<T> {
         return this.encodeInvokeOnTarget(codec, target.uuid, ...codecArguments,
             this.lastObservedVectorClock.entrySet(), target.uuid)
             .then((clientMessage) => {
@@ -111,7 +113,7 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
             });
     }
 
-    private getCRDTOperationTarget(excludedAddresses: Member[]): Promise<Member> {
+    private getCRDTOperationTarget(excludedAddresses: MemberImpl[]): Promise<MemberImpl> {
         if (this.currentTargetReplicaAddress != null &&
             !excludedAddresses.some(this.currentTargetReplicaAddress.equals.bind(this.currentTargetReplicaAddress))) {
             return Promise.resolve(this.currentTargetReplicaAddress);
@@ -123,7 +125,7 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
         }
     }
 
-    private chooseTargetReplica(excludedAddresses: Member[]): Promise<Member> {
+    private chooseTargetReplica(excludedAddresses: MemberImpl[]): Promise<MemberImpl> {
         return this.getReplicaAddresses(excludedAddresses).then((replicaAddresses) => {
             if (replicaAddresses.length === 0) {
                 return null;
@@ -132,11 +134,11 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
         });
     }
 
-    private getReplicaAddresses(excludedAddresses: Member[]): Promise<Member[]> {
-        const dataMembers = this.client.getClusterService().getMembers(MemberSelectors.DATA_MEMBER_SELECTOR);
+    private getReplicaAddresses(excludedAddresses: MemberImpl[]): Promise<MemberImpl[]> {
+        const dataMembers = this.client.getClusterService().getMembers(MemberSelectors.dataMemberSelector);
         return this.getMaxConfiguredReplicaCount().then((replicaCount: number) => {
             const currentCount = Math.min(replicaCount, dataMembers.length);
-            const replicaAddresses: Member[] = [];
+            const replicaAddresses: MemberImpl[] = [];
             for (let i = 0; i < currentCount; i++) {
                 const memberAddress = dataMembers[i];
                 if (!excludedAddresses.some(memberAddress.equals.bind(memberAddress))) {

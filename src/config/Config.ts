@@ -120,6 +120,7 @@ export interface ClientConfig {
 
 }
 
+/** @internal */
 export class ClientConfigImpl implements ClientConfig {
 
     properties: Properties = {

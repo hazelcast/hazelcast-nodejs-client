@@ -28,6 +28,7 @@ const PAGE_OFFSET = PAGE_SIZE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const ITERATION_TYPE_ID_OFFSET = PAGE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const INITIAL_FRAME_SIZE = ITERATION_TYPE_ID_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
+/** @internal */
 export class PagingPredicateHolderCodec {
     static encode(clientMessage: ClientMessage, pagingPredicateHolder: PagingPredicateHolder): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());

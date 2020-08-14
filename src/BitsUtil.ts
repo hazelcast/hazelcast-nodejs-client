@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
+/** @internal */
 export class BitsUtil {
     static BYTE_SIZE_IN_BYTES = 1;
     static BOOLEAN_SIZE_IN_BYTES = 1;

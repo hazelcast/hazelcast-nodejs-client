@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
-export class VectorClock  {
+/** @internal */
+export class VectorClock {
 
     private replicaTimestamps = new Map<string, Long>();
 

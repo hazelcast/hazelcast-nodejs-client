@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Promise from 'bluebird';
 import {EventEmitter} from 'events';
@@ -40,7 +41,7 @@ import {
 } from '../Util';
 import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
 import {ILogger} from '../logging/ILogger';
-import {Address} from '../Address';
+import {AddressImpl} from '../Address';
 import {HeartbeatManager} from '../HeartbeatManager';
 import {UuidUtil} from '../util/UuidUtil';
 import {WaitStrategy} from './WaitStrategy';
@@ -48,14 +49,15 @@ import {ReconnectMode} from '../config/ConnectionStrategyConfig';
 import {LoadBalancer} from '../LoadBalancer';
 import {UUID} from '../core/UUID';
 import {ClientConfigImpl} from '../config/Config';
-import {LifecycleState} from '../LifecycleService';
+import {LifecycleState, LifecycleServiceImpl} from '../LifecycleService';
 import {ClientMessage} from '../ClientMessage';
 import {BuildInfo} from '../BuildInfo';
 import {ClientAuthenticationCustomCodec} from '../codec/ClientAuthenticationCustomCodec';
 import {ClientAuthenticationCodec, ClientAuthenticationResponseParams} from '../codec/ClientAuthenticationCodec';
 import {AuthenticationStatus} from '../protocol/AuthenticationStatus';
 import {Invocation} from '../invocation/InvocationService';
-import {Member} from '../core/Member';
+import {MemberImpl} from '../core/Member';
+import {PartitionServiceImpl} from '../PartitionService';
 
 const CONNECTION_REMOVED_EVENT_NAME = 'connectionRemoved';
 const CONNECTION_ADDED_EVENT_NAME = 'connectionAdded';
@@ -94,6 +96,7 @@ enum ClientState {
 
 /**
  * Maintains connections between the client and members of the cluster.
+ * @internal
  */
 export class ClientConnectionManager extends EventEmitter {
 
@@ -119,7 +122,7 @@ export class ClientConnectionManager extends EventEmitter {
     private clientState = ClientState.INITIAL;
     private connectToClusterTaskSubmitted: boolean;
     private reconnectToMembersTask: Task;
-    private connectingAddresses = new Set<Address>();
+    private connectingAddresses = new Set<AddressImpl>();
 
     constructor(client: HazelcastClient) {
         super();
@@ -132,7 +135,7 @@ export class ClientConnectionManager extends EventEmitter {
         this.authenticationTimeout = this.heartbeatManager.getHeartbeatTimeout();
         this.shuffleMemberList = client.getConfig().properties['hazelcast.client.shuffle.member.list'] as boolean;
         this.isSmartRoutingEnabled = client.getConfig().network.smartRouting;
-        this.waitStrategy = this.initWaitStrategy(client.getConfig());
+        this.waitStrategy = this.initWaitStrategy(client.getConfig() as ClientConfigImpl);
         const connectionStrategyConfig = client.getConfig().connectionStrategy;
         this.asyncStart = connectionStrategyConfig.asyncStart;
         this.reconnectMode = connectionStrategyConfig.reconnectMode;
@@ -221,7 +224,7 @@ export class ClientConnectionManager extends EventEmitter {
         return this.clientUuid;
     }
 
-    public getOrConnect(address: Address): Promise<ClientConnection> {
+    public getOrConnect(address: AddressImpl): Promise<ClientConnection> {
         if (!this.client.getLifecycleService().isRunning()) {
             return Promise.reject(new ClientNotActiveError('Client is not active.'));
         }
@@ -244,7 +247,7 @@ export class ClientConnectionManager extends EventEmitter {
             this.client.getInvocationService().processResponse(msg);
         };
 
-        let translatedAddress: Address;
+        let translatedAddress: AddressImpl;
         let clientConnection: ClientConnection;
         this.translate(address)
             .then((translated) => {
@@ -318,8 +321,8 @@ export class ClientConnectionManager extends EventEmitter {
     private initWaitStrategy(config: ClientConfigImpl): WaitStrategy {
         const connectionStrategyConfig = config.connectionStrategy;
         const retryConfig = connectionStrategyConfig.connectionRetry;
-        return new WaitStrategy(retryConfig.initialBackoffMillis, retryConfig.maxBackoffMillis, retryConfig.multiplier,
-            retryConfig.clusterConnectTimeoutMillis, retryConfig.jitter, this.logger);
+        return new WaitStrategy(retryConfig.initialBackoffMillis, retryConfig.maxBackoffMillis,
+            retryConfig.multiplier, retryConfig.clusterConnectTimeoutMillis, retryConfig.jitter, this.logger);
     }
 
     private initConnectionTimeoutMillis(): number {
@@ -408,7 +411,7 @@ export class ClientConnectionManager extends EventEmitter {
             });
     }
 
-    private tryConnectingToAddress(index: number, addresses: Address[], triedAddresses: Set<string>): Promise<boolean> {
+    private tryConnectingToAddress(index: number, addresses: AddressImpl[], triedAddresses: Set<string>): Promise<boolean> {
         if (index >= addresses.length) {
             return Promise.resolve(false);
         }
@@ -426,7 +429,7 @@ export class ClientConnectionManager extends EventEmitter {
             });
     }
 
-    private connect(address: Address): Promise<ClientConnection> {
+    private connect(address: AddressImpl): Promise<ClientConnection> {
         this.logger.info('ConnectionManager', 'Trying to connect to ' + address);
         return this.getOrConnect(address)
             .catch((error) => {
@@ -437,10 +440,10 @@ export class ClientConnectionManager extends EventEmitter {
     }
 
     private emitLifecycleEvent(state: LifecycleState): void {
-        this.client.getLifecycleService().emitLifecycleEvent(state);
+        (this.client.getLifecycleService() as LifecycleServiceImpl).emitLifecycleEvent(state);
     }
 
-    private getPossibleMemberAddresses(): Promise<Address[]> {
+    private getPossibleMemberAddresses(): Promise<AddressImpl[]> {
         const addresses = this.client.getClusterService().getMembers()
             .map(((member) => member.address.toString()));
 
@@ -461,7 +464,7 @@ export class ClientConnectionManager extends EventEmitter {
                     shuffleArray(providerAddresses);
                 }
                 const allAddresses = Array.from(new Set([...addresses, ...providerAddresses]));
-                const result: Address[] = [];
+                const result: AddressImpl[] = [];
                 for (const address of allAddresses) {
                     result.push(...AddressHelper.getSocketAddresses(address));
                 }
@@ -469,7 +472,7 @@ export class ClientConnectionManager extends EventEmitter {
             });
     }
 
-    private getConnectionFromAddress(address: Address): ClientConnection {
+    private getConnectionFromAddress(address: AddressImpl): ClientConnection {
         for (const connection of this.getActiveConnections()) {
             if (connection.getRemoteAddress().equals(address)) {
                 return connection;
@@ -491,7 +494,7 @@ export class ClientConnectionManager extends EventEmitter {
         return deferred.promise;
     }
 
-    private triggerConnect(translatedAddress: Address): Promise<net.Socket> {
+    private triggerConnect(translatedAddress: AddressImpl): Promise<net.Socket> {
         if (this.client.getConfig().network.ssl.enabled) {
             if (this.client.getConfig().network.ssl.sslOptions) {
                 const opts = this.client.getConfig().network.ssl.sslOptions;
@@ -519,7 +522,7 @@ export class ClientConnectionManager extends EventEmitter {
         }
     }
 
-    private connectTLSSocket(address: Address, configOpts: any): Promise<tls.TLSSocket> {
+    private connectTLSSocket(address: AddressImpl, configOpts: any): Promise<tls.TLSSocket> {
         const connectionResolver = DeferredPromise<tls.TLSSocket>();
         const socket = tls.connect(address.port, address.host, configOpts);
         socket.once('secureConnect', () => {
@@ -538,7 +541,7 @@ export class ClientConnectionManager extends EventEmitter {
         return connectionResolver.promise;
     }
 
-    private connectNetSocket(address: Address): Promise<net.Socket> {
+    private connectNetSocket(address: AddressImpl): Promise<net.Socket> {
         const connectionResolver = DeferredPromise<net.Socket>();
         const socket = net.connect(address.port, address.host);
         socket.once('connect', () => {
@@ -565,7 +568,7 @@ export class ClientConnectionManager extends EventEmitter {
         this.emit(CONNECTION_REMOVED_EVENT_NAME, connection);
     }
 
-    private translate(target: Address): Promise<Address> {
+    private translate(target: AddressImpl): Promise<AddressImpl> {
         const addressProvider = this.client.getAddressProvider();
         return addressProvider.translate(target)
             .catch((error: Error) => {
@@ -728,7 +731,7 @@ export class ClientConnectionManager extends EventEmitter {
     }
 
     private checkPartitionCount(newPartitionCount: number): void {
-        const partitionService = this.client.getPartitionService();
+        const partitionService = this.client.getPartitionService() as PartitionServiceImpl;
         if (!partitionService.checkAndSetPartitionCount(newPartitionCount)) {
             throw new ClientNotAllowedInClusterError('Client can not work with this cluster because it has a different ' +
                 'partition count. Expected partition count: ' + partitionService.getPartitionCount() +
@@ -769,7 +772,7 @@ export class ClientConnectionManager extends EventEmitter {
             });
     }
 
-    private tryConnectToAllClusterMembers(members: Member[]): Promise<void> {
+    private tryConnectToAllClusterMembers(members: MemberImpl[]): Promise<void> {
         const promises: Array<Promise<void | ClientConnection>> = [];
 
         for (const member of members) {

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import {SerializationService} from '../SerializationService';
 import {PortableContext} from './PortableContext';
 import {Portable, PortableFactory} from '../Serializable';
 import {Serializer} from '../DefaultSerializer';
@@ -27,16 +26,15 @@ import * as Long from 'long';
 import {SerializationConfigImpl} from '../../config/SerializationConfig';
 import {HazelcastSerializationError} from '../../HazelcastError';
 
+/** @internal */
 export class PortableSerializer implements Serializer {
 
     id = -1;
-    private portableContext: PortableContext;
-    private factories: { [id: number]: PortableFactory };
-    private service: SerializationService;
+    private readonly portableContext: PortableContext;
+    private readonly factories: { [id: number]: PortableFactory };
 
-    constructor(service: SerializationService, serializationConfig: SerializationConfigImpl) {
-        this.service = service;
-        this.portableContext = new PortableContext(this.service, serializationConfig.portableVersion);
+    constructor(serializationConfig: SerializationConfigImpl) {
+        this.portableContext = new PortableContext(serializationConfig.portableVersion);
         this.factories = serializationConfig.portableFactories;
     }
 
@@ -99,6 +97,9 @@ export class PortableSerializer implements Serializer {
     }
 }
 
+/**
+ * Writer helper for {@link Portable} objects.
+ */
 export interface PortableWriter {
     writeInt(fieldName: string, value: number): void;
 
@@ -143,6 +144,9 @@ export interface PortableWriter {
     writePortableArray(fieldName: string, portables: Portable[]): void;
 }
 
+/**
+ * Reader helper for {@link Portable} objects.
+ */
 export interface PortableReader {
     getVersion(): number;
 

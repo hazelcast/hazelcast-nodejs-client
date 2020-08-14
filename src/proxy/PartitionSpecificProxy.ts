@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Promise from 'bluebird';
 import HazelcastClient from '../HazelcastClient';
 import {BaseProxy} from './BaseProxy';
 import {ClientMessage} from '../ClientMessage';
 
+/** @internal */
 export class PartitionSpecificProxy extends BaseProxy {
 
     private partitionId: number;

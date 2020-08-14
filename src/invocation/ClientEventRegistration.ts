@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {ClientConnection} from '../network/ClientConnection';
 import {UUID} from '../core/UUID';
 
+/** @internal */
 export class ClientEventRegistration {
     readonly serverRegistrationId: UUID;
     readonly correlationId: number;

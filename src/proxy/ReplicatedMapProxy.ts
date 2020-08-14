@@ -40,7 +40,7 @@ import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {Data} from '../serialization/Data';
 import {assertNotNull} from '../Util';
-import {ArrayComparator} from '../util/ArrayComparator';
+import {ListComparator} from '../core/Comparator';
 import {ReplicatedMap} from './ReplicatedMap';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {MapEvent} from '../core/MapListener';
@@ -154,7 +154,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
             });
     }
 
-    values(comparator?: ArrayComparator<V>): Promise<ReadOnlyLazyList<V>> {
+    values(comparator?: ListComparator<V>): Promise<ReadOnlyLazyList<V>> {
         return this.encodeInvoke(ReplicatedMapValuesCodec)
             .then((clientMessage) => {
                 const response = ReplicatedMapValuesCodec.decodeResponse(clientMessage);

@@ -34,10 +34,12 @@ const EVENT_PARTITION_LOST_PARTITION_ID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.
 const EVENT_PARTITION_LOST_LOST_BACKUP_COUNT_OFFSET = EVENT_PARTITION_LOST_PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const EVENT_PARTITION_LOST_SOURCE_OFFSET = EVENT_PARTITION_LOST_LOST_BACKUP_COUNT_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+/** @internal */
 export interface ClientAddPartitionLostListenerResponseParams {
     response: UUID;
 }
 
+/** @internal */
 export class ClientAddPartitionLostListenerCodec {
     static encodeRequest(localOnly: boolean): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

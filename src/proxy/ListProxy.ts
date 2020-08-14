@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Promise from 'bluebird';
 import {ListAddAllCodec} from '../codec/ListAddAllCodec';
@@ -45,6 +46,7 @@ import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {ClientMessage} from '../ClientMessage';
 import {UUID} from '../core/UUID';
 
+/** @internal */
 export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
 
     add(element: E): Promise<boolean> {

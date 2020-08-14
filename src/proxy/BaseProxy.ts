@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Promise from 'bluebird';
 import {BuildInfo} from '../BuildInfo';
@@ -23,6 +24,7 @@ import {UUID} from '../core/UUID';
 
 /**
  * Common super class for any proxy.
+ * @internal
  */
 export class BaseProxy {
 

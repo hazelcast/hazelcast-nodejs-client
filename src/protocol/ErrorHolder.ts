@@ -17,6 +17,7 @@
 import {StackTraceElement} from './StackTraceElement';
 
 export class ErrorHolder {
+
     errorCode: number;
     className: string;
     message: string;

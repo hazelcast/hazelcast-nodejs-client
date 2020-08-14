@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Long from 'long';
 import {BitsUtil} from '../../BitsUtil';
@@ -22,6 +23,7 @@ import {Portable} from '../Serializable';
 import {ClassDefinition, FieldDefinition, FieldType} from './ClassDefinition';
 import {PortableReader, PortableSerializer} from './PortableSerializer';
 
+/** @internal */
 export class DefaultPortableReader implements PortableReader {
 
     protected serializer: PortableSerializer;

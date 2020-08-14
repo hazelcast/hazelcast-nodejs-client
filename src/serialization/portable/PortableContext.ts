@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
-import {SerializationService} from '../SerializationService';
 import {ClassDefinitionContext} from './ClassDefinitionContext';
 import {DataInput} from '../Data';
 import {ClassDefinition, FieldDefinition, FieldType} from './ClassDefinition';
@@ -23,13 +23,13 @@ import {BitsUtil} from '../../BitsUtil';
 import {Portable, VersionedPortable} from '../Serializable';
 import {ClassDefinitionBuilder} from './ClassDefinitionBuilder';
 
+/** @internal */
 export class PortableContext {
-    private service: SerializationService;
+
     private version: number;
     private classDefContext: { [factoyId: number]: ClassDefinitionContext };
 
-    constructor(service: SerializationService, portableVersion: number) {
-        this.service = service;
+    constructor(portableVersion: number) {
         this.version = portableVersion;
         this.classDefContext = {};
     }

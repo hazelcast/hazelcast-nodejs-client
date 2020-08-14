@@ -13,16 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {murmur} from '../invocation/Murmur';
 import {Data} from './Data';
 import {NULL_TYPE_ID} from './DefaultSerializer';
 
+/** @internal */
 export const PARTITION_HASH_OFFSET = 0;
+/** @internal */
 export const TYPE_OFFSET = 4;
+/** @internal */
 export const DATA_OFFSET = 8;
+/** @internal */
 export const HEAP_DATA_OVERHEAD: number = DATA_OFFSET;
 
+/** @internal */
 export class HeapData implements Data {
 
     private payload: Buffer;

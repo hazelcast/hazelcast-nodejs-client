@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {Property} from '../config/Properties';
 import {DefaultLogger} from './DefaultLogger';
 import {ILogger, LogLevel} from './ILogger';
 import {enumFromString} from '../Util';
 
+/** @internal */
 export class LoggingService {
 
     private readonly logger: ILogger;

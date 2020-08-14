@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {DefaultPortableReader} from './DefaultPortableReader';
 import {PortableSerializer} from './PortableSerializer';
@@ -21,6 +22,7 @@ import {ClassDefinition, FieldDefinition, FieldType} from './ClassDefinition';
 import {Portable} from '../Serializable';
 import * as Long from 'long';
 
+/** @internal */
 export class MorphingPortableReader extends DefaultPortableReader {
     constructor(portableSerializer: PortableSerializer, input: DataInput, classDefinition: ClassDefinition) {
         super(portableSerializer, input, classDefinition);

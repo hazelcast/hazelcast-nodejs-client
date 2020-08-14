@@ -20,12 +20,11 @@ const expect = chai.expect;
 const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 const RC = require('./../RC');
-const Util = require('./../Util');
 const Promise = require('bluebird');
 const fs = require('fs');
 
-const HazelcastClient = require('../../').Client;
-const ItemEventType = require('../../').ItemEventType;
+const { Client } = require('../../');
+const { ItemEventType } = require('../../lib/core/ItemListener');
 
 describe('QueueProxyTest', function () {
 
@@ -41,7 +40,7 @@ describe('QueueProxyTest', function () {
                 return RC.startMember(cluster.id);
             })
             .then(function () {
-                return HazelcastClient.newHazelcastClient({ clusterName: cluster.id });
+                return Client.newHazelcastClient({ clusterName: cluster.id });
             }).then(function (hazelcastClient) {
                 client = hazelcastClient;
             });

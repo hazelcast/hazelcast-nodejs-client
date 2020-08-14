@@ -26,6 +26,7 @@ export interface ClientCloudConfig {
 
 }
 
+/** @internal */
 export class ClientCloudConfigImpl implements ClientCloudConfig {
 
     discoveryToken: string = null;

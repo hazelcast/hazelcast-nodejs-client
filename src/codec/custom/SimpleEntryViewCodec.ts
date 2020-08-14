@@ -35,6 +35,7 @@ const TTL_OFFSET = VERSION_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 const MAX_IDLE_OFFSET = TTL_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 const INITIAL_FRAME_SIZE = MAX_IDLE_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
+/** @internal */
 export class SimpleEntryViewCodec {
     static encode(clientMessage: ClientMessage, simpleEntryView: SimpleEntryView<Data, Data>): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());

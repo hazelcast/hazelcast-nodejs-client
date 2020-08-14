@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Long from 'long';
 import {Data} from '../../serialization/Data';
 import {SerializationService, SerializationServiceV1} from '../../serialization/SerializationService';
 import {ReadResultSet} from './ReadResultSet';
 
+/** @internal */
 export class LazyReadResultSet<T> implements ReadResultSet<T> {
 
     private readCount: number;

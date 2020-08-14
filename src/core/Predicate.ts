@@ -169,6 +169,7 @@ export function paging(predicate: Predicate, pageSize: number, comparator: Compa
 
 /**
  * Iteration type.
+ * @internal
  */
 export enum IterationType {
 
@@ -189,6 +190,7 @@ export enum IterationType {
 
 }
 
+/** @internal */
 export const iterationTypeToId = (type: IterationType): number => {
     switch (type) {
         case IterationType.KEY:
@@ -202,6 +204,7 @@ export const iterationTypeToId = (type: IterationType): number => {
     }
 }
 
+/** @internal */
 export enum QueryConstants {
 
     /**

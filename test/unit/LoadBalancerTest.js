@@ -16,9 +16,9 @@
 
 'use strict';
 
-const RandomLB = require('../../lib').RandomLB;
-const RoundRobinLB = require('../../lib').RoundRobinLB;
 const expect = require('chai').expect;
+const { RandomLB } = require('../../lib/util/RandomLB');
+const { RoundRobinLB } = require('../../lib/util/RoundRobinLB');
 
 describe('LoadBalancerTest', function () {
 

@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {ClientConnection} from '../network/ClientConnection';
 import * as Promise from 'bluebird';
-import {Member} from '../core/Member';
+import {MemberImpl} from '../core/Member';
 import {ClientInfo} from '../ClientInfo';
 import HazelcastClient from '../HazelcastClient';
 import {IllegalStateError, TargetDisconnectedError} from '../HazelcastError';
@@ -35,23 +36,25 @@ import {Cluster} from '../core/Cluster';
 
 class MemberListSnapshot {
     version: number;
-    readonly members: Map<string, Member>;
-    readonly memberList: Member[];
+    readonly members: Map<string, MemberImpl>;
+    readonly memberList: MemberImpl[];
 
-    constructor(version: number, members: Map<string, Member>, memberList: Member[]) {
+    constructor(version: number, members: Map<string, MemberImpl>, memberList: MemberImpl[]) {
         this.version = version;
         this.members = members;
         this.memberList = memberList;
     }
 }
 
-const EMPTY_SNAPSHOT = new MemberListSnapshot(-1, new Map<string, Member>(), []);
+const EMPTY_SNAPSHOT = new MemberListSnapshot(-1, new Map<string, MemberImpl>(), []);
 const INITIAL_MEMBERS_TIMEOUT_IN_MILLIS = 120 * 1000; // 120 seconds
 
 /**
  * Manages the relationship of this client with the cluster.
+ * @internal
  */
 export class ClusterService implements Cluster {
+
     private client: HazelcastClient;
     private memberListSnapshot: MemberListSnapshot = EMPTY_SNAPSHOT;
     private listeners: Map<string, MembershipListener> = new Map();
@@ -73,7 +76,7 @@ export class ClusterService implements Cluster {
      * @param uuid The UUID of the member.
      * @return The member that was found, or undefined if not found.
      */
-    public getMember(uuid: UUID): Member {
+    public getMember(uuid: UUID): MemberImpl {
         assertNotNull(uuid);
         return this.memberListSnapshot.members.get(uuid.toString());
     }
@@ -84,15 +87,15 @@ export class ClusterService implements Cluster {
      * @param selector {@link MemberSelector} instance to filter members to return
      * @return members that satisfy the given selector.
      */
-    public getMembers(selector?: MemberSelector): Member[] {
+    public getMembers(selector?: MemberSelector): MemberImpl[] {
         const members = this.getMemberList();
         if (selector == null) {
             return members;
         }
 
-        const selectedMembers: Member[] = [];
+        const selectedMembers: MemberImpl[] = [];
         members.forEach((member) => {
-            if (selector.select(member)) {
+            if (selector(member)) {
                 selectedMembers.push(member);
             }
         });
@@ -227,10 +230,10 @@ export class ClusterService implements Cluster {
         });
     }
 
-    private detectMembershipEvents(prevMembers: Member[], currentMembers: Member[]): MembershipEvent[] {
-        const newMembers = new Array<Member>();
+    private detectMembershipEvents(prevMembers: MemberImpl[], currentMembers: MemberImpl[]): MembershipEvent[] {
+        const newMembers = new Array<MemberImpl>();
 
-        const deadMembers = new Map<string, Member>();
+        const deadMembers = new Map<string, MemberImpl>();
         for (const member of prevMembers) {
             deadMembers.set(member.id(), member);
         }
@@ -267,11 +270,11 @@ export class ClusterService implements Cluster {
     }
 
     private createSnapshot(memberListVersion: number, memberInfos: MemberInfo[]): MemberListSnapshot {
-        const newMembers = new Map<string, Member>();
-        const newMemberList = new Array<Member>(memberInfos.length);
+        const newMembers = new Map<string, MemberImpl>();
+        const newMemberList = new Array<MemberImpl>(memberInfos.length);
         let index = 0;
         for (const memberInfo of memberInfos) {
-            const member = new Member(memberInfo.address, memberInfo.uuid, memberInfo.attributes, memberInfo.liteMember,
+            const member = new MemberImpl(memberInfo.address, memberInfo.uuid, memberInfo.attributes, memberInfo.liteMember,
                 memberInfo.version);
             newMembers.set(memberInfo.uuid.toString(), member);
             newMemberList[index++] = member;
@@ -289,7 +292,7 @@ export class ClusterService implements Cluster {
         return logString;
     }
 
-    private getMemberList(): Member[] {
+    private getMemberList(): MemberImpl[] {
         return this.memberListSnapshot.memberList;
     }
 

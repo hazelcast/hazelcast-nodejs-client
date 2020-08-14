@@ -21,6 +21,7 @@ import * as Long from 'long';
 
 const ENTRY_SIZE_IN_BYTES = BitsUtil.INT_SIZE_IN_BYTES + BitsUtil.LONG_SIZE_IN_BYTES;
 
+/** @internal */
 export class EntryListIntegerLongCodec {
     static encode(clientMessage: ClientMessage, entries: Array<[number, Long]>): void {
         const entryCount = entries.length;

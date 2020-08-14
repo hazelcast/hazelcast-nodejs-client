@@ -13,28 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
-import {Address} from '../Address';
+import {AddressImpl} from '../Address';
 import {UUID} from './UUID';
 import {MemberVersion} from './MemberVersion';
 
+/** @internal */
 export class MemberInfo {
-    /**
-     * Network address of member.
-     */
-    address: Address;
-    /**
-     * Unique id of member in cluster.
-     */
+
+    address: AddressImpl;
     uuid: UUID;
-    /**
-     * true if member is a lite member.
-     */
     liteMember: boolean;
     attributes: Map<string, string>;
     version: MemberVersion;
 
-    constructor(address: Address, uuid: UUID, attributes: Map<string, string>, liteMember: boolean, version: MemberVersion) {
+    constructor(address: AddressImpl,
+                uuid: UUID,
+                attributes: Map<string, string>,
+                liteMember: boolean,
+                version: MemberVersion) {
         this.address = address;
         this.uuid = uuid;
         this.attributes = attributes;
@@ -46,11 +44,9 @@ export class MemberInfo {
         if (other == null) {
             return false;
         }
-
         if (!this.address.equals(other.address)) {
             return false;
         }
-
         return this.uuid != null ? this.uuid.equals(other.uuid) : other.uuid === null;
     }
 

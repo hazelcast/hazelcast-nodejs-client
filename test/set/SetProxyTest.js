@@ -17,8 +17,8 @@
 
 const expect = require('chai').expect;
 const RC = require('./../RC');
-const Client = require('../..').Client;
-const ItemEventType = require('../..').ItemEventType;
+const { Client } = require('../../');
+const { ItemEventType } = require('../../lib/core/ItemListener');
 
 describe('SetProxyTest', function () {
 

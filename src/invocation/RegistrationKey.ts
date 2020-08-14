@@ -13,17 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {ClientMessage} from '../ClientMessage';
 
+/** @internal */
 export class RegistrationKey {
+
     private readonly userRegistrationId: string;
     private registerHandlerFunc: Function;
     private registerRequest: ClientMessage;
     private codec: ListenerMessageCodec;
 
-    constructor(regId: string, codec: ListenerMessageCodec, registerRequest?: ClientMessage, registerHandlerFunc?: Function) {
+    constructor(regId: string,
+                codec: ListenerMessageCodec,
+                registerRequest?: ClientMessage,
+                registerHandlerFunc?: Function) {
         this.userRegistrationId = regId;
         this.registerHandlerFunc = registerHandlerFunc;
         this.registerRequest = registerRequest;

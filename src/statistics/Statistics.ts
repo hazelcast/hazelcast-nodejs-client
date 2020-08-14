@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import HazelcastClient from '../HazelcastClient';
 import {ClientConnection} from '../network/ClientConnection';
@@ -29,6 +30,7 @@ import * as Long from 'long';
  * This class is the main entry point for collecting and sending the client
  * statistics to the cluster. If the client statistics feature is enabled,
  * it will be scheduled for periodic statistics collection and sent.
+ * @internal
  */
 export class Statistics {
 

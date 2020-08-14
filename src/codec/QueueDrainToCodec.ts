@@ -29,10 +29,12 @@ const REQUEST_MESSAGE_TYPE = 198912;
 
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+/** @internal */
 export interface QueueDrainToResponseParams {
     response: Data[];
 }
 
+/** @internal */
 export class QueueDrainToCodec {
     static encodeRequest(name: string): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

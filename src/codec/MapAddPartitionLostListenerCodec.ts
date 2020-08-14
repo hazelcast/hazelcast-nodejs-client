@@ -34,10 +34,12 @@ const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZ
 const EVENT_MAP_PARTITION_LOST_PARTITION_ID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const EVENT_MAP_PARTITION_LOST_UUID_OFFSET = EVENT_MAP_PARTITION_LOST_PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+/** @internal */
 export interface MapAddPartitionLostListenerResponseParams {
     response: UUID;
 }
 
+/** @internal */
 export class MapAddPartitionLostListenerCodec {
     static encodeRequest(name: string, localOnly: boolean): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
