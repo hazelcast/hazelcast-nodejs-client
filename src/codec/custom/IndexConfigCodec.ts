@@ -27,6 +27,7 @@ import {BitmapIndexOptionsCodec} from './BitmapIndexOptionsCodec';
 const TYPE_OFFSET = 0;
 const INITIAL_FRAME_SIZE = TYPE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+/** @internal */
 export class IndexConfigCodec {
     static encode(clientMessage: ClientMessage, indexConfig: InternalIndexConfig): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());

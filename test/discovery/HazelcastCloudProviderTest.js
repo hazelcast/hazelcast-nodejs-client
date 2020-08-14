@@ -18,13 +18,13 @@
 const sinon = require('sinon');
 const expect = require('chai').expect;
 const Promise = require('bluebird');
-const LogLevel = require('../../lib/').LogLevel;
 
-const IllegalStateError = require('../../').HazelcastErrors.IllegalStateError;
-const LoggingService = require('../../lib/logging/LoggingService').LoggingService;
-const Address = require('../../lib/Address').Address;
-const HazelcastCloudAddressProvider = require('../../lib/discovery/HazelcastCloudAddressProvider').HazelcastCloudAddressProvider;
-const HazelcastCloudDiscovery = require('../../lib/discovery/HazelcastCloudDiscovery').HazelcastCloudDiscovery;
+const { LogLevel } = require('../../lib/');
+const { HazelcastErrors: { IllegalStateError } } = require('../../');
+const { LoggingService } = require('../../lib/logging/LoggingService');
+const { AddressImpl } = require('../../lib/Address');
+const { HazelcastCloudAddressProvider } = require('../../lib/discovery/HazelcastCloudAddressProvider');
+const { HazelcastCloudDiscovery } = require('../../lib/discovery/HazelcastCloudDiscovery');
 
 describe('HazelcastCloudProviderTest', function () {
 
@@ -33,9 +33,9 @@ describe('HazelcastCloudProviderTest', function () {
     let provider;
 
     before(function () {
-        expectedAddresses.set('10.0.0.1:5701', new Address('198.51.100.1', 5701));
-        expectedAddresses.set('10.0.0.1:5702', new Address('198.51.100.1', 5702));
-        expectedAddresses.set('10.0.0.2:5701', new Address('198.51.100.2', 5701));
+        expectedAddresses.set('10.0.0.1:5701', new AddressImpl('198.51.100.1', 5701));
+        expectedAddresses.set('10.0.0.1:5702', new AddressImpl('198.51.100.1', 5702));
+        expectedAddresses.set('10.0.0.2:5701', new AddressImpl('198.51.100.2', 5701));
     });
 
     beforeEach(() => {
@@ -92,7 +92,7 @@ describe('HazelcastCloudProviderTest', function () {
     });
 
     it('translate_whenNotFound_thenReturnNull', function () {
-        const notAvailableAddress = new Address('127.0.0.3', 5701);
+        const notAvailableAddress = new AddressImpl('127.0.0.3', 5701);
         return provider.translate(notAvailableAddress).then((res) => {
             return expect(res).to.be.null;
         });

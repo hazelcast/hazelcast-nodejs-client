@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {PortableSerializer} from './PortableSerializer';
 import {PositionalDataOutput} from '../Data';
@@ -21,6 +22,7 @@ import {BitsUtil} from '../../BitsUtil';
 import {Portable} from '../Serializable';
 import * as Long from 'long';
 
+/** @internal */
 export class DefaultPortableWriter {
     private serializer: PortableSerializer;
     private output: PositionalDataOutput;

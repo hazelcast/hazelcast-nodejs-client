@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import HazelcastClient from '../HazelcastClient';
 import {ClientConnectionManager} from '../network/ClientConnectionManager';
-import {PartitionService} from '../PartitionService';
+import {PartitionServiceImpl} from '../PartitionService';
 import {ClusterService} from '../invocation/ClusterService';
 import {ILogger} from '../logging/ILogger';
 import {ClientConnection} from '../network/ClientConnection';
@@ -27,14 +28,15 @@ import {Invocation} from '../invocation/InvocationService';
 
 /**
  * Adds cluster listener to one of the connections. If that connection is removed,
- * it registers connection to any other connection
+ * it registers connection to any other connection.
+ * @internal
  */
 export class ClusterViewListenerService {
 
     private readonly client: HazelcastClient;
     private readonly clusterService: ClusterService;
     private readonly connectionManager: ClientConnectionManager;
-    private readonly partitionService: PartitionService;
+    private readonly partitionService: PartitionServiceImpl;
     private readonly logger: ILogger;
     private listenerAddedConnection: ClientConnection;
 
@@ -42,7 +44,7 @@ export class ClusterViewListenerService {
         this.client = client;
         this.logger = client.getLoggingService().getLogger();
         this.connectionManager = client.getConnectionManager();
-        this.partitionService = client.getPartitionService();
+        this.partitionService = client.getPartitionService() as PartitionServiceImpl;
         this.clusterService = client.getClusterService();
     }
 

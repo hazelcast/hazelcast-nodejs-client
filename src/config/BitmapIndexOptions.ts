@@ -74,6 +74,7 @@ export interface BitmapIndexOptions {
 /**
  * Follows the shape of {@link BitmapIndexOptions}, but doesn't implement it due
  * to the `uniqueKeyTransformation` enum field.
+ * @internal
  */
 export class InternalBitmapIndexOptions {
 

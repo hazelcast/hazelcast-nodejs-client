@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {AGGREGATOR_FACTORY_ID, aggregatorFactory} from '../aggregation/AggregatorFactory';
 import {CLUSTER_DATA_FACTORY_ID, clusterDataFactory} from '../ClusterDataFactory';
@@ -58,9 +59,10 @@ import {IdentifiedDataSerializableFactory} from './Serializable';
 import {JsonStringDeserializationPolicy} from '../config/JsonStringDeserializationPolicy';
 import {REST_VALUE_FACTORY_ID, restValueFactory} from '../core/RestValue';
 
+/** @internal */
 export interface SerializationService {
 
-    toData(object: any, paritioningStrategy?: any): Data;
+    toData(object: any, partitioningStrategy?: any): Data;
 
     toObject(data: Data): any;
 
@@ -70,6 +72,7 @@ export interface SerializationService {
 
 }
 
+/** @internal */
 export class SerializationServiceV1 implements SerializationService {
 
     private registry: { [id: number]: Serializer };
@@ -254,10 +257,7 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('javaClass', new JavaClassSerializer());
         this.registerSerializer('floatArray', new FloatArraySerializer());
         this.registerIdentifiedFactories();
-        this.registerSerializer(
-            '!portable',
-            new PortableSerializer(this, this.serializationConfig),
-        );
+        this.registerSerializer('!portable', new PortableSerializer(this.serializationConfig));
         if (this.serializationConfig.jsonStringDeserializationPolicy === JsonStringDeserializationPolicy.EAGER) {
             this.registerSerializer('!json', new JsonSerializer());
         } else {

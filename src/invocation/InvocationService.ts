@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as assert from 'assert';
 import * as Promise from 'bluebird';
@@ -33,7 +34,7 @@ import {ClientMessage} from '../ClientMessage';
 import {EXCEPTION_MESSAGE_TYPE} from '../codec/builtin/ErrorsCodec';
 import {ClientConnectionManager} from '../network/ClientConnectionManager';
 import {UUID} from '../core/UUID';
-import {PartitionService} from '../PartitionService';
+import {PartitionServiceImpl} from '../PartitionService';
 
 const MAX_FAST_INVOCATION_COUNT = 5;
 const PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS = 'hazelcast.client.invocation.retry.pause.millis';
@@ -41,6 +42,7 @@ const PROPERTY_INVOCATION_TIMEOUT_MILLIS = 'hazelcast.client.invocation.timeout.
 
 /**
  * A request to be sent to a hazelcast node.
+ * @internal
  */
 export class Invocation {
 
@@ -134,6 +136,7 @@ export class Invocation {
 
 /**
  * Sends requests to appropriate nodes. Resolves waiting promises with responses.
+ * @internal
  */
 export class InvocationService {
 
@@ -147,12 +150,12 @@ export class InvocationService {
     private logger: ILogger;
     private isShutdown: boolean;
     private connectionManager: ClientConnectionManager;
-    private partitionService: PartitionService;
+    private partitionService: PartitionServiceImpl;
 
     constructor(hazelcastClient: HazelcastClient) {
         this.client = hazelcastClient;
         this.connectionManager = hazelcastClient.getConnectionManager();
-        this.partitionService = hazelcastClient.getPartitionService();
+        this.partitionService = hazelcastClient.getPartitionService() as PartitionServiceImpl;
         this.logger = this.client.getLoggingService().getLogger();
         if (hazelcastClient.getConfig().network.smartRouting) {
             this.doInvoke = this.invokeSmart;

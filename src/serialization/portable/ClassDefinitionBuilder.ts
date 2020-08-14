@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {ClassDefinition, FieldDefinition, FieldType} from './ClassDefinition';
 import {HazelcastSerializationError} from '../../HazelcastError';
 
+/** @internal */
 export class ClassDefinitionBuilder {
     private readonly factoryId: number;
     private readonly classId: number;

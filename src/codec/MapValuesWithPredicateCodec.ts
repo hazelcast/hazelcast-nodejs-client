@@ -29,10 +29,12 @@ const REQUEST_MESSAGE_TYPE = 75520;
 
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+/** @internal */
 export interface MapValuesWithPredicateResponseParams {
     response: Data[];
 }
 
+/** @internal */
 export class MapValuesWithPredicateCodec {
     static encodeRequest(name: string, predicate: Data): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

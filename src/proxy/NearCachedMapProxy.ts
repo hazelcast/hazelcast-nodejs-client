@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Promise from 'bluebird';
 import {MapAddNearCacheInvalidationListenerCodec} from '../codec/MapAddNearCacheInvalidationListenerCodec';
@@ -20,14 +21,16 @@ import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec'
 import {EventType} from '../core/EventType';
 import {UUID} from '../core/UUID';
 import HazelcastClient from '../HazelcastClient';
+import {PartitionServiceImpl} from '../PartitionService';
 import {ListenerMessageCodec} from '../ListenerMessageCodec';
 import {NearCache} from '../nearcache/NearCache';
-import {StaleReadDetectorImpl} from '../nearcache/StaleReadDetectorImpl';
+import {StaleReadDetectorImpl} from '../nearcache/StaleReadDetector';
 import {Data} from '../serialization/Data';
 import {MapProxy} from './MapProxy';
 import {ClientMessage} from '../ClientMessage';
 import * as Long from 'long';
 
+/** @internal */
 export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
 
     private nearCache: NearCache;
@@ -228,7 +231,8 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
     private createNearCacheEventHandler(): Promise<Function> {
         const repairingTask = this.client.getRepairingTask();
         return repairingTask.registerAndGetHandler(this.getName(), this.nearCache).then((repairingHandler) => {
-            const staleReadDetector = new StaleReadDetectorImpl(repairingHandler, this.client.getPartitionService());
+            const staleReadDetector = new StaleReadDetectorImpl(
+                repairingHandler, this.client.getPartitionService() as PartitionServiceImpl);
             this.nearCache.setStaleReadDetector(staleReadDetector);
             const handle = function (key: Data, sourceUuid: UUID, partitionUuid: UUID, sequence: Long): void {
                 repairingHandler.handle(key, sourceUuid, partitionUuid, sequence);

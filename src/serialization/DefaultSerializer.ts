@@ -47,6 +47,7 @@ export interface Serializer<T = any> {
 
 }
 
+/** @internal */
 export class StringSerializer implements Serializer {
 
     id = -11;
@@ -60,6 +61,7 @@ export class StringSerializer implements Serializer {
     }
 }
 
+/** @internal */
 export class DoubleSerializer implements Serializer {
 
     id = -10;
@@ -73,6 +75,7 @@ export class DoubleSerializer implements Serializer {
     }
 }
 
+/** @internal */
 export class BooleanSerializer implements Serializer {
 
     id = -4;
@@ -86,8 +89,10 @@ export class BooleanSerializer implements Serializer {
     }
 }
 
+/** @internal */
 export const NULL_TYPE_ID = 0;
 
+/** @internal */
 export class NullSerializer implements Serializer {
 
     id = NULL_TYPE_ID;
@@ -97,10 +102,11 @@ export class NullSerializer implements Serializer {
     }
 
     write(output: DataOutput, object: any): void {
-        // Empty method
+        // no-op
     }
 }
 
+/** @internal */
 export class ShortSerializer implements Serializer {
 
     id = -6;
@@ -114,6 +120,7 @@ export class ShortSerializer implements Serializer {
     }
 }
 
+/** @internal */
 export class IntegerSerializer implements Serializer {
 
     id = -7;
@@ -127,6 +134,7 @@ export class IntegerSerializer implements Serializer {
     }
 }
 
+/** @internal */
 export class LongSerializer implements Serializer {
 
     id = -8;
@@ -140,6 +148,7 @@ export class LongSerializer implements Serializer {
     }
 }
 
+/** @internal */
 export class FloatSerializer implements Serializer {
 
     id = -9;
@@ -153,6 +162,7 @@ export class FloatSerializer implements Serializer {
     }
 }
 
+/** @internal */
 export class DateSerializer implements Serializer {
 
     id = -25;
@@ -166,6 +176,7 @@ export class DateSerializer implements Serializer {
     }
 }
 
+/** @internal */
 export class BooleanArraySerializer implements Serializer {
 
     id = -13;
@@ -179,6 +190,7 @@ export class BooleanArraySerializer implements Serializer {
     }
 }
 
+/** @internal */
 export class ShortArraySerializer implements Serializer {
 
     id = -15;
@@ -192,6 +204,7 @@ export class ShortArraySerializer implements Serializer {
     }
 }
 
+/** @internal */
 export class IntegerArraySerializer implements Serializer {
 
     id = -16;
@@ -205,6 +218,7 @@ export class IntegerArraySerializer implements Serializer {
     }
 }
 
+/** @internal */
 export class LongArraySerializer implements Serializer {
 
     id = -17;
@@ -218,6 +232,7 @@ export class LongArraySerializer implements Serializer {
     }
 }
 
+/** @internal */
 export class DoubleArraySerializer implements Serializer {
 
     id = -19;
@@ -231,6 +246,7 @@ export class DoubleArraySerializer implements Serializer {
     }
 }
 
+/** @internal */
 export class StringArraySerializer implements Serializer {
 
     id = -20;
@@ -244,6 +260,7 @@ export class StringArraySerializer implements Serializer {
     }
 }
 
+/** @internal */
 export class ByteSerializer implements Serializer {
 
     id = -3;
@@ -257,6 +274,7 @@ export class ByteSerializer implements Serializer {
     }
 }
 
+/** @internal */
 export class ByteArraySerializer implements Serializer {
 
     id = -12;
@@ -270,6 +288,7 @@ export class ByteArraySerializer implements Serializer {
     }
 }
 
+/** @internal */
 export class CharSerializer implements Serializer {
 
     id = -5;
@@ -283,6 +302,7 @@ export class CharSerializer implements Serializer {
     }
 }
 
+/** @internal */
 export class CharArraySerializer implements Serializer {
 
     id = -14;
@@ -296,6 +316,7 @@ export class CharArraySerializer implements Serializer {
     }
 }
 
+/** @internal */
 export class FloatArraySerializer implements Serializer {
 
     id = -18;
@@ -309,6 +330,7 @@ export class FloatArraySerializer implements Serializer {
     }
 }
 
+/** @internal */
 export class JavaClassSerializer implements Serializer {
 
     id = -24;
@@ -322,6 +344,7 @@ export class JavaClassSerializer implements Serializer {
     }
 }
 
+/** @internal */
 export class LinkedListSerializer implements Serializer {
 
     id = -30;
@@ -343,11 +366,13 @@ export class LinkedListSerializer implements Serializer {
     }
 }
 
+/** @internal */
 export class ArrayListSerializer extends LinkedListSerializer {
 
     id = -29;
 }
 
+/** @internal */
 export class IdentifiedDataSerializableSerializer implements Serializer {
 
     id = -2;
@@ -381,6 +406,7 @@ export class IdentifiedDataSerializableSerializer implements Serializer {
     }
 }
 
+/** @internal */
 export class JsonSerializer implements Serializer {
 
     id = -130;
@@ -399,6 +425,7 @@ export class JsonSerializer implements Serializer {
     }
 }
 
+/** @internal */
 export class HazelcastJsonValueSerializer extends JsonSerializer {
 
     read(input: DataInput): HazelcastJsonValue {

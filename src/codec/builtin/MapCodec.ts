@@ -17,6 +17,7 @@
 import {BEGIN_FRAME, ClientMessage, END_FRAME, NULL_FRAME} from '../../ClientMessage';
 import {CodecUtil} from './CodecUtil';
 
+/** @internal */
 export class MapCodec {
     static encode<K, V>(clientMessage: ClientMessage, map: Map<K, V>,
                         keyEncoder: (msg: ClientMessage, key: K) => void,

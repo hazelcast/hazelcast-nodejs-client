@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+/**
+ * Overload policy for Reliable Topic.
+ */
 export enum TopicOverloadPolicy {
 
     /**

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/** @internal */
 export interface HazelcastErrorConstructor {
     readonly prototype: Error;
 

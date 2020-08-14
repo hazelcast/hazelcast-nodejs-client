@@ -15,13 +15,13 @@
  */
 'use strict';
 
-const RC = require('../RC');
-const HazelcastClient = require('../../').Client;
-const expect = require('chai').expect;
-const Util = require('../Util');
 const fs = require('fs');
+const expect = require('chai').expect;
+const RC = require('../RC');
+const Util = require('../Util');
+const { Client } = require('../../');
 
-describe('Heartbeat', function () {
+describe('HeartbeatFromClientTest', function () {
 
     this.timeout(30000);
     let cluster;
@@ -53,13 +53,13 @@ describe('Heartbeat', function () {
             }
         };
         return RC.startMember(cluster.id).then(function (m) {
-            return HazelcastClient.newHazelcastClient(clientConfig);
+            return Client.newHazelcastClient(clientConfig);
         }).then(function (c) {
             client1 = c;
             client1.getConnectionManager().on('connectionClosed', function () {
                 connectionClosedEventCount++;
             });
-            return HazelcastClient.newHazelcastClient(clientConfig);
+            return Client.newHazelcastClient(clientConfig);
         }).then(function (c) {
             client2 = c;
             return client1.getMap(MAP_NAME);

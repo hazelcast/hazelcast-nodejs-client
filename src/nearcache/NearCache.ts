@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Long from 'long';
 import {EvictionPolicy} from '../config/EvictionPolicy';
@@ -22,11 +23,11 @@ import {DataKeyedHashMap} from '../DataStoreHashMap';
 import {Data} from '../serialization/Data';
 import {SerializationService} from '../serialization/SerializationService';
 import {DeferredPromise, shuffleArray} from '../Util';
-import * as AlwaysFreshStaleReadDetectorImpl from './AlwaysFreshStaleReadDetectorImpl';
 import {DataRecord} from './DataRecord';
-import {StaleReadDetector} from './StaleReadDetector';
+import {StaleReadDetector, alwaysFreshDetector} from './StaleReadDetector';
 import * as Promise from 'bluebird';
 
+/** @internal */
 export interface NearCacheStatistics {
     creationTime: number;
     evictedCount: number;
@@ -36,6 +37,7 @@ export interface NearCacheStatistics {
     entryCount: number;
 }
 
+/** @internal */
 export interface NearCache {
     put(key: Data, value: any): void;
 
@@ -60,6 +62,7 @@ export interface NearCache {
     setReady(): void;
 }
 
+/** @internal */
 export class NearCacheImpl implements NearCache {
 
     internalStore: DataKeyedHashMap<DataRecord>;
@@ -74,7 +77,7 @@ export class NearCacheImpl implements NearCache {
     private evictionSamplingCount: number;
     private evictionSamplingPoolSize: number;
     private evictionCandidatePool: DataRecord[];
-    private staleReadDetector: StaleReadDetector = AlwaysFreshStaleReadDetectorImpl.INSTANCE;
+    private staleReadDetector: StaleReadDetector = alwaysFreshDetector;
     private reservationCounter: Long = Long.ZERO;
 
     private evictedCount = 0;
@@ -302,7 +305,7 @@ export class NearCacheImpl implements NearCache {
     }
 
     private initInvalidationMetadata(dr: DataRecord): void {
-        if (this.staleReadDetector === AlwaysFreshStaleReadDetectorImpl.INSTANCE) {
+        if (this.staleReadDetector === alwaysFreshDetector) {
             return;
         }
         const partitionId = this.staleReadDetector.getPartitionId(dr.key);

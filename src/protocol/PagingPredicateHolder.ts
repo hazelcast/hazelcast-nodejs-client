@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {AnchorDataListHolder} from './AnchorDataListHolder';
 import {Data} from '../serialization/Data';
@@ -20,6 +21,7 @@ import {SerializationService} from '../serialization/SerializationService';
 import {PagingPredicateImpl} from '../serialization/DefaultPredicates';
 import {iterationTypeToId} from '../core/Predicate';
 
+/** @internal */
 export class PagingPredicateHolder {
 
     anchorDataListHolder: AnchorDataListHolder;

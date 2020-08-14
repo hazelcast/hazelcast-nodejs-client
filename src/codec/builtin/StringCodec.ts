@@ -16,6 +16,7 @@
 
 import {ClientMessage, Frame} from '../../ClientMessage';
 
+/** @internal */
 export class StringCodec {
     static encode(clientMessage: ClientMessage, value: string): void {
         clientMessage.addFrame(new Frame(Buffer.from(value, 'utf8')));

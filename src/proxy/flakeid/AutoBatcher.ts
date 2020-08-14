@@ -13,13 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Promise from 'bluebird';
 import {EventEmitter} from 'events';
 import * as Long from 'long';
 import {DeferredPromise} from '../../Util';
 
+/** @internal */
 export class Batch {
+
     private nextIdLong: Long;
     private increment: Long;
     private invalidSince: number;
@@ -53,9 +56,10 @@ export class Batch {
     }
 }
 
+/** @internal */
 export class AutoBatcher {
 
-    private readonly NEW_BATCH_AVAILABLE = 'newBatch';
+    private static readonly NEW_BATCH_AVAILABLE = 'newBatch';
 
     private queue: Array<Promise.Resolver<Long>> = [];
     private batch: Batch;
@@ -65,7 +69,7 @@ export class AutoBatcher {
 
     constructor(supplier: () => Promise<any>) {
         this.supplier = supplier;
-        this.emitter.on(this.NEW_BATCH_AVAILABLE, this.processIdRequests.bind(this));
+        this.emitter.on(AutoBatcher.NEW_BATCH_AVAILABLE, this.processIdRequests.bind(this));
         this.emitter.on('error', this.rejectAll.bind(this));
     }
 
@@ -99,7 +103,7 @@ export class AutoBatcher {
         this.supplier().then((batch: Batch) => {
             this.requestInFlight = false;
             this.batch = batch;
-            this.emitter.emit(this.NEW_BATCH_AVAILABLE);
+            this.emitter.emit(AutoBatcher.NEW_BATCH_AVAILABLE);
         }).catch((e) => {
             this.requestInFlight = false;
             this.emitter.emit('error', e);

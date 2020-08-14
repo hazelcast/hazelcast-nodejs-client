@@ -22,7 +22,7 @@ import {UUID} from '../core/UUID';
 import {StringCodec} from './builtin/StringCodec';
 import {CodecUtil} from './builtin/CodecUtil';
 import {ListMultiFrameCodec} from './builtin/ListMultiFrameCodec';
-import {Address} from '../Address';
+import {AddressImpl} from '../Address';
 import {AddressCodec} from './custom/AddressCodec';
 
 // hex: 0x000100
@@ -40,9 +40,10 @@ const RESPONSE_PARTITION_COUNT_OFFSET = RESPONSE_SERIALIZATION_VERSION_OFFSET + 
 const RESPONSE_CLUSTER_ID_OFFSET = RESPONSE_PARTITION_COUNT_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const RESPONSE_FAILOVER_SUPPORTED_OFFSET = RESPONSE_CLUSTER_ID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
 
+/** @internal */
 export interface ClientAuthenticationResponseParams {
     status: number;
-    address: Address;
+    address: AddressImpl;
     memberUuid: UUID;
     serializationVersion: number;
     serverHazelcastVersion: string;
@@ -51,6 +52,7 @@ export interface ClientAuthenticationResponseParams {
     failoverSupported: boolean;
 }
 
+/** @internal */
 export class ClientAuthenticationCodec {
     static encodeRequest(clusterName: string, username: string, password: string, uuid: UUID, clientType: string, serializationVersion: number, clientHazelcastVersion: string, clientName: string, labels: string[]): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

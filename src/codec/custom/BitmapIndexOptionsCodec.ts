@@ -25,6 +25,7 @@ import {StringCodec} from '../builtin/StringCodec';
 const UNIQUE_KEY_TRANSFORMATION_OFFSET = 0;
 const INITIAL_FRAME_SIZE = UNIQUE_KEY_TRANSFORMATION_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+/** @internal */
 export class BitmapIndexOptionsCodec {
     static encode(clientMessage: ClientMessage, bitmapIndexOptions: InternalBitmapIndexOptions): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());

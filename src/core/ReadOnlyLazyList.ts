@@ -43,6 +43,7 @@ export class ReadOnlyLazyList<T> {
     private internalArray: any[];
     private serializationService: SerializationService;
 
+    /** @internal */
     constructor(array: any[], serializationService: SerializationService) {
         this.internalArray = array;
         this.serializationService = serializationService;

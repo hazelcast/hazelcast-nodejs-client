@@ -33,12 +33,14 @@ const REQUEST_INITIAL_FRAME_SIZE = REQUEST_TARGET_REPLICA_UUID_OFFSET + BitsUtil
 const RESPONSE_VALUE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 const RESPONSE_REPLICA_COUNT_OFFSET = RESPONSE_VALUE_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
+/** @internal */
 export interface PNCounterGetResponseParams {
     value: Long;
     replicaTimestamps: Array<[UUID, Long]>;
     replicaCount: number;
 }
 
+/** @internal */
 export class PNCounterGetCodec {
     static encodeRequest(name: string, replicaTimestamps: Array<[UUID, Long]>, targetReplicaUUID: UUID): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

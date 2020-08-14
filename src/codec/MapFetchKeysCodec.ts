@@ -32,11 +32,13 @@ const REQUEST_MESSAGE_TYPE = 79616;
 const REQUEST_BATCH_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_BATCH_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+/** @internal */
 export interface MapFetchKeysResponseParams {
     iterationPointers: Array<[number, number]>;
     keys: Data[];
 }
 
+/** @internal */
 export class MapFetchKeysCodec {
     static encodeRequest(name: string, iterationPointers: Array<[number, number]>, batch: number): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Promise from 'bluebird';
 import {SetAddAllCodec} from '../codec/SetAddAllCodec';
@@ -36,6 +37,7 @@ import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {ClientMessage} from '../ClientMessage';
 import {UUID} from '../core/UUID';
 
+/** @internal */
 export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
 
     add(entry: E): Promise<boolean> {

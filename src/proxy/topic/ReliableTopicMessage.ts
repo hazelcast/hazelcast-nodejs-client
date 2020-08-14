@@ -13,21 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Long from 'long';
 import {Data, DataInput, DataOutput} from '../../serialization/Data';
 import {IdentifiedDataSerializable} from '../../serialization/Serializable';
-import {Address} from '../../Address';
+import {AddressImpl} from '../../Address';
 
+/** @internal */
 export const RELIABLE_TOPIC_MESSAGE_FACTORY_ID = -9;
+/** @internal */
 export const RELIABLE_TOPIC_CLASS_ID = 2;
 
+/** @internal */
 export class ReliableTopicMessage implements IdentifiedDataSerializable {
 
     factoryId = RELIABLE_TOPIC_MESSAGE_FACTORY_ID;
     classId = RELIABLE_TOPIC_CLASS_ID;
     publishTime: Long;
-    publisherAddress: Address;
+    publisherAddress: AddressImpl;
     payload: Data;
 
     readData(input: DataInput): any {
@@ -43,6 +47,7 @@ export class ReliableTopicMessage implements IdentifiedDataSerializable {
     }
 }
 
+/** @internal */
 export function reliableTopicMessageFactory(classId: number): IdentifiedDataSerializable {
     if (classId === RELIABLE_TOPIC_CLASS_ID) {
         return new ReliableTopicMessage();

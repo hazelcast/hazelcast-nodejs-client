@@ -13,16 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {IdentifiedDataSerializable} from './serialization/Serializable';
-import {Address} from './Address';
+import {AddressImpl} from './Address';
 
+/** @internal */
 export const CLUSTER_DATA_FACTORY_ID = 0;
+/** @internal */
 export const CLUSTER_DATA_ADDRESS_CLASS_ID = 1;
 
+/** @internal */
 export function clusterDataFactory(classId: number): IdentifiedDataSerializable {
     if (classId === CLUSTER_DATA_ADDRESS_CLASS_ID) {
-        return new Address();
+        return new AddressImpl();
     }
     return null;
 }

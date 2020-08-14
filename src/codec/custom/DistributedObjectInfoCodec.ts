@@ -20,6 +20,7 @@ import {CodecUtil} from '../builtin/CodecUtil';
 import {StringCodec} from '../builtin/StringCodec';
 import {DistributedObjectInfo} from '../../DistributedObjectInfo';
 
+/** @internal */
 export class DistributedObjectInfoCodec {
     static encode(clientMessage: ClientMessage, distributedObjectInfo: DistributedObjectInfo): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());

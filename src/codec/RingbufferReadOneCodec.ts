@@ -32,10 +32,12 @@ const REQUEST_MESSAGE_TYPE = 1509120;
 const REQUEST_SEQUENCE_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_SEQUENCE_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
+/** @internal */
 export interface RingbufferReadOneResponseParams {
     response: Data;
 }
 
+/** @internal */
 export class RingbufferReadOneCodec {
     static encodeRequest(name: string, sequence: Long): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

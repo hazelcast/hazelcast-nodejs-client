@@ -71,6 +71,7 @@ export interface NearCacheConfig {
 
 }
 
+/** @internal */
 export class NearCacheConfigImpl implements NearCacheConfig {
 
     /**

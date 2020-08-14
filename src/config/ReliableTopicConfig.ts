@@ -34,6 +34,7 @@ export interface ReliableTopicConfig {
 
 }
 
+/** @internal */
 export class ReliableTopicConfigImpl implements ReliableTopicConfig {
 
     /**

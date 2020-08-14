@@ -40,6 +40,7 @@ export interface FlakeIdGeneratorConfig {
 
 }
 
+/** @internal */
 export class FlakeIdGeneratorConfigImpl implements FlakeIdGeneratorConfig {
 
     /**

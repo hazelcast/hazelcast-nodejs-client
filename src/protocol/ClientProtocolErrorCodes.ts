@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
+/** @internal */
 export class ClientProtocolErrorCodes {
     static readonly UNDEFINED = 0;
     static readonly ARRAY_INDEX_OUT_OF_BOUNDS = 1;

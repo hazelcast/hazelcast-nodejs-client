@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Promise from 'bluebird';
 import {ClientAddDistributedObjectListenerCodec} from '../codec/ClientAddDistributedObjectListenerCodec';
@@ -36,17 +37,20 @@ import {SetProxy} from './SetProxy';
 import {ReliableTopicProxy} from './topic/ReliableTopicProxy';
 import {DistributedObjectEvent, DistributedObjectListener} from '../core/DistributedObjectListener';
 import {DeferredPromise} from '../Util';
-import {ILogger} from '../logging/ILogger';
 import {ClientMessage} from '../ClientMessage';
 import {UUID} from '../core/UUID';
 import {ClientCreateProxiesCodec} from '../codec/ClientCreateProxiesCodec';
 import {BaseProxy} from './BaseProxy';
 import {Ringbuffer} from './Ringbuffer';
+import {ClientConfigImpl} from '../config/Config';
 
+/** @internal */
 export const NAMESPACE_SEPARATOR = '/';
 const RINGBUFFER_PREFIX = '_hz_rb_';
 
+/** @internal */
 export class ProxyManager {
+
     public static readonly MAP_SERVICE: string = 'hz:impl:mapService';
     public static readonly SET_SERVICE: string = 'hz:impl:setService';
     public static readonly LOCK_SERVICE: string = 'hz:impl:lockService';
@@ -62,15 +66,9 @@ export class ProxyManager {
     public readonly service: { [serviceName: string]: any } = {};
     private readonly proxies = new Map<string, Promise<DistributedObject>>();
     private readonly client: HazelcastClient;
-    private readonly logger: ILogger;
-    private readonly invocationTimeoutMillis: number;
-    private readonly invocationRetryPauseMillis: number;
 
     constructor(client: HazelcastClient) {
         this.client = client;
-        this.logger = this.client.getLoggingService().getLogger();
-        this.invocationTimeoutMillis = this.client.getInvocationService().getInvocationTimeoutMillis();
-        this.invocationRetryPauseMillis = this.client.getInvocationService().getInvocationRetryPauseMillis();
     }
 
     public init(): void {
@@ -208,7 +206,8 @@ export class ProxyManager {
     private initializeLocalProxy(name: string, serviceName: string, createAtServer: boolean): Promise<DistributedObject> {
         let localProxy: DistributedObject;
 
-        if (serviceName === ProxyManager.MAP_SERVICE && this.client.getConfig().getNearCacheConfig(name)) {
+        const config = this.client.getConfig() as ClientConfigImpl;
+        if (serviceName === ProxyManager.MAP_SERVICE && config.getNearCacheConfig(name)) {
             localProxy = new NearCachedMapProxy(this.client, serviceName, name);
         } else {
             // This call may throw ClientOfflineError for partition specific proxies with async start

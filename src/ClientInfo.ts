@@ -17,6 +17,9 @@
 import {Address} from './Address';
 import {UUID} from './core/UUID';
 
+/**
+ * Local information of the client.
+ */
 export class ClientInfo {
 
     /**
@@ -43,4 +46,5 @@ export class ClientInfo {
      * Set of all labels of this client.
      */
     labels: Set<string>;
+
 }

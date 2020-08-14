@@ -32,10 +32,12 @@ const REQUEST_TTL_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_TTL_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
+/** @internal */
 export interface MapSetTtlResponseParams {
     response: boolean;
 }
 
+/** @internal */
 export class MapSetTtlCodec {
     static encodeRequest(name: string, key: Data, ttl: Long): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

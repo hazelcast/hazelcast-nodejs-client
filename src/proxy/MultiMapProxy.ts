@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Promise from 'bluebird';
 
@@ -52,6 +53,7 @@ import {UUID} from '../core/UUID';
 import * as SerializationUtil from '../serialization/SerializationUtil';
 import {MultiMapPutAllCodec} from '../codec/MultiMapPutAllCodec';
 
+/** @internal */
 export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
 
     private lockReferenceIdGenerator: LockReferenceIdGenerator = this.client.getLockReferenceIdGenerator();

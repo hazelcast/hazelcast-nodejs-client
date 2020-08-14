@@ -55,6 +55,7 @@ export interface IndexConfig {
 /**
  * Follows the shape of {@link IndexConfig}, but doesn't implement it due
  * to the `type` enum field.
+ * @internal
  */
 export class InternalIndexConfig {
 

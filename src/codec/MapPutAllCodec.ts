@@ -31,6 +31,7 @@ const REQUEST_MESSAGE_TYPE = 76800;
 const REQUEST_TRIGGER_MAP_LOADER_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_TRIGGER_MAP_LOADER_OFFSET + BitsUtil.BOOLEAN_SIZE_IN_BYTES;
 
+/** @internal */
 export class MapPutAllCodec {
     static encodeRequest(name: string, entries: Array<[Data, Data]>, triggerMapLoader: boolean): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();

@@ -16,6 +16,7 @@
 
 import {Member} from './Member';
 
-export interface MemberSelector {
-    select(member: Member): boolean;
-}
+/**
+ * Selector function for members.
+ */
+export type MemberSelector = (member: Member) => boolean;

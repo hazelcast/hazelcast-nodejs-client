@@ -13,28 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Promise from 'bluebird';
 import {MapFetchNearCacheInvalidationMetadataCodec} from '../codec/MapFetchNearCacheInvalidationMetadataCodec';
-import {MemberSelectors} from '../core/MemberSelectors';
+import * as MemberSelectors from '../core/MemberSelectors';
 import {UUID} from '../core/UUID';
 import HazelcastClient from '../HazelcastClient';
 import {Invocation} from '../invocation/InvocationService';
-import {PartitionService} from '../PartitionService';
 import {RepairingHandler} from './RepairingHandler';
 import {ILogger} from '../logging/ILogger';
 import {ClientMessage} from '../ClientMessage';
 
+/** @internal */
 export class MetadataFetcher {
 
     private client: HazelcastClient;
-    private partitionService: PartitionService;
     private logger: ILogger;
 
     constructor(client: HazelcastClient) {
         this.logger = client.getLoggingService().getLogger();
         this.client = client;
-        this.partitionService = this.client.getPartitionService();
     }
 
     initHandler(handler: RepairingHandler): Promise<void> {
@@ -84,7 +83,7 @@ export class MetadataFetcher {
     }
 
     protected scanMembers(objectNames: string[]): Array<Promise<ClientMessage>> {
-        const members = this.client.getClusterService().getMembers(MemberSelectors.DATA_MEMBER_SELECTOR);
+        const members = this.client.getClusterService().getMembers(MemberSelectors.dataMemberSelector);
         const promises: Array<Promise<any>> = [];
         members.forEach((member) => {
             const request = MapFetchNearCacheInvalidationMetadataCodec.encodeRequest(objectNames, member.uuid);

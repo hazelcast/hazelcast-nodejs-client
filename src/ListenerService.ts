@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Promise from 'bluebird';
 import HazelcastClient from './HazelcastClient';
@@ -26,7 +27,9 @@ import {DeferredPromise} from './Util';
 import {UuidUtil} from './util/UuidUtil';
 import {ILogger} from './logging/ILogger';
 
+/** @internal */
 export class ListenerService {
+
     private client: HazelcastClient;
     private logger: ILogger;
     private isSmartService: boolean;

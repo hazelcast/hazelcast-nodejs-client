@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {Data} from './Data';
 
+/** @internal */
 export function deserializeEntryList<K, V>(toObject: Function, entrySet: Array<[Data, Data]>): Array<[K, V]> {
     const deserializedSet: Array<[K, V]> = [];
     entrySet.forEach(function (entry): void {
@@ -24,6 +26,7 @@ export function deserializeEntryList<K, V>(toObject: Function, entrySet: Array<[
     return deserializedSet;
 }
 
+/** @internal */
 export function serializeList(toData: Function, input: any[]): Data[] {
     return input.map((each) => {
         return toData(each);

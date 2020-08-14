@@ -15,6 +15,7 @@
  */
 
 import {
+    Aggregator,
     CountAggregator,
     DoubleAverageAggregator,
     DoubleSumAggregator,
@@ -33,64 +34,64 @@ import {
  * @param attributePath extracts values from this path if given
  * @return an aggregator that counts the input values.
  * Accepts nulls as input values.
- * Aggregation result type Long.
+ * Aggregation result type `Long`.
  */
-export function count(attributePath?: string): CountAggregator {
+export function count(attributePath?: string): Aggregator<Long> {
     return new CountAggregator(attributePath);
 }
 
 /**
  * @param attributePath extracts values from this path if given
  * @return an aggregator that calculates the average of the input values.
- * Does NOT accept null input values.
+ * Does NOT accept `null` input values.
  * Accepts only Double input values (primitive and boxed).
- * Aggregation result type is number.
+ * Aggregation result type is `number`.
  */
-export function doubleAvg(attributePath?: string): DoubleAverageAggregator {
+export function doubleAvg(attributePath?: string): Aggregator<number> {
     return new DoubleAverageAggregator(attributePath);
 }
 
 /**
  * @param attributePath extracts values from this path if given
  * @return an aggregator that calculates the sum of the input values.
- * Does NOT accept null input values.
+ * Does NOT accept `null` input values.
  * Accepts only Double input values (primitive and boxed).
- * Aggregation result type is Double.
+ * Aggregation result type is `number`.
  */
-export function doubleSum(attributePath?: string): DoubleSumAggregator {
+export function doubleSum(attributePath?: string): Aggregator<number> {
     return new DoubleSumAggregator(attributePath);
 }
 
 /**
  * @param attributePath extracts values from this path if given
  * @return an aggregator that calculates the average of the input values.
- * Does NOT accept null input values.
+ * Does NOT accept `null` input values.
  * Accepts generic Number input values.
- * Aggregation result type is Double.
+ * Aggregation result type is `number`.
  */
-export function numberAvg(attributePath?: string): NumberAverageAggregator {
+export function numberAvg(attributePath?: string): Aggregator<number> {
     return new NumberAverageAggregator(attributePath);
 }
 
 /**
  * @param attributePath extracts values from this path if given
  * @return an aggregator that calculates the sum of the input values.
- * Does NOT accept null input values.
+ * Does NOT accept `null` input values.
  * Accepts generic Number input values.
- * Aggregation result type is {Long}.
+ * Aggregation result type is `Long`.
  */
-export function fixedPointSum(attributePath?: string): FixedPointSumAggregator {
+export function fixedPointSum(attributePath?: string): Aggregator<Long> {
     return new FixedPointSumAggregator(attributePath);
 }
 
 /**
  * @param attributePath extracts values from this path if given
  * @return an aggregator that calculates the sum of the input values.
- * Does NOT accept null input values.
+ * Does NOT accept `null` input values.
  * Accepts generic Number input values.
- * Aggregation result type is number.
+ * Aggregation result type is `number`.
  */
-export function floatingPointSum(attributePath?: string): FloatingPointSumAggregator {
+export function floatingPointSum(attributePath?: string): Aggregator<number> {
     return new FloatingPointSumAggregator(attributePath);
 }
 
@@ -98,10 +99,10 @@ export function floatingPointSum(attributePath?: string): FloatingPointSumAggreg
  * @param attributePath extracts values from this path if given
  * @param <R> type of the input object.
  * @return an aggregator that calculates the max of the input values.
- * Accepts null input values.
- * Aggregation result type is <R>
+ * Accepts `null` input values.
+ * Aggregation result type is `R`.
  */
-export function max<R>(attributePath?: string): MaxAggregator<R> {
+export function max<R>(attributePath?: string): Aggregator<R> {
     return new MaxAggregator<R>(attributePath);
 }
 
@@ -109,53 +110,53 @@ export function max<R>(attributePath?: string): MaxAggregator<R> {
  * @param attributePath extracts values from this path if given
  * @param <R> type of the input object.
  * @return an aggregator that calculates the min of the input values.
- * Accepts null input values.
- * Aggregation result type is <R>
+ * Accepts `null` input values.
+ * Aggregation result type is `R`.
  */
-export function min<R>(attributePath?: string): MinAggregator<R> {
+export function min<R>(attributePath?: string): Aggregator<R> {
     return new MinAggregator<R>(attributePath);
 }
 
 /**
  * @param attributePath extracts values from this path if given
  * @return an aggregator that calculates the average of the input values.
- * Does NOT accept null input values.
+ * Does NOT accept `null` input values.
  * Accepts only Integer input values (primitive and boxed).
- * Aggregation result type is number.
+ * Aggregation result type is `number`.
  */
-export function integerAvg(attributePath?: string): IntegerAverageAggregator {
+export function integerAvg(attributePath?: string): Aggregator<number> {
     return new IntegerAverageAggregator(attributePath);
 }
 
 /**
  * @param attributePath extracts values from this path if given
  * @return an aggregator that calculates the sum of the input values.
- * Does NOT accept null input values.
+ * Does NOT accept `null` input values.
  * Accepts only Integer input values (primitive and boxed).
- * Aggregation result type is {Long}.
+ * Aggregation result type is `Long`.
  */
-export function integerSum(attributePath?: string): IntegerSumAggregator {
+export function integerSum(attributePath?: string): Aggregator<Long> {
     return new IntegerSumAggregator(attributePath);
 }
 
 /**
  * @param attributePath extracts values from this path if given
  * @return an aggregator that calculates the average of the input values.
- * Does NOT accept null input values.
+ * Does NOT accept `null` input values.
  * Accepts only Long input values (primitive and boxed).
- * Aggregation result type is number.
+ * Aggregation result type is `number`.
  */
-export function longAvg(attributePath?: string): LongAverageAggregator {
+export function longAvg(attributePath?: string): Aggregator<number> {
     return new LongAverageAggregator(attributePath);
 }
 
 /**
  * @param attributePath extracts values from this path if given
  * @return an aggregator that calculates the sum of the input values.
- * Does NOT accept null input values.
+ * Does NOT accept `null` input values.
  * Accepts only Long input values (primitive and boxed).
- * Aggregation result type is {Long}.
+ * Aggregation result type is `Long`.
  */
-export function longSum(attributePath?: string): LongSumAggregator {
+export function longSum(attributePath?: string): Aggregator<Long> {
     return new LongSumAggregator(attributePath);
 }

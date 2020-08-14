@@ -17,7 +17,7 @@
 /**
  * Comparator is used to compare two map entries in a distributed map.
  * A comparator class with the same functionality should be registered
- * on Hazelcast server in order to be used in PagingPredicates.
+ * on Hazelcast cluster members in order to be used in PagingPredicates.
  */
 export interface Comparator {
 
@@ -36,3 +36,8 @@ export interface Comparator {
     sort(a: [any, any], b: [any, any]): number;
 
 }
+
+/**
+ * Comparator function to sort elements in a list.
+ */
+export type ListComparator<T> = (a: T, b: T) => number;

@@ -22,6 +22,7 @@ import {AnchorDataListHolder} from '../../protocol/AnchorDataListHolder';
 import {EntryListCodec} from '../builtin/EntryListCodec';
 import {DataCodec} from '../builtin/DataCodec';
 
+/** @internal */
 export class AnchorDataListHolderCodec {
     static encode(clientMessage: ClientMessage, anchorDataListHolder: AnchorDataListHolder): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());

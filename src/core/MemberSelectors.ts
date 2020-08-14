@@ -13,16 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {Member} from './Member';
-import {MemberSelector} from './MemberSelector';
 
-export class DataMemberSelector implements MemberSelector {
-    select(member: Member): boolean {
-        return !member.liteMember;
-    }
-}
-
-export class MemberSelectors {
-    static readonly DATA_MEMBER_SELECTOR = new DataMemberSelector();
-}
+/** @internal */
+export const dataMemberSelector = (member: Member): boolean => !member.liteMember;

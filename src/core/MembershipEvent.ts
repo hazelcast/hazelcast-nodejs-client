@@ -32,8 +32,10 @@ export class MembershipEvent {
      */
     members: Member[];
 
+    /** @internal */
     eventType: MemberEvent;
 
+    /** @internal */
     constructor(member: Member, eventType: MemberEvent, members: Member[]) {
         this.member = member;
         this.eventType = eventType;
@@ -42,6 +44,7 @@ export class MembershipEvent {
 
 }
 
+/** @internal */
 export enum MemberEvent {
 
     ADDED = 1,

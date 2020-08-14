@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "noEmit": true,
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "stripInternal": true
+    },
+    "include": [
+        "UserCodeTest.ts"
+    ]
+}

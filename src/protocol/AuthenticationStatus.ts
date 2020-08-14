@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 /**
- *  Status codes of authentication results.
+ * Status codes of authentication results.
+ * @internal
  */
 export enum AuthenticationStatus {
     AUTHENTICATED = 0,

@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
+/** @internal */
 export enum EventType {
     ADDED = 1 << 0,
     REMOVED = 1 << 1,

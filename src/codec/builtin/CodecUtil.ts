@@ -16,6 +16,7 @@
 
 import {ClientMessage, Frame, NULL_FRAME} from '../../ClientMessage';
 
+/** @internal */
 export class CodecUtil {
     static fastForwardToEndFrame(clientMessage: ClientMessage): void {
         // We are starting from 1 because of the BEGIN_FRAME we read

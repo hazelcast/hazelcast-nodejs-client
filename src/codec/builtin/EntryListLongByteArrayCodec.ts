@@ -20,6 +20,7 @@ import {ByteArrayCodec} from './ByteArrayCodec';
 import {ListLongCodec} from './ListLongCodec';
 import {ListMultiFrameCodec} from './ListMultiFrameCodec';
 
+/** @internal */
 export class EntryListLongByteArrayCodec {
     static encode(clientMessage: ClientMessage, entries: Array<[Long, Buffer]>): void {
         const entryCount = entries.length;

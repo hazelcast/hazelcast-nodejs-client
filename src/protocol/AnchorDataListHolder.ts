@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {Data} from '../serialization/Data';
 import {SerializationService} from '../serialization/SerializationService';
 
+/** @internal */
 export class AnchorDataListHolder {
     anchorPageList: number[];
     anchorDataList: Array<[Data, Data]>;

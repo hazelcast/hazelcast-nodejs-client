@@ -59,6 +59,7 @@ export interface ClientNetworkConfig {
 
 }
 
+/** @internal */
 export class ClientNetworkConfigImpl implements ClientNetworkConfig {
 
     clusterMembers: string[] = [];

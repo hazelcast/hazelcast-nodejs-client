@@ -12,7 +12,8 @@
             "es2017.string"
         ],
         "removeComments": false,
-        "sourceMap": true
+        "sourceMap": false,
+        "stripInternal": true
     },
     "include": [
         "src/index.ts"

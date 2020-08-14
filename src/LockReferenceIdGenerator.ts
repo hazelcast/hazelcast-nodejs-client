@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Long from 'long';
 
+/** @internal */
 export class LockReferenceIdGenerator {
 
     private counter: Long = Long.fromNumber(0);

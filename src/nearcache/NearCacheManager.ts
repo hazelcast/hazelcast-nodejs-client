@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {NearCache, NearCacheImpl} from './NearCache';
 import {SerializationService} from '../serialization/SerializationService';
+import {ClientConfigImpl} from '../config/Config';
 import HazelcastClient from '../HazelcastClient';
 
+/** @internal */
 export class NearCacheManager {
 
     protected readonly serializationService: SerializationService;
@@ -31,9 +34,9 @@ export class NearCacheManager {
     public getOrCreateNearCache(name: string): NearCache {
         let nearCache = this.caches.get(name);
         if (nearCache == null) {
-            nearCache = new NearCacheImpl(this.client.getConfig().getNearCacheConfig(name),
+            const config = this.client.getConfig() as ClientConfigImpl;
+            nearCache = new NearCacheImpl(config.getNearCacheConfig(name),
                 this.client.getSerializationService());
-
             this.caches.set(name, nearCache);
         }
         return nearCache;
