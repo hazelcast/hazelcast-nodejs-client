@@ -373,22 +373,17 @@ export default class HazelcastClient {
 
     /**
      * Registers a distributed object listener to cluster.
-     * @param listener Callback function will be called with following arguments.
-     * <ul>
-     *     <li>service name</li>
-     *     <li>distributed object name</li>
-     *     <li>name of the event that happened: either 'created' or 'destroyed'</li>
-     * </ul>
+     * @param listener distributed object listener function.
      * @returns registration id of the listener.
      */
-    addDistributedObjectListener(distributedObjectListener: DistributedObjectListener): Promise<string> {
-        return this.proxyManager.addDistributedObjectListener(distributedObjectListener);
+    addDistributedObjectListener(listener: DistributedObjectListener): Promise<string> {
+        return this.proxyManager.addDistributedObjectListener(listener);
     }
 
     /**
      * Removes a distributed object listener from cluster.
      * @param listenerId id of the listener to be removed.
-     * @returns `true` if registration is removed, `false` otherwise.
+     * @returns `true` if registration was removed, `false` otherwise.
      */
     removeDistributedObjectListener(listenerId: string): Promise<boolean> {
         return this.proxyManager.removeDistributedObjectListener(listenerId);
