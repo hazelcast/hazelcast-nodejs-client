@@ -242,6 +242,11 @@ export class ClientMessageReader {
 /** @internal */
 export class FragmentedClientMessageHandler {
     private readonly fragmentedMessages = new Map<number, ClientMessage>();
+    private readonly logger: ILogger;
+
+    constructor(logger: ILogger) {
+        this.logger = logger;
+    }
 
     handleFragmentedMessage(clientMessage: ClientMessage, callback: Function): void {
         const fragmentationFrame = clientMessage.startFrame;
@@ -251,10 +256,16 @@ export class FragmentedClientMessageHandler {
             this.fragmentedMessages.set(fragmentationId, clientMessage);
         } else {
             const existingMessage = this.fragmentedMessages.get(fragmentationId);
+            if (existingMessage == null) {
+                this.logger.debug('FragmentedClientMessageHandler',
+                    'A fragmented message without the begin part is received. Fragmentation id: ' + fragmentationId);
+                return;
+            }
+
             existingMessage.merge(clientMessage);
             if (fragmentationFrame.hasEndFragmentFlag()) {
-                callback(existingMessage);
                 this.fragmentedMessages.delete(fragmentationId);
+                callback(existingMessage);
             }
         }
     }
@@ -300,7 +311,7 @@ export class ClientConnection {
         this.reader = new ClientMessageReader();
         this.connectionId = connectionId;
         this.logger = this.client.getLoggingService().getLogger();
-        this.fragmentedMessageHandler = new FragmentedClientMessageHandler();
+        this.fragmentedMessageHandler = new FragmentedClientMessageHandler(this.logger);
     }
 
     /**

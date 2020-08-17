@@ -31,7 +31,9 @@ describe('FragmentedClientMessageHandlerTest', function () {
 
     beforeEach(() => {
         reader = new ClientMessageReader();
-        handler = new FragmentedClientMessageHandler();
+        handler = new FragmentedClientMessageHandler({
+            debug: () => {}
+        });
     });
 
     it('handles fragmented message', function (done) {
@@ -74,6 +76,12 @@ describe('FragmentedClientMessageHandlerTest', function () {
         });
         expect(isCalled).to.be.true;
         expect(handler.fragmentedMessages.size).to.equal(0);
+
+        // If a message with a missing begin part is received, we should do nothing
+        handler.handleFragmentedMessage(fragment1, () => done(new Error("It should ignore invalid messages.")))
+        handler.handleFragmentedMessage(fragment2, () => done(new Error("It should ignore invalid messages.")))
+        expect(handler.fragmentedMessages.size).to.equal(0);
+
         done();
     });
 
