@@ -22,7 +22,7 @@ const ObjectData = require('../../lib/serialization/ObjectData');
 const ODInp = ObjectData.ObjectDataInput;
 const ODOut = ObjectData.ObjectDataOutput;
 
-describe('ObjectData Test', function () {
+describe('ObjectDataTest', function () {
 
     const out = new ODOut(null, true);
     before(function () {
@@ -31,8 +31,7 @@ describe('ObjectData Test', function () {
         out.writeBoolean(true);
         out.writeBooleanArray([true, false, false, true, true]);
         out.writeByte(255 | 0);
-        out.writeByteArray([0 | 0, 1 | 0, 65535 | 0]);
-        out.writeBytes('bytes');
+        out.writeByteArray(Buffer.from('bytes'));
         out.writeChar('∂');
         out.writeCharArray(['h', 'a', 'z', 'e', 'l']);
         out.writeChars('cast');
@@ -66,14 +65,9 @@ describe('ObjectData Test', function () {
         expect(inp.readBoolean()).to.be.true;
         expect(inp.readBooleanArray()).to.deep.equal([true, false, false, true, true]);
         expect(inp.readByte()).to.equal(255);
-        expect(inp.readByteArray()).to.deep.equal([0, 1, 255]);
-        const readBytes = [];
-        readBytes.push(inp.readByte());
-        readBytes.push(inp.readByte());
-        readBytes.push(inp.readByte());
-        readBytes.push(inp.readByte());
-        readBytes.push(inp.readByte());
-        expect(String.fromCharCode.apply(null, readBytes)).to.equal('bytes');
+        const readBytes = inp.readByteArray();
+        expect(Buffer.isBuffer(readBytes)).to.be.true;
+        expect(readBytes.toString()).to.equal('bytes');
         expect(inp.readChar()).to.equal('∂');
         expect(inp.readCharArray()).to.deep.equal(['h', 'a', 'z', 'e', 'l']);
         expect(inp.readCharArray().join('')).to.equal('cast');

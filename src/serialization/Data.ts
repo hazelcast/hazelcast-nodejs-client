@@ -91,8 +91,6 @@ export interface DataOutput {
 
     writeByteArray(bytes: Buffer): void;
 
-    writeBytes(bytes: string): void;
-
     writeChar(char: string): void;
 
     writeCharArray(chars: string[]): void;
@@ -218,5 +216,7 @@ export interface DataInput {
     reset(): void;
 
     skipBytes(count: number): void;
+
+    available(): number;
 
 }

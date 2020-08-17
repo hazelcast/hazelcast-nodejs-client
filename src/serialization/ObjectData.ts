@@ -95,13 +95,6 @@ export class ObjectDataOutput implements DataOutput {
         }
     }
 
-    writeBytes(bytes: string): void {
-        const len = (bytes != null) ? bytes.length : 0;
-        for (let i = 0; i < len; i++) {
-            this.write(bytes.charCodeAt(i));
-        }
-    }
-
     writeChar(char: string): void {
         this.ensureAvailable(BitsUtil.CHAR_SIZE_IN_BYTES);
         BitsUtil.writeUInt16(this.buffer, this.pos, char.charCodeAt(0), this.isBigEndian());
@@ -355,6 +348,9 @@ export class ObjectDataInput implements DataInput {
             this.pos = pos;
         }
         const len = this.readInt();
+        if (len === BitsUtil.NULL_ARRAY_LENGTH) {
+            return null;
+        }
         const buf = this.buffer.slice(this.pos, this.pos + len);
         if (pos !== undefined) {
             this.pos = backupPos;
@@ -492,13 +488,10 @@ export class ObjectDataInput implements DataInput {
         if (len === BitsUtil.NULL_ARRAY_LENGTH) {
             return null;
         }
-
         const result = this.buffer.toString('utf8', readPos, readPos + len);
-
         if (pos === undefined) {
             this.pos += len;
         }
-
         return result;
     }
 
@@ -514,14 +507,16 @@ export class ObjectDataInput implements DataInput {
         this.pos += count;
     }
 
-    readCopy(other: Buffer, numBytes: number): void {
-        this.assertAvailable(numBytes, this.pos);
-        this.buffer.copy(other, 0, this.pos, this.pos + numBytes);
-        this.pos += numBytes;
-    }
-
     available(): number {
         return this.buffer.length - this.pos;
+    }
+
+    // used in binary compatibility tests
+    private readRaw(numOfBytes: number): Buffer {
+        this.assertAvailable(numOfBytes, this.pos);
+        const raw = this.buffer.slice(this.pos, this.pos + numOfBytes);
+        this.pos += numOfBytes;
+        return raw;
     }
 
     private readArray<T>(func: Function, pos?: number): T[] {
@@ -530,6 +525,9 @@ export class ObjectDataInput implements DataInput {
             this.pos = pos;
         }
         const len = this.readInt();
+        if (len === BitsUtil.NULL_ARRAY_LENGTH) {
+            return null;
+        }
         const arr: T[] = [];
         for (let i = 0; i < len; i++) {
             arr.push(func.call(this));

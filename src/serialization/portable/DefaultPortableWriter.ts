@@ -188,7 +188,7 @@ export class DefaultPortableWriter {
         const index: number = field.getIndex();
         this.output.pwriteInt(this.offset + index * BitsUtil.INT_SIZE_IN_BYTES, pos);
         this.output.writeShort(fieldName.length);
-        this.output.writeBytes(fieldName);
+        this.output.write(Buffer.from(fieldName));
         this.output.writeByte(fieldType);
         return field;
     }
