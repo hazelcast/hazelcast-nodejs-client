@@ -24,14 +24,16 @@ const ClientMessageReader = require('../../lib/network/ClientConnection').Client
 const cm = require('../../lib/ClientMessage');
 const FixSizedTypesCodec = require('../../lib/codec/builtin/FixSizedTypesCodec').FixSizedTypesCodec;
 
-describe('FragmentedClientMessageHandler', function () {
+describe('FragmentedClientMessageHandlerTest', function () {
 
     let reader;
     let handler;
 
     beforeEach(() => {
         reader = new ClientMessageReader();
-        handler = new FragmentedClientMessageHandler();
+        handler = new FragmentedClientMessageHandler({
+            debug: () => {}
+        });
     });
 
     it('handles fragmented message', function (done) {
@@ -62,15 +64,25 @@ describe('FragmentedClientMessageHandler', function () {
 
         // Should merge with the above message
         handler.handleFragmentedMessage(fragment1, () => done(new Error("It should just merge.")));
+        expect(handler.fragmentedMessages.size).to.equal(1);
         compareMessages(fragments[1].startFrame.next, endFrame.next);
         endFrame = fragmentedMessage.endFrame;
 
         // Should merge with the above message and run the callback
+        let isCalled = false;
         handler.handleFragmentedMessage(fragment2, () => {
             compareMessages(fragments[2].startFrame.next, endFrame.next);
-            done();
+            isCalled = true;
         });
+        expect(isCalled).to.be.true;
+        expect(handler.fragmentedMessages.size).to.equal(0);
 
+        // If a message with a missing begin part is received, we should do nothing
+        handler.handleFragmentedMessage(fragment1, () => done(new Error("It should ignore invalid messages.")))
+        handler.handleFragmentedMessage(fragment2, () => done(new Error("It should ignore invalid messages.")))
+        expect(handler.fragmentedMessages.size).to.equal(0);
+
+        done();
     });
 
     const compareMessages = (frame1, frame2) => {

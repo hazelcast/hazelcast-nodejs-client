@@ -242,6 +242,11 @@ export class ClientMessageReader {
 /** @internal */
 export class FragmentedClientMessageHandler {
     private readonly fragmentedMessages = new Map<number, ClientMessage>();
+    private readonly logger: ILogger;
+
+    constructor(logger: ILogger) {
+        this.logger = logger;
+    }
 
     handleFragmentedMessage(clientMessage: ClientMessage, callback: Function): void {
         const fragmentationFrame = clientMessage.startFrame;
@@ -249,18 +254,20 @@ export class FragmentedClientMessageHandler {
         clientMessage.dropFragmentationFrame();
         if (fragmentationFrame.hasBeginFragmentFlag()) {
             this.fragmentedMessages.set(fragmentationId, clientMessage);
-        } else if (fragmentationFrame.hasEndFragmentFlag()) {
-            const mergedMessage = this.mergeIntoExistingClientMessage(fragmentationId, clientMessage);
-            callback(mergedMessage);
         } else {
-            this.mergeIntoExistingClientMessage(fragmentationId, clientMessage);
-        }
-    }
+            const existingMessage = this.fragmentedMessages.get(fragmentationId);
+            if (existingMessage == null) {
+                this.logger.debug('FragmentedClientMessageHandler',
+                    'A fragmented message without the begin part is received. Fragmentation id: ' + fragmentationId);
+                return;
+            }
 
-    private mergeIntoExistingClientMessage(fragmentationId: number, clientMessage: ClientMessage): ClientMessage {
-        const existingMessage = this.fragmentedMessages.get(fragmentationId);
-        existingMessage.merge(clientMessage);
-        return existingMessage;
+            existingMessage.merge(clientMessage);
+            if (fragmentationFrame.hasEndFragmentFlag()) {
+                this.fragmentedMessages.delete(fragmentationId);
+                callback(existingMessage);
+            }
+        }
     }
 }
 
@@ -304,7 +311,7 @@ export class ClientConnection {
         this.reader = new ClientMessageReader();
         this.connectionId = connectionId;
         this.logger = this.client.getLoggingService().getLogger();
-        this.fragmentedMessageHandler = new FragmentedClientMessageHandler();
+        this.fragmentedMessageHandler = new FragmentedClientMessageHandler(this.logger);
     }
 
     /**
