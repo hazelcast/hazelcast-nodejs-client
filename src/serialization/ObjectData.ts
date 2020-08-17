@@ -27,6 +27,7 @@ const MASK_1BYTE = (1 << 8) - 1;
 
 /** @internal */
 export class ObjectDataOutput implements DataOutput {
+
     protected buffer: Buffer;
     protected bigEndian: boolean;
     private service: SerializationService;
@@ -84,8 +85,14 @@ export class ObjectDataOutput implements DataOutput {
         this.write(byte);
     }
 
-    writeByteArray(bytes: number[]): void {
-        this.writeArray(this.writeByte, bytes);
+    writeByteArray(bytes: Buffer): void {
+        const len = (bytes != null) ? bytes.length : BitsUtil.NULL_ARRAY_LENGTH;
+        this.writeInt(len);
+        if (len > 0) {
+            this.ensureAvailable(len);
+            bytes.copy(this.buffer, this.pos);
+            this.pos += len;
+        }
     }
 
     writeBytes(bytes: string): void {
@@ -237,6 +244,7 @@ export class ObjectDataOutput implements DataOutput {
 
 /** @internal */
 export class PositionalObjectDataOutput extends ObjectDataOutput implements PositionalDataOutput {
+
     pwrite(position: number, byte: number | Buffer): void {
         if (Buffer.isBuffer(byte)) {
             byte.copy(this.buffer, position);
@@ -297,7 +305,10 @@ export class ObjectDataInput implements DataInput {
     private bigEndian: boolean;
     private pos: number;
 
-    constructor(buffer: Buffer, offset: number, serializationService: SerializationService, isBigEndian: boolean) {
+    constructor(buffer: Buffer,
+                offset: number,
+                serializationService: SerializationService,
+                isBigEndian: boolean) {
         this.buffer = buffer;
         this.offset = offset;
         this.service = serializationService;
@@ -338,8 +349,19 @@ export class ObjectDataInput implements DataInput {
         return this.read(pos);
     }
 
-    readByteArray(pos?: number): number[] {
-        return this.readArray<number>(this.readByte, pos);
+    readByteArray(pos?: number): Buffer {
+        const backupPos = this.pos;
+        if (pos !== undefined) {
+            this.pos = pos;
+        }
+        const len = this.readInt();
+        const buf = this.buffer.slice(this.pos, this.pos + len);
+        if (pos !== undefined) {
+            this.pos = backupPos;
+        } else {
+            this.pos += len;
+        }
+        return buf;
     }
 
     readChar(pos?: number): string {

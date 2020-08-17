@@ -89,7 +89,7 @@ export interface DataOutput {
 
     writeByte(byte: number): void;
 
-    writeByteArray(bytes: number[]): void;
+    writeByteArray(bytes: Buffer): void;
 
     writeBytes(bytes: string): void;
 
@@ -176,7 +176,7 @@ export interface DataInput {
 
     readByte(pos?: number): number;
 
-    readByteArray(pos?: number): number[];
+    readByteArray(pos?: number): Buffer;
 
     readChar(pos?: number): string;
 

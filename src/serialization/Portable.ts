@@ -68,7 +68,7 @@ export interface PortableWriter {
 
     writeNullPortable(fieldName: string, factoryId: number, classId: number): void;
 
-    writeByteArray(fieldName: string, bytes: number[]): void;
+    writeByteArray(fieldName: string, bytes: Buffer): void;
 
     writeBooleanArray(fieldName: string, booleans: boolean[]): void;
 
@@ -121,7 +121,7 @@ export interface PortableReader {
 
     readPortable(fieldName: string): Portable;
 
-    readByteArray(fieldName: string): number[];
+    readByteArray(fieldName: string): Buffer;
 
     readBooleanArray(fieldName: string): boolean[];
 

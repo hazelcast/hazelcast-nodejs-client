@@ -24,7 +24,10 @@ import * as Long from 'long';
 
 /** @internal */
 export class MorphingPortableReader extends DefaultPortableReader {
-    constructor(portableSerializer: PortableSerializer, input: DataInput, classDefinition: ClassDefinition) {
+
+    constructor(portableSerializer: PortableSerializer,
+                input: DataInput,
+                classDefinition: ClassDefinition) {
         super(portableSerializer, input, classDefinition);
     }
 
@@ -165,7 +168,7 @@ export class MorphingPortableReader extends DefaultPortableReader {
         return this.validateCompatibleAndCall(fieldName, FieldType.BOOLEAN_ARRAY, super.readBooleanArray);
     }
 
-    readByteArray(fieldName: string): number[] {
+    readByteArray(fieldName: string): Buffer {
         return this.validateCompatibleAndCall(fieldName, FieldType.BYTE_ARRAY, super.readByteArray);
     }
 
