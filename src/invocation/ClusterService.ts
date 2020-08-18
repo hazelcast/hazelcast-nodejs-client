@@ -127,8 +127,8 @@ export class ClusterService implements Cluster {
     addMembershipListener(listener: MembershipListener): string {
         assertNotNull(listener);
 
-        const registrationId = UuidUtil.generate();
-        this.listeners.set(registrationId.toString(), listener);
+        const registrationId = UuidUtil.generate().toString();
+        this.listeners.set(registrationId, listener);
 
         if (this.isInitialMembershipListener(listener)) {
             const members = this.getMemberList();
@@ -139,7 +139,7 @@ export class ClusterService implements Cluster {
                 listener.init(event);
             }
         }
-        return registrationId.toString();
+        return registrationId;
     }
 
     removeMembershipListener(listenerId: string): boolean {
