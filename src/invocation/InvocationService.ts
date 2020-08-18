@@ -17,7 +17,7 @@
 
 import * as assert from 'assert';
 import * as Promise from 'bluebird';
-import HazelcastClient from '../HazelcastClient';
+import {HazelcastClient} from '../HazelcastClient';
 import {
     ClientNotActiveError,
     HazelcastInstanceNotActiveError,
@@ -26,14 +26,14 @@ import {
     RetryableHazelcastError,
     TargetDisconnectedError,
     TargetNotMemberError,
-} from '../HazelcastError';
+    UUID
+} from '../core';
 import {ClientConnection} from '../network/ClientConnection';
-import {DeferredPromise} from '../Util';
+import {DeferredPromise} from '../util/Util';
 import {ILogger} from '../logging/ILogger';
-import {ClientMessage} from '../ClientMessage';
+import {ClientMessage} from '../protocol/ClientMessage';
 import {EXCEPTION_MESSAGE_TYPE} from '../codec/builtin/ErrorsCodec';
 import {ClientConnectionManager} from '../network/ClientConnectionManager';
-import {UUID} from '../core/UUID';
 import {PartitionServiceImpl} from '../PartitionService';
 
 const MAX_FAST_INVOCATION_COUNT = 5;

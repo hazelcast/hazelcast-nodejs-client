@@ -20,9 +20,9 @@ const expect = require('chai').expect;
 const Promise = require('bluebird');
 
 const { LogLevel } = require('../../lib/');
-const { HazelcastErrors: { IllegalStateError } } = require('../../');
+const { IllegalStateError } = require('../../');
 const { LoggingService } = require('../../lib/logging/LoggingService');
-const { AddressImpl } = require('../../lib/Address');
+const { AddressImpl } = require('../../lib/core/Address');
 const { HazelcastCloudAddressProvider } = require('../../lib/discovery/HazelcastCloudAddressProvider');
 const { HazelcastCloudDiscovery } = require('../../lib/discovery/HazelcastCloudDiscovery');
 

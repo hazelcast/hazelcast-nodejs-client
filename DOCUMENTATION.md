@@ -355,7 +355,7 @@ distributed map in the Node.js client.
 The following example first creates a programmatic configuration object. Then, it starts a client.
 
 ```javascript
-const { Client } = require('hazelcast-client').Client;
+const { Client } = require('hazelcast-client');
 
 (async () => {
     try {
@@ -1359,9 +1359,11 @@ const cfg = {
 
 The following are the descriptions of configuration elements and attributes:
 
-* key (`rt1` in the above example): Name of your Reliable Topic.
+* key (`rt1` in the above example): Name of your Reliable Topic. Hazelcast client supports wildcard configuration for Reliable Topics. Using an asterisk (`*`) character in the name, different instances of topics can be configured by a single configuration.
 * `readBatchSize`: Minimum number of messages that Reliable Topic tries to read in batches. Its default value is `10`.
 * `overloadPolicy`: Policy to handle an overloaded topic. Available values are `DISCARD_OLDEST`, `DISCARD_NEWEST`, `BLOCK` and `ERROR`. Its default value is `BLOCK`. See [Slow Consumers](https://docs.hazelcast.org/docs/latest/manual/html-single/#slow-consumers) for definitions of these policies.
+
+> **NOTE: When you use `default` as the Reliable Topic configuration key, it has a special meaning. Hazelcast client will use that configuration as the default one for all Reliable Topics, unless there is a specific configuration for the topic.**
 
 ### 7.4.9. Using PN Counter
 
@@ -1421,9 +1423,11 @@ const cfg = {
 
 The following are the descriptions of configuration elements and attributes:
 
-* key (`flakeidgenerator` in the above example): Name of your Flake ID Generator.
+* key (`flakeidgenerator` in the above example): Name of your Flake ID Generator. Hazelcast client supports wildcard configuration for Flake ID Generators. Using an asterisk (`*`) character in the name, different instances of generators can be configured by a single configuration.
 * `prefetchCount`: Count of IDs which are pre-fetched on the background when one call to `FlakeIdGenerator.newId()` is made. Its value must be in the range `1` - `100,000`. Its default value is `100`.
 * `prefetchValidityMillis`: Specifies for how long the pre-fetched IDs can be used. After this time elapses, a new batch of IDs are fetched. Time unit is milliseconds. Its default value is `600,000` milliseconds (`10` minutes). The IDs contain a timestamp component, which ensures a rough global ordering of them. If an ID is assigned to an object that was created later, it will be out of order. If ordering is not important, set this value to `0`.
+
+> **NOTE: When you use `default` as the Flake ID Generator configuration key, it has a special meaning. Hazelcast client will use that configuration as the default one for all Flake ID Generators, unless there is a specific configuration for the generator.**
 
 ### 7.4.11. Using Lock, Semaphore and Atomic Long
 
@@ -1970,14 +1974,14 @@ In the above example code, `predicate` verifies whether the entry is active and 
 
 #### 7.7.1.3. Querying with SQL
 
-You can query with SQL by using the `SqlPredicate` class. Its constructor takes the regular SQL `where` clause, as shown in the below example.
+You can query with SQL by using the predicate returned from the `Predicates.sql` function. Its argument takes a regular SQL `where` clause, as shown in the below example.
 
 ```javascript
-const { SqlPredicate } = require('hazelcast-client');
+const { Predicates } = require('hazelcast-client');
 // ...
 const map = await client.getMap('employee');
 // Define the predicate
-const predicate = new SqlPredicate('active AND age < 30');
+const predicate = Predicates.sql('active AND age < 30');
 // Run the query
 const employees = await map.valuesWithPredicate(predicate);
 // Some operations
@@ -2075,10 +2079,7 @@ You can query the JSON strings stored inside your Hazelcast clusters. To query a
 `HazelcastJsonValue` objects can be used both as keys and values in the distributed data structures. Then, it is possible to query these objects using the query methods explained in this section.
 
 ```javascript
-const {
-    SqlPredicate,
-    HazelcastJsonValue
-} = require('hazelcast-client');
+const { HazelcastJsonValue } = require('hazelcast-client');
 // ...
 
 const personMap = await client.getMap('personsMap');
@@ -2372,6 +2373,8 @@ const cfg = {
 
 Following are the descriptions of all configuration elements:
 
+- key (`mostlyReadMap` in the above example): Name of your Map for which the Near Cache will be enabled. Hazelcast client supports wildcard configuration for Near Caches. Using an asterisk (`*`) character in the name, different instances of maps can be configured by a single configuration.
+
 - `inMemoryFormat`: Specifies in which format data will be stored in your Near Cache. Note that a map’s in-memory format can be different from that of its Near Cache. Available values are as follows:
   - `BINARY`: Data will be stored in serialized binary format (default value).
   - `OBJECT`: Data will be stored in deserialized form.
@@ -2391,6 +2394,8 @@ Following are the descriptions of all configuration elements:
 - `evictionMaxSize`: Maximum number of entries kept in the memory before eviction kicks in. Its default value is `Number.MAX_SAFE_INTEGER`.
 - `evictionSamplingCount`: Number of random entries that are evaluated to see if some of them are already expired. If there are expired entries, those are removed and there is no need for eviction. Its default value is `8`.
 - `evictionSamplingPoolSize`: Size of the pool for eviction candidates. The pool is kept sorted according to eviction policy. The entry with the highest score is evicted. Its default value is `16`.
+
+> **NOTE: When you use `default` as the Near Cache configuration key, it has a special meaning. Hazelcast client will use that configuration as the default one for all Maps, unless there is a specific configuration for a Map.**
 
 #### 7.8.2.2. Near Cache Example for Map
 

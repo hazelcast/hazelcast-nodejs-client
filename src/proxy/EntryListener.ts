@@ -15,7 +15,7 @@
  */
 
 import {MapEventListener} from './MapListener';
-import {Member} from './Member';
+import {Member} from '../core';
 
 /**
  * An interface which is used to get notified upon a map or an entry event.

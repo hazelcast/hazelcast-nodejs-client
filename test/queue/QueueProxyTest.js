@@ -19,12 +19,12 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
-const RC = require('./../RC');
 const Promise = require('bluebird');
 const fs = require('fs');
 
+const RC = require('./../RC');
 const { Client } = require('../../');
-const { ItemEventType } = require('../../lib/core/ItemListener');
+const { ItemEventType } = require('../../lib/proxy/ItemListener');
 
 describe('QueueProxyTest', function () {
 

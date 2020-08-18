@@ -19,7 +19,7 @@ import {HazelcastCloudDiscovery} from './HazelcastCloudDiscovery';
 import {AddressProvider} from '../connection/AddressProvider';
 import * as Promise from 'bluebird';
 import {ILogger} from '../logging/ILogger';
-import {AddressImpl} from '../Address';
+import {AddressImpl} from '../core/Address';
 
 /** @internal */
 export class HazelcastCloudAddressProvider implements AddressProvider {

@@ -16,13 +16,12 @@
 'use strict';
 
 const expect = require('chai').expect;
-const HazelcastClient = require('../../').Client;
-const Config = require('../../').Config;
-const Predicates = require('../../').Predicates;
 const Promise = require('bluebird');
-const RC = require('./../RC');
-const Util = require('./../Util');
 const fs = require('fs');
+
+const RC = require('./../RC');
+const { Client, Predicates } = require('../../');
+const Util = require('./../Util');
 const fillMap = require('../Util').fillMap;
 
 function createController(nearCacheEnabled) {
@@ -41,7 +40,7 @@ function createClient(nearCacheEnabled, clusterName) {
     if (nearCacheEnabled) {
         cfg.nearCaches['test'] = { timeToLiveSeconds: 1 };
     }
-    return HazelcastClient.newHazelcastClient(cfg);
+    return Client.newHazelcastClient(cfg);
 }
 
 describe('MapProxyTest', function () {

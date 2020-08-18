@@ -22,8 +22,8 @@ const expect = chai.expect;
 const net = require('net');
 
 const Controller = require('./RC');
-const { Client, HazelcastErrors } = require('../');
-const { AddressImpl } = require('../lib/Address');
+const { Client, IllegalStateError } = require('../');
+const { AddressImpl } = require('../lib/core/Address');
 
 describe('ConnectionManagerTest', function () {
 
@@ -122,6 +122,6 @@ describe('ConnectionManagerTest', function () {
                     clusterConnectTimeoutMillis: 2000
                 }
             }
-        })).to.be.rejectedWith(HazelcastErrors.IllegalStateError);
+        })).to.be.rejectedWith(IllegalStateError);
     });
 });

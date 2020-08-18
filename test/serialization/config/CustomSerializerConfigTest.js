@@ -17,7 +17,7 @@
 
 const expect = require('chai').expect;
 const RC = require('../../RC');
-const Client = require('../../../').Client;
+const { Client } = require('../../../');
 const { Musician, MusicianSerializer } = require('./Musician');
 
 describe('CustomSerializerConfigTest', function () {

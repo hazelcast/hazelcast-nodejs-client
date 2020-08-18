@@ -16,30 +16,30 @@
 
 'use strict';
 
-const cm = require('../../../lib/ClientMessage');
 const expect = require('chai').expect;
 const Long = require('long');
-const HeapData = require('../../../lib/serialization/HeapData').HeapData;
-const UUID = require('../../../lib/core/UUID').UUID;
-const ErrorHolder = require('../../../lib/protocol/ErrorHolder').ErrorHolder;
 
-const FixSizedTypesCodec = require('../../../lib/codec/builtin/FixSizedTypesCodec').FixSizedTypesCodec;
-const StringCodec = require('../../../lib/codec/builtin/StringCodec').StringCodec;
-const ByteArrayCodec = require('../../../lib/codec/builtin/ByteArrayCodec').ByteArrayCodec;
-const DataCodec = require('../../../lib/codec/builtin/DataCodec').DataCodec;
-const EntryListCodec = require('../../../lib/codec/builtin/EntryListCodec').EntryListCodec;
-const EntryListIntegerLongCodec = require('../../../lib/codec/builtin/EntryListIntegerLongCodec').EntryListIntegerLongCodec;
-const EntryListIntegerUUIDCodec = require('../../../lib/codec/builtin/EntryListIntegerUUIDCodec').EntryListIntegerUUIDCodec;
-const EntryListUUIDListIntegerCodec = require('../../../lib/codec/builtin/EntryListUUIDListIntegerCodec').EntryListUUIDListIntegerCodec;
-const EntryListUUIDLongCodec = require('../../../lib/codec/builtin/EntryListUUIDLongCodec').EntryListUUIDLongCodec;
-const ListMultiFrameCodec = require('../../../lib/codec/builtin/ListMultiFrameCodec').ListMultiFrameCodec;
-const ErrorHolderCodec = require('../../../lib/codec/custom/ErrorHolderCodec').ErrorHolderCodec;
-const ErrorsCodec = require('../../../lib/codec/builtin/ErrorsCodec').ErrorsCodec;
-const ListIntegerCodec = require('../../../lib/codec/builtin/ListIntegerCodec').ListIntegerCodec;
-const ListLongCodec = require('../../../lib/codec/builtin/ListLongCodec').ListLongCodec;
-const ListUUIDCodec = require('../../../lib/codec/builtin/ListUUIDCodec').ListUUIDCodec;
-const MapCodec = require('../../../lib/codec/builtin/MapCodec').MapCodec;
-const CodecUtil = require('../../../lib/codec/builtin/CodecUtil').CodecUtil;
+const cm = require('../../../lib/protocol/ClientMessage');
+const { HeapData } = require('../../../lib/serialization/HeapData');
+const { UUID } = require('../../../lib/core/UUID');
+const { ErrorHolder } = require('../../../lib/protocol/ErrorHolder');
+const { FixSizedTypesCodec } = require('../../../lib/codec/builtin/FixSizedTypesCodec');
+const { StringCodec } = require('../../../lib/codec/builtin/StringCodec');
+const { ByteArrayCodec } = require('../../../lib/codec/builtin/ByteArrayCodec');
+const { DataCodec } = require('../../../lib/codec/builtin/DataCodec');
+const { EntryListCodec } = require('../../../lib/codec/builtin/EntryListCodec');
+const { EntryListIntegerLongCodec } = require('../../../lib/codec/builtin/EntryListIntegerLongCodec');
+const { EntryListIntegerUUIDCodec } = require('../../../lib/codec/builtin/EntryListIntegerUUIDCodec');
+const { EntryListUUIDListIntegerCodec } = require('../../../lib/codec/builtin/EntryListUUIDListIntegerCodec');
+const { EntryListUUIDLongCodec } = require('../../../lib/codec/builtin/EntryListUUIDLongCodec');
+const { ListMultiFrameCodec } = require('../../../lib/codec/builtin/ListMultiFrameCodec');
+const { ErrorHolderCodec } = require('../../../lib/codec/custom/ErrorHolderCodec');
+const { ErrorsCodec } = require('../../../lib/codec/builtin/ErrorsCodec');
+const { ListIntegerCodec } = require('../../../lib/codec/builtin/ListIntegerCodec');
+const { ListLongCodec } = require('../../../lib/codec/builtin/ListLongCodec');
+const { ListUUIDCodec } = require('../../../lib/codec/builtin/ListUUIDCodec');
+const { MapCodec } = require('../../../lib/codec/builtin/MapCodec');
+const { CodecUtil } = require('../../../lib/codec/builtin/CodecUtil');
 
 describe('ClientMessageFramingTest', function () {
     let message;

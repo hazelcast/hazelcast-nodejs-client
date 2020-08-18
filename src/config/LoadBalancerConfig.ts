@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {LoadBalancer} from '../LoadBalancer';
+import {LoadBalancer} from '../core/LoadBalancer';
 
 /**
  * Defines {@link LoadBalancer} type used by the client.

@@ -18,8 +18,9 @@
 const expect = require('chai').expect;
 require('chai').use(require('chai-as-promised'));
 const path = require('path');
-const ClientConfigImpl = require('../../lib/config/Config').ClientConfigImpl;
-const ConfigBuilder = require('../../lib/config/ConfigBuilder').ConfigBuilder;
+
+const { ClientConfigImpl } = require('../../lib/config/Config');
+const { ConfigBuilder } = require('../../lib/config/ConfigBuilder');
 
 describe('ConfigBuilderHazelcastCloudTest', function () {
 

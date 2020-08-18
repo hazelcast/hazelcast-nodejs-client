@@ -18,11 +18,11 @@
 const chai = require('chai');
 chai.use(require('chai-as-promised'));
 const expect = require('chai').expect;
-const RC = require('../RC');
-const Client = require('../../').Client;
-const Errors = require('../..').HazelcastErrors;
 const fs = require('fs');
 const path = require('path');
+
+const RC = require('../RC');
+const { Client, ConsistencyLostError } = require('../../');
 
 describe('PNCounterConsistencyTest', function () {
 
@@ -62,7 +62,7 @@ describe('PNCounterConsistencyTest', function () {
             const currentReplicaAddress = pnCounter.currentTargetReplicaAddress;
             return RC.terminateMember(cluster.id, currentReplicaAddress.uuid.toString());
         }).then(function () {
-            return expect(pnCounter.addAndGet(10)).to.be.rejectedWith(Errors.ConsistencyLostError);
+            return expect(pnCounter.addAndGet(10)).to.be.rejectedWith(ConsistencyLostError);
         });
     });
 

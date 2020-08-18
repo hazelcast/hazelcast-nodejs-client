@@ -17,10 +17,10 @@
 
 import {ClassDefinitionContext} from './ClassDefinitionContext';
 import {DataInput} from '../Data';
-import {ClassDefinition, FieldDefinition, FieldType} from './ClassDefinition';
+import {ClassDefinition, FieldDefinition} from './ClassDefinition';
 import {ClassDefinitionWriter} from './ClassDefinitionWriter';
-import {BitsUtil} from '../../BitsUtil';
-import {Portable, VersionedPortable} from '../Serializable';
+import {BitsUtil} from '../../util/BitsUtil';
+import {Portable, VersionedPortable, FieldType} from '../Portable';
 import {ClassDefinitionBuilder} from './ClassDefinitionBuilder';
 
 /** @internal */

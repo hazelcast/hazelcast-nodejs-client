@@ -17,13 +17,13 @@
 
 import * as Promise from 'bluebird';
 import {MapFetchNearCacheInvalidationMetadataCodec} from '../codec/MapFetchNearCacheInvalidationMetadataCodec';
-import * as MemberSelectors from '../core/MemberSelectors';
+import {dataMemberSelector} from '../core/MemberSelector';
 import {UUID} from '../core/UUID';
-import HazelcastClient from '../HazelcastClient';
+import {HazelcastClient} from '../HazelcastClient';
 import {Invocation} from '../invocation/InvocationService';
 import {RepairingHandler} from './RepairingHandler';
 import {ILogger} from '../logging/ILogger';
-import {ClientMessage} from '../ClientMessage';
+import {ClientMessage} from '../protocol/ClientMessage';
 
 /** @internal */
 export class MetadataFetcher {
@@ -83,7 +83,7 @@ export class MetadataFetcher {
     }
 
     protected scanMembers(objectNames: string[]): Array<Promise<ClientMessage>> {
-        const members = this.client.getClusterService().getMembers(MemberSelectors.dataMemberSelector);
+        const members = this.client.getClusterService().getMembers(dataMemberSelector);
         const promises: Array<Promise<any>> = [];
         members.forEach((member) => {
             const request = MapFetchNearCacheInvalidationMetadataCodec.encodeRequest(objectNames, member.uuid);

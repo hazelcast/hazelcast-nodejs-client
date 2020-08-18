@@ -16,8 +16,8 @@
 'use strict';
 
 const expect = require('chai').expect;
-const HazelcastClient = require('../.').Client;
-const Controller = require('./RC');
+const RC = require('./RC');
+const { Client } = require('../.');
 
 describe('AutoPipeliningDisabledTest', function () {
 
@@ -26,7 +26,7 @@ describe('AutoPipeliningDisabledTest', function () {
     let map;
 
     const createClient = (clusterId) => {
-        return HazelcastClient.newHazelcastClient({
+        return Client.newHazelcastClient({
             clusterName: clusterId,
             properties: {
                 ['hazelcast.client.autopipelining.enabled']: false
@@ -36,9 +36,9 @@ describe('AutoPipeliningDisabledTest', function () {
 
     before(function () {
         this.timeout(32000);
-        return Controller.createCluster(null, null).then(c => {
+        return RC.createCluster(null, null).then(c => {
             cluster = c;
-            return Controller.startMember(cluster.id);
+            return RC.startMember(cluster.id);
         }).then(_ => {
             return createClient(cluster.id);
         }).then(c => {
@@ -58,7 +58,7 @@ describe('AutoPipeliningDisabledTest', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('basic map operations work fine', function () {

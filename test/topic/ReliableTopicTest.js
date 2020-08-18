@@ -20,8 +20,7 @@ const fs = require('fs');
 const Long = require('long');
 
 const RC = require('./../RC');
-const { Client } = require('../..');
-const { TopicOverloadPolicy: { TopicOverloadPolicy } } = require('../..');
+const { Client, TopicOverloadPolicy } = require('../..');
 const { ReliableTopicMessage } = require('../../lib/proxy/topic/ReliableTopicMessage');
 
 describe('ReliableTopicTest', function () {

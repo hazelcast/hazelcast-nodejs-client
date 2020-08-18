@@ -15,8 +15,8 @@
  */
 /** @ignore *//** */
 
-import {AbstractLoadBalancer} from './AbstractLoadBalancer';
-import {randomInt} from '../Util';
+import {AbstractLoadBalancer} from '../core/LoadBalancer';
+import {randomInt} from '../util/Util';
 import {Member} from '../core/Member';
 
 const INITIAL_SEED_CAP = 1 << 16;

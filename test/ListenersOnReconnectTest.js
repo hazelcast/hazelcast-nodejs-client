@@ -15,11 +15,11 @@
  */
 'use strict';
 
-const Controller = require('./RC');
 const expect = require('chai').expect;
-const HazelcastClient = require('../.').Client;
-const Util = require('./Util');
 const Promise = require('bluebird');
+const RC = require('./RC');
+const { Client } = require('../.');
+const Util = require('./Util');
 
 describe('ListenersOnReconnectTest', function () {
 
@@ -30,7 +30,7 @@ describe('ListenersOnReconnectTest', function () {
     let map;
 
     beforeEach(function () {
-        return Controller.createCluster(null, null).then(function (cl) {
+        return RC.createCluster(null, null).then(function (cl) {
             cluster = cl;
         });
     });
@@ -38,20 +38,20 @@ describe('ListenersOnReconnectTest', function () {
     afterEach(function () {
         return map.destroy().then(function () {
             client.shutdown();
-            return Controller.terminateCluster(cluster.id);
+            return RC.terminateCluster(cluster.id);
         });
     });
 
     function closeTwoMembersOutOfThreeAndTestListener(done, isSmart, membersToClose, turnoffMember) {
-        Controller.startMember(cluster.id).then(function (m) {
+        RC.startMember(cluster.id).then(function (m) {
             members[0] = m;
-            return Controller.startMember(cluster.id);
+            return RC.startMember(cluster.id);
         }).then(function (m) {
             members[1] = m;
-            return Controller.startMember(cluster.id);
+            return RC.startMember(cluster.id);
         }).then(function (m) {
             members[2] = m;
-            return HazelcastClient.newHazelcastClient({
+            return Client.newHazelcastClient({
                 clusterName: cluster.id,
                 network: {
                     smartRouting: isSmart
@@ -104,34 +104,34 @@ describe('ListenersOnReconnectTest', function () {
          */
 
         it('kill two members [1,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [1, 2], Controller.terminateMember);
+            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [1, 2], RC.terminateMember);
         });
 
         it('kill two members [0,1], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 1], Controller.terminateMember);
+            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 1], RC.terminateMember);
         });
 
         it('kill two members [0,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 2], Controller.terminateMember);
+            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 2], RC.terminateMember);
         });
 
         it('shutdown two members [1,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [1, 2], Controller.shutdownMember);
+            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [1, 2], RC.shutdownMember);
         });
 
         it('shutdown two members [0,1], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 1], Controller.shutdownMember);
+            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 1], RC.shutdownMember);
         });
 
         it('shutdown two members [0,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 2], Controller.shutdownMember);
+            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 2], RC.shutdownMember);
         });
 
         it('restart member, listener still receives map.put event [smart=' + isSmart + ']', function (done) {
             let member;
-            Controller.startMember(cluster.id).then(function (m) {
+            RC.startMember(cluster.id).then(function (m) {
                 member = m;
-                return HazelcastClient.newHazelcastClient({
+                return Client.newHazelcastClient({
                     clusterName: cluster.id,
                     network: {
                         smartRouting: isSmart
@@ -162,9 +162,9 @@ describe('ListenersOnReconnectTest', function () {
                 };
                 return map.addEntryListener(listener, 'keyx', true);
             }).then(function () {
-                return Controller.terminateMember(cluster.id, member.uuid);
+                return RC.terminateMember(cluster.id, member.uuid);
             }).then(function () {
-                return Controller.startMember(cluster.id);
+                return RC.startMember(cluster.id);
             }).then(function () {
                 return Util.promiseWaitMilliseconds(5000);
             }).then(function () {

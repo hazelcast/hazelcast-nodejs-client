@@ -14,27 +14,19 @@
  * limitations under the License.
  */
 
-import {TopicOverloadPolicy} from '../proxy/topic/TopicOverloadPolicy';
 import {ClientNetworkConfig, ClientNetworkConfigImpl} from './ClientNetworkConfig';
 import {ConfigPatternMatcher} from './ConfigPatternMatcher';
-import {EvictionPolicy} from './EvictionPolicy';
 import {FlakeIdGeneratorConfig, FlakeIdGeneratorConfigImpl} from './FlakeIdGeneratorConfig';
-import {InMemoryFormat} from './InMemoryFormat';
 import {MembershipListener} from '../core/MembershipListener';
 import {LifecycleState} from '../LifecycleService';
 import {NearCacheConfig, NearCacheConfigImpl} from './NearCacheConfig';
-import {SSLConfig} from './SSLConfig';
 import {Properties} from './Properties';
 import {ReliableTopicConfig, ReliableTopicConfigImpl} from './ReliableTopicConfig';
 import {SerializationConfig, SerializationConfigImpl} from './SerializationConfig';
 import {Statistics} from '../statistics/Statistics';
 import {ILogger} from '../logging/ILogger';
-import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy';
-import {ConnectionStrategyConfig, ConnectionStrategyConfigImpl, ReconnectMode} from './ConnectionStrategyConfig';
-import {LoadBalancerType, LoadBalancerConfig, LoadBalancerConfigImpl} from './LoadBalancerConfig';
-import {IndexConfig} from './IndexConfig';
-import {IndexType} from './IndexType';
-import {ConnectionRetryConfig} from './ConnectionRetryConfig';
+import {ConnectionStrategyConfig, ConnectionStrategyConfigImpl} from './ConnectionStrategyConfig';
+import {LoadBalancerConfig, LoadBalancerConfigImpl} from './LoadBalancerConfig';
 
 /**
  * Top level configuration object of Hazelcast client.
@@ -90,16 +82,46 @@ export interface ClientConfig {
 
     /**
      * Near Cache config for the client.
+     *
+     * Hazelcast client supports wildcard configuration for Near
+     * Caches. Using an asterisk (`*`) character in the name,
+     * different instances of Maps can be configured by a single
+     * configuration.
+     *
+     * When you use `default` as the config key, it has a special
+     * meaning. Hazelcast client will use that configuration as the
+     * default one for all Maps, unless there is a specific
+     * configuration for the Map.
      */
     nearCaches?: { [name: string]: NearCacheConfig };
 
     /**
-     * Configs for ReliableTopics.
+     * Configs for Reliable Topics.
+     *
+     * Hazelcast client supports wildcard configuration for Reliable
+     * Topics. Using an asterisk (`*`) character in the name,
+     * different instances of topics can be configured by a single
+     * configuration.
+     *
+     * When you use `default` as the config key, it has a special
+     * meaning. Hazelcast client will use that configuration as the
+     * default one for all Reliable Topics, unless there is
+     * a specific configuration for the topic.
      */
     reliableTopics?: { [name: string]: ReliableTopicConfig };
 
     /**
-     * Configs for FlakeIdGenerators.
+     * Configs for Flake ID Generators.
+     *
+     * Hazelcast client supports wildcard configuration for Flake
+     * ID Generators. Using an asterisk (`*`) character in the name,
+     * different instances of generators can be configured by a single
+     * configuration.
+     *
+     * When you use `default` as the config key, it has a special
+     * meaning. Hazelcast client will use that configuration as the
+     * default one for all Flake ID Generators, unless there is
+     * a specific configuration for the generator.
      */
     flakeIdGenerators?: { [name: string]: FlakeIdGeneratorConfig };
 
@@ -211,23 +233,3 @@ export class ClientConfigImpl implements ClientConfig {
         return null;
     }
 }
-
-export {
-    ClientNetworkConfig,
-    TopicOverloadPolicy,
-    SerializationConfig,
-    ReliableTopicConfig,
-    EvictionPolicy,
-    InMemoryFormat,
-    NearCacheConfig,
-    FlakeIdGeneratorConfig,
-    SSLConfig,
-    JsonStringDeserializationPolicy,
-    IndexConfig,
-    IndexType,
-    ConnectionStrategyConfig,
-    ReconnectMode,
-    ConnectionRetryConfig,
-    LoadBalancerConfig,
-    LoadBalancerType,
-};

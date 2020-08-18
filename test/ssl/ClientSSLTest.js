@@ -20,11 +20,9 @@ chai.use(require('chai-as-promised'));
 const expect = chai.expect;
 const fs = require('fs');
 
-const markEnterprise = require('../Util').markEnterprise;
 const RC = require('./../RC');
-
-const HazelcastClient = require("../../").Client;
-const Errors = require('../..').HazelcastErrors;
+const { Client, IllegalStateError } = require("../../");
+const { markEnterprise } = require('../Util');
 
 describe('ClientSSLTest', function () {
 
@@ -62,7 +60,7 @@ describe('ClientSSLTest', function () {
             .replace('[serverCertificate]', 'com/hazelcast/nio/ssl-mutual-auth/server1.keystore')
             .replace('[password]', 'password');
         return createCluster(sConfig).then(function () {
-            return expect(HazelcastClient.newHazelcastClient({
+            return expect(Client.newHazelcastClient({
                 clusterName: cluster.id,
                 network: {
                     clusterMembers: ['127.0.0.1:5701'],
@@ -75,7 +73,7 @@ describe('ClientSSLTest', function () {
                         clusterConnectTimeoutMillis: 1000
                     }
                 }
-            })).to.be.rejectedWith(Errors.IllegalStateError);
+            })).to.be.rejectedWith(IllegalStateError);
         })
     });
 
@@ -84,7 +82,7 @@ describe('ClientSSLTest', function () {
             .replace('[serverCertificate]', 'com/hazelcast/nio/ssl/letsencrypt.jks')
             .replace('[password]', '123456');
         return createCluster(sConfig).then(function () {
-            return HazelcastClient.newHazelcastClient({
+            return Client.newHazelcastClient({
                 clusterName: cluster.id,
                 network: {
                     clusterMembers: ['127.0.0.1:5701'],

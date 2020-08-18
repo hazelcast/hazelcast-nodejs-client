@@ -20,8 +20,8 @@ chai.use(require('chai-as-promised'));
 const expect = chai.expect;
 const path = require('path');
 
-const ConfigBuilder = require('../../lib/config/ConfigBuilder').ConfigBuilder;
-const Errors = require('../..').HazelcastErrors;
+const { ConfigBuilder } = require('../../lib/config/ConfigBuilder');
+const { HazelcastError } = require('../..');
 
 describe('ConfigBuilderSSLTest', function () {
 
@@ -31,8 +31,8 @@ describe('ConfigBuilderSSLTest', function () {
     }
 
     it('if both sslOptions and factory are set, should throw error', function () {
-        expect(() => loadJson('configurations/invalid-ssl-enabled.json')).to.throw(Errors.HazelcastError);
-        expect(() => loadJson('configurations/invalid-ssl-disabled.json')).to.throw(Errors.HazelcastError);
+        expect(() => loadJson('configurations/invalid-ssl-enabled.json')).to.throw(HazelcastError);
+        expect(() => loadJson('configurations/invalid-ssl-disabled.json')).to.throw(HazelcastError);
     });
 
     it('ssl is disabled but options are set', function () {

@@ -16,9 +16,11 @@
 
 import * as Promise from 'bluebird';
 import * as Long from 'long';
-import {OverflowPolicy} from '../core/OverflowPolicy';
-import {DistributedObject} from '../DistributedObject';
-import {ReadResultSet} from './ringbuffer/ReadResultSet';
+import {
+    DistributedObject,
+    ReadResultSet
+} from '../core';
+import {OverflowPolicy} from './OverflowPolicy';
 
 export interface Ringbuffer<E> extends DistributedObject {
 

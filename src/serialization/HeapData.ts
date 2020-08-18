@@ -17,7 +17,7 @@
 
 import {murmur} from '../invocation/Murmur';
 import {Data} from './Data';
-import {NULL_TYPE_ID} from './DefaultSerializer';
+import {NULL_TYPE_ID} from './DefaultSerializers';
 
 /** @internal */
 export const PARTITION_HASH_OFFSET = 0;

@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {PortableContext} from './PortableContext';
-import {Portable, PortableFactory} from '../Serializable';
-import {Serializer} from '../DefaultSerializer';
+import {Portable, PortableFactory} from '../Portable';
+import {Serializer} from '../Serializable';
 import {DataInput, PositionalDataOutput} from '../Data';
 import {DefaultPortableReader} from './DefaultPortableReader';
 import {MorphingPortableReader} from './MorphingPortableReader';
-import {ClassDefinition, FieldType} from './ClassDefinition';
+import {ClassDefinition} from './ClassDefinition';
 import {DefaultPortableWriter} from './DefaultPortableWriter';
-import * as Long from 'long';
 import {SerializationConfigImpl} from '../../config/SerializationConfig';
-import {HazelcastSerializationError} from '../../HazelcastError';
+import {HazelcastSerializationError} from '../../core';
 
 /** @internal */
 export class PortableSerializer implements Serializer {
@@ -95,104 +95,4 @@ export class PortableSerializer implements Serializer {
         }
         return portable;
     }
-}
-
-/**
- * Writer helper for {@link Portable} objects.
- */
-export interface PortableWriter {
-    writeInt(fieldName: string, value: number): void;
-
-    writeLong(fieldName: string, long: Long): void;
-
-    writeUTF(fieldName: string, str: string): void;
-
-    writeBoolean(fieldName: string, value: boolean): void;
-
-    writeByte(fieldName: string, value: number): void;
-
-    writeChar(fieldName: string, char: string): void;
-
-    writeDouble(fieldName: string, double: number): void;
-
-    writeFloat(fieldName: string, float: number): void;
-
-    writeShort(fieldName: string, value: number): void;
-
-    writePortable(fieldName: string, portable: Portable): void;
-
-    writeNullPortable(fieldName: string, factoryId: number, classId: number): void;
-
-    writeByteArray(fieldName: string, bytes: number[]): void;
-
-    writeBooleanArray(fieldName: string, booleans: boolean[]): void;
-
-    writeCharArray(fieldName: string, chars: string[]): void;
-
-    writeIntArray(fieldName: string, ints: number[]): void;
-
-    writeLongArray(fieldName: string, longs: Long[]): void;
-
-    writeDoubleArray(fieldName: string, doubles: number[]): void;
-
-    writeFloatArray(fieldName: string, floats: number[]): void;
-
-    writeShortArray(fieldName: string, shorts: number[]): void;
-
-    writeUTFArray(fieldName: string, val: string[]): void;
-
-    writePortableArray(fieldName: string, portables: Portable[]): void;
-}
-
-/**
- * Reader helper for {@link Portable} objects.
- */
-export interface PortableReader {
-    getVersion(): number;
-
-    hasField(fieldName: string): boolean;
-
-    getFieldNames(): string[];
-
-    getFieldType(fieldName: string): FieldType;
-
-    readInt(fieldName: string): number;
-
-    readLong(fieldName: string): Long;
-
-    readUTF(fieldName: string): string;
-
-    readBoolean(fieldName: string): boolean;
-
-    readByte(fieldName: string): number;
-
-    readChar(fieldName: string): string;
-
-    readDouble(fieldName: string): number;
-
-    readFloat(fieldName: string): number;
-
-    readShort(fieldName: string): number;
-
-    readPortable(fieldName: string): Portable;
-
-    readByteArray(fieldName: string): number[];
-
-    readBooleanArray(fieldName: string): boolean[];
-
-    readCharArray(fieldName: string): string[];
-
-    readIntArray(fieldName: string): number[];
-
-    readLongArray(fieldName: string): Long[];
-
-    readDoubleArray(fieldName: string): number[];
-
-    readFloatArray(fieldName: string): number[];
-
-    readShortArray(fieldName: string): number[];
-
-    readUTFArray(fieldName: string): string[];
-
-    readPortableArray(fieldName: string): Portable[];
 }

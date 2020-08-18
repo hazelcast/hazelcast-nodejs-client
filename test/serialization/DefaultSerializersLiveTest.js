@@ -15,10 +15,9 @@
  */
 'use strict';
 
-const Client = require('../../.').Client;
-const RC = require('../RC');
 const expect = require('chai').expect;
-const RestValue = require('../../lib/core/RestValue').RestValue;
+const RC = require('../RC');
+const { Client, RestValue } = require('../../');
 
 describe('DefaultSerializersLiveTest', function () {
 

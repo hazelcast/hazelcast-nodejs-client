@@ -16,8 +16,8 @@
 
 /* eslint-disable max-len */
 import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
-import {BitsUtil} from '../../BitsUtil';
-import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame, DEFAULT_FLAGS} from '../../ClientMessage';
+import {BitsUtil} from '../../util/BitsUtil';
+import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame, DEFAULT_FLAGS} from '../../protocol/ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
 import {MemberVersion} from '../../core/MemberVersion';
 

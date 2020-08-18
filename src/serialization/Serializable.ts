@@ -15,7 +15,33 @@
  */
 
 import {DataInput, DataOutput} from './Data';
-import {PortableReader, PortableWriter} from './portable/PortableSerializer';
+
+/**
+ * Defines common interface for default and custom serializers.
+ */
+export interface Serializer<T = any> {
+
+    /**
+     * Type id.
+     */
+    id: number;
+
+    /**
+     * Deserializes input data into an object.
+     *
+     * @param input input data reader
+     */
+    read(input: DataInput): T;
+
+    /**
+     * Serializes an object into binary data.
+     *
+     * @param output output data writer
+     * @param object object to be serialized
+     */
+    write(output: DataOutput, object: T): void;
+
+}
 
 /**
  * Interface for objects with IdentifiedDataSerializable
@@ -58,59 +84,6 @@ export interface IdentifiedDataSerializable {
  * @returns object for further initialization
  */
 export type IdentifiedDataSerializableFactory = (classId: number) => IdentifiedDataSerializable;
-
-/**
- * Interface for objects with Portable serialization support.
- */
-export interface Portable {
-
-    /**
-     * Factory id of the portable object.
-     */
-    factoryId: number;
-
-    /**
-     * Class id of the portable object.
-     */
-    classId: number;
-
-    /**
-     * Reads fields of the portable object from the binary representation.
-     *
-     * @param reader read helper
-     */
-    readPortable(reader: PortableReader): void;
-
-    /**
-     * Writes fields of the portable object into the binary representation.
-     *
-     * @param writer write helper
-     */
-    writePortable(writer: PortableWriter): void;
-
-}
-
-/**
- * Interface for Portable serialization with multiversion support.
- */
-export interface VersionedPortable extends Portable {
-
-    /**
-     * Version of the portable object.
-     */
-    version: number;
-
-}
-
-/**
- * Factory function for {@link Portable}. Should return
- * an instance of the right {@link Portable} object, given
- * the matching `classId`.
- *
- * @param classId class id
- * @returns object for further initialization
- */
-export type PortableFactory = (classId: number) => Portable;
 
 /**
  * Interface for objects with custom serialization support.

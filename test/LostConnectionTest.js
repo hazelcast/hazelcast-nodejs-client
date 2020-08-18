@@ -15,24 +15,24 @@
  */
 'use strict';
 
-const Controller = require('./RC');
 const expect = require('chai').expect;
-const HazelcastClient = require('../.').Client;
+const RC = require('./RC');
+const { Client } = require('../.');
 const Util = require('./Util');
 
-describe('Lost connection', function () {
+describe('LostConnectionTest', function () {
 
     let cluster, oldMember, client;
 
     before(function () {
-        return Controller.createCluster(null, null).then(function (res) {
+        return RC.createCluster(null, null).then(function (res) {
             cluster = res;
         }).then(function () {
-            return Controller.startMember(cluster.id);
+            return RC.startMember(cluster.id);
         }).then(function (m) {
             oldMember = m;
         }).then(function () {
-            return HazelcastClient.newHazelcastClient({
+            return Client.newHazelcastClient({
                 clusterName: cluster.id,
                 properties: {
                     'hazelcast.client.heartbeat.interval': 500,
@@ -46,7 +46,7 @@ describe('Lost connection', function () {
 
     after(function () {
         client.shutdown();
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('M2 starts, M1 goes down, client connects to M2', function (done) {
@@ -54,7 +54,7 @@ describe('Lost connection', function () {
         let newMember;
         const membershipListener = {
             memberAdded: (membershipEvent) => {
-                Controller.shutdownMember(cluster.id, oldMember.uuid).then(function () {
+                RC.shutdownMember(cluster.id, oldMember.uuid).then(function () {
                     return Util.promiseWaitMilliseconds(4000);
                 }).then(function () {
                     try {
@@ -70,7 +70,7 @@ describe('Lost connection', function () {
         };
 
         client.clusterService.addMembershipListener(membershipListener);
-        Controller.startMember(cluster.id).then(function (m) {
+        RC.startMember(cluster.id).then(function (m) {
             newMember = m;
         });
     });

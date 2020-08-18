@@ -17,8 +17,8 @@
 
 const expect = require('chai').expect;
 const RC = require('./RC');
-const HazelcastClient = require('../.').Client;
-const DeferredPromise = require('../lib/Util').DeferredPromise;
+const { Client } = require('../.');
+const { DeferredPromise } = require('../lib/util/Util');
 
 const dummyConfig = {
     network: {
@@ -77,7 +77,7 @@ configParams.forEach(function (cfg) {
                 return RC.startMember(cluster.id);
             }).then(function (member) {
                 cfg.clusterName = cluster.id;
-                return HazelcastClient.newHazelcastClient(cfg);
+                return Client.newHazelcastClient(cfg);
             }).then(function (res) {
                 client = res;
             });

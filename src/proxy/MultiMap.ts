@@ -15,9 +15,11 @@
  */
 
 import * as Promise from 'bluebird';
-import {EntryListener} from '../core/EntryListener';
-import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
-import {DistributedObject} from '../DistributedObject';
+import {EntryListener} from './EntryListener';
+import {
+    DistributedObject,
+    ReadOnlyLazyList
+} from '../core';
 
 export interface MultiMap<K, V> extends DistributedObject {
 

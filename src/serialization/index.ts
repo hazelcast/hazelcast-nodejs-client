@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Message} from './Message';
+/** @ignore *//** */
 
 /**
- * Message listener for Reliable Topic.
+ * Public API re-exports.
  */
-export type MessageListener<E> = (message: Message<E>) => void;
+
+export * from './Data';
+export * from './Portable';
+export * from './Serializable';

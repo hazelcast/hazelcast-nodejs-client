@@ -20,10 +20,10 @@ import * as Long from 'long';
 import {PNCounterAddCodec} from '../codec/PNCounterAddCodec';
 import {PNCounterGetCodec} from '../codec/PNCounterGetCodec';
 import {PNCounterGetConfiguredReplicaCountCodec} from '../codec/PNCounterGetConfiguredReplicaCountCodec';
-import * as MemberSelectors from '../core/MemberSelectors';
-import {VectorClock} from '../core/VectorClock';
-import {NoDataMemberInClusterError} from '../HazelcastError';
-import {randomInt} from '../Util';
+import {dataMemberSelector} from '../core/MemberSelector';
+import {VectorClock} from './VectorClock';
+import {NoDataMemberInClusterError} from '../core';
+import {randomInt} from '../util/Util';
 import {BaseProxy} from './BaseProxy';
 import {PNCounter} from './PNCounter';
 import {MemberImpl} from '../core/Member';
@@ -135,7 +135,7 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
     }
 
     private getReplicaAddresses(excludedAddresses: MemberImpl[]): Promise<MemberImpl[]> {
-        const dataMembers = this.client.getClusterService().getMembers(MemberSelectors.dataMemberSelector);
+        const dataMembers = this.client.getClusterService().getMembers(dataMemberSelector);
         return this.getMaxConfiguredReplicaCount().then((replicaCount: number) => {
             const currentCount = Math.min(replicaCount, dataMembers.length);
             const replicaAddresses: MemberImpl[] = [];

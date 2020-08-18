@@ -17,7 +17,7 @@
 
 import * as assert from 'assert';
 import * as Long from 'long';
-import {BitsUtil} from '../BitsUtil';
+import {BitsUtil} from '../util/BitsUtil';
 import {Data, DataInput, DataOutput, PositionalDataOutput} from './Data';
 import {HeapData, HEAP_DATA_OVERHEAD} from './HeapData';
 import {SerializationService} from './SerializationService';

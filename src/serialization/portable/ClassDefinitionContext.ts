@@ -16,7 +16,7 @@
 /** @ignore *//** */
 
 import {ClassDefinition} from './ClassDefinition';
-import {HazelcastSerializationError} from '../../HazelcastError';
+import {HazelcastSerializationError} from '../../core';
 
 /** @internal */
 export class ClassDefinitionContext {

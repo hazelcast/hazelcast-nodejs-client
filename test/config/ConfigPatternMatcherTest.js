@@ -16,9 +16,9 @@
 'use strict';
 
 const expect = require('chai').expect;
-const ConfigBuilder = require('../../lib/config/ConfigBuilder').ConfigBuilder;
-const FlakeIdGeneratorConfigImpl = require('../../lib/config/FlakeIdGeneratorConfig').FlakeIdGeneratorConfigImpl;
-const Errors = require('../..').HazelcastErrors;
+const { ConfigBuilder } = require('../../lib/config/ConfigBuilder');
+const { FlakeIdGeneratorConfigImpl } = require('../../lib/config/FlakeIdGeneratorConfig');
+const { ConfigurationError } = require('../..');
 
 describe('ConfigPatternMatcherTest', function () {
 
@@ -83,6 +83,6 @@ describe('ConfigPatternMatcherTest', function () {
         inputConfig.flakeIdGenerators['abcde*'] = f2;
         const config = new ConfigBuilder(inputConfig).build();
 
-        expect(config.getFlakeIdGeneratorConfig.bind(inputConfig, 'abcde.somemore.postf')).to.throw(Errors.ConfigurationError);
+        expect(config.getFlakeIdGeneratorConfig.bind(inputConfig, 'abcde.somemore.postf')).to.throw(ConfigurationError);
     });
 });

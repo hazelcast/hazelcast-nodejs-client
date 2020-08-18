@@ -20,10 +20,10 @@ const Socket = require('net').Socket;
 const sinon = require('sinon');
 const expect = require('chai').expect;
 
-const DeferredPromise = require('../../lib/Util').DeferredPromise;
-const DirectWriter = require('../../lib/network/ClientConnection').DirectWriter;
+const { DeferredPromise } = require('../../lib/util/Util');
+const { DirectWriter } = require('../../lib/network/ClientConnection');
 
-describe('DirectWriter', function () {
+describe('DirectWriterTest', function () {
 
     let queue;
     let mockSocket;

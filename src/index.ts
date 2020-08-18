@@ -13,53 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
-import {Address} from './Address';
-import TopicOverloadPolicy = require('./proxy/topic/TopicOverloadPolicy');
-import * as Aggregators from './aggregation/Aggregators';
-import {ClientInfo} from './ClientInfo';
-import * as Config from './config/Config';
-import * as Predicates from './core/Predicate';
-import HazelcastClient from './HazelcastClient';
-import * as HazelcastErrors from './HazelcastError';
-import {IMap} from './proxy/IMap';
-import {ReadResultSet} from './proxy/ringbuffer/ReadResultSet';
-import {EvictionPolicy} from './config/EvictionPolicy';
-import {InMemoryFormat} from './config/InMemoryFormat';
-import {ItemEvent} from './core/ItemListener';
-import {MapEvent} from './core/MapListener';
-import {EntryEvent} from './core/EntryListener';
-import {LogLevel} from './logging/ILogger';
-import {JsonStringDeserializationPolicy} from './config/JsonStringDeserializationPolicy';
-import {HazelcastJsonValue} from './core/HazelcastJsonValue';
-import {LoadBalancer} from './LoadBalancer';
-import {AbstractLoadBalancer} from './util/AbstractLoadBalancer';
-import {FieldType} from './serialization/portable/ClassDefinition';
-import {SSLOptionsFactory} from './connection/SSLOptionsFactory';
-import {BasicSSLOptionsFactory} from './connection/BasicSSLOptionsFactory';
+/**
+ * Public API re-exports.
+ */
 
-export {
-    HazelcastClient as Client,
-    Config,
-    ClientInfo,
-    IMap,
-    Address,
-    Predicates,
-    TopicOverloadPolicy,
-    HazelcastErrors,
-    ReadResultSet,
-    Aggregators,
-    EvictionPolicy,
-    InMemoryFormat,
-    ItemEvent,
-    MapEvent,
-    EntryEvent,
-    LogLevel,
-    JsonStringDeserializationPolicy,
-    HazelcastJsonValue,
-    LoadBalancer,
-    AbstractLoadBalancer,
-    FieldType,
-    SSLOptionsFactory,
-    BasicSSLOptionsFactory,
-};
+export * from './aggregation';
+export * from './config';
+export * from './connection';
+export * from './core';
+export * from './logging';
+export * from './proxy';
+export * from './serialization';
+export {HazelcastClient as Client} from './HazelcastClient';
+export * from './LifecycleService';
+export * from './PartitionService';

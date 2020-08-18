@@ -15,33 +15,40 @@
  */
 
 import * as Promise from 'bluebird';
-import {ClientInfo} from './ClientInfo';
+import {
+    ClientInfo,
+    Cluster,
+    DistributedObject,
+    DistributedObjectListener,
+    LoadBalancer,
+    IllegalStateError
+} from './core';
 import {ClientGetDistributedObjectsCodec} from './codec/ClientGetDistributedObjectsCodec';
 import {ClientConfig, ClientConfigImpl} from './config/Config';
 import {ConfigBuilder} from './config/ConfigBuilder';
-import {DistributedObject} from './DistributedObject';
 import {ClientConnectionManager} from './network/ClientConnectionManager';
-import {Cluster} from './core/Cluster';
 import {ClusterService} from './invocation/ClusterService';
 import {InvocationService} from './invocation/InvocationService';
 import {LifecycleService, LifecycleServiceImpl} from './LifecycleService';
-import {ListenerService} from './ListenerService';
-import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
+import {ListenerService} from './listener/ListenerService';
 import {LoggingService} from './logging/LoggingService';
 import {RepairingTask} from './nearcache/RepairingTask';
 import {PartitionService, PartitionServiceImpl} from './PartitionService';
 import {ClientErrorFactory} from './protocol/ErrorFactory';
-import {FlakeIdGenerator} from './proxy/FlakeIdGenerator';
-import {IList} from './proxy/IList';
-import {IMap} from './proxy/IMap';
-import {IQueue} from './proxy/IQueue';
-import {ReplicatedMap} from './proxy/ReplicatedMap';
-import {Ringbuffer} from './proxy/Ringbuffer';
-import {ISet} from './proxy/ISet';
-import {MultiMap} from './proxy/MultiMap';
-import {PNCounter} from './proxy/PNCounter';
+import {
+    FlakeIdGenerator,
+    IList,
+    IMap,
+    IQueue,
+    ISet,
+    ITopic,
+    MultiMap,
+    ReplicatedMap,
+    Ringbuffer,
+    PNCounter
+} from './proxy';
 import {ProxyManager, NAMESPACE_SEPARATOR} from './proxy/ProxyManager';
-import {ITopic} from './proxy/topic/ITopic';
+import {LockReferenceIdGenerator} from './proxy/LockReferenceIdGenerator';
 import {SerializationService, SerializationServiceV1} from './serialization/SerializationService';
 import {AddressProvider} from './connection/AddressProvider';
 import {HazelcastCloudAddressProvider} from './discovery/HazelcastCloudAddressProvider';
@@ -49,14 +56,11 @@ import {DefaultAddressProvider} from './connection/DefaultAddressProvider';
 import {HazelcastCloudDiscovery} from './discovery/HazelcastCloudDiscovery';
 import {Statistics} from './statistics/Statistics';
 import {NearCacheManager} from './nearcache/NearCacheManager';
-import {DistributedObjectListener} from './core/DistributedObjectListener';
-import {IllegalStateError} from './HazelcastError';
-import {LoadBalancer} from './LoadBalancer';
 import {LoadBalancerType} from './config/LoadBalancerConfig';
 import {RandomLB} from './util/RandomLB';
 import {RoundRobinLB} from './util/RoundRobinLB';
 import {ClusterViewListenerService} from './listener/ClusterViewListenerService';
-import {ClientMessage} from './ClientMessage';
+import {ClientMessage} from './protocol/ClientMessage';
 
 /**
  * Hazelcast client instance. When you want to use Hazelcast's distributed
@@ -65,7 +69,7 @@ import {ClientMessage} from './ClientMessage';
  *
  * Client instances should be shut down explicitly.
  */
-export default class HazelcastClient {
+export class HazelcastClient {
 
     /** @internal */
     private static CLIENT_ID = 0;

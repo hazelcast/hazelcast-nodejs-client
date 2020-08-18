@@ -13,38 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Address} from './Address';
-import {UUID} from './core/UUID';
+/** @ignore *//** */
 
 /**
- * Local information of the client.
+ * Public API re-exports.
  */
-export class ClientInfo {
 
-    /**
-     * Unique id of this client instance.
-     */
-    uuid: UUID;
-
-    /**
-     * Local port address that is used to communicate with cluster.
-     */
-    localAddress: Address;
-
-    /**
-     * Type of this client. It is always NodeJS.
-     */
-    type = 'NodeJS';
-
-    /**
-     * Name of the client.
-     */
-    name: string;
-
-    /**
-     * Set of all labels of this client.
-     */
-    labels: Set<string>;
-
-}
+export * from './Aggregator';
+export * as Aggregators from './Aggregators';

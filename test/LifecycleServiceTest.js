@@ -15,11 +15,11 @@
  */
 'use strict';
 
-const RC = require('./RC');
-const HazelcastClient = require('../.').Client;
 const expect = require('chai').expect;
+const RC = require('./RC');
+const { Client } = require('../.');
 
-describe('LifecycleService', function () {
+describe('LifecycleServiceTest', function () {
 
     let cluster;
 
@@ -53,7 +53,7 @@ describe('LifecycleService', function () {
                 done('Got lifecycle event ' + state + ' instead of ' + expectedState);
             }
         };
-        HazelcastClient.newHazelcastClient({
+        Client.newHazelcastClient({
             clusterName: cluster.id,
             lifecycleListeners: [ listener ]
         }).then(function (client) {
@@ -63,7 +63,7 @@ describe('LifecycleService', function () {
 
     it('event listener should get SHUTTING_DOWN, DISCONNECTED and SHUTDOWN events when added after startup', function (done) {
         let expectedState = 'SHUTTING_DOWN';
-        HazelcastClient.newHazelcastClient({
+        Client.newHazelcastClient({
             clusterName: cluster.id
         }).then(function (client) {
             client.lifecycleService.on('lifecycleEvent', function (state) {
@@ -82,7 +82,7 @@ describe('LifecycleService', function () {
     });
 
     it('isRunning returns correct values at lifecycle stages', function (done) {
-        HazelcastClient.newHazelcastClient({
+        Client.newHazelcastClient({
             clusterName: cluster.id
         }).then(function (client) {
             client.lifecycleService.on('lifecycleEvent',

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ClientMessage} from '../../ClientMessage';
+import {ClientMessage} from '../../protocol/ClientMessage';
 import {Data} from '../../serialization/Data';
 import {ListMultiFrameCodec} from './ListMultiFrameCodec';
 import {DataCodec} from './DataCodec';

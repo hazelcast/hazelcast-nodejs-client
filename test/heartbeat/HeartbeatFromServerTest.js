@@ -18,9 +18,8 @@
 const RC = require('../RC');
 const Util = require('../Util');
 const { Client } = require('../../');
-const { DeferredPromise } = require('../../lib/Util');
-const { AddressImpl } = require('../../lib/Address');
-const { TargetDisconnectedError } = require('../../lib/HazelcastError');
+const { DeferredPromise } = require('../../lib/util/Util');
+const { AddressImpl, TargetDisconnectedError } = require('../../lib/core');
 
 describe('HeartbeatFromServerTest', function () {
 

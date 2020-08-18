@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {ClientMessage, Frame} from '../../ClientMessage';
-import {BitsUtil} from '../../BitsUtil';
+import {ClientMessage, Frame} from '../../protocol/ClientMessage';
+import {BitsUtil} from '../../util/BitsUtil';
 import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 
 /** @internal */

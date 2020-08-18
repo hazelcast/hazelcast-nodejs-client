@@ -15,9 +15,9 @@
  */
 
 import * as Promise from 'bluebird';
-import {ItemListener} from '../core/ItemListener';
+import {ItemListener} from './ItemListener';
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
-import {DistributedObject} from '../DistributedObject';
+import {DistributedObject} from '../core/DistributedObject';
 
 export interface IList<E> extends DistributedObject {
 

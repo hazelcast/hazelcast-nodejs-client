@@ -20,14 +20,13 @@ const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-const DataRecord = require('../../lib/nearcache/DataRecord').DataRecord;
-const NearCacheImpl = require('../../lib/nearcache/NearCache').NearCacheImpl;
-const { Config } = require('../..');
-const EvictionPolicy = Config.EvictionPolicy;
-const SerializationService = require('../../lib/serialization/SerializationService').SerializationServiceV1;
+const { DataRecord } = require('../../lib/nearcache/DataRecord');
+const { NearCacheImpl } = require('../../lib/nearcache/NearCache');
+const { EvictionPolicy, InMemoryFormat } = require('../..');
+const { SerializationServiceV1 } = require('../../lib/serialization/SerializationService');
 const { NearCacheConfigImpl } = require('../../lib/config/NearCacheConfig');
 const { SerializationConfigImpl } = require('../../lib/config/SerializationConfig');
-const promiseLater = require('../Util').promiseLater;
+const { promiseLater } = require('../Util');
 
 describe('NearCacheTest', function () {
 
@@ -62,7 +61,7 @@ describe('NearCacheTest', function () {
 
     function createSerializationService() {
         const cfg = new SerializationConfigImpl();
-        return new SerializationService(cfg);
+        return new SerializationServiceV1(cfg);
     }
 
     function promiseBefore(boundaryInSec, func) {
@@ -241,7 +240,7 @@ describe('NearCacheTest', function () {
 
         it('Object', function () {
             const nearCacheConfig = new NearCacheConfigImpl();
-            nearCacheConfig.inMemoryFormat = Config.InMemoryFormat.OBJECT;
+            nearCacheConfig.inMemoryFormat = InMemoryFormat.OBJECT;
             const nearCache = new NearCacheImpl(nearCacheConfig, createSerializationService());
             nearCache.put(ds('k'), 'v');
             expect(nearCache.internalStore.get(ds('k')).value).to.be.a('string');
@@ -249,7 +248,7 @@ describe('NearCacheTest', function () {
 
         it('Binary', function () {
             const nearCacheConfig = new NearCacheConfigImpl();
-            nearCacheConfig.inMemoryFormat = Config.InMemoryFormat.BINARY;
+            nearCacheConfig.inMemoryFormat = InMemoryFormat.BINARY;
             const nearCache = new NearCacheImpl(nearCacheConfig, createSerializationService());
             nearCache.put(ds('k'), 'v');
             expect(nearCache.internalStore.get(ds('k')).value).to.not.be.a('string');

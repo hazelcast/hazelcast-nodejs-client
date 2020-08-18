@@ -15,8 +15,9 @@
  */
 /** @ignore *//** */
 
-import {ClassDefinition, FieldDefinition, FieldType} from './ClassDefinition';
-import {HazelcastSerializationError} from '../../HazelcastError';
+import {ClassDefinition, FieldDefinition} from './ClassDefinition';
+import {FieldType} from '../Portable';
+import {HazelcastSerializationError} from '../../core';
 
 /** @internal */
 export class ClassDefinitionBuilder {

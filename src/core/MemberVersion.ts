@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
+/** @internal */
 export class MemberVersion {
     major: number;
     minor: number;

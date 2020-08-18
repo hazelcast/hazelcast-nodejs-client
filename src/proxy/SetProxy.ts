@@ -29,13 +29,13 @@ import {SetIsEmptyCodec} from '../codec/SetIsEmptyCodec';
 import {SetRemoveCodec} from '../codec/SetRemoveCodec';
 import {SetRemoveListenerCodec} from '../codec/SetRemoveListenerCodec';
 import {SetSizeCodec} from '../codec/SetSizeCodec';
-import {ItemEvent, ItemEventType, ItemListener} from '../core/ItemListener';
-import {ListenerMessageCodec} from '../ListenerMessageCodec';
+import {ItemEvent, ItemEventType, ItemListener} from './ItemListener';
+import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
 import {Data} from '../serialization/Data';
 import {ISet} from './ISet';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
-import {ClientMessage} from '../ClientMessage';
-import {UUID} from '../core/UUID';
+import {ClientMessage} from '../protocol/ClientMessage';
+import {UUID} from '../core';
 
 /** @internal */
 export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {

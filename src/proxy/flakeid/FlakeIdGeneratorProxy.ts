@@ -17,13 +17,13 @@
 
 import * as Promise from 'bluebird';
 import * as Long from 'long';
-import {FlakeIdGeneratorNewIdBatchCodec} from '../codec/FlakeIdGeneratorNewIdBatchCodec';
-import {FlakeIdGeneratorConfigImpl} from '../config/FlakeIdGeneratorConfig';
-import HazelcastClient from '../HazelcastClient';
-import {BaseProxy} from './BaseProxy';
-import {AutoBatcher, Batch} from './flakeid/AutoBatcher';
-import {FlakeIdGenerator} from './FlakeIdGenerator';
-import {ClientConfigImpl} from '../config/Config';
+import {FlakeIdGeneratorNewIdBatchCodec} from '../../codec/FlakeIdGeneratorNewIdBatchCodec';
+import {FlakeIdGeneratorConfigImpl} from '../../config/FlakeIdGeneratorConfig';
+import {HazelcastClient} from '../../HazelcastClient';
+import {BaseProxy} from '../BaseProxy';
+import {AutoBatcher, Batch} from './AutoBatcher';
+import {FlakeIdGenerator} from '../FlakeIdGenerator';
+import {ClientConfigImpl} from '../../config/Config';
 
 /** @internal */
 export class FlakeIdGeneratorProxy extends BaseProxy implements FlakeIdGenerator {

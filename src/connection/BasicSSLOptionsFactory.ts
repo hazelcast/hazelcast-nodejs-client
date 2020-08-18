@@ -17,8 +17,12 @@
 import * as Promise from 'bluebird';
 import * as fs from 'fs';
 import {Properties} from '../config/Properties';
-import {HazelcastError} from '../HazelcastError';
-import {getBooleanOrUndefined, getStringOrUndefined, resolvePath} from '../Util';
+import {HazelcastError} from '../core';
+import {
+    getBooleanOrUndefined,
+    getStringOrUndefined,
+    resolvePath
+} from '../util/Util';
 import {SSLOptionsFactory} from './SSLOptionsFactory';
 
 /**

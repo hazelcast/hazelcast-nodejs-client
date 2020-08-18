@@ -15,8 +15,8 @@
  */
 
 /* eslint-disable max-len */
-import {BitsUtil} from '../BitsUtil';
-import {ClientMessage, Frame, PARTITION_ID_OFFSET} from '../ClientMessage';
+import {BitsUtil} from '../util/BitsUtil';
+import {ClientMessage, Frame, PARTITION_ID_OFFSET} from '../protocol/ClientMessage';
 import {StringCodec} from './builtin/StringCodec';
 import {Data} from '../serialization/Data';
 import {ListMultiFrameCodec} from './builtin/ListMultiFrameCodec';

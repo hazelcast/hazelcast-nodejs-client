@@ -18,8 +18,8 @@
 import {DefaultPortableReader} from './DefaultPortableReader';
 import {PortableSerializer} from './PortableSerializer';
 import {DataInput} from '../Data';
-import {ClassDefinition, FieldDefinition, FieldType} from './ClassDefinition';
-import {Portable} from '../Serializable';
+import {ClassDefinition, FieldDefinition} from './ClassDefinition';
+import {Portable, FieldType} from '../Portable';
 import * as Long from 'long';
 
 /** @internal */

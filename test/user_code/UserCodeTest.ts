@@ -6,7 +6,7 @@
 
 import { Client } from '../../lib';
 
-(async () => {
+(async (): Promise<void> => {
     const client = await Client.newHazelcastClient();
     const rb = await client.getRingbuffer('my-rb');
     await rb.add(1);

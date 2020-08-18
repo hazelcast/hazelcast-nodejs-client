@@ -15,9 +15,12 @@
  */
 
 import * as net from 'net';
-import {CLUSTER_DATA_FACTORY_ID, CLUSTER_DATA_ADDRESS_CLASS_ID} from './ClusterDataFactory';
-import {DataInput, DataOutput} from './serialization/Data';
-import {IdentifiedDataSerializable} from './serialization/Serializable';
+import {
+    CLUSTER_DATA_FACTORY_ID,
+    CLUSTER_DATA_ADDRESS_CLASS_ID
+} from '../serialization/ClusterDataFactory';
+import {DataInput, DataOutput} from '../serialization/Data';
+import {IdentifiedDataSerializable} from '../serialization/Serializable';
 
 /**
  * Represents a network address (e.g. of the client or a cluster member).
