@@ -15,7 +15,7 @@
  */
 
 /* eslint-disable max-len */
-import {ClientMessage, BEGIN_FRAME, END_FRAME} from '../../ClientMessage';
+import {ClientMessage, BEGIN_FRAME, END_FRAME} from '../../protocol/ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
 import {ListIntegerCodec} from '../builtin/ListIntegerCodec';
 import {AnchorDataListHolder} from '../../protocol/AnchorDataListHolder';

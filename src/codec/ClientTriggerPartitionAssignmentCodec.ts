@@ -15,8 +15,8 @@
  */
 
 /* eslint-disable max-len */
-import {BitsUtil} from '../BitsUtil';
-import {ClientMessage, Frame, PARTITION_ID_OFFSET} from '../ClientMessage';
+import {BitsUtil} from '../util/BitsUtil';
+import {ClientMessage, Frame, PARTITION_ID_OFFSET} from '../protocol/ClientMessage';
 
 // hex: 0x001000
 const REQUEST_MESSAGE_TYPE = 4096;

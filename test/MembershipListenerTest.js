@@ -15,11 +15,11 @@
  */
 'use strict';
 
-const HazelcastClient = require('../.').Client;
-const Controller = require('./RC');
 const expect = require('chai').expect;
-const DeferredPromise = require('../lib/Util').DeferredPromise;
-const MemberEvent = require('../lib/core/MembershipEvent').MemberEvent;
+const RC = require('./RC');
+const Client = require('../.').Client;
+const { DeferredPromise } = require('../lib/util/Util');
+const { MemberEvent } = require('../lib/core');
 
 describe('MembershipListenerTest', function () {
 
@@ -27,11 +27,11 @@ describe('MembershipListenerTest', function () {
     let cluster, client;
 
     beforeEach(function () {
-        return Controller.createCluster(null, null).then(function (res) {
+        return RC.createCluster(null, null).then(function (res) {
             cluster = res;
-            return Controller.startMember(cluster.id)
+            return RC.startMember(cluster.id)
         }).then(function (res) {
-            return HazelcastClient.newHazelcastClient({
+            return Client.newHazelcastClient({
                 clusterName: cluster.id
             });
         }).then(function (res) {
@@ -41,7 +41,7 @@ describe('MembershipListenerTest', function () {
 
     afterEach(function () {
         client.shutdown();
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('sees member added event', function () {
@@ -55,7 +55,7 @@ describe('MembershipListenerTest', function () {
         };
         client.clusterService.addMembershipListener(membershipListener);
 
-        return Controller.startMember(cluster.id).then(function (res) {
+        return RC.startMember(cluster.id).then(function (res) {
             newMember = res;
             return listenerCalledResolver.promise;
         }).then(function (membershipEvent) {
@@ -84,7 +84,7 @@ describe('MembershipListenerTest', function () {
         client.clusterService.addMembershipListener(membershipListener);
         client.clusterService.addMembershipListener(membershipListener2);
 
-        return Controller.startMember(cluster.id).then(function (res) {
+        return RC.startMember(cluster.id).then(function (res) {
             newMember = res;
             return listenerCalledResolver.promise;
         }).then(function (membershipEvent) {
@@ -108,7 +108,7 @@ describe('MembershipListenerTest', function () {
         client.clusterService.addMembershipListener(membershipListener);
         client.clusterService.addMembershipListener(membershipListener);
 
-        return Controller.startMember(cluster.id).then(function (m) {
+        return RC.startMember(cluster.id).then(function (m) {
             expect(counter).to.equal(2);
         });
     });
@@ -124,9 +124,9 @@ describe('MembershipListenerTest', function () {
         };
         client.clusterService.addMembershipListener(membershipListener);
 
-        return Controller.startMember(cluster.id).then(function (res) {
+        return RC.startMember(cluster.id).then(function (res) {
             newMember = res;
-            return Controller.shutdownMember(cluster.id, newMember.uuid);
+            return RC.shutdownMember(cluster.id, newMember.uuid);
         }).then(function () {
             return listenerCalledResolver.promise;
         }).then(function (membershipEvent) {

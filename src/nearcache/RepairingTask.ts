@@ -17,7 +17,7 @@
 
 import * as assert from 'assert';
 import * as Long from 'long';
-import HazelcastClient from '../HazelcastClient';
+import {HazelcastClient} from '../HazelcastClient';
 import {MetadataFetcher} from './MetadataFetcher';
 import {NearCache} from './NearCache';
 import {RepairingHandler} from './RepairingHandler';

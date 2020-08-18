@@ -16,11 +16,11 @@
 'use strict';
 
 const expect = require('chai').expect;
-const HazelcastClient = require('../../.').Client;
-const RC = require('./../RC');
-const Util = require('./../Util');
 const Promise = require('bluebird');
 const Long = require('long');
+const RC = require('./../RC');
+const { Client } = require('../../');
+const Util = require('./../Util');
 
 describe("FlakeIdGeneratorProxyTest", function () {
 
@@ -36,7 +36,7 @@ describe("FlakeIdGeneratorProxyTest", function () {
             cluster = response;
             return RC.startMember(cluster.id);
         }).then(function () {
-            return HazelcastClient.newHazelcastClient({
+            return Client.newHazelcastClient({
                 clusterName: cluster.id,
                 flakeIdGenerators: {
                     'shortterm': {

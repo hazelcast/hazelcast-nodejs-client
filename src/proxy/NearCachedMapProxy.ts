@@ -18,16 +18,16 @@
 import * as Promise from 'bluebird';
 import {MapAddNearCacheInvalidationListenerCodec} from '../codec/MapAddNearCacheInvalidationListenerCodec';
 import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
-import {EventType} from '../core/EventType';
+import {EventType} from './EventType';
 import {UUID} from '../core/UUID';
-import HazelcastClient from '../HazelcastClient';
+import {HazelcastClient} from '../HazelcastClient';
 import {PartitionServiceImpl} from '../PartitionService';
-import {ListenerMessageCodec} from '../ListenerMessageCodec';
+import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
 import {NearCache} from '../nearcache/NearCache';
 import {StaleReadDetectorImpl} from '../nearcache/StaleReadDetector';
 import {Data} from '../serialization/Data';
 import {MapProxy} from './MapProxy';
-import {ClientMessage} from '../ClientMessage';
+import {ClientMessage} from '../protocol/ClientMessage';
 import * as Long from 'long';
 
 /** @internal */

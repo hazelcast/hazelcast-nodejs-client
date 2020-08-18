@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Member} from './Member';
+import {Member} from '../core';
 
 /**
  * Item event listener for IQueue, ISet, IList.

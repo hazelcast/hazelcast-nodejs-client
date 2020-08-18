@@ -17,7 +17,7 @@
 // Other codecs message types can be in range 0x000100 - 0xFFFFFF
 // So, it is safe to supply a custom message type for exceptions in
 // the range 0x000000 - 0x0000FF
-import {ClientMessage} from '../../ClientMessage';
+import {ClientMessage} from '../../protocol/ClientMessage';
 import {ErrorHolder} from '../../protocol/ErrorHolder';
 import {ListMultiFrameCodec} from './ListMultiFrameCodec';
 import {ErrorHolderCodec} from '../custom/ErrorHolderCodec';

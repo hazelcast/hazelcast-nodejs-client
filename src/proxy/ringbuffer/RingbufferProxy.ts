@@ -15,6 +15,7 @@
  */
 /** @ignore *//** */
 
+import * as Long from 'long';
 import * as Promise from 'bluebird';
 import {RingbufferAddAllCodec} from '../../codec/RingbufferAddAllCodec';
 import {RingbufferAddCodec} from '../../codec/RingbufferAddCodec';
@@ -25,12 +26,11 @@ import {RingbufferReadOneCodec} from '../../codec/RingbufferReadOneCodec';
 import {RingbufferRemainingCapacityCodec} from '../../codec/RingbufferRemainingCapacityCodec';
 import {RingbufferSizeCodec} from '../../codec/RingbufferSizeCodec';
 import {RingbufferTailSequenceCodec} from '../../codec/RingbufferTailSequenceCodec';
-import {OverflowPolicy, overflowPolicyToId} from '../../core/OverflowPolicy';
+import {OverflowPolicy, overflowPolicyToId} from '../OverflowPolicy';
 import {Ringbuffer} from '../Ringbuffer';
 import {PartitionSpecificProxy} from '../PartitionSpecificProxy';
 import {LazyReadResultSet} from './LazyReadResultSet';
-import {ReadResultSet} from './ReadResultSet';
-import Long = require('long');
+import {ReadResultSet} from '../../core';
 
 /** @internal */
 export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbuffer<E> {

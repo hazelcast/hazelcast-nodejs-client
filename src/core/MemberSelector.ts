@@ -20,3 +20,6 @@ import {Member} from './Member';
  * Selector function for members.
  */
 export type MemberSelector = (member: Member) => boolean;
+
+/** @internal */
+export const dataMemberSelector = (member: Member): boolean => !member.liteMember;

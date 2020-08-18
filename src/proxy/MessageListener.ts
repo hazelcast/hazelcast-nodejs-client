@@ -13,9 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/** @ignore *//** */
 
-import {Member} from './Member';
+import * as Long from 'long';
+import {Address} from '../core';
 
-/** @internal */
-export const dataMemberSelector = (member: Member): boolean => !member.liteMember;
+/**
+ * Message listener for Reliable Topic.
+ */
+export type MessageListener<E> = (message: Message<E>) => void;
+
+/**
+ * Message of Reliable Topic.
+ */
+export class Message<T> {
+
+    /**
+     * Published message.
+     */
+    messageObject: T;
+
+    /**
+     * Address of the member that published the message.
+     */
+    publisher: Address;
+
+    /**
+     * Time when the message was published (Epoch time).
+     */
+    publishingTime: Long;
+
+}

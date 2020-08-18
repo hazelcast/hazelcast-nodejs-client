@@ -19,10 +19,12 @@
 const expect = require('chai').expect;
 const crypto = require('crypto');
 
-const FragmentedClientMessageHandler = require('../../lib/network/ClientConnection').FragmentedClientMessageHandler;
-const ClientMessageReader = require('../../lib/network/ClientConnection').ClientMessageReader;
-const cm = require('../../lib/ClientMessage');
-const FixSizedTypesCodec = require('../../lib/codec/builtin/FixSizedTypesCodec').FixSizedTypesCodec;
+const {
+    ClientMessageReader,
+    FragmentedClientMessageHandler
+} = require('../../lib/network/ClientConnection');
+const cm = require('../../lib/protocol/ClientMessage');
+const { FixSizedTypesCodec } = require('../../lib/codec/builtin/FixSizedTypesCodec');
 
 describe('FragmentedClientMessageHandlerTest', function () {
 

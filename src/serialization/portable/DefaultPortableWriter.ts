@@ -17,9 +17,9 @@
 
 import {PortableSerializer} from './PortableSerializer';
 import {PositionalDataOutput} from '../Data';
-import {ClassDefinition, FieldDefinition, FieldType} from './ClassDefinition';
-import {BitsUtil} from '../../BitsUtil';
-import {Portable} from '../Serializable';
+import {ClassDefinition, FieldDefinition} from './ClassDefinition';
+import {BitsUtil} from '../../util/BitsUtil';
+import {Portable, FieldType} from '../Portable';
 import * as Long from 'long';
 
 /** @internal */

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {TopicOverloadPolicy} from '../proxy/topic/TopicOverloadPolicy';
+import {TopicOverloadPolicy} from '../proxy';
 
 /**
  * Configuration to be used by the client for the specified ReliableTopic.

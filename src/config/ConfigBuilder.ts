@@ -15,9 +15,15 @@
  */
 /** @ignore *//** */
 
-import {HazelcastError} from '../HazelcastError';
-import {TopicOverloadPolicy} from '../proxy/topic/TopicOverloadPolicy';
-import {tryGetArray, tryGetBoolean, tryGetEnum, tryGetNumber, tryGetString} from '../Util';
+import {HazelcastError} from '../core';
+import {TopicOverloadPolicy} from '../proxy';
+import {
+    tryGetArray,
+    tryGetBoolean,
+    tryGetEnum,
+    tryGetNumber,
+    tryGetString
+} from '../util/Util';
 import {ClientConfig, ClientConfigImpl} from './Config';
 import {EvictionPolicy} from './EvictionPolicy';
 import {FlakeIdGeneratorConfigImpl} from './FlakeIdGeneratorConfig';

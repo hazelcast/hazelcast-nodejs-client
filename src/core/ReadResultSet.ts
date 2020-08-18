@@ -19,7 +19,7 @@ import * as Long from 'long';
 export const SEQUENCE_UNAVAILABLE = -1;
 
 /**
- * ReadResultSet defines the result of a {@link Ringbuffer.readMany} operation.
+ * Defines the result of a {@link Ringbuffer.readMany} operation.
  */
 export interface ReadResultSet<T> {
 

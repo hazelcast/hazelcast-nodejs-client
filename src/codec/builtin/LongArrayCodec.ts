@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ClientMessage} from '../../ClientMessage';
+import {ClientMessage} from '../../protocol/ClientMessage';
 import * as Long from 'long';
 import {ListLongCodec} from './ListLongCodec';
 

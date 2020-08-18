@@ -36,14 +36,13 @@ import {QueueRemoveCodec} from '../codec/QueueRemoveCodec';
 import {QueueRemoveListenerCodec} from '../codec/QueueRemoveListenerCodec';
 import {QueueSizeCodec} from '../codec/QueueSizeCodec';
 import {QueueTakeCodec} from '../codec/QueueTakeCodec';
-import {ItemEvent, ItemEventType, ItemListener} from '../core/ItemListener';
-import {IllegalStateError} from '../HazelcastError';
-import {ListenerMessageCodec} from '../ListenerMessageCodec';
+import {ItemEvent, ItemEventType, ItemListener} from './ItemListener';
+import {IllegalStateError, UUID} from '../core';
+import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
 import {Data} from '../serialization/Data';
 import {IQueue} from './IQueue';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
-import {ClientMessage} from '../ClientMessage';
-import {UUID} from '../core/UUID';
+import {ClientMessage} from '../protocol/ClientMessage';
 
 /** @internal */
 export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {

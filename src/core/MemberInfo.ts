@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import {AddressImpl} from '../Address';
+import {AddressImpl} from './Address';
 import {UUID} from './UUID';
 import {MemberVersion} from './MemberVersion';
 

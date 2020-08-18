@@ -15,9 +15,9 @@
  */
 /** @ignore *//** */
 
-import {BitsUtil} from './BitsUtil';
-import {ClientConnection} from './network/ClientConnection';
-import {FixSizedTypesCodec} from './codec/builtin/FixSizedTypesCodec';
+import {BitsUtil} from '../util/BitsUtil';
+import {ClientConnection} from '../network/ClientConnection';
+import {FixSizedTypesCodec} from '../codec/builtin/FixSizedTypesCodec';
 
 const MESSAGE_TYPE_OFFSET = 0;
 const CORRELATION_ID_OFFSET = MESSAGE_TYPE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;

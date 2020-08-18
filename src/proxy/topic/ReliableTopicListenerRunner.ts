@@ -20,13 +20,12 @@ import {
     InvocationTimeoutError,
     ClientNotActiveError,
     ClientOfflineError
-} from '../../HazelcastError';
+} from '../../core';
 import {SerializationService} from '../../serialization/SerializationService';
 import {Ringbuffer} from '../Ringbuffer';
 import {ReliableTopicMessage} from './ReliableTopicMessage';
 import {ReliableTopicProxy} from './ReliableTopicProxy';
-import {Message} from './Message';
-import {MessageListener} from './MessageListener';
+import {Message, MessageListener} from '../MessageListener';
 import {ILogger} from '../../logging/ILogger';
 
 /** @internal */

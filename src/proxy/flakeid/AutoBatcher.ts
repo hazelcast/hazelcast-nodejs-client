@@ -18,7 +18,7 @@
 import * as Promise from 'bluebird';
 import {EventEmitter} from 'events';
 import * as Long from 'long';
-import {DeferredPromise} from '../../Util';
+import {DeferredPromise} from '../../util/Util';
 
 /** @internal */
 export class Batch {

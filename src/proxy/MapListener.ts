@@ -15,7 +15,7 @@
  */
 
 import {EntryListener} from './EntryListener';
-import {Member} from './Member';
+import {Member} from '../core';
 
 /**
  * Map or entry level event listener.

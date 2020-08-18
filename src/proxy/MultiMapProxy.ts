@@ -16,18 +16,15 @@
 /** @ignore *//** */
 
 import * as Promise from 'bluebird';
-
 import * as Long from 'long';
 import {MultiMapForceUnlockCodec} from '../codec/MultiMapForceUnlockCodec';
 import {MultiMapIsLockedCodec} from '../codec/MultiMapIsLockedCodec';
 import {MultiMapLockCodec} from '../codec/MultiMapLockCodec';
 import {MultiMapTryLockCodec} from '../codec/MultiMapTryLockCodec';
 import {MultiMapUnlockCodec} from '../codec/MultiMapUnlockCodec';
-import {EventType} from '../core/EventType';
-import {EntryEvent, EntryListener} from '../core/EntryListener';
-import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
-import {ListenerMessageCodec} from '../ListenerMessageCodec';
-import {LockReferenceIdGenerator} from '../LockReferenceIdGenerator';
+import {EventType} from './EventType';
+import {EntryEvent, EntryListener} from './EntryListener';
+import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
 import {Data} from '../serialization/Data';
 import {MultiMapAddEntryListenerCodec} from '../codec/MultiMapAddEntryListenerCodec';
 import {MultiMapAddEntryListenerToKeyCodec} from '../codec/MultiMapAddEntryListenerToKeyCodec';
@@ -47,16 +44,19 @@ import {MultiMapValueCountCodec} from '../codec/MultiMapValueCountCodec';
 import {MultiMapValuesCodec} from '../codec/MultiMapValuesCodec';
 import {BaseProxy} from './BaseProxy';
 import {MultiMap} from './MultiMap';
-import {MapEvent} from '../core/MapListener';
-import {ClientMessage} from '../ClientMessage';
-import {UUID} from '../core/UUID';
+import {MapEvent} from './MapListener';
+import {ClientMessage} from '../protocol/ClientMessage';
+import {
+    ReadOnlyLazyList,
+    UUID
+} from '../core';
 import * as SerializationUtil from '../serialization/SerializationUtil';
 import {MultiMapPutAllCodec} from '../codec/MultiMapPutAllCodec';
 
 /** @internal */
 export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
 
-    private lockReferenceIdGenerator: LockReferenceIdGenerator = this.client.getLockReferenceIdGenerator();
+    private lockReferenceIdGenerator = this.client.getLockReferenceIdGenerator();
     private deserializeList = <X>(items: Data[]): X[] => {
         return items.map<X>(this.toObject.bind(this));
     };

@@ -17,11 +17,14 @@
 import * as Promise from 'bluebird';
 import {Aggregator} from '../aggregation/Aggregator';
 import {SimpleEntryView} from '../core/SimpleEntryView';
-import {MapListener} from '../core/MapListener';
-import {Predicate} from '../core/Predicate';
-import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
-import {DistributedObject} from '../DistributedObject';
-import {IdentifiedDataSerializable, Portable} from '../serialization/Serializable';
+import {MapListener} from './MapListener';
+import {
+    Predicate,
+    ReadOnlyLazyList,
+    DistributedObject
+} from '../core';
+import {IdentifiedDataSerializable} from '../serialization/Serializable';
+import {Portable} from '../serialization/Portable';
 import {IndexConfig} from '../config/IndexConfig';
 
 export interface IMap<K, V> extends DistributedObject {

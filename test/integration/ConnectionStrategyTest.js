@@ -15,18 +15,17 @@
  */
 'use strict';
 
+const expect = require('chai').expect;
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 
-const expect = require('chai').expect;
-const Client = require('../../.').Client;
 const RC = require('../RC');
+const { Client, ClientOfflineError, ClientNotActiveError } = require('../../');
 const TestUtil = require('../Util');
-const Errors = require('../../.').HazelcastErrors;
-const Util = require('../../lib/Util');
-const ReconnectMode = require('../../lib/config/ConnectionStrategyConfig').ReconnectMode;
-const LifecycleState = require('../../lib/LifecycleService').LifecycleState;
+const Util = require('../../lib/util/Util');
+const { ReconnectMode } = require('../../lib/config/ConnectionStrategyConfig');
+const { LifecycleState } = require('../../lib/LifecycleService');
 
 describe('ConnectionStrategyTest', function () {
 
@@ -54,7 +53,7 @@ describe('ConnectionStrategyTest', function () {
             }
         }).then((c) => {
             client = c;
-            return expect(client.getMap(TestUtil.randomString())).to.be.rejectedWith(Errors.ClientOfflineError);
+            return expect(client.getMap(TestUtil.randomString())).to.be.rejectedWith(ClientOfflineError);
         });
     });
 
@@ -66,7 +65,7 @@ describe('ConnectionStrategyTest', function () {
         }).then((c) => {
             client = c;
             client.shutdown();
-            return expect(client.getMap(TestUtil.randomString())).to.be.rejectedWith(Errors.ClientNotActiveError);
+            return expect(client.getMap(TestUtil.randomString())).to.be.rejectedWith(ClientNotActiveError);
         })
     });
 
@@ -153,7 +152,7 @@ describe('ConnectionStrategyTest', function () {
                 return shutdown.promise;
             })
             .then(() => {
-                return expect(map.put(1, 5)).to.be.rejectedWith(Errors.ClientNotActiveError);
+                return expect(map.put(1, 5)).to.be.rejectedWith(ClientNotActiveError);
             });
     });
 
@@ -202,7 +201,7 @@ describe('ConnectionStrategyTest', function () {
                 return disconnected.promise;
             })
             .then(() => {
-                return expect(map.put(1, 5)).to.be.rejectedWith(Errors.ClientOfflineError);
+                return expect(map.put(1, 5)).to.be.rejectedWith(ClientOfflineError);
             })
             .then(() => {
                 client.getLifecycleService().on('lifecycleEvent', (state) => {
@@ -228,7 +227,7 @@ describe('ConnectionStrategyTest', function () {
             }
         }).then((c) => {
             client = c;
-            return expect(client.getList(TestUtil.randomString())).to.be.rejectedWith(Errors.ClientOfflineError);
+            return expect(client.getList(TestUtil.randomString())).to.be.rejectedWith(ClientOfflineError);
         });
     });
 

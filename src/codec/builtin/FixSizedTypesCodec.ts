@@ -15,7 +15,7 @@
  */
 
 import * as Long from 'long';
-import {BitsUtil} from '../../BitsUtil';
+import {BitsUtil} from '../../util/BitsUtil';
 import {UUID} from '../../core/UUID';
 
 /** @internal */

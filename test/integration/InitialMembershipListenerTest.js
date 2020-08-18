@@ -22,8 +22,8 @@ chai.use(chaiAsPromised);
 
 const expect = require('chai').expect;
 const Client = require('../../.').Client;
-const Controller = require('../RC');
-const Util = require('../../lib/Util');
+const RC = require('../RC');
+const Util = require('../../lib/util/Util');
 
 describe('InitialMembershipListenerTest', function () {
 
@@ -34,10 +34,10 @@ describe('InitialMembershipListenerTest', function () {
     let client;
 
     beforeEach(function () {
-       return Controller.createCluster(null, null)
+       return RC.createCluster(null, null)
            .then((c) => {
                cluster = c;
-               return Controller.startMember(cluster.id);
+               return RC.startMember(cluster.id);
            })
            .then((m) => {
                initialMember = m;
@@ -49,7 +49,7 @@ describe('InitialMembershipListenerTest', function () {
             client.shutdown();
         }
 
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     it('receives available member when added before client start', function (done) {
@@ -127,7 +127,7 @@ describe('InitialMembershipListenerTest', function () {
         Client.newHazelcastClient(config)
             .then((c) => {
                 client = c;
-                return Controller.startMember(cluster.id);
+                return RC.startMember(cluster.id);
             })
             .then((m) => {
                 newMember = m;

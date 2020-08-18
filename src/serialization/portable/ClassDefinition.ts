@@ -16,6 +16,7 @@
 /** @ignore *//** */
 
 import {deepEqual} from 'assert';
+import {FieldType} from '../Portable';
 
 /** @internal */
 export class ClassDefinition {
@@ -137,30 +138,4 @@ export class FieldDefinition {
     getVersion(): number {
         return this.version;
     }
-}
-
-/**
- * Portable field type.
- */
-export enum FieldType {
-    PORTABLE = 0,
-    BYTE = 1,
-    BOOLEAN = 2,
-    CHAR = 3,
-    SHORT = 4,
-    INT = 5,
-    LONG = 6,
-    FLOAT = 7,
-    DOUBLE = 8,
-    UTF = 9,
-    PORTABLE_ARRAY = 10,
-    BYTE_ARRAY = 11,
-    BOOLEAN_ARRAY = 12,
-    CHAR_ARRAY = 13,
-    SHORT_ARRAY = 14,
-    INT_ARRAY = 15,
-    LONG_ARRAY = 16,
-    FLOAT_ARRAY = 17,
-    DOUBLE_ARRAY = 18,
-    UTF_ARRAY = 19,
 }

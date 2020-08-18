@@ -16,16 +16,16 @@
 /** @ignore *//** */
 
 import * as Promise from 'bluebird';
-import HazelcastClient from './HazelcastClient';
-import {HazelcastError} from './HazelcastError';
-import {ClientConnection} from './network/ClientConnection';
-import {ClientEventRegistration} from './invocation/ClientEventRegistration';
-import {Invocation} from './invocation/InvocationService';
-import {RegistrationKey} from './invocation/RegistrationKey';
+import {HazelcastClient} from '../HazelcastClient';
+import {HazelcastError} from '../core';
+import {ClientConnection} from '../network/ClientConnection';
+import {ClientEventRegistration} from '../invocation/ClientEventRegistration';
+import {Invocation} from '../invocation/InvocationService';
+import {RegistrationKey} from '../invocation/RegistrationKey';
 import {ListenerMessageCodec} from './ListenerMessageCodec';
-import {DeferredPromise} from './Util';
-import {UuidUtil} from './util/UuidUtil';
-import {ILogger} from './logging/ILogger';
+import {DeferredPromise} from '../util/Util';
+import {UuidUtil} from '../util/UuidUtil';
+import {ILogger} from '../logging/ILogger';
 
 /** @internal */
 export class ListenerService {
@@ -116,7 +116,7 @@ export class ListenerService {
         return deferred.promise;
     }
 
-    registerListener(codec: ListenerMessageCodec, listenerHandlerFunc: Function): Promise<string> {
+    registerListener(codec: ListenerMessageCodec, listenerHandlerFn: Function): Promise<string> {
         const activeConnections = this.client.getConnectionManager().getActiveConnections();
         const userRegistrationKey: string = UuidUtil.generate().toString();
         let connectionsOnUserKey: Map<ClientConnection, ClientEventRegistration>;
@@ -127,7 +127,7 @@ export class ListenerService {
             connectionsOnUserKey = new Map();
             this.activeRegistrations.set(userRegistrationKey, connectionsOnUserKey);
             this.userRegistrationKeyInformation.set(userRegistrationKey,
-                new RegistrationKey(userRegistrationKey, codec, registerRequest, listenerHandlerFunc));
+                new RegistrationKey(userRegistrationKey, codec, registerRequest, listenerHandlerFn));
         }
         for (const connection of activeConnections) {
             if (connectionsOnUserKey.has(connection)) {
@@ -136,7 +136,7 @@ export class ListenerService {
             // New correlation id will be set on the invoke call
             const requestCopy = registerRequest.copyWithNewCorrelationId();
             const invocation = new Invocation(this.client, requestCopy);
-            invocation.handler = listenerHandlerFunc as any;
+            invocation.handler = listenerHandlerFn as any;
             invocation.connection = connection;
             this.client.getInvocationService().invokeUrgent(invocation).then((responseMessage) => {
                 const correlationId = responseMessage.getCorrelationId();

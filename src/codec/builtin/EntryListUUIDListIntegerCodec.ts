@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {BEGIN_FRAME, ClientMessage, END_FRAME} from '../../ClientMessage';
+import {BEGIN_FRAME, ClientMessage, END_FRAME} from '../../protocol/ClientMessage';
 import {UUID} from '../../core/UUID';
 import {ListIntegerCodec} from './ListIntegerCodec';
 import {ListUUIDCodec} from './ListUUIDCodec';

@@ -18,7 +18,7 @@
 const expect = require('chai').expect;
 const RC = require('./../RC');
 const { Client } = require('../../');
-const { ItemEventType } = require('../../lib/core/ItemListener');
+const { ItemEventType } = require('../../lib/proxy/ItemListener');
 
 describe('ListProxyTest', function () {
 

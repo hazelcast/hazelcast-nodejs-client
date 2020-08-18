@@ -14,9 +14,14 @@
  * limitations under the License.
  */
 
-import {ClientConfig} from './config/Config';
-import {Cluster} from './core/Cluster';
-import {Member} from './core/Member';
+import {ClientConfig} from '../config/Config';
+import {Cluster} from './Cluster';
+import {Member} from './Member';
+import {
+    InitialMembershipListener,
+    InitialMembershipEvent,
+    MembershipEvent
+} from './MembershipListener';
 
 /**
  * {@link LoadBalancer} allows you to send operations to one of a number of endpoints (Members).
@@ -44,4 +49,41 @@ export interface LoadBalancer {
      */
     next(): Member;
 
+}
+
+/**
+ * Abstract Load Balancer to be used in built-in and user-provided
+ * {@link LoadBalancer} implementations.
+ */
+export abstract class AbstractLoadBalancer implements LoadBalancer, InitialMembershipListener {
+
+    private members: Member[];
+    private cluster: Cluster;
+
+    abstract next(): Member;
+
+    initLoadBalancer(cluster: Cluster, config: ClientConfig): void {
+        this.cluster = cluster;
+        cluster.addMembershipListener(this);
+    }
+
+    init(event: InitialMembershipEvent): void {
+        this.setMembers();
+    }
+
+    memberAdded(membership: MembershipEvent): void {
+        this.setMembers();
+    }
+
+    memberRemoved(membership: MembershipEvent): void {
+        this.setMembers();
+    }
+
+    protected getMembers(): Member[] {
+        return this.members;
+    }
+
+    private setMembers(): void {
+        this.members = this.cluster.getMembers();
+    }
 }

@@ -18,9 +18,9 @@
 const chai = require('chai');
 chai.use(require('chai-as-promised'));
 const expect = chai.expect;
-const HazelcastClient = require('../../.').Client;
-const Errors = require('../../.').HazelcastErrors;
+
 const RC = require('./../RC');
+const { Client, HazelcastError } = require('../../.');
 const Util = require('../Util');
 
 describe("FlakeIdGeneratorOutOfRangeTest", function () {
@@ -56,7 +56,7 @@ describe("FlakeIdGeneratorOutOfRangeTest", function () {
             }).then(function () {
                 return assignOverflowedNodeId(cluster.id, Util.getRandomInt(0, 2));
             }).then(function () {
-                return HazelcastClient.newHazelcastClient({
+                return Client.newHazelcastClient({
                     clusterName: cluster.id,
                     network: {
                         smartRouting: false
@@ -90,7 +90,7 @@ describe("FlakeIdGeneratorOutOfRangeTest", function () {
         }).then(function () {
             return assignOverflowedNodeId(cluster.id, 1);
         }).then(function () {
-            return HazelcastClient.newHazelcastClient({
+            return Client.newHazelcastClient({
                 clusterName: cluster.id
             });
         }).then(function (cl) {
@@ -98,7 +98,7 @@ describe("FlakeIdGeneratorOutOfRangeTest", function () {
             return client.getFlakeIdGenerator('test');
         }).then(function (idGenerator) {
             flakeIdGenerator = idGenerator;
-            return expect(flakeIdGenerator.newId(flakeIdGenerator)).to.be.rejectedWith(Errors.HazelcastError);
+            return expect(flakeIdGenerator.newId(flakeIdGenerator)).to.be.rejectedWith(HazelcastError);
         });
     });
 });

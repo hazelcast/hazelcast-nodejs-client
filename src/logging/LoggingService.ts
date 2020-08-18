@@ -18,7 +18,7 @@
 import {Property} from '../config/Properties';
 import {DefaultLogger} from './DefaultLogger';
 import {ILogger, LogLevel} from './ILogger';
-import {enumFromString} from '../Util';
+import {enumFromString} from '../util/Util';
 
 /** @internal */
 export class LoggingService {

@@ -16,10 +16,10 @@
 'use strict';
 
 const expect = require('chai').expect;
-const HazelcastClient = require('../../.').Client;
-const RC = require('./../RC');
-const Util = require('./../Util');
 const fs = require('fs');
+const RC = require('./../RC');
+const { Client } = require('../../.');
+const Util = require('./../Util');
 const fillMap = require('../Util').fillMap;
 
 describe('NearCachedMapTest', function () {
@@ -46,12 +46,12 @@ describe('NearCachedMapTest', function () {
                     })
                     .then(function (member) {
                         cfg.clusterName = cluster.id;
-                        return HazelcastClient.newHazelcastClient(cfg).then(function (hazelcastClient) {
+                        return Client.newHazelcastClient(cfg).then(function (hazelcastClient) {
                             client1 = hazelcastClient;
                         });
                     })
                     .then(function () {
-                        return HazelcastClient.newHazelcastClient(cfg).then(function (hazelcastClient) {
+                        return Client.newHazelcastClient(cfg).then(function (hazelcastClient) {
                             client2 = hazelcastClient;
                         });
                     });

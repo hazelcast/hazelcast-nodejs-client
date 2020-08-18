@@ -16,10 +16,10 @@
 'use strict';
 
 const expect = require('chai').expect;
-const Util = require("../lib/Util");
+const Util = require("../lib/util/Util");
 const TestUtil = require('./Util');
 
-describe('Repetition Task', function () {
+describe('RepetitionTaskTest', function () {
 
     it('should be cancelled before timeout', function () {
         let counter = 0;

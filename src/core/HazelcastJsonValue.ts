@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {assertString} from '../Util';
+import {assertString} from '../util/Util';
 
 /**
  * HazelcastJsonValue is a wrapper for JSON formatted strings. It is preferred

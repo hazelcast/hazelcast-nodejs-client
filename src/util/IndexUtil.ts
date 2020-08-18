@@ -18,7 +18,7 @@
 import {IndexConfig, InternalIndexConfig} from '../config/IndexConfig';
 import {IndexType} from '../config/IndexType';
 import {UniqueKeyTransformation, InternalBitmapIndexOptions} from '../config/BitmapIndexOptions';
-import {tryGetEnum} from '../Util';
+import {tryGetEnum} from '../util/Util';
 
 /**
  * Maximum number of attributes allowed in the index.

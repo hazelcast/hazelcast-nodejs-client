@@ -50,9 +50,9 @@ import {
     UnsupportedOperationError,
     HazelcastSerializationError,
     ReachedMaxSizeError,
-} from '../HazelcastError';
+} from '../core';
 import {ClientProtocolErrorCodes} from './ClientProtocolErrorCodes';
-import {ClientMessage} from '../ClientMessage';
+import {ClientMessage} from '../protocol/ClientMessage';
 import {ErrorsCodec} from '../codec/builtin/ErrorsCodec';
 import {ErrorHolder} from './ErrorHolder';
 

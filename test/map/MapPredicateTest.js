@@ -21,8 +21,7 @@ const Promise = require('bluebird');
 const fs = require('fs');
 
 const RC = require('./../RC');
-const HazelcastClient = require('../..').Client;
-const Predicates = require('../..').Predicates;
+const { Client, Predicates } = require('../..');
 const identifiedFactory = require('../javaclasses/IdentifiedFactory');
 const CustomComparator = require('../javaclasses/CustomComparator');
 
@@ -44,7 +43,7 @@ describe('MapPredicateTest', function () {
                 return RC.startMember(cluster.id);
             })
             .then(function (member) {
-                return HazelcastClient.newHazelcastClient({
+                return Client.newHazelcastClient({
                     clusterName: cluster.id,
                     serialization: {
                         dataSerializableFactories: {

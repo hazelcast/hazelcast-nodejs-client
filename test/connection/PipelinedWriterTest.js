@@ -21,10 +21,10 @@ const sinon = require('sinon');
 const expect = require('chai').expect;
 const Promise = require('bluebird');
 
-const DeferredPromise = require('../../lib/Util').DeferredPromise;
-const PipelinedWriter = require('../../lib/network/ClientConnection').PipelinedWriter;
+const { DeferredPromise } = require('../../lib/util/Util');
+const { PipelinedWriter } = require('../../lib/network/ClientConnection');
 
-describe('PipelinedWriter', function () {
+describe('PipelinedWriterTest', function () {
     let writer;
     let mockSocket;
 

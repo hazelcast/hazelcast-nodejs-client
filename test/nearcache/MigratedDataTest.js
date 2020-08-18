@@ -15,12 +15,12 @@
  */
 'use strict';
 
-const RC = require('../RC');
-const HazelcastClient = require('../../').Client;
 const expect = require('chai').expect;
 const fs = require('fs');
+const RC = require('../RC');
+const { Client } = require('../../');
 const Util = require('../Util');
-const DeferredPromise = require('../../lib/Util').DeferredPromise;
+const { DeferredPromise } = require('../../lib/util/Util');
 
 describe('MigratedDataTest', function () {
 
@@ -76,7 +76,7 @@ describe('MigratedDataTest', function () {
     });
 
     beforeEach(function () {
-        return HazelcastClient.newHazelcastClient({
+        return Client.newHazelcastClient({
             clusterName: cluster.id,
             nearCaches: {
                 [mapName]: {}

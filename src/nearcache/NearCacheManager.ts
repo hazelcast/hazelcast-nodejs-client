@@ -18,7 +18,7 @@
 import {NearCache, NearCacheImpl} from './NearCache';
 import {SerializationService} from '../serialization/SerializationService';
 import {ClientConfigImpl} from '../config/Config';
-import HazelcastClient from '../HazelcastClient';
+import {HazelcastClient} from '../HazelcastClient';
 
 /** @internal */
 export class NearCacheManager {

@@ -15,7 +15,6 @@
  */
 
 import {MembershipListener} from './MembershipListener';
-import {UUID} from './UUID';
 import {Member} from './Member';
 import {MemberSelector} from './MemberSelector';
 
@@ -42,7 +41,7 @@ export interface Cluster {
      * @throws AssertionError if listener is `null`
      * @see {@link removeMembershipListener}
      */
-    addMembershipListener(listener: MembershipListener): UUID;
+    addMembershipListener(listener: MembershipListener): string;
 
     /**
      * Removes the specified {@link MembershipListener}.
@@ -51,12 +50,12 @@ export interface Cluster {
      *
      * This method can safely be called multiple times for the same registration ID; subsequent calls are ignored.
      *
-     * @param registrationId the registrationId of MembershipListener to remove
+     * @param listenerId the registration ID of MembershipListener to remove
      * @return true if the registration is removed, false otherwise
      * @throws AssertionError if the registration ID is `null`
      * @see {@link addMembershipListener}
      */
-    removeMembershipListener(registrationId: UUID): boolean;
+    removeMembershipListener(listenerId: string): boolean;
 
     /**
      * List of the current members in the cluster.

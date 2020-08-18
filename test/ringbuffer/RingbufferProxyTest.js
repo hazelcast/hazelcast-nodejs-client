@@ -16,11 +16,11 @@
 'use strict';
 
 const { expect } = require('chai');
-const { Client, HazelcastErrors } = require('../../');
-const RC = require('./../RC');
-const fs = require('fs');
-const PrefixFilter = require('../javaclasses/PrefixFilter');
 const Promise = require('bluebird');
+const fs = require('fs');
+const { Client, StaleSequenceError } = require('../../');
+const RC = require('./../RC');
+const PrefixFilter = require('../javaclasses/PrefixFilter');
 
 describe('RingbufferProxyTest', function () {
 
@@ -75,7 +75,7 @@ describe('RingbufferProxyTest', function () {
             await limitedCapacityRb.readOne(0);
             return Promise.reject('Test failed as readOne did not throw');
         } catch (e) {
-            expect(e).to.be.an.instanceof(HazelcastErrors.StaleSequenceError);
+            expect(e).to.be.an.instanceof(StaleSequenceError);
         }
     });
 

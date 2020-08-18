@@ -16,16 +16,16 @@
 /** @ignore *//** */
 
 import {AGGREGATOR_FACTORY_ID, aggregatorFactory} from '../aggregation/AggregatorFactory';
-import {CLUSTER_DATA_FACTORY_ID, clusterDataFactory} from '../ClusterDataFactory';
+import {CLUSTER_DATA_FACTORY_ID, clusterDataFactory} from './ClusterDataFactory';
 import {SerializationConfigImpl} from '../config/SerializationConfig';
 import {
     RELIABLE_TOPIC_MESSAGE_FACTORY_ID,
     reliableTopicMessageFactory,
 } from '../proxy/topic/ReliableTopicMessage';
-import * as Util from '../Util';
+import * as Util from '../util/Util';
 import {Data, DataInput, DataOutput} from './Data';
+import {Serializer, IdentifiedDataSerializableFactory} from './Serializable';
 import {
-    Serializer,
     BooleanArraySerializer,
     BooleanSerializer,
     ByteArraySerializer,
@@ -50,12 +50,11 @@ import {
     ShortSerializer,
     StringArraySerializer,
     StringSerializer,
-} from './DefaultSerializer';
+} from './DefaultSerializers';
 import {DATA_OFFSET, HeapData} from './HeapData';
 import {ObjectDataInput, PositionalObjectDataOutput} from './ObjectData';
 import {PortableSerializer} from './portable/PortableSerializer';
 import {PREDICATE_FACTORY_ID, predicateFactory} from './DefaultPredicates';
-import {IdentifiedDataSerializableFactory} from './Serializable';
 import {JsonStringDeserializationPolicy} from '../config/JsonStringDeserializationPolicy';
 import {REST_VALUE_FACTORY_ID, restValueFactory} from '../core/RestValue';
 

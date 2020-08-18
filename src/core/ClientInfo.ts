@@ -14,40 +14,37 @@
  * limitations under the License.
  */
 
-import {Member} from './Member';
+import {Address} from './Address';
+import {UUID} from './UUID';
 
 /**
- * Membership event fired when a new member is added to the cluster and/or
- * when a member leaves the cluster or when there is a member attribute change.
+ * Local information of the client.
  */
-export class MembershipEvent {
+export class ClientInfo {
 
     /**
-     * Removed or added member.
+     * Unique id of this client instance.
      */
-    member: Member;
+    uuid: UUID;
 
     /**
-     * Members list at the moment after this event.
+     * Local port address that is used to communicate with cluster.
      */
-    members: Member[];
+    localAddress: Address;
 
-    /** @internal */
-    eventType: MemberEvent;
+    /**
+     * Type of this client. It is always NodeJS.
+     */
+    type = 'NodeJS';
 
-    /** @internal */
-    constructor(member: Member, eventType: MemberEvent, members: Member[]) {
-        this.member = member;
-        this.eventType = eventType;
-        this.members = members;
-    }
+    /**
+     * Name of the client.
+     */
+    name: string;
 
-}
-
-/** @internal */
-export enum MemberEvent {
-
-    ADDED = 1,
-    REMOVED = 2,
+    /**
+     * Set of all labels of this client.
+     */
+    labels: Set<string>;
 
 }
