@@ -128,6 +128,10 @@ describe('ConfigBuilderTest', function () {
         expect(networkCfg.ssl.sslOptions.servername).to.equal('foo.bar.com');
     });
 
+    it('backupAckToClientEnabled', function () {
+        expect(fullConfig.backupAckToClientEnabled).to.be.false;
+    });
+
     it('properties', function () {
         const properties = fullConfig.properties;
         expect(properties['hazelcast.client.heartbeat.interval']).to.equal(1000);

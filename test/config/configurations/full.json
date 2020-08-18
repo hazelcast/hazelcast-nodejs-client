@@ -42,6 +42,7 @@
             "discoveryToken": "EXAMPLE_TOKEN"
         }
     },
+    "backupAckToClientEnabled": false,
     "connectionStrategy": {
         "asyncStart": true,
         "reconnectMode": "async",

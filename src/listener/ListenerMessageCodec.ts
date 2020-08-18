@@ -20,7 +20,11 @@ import {UUID} from '../core/UUID';
 
 /** @internal */
 export interface ListenerMessageCodec {
+
     encodeAddRequest: (localOnly: boolean) => ClientMessage;
+
     decodeAddResponse: (msg: ClientMessage) => UUID;
+
     encodeRemoveRequest: (listenerId: UUID) => ClientMessage;
+
 }

@@ -105,6 +105,10 @@
                 }
             }
         },
+        "backupAckToClientEnabled": {
+            "type": "boolean",
+            "default": true
+        },
         "connectionStrategy": {
             "type": "object",
             "properties": {

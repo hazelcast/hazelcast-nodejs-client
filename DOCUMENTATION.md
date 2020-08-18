@@ -36,6 +36,7 @@
   * [5.4. Setting Connection Timeout](#54-setting-connection-timeout)
   * [5.5. Enabling Client TLS/SSL](#55-enabling-client-tlsssl)
   * [5.6. Enabling Hazelcast Cloud Discovery](#56-enabling-hazelcast-cloud-discovery)
+  * [5.7. Configuring Backup Acknowledgment](#57-configuring-backup-acknowledgment)
 * [6. Client Connection Strategy](#6-client-connection-strategy)
   * [6.1. Configuring Client Connection Retry](#61-configuring-client-connection-retry)
 * [7. Using Node.js Client with Hazelcast IMDG](#7-using-nodejs-client-with-hazelcast-imdg)
@@ -1011,6 +1012,26 @@ const cfg = {
 
 To be able to connect to the provided IP addresses, you should use secure TLS/SSL connection between the client and members. Therefore, you should set an SSL configuration as described in the previous section.
 
+## 5.7. Configuring Backup Acknowledgment
+
+When an operation with sync backup is sent by a client to the Hazelcast member(s), the acknowledgment of the operation's backup is sent to the client by the backup replica member(s). This improves the performance of the client operations.
+
+To disable backup acknowledgement, you should use the `backupAckToClientEnabled` configuration option.
+
+```javascript
+const cfg = {
+    backupAckToClientEnabled: false
+};
+```
+
+Its default value is `true`. This option has no effect for unisocket clients.
+
+You can also fine-tune this feature using entries of the `properties` config option as described below:
+
+- `hazelcast.client.operation.backup.timeout.millis`: Default value is `5000` milliseconds. If an operation has
+backups, this property specifies how long (in milliseconds) the invocation waits for acks from the backup replicas. If acks are not received from some of the backups, there will not be any rollback on the other successful replicas.
+
+- `hazelcast.client.operation.fail.on.indeterminate.state`: Default value is `false`. When it is `true`, if an operation has sync backups and acks are not received from backup replicas in time, or the member which owns primary replica of the target partition leaves the cluster, then the invocation fails. However, even if the invocation fails, there will not be any rollback on other successful replicas.
 
 # 6. Client Connection Strategy
 

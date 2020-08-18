@@ -118,7 +118,7 @@ export class ListenerService {
 
     registerListener(codec: ListenerMessageCodec, listenerHandlerFn: Function): Promise<string> {
         const activeConnections = this.client.getConnectionManager().getActiveConnections();
-        const userRegistrationKey: string = UuidUtil.generate().toString();
+        const userRegistrationKey = UuidUtil.generate().toString();
         let connectionsOnUserKey: Map<ClientConnection, ClientEventRegistration>;
         const deferred = DeferredPromise<string>();
         const registerRequest = codec.encodeAddRequest(this.isSmart());
@@ -133,7 +133,7 @@ export class ListenerService {
             if (connectionsOnUserKey.has(connection)) {
                 continue;
             }
-            // New correlation id will be set on the invoke call
+            // new correlation id will be set on the invoke call
             const requestCopy = registerRequest.copyWithNewCorrelationId();
             const invocation = new Invocation(this.client, requestCopy);
             invocation.handler = listenerHandlerFn as any;
