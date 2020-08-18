@@ -22,7 +22,7 @@ const fs = require('fs');
 
 const RC = require('./../RC');
 const { Client, IllegalStateError } = require("../../");
-const markEnterprise = require('../Util').markEnterprise;
+const { markEnterprise } = require('../Util');
 
 describe('ClientSSLTest', function () {
 

@@ -15,10 +15,10 @@
  */
 'use strict';
 
-const RC = require('../RC');
-const Client = require('../../').Client;
 const expect = require('chai').expect;
 const fs = require('fs');
+const RC = require('../RC');
+const { Client } = require('../../');
 const Util = require('../Util');
 const { DeferredPromise } = require('../../lib/util/Util');
 

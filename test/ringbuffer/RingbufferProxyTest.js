@@ -15,11 +15,11 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const Promise = require('bluebird');
 const fs = require('fs');
+const { Client, StaleSequenceError } = require('../../');
 const RC = require('./../RC');
-const { Client } = require('../../');
 const PrefixFilter = require('../javaclasses/PrefixFilter');
 
 describe('RingbufferProxyTest', function () {
@@ -27,117 +27,134 @@ describe('RingbufferProxyTest', function () {
     let cluster;
     let client;
     let rb;
+    let ttlRb;
+    let limitedCapacityRb;
 
-    before(function () {
+    before(async function () {
         this.timeout(10000);
         const config = fs.readFileSync(__dirname + '/hazelcast_ringbuffer.xml', 'utf8');
-        return RC.createCluster(null, config).then(function (response) {
-            cluster = response;
-            return RC.startMember(cluster.id);
-        }).then(function () {
-            return Client.newHazelcastClient({ clusterName: cluster.id });
-        }).then(function (hazelcastClient) {
-            client = hazelcastClient;
-        });
+        cluster = await RC.createCluster(null, config);
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({ clusterName: cluster.id });
     });
 
-    beforeEach(function () {
-        return client.getRingbuffer('test').then(function (buffer) {
-            rb = buffer;
-        })
+    beforeEach(async function () {
+        rb = await client.getRingbuffer('test');
+        ttlRb = await client.getRingbuffer('ttl-cap');
+        limitedCapacityRb = await client.getRingbuffer('capacity');
     });
 
-    afterEach(function () {
-        return rb.destroy();
+    afterEach(async function () {
+        await rb.destroy();
+        await ttlRb.destroy();
+        await limitedCapacityRb.destroy();
     });
 
-    after(function () {
+    after(async function () {
         client.shutdown();
         return RC.terminateCluster(cluster.id);
     });
 
-    it('adds one item and reads back', function () {
-        return rb.add(1).then(function (sequence) {
-            return rb.readOne(sequence).then(function (item) {
-                expect(item).to.equal(1);
-            });
-        })
+    it('adds one item and reads back', async function () {
+        const sequence = await rb.add(1);
+        const item = await rb.readOne(sequence);
+        expect(item).to.equal(1);
     });
 
-    it('adds multiple items and reads them back one by one', function () {
-        return rb.addAll([1, 2, 3]).then(function () {
-            return Promise.all([
-                rb.readOne(0), rb.readOne(1), rb.readOne(2)
-            ]).then(function (items) {
-                expect(items).to.deep.equal([1, 2, 3]);
-            });
-        })
+    it('adds multiple items and reads them back one by one', async function () {
+        await rb.addAll([1, 2, 3]);
+        const items = await Promise.all([
+            rb.readOne(0), rb.readOne(1), rb.readOne(2)
+        ]);
+        expect(items).to.deep.equal([1, 2, 3]);
     });
 
-    it('reads all items at once', function () {
-        return rb.addAll([1, 2, 3]).then(function () {
-            return rb.readMany(0, 1, 3).then(function (items) {
-                expect(items.get(0)).to.equal(1);
-                expect(items.get(1)).to.equal(2);
-                expect(items.get(2)).to.equal(3);
-                expect(items.getReadCount()).to.equal(3);
-            });
-        })
+    it('readOne throws on read stale sequence', async function () {
+        await limitedCapacityRb.addAll([1, 2, 3, 4, 5]);
+        try {
+            await limitedCapacityRb.readOne(0);
+            return Promise.reject('Test failed as readOne did not throw');
+        } catch (e) {
+            expect(e).to.be.an.instanceof(StaleSequenceError);
+        }
     });
 
-    it('readMany with filter filters the results', function () {
-        return rb.addAll(['item1', 'prefixedItem2', 'prefixedItem3']).then(function () {
-            return rb.readMany(0, 1, 3, new PrefixFilter('prefixed')).then(function (items) {
-                expect(items.get(0)).to.equal('prefixedItem2');
-                expect(items.get(1)).to.equal('prefixedItem3');
-            });
-        })
+    it('readOne throws on negative sequence', function () {
+        expect(() => rb.readOne(-1)).to.throw(RangeError);
     });
 
-    it('correctly reports tail sequence', function () {
-        return rb.addAll([1, 2, 3]).then(function () {
-            return rb.tailSequence().then(function (sequence) {
-                expect(sequence.toNumber()).to.equal(2);
-            });
-        })
+    it('readMany throws on negative start sequence', function () {
+        expect(() => rb.readMany(-1)).to.throw(RangeError);
     });
 
-    it('correctly reports head sequence', function () {
-        let limitedCapacity;
-        return client.getRingbuffer('capacity').then(function (buffer) {
-            limitedCapacity = buffer;
-            return limitedCapacity.addAll([1, 2, 3, 4, 5]);
-        }).then(function () {
-            return limitedCapacity.headSequence().then(function (sequence) {
-                expect(sequence.toNumber()).to.equal(2);
-            });
-        })
+    it('readMany throws on negative min count', function () {
+        expect(() => rb.readMany(0, -1)).to.throw(RangeError);
     });
 
-    it('correctly reports remaining capacity', function () {
-        let ttl = client.getRingbuffer('ttl-cap').then(function (buffer) {
-            ttl = buffer;
-            return ttl.addAll([1, 2]);
-        }).then(function () {
-            return ttl.remainingCapacity().then(function (rc) {
-                expect(rc.toNumber()).to.equal(3);
-            });
-        })
+    it('readMany throws on min count greater than max count', function () {
+        expect(() => rb.readMany(0, 2, 1)).to.throw(RangeError);
     });
 
-    it('correctly reports total capacity', function () {
-        return client.getRingbuffer('ttl-cap').then(function (buffer) {
-            return buffer.capacity();
-        }).then(function (capacity) {
-            expect(capacity.toNumber()).to.equal(5);
-        });
+    it('readMany throws on too large max count', function () {
+        expect(() => rb.readMany(0, 1, 1001)).to.throw(RangeError);
     });
 
-    it('correctly reports size', function () {
-        return rb.addAll([1, 2]).then(function () {
-            return rb.size().then(function (size) {
-                expect(size.toNumber()).to.equal(2);
-            });
-        })
+    it('readMany reads all items at once', async function () {
+        await rb.addAll([1, 2, 3]);
+        const items = await rb.readMany(0, 1, 3);
+        expect(items.get(0)).to.equal(1);
+        expect(items.get(1)).to.equal(2);
+        expect(items.get(2)).to.equal(3);
+        expect(items.getReadCount()).to.equal(3);
+        expect(items.size()).to.equal(3);
+        expect(items.getNextSequenceToReadFrom().toNumber()).to.equal(3);
+    });
+
+    it('readMany with filter filters the results', async function () {
+        await rb.addAll(['item1', 'prefixedItem2', 'prefixedItem3']);
+        const items = await rb.readMany(0, 1, 3, new PrefixFilter('prefixed'));
+        expect(items.get(0)).to.equal('prefixedItem2');
+        expect(items.get(1)).to.equal('prefixedItem3');
+        expect(items.getReadCount()).to.equal(3);
+        expect(items.size()).to.equal(2);
+    });
+
+    it('readMany reads newer items when sequence is no longer available', async function () {
+        await limitedCapacityRb.addAll([1, 2, 3, 4, 5]);
+        const items = await limitedCapacityRb.readMany(0, 1, 2);
+        expect(items.get(0)).to.equal(3);
+        expect(items.get(1)).to.equal(4);
+        expect(items.getReadCount()).to.equal(2);
+        expect(items.size()).to.equal(2);
+        expect(items.getNextSequenceToReadFrom().toNumber()).to.equal(4);
+    });
+
+    it('correctly reports tail sequence', async function () {
+        await rb.addAll([1, 2, 3]);
+        const sequence = await rb.tailSequence();
+        expect(sequence.toNumber()).to.equal(2);
+    });
+
+    it('correctly reports head sequence', async function () {
+        await limitedCapacityRb.addAll([1, 2, 3, 4, 5]);
+        const sequence = await limitedCapacityRb.headSequence();
+        expect(sequence.toNumber()).to.equal(2);
+    });
+
+    it('correctly reports remaining capacity', async function () {
+        await ttlRb.addAll([1, 2]);
+        const rc = await ttlRb.remainingCapacity();
+        expect(rc.toNumber()).to.equal(3);
+    });
+
+    it('correctly reports total capacity', async function () {
+        const capacity = await ttlRb.capacity();
+        expect(capacity.toNumber()).to.equal(5);
+    });
+
+    it('correctly reports size', async function () {
+        await rb.addAll([1, 2]);
+        const size = await rb.size();
+        expect(size.toNumber()).to.equal(2);
     });
 });

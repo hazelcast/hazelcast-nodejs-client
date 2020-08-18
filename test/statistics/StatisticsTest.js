@@ -19,9 +19,9 @@ const expect = require('chai').expect;
 const os = require('os');
 
 const RC = require('../RC');
-const Client = require('../../').Client;
+const { Client } = require('../../');
 const { BuildInfo } = require('../../lib/BuildInfo');
-const  {Statistics } = require("../../lib/statistics/Statistics");
+const { Statistics } = require("../../lib/statistics/Statistics");
 const TestUtil = require('../Util');
 
 function getClientStatisticsFromServer(cluster, client) {

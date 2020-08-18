@@ -15,16 +15,16 @@
  */
 'use strict';
 
-const chai = require("chai");
+const chai = require('chai');
 const expect = chai.expect;
-const chaiAsPromised = require("chai-as-promised");
+const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 const fs = require('fs');
 const path = require('path');
 
 const RC = require('./../RC');
-const { Client, IllegalStateError } = require("../../.");
-const markEnterprise = require('../Util').markEnterprise;
+const { Client, IllegalStateError } = require('../../');
+const { markEnterprise } = require('../Util');
 
 describe('ClientSSLAuthenticationTest', function () {
 
