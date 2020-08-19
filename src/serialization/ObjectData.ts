@@ -349,6 +349,9 @@ export class ObjectDataInput implements DataInput {
         }
         const len = this.readInt();
         if (len === BitsUtil.NULL_ARRAY_LENGTH) {
+            if (pos !== undefined) {
+                this.pos = backupPos;
+            }
             return null;
         }
         const buf = this.buffer.slice(this.pos, this.pos + len);
@@ -526,6 +529,9 @@ export class ObjectDataInput implements DataInput {
         }
         const len = this.readInt();
         if (len === BitsUtil.NULL_ARRAY_LENGTH) {
+            if (pos !== undefined) {
+                this.pos = backupPos;
+            }
             return null;
         }
         const arr: T[] = [];
