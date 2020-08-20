@@ -553,18 +553,22 @@ In the following chapters you will learn the description of all options supporte
 
 Serialization is the process of converting an object into a stream of bytes to store the object in the memory, a file or database, or transmit it through the network. Its main purpose is to save the state of an object in order to be able to recreate it when needed. The reverse process is called deserialization. Hazelcast offers you its own native serialization methods. You will see these methods throughout this chapter.
 
-Hazelcast serializes all your objects before sending them to the server. The `boolean`, `number`,`string` and `Long` types are serialized natively and you cannot override this behavior. The following table is the conversion of types for the Java server side.
+Hazelcast serializes all your objects before sending them to the server. Certain types, like `boolean`, `number`, `string`, and `Long`, are serialized natively and you cannot override this behavior. The following table is the conversion of types for the Java server side.
 
-| Node.js | Java                                |
-|---------|-------------------------------------|
-| boolean | Boolean                             |
-| number  | Byte, Short, Integer, Float, Double |
-| string  | String                              |
-| Long    | Long                                |
+| Node.js         | Java                                  |
+|-----------------|---------------------------------------|
+| boolean         | Boolean                               |
+| number          | Byte, Short, Integer, Float, Double   |
+| string          | String                                |
+| Long            | Long                                  |
+| Buffer          | byte[]                                |
+| Object          | com.hazelcast.core.HazelcastJsonValue |
 
-> **NOTE: A `number` type is serialized as `Double` by default. You can configure this behavior using the `serialization.defaultNumberType` config option.**
+> **NOTE: The `Long` type means the type provided by [long.js library](https://github.com/dcodeIO/long.js).**
 
-Arrays of the above types can be serialized as `boolean[]`, `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `long[]` and `string[]` for the Java server side, respectively.
+> **NOTE: A `number` is serialized as `Double` by default. You can configure this behavior using the `serialization.defaultNumberType` config option.**
+
+Arrays of the `boolean`, `number`, `string`, and `Long` types can be serialized as `boolean[]`, `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `string[]`, and `long[]` for the Java server side, respectively.
 
 **Serialization Priority**
 

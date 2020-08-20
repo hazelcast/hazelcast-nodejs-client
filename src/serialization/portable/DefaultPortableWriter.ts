@@ -24,6 +24,7 @@ import * as Long from 'long';
 
 /** @internal */
 export class DefaultPortableWriter {
+
     private serializer: PortableSerializer;
     private output: PositionalDataOutput;
     private classDefinition: ClassDefinition;
@@ -31,7 +32,9 @@ export class DefaultPortableWriter {
     private offset: number;
     private begin: number;
 
-    constructor(serializer: PortableSerializer, output: PositionalDataOutput, classDefinition: ClassDefinition) {
+    constructor(serializer: PortableSerializer,
+                output: PositionalDataOutput,
+                classDefinition: ClassDefinition) {
         this.serializer = serializer;
         this.output = output;
         this.classDefinition = classDefinition;
@@ -108,7 +111,7 @@ export class DefaultPortableWriter {
         this.output.writeInt(classId);
     }
 
-    writeByteArray(fieldName: string, bytes: number[]): void {
+    writeByteArray(fieldName: string, bytes: Buffer): void {
         this.setPosition(fieldName, FieldType.BYTE_ARRAY);
         this.output.writeByteArray(bytes);
     }
@@ -185,7 +188,7 @@ export class DefaultPortableWriter {
         const index: number = field.getIndex();
         this.output.pwriteInt(this.offset + index * BitsUtil.INT_SIZE_IN_BYTES, pos);
         this.output.writeShort(fieldName.length);
-        this.output.writeBytes(fieldName);
+        this.output.write(Buffer.from(fieldName));
         this.output.writeByte(fieldType);
         return field;
     }

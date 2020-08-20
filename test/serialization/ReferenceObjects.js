@@ -45,7 +45,7 @@ for (let ci = 65535 - to.aString.length; ci > 0; ci--) {
 }
 
 to.booleans = [true, false, true];
-to.bytes = [112, 4, -1, 4, 112, -35, 43];
+to.bytes = Buffer.from([112, 4, -1, 4, 112, -35, 43]);
 to.chars = ['a', 'b', 'c'];
 to.doubles = [-897543.3678909, 11.1, 22.2, 33.3];
 to.shorts = [-500, 2, 3];

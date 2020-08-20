@@ -58,6 +58,8 @@ export function getType(obj: any): string {
     assertNotNull(obj);
     if (Long.isLong(obj)) {
         return 'long';
+    } if (Buffer.isBuffer(obj)) {
+        return 'buffer';
     } else {
         const t = typeof obj;
         if (t !== 'object') {
