@@ -320,6 +320,8 @@ export class SerializationServiceV1 implements SerializationService {
         let convertedName: string;
         if (name === 'number') {
             convertedName = this.serializationConfig.defaultNumberType;
+        } else if (name === 'buffer') {
+            convertedName = 'byteArray';
         } else {
             convertedName = name;
         }

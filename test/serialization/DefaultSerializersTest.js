@@ -17,10 +17,10 @@
 
 const expect = require('chai').expect;
 const Long = require('long');
-const SerializationServiceV1 = require('../../lib/serialization/SerializationService').SerializationServiceV1;
-const SerializationConfigImpl = require('../../lib/config/SerializationConfig').SerializationConfigImpl;
-const Predicates = require('../../.').Predicates;
-const RestValue = require('../../lib/core/RestValue').RestValue;
+const { SerializationServiceV1 } = require('../../lib/serialization/SerializationService');
+const { SerializationConfigImpl } = require('../../lib/config/SerializationConfig');
+const { Predicates } = require('../../.');
+const { RestValue } = require('../../lib/core/RestValue');
 
 describe('DefaultSerializersTest', function () {
 
@@ -42,11 +42,13 @@ describe('DefaultSerializersTest', function () {
         '1⚐中💦2😭‍🙆😔5',
         'Iñtërnâtiônàlizætiøn',
         '\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}',
+        Buffer.from('abc'),
         [12, 56, 54, 12],
         [43546.6, 2343.4, 8988, 4],
         [23545798.6],
         null,
         {abc: 'abc', 'five': 5},
+        [{foo: 'bar'}, {bar: 'baz'}],
         Predicates.sql('test'),
         Predicates.and(Predicates.alwaysTrue(), Predicates.alwaysTrue()),
         Predicates.between('this', 0, 1),

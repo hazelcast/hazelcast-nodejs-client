@@ -24,6 +24,7 @@ import {HazelcastSerializationError} from '../../core';
 
 /** @internal */
 export class ClassDefinitionWriter implements PortableWriter {
+
     private context: PortableContext;
     private builder: ClassDefinitionBuilder;
 
@@ -88,7 +89,7 @@ export class ClassDefinitionWriter implements PortableWriter {
         this.builder.addPortableField(fieldName, nestedClassDef);
     }
 
-    writeByteArray(fieldName: string, bytes: number[]): void {
+    writeByteArray(fieldName: string, bytes: Buffer): void {
         this.builder.addByteArrayField(fieldName);
     }
 

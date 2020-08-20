@@ -15,15 +15,16 @@
  */
 'use strict';
 
-const SerializationConfigImpl = require('../../lib/config/SerializationConfig').SerializationConfigImpl;
-const SerializationServiceV1 = require('../../lib/serialization/SerializationService').SerializationServiceV1;
 const Long = require('long');
 const Util = require('../Util');
-
-const PortableObject = require('./PortableObjects').PortableObject;
-const PortableObjectV2 = require('./PortableObjects').PortableObjectV2;
-const InnerPortable = require('./PortableObjects').InnerPortable;
-const SimplePortableV3 = require('./PortableObjects').SimplePortableV3;
+const { SerializationConfigImpl } = require('../../lib/config/SerializationConfig');
+const { SerializationServiceV1 } = require('../../lib/serialization/SerializationService');
+const {
+    PortableObject,
+    PortableObjectV2,
+    InnerPortable,
+    SimplePortableV3
+} = require('./PortableObjects');
 
 describe('PortableSerializationTest', function () {
 
@@ -44,10 +45,12 @@ describe('PortableSerializationTest', function () {
     it('write-read', function () {
         const service = createSerializationService(PortableObject);
         const emp = new PortableObject(
-            99, true, 'a', 23, 54375456, Long.fromBits(243534, 43543654), 24.1, 32435.6533,
-            'hazelcast', new InnerPortable('a', 'b'), [99, 100, 101], [true, false, false, true], ['a', 'b', 'v'], [12, 545, 23, 6], [325, 6547656, 345],
-            [Long.fromNumber(342534654), Long.fromNumber(-3215243654), Long.fromNumber(123123)], [233.2, 65.88, 657.345],
-            [43645.325, 887.56756], ['hazelcast', 'ankara', 'istanbul', 'london', 'palo alto'],
+            99, true, 'a', 23, 54375456, Long.fromBits(243534, 43543654), 24.1, 32435.6533, 'hazelcast',
+            new InnerPortable('a', 'b'), Buffer.from([0x99, 0x100, 0x101]), [true, false, false, true],
+            ['a', 'b', 'v'], [12, 545, 23, 6], [325, 6547656, 345],
+            [Long.fromNumber(342534654), Long.fromNumber(-3215243654), Long.fromNumber(123123)],
+            [233.2, 65.88, 657.345], [43645.325, 887.56756],
+            ['hazelcast', 'ankara', 'istanbul', 'london', 'palo alto'],
             [new InnerPortable('elma', 'armut'), new InnerPortable('masa', 'sandalye')]
         );
 
@@ -62,7 +65,7 @@ describe('PortableSerializationTest', function () {
 
         const emp = new PortableObjectV2(
             'a_new_value', 99, true, 'a', 23, 54375456, Long.fromBits(243534, 43543654), 24.1, 32435.6533,
-            new InnerPortable('a', 'b'), [99, 100, 101], [true, false, false, true],
+            new InnerPortable('a', 'b'), Buffer.from([0x99, 0x100, 0x101]), [true, false, false, true],
             ['a', 'b', 'v'], [12, 545, 23, 6], [325, 6547656, 345],
             [Long.fromNumber(342534654), Long.fromNumber(-3215243654), Long.fromNumber(123123)],
             [233.2, 65.88, 657.345], [43645.325, 887.56756],
@@ -81,8 +84,8 @@ describe('PortableSerializationTest', function () {
         const newService = createSerializationService(PortableObjectV2);
 
         const empv1 = new PortableObject(
-            99, true, 'a', 23, 54375456, Long.fromBits(243534, 43543654), 24.1, 32435.6533,
-            'hazelcast', new InnerPortable('a', 'b'), [99, 100, 101], [true, false, false, true],
+            99, true, 'a', 23, 54375456, Long.fromBits(243534, 43543654), 24.1, 32435.6533, 'hazelcast',
+            new InnerPortable('a', 'b'), Buffer.from([0x99, 0x100, 0x101]), [true, false, false, true],
             ['a', 'b', 'v'], [12, 545, 23, 6], [325, 6547656, 345],
             [Long.fromNumber(342534654), Long.fromNumber(-3215243654), Long.fromNumber(123123)],
             [233.2, 65.88, 657.345], [43645.325, 887.56756],
@@ -91,7 +94,7 @@ describe('PortableSerializationTest', function () {
         );
         const empv2 = new PortableObjectV2(
             undefined, 99, true, 'a', 23, 54375456, Long.fromBits(243534, 43543654), 24.1, 32435.6533,
-            new InnerPortable('a', 'b'), [99, 100, 101], [true, false, false, true],
+            new InnerPortable('a', 'b'), Buffer.from([0x99, 0x100, 0x101]), [true, false, false, true],
             ['a', 'b', 'v'], [12, 545, 23, 6], [325, 6547656, 345],
             [Long.fromNumber(342534654), Long.fromNumber(-3215243654), Long.fromNumber(123123)],
             [233.2, 65.88, 657.345], [43645.325, 887.56756],
@@ -110,7 +113,7 @@ describe('PortableSerializationTest', function () {
 
         const innerPortableV2 = new PortableObjectV2(
             'propstring', 99, true, 'a', 23, 54375456, Long.fromBits(243534, 43543654), 24.1, 32435.6533,
-            new InnerPortable('a', 'b'), [99, 100, 101], [true, false, false, true],
+            new InnerPortable('a', 'b'), Buffer.from([0x99, 0x100, 0x101]), [true, false, false, true],
             ['a', 'b', 'v'], [12, 545, 23, 6], [325, 6547656, 345],
             [Long.fromNumber(342534654), Long.fromNumber(-3215243654), Long.fromNumber(123123)],
             [233.2, 65.88, 657.345], [43645.325, 887.56756],

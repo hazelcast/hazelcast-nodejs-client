@@ -20,10 +20,11 @@ const { SerializationConfigImpl } = require('../../lib/config/SerializationConfi
 const { SerializationServiceV1 } = require('../../lib/serialization/SerializationService');
 const Util = require('../Util');
 
-describe('IdentifiedDataSerializableTest', function () {
-    const IdentifiedDataClass = function (a_byte, a_boolean, a_character, a_short, an_integer,
-                                          a_long, a_float, a_double, a_string, bytes, booleans,
-                                          chars, shorts, integers, longs, floats, doubles, strings) {
+class IdentifiedDataClass {
+
+    constructor(a_byte, a_boolean, a_character, a_short, an_integer,
+                a_long, a_float, a_double, a_string, bytes, booleans,
+                chars, shorts, integers, longs, floats, doubles, strings) {
         this.a_byte = a_byte;
         this.a_boolean = a_boolean;
         this.a_character = a_character;
@@ -45,9 +46,9 @@ describe('IdentifiedDataSerializableTest', function () {
 
         this.factoryId = 1;
         this.classId = 1;
-    };
+    }
 
-    IdentifiedDataClass.prototype.readData = function (inp) {
+    readData(inp) {
         this.a_byte = inp.readByte();
         this.a_boolean = inp.readBoolean();
         this.a_character = inp.readChar();
@@ -67,9 +68,9 @@ describe('IdentifiedDataSerializableTest', function () {
         this.floats = inp.readFloatArray();
         this.doubles = inp.readDoubleArray();
         this.strings = inp.readUTFArray();
-    };
+    }
 
-    IdentifiedDataClass.prototype.writeData = function (outp) {
+    writeData(outp) {
         outp.writeByte(this.a_byte);
         outp.writeBoolean(this.a_boolean);
         outp.writeChar(this.a_character);
@@ -89,7 +90,11 @@ describe('IdentifiedDataSerializableTest', function () {
         outp.writeFloatArray(this.floats);
         outp.writeDoubleArray(this.doubles);
         outp.writeUTFArray(this.strings);
-    };
+    }
+
+}
+
+describe('IdentifiedDataSerializableTest', function () {
 
     const identifiedFactory = (classId) => {
         if (classId === 1) {
@@ -105,7 +110,7 @@ describe('IdentifiedDataSerializableTest', function () {
         service = new SerializationServiceV1(cfg);
         const dd = new IdentifiedDataClass(
             99, true, 'a', 23, 54375456, Long.fromBits(243534, 43543654), 24.1, 32435.6533,
-            'hazelcast', [99, 100, 101], [true, false, false, true],
+            'hazelcast', Buffer.from([0x99, 0x100, 0x101]), [true, false, false, true],
             ['a', 'b', 'v'], [12, 545, 23, 6], [325, 6547656, 345],
             [Long.fromNumber(342534654), Long.fromNumber(-3215243654), Long.fromNumber(123123)],
             [233.2, 65.88, 657.345], [43645.325, 887.56756],

@@ -27,6 +27,7 @@ const MASK_1BYTE = (1 << 8) - 1;
 
 /** @internal */
 export class ObjectDataOutput implements DataOutput {
+
     protected buffer: Buffer;
     protected bigEndian: boolean;
     private service: SerializationService;
@@ -84,14 +85,13 @@ export class ObjectDataOutput implements DataOutput {
         this.write(byte);
     }
 
-    writeByteArray(bytes: number[]): void {
-        this.writeArray(this.writeByte, bytes);
-    }
-
-    writeBytes(bytes: string): void {
-        const len = (bytes != null) ? bytes.length : 0;
-        for (let i = 0; i < len; i++) {
-            this.write(bytes.charCodeAt(i));
+    writeByteArray(bytes: Buffer): void {
+        const len = (bytes != null) ? bytes.length : BitsUtil.NULL_ARRAY_LENGTH;
+        this.writeInt(len);
+        if (len > 0) {
+            this.ensureAvailable(len);
+            bytes.copy(this.buffer, this.pos);
+            this.pos += len;
         }
     }
 
@@ -237,6 +237,7 @@ export class ObjectDataOutput implements DataOutput {
 
 /** @internal */
 export class PositionalObjectDataOutput extends ObjectDataOutput implements PositionalDataOutput {
+
     pwrite(position: number, byte: number | Buffer): void {
         if (Buffer.isBuffer(byte)) {
             byte.copy(this.buffer, position);
@@ -297,7 +298,10 @@ export class ObjectDataInput implements DataInput {
     private bigEndian: boolean;
     private pos: number;
 
-    constructor(buffer: Buffer, offset: number, serializationService: SerializationService, isBigEndian: boolean) {
+    constructor(buffer: Buffer,
+                offset: number,
+                serializationService: SerializationService,
+                isBigEndian: boolean) {
         this.buffer = buffer;
         this.offset = offset;
         this.service = serializationService;
@@ -338,8 +342,25 @@ export class ObjectDataInput implements DataInput {
         return this.read(pos);
     }
 
-    readByteArray(pos?: number): number[] {
-        return this.readArray<number>(this.readByte, pos);
+    readByteArray(pos?: number): Buffer {
+        const backupPos = this.pos;
+        if (pos !== undefined) {
+            this.pos = pos;
+        }
+        const len = this.readInt();
+        if (len === BitsUtil.NULL_ARRAY_LENGTH) {
+            if (pos !== undefined) {
+                this.pos = backupPos;
+            }
+            return null;
+        }
+        const buf = this.buffer.slice(this.pos, this.pos + len);
+        if (pos !== undefined) {
+            this.pos = backupPos;
+        } else {
+            this.pos += len;
+        }
+        return buf;
     }
 
     readChar(pos?: number): string {
@@ -470,13 +491,10 @@ export class ObjectDataInput implements DataInput {
         if (len === BitsUtil.NULL_ARRAY_LENGTH) {
             return null;
         }
-
         const result = this.buffer.toString('utf8', readPos, readPos + len);
-
         if (pos === undefined) {
             this.pos += len;
         }
-
         return result;
     }
 
@@ -492,14 +510,16 @@ export class ObjectDataInput implements DataInput {
         this.pos += count;
     }
 
-    readCopy(other: Buffer, numBytes: number): void {
-        this.assertAvailable(numBytes, this.pos);
-        this.buffer.copy(other, 0, this.pos, this.pos + numBytes);
-        this.pos += numBytes;
-    }
-
     available(): number {
         return this.buffer.length - this.pos;
+    }
+
+    // used in binary compatibility tests
+    private readRaw(numOfBytes: number): Buffer {
+        this.assertAvailable(numOfBytes, this.pos);
+        const raw = this.buffer.slice(this.pos, this.pos + numOfBytes);
+        this.pos += numOfBytes;
+        return raw;
     }
 
     private readArray<T>(func: Function, pos?: number): T[] {
@@ -508,6 +528,12 @@ export class ObjectDataInput implements DataInput {
             this.pos = pos;
         }
         const len = this.readInt();
+        if (len === BitsUtil.NULL_ARRAY_LENGTH) {
+            if (pos !== undefined) {
+                this.pos = backupPos;
+            }
+            return null;
+        }
         const arr: T[] = [];
         for (let i = 0; i < len; i++) {
             arr.push(func.call(this));

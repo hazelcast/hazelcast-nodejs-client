@@ -34,7 +34,9 @@ export class DefaultPortableReader implements PortableReader {
     private finalPos: number;
     private raw = false;
 
-    constructor(serializer: PortableSerializer, input: DataInput, classDefinition: ClassDefinition) {
+    constructor(serializer: PortableSerializer,
+                input: DataInput,
+                classDefinition: ClassDefinition) {
         this.serializer = serializer;
         this.input = input;
         this.classDefinition = classDefinition;
@@ -120,7 +122,7 @@ export class DefaultPortableReader implements PortableReader {
         }
     }
 
-    readByteArray(fieldName: string): number[] {
+    readByteArray(fieldName: string): Buffer {
         const pos = this.positionByField(fieldName, FieldType.BYTE_ARRAY);
         return this.input.readByteArray(pos);
     }
