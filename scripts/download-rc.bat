@@ -95,5 +95,3 @@ start /min "hazelcast-remote-controller" cmd /c "java -Dhazelcast.enterprise.lic
 
 echo wait for Hazelcast to start ...
 ping -n 15 127.0.0.1 > nul
-
-
