@@ -23,6 +23,7 @@ import {TopicOverloadError} from '../../core';
 import {AddressImpl} from '../../core/Address';
 import {SerializationService} from '../../serialization/SerializationService';
 import {UuidUtil} from '../../util/UuidUtil';
+import {DeferredPromise} from '../../util/Util';
 import {BaseProxy} from '../BaseProxy';
 import {Ringbuffer} from '../Ringbuffer';
 import {ITopic} from '../ITopic';
@@ -142,28 +143,23 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
     }
 
     private addWithBackoff(reliableTopicMessage: ReliableTopicMessage): Promise<void> {
-        let resolve: Function;
-        const promise = new Promise<void>(function (): void {
-            resolve = arguments[0];
-        });
-
-        this.trySendMessage(reliableTopicMessage, TOPIC_INITIAL_BACKOFF, resolve);
-
-        return promise;
+        const deferred = DeferredPromise<void>();
+        this.trySendMessage(reliableTopicMessage, TOPIC_INITIAL_BACKOFF, deferred);
+        return deferred.promise;
     }
 
-    private trySendMessage(message: ReliableTopicMessage, delay: number, resolve: Function): void {
+    private trySendMessage(message: ReliableTopicMessage, delay: number, deferred: Promise.Resolver<void>): void {
         this.ringbuffer.add(message, OverflowPolicy.FAIL).then((seq: Long) => {
             if (seq.toNumber() === -1) {
                 let newDelay = delay *= 2;
                 if (newDelay > TOPIC_MAX_BACKOFF) {
                     newDelay = TOPIC_MAX_BACKOFF;
                 }
-                this.trySendMessage(message, newDelay, resolve);
+                this.trySendMessage(message, newDelay, deferred);
             } else {
-                resolve();
+                deferred.resolve();
             }
-        });
+        }).catch(deferred.reject);
     }
 
 }

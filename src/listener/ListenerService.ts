@@ -22,6 +22,7 @@ import {ClientConnection} from '../network/ClientConnection';
 import {ClientEventRegistration} from '../invocation/ClientEventRegistration';
 import {Invocation} from '../invocation/InvocationService';
 import {RegistrationKey} from '../invocation/RegistrationKey';
+import {ClientMessageHandler} from '../protocol/ClientMessage';
 import {ListenerMessageCodec} from './ListenerMessageCodec';
 import {DeferredPromise} from '../util/Util';
 import {UuidUtil} from '../util/UuidUtil';
@@ -116,7 +117,8 @@ export class ListenerService {
         return deferred.promise;
     }
 
-    registerListener(codec: ListenerMessageCodec, listenerHandlerFn: Function): Promise<string> {
+    registerListener(codec: ListenerMessageCodec,
+                     listenerHandlerFn: ClientMessageHandler): Promise<string> {
         const activeConnections = this.client.getConnectionManager().getActiveConnections();
         const userRegistrationKey: string = UuidUtil.generate().toString();
         let connectionsOnUserKey: Map<ClientConnection, ClientEventRegistration>;

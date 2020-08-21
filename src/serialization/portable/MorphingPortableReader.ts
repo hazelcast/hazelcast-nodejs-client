@@ -133,62 +133,64 @@ export class MorphingPortableReader extends DefaultPortableReader {
     }
 
     readPortableArray(fieldName: string): Portable[] {
-        return this.validateCompatibleAndCall(fieldName, FieldType.PORTABLE_ARRAY, super.readPortableArray);
+        return this.validateCompatibleAndRead(fieldName, FieldType.PORTABLE_ARRAY, super.readPortableArray);
     }
 
     readUTFArray(fieldName: string): string[] {
-        return this.validateCompatibleAndCall(fieldName, FieldType.UTF_ARRAY, super.readUTFArray);
+        return this.validateCompatibleAndRead(fieldName, FieldType.UTF_ARRAY, super.readUTFArray);
     }
 
     readShortArray(fieldName: string): number[] {
-        return this.validateCompatibleAndCall(fieldName, FieldType.SHORT_ARRAY, super.readShortArray);
+        return this.validateCompatibleAndRead(fieldName, FieldType.SHORT_ARRAY, super.readShortArray);
     }
 
     readFloatArray(fieldName: string): number[] {
-        return this.validateCompatibleAndCall(fieldName, FieldType.FLOAT_ARRAY, super.readFloatArray);
+        return this.validateCompatibleAndRead(fieldName, FieldType.FLOAT_ARRAY, super.readFloatArray);
     }
 
     readDoubleArray(fieldName: string): number[] {
-        return this.validateCompatibleAndCall(fieldName, FieldType.DOUBLE_ARRAY, super.readDoubleArray);
+        return this.validateCompatibleAndRead(fieldName, FieldType.DOUBLE_ARRAY, super.readDoubleArray);
     }
 
     readLongArray(fieldName: string): Long[] {
-        return this.validateCompatibleAndCall(fieldName, FieldType.LONG_ARRAY, super.readLongArray);
+        return this.validateCompatibleAndRead(fieldName, FieldType.LONG_ARRAY, super.readLongArray);
     }
 
     readIntArray(fieldName: string): number[] {
-        return this.validateCompatibleAndCall(fieldName, FieldType.INT_ARRAY, super.readIntArray);
+        return this.validateCompatibleAndRead(fieldName, FieldType.INT_ARRAY, super.readIntArray);
     }
 
     readCharArray(fieldName: string): string[] {
-        return this.validateCompatibleAndCall(fieldName, FieldType.CHAR_ARRAY, super.readCharArray);
+        return this.validateCompatibleAndRead(fieldName, FieldType.CHAR_ARRAY, super.readCharArray);
     }
 
     readBooleanArray(fieldName: string): boolean[] {
-        return this.validateCompatibleAndCall(fieldName, FieldType.BOOLEAN_ARRAY, super.readBooleanArray);
+        return this.validateCompatibleAndRead(fieldName, FieldType.BOOLEAN_ARRAY, super.readBooleanArray);
     }
 
     readByteArray(fieldName: string): Buffer {
-        return this.validateCompatibleAndCall(fieldName, FieldType.BYTE_ARRAY, super.readByteArray);
+        return this.validateCompatibleAndRead(fieldName, FieldType.BYTE_ARRAY, super.readByteArray);
     }
 
     readChar(fieldName: string): string {
-        return this.validateCompatibleAndCall(fieldName, FieldType.CHAR, super.readChar);
+        return this.validateCompatibleAndRead(fieldName, FieldType.CHAR, super.readChar);
     }
 
     readByte(fieldName: string): number {
-        return this.validateCompatibleAndCall(fieldName, FieldType.BYTE, super.readByte);
+        return this.validateCompatibleAndRead(fieldName, FieldType.BYTE, super.readByte);
     }
 
     readBoolean(fieldName: string): boolean {
-        return this.validateCompatibleAndCall(fieldName, FieldType.BOOLEAN, super.readBoolean);
+        return this.validateCompatibleAndRead(fieldName, FieldType.BOOLEAN, super.readBoolean);
     }
 
     readUTF(fieldName: string): string {
-        return this.validateCompatibleAndCall(fieldName, FieldType.UTF, super.readUTF);
+        return this.validateCompatibleAndRead(fieldName, FieldType.UTF, super.readUTF);
     }
 
-    private validateCompatibleAndCall(fieldName: string, expectedType: FieldType, superFunc: Function): any {
+    private validateCompatibleAndRead(fieldName: string,
+                                      expectedType: FieldType,
+                                      readFn: (fieldName: string) => any): any {
         const fd = this.classDefinition.getField(fieldName);
         if (fd === null) {
             return undefined;
@@ -196,7 +198,7 @@ export class MorphingPortableReader extends DefaultPortableReader {
         if (fd.getType() !== expectedType) {
             throw this.createIncompatibleClassChangeError(fd, expectedType);
         }
-        return superFunc.call(this, fieldName);
+        return readFn.call(this, fieldName);
     }
 
     private createIncompatibleClassChangeError(fd: FieldDefinition, expectedType: FieldType): Error {
