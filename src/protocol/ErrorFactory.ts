@@ -16,6 +16,8 @@
 /** @ignore *//** */
 
 import {
+    ArrayIndexOutOfBoundsError,
+    ArrayStoreError,
     AuthenticationError,
     CallerNotMemberError,
     CancellationError,
@@ -31,9 +33,17 @@ import {
     InvocationTimeoutError,
     IndeterminateOperationStateError,
     IOError,
+    IllegalArgumentError,
+    IndexOutOfBoundsError,
+    InvalidAddressError,
+    InvalidConfigurationError,
+    InterruptedError,
     MemberLeftError,
+    NegativeArraySizeError,
+    NoSuchElementError,
     NoDataMemberInClusterError,
     NodeIdOutOfRangeError,
+    NullPointerError,
     PartitionMigratingError,
     QueryError,
     SplitBrainProtectionError,
@@ -57,7 +67,7 @@ import {ClientMessage} from '../protocol/ClientMessage';
 import {ErrorsCodec} from '../codec/builtin/ErrorsCodec';
 import {ErrorHolder} from './ErrorHolder';
 
-type ErrorFactory = (msg: string, cause: Error) => Error;
+type ErrorFactory = (msg: string, cause: Error, serverError: ErrorHolder) => Error;
 
 /** @internal */
 export class ClientErrorFactory {
@@ -66,103 +76,103 @@ export class ClientErrorFactory {
 
     constructor() {
         this.register(ClientProtocolErrorCodes.ARRAY_INDEX_OUT_OF_BOUNDS,
-            (m, c) => new RangeError(m));
+            (m, c, e) => new ArrayIndexOutOfBoundsError(m, c, e));
         this.register(ClientProtocolErrorCodes.ARRAY_STORE,
-            (m, c) => new TypeError(m));
+            (m, c, e) => new ArrayStoreError(m, c, e));
         this.register(ClientProtocolErrorCodes.AUTHENTICATION,
-            (m, c) => new AuthenticationError(m, c));
+            (m, c, e) => new AuthenticationError(m, c, e));
         this.register(ClientProtocolErrorCodes.CALLER_NOT_MEMBER,
-            (m, c) => new CallerNotMemberError(m, c));
+            (m, c, e) => new CallerNotMemberError(m, c, e));
         this.register(ClientProtocolErrorCodes.CANCELLATION,
-            (m, c) => new CancellationError(m, c));
+            (m, c, e) => new CancellationError(m, c, e));
         this.register(ClientProtocolErrorCodes.CLASS_CAST,
-            (m, c) => new ClassCastError(m, c));
+            (m, c, e) => new ClassCastError(m, c, e));
         this.register(ClientProtocolErrorCodes.CLASS_NOT_FOUND,
-            (m, c) => new ClassNotFoundError(m, c));
+            (m, c, e) => new ClassNotFoundError(m, c, e));
         this.register(ClientProtocolErrorCodes.CONCURRENT_MODIFICATION,
-            (m, c) => new ConcurrentModificationError(m, c));
+            (m, c, e) => new ConcurrentModificationError(m, c, e));
         this.register(ClientProtocolErrorCodes.CONFIG_MISMATCH,
-            (m, c) => new ConfigMismatchError(m, c));
+            (m, c, e) => new ConfigMismatchError(m, c, e));
         this.register(ClientProtocolErrorCodes.DISTRIBUTED_OBJECT_DESTROYED,
-            (m, c) => new DistributedObjectDestroyedError(m, c));
+            (m, c, e) => new DistributedObjectDestroyedError(m, c, e));
         this.register(ClientProtocolErrorCodes.EOF,
-            (m, c) => new IOError(m, c));
+            (m, c, e) => new IOError(m, c, e));
         this.register(ClientProtocolErrorCodes.HAZELCAST,
-            (m, c) => new HazelcastError(m, c));
+            (m, c, e) => new HazelcastError(m, c, e));
         this.register(ClientProtocolErrorCodes.HAZELCAST_INSTANCE_NOT_ACTIVE,
-            (m, c) => new HazelcastInstanceNotActiveError(m, c));
+            (m, c, e) => new HazelcastInstanceNotActiveError(m, c, e));
         this.register(ClientProtocolErrorCodes.HAZELCAST_OVERLOAD,
-            (m, c) => new HazelcastError(m, c));
+            (m, c, e) => new HazelcastError(m, c, e));
         this.register(ClientProtocolErrorCodes.HAZELCAST_SERIALIZATION,
-            (m, c) => new HazelcastSerializationError(m, c));
-        this.register(ClientProtocolErrorCodes.IO,
-            (m, c) => new IOError(m, c));
-        this.register(ClientProtocolErrorCodes.ILLEGAL_ARGUMENT,
-            (m, c) => new TypeError(m));
-        this.register(ClientProtocolErrorCodes.ILLEGAL_STATE,
-            (m, c) => new IllegalStateError(m, c));
-        this.register(ClientProtocolErrorCodes.INDEX_OUT_OF_BOUNDS,
-            (m, c) => new RangeError(m));
-        this.register(ClientProtocolErrorCodes.INTERRUPTED,
-            (m, c) => new Error(m));
-        this.register(ClientProtocolErrorCodes.INVALID_ADDRESS,
-            (m, c) => new TypeError(m));
-        this.register(ClientProtocolErrorCodes.INVALID_CONFIGURATION,
-            (m, c) => new TypeError(m));
-        this.register(ClientProtocolErrorCodes.MEMBER_LEFT,
-            (m, c) => new MemberLeftError(m, c));
-        this.register(ClientProtocolErrorCodes.NEGATIVE_ARRAY_SIZE,
-            (m, c) => new RangeError(m));
-        this.register(ClientProtocolErrorCodes.NO_SUCH_ELEMENT,
-            (m, c) => new ReferenceError(m));
-        this.register(ClientProtocolErrorCodes.NOT_SERIALIZABLE,
-            (m, c) => new IOError(m, c));
-        this.register(ClientProtocolErrorCodes.NULL_POINTER,
-            (m, c) => new ReferenceError(m));
-        this.register(ClientProtocolErrorCodes.OPERATION_TIMEOUT,
-            (m, c) => new InvocationTimeoutError(m, c));
-        this.register(ClientProtocolErrorCodes.PARTITION_MIGRATING,
-            (m, c) => new PartitionMigratingError(m, c));
-        this.register(ClientProtocolErrorCodes.QUERY,
-            (m, c) => new QueryError(m, c));
-        this.register(ClientProtocolErrorCodes.QUERY_RESULT_SIZE_EXCEEDED,
-            (m, c) => new QueryError(m, c));
-        this.register(ClientProtocolErrorCodes.SPLIT_BRAIN_PROTECTION,
-            (m, c) => new SplitBrainProtectionError(m, c));
-        this.register(ClientProtocolErrorCodes.REACHED_MAX_SIZE,
-            (m, c) => new ReachedMaxSizeError(m, c));
-        this.register(ClientProtocolErrorCodes.RETRYABLE_HAZELCAST,
-            (m, c) => new RetryableHazelcastError(m, c));
-        this.register(ClientProtocolErrorCodes.RETRYABLE_IO,
-            (m, c) => new RetryableIOError(m, c));
-        this.register(ClientProtocolErrorCodes.SOCKET,
-            (m, c) => new IOError(m, c));
-        this.register(ClientProtocolErrorCodes.STALE_SEQUENCE,
-            (m, c) => new StaleSequenceError(m, c));
-        this.register(ClientProtocolErrorCodes.TARGET_DISCONNECTED,
-            (m, c) => new TargetDisconnectedError(m, c));
-        this.register(ClientProtocolErrorCodes.TARGET_NOT_MEMBER,
-            (m, c) => new TargetNotMemberError(m, c));
-        this.register(ClientProtocolErrorCodes.TOPIC_OVERLOAD,
-            (m, c) => new TopicOverloadError(m, c));
-        this.register(ClientProtocolErrorCodes.TRANSACTION,
-            (m, c) => new TransactionError(m, c));
-        this.register(ClientProtocolErrorCodes.TRANSACTION_NOT_ACTIVE,
-            (m, c) => new TransactionNotActiveError(m, c));
-        this.register(ClientProtocolErrorCodes.TRANSACTION_TIMED_OUT,
-            (m, c) => new TransactionTimedOutError(m, c));
-        this.register(ClientProtocolErrorCodes.UNSUPPORTED_OPERATION,
-            (m, c) => new UnsupportedOperationError(m, c));
-        this.register(ClientProtocolErrorCodes.NO_DATA_MEMBER,
-            (m, c) => new NoDataMemberInClusterError(m, c));
-        this.register(ClientProtocolErrorCodes.STALE_TASK_ID,
-            (m, c) => new StaleTaskIdError(m, c));
-        this.register(ClientProtocolErrorCodes.FLAKE_ID_NODE_ID_OUT_OF_RANGE_EXCEPTION,
-            (m, c) => new NodeIdOutOfRangeError(m, c));
-        this.register(ClientProtocolErrorCodes.CONSISTENCY_LOST_EXCEPTION,
-            (m, c) => new ConsistencyLostError(m, c));
+            (m, c, e) => new HazelcastSerializationError(m, c, e));
         this.register(ClientProtocolErrorCodes.INDETERMINATE_OPERATION_STATE,
-            (m, c) => new IndeterminateOperationStateError(m, c));
+            (m, c, e) => new IndeterminateOperationStateError(m, c, e));
+        this.register(ClientProtocolErrorCodes.IO,
+            (m, c, e) => new IOError(m, c, e));
+        this.register(ClientProtocolErrorCodes.ILLEGAL_ARGUMENT,
+            (m, c, e) => new IllegalArgumentError(m, c, e));
+        this.register(ClientProtocolErrorCodes.ILLEGAL_STATE,
+            (m, c, e) => new IllegalStateError(m, c, e));
+        this.register(ClientProtocolErrorCodes.INDEX_OUT_OF_BOUNDS,
+            (m, c, e) => new IndexOutOfBoundsError(m, c, e));
+        this.register(ClientProtocolErrorCodes.INTERRUPTED,
+            (m, c, e) => new InterruptedError(m, c, e));
+        this.register(ClientProtocolErrorCodes.INVALID_ADDRESS,
+            (m, c, e) => new InvalidAddressError(m, c, e));
+        this.register(ClientProtocolErrorCodes.INVALID_CONFIGURATION,
+            (m, c, e) => new InvalidConfigurationError(m, c, e));
+        this.register(ClientProtocolErrorCodes.MEMBER_LEFT,
+            (m, c, e) => new MemberLeftError(m, c, e));
+        this.register(ClientProtocolErrorCodes.NEGATIVE_ARRAY_SIZE,
+            (m, c, e) => new NegativeArraySizeError(m, c, e));
+        this.register(ClientProtocolErrorCodes.NO_SUCH_ELEMENT,
+            (m, c, e) => new NoSuchElementError(m, c, e));
+        this.register(ClientProtocolErrorCodes.NOT_SERIALIZABLE,
+            (m, c, e) => new IOError(m, c, e));
+        this.register(ClientProtocolErrorCodes.NULL_POINTER,
+            (m, c, e) => new NullPointerError(m, c, e));
+        this.register(ClientProtocolErrorCodes.OPERATION_TIMEOUT,
+            (m, c, e) => new InvocationTimeoutError(m, c, e));
+        this.register(ClientProtocolErrorCodes.PARTITION_MIGRATING,
+            (m, c, e) => new PartitionMigratingError(m, c, e));
+        this.register(ClientProtocolErrorCodes.QUERY,
+            (m, c, e) => new QueryError(m, c, e));
+        this.register(ClientProtocolErrorCodes.QUERY_RESULT_SIZE_EXCEEDED,
+            (m, c, e) => new QueryError(m, c, e));
+        this.register(ClientProtocolErrorCodes.SPLIT_BRAIN_PROTECTION,
+            (m, c, e) => new SplitBrainProtectionError(m, c, e));
+        this.register(ClientProtocolErrorCodes.REACHED_MAX_SIZE,
+            (m, c, e) => new ReachedMaxSizeError(m, c, e));
+        this.register(ClientProtocolErrorCodes.RETRYABLE_HAZELCAST,
+            (m, c, e) => new RetryableHazelcastError(m, c, e));
+        this.register(ClientProtocolErrorCodes.RETRYABLE_IO,
+            (m, c, e) => new RetryableIOError(m, c, e));
+        this.register(ClientProtocolErrorCodes.SOCKET,
+            (m, c, e) => new IOError(m, c, e));
+        this.register(ClientProtocolErrorCodes.STALE_SEQUENCE,
+            (m, c, e) => new StaleSequenceError(m, c, e));
+        this.register(ClientProtocolErrorCodes.TARGET_DISCONNECTED,
+            (m, c, e) => new TargetDisconnectedError(m, c, e));
+        this.register(ClientProtocolErrorCodes.TARGET_NOT_MEMBER,
+            (m, c, e) => new TargetNotMemberError(m, c, e));
+        this.register(ClientProtocolErrorCodes.TOPIC_OVERLOAD,
+            (m, c, e) => new TopicOverloadError(m, c, e));
+        this.register(ClientProtocolErrorCodes.TRANSACTION,
+            (m, c, e) => new TransactionError(m, c, e));
+        this.register(ClientProtocolErrorCodes.TRANSACTION_NOT_ACTIVE,
+            (m, c, e) => new TransactionNotActiveError(m, c, e));
+        this.register(ClientProtocolErrorCodes.TRANSACTION_TIMED_OUT,
+            (m, c, e) => new TransactionTimedOutError(m, c, e));
+        this.register(ClientProtocolErrorCodes.UNSUPPORTED_OPERATION,
+            (m, c, e) => new UnsupportedOperationError(m, c, e));
+        this.register(ClientProtocolErrorCodes.NO_DATA_MEMBER,
+            (m, c, e) => new NoDataMemberInClusterError(m, c, e));
+        this.register(ClientProtocolErrorCodes.STALE_TASK_ID,
+            (m, c, e) => new StaleTaskIdError(m, c, e));
+        this.register(ClientProtocolErrorCodes.FLAKE_ID_NODE_ID_OUT_OF_RANGE_EXCEPTION,
+            (m, c, e) => new NodeIdOutOfRangeError(m, c, e));
+        this.register(ClientProtocolErrorCodes.CONSISTENCY_LOST_EXCEPTION,
+            (m, c, e) => new ConsistencyLostError(m, c, e));
     }
 
     createErrorFromClientMessage(clientMessage: ClientMessage): Error {
@@ -170,7 +180,7 @@ export class ClientErrorFactory {
         return this.createError(errorHolders, 0);
     }
 
-    createError(errorHolders: ErrorHolder[], errorHolderIdx: number): Error {
+    private createError(errorHolders: ErrorHolder[], errorHolderIdx: number): Error {
         if (errorHolderIdx === errorHolders.length) {
             return null;
         }
@@ -178,7 +188,7 @@ export class ClientErrorFactory {
         const factoryFn = this.codeToErrorConstructor.get(errorHolder.errorCode);
         let error: Error;
         if (factoryFn != null) {
-            error = factoryFn(errorHolder.message, this.createError(errorHolders, errorHolderIdx + 1));
+            error = factoryFn(errorHolder.message, this.createError(errorHolders, errorHolderIdx + 1), errorHolder);
         } else {
             error = new UndefinedErrorCodeError(errorHolder.message, errorHolder.className);
         }

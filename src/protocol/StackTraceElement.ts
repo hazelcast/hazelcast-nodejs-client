@@ -15,8 +15,11 @@
  */
 /** @ignore *//** */
 
+import {ServerErrorStackElement} from '../core';
+
 /** @internal */
-export class StackTraceElement {
+export class StackTraceElement implements ServerErrorStackElement {
+
     className: string;
     methodName: string;
     fileName: string;
