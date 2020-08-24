@@ -18,6 +18,15 @@ import * as Promise from 'bluebird';
 import {DistributedObject} from '../core';
 import {MessageListener} from './MessageListener';
 
+/**
+ * Hazelcast provides distribution mechanism for publishing messages that are
+ * delivered to multiple subscribers, which is also known as a publish/subscribe
+ * (pub/sub) messaging model. Publish and subscriptions are cluster-wide.
+ *
+ * This interface stand for reliable topic, i.e. it uses a Ringbuffer to store
+ * events. The events in the Ringbuffer are replicated, so they won't get
+ * lost when a node goes down.
+ */
 export interface ITopic<E> extends DistributedObject {
 
     /**

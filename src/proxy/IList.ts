@@ -19,6 +19,9 @@ import {ItemListener} from './ItemListener';
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 import {DistributedObject} from '../core/DistributedObject';
 
+/**
+ * Concurrent and distributed list.
+ */
 export interface IList<E> extends DistributedObject {
 
     /**

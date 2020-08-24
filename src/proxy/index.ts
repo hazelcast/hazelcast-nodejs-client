@@ -35,3 +35,4 @@ export * from './ReplicatedMap';
 export * from './Ringbuffer';
 export * from './MessageListener';
 export * from './TopicOverloadPolicy';
+export * from './IAtomicLong';

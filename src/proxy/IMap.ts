@@ -27,6 +27,9 @@ import {IdentifiedDataSerializable} from '../serialization/Serializable';
 import {Portable} from '../serialization/Portable';
 import {IndexConfig} from '../config/IndexConfig';
 
+/**
+ * Concurrent, distributed, observable and queryable map.
+ */
 export interface IMap<K, V> extends DistributedObject {
 
     /**

@@ -45,9 +45,11 @@ import {
     MultiMap,
     ReplicatedMap,
     Ringbuffer,
-    PNCounter
+    PNCounter,
+    IAtomicLong
 } from './proxy';
 import {ProxyManager, NAMESPACE_SEPARATOR} from './proxy/ProxyManager';
+import {ClientRaftProxyFactory} from './proxy/cpsubsystem/ClientRaftProxyFactory';
 import {LockReferenceIdGenerator} from './proxy/LockReferenceIdGenerator';
 import {SerializationService, SerializationServiceV1} from './serialization/SerializationService';
 import {AddressProvider} from './connection/AddressProvider';
@@ -98,6 +100,8 @@ export class HazelcastClient {
     private readonly lifecycleService: LifecycleServiceImpl;
     /** @internal */
     private readonly proxyManager: ProxyManager;
+    /** @internal */
+    private readonly cpProxyFactory: ClientRaftProxyFactory;
     /** @internal */
     private readonly nearCacheManager: NearCacheManager;
     /** @internal */
@@ -295,6 +299,22 @@ export class HazelcastClient {
      */
     getPNCounter(name: string): Promise<PNCounter> {
         return this.proxyManager.getOrCreateProxy(name, ProxyManager.PNCOUNTER_SERVICE) as Promise<PNCounter>;
+    }
+
+    /**
+     * Returns the distributed AtomicLong instance with given name.
+     * The instance is created on CP Subsystem.
+     *
+     * If no group name is given within the `name` argument, then the
+     * AtomicLong instance will be created on the DEFAULT CP group.
+     * If a group name is given, like `.getAtomicLong('myLong@group1')`,
+     * the given group will be initialized first, if not initialized
+     * already, and then the instance will be created on this group.
+     * @param name
+     * @returns {Promise<PNCounter>}
+     */
+    getAtomicLong(name: string): Promise<IAtomicLong> {
+        return this.cpProxyFactory.getOrCreateProxy(name, ProxyManager.PNCOUNTER_SERVICE) as Promise<IAtomicLong>;
     }
 
     /**

@@ -21,6 +21,9 @@ import {
     ReadOnlyLazyList
 } from '../core';
 
+/**
+ * A specialized map whose keys can be associated with multiple values.
+ */
 export interface MultiMap<K, V> extends DistributedObject {
 
     /**

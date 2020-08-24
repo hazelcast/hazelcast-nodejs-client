@@ -20,7 +20,7 @@ import {DistributedObject} from '../core/DistributedObject';
 
 /**
  * PN (Positive-Negative) CRDT counter.
- * <p>
+ *
  * The counter supports adding and subtracting values as well as
  * retrieving the current counter value.
  * The counter guarantees that whenever two nodes have received the
@@ -28,11 +28,11 @@ import {DistributedObject} from '../core/DistributedObject';
  * identical, and any conflicting updates are merged automatically.
  * If no new updates are made to the shared state, all nodes that can
  * communicate will eventually have the same data.
- * <p>
+ *
  * The invocation is remote. This may lead to indeterminate state -
  * the update may be applied but the response has not been received.
  * In this case, the caller will be notified with a `TargetDisconnectedError`
- * <p>
+ *
  * The read and write methods provide monotonic read and RYW (read-your-write)
  * guarantees. These guarantees are session guarantees which means that if
  * no replica with the previously observed state is reachable, the session
@@ -47,7 +47,7 @@ import {DistributedObject} from '../core/DistributedObject';
  * case the session can be continued or you can reset the session by calling
  * the `reset()` method. If you have called the `reset()` method,
  * a new session is started with the next invocation to a CRDT replica.
- * <p>
+ *
  * <b>NOTE:</b>
  * The CRDT state is kept entirely on non-lite (data) members. If there
  * aren't any and the methods here are invoked, they will
