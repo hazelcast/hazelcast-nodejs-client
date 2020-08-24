@@ -168,12 +168,6 @@ export class ClusterService implements Cluster {
         }
     }
 
-    reset(): void {
-        this.logger.trace('ClusterService', 'Resetting the cluster snapshot');
-        this.initialListFetched = DeferredPromise<void>();
-        this.memberListSnapshot = EMPTY_SNAPSHOT;
-    }
-
     handleMembersViewEvent(memberListVersion: number, memberInfos: MemberInfo[]): void {
         if (this.memberListSnapshot === EMPTY_SNAPSHOT) {
             this.applyInitialState(memberListVersion, memberInfos);
