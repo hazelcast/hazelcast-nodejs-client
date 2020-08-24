@@ -16,7 +16,7 @@
 'use strict';
 
 const { expect } = require('chai');
-const { IllegalStateError } = require('../../../');
+const { IllegalStateError, UndefinedErrorCodeError } = require('../../../');
 const { ClientErrorFactory } = require('../../../lib/protocol/ErrorFactory');
 const { ClientProtocolErrorCodes } = require('../../../lib/protocol/ClientProtocolErrorCodes');
 
@@ -24,9 +24,9 @@ describe('ClientErrorFactoryTest', function () {
 
     const factory = new ClientErrorFactory();
 
-    function createErrorHolder() {
+    function createErrorHolder(code) {
         return {
-            errorCode: ClientProtocolErrorCodes.ILLEGAL_STATE,
+            errorCode: code,
             className: 'foo.bar.Baz1',
             message: 'error: foo bar',
             stackTraceElements: [
@@ -41,25 +41,33 @@ describe('ClientErrorFactoryTest', function () {
     }
 
     it('createError: should create error with no cause', function () {
-        const error = factory.createError([createErrorHolder()], 0);
+        const code = ClientProtocolErrorCodes.ILLEGAL_STATE;
+        const error = factory.createError([createErrorHolder(code)], 0);
 
         expect(error).to.be.instanceOf(IllegalStateError);
         expect(error.message).to.be.equal('error: foo bar');
-        expect(error.serverError).to.deep.equal(createErrorHolder());
+        expect(error.serverError).to.deep.equal(createErrorHolder(code));
         expect(error.cause).to.be.null;
     });
 
     it('createError: should create error with given cause', function () {
-        const error = factory.createError([createErrorHolder(), createErrorHolder()], 0);
+        const code = ClientProtocolErrorCodes.ILLEGAL_STATE;
+        const error = factory.createError([createErrorHolder(code), createErrorHolder(code)], 0);
 
         expect(error).to.be.instanceOf(IllegalStateError);
         expect(error.message).to.be.equal('error: foo bar');
-        expect(error.serverError).to.deep.equal(createErrorHolder());
+        expect(error.serverError).to.deep.equal(createErrorHolder(code));
 
         const cause = error.cause;
         expect(cause).to.be.instanceOf(IllegalStateError);
         expect(cause.message).to.be.equal('error: foo bar');
-        expect(cause.serverError).to.deep.equal(createErrorHolder());
+        expect(cause.serverError).to.deep.equal(createErrorHolder(code));
         expect(cause.cause).to.be.null;
+    });
+
+    it('createError: should create UndefinedErrorCodeError for unknown code', function () {
+        const error = factory.createError([createErrorHolder(-1)], 0);
+
+        expect(error).to.be.instanceOf(UndefinedErrorCodeError);
     });
 });
