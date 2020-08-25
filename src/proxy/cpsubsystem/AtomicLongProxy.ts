@@ -22,14 +22,21 @@ import {BaseProxy} from '../BaseProxy';
 import {IAtomicLong} from '../IAtomicLong';
 import {UnsupportedOperationError} from '../../core';
 import {ATOMIC_LONG_SERVICE} from './ClientRaftProxyFactory';
+import {RaftGroupId} from './RaftGroupId';
+import {CPGroupDestroyCPObjectCodec} from '../../codec/CPGroupDestroyCPObjectCodec';
+import {AtomicLongAddAndGetCodec} from '../../codec/AtomicLongAddAndGetCodec';
+import {AtomicLongCompareAndSetCodec} from '../../codec/AtomicLongCompareAndSetCodec';
+import {AtomicLongGetCodec} from '../../codec/AtomicLongGetCodec';
+import {AtomicLongGetAndAddCodec} from '../../codec/AtomicLongGetAndAddCodec';
+import {AtomicLongGetAndSetCodec} from '../../codec/AtomicLongGetAndSetCodec';
 
 /** @internal */
 export class AtomicLongProxy extends BaseProxy implements IAtomicLong {
 
-    private readonly groupId: string;
+    private readonly groupId: RaftGroupId;
     private readonly objectName: string;
 
-    constructor(client: HazelcastClient, groupId: string, proxyName: string, objectName: string) {
+    constructor(client: HazelcastClient, groupId: RaftGroupId, proxyName: string, objectName: string) {
         super(client, ATOMIC_LONG_SERVICE, proxyName);
         this.groupId = groupId;
         this.objectName = objectName;
@@ -39,45 +46,79 @@ export class AtomicLongProxy extends BaseProxy implements IAtomicLong {
         throw new UnsupportedOperationError('This operation is not supported by IAtomicLong.');
     }
 
-    // TODO override
     destroy(): Promise<void> {
-        return Promise.resolve();
+        const clientMessage = CPGroupDestroyCPObjectCodec.encodeRequest(this.groupId, this.serviceName, this.objectName);
+        return this.client.getInvocationService().invokeOnRandomTarget(clientMessage).then();
     }
 
     addAndGet(delta: Long | number): Promise<Long> {
-        return Promise.resolve(new Long(1));
+        if (!Long.isLong(delta)) {
+            delta = Long.fromNumber(delta as number);
+        }
+        return this.encodeInvokeOnRandomTarget(AtomicLongAddAndGetCodec, this.groupId, this.objectName, delta)
+            .then((clientMessage) => {
+                const response = AtomicLongAddAndGetCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     compareAndSet(expect: Long | number, update: Long | number): Promise<boolean> {
-        return Promise.resolve(true);
+        if (!Long.isLong(expect)) {
+            expect = Long.fromNumber(expect as number);
+        }
+        if (!Long.isLong(update)) {
+            update = Long.fromNumber(update as number);
+        }
+        return this.encodeInvokeOnRandomTarget(AtomicLongCompareAndSetCodec, this.groupId, this.objectName, expect, update)
+            .then((clientMessage) => {
+                const response = AtomicLongCompareAndSetCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     decrementAndGet(): Promise<Long> {
-        return Promise.resolve(new Long(1));
+        return this.addAndGet(-1);
     }
 
     get(): Promise<Long> {
-        return Promise.resolve(new Long(1));
+        return this.encodeInvokeOnRandomTarget(AtomicLongGetCodec, this.groupId, this.objectName)
+            .then((clientMessage) => {
+                const response = AtomicLongGetCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     getAndAdd(delta: Long | number): Promise<Long> {
-        return Promise.resolve(new Long(1));
+        if (!Long.isLong(delta)) {
+            delta = Long.fromNumber(delta as number);
+        }
+        return this.encodeInvokeOnRandomTarget(AtomicLongGetAndAddCodec, this.groupId, this.objectName, delta)
+            .then((clientMessage) => {
+                const response = AtomicLongGetAndAddCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     getAndSet(newValue: Long | number): Promise<Long> {
-        return Promise.resolve(new Long(1));
+        if (!Long.isLong(newValue)) {
+            newValue = Long.fromNumber(newValue as number);
+        }
+        return this.encodeInvokeOnRandomTarget(AtomicLongGetAndSetCodec, this.groupId, this.objectName, newValue)
+            .then((clientMessage) => {
+                const response = AtomicLongGetAndSetCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     incrementAndGet(): Promise<Long> {
-        return Promise.resolve(new Long(1));
+        return this.addAndGet(1);
     }
 
     getAndIncrement(): Promise<Long> {
-        return Promise.resolve(new Long(1));
+        return this.getAndAdd(1);
     }
 
     set(newValue: Long | number): Promise<void> {
-        return Promise.resolve();
+        return this.getAndSet(newValue).then();
     }
-
 }

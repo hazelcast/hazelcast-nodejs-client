@@ -27,7 +27,7 @@ import {ClassDefinitionBuilder} from './ClassDefinitionBuilder';
 export class PortableContext {
 
     private version: number;
-    private classDefContext: { [factoyId: number]: ClassDefinitionContext };
+    private classDefContext: { [factoryId: number]: ClassDefinitionContext };
 
     constructor(portableVersion: number) {
         this.version = portableVersion;

@@ -23,6 +23,8 @@ import {
 } from '../../core';
 import {HazelcastClient} from '../../HazelcastClient';
 import {AtomicLongProxy} from './AtomicLongProxy';
+import {RaftGroupId} from './RaftGroupId';
+import {CPGroupCreateCPGroupCodec} from '../../codec/CPGroupCreateCPGroupCodec';
 import {assertString} from '../../util/Util';
 
 /** @internal */
@@ -72,7 +74,7 @@ export class ClientRaftProxyFactory {
         proxyName = withoutDefaultGroupName(proxyName);
         const objectName = getObjectNameForProxy(proxyName);
 
-        return this.getGroupId(proxyName, objectName).then((groupId) => {
+        return this.getGroupId(proxyName).then((groupId) => {
             if (serviceName === ATOMIC_LONG_SERVICE) {
                 return new AtomicLongProxy(this.client, groupId, proxyName, objectName);
             }
@@ -80,7 +82,12 @@ export class ClientRaftProxyFactory {
         });
     }
 
-    private getGroupId(proxyName: string, objectName: string): Promise<string> {
-        return Promise.resolve('TODO');
+    private getGroupId(proxyName: string): Promise<RaftGroupId> {
+        const clientMessage = CPGroupCreateCPGroupCodec.encodeRequest(proxyName);
+        return this.client.getInvocationService().invokeOnRandomTarget(clientMessage)
+            .then((clientMessage) => {
+                const response = CPGroupCreateCPGroupCodec.decodeResponse(clientMessage);
+                return response.groupId;
+            });
     }
 }
