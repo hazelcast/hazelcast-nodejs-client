@@ -90,6 +90,8 @@ export class ConfigBuilder {
                 this.handleLogger(value);
             } else if (key === 'customCredentials') {
                 this.handleCredentials(value);
+            } else if (key === 'backupAckToClientEnabled') {
+                this.effectiveConfig.backupAckToClientEnabled = tryGetBoolean(value);
             }
         }
     }

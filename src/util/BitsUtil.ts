@@ -28,25 +28,7 @@ export class BitsUtil {
     static readonly DOUBLE_SIZE_IN_BYTES = 8;
     static readonly UUID_SIZE_IN_BYTES = BitsUtil.BOOLEAN_SIZE_IN_BYTES + 2 * BitsUtil.LONG_SIZE_IN_BYTES;
 
-    static readonly BIG_ENDIAN = 2;
-    static readonly LITTLE_ENDIAN = 1;
-
-    static readonly BEGIN_FLAG = 0x80;
-    static readonly END_FLAG = 0x40;
-    static readonly BEGIN_END_FLAG = BitsUtil.BEGIN_FLAG | BitsUtil.END_FLAG;
-    static readonly LISTENER_FLAG = 0x01;
-
     static readonly NULL_ARRAY_LENGTH = -1;
-
-    static readonly FRAME_LENGTH_FIELD_OFFSET = 0;
-    static readonly VERSION_FIELD_OFFSET = BitsUtil.FRAME_LENGTH_FIELD_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
-    static readonly FLAGS_FIELD_OFFSET = BitsUtil.VERSION_FIELD_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
-    static readonly TYPE_FIELD_OFFSET = BitsUtil.FLAGS_FIELD_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
-    static readonly CORRELATION_ID_FIELD_OFFSET = BitsUtil.TYPE_FIELD_OFFSET + BitsUtil.SHORT_SIZE_IN_BYTES;
-    static readonly PARTITION_ID_FIELD_OFFSET = BitsUtil.CORRELATION_ID_FIELD_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
-    static readonly DATA_OFFSET_FIELD_OFFSET = BitsUtil.PARTITION_ID_FIELD_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
-
-    static readonly HEADER_SIZE = BitsUtil.DATA_OFFSET_FIELD_OFFSET + BitsUtil.SHORT_SIZE_IN_BYTES;
 
     static writeUInt32(buffer: Buffer, pos: number, val: number, isBigEndian: boolean): void {
         if (isBigEndian) {

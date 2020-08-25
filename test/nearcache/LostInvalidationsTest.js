@@ -15,18 +15,17 @@
  */
 'use strict';
 
-const RC = require('../RC');
-const Client = require('../../').Client;
 const expect = require('chai').expect;
 const fs = require('fs');
-const Util = require('../Util');
+const RC = require('../RC');
+const { Client } = require('../../');
 const { DeferredPromise } = require('../../lib/util/Util');
+const Util = require('../Util');
 
-describe('LostInvalidation', function () {
+describe('LostInvalidationTest', function () {
     this.timeout(30000);
 
     let cluster;
-    let member;
     let client;
     let modifyingClient;
 
@@ -38,10 +37,10 @@ describe('LostInvalidation', function () {
         const clientRegistrationKey = client.getListenerService().activeRegistrations
             .get(listenerId).get(client.getConnectionManager().getRandomConnection());
         const correlationId = clientRegistrationKey.correlationId;
-        const handler = client.getInvocationService().eventHandlers[correlationId].handler;
+        const handler = client.getInvocationService().eventHandlers.get(correlationId).handler;
         const deferred = DeferredPromise();
         let numberOfBlockedInvalidations = 0;
-        client.getInvocationService().eventHandlers[correlationId].handler = function () {
+        client.getInvocationService().eventHandlers.get(correlationId).handler = () => {
             numberOfBlockedInvalidations++;
             if (notifyAfterNumberOfEvents !== undefined && notifyAfterNumberOfEvents === numberOfBlockedInvalidations) {
                 deferred.resolve();
@@ -55,7 +54,7 @@ describe('LostInvalidation', function () {
     }
 
     function unblockInvalidationEvents(client, metadata) {
-        client.getInvocationService().eventHandlers[metadata.correlationId].handler = metadata.handler;
+        client.getInvocationService().eventHandlers.get(metadata.correlationId).handler = metadata.handler;
     }
 
     before(function () {
@@ -63,9 +62,6 @@ describe('LostInvalidation', function () {
             .then(function (resp) {
                 cluster = resp;
                 return RC.startMember(cluster.id);
-            })
-            .then(function (m) {
-                member = m;
             });
     });
 

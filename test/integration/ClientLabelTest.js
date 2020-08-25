@@ -16,46 +16,39 @@
 
 'use strict';
 
-const expect = require('chai').expect;
-const Client = require('../../.').Client;
-const Controller = require('../RC');
+const { expect } = require('chai');
+const { Client } = require('../../.');
+const RC = require('../RC');
 
 describe('ClientLabelTest', function () {
 
     this.timeout(32000);
     let cluster, client;
 
-    before(function () {
-        return Controller.createCluster(null, null)
-            .then((c) => {
-                cluster = c;
-                return Controller.startMember(cluster.id);
-            });
+    before(async function () {
+        cluster = await RC.createCluster(null, null);
+        return RC.startMember(cluster.id);
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         return client.shutdown();
     });
 
-    after(function () {
-        return Controller.terminateCluster(cluster.id);
+    after(async function () {
+        return RC.terminateCluster(cluster.id);
     });
 
-    it('labels should be received on member side', function () {
-        return Client.newHazelcastClient({
+    it('labels should be received on member side', async function () {
+        client = await Client.newHazelcastClient({
             clusterName: cluster.id,
             clientLabels: ['testLabel']
-        }).then((c) => {
-            client = c;
-
-            const script = 'var client = instance_0.getClientService().getConnectedClients().iterator().next();\n' +
-                'result = client.getLabels().iterator().next();\n';
-
-            return Controller.executeOnController(cluster.id, script, 1);
-        }).then((res) => {
-            expect(res.result).to.not.be.null;
-            expect(res.result.toString()).to.equal('testLabel');
         });
+
+        const script = 'var client = instance_0.getClientService().getConnectedClients().iterator().next();\n' +
+            'result = client.getLabels().iterator().next();\n';
+        const res = await RC.executeOnController(cluster.id, script, 1);
+        expect(res.result).to.not.be.null;
+        expect(res.result.toString()).to.equal('testLabel');
     });
 
 });
