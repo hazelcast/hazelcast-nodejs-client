@@ -24,7 +24,7 @@ import {UnsupportedOperationError} from '../../core';
 import {ATOMIC_LONG_SERVICE} from './ClientRaftProxyFactory';
 
 /** @internal */
-export class AtomicLongProxy<E> extends BaseProxy implements IAtomicLong<E> {
+export class AtomicLongProxy extends BaseProxy implements IAtomicLong {
 
     private readonly groupId: string;
     private readonly objectName: string;
@@ -41,6 +41,42 @@ export class AtomicLongProxy<E> extends BaseProxy implements IAtomicLong<E> {
 
     // TODO override
     destroy(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    addAndGet(delta: Long | number): Promise<Long> {
+        return Promise.resolve(new Long(1));
+    }
+
+    compareAndSet(expect: Long | number, update: Long | number): Promise<boolean> {
+        return Promise.resolve(true);
+    }
+
+    decrementAndGet(): Promise<Long> {
+        return Promise.resolve(new Long(1));
+    }
+
+    get(): Promise<Long> {
+        return Promise.resolve(new Long(1));
+    }
+
+    getAndAdd(delta: Long | number): Promise<Long> {
+        return Promise.resolve(new Long(1));
+    }
+
+    getAndSet(newValue: Long | number): Promise<Long> {
+        return Promise.resolve(new Long(1));
+    }
+
+    incrementAndGet(): Promise<Long> {
+        return Promise.resolve(new Long(1));
+    }
+
+    getAndIncrement(): Promise<Long> {
+        return Promise.resolve(new Long(1));
+    }
+
+    set(newValue: Long | number): Promise<void> {
         return Promise.resolve();
     }
 

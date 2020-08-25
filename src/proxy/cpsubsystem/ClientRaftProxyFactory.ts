@@ -15,6 +15,7 @@
  */
 /** @ignore *//** */
 
+import * as assert from 'assert';
 import * as Promise from 'bluebird';
 import {
     DistributedObject,
@@ -22,20 +23,40 @@ import {
 } from '../../core';
 import {HazelcastClient} from '../../HazelcastClient';
 import {AtomicLongProxy} from './AtomicLongProxy';
+import {assertString} from '../../util/Util';
 
 /** @internal */
 export const ATOMIC_LONG_SERVICE = 'hz:raft:atomicLongService';
+const DEFAULT_GROUP_NAME = 'default';
 
 /** @internal */
 export function withoutDefaultGroupName(name: string): string {
-    // TODO
+    assertString(name);
+    name = name.trim();
+    const i = name.indexOf('@');
+    if (i === -1) {
+        return name;
+    }
+
+    assert(name.slice(i + 1).indexOf('@') === -1, 'Custom group name must be specified at most once');
+    const groupName = name.slice(i + 1).trim();
+    if (groupName === DEFAULT_GROUP_NAME) {
+        return name.slice(0, i);
+    }
     return name;
 }
 
 /** @internal */
-export function getGroupNameForProxy(name: string): string {
-    // TODO
-    return name;
+export function getObjectNameForProxy(name: string): string {
+    assertString(name);
+    const i = name.indexOf('@');
+    if (i === -1) {
+        return name;
+    }
+    assert(i < (name.length - 1), 'Custom CP group name cannot be empty string');
+    const objectName = name.slice(0, i).trim();
+    assert(objectName.length > 0, 'Object name cannot be empty string');
+    return objectName;
 }
 
 /** @internal */
@@ -49,7 +70,7 @@ export class ClientRaftProxyFactory {
 
     public getOrCreateProxy(proxyName: string, serviceName: string): Promise<DistributedObject> {
         proxyName = withoutDefaultGroupName(proxyName);
-        const objectName = getGroupNameForProxy(proxyName);
+        const objectName = getObjectNameForProxy(proxyName);
 
         return this.getGroupId(proxyName, objectName).then((groupId) => {
             if (serviceName === ATOMIC_LONG_SERVICE) {
