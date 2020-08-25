@@ -18,7 +18,8 @@
 import {Data} from './Data';
 
 /** @internal */
-export function deserializeEntryList<K, V>(toObject: Function, entrySet: Array<[Data, Data]>): Array<[K, V]> {
+export function deserializeEntryList<K, V>(toObject: (data: Data) => any,
+                                           entrySet: Array<[Data, Data]>): Array<[K, V]> {
     const deserializedSet: Array<[K, V]> = [];
     entrySet.forEach(function (entry): void {
         deserializedSet.push([toObject(entry[0]), toObject(entry[1])]);
@@ -27,7 +28,8 @@ export function deserializeEntryList<K, V>(toObject: Function, entrySet: Array<[
 }
 
 /** @internal */
-export function serializeList(toData: Function, input: any[]): Data[] {
+export function serializeList(toData: (obj: any) => Data,
+                              input: any[]): Data[] {
     return input.map((each) => {
         return toData(each);
     });

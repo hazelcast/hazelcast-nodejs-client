@@ -51,6 +51,9 @@ import {MapEvent} from './MapListener';
 import {ClientMessage} from '../protocol/ClientMessage';
 import {deserializeEntryList} from '../serialization/SerializationUtil';
 
+type EntryEventHander = (key: Data, value: Data, oldValue: Data, mergingValue: Data,
+                         eventType: number, uuid: UUID, numberOfAffectedEntries: number) => void
+
 export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements ReplicatedMap<K, V> {
 
     put(key: K, value: V, ttl: Long | number = 0): Promise<V> {
@@ -200,7 +203,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
     private addEntryListenerInternal(listener: EntryListener<K, V>, predicate: Predicate,
                                      key: K): Promise<string> {
         const toObject = this.toObject.bind(this);
-        const entryEventHandler = (key: K, value: V, oldValue: V, mergingValue: V,
+        const entryEventHandler = (key: Data, value: Data, oldValue: Data, mergingValue: Data,
                                    event: number, uuid: UUID, numberOfAffectedEntries: number): void => {
             const member = this.client.getClusterService().getMember(uuid);
             const name = this.name;
@@ -233,7 +236,9 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
                 listener[mapEventMethod].apply(null, [mapEvent]);
             }
         };
-        let listenerHandler: Function;
+        let listenerHandler: (message: ClientMessage,
+                              handler: EntryEventHander,
+                              toObjectFn: (data: Data) => any) => void;
         let codec: ListenerMessageCodec;
         if (key && predicate) {
             const keyData = this.toData(key);

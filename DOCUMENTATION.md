@@ -135,7 +135,7 @@ This chapter provides information on how to get started with your Hazelcast Node
 ## 1.1. Requirements
 
 - Windows, Linux or MacOS
-- Node.js 8 or newer
+- Node.js 10 or newer
 - Java 8 or newer
 - Hazelcast IMDG 4.0 or newer
 - Latest Hazelcast Node.js client
