@@ -19,9 +19,14 @@ const { expect } = require('chai');
 const fs = require('fs');
 const Long = require('long');
 const RC = require('./../RC');
-const { Client } = require('../../');
+const {
+    Client,
+    DistributedObjectDestroyedError
+} = require('../../');
 
 describe('AtomicLongProxyTest', function () {
+
+    this.timeout(30000);
 
     let cluster;
     let client;
@@ -32,7 +37,6 @@ describe('AtomicLongProxyTest', function () {
     }
 
     before(async function () {
-        this.timeout(30000);
         cluster = await RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_cpsubsystem.xml', 'utf8'))
         await Promise.all([
             RC.startMember(cluster.id),
@@ -40,19 +44,39 @@ describe('AtomicLongProxyTest', function () {
             RC.startMember(cluster.id)
         ]);
         client = await Client.newHazelcastClient({ clusterName: cluster.id });
-    });
-
-    beforeEach(async function () {
         long = await client.getAtomicLong('along');
     });
 
     afterEach(async function () {
-        return long.destroy();
+        // return to default value
+        await long.set(0);
     });
 
     after(async function () {
         client.shutdown();
         return RC.shutdownCluster(cluster.id);
+    });
+
+    it('should create AtomicLong with respect to given CP group', async function () {
+        const longInAnotherGroup = await client.getAtomicLong('along@mygroup');
+
+        const value1 = await longInAnotherGroup.incrementAndGet();
+        expectLong(1, value1);
+        // the following value has to be 0,
+        // as `long` belongs to the default CP group
+        const value2 = await long.get();
+        expectLong(0, value2);
+    });
+
+    it('destroy: should destroy AtomicLong', async function () {
+        const anotherLong = await client.getAtomicLong('another-long');
+        await anotherLong.destroy();
+
+        try {
+            await anotherLong.get();
+        } catch (err) {
+            expect(err).to.be.instanceOf(DistributedObjectDestroyedError);
+        }
     });
 
     it('get: should return 0 initially', async function () {
@@ -130,9 +154,9 @@ describe('AtomicLongProxyTest', function () {
         expectLong(0, value);
     });
 
-    it('getAndIncrement: should increment the value', async function () {
-        await long.getAndIncrement(2);
+    it('getAndIncrement: should increment', async function () {
+        await long.getAndIncrement();
         const value = await long.get();
-        expectLong(2, value);
+        expectLong(1, value);
     });
 });
