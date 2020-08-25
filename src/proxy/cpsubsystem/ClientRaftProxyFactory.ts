@@ -27,8 +27,6 @@ import {RaftGroupId} from './RaftGroupId';
 import {CPGroupCreateCPGroupCodec} from '../../codec/CPGroupCreateCPGroupCodec';
 import {assertString} from '../../util/Util';
 
-/** @internal */
-export const ATOMIC_LONG_SERVICE = 'hz:raft:atomicLongService';
 const DEFAULT_GROUP_NAME = 'default';
 
 /** @internal */
@@ -64,6 +62,8 @@ export function getObjectNameForProxy(name: string): string {
 /** @internal */
 export class ClientRaftProxyFactory {
 
+    public static readonly ATOMIC_LONG_SERVICE = 'hz:raft:atomicLongService';
+
     private readonly client: HazelcastClient;
 
     constructor(client: HazelcastClient) {
@@ -75,7 +75,7 @@ export class ClientRaftProxyFactory {
         const objectName = getObjectNameForProxy(proxyName);
 
         return this.getGroupId(proxyName).then((groupId) => {
-            if (serviceName === ATOMIC_LONG_SERVICE) {
+            if (serviceName === ClientRaftProxyFactory.ATOMIC_LONG_SERVICE) {
                 return new AtomicLongProxy(this.client, groupId, proxyName, objectName);
             }
             throw new IllegalStateError('Unexpected service name: ' + serviceName);

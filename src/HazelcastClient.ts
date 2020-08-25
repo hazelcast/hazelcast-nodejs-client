@@ -133,6 +133,7 @@ export class HazelcastClient {
         this.addressProvider = this.createAddressProvider();
         this.connectionManager = new ClientConnectionManager(this);
         this.invocationService = new InvocationService(this);
+        this.cpProxyFactory = new ClientRaftProxyFactory(this);
         this.proxyManager = new ProxyManager(this);
         this.clusterService = new ClusterService(this);
         this.lifecycleService = new LifecycleServiceImpl(this);
@@ -314,7 +315,7 @@ export class HazelcastClient {
      * @returns {Promise<PNCounter>}
      */
     getAtomicLong(name: string): Promise<IAtomicLong> {
-        return this.cpProxyFactory.getOrCreateProxy(name, ProxyManager.PNCOUNTER_SERVICE) as Promise<IAtomicLong>;
+        return this.cpProxyFactory.getOrCreateProxy(name, ClientRaftProxyFactory.ATOMIC_LONG_SERVICE) as Promise<IAtomicLong>;
     }
 
     /**

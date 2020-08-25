@@ -21,7 +21,7 @@ import {HazelcastClient} from '../../HazelcastClient';
 import {BaseProxy} from '../BaseProxy';
 import {IAtomicLong} from '../IAtomicLong';
 import {UnsupportedOperationError} from '../../core';
-import {ATOMIC_LONG_SERVICE} from './ClientRaftProxyFactory';
+import {ClientRaftProxyFactory} from './ClientRaftProxyFactory';
 import {RaftGroupId} from './RaftGroupId';
 import {CPGroupDestroyCPObjectCodec} from '../../codec/CPGroupDestroyCPObjectCodec';
 import {AtomicLongAddAndGetCodec} from '../../codec/AtomicLongAddAndGetCodec';
@@ -37,7 +37,7 @@ export class AtomicLongProxy extends BaseProxy implements IAtomicLong {
     private readonly objectName: string;
 
     constructor(client: HazelcastClient, groupId: RaftGroupId, proxyName: string, objectName: string) {
-        super(client, ATOMIC_LONG_SERVICE, proxyName);
+        super(client, ClientRaftProxyFactory.ATOMIC_LONG_SERVICE, proxyName);
         this.groupId = groupId;
         this.objectName = objectName;
     }

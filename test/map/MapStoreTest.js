@@ -15,15 +15,15 @@
  */
 'use strict';
 
-const expect = require("chai").expect;
+const expect = require('chai').expect;
 const fs = require('fs');
-const HazelcastClient = require("../../lib/index.js").Client;
 const RC = require('./../RC');
-const fillMap = require('../Util').fillMap;
-const promiseWaitMilliseconds = require('../Util').promiseWaitMilliseconds;
+const { Client } = require('../../lib/index.js');
+const { fillMap } = require('../Util');
+const { promiseWaitMilliseconds } = require('../Util');
 const Util = require('../Util');
 
-describe('MapStore', function () {
+describe('MapStoreTest', function () {
 
     let cluster;
     let client;
@@ -37,7 +37,7 @@ describe('MapStore', function () {
                 return RC.startMember(cluster.id);
             })
             .then(function (member) {
-                return HazelcastClient.newHazelcastClient({ clusterName: cluster.id });
+                return Client.newHazelcastClient({ clusterName: cluster.id });
             })
             .then(function (hazelcastClient) {
                 client = hazelcastClient;
@@ -208,21 +208,21 @@ describe('MapStore', function () {
             updated: event => {
                 map.removeEntryListener(listenerId)
                     .then(() => {
-                        if (event.oldValue === "1") {
+                        if (event.oldValue === '1') {
                             done();
                         } else {
-                            done(new Error("Old value for the received event does not match with expected value! " +
-                                "Expected: 1, received: " + event.oldValue));
+                            done(new Error('Old value for the received event does not match with expected value! ' +
+                                'Expected: 1, received: ' + event.oldValue));
                         }
                     });
             },
         }
         map.evictAll()
-            .then(() => map.put("1", "1"))
+            .then(() => map.put('1', '1'))
             .then(() => map.addEntryListener(listener, null, true))
             .then(id => {
                 listenerId = id;
-                return map.putAll([["1", "2"]]);
+                return map.putAll([['1', '2']]);
             });
     });
 
@@ -236,18 +236,18 @@ describe('MapStore', function () {
                         if (event.oldValue == null) {
                             done();
                         } else {
-                            done(new Error("Old value for the received event does not match with expected value! " +
-                                "Expected: null, received: " + event.oldValue));
+                            done(new Error('Old value for the received event does not match with expected value! ' +
+                                'Expected: null, received: ' + event.oldValue));
                         }
                     });
             },
         }
         map.evictAll()
-            .then(() => map.put("1", "1"))
+            .then(() => map.put('1', '1'))
             .then(() => map.addEntryListener(listener, null, true))
             .then(id => {
                 listenerId = id;
-                return map.setAll([["1", "2"]]);
+                return map.setAll([['1', '2']]);
             });
     });
 });
