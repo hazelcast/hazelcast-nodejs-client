@@ -374,9 +374,7 @@ export class InvocationService {
      * Removes the handler for all event handlers with a specific correlation id.
      */
     removeEventHandler(correlationId: number): void {
-        if (this.eventHandlers.has(correlationId)) {
-            this.eventHandlers.delete(correlationId);
-        }
+        this.eventHandlers.delete(correlationId);
     }
 
     backupEventHandler(clientMessage: ClientMessage): void {
