@@ -41,7 +41,7 @@ export interface AtomicLongAlterResponseParams {
 
 /** @internal */
 export class AtomicLongAlterCodec {
-    static encodeRequest(groupId: RaftGroupId, name: string, function: Data, returnValueType: number): ClientMessage {
+    static encodeRequest(groupId: RaftGroupId, name: string, _function: Data, returnValueType: number): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(false);
 
@@ -53,7 +53,7 @@ export class AtomicLongAlterCodec {
 
         RaftGroupIdCodec.encode(clientMessage, groupId);
         StringCodec.encode(clientMessage, name);
-        DataCodec.encode(clientMessage, function);
+        DataCodec.encode(clientMessage, _function);
         return clientMessage;
     }
 
