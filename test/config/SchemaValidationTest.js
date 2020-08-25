@@ -25,7 +25,7 @@ describe('SchemaValidationTest', function () {
     let schema;
 
     before(function () {
-        schema = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../config-schema.json'), 'utf8'));
+        schema = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'configurations/config-schema.json'), 'utf8'));
     });
 
     function validateCandidate(candidate) {

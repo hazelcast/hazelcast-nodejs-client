@@ -37,15 +37,19 @@ const BEGIN_DATA_STRUCTURE_FLAG = 1 << 12;
 const END_DATA_STRUCTURE_FLAG = 1 << 11;
 const IS_NULL_FLAG = 1 << 10;
 const IS_EVENT_FLAG = 1 << 9;
+/** @internal */
+export const IS_BACKUP_AWARE_FLAG = 1 << 8;
+const IS_BACKUP_EVENT_FLAG = 1 << 7;
 
 /** @internal */
 export const SIZE_OF_FRAME_LENGTH_AND_FLAGS = BitsUtil.INT_SIZE_IN_BYTES + BitsUtil.SHORT_SIZE_IN_BYTES;
 
 /** @internal */
 export class Frame {
+
     content: Buffer;
-    flags: number;
     next: Frame;
+    flags: number;
 
     constructor(content: Buffer, flags?: number) {
         this.content = content;
@@ -89,6 +93,10 @@ export class Frame {
         return this.isFlagSet(this.flags, IS_EVENT_FLAG);
     }
 
+    hasBackupEventFlag(): boolean {
+        return this.isFlagSet(this.flags, IS_BACKUP_EVENT_FLAG);
+    }
+
     isFinalFrame(): boolean {
         return this.isFlagSet(this.flags, IS_FINAL_FLAG);
     }
@@ -103,6 +111,10 @@ export class Frame {
 
     hasEndFragmentFlag(): boolean {
         return this.isFlagSet(this.flags, END_FRAGMENT_FLAG);
+    }
+
+    addFlag(flag: number): void {
+        this.flags |= flag;
     }
 
     private isFlagSet(flags: number, flagMask: number): boolean {
@@ -120,6 +132,7 @@ export const END_FRAME = new Frame(Buffer.allocUnsafe(0), END_DATA_STRUCTURE_FLA
 
 /** @internal */
 export class ClientMessage {
+
     startFrame: Frame;
     endFrame: Frame;
     private retryable: boolean;
@@ -197,8 +210,8 @@ export class ClientMessage {
         this.startFrame.content.writeInt32LE(partitionId, PARTITION_ID_OFFSET);
     }
 
-    getHeaderFlags(): number {
-        return this.startFrame.flags;
+    getNumberOfBackupAcks(): number {
+        return this.startFrame.content.readUInt8(RESPONSE_BACKUP_ACKS_OFFSET);
     }
 
     isRetryable(): boolean {

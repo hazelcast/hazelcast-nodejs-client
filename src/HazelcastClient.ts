@@ -468,6 +468,7 @@ export class HazelcastClient {
             .then(() => {
                 this.listenerService.start();
                 this.proxyManager.init();
+                this.invocationService.start();
                 this.loadBalancer.initLoadBalancer(this.clusterService, this.config);
                 this.statistics.start();
                 return this.sendStateToCluster();

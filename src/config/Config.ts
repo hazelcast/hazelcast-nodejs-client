@@ -40,8 +40,9 @@ export interface ClientConfig {
     clusterName?: string;
 
     /**
-     * Name of the client instance. By default, set to `hz.client_${CLIENT_ID}`, where
-     * `CLIENT_ID` starts from `0` and it is incremented by `1` for each new client.
+     * Name of the client instance. By default, set to `hz.client_${CLIENT_ID}`,
+     * where `CLIENT_ID` starts from `0` and it is incremented by `1`
+     * for each new client.
      */
     instanceName?: string;
 
@@ -131,9 +132,20 @@ export interface ClientConfig {
     customLogger?: ILogger;
 
     /**
-     * Custom credentials to be used as a part of authentication on the cluster.
+     * Custom credentials to be used as a part of authentication on
+     * the cluster.
      */
     customCredentials?: any;
+
+    /**
+     * Enables client to get backup acknowledgements directly from
+     * the member that backups are applied, which reduces number of hops
+     * and increases performance for smart clients.
+     *
+     * Enabled by default for smart clients. This option has no effect
+     * for unisocket clients.
+     */
+    backupAckToClientEnabled?: boolean;
 
     /**
      * User-defined properties.
@@ -150,6 +162,7 @@ export class ClientConfigImpl implements ClientConfig {
         'hazelcast.client.heartbeat.timeout': 60000,
         'hazelcast.client.invocation.retry.pause.millis': 1000,
         'hazelcast.client.invocation.timeout.millis': 120000,
+        'hazelcast.client.internal.clean.resources.millis': 100,
         'hazelcast.client.cloud.url': 'https://coordinator.hazelcast.cloud',
         'hazelcast.client.statistics.enabled': false,
         'hazelcast.client.statistics.period.seconds': Statistics.PERIOD_SECONDS_DEFAULT_VALUE,
@@ -161,6 +174,8 @@ export class ClientConfigImpl implements ClientConfig {
         'hazelcast.client.autopipelining.threshold.bytes': 8192,
         'hazelcast.client.socket.no.delay': true,
         'hazelcast.client.shuffle.member.list': true,
+        'hazelcast.client.operation.backup.timeout.millis': 5000,
+        'hazelcast.client.operation.fail.on.indeterminate.state': false,
     };
 
     instanceName: string;
@@ -177,6 +192,7 @@ export class ClientConfigImpl implements ClientConfig {
     clusterName = 'dev';
     clientLabels: string[] = [];
     loadBalancer = new LoadBalancerConfigImpl();
+    backupAckToClientEnabled = true;
 
     private configPatternMatcher = new ConfigPatternMatcher();
 

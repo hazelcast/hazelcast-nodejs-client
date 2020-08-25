@@ -295,3 +295,10 @@ export class ReachedMaxSizeError extends HazelcastError {
         Object.setPrototypeOf(this, ReachedMaxSizeError.prototype);
     }
 }
+
+export class IndeterminateOperationStateError extends HazelcastError {
+    constructor(msg: string, cause?: Error) {
+        super(msg, cause);
+        Object.setPrototypeOf(this, IndeterminateOperationStateError.prototype);
+    }
+}

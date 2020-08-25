@@ -39,7 +39,7 @@ describe('ClientMessageTest', function () {
         const cmDecode = ClientMessage.createForDecode(cmEncode.startFrame);
 
         expect(cmEncode.getMessageType()).to.equal(cmDecode.getMessageType());
-        expect(cmEncode.getHeaderFlags()).to.equal(cmDecode.getHeaderFlags());
+        expect(cmEncode.getStartFrame().flags).to.equal(cmDecode.getStartFrame().flags);
         expect(cmEncode.getCorrelationId()).to.equal(cmDecode.getCorrelationId());
         expect(cmEncode.getPartitionId()).to.equal(cmDecode.getPartitionId());
         expect(cmEncode.getTotalFrameLength()).to.equal(cmDecode.getTotalFrameLength());
@@ -68,7 +68,7 @@ describe('ClientMessageTest', function () {
         expect(originalFrame.flags).to.equal(copyFrame.flags);
 
         expect(originalMessage.getMessageType()).to.equal(copyMessage.getMessageType());
-        expect(originalMessage.getHeaderFlags()).to.equal(copyMessage.getHeaderFlags());
+        expect(originalMessage.getStartFrame().flags).to.equal(copyMessage.getStartFrame().flags);
         expect(originalMessage.getPartitionId()).to.equal(copyMessage.getPartitionId());
         expect(originalMessage.getTotalFrameLength()).to.equal(copyMessage.getTotalFrameLength());
         expect(copyMessage.getCorrelationId()).to.equal(-1);
