@@ -30,6 +30,8 @@ const { ClientLocalBackupListenerCodec } = require('../../lib/codec/ClientLocalB
  */
 describe('ClientBackupAcksTest', function () {
 
+    this.timeout(15000);
+
     let cluster;
     let client;
 
