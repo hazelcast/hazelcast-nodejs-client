@@ -287,3 +287,6 @@ export class ClientMessage {
         return Buffer.concat(buffers, totalLength);
     }
 }
+
+/** @internal */
+export type ClientMessageHandler = (message: ClientMessage) => void;

@@ -22,6 +22,7 @@ import {BitsUtil} from '../util/BitsUtil';
 import {BuildInfo} from '../BuildInfo';
 import {HazelcastClient} from '../HazelcastClient';
 import {AddressImpl, IOError, UUID} from '../core';
+import {ClientMessageHandler} from '../protocol/ClientMessage';
 import {DeferredPromise} from '../util/Util';
 import {ILogger} from '../logging/ILogger';
 import {
@@ -250,7 +251,7 @@ export class FragmentedClientMessageHandler {
         this.logger = logger;
     }
 
-    handleFragmentedMessage(clientMessage: ClientMessage, callback: Function): void {
+    handleFragmentedMessage(clientMessage: ClientMessage, callback: ClientMessageHandler): void {
         const fragmentationFrame = clientMessage.startFrame;
         const fragmentationId = clientMessage.getFragmentationId();
         clientMessage.dropFragmentationFrame();
@@ -413,7 +414,7 @@ export class ClientConnection {
      * Registers a function to pass received data on 'data' events on this connection.
      * @param callback
      */
-    registerResponseCallback(callback: Function): void {
+    registerResponseCallback(callback: ClientMessageHandler): void {
         this.socket.on('data', (buffer: Buffer) => {
             this.lastReadTimeMillis = Date.now();
             this.reader.append(buffer);

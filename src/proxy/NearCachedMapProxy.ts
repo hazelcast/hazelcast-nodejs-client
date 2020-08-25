@@ -15,6 +15,7 @@
  */
 /** @ignore *//** */
 
+import * as Long from 'long';
 import * as Promise from 'bluebird';
 import {MapAddNearCacheInvalidationListenerCodec} from '../codec/MapAddNearCacheInvalidationListenerCodec';
 import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
@@ -27,8 +28,7 @@ import {NearCache} from '../nearcache/NearCache';
 import {StaleReadDetectorImpl} from '../nearcache/StaleReadDetector';
 import {Data} from '../serialization/Data';
 import {MapProxy} from './MapProxy';
-import {ClientMessage} from '../protocol/ClientMessage';
-import * as Long from 'long';
+import {ClientMessage, ClientMessageHandler} from '../protocol/ClientMessage';
 
 /** @internal */
 export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
@@ -228,7 +228,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         };
     }
 
-    private createNearCacheEventHandler(): Promise<Function> {
+    private createNearCacheEventHandler(): Promise<ClientMessageHandler> {
         const repairingTask = this.client.getRepairingTask();
         return repairingTask.registerAndGetHandler(this.getName(), this.nearCache).then((repairingHandler) => {
             const staleReadDetector = new StaleReadDetectorImpl(

@@ -71,6 +71,16 @@ export interface SerializationService {
 
 }
 
+type PartitionStrategy = (obj: any) => number;
+
+const defaultPartitionStrategy = (obj: any): number => {
+    if (obj == null || !obj['getPartitionHash']) {
+        return 0;
+    } else {
+        return obj.getPartitionHash();
+    }
+}
+
 /** @internal */
 export class SerializationServiceV1 implements SerializationService {
 
@@ -95,7 +105,7 @@ export class SerializationServiceV1 implements SerializationService {
         }
     }
 
-    toData(object: any, partitioningStrategy: any = this.defaultPartitionStrategy): Data {
+    toData(object: any, partitioningStrategy: PartitionStrategy = defaultPartitionStrategy): Data {
         if (this.isData(object)) {
             return object as Data;
         }
@@ -338,15 +348,7 @@ export class SerializationServiceV1 implements SerializationService {
         return serializer;
     }
 
-    protected calculatePartitionHash(object: any, strategy: Function): number {
+    protected calculatePartitionHash(object: any, strategy: PartitionStrategy): number {
         return strategy(object);
-    }
-
-    private defaultPartitionStrategy(obj: any): number {
-        if (obj == null || !obj['getPartitionHash']) {
-            return 0;
-        } else {
-            return obj.getPartitionHash();
-        }
     }
 }

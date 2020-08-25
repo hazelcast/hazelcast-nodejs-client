@@ -11,26 +11,26 @@
         "@types/long": "4.0.1"
     },
     "devDependencies": {
-        "@types/node": "^8.10.60",
-        "@typescript-eslint/eslint-plugin": "^2.34.0",
-        "@typescript-eslint/parser": "^2.34.0",
+        "@types/node": "^10.17.28",
+        "@typescript-eslint/eslint-plugin": "^3.10.0",
+        "@typescript-eslint/parser": "^3.10.0",
         "chai": "^4.2.0",
         "chai-as-promised": "^7.1.1",
-        "eslint": "^6.8.0",
+        "eslint": "^7.7.0",
         "jsonschema": "^1.2.6",
-        "mocha": "^7.2.0",
-        "mocha-junit-reporter": "^1.23.3",
+        "mocha": "^8.1.1",
+        "mocha-junit-reporter": "^2.0.0",
         "mousse": "^0.3.1",
         "nyc": "^15.1.0",
         "rimraf": "^3.0.2",
-        "sinon": "^9.0.2",
+        "sinon": "^9.0.3",
         "thrift": "^0.12.0",
         "typedoc": "^0.18.0",
-        "typescript": "^3.9.5",
-        "winston": "^3.2.1"
+        "typescript": "^3.9.7",
+        "winston": "^3.3.3"
     },
     "engines": {
-        "node": ">=8"
+        "node": ">=10"
     },
     "scripts": {
         "clean": "rimraf lib *.jar *.log",

@@ -89,6 +89,9 @@ import {IndexUtil} from '../util/IndexUtil';
 import {PagingPredicateHolder} from '../protocol/PagingPredicateHolder';
 import {MapEntriesWithPagingPredicateCodec} from '../codec/MapEntriesWithPagingPredicateCodec';
 
+type EntryEventHander = (key: Data, value: Data, oldValue: Data, mergingValue: Data, eventType: number,
+                         uuid: UUID, numberOfAffectedEntries: number) => void;
+
 /** @internal */
 export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     aggregate<R>(aggregator: Aggregator<R>): Promise<R> {
@@ -691,7 +694,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             }
         }
         const toObject = this.toObject.bind(this);
-        const entryEventHandler = (key: K, value: V, oldValue: V, mergingValue: V, eventType: number,
+        const entryEventHandler = (key: Data, value: Data, oldValue: Data, mergingValue: Data, eventType: number,
                                    uuid: UUID, numberOfAffectedEntries: number): void => {
             const member = this.client.getClusterService().getMember(uuid);
             const name = this.name;
@@ -736,7 +739,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             }
         };
         let codec: ListenerMessageCodec;
-        let listenerHandler: Function;
+        let listenerHandler: (message: ClientMessage, handler: EntryEventHander) => void;
         if (key && predicate) {
             const keyData = this.toData(key);
             const predicateData = this.toData(predicate);
@@ -755,7 +758,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             listenerHandler = MapAddEntryListenerCodec.handle;
         }
         return this.client.getListenerService()
-            .registerListener(codec, (m: ClientMessage) => {
+            .registerListener(codec, (m: ClientMessage): void => {
                 listenerHandler(m, entryEventHandler);
             });
     }

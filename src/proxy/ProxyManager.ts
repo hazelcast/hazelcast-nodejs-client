@@ -164,7 +164,7 @@ export class ProxyManager {
     }
 
     public addDistributedObjectListener(distributedObjectListener: DistributedObjectListener): Promise<string> {
-        const handler = function (clientMessage: ClientMessage): void {
+        const handler = (clientMessage: ClientMessage): void => {
             const converterFunc = (objectName: string, serviceName: string, eventType: string): void => {
                 eventType = eventType.toLowerCase();
                 const distributedObjectEvent = new DistributedObjectEvent(eventType, serviceName, objectName);

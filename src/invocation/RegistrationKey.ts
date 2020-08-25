@@ -16,22 +16,22 @@
 /** @ignore *//** */
 
 import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
-import {ClientMessage} from '../protocol/ClientMessage';
+import {ClientMessage, ClientMessageHandler} from '../protocol/ClientMessage';
 
 /** @internal */
 export class RegistrationKey {
 
     private readonly userRegistrationId: string;
-    private registerHandlerFunc: Function;
+    private registerHandlerFn: ClientMessageHandler;
     private registerRequest: ClientMessage;
     private codec: ListenerMessageCodec;
 
     constructor(regId: string,
                 codec: ListenerMessageCodec,
                 registerRequest?: ClientMessage,
-                registerHandlerFunc?: Function) {
+                registerHandlerFn?: ClientMessageHandler) {
         this.userRegistrationId = regId;
-        this.registerHandlerFunc = registerHandlerFunc;
+        this.registerHandlerFn = registerHandlerFn;
         this.registerRequest = registerRequest;
         this.codec = codec;
     }
@@ -52,12 +52,12 @@ export class RegistrationKey {
         this.codec = value;
     }
 
-    getHandler(): Function {
-        return this.registerHandlerFunc;
+    getHandler(): ClientMessageHandler {
+        return this.registerHandlerFn;
     }
 
-    setHandler(handler: Function): void {
-        this.registerHandlerFunc = handler;
+    setHandler(handler: ClientMessageHandler): void {
+        this.registerHandlerFn = handler;
     }
 
     getUserRegistrationKey(): string {
