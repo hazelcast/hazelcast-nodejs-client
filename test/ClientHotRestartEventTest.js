@@ -34,17 +34,20 @@ describe('ClientHotRestartEventTest', function () {
     let client;
     let cluster;
 
+    const hotRestartDir = `/tmp/hot-restart-test-${randomString()}`;
+
     function createClusterConfig(port) {
         return `<?xml version="1.0" encoding="UTF-8"?>
                 <hazelcast xmlns="http://www.hazelcast.com/schema/config"
                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                     xsi:schemaLocation="http://www.hazelcast.com/schema/config
                     http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
+                    <cluster-name>hot-restart-test</cluster-name>
                     <network>
                         <port>${port}</port>
                     </network>
                     <hot-restart-persistence enabled="true">
-                        <base-dir>/tmp/hot-restart-test-${randomString()}</base-dir>
+                        <base-dir>${hotRestartDir}</base-dir>
                     </hot-restart-persistence>
                  </hazelcast>`;
     }
@@ -54,8 +57,7 @@ describe('ClientHotRestartEventTest', function () {
     });
 
     beforeEach(async function () {
-        // TODO need API to specify cluster name
-        cluster = await RC.createCluster(null, createClusterConfig(5701));
+        cluster = await RC.createClusterKeepClusterName(null, createClusterConfig(5701));
     });
 
     afterEach(async function () {
@@ -74,7 +76,7 @@ describe('ClientHotRestartEventTest', function () {
 
         await RC.shutdownCluster(cluster.id);
         // now stop cluster, restart it with the same name and then start member with port 5702
-        cluster = await RC.createCluster(null, createClusterConfig(5702));
+        cluster = await RC.createClusterKeepClusterName(null, createClusterConfig(5702));
         await RC.startMember(cluster.id);
 
         await listener.expectedPromise;
