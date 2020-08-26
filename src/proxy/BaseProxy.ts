@@ -26,7 +26,7 @@ import {UUID} from '../core/UUID';
  * Common super class for any proxy.
  * @internal
  */
-export class BaseProxy {
+export abstract class BaseProxy {
 
     protected client: HazelcastClient;
     protected readonly name: string;

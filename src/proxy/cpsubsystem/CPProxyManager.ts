@@ -60,7 +60,7 @@ export function getObjectNameForProxy(name: string): string {
 }
 
 /** @internal */
-export class ClientRaftProxyFactory {
+export class CPProxyManager {
 
     public static readonly ATOMIC_LONG_SERVICE = 'hz:raft:atomicLongService';
 
@@ -75,7 +75,7 @@ export class ClientRaftProxyFactory {
         const objectName = getObjectNameForProxy(proxyName);
 
         return this.getGroupId(proxyName).then((groupId) => {
-            if (serviceName === ClientRaftProxyFactory.ATOMIC_LONG_SERVICE) {
+            if (serviceName === CPProxyManager.ATOMIC_LONG_SERVICE) {
                 return new AtomicLongProxy(this.client, groupId, proxyName, objectName);
             }
             throw new IllegalStateError('Unexpected service name: ' + serviceName);

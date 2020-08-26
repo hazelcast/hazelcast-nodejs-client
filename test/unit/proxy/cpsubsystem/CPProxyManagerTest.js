@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 'use strict';
 
 const { expect } = require('chai');
@@ -21,9 +20,9 @@ const { AssertionError } = require('assert');
 const {
     withoutDefaultGroupName,
     getObjectNameForProxy
-} = require('../../../../lib/proxy/cpsubsystem/ClientRaftProxyFactory');
+} = require('../../../../lib/proxy/cpsubsystem/CPProxyManager');
 
-describe('ClientRaftProxyFactoryTest', function () {
+describe('CPProxyManagerTest', function () {
 
     it('withoutDefaultGroupName: should remove default group from result', function () {
         expect(withoutDefaultGroupName('test@default')).to.be.equal('test');

@@ -49,7 +49,7 @@ import {
     IAtomicLong
 } from './proxy';
 import {ProxyManager, NAMESPACE_SEPARATOR} from './proxy/ProxyManager';
-import {ClientRaftProxyFactory} from './proxy/cpsubsystem/ClientRaftProxyFactory';
+import {CPProxyManager} from './proxy/cpsubsystem/CPProxyManager';
 import {LockReferenceIdGenerator} from './proxy/LockReferenceIdGenerator';
 import {SerializationService, SerializationServiceV1} from './serialization/SerializationService';
 import {AddressProvider} from './connection/AddressProvider';
@@ -101,7 +101,7 @@ export class HazelcastClient {
     /** @internal */
     private readonly proxyManager: ProxyManager;
     /** @internal */
-    private readonly cpProxyFactory: ClientRaftProxyFactory;
+    private readonly cpProxyManager: CPProxyManager;
     /** @internal */
     private readonly nearCacheManager: NearCacheManager;
     /** @internal */
@@ -133,7 +133,7 @@ export class HazelcastClient {
         this.addressProvider = this.createAddressProvider();
         this.connectionManager = new ClientConnectionManager(this);
         this.invocationService = new InvocationService(this);
-        this.cpProxyFactory = new ClientRaftProxyFactory(this);
+        this.cpProxyManager = new CPProxyManager(this);
         this.proxyManager = new ProxyManager(this);
         this.clusterService = new ClusterService(this);
         this.lifecycleService = new LifecycleServiceImpl(this);
@@ -315,7 +315,7 @@ export class HazelcastClient {
      * @returns {Promise<PNCounter>}
      */
     getAtomicLong(name: string): Promise<IAtomicLong> {
-        return this.cpProxyFactory.getOrCreateProxy(name, ClientRaftProxyFactory.ATOMIC_LONG_SERVICE) as Promise<IAtomicLong>;
+        return this.cpProxyManager.getOrCreateProxy(name, CPProxyManager.ATOMIC_LONG_SERVICE) as Promise<IAtomicLong>;
     }
 
     /**
