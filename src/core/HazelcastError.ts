@@ -395,8 +395,8 @@ export class NullPointerError extends HazelcastError {
 }
 
 export class UndefinedErrorCodeError extends HazelcastError {
-    constructor(msg: string, className: string, serverStackTrace?: ServerErrorStackElement[]) {
-        super('Class name: ' + className + ' , Message: ' + msg, null, serverStackTrace);
+    constructor(msg: string, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
+        super(msg, cause, serverStackTrace);
         Object.setPrototypeOf(this, UndefinedErrorCodeError.prototype);
     }
 }

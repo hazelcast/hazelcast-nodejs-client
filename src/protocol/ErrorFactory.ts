@@ -195,7 +195,12 @@ export class ClientErrorFactory {
                 errorHolder.stackTraceElements
             );
         } else {
-            error = new UndefinedErrorCodeError(errorHolder.message, errorHolder.className);
+            const msg = 'Class name: ' + errorHolder.className + ', Message: ' + errorHolder.message;
+            error = new UndefinedErrorCodeError(
+                msg,
+                this.createError(errorHolders, errorHolderIdx + 1),
+                errorHolder.stackTraceElements
+            );
         }
         return error;
     }

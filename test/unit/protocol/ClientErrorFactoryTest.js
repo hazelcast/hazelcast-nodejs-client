@@ -40,34 +40,52 @@ describe('ClientErrorFactoryTest', function () {
         };
     }
 
+    function assertKnownError(error, clazz, code) {
+        expect(error).to.be.instanceOf(clazz);
+        expect(error.message).to.be.equal('error: foo bar');
+        expect(error.serverStackTrace).to.deep.equal(createErrorHolder(code).stackTraceElements);
+    }
+
+    function assertUnknownError(error) {
+        expect(error).to.be.instanceOf(UndefinedErrorCodeError);
+        expect(error.message).to.contain('error: foo bar');
+        expect(error.message).to.contain('foo.bar.Baz1');
+        expect(error.serverStackTrace).to.deep.equal(createErrorHolder(-1).stackTraceElements);
+    }
+
     it('createError: should create error with no cause', function () {
         const code = ClientProtocolErrorCodes.ILLEGAL_STATE;
         const error = factory.createError([createErrorHolder(code)], 0);
 
-        expect(error).to.be.instanceOf(IllegalStateError);
-        expect(error.message).to.be.equal('error: foo bar');
+        assertKnownError(error, IllegalStateError, code);
         expect(error.cause).to.be.null;
-        expect(error.serverStackTrace).to.deep.equal(createErrorHolder(code).stackTraceElements);
     });
 
     it('createError: should create error with given cause', function () {
         const code = ClientProtocolErrorCodes.ILLEGAL_STATE;
         const error = factory.createError([createErrorHolder(code), createErrorHolder(code)], 0);
 
-        expect(error).to.be.instanceOf(IllegalStateError);
-        expect(error.message).to.be.equal('error: foo bar');
-        expect(error.serverStackTrace).to.deep.equal(createErrorHolder(code).stackTraceElements);
+        assertKnownError(error, IllegalStateError, code);
 
         const cause = error.cause;
-        expect(cause).to.be.instanceOf(IllegalStateError);
-        expect(cause.message).to.be.equal('error: foo bar');
-        expect(cause.serverStackTrace).to.deep.equal(createErrorHolder(code).stackTraceElements);
+        assertKnownError(cause, IllegalStateError, code);
         expect(cause.cause).to.be.null;
     });
 
-    it('createError: should create UndefinedErrorCodeError for unknown code', function () {
+    it('createError: should create UndefinedErrorCodeError for single exception with unknown code', function () {
         const error = factory.createError([createErrorHolder(-1)], 0);
 
-        expect(error).to.be.instanceOf(UndefinedErrorCodeError);
+        assertUnknownError(error);
+        expect(error.cause).to.be.null;
+    });
+
+    it('createError: should create UndefinedErrorCodeError with known cause for chain of exceptions', function () {
+        const knownCode = ClientProtocolErrorCodes.ILLEGAL_STATE;
+        const error = factory.createError([createErrorHolder(-1), createErrorHolder(knownCode)], 0);
+
+        assertUnknownError(error);
+
+        const cause = error.cause;
+        assertKnownError(cause, IllegalStateError, knownCode);
     });
 });
