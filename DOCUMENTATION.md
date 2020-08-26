@@ -60,7 +60,9 @@
     * [7.4.9. Using PN Counter](#749-using-pn-counter)
     * [7.4.10. Using Flake ID Generator](#7410-using-flake-id-generator)
       * [7.4.10.1. Configuring Flake ID Generator](#74101-configuring-flake-id-generator)
-    * [7.4.11. Using Lock, Semaphore and Atomic Long](#7411-using-lock-semaphore-and-atomic-long)
+    * [7.4.11. CP Subsystem](#7411-cp-subsystem)
+      * [7.4.11.1. Using Atomic Long](#74111-using-atomic-long)
+      * [7.4.11.2. Using Lock and Semaphore](#74112-using-lock-and-semaphore)
   * [7.5. Distributed Events](#75-distributed-events)
     * [7.5.1. Listening for Cluster Events](#751-listening-for-cluster-events)
       * [7.5.1.1. Membership Listener](#7511-membership-listener)
@@ -1247,11 +1249,11 @@ const map = await client.getReplicatedMap('my-replicated-map');
 // Put and get a value from the Replicated Map
 // (key/value is replicated to all members)
 const replacedValue = await map.put('key', 'value');
-// Will print 'replaced value = null' as it's the first update
-console.log('replaced value = ' + replacedValue);
+// Will print 'Replaced value: null' as it's the first update
+console.log('Replaced value:', replacedValue);
 const value = map.get('key');
 // The value is retrieved from a random member in the cluster
-console.log('value = ' + value);
+console.log('Value:', value);
 ```
 
 Hazelcast Replicated Map uses `EntryListener` to listen to the events that occur when the entries are added to, updated in or evicted/removed from the Replicated Map. See the [Entry Listener section](#7522-entry-listener) for information on how to create an entry listener object and register it.
@@ -1270,12 +1272,12 @@ await queue.offer('item');
 // Poll the Queue and return the string
 let item = queue.poll();
 // Timed-restricted operations
-await queue.offer('anotheritem', 500);
-await queue.poll(5000);
+await queue.offer('anotheritem', 500); // waits up to 500 millis
+await queue.poll(5000); // waits up to 5000 millis
 // Indefinitely-waiting operations
 await queue.put('yetanotheritem');
-const value = queue.take();
-console.log(value);
+const item = queue.take();
+console.log('Item:', item);
 ```
 
 Hazelcast Queue uses `ItemListener` to listen to the events that occur when the items are added to or removed from the Queue. See the [Item Listener section](#7523-item-listener) for information on how to create an item listener object and register it.
@@ -1298,7 +1300,7 @@ await set.add('item2');
 await set.add('item3');
 // Get the items. Note that there are no duplicates
 const values = await set.toArray();
-console.log(values);
+console.log('Values:', values);
 ```
 
 Hazelcast Set uses `ItemListener` to listen to the events that occur when the items are added to or removed from the Set. See the [Item Listener section](#7523-item-listener) for information on how to create an item listener object and register it.
@@ -1317,10 +1319,10 @@ await list.add('item1');
 await list.add('item2');
 // Remove the first element
 const value = await list.removeAt(0);
-console.log(value);
+console.log('Value:', value);
 // There is only one element left
 const len = await list.size();
-console.log(len);
+console.log('Length:', len);
 // Clear the list
 await list.clear();
 ```
@@ -1343,9 +1345,9 @@ await rb.add(200);
 // If you want to start from the next item, call rb.tailSequence()+1
 const sequence = await rb.headSequence();
 let value = await rb.readOne(sequence);
-console.log(value);
+console.log('Value:', value);
 value = await rb.readOne(sequence.add(1));
-console.log(value);
+console.log('Next value:', value);
 ```
 
 ### 7.4.8. Using Reliable Topic
@@ -1359,7 +1361,7 @@ A Reliable Topic usage example is shown below.
 const topic = await client.getReliableTopic('my-distributed-topic');
 // Add a Listener to the Topic
 topic.addMessageListener((message) => {
-    console.log(message);
+    console.log('Message:', message);
 });
 // Publish a message to the Topic
 await topic.publish('Hello to the distributed world!');
@@ -1397,23 +1399,23 @@ Hazelcast `PNCounter` (Positive-Negative Counter) is a CRDT positive-negative co
 A PN Counter usage example is shown below.
 
 ```javascript
-// Get a Topic called 'my-pn-counter'
+// Get a PN Counter called 'my-pn-counter'
 const pnCounter = await client.getPNCounter('my-pn-counter');
 // Get the current value
 let value = await pnCounter.get();
-console.log('Counter started with value ' + value); // 0
+console.log('Counter started with value:', value); // 0
 
 // Increment and get
 value = await pnCounter.addAndGet(5);
-console.log('Value after operation is ' + value); // 5
+console.log('Value after operation:', value); // 5
 // Get and increment
 value = await pnCounter.getAndAdd(2);
-console.log('Value before operation was ' + value); // 5
+console.log('Value before operation:', value); // 5
 
 value = await pnCounter.get();
-console.log('New value is ' + value); // 7
+console.log('New value:', value); // 7
 value = await pnCounter.decrementAndGet();
-console.log('Decremented counter by one. New value is ' + value); // 6
+console.log('Decremented counter by one. New value:', value); // 6
 ```
 
 ### 7.4.10. Using Flake ID Generator
@@ -1423,11 +1425,11 @@ Hazelcast `FlakeIdGenerator` is used to generate cluster-wide unique identifiers
 A Flake ID Generator usage example is shown below.
 
 ```javascript
-// Get a Topic called 'my-flake-id-generator'
+// Get a Flake ID Generator called 'my-flake-id-generator'
 const flakeIdGenerator = await client.getFlakeIdGenerator('my-flake-id-generator');
-// Generate an id
+// Generate an id (returns a Long)
 const id = flakeIdGenerator.newId();
-console.log('New id: ' + id.toString());
+console.log('New id:', id.toString());
 ```
 
 #### 7.4.10.1 Configuring Flake ID Generator
@@ -1454,11 +1456,34 @@ The following are the descriptions of configuration elements and attributes:
 
 > **NOTE: When you use `default` as the Flake ID Generator configuration key, it has a special meaning. Hazelcast client will use that configuration as the default one for all Flake ID Generators, unless there is a specific configuration for the generator.**
 
-### 7.4.11. Using Lock, Semaphore and Atomic Long
+### 7.4.11. CP Subsystem
 
 Hazelcast IMDG 4.0 introduces CP concurrency primitives with respect to the [CAP principle](http://awoc.wolski.fi/dlib/big-data/Brewer_podc_keynote_2000.pdf), i.e., they always maintain [linearizability](https://aphyr.com/posts/313-strong-consistency-models) and prefer consistency to availability during network partitions and client or server failures.
 
-These new implementations are accessed using the [CP Subsystem](https://docs.hazelcast.org/docs/latest/manual/html-single/#cp-subsystem) which cannot be used with the Node.js client yet. We plan to implement support for the CP Subsystem in the upcoming 4.0 release of Hazelcast Node.js client. In the meantime, since there is no way to access old non-CP primitives using IMDG 4.x, we removed their implementations, code samples and documentations. They will be back once we implement them.
+Before using Atomic Long, Lock, and Semaphore, CP Subsystem has to be enabled on cluster-side. Refer to [CP Subsystem](https://docs.hazelcast.org/docs/latest/manual/html-single/#cp-subsystem) documentation for more information.
+
+### 7.4.11.1. Using Atomic Long
+
+Hazelcast `IAtomicLong` is the distributed implementation of atomic 64-bit integer counter. It offers various atomic operations such as `get`, `set`, `getAndSet`, `compareAndSet` and `incrementAndGet`. This data structure is a part of CP Subsystem.
+
+An Atomic Long usage example is shown below.
+
+```javascript
+// Get an AtomicLong called 'my-atomic-long'
+const atomicLong = await client.getAtomicLong('my-atomic-long');
+// Get current value (returns a Long)
+const value = await atomicLong.get();
+console.log('Value:', value);
+// Increment by 42
+await atomicLong.addAndGet(42);
+// Set to 0 atomically if the current value is 42
+const result = atomicLong.compareAndSet(42, 0);
+console.log('CAS operation result:', result);
+```
+
+### 7.4.11.2. Using Lock and Semaphore
+
+These new implementations are accessed using the [CP Subsystem](https://docs.hazelcast.org/docs/latest/manual/html-single/#cp-subsystem) which cannot be used with the Node.js client yet. We plan to implement these data structures in the upcoming 4.0 release of Hazelcast Node.js client. In the meantime, since there is no way to access old non-CP primitives using IMDG 4.x, we removed their implementations, code samples and documentations. They will be back once we implement them.
 
 ## 7.5. Distributed Events
 
