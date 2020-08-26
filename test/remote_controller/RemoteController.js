@@ -24,6 +24,8 @@
 var thrift = require('thrift');
 var Thrift = thrift.Thrift;
 var Q = thrift.Q;
+var Int64 = require('node-int64');
+
 
 var ttypes = require('./remote-controller_types');
 //HELPER FUNCTIONS AND STRUCTURES
@@ -370,6 +372,138 @@ RemoteController_createCluster_result.prototype.read = function(input) {
 
 RemoteController_createCluster_result.prototype.write = function(output) {
   output.writeStructBegin('RemoteController_createCluster_result');
+  if (this.success !== null && this.success !== undefined) {
+    output.writeFieldBegin('success', Thrift.Type.STRUCT, 0);
+    this.success.write(output);
+    output.writeFieldEnd();
+  }
+  if (this.serverException !== null && this.serverException !== undefined) {
+    output.writeFieldBegin('serverException', Thrift.Type.STRUCT, 1);
+    this.serverException.write(output);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+var RemoteController_createClusterKeepClusterName_args = function(args) {
+  this.hzVersion = null;
+  this.xmlconfig = null;
+  if (args) {
+    if (args.hzVersion !== undefined && args.hzVersion !== null) {
+      this.hzVersion = args.hzVersion;
+    }
+    if (args.xmlconfig !== undefined && args.xmlconfig !== null) {
+      this.xmlconfig = args.xmlconfig;
+    }
+  }
+};
+RemoteController_createClusterKeepClusterName_args.prototype = {};
+RemoteController_createClusterKeepClusterName_args.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true) {
+    var ret = input.readFieldBegin();
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid) {
+      case 1:
+      if (ftype == Thrift.Type.STRING) {
+        this.hzVersion = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.STRING) {
+        this.xmlconfig = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+RemoteController_createClusterKeepClusterName_args.prototype.write = function(output) {
+  output.writeStructBegin('RemoteController_createClusterKeepClusterName_args');
+  if (this.hzVersion !== null && this.hzVersion !== undefined) {
+    output.writeFieldBegin('hzVersion', Thrift.Type.STRING, 1);
+    output.writeString(this.hzVersion);
+    output.writeFieldEnd();
+  }
+  if (this.xmlconfig !== null && this.xmlconfig !== undefined) {
+    output.writeFieldBegin('xmlconfig', Thrift.Type.STRING, 2);
+    output.writeString(this.xmlconfig);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+var RemoteController_createClusterKeepClusterName_result = function(args) {
+  this.success = null;
+  this.serverException = null;
+  if (args instanceof ttypes.ServerException) {
+    this.serverException = args;
+    return;
+  }
+  if (args) {
+    if (args.success !== undefined && args.success !== null) {
+      this.success = new ttypes.Cluster(args.success);
+    }
+    if (args.serverException !== undefined && args.serverException !== null) {
+      this.serverException = args.serverException;
+    }
+  }
+};
+RemoteController_createClusterKeepClusterName_result.prototype = {};
+RemoteController_createClusterKeepClusterName_result.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true) {
+    var ret = input.readFieldBegin();
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid) {
+      case 0:
+      if (ftype == Thrift.Type.STRUCT) {
+        this.success = new ttypes.Cluster();
+        this.success.read(input);
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 1:
+      if (ftype == Thrift.Type.STRUCT) {
+        this.serverException = new ttypes.ServerException();
+        this.serverException.read(input);
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+RemoteController_createClusterKeepClusterName_result.prototype.write = function(output) {
+  output.writeStructBegin('RemoteController_createClusterKeepClusterName_result');
   if (this.success !== null && this.success !== undefined) {
     output.writeFieldBegin('success', Thrift.Type.STRUCT, 0);
     this.success.write(output);
@@ -1742,6 +1876,69 @@ RemoteControllerClient.prototype.recv_createCluster = function(input,mtype,rseqi
   return callback('createCluster failed: unknown result');
 };
 
+RemoteControllerClient.prototype.createClusterKeepClusterName = function(hzVersion, xmlconfig, callback) {
+  this._seqid = this.new_seqid();
+  if (callback === undefined) {
+    var _defer = Q.defer();
+    this._reqs[this.seqid()] = function(error, result) {
+      if (error) {
+        _defer.reject(error);
+      } else {
+        _defer.resolve(result);
+      }
+    };
+    this.send_createClusterKeepClusterName(hzVersion, xmlconfig);
+    return _defer.promise;
+  } else {
+    this._reqs[this.seqid()] = callback;
+    this.send_createClusterKeepClusterName(hzVersion, xmlconfig);
+  }
+};
+
+RemoteControllerClient.prototype.send_createClusterKeepClusterName = function(hzVersion, xmlconfig) {
+  var output = new this.pClass(this.output);
+  var params = {
+    hzVersion: hzVersion,
+    xmlconfig: xmlconfig
+  };
+  var args = new RemoteController_createClusterKeepClusterName_args(params);
+  try {
+    output.writeMessageBegin('createClusterKeepClusterName', Thrift.MessageType.CALL, this.seqid());
+    args.write(output);
+    output.writeMessageEnd();
+    return this.output.flush();
+  }
+  catch (e) {
+    delete this._reqs[this.seqid()];
+    if (typeof output.reset === 'function') {
+      output.reset();
+    }
+    throw e;
+  }
+};
+
+RemoteControllerClient.prototype.recv_createClusterKeepClusterName = function(input,mtype,rseqid) {
+  var callback = this._reqs[rseqid] || function() {};
+  delete this._reqs[rseqid];
+  if (mtype == Thrift.MessageType.EXCEPTION) {
+    var x = new Thrift.TApplicationException();
+    x.read(input);
+    input.readMessageEnd();
+    return callback(x);
+  }
+  var result = new RemoteController_createClusterKeepClusterName_result();
+  result.read(input);
+  input.readMessageEnd();
+
+  if (null !== result.serverException) {
+    return callback(result.serverException);
+  }
+  if (null !== result.success) {
+    return callback(null, result.success);
+  }
+  return callback('createClusterKeepClusterName failed: unknown result');
+};
+
 RemoteControllerClient.prototype.startMember = function(clusterId, callback) {
   this._seqid = this.new_seqid();
   if (callback === undefined) {
@@ -2502,6 +2699,49 @@ RemoteControllerProcessor.prototype.process_createCluster = function(seqid, inpu
       } else {
         result_obj = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
         output.writeMessageBegin("createCluster", Thrift.MessageType.EXCEPTION, seqid);
+      }
+      result_obj.write(output);
+      output.writeMessageEnd();
+      output.flush();
+    });
+  }
+};
+RemoteControllerProcessor.prototype.process_createClusterKeepClusterName = function(seqid, input, output) {
+  var args = new RemoteController_createClusterKeepClusterName_args();
+  args.read(input);
+  input.readMessageEnd();
+  if (this._handler.createClusterKeepClusterName.length === 2) {
+    Q.fcall(this._handler.createClusterKeepClusterName.bind(this._handler),
+      args.hzVersion,
+      args.xmlconfig
+    ).then(function(result) {
+      var result_obj = new RemoteController_createClusterKeepClusterName_result({success: result});
+      output.writeMessageBegin("createClusterKeepClusterName", Thrift.MessageType.REPLY, seqid);
+      result_obj.write(output);
+      output.writeMessageEnd();
+      output.flush();
+    }).catch(function (err) {
+      var result;
+      if (err instanceof ttypes.ServerException) {
+        result = new RemoteController_createClusterKeepClusterName_result(err);
+        output.writeMessageBegin("createClusterKeepClusterName", Thrift.MessageType.REPLY, seqid);
+      } else {
+        result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
+        output.writeMessageBegin("createClusterKeepClusterName", Thrift.MessageType.EXCEPTION, seqid);
+      }
+      result.write(output);
+      output.writeMessageEnd();
+      output.flush();
+    });
+  } else {
+    this._handler.createClusterKeepClusterName(args.hzVersion, args.xmlconfig, function (err, result) {
+      var result_obj;
+      if ((err === null || typeof err === 'undefined') || err instanceof ttypes.ServerException) {
+        result_obj = new RemoteController_createClusterKeepClusterName_result((err !== null || typeof err === 'undefined') ? err : {success: result});
+        output.writeMessageBegin("createClusterKeepClusterName", Thrift.MessageType.REPLY, seqid);
+      } else {
+        result_obj = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
+        output.writeMessageBegin("createClusterKeepClusterName", Thrift.MessageType.EXCEPTION, seqid);
       }
       result_obj.write(output);
       output.writeMessageEnd();
