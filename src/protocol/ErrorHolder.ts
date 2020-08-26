@@ -16,10 +16,9 @@
 /** @ignore *//** */
 
 import {StackTraceElement} from './StackTraceElement';
-import {ServerError} from '../core';
 
 /** @internal */
-export class ErrorHolder implements ServerError {
+export class ErrorHolder {
 
     errorCode: number;
     className: string;

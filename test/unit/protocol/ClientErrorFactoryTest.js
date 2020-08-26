@@ -46,8 +46,8 @@ describe('ClientErrorFactoryTest', function () {
 
         expect(error).to.be.instanceOf(IllegalStateError);
         expect(error.message).to.be.equal('error: foo bar');
-        expect(error.serverError).to.deep.equal(createErrorHolder(code));
         expect(error.cause).to.be.null;
+        expect(error.serverStackTrace).to.deep.equal(createErrorHolder(code).stackTraceElements);
     });
 
     it('createError: should create error with given cause', function () {
@@ -56,12 +56,12 @@ describe('ClientErrorFactoryTest', function () {
 
         expect(error).to.be.instanceOf(IllegalStateError);
         expect(error.message).to.be.equal('error: foo bar');
-        expect(error.serverError).to.deep.equal(createErrorHolder(code));
+        expect(error.serverStackTrace).to.deep.equal(createErrorHolder(code).stackTraceElements);
 
         const cause = error.cause;
         expect(cause).to.be.instanceOf(IllegalStateError);
         expect(cause.message).to.be.equal('error: foo bar');
-        expect(cause.serverError).to.deep.equal(createErrorHolder(code));
+        expect(cause.serverStackTrace).to.deep.equal(createErrorHolder(code).stackTraceElements);
         expect(cause.cause).to.be.null;
     });
 
