@@ -1462,6 +1462,8 @@ Hazelcast IMDG 4.0 introduces CP concurrency primitives with respect to the [CAP
 
 Before using Atomic Long, Lock, and Semaphore, CP Subsystem has to be enabled on cluster-side. Refer to [CP Subsystem](https://docs.hazelcast.org/docs/latest/manual/html-single/#cp-subsystem) documentation for more information.
 
+> **NOTE: If you call the `DistributedObject.destroy()` method on a CP data structure, that data structure is terminated on the underlying CP group and cannot be reinitialized until the CP group is force-destroyed on the cluster side. For this reason, please make sure that you are completely done with a CP data structure before destroying its proxy.**
+
 ### 7.4.11.1. Using Atomic Long
 
 Hazelcast `IAtomicLong` is the distributed implementation of atomic 64-bit integer counter. It offers various atomic operations such as `get`, `set`, `getAndSet`, `compareAndSet` and `incrementAndGet`. This data structure is a part of CP Subsystem.
@@ -1480,6 +1482,8 @@ await atomicLong.addAndGet(42);
 const result = atomicLong.compareAndSet(42, 0);
 console.log('CAS operation result:', result);
 ```
+
+`IAtomicLong` implementation does not offer exactly-once / effectively-once execution semantics. It goes with at-least-once execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to offer at-most-once execution semantics. Please see [`fail-on-indeterminate-operation-state`](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-subsystem-configuration) server-side setting.
 
 ### 7.4.11.2. Using Lock and Semaphore
 

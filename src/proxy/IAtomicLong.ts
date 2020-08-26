@@ -31,8 +31,7 @@ import {DistributedObject} from '../core';
  * execution semantics. It goes with at-least-once execution semantics
  * by default and can cause an API call to be committed multiple times
  * in case of CP member failures. It can be tuned to offer at-most-once
- * execution semantics. Please see
- * `CPSubsystemConfig#setFailOnIndeterminateOperationState(boolean)`
+ * execution semantics. Please see `fail-on-indeterminate-operation-state`
  * server-side setting.
  */
 export interface IAtomicLong extends DistributedObject {
