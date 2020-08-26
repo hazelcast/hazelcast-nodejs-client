@@ -64,7 +64,7 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
         if (!Long.isLong(update)) {
             update = Long.fromNumber(update as number);
         }
-        return this.encodeInvokeOnRandomTarget(AtomicLongCompareAndSetCodec,this.groupId, this.objectName, expect, update)
+        return this.encodeInvokeOnRandomTarget(AtomicLongCompareAndSetCodec, this.groupId, this.objectName, expect, update)
             .then((clientMessage) => {
                 const response = AtomicLongCompareAndSetCodec.decodeResponse(clientMessage);
                 return response.response;
