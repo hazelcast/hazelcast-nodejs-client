@@ -38,7 +38,7 @@ export function withoutDefaultGroupName(name: string): string {
         return name;
     }
 
-    assert(name.slice(i + 1).indexOf('@') === -1, 'Custom group name must be specified at most once');
+    assert(name.indexOf('@', i + 1) === -1, 'Custom group name must be specified at most once');
     const groupName = name.slice(i + 1).trim();
     if (groupName === DEFAULT_GROUP_NAME) {
         return name.slice(0, i);

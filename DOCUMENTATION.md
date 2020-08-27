@@ -1464,7 +1464,7 @@ Before using Atomic Long, Lock, and Semaphore, CP Subsystem has to be enabled on
 
 > **NOTE: If you call the `DistributedObject.destroy()` method on a CP data structure, that data structure is terminated on the underlying CP group and cannot be reinitialized until the CP group is force-destroyed on the cluster side. For this reason, please make sure that you are completely done with a CP data structure before destroying its proxy.**
 
-### 7.4.11.1. Using Atomic Long
+#### 7.4.11.1. Using Atomic Long
 
 Hazelcast `IAtomicLong` is the distributed implementation of atomic 64-bit integer counter. It offers various atomic operations such as `get`, `set`, `getAndSet`, `compareAndSet` and `incrementAndGet`. This data structure is a part of CP Subsystem.
 
@@ -1485,7 +1485,7 @@ console.log('CAS operation result:', result);
 
 `IAtomicLong` implementation does not offer exactly-once / effectively-once execution semantics. It goes with at-least-once execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to offer at-most-once execution semantics. Please see [`fail-on-indeterminate-operation-state`](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-subsystem-configuration) server-side setting.
 
-### 7.4.11.2. Using Lock and Semaphore
+#### 7.4.11.2. Using Lock and Semaphore
 
 These new implementations are accessed using the [CP Subsystem](https://docs.hazelcast.org/docs/latest/manual/html-single/#cp-subsystem) which cannot be used with the Node.js client yet. We plan to implement these data structures in the upcoming 4.0 release of Hazelcast Node.js client. In the meantime, since there is no way to access old non-CP primitives using IMDG 4.x, we removed their implementations, code samples and documentations. They will be back once we implement them.
 
