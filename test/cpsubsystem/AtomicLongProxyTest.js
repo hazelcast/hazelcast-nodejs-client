@@ -97,14 +97,8 @@ describe('AtomicLongProxyTest', function () {
         expectLong(0, value);
     });
 
-    it('addAndGet: should return added value', async function () {
-        const value = await long.addAndGet(33);
-        expectLong(33, value);
-    });
-
     it('addAndGet: should add', async function () {
-        await long.addAndGet(33);
-        const value = await long.get();
+        const value = await long.addAndGet(33);
         expectLong(33, value);
     });
 
