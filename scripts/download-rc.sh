@@ -93,17 +93,7 @@ else
     echo "Starting Remote Controller ... oss ..."
 fi
 
-nohup java --add-modules java.se \
-  --add-exports java.base/jdk.internal.ref=ALL-UNNAMED \
-  --add-opens java.base/java.lang=ALL-UNNAMED \
-  --add-opens java.base/java.nio=ALL-UNNAMED \
-  --add-opens java.base/sun.nio.ch=ALL-UNNAMED \
-  --add-opens java.management/sun.management=ALL-UNNAMED \
-  --add-opens jdk.management/com.ibm.lang.management.internal=ALL-UNNAMED \
-  --add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED \
-  -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} \
-  -cp ${CLASSPATH} \
-  com.hazelcast.remotecontroller.Main --use-simple-server>rc_stdout.log 2>rc_stderr.log &
+nohup java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} -cp ${CLASSPATH}  com.hazelcast.remotecontroller.Main --use-simple-server>rc_stdout.log 2>rc_stderr.log &
 
 sleep 10
 
