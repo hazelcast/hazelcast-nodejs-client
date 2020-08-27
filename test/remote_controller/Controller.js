@@ -50,6 +50,10 @@ HzRemoteController.prototype.createCluster = function(hzVersion, xmlConfig, call
     return this.client.createCluster(hzVersion, xmlConfig, callback);
 };
 
+HzRemoteController.prototype.createClusterKeepClusterName = function(hzVersion, xmlConfig, callback) {
+    return this.client.createClusterKeepClusterName(hzVersion, xmlConfig, callback);
+};
+
 HzRemoteController.prototype.startMember = function(clusterId, callback) {
     return this.client.startMember(clusterId, callback);
 };

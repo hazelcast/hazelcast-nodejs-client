@@ -29,6 +29,15 @@ function createCluster(hzVersion, config) {
     return deferred.promise;
 }
 
+function createClusterKeepClusterName(hzVersion, config) {
+    const deferred = DeferredPromise();
+    controller.createClusterKeepClusterName(hzVersion, config, function (err, cluster) {
+        if (err) return deferred.reject(err);
+        return deferred.resolve(cluster);
+    });
+    return deferred.promise;
+}
+
 function startMember(clusterId) {
     const deferred = DeferredPromise();
     controller.startMember(clusterId, function (err, member) {
@@ -95,6 +104,7 @@ function executeOnController(clusterId, script, lang) {
 
 exports.exit = exit;
 exports.createCluster = createCluster;
+exports.createClusterKeepClusterName = createClusterKeepClusterName;
 exports.startMember = startMember;
 exports.shutdownMember = shutdownMember;
 exports.shutdownCluster = shutdownCluster;
