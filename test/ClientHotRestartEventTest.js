@@ -15,6 +15,7 @@
  */
 'use strict';
 
+const { expect } = require('chai');
 const RC = require('./RC');
 const { Client } = require('../.');
 const {
