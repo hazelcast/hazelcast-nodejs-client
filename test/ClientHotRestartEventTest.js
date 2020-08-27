@@ -31,7 +31,7 @@ const {
  */
 describe('ClientHotRestartEventTest', function () {
 
-    this.timeout(30000);
+    this.timeout(60000);
     let client;
     let cluster;
 
