@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+import * as Promise from 'bluebird';
+import * as Long from 'long';
+import {DistributedObject} from '../core/DistributedObject';
+
 /**
  * A cluster-wide unique ID generator. Generated IDs are `Long` primitive values
  * and are k-ordered (roughly ordered). IDs are in the range from `0` to `Long.MAX_VALUE`.
@@ -36,10 +40,6 @@
  * nodeId will be assigned from zero again. Uniqueness after the restart will be preserved thanks to
  * the timestamp component.
  */
-import * as Promise from 'bluebird';
-import * as Long from 'long';
-import {DistributedObject} from '../core/DistributedObject';
-
 export interface FlakeIdGenerator extends DistributedObject {
 
     /**

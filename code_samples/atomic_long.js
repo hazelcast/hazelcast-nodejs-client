@@ -13,26 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/** @ignore *//** */
+'use strict';
 
-/**
- * Public API re-exports.
- */
+const { Client } = require('hazelcast-client');
 
-export * from './EntryListener';
-export * from './FlakeIdGenerator';
-export * from './IList';
-export * from './IMap';
-export * from './IQueue';
-export * from './ISet';
-export * from './ItemListener';
-export * from './ITopic';
-export * from './MapListener';
-export * from './MultiMap';
-export * from './OverflowPolicy';
-export * from './PNCounter';
-export * from './ReplicatedMap';
-export * from './Ringbuffer';
-export * from './MessageListener';
-export * from './TopicOverloadPolicy';
-export * from './IAtomicLong';
+(async () => {
+    try {
+        const client = await Client.newHazelcastClient();
+
+        const viewCounter = await client.getAtomicLong('views');
+        const value = await viewCounter.get();
+        console.log('Value:', value);
+        const newValue = await viewCounter.addAndGet(42);
+        console.log('New value:', newValue);
+
+        client.shutdown();
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

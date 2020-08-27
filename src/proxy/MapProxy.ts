@@ -292,8 +292,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     clear(): Promise<void> {
-        return this.encodeInvokeOnRandomTarget(MapClearCodec)
-            .then(() => undefined);
+        return this.encodeInvokeOnRandomTarget(MapClearCodec).then();
     }
 
     isEmpty(): Promise<boolean> {
@@ -346,20 +345,17 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     evictAll(): Promise<void> {
-        return this.encodeInvokeOnRandomTarget(MapEvictAllCodec)
-            .then(() => undefined);
+        return this.encodeInvokeOnRandomTarget(MapEvictAllCodec).then();
     }
 
     flush(): Promise<void> {
-        return this.encodeInvokeOnRandomTarget(MapFlushCodec)
-            .then(() => undefined);
+        return this.encodeInvokeOnRandomTarget(MapFlushCodec).then();
     }
 
     lock(key: K, ttl = -1): Promise<void> {
         assertNotNull(key);
         const keyData = this.toData(key);
-        return this.encodeInvokeOnKey(MapLockCodec, keyData, keyData, 0, ttl, 0)
-            .then(() => undefined);
+        return this.encodeInvokeOnKey(MapLockCodec, keyData, keyData, 0, ttl, 0).then();
     }
 
     isLocked(key: K): Promise<boolean> {
@@ -375,15 +371,13 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     unlock(key: K): Promise<void> {
         assertNotNull(key);
         const keyData = this.toData(key);
-        return this.encodeInvokeOnKey(MapUnlockCodec, keyData, keyData, 0, 0)
-            .then(() => undefined);
+        return this.encodeInvokeOnKey(MapUnlockCodec, keyData, keyData, 0, 0).then();
     }
 
     forceUnlock(key: K): Promise<void> {
         assertNotNull(key);
         const keyData = this.toData(key);
-        return this.encodeInvokeOnKey(MapForceUnlockCodec, keyData, keyData, 0)
-            .then(() => undefined);
+        return this.encodeInvokeOnKey(MapForceUnlockCodec, keyData, keyData, 0).then();
     }
 
     keySet(): Promise<K[]> {
@@ -396,13 +390,11 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 
     loadAll(keys: K[] = null, replaceExistingValues = true): Promise<void> {
         if (keys == null) {
-            return this.encodeInvokeOnRandomTarget(MapLoadAllCodec, replaceExistingValues)
-                .then(() => undefined);
+            return this.encodeInvokeOnRandomTarget(MapLoadAllCodec, replaceExistingValues).then();
         } else {
             const toData = this.toData.bind(this);
             const keysData: Data[] = keys.map<Data>(toData);
-            return this.encodeInvokeOnRandomTarget(MapLoadGivenKeysCodec, keysData, replaceExistingValues)
-                .then(() => undefined);
+            return this.encodeInvokeOnRandomTarget(MapLoadGivenKeysCodec, keysData, replaceExistingValues).then();
         }
     }
 
@@ -477,8 +469,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     addIndex(indexConfig: IndexConfig): Promise<void> {
         assertNotNull(indexConfig);
         const normalizedConfig = IndexUtil.validateAndNormalize(this.name, indexConfig);
-        return this.encodeInvokeOnRandomTarget(MapAddIndexCodec, normalizedConfig)
-            .then(() => undefined);
+        return this.encodeInvokeOnRandomTarget(MapAddIndexCodec, normalizedConfig).then();
     }
 
     tryLock(key: K, timeout = 0, lease = -1): Promise<boolean> {
@@ -588,8 +579,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     protected deleteInternal(keyData: Data): Promise<void> {
-        return this.encodeInvokeOnKey(MapDeleteCodec, keyData, keyData, 0)
-            .then(() => undefined);
+        return this.encodeInvokeOnKey(MapDeleteCodec, keyData, keyData, 0).then();
     }
 
     protected evictInternal(keyData: Data): Promise<boolean> {
@@ -609,8 +599,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     protected putTransientInternal(keyData: Data, valueData: Data, ttl: number): Promise<void> {
-        return this.encodeInvokeOnKey(MapPutTransientCodec, keyData, keyData, valueData, 0, ttl)
-            .then(() => undefined);
+        return this.encodeInvokeOnKey(MapPutTransientCodec, keyData, keyData, valueData, 0, ttl).then();
     }
 
     protected replaceInternal(keyData: Data, newValueData: Data): Promise<V> {
@@ -630,8 +619,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     protected setInternal(keyData: Data, valueData: Data, ttl: number): Promise<void> {
-        return this.encodeInvokeOnKey(MapSetCodec, keyData, keyData, valueData, 0, ttl)
-            .then(() => undefined);
+        return this.encodeInvokeOnKey(MapSetCodec, keyData, keyData, valueData, 0, ttl).then();
     }
 
     protected tryPutInternal(keyData: Data, valueData: Data, timeout: number): Promise<boolean> {
@@ -669,8 +657,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                     .then(() => this.finalizePutAll(partitionsToKeys)),
             );
         }
-        return Promise.all(partitionPromises)
-            .then(() => undefined);
+        return Promise.all(partitionPromises).then();
     }
 
     private addEntryListenerInternal(

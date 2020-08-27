@@ -15,24 +15,18 @@
  */
 /** @ignore *//** */
 
-/**
- * Public API re-exports.
- */
+import * as Long from 'long';
 
-export * from './EntryListener';
-export * from './FlakeIdGenerator';
-export * from './IList';
-export * from './IMap';
-export * from './IQueue';
-export * from './ISet';
-export * from './ItemListener';
-export * from './ITopic';
-export * from './MapListener';
-export * from './MultiMap';
-export * from './OverflowPolicy';
-export * from './PNCounter';
-export * from './ReplicatedMap';
-export * from './Ringbuffer';
-export * from './MessageListener';
-export * from './TopicOverloadPolicy';
-export * from './IAtomicLong';
+/** @internal */
+export class RaftGroupId {
+
+    name: string;
+    seed: Long;
+    id: Long;
+
+    constructor(name: string, seed: Long, id: Long) {
+        this.name = name;
+        this.seed = seed;
+        this.id = id;
+    }
+}

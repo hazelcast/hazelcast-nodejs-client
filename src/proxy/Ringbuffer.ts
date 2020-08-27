@@ -22,6 +22,12 @@ import {
 } from '../core';
 import {OverflowPolicy} from './OverflowPolicy';
 
+/**
+ * A Ringbuffer is a data structure where the content is stored in a ring-like
+ * structure. A ringbuffer has a fixed capacity so it won't grow beyond
+ * that capacity and endanger the stability of the system. If that capacity
+ * is exceeded, the oldest item in the ringbuffer is overwritten.
+ */
 export interface Ringbuffer<E> extends DistributedObject {
 
     /**

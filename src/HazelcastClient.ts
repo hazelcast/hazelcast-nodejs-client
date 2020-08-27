@@ -45,9 +45,11 @@ import {
     MultiMap,
     ReplicatedMap,
     Ringbuffer,
-    PNCounter
+    PNCounter,
+    IAtomicLong
 } from './proxy';
 import {ProxyManager, NAMESPACE_SEPARATOR} from './proxy/ProxyManager';
+import {CPProxyManager} from './proxy/cpsubsystem/CPProxyManager';
 import {LockReferenceIdGenerator} from './proxy/LockReferenceIdGenerator';
 import {SerializationService, SerializationServiceV1} from './serialization/SerializationService';
 import {AddressProvider} from './connection/AddressProvider';
@@ -99,6 +101,8 @@ export class HazelcastClient {
     /** @internal */
     private readonly proxyManager: ProxyManager;
     /** @internal */
+    private readonly cpProxyManager: CPProxyManager;
+    /** @internal */
     private readonly nearCacheManager: NearCacheManager;
     /** @internal */
     private readonly lockReferenceIdGenerator: LockReferenceIdGenerator;
@@ -129,6 +133,7 @@ export class HazelcastClient {
         this.addressProvider = this.createAddressProvider();
         this.connectionManager = new ClientConnectionManager(this);
         this.invocationService = new InvocationService(this);
+        this.cpProxyManager = new CPProxyManager(this);
         this.proxyManager = new ProxyManager(this);
         this.clusterService = new ClusterService(this);
         this.lifecycleService = new LifecycleServiceImpl(this);
@@ -295,6 +300,22 @@ export class HazelcastClient {
      */
     getPNCounter(name: string): Promise<PNCounter> {
         return this.proxyManager.getOrCreateProxy(name, ProxyManager.PNCOUNTER_SERVICE) as Promise<PNCounter>;
+    }
+
+    /**
+     * Returns the distributed AtomicLong instance with given name.
+     * The instance is created on CP Subsystem.
+     *
+     * If no group name is given within the `name` argument, then the
+     * AtomicLong instance will be created on the DEFAULT CP group.
+     * If a group name is given, like `.getAtomicLong('myLong@group1')`,
+     * the given group will be initialized first, if not initialized
+     * already, and then the instance will be created on this group.
+     * @param name
+     * @returns {Promise<PNCounter>}
+     */
+    getAtomicLong(name: string): Promise<IAtomicLong> {
+        return this.cpProxyManager.getOrCreateProxy(name, CPProxyManager.ATOMIC_LONG_SERVICE) as Promise<IAtomicLong>;
     }
 
     /**
