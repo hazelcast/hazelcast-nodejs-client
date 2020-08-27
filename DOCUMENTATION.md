@@ -367,7 +367,7 @@ const { Client } = require('hazelcast-client');
         // Print some information about this client
         console.log(client.getLocalEndpoint());
 
-        client.shutdown();
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }
@@ -1149,7 +1149,7 @@ As the final step, if you are done with your client, you can shut it down as sho
 
 ```javascript
 ...
-client.shutdown();
+await client.shutdown();
 ```
 
 ## 7.2. Node.js Client Operation Modes
@@ -1460,6 +1460,8 @@ The following are the descriptions of configuration elements and attributes:
 
 Hazelcast IMDG 4.0 introduces CP concurrency primitives with respect to the [CAP principle](http://awoc.wolski.fi/dlib/big-data/Brewer_podc_keynote_2000.pdf), i.e., they always maintain [linearizability](https://aphyr.com/posts/313-strong-consistency-models) and prefer consistency to availability during network partitions and client or server failures.
 
+All data structures within P Subsystem are available through `client.getCPSubsystem()` component of the client.
+
 Before using Atomic Long, Lock, and Semaphore, CP Subsystem has to be enabled on cluster-side. Refer to [CP Subsystem](https://docs.hazelcast.org/docs/latest/manual/html-single/#cp-subsystem) documentation for more information.
 
 > **NOTE: If you call the `DistributedObject.destroy()` method on a CP data structure, that data structure is terminated on the underlying CP group and cannot be reinitialized until the CP group is force-destroyed on the cluster side. For this reason, please make sure that you are completely done with a CP data structure before destroying its proxy.**
@@ -1472,7 +1474,7 @@ An Atomic Long usage example is shown below.
 
 ```javascript
 // Get an AtomicLong called 'my-atomic-long'
-const atomicLong = await client.getAtomicLong('my-atomic-long');
+const atomicLong = await client.getCPSubsystem().getAtomicLong('my-atomic-long');
 // Get current value (returns a Long)
 const value = await atomicLong.get();
 console.log('Value:', value);
@@ -1590,7 +1592,7 @@ const cfg = {
 };
 
 const client = await Client.newHazelcastClient(cfg);
-client.shutdown();
+await client.shutdown();
 ```
 
 **Output:**

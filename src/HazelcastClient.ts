@@ -45,11 +45,10 @@ import {
     MultiMap,
     ReplicatedMap,
     Ringbuffer,
-    PNCounter,
-    IAtomicLong
+    PNCounter
 } from './proxy';
 import {ProxyManager, NAMESPACE_SEPARATOR} from './proxy/ProxyManager';
-import {CPProxyManager} from './proxy/cpsubsystem/CPProxyManager';
+import {CPSubsystem, CPSubsystemImpl} from './CPSubsystem';
 import {LockReferenceIdGenerator} from './proxy/LockReferenceIdGenerator';
 import {SerializationService, SerializationServiceV1} from './serialization/SerializationService';
 import {AddressProvider} from './connection/AddressProvider';
@@ -101,7 +100,7 @@ export class HazelcastClient {
     /** @internal */
     private readonly proxyManager: ProxyManager;
     /** @internal */
-    private readonly cpProxyManager: CPProxyManager;
+    private readonly cpSubsystem: CPSubsystemImpl;
     /** @internal */
     private readonly nearCacheManager: NearCacheManager;
     /** @internal */
@@ -133,8 +132,8 @@ export class HazelcastClient {
         this.addressProvider = this.createAddressProvider();
         this.connectionManager = new ClientConnectionManager(this);
         this.invocationService = new InvocationService(this);
-        this.cpProxyManager = new CPProxyManager(this);
         this.proxyManager = new ProxyManager(this);
+        this.cpSubsystem = new CPSubsystemImpl(this);
         this.clusterService = new ClusterService(this);
         this.lifecycleService = new LifecycleServiceImpl(this);
         this.lockReferenceIdGenerator = new LockReferenceIdGenerator();
@@ -145,7 +144,7 @@ export class HazelcastClient {
 
     /**
      * Creates a new client object and automatically connects to cluster.
-     * @param config Default {@link ClientConfig} is used when this parameter is absent.
+     * @param config Default client config is used when this parameter is absent.
      * @returns a new client instance
      */
     static newHazelcastClient(config?: ClientConfig): Promise<HazelcastClient> {
@@ -157,8 +156,6 @@ export class HazelcastClient {
 
     /**
      * Returns the name of this Hazelcast instance.
-     *
-     * @return name of this Hazelcast instance
      */
     getName(): string {
         return this.instanceName;
@@ -166,7 +163,6 @@ export class HazelcastClient {
 
     /**
      * Gathers information of this local client.
-     * @returns {ClientInfo}
      */
      getLocalEndpoint(): ClientInfo {
         return this.clusterService.getLocalClient();
@@ -174,7 +170,6 @@ export class HazelcastClient {
 
     /**
      * Gives all known distributed objects in cluster.
-     * @returns {Promise<DistributedObject[]>|Promise<T>}
      */
     getDistributedObjects(): Promise<DistributedObject[]> {
         const clientMessage = ClientGetDistributedObjectsCodec.encodeRequest();
@@ -213,81 +208,63 @@ export class HazelcastClient {
     }
 
     /**
-     * Returns the distributed map instance with given name.
-     * @param name
-     * @returns {Promise<IMap<K, V>>}
+     * Returns the distributed Map instance with given name.
      */
     getMap<K, V>(name: string): Promise<IMap<K, V>> {
         return this.proxyManager.getOrCreateProxy(name, ProxyManager.MAP_SERVICE) as Promise<IMap<K, V>>;
     }
 
     /**
-     * Returns the distributed set instance with given name.
-     * @param name
-     * @returns {Promise<ISet<E>>}
+     * Returns the distributed Set instance with given name.
      */
     getSet<E>(name: string): Promise<ISet<E>> {
         return this.proxyManager.getOrCreateProxy(name, ProxyManager.SET_SERVICE) as Promise<ISet<E>>;
     }
 
     /**
-     * Returns the distributed queue instance with given name.
-     * @param name
-     * @returns {Promise<IQueue<E>>}
+     * Returns the distributed Queue instance with given name.
      */
     getQueue<E>(name: string): Promise<IQueue<E>> {
         return this.proxyManager.getOrCreateProxy(name, ProxyManager.QUEUE_SERVICE) as Promise<IQueue<E>>;
     }
 
     /**
-     * Returns the distributed list instance with given name.
-     * @param name
-     * @returns {Promise<IList<E>>}
+     * Returns the distributed List instance with given name.
      */
     getList<E>(name: string): Promise<IList<E>> {
         return this.proxyManager.getOrCreateProxy(name, ProxyManager.LIST_SERVICE) as Promise<IList<E>>;
     }
 
     /**
-     * Returns the distributed multi-map instance with given name.
-     * @param name
-     * @returns {Promise<MultiMap<K, V>>}
+     * Returns the distributed MultiMap instance with given name.
      */
     getMultiMap<K, V>(name: string): Promise<MultiMap<K, V>> {
         return this.proxyManager.getOrCreateProxy(name, ProxyManager.MULTIMAP_SERVICE) as Promise<MultiMap<K, V>>;
     }
 
     /**
-     * Returns a distributed ringbuffer instance with the given name.
-     * @param name
-     * @returns {Promise<Ringbuffer<E>>}
+     * Returns a distributed Ringbuffer instance with the given name.
      */
     getRingbuffer<E>(name: string): Promise<Ringbuffer<E>> {
         return this.proxyManager.getOrCreateProxy(name, ProxyManager.RINGBUFFER_SERVICE) as Promise<Ringbuffer<E>>;
     }
 
     /**
-     * Returns a distributed reliable topic instance with the given name.
-     * @param name
-     * @returns {Promise<ITopic<E>>}
+     * Returns a distributed Reliable Topic instance with the given name.
      */
     getReliableTopic<E>(name: string): Promise<ITopic<E>> {
         return this.proxyManager.getOrCreateProxy(name, ProxyManager.RELIABLETOPIC_SERVICE) as Promise<ITopic<E>>;
     }
 
     /**
-     * Returns the distributed replicated-map instance with given name.
-     * @param name
-     * @returns {Promise<ReplicatedMap<K, V>>}
+     * Returns the distributed Replicated Map instance with given name.
      */
     getReplicatedMap<K, V>(name: string): Promise<ReplicatedMap<K, V>> {
         return this.proxyManager.getOrCreateProxy(name, ProxyManager.REPLICATEDMAP_SERVICE) as Promise<ReplicatedMap<K, V>>;
     }
 
     /**
-     * Returns the distributed flake ID generator instance with given name.
-     * @param name
-     * @returns {Promise<FlakeIdGenerator>}
+     * Returns the distributed Flake ID Generator instance with given name.
      */
     getFlakeIdGenerator(name: string): Promise<FlakeIdGenerator> {
         return this.proxyManager.getOrCreateProxy(name, ProxyManager.FLAKEID_SERVICE) as Promise<FlakeIdGenerator>;
@@ -295,33 +272,22 @@ export class HazelcastClient {
 
     /**
      * Returns the distributed PN Counter instance with given name.
-     * @param name
-     * @returns {Promise<PNCounter>}
      */
     getPNCounter(name: string): Promise<PNCounter> {
         return this.proxyManager.getOrCreateProxy(name, ProxyManager.PNCOUNTER_SERVICE) as Promise<PNCounter>;
     }
 
     /**
-     * Returns the distributed AtomicLong instance with given name.
-     * The instance is created on CP Subsystem.
-     *
-     * If no group name is given within the `name` argument, then the
-     * AtomicLong instance will be created on the DEFAULT CP group.
-     * If a group name is given, like `.getAtomicLong('myLong@group1')`,
-     * the given group will be initialized first, if not initialized
-     * already, and then the instance will be created on this group.
-     * @param name
-     * @returns {Promise<PNCounter>}
+     * Returns the CP subsystem that offers a set of in-memory linearizable
+     * data structures.
      */
-    getAtomicLong(name: string): Promise<IAtomicLong> {
-        return this.cpProxyManager.getOrCreateProxy(name, CPProxyManager.ATOMIC_LONG_SERVICE) as Promise<IAtomicLong>;
+    getCPSubsystem(): CPSubsystem {
+        return this.cpSubsystem;
     }
 
     /**
      * Returns configuration that this instance started with.
-     * Returned configuration object should not be modified.
-     * @returns {ClientConfig} configuration object
+     * The returned object should not be modified.
      */
     getConfig(): ClientConfig {
         return this.config;
@@ -435,22 +401,25 @@ export class HazelcastClient {
     }
 
     /** @internal */
-    doShutdown(): void {
+    doShutdown(): Promise<void> {
         if (this.mapRepairingTask !== undefined) {
             this.mapRepairingTask.shutdown();
         }
         this.nearCacheManager.destroyAllNearCaches();
         this.proxyManager.destroy();
-        this.connectionManager.shutdown();
-        this.invocationService.shutdown();
         this.statistics.stop();
+        return this.cpSubsystem.shutdown()
+            .then(() => {
+                this.connectionManager.shutdown();
+                this.invocationService.shutdown();
+            });
     }
 
     /**
      * Shuts down this client instance.
      */
-    shutdown(): void {
-        this.getLifecycleService().shutdown();
+    shutdown(): Promise<void> {
+        return this.lifecycleService.shutdown();
     }
 
     /** @internal */

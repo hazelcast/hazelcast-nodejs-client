@@ -51,8 +51,8 @@ describe('RingbufferProxyTest', function () {
     });
 
     after(async function () {
-        client.shutdown();
-        return RC.terminateCluster(cluster.id);
+        return client.shutdown()
+            .then(() => RC.terminateCluster(cluster.id));
     });
 
     it('adds one item and reads back', async function () {

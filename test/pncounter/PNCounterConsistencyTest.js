@@ -26,58 +26,39 @@ const { Client, ConsistencyLostError } = require('../../');
 
 describe('PNCounterConsistencyTest', function () {
 
+    this.timeout(10000);
+
     let cluster;
     let client;
 
-    beforeEach(function () {
-        this.timeout(10000);
-        return RC.createCluster(null, fs.readFileSync(path.resolve(__dirname, 'hazelcast_crdtreplication_delayed.xml'), 'utf8'))
-            .then(function (cl) {
-                cluster = cl;
-                return RC.startMember(cluster.id);
-            })
-            .then(function () {
-                return RC.startMember(cluster.id);
-            })
-            .then(function () {
-                return Client.newHazelcastClient({ clusterName: cluster.id });
-            })
-            .then(function (value) {
-                client = value;
-            });
+    beforeEach(async function () {
+        cluster = await RC.createCluster(null,
+                fs.readFileSync(path.resolve(__dirname, 'hazelcast_crdtreplication_delayed.xml'), 'utf8'));
+        await RC.startMember(cluster.id);
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({ clusterName: cluster.id });
     });
 
-    afterEach(function () {
-        this.timeout(10000);
-        client.shutdown();
+    afterEach(async function () {
+        await client.shutdown();
         return RC.terminateCluster(cluster.id);
     });
 
-    it('target replica killed, no replica is sufficiently up-to-date, get operation throws ConsistencyLostError', function () {
-        let pnCounter;
-        return client.getPNCounter('pncounter').then(function (counter) {
-            pnCounter = counter;
-            return pnCounter.getAndAdd(3)
-        }).then(function () {
-            const currentReplicaAddress = pnCounter.currentTargetReplicaAddress;
-            return RC.terminateMember(cluster.id, currentReplicaAddress.uuid.toString());
-        }).then(function () {
-            return expect(pnCounter.addAndGet(10)).to.be.rejectedWith(ConsistencyLostError);
-        });
+    it('target replica killed, no replica is up-to-date, get operation throws ConsistencyLostError', async function () {
+        const pnCounter = await client.getPNCounter('pncounter');
+        await pnCounter.getAndAdd(3)
+        const currentReplicaAddress = pnCounter.currentTargetReplicaAddress;
+        await RC.terminateMember(cluster.id, currentReplicaAddress.uuid.toString());
+
+        await expect(pnCounter.addAndGet(10)).to.be.rejectedWith(ConsistencyLostError);
     });
 
-    it('target replica killed, no replica is sufficiently up-to-date, get operation may proceed after calling reset', function () {
-        let pnCounter;
-        return client.getPNCounter('pncounter').then(function (counter) {
-            pnCounter = counter;
-            return pnCounter.getAndAdd(3);
-        }).then(function () {
-            const currentReplicaAddress = pnCounter.currentTargetReplicaAddress;
-            return RC.terminateMember(cluster.id, currentReplicaAddress.uuid.toString());
-        }).then(function () {
-            return pnCounter.reset();
-        }).then(function () {
-            return pnCounter.addAndGet(10);
-        });
+    it('target replica killed, no replica is up-to-date, get operation proceeds after calling reset', async function () {
+        const pnCounter = await client.getPNCounter('pncounter');
+        await pnCounter.getAndAdd(3);
+        const currentReplicaAddress = pnCounter.currentTargetReplicaAddress;
+        await RC.terminateMember(cluster.id, currentReplicaAddress.uuid.toString());
+        await pnCounter.reset();
+        await pnCounter.addAndGet(10);
     })
 });

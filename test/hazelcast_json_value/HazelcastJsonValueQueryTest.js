@@ -56,8 +56,8 @@ describe('HazelcastJsonValue query test', function () {
         if (!client) {
             return;
         }
-        client.shutdown();
-        return RC.terminateCluster(cluster.id);
+        return client.shutdown()
+            .then(() => RC.terminateCluster(cluster.id));
     });
 
     it('querying over JavaScript objects', function () {

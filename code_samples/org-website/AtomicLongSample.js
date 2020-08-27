@@ -24,12 +24,12 @@ const { Client } = require('hazelcast-client');
         // Note: CP Subsystem has to be enabled on the cluster
         const hz = await Client.newHazelcastClient();
         // Get the AtomicLong counter from Cluster
-        const counter = await hz.getAtomicLong('counter');
+        const counter = await hz.getCPSubsystem().getAtomicLong('counter');
         // Add and get the counter
         const value = await counter.addAndGet(3);
         console.log('Counter value is', value);
         // Shutdown this Hazelcast client
-        hz.shutdown();
+        await hz.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

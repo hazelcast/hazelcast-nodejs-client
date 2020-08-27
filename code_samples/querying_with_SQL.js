@@ -49,7 +49,7 @@ class Customer {
             console.log(person);
         }
 
-        client.shutdown();
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

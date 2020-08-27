@@ -25,7 +25,7 @@ const { Client } = require('hazelcast-client');
         const id = await flakeIdGenerator.newId();
         console.log('Generated id:', id.toString());
 
-        client.shutdown();
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

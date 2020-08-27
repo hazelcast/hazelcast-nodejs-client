@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 'use strict';
+
+const Benchmark = require('./SimpleBenchmark');
+const Client = require('../.').Client;
 
 const REQ_COUNT = 100000;
 const BATCH_SIZE = 100;
@@ -40,19 +42,22 @@ function randomOp(map) {
     return map.remove(key);
 }
 
-const Benchmark = require('./SimpleBenchmark');
-const Client = require('../.').Client;
+(async () => {
+    try {
+        const client = await Client.newHazelcastClient();
+        const map = await client.getMap('default');
 
-Client.newHazelcastClient()
-    .then((client) => client.getMap('default'))
-    .then((map) => {
         const benchmark = new Benchmark({
             nextOp: () => randomOp(map),
             totalOpsCount: REQ_COUNT,
             batchSize: BATCH_SIZE
         });
-        return benchmark.run()
-            .then(() => map.destroy())
-            .then(() => map.client.shutdown());
-    })
-    .then(() => console.log('Benchmark finished'));
+        await benchmark.run();
+        console.log('Benchmark finished');
+
+        await map.destroy();
+        await client.shutdown();
+    } catch (err) {
+        console.error('Error occurred:', err);
+    }
+})();

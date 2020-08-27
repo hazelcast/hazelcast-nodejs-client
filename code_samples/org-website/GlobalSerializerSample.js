@@ -43,7 +43,7 @@ class GlobalSerializer {
         // GlobalSerializer will serialize/deserialize all non-builtin types
 
         // Shutdown this Hazelcast client
-        hz.shutdown();
+        await hz.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

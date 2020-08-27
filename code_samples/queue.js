@@ -32,7 +32,7 @@ const { Client } = require('hazelcast-client');
         item = await queue.poll();
         console.log(`Retrieved item: ${item}`);
 
-        client.shutdown();
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

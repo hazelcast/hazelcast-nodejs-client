@@ -43,8 +43,8 @@ describe('ClusterServiceTest', function () {
     });
 
     afterEach(function () {
-        client.shutdown();
-        return RC.terminateCluster(cluster.id);
+        return client.shutdown()
+            .then(() => RC.terminateCluster(cluster.id));
     });
 
     it('should know when a new member joins to cluster', function (done) {
@@ -65,7 +65,7 @@ describe('ClusterServiceTest', function () {
         let member2;
 
         const membershipListener = {
-            memberRemoved: (event) => {
+            memberRemoved: () => {
                 expect(client.getClusterService().getSize()).to.be.eq(1);
                 done();
             }
@@ -83,7 +83,7 @@ describe('ClusterServiceTest', function () {
         let member2, member3;
 
         const membershipListener = {
-            memberRemoved: (event) => {
+            memberRemoved: () => {
                 const remainingMemberList = client.getClusterService().getMemberList();
                 expect(remainingMemberList).to.have.length(2);
                 const portList = remainingMemberList.map(function (member) {
@@ -120,7 +120,7 @@ describe('ClusterServiceTest', function () {
                     clusterConnectTimeoutMillis: 2000
                 }
             }
-        }).catch(function (err) {
+        }).catch(function () {
             done();
         }).then(function (client) {
             if (client) {
@@ -143,16 +143,16 @@ describe('ClusterServiceTest', function () {
                 }
             }
         }).then(function (newClient) {
-            newClient.shutdown();
-            done(new Error('Client falsely started with wrong cluster name'));
-        }).catch(function (err) {
+            return newClient.shutdown()
+                .then(() => done(new Error('Client falsely started with wrong cluster name')));
+        }).catch(function () {
             done();
         });
     });
 
     it('should not run when listener was removed', function (done) {
         const membershipListener = {
-            memberAdded: (event) => {
+            memberAdded: () => {
                 done(new Error('Listener falsely fired'));
             }
         };

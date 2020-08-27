@@ -67,9 +67,9 @@ describe('ReliableTopicTest', function () {
     });
 
     after(async function () {
-        clientOne.shutdown();
-        clientTwo.shutdown();
-        return RC.terminateCluster(cluster.id);
+        return clientOne.shutdown()
+            .then(() => clientTwo.shutdown())
+            .then(() => RC.terminateCluster(cluster.id));
     });
 
     it('writes and reads messages', function (done) {

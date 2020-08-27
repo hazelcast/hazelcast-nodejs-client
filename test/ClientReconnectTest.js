@@ -24,8 +24,8 @@ describe('ClientReconnectTest', function () {
     let cluster, client;
 
     afterEach(function () {
-        client.shutdown();
-        return RC.terminateCluster(cluster.id);
+        return client.shutdown()
+            .then(() => RC.terminateCluster(cluster.id));
     });
 
     it('member restarts, while map.put in progress', function () {

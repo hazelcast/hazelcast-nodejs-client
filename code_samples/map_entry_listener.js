@@ -39,7 +39,7 @@ const { Client } = require('hazelcast-client');
         await map.put(1, 'new-value');
         await map.remove(1);
 
-        client.shutdown();
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

@@ -31,7 +31,7 @@ const { Client } = require('hazelcast-client');
         await map.putIfAbsent('somekey', 'somevalue');
         await map.replace('key', 'value', 'newvalue');
         // Shutdown this Hazelcast client
-        hz.shutdown();
+        await hz.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

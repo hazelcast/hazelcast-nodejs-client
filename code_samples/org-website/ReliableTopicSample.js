@@ -31,7 +31,7 @@ const { Client } = require('hazelcast-client');
         // Publish a message to the Topic
         await topic.publish('Hello to distributed world');
         // Shutdown this Hazelcast Client
-        hz.shutdown();
+        await hz.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

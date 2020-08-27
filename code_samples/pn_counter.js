@@ -27,7 +27,7 @@ const { Client } = require('hazelcast-client');
         value = await pnCounter.decrementAndGet();
         console.log('Decremented counter. Current value is', value.toNumber());
 
-        client.shutdown();
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

@@ -74,7 +74,7 @@ const giveInformation = (timeofday) => {
         const deserialized = await map.get(1);
         giveInformation(deserialized);
 
-        client.shutdown();
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

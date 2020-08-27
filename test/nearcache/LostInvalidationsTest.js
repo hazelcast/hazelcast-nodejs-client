@@ -85,8 +85,8 @@ describe('LostInvalidationTest', function () {
     });
 
     afterEach(function () {
-        client.shutdown();
-        modifyingClient.shutdown();
+        return client.shutdown()
+            .then(() => modifyingClient.shutdown());
     });
 
     after(function () {

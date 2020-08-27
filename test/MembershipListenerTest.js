@@ -40,8 +40,8 @@ describe('MembershipListenerTest', function () {
     });
 
     afterEach(function () {
-        client.shutdown();
-        return RC.terminateCluster(cluster.id);
+        return client.shutdown()
+            .then(() => RC.terminateCluster(cluster.id));
     });
 
     it('sees member added event', function () {

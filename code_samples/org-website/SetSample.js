@@ -35,7 +35,7 @@ const { Client } = require('hazelcast-client');
         const items = await set.toArray();
         console.log(items);
         // Shutdown this Hazelcast client
-        hz.shutdown();
+        await hz.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

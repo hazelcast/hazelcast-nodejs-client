@@ -53,7 +53,7 @@ async function do50000Gets(client, mapName) {
         await do50000Gets(client, nearCachedMapName);
         await do50000Gets(client, regularMapName);
 
-        client.shutdown();
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

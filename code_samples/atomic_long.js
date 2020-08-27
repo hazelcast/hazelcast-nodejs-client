@@ -21,13 +21,13 @@ const { Client } = require('hazelcast-client');
     try {
         const client = await Client.newHazelcastClient();
 
-        const viewCounter = await client.getAtomicLong('views');
+        const viewCounter = await client.getCPSubsystem().getAtomicLong('views');
         const value = await viewCounter.get();
         console.log('Value:', value);
         const newValue = await viewCounter.addAndGet(42);
         console.log('New value:', newValue);
 
-        client.shutdown();
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

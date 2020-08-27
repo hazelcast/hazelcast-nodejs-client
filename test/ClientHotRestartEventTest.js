@@ -62,7 +62,7 @@ describe('ClientHotRestartEventTest', function () {
     });
 
     afterEach(async function () {
-        client.shutdown();
+        await client.shutdown();
         return RC.terminateCluster(cluster.id);
     });
 

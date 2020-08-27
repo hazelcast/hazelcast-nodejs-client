@@ -212,9 +212,9 @@ function portableFactory3(classId) {
             console.log('Failed due to:', err.message);
         }
 
-        client.shutdown();
-        client2.shutdown();
-        client3.shutdown();
+        await client.shutdown();
+        await client2.shutdown();
+        await client3.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

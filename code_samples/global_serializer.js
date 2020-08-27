@@ -56,7 +56,7 @@ selfReferringObject.self = selfReferringObject;
         console.log(obj.self);
         console.log(obj.self.self);
 
-        client.shutdown();
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

@@ -40,7 +40,7 @@ const { usernamePasswordCredentialsFactory } = require('./user_pass_cred_factory
         value = await adminMap.get('anotherKey');
         console.log('Value for the "anotherKey" is', value);
 
-        adminClient.shutdown();
+        await adminClient.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

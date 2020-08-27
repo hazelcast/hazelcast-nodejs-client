@@ -28,7 +28,7 @@ const { Client } = require('hazelcast-client');
         });
         console.log('The client is authenticated using SSL');
 
-        client.shutdown();
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

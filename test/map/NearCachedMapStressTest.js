@@ -67,9 +67,9 @@ describe('NearCachedMapStress', function () {
     });
 
     after(function () {
-        client1.shutdown();
-        validatingClient.shutdown();
-        return RC.terminateCluster(cluster.id);
+        return client1.shutdown()
+            .then(() => validatingClient.shutdown())
+            .then(() => RC.terminateCluster(cluster.id));
     });
 
     function completeOperation() {

@@ -34,7 +34,7 @@ const { Client } = require('hazelcast-client');
         value = await rb.readOne(sequence.add(1));
         console.log('Next value:', value);
         // Shutdown this Hazelcast client
-        hz.shutdown();
+        await hz.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

@@ -27,19 +27,18 @@ const { ClientConnection } = require('../lib/network/ClientConnection');
 
 describe('ClientProxyTest', function () {
 
-    let cluster, client, map, list;
+    let cluster;
+    let client;
+    let map;
+    let list;
 
-    afterEach(function () {
+    afterEach(async function () {
         sandbox.restore();
         if (map && list) {
-            return map.destroy()
-                .then(function () {
-                    return list.destroy();
-                })
-                .then(function () {
-                    client.shutdown();
-                    return RC.terminateCluster(cluster.id);
-                });
+            await map.destroy();
+            await list.destroy();
+            await client.shutdown();
+            await RC.terminateCluster(cluster.id);
         }
     });
 
@@ -67,24 +66,15 @@ describe('ClientProxyTest', function () {
         assert.equal(mapProxy.getConnectedServerVersion(), 30700);
     });
 
-    it('Proxies with the same name should be different for different services', function () {
-        return RC.createCluster().then(function (response) {
-            cluster = response;
-            return RC.startMember(cluster.id);
-        }).then(function () {
-            return Client.newHazelcastClient({
-                clusterName: cluster.id
-            });
-        }).then(function (res) {
-            client = res;
-            return client.getMap('Furkan').then(function (m) {
-                map = m;
-                return client.getList('Furkan');
-            }).then(function (l) {
-                list = l;
-                expect(list.getServiceName()).to.be.equal('hz:impl:listService');
-                expect(map.getServiceName()).to.be.equal('hz:impl:mapService');
-            });
-        });
+    it('Proxies with the same name should be different for different services', async function () {
+        cluster = await RC.createCluster();
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({ clusterName: cluster.id });
+
+        map = await client.getMap('Furkan');
+        list = await client.getList('Furkan');
+
+        expect(list.getServiceName()).to.be.equal('hz:impl:listService');
+        expect(map.getServiceName()).to.be.equal('hz:impl:mapService');
     });
 });

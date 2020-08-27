@@ -40,7 +40,7 @@ const {
         const avgAge = await map.aggregate(Aggregators.numberAvg());
         console.log(`Average age is ${avgAge}`);
 
-        client.shutdown();
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

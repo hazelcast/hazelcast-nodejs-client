@@ -61,7 +61,7 @@ function portableFactory(classId) {
         // Customer can be used here
 
         // Shutdown this Hazelcast client
-        hz.shutdown();
+        await hz.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

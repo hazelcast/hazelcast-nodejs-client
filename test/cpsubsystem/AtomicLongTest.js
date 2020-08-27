@@ -15,7 +15,10 @@
  */
 'use strict';
 
-const { expect } = require('chai');
+const chai = require('chai');
+chai.should();
+chai.use(require('chai-as-promised'));
+const expect = chai.expect;
 const fs = require('fs');
 const Long = require('long');
 const RC = require('./../RC');
@@ -24,7 +27,7 @@ const {
     DistributedObjectDestroyedError
 } = require('../../');
 
-describe('AtomicLongProxyTest', function () {
+describe('AtomicLongTest', function () {
 
     this.timeout(30000);
 
@@ -44,7 +47,7 @@ describe('AtomicLongProxyTest', function () {
             RC.startMember(cluster.id)
         ]);
         client = await Client.newHazelcastClient({ clusterName: cluster.id });
-        long = await client.getAtomicLong('along');
+        long = await client.getCPSubsystem().getAtomicLong('along');
     });
 
     afterEach(async function () {
@@ -53,12 +56,12 @@ describe('AtomicLongProxyTest', function () {
     });
 
     after(async function () {
-        client.shutdown();
+        await client.shutdown();
         return RC.shutdownCluster(cluster.id);
     });
 
     it('should create AtomicLong with respect to given CP group', async function () {
-        const longInAnotherGroup = await client.getAtomicLong('along@mygroup');
+        const longInAnotherGroup = await client.getCPSubsystem().getAtomicLong('along@mygroup');
 
         const value1 = await longInAnotherGroup.incrementAndGet();
         expectLong(1, value1);
@@ -69,27 +72,12 @@ describe('AtomicLongProxyTest', function () {
     });
 
     it('destroy: should destroy AtomicLong and throw on operation', async function () {
-        const anotherLong = await client.getAtomicLong('another-long-1');
+        const anotherLong = await client.getCPSubsystem().getAtomicLong('another-long-1');
         await anotherLong.destroy();
         // the next destroy call should be ignored
         await anotherLong.destroy();
 
-        try {
-            await anotherLong.get();
-        } catch (err) {
-            expect(err).to.be.instanceOf(DistributedObjectDestroyedError);
-        }
-    });
-
-    it('destroy: should destroy AtomicLong and throw on getAtomitLong call', async function () {
-        const anotherLong = await client.getAtomicLong('another-long-2');
-        await anotherLong.destroy();
-
-        try {
-            await client.getAtomicLong('another-long-2');
-        } catch (err) {
-            expect(err).to.be.instanceOf(DistributedObjectDestroyedError);
-        }
+        await expect(anotherLong.get()).to.be.rejectedWith(DistributedObjectDestroyedError);
     });
 
     it('get: should return 0 initially', async function () {

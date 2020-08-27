@@ -90,8 +90,8 @@ describe('StatisticsTest (default period)', function () {
     });
 
     after(function () {
-        client.shutdown();
-        return RC.terminateCluster(cluster.id);
+        return client.shutdown()
+            .then(() => RC.terminateCluster(cluster.id));
     });
 
     beforeEach(function () {
@@ -193,8 +193,8 @@ describe('StatisticsTest (non-default period)', function () {
     });
 
     after(function () {
-        client.shutdown();
-        return RC.terminateCluster(cluster.id);
+        return client.shutdown()
+            .then(() => RC.terminateCluster(cluster.id));
     });
 
     it('should not change before period', function () {
@@ -248,8 +248,8 @@ describe('StatisticsTest (negative period)', function () {
     });
 
     after(function () {
-        client.shutdown();
-        return RC.terminateCluster(cluster.id);
+        return client.shutdown()
+            .then(() => RC.terminateCluster(cluster.id));
     });
 
     it('should be enabled via configuration', function () {

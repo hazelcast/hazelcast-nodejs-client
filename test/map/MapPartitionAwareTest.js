@@ -68,9 +68,8 @@ describe('MapPartitionAwareTest', function () {
     });
 
     after(function () {
-        this.timeout(30000);
-        client.shutdown();
-        return RC.terminateCluster(cluster.id);
+        return client.shutdown()
+            .then(() => RC.terminateCluster(cluster.id));
     });
 
     beforeEach(function () {

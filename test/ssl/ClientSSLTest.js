@@ -26,6 +26,8 @@ const { markEnterprise } = require('../Util');
 
 describe('ClientSSLTest', function () {
 
+    this.timeout(20000);
+
     let cluster;
     let client;
     let serverConfig;
@@ -35,66 +37,60 @@ describe('ClientSSLTest', function () {
     });
 
     beforeEach(function () {
-        this.timeout(20000);
         serverConfig = fs.readFileSync(__dirname + '/hazelcast-ssl.xml', 'utf8');
     });
 
-    afterEach(function () {
-        this.timeout(20000);
+    afterEach(async function () {
         if (client) {
-            client.shutdown();
+            await client.shutdown();
             client = null;
         }
         return RC.terminateCluster(cluster.id);
     });
 
-    function createCluster(sConfig) {
-        return RC.createCluster(null, sConfig).then(function (response) {
-            cluster = response;
-            return RC.startMember(cluster.id);
-        });
+    async function createCluster(sConfig) {
+        cluster = await RC.createCluster(null, sConfig);
+        return RC.startMember(cluster.id);
     }
 
-    it('should not be able to connect to the server with invalid certificate', function () {
+    it('should not be able to connect to the server with invalid certificate', async function () {
         const sConfig = serverConfig
             .replace('[serverCertificate]', 'com/hazelcast/nio/ssl-mutual-auth/server1.keystore')
             .replace('[password]', 'password');
-        return createCluster(sConfig).then(function () {
-            return expect(Client.newHazelcastClient({
-                clusterName: cluster.id,
-                network: {
-                    clusterMembers: ['127.0.0.1:5701'],
-                    ssl: {
-                        enabled: true
-                    }
-                },
-                connectionStrategy: {
-                    connectionRetry: {
-                        clusterConnectTimeoutMillis: 1000
-                    }
+        await createCluster(sConfig);
+
+        await expect(Client.newHazelcastClient({
+            clusterName: cluster.id,
+            network: {
+                clusterMembers: ['127.0.0.1:5701'],
+                ssl: {
+                    enabled: true
                 }
-            })).to.be.rejectedWith(IllegalStateError);
-        })
+            },
+            connectionStrategy: {
+                connectionRetry: {
+                    clusterConnectTimeoutMillis: 1000
+                }
+            }
+        })).to.be.rejectedWith(IllegalStateError);
     });
 
-    it('should be able to connect to the server with valid certificate', function () {
+    it('should be able to connect to the server with valid certificate', async function () {
         const sConfig = serverConfig
             .replace('[serverCertificate]', 'com/hazelcast/nio/ssl/letsencrypt.jks')
             .replace('[password]', '123456');
-        return createCluster(sConfig).then(function () {
-            return Client.newHazelcastClient({
-                clusterName: cluster.id,
-                network: {
-                    clusterMembers: ['127.0.0.1:5701'],
-                    ssl: {
-                        enabled: true
-                    }
+        await createCluster(sConfig);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            network: {
+                clusterMembers: ['127.0.0.1:5701'],
+                ssl: {
+                    enabled: true
                 }
-            });
-        }).then(function (hazelcastClient) {
-            client = hazelcastClient;
-            return expect(client.lifecycleService.isRunning()).to.be.true;
+            }
         });
+
+        expect(client.lifecycleService.isRunning()).to.be.true;
     });
 });
 
