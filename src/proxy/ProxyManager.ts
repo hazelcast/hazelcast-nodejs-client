@@ -130,9 +130,7 @@ export class ProxyManager {
         const request = ClientCreateProxiesCodec.encodeRequest(proxyEntries);
         request.setPartitionId(-1);
         const invocation = new Invocation(this.client, request);
-        return this.client.getInvocationService()
-            .invokeUrgent(invocation)
-            .then(() => undefined);
+        return this.client.getInvocationService().invokeUrgent(invocation).then();
     }
 
     public getDistributedObjects(): Promise<DistributedObject[]> {
@@ -148,8 +146,7 @@ export class ProxyManager {
         this.proxies.delete(serviceName + NAMESPACE_SEPARATOR + name);
         const clientMessage = ClientDestroyProxyCodec.encodeRequest(name, serviceName);
         clientMessage.setPartitionId(-1);
-        return this.client.getInvocationService().invokeOnRandomTarget(clientMessage)
-            .then(() => undefined);
+        return this.client.getInvocationService().invokeOnRandomTarget(clientMessage).then();
     }
 
     public destroyProxyLocally(namespace: string): Promise<void> {

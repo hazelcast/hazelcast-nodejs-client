@@ -26,7 +26,7 @@ import {UUID} from '../core/UUID';
  * Common super class for any proxy.
  * @internal
  */
-export class BaseProxy {
+export abstract class BaseProxy {
 
     protected client: HazelcastClient;
     protected readonly name: string;
@@ -42,40 +42,20 @@ export class BaseProxy {
         return this.name;
     }
 
-    /**
-     * Returns name of the proxy.
-     * @returns
-     */
     getName(): string {
         return this.name;
     }
 
-    /**
-     * Returns name of the service which this proxy belongs to.
-     * Refer to service field of {@link ProxyManager} for service names.
-     * @returns
-     */
     getServiceName(): string {
         return this.serviceName;
     }
 
-    /**
-     * Deletes the proxy object and frees allocated resources on cluster.
-     * @returns
-     */
     destroy(): Promise<void> {
         return this.client.getProxyManager().destroyProxy(this.name, this.serviceName).then(() => {
             return this.postDestroy();
         });
     }
 
-    /**
-     * Destroys this client proxy instance locally without issuing distributed
-     * object destroy request to the cluster as the destroy method does.
-     * <p>
-     * The local destruction operation still may perform some communication
-     * with the cluster; for example, to unregister remote event subscriptions.
-     */
     destroyLocally(): Promise<void> {
         return this.postDestroy();
     }
