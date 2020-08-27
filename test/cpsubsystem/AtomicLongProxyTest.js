@@ -33,7 +33,7 @@ describe('AtomicLongProxyTest', function () {
     let long;
 
     function expectLong(expected, long) {
-        return expect(long.toString()).to.equal(Long.fromValue(expected).toString());
+        expect(long.toString()).to.equal(Long.fromValue(expected).toString());
     }
 
     before(async function () {
@@ -68,12 +68,25 @@ describe('AtomicLongProxyTest', function () {
         expectLong(0, value2);
     });
 
-    it('destroy: should destroy AtomicLong', async function () {
-        const anotherLong = await client.getAtomicLong('another-long');
+    it('destroy: should destroy AtomicLong and throw on operation', async function () {
+        const anotherLong = await client.getAtomicLong('another-long-1');
+        await anotherLong.destroy();
+        // the next destroy call should be ignored
         await anotherLong.destroy();
 
         try {
             await anotherLong.get();
+        } catch (err) {
+            expect(err).to.be.instanceOf(DistributedObjectDestroyedError);
+        }
+    });
+
+    it('destroy: should destroy AtomicLong and throw on getAtomitLong call', async function () {
+        const anotherLong = await client.getAtomicLong('another-long-2');
+        await anotherLong.destroy();
+
+        try {
+            await client.getAtomicLong('another-long-2');
         } catch (err) {
             expect(err).to.be.instanceOf(DistributedObjectDestroyedError);
         }
@@ -103,7 +116,7 @@ describe('AtomicLongProxyTest', function () {
     it('getAndAdd: should add', async function () {
         await long.getAndAdd(123);
         const value = await long.get();
-        return expectLong(123, value);
+        expectLong(123, value);
     });
 
     it('decrementAndGet: should decrement', async function () {
