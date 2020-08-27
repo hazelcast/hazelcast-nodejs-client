@@ -19,7 +19,7 @@ const expect = require('chai').expect;
 const BuildInfo = require('../lib/BuildInfo').BuildInfo;
 const UuidUtil = require('../lib/util/UuidUtil').UuidUtil;
 
-const promiseLater = function (time, func) {
+exports.promiseLater = function (time, func) {
     if (func === undefined) {
         func = () => {};
     }
@@ -27,6 +27,14 @@ const promiseLater = function (time, func) {
         setTimeout(function () {
             resolve(func());
         }, time);
+    });
+};
+
+exports.promiseWaitMilliseconds = function (milliseconds) {
+    return new Promise(function (resolve) {
+        setTimeout(function () {
+            resolve();
+        }, milliseconds);
     });
 };
 
@@ -52,15 +60,16 @@ const expectAlmostEqual = function (actual, expected) {
     }
     return expect(actual).to.equal(expected);
 };
+exports.expectAlmostEqual = expectAlmostEqual;
 
 exports.fillMap = function (map, size, keyPrefix, valuePrefix) {
-    if (size == void 0) {
+    if (size === undefined) {
         size = 10;
     }
-    if (keyPrefix == void 0) {
+    if (keyPrefix === undefined) {
         keyPrefix = 'key';
     }
-    if (valuePrefix == void 0) {
+    if (valuePrefix === undefined) {
         valuePrefix = 'val';
     }
     const entries = [];
@@ -94,21 +103,46 @@ exports.markServerVersionAtLeast = function (_this, client, expectedVersion) {
     }
 };
 
-exports.promiseWaitMilliseconds = function (milliseconds) {
-    return new Promise(function (resolve, reject) {
-        setTimeout(function () {
-            resolve();
-        }, milliseconds);
-    });
-};
-
 exports.getRandomInt = function (lowerLim, upperLim) {
     return Math.floor(Math.random() * (upperLim - lowerLim)) + lowerLim;
 };
 
-exports.promiseLater = promiseLater;
-exports.expectAlmostEqual = expectAlmostEqual;
-
 exports.randomString = function () {
     return UuidUtil.generate().toString();
 };
+
+class CountingMembershipListener {
+
+    constructor(expectedAdds, expectedRemoves) {
+        this.adds = 0;
+        this.expectedAdds = expectedAdds;
+        this.removes = 0;
+        this.expectedRemoves = expectedRemoves;
+        this.expectedPromise = new Promise((resolve) => {
+            this._resolve = resolve;
+        });
+    }
+
+    memberAdded() {
+        this.adds++;
+        this.checkCounts();
+    }
+
+    memberRemoved() {
+        this.removes++;
+        this.checkCounts();
+    }
+
+    checkCounts() {
+        if (this.adds < this.expectedAdds) {
+            return;
+        }
+        if (this.removes < this.expectedRemoves) {
+            return;
+        }
+        this._resolve();
+    }
+
+}
+
+exports.CountingMembershipListener = CountingMembershipListener;

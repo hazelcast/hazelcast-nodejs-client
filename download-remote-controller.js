@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-var child_process = require('child_process');
-var path = require('path');
+const child_process = require('child_process');
+const path = require('path');
 
-var scriptName = path.join('scripts', 'download-rc');
-var options = {
+let scriptName = path.join('scripts', 'download-rc');
+const options = {
     stdio: [0, 1, 2]
 };
 
@@ -27,4 +27,5 @@ if (process.platform === 'win32') {
 } else if (process.platform === 'linux' || process.platform === 'darwin') {
     scriptName = scriptName + '.sh'
 }
+
 child_process.execFileSync(scriptName, options);

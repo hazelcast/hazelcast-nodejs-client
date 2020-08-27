@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const RC = require('./RC');
 const { Client } = require('../.');
 
@@ -25,49 +25,35 @@ describe('AutoPipeliningDisabledTest', function () {
     let client;
     let map;
 
-    const createClient = (clusterId) => {
-        return Client.newHazelcastClient({
-            clusterName: clusterId,
+    before(async function () {
+        this.timeout(32000);
+        cluster = await RC.createCluster(null, null);
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
             properties: {
                 ['hazelcast.client.autopipelining.enabled']: false
             }
         });
-    };
-
-    before(function () {
-        this.timeout(32000);
-        return RC.createCluster(null, null).then(c => {
-            cluster = c;
-            return RC.startMember(cluster.id);
-        }).then(_ => {
-            return createClient(cluster.id);
-        }).then(c => {
-            client = c;
-        });
     });
 
-    beforeEach(function () {
-        return client.getMap('test').then(m => {
-            map = m;
-        });
+    beforeEach(async function () {
+        map = await client.getMap('test');
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         return map.destroy();
     });
 
-    after(function () {
+    after(async function () {
         client.shutdown();
         return RC.terminateCluster(cluster.id);
     });
 
-    it('basic map operations work fine', function () {
-        return map.set('foo', 'bar')
-            .then(() => map.get('foo'))
-            .then(v => {
-                return expect(v).to.equal('bar');
-            });
+    it('basic map operations work fine', async function () {
+        await map.set('foo', 'bar');
+        const value = await map.get('foo');
+        expect(value).to.equal('bar');
     });
-
 });
 
