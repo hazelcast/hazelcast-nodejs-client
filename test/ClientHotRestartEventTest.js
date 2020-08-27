@@ -66,7 +66,7 @@ describe('ClientHotRestartEventTest', function () {
         return RC.terminateCluster(cluster.id);
     });
 
-    it('should receive membership events when the member is restarted', async function () {
+    it('should receive membership events when the member is restarted with another port and same uuid', async function () {
         const member = await RC.startMember(cluster.id);
 
         client = await Client.newHazelcastClient({
@@ -83,6 +83,6 @@ describe('ClientHotRestartEventTest', function () {
         await listener.expectedPromise;
 
         expect(client.getCluster().getMembers().length).to.be.equal(1);
-        expect(client.getCluster().getMembers()[0].uuid.toString()).to.be.equal(member.id);
+        expect(client.getCluster().getMembers()[0].uuid.toString()).to.be.equal(member.uuid);
     });
 });
