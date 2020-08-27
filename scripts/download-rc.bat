@@ -28,7 +28,7 @@ if errorlevel 1 (
 )
 
 if exist hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar (
-	echo remote controller already exist, not downloading from maven.
+	echo remote controller already exists, not downloading from maven.
 ) else (
 	echo Downloading: remote-controller jar com.hazelcast:hazelcast-remote-controller:%HAZELCAST_RC_VERSION%
 	call mvn -q dependency:get -DrepoUrl=%SNAPSHOT_REPO% -Dartifact=com.hazelcast:hazelcast-remote-controller:%HAZELCAST_RC_VERSION% -Ddest=hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar
