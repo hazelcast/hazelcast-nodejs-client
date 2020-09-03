@@ -79,12 +79,13 @@ export interface FencedLock extends DistributedObject {
     /**
      * Releases the lock if the lock is currently held by the client.
      *
+     * @param fence fencing token returned from `lock`/`tryLock` method.
      * @throws IllegalMonitorStateError if the client does not hold
      *         the lock
      * @throws LockOwnershipLostError if the underlying CP session was
      *         closed before the client releases the lock
      */
-    unlock(): Promise<void>;
+    unlock(fence: Long): Promise<void>;
 
     /**
      * Returns whether this lock is locked or not.

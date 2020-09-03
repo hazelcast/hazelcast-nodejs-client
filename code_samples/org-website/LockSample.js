@@ -30,7 +30,7 @@ const { Client } = require('hazelcast-client');
         try {
             // Guarded code goes here
         } finally {
-            await lock.unlock();
+            await lock.unlock(fence);
         }
         // Shutdown this Hazelcast client
         await hz.shutdown();

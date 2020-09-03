@@ -33,7 +33,7 @@ const { Client } = require('hazelcast-client');
 
             // more guarded code goes here
         } finally {
-            await lock.unlock();
+            await lock.unlock(fence);
         }
 
         locked = await lock.isLocked();

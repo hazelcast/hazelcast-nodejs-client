@@ -54,9 +54,9 @@ describe('FencedLockProxyTest', function () {
     async function prepareForUnlock(lockedSessionId, currentSessionId) {
         prepareAcquireSession(lockedSessionId);
         stubRequestLock(2);
-        await proxy.lock();
-
         prepareGetSession(currentSessionId);
+
+        return proxy.lock();
     }
 
     function stubRequest(methodName, result, firstCallErr) {
@@ -201,41 +201,41 @@ describe('FencedLockProxyTest', function () {
     });
 
     it('unlock: should release session when lock held', async function () {
-        await prepareForUnlock(1, 1);
+        const fence = await prepareForUnlock(1, 1);
         stubRequestUnlock();
 
-        await proxy.unlock();
+        await proxy.unlock(fence);
         expect(cpSessionManagerStub.releaseSession.calledOnce).to.be.true;
     });
 
-    it('unlock: should throw when no lock held', async function () {
-        await expect(proxy.unlock()).to.be.rejectedWith(IllegalMonitorStateError);
+    it('unlock: should throw on no argument', function () {
+        expect(() => proxy.unlock()).to.throw(TypeError);
+    });
+
+    it('unlock: should throw on invalid token given', function () {
+        expect(() => proxy.unlock(Long.fromNumber(1))).to.throw(TypeError);
     });
 
     it('unlock: should throw when session id has changed', async function () {
-        await prepareForUnlock(1, 2);
+        const fence = await prepareForUnlock(1, 2);
 
-        await expect(proxy.unlock()).to.be.rejectedWith(LockOwnershipLostError);
+        await expect(proxy.unlock(fence)).to.be.rejectedWith(LockOwnershipLostError);
     });
 
-    it('unlock: should throw when no active session id', async function () {
-        prepareGetSession(-1);
+    it('unlock: should throw when no active session id and no lock is held', async function () {
+        const fence = await prepareForUnlock(1, -1);
+        // clean up internal map as if the lock is not held
+        proxy.lockedSessionIds.clear();
 
-        await expect(proxy.unlock()).to.be.rejectedWith(IllegalMonitorStateError);
+        await expect(proxy.unlock(fence)).to.be.rejectedWith(IllegalMonitorStateError);
     });
 
     it('unlock: should throw on expired session error', async function () {
-        await prepareForUnlock(1, 1);
+        const fence = await prepareForUnlock(1, 1);
         stubRequestUnlock(new SessionExpiredError());
 
-        await expect(proxy.unlock()).to.be.rejectedWith(LockOwnershipLostError);
+        await expect(proxy.unlock(fence)).to.be.rejectedWith(LockOwnershipLostError);
         expect(cpSessionManagerStub.invalidateSession.calledOnce).to.be.true;
-    });
-
-    it('isLocked: should throw when session id has changed', async function () {
-        await prepareForUnlock(1, 2);
-
-        await expect(proxy.isLocked()).to.be.rejectedWith(LockOwnershipLostError);
     });
 
     it('isLocked: should return true when lock is held', async function () {

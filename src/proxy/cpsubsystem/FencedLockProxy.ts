@@ -41,56 +41,23 @@ import {
     UUID
 } from '../../core';
 
-const INVALID_FENCE = Long.fromNumber(0);
+const fenceThreadIdSymbol = Symbol('FenceThreadIdSymbol');
 
-/**
- * Contains information for the last successful lock acquire.
- */
-class LastKnownLock {
-
-    // "thread id" that has acquired the lock
-    threadId: number;
-    // session id that has acquired the lock
-    sessionId: Long;
-
-    update(threadId: number, sessionId: Long) {
-        this.threadId = threadId;
-        this.sessionId = sessionId;
-    }
-
-    clear(): void {
-        this.threadId = undefined;
-        this.sessionId = undefined;
-    }
-
-    clearIfSameThread(threadId: number): void {
-        if (this.threadId === threadId) {
-            this.clear();
-        }
-    }
-
-    isEmpty(): boolean {
-        return this.threadId === undefined && this.sessionId === undefined;
-    }
+interface Fence extends Long {
+    [fenceThreadIdSymbol]?: number;
 }
+
+const INVALID_FENCE: Fence = Long.fromNumber(0);
 
 function isValidFence(fence: Long): boolean {
     return fence.greaterThan(INVALID_FENCE);
 }
 
-function wrapErrorWithPromise(fn: () => void): Promise<any> | undefined {
-    try {
-        fn();
-        return undefined;
-    } catch (err) {
-        return Promise.reject(err);
-    }
-}
-
 /** @internal */
 export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
 
-    private readonly lastKnownLock = new LastKnownLock();
+    // "thread id" -> id of the session that has acquired the lock
+    private readonly lockedSessionIds: Map<number, Long> = new Map();
 
     constructor(client: HazelcastClient,
                 groupId: RaftGroupId,
@@ -99,23 +66,23 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
         super(client, CPProxyManager.LOCK_SERVICE, groupId, proxyName, objectName);
     }
 
-    lock(): Promise<Long> {
+    lock(): Promise<Fence> {
         const threadId = this.nextThreadId();
         const invocationUid = UuidUtil.generate();
         return this.doLock(threadId, invocationUid);
     }
 
-    private doLock(threadId: number, invocationUid: UUID): Promise<Long> {
+    private doLock(threadId: number, invocationUid: UUID): Promise<Fence> {
         let sessionId: Long;
         return this.acquireSession()
             .then((id) => {
                 sessionId = id;
-                this.verifyLockedSessionId(sessionId, true);
                 return this.requestLock(sessionId, Long.fromNumber(threadId), invocationUid);
             })
-            .then((fence) => {
+            .then((fence: Fence) => {
                 assert(isValidFence(fence), 'FencedLock somehow hit reentrant lock limit');
-                this.lastKnownLock.update(threadId, sessionId);
+                this.lockedSessionIds.set(threadId, sessionId);
+                fence[fenceThreadIdSymbol] = threadId;
                 return fence;
             })
             .catch((err) => {
@@ -132,7 +99,7 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
             });
     }
 
-    tryLock(timeout?: number): Promise<Long> {
+    tryLock(timeout?: number): Promise<Fence> {
         if (timeout === undefined) {
             timeout = 0;
         }
@@ -142,18 +109,18 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
         return this.doTryLock(timeout, threadId, invocationUid);
     }
 
-    private doTryLock(timeout: number, threadId: number, invocationUid: UUID): Promise<Long> {
+    private doTryLock(timeout: number, threadId: number, invocationUid: UUID): Promise<Fence> {
         const start = Date.now();
         let sessionId: Long;
         return this.acquireSession()
             .then((id) => {
                 sessionId = id;
-                this.verifyLockedSessionId(sessionId, true);
                 return this.requestTryLock(sessionId, Long.fromNumber(threadId), invocationUid, timeout);
             })
-            .then((fence) => {
+            .then((fence: Fence) => {
                 if (isValidFence(fence)) {
-                    this.lastKnownLock.update(threadId, sessionId);
+                    this.lockedSessionIds.set(threadId, sessionId);
+                    fence[fenceThreadIdSymbol] = threadId;
                 } else {
                     this.releaseSession(sessionId);
                 }
@@ -177,15 +144,17 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
             });
     }
 
-    unlock(): Promise<void> {
-        const threadId = this.lastKnownLock.threadId;
+    unlock(token: Long): Promise<void> {
+        const threadId = this.extractThreadId(token);
         const sessionId = this.getSessionId();
-        const rejected = wrapErrorWithPromise(() => this.verifyLockedSessionId(sessionId, false));
+
+        // the order of the following checks is important
+        const rejected = this.verifyLockedSessionId(threadId, sessionId);
         if (rejected) {
             return rejected;
         }
-        if (this.lastKnownLock.isEmpty() || NO_SESSION_ID.equals(sessionId)) {
-            this.lastKnownLock.clear();
+        if (NO_SESSION_ID.equals(sessionId)) {
+            this.lockedSessionIds.delete(threadId);
             return Promise.reject(
                 new IllegalMonitorStateError('Client is not owner of the Lock[' + this.proxyName + '].')
             );
@@ -193,35 +162,26 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
 
         return this.requestUnlock(sessionId, Long.fromNumber(threadId), UuidUtil.generate())
             .then(() => {
-                this.lastKnownLock.clearIfSameThread(threadId);
+                this.lockedSessionIds.delete(threadId);
                 this.releaseSession(sessionId);
             })
             .catch((err) => {
                 if (err instanceof SessionExpiredError) {
-                    this.lastKnownLock.clearIfSameThread(threadId);
+                    this.lockedSessionIds.delete(threadId);
                     this.invalidateSession(sessionId);
 
                     throw this.newLockOwnershipLostError(sessionId);
                 }
                 if (err instanceof IllegalMonitorStateError) {
-                    this.lastKnownLock.clearIfSameThread(threadId);
+                    this.lockedSessionIds.delete(threadId);
                 }
                 throw err;
             });
     }
 
     isLocked(): Promise<boolean> {
-        const sessionId = this.getSessionId();
-        const rejected = wrapErrorWithPromise(() => this.verifyLockedSessionId(sessionId, false));
-        if (rejected) {
-            return rejected;
-        }
-
         return this.requestLockOwnershipState().then((state) => {
             const locked = isValidFence(state.fence);
-            if (locked && sessionId.equals(state.sessionId)) {
-                this.lastKnownLock.update(state.threadId.toNumber(), state.sessionId);
-            }
             return locked;
         });
     }
@@ -262,14 +222,22 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
         });
     }
 
-    private verifyLockedSessionId(sessionId: Long, releaseSession: boolean): void {
-        const lockedSessionId = this.lastKnownLock.sessionId;
+    private extractThreadId(fence: Fence): number {
+        if (!Long.isLong(fence)) {
+            throw new TypeError('Fencing token should be of type Long');
+        }
+        const threadId = fence[fenceThreadIdSymbol] as number;
+        if (threadId === undefined) {
+            throw new TypeError('Invalid fencing token provided');
+        }
+        return threadId;
+    }
+
+    private verifyLockedSessionId(threadId: number, sessionId: Long): Promise<any> | undefined {
+        const lockedSessionId = this.lockedSessionIds.get(threadId);
         if (lockedSessionId !== undefined && !lockedSessionId.equals(sessionId)) {
-            this.lastKnownLock.clear();
-            if (releaseSession) {
-                this.releaseSession(sessionId);
-            }
-            throw this.newLockOwnershipLostError(lockedSessionId);
+            this.lockedSessionIds.delete(threadId);
+            return Promise.reject(this.newLockOwnershipLostError(lockedSessionId));
         }
     }
 

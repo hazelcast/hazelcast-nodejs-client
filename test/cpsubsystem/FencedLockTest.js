@@ -61,13 +61,16 @@ describe('FencedLockTest', function () {
     }
 
     function expectSingleValidFence(fences) {
+        let validFence;
         let validCnt = 0;
         for (const fence of fences) {
             if (fence.toNumber() > 0) {
                 validCnt++;
+                validFence = fence;
             }
         }
         expect(validCnt).to.be.equal(1);
+        return validFence;
     }
 
     before(async function () {
@@ -89,16 +92,16 @@ describe('FencedLockTest', function () {
     it('should create FencedLock with respect to given CP group', async function () {
         const lockInAnotherGroup = await client.getCPSubsystem().getLock('alock@mygroup');
 
-        await lockInAnotherGroup.lock();
+        const fence = await lockInAnotherGroup.lock();
         try {
             const locked = await lock.isLocked();
             expect(locked).to.be.false;
         } finally {
-            await lockInAnotherGroup.unlock();
+            await lockInAnotherGroup.unlock(fence);
         }
     });
 
-    it('should release locks on shutdown', async function () {
+    it('should release locks on client shutdown', async function () {
         const anotherClient = await Client.newHazelcastClient({ clusterName: cluster.id });
         const lockOfAnotherClient = await anotherClient.getCPSubsystem().getLock('alock');
 
@@ -128,22 +131,22 @@ describe('FencedLockTest', function () {
     });
 
     it('isLocked: should return true when locked with lock', async function () {
-        await lock.lock();
+        const fence = await lock.lock();
         try {
             const locked = await lock.isLocked();
             expect(locked).to.be.true;
         } finally {
-            await lock.unlock();
+            await lock.unlock(fence);
         }
     });
 
     it('isLocked: should return true when locked with tryLock', async function () {
-        await lock.tryLock();
+        const fence = await lock.tryLock();
         try {
             const locked = await lock.isLocked();
             expect(locked).to.be.true;
         } finally {
-            await lock.unlock();
+            await lock.unlock(fence);
         }
     });
 
@@ -152,27 +155,27 @@ describe('FencedLockTest', function () {
         try {
             expectValidFence(fence);
         } finally {
-            await lock.unlock();
+            await lock.unlock(fence);
         }
     });
 
     it('lock: should be non-reentrant', function (done) {
         let unlockedByTimer = false;
         lock.lock()
-            .then(() => {
+            .then((fence) => {
                 setTimeout(() => {
                     unlockedByTimer = true;
                     // passes only if
-                    lock.unlock()
+                    lock.unlock(fence)
                         .catch(done);
                 }, 1000);
                 return lock.lock();
             })
-            .then(() => {
+            .then((fence) => {
                 if (unlockedByTimer) {
                     done();
                 }
-                return lock.unlock();
+                return lock.unlock(fence);
             })
             .catch(done);
     });
@@ -209,17 +212,17 @@ describe('FencedLockTest', function () {
         try {
             expectValidFence(fence);
         } finally {
-            await lock.unlock();
+            await lock.unlock(fence);
         }
     });
 
     it('tryLock: should return invalid fence when locked and timeout not specified', async function () {
-        await lock.lock();
-        const fence = await lock.tryLock();
+        const fence = await lock.lock();
+        const invalidFence = await lock.tryLock();
         try {
-            expectInvalidFence(fence);
+            expectInvalidFence(invalidFence);
         } finally {
-            await lock.unlock();
+            await lock.unlock(fence);
         }
     });
 
@@ -228,46 +231,51 @@ describe('FencedLockTest', function () {
         try {
             expectValidFence(fence);
         } finally {
-            await lock.unlock();
+            await lock.unlock(fence);
         }
     });
 
     it('tryLock: should return invalid fence when locked and timeout specified', async function () {
-        await lock.lock();
-        const fence = await lock.tryLock(100);
+        const fence = await lock.lock();
+        const invalidFence = await lock.tryLock(100);
         try {
-            expectInvalidFence(fence);
+            expectInvalidFence(invalidFence);
         } finally {
-            await lock.unlock();
+            await lock.unlock(fence);
         }
     });
 
     it('tryLock: should keep retrying until timeout when locked', async function () {
+        let fence;
         const start = Date.now();
         try {
-            await lock.lock();
+            fence = await lock.lock();
             await lock.tryLock(1000);
             expect(Date.now() - start).to.be.greaterThan(900);
         } finally {
-            await lock.unlock();
+            await lock.unlock(fence);
         }
     });
 
     it('tryLock: should succeed for one call in case of concurrent calls', async function () {
+        let fence;
         try {
             const tryLockPromises = [];
             for (let i = 0; i < 5; i++) {
                 tryLockPromises.push(lock.tryLock());
             }
             const fences = await Promise.all(tryLockPromises);
-            expectSingleValidFence(fences);
+            fence = expectSingleValidFence(fences);
         } finally {
-            await lock.unlock();
+            await lock.unlock(fence);
         }
     });
 
     it('unlock: should throw when not locked', async function () {
-        await expect(lock.unlock()).to.be.rejectedWith(IllegalMonitorStateError);
+        const fence = await lock.lock();
+        await lock.unlock(fence);
+
+        await expect(lock.unlock(fence)).to.be.rejectedWith(IllegalMonitorStateError);
     });
 
     it('lock-unlock: should return monotonical fence sequence', async function () {
@@ -275,7 +283,7 @@ describe('FencedLockTest', function () {
         for (let i = 0; i < 3; i++) {
             const fence = await lock.lock();
             fences.push(fence);
-            await lock.unlock();
+            await lock.unlock(fence);
         }
 
         expectValidFenceSequence(fences);
@@ -286,7 +294,7 @@ describe('FencedLockTest', function () {
         for (let i = 0; i < 3; i++) {
             const fence = await lock.tryLock();
             fences.push(fence);
-            await lock.unlock();
+            await lock.unlock(fence);
         }
 
         expectValidFenceSequence(fences);

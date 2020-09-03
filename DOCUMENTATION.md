@@ -1503,7 +1503,7 @@ try {
     // Your guarded code goes here
 } finally {
     // Make sure to release the lock
-    await lock.unlock();
+    await lock.unlock(fence);
 }
 ```
 
@@ -1521,7 +1521,7 @@ FencedLocks in Hazelcast Node.js client are different from the Java implementati
 const fence = await lock.lock();
 // The following Promise will never be resolved
 // (i.e., it's a dead lock)
-const fence = await lock.lock();
+await lock.lock();
 ```
 
 Considering this, you should always call the `.lock()` method only once per async call chain and make sure to release the lock as early as possible.
@@ -1537,7 +1537,7 @@ if (fence.greaterThan(0)) {
         // Your guarded code goes here
     } finally {
         // Make sure to release the lock
-        await lock.unlock();
+        await lock.unlock(fence);
     }
 }
 ```
