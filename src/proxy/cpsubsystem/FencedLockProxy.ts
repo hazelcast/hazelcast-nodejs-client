@@ -66,6 +66,11 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
         super(client, CPProxyManager.LOCK_SERVICE, groupId, proxyName, objectName);
     }
 
+    destroy(): Promise<void> {
+        return super.destroy()
+            .then(() => this.lockedSessionIds.clear());
+    }
+
     lock(): Promise<Fence> {
         const threadId = this.nextThreadId();
         const invocationUid = UuidUtil.generate();
