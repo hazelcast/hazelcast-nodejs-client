@@ -69,7 +69,8 @@ export interface FencedLock extends DistributedObject {
      *                before giving up; when it's not specified the operation
      *                will return immediately after the acquire attempt
      * @returns fencing token (see {@link FencedLock#lock} for more
-     *          information on fencing tokens)
+     *          information on fencing tokens) when lock is acquired;
+     *          or `undefined` when attempt failed
      * @throws LockOwnershipLostError if the underlying CP session was
      *         closed before the client releases the lock
      */
