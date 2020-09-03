@@ -62,7 +62,8 @@
       * [7.4.10.1. Configuring Flake ID Generator](#74101-configuring-flake-id-generator)
     * [7.4.11. CP Subsystem](#7411-cp-subsystem)
       * [7.4.11.1. Using Atomic Long](#74111-using-atomic-long)
-      * [7.4.11.2. Using Lock and Semaphore](#74112-using-lock-and-semaphore)
+      * [7.4.11.2. Using Lock](#74112-using-lock)
+      * [7.4.11.3. Using Semaphore](#74113-using-semaphore)
   * [7.5. Distributed Events](#75-distributed-events)
     * [7.5.1. Listening for Cluster Events](#751-listening-for-cluster-events)
       * [7.5.1.1. Membership Listener](#7511-membership-listener)
@@ -1460,11 +1461,11 @@ The following are the descriptions of configuration elements and attributes:
 
 Hazelcast IMDG 4.0 introduces CP concurrency primitives with respect to the [CAP principle](http://awoc.wolski.fi/dlib/big-data/Brewer_podc_keynote_2000.pdf), i.e., they always maintain [linearizability](https://aphyr.com/posts/313-strong-consistency-models) and prefer consistency to availability during network partitions and client or server failures.
 
-All data structures within P Subsystem are available through `client.getCPSubsystem()` component of the client.
+All data structures within CP Subsystem are available through `client.getCPSubsystem()` component of the client.
 
 Before using Atomic Long, Lock, and Semaphore, CP Subsystem has to be enabled on cluster-side. Refer to [CP Subsystem](https://docs.hazelcast.org/docs/latest/manual/html-single/#cp-subsystem) documentation for more information.
 
-> **NOTE: If you call the `DistributedObject.destroy()` method on a CP data structure, that data structure is terminated on the underlying CP group and cannot be reinitialized until the CP group is force-destroyed on the cluster side. For this reason, please make sure that you are completely done with a CP data structure before destroying its proxy.**
+Data structures in CP Subsystem run in CP groups. Each CP group elects its own Raft leader and runs the Raft consensus algorithm independently. The CP data structures differ from the other Hazelcast data structures in two aspects. First, an internal commit is performed on the METADATA CP group every time you fetch a proxy from this interface. Hence, callers should cache returned proxy objects. Second, if you call `DistributedObject.destroy()` on a CP data structure proxy, that data structure is terminated on the underlying CP group and cannot be reinitialized until the CP group is force-destroyed. For this reason, please make sure that you are completely done with a CP data structure before destroying its proxy.
 
 #### 7.4.11.1. Using Atomic Long
 
@@ -1487,9 +1488,63 @@ console.log('CAS operation result:', result);
 
 `IAtomicLong` implementation does not offer exactly-once / effectively-once execution semantics. It goes with at-least-once execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to offer at-most-once execution semantics. Please see [`fail-on-indeterminate-operation-state`](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-subsystem-configuration) server-side setting.
 
-#### 7.4.11.2. Using Lock and Semaphore
+#### 7.4.11.2. Using Lock
 
-These new implementations are accessed using the [CP Subsystem](https://docs.hazelcast.org/docs/latest/manual/html-single/#cp-subsystem) which cannot be used with the Node.js client yet. We plan to implement these data structures in the upcoming 4.0 release of Hazelcast Node.js client. In the meantime, since there is no way to access old non-CP primitives using IMDG 4.x, we removed their implementations, code samples and documentations. They will be back once we implement them.
+Hazelcast `FencedLock` is the distributed implementation of a linearizable and distributed lock. It offers multiple  operations for acquiring the lock. This data structure is a part of CP Subsystem.
+
+A basic Lock usage example is shown below.
+
+```javascript
+// Get a FencedLock called 'my-lock'
+const lock = await client.getCPSubsystem().getLock('my-lock');
+// Acquire the lock (returns a fencing token of Long type)
+const fence = await lock.lock();
+try {
+    // Your guarded code goes here
+} finally {
+    // Make sure to release the lock
+    await lock.unlock();
+}
+```
+
+FencedLock works on top of CP sessions. It keeps a CP session open while the lock is acquired. Please refer to [CP Session](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-sessions) documentation for more information.
+
+Distributed locks are unfortunately *not equivalent* to single-node mutexes because of the complexities in distributed systems, such as uncertain communication patterns, and independent and partial failures. In an asynchronous network, no lock service can guarantee mutual exclusion, because there is no way to distinguish between a slow and a crashed process. Consider the following scenario, where a Hazelcast client acquires a FencedLock, then hits a long GC pause. Since it will not be able to commit session heartbeats while paused, its CP session will be eventually closed. After this moment, another Hazelcast client can acquire this lock. If the first client wakes up again, it may not immediately notice that it has lost ownership of the lock. In this case, multiple clients think they hold the lock. If they attempt to perform an operation on a shared resource, they can break the system. To prevent such situations, you can choose to use an infinite session timeout, but this time probably you are going to deal with liveliness issues. For the scenario above, even if the first client actually crashes, requests sent by 2 clients can be re-ordered in the network and hit the external resource in reverse order.
+
+There is a simple solution for this problem. Lock holders are ordered by a monotonic fencing token, which increments each time the lock is assigned to a new owner. This fencing token can be passed to external services or resources to ensure sequential execution of side effects performed by lock holders.
+
+You can read more about the fencing token idea in Martin Kleppmann's "How to do distributed locking" blog post and Google's Chubby paper.
+
+FencedLocks in Hazelcast Node.js client are different from the Java implementation as they *non-reentrant*. Once a caller acquires the lock, it can not acquire the lock reentrantly in the same asynchronous call chain. So, the next acquire attempt made within the same async chain will lead to a dead lock.
+
+```javascript
+const fence = await lock.lock();
+// The following Promise will never be resolved
+// (i.e., it's a dead lock)
+const fence = await lock.lock();
+```
+
+Considering this, you should always call the `.lock()` method only once per async call chain and make sure to release the lock as early as possible.
+
+As an alternative approach, you can use the `.tryLock()` method of FencedLock. It tries to acquire the lock in optimistic manner and immediately returns with either a valid fencing token or zero (`Long.fromNumber(0)`). It also accepts an optional `timeout` argument which specifies the timeout in milliseconds to acquire the lock before giving up.
+
+```javascript
+// Try to acquire the lock
+const fence = await lock.tryLock();
+// Check for valid fencing token
+if (fence.greaterThan(0)) {
+    try {
+        // Your guarded code goes here
+    } finally {
+        // Make sure to release the lock
+        await lock.unlock();
+    }
+}
+```
+
+#### 7.4.11.3. Using Semaphore
+
+This new implementation cannot be used with the Node.js client yet. We plan to implement this data structure in the upcoming 4.0 release of Hazelcast Node.js client. In the meantime, since there is no way to access the old non-CP Semaphore primitive using IMDG 4.x, we removed its implementation, code samples and documentation. It will be back once we implement them.
 
 ## 7.5. Distributed Events
 

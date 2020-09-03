@@ -34,11 +34,11 @@ import {HazelcastClient} from './HazelcastClient';
  * Data structures in CP Subsystem run in CP groups. Each CP group elects
  * its own Raft leader and runs the Raft consensus algorithm independently.
  *
- * The CP data structure proxies differ from the other Hazelcast data
- * structure proxies in two aspects. First, an internal commit is performed on
- * the METADATA CP group every time you fetch a proxy from this interface.
- * Hence, callers should cache returned proxy objects. Second, if you call
- * `DistributedObject#destroy()` on a CP data structure proxy, that data
+ * The CP data structures differ from the other Hazelcast data structures
+ * in two aspects. First, an internal commit is performed on the METADATA CP
+ * group every time you fetch a proxy from this interface. Hence, callers
+ * should cache returned proxy objects. Second, if you call
+ * `DistributedObject.destroy()` on a CP data structure proxy, that data
  * structure is terminated on the underlying CP group and cannot be
  * reinitialized until the CP group is force-destroyed. For this
  * reason, please make sure that you are completely done with a CP data
