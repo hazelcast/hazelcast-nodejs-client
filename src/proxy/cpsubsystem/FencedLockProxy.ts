@@ -47,7 +47,7 @@ interface Fence extends Long {
     [fenceThreadIdSymbol]?: number;
 }
 
-const INVALID_FENCE: Fence = Long.fromNumber(0);
+const INVALID_FENCE = Long.fromNumber(0);
 
 function isValidFence(fence: Long): boolean {
     return fence.greaterThan(INVALID_FENCE);
@@ -99,7 +99,7 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
             });
     }
 
-    tryLock(timeout?: number): Promise<Fence> {
+    tryLock(timeout?: number): Promise<Fence | undefined> {
         if (timeout === undefined) {
             timeout = 0;
         }
@@ -109,7 +109,7 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
         return this.doTryLock(timeout, threadId, invocationUid);
     }
 
-    private doTryLock(timeout: number, threadId: number, invocationUid: UUID): Promise<Fence> {
+    private doTryLock(timeout: number, threadId: number, invocationUid: UUID): Promise<Fence | undefined> {
         const start = Date.now();
         let sessionId: Long;
         return this.acquireSession()
@@ -121,22 +121,23 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
                 if (isValidFence(fence)) {
                     this.lockedSessionIds.set(threadId, sessionId);
                     fence[fenceThreadIdSymbol] = threadId;
-                } else {
-                    this.releaseSession(sessionId);
+                    return fence;
                 }
-                return fence;
+
+                this.releaseSession(sessionId);
+                return undefined;
             })
             .catch((err) => {
                 if (err instanceof WaitKeyCancelledError) {
                     this.releaseSession(sessionId);
-                    return INVALID_FENCE;
+                    return undefined;
                 }
                 if (err instanceof SessionExpiredError) {
                     this.invalidateSession(sessionId);
 
                     timeout -= Date.now() - start;
                     if (timeout < 0) {
-                        return INVALID_FENCE;
+                        return undefined;
                     }
                     return this.doTryLock(timeout, threadId, invocationUid);
                 }

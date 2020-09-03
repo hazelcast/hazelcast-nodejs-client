@@ -1526,13 +1526,13 @@ await lock.lock();
 
 Considering this, you should always call the `.lock()` method only once per async call chain and make sure to release the lock as early as possible.
 
-As an alternative approach, you can use the `.tryLock()` method of FencedLock. It tries to acquire the lock in optimistic manner and immediately returns with either a valid fencing token or zero (`Long.fromNumber(0)`). It also accepts an optional `timeout` argument which specifies the timeout in milliseconds to acquire the lock before giving up.
+As an alternative approach, you can use the `.tryLock()` method of FencedLock. It tries to acquire the lock in optimistic manner and immediately returns with either a valid fencing token or `undefined`. It also accepts an optional `timeout` argument which specifies the timeout in milliseconds to acquire the lock before giving up.
 
 ```javascript
 // Try to acquire the lock
 const fence = await lock.tryLock();
 // Check for valid fencing token
-if (fence.greaterThan(0)) {
+if (fence !== undefined) {
     try {
         // Your guarded code goes here
     } finally {

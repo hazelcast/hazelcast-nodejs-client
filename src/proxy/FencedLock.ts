@@ -63,8 +63,7 @@ export interface FencedLock extends DistributedObject {
      * assigned to the current lock acquire.
      *
      * If the lock is already held by another caller, then this method
-     * immediately returns `0` (of `Long` type) that represents a failed
-     * lock attempt.
+     * immediately returns `undefined`, which means a failed lock attempt.
      *
      * @param timeout optional timeout in milliseconds to acquire the lock
      *                before giving up; when it's not specified the operation
@@ -74,7 +73,7 @@ export interface FencedLock extends DistributedObject {
      * @throws LockOwnershipLostError if the underlying CP session was
      *         closed before the client releases the lock
      */
-    tryLock(timeout?: number): Promise<Long>;
+    tryLock(timeout?: number): Promise<Long | undefined>;
 
     /**
      * Releases the lock if the lock is currently held by the client.

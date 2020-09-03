@@ -45,10 +45,6 @@ describe('FencedLockTest', function () {
         expect(fence.toNumber()).to.be.greaterThan(0);
     }
 
-    function expectInvalidFence(fence) {
-        expect(fence.toNumber()).to.be.equal(0);
-    }
-
     function expectValidFenceSequence(fences) {
         let prevFence;
         for (const fence of fences) {
@@ -64,7 +60,7 @@ describe('FencedLockTest', function () {
         let validFence;
         let validCnt = 0;
         for (const fence of fences) {
-            if (fence.toNumber() > 0) {
+            if (fence !== undefined && fence.toNumber() > 0) {
                 validCnt++;
                 validFence = fence;
             }
@@ -150,7 +146,7 @@ describe('FencedLockTest', function () {
         }
     });
 
-    it('lock: should return valid fence when not locked', async function () {
+    it('lock: should return fence when not locked', async function () {
         const fence = await lock.lock();
         try {
             expectValidFence(fence);
@@ -207,7 +203,7 @@ describe('FencedLockTest', function () {
         expect(() => lock.tryLock('invalid timeout')).to.throw(AssertionError);
     });
 
-    it('tryLock: should return valid fence when not locked and timeout not specified', async function () {
+    it('tryLock: should return fence when not locked and timeout not specified', async function () {
         const fence = await lock.tryLock();
         try {
             expectValidFence(fence);
@@ -216,17 +212,17 @@ describe('FencedLockTest', function () {
         }
     });
 
-    it('tryLock: should return invalid fence when locked and timeout not specified', async function () {
+    it('tryLock: should return undefined when locked and timeout not specified', async function () {
         const fence = await lock.lock();
         const invalidFence = await lock.tryLock();
         try {
-            expectInvalidFence(invalidFence);
+            expect(invalidFence).to.be.undefined;
         } finally {
             await lock.unlock(fence);
         }
     });
 
-    it('tryLock: should return valid fence when not locked and timeout specified', async function () {
+    it('tryLock: should return fence when not locked and timeout specified', async function () {
         const fence = await lock.tryLock(100);
         try {
             expectValidFence(fence);
@@ -235,11 +231,11 @@ describe('FencedLockTest', function () {
         }
     });
 
-    it('tryLock: should return invalid fence when locked and timeout specified', async function () {
+    it('tryLock: should return undefined when locked and timeout specified', async function () {
         const fence = await lock.lock();
         const invalidFence = await lock.tryLock(100);
         try {
-            expectInvalidFence(invalidFence);
+            expect(invalidFence).to.be.undefined;
         } finally {
             await lock.unlock(fence);
         }

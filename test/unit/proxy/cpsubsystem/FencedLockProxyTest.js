@@ -151,11 +151,11 @@ describe('FencedLockProxyTest', function () {
         stubRequestTryLock(0);
 
         const fence = await proxy.tryLock();
-        expect(fence.toNumber()).to.be.equal(0);
+        expect(fence).to.be.undefined;
         expect(cpSessionManagerStub.releaseSession.calledOnce).to.be.true;
     });
 
-    it('tryLock: should return invalid fence on expired session error and no timeout', async function () {
+    it('tryLock: should return undefined on expired session error and no timeout', async function () {
         sandbox.useFakeTimers(0);
         prepareAcquireSession(1);
         stubRequestTryLock(2, new SessionExpiredError());
@@ -165,7 +165,7 @@ describe('FencedLockProxyTest', function () {
         sandbox.useFakeTimers(100);
         const fence = await promise;
 
-        expect(fence.toNumber()).to.be.equal(0);
+        expect(fence).to.be.undefined;
         expect(cpSessionManagerStub.invalidateSession.calledOnce).to.be.true;
     });
 
@@ -183,13 +183,13 @@ describe('FencedLockProxyTest', function () {
         expect(cpSessionManagerStub.invalidateSession.calledOnce).to.be.true;
     });
 
-    it('tryLock: should return invalid fence on wait key cancelled error', async function () {
+    it('tryLock: should return undefined on wait key cancelled error', async function () {
         prepareAcquireSession(1);
         stubRequestTryLock(2, new WaitKeyCancelledError());
 
         const fence = await proxy.tryLock();
 
-        expect(fence.toNumber()).to.be.equal(0);
+        expect(fence).to.be.undefined;
         expect(cpSessionManagerStub.releaseSession.calledOnce).to.be.true;
     });
 
@@ -212,7 +212,7 @@ describe('FencedLockProxyTest', function () {
         expect(() => proxy.unlock()).to.throw(TypeError);
     });
 
-    it('unlock: should throw on invalid token given', function () {
+    it('unlock: should throw on invalid fence given', function () {
         expect(() => proxy.unlock(Long.fromNumber(1))).to.throw(TypeError);
     });
 
