@@ -155,9 +155,10 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
         const sessionId = this.getSessionId();
 
         // the order of the following checks is important
-        const rejected = this.verifyLockedSessionId(threadId, sessionId);
-        if (rejected) {
-            return rejected;
+        const lockedSessionId = this.lockedSessionIds.get(threadId);
+        if (lockedSessionId !== undefined && !lockedSessionId.equals(sessionId)) {
+            this.lockedSessionIds.delete(threadId);
+            return Promise.reject(this.newLockOwnershipLostError(lockedSessionId));
         }
         if (NO_SESSION_ID.equals(sessionId)) {
             this.lockedSessionIds.delete(threadId);
@@ -237,14 +238,6 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
             throw new TypeError('Invalid fencing token provided');
         }
         return threadId;
-    }
-
-    private verifyLockedSessionId(threadId: number, sessionId: Long): Promise<any> | undefined {
-        const lockedSessionId = this.lockedSessionIds.get(threadId);
-        if (lockedSessionId !== undefined && !lockedSessionId.equals(sessionId)) {
-            this.lockedSessionIds.delete(threadId);
-            return Promise.reject(this.newLockOwnershipLostError(lockedSessionId));
-        }
     }
 
     private newLockOwnershipLostError(sessionId: Long) {
