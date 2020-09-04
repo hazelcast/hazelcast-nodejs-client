@@ -112,6 +112,7 @@ describe('CPSessionManagerTest', function () {
         const GROUP_ID = 42;
         const GROUP_ID_AS_STRING = prepareGroupId().getStringId();
         const SESSION_ID = 24;
+        const THREAD_ID = 3;
         const TTL_MILLIS = 1000;
         const HEARTBEAT_MILLIS = 100;
 
@@ -133,6 +134,12 @@ describe('CPSessionManagerTest', function () {
                 ttlMillis: Long.fromNumber(TTL_MILLIS),
                 heartbeatMillis: Long.fromNumber(HEARTBEAT_MILLIS)
             }));
+            return stub;
+        }
+
+        function stubRequestGenerateThreadId() {
+            const stub = sandbox.stub(sessionManager, 'requestGenerateThreadId');
+            stub.returns(Promise.resolve(Long.fromNumber(THREAD_ID)));
             return stub;
         }
 
@@ -237,6 +244,29 @@ describe('CPSessionManagerTest', function () {
 
             sessionManager.invalidateSession(prepareGroupId(), Long.fromNumber(1));
             expect(sessionManager.sessions.size).to.be.equal(1);
+        });
+
+        it('getOrCreateUniqueThreadId: should reject when shut down', async function () {
+            await sessionManager.shutdown();
+
+            expect(sessionManager.getOrCreateUniqueThreadId(prepareGroupId(42))).to.be.rejectedWith(IllegalStateError);
+        });
+
+        it('getOrCreateUniqueThreadId: should generate new thread id for unknown group id', async function () {
+            stubRequestGenerateThreadId();
+
+            const id = await sessionManager.getOrCreateUniqueThreadId(prepareGroupId());
+            expect(id.toNumber()).to.be.equal(THREAD_ID);
+            expect(sessionManager.uniqueThreadIds.size).to.be.equal(1);
+        });
+
+        it('getOrCreateUniqueThreadId: should not generate new thread id for existing id', async function () {
+            const requestGenerateThreadIdStub = stubRequestGenerateThreadId();
+            sessionManager.uniqueThreadIds.set(GROUP_ID_AS_STRING, Long.fromNumber(THREAD_ID));
+
+            const id = await sessionManager.getOrCreateUniqueThreadId(prepareGroupId());
+            expect(id.toNumber()).to.be.equal(THREAD_ID);
+            expect(requestGenerateThreadIdStub.notCalled).to.be.true;
         });
 
         it('shutdown: should cancel heartbeat task', async function () {
