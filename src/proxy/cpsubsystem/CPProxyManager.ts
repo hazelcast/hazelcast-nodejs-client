@@ -65,6 +65,7 @@ export class CPProxyManager {
 
     static readonly ATOMIC_LONG_SERVICE = 'hz:raft:atomicLongService';
     static readonly LOCK_SERVICE = 'hz:raft:lockService';
+    static readonly SEMAPHORE_SERVICE = 'hz:raft:semaphoreService';
 
     private readonly client: HazelcastClient;
     private readonly lockProxies: Map<string, FencedLockProxy> = new Map();

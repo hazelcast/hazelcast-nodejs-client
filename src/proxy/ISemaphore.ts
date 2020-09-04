@@ -92,6 +92,42 @@ export interface ISemaphore extends DistributedObject {
     acquire(permits?: number): Promise<void>;
 
     /**
+     * Acquires the given number of permits and returns `true`, if they
+     * become available during the given timeout. If permits are acquired,
+     * the number of available permits in the ISemaphore instance is also
+     * reduced by the given amount.
+     *
+     * @param permits the number of permits to acquire
+     * @param timeout optional timeout in milliseconds to wait for the permits;
+     *                when it's not specified the operation will return
+     *                immediately after the acquire attempt
+     * @returns `true` if all permits were acquired, `false` if the waiting
+     *          time elapsed before all permits could be acquired
+     */
+    tryAcquire(permits: number, timeout?: number): Promise<boolean>;
+
+    /**
+     * Releases the given number of permits and increases the number of
+     * available permits by that amount. If some callers in the cluster are
+     * waiting for acquiring permits, they will be notified.
+     *
+     * If the underlying ISemaphore implementation is non-JDK-compatible
+     * (configured via `jdk-compatible` server-side setting), then a client can
+     * only release a permit which it has acquired before. In other words, a client
+     * cannot release a permit without acquiring it first.
+     *
+     * Otherwise, which means the default implementation, there is no such
+     * requirement for clients. A client can freely release a permit without
+     * acquiring it first. In this case, correct usage of a semaphore is established
+     * by programming convention in the application.
+     *
+     * @param permits the number of permits to release
+     * @throws IllegalStateError if the Semaphore is non-JDK-compatible
+     *         and the caller does not have a permit
+     */
+    release(permits?: number): Promise<void>;
+
+    /**
      * Returns the current number of permits currently available in this semaphore.
      *
      * This method is typically used for debugging and testing purposes.
@@ -126,58 +162,4 @@ export interface ISemaphore extends DistributedObject {
      * @param increase the number of permits to increase
      */
     increasePermits(increase: number): Promise<void>;
-
-    /**
-     * Releases the given number of permits, increasing the number of available
-     * permits by that amount. There is no requirement that a thread that releases a
-     * permit must have acquired that permit by calling one of the acquire()acquire
-     * methods. Correct usage of a semaphore is established by programming convention
-     * in the application
-     */
-
-    /**
-     * Releases the given number of permits and increases the number of
-     * available permits by that amount. If some callers in the cluster are
-     * waiting for acquiring permits, they will be notified.
-     *
-     * If the underlying ISemaphore implementation is non-JDK-compatible
-     * (configured via `jdk-compatible` server-side setting), then a client can
-     * only release a permit which it has acquired before. In other words, a client
-     * cannot release a permit without acquiring it first.
-     *
-     * Otherwise, which means the default implementation, there is no such
-     * requirement for clients. A client can freely release a permit without
-     * acquiring it first. In this case, correct usage of a semaphore is established
-     * by programming convention in the application.
-     *
-     * @param permits the number of permits to release
-     * @throws IllegalStateError if the Semaphore is non-JDK-compatible
-     *         and the caller does not have a permit
-     */
-    release(permits?: number): Promise<void>;
-
-    /**
-     * Acquires the given number of permits, if they are available, and returns
-     * immediately, with the value true, reducing the number of available permits
-     * by the given amount. If insufficient permits are available then this
-     * method will return immediately with the value false and the number of
-     * available permits is unchanged.
-     * @param permits
-     * @param timeout
-     */
-
-    /**
-     * Acquires the given number of permits and returns `true`, if they
-     * become available during the given timeout. If permits are acquired,
-     * the number of available permits in the ISemaphore instance is also
-     * reduced by the given amount.
-     *
-     * @param permits the number of permits to acquire
-     * @param timeout optional timeout in milliseconds to wait for the permits;
-     *                when it's not specified the operation will return
-     *                immediately after the acquire attempt
-     * @returns `true` if all permits were acquired, `false` if the waiting
-     *          time elapsed before all permits could be acquired
-     */
-    tryAcquire(permits: number, timeout?: number): Promise<boolean>;
 }

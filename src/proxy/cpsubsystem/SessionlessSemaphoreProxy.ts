@@ -19,94 +19,173 @@ import * as Long from 'long';
 import * as Promise from 'bluebird';
 import {HazelcastClient} from '../../HazelcastClient';
 import {BaseCPProxy} from './BaseCPProxy';
-import {IAtomicLong} from '../IAtomicLong';
+import {ISemaphore} from '../ISemaphore';
+import {CPSubsystemImpl} from '../../CPSubsystem';
 import {CPProxyManager} from './CPProxyManager';
+import {CPSessionManager, NO_SESSION_ID} from './CPSessionManager';
 import {RaftGroupId} from './RaftGroupId';
-import {AtomicLongAddAndGetCodec} from '../../codec/AtomicLongAddAndGetCodec';
-import {AtomicLongCompareAndSetCodec} from '../../codec/AtomicLongCompareAndSetCodec';
-import {AtomicLongGetCodec} from '../../codec/AtomicLongGetCodec';
-import {AtomicLongGetAndAddCodec} from '../../codec/AtomicLongGetAndAddCodec';
-import {AtomicLongGetAndSetCodec} from '../../codec/AtomicLongGetAndSetCodec';
+import {assertNonNegativeNumber} from '../../util/Util';
+import {UuidUtil} from '../../util/UuidUtil';
+import {SemaphoreInitCodec} from '../../codec/SemaphoreInitCodec';
+import {SemaphoreAcquireCodec} from '../../codec/SemaphoreAcquireCodec';
+import {SemaphoreAvailablePermitsCodec} from '../../codec/SemaphoreAvailablePermitsCodec';
+import {SemaphoreDrainCodec} from '../../codec/SemaphoreDrainCodec';
+import {SemaphoreChangeCodec} from '../../codec/SemaphoreChangeCodec';
+import {SemaphoreReleaseCodec} from '../../codec/SemaphoreReleaseCodec';
+import {
+    IllegalStateError,
+    WaitKeyCancelledError
+} from '../../core';
 
-// TODO
 /** @internal */
-export class SessionlessSemaphoreProxy extends BaseCPProxy implements IAtomicLong {
+export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore {
+
+    private readonly sessionManager: CPSessionManager;
 
     constructor(client: HazelcastClient,
                 groupId: RaftGroupId,
                 proxyName: string,
                 objectName: string) {
-        super(client, CPProxyManager.ATOMIC_LONG_SERVICE, groupId, proxyName, objectName);
+        super(client, CPProxyManager.SEMAPHORE_SERVICE, groupId, proxyName, objectName);
+        this.sessionManager = (client.getCPSubsystem() as CPSubsystemImpl).getCPSessionManager();
     }
 
-    addAndGet(delta: Long | number): Promise<Long> {
-        if (!Long.isLong(delta)) {
-            delta = Long.fromNumber(delta as number);
-        }
-        return this.encodeInvokeOnRandomTarget(AtomicLongAddAndGetCodec, this.groupId, this.objectName, delta)
+    init(permits: number): Promise<boolean> {
+        assertNonNegativeNumber(permits);
+        return this.encodeInvokeOnRandomTarget(SemaphoreInitCodec, this.groupId, this.objectName, permits)
             .then((clientMessage) => {
-                const response = AtomicLongAddAndGetCodec.decodeResponse(clientMessage);
+                const response = SemaphoreInitCodec.decodeResponse(clientMessage);
                 return response.response;
             });
     }
 
-    compareAndSet(expect: Long | number, update: Long | number): Promise<boolean> {
-        if (!Long.isLong(expect)) {
-            expect = Long.fromNumber(expect as number);
+    acquire(permits?: number): Promise<void> {
+        if (permits === undefined) {
+            permits = 1;
         }
-        if (!Long.isLong(update)) {
-            update = Long.fromNumber(update as number);
+        assertNonNegativeNumber(permits);
+
+        return this.doTryAcquire(permits, -1).then();
+    }
+
+    tryAcquire(permits: number, timeout?: number): Promise<boolean> {
+        assertNonNegativeNumber(permits);
+        if (timeout === undefined) {
+            timeout = 0;
         }
-        return this.encodeInvokeOnRandomTarget(AtomicLongCompareAndSetCodec, this.groupId, this.objectName, expect, update)
+        assertNonNegativeNumber(timeout);
+
+        return this.doTryAcquire(permits, timeout);
+    }
+
+    doTryAcquire(permits: number, timeout: number): Promise<boolean> {
+        const invocationUid = UuidUtil.generate();
+        return this.getClusterWideThreadId()
+            .then((clusterWideThreadId) =>
+                this.encodeInvokeOnRandomTarget(
+                    SemaphoreAcquireCodec,
+                    this.groupId,
+                    this.objectName,
+                    NO_SESSION_ID,
+                    clusterWideThreadId,
+                    invocationUid,
+                    permits,
+                    timeout
+                )
+            )
+            .catch((err) => {
+                if (err instanceof WaitKeyCancelledError) {
+                    throw new IllegalStateError('Semaphore[' + this.objectName
+                        + '] not acquired because the acquire call on the CP group was cancelled.');
+                }
+                throw err;
+            })
+            .then();
+    }
+
+    release(permits?: number): Promise<void> {
+        if (permits === undefined) {
+            permits = 1;
+        }
+        assertNonNegativeNumber(permits);
+
+        const invocationUid = UuidUtil.generate();
+        return this.getClusterWideThreadId()
+            .then((clusterWideThreadId) =>
+                this.encodeInvokeOnRandomTarget(
+                    SemaphoreReleaseCodec,
+                    this.groupId,
+                    this.objectName,
+                    NO_SESSION_ID,
+                    clusterWideThreadId,
+                    invocationUid,
+                    permits
+                )
+            )
+            .then();
+    }
+
+    availablePermits(): Promise<number> {
+        return this.encodeInvokeOnRandomTarget(SemaphoreAvailablePermitsCodec, this.groupId, this.objectName)
             .then((clientMessage) => {
-                const response = AtomicLongCompareAndSetCodec.decodeResponse(clientMessage);
+                const response = SemaphoreAvailablePermitsCodec.decodeResponse(clientMessage);
                 return response.response;
             });
     }
 
-    decrementAndGet(): Promise<Long> {
-        return this.addAndGet(-1);
-    }
-
-    get(): Promise<Long> {
-        return this.encodeInvokeOnRandomTarget(AtomicLongGetCodec, this.groupId, this.objectName)
+    drainPermits(): Promise<number> {
+        const invocationUid = UuidUtil.generate();
+        return this.getClusterWideThreadId()
+            .then((clusterWideThreadId) =>
+                this.encodeInvokeOnRandomTarget(
+                    SemaphoreDrainCodec,
+                    this.groupId,
+                    this.objectName,
+                    NO_SESSION_ID,
+                    clusterWideThreadId,
+                    invocationUid
+                )
+            )
             .then((clientMessage) => {
-                const response = AtomicLongGetCodec.decodeResponse(clientMessage);
+                const response = SemaphoreDrainCodec.decodeResponse(clientMessage);
                 return response.response;
             });
     }
 
-    getAndAdd(delta: Long | number): Promise<Long> {
-        if (!Long.isLong(delta)) {
-            delta = Long.fromNumber(delta as number);
+    reducePermits(reduction: number): Promise<void> {
+        assertNonNegativeNumber(reduction);
+        if (reduction === 0) {
+            return;
         }
-        return this.encodeInvokeOnRandomTarget(AtomicLongGetAndAddCodec, this.groupId, this.objectName, delta)
-            .then((clientMessage) => {
-                const response = AtomicLongGetAndAddCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+        return this.doChangePermits(-reduction);
     }
 
-    getAndSet(newValue: Long | number): Promise<Long> {
-        if (!Long.isLong(newValue)) {
-            newValue = Long.fromNumber(newValue as number);
+    increasePermits(increase: number): Promise<void> {
+        assertNonNegativeNumber(increase);
+        if (increase === 0) {
+            return;
         }
-        return this.encodeInvokeOnRandomTarget(AtomicLongGetAndSetCodec, this.groupId, this.objectName, newValue)
-            .then((clientMessage) => {
-                const response = AtomicLongGetAndSetCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+        return this.doChangePermits(increase);
     }
 
-    incrementAndGet(): Promise<Long> {
-        return this.addAndGet(1);
+    private doChangePermits(delta: number): Promise<void> {
+        const invocationUid = UuidUtil.generate();
+        return this.getClusterWideThreadId()
+            .then((clusterWideThreadId) =>
+                this.encodeInvokeOnRandomTarget(
+                    SemaphoreChangeCodec,
+                    this.groupId,
+                    this.objectName,
+                    NO_SESSION_ID,
+                    clusterWideThreadId,
+                    invocationUid,
+                    delta
+                )
+            )
+            .then();
     }
 
-    getAndIncrement(): Promise<Long> {
-        return this.getAndAdd(1);
-    }
-
-    set(newValue: Long | number): Promise<void> {
-        return this.getAndSet(newValue).then();
+    private getClusterWideThreadId(): Promise<Long> {
+        return this.sessionManager.getOrCreateUniqueThreadId(this.groupId);
     }
 }

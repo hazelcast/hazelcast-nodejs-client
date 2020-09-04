@@ -41,6 +41,12 @@ export function assertNumber(v: any): void {
 }
 
 /** @internal */
+export function assertNonNegativeNumber(v: any): void {
+    assert(typeof v === 'number', 'Number value expected.');
+    assert(v >= 0, 'Non-negative value expected.');
+}
+
+/** @internal */
 export function shuffleArray<T>(array: T[]): void {
     let randomIndex: number;
     let temp: T;
