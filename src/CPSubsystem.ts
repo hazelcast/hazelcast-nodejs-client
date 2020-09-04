@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {IAtomicLong, FencedLock} from './proxy';
+import {IAtomicLong, FencedLock, ISemaphore} from './proxy';
 import {CPProxyManager} from './proxy/cpsubsystem/CPProxyManager';
 import {CPSessionManager} from './proxy/cpsubsystem/CPSessionManager';
 import {HazelcastClient} from './HazelcastClient';
@@ -63,11 +63,23 @@ export interface CPSubsystem {
      *
      * If no group name is given within the `name` argument, then the
      * FencedLock instance will be created on the DEFAULT CP group.
-     * If a group name is given, like `.getLong('myLock@group1')`,
+     * If a group name is given, like `.getLock('myLock@group1')`,
      * the given group will be initialized first, if not initialized
      * already, and then the instance will be created on this group.
      */
     getLock(name: string): Promise<FencedLock>;
+
+    /**
+     * Returns the distributed Semaphore instance instance with given name.
+     * The instance is created on CP Subsystem.
+     *
+     * If no group name is given within the `name` argument, then the
+     * Semaphore instance will be created on the DEFAULT CP group.
+     * If a group name is given, like `.getSemaphore('mySemaphore@group1')`,
+     * the given group will be initialized first, if not initialized
+     * already, and then the instance will be created on this group.
+     */
+    getSemaphore(name: string): Promise<ISemaphore>;
 
 }
 
@@ -88,6 +100,10 @@ export class CPSubsystemImpl implements CPSubsystem {
 
     getLock(name: string): Promise<FencedLock> {
         return this.cpProxyManager.getOrCreateProxy(name, CPProxyManager.LOCK_SERVICE) as Promise<FencedLock>;
+    }
+
+    getSemaphore(name: string): Promise<ISemaphore> {
+        return this.cpProxyManager.getOrCreateProxy(name, CPProxyManager.SEMAPHORE_SERVICE) as Promise<ISemaphore>;
     }
 
     getCPSessionManager(): CPSessionManager {
