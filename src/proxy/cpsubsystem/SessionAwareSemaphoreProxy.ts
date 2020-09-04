@@ -15,241 +15,279 @@
  */
 /** @ignore *//** */
 
-import * as assert from 'assert';
 import * as Long from 'long';
 import * as Promise from 'bluebird';
 import {HazelcastClient} from '../../HazelcastClient';
 import {CPSessionAwareProxy} from './CPSessionAwareProxy';
-import {FencedLock} from '../FencedLock';
+import {ISemaphore} from '../ISemaphore';
 import {CPProxyManager} from './CPProxyManager';
 import {NO_SESSION_ID} from './CPSessionManager';
 import {RaftGroupId} from './RaftGroupId';
-import {FencedLockLockCodec} from '../../codec/FencedLockLockCodec';
-import {FencedLockTryLockCodec} from '../../codec/FencedLockTryLockCodec';
-import {FencedLockUnlockCodec} from '../../codec/FencedLockUnlockCodec';
-import {
-    FencedLockGetLockOwnershipCodec,
-    FencedLockGetLockOwnershipResponseParams
-} from '../../codec/FencedLockGetLockOwnershipCodec';
-import {assertNumber} from '../../util/Util';
+import {assertNonNegativeNumber} from '../../util/Util';
 import {UuidUtil} from '../../util/UuidUtil';
+import {SemaphoreInitCodec} from '../../codec/SemaphoreInitCodec';
+import {SemaphoreAcquireCodec} from '../../codec/SemaphoreAcquireCodec';
+import {SemaphoreAvailablePermitsCodec} from '../../codec/SemaphoreAvailablePermitsCodec';
+import {SemaphoreDrainCodec} from '../../codec/SemaphoreDrainCodec';
+import {SemaphoreChangeCodec} from '../../codec/SemaphoreChangeCodec';
+import {SemaphoreReleaseCodec} from '../../codec/SemaphoreReleaseCodec';
 import {
-    IllegalMonitorStateError,
-    LockOwnershipLostError,
+    IllegalStateError,
     SessionExpiredError,
     WaitKeyCancelledError,
     UUID
 } from '../../core';
 
-const fenceThreadIdSymbol = Symbol('FenceThreadIdSymbol');
+/**
+ * In Node.js client session-aware Semaphore always uses the same "thread id".
+ */
+const THREAD_ID = Long.fromNumber(0);
+/**
+ * Since a proxy does not know how many permits will be drained on
+ * the Raft group, it uses this constant to increment its local session
+ * acquire count. Then, it adjusts the local session acquire count after
+ * the drain response is returned.
+ */
+const DRAIN_SESSION_ACQ_COUNT = 1024;
 
-interface Fence extends Long {
-    [fenceThreadIdSymbol]?: number;
-}
-
-const INVALID_FENCE = Long.fromNumber(0);
-
-function isValidFence(fence: Long): boolean {
-    return fence.greaterThan(INVALID_FENCE);
-}
-
-// TODO
 /** @internal */
-export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements FencedLock {
-
-    // "thread id" -> id of the session that has acquired the lock
-    private readonly lockedSessionIds: Map<number, Long> = new Map();
+export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements ISemaphore {
 
     constructor(client: HazelcastClient,
                 groupId: RaftGroupId,
                 proxyName: string,
                 objectName: string) {
-        super(client, CPProxyManager.LOCK_SERVICE, groupId, proxyName, objectName);
+        super(client, CPProxyManager.SEMAPHORE_SERVICE, groupId, proxyName, objectName);
     }
 
-    destroy(): Promise<void> {
-        return super.destroy()
-            .then(() => this.lockedSessionIds.clear());
+    init(permits: number): Promise<boolean> {
+        assertNonNegativeNumber(permits);
+        return this.encodeInvokeOnRandomTarget(SemaphoreInitCodec, this.groupId, this.objectName, permits)
+            .then((clientMessage) => {
+                const response = SemaphoreInitCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
-    lock(): Promise<Fence> {
-        const threadId = this.nextThreadId();
+    acquire(permits = 1): Promise<void> {
+        assertNonNegativeNumber(permits);
+
         const invocationUid = UuidUtil.generate();
-        return this.doLock(threadId, invocationUid);
+        return this.doAcquire(permits, invocationUid);
     }
 
-    private doLock(threadId: number, invocationUid: UUID): Promise<Fence> {
+    private doAcquire(permits: number, invocationUid: UUID): Promise<void> {
         let sessionId: Long;
-        return this.acquireSession()
+        return this.acquireSession(permits)
             .then((id) => {
                 sessionId = id;
-                return this.requestLock(sessionId, Long.fromNumber(threadId), invocationUid);
-            })
-            .then((fence: Fence) => {
-                assert(isValidFence(fence), 'FencedLock somehow hit reentrant lock limit');
-                this.lockedSessionIds.set(threadId, sessionId);
-                fence[fenceThreadIdSymbol] = threadId;
-                return fence;
+                return this.requestAcquire(sessionId, invocationUid, permits, -1);
             })
             .catch((err) => {
                 if (err instanceof SessionExpiredError) {
                     this.invalidateSession(sessionId);
-                    return this.doLock(threadId, invocationUid);
+                    return this.doAcquire(permits, invocationUid);
                 }
                 if (err instanceof WaitKeyCancelledError) {
-                    this.releaseSession(sessionId);
-                    throw new IllegalMonitorStateError('Lock[' + this.objectName
-                        + '] not acquired because the lock call on the CP group was cancelled.');
+                    this.releaseSession(sessionId, permits);
+                    throw new IllegalStateError('Semaphore[' + this.objectName
+                        + '] not acquired because the acquire call on the CP group was cancelled.');
                 }
                 throw err;
-            });
+            })
+            .then();
     }
 
-    tryLock(timeout?: number): Promise<Fence | undefined> {
-        if (timeout === undefined) {
-            timeout = 0;
-        }
-        assertNumber(timeout);
-        const threadId = this.nextThreadId();
+    tryAcquire(permits: number, timeout = 0): Promise<boolean> {
+        assertNonNegativeNumber(permits);
+        assertNonNegativeNumber(timeout);
+
         const invocationUid = UuidUtil.generate();
-        return this.doTryLock(timeout, threadId, invocationUid);
+        return this.doTryAcquire(permits, timeout, invocationUid);
     }
 
-    private doTryLock(timeout: number, threadId: number, invocationUid: UUID): Promise<Fence | undefined> {
+    private doTryAcquire(permits: number, timeout: number, invocationUid: UUID): Promise<boolean> {
         const start = Date.now();
         let sessionId: Long;
-        return this.acquireSession()
+        return this.acquireSession(permits)
             .then((id) => {
                 sessionId = id;
-                return this.requestTryLock(sessionId, Long.fromNumber(threadId), invocationUid, timeout);
+                return this.requestAcquire(sessionId, invocationUid, permits, timeout);
             })
-            .then((fence: Fence) => {
-                if (isValidFence(fence)) {
-                    this.lockedSessionIds.set(threadId, sessionId);
-                    fence[fenceThreadIdSymbol] = threadId;
-                    return fence;
+            .then((acquired) => {
+                if (!acquired) {
+                    this.releaseSession(sessionId, permits);
                 }
-
-                this.releaseSession(sessionId);
-                return undefined;
+                return acquired;
             })
             .catch((err) => {
                 if (err instanceof WaitKeyCancelledError) {
-                    this.releaseSession(sessionId);
-                    return undefined;
+                    this.releaseSession(sessionId, permits);
+                    return false;
                 }
                 if (err instanceof SessionExpiredError) {
                     this.invalidateSession(sessionId);
 
                     timeout -= Date.now() - start;
                     if (timeout < 0) {
-                        return undefined;
+                        return false;
                     }
-                    return this.doTryLock(timeout, threadId, invocationUid);
+                    return this.doTryAcquire(permits, timeout, invocationUid);
                 }
                 throw err;
             });
     }
 
-    unlock(token: Long): Promise<void> {
-        const threadId = this.extractThreadId(token);
+    release(permits = 1): Promise<void> {
+        assertNonNegativeNumber(permits);
+
         const sessionId = this.getSessionId();
-
-        // the order of the following checks is important
-        const rejected = this.verifyLockedSessionId(threadId, sessionId);
-        if (rejected) {
-            return rejected;
-        }
         if (NO_SESSION_ID.equals(sessionId)) {
-            this.lockedSessionIds.delete(threadId);
-            return Promise.reject(
-                new IllegalMonitorStateError('Client is not owner of the Lock[' + this.proxyName + '].')
-            );
+            return Promise.reject(this.newIllegalStateError());
         }
-
-        return this.requestUnlock(sessionId, Long.fromNumber(threadId), UuidUtil.generate())
+        const invocationUid = UuidUtil.generate();
+        return this.requestRelease(sessionId, invocationUid, permits)
+            .catch((err) => {
+                if (err instanceof SessionExpiredError) {
+                    this.invalidateSession(sessionId);
+                    throw this.newIllegalStateError(err);
+                }
+                this.releaseSession(sessionId, permits);
+                throw err;
+            })
             .then(() => {
-                this.lockedSessionIds.delete(threadId);
-                this.releaseSession(sessionId);
+                this.releaseSession(sessionId, permits);
+            });
+    }
+
+    availablePermits(): Promise<number> {
+        return this.encodeInvokeOnRandomTarget(SemaphoreAvailablePermitsCodec, this.groupId, this.objectName)
+            .then((clientMessage) => {
+                const response = SemaphoreAvailablePermitsCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
+    }
+
+    drainPermits(): Promise<number> {
+        const invocationUid = UuidUtil.generate();
+        return this.doDrainPermits(invocationUid);
+    }
+
+    private doDrainPermits(invocationUid: UUID): Promise<number> {
+        let sessionId: Long;
+        return this.acquireSession(DRAIN_SESSION_ACQ_COUNT)
+            .then((id) => {
+                sessionId = id;
+                return this.requestDrain(sessionId, invocationUid);
+            })
+            .then((count) => {
+                this.releaseSession(sessionId, DRAIN_SESSION_ACQ_COUNT - count);
+                return count;
             })
             .catch((err) => {
                 if (err instanceof SessionExpiredError) {
-                    this.lockedSessionIds.delete(threadId);
                     this.invalidateSession(sessionId);
-
-                    throw this.newLockOwnershipLostError(sessionId);
-                }
-                if (err instanceof IllegalMonitorStateError) {
-                    this.lockedSessionIds.delete(threadId);
+                    return this.doDrainPermits(invocationUid);
                 }
                 throw err;
             });
     }
 
-    isLocked(): Promise<boolean> {
-        return this.requestLockOwnershipState().then((state) => {
-            const locked = isValidFence(state.fence);
-            return locked;
-        });
+    reducePermits(reduction: number): Promise<void> {
+        assertNonNegativeNumber(reduction);
+        if (reduction === 0) {
+            return;
+        }
+        return this.doChangePermits(-reduction);
     }
 
-    private requestLock(sessionId: Long, threadId: Long, invocationUid: UUID): Promise<Long> {
+    increasePermits(increase: number): Promise<void> {
+        assertNonNegativeNumber(increase);
+        if (increase === 0) {
+            return;
+        }
+        return this.doChangePermits(increase);
+    }
+
+    private doChangePermits(delta: number): Promise<void> {
+        let sessionId: Long;
+        const invocationUid = UuidUtil.generate();
+        return this.acquireSession()
+            .then((id) => {
+                sessionId = id;
+                return this.requestChange(sessionId, invocationUid, delta);
+            })
+            .catch((err) => {
+                if (err instanceof SessionExpiredError) {
+                    this.invalidateSession(sessionId);
+                    throw this.newIllegalStateError(err);
+                }
+                this.releaseSession(sessionId);
+                throw err;
+            })
+            .then(() => {
+                this.releaseSession(sessionId);
+            });
+    }
+
+    private requestAcquire(sessionId: Long,
+                           invocationUid: UUID,
+                           permits: number,
+                           timeout: number): Promise<boolean> {
         return this.encodeInvokeOnRandomTarget(
-            FencedLockLockCodec, this.groupId, this.objectName, sessionId, threadId, invocationUid
+            SemaphoreAcquireCodec,
+            this.groupId,
+            this.objectName,
+            sessionId,
+            THREAD_ID,
+            invocationUid,
+            permits,
+            timeout
         ).then((clientMessage) => {
-            const response = FencedLockLockCodec.decodeResponse(clientMessage);
+            const response = SemaphoreAcquireCodec.decodeResponse(clientMessage);
             return response.response;
         });
     }
 
-    private requestTryLock(sessionId: Long, threadId: Long, invocationUid: UUID, timeout: number): Promise<Long> {
+    private requestRelease(sessionId: Long, invocationUid: UUID, permits: number): Promise<void> {
         return this.encodeInvokeOnRandomTarget(
-            FencedLockTryLockCodec, this.groupId, this.objectName, sessionId, threadId, invocationUid, timeout
+            SemaphoreReleaseCodec,
+            this.groupId,
+            this.objectName,
+            sessionId,
+            THREAD_ID,
+            invocationUid,
+            permits
+        ).then();
+    }
+
+    private requestDrain(sessionId: Long, invocationUid: UUID): Promise<number> {
+        return this.encodeInvokeOnRandomTarget(
+            SemaphoreDrainCodec,
+            this.groupId,
+            this.objectName,
+            sessionId,
+            THREAD_ID,
+            invocationUid
         ).then((clientMessage) => {
-            const response = FencedLockTryLockCodec.decodeResponse(clientMessage);
+            const response = SemaphoreDrainCodec.decodeResponse(clientMessage);
             return response.response;
         });
     }
 
-    private requestUnlock(sessionId: Long, threadId: Long, invocationUid: UUID): Promise<boolean> {
+    private requestChange(sessionId: Long, invocationUid: UUID, delta: number): Promise<void> {
         return this.encodeInvokeOnRandomTarget(
-            FencedLockUnlockCodec, this.groupId, this.objectName, sessionId, threadId, invocationUid
-        ).then((clientMessage) => {
-            const response = FencedLockUnlockCodec.decodeResponse(clientMessage);
-            return response.response;
-        });
+            SemaphoreChangeCodec,
+            this.groupId,
+            this.objectName,
+            sessionId,
+            THREAD_ID,
+            invocationUid,
+            delta
+        ).then();
     }
 
-    private requestLockOwnershipState(): Promise<FencedLockGetLockOwnershipResponseParams> {
-        return this.encodeInvokeOnRandomTarget(
-            FencedLockGetLockOwnershipCodec, this.groupId, this.objectName
-        ).then((clientMessage) => {
-            const response = FencedLockGetLockOwnershipCodec.decodeResponse(clientMessage);
-            return response;
-        });
-    }
-
-    private extractThreadId(fence: Fence): number {
-        if (!Long.isLong(fence)) {
-            throw new TypeError('Fencing token should be of type Long');
-        }
-        const threadId = fence[fenceThreadIdSymbol] as number;
-        if (threadId === undefined) {
-            throw new TypeError('Invalid fencing token provided');
-        }
-        return threadId;
-    }
-
-    private verifyLockedSessionId(threadId: number, sessionId: Long): Promise<any> | undefined {
-        const lockedSessionId = this.lockedSessionIds.get(threadId);
-        if (lockedSessionId !== undefined && !lockedSessionId.equals(sessionId)) {
-            this.lockedSessionIds.delete(threadId);
-            return Promise.reject(this.newLockOwnershipLostError(lockedSessionId));
-        }
-    }
-
-    private newLockOwnershipLostError(sessionId: Long) {
-        return new LockOwnershipLostError('Client is not owner of the Lock[' + this.proxyName
-            + '] because its Session[' + sessionId.toString() + '] was closed by server!');
+    private newIllegalStateError(cause?: SessionExpiredError) {
+        return new IllegalStateError('Semaphore[' + this.objectName + '] has no valid session!', cause);
     }
 }

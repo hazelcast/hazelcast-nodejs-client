@@ -103,11 +103,9 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
             });
     }
 
-    tryLock(timeout?: number): Promise<Fence | undefined> {
-        if (timeout === undefined) {
-            timeout = 0;
-        }
+    tryLock(timeout = 0): Promise<Fence | undefined> {
         assertNonNegativeNumber(timeout);
+
         const threadId = this.nextThreadId();
         const invocationUid = UuidUtil.generate();
         return this.doTryLock(timeout, threadId, invocationUid);

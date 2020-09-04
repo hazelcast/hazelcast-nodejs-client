@@ -101,16 +101,16 @@ export class CPSessionManager {
         return session !== undefined ? session.id : NO_SESSION_ID;
     }
 
-    acquireSession(groupId: RaftGroupId): Promise<Long> {
+    acquireSession(groupId: RaftGroupId, permits: number): Promise<Long> {
         return this.getOrCreateSession(groupId).then((state) => {
-            return state.acquire(1);
+            return state.acquire(permits);
         });
     }
 
-    releaseSession(groupId: RaftGroupId, sessionId: Long): void {
+    releaseSession(groupId: RaftGroupId, sessionId: Long, permits: number): void {
         const session = this.sessions.get(groupId.getStringId());
         if (session !== undefined && session.id.equals(sessionId)) {
-            session.release(1);
+            session.release(permits);
         }
     }
 

@@ -52,12 +52,12 @@ export abstract class CPSessionAwareProxy extends BaseCPProxy {
         return this.sessionManager.getSessionId(this.groupId);
     }
 
-    protected acquireSession(): Promise<Long> {
-        return this.sessionManager.acquireSession(this.groupId);
+    protected acquireSession(permits = 1): Promise<Long> {
+        return this.sessionManager.acquireSession(this.groupId, permits);
     }
 
-    protected releaseSession(sessionId: Long): void {
-        return this.sessionManager.releaseSession(this.groupId, sessionId);
+    protected releaseSession(sessionId: Long, permits = 1): void {
+        return this.sessionManager.releaseSession(this.groupId, sessionId, permits);
     }
 
     protected invalidateSession(sessionId: Long): void {

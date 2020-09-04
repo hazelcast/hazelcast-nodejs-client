@@ -59,26 +59,20 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
             });
     }
 
-    acquire(permits?: number): Promise<void> {
-        if (permits === undefined) {
-            permits = 1;
-        }
+    acquire(permits = 1): Promise<void> {
         assertNonNegativeNumber(permits);
 
         return this.doTryAcquire(permits, -1).then();
     }
 
-    tryAcquire(permits: number, timeout?: number): Promise<boolean> {
+    tryAcquire(permits: number, timeout = 0): Promise<boolean> {
         assertNonNegativeNumber(permits);
-        if (timeout === undefined) {
-            timeout = 0;
-        }
         assertNonNegativeNumber(timeout);
 
         return this.doTryAcquire(permits, timeout);
     }
 
-    doTryAcquire(permits: number, timeout: number): Promise<boolean> {
+    private doTryAcquire(permits: number, timeout: number): Promise<boolean> {
         const invocationUid = UuidUtil.generate();
         return this.getClusterWideThreadId()
             .then((clusterWideThreadId) =>
@@ -93,20 +87,20 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
                     timeout
                 )
             )
+            .then((clientMessage) => {
+                const response = SemaphoreAcquireCodec.decodeResponse(clientMessage);
+                return response.response;
+            })
             .catch((err) => {
                 if (err instanceof WaitKeyCancelledError) {
                     throw new IllegalStateError('Semaphore[' + this.objectName
                         + '] not acquired because the acquire call on the CP group was cancelled.');
                 }
                 throw err;
-            })
-            .then();
+            });
     }
 
-    release(permits?: number): Promise<void> {
-        if (permits === undefined) {
-            permits = 1;
-        }
+    release(permits = 1): Promise<void> {
         assertNonNegativeNumber(permits);
 
         const invocationUid = UuidUtil.generate();

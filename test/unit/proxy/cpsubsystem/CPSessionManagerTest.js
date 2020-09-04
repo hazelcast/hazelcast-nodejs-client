@@ -172,6 +172,14 @@ describe('CPSessionManagerTest', function () {
             expect(sessionManager.sessions.get(GROUP_ID_AS_STRING).acquireCount).to.be.equal(1);
         });
 
+        it('acquireSession: should consider permits when creating new session', async function () {
+            stubRequestNewSession();
+
+            const id = await sessionManager.acquireSession(prepareGroupId(), 3);
+            expect(id.toNumber()).to.be.equal(SESSION_ID);
+            expect(sessionManager.sessions.get(GROUP_ID_AS_STRING).acquireCount).to.be.equal(3);
+        });
+
         it('acquireSession: should create new session for existing invalid session', async function () {
             const requestNewSessionStub = stubRequestNewSession();
 
@@ -196,11 +204,18 @@ describe('CPSessionManagerTest', function () {
             expect(sessionManager.sessions.get(GROUP_ID_AS_STRING).acquireCount).to.be.equal(1);
         });
 
-        it('releaseSession: should decrement acquire counter for known session', function () {
+        it('releaseSession: should decrement acquire counter by 1 for known session', function () {
             sessionManager.sessions.set(GROUP_ID_AS_STRING, prepareSessionState());
 
             sessionManager.releaseSession(prepareGroupId(), Long.fromNumber(SESSION_ID));
             expect(sessionManager.sessions.get(GROUP_ID_AS_STRING).acquireCount).to.be.equal(-1);
+        });
+
+        it('releaseSession: should decrement acquire counter by given permits for known session', function () {
+            sessionManager.sessions.set(GROUP_ID_AS_STRING, prepareSessionState());
+
+            sessionManager.releaseSession(prepareGroupId(), Long.fromNumber(SESSION_ID), 3);
+            expect(sessionManager.sessions.get(GROUP_ID_AS_STRING).acquireCount).to.be.equal(-3);
         });
 
         it('releaseSession: should not decrement acquire counter for unknown session', function () {
