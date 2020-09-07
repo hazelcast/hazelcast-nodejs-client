@@ -15,7 +15,6 @@
  */
 
 import * as Promise from 'bluebird';
-import * as Long from 'long';
 import {DistributedObject} from '../core';
 
 /**
