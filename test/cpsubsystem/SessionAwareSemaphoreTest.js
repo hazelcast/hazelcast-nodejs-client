@@ -23,7 +23,7 @@ const fs = require('fs');
 const RC = require('./../RC');
 const {
     Client,
-    IllegalStateError,
+    IllegalStateError
 } = require('../../');
 
 describe('SessionAwareSemaphoreTest', function () {

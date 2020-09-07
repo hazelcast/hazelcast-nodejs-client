@@ -15,10 +15,7 @@
  */
 'use strict';
 
-const chai = require('chai');
-chai.should();
-chai.use(require('chai-as-promised'));
-const expect = chai.expect;
+const { expect } = require('chai');
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
 const Long = require('long');

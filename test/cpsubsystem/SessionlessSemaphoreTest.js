@@ -21,10 +21,7 @@ chai.use(require('chai-as-promised'));
 const expect = chai.expect;
 const fs = require('fs');
 const RC = require('./../RC');
-const {
-    Client,
-    IllegalStateError,
-} = require('../../');
+const { Client } = require('../../');
 
 describe('SessionlessSemaphoreTest', function () {
 
