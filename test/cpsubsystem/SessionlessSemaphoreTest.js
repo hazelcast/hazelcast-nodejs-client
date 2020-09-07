@@ -67,7 +67,7 @@ describe('SessionlessSemaphoreTest', function () {
             await ownSemaphore.release(1);
 
             const permits = await ownSemaphore.availablePermits();
-            expect(permits).to.be.equal(-5);
+            expect(permits).to.be.equal(1);
         } finally {
             await anotherClient.shutdown();
         }

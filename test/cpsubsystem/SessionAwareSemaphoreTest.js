@@ -84,11 +84,10 @@ describe('SessionAwareSemaphoreTest', function () {
         const semaphore = await getSemaphore(0);
 
         await semaphore.reducePermits(100);
-        await semaphore.release(10);
 
         const available = await semaphore.availablePermits();
-        expect(available).to.be.equal(-90);
+        expect(available).to.be.equal(-100);
         const drained = await semaphore.drainPermits();
-        expect(drained).to.be.equal(-90);
+        expect(drained).to.be.equal(-100);
     });
 });
