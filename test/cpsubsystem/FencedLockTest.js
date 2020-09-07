@@ -20,7 +20,6 @@ chai.should();
 chai.use(require('chai-as-promised'));
 const expect = chai.expect;
 const fs = require('fs');
-const { AssertionError } = require('assert');
 const RC = require('./../RC');
 const {
     Client,
@@ -197,10 +196,6 @@ describe('FencedLockTest', function () {
         await Promise.race(lockPromises);
 
         expect(lockCnt).to.be.equal(1);
-    });
-
-    it('tryLock: should throw when timeout is not a number', async function () {
-        expect(() => lock.tryLock('invalid timeout')).to.throw(AssertionError);
     });
 
     it('tryLock: should return fence when not locked and timeout not specified', async function () {

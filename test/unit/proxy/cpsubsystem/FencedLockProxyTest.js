@@ -22,6 +22,7 @@ const expect = chai.expect;
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
 const Long = require('long');
+const { AssertionError } = require('assert');
 const {
     Client,
     IllegalMonitorStateError,
@@ -198,6 +199,10 @@ describe('FencedLockProxyTest', function () {
         stubRequestTryLock(2, new Error());
 
         await expect(proxy.tryLock()).to.be.rejectedWith(Error);
+    });
+
+    it('tryLock: should throw when timeout is not a number', function () {
+        expect(() => proxy.tryLock('invalid timeout')).to.throw(AssertionError);
     });
 
     it('unlock: should release session when lock held', async function () {

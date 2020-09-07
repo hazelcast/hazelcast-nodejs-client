@@ -144,6 +144,83 @@ describe('SemaphoreCommonTest', function () {
                     })
                     .catch(done);
             });
+
+            it('tryAcquire: should succeed when permits are available', async function () {
+                const semaphore = await getSemaphore(type, 5);
+
+                const result = await semaphore.tryAcquire(2);
+                expect(result).to.be.true;
+
+                const permits = await semaphore.availablePermits();
+                expect(permits).to.be.equal(3);
+            });
+
+            it('tryAcquire: should fail when permits are not available', async function () {
+                const semaphore = await getSemaphore(type, 1);
+
+                const result = await semaphore.tryAcquire(2);
+                expect(result).to.be.false;
+
+                const permits = await semaphore.availablePermits();
+                expect(permits).to.be.equal(1);
+            });
+
+            it('tryAcquire: should keep retrying until timeout when permits are not available', async function () {
+                const semaphore = await getSemaphore(type, 1);
+
+                const start = Date.now();
+                const result = await semaphore.tryAcquire(2, 1000);
+                expect(result).to.be.false;
+                expect(Date.now() - start).to.be.greaterThan(900);
+            });
+
+            it('release: should succeed when permits are acquired', async function () {
+                const semaphore = await getSemaphore(type, 2);
+                await semaphore.acquire(2);
+                await semaphore.release(2);
+
+                const permits = await semaphore.availablePermits();
+                expect(permits).to.be.equal(2);
+            });
+
+            it('reducePermits: should reduce available permits', async function () {
+                const semaphore = await getSemaphore(type, 10);
+
+                await semaphore.reducePermits(5);
+
+                const permits = await semaphore.availablePermits();
+                expect(permits).to.be.equal(5);
+            });
+
+            it('increasePermits: should increase available permits', async function () {
+                const semaphore = await getSemaphore(type, 10);
+
+                let permits = await semaphore.availablePermits();
+                expect(permits).to.be.equal(10);
+
+                await semaphore.increasePermits(100);
+
+                permits = await semaphore.availablePermits();
+                expect(permits).to.be.equal(110);
+            });
+
+            it('drainPermits: should drain all available permits', async function () {
+                const semaphore = await getSemaphore(type, 20);
+
+                await semaphore.acquire(5);
+
+                const drained = await semaphore.drainPermits();
+                expect(drained).to.be.equal(15);
+                const available = await semaphore.availablePermits();
+                expect(available).to.be.equal(0);
+            });
+
+            it('drainPermits: should return 0 when permits are not available', async function () {
+                const semaphore = await getSemaphore(type, 0);
+
+                const drained = await semaphore.drainPermits();
+                expect(drained).to.be.equal(0);
+            });
         })
     }
 });
