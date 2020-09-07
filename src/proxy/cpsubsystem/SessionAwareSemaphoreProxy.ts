@@ -39,10 +39,6 @@ import {
 } from '../../core';
 
 /**
- * In Node.js client session-aware Semaphore always uses the same "thread id".
- */
-const THREAD_ID = Long.fromNumber(0);
-/**
  * Since a proxy does not know how many permits will be drained on
  * the Raft group, it uses this constant to increment its local session
  * acquire count. Then, it adjusts the local session acquire count after
@@ -78,10 +74,11 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
 
     private doAcquire(permits: number, invocationUid: UUID): Promise<void> {
         let sessionId: Long;
+        const threadId = Long.fromNumber(this.nextThreadId());
         return this.acquireSession(permits)
             .then((id) => {
                 sessionId = id;
-                return this.requestAcquire(sessionId, invocationUid, permits, -1);
+                return this.requestAcquire(sessionId, threadId, invocationUid, permits, -1);
             })
             .catch((err) => {
                 if (err instanceof SessionExpiredError) {
@@ -109,10 +106,11 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
     private doTryAcquire(permits: number, timeout: number, invocationUid: UUID): Promise<boolean> {
         const start = Date.now();
         let sessionId: Long;
+        const threadId = Long.fromNumber(this.nextThreadId());
         return this.acquireSession(permits)
             .then((id) => {
                 sessionId = id;
-                return this.requestAcquire(sessionId, invocationUid, permits, timeout);
+                return this.requestAcquire(sessionId, threadId, invocationUid, permits, timeout);
             })
             .then((acquired) => {
                 if (!acquired) {
@@ -145,8 +143,9 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
         if (NO_SESSION_ID.equals(sessionId)) {
             return Promise.reject(this.newIllegalStateError());
         }
+        const threadId = Long.fromNumber(this.nextThreadId());
         const invocationUid = UuidUtil.generate();
-        return this.requestRelease(sessionId, invocationUid, permits)
+        return this.requestRelease(sessionId, threadId, invocationUid, permits)
             .catch((err) => {
                 if (err instanceof SessionExpiredError) {
                     this.invalidateSession(sessionId);
@@ -175,10 +174,11 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
 
     private doDrainPermits(invocationUid: UUID): Promise<number> {
         let sessionId: Long;
+        const threadId = Long.fromNumber(this.nextThreadId());
         return this.acquireSession(DRAIN_SESSION_ACQ_COUNT)
             .then((id) => {
                 sessionId = id;
-                return this.requestDrain(sessionId, invocationUid);
+                return this.requestDrain(sessionId, threadId, invocationUid);
             })
             .then((count) => {
                 this.releaseSession(sessionId, DRAIN_SESSION_ACQ_COUNT - count);
@@ -211,11 +211,12 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
 
     private doChangePermits(delta: number): Promise<void> {
         let sessionId: Long;
+        const threadId = Long.fromNumber(this.nextThreadId());
         const invocationUid = UuidUtil.generate();
         return this.acquireSession()
             .then((id) => {
                 sessionId = id;
-                return this.requestChange(sessionId, invocationUid, delta);
+                return this.requestChange(sessionId, threadId, invocationUid, delta);
             })
             .catch((err) => {
                 if (err instanceof SessionExpiredError) {
@@ -231,6 +232,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
     }
 
     private requestAcquire(sessionId: Long,
+                           threadId: Long,
                            invocationUid: UUID,
                            permits: number,
                            timeout: number): Promise<boolean> {
@@ -239,7 +241,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
             this.groupId,
             this.objectName,
             sessionId,
-            THREAD_ID,
+            threadId,
             invocationUid,
             permits,
             Long.fromNumber(timeout)
@@ -249,25 +251,30 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
         });
     }
 
-    private requestRelease(sessionId: Long, invocationUid: UUID, permits: number): Promise<void> {
+    private requestRelease(sessionId: Long,
+                           threadId: Long,
+                           invocationUid: UUID,
+                           permits: number): Promise<void> {
         return this.encodeInvokeOnRandomTarget(
             SemaphoreReleaseCodec,
             this.groupId,
             this.objectName,
             sessionId,
-            THREAD_ID,
+            threadId,
             invocationUid,
             permits
         ).then();
     }
 
-    private requestDrain(sessionId: Long, invocationUid: UUID): Promise<number> {
+    private requestDrain(sessionId: Long,
+                         threadId: Long,
+                         invocationUid: UUID): Promise<number> {
         return this.encodeInvokeOnRandomTarget(
             SemaphoreDrainCodec,
             this.groupId,
             this.objectName,
             sessionId,
-            THREAD_ID,
+            threadId,
             invocationUid
         ).then((clientMessage) => {
             const response = SemaphoreDrainCodec.decodeResponse(clientMessage);
@@ -275,13 +282,16 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
         });
     }
 
-    private requestChange(sessionId: Long, invocationUid: UUID, delta: number): Promise<void> {
+    private requestChange(sessionId: Long,
+                          threadId: Long,
+                          invocationUid: UUID,
+                          delta: number): Promise<void> {
         return this.encodeInvokeOnRandomTarget(
             SemaphoreChangeCodec,
             this.groupId,
             this.objectName,
             sessionId,
-            THREAD_ID,
+            threadId,
             invocationUid,
             delta
         ).then();
