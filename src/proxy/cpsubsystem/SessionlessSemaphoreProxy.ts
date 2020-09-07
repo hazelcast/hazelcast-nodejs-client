@@ -84,7 +84,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
                     clusterWideThreadId,
                     invocationUid,
                     permits,
-                    timeout
+                    Long.fromNumber(timeout)
                 )
             )
             .then((clientMessage) => {

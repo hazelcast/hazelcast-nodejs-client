@@ -161,7 +161,7 @@ describe('FencedLockTest', function () {
             .then((fence) => {
                 setTimeout(() => {
                     unlockedByTimer = true;
-                    // passes only if
+                    // passes only when this unlock happens
                     lock.unlock(fence)
                         .catch(done);
                 }, 1000);

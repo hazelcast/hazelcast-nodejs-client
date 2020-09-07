@@ -242,7 +242,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
             THREAD_ID,
             invocationUid,
             permits,
-            timeout
+            Long.fromNumber(timeout)
         ).then((clientMessage) => {
             const response = SemaphoreAcquireCodec.decodeResponse(clientMessage);
             return response.response;

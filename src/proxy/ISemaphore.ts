@@ -84,7 +84,7 @@ export interface ISemaphore extends DistributedObject {
      *
      * If insufficient permits are available then the returned promise is not
      * resolved until there are sufficient number of available permits or this
-     * `ISemaphore is destroyed.
+     * ISemaphore is destroyed.
      *
      * @param permits optional number of permits to acquire; defaults to `1`
      *                when not specified

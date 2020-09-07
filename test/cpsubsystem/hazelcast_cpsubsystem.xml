@@ -23,14 +23,12 @@
         <group-size>3</group-size>
         <semaphores>
             <semaphore>
-                <name>sessionless-semaphore</name>
+                <name>sessionless</name>
                 <jdk-compatible>true</jdk-compatible>
-                <initial-permits>1</initial-permits>
             </semaphore>
             <semaphore>
-                <name>sessionaware-semaphore</name>
+                <name>sessionaware</name>
                 <jdk-compatible>false</jdk-compatible>
-                <initial-permits>1</initial-permits>
             </semaphore>
         </semaphores>
     </cp-subsystem>

@@ -127,18 +127,18 @@ export class CPSessionManager {
         }
         const groupIdStr = groupId.getStringId();
         const threadId = this.uniqueThreadIds.get(groupIdStr);
-        if (threadId === undefined) {
-            return this.requestGenerateThreadId(groupId)
-                .then((globalThreadId) => {
-                    const existing = this.uniqueThreadIds.get(groupIdStr);
-                    if (existing !== undefined) {
-                        return existing;
-                    }
-                    this.uniqueThreadIds.set(groupIdStr, globalThreadId);
-                    return globalThreadId;
-                });
+        if (threadId !== undefined) {
+            return Promise.resolve(threadId);
         }
-        return Promise.resolve(threadId);
+        return this.requestGenerateThreadId(groupId)
+            .then((globalThreadId) => {
+                const existing = this.uniqueThreadIds.get(groupIdStr);
+                if (existing !== undefined) {
+                    return existing;
+                }
+                this.uniqueThreadIds.set(groupIdStr, globalThreadId);
+                return globalThreadId;
+            });
     }
 
     shutdown(): Promise<void> {
