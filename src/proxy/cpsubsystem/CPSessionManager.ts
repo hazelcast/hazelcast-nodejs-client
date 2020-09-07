@@ -87,8 +87,6 @@ export class CPSessionManager {
     private readonly client: HazelcastClient;
     // <group_id, session_state> map
     private readonly sessions: Map<string, SessionState> = new Map();
-    // <group_id, cluster wide unique thread id> map
-    private readonly uniqueThreadIds: Map<string, Long> = new Map();
     private heartbeatTask: Task;
     private isShutdown = false;
 
@@ -121,24 +119,11 @@ export class CPSessionManager {
         }
     }
 
-    getOrCreateUniqueThreadId(groupId: RaftGroupId): Promise<Long> {
+    createUniqueThreadId(groupId: RaftGroupId): Promise<Long> {
         if (this.isShutdown) {
             return Promise.reject(new IllegalStateError('Session manager is already shut down'));
         }
-        const groupIdStr = groupId.getStringId();
-        const threadId = this.uniqueThreadIds.get(groupIdStr);
-        if (threadId !== undefined) {
-            return Promise.resolve(threadId);
-        }
-        return this.requestGenerateThreadId(groupId)
-            .then((globalThreadId) => {
-                const existing = this.uniqueThreadIds.get(groupIdStr);
-                if (existing !== undefined) {
-                    return existing;
-                }
-                this.uniqueThreadIds.set(groupIdStr, globalThreadId);
-                return globalThreadId;
-            });
+        return this.requestGenerateThreadId(groupId);
     }
 
     shutdown(): Promise<void> {

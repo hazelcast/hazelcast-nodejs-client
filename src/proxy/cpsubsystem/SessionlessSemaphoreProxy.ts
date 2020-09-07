@@ -180,6 +180,6 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
     }
 
     private getClusterWideThreadId(): Promise<Long> {
-        return this.sessionManager.getOrCreateUniqueThreadId(this.groupId);
+        return this.sessionManager.createUniqueThreadId(this.groupId);
     }
 }

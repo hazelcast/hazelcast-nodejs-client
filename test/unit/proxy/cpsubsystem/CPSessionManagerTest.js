@@ -112,7 +112,6 @@ describe('CPSessionManagerTest', function () {
         const GROUP_ID = 42;
         const GROUP_ID_AS_STRING = prepareGroupId().getStringId();
         const SESSION_ID = 24;
-        const THREAD_ID = 3;
         const TTL_MILLIS = 1000;
         const HEARTBEAT_MILLIS = 100;
 
@@ -137,9 +136,9 @@ describe('CPSessionManagerTest', function () {
             return stub;
         }
 
-        function stubRequestGenerateThreadId() {
+        function stubRequestGenerateThreadId(threadId) {
             const stub = sandbox.stub(sessionManager, 'requestGenerateThreadId');
-            stub.returns(Promise.resolve(Long.fromNumber(THREAD_ID)));
+            stub.returns(Promise.resolve(Long.fromNumber(threadId)));
             return stub;
         }
 
@@ -246,27 +245,17 @@ describe('CPSessionManagerTest', function () {
             expect(sessionManager.sessions.size).to.be.equal(1);
         });
 
-        it('getOrCreateUniqueThreadId: should reject when shut down', async function () {
+        it('createUniqueThreadId: should reject when shut down', async function () {
             await sessionManager.shutdown();
 
-            expect(sessionManager.getOrCreateUniqueThreadId(prepareGroupId(42))).to.be.rejectedWith(IllegalStateError);
+            expect(sessionManager.createUniqueThreadId(prepareGroupId(42))).to.be.rejectedWith(IllegalStateError);
         });
 
-        it('getOrCreateUniqueThreadId: should generate new thread id for unknown group id', async function () {
-            stubRequestGenerateThreadId();
+        it('createUniqueThreadId: should generate new thread id', async function () {
+            stubRequestGenerateThreadId(5);
 
-            const id = await sessionManager.getOrCreateUniqueThreadId(prepareGroupId());
-            expect(id.toNumber()).to.be.equal(THREAD_ID);
-            expect(sessionManager.uniqueThreadIds.size).to.be.equal(1);
-        });
-
-        it('getOrCreateUniqueThreadId: should not generate new thread id for existing id', async function () {
-            const requestGenerateThreadIdStub = stubRequestGenerateThreadId();
-            sessionManager.uniqueThreadIds.set(GROUP_ID_AS_STRING, Long.fromNumber(THREAD_ID));
-
-            const id = await sessionManager.getOrCreateUniqueThreadId(prepareGroupId());
-            expect(id.toNumber()).to.be.equal(THREAD_ID);
-            expect(requestGenerateThreadIdStub.notCalled).to.be.true;
+            const id = await sessionManager.createUniqueThreadId(prepareGroupId());
+            expect(id.toNumber()).to.be.equal(5);
         });
 
         it('shutdown: should cancel heartbeat task', async function () {
