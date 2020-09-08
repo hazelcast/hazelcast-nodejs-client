@@ -267,7 +267,10 @@ export interface DeferredPromise<T> {
 
 }
 
-/** @internal */
+/**
+ * Returns a deferred promise.
+ * @internal
+ */
 export function deferredPromise<T>(): DeferredPromise<T> {
     let resolve: any;
     let reject: any;
@@ -282,16 +285,30 @@ export function deferredPromise<T>(): DeferredPromise<T> {
     };
 }
 
-/** @internal */
+/**
+ * Returns a promise that is resolved after the specified timeout.
+ * @param timeout timeout in milliseconds.
+ * @internal
+ */
 export function delayedPromise(timeout: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, timeout));
 }
 
-// TODO cover with tests
-/** @internal */
-export function timedPromise<T>(promise: Promise<T>, timeout: number, err?: Error): Promise<T> {
+/**
+ * Returns a Promise that will be fulfilled with the wrapped promise's
+ * resolve value or rejection reason. However, if the wrapped promise is
+ * not resolved or rejected within the given timeout, the returned
+ * promise is rejected with an `Error` or the given error.
+ *
+ * @param wrapped wrapped promise
+ * @param timeout timeout in millisecond
+ * @param err optional error for the timeout case
+ * @internal
+ */
+export function timedPromise<T>(wrapped: Promise<T>, timeout: number, err?: Error): Promise<T> {
     const deferred = deferredPromise<T>();
     let timed = false;
+
     const timer = setTimeout(() => {
         if (err) {
             deferred.reject(err);
@@ -300,7 +317,8 @@ export function timedPromise<T>(promise: Promise<T>, timeout: number, err?: Erro
         }
         timed = true;
     }, timeout);
-    promise.then((result) => {
+
+    wrapped.then((result) => {
         if (!timed) {
             deferred.resolve(result);
             clearTimeout(timer);
@@ -311,6 +329,7 @@ export function timedPromise<T>(promise: Promise<T>, timeout: number, err?: Erro
             clearTimeout(timer);
         }
     });
+
     return deferred.promise;
 }
 
