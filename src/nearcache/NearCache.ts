@@ -21,10 +21,17 @@ import {InMemoryFormat} from '../config/InMemoryFormat';
 import {NearCacheConfigImpl} from '../config/NearCacheConfig';
 import {Data} from '../serialization/Data';
 import {SerializationService} from '../serialization/SerializationService';
-import {DeferredPromise, shuffleArray} from '../util/Util';
+import {
+    deferredPromise,
+    DeferredPromise,
+    shuffleArray
+} from '../util/Util';
 import {DataKeyedHashMap} from './DataStoreHashMap';
 import {DataRecord} from './DataRecord';
-import {StaleReadDetector, alwaysFreshDetector} from './StaleReadDetector';
+import {
+    StaleReadDetector,
+    alwaysFreshDetector
+} from './StaleReadDetector';
 
 /** @internal */
 export interface NearCacheStatistics {
@@ -110,7 +117,7 @@ export class NearCacheImpl implements NearCache {
 
         this.evictionCandidatePool = [];
         this.internalStore = new DataKeyedHashMap<DataRecord>();
-        this.ready = DeferredPromise();
+        this.ready = deferredPromise();
     }
 
     setReady(): void {

@@ -22,7 +22,10 @@ import {TopicOverloadError} from '../../core';
 import {AddressImpl} from '../../core/Address';
 import {SerializationService} from '../../serialization/SerializationService';
 import {UuidUtil} from '../../util/UuidUtil';
-import {DeferredPromise} from '../../util/Util';
+import {
+    deferredPromise,
+    DeferredPromise
+} from '../../util/Util';
 import {BaseProxy} from '../BaseProxy';
 import {Ringbuffer} from '../Ringbuffer';
 import {ITopic} from '../ITopic';
@@ -142,7 +145,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
     }
 
     private addWithBackoff(reliableTopicMessage: ReliableTopicMessage): Promise<void> {
-        const deferred = DeferredPromise<void>();
+        const deferred = deferredPromise<void>();
         this.trySendMessage(reliableTopicMessage, TOPIC_INITIAL_BACKOFF, deferred);
         return deferred.promise;
     }

@@ -20,7 +20,7 @@ const fs = require('fs');
 
 const RC = require('../RC');
 const Client = require('../../.').Client;
-const { DeferredPromise } = require('../../lib/util/Util');
+const { deferredPromise } = require('../../lib/util/Util');
 const { getRandomInt } = require('../Util');
 
 describe('NearCachedMapStress', function () {
@@ -34,7 +34,7 @@ describe('NearCachedMapStress', function () {
     const mapName = 'stressncmap';
     const concurrencyLevel = 32;
     const totalNumOperations = 100000;
-    const completedDeferred = DeferredPromise();
+    const completedDeferred = deferredPromise();
     const putPercent = 15;
     const removePercent = 20;
     const getPercent = 100 - putPercent - removePercent;

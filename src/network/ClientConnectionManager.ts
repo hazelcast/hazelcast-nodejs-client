@@ -37,6 +37,7 @@ import * as tls from 'tls';
 import {
     AddressHelper,
     cancelRepetitionTask,
+    deferredPromise,
     DeferredPromise,
     scheduleWithRepetition,
     shuffleArray,
@@ -243,7 +244,7 @@ export class ClientConnectionManager extends EventEmitter {
             return pendingConnection.promise;
         }
 
-        const connectionResolver: DeferredPromise<ClientConnection> = DeferredPromise<ClientConnection>();
+        const connectionResolver: DeferredPromise<ClientConnection> = deferredPromise<ClientConnection>();
         this.pendingConnections.set(addressKey, connectionResolver);
 
         const processResponseCallback = (msg: ClientMessage): void => {
@@ -492,7 +493,7 @@ export class ClientConnectionManager extends EventEmitter {
 
     private initiateCommunication(socket: net.Socket): Promise<void> {
         // Send the protocol version
-        const deferred = DeferredPromise<void>();
+        const deferred = deferredPromise<void>();
         socket.write(BINARY_PROTOCOL_VERSION as any, (err: Error) => {
             if (err) {
                 deferred.reject(err);
@@ -532,7 +533,7 @@ export class ClientConnectionManager extends EventEmitter {
     }
 
     private connectTLSSocket(address: AddressImpl, configOpts: any): Promise<tls.TLSSocket> {
-        const connectionResolver = DeferredPromise<tls.TLSSocket>();
+        const connectionResolver = deferredPromise<tls.TLSSocket>();
         const socket = tls.connect(address.port, address.host, configOpts);
         socket.once('secureConnect', () => {
             connectionResolver.resolve(socket);
@@ -551,7 +552,7 @@ export class ClientConnectionManager extends EventEmitter {
     }
 
     private connectNetSocket(address: AddressImpl): Promise<net.Socket> {
-        const connectionResolver = DeferredPromise<net.Socket>();
+        const connectionResolver = deferredPromise<net.Socket>();
         const socket = net.connect(address.port, address.host);
         socket.once('connect', () => {
             connectionResolver.resolve(socket);

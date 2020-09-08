@@ -22,7 +22,7 @@ import {BuildInfo} from '../BuildInfo';
 import {HazelcastClient} from '../HazelcastClient';
 import {AddressImpl, IOError, UUID} from '../core';
 import {ClientMessageHandler} from '../protocol/ClientMessage';
-import {DeferredPromise, copyBuffers} from '../util/Util';
+import {copyBuffers, deferredPromise, DeferredPromise} from '../util/Util';
 import {ILogger} from '../logging/ILogger';
 import {
     ClientMessage,
@@ -384,7 +384,7 @@ export class ClientConnection {
     }
 
     write(buffer: Buffer): Promise<void> {
-        const deferred = DeferredPromise<void>();
+        const deferred = deferredPromise<void>();
         this.writer.write(buffer, deferred);
         return deferred.promise;
     }

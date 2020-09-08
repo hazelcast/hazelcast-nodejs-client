@@ -40,6 +40,7 @@ import {
     scheduleWithRepetition,
     cancelRepetitionTask,
     Task,
+    deferredPromise,
     DeferredPromise
 } from '../util/Util';
 
@@ -306,7 +307,7 @@ export class InvocationService {
     }
 
     invoke(invocation: Invocation): Promise<ClientMessage> {
-        invocation.deferred = DeferredPromise<ClientMessage>();
+        invocation.deferred = deferredPromise<ClientMessage>();
         const newCorrelationId = this.correlationCounter++;
         invocation.request.setCorrelationId(newCorrelationId);
         this.doInvoke(invocation);

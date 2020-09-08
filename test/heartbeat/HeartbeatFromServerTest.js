@@ -18,7 +18,7 @@
 const RC = require('../RC');
 const Util = require('../Util');
 const { Client } = require('../../');
-const { DeferredPromise } = require('../../lib/util/Util');
+const { deferredPromise } = require('../../lib/util/Util');
 const { AddressImpl, TargetDisconnectedError } = require('../../lib/core');
 
 describe('HeartbeatFromServerTest', function () {
@@ -57,7 +57,7 @@ describe('HeartbeatFromServerTest', function () {
 
     it('connectionRemoved fired when second member stops heartbeating', function (done) {
         let client;
-        const memberAddedPromise = new DeferredPromise();
+        const memberAddedPromise = new deferredPromise();
         RC.startMember(cluster.id).then(function () {
             return Client.newHazelcastClient({
                 clusterName: cluster.id,
@@ -106,7 +106,7 @@ describe('HeartbeatFromServerTest', function () {
     it('connectionAdded fired when second member comes back', function (done) {
         let client;
         let member2;
-        const memberAddedPromise = new DeferredPromise();
+        const memberAddedPromise = new deferredPromise();
         RC.startMember(cluster.id).then(function (m) {
             return Client.newHazelcastClient({
                 clusterName: cluster.id,

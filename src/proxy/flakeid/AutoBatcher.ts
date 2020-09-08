@@ -17,7 +17,10 @@
 
 import {EventEmitter} from 'events';
 import * as Long from 'long';
-import {DeferredPromise} from '../../util/Util';
+import {
+    deferredPromise,
+    DeferredPromise
+} from '../../util/Util';
 
 /** @internal */
 export class Batch {
@@ -88,7 +91,7 @@ export class AutoBatcher {
     }
 
     nextId(): Promise<Long> {
-        const deferred = DeferredPromise<Long>();
+        const deferred = deferredPromise<Long>();
         this.queue.push(deferred);
         this.processIdRequests();
         return deferred.promise;

@@ -267,9 +267,8 @@ export interface DeferredPromise<T> {
 
 }
 
-// TODO cover with tests
 /** @internal */
-export function DeferredPromise<T>(): DeferredPromise<T> {
+export function deferredPromise<T>(): DeferredPromise<T> {
     let resolve: any;
     let reject: any;
     const promise = new Promise<T>(function (): void {
@@ -291,7 +290,7 @@ export function delayedPromise(timeout: number): Promise<void> {
 // TODO cover with tests
 /** @internal */
 export function timedPromise<T>(promise: Promise<T>, timeout: number, err?: Error): Promise<T> {
-    const deferred = DeferredPromise<T>();
+    const deferred = deferredPromise<T>();
     let timed = false;
     const timer = setTimeout(() => {
         if (err) {

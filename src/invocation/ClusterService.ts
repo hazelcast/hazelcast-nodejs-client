@@ -20,7 +20,7 @@ import {HazelcastClient} from '../HazelcastClient';
 import {MemberSelector} from '../core/MemberSelector';
 import {
     assertNotNull,
-    DeferredPromise,
+    deferredPromise,
     timedPromise
 } from '../util/Util';
 import {UuidUtil} from '../util/UuidUtil';
@@ -66,7 +66,7 @@ export class ClusterService implements Cluster {
     private memberListSnapshot: MemberListSnapshot = EMPTY_SNAPSHOT;
     private listeners: Map<string, MembershipListener> = new Map();
     private logger: ILogger;
-    private initialListFetched = DeferredPromise<void>();
+    private initialListFetched = deferredPromise<void>();
     private connectionManager: ClientConnectionManager;
     private readonly labels: Set<string>;
 

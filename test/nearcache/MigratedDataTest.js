@@ -20,7 +20,7 @@ const fs = require('fs');
 const RC = require('../RC');
 const { Client } = require('../../');
 const Util = require('../Util');
-const { DeferredPromise } = require('../../lib/util/Util');
+const { deferredPromise } = require('../../lib/util/Util');
 
 describe('MigratedDataTest', function () {
 
@@ -33,7 +33,7 @@ describe('MigratedDataTest', function () {
     const mapName = 'ncmap';
 
     function waitForPartitionTableEvent(partitionService) {
-        const deferred = DeferredPromise();
+        const deferred = deferredPromise();
         const expectedPartitionCount = partitionService.partitionCount;
 
         function checkPartitionTable(remainingTries) {
@@ -50,7 +50,7 @@ describe('MigratedDataTest', function () {
     }
 
     function waitUntilPartitionMovesTo(partitionService, partitionId, uuid) {
-        const deferred = DeferredPromise();
+        const deferred = deferredPromise();
         (function resolveOrTimeout(remainingTries) {
             if (partitionService.getPartitionOwner(partitionId).toString() === uuid) {
                 deferred.resolve();
