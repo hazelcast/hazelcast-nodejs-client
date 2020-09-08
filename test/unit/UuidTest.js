@@ -20,7 +20,8 @@ const UUID = require('../../lib/core/UUID').UUID;
 const expect = require('chai').expect;
 const Long = require('long');
 
-describe('UUID', function () {
+describe('UuidTest', function () {
+
     it('with small most significant high bits', function () {
         const uuid = new UUID(new Long(-99999, 1), new Long(213231, -213321));
         // Should pad first part with zeros
