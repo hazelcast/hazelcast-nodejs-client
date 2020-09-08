@@ -26,6 +26,7 @@ const { PipelinedWriter } = require('../../lib/network/ClientConnection');
 
 describe('PipelinedWriterTest', function () {
 
+    const THRESHOLD = 8192;
     let writer;
     let mockSocket;
 
@@ -36,7 +37,7 @@ describe('PipelinedWriterTest', function () {
             process.nextTick(() => mockSocket.emit('data', data));
             return canWrite;
         });
-        writer = new PipelinedWriter(mockSocket, 8192);
+        writer = new PipelinedWriter(mockSocket, THRESHOLD);
     }
 
     function setUpWriteFailure(err) {
@@ -45,10 +46,10 @@ describe('PipelinedWriterTest', function () {
             process.nextTick(() => cb(err));
             return false;
         });
-        writer = new PipelinedWriter(mockSocket, 8192);
+        writer = new PipelinedWriter(mockSocket, THRESHOLD);
     }
 
-    it('writes single message into socket (without copying it)', (done) => {
+    it('writes single small message into socket (without copying it)', (done) => {
         setUpWriteSuccess(true);
 
         const buffer = Buffer.from('test');
@@ -59,39 +60,53 @@ describe('PipelinedWriterTest', function () {
         });
     });
 
-    it('writes multiple messages as one into socket', (done) => {
+    it('writes single large message into socket (without copying it)', (done) => {
+        setUpWriteSuccess(true);
+
+        const buffer = Buffer.allocUnsafe(THRESHOLD * 2);
+        writer.write(buffer, DeferredPromise());
+        mockSocket.on('data', (data) => {
+            expect(data).to.be.equal(buffer);
+            done();
+        });
+    });
+
+    it('writes multiple small messages as one into socket', (done) => {
         setUpWriteSuccess(true);
 
         writer.write(Buffer.from('1'), DeferredPromise());
         writer.write(Buffer.from('2'), DeferredPromise());
         writer.write(Buffer.from('3'), DeferredPromise());
         mockSocket.on('data', (data) => {
-            expect(data).to.be.deep.equal(Buffer.from('123'));
+            expect(Buffer.compare(data, Buffer.from('123'))).to.be.equal(0);
             done();
         });
     });
 
-    it('coalesces buffers when writing into socket', (done) => {
+    it('coalesces buffers when writing into socket (1/2 of threshold)', (done) => {
         setUpWriteSuccess(true);
 
-        const size = 4200;
+        const size = THRESHOLD / 2;
+        const data1 = Buffer.alloc(size).fill('1');
         const resolver1 = DeferredPromise();
-        writer.write(Buffer.alloc(size), resolver1);
+        writer.write(data1, resolver1);
+        const data2 = Buffer.alloc(size).fill('2');
         const resolver2 = DeferredPromise();
-        writer.write(Buffer.alloc(size), resolver2);
+        writer.write(data2, resolver2);
+        const data3 = Buffer.alloc(size).fill('3');
         const resolver3 = DeferredPromise();
-        writer.write(Buffer.alloc(size), resolver3);
+        writer.write(data3, resolver3);
 
         let cnt = 0;
         let allData = Buffer.alloc(0);
         mockSocket.on('data', (data) => {
             allData = Buffer.concat([allData, data]);
-            cnt += 1;
+            cnt++;
             if (cnt === 1) {
-                expect(data).to.be.deep.equal(Buffer.alloc(size * 2));
+                expect(Buffer.compare(data, Buffer.concat([data1, data2]))).to.be.equal(0);
             }
             if (cnt === 2) {
-                expect(data).to.be.deep.equal(Buffer.alloc(size));
+                expect(Buffer.compare(data, data3)).to.be.equal(0);
             }
         });
 
@@ -101,7 +116,7 @@ describe('PipelinedWriterTest', function () {
             resolver3.promise
         ]).then(() => {
             expect(cnt).to.be.equal(2);
-            expect(allData).to.be.deep.equal(Buffer.alloc(size * 3));
+            expect(Buffer.compare(allData, Buffer.concat([data1, data2, data3]))).to.be.equal(0);
             done();
         });
     });
@@ -109,7 +124,7 @@ describe('PipelinedWriterTest', function () {
     it('allows I/O in between coalesced writes into socket', (done) => {
         setUpWriteSuccess(true);
 
-        const size = 9000;
+        const size = THRESHOLD * 2;
         writer.write(Buffer.alloc(size), DeferredPromise());
         writer.write(Buffer.alloc(size), DeferredPromise());
         let cnt = 0;
@@ -187,7 +202,7 @@ describe('PipelinedWriterTest', function () {
         writer.on('write', () => done(new Error()));
         const resolver = DeferredPromise();
         writer.write(Buffer.from('test'), resolver);
-        resolver.promise.catch(_ => {
+        resolver.promise.catch(() => {
             done();
         });
     });

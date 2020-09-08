@@ -23,7 +23,7 @@ import {BuildInfo} from '../BuildInfo';
 import {HazelcastClient} from '../HazelcastClient';
 import {AddressImpl, IOError, UUID} from '../core';
 import {ClientMessageHandler} from '../protocol/ClientMessage';
-import {DeferredPromise} from '../util/Util';
+import {DeferredPromise, copyBuffers} from '../util/Util';
 import {ILogger} from '../logging/ILogger';
 import {
     ClientMessage,
@@ -31,31 +31,38 @@ import {
     SIZE_OF_FRAME_LENGTH_AND_FLAGS
 } from '../protocol/ClientMessage';
 
-const FROZEN_ARRAY = Object.freeze([]) as OutputQueueItem[];
+const FROZEN_ARRAY = Object.freeze([]);
 const PROPERTY_PIPELINING_ENABLED = 'hazelcast.client.autopipelining.enabled';
 const PROPERTY_PIPELINING_THRESHOLD = 'hazelcast.client.autopipelining.threshold.bytes';
 const PROPERTY_NO_DELAY = 'hazelcast.client.socket.no.delay';
 
-interface OutputQueueItem {
-    buffer: Buffer;
-    resolver: Promise.Resolver<void>;
+abstract class Writer extends EventEmitter {
+
+    abstract write(buffer: Buffer, resolver: Promise.Resolver<void>): void;
+
+    abstract close(): void;
+
 }
 
 /** @internal */
-export class PipelinedWriter extends EventEmitter {
+export class PipelinedWriter extends Writer {
 
     private readonly socket: net.Socket;
-    private queue: OutputQueueItem[] = [];
+    private queuedBufs: Buffer[] = [];
+    private queuedResolvers: Promise.Resolver<void>[] = [];
     private error: Error;
     private scheduled = false;
     private canWrite = true;
     // coalescing threshold in bytes
     private readonly threshold: number;
+    // reusable buffer for coalescing
+    private readonly coalesceBuf: Buffer;
 
     constructor(socket: net.Socket, threshold: number) {
         super();
         this.socket = socket;
         this.threshold = threshold;
+        this.coalesceBuf = Buffer.allocUnsafe(threshold);
 
         // write queued items on drain event
         socket.on('drain', () => {
@@ -69,8 +76,16 @@ export class PipelinedWriter extends EventEmitter {
             // if there was a write error, it's useless to keep writing to the socket
             return process.nextTick(() => resolver.reject(this.error));
         }
-        this.queue.push({ buffer, resolver });
+        this.queuedBufs.push(buffer);
+        this.queuedResolvers.push(resolver);
         this.schedule();
+    }
+
+    close(): void {
+        this.canWrite = false;
+        // no more items can be added now
+        this.queuedResolvers = FROZEN_ARRAY as Promise.Resolver<void>[];
+        this.queuedBufs = FROZEN_ARRAY as Buffer[];
     }
 
     private schedule(): void {
@@ -86,16 +101,17 @@ export class PipelinedWriter extends EventEmitter {
             return;
         }
 
-        const buffers: Buffer[] = [];
-        const resolvers: Array<Promise.Resolver<void>> = [];
         let totalLength = 0;
-
-        while (this.queue.length > 0 && totalLength < this.threshold) {
-            const item = this.queue.shift();
-            const data = item.buffer;
-            totalLength += data.length;
-            buffers.push(data);
-            resolvers.push(item.resolver);
+        let queueIdx = 0;
+        while (queueIdx < this.queuedBufs.length && totalLength < this.threshold) {
+            const buf = this.queuedBufs[queueIdx];
+            // if the next buffer exceeds the threshold,
+            // try to take multiple queued buffers which fit this.coalesceBuf
+            if (queueIdx > 0 && totalLength + buf.length > this.threshold) {
+                break;
+            }
+            totalLength += buf.length;
+            queueIdx++;
         }
 
         if (totalLength === 0) {
@@ -103,19 +119,33 @@ export class PipelinedWriter extends EventEmitter {
             return;
         }
 
-        // coalesce buffers and write to the socket: no further writes until flushed
-        const merged = buffers.length === 1 ? buffers[0] : Buffer.concat(buffers, totalLength);
-        this.canWrite = this.socket.write(merged as any, (err: Error) => {
+        const buffers = this.queuedBufs.slice(0, queueIdx);
+        this.queuedBufs = this.queuedBufs.slice(queueIdx);
+        const resolvers = this.queuedResolvers.slice(0, queueIdx);
+        this.queuedResolvers = this.queuedResolvers.slice(queueIdx);
+
+        let buf;
+        if (buffers.length === 1) {
+            // take the only buffer
+            buf = buffers[0];
+        } else {
+            // coalesce buffers
+            copyBuffers(this.coalesceBuf, buffers, totalLength);
+            buf = this.coalesceBuf.slice(0, totalLength);
+        }
+
+        // write to the socket: no further writes until flushed
+        this.canWrite = this.socket.write(buf, (err: Error) => {
             if (err) {
                 this.handleError(err, resolvers);
                 return;
             }
 
             this.emit('write');
-            for (const r of resolvers) {
-                r.resolve();
+            for (const resolver of resolvers) {
+                resolver.resolve();
             }
-            if (this.queue.length === 0 || !this.canWrite) {
+            if (this.queuedBufs.length === 0 || !this.canWrite) {
                 // will start running on the next message or drain event
                 this.scheduled = false;
                 return;
@@ -130,17 +160,15 @@ export class PipelinedWriter extends EventEmitter {
         for (const r of sentResolvers) {
             r.reject(this.error);
         }
-        // no more items can be added now
-        const q = this.queue;
-        this.queue = FROZEN_ARRAY;
-        for (const it of q) {
-            it.resolver.reject(this.error);
+        for (const resolver of this.queuedResolvers) {
+            resolver.reject(this.error);
         }
+        this.close();
     }
 }
 
 /** @internal */
-export class DirectWriter extends EventEmitter {
+export class DirectWriter extends Writer {
 
     private readonly socket: net.Socket;
 
@@ -158,6 +186,10 @@ export class DirectWriter extends EventEmitter {
             this.emit('write');
             resolver.resolve();
         });
+    }
+
+    close(): void {
+        // no-op
     }
 }
 
@@ -296,7 +328,7 @@ export class ClientConnection {
     private closedCause: Error;
     private connectedServerVersion: number;
     private readonly socket: net.Socket;
-    private readonly writer: PipelinedWriter | DirectWriter;
+    private readonly writer: Writer;
     private readonly reader: ClientMessageReader;
     private readonly logger: ILogger;
     private readonly fragmentedMessageHandler: FragmentedClientMessageHandler;
@@ -381,6 +413,7 @@ export class ClientConnection {
         this.logClose();
 
         this.socket.end();
+        this.writer.close();
 
         this.client.getConnectionManager().onConnectionClose(this);
     }

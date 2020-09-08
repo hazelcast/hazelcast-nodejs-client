@@ -273,3 +273,22 @@ export function DeferredPromise<T>(): Promise.Resolver<T> {
         promise,
     } as Promise.Resolver<T>;
 }
+
+/**
+ * Copy contents of the given array of buffers into the target buffer.
+ *
+ * @param target target buffer
+ * @param sources source buffers
+ * @param totalLength total length of all source buffers
+ * @internal
+ */
+export function copyBuffers(target: Buffer, sources: Buffer[], totalLength: number): void {
+    if (target.length < totalLength) {
+        throw new RangeError('Target length ' + target.length + ' is less than requested ' + totalLength);
+    }
+    let pos = 0;
+    for (const source of sources) {
+        source.copy(target, pos);
+        pos += source.length;
+    }
+}
