@@ -15,7 +15,6 @@
  */
 /** @ignore *//** */
 
-import * as Promise from 'bluebird';
 import {HazelcastClient} from '../HazelcastClient';
 import {HazelcastError} from '../core';
 import {ClientConnection} from '../network/ClientConnection';

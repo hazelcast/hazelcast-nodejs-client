@@ -15,7 +15,6 @@
  */
 /** @ignore *//** */
 
-import * as Promise from 'bluebird';
 import * as Long from 'long';
 import {FlakeIdGeneratorNewIdBatchCodec} from '../../codec/FlakeIdGeneratorNewIdBatchCodec';
 import {FlakeIdGeneratorConfigImpl} from '../../config/FlakeIdGeneratorConfig';

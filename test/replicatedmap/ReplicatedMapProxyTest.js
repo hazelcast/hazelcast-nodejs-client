@@ -15,13 +15,12 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const fs = require('fs');
 const path = require('path');
-const Promise = require('bluebird');
 const RC = require('./../RC');
-const Client = require('../..').Client;
-const Predicates = require('../..').Predicates;
+const { Client } = require('../..');
+const { Predicates } = require('../..');
 
 describe('ReplicatedMapProxyTest', function () {
 

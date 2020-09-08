@@ -16,7 +16,6 @@
 /** @ignore *//** */
 
 import * as Long from 'long';
-import * as Promise from 'bluebird';
 import {OverflowPolicy} from '../OverflowPolicy';
 import {HazelcastClient} from '../../HazelcastClient';
 import {TopicOverloadError} from '../../core';
@@ -148,7 +147,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         return deferred.promise;
     }
 
-    private trySendMessage(message: ReliableTopicMessage, delay: number, deferred: Promise.Resolver<void>): void {
+    private trySendMessage(message: ReliableTopicMessage, delay: number, deferred: DeferredPromise<void>): void {
         this.ringbuffer.add(message, OverflowPolicy.FAIL).then((seq: Long) => {
             if (seq.toNumber() === -1) {
                 let newDelay = delay *= 2;

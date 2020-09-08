@@ -15,7 +15,6 @@
  */
 /** @ignore *//** */
 
-import * as Promise from 'bluebird';
 import * as Long from 'long';
 import {MultiMapForceUnlockCodec} from '../codec/MultiMapForceUnlockCodec';
 import {MultiMapIsLockedCodec} from '../codec/MultiMapIsLockedCodec';

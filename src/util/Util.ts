@@ -17,7 +17,6 @@
 
 import * as assert from 'assert';
 import * as Long from 'long';
-import * as Promise from 'bluebird';
 import * as Path from 'path';
 import {AddressImpl, UUID} from '../core';
 
@@ -260,18 +259,60 @@ export function cancelRepetitionTask(task: Task): void {
 }
 
 /** @internal */
-export function DeferredPromise<T>(): Promise.Resolver<T> {
+export interface DeferredPromise<T> {
+
+    promise: Promise<T>;
+    resolve: (result: T) => void;
+    reject: (err: Error) => void;
+
+}
+
+// TODO cover with tests
+/** @internal */
+export function DeferredPromise<T>(): DeferredPromise<T> {
     let resolve: any;
     let reject: any;
-    const promise = new Promise(function (): void {
+    const promise = new Promise<T>(function (): void {
         resolve = arguments[0];
         reject = arguments[1];
     });
     return {
         resolve,
         reject,
-        promise,
-    } as Promise.Resolver<T>;
+        promise
+    };
+}
+
+/** @internal */
+export function delayedPromise(timeout: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, timeout));
+}
+
+// TODO cover with tests
+/** @internal */
+export function timedPromise<T>(promise: Promise<T>, timeout: number, err?: Error): Promise<T> {
+    const deferred = DeferredPromise<T>();
+    let timed = false;
+    const timer = setTimeout(() => {
+        if (err) {
+            deferred.reject(err);
+        } else {
+            deferred.reject(new Error('Operation did not finish within timeout: ' + timeout));
+        }
+        timed = true;
+    }, timeout);
+    promise.then((result) => {
+        if (!timed) {
+            deferred.resolve(result);
+            clearTimeout(timer);
+        }
+    }).catch((err) => {
+        if (!timed) {
+            deferred.reject(err);
+            clearTimeout(timer);
+        }
+    });
+    return deferred.promise;
 }
 
 /**

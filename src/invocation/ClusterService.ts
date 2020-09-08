@@ -15,11 +15,14 @@
  */
 /** @ignore *//** */
 
-import * as Promise from 'bluebird';
 import {ClientConnection} from '../network/ClientConnection';
 import {HazelcastClient} from '../HazelcastClient';
 import {MemberSelector} from '../core/MemberSelector';
-import {assertNotNull, DeferredPromise} from '../util/Util';
+import {
+    assertNotNull,
+    DeferredPromise,
+    timedPromise
+} from '../util/Util';
 import {UuidUtil} from '../util/UuidUtil';
 import {ILogger} from '../logging/ILogger';
 import {ClientConnectionManager} from '../network/ClientConnectionManager';
@@ -154,8 +157,7 @@ export class ClusterService implements Cluster {
     }
 
     waitInitialMemberListFetched(): Promise<void> {
-        return this.initialListFetched.promise
-            .timeout(INITIAL_MEMBERS_TIMEOUT_IN_MILLIS)
+        return timedPromise(this.initialListFetched.promise, INITIAL_MEMBERS_TIMEOUT_IN_MILLIS)
             .catch((error) => {
                 return Promise.reject(new IllegalStateError('Could not get initial member list from the cluster!', error));
             });

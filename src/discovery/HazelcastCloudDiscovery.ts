@@ -18,7 +18,6 @@
 import {AddressHelper, DeferredPromise} from '../util/Util';
 import {get} from 'https';
 import {IncomingMessage} from 'http';
-import * as Promise from 'bluebird';
 import {Properties} from '../config/Properties';
 import * as URL from 'url';
 import {AddressImpl} from '../core/Address';

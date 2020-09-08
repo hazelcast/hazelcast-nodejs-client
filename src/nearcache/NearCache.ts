@@ -25,7 +25,6 @@ import {DeferredPromise, shuffleArray} from '../util/Util';
 import {DataKeyedHashMap} from './DataStoreHashMap';
 import {DataRecord} from './DataRecord';
 import {StaleReadDetector, alwaysFreshDetector} from './StaleReadDetector';
-import * as Promise from 'bluebird';
 
 /** @internal */
 export interface NearCacheStatistics {
@@ -86,7 +85,7 @@ export class NearCacheImpl implements NearCache {
     private hitCount = 0;
     private creationTime = Date.now();
     private compareFunc: (x: DataRecord, y: DataRecord) => number;
-    private ready: Promise.Resolver<void>;
+    private ready: DeferredPromise<void>;
 
     constructor(nearCacheConfig: NearCacheConfigImpl, serializationService: SerializationService) {
         this.serializationService = serializationService;

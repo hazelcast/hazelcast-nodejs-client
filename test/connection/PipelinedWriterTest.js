@@ -16,10 +16,9 @@
 
 'use strict';
 
-const Socket = require('net').Socket;
+const { Socket } = require('net');
 const sinon = require('sinon');
-const expect = require('chai').expect;
-const Promise = require('bluebird');
+const { expect } = require('chai');
 
 const { DeferredPromise } = require('../../lib/util/Util');
 const { PipelinedWriter } = require('../../lib/network/ClientConnection');

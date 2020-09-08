@@ -22,7 +22,6 @@ import {MetadataFetcher} from './MetadataFetcher';
 import {NearCache} from './NearCache';
 import {RepairingHandler} from './RepairingHandler';
 import {PartitionServiceImpl} from '../PartitionService';
-import * as Promise from 'bluebird';
 import {ILogger} from '../logging/ILogger';
 import {UUID} from '../core/UUID';
 

@@ -16,7 +16,6 @@
 /** @ignore *//** */
 
 import * as Long from 'long';
-import * as Promise from 'bluebird';
 import {MapAddNearCacheInvalidationListenerCodec} from '../codec/MapAddNearCacheInvalidationListenerCodec';
 import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
 import {EventType} from './EventType';

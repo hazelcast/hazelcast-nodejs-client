@@ -16,7 +16,6 @@
 /** @ignore *//** */
 
 import * as Long from 'long';
-import * as Promise from 'bluebird';
 import {HazelcastClient} from '../../HazelcastClient';
 import {RaftGroupId} from './RaftGroupId';
 import {BaseCPProxy} from './BaseCPProxy';

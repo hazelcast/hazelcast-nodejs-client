@@ -16,7 +16,6 @@
 /** @ignore *//** */
 
 import * as assert from 'assert';
-import * as Promise from 'bluebird';
 import {HazelcastClient} from '../HazelcastClient';
 import {
     ClientNotActiveError,
@@ -89,7 +88,7 @@ export class Invocation {
     /**
      * Promise managing object.
      */
-    deferred: Promise.Resolver<ClientMessage>;
+    deferred: DeferredPromise<ClientMessage>;
 
     /**
      * Contains the pending response from the primary. It is pending because it could be that backups need to complete.

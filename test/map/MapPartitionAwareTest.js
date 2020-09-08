@@ -15,10 +15,9 @@
  */
 'use strict';
 
-const Client = require('../../.').Client;
+const { expect } = require('chai');
 const RC = require('../RC');
-const expect = require('chai').expect;
-const Promise = require('bluebird');
+const { Client } = require('../../.');
 
 describe('MapPartitionAwareTest', function () {
 

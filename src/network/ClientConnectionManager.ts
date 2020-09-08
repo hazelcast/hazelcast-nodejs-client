@@ -15,7 +15,6 @@
  */
 /** @ignore *//** */
 
-import * as Promise from 'bluebird';
 import {EventEmitter} from 'events';
 import {HazelcastClient} from '../HazelcastClient';
 import {
@@ -42,6 +41,7 @@ import {
     scheduleWithRepetition,
     shuffleArray,
     Task,
+    timedPromise
 } from '../util/Util';
 import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
 import {ILogger} from '../logging/ILogger';
@@ -120,7 +120,7 @@ export class ClientConnectionManager extends EventEmitter {
     private waitStrategy: WaitStrategy;
     private loadBalancer: LoadBalancer;
     private activeConnections = new Map<string, ClientConnection>();
-    private pendingConnections = new Map<string, Promise.Resolver<ClientConnection>>();
+    private pendingConnections = new Map<string, DeferredPromise<ClientConnection>>();
     private clusterId: UUID;
     private clientState = ClientState.INITIAL;
     private connectToClusterTaskSubmitted: boolean;
@@ -243,7 +243,7 @@ export class ClientConnectionManager extends EventEmitter {
             return pendingConnection.promise;
         }
 
-        const connectionResolver: Promise.Resolver<ClientConnection> = DeferredPromise<ClientConnection>();
+        const connectionResolver: DeferredPromise<ClientConnection> = DeferredPromise<ClientConnection>();
         this.pendingConnections.set(addressKey, connectionResolver);
 
         const processResponseCallback = (msg: ClientMessage): void => {
@@ -269,9 +269,11 @@ export class ClientConnectionManager extends EventEmitter {
             .then(() => connectionResolver.resolve(clientConnection))
             .catch((error) => connectionResolver.reject(error));
 
-        return connectionResolver.promise
-            .timeout(this.connectionTimeoutMillis, new HazelcastError(`Connection timed out to address ${address}.`))
-            .finally(() => this.pendingConnections.delete(addressKey));
+        return timedPromise(
+            connectionResolver.promise,
+            this.connectionTimeoutMillis,
+            new HazelcastError(`Connection timed out to address ${address}.`)
+        ).finally(() => this.pendingConnections.delete(addressKey));
     }
 
     public getRandomConnection(): ClientConnection {
@@ -405,10 +407,14 @@ export class ClientConnectionManager extends EventEmitter {
                         return false;
                     });
             })
-            .catch(ClientNotAllowedInClusterError, InvalidConfigurationError, (error: Error) => {
-                this.logger.warn('ConnectionManager', 'Stopped trying on the cluster: '
-                    + this.client.getConfig().clusterName + ' reason: ' + error.message);
-                return false;
+            .catch((error: Error) => {
+                if (error instanceof ClientNotAllowedInClusterError
+                        || error instanceof InvalidConfigurationError) {
+                    this.logger.warn('ConnectionManager', 'Stopped trying on the cluster: '
+                        + this.client.getConfig().clusterName + ' reason: ' + error.message);
+                    return false;
+                }
+                throw error;
             });
     }
 
@@ -632,39 +638,38 @@ export class ClientConnectionManager extends EventEmitter {
         const request = this.encodeAuthenticationRequest();
         const invocation = new Invocation(this.client, request);
         invocation.connection = connection;
-        return this.client.getInvocationService()
-            .invokeUrgent(invocation)
-            .timeout(this.authenticationTimeout)
-            .catch((e) => {
-                connection.close('Failed to authenticate connection', e);
-                throw e;
-            })
-            .then((responseMessage) => {
-                const response = ClientAuthenticationCodec.decodeResponse(responseMessage);
-                if (response.status === AuthenticationStatus.AUTHENTICATED) {
-                    this.handleSuccessfulAuth(connection, response);
-                } else {
-                    let error: Error;
-                    switch (response.status) {
-                        case AuthenticationStatus.CREDENTIALS_FAILED:
-                            error = new AuthenticationError('Authentication failed. The configured cluster name on '
-                                + 'the client does not match the one configured in the cluster or '
-                                + 'the credentials set in the client security config could not be authenticated');
-                            break;
-                        case AuthenticationStatus.SERIALIZATION_VERSION_MISMATCH:
-                            error = new IllegalStateError('Server serialization version does not match to client.');
-                            break;
-                        case AuthenticationStatus.NOT_ALLOWED_IN_CLUSTER:
-                            error = new ClientNotAllowedInClusterError('Client is not allowed in the cluster');
-                            break;
-                        default:
-                            error = new AuthenticationError('Authentication status code not supported. Status: '
-                                + response.status);
-                    }
-                    connection.close('Failed to authenticate connection', error);
-                    return Promise.reject(error);
+        return timedPromise(
+            this.client.getInvocationService().invokeUrgent(invocation),
+            this.authenticationTimeout
+        ).catch((e) => {
+            connection.close('Failed to authenticate connection', e);
+            throw e;
+        }).then((responseMessage) => {
+            const response = ClientAuthenticationCodec.decodeResponse(responseMessage);
+            if (response.status === AuthenticationStatus.AUTHENTICATED) {
+                this.handleSuccessfulAuth(connection, response);
+            } else {
+                let error: Error;
+                switch (response.status) {
+                    case AuthenticationStatus.CREDENTIALS_FAILED:
+                        error = new AuthenticationError('Authentication failed. The configured cluster name on '
+                            + 'the client does not match the one configured in the cluster or '
+                            + 'the credentials set in the client security config could not be authenticated');
+                        break;
+                    case AuthenticationStatus.SERIALIZATION_VERSION_MISMATCH:
+                        error = new IllegalStateError('Server serialization version does not match to client.');
+                        break;
+                    case AuthenticationStatus.NOT_ALLOWED_IN_CLUSTER:
+                        error = new ClientNotAllowedInClusterError('Client is not allowed in the cluster');
+                        break;
+                    default:
+                        error = new AuthenticationError('Authentication status code not supported. Status: '
+                            + response.status);
                 }
-            });
+                connection.close('Failed to authenticate connection', error);
+                return Promise.reject(error);
+            }
+        });
     }
 
     private handleSuccessfulAuth(connection: ClientConnection, response: ClientAuthenticationResponseParams): void {

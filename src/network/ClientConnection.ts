@@ -15,7 +15,6 @@
  */
 /** @ignore *//** */
 
-import * as Promise from 'bluebird';
 import * as net from 'net';
 import {EventEmitter} from 'events';
 import {BitsUtil} from '../util/BitsUtil';
@@ -38,7 +37,7 @@ const PROPERTY_NO_DELAY = 'hazelcast.client.socket.no.delay';
 
 abstract class Writer extends EventEmitter {
 
-    abstract write(buffer: Buffer, resolver: Promise.Resolver<void>): void;
+    abstract write(buffer: Buffer, resolver: DeferredPromise<void>): void;
 
     abstract close(): void;
 
@@ -49,7 +48,7 @@ export class PipelinedWriter extends Writer {
 
     private readonly socket: net.Socket;
     private queuedBufs: Buffer[] = [];
-    private queuedResolvers: Promise.Resolver<void>[] = [];
+    private queuedResolvers: DeferredPromise<void>[] = [];
     private error: Error;
     private scheduled = false;
     private canWrite = true;
@@ -71,7 +70,7 @@ export class PipelinedWriter extends Writer {
         });
     }
 
-    write(buffer: Buffer, resolver: Promise.Resolver<void>): void {
+    write(buffer: Buffer, resolver: DeferredPromise<void>): void {
         if (this.error) {
             // if there was a write error, it's useless to keep writing to the socket
             return process.nextTick(() => resolver.reject(this.error));
@@ -84,7 +83,7 @@ export class PipelinedWriter extends Writer {
     close(): void {
         this.canWrite = false;
         // no more items can be added now
-        this.queuedResolvers = FROZEN_ARRAY as Promise.Resolver<void>[];
+        this.queuedResolvers = FROZEN_ARRAY as DeferredPromise<void>[];
         this.queuedBufs = FROZEN_ARRAY as Buffer[];
     }
 
@@ -155,7 +154,7 @@ export class PipelinedWriter extends Writer {
         });
     }
 
-    private handleError(err: any, sentResolvers: Array<Promise.Resolver<void>>): void {
+    private handleError(err: any, sentResolvers: Array<DeferredPromise<void>>): void {
         this.error = new IOError(err);
         for (const r of sentResolvers) {
             r.reject(this.error);
@@ -177,7 +176,7 @@ export class DirectWriter extends Writer {
         this.socket = socket;
     }
 
-    write(buffer: Buffer, resolver: Promise.Resolver<void>): void {
+    write(buffer: Buffer, resolver: DeferredPromise<void>): void {
         this.socket.write(buffer as any, (err: any) => {
             if (err) {
                 resolver.reject(new IOError(err));

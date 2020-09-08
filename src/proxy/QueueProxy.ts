@@ -15,7 +15,6 @@
  */
 /** @ignore *//** */
 
-import * as Promise from 'bluebird';
 import {QueueAddAllCodec} from '../codec/QueueAddAllCodec';
 import {QueueAddListenerCodec} from '../codec/QueueAddListenerCodec';
 import {QueueClearCodec} from '../codec/QueueClearCodec';

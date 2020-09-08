@@ -15,7 +15,6 @@
  */
 /** @ignore *//** */
 
-import * as Promise from 'bluebird';
 import {ClientAddDistributedObjectListenerCodec} from '../codec/ClientAddDistributedObjectListenerCodec';
 import {ClientCreateProxyCodec} from '../codec/ClientCreateProxyCodec';
 import {ClientDestroyProxyCodec} from '../codec/ClientDestroyProxyCodec';

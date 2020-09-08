@@ -17,7 +17,6 @@
 
 import * as assert from 'assert';
 import * as Long from 'long';
-import * as Promise from 'bluebird';
 import {HazelcastClient} from '../../HazelcastClient';
 import {CPSessionAwareProxy} from './CPSessionAwareProxy';
 import {FencedLock} from '../FencedLock';

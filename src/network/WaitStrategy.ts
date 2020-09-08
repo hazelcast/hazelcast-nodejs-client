@@ -16,7 +16,7 @@
 /** @ignore *//** */
 
 import {ILogger} from '../logging/ILogger';
-import * as Promise from 'bluebird';
+import {delayedPromise} from '../util/Util';
 
 /** @internal */
 export class WaitStrategy {
@@ -71,7 +71,7 @@ export class WaitStrategy {
             actualSleepTime + ' ms, attempt: ' + this.attempt + ', cluster connect timeout: ' +
             this.clusterConnectTimeoutMillis + ' ms, max backoff millis: ' + this.maxBackoffMillis);
 
-        return Promise.delay(actualSleepTime)
+        return delayedPromise(actualSleepTime)
             .then(() => {
                 this.currentBackoffMillis = Math.min(Math.round(currentTimeMillis * this.multiplier), this.maxBackoffMillis);
                 return true;
