@@ -19,7 +19,7 @@ import * as assert from 'assert';
 import * as Long from 'long';
 import * as Promise from 'bluebird';
 import * as Path from 'path';
-import {AddressImpl} from '../core/Address';
+import {AddressImpl, UUID} from '../core';
 
 /** @internal */
 export function assertNotNull(v: any): void {
@@ -65,6 +65,8 @@ export function getType(obj: any): string {
         return 'long';
     } if (Buffer.isBuffer(obj)) {
         return 'buffer';
+    } if (UUID.isUUID(obj)) {
+        return 'uuid';
     } else {
         const t = typeof obj;
         if (t !== 'object') {

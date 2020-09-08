@@ -50,6 +50,7 @@ import {
     ShortSerializer,
     StringArraySerializer,
     StringSerializer,
+    UuidSerializer
 } from './DefaultSerializers';
 import {DATA_OFFSET, HeapData} from './HeapData';
 import {ObjectDataInput, PositionalObjectDataOutput} from './ObjectData';
@@ -265,6 +266,7 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('stringArray', new StringArraySerializer());
         this.registerSerializer('javaClass', new JavaClassSerializer());
         this.registerSerializer('floatArray', new FloatArraySerializer());
+        this.registerSerializer('uuid', new UuidSerializer());
         this.registerIdentifiedFactories();
         this.registerSerializer('!portable', new PortableSerializer(this.serializationConfig));
         if (this.serializationConfig.jsonStringDeserializationPolicy === JsonStringDeserializationPolicy.EAGER) {
