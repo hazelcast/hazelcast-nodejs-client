@@ -18,7 +18,7 @@ import * as Promise from 'bluebird';
 import {DistributedObject} from '../core';
 
 /**
- * A linearizable, distributed, non-reentrant semaphore.
+ * A linearizable, distributed semaphore.
  *
  * ISemaphore works on top of the Raft consensus algorithm. It offers
  * linearizability during crash failures and network partitions. It is CP with
@@ -27,7 +27,7 @@ import {DistributedObject} from '../core';
  *
  * ISemaphore is a cluster-wide counting semaphore. Conceptually, it maintains
  * a set of permits. Each `acquire()` waits if necessary until a permit
- * is available, and then takes it. Dually, each `release() adds a
+ * is available, and then takes it. Dually, each `release()` adds a
  * permit, potentially releasing a waiting acquirer. However, no actual permit
  * objects are used; the semaphore just keeps a count of the number available
  * and acts accordingly.
