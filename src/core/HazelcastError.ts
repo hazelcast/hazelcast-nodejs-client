@@ -429,6 +429,34 @@ export class WaitKeyCancelledError extends HazelcastError {
     }
 }
 
+export class LeaderDemotedError extends HazelcastError {
+    constructor(msg: string, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
+        super(msg, cause, serverStackTrace);
+        Object.setPrototypeOf(this, LeaderDemotedError.prototype);
+    }
+}
+
+export class StaleAppendRequestError extends HazelcastError {
+    constructor(msg: string, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
+        super(msg, cause, serverStackTrace);
+        Object.setPrototypeOf(this, StaleAppendRequestError.prototype);
+    }
+}
+
+export class CannotReplicateError extends HazelcastError {
+    constructor(msg: string, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
+        super(msg, cause, serverStackTrace);
+        Object.setPrototypeOf(this, CannotReplicateError.prototype);
+    }
+}
+
+export class NotLeaderError extends HazelcastError {
+    constructor(msg: string, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
+        super(msg, cause, serverStackTrace);
+        Object.setPrototypeOf(this, NotLeaderError.prototype);
+    }
+}
+
 export class UndefinedErrorCodeError extends HazelcastError {
     constructor(msg: string, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
         super(msg, cause, serverStackTrace);

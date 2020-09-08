@@ -21,6 +21,7 @@ import {
     AuthenticationError,
     CallerNotMemberError,
     CancellationError,
+    CannotReplicateError,
     ClassCastError,
     ClassNotFoundError,
     ConcurrentModificationError,
@@ -40,12 +41,14 @@ import {
     InvalidAddressError,
     InvalidConfigurationError,
     InterruptedError,
+    LeaderDemotedError,
     LockOwnershipLostError,
     MemberLeftError,
     NegativeArraySizeError,
     NoSuchElementError,
     NoDataMemberInClusterError,
     NodeIdOutOfRangeError,
+    NotLeaderError,
     NullPointerError,
     PartitionMigratingError,
     QueryError,
@@ -53,6 +56,7 @@ import {
     SplitBrainProtectionError,
     RetryableHazelcastError,
     RetryableIOError,
+    StaleAppendRequestError,
     StaleSequenceError,
     StaleTaskIdError,
     TargetDisconnectedError,
@@ -189,6 +193,14 @@ export class ClientErrorFactory {
             (m, c, s) => new IllegalMonitorStateError(m, c, s));
         this.register(ClientProtocolErrorCodes.WAIT_KEY_CANCELLED_EXCEPTION,
             (m, c, s) => new WaitKeyCancelledError(m, c, s));
+        this.register(ClientProtocolErrorCodes.CANNOT_REPLICATE_EXCEPTION,
+            (m, c, s) => new CannotReplicateError(m, c, s));
+        this.register(ClientProtocolErrorCodes.LEADER_DEMOTED_EXCEPTION,
+            (m, c, s) => new LeaderDemotedError(m, c, s));
+        this.register(ClientProtocolErrorCodes.STALE_APPEND_REQUEST_EXCEPTION,
+            (m, c, s) => new StaleAppendRequestError(m, c, s));
+        this.register(ClientProtocolErrorCodes.NOT_LEADER_EXCEPTION,
+            (m, c, s) => new NotLeaderError(m, c, s));
     }
 
     createErrorFromClientMessage(clientMessage: ClientMessage): Error {
