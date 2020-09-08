@@ -23,46 +23,49 @@ import {
     IdentifiedDataSerializable,
     IdentifiedDataSerializableFactory
 } from './Serializable';
-import {HazelcastJsonValue} from '../core';
+import {
+    HazelcastJsonValue,
+    UUID
+} from '../core';
 
 /** @internal */
-export class StringSerializer implements Serializer {
+export class StringSerializer implements Serializer<string> {
 
     id = -11;
 
-    read(input: DataInput): any {
+    read(input: DataInput): string {
         return input.readUTF();
     }
 
-    write(output: DataOutput, object: any): void {
+    write(output: DataOutput, object: string): void {
         output.writeUTF(object);
     }
 }
 
 /** @internal */
-export class DoubleSerializer implements Serializer {
+export class DoubleSerializer implements Serializer<number> {
 
     id = -10;
 
-    read(input: DataInput): any {
+    read(input: DataInput): number {
         return input.readDouble();
     }
 
-    write(output: DataOutput, object: any): void {
+    write(output: DataOutput, object: number): void {
         output.writeDouble(object);
     }
 }
 
 /** @internal */
-export class BooleanSerializer implements Serializer {
+export class BooleanSerializer implements Serializer<boolean> {
 
     id = -4;
 
-    read(input: DataInput): any {
+    read(input: DataInput): boolean {
         return input.readBoolean();
     }
 
-    write(output: DataOutput, object: any): void {
+    write(output: DataOutput, object: boolean): void {
         output.writeBoolean(object);
     }
 }
@@ -71,11 +74,11 @@ export class BooleanSerializer implements Serializer {
 export const NULL_TYPE_ID = 0;
 
 /** @internal */
-export class NullSerializer implements Serializer {
+export class NullSerializer implements Serializer<null> {
 
     id = NULL_TYPE_ID;
 
-    read(input: DataInput): any {
+    read(input: DataInput): null {
         return null;
     }
 
@@ -85,91 +88,91 @@ export class NullSerializer implements Serializer {
 }
 
 /** @internal */
-export class ShortSerializer implements Serializer {
+export class ShortSerializer implements Serializer<number> {
 
     id = -6;
 
-    read(input: DataInput): any {
+    read(input: DataInput): number {
         return input.readShort();
     }
 
-    write(output: DataOutput, object: any): void {
+    write(output: DataOutput, object: number): void {
         output.writeShort(object);
     }
 }
 
 /** @internal */
-export class IntegerSerializer implements Serializer {
+export class IntegerSerializer implements Serializer<number> {
 
     id = -7;
 
-    read(input: DataInput): any {
+    read(input: DataInput): number {
         return input.readInt();
     }
 
-    write(output: DataOutput, object: any): void {
+    write(output: DataOutput, object: number): void {
         output.writeInt(object);
     }
 }
 
 /** @internal */
-export class LongSerializer implements Serializer {
+export class LongSerializer implements Serializer<Long> {
 
     id = -8;
 
-    read(input: DataInput): any {
+    read(input: DataInput): Long {
         return input.readLong();
     }
 
-    write(output: DataOutput, object: any): void {
+    write(output: DataOutput, object: Long): void {
         output.writeLong(object);
     }
 }
 
 /** @internal */
-export class FloatSerializer implements Serializer {
+export class FloatSerializer implements Serializer<number> {
 
     id = -9;
 
-    read(input: DataInput): any {
+    read(input: DataInput): number {
         return input.readFloat();
     }
 
-    write(output: DataOutput, object: any): void {
+    write(output: DataOutput, object: number): void {
         output.writeFloat(object);
     }
 }
 
 /** @internal */
-export class DateSerializer implements Serializer {
+export class DateSerializer implements Serializer<Date> {
 
     id = -25;
 
-    read(input: DataInput): any {
+    read(input: DataInput): Date {
         return new Date(input.readLong().toNumber());
     }
 
-    write(output: DataOutput, object: any): void {
+    write(output: DataOutput, object: Date): void {
         output.writeLong(Long.fromNumber(object.getMilliseconds()));
     }
 }
 
 /** @internal */
-export class BooleanArraySerializer implements Serializer {
+export class BooleanArraySerializer implements Serializer<boolean[]> {
 
     id = -13;
 
-    read(input: DataInput): any {
+    read(input: DataInput): boolean[] {
         return input.readBooleanArray();
     }
 
-    write(output: DataOutput, object: any): void {
+    write(output: DataOutput, object: boolean[]): void {
         output.writeBooleanArray(object);
     }
 }
 
 /** @internal */
-export class ShortArraySerializer implements Serializer {
+export class ShortArraySerializer implements Serializer<number[]> {
 
     id = -15;
 
@@ -177,125 +180,125 @@ export class ShortArraySerializer implements Serializer {
         return input.readShortArray();
     }
 
-    write(output: DataOutput, object: any): void {
+    write(output: DataOutput, object: number[]): void {
         output.writeShortArray(object);
     }
 }
 
 /** @internal */
-export class IntegerArraySerializer implements Serializer {
+export class IntegerArraySerializer implements Serializer<number[]> {
 
     id = -16;
 
-    read(input: DataInput): any {
+    read(input: DataInput): number[] {
         return input.readIntArray();
     }
 
-    write(output: DataOutput, object: any): void {
+    write(output: DataOutput, object: number[]): void {
         output.writeIntArray(object);
     }
 }
 
 /** @internal */
-export class LongArraySerializer implements Serializer {
+export class LongArraySerializer implements Serializer<Long[]> {
 
     id = -17;
 
-    read(input: DataInput): any {
+    read(input: DataInput): Long[] {
         return input.readLongArray();
     }
 
-    write(output: DataOutput, object: any): void {
+    write(output: DataOutput, object: Long[]): void {
         output.writeLongArray(object);
     }
 }
 
 /** @internal */
-export class DoubleArraySerializer implements Serializer {
+export class DoubleArraySerializer implements Serializer<number[]> {
 
     id = -19;
 
-    read(input: DataInput): any {
+    read(input: DataInput): number[] {
         return input.readDoubleArray();
     }
 
-    write(output: DataOutput, object: any): void {
+    write(output: DataOutput, object: number[]): void {
         output.writeDoubleArray(object);
     }
 }
 
 /** @internal */
-export class StringArraySerializer implements Serializer {
+export class StringArraySerializer implements Serializer<string[]> {
 
     id = -20;
 
-    read(input: DataInput): any {
+    read(input: DataInput): string[] {
         return input.readUTFArray();
     }
 
-    write(output: DataOutput, object: any): void {
+    write(output: DataOutput, object: string[]): void {
         output.writeUTFArray(object);
     }
 }
 
 /** @internal */
-export class ByteSerializer implements Serializer {
+export class ByteSerializer implements Serializer<number> {
 
     id = -3;
 
-    read(input: DataInput): any {
+    read(input: DataInput): number {
         return input.readByte();
     }
 
-    write(output: DataOutput, object: any): void {
+    write(output: DataOutput, object: number): void {
         output.writeByte(object);
     }
 }
 
 /** @internal */
-export class ByteArraySerializer implements Serializer {
+export class ByteArraySerializer implements Serializer<Buffer> {
 
     id = -12;
 
-    read(input: DataInput): any {
+    read(input: DataInput): Buffer {
         return input.readByteArray();
     }
 
-    write(output: DataOutput, object: any): void {
+    write(output: DataOutput, object: Buffer): void {
         output.writeByteArray(object);
     }
 }
 
 /** @internal */
-export class CharSerializer implements Serializer {
+export class CharSerializer implements Serializer<string> {
 
     id = -5;
 
-    read(input: DataInput): any {
+    read(input: DataInput): string {
         return input.readChar();
     }
 
-    write(output: DataOutput, object: any): void {
+    write(output: DataOutput, object: string): void {
         output.writeChar(object);
     }
 }
 
 /** @internal */
-export class CharArraySerializer implements Serializer {
+export class CharArraySerializer implements Serializer<string[]> {
 
     id = -14;
 
-    read(input: DataInput): any {
+    read(input: DataInput): string[] {
         return input.readCharArray();
     }
 
-    write(output: DataOutput, object: any): void {
+    write(output: DataOutput, object: string[]): void {
         output.writeCharArray(object);
     }
 }
 
 /** @internal */
-export class FloatArraySerializer implements Serializer {
+export class FloatArraySerializer implements Serializer<number[]> {
 
     id = -18;
 
@@ -323,11 +326,11 @@ export class JavaClassSerializer implements Serializer {
 }
 
 /** @internal */
-export class LinkedListSerializer implements Serializer {
+export class LinkedListSerializer implements Serializer<any[]> {
 
     id = -30;
 
-    read(input: DataInput): any {
+    read(input: DataInput): any[] {
         const size = input.readInt();
         let result: any = null;
         if (size > BitsUtil.NULL_ARRAY_LENGTH) {
@@ -339,7 +342,7 @@ export class LinkedListSerializer implements Serializer {
         return result;
     }
 
-    write(output: DataOutput, object: any): void {
+    write(output: DataOutput, object: any[]): void {
         // no-op
     }
 }
@@ -408,5 +411,20 @@ export class HazelcastJsonValueSerializer extends JsonSerializer {
 
     read(input: DataInput): HazelcastJsonValue {
         return new HazelcastJsonValue(input.readUTF());
+    }
+}
+
+/** @internal */
+export class UuidSerializer implements Serializer<UUID> {
+
+    id = -21;
+
+    read(input: DataInput): UUID {
+        return new UUID(input.readLong(), input.readLong());
+    }
+
+    write(output: DataOutput, uuid: UUID): void {
+        output.writeLong(uuid.mostSignificant);
+        output.writeLong(uuid.leastSignificant);
     }
 }
