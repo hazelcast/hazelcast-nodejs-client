@@ -17,31 +17,31 @@
 'use strict';
 
 const { expect } = require('chai');
-const { writeBuffers } = require('../../lib/util/Util');
+const { copyBuffers } = require('../../lib/util/Util');
 
 describe('UtilTest', function () {
 
-    it('writeBuffers: throws on invalid total length', function () {
-        expect(() => writeBuffers(Buffer.from([0x1]), [ Buffer.from([0x2]) ], 3))
+    it('copyBuffers: throws on invalid total length', function () {
+        expect(() => copyBuffers(Buffer.from([0x1]), [ Buffer.from([0x2]) ], 3))
             .to.throw(RangeError);
     });
 
-    it('writeBuffers: writes single buffer of less length', function () {
+    it('copyBuffers: writes single buffer of less length', function () {
         const target = Buffer.from('abc');
         const sources = [ Buffer.from('d') ];
-        writeBuffers(target, sources, 1);
+        copyBuffers(target, sources, 1);
 
         expect(Buffer.compare(target, Buffer.from('dbc'))).to.be.equal(0);
     });
 
-    it('writeBuffers: writes multiple buffers of same total length', function () {
+    it('copyBuffers: writes multiple buffers of same total length', function () {
         const target = Buffer.from('abc');
         const sources = [
             Buffer.from('d'),
             Buffer.from('e'),
             Buffer.from('f')
         ];
-        writeBuffers(target, sources, 3);
+        copyBuffers(target, sources, 3);
 
         expect(Buffer.compare(target, Buffer.from('def'))).to.be.equal(0);
     });

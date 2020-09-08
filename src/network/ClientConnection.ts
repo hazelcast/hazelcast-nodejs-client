@@ -23,7 +23,7 @@ import {BuildInfo} from '../BuildInfo';
 import {HazelcastClient} from '../HazelcastClient';
 import {AddressImpl, IOError, UUID} from '../core';
 import {ClientMessageHandler} from '../protocol/ClientMessage';
-import {DeferredPromise, writeBuffers} from '../util/Util';
+import {DeferredPromise, copyBuffers} from '../util/Util';
 import {ILogger} from '../logging/ILogger';
 import {
     ClientMessage,
@@ -130,7 +130,7 @@ export class PipelinedWriter extends Writer {
             buf = buffers[0];
         } else {
             // coalesce buffers
-            writeBuffers(this.coalesceBuf, buffers, totalLength);
+            copyBuffers(this.coalesceBuf, buffers, totalLength);
             buf = this.coalesceBuf.slice(0, totalLength);
         }
 

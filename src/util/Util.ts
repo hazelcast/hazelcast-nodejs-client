@@ -268,14 +268,14 @@ export function DeferredPromise<T>(): Promise.Resolver<T> {
 }
 
 /**
- * Writes given array of buffers into the target.
+ * Copy contents of the given array of buffers into the target buffer.
  *
  * @param target target buffer
  * @param sources source buffers
  * @param totalLength total length of all source buffers
  * @internal
  */
-export function writeBuffers(target: Buffer, sources: Buffer[], totalLength: number): void {
+export function copyBuffers(target: Buffer, sources: Buffer[], totalLength: number): void {
     if (target.length < totalLength) {
         throw new RangeError('Target length ' + target.length + ' is less than requested ' + totalLength);
     }
