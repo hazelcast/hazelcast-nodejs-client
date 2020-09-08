@@ -394,6 +394,69 @@ export class NullPointerError extends HazelcastError {
     }
 }
 
+export class SessionExpiredError extends HazelcastError {
+    constructor(msg: string, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
+        super(msg, cause, serverStackTrace);
+        Object.setPrototypeOf(this, SessionExpiredError.prototype);
+    }
+}
+
+export class CPGroupDestroyedError extends HazelcastError {
+    constructor(msg: string, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
+        super(msg, cause, serverStackTrace);
+        Object.setPrototypeOf(this, CPGroupDestroyedError.prototype);
+    }
+}
+
+export class LockOwnershipLostError extends HazelcastError {
+    constructor(msg: string, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
+        super(msg, cause, serverStackTrace);
+        Object.setPrototypeOf(this, LockOwnershipLostError.prototype);
+    }
+}
+
+export class IllegalMonitorStateError extends HazelcastError {
+    constructor(msg: string, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
+        super(msg, cause, serverStackTrace);
+        Object.setPrototypeOf(this, IllegalMonitorStateError.prototype);
+    }
+}
+
+export class WaitKeyCancelledError extends HazelcastError {
+    constructor(msg: string, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
+        super(msg, cause, serverStackTrace);
+        Object.setPrototypeOf(this, WaitKeyCancelledError.prototype);
+    }
+}
+
+export class LeaderDemotedError extends HazelcastError {
+    constructor(msg: string, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
+        super(msg, cause, serverStackTrace);
+        Object.setPrototypeOf(this, LeaderDemotedError.prototype);
+    }
+}
+
+export class StaleAppendRequestError extends HazelcastError {
+    constructor(msg: string, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
+        super(msg, cause, serverStackTrace);
+        Object.setPrototypeOf(this, StaleAppendRequestError.prototype);
+    }
+}
+
+export class CannotReplicateError extends HazelcastError {
+    constructor(msg: string, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
+        super(msg, cause, serverStackTrace);
+        Object.setPrototypeOf(this, CannotReplicateError.prototype);
+    }
+}
+
+export class NotLeaderError extends HazelcastError {
+    constructor(msg: string, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
+        super(msg, cause, serverStackTrace);
+        Object.setPrototypeOf(this, NotLeaderError.prototype);
+    }
+}
+
 export class UndefinedErrorCodeError extends HazelcastError {
     constructor(msg: string, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
         super(msg, cause, serverStackTrace);

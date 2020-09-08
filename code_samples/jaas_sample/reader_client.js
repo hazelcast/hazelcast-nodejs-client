@@ -41,7 +41,7 @@ const { usernamePasswordCredentialsFactory } = require('./user_pass_cred_factory
             console.log('Reader cannot put to map. Reason:', err);
         }
 
-        readerClient.shutdown();
+        await readerClient.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

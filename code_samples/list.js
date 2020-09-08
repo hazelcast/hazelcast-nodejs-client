@@ -33,7 +33,7 @@ const { Client } = require('hazelcast-client');
         const removedItem = await list.removeAt(1);
         console.log('Removed', removedItem);
 
-        client.shutdown();
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

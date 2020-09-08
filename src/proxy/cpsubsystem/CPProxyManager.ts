@@ -23,6 +23,7 @@ import {
 } from '../../core';
 import {HazelcastClient} from '../../HazelcastClient';
 import {AtomicLongProxy} from './AtomicLongProxy';
+import {FencedLockProxy} from './FencedLockProxy';
 import {RaftGroupId} from './RaftGroupId';
 import {CPGroupCreateCPGroupCodec} from '../../codec/CPGroupCreateCPGroupCodec';
 import {assertString} from '../../util/Util';
@@ -53,6 +54,7 @@ export function getObjectNameForProxy(name: string): string {
     if (i === -1) {
         return name;
     }
+
     assert(i < (name.length - 1), 'Custom CP group name cannot be empty string');
     const objectName = name.slice(0, i).trim();
     assert(objectName.length > 0, 'Object name cannot be empty string');
@@ -62,21 +64,25 @@ export function getObjectNameForProxy(name: string): string {
 /** @internal */
 export class CPProxyManager {
 
-    public static readonly ATOMIC_LONG_SERVICE = 'hz:raft:atomicLongService';
+    static readonly ATOMIC_LONG_SERVICE = 'hz:raft:atomicLongService';
+    static readonly LOCK_SERVICE = 'hz:raft:lockService';
 
     private readonly client: HazelcastClient;
+    private readonly lockProxies: Map<string, FencedLockProxy> = new Map();
 
     constructor(client: HazelcastClient) {
         this.client = client;
     }
 
-    public getOrCreateProxy(proxyName: string, serviceName: string): Promise<DistributedObject> {
+    getOrCreateProxy(proxyName: string, serviceName: string): Promise<DistributedObject> {
         proxyName = withoutDefaultGroupName(proxyName);
         const objectName = getObjectNameForProxy(proxyName);
 
         return this.getGroupId(proxyName).then((groupId) => {
             if (serviceName === CPProxyManager.ATOMIC_LONG_SERVICE) {
                 return new AtomicLongProxy(this.client, groupId, proxyName, objectName);
+            } else if (serviceName === CPProxyManager.LOCK_SERVICE) {
+                return this.createFencedLock(groupId, proxyName, objectName);
             }
             throw new IllegalStateError('Unexpected service name: ' + serviceName);
         });
@@ -89,5 +95,19 @@ export class CPProxyManager {
                 const response = CPGroupCreateCPGroupCodec.decodeResponse(clientMessage);
                 return response.groupId;
             });
+    }
+
+    private createFencedLock(groupId: RaftGroupId, proxyName: string, objectName: string): FencedLockProxy {
+        let proxy = this.lockProxies.get(proxyName);
+        if (proxy !== undefined) {
+            if (!groupId.equals(proxy.getGroupId())) {
+                this.lockProxies.delete(proxyName);
+            } else {
+                return proxy;
+            }
+        }
+        proxy = new FencedLockProxy(this.client, groupId, proxyName, objectName);
+        this.lockProxies.set(proxyName, proxy);
+        return proxy;
     }
 }

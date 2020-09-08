@@ -58,7 +58,7 @@ class CustomSerializer {
         // CustomSerializer will serialize/deserialize CustomSerializable objects
 
         // Shutdown this Hazelcast client
-        hz.shutdown();
+        await hz.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

@@ -59,7 +59,7 @@ function entryProcessorDataSerializableFactory(classId) {
         const value = await map.get('key');
         console.log(value);
         // Shutdown this Hazelcast client
-        hz.shutdown();
+        await hz.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

@@ -36,3 +36,4 @@ export * from './Ringbuffer';
 export * from './MessageListener';
 export * from './TopicOverloadPolicy';
 export * from './IAtomicLong';
+export * from './FencedLock';

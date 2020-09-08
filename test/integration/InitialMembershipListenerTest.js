@@ -19,10 +19,10 @@
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
+const { expect } = require('chai');
 
-const expect = require('chai').expect;
-const Client = require('../../.').Client;
 const RC = require('../RC');
+const { Client } = require('../../.');
 const Util = require('../../lib/util/Util');
 
 describe('InitialMembershipListenerTest', function () {
@@ -33,26 +33,19 @@ describe('InitialMembershipListenerTest', function () {
     let initialMember;
     let client;
 
-    beforeEach(function () {
-       return RC.createCluster(null, null)
-           .then((c) => {
-               cluster = c;
-               return RC.startMember(cluster.id);
-           })
-           .then((m) => {
-               initialMember = m;
-           })
+    beforeEach(async function () {
+       cluster = await RC.createCluster(null, null);
+       initialMember = await RC.startMember(cluster.id);
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         if (client != null) {
-            client.shutdown();
+            await client.shutdown();
         }
-
         return RC.terminateCluster(cluster.id);
     });
 
-    it('receives available member when added before client start', function (done) {
+    it('should receive available member when added before client start', function (done) {
         const config = {
             clusterName: cluster.id,
             membershipListeners: [
@@ -73,9 +66,10 @@ describe('InitialMembershipListenerTest', function () {
             .then((c) => {
                 client = c;
             })
+            .catch(done);
     });
 
-    it('receives available member when added after client start', function (done) {
+    it('should receive available member when added after client start', function (done) {
         const membershipListener = {
             init: (event) => {
                 const members = event.members;
@@ -91,10 +85,11 @@ describe('InitialMembershipListenerTest', function () {
             .then((c) => {
                 client = c;
                 client.getClusterService().addMembershipListener(membershipListener);
-            });
+            })
+            .catch(done);
     });
 
-    it('receives events after initial event', function (done) {
+    it('should receive events after initial event', function (done) {
         let newMember;
         const newMemberResolved = Util.DeferredPromise();
 
@@ -133,9 +128,6 @@ describe('InitialMembershipListenerTest', function () {
                 newMember = m;
                 newMemberResolved.resolve();
             })
-            .catch((e) => {
-                done(e);
-            });
+            .catch(done);
     });
-
 });

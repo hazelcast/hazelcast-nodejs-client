@@ -42,7 +42,7 @@ const { Client } = require('hazelcast-client');
         // collection time and keep client running. Then, you should see
         // the statistics in Hazelcast Management Center
         await new Promise((resolve) => setTimeout(resolve, 60000));
-        client.shutdown();
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

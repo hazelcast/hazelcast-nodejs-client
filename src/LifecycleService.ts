@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import * as Promise from 'bluebird';
 import {EventEmitter} from 'events';
 import {HazelcastClient} from './HazelcastClient';
 import {ILogger} from './logging/ILogger';
@@ -74,11 +75,6 @@ export interface LifecycleService {
      */
     isRunning(): boolean;
 
-    /**
-     * Shuts down the client.
-     */
-    shutdown(): void;
-
 }
 
 /** @internal */
@@ -122,14 +118,14 @@ export class LifecycleServiceImpl extends EventEmitter implements LifecycleServi
         this.emitLifecycleEvent(LifecycleState.STARTED);
     }
 
-    shutdown(): void {
+    shutdown(): Promise<void> {
         if (!this.active) {
             return;
         }
         this.active = false;
 
         this.emitLifecycleEvent(LifecycleState.SHUTTING_DOWN);
-        this.client.doShutdown();
-        this.emitLifecycleEvent(LifecycleState.SHUTDOWN);
+        return this.client.doShutdown()
+            .then(() => this.emitLifecycleEvent(LifecycleState.SHUTDOWN));
     }
 }

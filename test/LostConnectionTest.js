@@ -22,38 +22,33 @@ const Util = require('./Util');
 
 describe('LostConnectionTest', function () {
 
-    let cluster, oldMember, client;
+    let cluster;
+    let oldMember;
+    let client;
 
-    before(function () {
-        return RC.createCluster(null, null).then(function (res) {
-            cluster = res;
-        }).then(function () {
-            return RC.startMember(cluster.id);
-        }).then(function (m) {
-            oldMember = m;
-        }).then(function () {
-            return Client.newHazelcastClient({
-                clusterName: cluster.id,
-                properties: {
-                    'hazelcast.client.heartbeat.interval': 500,
-                    'hazelcast.client.heartbeat.timeout': 2000
-                }
-            });
-        }).then(function (cl) {
-            client = cl;
+    before(async function () {
+        cluster = await RC.createCluster(null, null);
+        oldMember = await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            properties: {
+                'hazelcast.client.heartbeat.interval': 500,
+                'hazelcast.client.heartbeat.timeout': 2000
+            }
         });
     });
 
-    after(function () {
-        client.shutdown();
+    after(async function () {
+        await client.shutdown();
         return RC.terminateCluster(cluster.id);
     });
 
     it('M2 starts, M1 goes down, client connects to M2', function (done) {
         this.timeout(32000);
+
         let newMember;
         const membershipListener = {
-            memberAdded: (membershipEvent) => {
+            memberAdded: () => {
                 RC.shutdownMember(cluster.id, oldMember.uuid).then(function () {
                     return Util.promiseWaitMilliseconds(4000);
                 }).then(function () {
@@ -70,8 +65,10 @@ describe('LostConnectionTest', function () {
         };
 
         client.clusterService.addMembershipListener(membershipListener);
-        RC.startMember(cluster.id).then(function (m) {
-            newMember = m;
-        });
+        RC.startMember(cluster.id)
+            .then((m) => {
+                newMember = m;
+            })
+            .catch(done);
     });
 });

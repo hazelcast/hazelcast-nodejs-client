@@ -46,7 +46,7 @@ describe('AutoPipeliningDisabledTest', function () {
     });
 
     after(async function () {
-        client.shutdown();
+        await client.shutdown();
         return RC.terminateCluster(cluster.id);
     });
 

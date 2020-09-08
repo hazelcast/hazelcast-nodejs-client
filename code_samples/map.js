@@ -35,7 +35,7 @@ const { Client } = require('hazelcast-client');
         disappearingValue = await map.get('disappearing-key');
         console.log('Disappeared value:', disappearingValue);
 
-        client.shutdown();
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }
