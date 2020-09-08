@@ -36,8 +36,16 @@ const PROPERTY_PIPELINING_ENABLED = 'hazelcast.client.autopipelining.enabled';
 const PROPERTY_PIPELINING_THRESHOLD = 'hazelcast.client.autopipelining.threshold.bytes';
 const PROPERTY_NO_DELAY = 'hazelcast.client.socket.no.delay';
 
+abstract class Writer extends EventEmitter {
+
+    abstract write(buffer: Buffer, resolver: Promise.Resolver<void>): void;
+
+    abstract close(): void;
+
+}
+
 /** @internal */
-export class PipelinedWriter extends EventEmitter {
+export class PipelinedWriter extends Writer {
 
     private readonly socket: net.Socket;
     private queuedBufs: Buffer[] = [];
@@ -71,6 +79,13 @@ export class PipelinedWriter extends EventEmitter {
         this.queuedBufs.push(buffer);
         this.queuedResolvers.push(resolver);
         this.schedule();
+    }
+
+    close(): void {
+        this.canWrite = false;
+        // no more items can be added now
+        this.queuedResolvers = FROZEN_ARRAY as Promise.Resolver<void>[];
+        this.queuedBufs = FROZEN_ARRAY as Buffer[];
     }
 
     private schedule(): void {
@@ -145,18 +160,15 @@ export class PipelinedWriter extends EventEmitter {
         for (const r of sentResolvers) {
             r.reject(this.error);
         }
-        // no more items can be added now
-        const resolvers = this.queuedResolvers;
-        this.queuedResolvers = FROZEN_ARRAY as Promise.Resolver<void>[];
-        this.queuedBufs = FROZEN_ARRAY as Buffer[];
-        for (const resolver of resolvers) {
+        for (const resolver of this.queuedResolvers) {
             resolver.reject(this.error);
         }
+        this.close();
     }
 }
 
 /** @internal */
-export class DirectWriter extends EventEmitter {
+export class DirectWriter extends Writer {
 
     private readonly socket: net.Socket;
 
@@ -174,6 +186,10 @@ export class DirectWriter extends EventEmitter {
             this.emit('write');
             resolver.resolve();
         });
+    }
+
+    close(): void {
+        // no-op
     }
 }
 
@@ -312,7 +328,7 @@ export class ClientConnection {
     private closedCause: Error;
     private connectedServerVersion: number;
     private readonly socket: net.Socket;
-    private readonly writer: PipelinedWriter | DirectWriter;
+    private readonly writer: Writer;
     private readonly reader: ClientMessageReader;
     private readonly logger: ILogger;
     private readonly fragmentedMessageHandler: FragmentedClientMessageHandler;
@@ -397,6 +413,7 @@ export class ClientConnection {
         this.logClose();
 
         this.socket.end();
+        this.writer.close();
 
         this.client.getConnectionManager().onConnectionClose(this);
     }
