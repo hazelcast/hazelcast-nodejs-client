@@ -20,6 +20,7 @@ const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
 const { Client, IndeterminateOperationStateError } = require('../../');
 const { Invocation, InvocationService } = require('../../lib/invocation/InvocationService');
+const { LifecycleServiceImpl } = require('../../lib/LifecycleService');
 const { ClientMessage } = require('../../lib/protocol/ClientMessage');
 
 describe('InvocationTest', function () {
@@ -31,6 +32,7 @@ describe('InvocationTest', function () {
         clientStub = sandbox.stub(Client.prototype);
         serviceStub = sandbox.stub(InvocationService.prototype);
         clientStub.getInvocationService.returns(serviceStub);
+        clientStub.getLifecycleService.returns(sandbox.stub(LifecycleServiceImpl.prototype));
     });
 
     afterEach(function () {
