@@ -22,7 +22,6 @@ import {BaseCPProxy} from './BaseCPProxy';
 import {IAtomicLong} from '../IAtomicLong';
 import {CPProxyManager} from './CPProxyManager';
 import {RaftGroupId} from './RaftGroupId';
-import {CPGroupDestroyCPObjectCodec} from '../../codec/CPGroupDestroyCPObjectCodec';
 import {AtomicLongAddAndGetCodec} from '../../codec/AtomicLongAddAndGetCodec';
 import {AtomicLongCompareAndSetCodec} from '../../codec/AtomicLongCompareAndSetCodec';
 import {AtomicLongGetCodec} from '../../codec/AtomicLongGetCodec';
@@ -32,18 +31,11 @@ import {AtomicLongGetAndSetCodec} from '../../codec/AtomicLongGetAndSetCodec';
 /** @internal */
 export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
 
-    private readonly groupId: RaftGroupId;
-    private readonly objectName: string;
-
-    constructor(client: HazelcastClient, groupId: RaftGroupId, proxyName: string, objectName: string) {
-        super(client, CPProxyManager.ATOMIC_LONG_SERVICE, proxyName);
-        this.groupId = groupId;
-        this.objectName = objectName;
-    }
-
-    destroy(): Promise<void> {
-        return this.encodeInvokeOnRandomTarget(CPGroupDestroyCPObjectCodec,
-            this.groupId, this.serviceName, this.objectName).then();
+    constructor(client: HazelcastClient,
+                groupId: RaftGroupId,
+                proxyName: string,
+                objectName: string) {
+        super(client, CPProxyManager.ATOMIC_LONG_SERVICE, groupId, proxyName, objectName);
     }
 
     addAndGet(delta: Long | number): Promise<Long> {

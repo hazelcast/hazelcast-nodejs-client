@@ -45,8 +45,8 @@ describe('Invalidation metadata distortion', function () {
     });
 
     afterEach(function () {
-        client.shutdown();
-        validationClient.shutdown();
+        return client.shutdown()
+            .then(() => validationClient.shutdown());
     });
 
     function createConfig(withNearCache) {

@@ -595,7 +595,7 @@ export class ClientConnectionManager extends EventEmitter {
 
     private shutdownClient(): void {
         try {
-            this.client.getLifecycleService().shutdown();
+            (this.client.getLifecycleService() as LifecycleServiceImpl).shutdown();
         } catch (e) {
             this.logger.error('ConnectionManager', `Error during client shutdown ${e}`);
         }

@@ -90,7 +90,7 @@ class Comparator {
         values = await map.valuesWithPredicate(predicate);
         console.log('Page 3:', values);
 
-        client.shutdown();
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

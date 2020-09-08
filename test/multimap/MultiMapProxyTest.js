@@ -52,8 +52,8 @@ describe('MultiMapProxyTest', function () {
     });
 
     after(function () {
-        client.shutdown();
-        return RC.terminateCluster(cluster.id);
+        return client.shutdown()
+            .then(() => RC.terminateCluster(cluster.id));
     });
 
     it('adds and retrieves a single item', function () {

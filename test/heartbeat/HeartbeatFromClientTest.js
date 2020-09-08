@@ -85,8 +85,9 @@ describe('HeartbeatFromClientTest', function () {
         }).then(function () {
             clearInterval(pushTask);
             expect(connectionClosedEventCount).to.equal(0);
-            client1.shutdown();
-            client2.shutdown();
+            return client1.shutdown();
+        }).then(function () {
+            return client2.shutdown();
         });
     });
 });

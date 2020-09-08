@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 'use strict';
 
 class Benchmark {
@@ -39,11 +38,11 @@ class Benchmark {
     run() {
         // initial batch of ops (no-op promises)
         const batch = new Array(this.batchSize).fill(Promise.resolve());
-        const start = new Date();
+        const start = process.hrtime();
         return Promise.all(batch.map(this.chainNext.bind(this)))
             .then(() => {
-                const finish = new Date();
-                const tookSec = (finish - start) / 1000;
+                const time = process.hrtime(start);
+                const tookSec = time[0] + time[1] * 1e-9;
                 console.log(`Took ${tookSec} seconds for ${this.opsCount} requests`);
                 console.log(`Ops/s: ${this.opsCount / tookSec}`);
             });

@@ -21,11 +21,13 @@ import {
     AuthenticationError,
     CallerNotMemberError,
     CancellationError,
+    CannotReplicateError,
     ClassCastError,
     ClassNotFoundError,
     ConcurrentModificationError,
     ConfigMismatchError,
     ConsistencyLostError,
+    CPGroupDestroyedError,
     DistributedObjectDestroyedError,
     HazelcastError,
     HazelcastInstanceNotActiveError,
@@ -34,21 +36,27 @@ import {
     IndeterminateOperationStateError,
     IOError,
     IllegalArgumentError,
+    IllegalMonitorStateError,
     IndexOutOfBoundsError,
     InvalidAddressError,
     InvalidConfigurationError,
     InterruptedError,
+    LeaderDemotedError,
+    LockOwnershipLostError,
     MemberLeftError,
     NegativeArraySizeError,
     NoSuchElementError,
     NoDataMemberInClusterError,
     NodeIdOutOfRangeError,
+    NotLeaderError,
     NullPointerError,
     PartitionMigratingError,
     QueryError,
+    SessionExpiredError,
     SplitBrainProtectionError,
     RetryableHazelcastError,
     RetryableIOError,
+    StaleAppendRequestError,
     StaleSequenceError,
     StaleTaskIdError,
     TargetDisconnectedError,
@@ -61,6 +69,7 @@ import {
     UnsupportedOperationError,
     HazelcastSerializationError,
     ReachedMaxSizeError,
+    WaitKeyCancelledError,
 } from '../core';
 import {ClientProtocolErrorCodes} from './ClientProtocolErrorCodes';
 import {ClientMessage} from '../protocol/ClientMessage';
@@ -174,6 +183,24 @@ export class ClientErrorFactory {
             (m, c, s) => new NodeIdOutOfRangeError(m, c, s));
         this.register(ClientProtocolErrorCodes.CONSISTENCY_LOST_EXCEPTION,
             (m, c, s) => new ConsistencyLostError(m, c, s));
+        this.register(ClientProtocolErrorCodes.SESSION_EXPIRED_EXCEPTION,
+            (m, c, s) => new SessionExpiredError(m, c, s));
+        this.register(ClientProtocolErrorCodes.CP_GROUP_DESTROYED_EXCEPTION,
+            (m, c, s) => new CPGroupDestroyedError(m, c, s));
+        this.register(ClientProtocolErrorCodes.LOCK_OWNERSHIP_LOST_EXCEPTION,
+            (m, c, s) => new LockOwnershipLostError(m, c, s));
+        this.register(ClientProtocolErrorCodes.ILLEGAL_MONITOR_STATE,
+            (m, c, s) => new IllegalMonitorStateError(m, c, s));
+        this.register(ClientProtocolErrorCodes.WAIT_KEY_CANCELLED_EXCEPTION,
+            (m, c, s) => new WaitKeyCancelledError(m, c, s));
+        this.register(ClientProtocolErrorCodes.CANNOT_REPLICATE_EXCEPTION,
+            (m, c, s) => new CannotReplicateError(m, c, s));
+        this.register(ClientProtocolErrorCodes.LEADER_DEMOTED_EXCEPTION,
+            (m, c, s) => new LeaderDemotedError(m, c, s));
+        this.register(ClientProtocolErrorCodes.STALE_APPEND_REQUEST_EXCEPTION,
+            (m, c, s) => new StaleAppendRequestError(m, c, s));
+        this.register(ClientProtocolErrorCodes.NOT_LEADER_EXCEPTION,
+            (m, c, s) => new NotLeaderError(m, c, s));
     }
 
     createErrorFromClientMessage(clientMessage: ClientMessage): Error {

@@ -20,13 +20,37 @@ import * as Long from 'long';
 /** @internal */
 export class RaftGroupId {
 
-    name: string;
-    seed: Long;
-    id: Long;
+    readonly name: string;
+    readonly seed: Long;
+    readonly id: Long;
+    private stringId: string;
 
     constructor(name: string, seed: Long, id: Long) {
         this.name = name;
         this.seed = seed;
         this.id = id;
+    }
+
+    getStringId(): string {
+        if (this.stringId !== undefined) {
+            return this.stringId;
+        }
+        this.stringId = this.name;
+        this.stringId += ':' + this.seed.toString();
+        this.stringId += ':' + this.id.toString();
+        return this.stringId;
+    }
+
+    equals(other: RaftGroupId): boolean {
+        if (other == null) {
+            return false;
+        }
+        if (this.name !== other.name) {
+            return false;
+        }
+        if (!this.seed.equals(other.seed)) {
+            return false;
+        }
+        return this.id.equals(other.id);
     }
 }

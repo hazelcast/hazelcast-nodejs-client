@@ -33,7 +33,7 @@ const { Client } = require('hazelcast-client');
         const size = await set.size();
         console.log('Set size:', size);
 
-        client.shutdown();
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

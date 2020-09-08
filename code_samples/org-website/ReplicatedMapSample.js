@@ -33,7 +33,7 @@ const { Client } = require('hazelcast-client');
         // The value is retrieved from a random member in the cluster
         console.log('Value for key:', value);
         // Shutdown this Hazelcast client
-        hz.shutdown();
+        await hz.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

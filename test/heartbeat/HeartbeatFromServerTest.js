@@ -86,8 +86,7 @@ describe('HeartbeatFromServerTest', function () {
                 if (remoteAddress.host === member2.host && remoteAddress.port === member2.port) {
                     if (connection.closedReason === 'Heartbeat timed out'
                             && connection.closedCause instanceof TargetDisconnectedError) {
-                        done();
-                        client.shutdown();
+                        return client.shutdown().then(() => done());
                     } else {
                         done(new Error('Connection does not closed due to heartbeat timeout. Reason: '
                             + connection.closedReason + ', cause: ' + connection.closedCause));
@@ -148,8 +147,7 @@ describe('HeartbeatFromServerTest', function () {
             client.getConnectionManager().once('connectionAdded', function (connection) {
                 const remoteAddress = connection.getRemoteAddress();
                 if (remoteAddress.host === member2.host && remoteAddress.port === member2.port) {
-                    done();
-                    client.shutdown();
+                    return client.shutdown().then(() => done());
                 } else {
                     done(new Error(remoteAddress.host + ':' + remoteAddress.port + ' is added instead of '
                         + member2.host + ':' + member2.port));

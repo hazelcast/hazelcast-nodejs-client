@@ -73,9 +73,9 @@ describe('NearCachedMapTest', function () {
             });
 
             after(function () {
-                client1.shutdown();
-                client2.shutdown();
-                return RC.terminateCluster(cluster.id);
+                return client1.shutdown()
+                    .then(() => client2.shutdown())
+                    .then(() => RC.terminateCluster(cluster.id));
             });
 
             function getNearCacheStats(map) {

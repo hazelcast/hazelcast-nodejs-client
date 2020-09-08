@@ -34,7 +34,7 @@ const { Client } = require('hazelcast-client');
         await map.destroy();
 
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        client.shutdown();
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

@@ -220,6 +220,5 @@ export class ProxyManager {
         } else {
             return Promise.resolve(localProxy);
         }
-
     }
 }

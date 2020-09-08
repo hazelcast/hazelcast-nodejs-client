@@ -22,7 +22,7 @@ chai.use(chaiAsPromised);
 
 const expect = require('chai').expect;
 const Client = require('../../.').Client;
-const Controller = require('../RC');
+const RC = require('../RC');
 const Util = require('../Util');
 
 describe('DistributedObjectsTest', function () {
@@ -35,10 +35,10 @@ describe('DistributedObjectsTest', function () {
     }
 
     beforeEach(function () {
-        return Controller.createCluster(null, null)
+        return RC.createCluster(null, null)
             .then((c) => {
                 cluster = c;
-                return Controller.startMember(cluster.id);
+                return RC.startMember(cluster.id);
             })
             .then(() => {
                 return Client.newHazelcastClient({
@@ -51,8 +51,8 @@ describe('DistributedObjectsTest', function () {
     });
 
     afterEach(function () {
-        client.shutdown();
-        return Controller.terminateCluster(cluster.id);
+        return client.shutdown()
+            .then(() => RC.terminateCluster(cluster.id));
     });
 
     it('get distributed objects with no object on cluster', function () {
@@ -122,7 +122,7 @@ describe('DistributedObjectsTest', function () {
             .then((objects) => {
                 // Make sure that live objects are not deleted
                 expect(toNamespace(objects)).to.have.deep.members(toNamespace([map, set, queue]));
-                otherClient.shutdown();
+                return otherClient.shutdown();
             });
     });
 
@@ -174,7 +174,7 @@ describe('DistributedObjectsTest', function () {
             })
             .then((objects) => {
                 expect(objects).to.have.lengthOf(0);
-                otherClient.shutdown();
+                return otherClient.shutdown();
             });
     });
 });

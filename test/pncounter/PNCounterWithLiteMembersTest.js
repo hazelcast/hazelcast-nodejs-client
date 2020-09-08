@@ -45,8 +45,8 @@ describe('PNCounterWithLiteMembersTest', function () {
     });
 
     after(function () {
-        client.shutdown();
-        return RC.terminateCluster(cluster.id);
+        return client.shutdown()
+            .then(() => RC.terminateCluster(cluster.id));
     });
 
     beforeEach(function () {

@@ -63,7 +63,7 @@ const winstonAdapter = {
             customLogger: winstonAdapter
         });
 
-        client.shutdown();
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

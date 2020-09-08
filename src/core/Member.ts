@@ -87,10 +87,10 @@ export class MemberImpl implements Member {
     }
 
     id(): string {
-        let hashCode = this.address.toString();
+        let id = this.address.toString();
         if (this.uuid) {
-            hashCode += this.uuid.toString();
+            id += this.uuid.toString();
         }
-        return hashCode;
+        return id;
     }
 }

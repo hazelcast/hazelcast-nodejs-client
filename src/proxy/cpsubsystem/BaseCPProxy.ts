@@ -18,6 +18,8 @@
 import * as Promise from 'bluebird';
 import {HazelcastClient} from '../../HazelcastClient';
 import {ClientMessage} from '../../protocol/ClientMessage';
+import {RaftGroupId} from './RaftGroupId';
+import {CPGroupDestroyCPObjectCodec} from '../../codec/CPGroupDestroyCPObjectCodec';
 import {UnsupportedOperationError} from '../../core';
 
 /**
@@ -29,11 +31,19 @@ export abstract class BaseCPProxy {
     protected client: HazelcastClient;
     protected readonly proxyName: string;
     protected readonly serviceName: string;
+    protected readonly groupId: RaftGroupId;
+    protected readonly objectName: string;
 
-    constructor(client: HazelcastClient, serviceName: string, proxyName: string) {
+    constructor(client: HazelcastClient,
+                serviceName: string,
+                groupId: RaftGroupId,
+                proxyName: string,
+                objectName: string) {
         this.client = client;
-        this.proxyName = proxyName;
         this.serviceName = serviceName;
+        this.groupId = groupId;
+        this.proxyName = proxyName;
+        this.objectName = objectName;
     }
 
     getPartitionKey(): string {
@@ -46,6 +56,15 @@ export abstract class BaseCPProxy {
 
     getServiceName(): string {
         return this.serviceName;
+    }
+
+    getGroupId(): RaftGroupId {
+        return this.groupId;
+    }
+
+    destroy(): Promise<void> {
+        return this.encodeInvokeOnRandomTarget(CPGroupDestroyCPObjectCodec,
+            this.groupId, this.serviceName, this.objectName).then();
     }
 
     /**

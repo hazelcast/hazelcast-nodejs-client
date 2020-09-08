@@ -15,7 +15,10 @@
  */
 'use strict';
 
-const { expect } = require('chai');
+const chai = require('chai');
+chai.should();
+chai.use(require('chai-as-promised'));
+const expect = chai.expect;
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
 const { Client, IndeterminateOperationStateError } = require('../../');
@@ -75,11 +78,7 @@ describe('ClientBackupAcksTest', function () {
         sandbox.replace(ClientLocalBackupListenerCodec, 'handle', sinon.fake());
         const map = await client.getMap('test-map');
 
-        try {
-            await map.set('foo', 'bar');
-        } catch (err) {
-            expect(err).to.be.instanceof(IndeterminateOperationStateError);
-        }
+        await expect(map.set('foo', 'bar')).to.be.rejectedWith(IndeterminateOperationStateError);
     });
 
     it('should not throw when backup acks were lost in smart mode when prop is not set', async function () {

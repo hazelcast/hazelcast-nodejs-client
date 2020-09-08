@@ -50,8 +50,8 @@ describe("MultiMap Proxy Listener", function () {
     });
 
     after(function () {
-        client.shutdown();
-        return RC.terminateCluster(cluster.id);
+        return client.shutdown()
+            .then(() => RC.terminateCluster(cluster.id));
     });
 
     function Listener(eventName, doneCallback, expectedName, expectedKey, expectedValue, expectedOldValue,

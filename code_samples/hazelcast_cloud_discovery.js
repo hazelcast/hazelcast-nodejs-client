@@ -45,7 +45,7 @@ const path = require('path');
         const value = await map.get('key');
         console.log(value);
 
-        client.shutdown();
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

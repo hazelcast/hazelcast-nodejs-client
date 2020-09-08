@@ -83,7 +83,7 @@ async function generateUsers(usersMap) {
         console.log(result1.toArray());
         console.log(result2.toArray());
         // Shutdown this Hazelcast client
-        hz.shutdown();
+        await hz.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

@@ -58,7 +58,7 @@ class Employee {
         employee = await map.get('key');
         console.log('Employee object:', employee);
 
-        client.shutdown();
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

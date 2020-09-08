@@ -77,7 +77,7 @@ const value = await map.get('key');
 console.log(value); // Outputs 'value'
 
 // Shutdown the client
-client.shutdown();
+await client.shutdown();
 ```
 
 > **NOTE: For the sake of brevity we are going to omit boilerplate parts in the above code snippet. Refer to the [Code Samples section](#16-code-samples) to see samples with the complete code.**
@@ -108,7 +108,7 @@ const client = await Client.newHazelcastClient({
 });
 
 console.log('Connected to cluster');
-client.shutdown();
+await client.shutdown();
 ```
 
 Refer to [the documentation](DOCUMENTATION.md) to learn more about supported configuration options.

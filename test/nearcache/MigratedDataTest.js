@@ -91,7 +91,7 @@ describe('MigratedDataTest', function () {
     });
 
     afterEach(function () {
-        client.shutdown();
+        return client.shutdown();
     });
 
     after(function () {

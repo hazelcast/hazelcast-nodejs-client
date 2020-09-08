@@ -120,7 +120,7 @@ describe('ClientSSLAuthenticationTest', function () {
                         './client1-key.pem', './client1-cert.pem', './server1-cert.pem'
                     ));
                 }).then(function (client) {
-                    client.shutdown();
+                    return client.shutdown();
                 });
             });
 
@@ -154,7 +154,7 @@ describe('ClientSSLAuthenticationTest', function () {
                         './client1-key.pem', './client1-cert.pem', './server1-cert.pem'
                     ));
                 }).then(function (client) {
-                    client.shutdown();
+                    return client.shutdown();
                 });
             });
 

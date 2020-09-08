@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const sinon = require('sinon');
 const winston = require('winston');
 const RC = require('./RC');
@@ -59,14 +59,12 @@ describe('LoggingTest', function () {
         }
     };
 
-    before(function () {
-        return RC.createCluster(null, null).then(function (res) {
-            cluster = res;
-            return RC.startMember(cluster.id);
-        });
+    before(async function () {
+        cluster = await RC.createCluster(null, null);
+        return RC.startMember(cluster.id);
     });
 
-    after(function () {
+    after(async function () {
         return RC.terminateCluster(cluster.id);
     });
 
@@ -74,100 +72,86 @@ describe('LoggingTest', function () {
         sinon.spy(console, 'log');
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         if (client != null) {
-            client.shutdown();
+            await client.shutdown();
             client = null;
         }
         console.log.restore();
     });
 
-    it('winston should emit logging event', function () {
+    it('winston should emit logging event', async function () {
         let loggingHappened = false;
         winstonAdapter.logger.transports[0].on('logged', function (transport, level, msg, meta) {
             loggingHappened = true;
         });
 
-        return Client.newHazelcastClient({
+        client = await Client.newHazelcastClient({
             clusterName: cluster.id,
             customLogger: winstonAdapter
-        }).then(function (hz) {
-            client = hz;
-            return expect(loggingHappened).to.be.true;
         });
+        expect(loggingHappened).to.be.true;
     });
 
-    it('no logging', function () {
-        return Client.newHazelcastClient({
+    it('no logging', async function () {
+        client = await Client.newHazelcastClient({
             clusterName: cluster.id,
             properties: {
                 'hazelcast.logging.level': 'OFF'
             }
-        }).then(function (hz) {
-            client = hz;
-            return sinon.assert.notCalled(console.log);
         });
+        sinon.assert.notCalled(console.log);
     });
 
-    it('default logging in case of empty property', function () {
-        return Client.newHazelcastClient({
+    it('default logging in case of empty property', async function () {
+        client = await Client.newHazelcastClient({
             clusterName: cluster.id
-        }).then(function (hz) {
-            client = hz;
-            return sinon.assert.called(console.log);
         });
+        sinon.assert.called(console.log);
     });
 
-    it('default logging in case of default property', function () {
-        return Client.newHazelcastClient({
+    it('default logging in case of default property', async function () {
+        client = await Client.newHazelcastClient({
             clusterName: cluster.id,
             properties: {
                 'hazelcast.logging.level': 'INFO'
             }
-        }).then(function (hz) {
-            client = hz;
-            return sinon.assert.called(console.log);
         });
+        sinon.assert.called(console.log);
     });
 
     it('error in case of unknown property value', function () {
-        return expect(Client.newHazelcastClient.bind(this, {
+        expect(() => Client.newHazelcastClient({
             clusterName: cluster.id,
             customLogger: 'unknw'
         })).to.throw(Error);
     });
 
-    it('default logging, default level', function () {
-        return Client.newHazelcastClient({
+    it('default logging, default level', async function () {
+        client = await Client.newHazelcastClient({
             clusterName: cluster.id
-        }).then(function (cl) {
-            client = cl;
-            return sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'INFO');
         });
+        sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'INFO');
     });
 
-    it('default logging, error level', function () {
-        return Client.newHazelcastClient({
+    it('default logging, error level', async function () {
+        client = await Client.newHazelcastClient({
             clusterName: cluster.id,
             properties: {
                 'hazelcast.logging.level': 'ERROR'
             }
-        }).then(function (cl) {
-            client = cl;
-            return sinon.assert.notCalled(console.log);
         });
+        sinon.assert.notCalled(console.log);
     });
 
-    it('default logging, trace level', function () {
-        return Client.newHazelcastClient({
+    it('default logging, trace level', async function () {
+        client = await Client.newHazelcastClient({
             clusterName: cluster.id,
             properties: {
                 'hazelcast.logging.level': 'TRACE'
             }
-        }).then(function (cl) {
-            client = cl;
-            sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'INFO');
-            sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'TRACE');
         });
+        sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'INFO');
+        sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'TRACE');
     });
 });

@@ -50,7 +50,7 @@ const {
             console.log(employee.toString());
         }
 
-        client.shutdown();
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
     }

@@ -39,7 +39,7 @@ describe('FactoriesTest', function () {
 
     afterEach(function () {
         if (client != null) {
-            client.shutdown();
+            return client.shutdown();
         }
     });
 
