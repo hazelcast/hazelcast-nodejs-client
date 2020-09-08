@@ -15,9 +15,10 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const Long = require('long');
+const { expect } = require('chai');
 const RC = require('../RC');
-const { Client, RestValue } = require('../../');
+const { Client, RestValue, UUID } = require('../../');
 
 describe('DefaultSerializersLiveTest', function () {
 
@@ -144,5 +145,19 @@ describe('DefaultSerializersLiveTest', function () {
         const result = JSON.parse(response.result.toString());
         expect(result.contentType).to.equal(restValue.contentType);
         expect(result.value).to.equal(restValue.value);
+    });
+
+    it('UUID', async function () {
+        // Make sure that the object is properly de-serialized at the server
+        const uuid = new UUID(Long.fromNumber(24), Long.fromNumber(42));
+
+        const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
+            'var uuid = map.get("key");\n' +
+            'result = "\\"" + uuid.toString() + "\\"";\n';
+
+        await map.put('key', uuid);
+        const response = await RC.executeOnController(cluster.id, script, 1);
+        const result = JSON.parse(response.result);
+        expect(result).to.equal(uuid.toString());
     });
 });

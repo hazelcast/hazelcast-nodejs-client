@@ -15,18 +15,19 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const Long = require('long');
 const { SerializationServiceV1 } = require('../../lib/serialization/SerializationService');
 const { SerializationConfigImpl } = require('../../lib/config/SerializationConfig');
-const { Predicates } = require('../../.');
-const { RestValue } = require('../../lib/core/RestValue');
+const { Predicates } = require('../../');
+const { RestValue, UUID } = require('../../lib/');
 
 describe('DefaultSerializersTest', function () {
 
     const restValue = new RestValue();
     restValue.value = '{"test":"data"}';
     restValue.contentType = 'text/plain';
+    const uuid = new UUID(Long.fromNumber(1), Long.fromNumber(2));
 
     const parameters = [
         14,
@@ -68,7 +69,8 @@ describe('DefaultSerializersTest', function () {
         Predicates.alwaysTrue(),
         Predicates.alwaysFalse(),
         Predicates.paging(Predicates.greaterEqual('this', 10), 10),
-        restValue
+        restValue,
+        uuid
     ];
 
     parameters.forEach(function (obj) {

@@ -35,18 +35,18 @@ export class RestValue implements IdentifiedDataSerializable {
      * HTTP Content-Type specified for the value.
      */
     contentType: string;
-    /** @ignore */
+    /** @internal */
     factoryId = REST_VALUE_FACTORY_ID;
-    /** @ignore */
+    /** @internal */
     classId = REST_VALUE_CLASS_ID;
 
-    /** @ignore */
+    /** @internal */
     readData(input: DataInput): any {
         this.value = input.readUTF();
         this.contentType = input.readUTF();
     }
 
-    /** @ignore */
+    /** @internal */
     writeData(output: DataOutput): void {
         output.writeUTF(this.value);
         output.writeUTF(this.contentType);
