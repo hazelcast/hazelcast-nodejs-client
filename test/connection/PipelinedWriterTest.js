@@ -29,22 +29,12 @@ describe('PipelinedWriterTest', function () {
     let writer;
     let mockSocket;
 
-    function setUpWriteSuccess() {
+    function setUpWriteSuccess(canWrite) {
         mockSocket = new Socket({});
         sinon.stub(mockSocket, 'write').callsFake((data, cb) => {
             process.nextTick(cb);
             process.nextTick(() => mockSocket.emit('data', data));
-            return true;
-        });
-        writer = new PipelinedWriter(mockSocket, 8192);
-    }
-
-    function setUpWriteSuccessWaitForDrain() {
-        mockSocket = new Socket({});
-        sinon.stub(mockSocket, 'write').callsFake((data, cb) => {
-            process.nextTick(cb);
-            process.nextTick(() => mockSocket.emit('data', data));
-            return false;
+            return canWrite;
         });
         writer = new PipelinedWriter(mockSocket, 8192);
     }
@@ -59,7 +49,7 @@ describe('PipelinedWriterTest', function () {
     }
 
     it('writes single message into socket (without copying it)', (done) => {
-        setUpWriteSuccess();
+        setUpWriteSuccess(true);
 
         const buffer = Buffer.from('test');
         writer.write(buffer, DeferredPromise());
@@ -70,7 +60,7 @@ describe('PipelinedWriterTest', function () {
     });
 
     it('writes multiple messages as one into socket', (done) => {
-        setUpWriteSuccess();
+        setUpWriteSuccess(true);
 
         writer.write(Buffer.from('1'), DeferredPromise());
         writer.write(Buffer.from('2'), DeferredPromise());
@@ -82,7 +72,7 @@ describe('PipelinedWriterTest', function () {
     });
 
     it('coalesces buffers when writing into socket', (done) => {
-        setUpWriteSuccess();
+        setUpWriteSuccess(true);
 
         const size = 4200;
         const resolver1 = DeferredPromise();
@@ -117,7 +107,7 @@ describe('PipelinedWriterTest', function () {
     });
 
     it('allows I/O in between coalesced writes into socket', (done) => {
-        setUpWriteSuccess();
+        setUpWriteSuccess(true);
 
         const size = 9000;
         writer.write(Buffer.alloc(size), DeferredPromise());
@@ -138,7 +128,7 @@ describe('PipelinedWriterTest', function () {
     });
 
     it('resolves single promise on write success', (done) => {
-        setUpWriteSuccess();
+        setUpWriteSuccess(true);
 
         const resolver = DeferredPromise();
         writer.write(Buffer.from('test'), resolver);
@@ -146,7 +136,7 @@ describe('PipelinedWriterTest', function () {
     });
 
     it('resolves multiple promises on write success', (done) => {
-        setUpWriteSuccess();
+        setUpWriteSuccess(true);
 
         const resolver1 = DeferredPromise();
         writer.write(Buffer.from('test'), resolver1);
@@ -185,7 +175,7 @@ describe('PipelinedWriterTest', function () {
     });
 
     it('emits write event on write success', (done) => {
-        setUpWriteSuccess();
+        setUpWriteSuccess(true);
 
         writer.on('write', done);
         writer.write(Buffer.from('test'), DeferredPromise());
@@ -203,7 +193,7 @@ describe('PipelinedWriterTest', function () {
     });
 
     it('waits for drain event when necessary', (done) => {
-        setUpWriteSuccessWaitForDrain();
+        setUpWriteSuccess(false);
 
         const buffer = Buffer.from('test');
         writer.write(buffer, DeferredPromise());
@@ -219,7 +209,7 @@ describe('PipelinedWriterTest', function () {
     });
 
     it('writes queued items on drain event', (done) => {
-        setUpWriteSuccessWaitForDrain();
+        setUpWriteSuccess(false);
 
         const buffer = Buffer.from('test');
         writer.write(buffer, DeferredPromise());
