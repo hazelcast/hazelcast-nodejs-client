@@ -105,7 +105,7 @@ describe('FencedLockTest', function () {
         let locked = await lock.isLocked();
         expect(locked).to.be.true;
 
-        anotherClient.shutdown();
+        await anotherClient.shutdown();
 
         await new Promise((resolve) => setTimeout(resolve, 5000));
         locked = await lock.isLocked();
