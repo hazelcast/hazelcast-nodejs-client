@@ -25,22 +25,35 @@ const { DeferredPromise } = require('../../lib/util/Util');
 const { PipelinedWriter } = require('../../lib/network/ClientConnection');
 
 describe('PipelinedWriterTest', function () {
+
     let writer;
     let mockSocket;
 
-    const setUpWriteSuccess = () => {
+    function setUpWriteSuccess() {
         mockSocket = new Socket({});
         sinon.stub(mockSocket, 'write').callsFake((data, cb) => {
-            cb();
-            mockSocket.emit('data', data);
+            process.nextTick(cb);
+            process.nextTick(() => mockSocket.emit('data', data));
+            return true;
         });
         writer = new PipelinedWriter(mockSocket, 8192);
     }
 
-    const setUpWriteFailure = (err) => {
+    function setUpWriteSuccessWaitForDrain() {
+        mockSocket = new Socket({});
+        sinon.stub(mockSocket, 'write').callsFake((data, cb) => {
+            process.nextTick(cb);
+            process.nextTick(() => mockSocket.emit('data', data));
+            return false;
+        });
+        writer = new PipelinedWriter(mockSocket, 8192);
+    }
+
+    function setUpWriteFailure(err) {
         mockSocket = new Socket({});
         sinon.stub(mockSocket, 'write').callsFake((_, cb) => {
-            cb(err);
+            process.nextTick(() => cb(err));
+            return false;
         });
         writer = new PipelinedWriter(mockSocket, 8192);
     }
@@ -50,7 +63,7 @@ describe('PipelinedWriterTest', function () {
 
         const buffer = Buffer.from('test');
         writer.write(buffer, DeferredPromise());
-        mockSocket.on('data', function(data) {
+        mockSocket.on('data', (data) => {
             expect(data).to.be.equal(buffer);
             done();
         });
@@ -62,7 +75,7 @@ describe('PipelinedWriterTest', function () {
         writer.write(Buffer.from('1'), DeferredPromise());
         writer.write(Buffer.from('2'), DeferredPromise());
         writer.write(Buffer.from('3'), DeferredPromise());
-        mockSocket.on('data', function(data) {
+        mockSocket.on('data', (data) => {
             expect(data).to.be.deep.equal(Buffer.from('123'));
             done();
         });
@@ -81,7 +94,7 @@ describe('PipelinedWriterTest', function () {
 
         let cnt = 0;
         let allData = Buffer.alloc(0);
-        mockSocket.on('data', function(data) {
+        mockSocket.on('data', (data) => {
             allData = Buffer.concat([allData, data]);
             cnt += 1;
             if (cnt === 1) {
@@ -117,7 +130,7 @@ describe('PipelinedWriterTest', function () {
                 done(new Error());
             }
         });
-        mockSocket.on('data', function(data) {
+        mockSocket.on('data', () => {
             if (++cnt === 2) {
                 done();
             }
@@ -189,4 +202,34 @@ describe('PipelinedWriterTest', function () {
         });
     });
 
+    it('waits for drain event when necessary', (done) => {
+        setUpWriteSuccessWaitForDrain();
+
+        const buffer = Buffer.from('test');
+        writer.write(buffer, DeferredPromise());
+        let writes = 0;
+        mockSocket.on('data', () => {
+            if (++writes === 1) {
+                writer.write(buffer, DeferredPromise());
+                setTimeout(done, 10);
+            } else {
+                done(new Error('Unexpected write before drain event'));
+            }
+        });
+    });
+
+    it('writes queued items on drain event', (done) => {
+        setUpWriteSuccessWaitForDrain();
+
+        const buffer = Buffer.from('test');
+        writer.write(buffer, DeferredPromise());
+        let writes = 0;
+        mockSocket.on('data', () => {
+            if (++writes === 10) {
+                return done();
+            }
+            mockSocket.emit('drain');
+            writer.write(buffer, DeferredPromise());
+        });
+    });
 });

@@ -48,6 +48,7 @@ export class PipelinedWriter extends EventEmitter {
     private queue: OutputQueueItem[] = [];
     private error: Error;
     private scheduled = false;
+    private canWrite = true;
     // coalescing threshold in bytes
     private readonly threshold: number;
 
@@ -55,6 +56,12 @@ export class PipelinedWriter extends EventEmitter {
         super();
         this.socket = socket;
         this.threshold = threshold;
+
+        // write queued items on drain event
+        socket.on('drain', () => {
+            this.canWrite = true;
+            this.schedule();
+        });
     }
 
     write(buffer: Buffer, resolver: Promise.Resolver<void>): void {
@@ -67,7 +74,7 @@ export class PipelinedWriter extends EventEmitter {
     }
 
     private schedule(): void {
-        if (!this.scheduled) {
+        if (!this.scheduled && this.canWrite) {
             this.scheduled = true;
             // nextTick allows queue to be processed on the current event loop phase
             process.nextTick(() => this.process());
@@ -98,7 +105,7 @@ export class PipelinedWriter extends EventEmitter {
 
         // coalesce buffers and write to the socket: no further writes until flushed
         const merged = buffers.length === 1 ? buffers[0] : Buffer.concat(buffers, totalLength);
-        this.socket.write(merged as any, (err: Error) => {
+        this.canWrite = this.socket.write(merged as any, (err: Error) => {
             if (err) {
                 this.handleError(err, resolvers);
                 return;
@@ -108,12 +115,12 @@ export class PipelinedWriter extends EventEmitter {
             for (const r of resolvers) {
                 r.resolve();
             }
-            if (this.queue.length === 0) {
-                // will start running on the next message
+            if (this.queue.length === 0 || !this.canWrite) {
+                // will start running on the next message or drain event
                 this.scheduled = false;
                 return;
             }
-            // setImmediate allows IO between writes
+            // setImmediate allows I/O between writes
             setImmediate(() => this.process());
         });
     }
