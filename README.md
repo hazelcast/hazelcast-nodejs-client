@@ -182,7 +182,7 @@ Test script automatically downloads `hazelcast-remote-controller` and Hazelcast 
 
 ## License
 
-[Apache 2 License](LICENSE).
+[Apache 2.0 License](LICENSE).
 
 ## Copyright
 
