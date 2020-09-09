@@ -30,7 +30,7 @@ import {
     SIZE_OF_FRAME_LENGTH_AND_FLAGS
 } from '../protocol/ClientMessage';
 
-const FROZEN_ARRAY = Object.freeze([]);
+const FROZEN_ARRAY = Object.freeze([]) as OutputQueueItem[];
 const PROPERTY_PIPELINING_ENABLED = 'hazelcast.client.autopipelining.enabled';
 const PROPERTY_PIPELINING_THRESHOLD = 'hazelcast.client.autopipelining.threshold.bytes';
 const PROPERTY_NO_DELAY = 'hazelcast.client.socket.no.delay';
@@ -40,15 +40,20 @@ abstract class Writer extends EventEmitter {
     abstract write(buffer: Buffer, resolver: DeferredPromise<void>): void;
 
     abstract close(): void;
+}
 
+interface OutputQueueItem {
+
+    buffer: Buffer;
+
+    resolver: DeferredPromise<void>;
 }
 
 /** @internal */
 export class PipelinedWriter extends Writer {
 
     private readonly socket: net.Socket;
-    private queuedBufs: Buffer[] = [];
-    private queuedResolvers: DeferredPromise<void>[] = [];
+    private queue: OutputQueueItem[] = [];
     private error: Error;
     private scheduled = false;
     private canWrite = true;
@@ -75,16 +80,14 @@ export class PipelinedWriter extends Writer {
             // if there was a write error, it's useless to keep writing to the socket
             return process.nextTick(() => resolver.reject(this.error));
         }
-        this.queuedBufs.push(buffer);
-        this.queuedResolvers.push(resolver);
+        this.queue.push({ buffer, resolver });
         this.schedule();
     }
 
     close(): void {
         this.canWrite = false;
         // no more items can be added now
-        this.queuedResolvers = FROZEN_ARRAY as DeferredPromise<void>[];
-        this.queuedBufs = FROZEN_ARRAY as Buffer[];
+        this.queue = FROZEN_ARRAY;
     }
 
     private schedule(): void {
@@ -102,8 +105,8 @@ export class PipelinedWriter extends Writer {
 
         let totalLength = 0;
         let queueIdx = 0;
-        while (queueIdx < this.queuedBufs.length && totalLength < this.threshold) {
-            const buf = this.queuedBufs[queueIdx];
+        while (queueIdx < this.queue.length && totalLength < this.threshold) {
+            const buf = this.queue[queueIdx].buffer;
             // if the next buffer exceeds the threshold,
             // try to take multiple queued buffers which fit this.coalesceBuf
             if (queueIdx > 0 && totalLength + buf.length > this.threshold) {
@@ -118,33 +121,31 @@ export class PipelinedWriter extends Writer {
             return;
         }
 
-        const buffers = this.queuedBufs.slice(0, queueIdx);
-        this.queuedBufs = this.queuedBufs.slice(queueIdx);
-        const resolvers = this.queuedResolvers.slice(0, queueIdx);
-        this.queuedResolvers = this.queuedResolvers.slice(queueIdx);
+        const writeBatch = this.queue.slice(0, queueIdx);
+        this.queue = this.queue.slice(queueIdx);
 
         let buf;
-        if (buffers.length === 1) {
+        if (writeBatch.length === 1) {
             // take the only buffer
-            buf = buffers[0];
+            buf = writeBatch[0].buffer;
         } else {
             // coalesce buffers
-            copyBuffers(this.coalesceBuf, buffers, totalLength);
+            copyBuffers(this.coalesceBuf, writeBatch, totalLength);
             buf = this.coalesceBuf.slice(0, totalLength);
         }
 
         // write to the socket: no further writes until flushed
         this.canWrite = this.socket.write(buf, (err: Error) => {
             if (err) {
-                this.handleError(err, resolvers);
+                this.handleError(err, writeBatch);
                 return;
             }
 
             this.emit('write');
-            for (const resolver of resolvers) {
-                resolver.resolve();
+            for (const item of writeBatch) {
+                item.resolver.resolve();
             }
-            if (this.queuedBufs.length === 0 || !this.canWrite) {
+            if (this.queue.length === 0 || !this.canWrite) {
                 // will start running on the next message or drain event
                 this.scheduled = false;
                 return;
@@ -154,13 +155,13 @@ export class PipelinedWriter extends Writer {
         });
     }
 
-    private handleError(err: any, sentResolvers: Array<DeferredPromise<void>>): void {
+    private handleError(err: any, sentResolvers: OutputQueueItem[]): void {
         this.error = new IOError(err);
-        for (const r of sentResolvers) {
-            r.reject(this.error);
+        for (const item of sentResolvers) {
+            item.resolver.reject(this.error);
         }
-        for (const resolver of this.queuedResolvers) {
-            resolver.reject(this.error);
+        for (const item of this.queue) {
+            item.resolver.reject(this.error);
         }
         this.close();
     }
