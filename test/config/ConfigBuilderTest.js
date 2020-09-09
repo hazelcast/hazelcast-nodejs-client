@@ -15,14 +15,14 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const path = require('path');
 const {
     EvictionPolicy,
     JsonStringDeserializationPolicy,
     LoadBalancerType,
     InMemoryFormat,
-    TopicOverloadPolicy,
+    TopicOverloadPolicy
 } = require('../..');
 const { ConfigBuilder } = require('../../lib/config/ConfigBuilder');
 const { AddressHelper } = require('../../lib/util/Util');
@@ -118,6 +118,7 @@ describe('ConfigBuilderTest', function () {
         expect(address0.port).to.be.undefined;
         expect(address1.host).to.equal('127.0.0.2');
         expect(address1.port).to.equal(5702);
+        expect(networkCfg.redoOperation).to.be.true;
         expect(networkCfg.smartRouting).to.be.false;
         expect(networkCfg.connectionTimeout).to.equal(6000);
         expect(networkCfg.ssl.enabled).to.be.true;

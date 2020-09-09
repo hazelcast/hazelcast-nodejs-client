@@ -27,6 +27,7 @@
             "127.0.0.9",
             "127.0.0.2:5702"
         ],
+        "redoOperation": true,
         "smartRouting": false,
         "connectionTimeout": 6000,
         "ssl": {

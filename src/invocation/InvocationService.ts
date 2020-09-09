@@ -158,7 +158,7 @@ export class Invocation {
         }
 
         if (err instanceof TargetDisconnectedError) {
-            return this.request.isRetryable();
+            return this.request.isRetryable() || this.invocationService.redoOperationEnabled();
         }
 
         return false;
@@ -251,6 +251,7 @@ export class InvocationService {
     private readonly connectionManager: ClientConnectionManager;
     private readonly partitionService: PartitionServiceImpl;
     private readonly cleanResourcesMillis: number;
+    private readonly redoOperation: boolean;
     private correlationCounter = 1;
     private cleanResourcesTask: Task;
     private isShutdown: boolean;
@@ -276,6 +277,7 @@ export class InvocationService {
             config.properties[PROPERTY_FAIL_ON_INDETERMINATE_STATE] as boolean;
         this.cleanResourcesMillis =
             config.properties[PROPERTY_CLEAN_RESOURCES_MILLIS] as number;
+        this.redoOperation = config.network.redoOperation;
         this.backupAckToClientEnabled = config.network.smartRouting && config.backupAckToClientEnabled;
         this.isShutdown = false;
     }
@@ -304,6 +306,10 @@ export class InvocationService {
         if (this.cleanResourcesTask != null) {
             cancelRepetitionTask(this.cleanResourcesTask);
         }
+    }
+
+    redoOperationEnabled() {
+        return this.redoOperation;
     }
 
     invoke(invocation: Invocation): Promise<ClientMessage> {
