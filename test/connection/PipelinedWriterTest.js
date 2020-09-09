@@ -62,7 +62,7 @@ describe('PipelinedWriterTest', function () {
         setUpWriteSuccess(true);
 
         const buffer = Buffer.allocUnsafe(THRESHOLD * 2);
-        writer.write(buffer, DeferredPromise());
+        writer.write(buffer, deferredPromise());
         mockSocket.on('data', (data) => {
             expect(data).to.be.equal(buffer);
             done();
