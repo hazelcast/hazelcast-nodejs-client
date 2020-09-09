@@ -182,13 +182,14 @@ export class ClientConnectionManager extends EventEmitter {
             pending.reject(new ClientNotActiveError('Hazelcast client is shutting down'));
         });
 
+        // HeartbeatManager should be shut down before connections are closed
+        this.heartbeatManager.shutdown();
         this.activeConnections.forEach((connection) => {
             connection.close('Hazelcast client is shutting down', null);
         });
 
         this.removeAllListeners(CONNECTION_REMOVED_EVENT_NAME);
         this.removeAllListeners(CONNECTION_ADDED_EVENT_NAME);
-        this.heartbeatManager.shutdown();
     }
 
     public getConnection(uuid: UUID): ClientConnection {
