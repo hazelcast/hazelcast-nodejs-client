@@ -25,13 +25,13 @@ const {
 describe('UtilTest', function () {
 
     it('copyBuffers: throws on invalid total length', function () {
-        expect(() => copyBuffers(Buffer.from([0x1]), [ Buffer.from([0x2]) ], 3))
+        expect(() => copyBuffers(Buffer.from([0x1]), [ { buffer: Buffer.from([0x2]) } ], 3))
             .to.throw(RangeError);
     });
 
     it('copyBuffers: writes single buffer of less length', function () {
         const target = Buffer.from('abc');
-        const sources = [ Buffer.from('d') ];
+        const sources = [ { buffer: Buffer.from('d') } ];
         copyBuffers(target, sources, 1);
 
         expect(Buffer.compare(target, Buffer.from('dbc'))).to.be.equal(0);
@@ -40,9 +40,9 @@ describe('UtilTest', function () {
     it('copyBuffers: writes multiple buffers of same total length', function () {
         const target = Buffer.from('abc');
         const sources = [
-            Buffer.from('d'),
-            Buffer.from('e'),
-            Buffer.from('f')
+            { buffer: Buffer.from('d') },
+            { buffer: Buffer.from('e') },
+            { buffer: Buffer.from('f') }
         ];
         copyBuffers(target, sources, 3);
 
