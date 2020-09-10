@@ -333,21 +333,25 @@ export function timedPromise<T>(wrapped: Promise<T>, timeout: number, err?: Erro
     return deferred.promise;
 }
 
+type Binary = {
+    buffer: Buffer;
+}
+
 /**
- * Copy contents of the given array of buffers into the target buffer.
+ * Copy contents of the given array of objects with buffers into the target buffer.
  *
  * @param target target buffer
- * @param sources source buffers
+ * @param sources source objects that contain buffers
  * @param totalLength total length of all source buffers
  * @internal
  */
-export function copyBuffers(target: Buffer, sources: Buffer[], totalLength: number): void {
+export function copyBuffers(target: Buffer, sources: Binary[], totalLength: number): void {
     if (target.length < totalLength) {
         throw new RangeError('Target length ' + target.length + ' is less than requested ' + totalLength);
     }
     let pos = 0;
     for (const source of sources) {
-        source.copy(target, pos);
-        pos += source.length;
+        source.buffer.copy(target, pos);
+        pos += source.buffer.length;
     }
 }
