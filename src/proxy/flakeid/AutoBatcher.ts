@@ -15,10 +15,12 @@
  */
 /** @ignore *//** */
 
-import * as Promise from 'bluebird';
 import {EventEmitter} from 'events';
 import * as Long from 'long';
-import {DeferredPromise} from '../../util/Util';
+import {
+    deferredPromise,
+    DeferredPromise
+} from '../../util/Util';
 
 /** @internal */
 export class Batch {
@@ -61,7 +63,7 @@ export class AutoBatcher {
 
     private static readonly NEW_BATCH_AVAILABLE = 'newBatch';
 
-    private queue: Array<Promise.Resolver<Long>> = [];
+    private queue: Array<DeferredPromise<Long>> = [];
     private batch: Batch;
     private requestInFlight = false;
     private supplier: () => Promise<any>;
@@ -89,7 +91,7 @@ export class AutoBatcher {
     }
 
     nextId(): Promise<Long> {
-        const deferred = DeferredPromise<Long>();
+        const deferred = deferredPromise<Long>();
         this.queue.push(deferred);
         this.processIdRequests();
         return deferred.promise;
@@ -111,7 +113,7 @@ export class AutoBatcher {
     }
 
     private rejectAll(e: Error): void {
-        this.queue.forEach((deferred: Promise.Resolver<Long>) => {
+        this.queue.forEach((deferred: DeferredPromise<Long>) => {
             deferred.reject(e);
         });
         this.queue = [];

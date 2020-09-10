@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import * as Promise from 'bluebird';
 import {Aggregator} from '../aggregation/Aggregator';
 import {SimpleEntryView} from '../core/SimpleEntryView';
 import {MapListener} from './MapListener';

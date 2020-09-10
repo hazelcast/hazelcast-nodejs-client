@@ -23,7 +23,7 @@ chai.use(chaiAsPromised);
 const RC = require('../RC');
 const { Client, ClientOfflineError, ClientNotActiveError } = require('../../');
 const TestUtil = require('../Util');
-const Util = require('../../lib/util/Util');
+const { deferredPromise } = require('../../lib/util/Util');
 const { ReconnectMode } = require('../../lib/config/ConnectionStrategyConfig');
 const { LifecycleState } = require('../../lib/LifecycleService');
 
@@ -75,7 +75,7 @@ describe('ConnectionStrategyTest', function () {
                 asyncStart: true
             }
         };
-        const connected = Util.DeferredPromise();
+        const connected = deferredPromise();
         config.lifecycleListeners.push((state) => {
             if (state === LifecycleState.CONNECTED) {
                 connected.resolve();
@@ -102,7 +102,7 @@ describe('ConnectionStrategyTest', function () {
                 }
             }
         };
-        const shutdown = Util.DeferredPromise();
+        const shutdown = deferredPromise();
         config.lifecycleListeners.push((state) => {
             if (state === LifecycleState.SHUTDOWN) {
                 shutdown.resolve();
@@ -134,8 +134,8 @@ describe('ConnectionStrategyTest', function () {
                 }
             }
         };
-        const disconnected = Util.DeferredPromise();
-        const reconnected = Util.DeferredPromise();
+        const disconnected = deferredPromise();
+        const reconnected = deferredPromise();
         config.lifecycleListeners.push((state) => {
             if (state === LifecycleState.DISCONNECTED) {
                 disconnected.resolve();

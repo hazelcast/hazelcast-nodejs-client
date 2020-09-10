@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import * as Promise from 'bluebird';
 import {IAtomicLong, FencedLock} from './proxy';
 import {CPProxyManager} from './proxy/cpsubsystem/CPProxyManager';
 import {CPSessionManager} from './proxy/cpsubsystem/CPSessionManager';

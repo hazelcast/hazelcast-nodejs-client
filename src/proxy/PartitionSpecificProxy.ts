@@ -15,7 +15,6 @@
  */
 /** @ignore *//** */
 
-import * as Promise from 'bluebird';
 import {HazelcastClient} from '../HazelcastClient';
 import {BaseProxy} from './BaseProxy';
 import {ClientMessage} from '../protocol/ClientMessage';

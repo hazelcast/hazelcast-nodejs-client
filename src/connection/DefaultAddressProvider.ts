@@ -17,7 +17,6 @@
 
 import {AddressProvider} from './AddressProvider';
 import {ClientNetworkConfigImpl} from '../config/ClientNetworkConfig';
-import * as Promise from 'bluebird';
 import {AddressImpl} from '../core/Address';
 
 /**

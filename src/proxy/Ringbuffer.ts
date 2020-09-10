@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import * as Promise from 'bluebird';
 import * as Long from 'long';
 import {
     DistributedObject,

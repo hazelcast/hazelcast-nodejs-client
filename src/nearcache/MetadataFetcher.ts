@@ -15,7 +15,6 @@
  */
 /** @ignore *//** */
 
-import * as Promise from 'bluebird';
 import {MapFetchNearCacheInvalidationMetadataCodec} from '../codec/MapFetchNearCacheInvalidationMetadataCodec';
 import {dataMemberSelector} from '../core/MemberSelector';
 import {UUID} from '../core/UUID';
@@ -50,9 +49,11 @@ export class MetadataFetcher {
     fetchMetadata(handlers: Map<string, RepairingHandler>): Promise<void> {
         const objectNames = this.getObjectNames(handlers);
         const promises = this.scanMembers(objectNames);
-        return Promise.each(promises, (clientMessage: ClientMessage) => {
-            this.processResponse(clientMessage, handlers);
-        }).then(() => undefined);
+        return Promise.all(promises).then((clientMessages: ClientMessage[]) => {
+            clientMessages.forEach((response) => {
+                this.processResponse(response, handlers);
+            });
+        });
     }
 
     protected processResponse(responseMessage: ClientMessage, handlers: Map<string, RepairingHandler>): void {

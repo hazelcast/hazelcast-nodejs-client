@@ -15,7 +15,6 @@
  */
 /** @ignore *//** */
 
-import * as Promise from 'bluebird';
 import {BuildInfo} from '../BuildInfo';
 import {HazelcastClient} from '../HazelcastClient';
 import {Data} from '../serialization/Data';

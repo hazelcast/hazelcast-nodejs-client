@@ -16,14 +16,16 @@
 /** @ignore *//** */
 
 import * as Long from 'long';
-import * as Promise from 'bluebird';
 import {OverflowPolicy} from '../OverflowPolicy';
 import {HazelcastClient} from '../../HazelcastClient';
 import {TopicOverloadError} from '../../core';
 import {AddressImpl} from '../../core/Address';
 import {SerializationService} from '../../serialization/SerializationService';
 import {UuidUtil} from '../../util/UuidUtil';
-import {DeferredPromise} from '../../util/Util';
+import {
+    deferredPromise,
+    DeferredPromise
+} from '../../util/Util';
 import {BaseProxy} from '../BaseProxy';
 import {Ringbuffer} from '../Ringbuffer';
 import {ITopic} from '../ITopic';
@@ -143,12 +145,12 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
     }
 
     private addWithBackoff(reliableTopicMessage: ReliableTopicMessage): Promise<void> {
-        const deferred = DeferredPromise<void>();
+        const deferred = deferredPromise<void>();
         this.trySendMessage(reliableTopicMessage, TOPIC_INITIAL_BACKOFF, deferred);
         return deferred.promise;
     }
 
-    private trySendMessage(message: ReliableTopicMessage, delay: number, deferred: Promise.Resolver<void>): void {
+    private trySendMessage(message: ReliableTopicMessage, delay: number, deferred: DeferredPromise<void>): void {
         this.ringbuffer.add(message, OverflowPolicy.FAIL).then((seq: Long) => {
             if (seq.toNumber() === -1) {
                 let newDelay = delay *= 2;

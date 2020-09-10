@@ -15,10 +15,9 @@
  */
 /** @ignore *//** */
 
-import {AddressHelper, DeferredPromise} from '../util/Util';
+import {AddressHelper, deferredPromise} from '../util/Util';
 import {get} from 'https';
 import {IncomingMessage} from 'http';
-import * as Promise from 'bluebird';
 import {Properties} from '../config/Properties';
 import * as URL from 'url';
 import {AddressImpl} from '../core/Address';
@@ -59,7 +58,7 @@ export class HazelcastCloudDiscovery {
     }
 
     callService(): Promise<Map<string, AddressImpl>> {
-        const deferred = DeferredPromise<Map<string, AddressImpl>>();
+        const deferred = deferredPromise<Map<string, AddressImpl>>();
 
         const url = URL.parse(this.endpointUrl);
         const endpointUrlOptions = {

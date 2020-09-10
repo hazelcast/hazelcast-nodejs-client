@@ -20,7 +20,7 @@ const Socket = require('net').Socket;
 const sinon = require('sinon');
 const expect = require('chai').expect;
 
-const { DeferredPromise } = require('../../lib/util/Util');
+const { deferredPromise } = require('../../lib/util/Util');
 const { DirectWriter } = require('../../lib/network/ClientConnection');
 
 describe('DirectWriterTest', function () {
@@ -54,7 +54,7 @@ describe('DirectWriterTest', function () {
             done();
         });
 
-        queue.write(buffer, DeferredPromise());
+        queue.write(buffer, deferredPromise());
     });
 
     it('writes multiple messages separately into socket', (done) => {
@@ -68,15 +68,15 @@ describe('DirectWriterTest', function () {
             }
         });
 
-        queue.write(Buffer.from('test'), DeferredPromise());
-        queue.write(Buffer.from('test'), DeferredPromise());
-        queue.write(Buffer.from('test'), DeferredPromise());
+        queue.write(Buffer.from('test'), deferredPromise());
+        queue.write(Buffer.from('test'), deferredPromise());
+        queue.write(Buffer.from('test'), deferredPromise());
     });
 
     it('resolves promise on write success', (done) => {
         setUpWriteSuccess();
 
-        const resolver = DeferredPromise();
+        const resolver = deferredPromise();
         queue.write(Buffer.from('test'), resolver);
         resolver.promise.then(done);
     });
@@ -85,7 +85,7 @@ describe('DirectWriterTest', function () {
         const err = new Error();
         setUpWriteFailure(err);
 
-        const resolver = DeferredPromise();
+        const resolver = deferredPromise();
         queue.write(Buffer.from('test'), resolver);
         resolver.promise.catch((err) => {
             expect(err).to.be.equal(err);
@@ -97,14 +97,14 @@ describe('DirectWriterTest', function () {
         setUpWriteSuccess();
 
         queue.on('write', done);
-        queue.write(Buffer.from('test'), DeferredPromise());
+        queue.write(Buffer.from('test'), deferredPromise());
     });
 
     it('does not emit write event on write failure', (done) => {
         setUpWriteFailure(new Error());
 
         queue.on('write', () => done(new Error()));
-        const resolver = DeferredPromise();
+        const resolver = deferredPromise();
         queue.write(Buffer.from('test'), resolver);
         resolver.promise.catch(_ => {
             done();

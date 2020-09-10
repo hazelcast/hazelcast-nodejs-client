@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import * as Promise from 'bluebird';
 import {ItemListener} from './ItemListener';
 import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 import {DistributedObject} from '../core/DistributedObject';

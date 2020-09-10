@@ -15,7 +15,6 @@
  */
 
 import * as Long from 'long';
-import * as Promise from 'bluebird';
 import {EntryListener} from './EntryListener';
 import {
     DistributedObject,
