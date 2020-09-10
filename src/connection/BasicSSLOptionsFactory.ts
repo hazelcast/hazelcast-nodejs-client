@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import * as Promise from 'bluebird';
 import * as fs from 'fs';
+import {promisify} from 'util';
 import {Properties} from '../config/Properties';
 import {HazelcastError} from '../core';
 import {
@@ -44,7 +44,7 @@ export class BasicSSLOptionsFactory implements SSLOptionsFactory {
 
         const promises = [];
 
-        const readFile = Promise.promisify(fs.readFile);
+        const readFile = promisify(fs.readFile);
 
         const caPath = getStringOrUndefined(properties.caPath);
         const keyPath = getStringOrUndefined(properties.keyPath);

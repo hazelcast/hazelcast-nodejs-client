@@ -15,10 +15,9 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
-const Promise = require('bluebird');
+const { expect } = require('chai');
 const RC = require('./../RC');
-const Client = require('../..').Client;
+const { Client } = require('../..');
 const Util = require('../Util');
 
 describe('MultiMapProxyTest', function () {

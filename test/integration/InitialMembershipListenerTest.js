@@ -23,7 +23,7 @@ const { expect } = require('chai');
 
 const RC = require('../RC');
 const { Client } = require('../../.');
-const Util = require('../../lib/util/Util');
+const { deferredPromise } = require('../../lib/util/Util');
 
 describe('InitialMembershipListenerTest', function () {
 
@@ -91,7 +91,7 @@ describe('InitialMembershipListenerTest', function () {
 
     it('should receive events after initial event', function (done) {
         let newMember;
-        const newMemberResolved = Util.DeferredPromise();
+        const newMemberResolved = deferredPromise();
 
         const membershipListener = {
             init: (event) => {

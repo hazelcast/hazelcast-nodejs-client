@@ -16,10 +16,9 @@
 'use strict';
 
 const { expect } = require('chai');
-const Promise = require('bluebird');
 const fs = require('fs');
-const { Client, StaleSequenceError } = require('../../');
 const RC = require('./../RC');
+const { Client, StaleSequenceError } = require('../../');
 const PrefixFilter = require('../javaclasses/PrefixFilter');
 
 describe('RingbufferProxyTest', function () {

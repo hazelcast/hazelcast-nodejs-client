@@ -16,7 +16,6 @@
 'use strict';
 
 const expect = require('chai').expect;
-const Promise = require('bluebird');
 const RC = require('./RC');
 const { Client } = require('../.');
 const Util = require('./Util');

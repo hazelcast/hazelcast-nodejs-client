@@ -15,7 +15,6 @@
  */
 /** @ignore *//** */
 
-import * as Promise from 'bluebird';
 import {Aggregator} from '../aggregation/Aggregator';
 import {MapAddEntryListenerCodec} from '../codec/MapAddEntryListenerCodec';
 import {MapAddEntryListenerToKeyCodec} from '../codec/MapAddEntryListenerToKeyCodec';

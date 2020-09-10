@@ -19,7 +19,7 @@ const expect = require('chai').expect;
 const fs = require('fs');
 const RC = require('../RC');
 const { Client } = require('../../');
-const { DeferredPromise } = require('../../lib/util/Util');
+const { deferredPromise } = require('../../lib/util/Util');
 const Util = require('../Util');
 
 describe('LostInvalidationTest', function () {
@@ -38,7 +38,7 @@ describe('LostInvalidationTest', function () {
             .get(listenerId).get(client.getConnectionManager().getRandomConnection());
         const correlationId = clientRegistrationKey.correlationId;
         const handler = client.getInvocationService().eventHandlers.get(correlationId).handler;
-        const deferred = DeferredPromise();
+        const deferred = deferredPromise();
         let numberOfBlockedInvalidations = 0;
         client.getInvocationService().eventHandlers.get(correlationId).handler = () => {
             numberOfBlockedInvalidations++;

@@ -16,7 +16,6 @@
 /** @ignore *//** */
 
 import * as Long from 'long';
-import * as Promise from 'bluebird';
 import {RingbufferAddAllCodec} from '../../codec/RingbufferAddAllCodec';
 import {RingbufferAddCodec} from '../../codec/RingbufferAddCodec';
 import {RingbufferCapacityCodec} from '../../codec/RingbufferCapacityCodec';

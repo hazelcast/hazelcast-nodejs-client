@@ -15,7 +15,6 @@
  */
 /** @ignore *//** */
 
-import * as Promise from 'bluebird';
 import {HazelcastClient} from '../HazelcastClient';
 import {HazelcastError} from '../core';
 import {ClientConnection} from '../network/ClientConnection';
@@ -24,7 +23,7 @@ import {Invocation} from '../invocation/InvocationService';
 import {RegistrationKey} from '../invocation/RegistrationKey';
 import {ClientMessageHandler} from '../protocol/ClientMessage';
 import {ListenerMessageCodec} from './ListenerMessageCodec';
-import {DeferredPromise} from '../util/Util';
+import {deferredPromise} from '../util/Util';
 import {UuidUtil} from '../util/UuidUtil';
 import {ILogger} from '../logging/ILogger';
 
@@ -89,7 +88,7 @@ export class ListenerService {
     }
 
     invokeRegistrationFromRecord(userRegistrationKey: string, connection: ClientConnection): Promise<ClientEventRegistration> {
-        const deferred = DeferredPromise<ClientEventRegistration>();
+        const deferred = deferredPromise<ClientEventRegistration>();
         const activeRegsOnUserKey = this.activeRegistrations.get(userRegistrationKey);
         if (activeRegsOnUserKey !== undefined && activeRegsOnUserKey.has(connection)) {
             deferred.resolve(activeRegsOnUserKey.get(connection));
@@ -122,7 +121,7 @@ export class ListenerService {
         const activeConnections = this.client.getConnectionManager().getActiveConnections();
         const userRegistrationKey = UuidUtil.generate().toString();
         let connectionsOnUserKey: Map<ClientConnection, ClientEventRegistration>;
-        const deferred = DeferredPromise<string>();
+        const deferred = deferredPromise<string>();
         const registerRequest = codec.encodeAddRequest(this.isSmart());
         connectionsOnUserKey = this.activeRegistrations.get(userRegistrationKey);
         if (connectionsOnUserKey === undefined) {
@@ -161,7 +160,7 @@ export class ListenerService {
     }
 
     deregisterListener(userRegistrationKey: string): Promise<boolean> {
-        const deferred = DeferredPromise<boolean>();
+        const deferred = deferredPromise<boolean>();
         const registrationsOnUserKey = this.activeRegistrations.get(userRegistrationKey);
         if (registrationsOnUserKey === undefined) {
             deferred.resolve(false);

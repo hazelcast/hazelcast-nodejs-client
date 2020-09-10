@@ -18,7 +18,7 @@
 const expect = require('chai').expect;
 const RC = require('./RC');
 const Client = require('../.').Client;
-const { DeferredPromise } = require('../lib/util/Util');
+const { deferredPromise } = require('../lib/util/Util');
 const { MemberEvent } = require('../lib/core');
 
 describe('MembershipListenerTest', function () {
@@ -46,7 +46,7 @@ describe('MembershipListenerTest', function () {
 
     it('sees member added event', function () {
         let newMember;
-        const listenerCalledResolver = DeferredPromise();
+        const listenerCalledResolver = deferredPromise();
 
         const membershipListener = {
             memberAdded: (membershipEvent) => {
@@ -68,7 +68,7 @@ describe('MembershipListenerTest', function () {
 
     it('sees member added event and other listener\'s event ', function () {
         let newMember;
-        const listenerCalledResolver = DeferredPromise();
+        const listenerCalledResolver = deferredPromise();
         let listenedSecondListener = false;
 
         const membershipListener = {
@@ -115,7 +115,7 @@ describe('MembershipListenerTest', function () {
 
     it('sees member removed event', function () {
         let newMember;
-        const listenerCalledResolver = DeferredPromise();
+        const listenerCalledResolver = deferredPromise();
 
         const membershipListener = {
             memberRemoved: (membershipEvent) => {

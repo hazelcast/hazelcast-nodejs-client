@@ -16,13 +16,13 @@
 
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const fs = require('fs');
 const http = require('http');
 const querystring = require('querystring');
-const Client = require('../../lib').Client;
 const RC = require('../RC');
-const { DeferredPromise } = require('../../lib/util/Util');
+const Client = require('../../lib').Client;
+const { deferredPromise } = require('../../lib/util/Util');
 
 describe('RestValueTest', function () {
 
@@ -69,7 +69,7 @@ describe('RestValueTest', function () {
                 return queue.addItemListener(itemListener, true);
             })
             .then(() => {
-                const deferred = DeferredPromise();
+                const deferred = deferredPromise();
 
                 const options = {
                     hostname: member.host,

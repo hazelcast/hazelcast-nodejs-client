@@ -16,7 +16,6 @@
 /** @ignore *//** */
 
 import * as assert from 'assert';
-import * as Promise from 'bluebird';
 import {HazelcastClient} from '../HazelcastClient';
 import {
     ClientNotActiveError,
@@ -41,6 +40,7 @@ import {
     scheduleWithRepetition,
     cancelRepetitionTask,
     Task,
+    deferredPromise,
     DeferredPromise
 } from '../util/Util';
 
@@ -89,7 +89,7 @@ export class Invocation {
     /**
      * Promise managing object.
      */
-    deferred: Promise.Resolver<ClientMessage>;
+    deferred: DeferredPromise<ClientMessage>;
 
     /**
      * Contains the pending response from the primary. It is pending because it could be that backups need to complete.
@@ -307,7 +307,7 @@ export class InvocationService {
     }
 
     invoke(invocation: Invocation): Promise<ClientMessage> {
-        invocation.deferred = DeferredPromise<ClientMessage>();
+        invocation.deferred = deferredPromise<ClientMessage>();
         const newCorrelationId = this.correlationCounter++;
         invocation.request.setCorrelationId(newCorrelationId);
         this.doInvoke(invocation);

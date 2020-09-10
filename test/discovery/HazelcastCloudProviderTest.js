@@ -17,7 +17,6 @@
 
 const sinon = require('sinon');
 const expect = require('chai').expect;
-const Promise = require('bluebird');
 
 const { LogLevel } = require('../../lib/');
 const { IllegalStateError } = require('../../');

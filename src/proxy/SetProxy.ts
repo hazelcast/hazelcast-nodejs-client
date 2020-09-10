@@ -15,7 +15,6 @@
  */
 /** @ignore *//** */
 
-import * as Promise from 'bluebird';
 import {SetAddAllCodec} from '../codec/SetAddAllCodec';
 import {SetAddCodec} from '../codec/SetAddCodec';
 import {SetAddListenerCodec} from '../codec/SetAddListenerCodec';

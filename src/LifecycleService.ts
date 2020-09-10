@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import * as Promise from 'bluebird';
 import {EventEmitter} from 'events';
 import {HazelcastClient} from './HazelcastClient';
 import {ILogger} from './logging/ILogger';

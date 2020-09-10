@@ -15,7 +15,6 @@
  */
 /** @ignore *//** */
 
-import * as Promise from 'bluebird';
 import {ClientAddDistributedObjectListenerCodec} from '../codec/ClientAddDistributedObjectListenerCodec';
 import {ClientCreateProxyCodec} from '../codec/ClientCreateProxyCodec';
 import {ClientDestroyProxyCodec} from '../codec/ClientDestroyProxyCodec';
@@ -36,7 +35,7 @@ import {RingbufferProxy} from './ringbuffer/RingbufferProxy';
 import {SetProxy} from './SetProxy';
 import {ReliableTopicProxy} from './topic/ReliableTopicProxy';
 import {DistributedObjectEvent, DistributedObjectListener} from '../core/DistributedObjectListener';
-import {DeferredPromise} from '../util/Util';
+import {deferredPromise} from '../util/Util';
 import {ClientMessage} from '../protocol/ClientMessage';
 import {UUID} from '../core/UUID';
 import {ClientCreateProxiesCodec} from '../codec/ClientCreateProxiesCodec';
@@ -90,7 +89,7 @@ export class ProxyManager {
             return this.proxies.get(fullName);
         }
 
-        const deferred = DeferredPromise<DistributedObject>();
+        const deferred = deferredPromise<DistributedObject>();
         this.proxies.set(fullName, deferred.promise);
 
         let createProxyPromise: Promise<any>;

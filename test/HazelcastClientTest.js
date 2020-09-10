@@ -18,7 +18,7 @@
 const expect = require('chai').expect;
 const RC = require('./RC');
 const { Client } = require('../.');
-const { DeferredPromise } = require('../lib/util/Util');
+const { deferredPromise } = require('../lib/util/Util');
 
 const dummyConfig = {
     network: {
@@ -55,7 +55,7 @@ ManagedObjects.prototype.destroyAll = function () {
 };
 
 ManagedObjects.prototype.destroy = function (name) {
-    const deferred = DeferredPromise();
+    const deferred = deferredPromise();
     this.managedObjects.filter((el) => {
         if (el.getName() === name) {
             el.destroy().then(function () {
