@@ -2594,6 +2594,8 @@ const cfg = {
 
 After enabling the client statistics, you can monitor your clients using Hazelcast Management Center. Please refer to the [Monitoring Clients section](https://docs.hazelcast.org/docs/management-center/latest/manual/html/index.html#monitoring-clients) in the Hazelcast Management Center Reference Manual for more information on the client statistics.
 
+> **NOTE: Statistics sent by Hazelcast Node.js client 4.0 are compatible with Management Center 4.0. Management Center 4.2020.08 and newer versions will be supported in version 4.1 of the client.**
+
 ### 7.9.2. Logging Configuration
 
  By default, Hazelcast Node.js client uses a default logger which logs to the `stdout` with the `INFO` log level. You can change the log level using the `hazelcast.logging.level` entry of the `properties` config option.
