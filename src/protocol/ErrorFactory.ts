@@ -32,7 +32,7 @@ import {
     HazelcastError,
     HazelcastInstanceNotActiveError,
     IllegalStateError,
-    InvocationTimeoutError,
+    OperationTimeoutError,
     IndeterminateOperationStateError,
     IOError,
     IllegalArgumentError,
@@ -142,7 +142,7 @@ export class ClientErrorFactory {
         this.register(ClientProtocolErrorCodes.NULL_POINTER,
             (m, c, s) => new NullPointerError(m, c, s));
         this.register(ClientProtocolErrorCodes.OPERATION_TIMEOUT,
-            (m, c, s) => new InvocationTimeoutError(m, c, s));
+            (m, c, s) => new OperationTimeoutError(m, c, s));
         this.register(ClientProtocolErrorCodes.PARTITION_MIGRATING,
             (m, c, s) => new PartitionMigratingError(m, c, s));
         this.register(ClientProtocolErrorCodes.QUERY,

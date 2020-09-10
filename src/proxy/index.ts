@@ -38,3 +38,4 @@ export * from './TopicOverloadPolicy';
 export * from './IAtomicLong';
 export * from './FencedLock';
 export * from './ISemaphore';
+export * from './ICountDownLatch';
