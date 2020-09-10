@@ -56,6 +56,10 @@
                         "type": "string"
                     }
                 },
+                "redoOperation": {
+                    "type": "boolean",
+                    "default": false
+                },
                 "smartRouting": {
                     "type": "boolean",
                     "default": true

@@ -141,6 +141,8 @@ export class ConfigBuilder {
                 this.handleClusterMembers(jsonObject[key]);
             } else if (key === 'smartRouting') {
                 this.effectiveConfig.network.smartRouting = tryGetBoolean(jsonObject[key]);
+            } else if (key === 'redoOperation') {
+                this.effectiveConfig.network.redoOperation = tryGetBoolean(jsonObject[key]);
             } else if (key === 'connectionTimeout') {
                 this.effectiveConfig.network.connectionTimeout = tryGetNumber(jsonObject[key]);
             } else if (key === 'ssl') {
