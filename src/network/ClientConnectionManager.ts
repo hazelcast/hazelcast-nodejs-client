@@ -668,7 +668,7 @@ export class ClientConnectionManager extends EventEmitter {
                             + response.status);
                 }
                 connection.close('Failed to authenticate connection', error);
-                return Promise.reject(error);
+                throw error;
             }
         });
     }
