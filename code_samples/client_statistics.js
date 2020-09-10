@@ -40,7 +40,7 @@ const { Client } = require('hazelcast-client');
         // At this point, we have 1 near cache miss, 2 near cache hits
         // in client's near cache statistics. Sleep more than statistics
         // collection time and keep client running. Then, you should see
-        // the statistics in Hazelcast Management Center
+        // the statistics in Hazelcast Management Center 4.0
         await new Promise((resolve) => setTimeout(resolve, 60000));
         await client.shutdown();
     } catch (err) {
