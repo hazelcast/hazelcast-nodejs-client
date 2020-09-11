@@ -27,6 +27,7 @@ const {
     DistributedObjectDestroyedError
 } = require('../../');
 
+// TODO covert negative and non-number cases
 describe('AtomicLongTest', function () {
 
     this.timeout(30000);
@@ -72,7 +73,7 @@ describe('AtomicLongTest', function () {
     });
 
     it('destroy: should destroy AtomicLong and throw on operation', async function () {
-        const anotherLong = await client.getCPSubsystem().getAtomicLong('another-long-1');
+        const anotherLong = await client.getCPSubsystem().getAtomicLong('another-long');
         await anotherLong.destroy();
         // the next destroy call should be ignored
         await anotherLong.destroy();

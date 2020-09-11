@@ -20,7 +20,10 @@ import {BaseCPProxy} from './BaseCPProxy';
 import {ICountDownLatch} from '../ICountDownLatch';
 import {CPProxyManager} from './CPProxyManager';
 import {RaftGroupId} from './RaftGroupId';
-import {assertNumber, assertNonNegativeNumber} from '../../util/Util';
+import {
+    assertNumber,
+    assertPositiveNumber
+} from '../../util/Util';
 import {UuidUtil} from '../../util/UuidUtil';
 import {CountDownLatchAwaitCodec} from '../../codec/CountDownLatchAwaitCodec';
 import {CountDownLatchGetRoundCodec} from '../../codec/CountDownLatchGetRoundCodec';
@@ -59,7 +62,7 @@ export class CountDownLatchProxy extends BaseCPProxy implements ICountDownLatch 
     }
 
     countDown(): Promise<void> {
-        let round;
+        let round: number;
         const invocationUid = UuidUtil.generate();
         return this.getRound()
             .then((r) => {
@@ -108,7 +111,7 @@ export class CountDownLatchProxy extends BaseCPProxy implements ICountDownLatch 
     }
 
     trySetCount(count: number): Promise<boolean> {
-        assertNonNegativeNumber(count);
+        assertPositiveNumber(count);
         return this.encodeInvokeOnRandomTarget(
             CountDownLatchTrySetCountCodec,
             this.groupId,

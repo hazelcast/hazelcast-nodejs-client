@@ -22,6 +22,7 @@ import {
 } from '../../core';
 import {HazelcastClient} from '../../HazelcastClient';
 import {AtomicLongProxy} from './AtomicLongProxy';
+import {CountDownLatchProxy} from './CountDownLatchProxy';
 import {FencedLock} from '../FencedLock';
 import {FencedLockProxy} from './FencedLockProxy';
 import {ISemaphore} from '../ISemaphore';
@@ -87,6 +88,8 @@ export class CPProxyManager {
         return this.getGroupId(proxyName).then((groupId): DistributedObject | Promise<DistributedObject> => {
             if (serviceName === CPProxyManager.ATOMIC_LONG_SERVICE) {
                 return new AtomicLongProxy(this.client, groupId, proxyName, objectName);
+            } else if (serviceName === CPProxyManager.LATCH_SERVICE) {
+                return new CountDownLatchProxy(this.client, groupId, proxyName, objectName);
             } else if (serviceName === CPProxyManager.LOCK_SERVICE) {
                 return this.createFencedLock(groupId, proxyName, objectName);
             } else if (serviceName === CPProxyManager.SEMAPHORE_SERVICE) {
