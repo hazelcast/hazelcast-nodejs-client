@@ -21,10 +21,7 @@ import {BaseCPProxy} from './BaseCPProxy';
 import {IAtomicLong} from '../IAtomicLong';
 import {CPProxyManager} from './CPProxyManager';
 import {RaftGroupId} from './RaftGroupId';
-import {
-    assertNumber,
-    assertPositiveNumber
-} from '../../util/Util';
+import {assertNumber} from '../../util/Util';
 import {AtomicLongAddAndGetCodec} from '../../codec/AtomicLongAddAndGetCodec';
 import {AtomicLongCompareAndSetCodec} from '../../codec/AtomicLongCompareAndSetCodec';
 import {AtomicLongGetCodec} from '../../codec/AtomicLongGetCodec';
