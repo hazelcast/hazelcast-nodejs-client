@@ -21,13 +21,13 @@ chai.use(require('chai-as-promised'));
 const expect = chai.expect;
 const fs = require('fs');
 const Long = require('long');
+const { AssertionError } = require('assert');
 const RC = require('./../RC');
 const {
     Client,
     DistributedObjectDestroyedError
 } = require('../../');
 
-// TODO covert negative and non-number cases
 describe('AtomicLongTest', function () {
 
     this.timeout(30000);
@@ -86,9 +86,18 @@ describe('AtomicLongTest', function () {
         expectLong(0, value);
     });
 
-    it('addAndGet: should add', async function () {
+    it('addAndGet: should add number', async function () {
         const value = await long.addAndGet(33);
         expectLong(33, value);
+    });
+
+    it('addAndGet: should add Long', async function () {
+        const value = await long.addAndGet(Long.fromNumber(11));
+        expectLong(11, value);
+    });
+
+    it('addAndGet: should throw on non-number delta', async function () {
+        expect(() => long.addAndGet('delta')).to.throw(AssertionError);
     });
 
     it('getAndAdd: should return old value', async function () {
@@ -96,10 +105,20 @@ describe('AtomicLongTest', function () {
         expectLong(0, value);
     });
 
-    it('getAndAdd: should add', async function () {
+    it('getAndAdd: should add number', async function () {
         await long.getAndAdd(123);
         const value = await long.get();
         expectLong(123, value);
+    });
+
+    it('getAndAdd: should add Long', async function () {
+        await long.getAndAdd(Long.fromNumber(321));
+        const value = await long.get();
+        expectLong(321, value);
+    });
+
+    it('getAndAdd: should throw on non-number delta', async function () {
+        expect(() => long.getAndAdd('delta')).to.throw(AssertionError);
     });
 
     it('decrementAndGet: should decrement', async function () {
@@ -107,12 +126,28 @@ describe('AtomicLongTest', function () {
         expectLong(-1, value);
     });
 
-    it('compareAndSet: should set the value when condition is met', async function () {
+    it('compareAndSet: should throw on non-number expected argument', async function () {
+        expect(() => long.compareAndSet('expected', 1)).to.throw(AssertionError);
+    });
+
+    it('compareAndSet: should throw on non-number update argument', async function () {
+        expect(() => long.compareAndSet(1, 'update')).to.throw(AssertionError);
+    });
+
+    it('compareAndSet: should set number value when condition is met', async function () {
         await long.set(42);
         const result = await long.compareAndSet(42, 13);
         expect(result).to.be.true;
         const value = await long.get();
         expectLong(13, value);
+    });
+
+    it('compareAndSet: should set Long value when condition is met', async function () {
+        await long.set(4);
+        const result = await long.compareAndSet(Long.fromNumber(4), Long.fromNumber(1));
+        expect(result).to.be.true;
+        const value = await long.get();
+        expectLong(1, value);
     });
 
     it('compareAndSet: should have no effect when condition is not met', async function () {
@@ -123,10 +158,24 @@ describe('AtomicLongTest', function () {
         expectLong(42, value);
     });
 
-    it('set: should set new value', async function () {
+    it('set: should throw on non-number new value', async function () {
+        expect(() => long.set('newValue')).to.throw(AssertionError);
+    });
+
+    it('set: should set new number value', async function () {
         await long.set(1001);
         const value = await long.get();
         expectLong(1001, value);
+    });
+
+    it('set: should set new Long value', async function () {
+        await long.set(Long.fromNumber(101));
+        const value = await long.get();
+        expectLong(101, value);
+    });
+
+    it('getAndSet: should throw on non-number new value', async function () {
+        expect(() => long.getAndSet('newValue')).to.throw(AssertionError);
     });
 
     it('getAndSet: should return old value', async function () {
@@ -134,10 +183,16 @@ describe('AtomicLongTest', function () {
         expectLong(0, value);
     });
 
-    it('getAndSet: should set the value', async function () {
+    it('getAndSet: should set number value', async function () {
         await long.getAndSet(-123);
         const value = await long.get();
         expectLong(-123, value);
+    });
+
+    it('getAndSet: should set Long value', async function () {
+        await long.getAndSet(Long.fromNumber(-1));
+        const value = await long.get();
+        expectLong(-1, value);
     });
 
     it('incrementAndGet: should increment', async function () {
