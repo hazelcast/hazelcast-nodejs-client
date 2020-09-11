@@ -30,7 +30,7 @@ const { Client } = require('hazelcast-client');
         // Check count
         let count = await latch.getCount();
         console.log('Count:', count);
-        // Wait to 5 seconds for the count to become zero up
+        // Wait up to 5 seconds for the count to become zero
         latch.await(5000)
             .then(() => {
                 console.log('Returned from await()');
