@@ -63,7 +63,7 @@ import {DistributedObject} from '../core';
  * implementation by enabling JDK compatibility `jdk-compatible` server-side
  * setting. Refer to Semaphore configuration documentation for more details.
  * </li>
- * <ul>
+ * </ul>
  */
 export interface ISemaphore extends DistributedObject {
 
