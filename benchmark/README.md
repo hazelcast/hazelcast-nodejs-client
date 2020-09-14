@@ -1,9 +1,9 @@
 # Simple benchmark for Hazelcast IMDG Node.js Client
 
-A collection of simple benchmarks that run operations on Map in parallel, measure execution time and calculate throughput:
-* `MapPutRunner` - runs `map.put('foo', 'bar')` operations.
-* `MapGetRunner` - runs `map.get` operations that read string value with >100 KB size.
-* `MapRandomOpRunner` - runs randomly selected operations (`get`, `put`, `remove`).
+A simple benchmark that runs operations on `Map` concurrently, measures the execution time and calculates the throughput:
+* `put` - runs `map.put('foo', 'bar')` operations.
+* `get` - runs `map.get` operations that read string value with >100 KB size.
+* `random` - runs randomly selected operations (`get`, `put`, `remove`).
 
 ## Running the benchmark
 
@@ -24,20 +24,21 @@ docker run -p 5701:5701 hazelcast/hazelcast:4.0.2
 
 Finally, run one of the benchmarks, e.g.:
 ```bash
-node benchmark/MapPutRunner.js
+node benchmark/Benchmark.js put
+```
+
+You can also override the total number of operations (`-t` argument) and the concurrency level (`-c` argument) for the benchmark:
+```bash
+node benchmark/Benchmark.js put -t 3000000 -c 256
 ```
 
 The benchmark will run and produce its results into the console:
 ```bash
-[DefaultLogger] INFO at ConnectionAuthenticator: Connection to 172.17.0.2:5701 authenticated
-[DefaultLogger] INFO at ClusterService: Members received.
-[ Member {
-    address: Address { host: '172.17.0.2', port: 5701, type: 4 },
-    uuid: 'ea5ae364-9b0e-438d-bde6-e7592ca21c14',
-    isLiteMember: false,
-    attributes: {} } ]
-[DefaultLogger] INFO at HazelcastClient: Client started
-Took 1.058 seconds for 50000 requests
-Ops/s: 47258.979206049145
+Benchmark type: put
+Value size: 1024
+Starting warm-up for 300000 operations
+Warm-up finished
+Took 18.345385751 seconds for 3000000 operations
+Ops/s: 163528.85901221627
 Benchmark finished
 ```
