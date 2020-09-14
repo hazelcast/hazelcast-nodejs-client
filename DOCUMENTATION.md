@@ -65,6 +65,7 @@
       * [7.4.11.2. Using Lock](#74112-using-lock)
       * [7.4.11.3. Using Semaphore](#74113-using-semaphore)
       * [7.4.11.4. Using CountDownLatch](#74114-using-countdownlatch)
+      * [7.4.11.5. Using AtomicReference](#74115-using-atomicreference)
   * [7.5. Distributed Events](#75-distributed-events)
     * [7.5.1. Listening for Cluster Events](#751-listening-for-cluster-events)
       * [7.5.1.1. Membership Listener](#7511-membership-listener)
@@ -1623,6 +1624,41 @@ console.log('Count is zero:', countIsZero);
 ```
 
 > **NOTE: CountDownLatch count can be reset with `trySetCount()` after a countdown has finished, but not during an active count.**
+
+#### 7.4.11.5. Using AtomicReference
+
+Hazelcast `IAtomicReference` is the distributed implementation of a linearizable object reference. It provides a set of atomic operations allowing to modify the value behind the reference. This data structure is a part of CP Subsystem.
+
+A basic AtomicReference usage example is shown below.
+
+```javascript
+// Get a AtomicReference called 'my-ref'
+const ref = await client.getCPSubsystem().getAtomicReference('my-ref');
+// Set the value atomically
+await ref.set(42);
+// Read the value
+const value = await ref.get();
+console.log('Value:', value);
+// Prints:
+// Value: 42
+// Try to replace the value with 'value'
+// with a compare-and-set atomic operation
+const result = await ref.compareAndSet(42, 'value');
+console.log('CAS result:', result);
+// Prints:
+// CAS result: true
+```
+
+The following are some considerations you need to know when you use AtomicReference:
+
+* IAtomicReference works based on the byte-content and not on the object-reference. If you use the `compareAndSet()` method, do not change to the original value because its serialized content will then be different.
+* All methods returning an object return a private copy. You can modify the private copy, but the rest of the world is shielded from your changes. If you want these changes to be visible to the rest of the world, you need to write the change back to the AtomicReference; but be careful about introducing a data-race.
+* The 'in-memory format' of an AtomicReference is `binary`. The receiving side does not need to have the class definition available unless it needs to be deserialized on the other side., e.g., because a method like `alter()` is executed. This deserialization is done for every call that needs to have the object instead of the binary content, so be careful with expensive object graphs that need to be deserialized.
+* If you have an object with many fields or an object graph and you only need to calculate some information or need a subset of fields, you can use the `apply()` method. With the `apply()` method, the whole object does not need to be sent over the line; only the information that is relevant is sent.
+
+> **NOTE: `IFunction`-based methods, like `alter()` or `apply()` are not yet supported by Hazelcast Node.js client.**
+
+AtomicReference does not offer exactly-once / effectively-once execution semantics. It goes with at-least-once execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to offer at-most-once execution semantics. Please see [`fail-on-indeterminate-operation-state`](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-subsystem-configuration) server-side setting.
 
 ## 7.5. Distributed Events
 
