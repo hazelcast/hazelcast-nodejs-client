@@ -29,7 +29,7 @@ const { Client } = require('hazelcast-client');
         // Read the value
         const value = await ref.get();
         console.log('Value:', value);
-        // Performa compare-and-set atomic operation
+        // Perform compare-and-set atomic operation
         const result = await ref.compareAndSet(42, 'value');
         console.log('CAS result:', result);
         // Shutdown this Hazelcast client
