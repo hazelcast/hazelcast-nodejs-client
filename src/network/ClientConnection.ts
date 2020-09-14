@@ -412,8 +412,8 @@ export class ClientConnection {
 
         this.logClose();
 
-        this.socket.end();
         this.writer.close();
+        this.socket.end();
 
         this.client.getConnectionManager().onConnectionClose(this);
     }

@@ -51,7 +51,7 @@ export class HeartbeatManager {
     /**
      * Starts sending periodic heartbeat operations.
      */
-    public start(): void {
+    start(): void {
         this.timer = scheduleWithRepetition(
             this.heartbeatFunction.bind(this), this.heartbeatInterval, this.heartbeatInterval);
     }
@@ -59,14 +59,14 @@ export class HeartbeatManager {
     /**
      * Cancels the periodic heartbeat operation.
      */
-    public shutdown(): void {
+    shutdown(): void {
         cancelRepetitionTask(this.timer);
     }
 
     /**
      * Returns the heartbeat timeout in milliseconds.
      */
-    public getHeartbeatTimeout(): number {
+    getHeartbeatTimeout(): number {
         return this.heartbeatTimeout;
     }
 
