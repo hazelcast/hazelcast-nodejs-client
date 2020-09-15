@@ -71,8 +71,11 @@ describe('HeartbeatFromServerTest', function () {
             const membershipListener = {
                 memberAdded: (membershipEvent) => {
                     const address = new AddressImpl(membershipEvent.member.address.host, membershipEvent.member.address.port);
-                    warmUpConnectionToAddressWithRetry(client, address);
-                    memberAddedPromise.resolve();
+                    warmUpConnectionToAddressWithRetry(client, address)
+                        .then(() => {
+                            memberAddedPromise.resolve();
+                        })
+                        .catch(done);
                 }
             };
 

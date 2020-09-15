@@ -232,8 +232,8 @@ export function randomInt(upperBound: number): number {
 
 /** @internal */
 export class Task {
-    intervalId: NodeJS.Timer;
     timeoutId: NodeJS.Timer;
+    intervalId: NodeJS.Timer;
 }
 
 /** @internal */

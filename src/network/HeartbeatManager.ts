@@ -38,7 +38,7 @@ export class HeartbeatManager {
     private readonly heartbeatTimeout: number;
     private readonly heartbeatInterval: number;
     private logger: ILogger;
-    private timer: Task;
+    private task: Task;
 
     constructor(client: HazelcastClient, connectionManager: ClientConnectionManager) {
         this.client = client;
@@ -52,7 +52,7 @@ export class HeartbeatManager {
      * Starts sending periodic heartbeat operations.
      */
     start(): void {
-        this.timer = scheduleWithRepetition(
+        this.task = scheduleWithRepetition(
             this.heartbeatFunction.bind(this), this.heartbeatInterval, this.heartbeatInterval);
     }
 
@@ -60,7 +60,7 @@ export class HeartbeatManager {
      * Cancels the periodic heartbeat operation.
      */
     shutdown(): void {
-        cancelRepetitionTask(this.timer);
+        cancelRepetitionTask(this.task);
     }
 
     /**
