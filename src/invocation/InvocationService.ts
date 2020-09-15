@@ -20,7 +20,7 @@ import {HazelcastClient} from '../HazelcastClient';
 import {
     ClientNotActiveError,
     HazelcastInstanceNotActiveError,
-    InvocationTimeoutError,
+    OperationTimeoutError,
     IndeterminateOperationStateError,
     IOError,
     RetryableHazelcastError,
@@ -554,7 +554,7 @@ export class InvocationService {
 
         if (invocation.deadline < Date.now()) {
             this.logger.trace('InvocationService', 'Error will not be retried because invocation timed out');
-            invocation.deferred.reject(new InvocationTimeoutError('Invocation '
+            invocation.deferred.reject(new OperationTimeoutError('Invocation '
                 + invocation.request.getCorrelationId() + ') reached its deadline.', error));
             return true;
         }

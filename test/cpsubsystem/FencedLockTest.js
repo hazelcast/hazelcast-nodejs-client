@@ -241,8 +241,8 @@ describe('FencedLockTest', function () {
         const start = Date.now();
         try {
             fence = await lock.lock();
-            await lock.tryLock(1000);
-            expect(Date.now() - start).to.be.greaterThan(900);
+            await lock.tryLock(100);
+            expect(Date.now() - start).to.be.greaterThan(100);
         } finally {
             await lock.unlock(fence);
         }

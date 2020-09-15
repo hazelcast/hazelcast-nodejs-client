@@ -142,10 +142,10 @@ export class IOError extends HazelcastError {
     }
 }
 
-export class InvocationTimeoutError extends HazelcastError {
+export class OperationTimeoutError extends HazelcastError {
     constructor(msg: string, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
         super(msg, cause, serverStackTrace);
-        Object.setPrototypeOf(this, InvocationTimeoutError.prototype);
+        Object.setPrototypeOf(this, OperationTimeoutError.prototype);
     }
 }
 

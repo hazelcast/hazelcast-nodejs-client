@@ -291,7 +291,25 @@ describe('CPSessionManagerTest', function () {
                         expect(requestHeartbeatStub.withArgs(groupId, sessionId).callCount).to.be.greaterThan(1);
                         expect(sessionManager.sessions.size).to.be.equal(1);
                         done();
-                    }, HEARTBEAT_MILLIS * 5);
+                    }, HEARTBEAT_MILLIS * 3);
+                })
+                .catch(done);
+        });
+
+        it('heartbeatTask: should stop sending heartbeats for released session', function (done) {
+            stubRequestNewSession();
+
+            const requestHeartbeatStub = sandbox.stub(sessionManager, 'requestHeartbeat');
+            requestHeartbeatStub.returns(Promise.resolve());
+
+            const groupId = prepareGroupId();
+            sessionManager.acquireSession(groupId)
+                .then((sessionId) => {
+                    sessionManager.releaseSession(groupId, sessionId);
+                    setTimeout(() => {
+                        expect(requestHeartbeatStub.notCalled).to.be.true;
+                        done();
+                    }, HEARTBEAT_MILLIS * 3);
                 })
                 .catch(done);
         });
@@ -309,7 +327,7 @@ describe('CPSessionManagerTest', function () {
                     setTimeout(() => {
                         expect(sessionManager.sessions.size).to.be.equal(0);
                         done();
-                    }, HEARTBEAT_MILLIS * 5);
+                    }, HEARTBEAT_MILLIS * 3);
                 })
                 .catch(done);
         });
