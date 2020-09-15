@@ -151,7 +151,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
     reducePermits(reduction: number): Promise<void> {
         assertNonNegativeNumber(reduction);
         if (reduction === 0) {
-            return;
+            return Promise.resolve();
         }
         return this.doChangePermits(-reduction);
     }
@@ -159,7 +159,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
     increasePermits(increase: number): Promise<void> {
         assertNonNegativeNumber(increase);
         if (increase === 0) {
-            return;
+            return Promise.resolve();
         }
         return this.doChangePermits(increase);
     }

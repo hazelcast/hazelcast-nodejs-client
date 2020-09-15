@@ -198,7 +198,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
     reducePermits(reduction: number): Promise<void> {
         assertNonNegativeNumber(reduction);
         if (reduction === 0) {
-            return;
+            return Promise.resolve();
         }
         return this.doChangePermits(-reduction);
     }
@@ -206,7 +206,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
     increasePermits(increase: number): Promise<void> {
         assertNonNegativeNumber(increase);
         if (increase === 0) {
-            return;
+            return Promise.resolve();
         }
         return this.doChangePermits(increase);
     }
