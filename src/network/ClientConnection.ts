@@ -315,6 +315,7 @@ export class FragmentedClientMessageHandler {
 
 /** @internal */
 export class ClientConnection {
+
     private readonly connectionId: number;
     private remoteAddress: AddressImpl;
     private remoteUuid: UUID;
@@ -412,8 +413,8 @@ export class ClientConnection {
 
         this.logClose();
 
-        this.socket.end();
         this.writer.close();
+        this.socket.end();
 
         this.client.getConnectionManager().onConnectionClose(this);
     }
