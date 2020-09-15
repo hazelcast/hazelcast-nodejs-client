@@ -137,7 +137,7 @@ describe('StatisticsTest (default period)', function () {
             expect(extractStringStatValue(stats, 'os.maxFileDescriptorCount')).to.equal('');
             expect(extractStringStatValue(stats, 'os.openFileDescriptorCount')).to.equal('');
             expect(extractIntStatValue(stats, 'os.processCpuTime')).to.greaterThan(1000);
-            expect(extractFloatStatValue(stats, 'os.systemLoadAverage')).to.be.greaterThan(0);
+            expect(extractFloatStatValue(stats, 'os.systemLoadAverage')).to.be.at.least(0);
             expect(extractIntStatValue(stats, 'os.totalPhysicalMemorySize')).to.equal(os.totalmem());
             expect(extractStringStatValue(stats, 'os.totalSwapSpaceSize')).to.equal('');
             expect(extractIntStatValue(stats, 'runtime.availableProcessors')).to.equal(os.cpus().length);
