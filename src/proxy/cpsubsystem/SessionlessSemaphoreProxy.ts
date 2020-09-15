@@ -67,7 +67,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
         return this.doTryAcquire(permits, -1).then();
     }
 
-    tryAcquire(permits: number, timeout = 0): Promise<boolean> {
+    tryAcquire(permits = 1, timeout = 0): Promise<boolean> {
         assertPositiveNumber(permits);
         assertNonNegativeNumber(timeout);
 

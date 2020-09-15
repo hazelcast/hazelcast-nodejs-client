@@ -97,7 +97,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
             .then();
     }
 
-    tryAcquire(permits: number, timeout = 0): Promise<boolean> {
+    tryAcquire(permits = 1, timeout = 0): Promise<boolean> {
         assertPositiveNumber(permits);
         assertNonNegativeNumber(timeout);
 

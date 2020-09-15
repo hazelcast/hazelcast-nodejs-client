@@ -145,7 +145,17 @@ describe('SemaphoreCommonTest', function () {
                     .catch(done);
             });
 
-            it('tryAcquire: should succeed when permits are available', async function () {
+            it('tryAcquire: should acquire one permit by default when permits are available', async function () {
+                const semaphore = await getSemaphore(type, 5);
+
+                const result = await semaphore.tryAcquire();
+                expect(result).to.be.true;
+
+                const permits = await semaphore.availablePermits();
+                expect(permits).to.be.equal(4);
+            });
+
+            it('tryAcquire: should acquire given number of permits when permits are available', async function () {
                 const semaphore = await getSemaphore(type, 5);
 
                 const result = await semaphore.tryAcquire(2);

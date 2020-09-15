@@ -95,14 +95,15 @@ export interface ISemaphore extends DistributedObject {
      * the number of available permits in the ISemaphore instance is also
      * reduced by the given amount.
      *
-     * @param permits the number of permits to acquire
+     * @param permits the number of permits to acquire; defaults to `1`
+     *                when not specified
      * @param timeout optional timeout in milliseconds to wait for the permits;
      *                when it's not specified the operation will return
      *                immediately after the acquire attempt
      * @returns `true` if all permits were acquired, `false` if the waiting
      *          time elapsed before all permits could be acquired
      */
-    tryAcquire(permits: number, timeout?: number): Promise<boolean>;
+    tryAcquire(permits?: number, timeout?: number): Promise<boolean>;
 
     /**
      * Releases the given number of permits and increases the number of
