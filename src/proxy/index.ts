@@ -37,3 +37,4 @@ export * from './MessageListener';
 export * from './TopicOverloadPolicy';
 export * from './IAtomicLong';
 export * from './FencedLock';
+export * from './ISemaphore';

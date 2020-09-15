@@ -22,6 +22,7 @@ const expect = chai.expect;
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
 const Long = require('long');
+const { AssertionError } = require('assert');
 const {
     Client,
     IllegalMonitorStateError,
@@ -138,15 +139,16 @@ describe('FencedLockProxyTest', function () {
         await expect(proxy.lock()).to.be.rejectedWith(Error);
     });
 
-    it('tryLock: should return fence on successful acquire', async function () {
+    it('tryLock: should not release session on successful acquire', async function () {
         prepareAcquireSession(1);
         stubRequestTryLock(2);
 
         const fence = await proxy.tryLock();
         expect(fence.toNumber()).to.be.equal(2);
+        expect(cpSessionManagerStub.releaseSession.calledOnce).to.be.false;
     });
 
-    it('tryLock: should return release session on failed acquire', async function () {
+    it('tryLock: should release session on failed acquire', async function () {
         prepareAcquireSession(1);
         stubRequestTryLock(0);
 
@@ -183,7 +185,7 @@ describe('FencedLockProxyTest', function () {
         expect(cpSessionManagerStub.invalidateSession.calledOnce).to.be.true;
     });
 
-    it('tryLock: should return undefined on wait key cancelled error', async function () {
+    it('tryLock: should release session on wait key cancelled error', async function () {
         prepareAcquireSession(1);
         stubRequestTryLock(2, new WaitKeyCancelledError());
 
@@ -198,6 +200,10 @@ describe('FencedLockProxyTest', function () {
         stubRequestTryLock(2, new Error());
 
         await expect(proxy.tryLock()).to.be.rejectedWith(Error);
+    });
+
+    it('tryLock: should throw when timeout is not a number', function () {
+        expect(() => proxy.tryLock('invalid timeout')).to.throw(AssertionError);
     });
 
     it('unlock: should release session when lock held', async function () {

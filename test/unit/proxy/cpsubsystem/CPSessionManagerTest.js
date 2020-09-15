@@ -136,6 +136,12 @@ describe('CPSessionManagerTest', function () {
             return stub;
         }
 
+        function stubRequestGenerateThreadId(threadId) {
+            const stub = sandbox.stub(sessionManager, 'requestGenerateThreadId');
+            stub.returns(Promise.resolve(Long.fromNumber(threadId)));
+            return stub;
+        }
+
         beforeEach(function () {
             clientStub = sandbox.stub(Client.prototype);
             sessionManager = new CPSessionManager(clientStub);
@@ -172,6 +178,14 @@ describe('CPSessionManagerTest', function () {
             expect(sessionManager.sessions.get(GROUP_ID_AS_STRING).acquireCount).to.be.equal(1);
         });
 
+        it('acquireSession: should consider permits when creating new session', async function () {
+            stubRequestNewSession();
+
+            const id = await sessionManager.acquireSession(prepareGroupId(), 3);
+            expect(id.toNumber()).to.be.equal(SESSION_ID);
+            expect(sessionManager.sessions.get(GROUP_ID_AS_STRING).acquireCount).to.be.equal(3);
+        });
+
         it('acquireSession: should create new session for existing invalid session', async function () {
             const requestNewSessionStub = stubRequestNewSession();
 
@@ -196,11 +210,18 @@ describe('CPSessionManagerTest', function () {
             expect(sessionManager.sessions.get(GROUP_ID_AS_STRING).acquireCount).to.be.equal(1);
         });
 
-        it('releaseSession: should decrement acquire counter for known session', function () {
+        it('releaseSession: should decrement acquire counter by 1 for known session', function () {
             sessionManager.sessions.set(GROUP_ID_AS_STRING, prepareSessionState());
 
             sessionManager.releaseSession(prepareGroupId(), Long.fromNumber(SESSION_ID));
             expect(sessionManager.sessions.get(GROUP_ID_AS_STRING).acquireCount).to.be.equal(-1);
+        });
+
+        it('releaseSession: should decrement acquire counter by given permits for known session', function () {
+            sessionManager.sessions.set(GROUP_ID_AS_STRING, prepareSessionState());
+
+            sessionManager.releaseSession(prepareGroupId(), Long.fromNumber(SESSION_ID), 3);
+            expect(sessionManager.sessions.get(GROUP_ID_AS_STRING).acquireCount).to.be.equal(-3);
         });
 
         it('releaseSession: should not decrement acquire counter for unknown session', function () {
@@ -222,6 +243,19 @@ describe('CPSessionManagerTest', function () {
 
             sessionManager.invalidateSession(prepareGroupId(), Long.fromNumber(1));
             expect(sessionManager.sessions.size).to.be.equal(1);
+        });
+
+        it('createUniqueThreadId: should reject when shut down', async function () {
+            await sessionManager.shutdown();
+
+            expect(sessionManager.createUniqueThreadId(prepareGroupId(42))).to.be.rejectedWith(IllegalStateError);
+        });
+
+        it('createUniqueThreadId: should generate new thread id', async function () {
+            stubRequestGenerateThreadId(5);
+
+            const id = await sessionManager.createUniqueThreadId(prepareGroupId());
+            expect(id.toNumber()).to.be.equal(5);
         });
 
         it('shutdown: should cancel heartbeat task', async function () {

@@ -30,7 +30,7 @@ import {
     FencedLockGetLockOwnershipCodec,
     FencedLockGetLockOwnershipResponseParams
 } from '../../codec/FencedLockGetLockOwnershipCodec';
-import {assertNumber} from '../../util/Util';
+import {assertNonNegativeNumber} from '../../util/Util';
 import {UuidUtil} from '../../util/UuidUtil';
 import {
     IllegalMonitorStateError,
@@ -103,11 +103,9 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
             });
     }
 
-    tryLock(timeout?: number): Promise<Fence | undefined> {
-        if (timeout === undefined) {
-            timeout = 0;
-        }
-        assertNumber(timeout);
+    tryLock(timeout = 0): Promise<Fence | undefined> {
+        assertNonNegativeNumber(timeout);
+
         const threadId = this.nextThreadId();
         const invocationUid = UuidUtil.generate();
         return this.doTryLock(timeout, threadId, invocationUid);
