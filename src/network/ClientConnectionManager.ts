@@ -145,7 +145,7 @@ export class ClientConnectionManager extends EventEmitter {
         this.reconnectMode = connectionStrategyConfig.reconnectMode;
     }
 
-    public start(): Promise<void> {
+    start(): Promise<void> {
         if (this.alive) {
             return Promise.resolve();
         }
@@ -160,7 +160,7 @@ export class ClientConnectionManager extends EventEmitter {
             });
     }
 
-    public connectToAllClusterMembers(): Promise<void> {
+    connectToAllClusterMembers(): Promise<void> {
         if (!this.isSmartRoutingEnabled) {
             return Promise.resolve();
         }
@@ -169,7 +169,7 @@ export class ClientConnectionManager extends EventEmitter {
         return this.tryConnectToAllClusterMembers(members);
     }
 
-    public shutdown(): void {
+    shutdown(): void {
         if (!this.alive) {
             return;
         }
@@ -192,11 +192,11 @@ export class ClientConnectionManager extends EventEmitter {
         this.removeAllListeners(CONNECTION_ADDED_EVENT_NAME);
     }
 
-    public getConnection(uuid: UUID): ClientConnection {
+    getConnection(uuid: UUID): ClientConnection {
         return this.activeConnections.get(uuid.toString());
     }
 
-    public checkIfInvocationAllowed(): Error {
+    checkIfInvocationAllowed(): Error {
         const state = this.clientState;
         if (state === ClientState.INITIALIZED_ON_CLUSTER && this.activeConnections.size > 0) {
             return null;
@@ -217,19 +217,19 @@ export class ClientConnectionManager extends EventEmitter {
         return error;
     }
 
-    public getActiveConnections(): ClientConnection[] {
+    getActiveConnections(): ClientConnection[] {
         return Array.from(this.activeConnections.values());
     }
 
-    public isAlive(): boolean {
+    isAlive(): boolean {
         return this.alive;
     }
 
-    public getClientUuid(): UUID {
+    getClientUuid(): UUID {
         return this.clientUuid;
     }
 
-    public getOrConnect(address: AddressImpl): Promise<ClientConnection> {
+    getOrConnect(address: AddressImpl): Promise<ClientConnection> {
         if (!this.client.getLifecycleService().isRunning()) {
             return Promise.reject(new ClientNotActiveError('Client is not active.'));
         }
@@ -278,7 +278,7 @@ export class ClientConnectionManager extends EventEmitter {
         ).finally(() => this.pendingConnections.delete(addressKey));
     }
 
-    public getRandomConnection(): ClientConnection {
+    getRandomConnection(): ClientConnection {
         if (this.isSmartRoutingEnabled) {
             const member = this.loadBalancer.next();
             if (member != null) {
@@ -298,7 +298,7 @@ export class ClientConnectionManager extends EventEmitter {
         }
     }
 
-    public onConnectionClose(connection: ClientConnection): void {
+    onConnectionClose(connection: ClientConnection): void {
         const endpoint = connection.getRemoteAddress();
         const memberUuid = connection.getRemoteUuid();
 

@@ -56,7 +56,7 @@ describe('HeartbeatFromServerTest', function () {
     });
 
     it('connectionRemoved fired when second member stops heartbeating', function (done) {
-        const memberAddedPromise = new deferredPromise();
+        const memberAddedPromise = deferredPromise();
         RC.startMember(cluster.id).then(() => {
             return Client.newHazelcastClient({
                 clusterName: cluster.id,
@@ -104,7 +104,7 @@ describe('HeartbeatFromServerTest', function () {
 
     it('connectionAdded fired when second member comes back', function (done) {
         let member2;
-        const memberAddedPromise = new deferredPromise();
+        const memberAddedPromise = deferredPromise();
         RC.startMember(cluster.id).then(() => {
             return Client.newHazelcastClient({
                 clusterName: cluster.id,

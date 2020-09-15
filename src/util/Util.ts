@@ -237,34 +237,31 @@ export class Task {
 }
 
 /** @internal */
-export function scheduleWithRepetition(callback: (...args: any[]) => void,
-                                       initialDelay: number,
-                                       periodMillis: number): Task {
+export function scheduleWithRepetition(callback: () => void,
+                                       initialDelayMs: number,
+                                       periodMs: number): Task {
     const task = new Task();
-    task.timeoutId = setTimeout(function (): void {
+    task.timeoutId = setTimeout(() => {
         callback();
-        task.intervalId = setInterval(callback, periodMillis);
-    }, initialDelay);
-
+        task.intervalId = setInterval(callback, periodMs);
+    }, initialDelayMs);
     return task;
 }
 
 /** @internal */
 export function cancelRepetitionTask(task: Task): void {
-    if (task.intervalId != null) {
+    if (task.intervalId !== undefined) {
         clearInterval(task.intervalId);
-    } else if (task.timeoutId != null) {
+    } else if (task.timeoutId !== undefined) {
         clearTimeout(task.timeoutId);
     }
 }
 
 /** @internal */
 export interface DeferredPromise<T> {
-
     promise: Promise<T>;
     resolve: (result: T) => void;
     reject: (err: Error) => void;
-
 }
 
 /**

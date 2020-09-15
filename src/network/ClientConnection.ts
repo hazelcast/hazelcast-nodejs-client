@@ -315,6 +315,7 @@ export class FragmentedClientMessageHandler {
 
 /** @internal */
 export class ClientConnection {
+
     private readonly connectionId: number;
     private remoteAddress: AddressImpl;
     private remoteUuid: UUID;
