@@ -56,7 +56,7 @@ import {DistributedObject} from '../core';
  * <li>
  * The second implementation is sessionless. This one does not perform
  * auto-cleanup of acquired permits on failures. Acquired permits are not
- * bound to threads and permits can be released without acquiring first.
+ * bound to callers and permits can be released without acquiring first.
  * However, you need to handle failed permit owners on your own. If a Hazelcast
  * server or a client fails while holding some permits, they will not be
  * automatically released. You can use the sessionless CP ISemaphore
