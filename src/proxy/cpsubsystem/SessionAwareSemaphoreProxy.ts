@@ -22,7 +22,10 @@ import {ISemaphore} from '../ISemaphore';
 import {CPProxyManager} from './CPProxyManager';
 import {NO_SESSION_ID} from './CPSessionManager';
 import {RaftGroupId} from './RaftGroupId';
-import {assertNonNegativeNumber} from '../../util/Util';
+import {
+    assertNonNegativeNumber,
+    assertPositiveNumber
+} from '../../util/Util';
 import {UuidUtil} from '../../util/UuidUtil';
 import {SemaphoreInitCodec} from '../../codec/SemaphoreInitCodec';
 import {SemaphoreAcquireCodec} from '../../codec/SemaphoreAcquireCodec';
@@ -65,7 +68,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
     }
 
     acquire(permits = 1): Promise<void> {
-        assertNonNegativeNumber(permits);
+        assertPositiveNumber(permits);
 
         const invocationUid = UuidUtil.generate();
         return this.doAcquire(permits, invocationUid);
@@ -95,7 +98,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
     }
 
     tryAcquire(permits: number, timeout = 0): Promise<boolean> {
-        assertNonNegativeNumber(permits);
+        assertPositiveNumber(permits);
         assertNonNegativeNumber(timeout);
 
         const invocationUid = UuidUtil.generate();
@@ -136,7 +139,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
     }
 
     release(permits = 1): Promise<void> {
-        assertNonNegativeNumber(permits);
+        assertPositiveNumber(permits);
 
         const sessionId = this.getSessionId();
         if (NO_SESSION_ID.equals(sessionId)) {

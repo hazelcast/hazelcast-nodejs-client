@@ -23,7 +23,10 @@ import {CPSubsystemImpl} from '../../CPSubsystem';
 import {CPProxyManager} from './CPProxyManager';
 import {CPSessionManager, NO_SESSION_ID} from './CPSessionManager';
 import {RaftGroupId} from './RaftGroupId';
-import {assertNonNegativeNumber} from '../../util/Util';
+import {
+    assertNonNegativeNumber,
+    assertPositiveNumber
+} from '../../util/Util';
 import {UuidUtil} from '../../util/UuidUtil';
 import {SemaphoreInitCodec} from '../../codec/SemaphoreInitCodec';
 import {SemaphoreAcquireCodec} from '../../codec/SemaphoreAcquireCodec';
@@ -59,13 +62,13 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
     }
 
     acquire(permits = 1): Promise<void> {
-        assertNonNegativeNumber(permits);
+        assertPositiveNumber(permits);
 
         return this.doTryAcquire(permits, -1).then();
     }
 
     tryAcquire(permits: number, timeout = 0): Promise<boolean> {
-        assertNonNegativeNumber(permits);
+        assertPositiveNumber(permits);
         assertNonNegativeNumber(timeout);
 
         return this.doTryAcquire(permits, timeout);
@@ -100,7 +103,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
     }
 
     release(permits = 1): Promise<void> {
-        assertNonNegativeNumber(permits);
+        assertPositiveNumber(permits);
 
         const invocationUid = UuidUtil.generate();
         return this.getClusterWideThreadId()

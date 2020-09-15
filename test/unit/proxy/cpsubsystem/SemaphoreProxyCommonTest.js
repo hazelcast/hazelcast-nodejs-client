@@ -77,6 +77,11 @@ describe('SemaphoreProxyCommonTest', function () {
                 expect(() => proxy.acquire('permits')).to.throw(AssertionError);
             });
 
+            it('acquire: should throw for zero', function () {
+                const proxy = createProxy(type);
+                expect(() => proxy.acquire(0)).to.throw(AssertionError);
+            });
+
             it('acquire: should throw for negative number', function () {
                 const proxy = createProxy(type);
                 expect(() => proxy.acquire(-1)).to.throw(AssertionError);
@@ -85,6 +90,11 @@ describe('SemaphoreProxyCommonTest', function () {
             it('tryAcquire: should throw for non-number permits', function () {
                 const proxy = createProxy(type);
                 expect(() => proxy.tryAcquire('permits')).to.throw(AssertionError);
+            });
+
+            it('tryAcquire: should throw for zero permits', function () {
+                const proxy = createProxy(type);
+                expect(() => proxy.tryAcquire(0)).to.throw(AssertionError);
             });
 
             it('tryAcquire: should throw for negative permits', function () {
@@ -105,6 +115,11 @@ describe('SemaphoreProxyCommonTest', function () {
             it('release: should throw for non-number', function () {
                 const proxy = createProxy(type);
                 expect(() => proxy.release('permits')).to.throw(AssertionError);
+            });
+
+            it('release: should throw for zero', function () {
+                const proxy = createProxy(type);
+                expect(() => proxy.release(0)).to.throw(AssertionError);
             });
 
             it('release: should throw for negative number', function () {
