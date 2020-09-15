@@ -57,7 +57,7 @@ export interface BitmapIndexOptions {
 
     /**
      * Unique key attribute configured in this index config.
-     * Defaults to {@code __key}. The unique key attribute is used as a source
+     * Defaults to `__key`. The unique key attribute is used as a source
      * of values which uniquely identify each entry being inserted into an index.
      */
     uniqueKey?: string;

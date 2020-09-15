@@ -99,7 +99,7 @@ export interface ICountDownLatch extends DistributedObject {
      * Sets the count to the given value if the current count is zero.
      *
      * If count is not zero, then this method does nothing and returns
-     * `{@code `false`.
+     * `false`.
      *
      * @param count the number of times `countDown()` must be invoked
      *              before callers can pass through `await()`
