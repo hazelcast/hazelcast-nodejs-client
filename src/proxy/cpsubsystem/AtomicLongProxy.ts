@@ -21,6 +21,7 @@ import {BaseCPProxy} from './BaseCPProxy';
 import {IAtomicLong} from '../IAtomicLong';
 import {CPProxyManager} from './CPProxyManager';
 import {RaftGroupId} from './RaftGroupId';
+import {assertNumber} from '../../util/Util';
 import {AtomicLongAddAndGetCodec} from '../../codec/AtomicLongAddAndGetCodec';
 import {AtomicLongCompareAndSetCodec} from '../../codec/AtomicLongCompareAndSetCodec';
 import {AtomicLongGetCodec} from '../../codec/AtomicLongGetCodec';
@@ -39,6 +40,7 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
 
     addAndGet(delta: Long | number): Promise<Long> {
         if (!Long.isLong(delta)) {
+            assertNumber(delta);
             delta = Long.fromNumber(delta as number);
         }
         return this.encodeInvokeOnRandomTarget(AtomicLongAddAndGetCodec, this.groupId, this.objectName, delta)
@@ -50,9 +52,11 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
 
     compareAndSet(expect: Long | number, update: Long | number): Promise<boolean> {
         if (!Long.isLong(expect)) {
+            assertNumber(expect);
             expect = Long.fromNumber(expect as number);
         }
         if (!Long.isLong(update)) {
+            assertNumber(update);
             update = Long.fromNumber(update as number);
         }
         return this.encodeInvokeOnRandomTarget(AtomicLongCompareAndSetCodec, this.groupId, this.objectName, expect, update)
@@ -76,6 +80,7 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
 
     getAndAdd(delta: Long | number): Promise<Long> {
         if (!Long.isLong(delta)) {
+            assertNumber(delta);
             delta = Long.fromNumber(delta as number);
         }
         return this.encodeInvokeOnRandomTarget(AtomicLongGetAndAddCodec, this.groupId, this.objectName, delta)
@@ -87,6 +92,7 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
 
     getAndSet(newValue: Long | number): Promise<Long> {
         if (!Long.isLong(newValue)) {
+            assertNumber(newValue);
             newValue = Long.fromNumber(newValue as number);
         }
         return this.encodeInvokeOnRandomTarget(AtomicLongGetAndSetCodec, this.groupId, this.objectName, newValue)

@@ -179,9 +179,9 @@ describe('SemaphoreCommonTest', function () {
                 const semaphore = await getSemaphore(type, 1);
 
                 const start = Date.now();
-                const result = await semaphore.tryAcquire(2, 1000);
+                const result = await semaphore.tryAcquire(2, 100);
                 expect(result).to.be.false;
-                expect(Date.now() - start).to.be.greaterThan(900);
+                expect(Date.now() - start).to.be.greaterThan(100);
             });
 
             it('release: should succeed when permits are acquired', async function () {

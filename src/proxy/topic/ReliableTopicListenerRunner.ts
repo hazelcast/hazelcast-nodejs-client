@@ -17,7 +17,7 @@
 
 import {ReadResultSet} from '../../';
 import {
-    InvocationTimeoutError,
+    OperationTimeoutError,
     ClientNotActiveError,
     ClientOfflineError
 } from '../../core';
@@ -102,7 +102,7 @@ export class ReliableTopicListenerRunner<E> {
     }
 
     private handleInternalError(err: Error): boolean {
-        if (err instanceof InvocationTimeoutError) {
+        if (err instanceof OperationTimeoutError) {
             this.logger.trace('ReliableTopicListenerRunner', 'Listener of topic: ' + this.proxy.getName()
                 + ' timed out. Continuing from last known sequence: ' + this.sequenceNumber);
             return true;

@@ -64,6 +64,7 @@
       * [7.4.11.1. Using Atomic Long](#74111-using-atomic-long)
       * [7.4.11.2. Using Lock](#74112-using-lock)
       * [7.4.11.3. Using Semaphore](#74113-using-semaphore)
+      * [7.4.11.4. Using CountDownLatch](#74114-using-countdownlatch)
   * [7.5. Distributed Events](#75-distributed-events)
     * [7.5.1. Listening for Cluster Events](#751-listening-for-cluster-events)
       * [7.5.1.1. Membership Listener](#7511-membership-listener)
@@ -1548,7 +1549,7 @@ if (fence !== undefined) {
 
 #### 7.4.11.3. Using Semaphore
 
-Hazelcast `ISemaphore` is the distributed implementation of a linearizable and distributed lock. It offers multiple  operations for acquiring the permits. This data structure is a part of CP Subsystem.
+Hazelcast `ISemaphore` is the distributed implementation of a linearizable and distributed semaphore. It offers multiple operations for acquiring the permits. This data structure is a part of CP Subsystem.
 
 Semaphore is a cluster-wide counting semaphore. Conceptually, it maintains a set of permits. Each `acquire()` waits if necessary until a permit is available, and then takes it. Dually, each `release()` adds a permit, potentially releasing a waiting acquirer. However, no actual permit objects are used; the semaphore just keeps a count of the number available and acts accordingly.
 
@@ -1558,7 +1559,7 @@ A basic Semaphore usage example is shown below.
 // Get a Semaphore called 'my-semaphore'
 const semaphore = await client.getCPSubsystem().getSemaphore('my-semaphore');
 // Try to initialize the semaphore
-// (this operation does nothing if the semaphore is already initialized)
+// (does nothing if the semaphore is already initialized)
 await semaphore.init(3);
 // Acquire 3 permits out of 3
 await semaphore.acquire(3);
@@ -1593,6 +1594,35 @@ if (success) {
 
  * The default implementation is session-aware. In this one, when a caller makes its very first `acquire()` call, it starts a new CP session with the underlying CP group. Then, liveliness of the caller is tracked via this CP session. When the caller fails, permits acquired by this caller are automatically and safely released. However, the session-aware version comes with a limitation, that is, a Hazelcast client cannot release permits before acquiring them first. In other words, a client can release only the permits it has acquired earlier.
  * The second implementation is sessionless. This one does not perform auto-cleanup of acquired permits on failures. Acquired permits are not bound to callers and permits can be released without acquiring first. However, you need to handle failed permit owners on your own. If a Hazelcast server or a client fails while holding some permits, they will not be automatically released. You can use the sessionless CP Semaphore implementation by enabling JDK compatibility `jdk-compatible` server-side setting. Refer to [Semaphore configuration](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#semaphore-configuration) documentation for more details.
+
+#### 7.4.11.4. Using CountDownLatch
+
+Hazelcast `ICountDownLatch` is the distributed implementation of a linearizable and distributed countdown latch. This data structure is a cluster-wide synchronization aid that allows one or more callers to wait until a set of operations being performed in other callers completes. This data structure is a part of CP Subsystem.
+
+A basic CountDownLatch usage example is shown below.
+
+```javascript
+// Get a CountDownLatch called 'my-latch'
+const latch = await client.getCPSubsystem().getCountDownLatch('my-latch');
+// Try to initialize the latch
+// (does nothing if the count is not zero)
+const initialized = await latch.trySetCount(1);
+console.log('Initialized:', initialized);
+// Check count
+let count = await latch.getCount();
+console.log('Count:', count);
+// Prints:
+// Count: 1
+// Bring the count down to zero after 10ms
+setTimeout(() => {
+    latch.countDown().catch(console.error);
+}, 10);
+// Wait up to 1 second for the count to become zero up
+const countIsZero = await latch.await(1000);
+console.log('Count is zero:', countIsZero);
+```
+
+> **NOTE: CountDownLatch count can be reset with `trySetCount()` after a countdown has finished, but not during an active count.**
 
 ## 7.5. Distributed Events
 

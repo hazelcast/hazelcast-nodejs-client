@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import {IAtomicLong, FencedLock, ISemaphore} from './proxy';
+import {
+    IAtomicLong,
+    ICountDownLatch,
+    FencedLock,
+    ISemaphore
+} from './proxy';
 import {CPProxyManager} from './proxy/cpsubsystem/CPProxyManager';
 import {CPSessionManager} from './proxy/cpsubsystem/CPSessionManager';
 import {HazelcastClient} from './HazelcastClient';
@@ -81,6 +86,18 @@ export interface CPSubsystem {
      */
     getSemaphore(name: string): Promise<ISemaphore>;
 
+    /**
+     * Returns the distributed CountDownLatch instance with given name.
+     * The instance is created on CP Subsystem.
+     *
+     * If no group name is given within the `name` argument, then the
+     * ICountDownLatch instance will be created on the DEFAULT CP group.
+     * If a group name is given, like `.getCountDownLatch('myLatch@group1')`,
+     * the given group will be initialized first, if not initialized
+     * already, and then the instance will be created on this group.
+     */
+    getCountDownLatch(name: string): Promise<ICountDownLatch>;
+
 }
 
 /** @internal */
@@ -104,6 +121,10 @@ export class CPSubsystemImpl implements CPSubsystem {
 
     getSemaphore(name: string): Promise<ISemaphore> {
         return this.cpProxyManager.getOrCreateProxy(name, CPProxyManager.SEMAPHORE_SERVICE) as Promise<ISemaphore>;
+    }
+
+    getCountDownLatch(name: string): Promise<ICountDownLatch> {
+        return this.cpProxyManager.getOrCreateProxy(name, CPProxyManager.LATCH_SERVICE) as Promise<ICountDownLatch>;
     }
 
     getCPSessionManager(): CPSessionManager {
