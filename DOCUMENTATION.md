@@ -1479,18 +1479,22 @@ const atomicLong = await client.getCPSubsystem().getAtomicLong('my-atomic-long')
 // Get current value (returns a Long)
 const value = await atomicLong.get();
 console.log('Value:', value);
+// Prints:
+// Value: 0
 // Increment by 42
 await atomicLong.addAndGet(42);
 // Set to 0 atomically if the current value is 42
 const result = atomicLong.compareAndSet(42, 0);
 console.log('CAS operation result:', result);
+// Prints:
+// CAS operation result: true
 ```
 
-`IAtomicLong` implementation does not offer exactly-once / effectively-once execution semantics. It goes with at-least-once execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to offer at-most-once execution semantics. Please see [`fail-on-indeterminate-operation-state`](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-subsystem-configuration) server-side setting.
+AtomicLong implementation does not offer exactly-once / effectively-once execution semantics. It goes with at-least-once execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to offer at-most-once execution semantics. Please see [`fail-on-indeterminate-operation-state`](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-subsystem-configuration) server-side setting.
 
 #### 7.4.11.2. Using Lock
 
-Hazelcast `FencedLock` is the distributed implementation of a linearizable and distributed lock. It offers multiple  operations for acquiring the lock. This data structure is a part of CP Subsystem.
+Hazelcast `FencedLock` is the distributed implementation of a linearizable lock. It offers multiple  operations for acquiring the lock. This data structure is a part of CP Subsystem.
 
 A basic Lock usage example is shown below.
 
@@ -1524,9 +1528,9 @@ const fence = await lock.lock();
 await lock.lock();
 ```
 
-Considering this, you should always call the `.lock()` method only once per async call chain and make sure to release the lock as early as possible.
+Considering this, you should always call the `lock()` method only once per async call chain and make sure to release the lock as early as possible.
 
-As an alternative approach, you can use the `.tryLock()` method of FencedLock. It tries to acquire the lock in optimistic manner and immediately returns with either a valid fencing token or `undefined`. It also accepts an optional `timeout` argument which specifies the timeout in milliseconds to acquire the lock before giving up.
+As an alternative approach, you can use the `tryLock()` method of FencedLock. It tries to acquire the lock in optimistic manner and immediately returns with either a valid fencing token or `undefined`. It also accepts an optional `timeout` argument which specifies the timeout in milliseconds to acquire the lock before giving up.
 
 ```javascript
 // Try to acquire the lock
@@ -1544,7 +1548,51 @@ if (fence !== undefined) {
 
 #### 7.4.11.3. Using Semaphore
 
-This new implementation cannot be used with the Node.js client yet. We plan to implement this data structure in the upcoming 4.0 release of Hazelcast Node.js client. In the meantime, since there is no way to access the old non-CP Semaphore primitive using IMDG 4.x, we removed its implementation, code samples and documentation. It will be back once we implement them.
+Hazelcast `ISemaphore` is the distributed implementation of a linearizable and distributed lock. It offers multiple  operations for acquiring the permits. This data structure is a part of CP Subsystem.
+
+Semaphore is a cluster-wide counting semaphore. Conceptually, it maintains a set of permits. Each `acquire()` waits if necessary until a permit is available, and then takes it. Dually, each `release()` adds a permit, potentially releasing a waiting acquirer. However, no actual permit objects are used; the semaphore just keeps a count of the number available and acts accordingly.
+
+A basic Semaphore usage example is shown below.
+
+```javascript
+// Get a Semaphore called 'my-semaphore'
+const semaphore = await client.getCPSubsystem().getSemaphore('my-semaphore');
+// Try to initialize the semaphore
+// (this operation does nothing if the semaphore is already initialized)
+await semaphore.init(3);
+// Acquire 3 permits out of 3
+await semaphore.acquire(3);
+// Release 2 permits
+await semaphore.release(2);
+// Check available permits
+const available = await semaphore.availablePermits();
+console.log('Available:', available);
+// Prints:
+// Available: 1
+```
+
+Beware of the increased risk of indefinite postponement when using the multiple-permit acquire. If permits are released one by one, a caller waiting for one permit will acquire it before a caller waiting for multiple permits regardless of the call order. Correct usage of a semaphore is established by programming convention in the application.
+
+As an alternative, potentially safer approach to the multiple-permit acquire, you can use the `tryAcquire()` method of Semaphore. It tries to acquire the permits in optimistic manner and immediately returns with a `boolean` operation result. It also accepts an optional `timeout` argument which specifies the timeout in milliseconds to acquire the permits before giving up.
+
+```javascript
+// Try to acquire 2 permits
+const success = await semaphore.tryAcquire(2);
+// Check for valid fencing token
+if (success) {
+    try {
+        // Your guarded code goes here
+    } finally {
+        // Make sure to release the permits
+        await semaphore.release(2);
+    }
+}
+```
+
+ Semaphore data structure has two variations:
+
+ * The default implementation is session-aware. In this one, when a caller makes its very first `acquire()` call, it starts a new CP session with the underlying CP group. Then, liveliness of the caller is tracked via this CP session. When the caller fails, permits acquired by this caller are automatically and safely released. However, the session-aware version comes with a limitation, that is, a Hazelcast client cannot release permits before acquiring them first. In other words, a client can release only the permits it has acquired earlier.
+ * The second implementation is sessionless. This one does not perform auto-cleanup of acquired permits on failures. Acquired permits are not bound to callers and permits can be released without acquiring first. However, you need to handle failed permit owners on your own. If a Hazelcast server or a client fails while holding some permits, they will not be automatically released. You can use the sessionless CP Semaphore implementation by enabling JDK compatibility `jdk-compatible` server-side setting. Refer to [Semaphore configuration](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#semaphore-configuration) documentation for more details.
 
 ## 7.5. Distributed Events
 

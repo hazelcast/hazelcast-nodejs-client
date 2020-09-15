@@ -22,9 +22,14 @@ import {
 } from '../../core';
 import {HazelcastClient} from '../../HazelcastClient';
 import {AtomicLongProxy} from './AtomicLongProxy';
+import {FencedLock} from '../FencedLock';
 import {FencedLockProxy} from './FencedLockProxy';
+import {ISemaphore} from '../ISemaphore';
+import {SessionlessSemaphoreProxy} from './SessionlessSemaphoreProxy';
+import {SessionAwareSemaphoreProxy} from './SessionAwareSemaphoreProxy';
 import {RaftGroupId} from './RaftGroupId';
 import {CPGroupCreateCPGroupCodec} from '../../codec/CPGroupCreateCPGroupCodec';
+import {SemaphoreGetSemaphoreTypeCodec} from '../../codec/SemaphoreGetSemaphoreTypeCodec';
 import {assertString} from '../../util/Util';
 
 const DEFAULT_GROUP_NAME = 'default';
@@ -65,6 +70,7 @@ export class CPProxyManager {
 
     static readonly ATOMIC_LONG_SERVICE = 'hz:raft:atomicLongService';
     static readonly LOCK_SERVICE = 'hz:raft:lockService';
+    static readonly SEMAPHORE_SERVICE = 'hz:raft:semaphoreService';
 
     private readonly client: HazelcastClient;
     private readonly lockProxies: Map<string, FencedLockProxy> = new Map();
@@ -77,11 +83,13 @@ export class CPProxyManager {
         proxyName = withoutDefaultGroupName(proxyName);
         const objectName = getObjectNameForProxy(proxyName);
 
-        return this.getGroupId(proxyName).then((groupId) => {
+        return this.getGroupId(proxyName).then((groupId): DistributedObject | Promise<DistributedObject> => {
             if (serviceName === CPProxyManager.ATOMIC_LONG_SERVICE) {
                 return new AtomicLongProxy(this.client, groupId, proxyName, objectName);
             } else if (serviceName === CPProxyManager.LOCK_SERVICE) {
                 return this.createFencedLock(groupId, proxyName, objectName);
+            } else if (serviceName === CPProxyManager.SEMAPHORE_SERVICE) {
+                return this.createSemaphore(groupId, proxyName, objectName);
             }
             throw new IllegalStateError('Unexpected service name: ' + serviceName);
         });
@@ -96,7 +104,7 @@ export class CPProxyManager {
             });
     }
 
-    private createFencedLock(groupId: RaftGroupId, proxyName: string, objectName: string): FencedLockProxy {
+    private createFencedLock(groupId: RaftGroupId, proxyName: string, objectName: string): FencedLock {
         let proxy = this.lockProxies.get(proxyName);
         if (proxy !== undefined) {
             if (!groupId.equals(proxy.getGroupId())) {
@@ -108,5 +116,19 @@ export class CPProxyManager {
         proxy = new FencedLockProxy(this.client, groupId, proxyName, objectName);
         this.lockProxies.set(proxyName, proxy);
         return proxy;
+    }
+
+    private createSemaphore(groupId: RaftGroupId, proxyName: string, objectName: string): Promise<ISemaphore> {
+        const clientMessage = SemaphoreGetSemaphoreTypeCodec.encodeRequest(proxyName);
+        return this.client.getInvocationService().invokeOnRandomTarget(clientMessage)
+            .then((clientMessage) => {
+                const response = SemaphoreGetSemaphoreTypeCodec.decodeResponse(clientMessage);
+                return response.response;
+            })
+            .then((jdkCompatible) => {
+                return jdkCompatible
+                    ? new SessionlessSemaphoreProxy(this.client, groupId, proxyName, objectName)
+                    : new SessionAwareSemaphoreProxy(this.client, groupId, proxyName, objectName);
+            });
     }
 }

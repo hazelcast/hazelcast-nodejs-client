@@ -29,6 +29,7 @@ import {
 } from '../../codec/CPSessionCreateSessionCodec';
 import {CPSessionCloseSessionCodec} from '../../codec/CPSessionCloseSessionCodec';
 import {CPSessionHeartbeatSessionCodec} from '../../codec/CPSessionHeartbeatSessionCodec';
+import {CPSessionGenerateThreadIdCodec} from '../../codec/CPSessionGenerateThreadIdCodec';
 import {
     scheduleWithRepetition,
     cancelRepetitionTask,
@@ -98,16 +99,16 @@ export class CPSessionManager {
         return session !== undefined ? session.id : NO_SESSION_ID;
     }
 
-    acquireSession(groupId: RaftGroupId): Promise<Long> {
+    acquireSession(groupId: RaftGroupId, permits = 1): Promise<Long> {
         return this.getOrCreateSession(groupId).then((state) => {
-            return state.acquire(1);
+            return state.acquire(permits);
         });
     }
 
-    releaseSession(groupId: RaftGroupId, sessionId: Long): void {
+    releaseSession(groupId: RaftGroupId, sessionId: Long, permits = 1): void {
         const session = this.sessions.get(groupId.getStringId());
         if (session !== undefined && session.id.equals(sessionId)) {
-            session.release(1);
+            session.release(permits);
         }
     }
 
@@ -116,6 +117,13 @@ export class CPSessionManager {
         if (session !== undefined && session.id.equals(sessionId)) {
             this.sessions.delete(groupId.getStringId());
         }
+    }
+
+    createUniqueThreadId(groupId: RaftGroupId): Promise<Long> {
+        if (this.isShutdown) {
+            return Promise.reject(new IllegalStateError('Session manager is already shut down'));
+        }
+        return this.requestGenerateThreadId(groupId);
     }
 
     shutdown(): Promise<void> {
@@ -140,7 +148,7 @@ export class CPSessionManager {
             return Promise.reject(new IllegalStateError('Session manager is already shut down'));
         }
         const session = this.sessions.get(groupId.getStringId());
-        if (session == null || !session.isValid()) {
+        if (session === undefined || !session.isValid()) {
             return this.createNewSession(groupId);
         }
         return Promise.resolve(session);
@@ -176,6 +184,15 @@ export class CPSessionManager {
     private requestHeartbeat(groupId: RaftGroupId, sessionId: Long): Promise<void> {
         const clientMessage = CPSessionHeartbeatSessionCodec.encodeRequest(groupId, sessionId);
         return this.client.getInvocationService().invokeOnRandomTarget(clientMessage).then();
+    }
+
+    private requestGenerateThreadId(groupId: RaftGroupId): Promise<Long> {
+        const clientMessage = CPSessionGenerateThreadIdCodec.encodeRequest(groupId);
+        return this.client.getInvocationService().invokeOnRandomTarget(clientMessage)
+            .then((clientMessage) => {
+                const response = CPSessionGenerateThreadIdCodec.decodeResponse(clientMessage);
+                return response.response;
+            });
     }
 
     private scheduleHeartbeatTask(heartbeatMillis: number): void {

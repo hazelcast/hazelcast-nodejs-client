@@ -18,7 +18,7 @@ import * as Long from 'long';
 import {DistributedObject} from '../core';
 
 /**
- * A linearizable, distributed, non-reentrant lock.
+ * A linearizable, distributed lock.
  *
  * FencedLock is CP with respect to the CAP principle. It works on top
  * of the Raft consensus algorithm. It offers linearizability during crash-stop
