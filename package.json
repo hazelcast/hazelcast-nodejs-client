@@ -25,7 +25,8 @@
         "thrift": "^0.12.0",
         "typedoc": "^0.18.0",
         "typescript": "^3.9.7",
-        "winston": "^3.3.3"
+        "winston": "^3.3.3",
+        "yargs": "^16.0.3"
     },
     "engines": {
         "node": ">=10"
