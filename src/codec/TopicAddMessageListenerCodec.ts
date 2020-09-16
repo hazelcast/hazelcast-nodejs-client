@@ -37,7 +37,6 @@ const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZ
 const EVENT_TOPIC_PUBLISH_TIME_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const EVENT_TOPIC_UUID_OFFSET = EVENT_TOPIC_PUBLISH_TIME_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
-
 /** @internal */
 export class TopicAddMessageListenerCodec {
     static encodeRequest(name: string, localOnly: boolean): ClientMessage {

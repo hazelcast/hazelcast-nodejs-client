@@ -28,7 +28,6 @@ const REQUEST_MESSAGE_TYPE = 1966592;
 
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
-
 /** @internal */
 export class CPGroupDestroyCPObjectCodec {
     static encodeRequest(groupId: RaftGroupId, serviceName: string, objectName: string): ClientMessage {
@@ -45,5 +44,4 @@ export class CPGroupDestroyCPObjectCodec {
         StringCodec.encode(clientMessage, objectName);
         return clientMessage;
     }
-
 }

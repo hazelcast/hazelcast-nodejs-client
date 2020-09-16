@@ -28,7 +28,6 @@ const REQUEST_MESSAGE_TYPE = 197120;
 
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
-
 /** @internal */
 export class QueuePutCodec {
     static encodeRequest(name: string, value: Data): ClientMessage {
@@ -44,5 +43,4 @@ export class QueuePutCodec {
         DataCodec.encode(clientMessage, value);
         return clientMessage;
     }
-
 }

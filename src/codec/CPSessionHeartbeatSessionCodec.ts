@@ -30,7 +30,6 @@ const REQUEST_MESSAGE_TYPE = 2032384;
 const REQUEST_SESSION_ID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_SESSION_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
-
 /** @internal */
 export class CPSessionHeartbeatSessionCodec {
     static encodeRequest(groupId: RaftGroupId, sessionId: Long): ClientMessage {
@@ -46,5 +45,4 @@ export class CPSessionHeartbeatSessionCodec {
         RaftGroupIdCodec.encode(clientMessage, groupId);
         return clientMessage;
     }
-
 }

@@ -28,7 +28,6 @@ const REQUEST_MESSAGE_TYPE = 2048;
 
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
-
 /** @internal */
 export class ClientGetDistributedObjectsCodec {
     static encodeRequest(): ClientMessage {

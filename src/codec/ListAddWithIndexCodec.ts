@@ -30,7 +30,6 @@ const REQUEST_MESSAGE_TYPE = 332032;
 const REQUEST_INDEX_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_INDEX_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
-
 /** @internal */
 export class ListAddWithIndexCodec {
     static encodeRequest(name: string, index: number, value: Data): ClientMessage {
@@ -47,5 +46,4 @@ export class ListAddWithIndexCodec {
         DataCodec.encode(clientMessage, value);
         return clientMessage;
     }
-
 }

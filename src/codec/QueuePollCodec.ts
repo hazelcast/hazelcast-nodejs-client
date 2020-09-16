@@ -32,7 +32,6 @@ const REQUEST_MESSAGE_TYPE = 197888;
 const REQUEST_TIMEOUT_MILLIS_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_TIMEOUT_MILLIS_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
-
 /** @internal */
 export class QueuePollCodec {
     static encodeRequest(name: string, timeoutMillis: Long): ClientMessage {

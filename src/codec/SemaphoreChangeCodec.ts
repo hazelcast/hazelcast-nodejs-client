@@ -36,7 +36,6 @@ const REQUEST_PERMITS_OFFSET = REQUEST_INVOCATION_UID_OFFSET + BitsUtil.UUID_SIZ
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_PERMITS_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
-
 /** @internal */
 export class SemaphoreChangeCodec {
     static encodeRequest(groupId: RaftGroupId, name: string, sessionId: Long, threadId: Long, invocationUid: UUID, permits: number): ClientMessage {

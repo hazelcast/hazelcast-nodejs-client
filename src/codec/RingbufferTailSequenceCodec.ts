@@ -29,7 +29,6 @@ const REQUEST_MESSAGE_TYPE = 1507840;
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
-
 /** @internal */
 export class RingbufferTailSequenceCodec {
     static encodeRequest(name: string): ClientMessage {

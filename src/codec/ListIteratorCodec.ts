@@ -29,7 +29,6 @@ const REQUEST_MESSAGE_TYPE = 333312;
 
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
-
 /** @internal */
 export class ListIteratorCodec {
     static encodeRequest(name: string): ClientMessage {

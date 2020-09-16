@@ -38,7 +38,6 @@ const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZ
 const EVENT_ITEM_UUID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const EVENT_ITEM_EVENT_TYPE_OFFSET = EVENT_ITEM_UUID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
 
-
 /** @internal */
 export class SetAddListenerCodec {
     static encodeRequest(name: string, includeValue: boolean, localOnly: boolean): ClientMessage {

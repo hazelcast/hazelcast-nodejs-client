@@ -31,7 +31,6 @@ const REQUEST_MESSAGE_TYPE = 331520;
 const REQUEST_INDEX_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_INDEX_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
-
 /** @internal */
 export class ListGetCodec {
     static encodeRequest(name: string, index: number): ClientMessage {

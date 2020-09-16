@@ -28,7 +28,6 @@ const REQUEST_MESSAGE_TYPE = 73728;
 const REQUEST_REPLACE_EXISTING_VALUES_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_REPLACE_EXISTING_VALUES_OFFSET + BitsUtil.BOOLEAN_SIZE_IN_BYTES;
 
-
 /** @internal */
 export class MapLoadAllCodec {
     static encodeRequest(name: string, replaceExistingValues: boolean): ClientMessage {
@@ -44,5 +43,4 @@ export class MapLoadAllCodec {
         StringCodec.encode(clientMessage, name);
         return clientMessage;
     }
-
 }

@@ -33,7 +33,6 @@ const REQUEST_MESSAGE_TYPE = 656640;
 const REQUEST_RETURN_OLD_VALUE_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_RETURN_OLD_VALUE_OFFSET + BitsUtil.BOOLEAN_SIZE_IN_BYTES;
 
-
 /** @internal */
 export class AtomicRefSetCodec {
     static encodeRequest(groupId: RaftGroupId, name: string, newValue: Data, returnOldValue: boolean): ClientMessage {

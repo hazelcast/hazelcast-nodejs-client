@@ -33,7 +33,6 @@ const REQUEST_INITIAL_FRAME_SIZE = REQUEST_LOCAL_ONLY_OFFSET + BitsUtil.BOOLEAN_
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 const EVENT_DISTRIBUTED_OBJECT_SOURCE_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
-
 /** @internal */
 export class ClientAddDistributedObjectListenerCodec {
     static encodeRequest(localOnly: boolean): ClientMessage {

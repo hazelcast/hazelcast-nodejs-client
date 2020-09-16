@@ -35,7 +35,6 @@ const REQUEST_INVOCATION_UID_OFFSET = REQUEST_THREAD_ID_OFFSET + BitsUtil.LONG_S
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_INVOCATION_UID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
-
 /** @internal */
 export class FencedLockLockCodec {
     static encodeRequest(groupId: RaftGroupId, name: string, sessionId: Long, threadId: Long, invocationUid: UUID): ClientMessage {

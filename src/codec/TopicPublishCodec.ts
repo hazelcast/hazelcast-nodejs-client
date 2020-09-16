@@ -28,7 +28,6 @@ const REQUEST_MESSAGE_TYPE = 262400;
 
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
-
 /** @internal */
 export class TopicPublishCodec {
     static encodeRequest(name: string, message: Data): ClientMessage {
@@ -44,5 +43,4 @@ export class TopicPublishCodec {
         DataCodec.encode(clientMessage, message);
         return clientMessage;
     }
-
 }

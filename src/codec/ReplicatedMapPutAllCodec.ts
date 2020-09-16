@@ -29,7 +29,6 @@ const REQUEST_MESSAGE_TYPE = 854016;
 
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
-
 /** @internal */
 export class ReplicatedMapPutAllCodec {
     static encodeRequest(name: string, entries: Array<[Data, Data]>): ClientMessage {
@@ -45,5 +44,4 @@ export class ReplicatedMapPutAllCodec {
         EntryListCodec.encode(clientMessage, entries, DataCodec.encode, DataCodec.encode);
         return clientMessage;
     }
-
 }
