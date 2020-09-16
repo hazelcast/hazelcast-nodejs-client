@@ -58,7 +58,7 @@ export class PNCounterGetCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): GetResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): PNCounterGetResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
         const response = {} as PNCounterGetResponseParams;

@@ -57,7 +57,7 @@ export class MapFetchNearCacheInvalidationMetadataCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): FetchNearCacheInvalidationMetadataResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): MapFetchNearCacheInvalidationMetadataResponseParams {
         // empty initial frame
         clientMessage.nextFrame();
 

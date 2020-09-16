@@ -76,7 +76,7 @@ export class ClientAuthenticationCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): AuthenticationResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): ClientAuthenticationResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
         const response = {} as ClientAuthenticationResponseParams;

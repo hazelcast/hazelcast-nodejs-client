@@ -56,7 +56,7 @@ export class MapValuesWithPagingPredicateCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): ValuesWithPagingPredicateResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): MapValuesWithPagingPredicateResponseParams {
         // empty initial frame
         clientMessage.nextFrame();
 

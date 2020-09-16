@@ -57,7 +57,7 @@ export class CPSessionCreateSessionCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): CreateSessionResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): CPSessionCreateSessionResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
         const response = {} as CPSessionCreateSessionResponseParams;

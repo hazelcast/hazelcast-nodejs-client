@@ -62,7 +62,7 @@ export class PNCounterAddCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): AddResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): PNCounterAddResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
         const response = {} as PNCounterAddResponseParams;

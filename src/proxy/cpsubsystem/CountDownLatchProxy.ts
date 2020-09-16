@@ -55,10 +55,7 @@ export class CountDownLatchProxy extends BaseCPProxy implements ICountDownLatch 
             this.objectName,
             invocationUid,
             timeout
-        ).then((clientMessage) => {
-            const response = CountDownLatchAwaitCodec.decodeResponse(clientMessage);
-            return response.response;
-        });
+        ).then(CountDownLatchAwaitCodec.decodeResponse);
     }
 
     countDown(): Promise<void> {
@@ -83,10 +80,7 @@ export class CountDownLatchProxy extends BaseCPProxy implements ICountDownLatch 
             CountDownLatchGetRoundCodec,
             this.groupId,
             this.objectName
-        ).then((clientMessage) => {
-            const response = CountDownLatchGetRoundCodec.decodeResponse(clientMessage);
-            return response.response;
-        });
+        ).then(CountDownLatchGetRoundCodec.decodeResponse);
     }
 
     private requestCountDown(round: number, invocationUid: UUID): Promise<void> {
@@ -104,10 +98,7 @@ export class CountDownLatchProxy extends BaseCPProxy implements ICountDownLatch 
             CountDownLatchGetCountCodec,
             this.groupId,
             this.objectName
-        ).then((clientMessage) => {
-            const response = CountDownLatchGetCountCodec.decodeResponse(clientMessage);
-            return response.response;
-        });
+        ).then(CountDownLatchGetCountCodec.decodeResponse);
     }
 
     trySetCount(count: number): Promise<boolean> {
@@ -117,9 +108,6 @@ export class CountDownLatchProxy extends BaseCPProxy implements ICountDownLatch 
             this.groupId,
             this.objectName,
             count
-        ).then((clientMessage) => {
-            const response = CountDownLatchTrySetCountCodec.decodeResponse(clientMessage);
-            return response.response;
-        });
+        ).then(CountDownLatchTrySetCountCodec.decodeResponse);
     }
 }

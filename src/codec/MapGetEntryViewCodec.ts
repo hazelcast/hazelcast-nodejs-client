@@ -59,7 +59,7 @@ export class MapGetEntryViewCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): GetEntryViewResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): MapGetEntryViewResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
         const response = {} as MapGetEntryViewResponseParams;

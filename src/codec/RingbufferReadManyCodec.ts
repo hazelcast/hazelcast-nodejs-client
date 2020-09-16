@@ -66,7 +66,7 @@ export class RingbufferReadManyCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): ReadManyResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): RingbufferReadManyResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
         const response = {} as RingbufferReadManyResponseParams;

@@ -56,7 +56,7 @@ export class MapFetchKeysCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): FetchKeysResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): MapFetchKeysResponseParams {
         // empty initial frame
         clientMessage.nextFrame();
 

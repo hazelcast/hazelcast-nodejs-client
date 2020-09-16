@@ -41,25 +41,19 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
 
     add(entry: E): Promise<boolean> {
         return this.encodeInvoke(SetAddCodec, this.toData(entry))
-            .then((clientMessage) => {
-                const response = SetAddCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(SetAddCodec.decodeResponse);
     }
 
     addAll(items: E[]): Promise<boolean> {
         return this.encodeInvoke(SetAddAllCodec, this.serializeList(items))
-            .then((clientMessage) => {
-                const response = SetAddAllCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(SetAddAllCodec.decodeResponse);
     }
 
     toArray(): Promise<E[]> {
         return this.encodeInvoke(SetGetAllCodec)
             .then((clientMessage) => {
                 const response = SetGetAllCodec.decodeResponse(clientMessage);
-                return response.response.map(this.toObject.bind(this));
+                return response.map(this.toObject.bind(this));
             });
     }
 
@@ -69,58 +63,37 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
 
     contains(entry: E): Promise<boolean> {
         return this.encodeInvoke(SetContainsCodec, this.toData(entry))
-            .then((clientMessage) => {
-                const response = SetContainsCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(SetContainsCodec.decodeResponse);
     }
 
     containsAll(items: E[]): Promise<boolean> {
         return this.encodeInvoke(SetContainsAllCodec, this.serializeList(items))
-            .then((clientMessage) => {
-                const response = SetContainsAllCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(SetContainsAllCodec.decodeResponse);
     }
 
     isEmpty(): Promise<boolean> {
         return this.encodeInvoke(SetIsEmptyCodec)
-            .then((clientMessage) => {
-                const response = SetIsEmptyCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(SetIsEmptyCodec.decodeResponse);
     }
 
     remove(entry: E): Promise<boolean> {
         return this.encodeInvoke(SetRemoveCodec, this.toData(entry))
-            .then((clientMessage) => {
-                const response = SetRemoveCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(SetRemoveCodec.decodeResponse);
     }
 
     removeAll(items: E[]): Promise<boolean> {
         return this.encodeInvoke(SetCompareAndRemoveAllCodec, this.serializeList(items))
-            .then((clientMessage) => {
-                const response = SetCompareAndRemoveAllCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(SetCompareAndRemoveAllCodec.decodeResponse);
     }
 
     retainAll(items: E[]): Promise<boolean> {
         return this.encodeInvoke(SetCompareAndRetainAllCodec, this.serializeList(items))
-            .then((clientMessage) => {
-                const response = SetCompareAndRetainAllCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(SetCompareAndRetainAllCodec.decodeResponse);
     }
 
     size(): Promise<number> {
         return this.encodeInvoke(SetSizeCodec)
-            .then((clientMessage) => {
-                const response = SetSizeCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(SetSizeCodec.decodeResponse);
     }
 
     addItemListener(listener: ItemListener<E>, includeValue = true): Promise<string> {
@@ -158,7 +131,7 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
                 return SetAddListenerCodec.encodeRequest(name, includeValue, localOnly);
             },
             decodeAddResponse(msg: ClientMessage): UUID {
-                return SetAddListenerCodec.decodeResponse(msg).response;
+                return SetAddListenerCodec.decodeResponse(msg);
             },
             encodeRemoveRequest(listenerId: UUID): ClientMessage {
                 return SetRemoveListenerCodec.encodeRequest(name, listenerId);

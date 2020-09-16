@@ -59,7 +59,7 @@ export class FencedLockGetLockOwnershipCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): GetLockOwnershipResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): FencedLockGetLockOwnershipResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
         const response = {} as FencedLockGetLockOwnershipResponseParams;

@@ -56,7 +56,7 @@ export class FlakeIdGeneratorNewIdBatchCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): NewIdBatchResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): FlakeIdGeneratorNewIdBatchResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
         const response = {} as FlakeIdGeneratorNewIdBatchResponseParams;

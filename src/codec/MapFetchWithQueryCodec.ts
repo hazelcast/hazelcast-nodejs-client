@@ -58,7 +58,7 @@ export class MapFetchWithQueryCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): FetchWithQueryResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): MapFetchWithQueryResponseParams {
         // empty initial frame
         clientMessage.nextFrame();
 

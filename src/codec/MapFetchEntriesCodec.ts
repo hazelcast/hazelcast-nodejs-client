@@ -56,7 +56,7 @@ export class MapFetchEntriesCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): FetchEntriesResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): MapFetchEntriesResponseParams {
         // empty initial frame
         clientMessage.nextFrame();
 

@@ -52,7 +52,7 @@ export class MapEventJournalSubscribeCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): EventJournalSubscribeResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): MapEventJournalSubscribeResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
         const response = {} as MapEventJournalSubscribeResponseParams;

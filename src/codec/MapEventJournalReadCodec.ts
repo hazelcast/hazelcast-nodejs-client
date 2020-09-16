@@ -67,7 +67,7 @@ export class MapEventJournalReadCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): EventJournalReadResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): MapEventJournalReadResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
         const response = {} as MapEventJournalReadResponseParams;

@@ -56,7 +56,7 @@ export class MapKeySetWithPagingPredicateCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): KeySetWithPagingPredicateResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): MapKeySetWithPagingPredicateResponseParams {
         // empty initial frame
         clientMessage.nextFrame();
 

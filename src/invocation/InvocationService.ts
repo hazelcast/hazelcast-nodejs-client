@@ -224,7 +224,7 @@ const backupListenerCodec: ListenerMessageCodec = {
     },
 
     decodeAddResponse(msg: ClientMessage): UUID {
-        return ClientLocalBackupListenerCodec.decodeResponse(msg).response;
+        return ClientLocalBackupListenerCodec.decodeResponse(msg);
     },
 
     encodeRemoveRequest(listenerId: UUID): ClientMessage {
