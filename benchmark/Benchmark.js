@@ -18,8 +18,8 @@
 const argv = require('yargs')
     .usage('Usage: $0 <command> [options]')
     .command('get', 'Run get benchmark')
-    .command('put', 'Run put benchmark')
-    .command('random', 'Run random op (get, put, remove) benchmark')
+    .command('set', 'Run set benchmark')
+    .command('random', 'Run random op (get, set, remove) benchmark')
     .number('t')
     .describe('t', 'Total number of operations to run')
     .number('c')
@@ -36,7 +36,7 @@ const VAL = randomString(VALUE_SIZE);
 
 const RANDOM_ENTRY_COUNT = 1000;
 const RANDOM_GET_PERCENTAGE = 40;
-const RANDOM_PUT_PERCENTAGE = 40;
+const RANDOM_SET_PERCENTAGE = 40;
 
 function randomString(len) {
     const charSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -53,8 +53,8 @@ function randomOp(map) {
     const opType = Math.floor(Math.random() * 100);
     if (opType < RANDOM_GET_PERCENTAGE) {
         return map.get(key);
-    } else if (opType < RANDOM_GET_PERCENTAGE + RANDOM_PUT_PERCENTAGE) {
-        return map.put(key, VAL);
+    } else if (opType < RANDOM_GET_PERCENTAGE + RANDOM_SET_PERCENTAGE) {
+        return map.set(key, VAL);
     }
     return map.remove(key);
 }
@@ -70,14 +70,14 @@ function randomOp(map) {
                 prepareOp = (map) => map.set(KEY, VAL);
                 nextOp = (map) => map.get(KEY);
                 break;
-            case 'put':
-                nextOp = (map) => map.get(KEY);
+            case 'set':
+                nextOp = (map) => map.set(KEY, VAL);
                 break;
             case 'random':
                 nextOp = (map) => randomOp(map);
                 break;
             default:
-                console.error(`Unknown command "${type}". Supported commands are "get", "put", "random".`);
+                console.error(`Unknown command "${type}". Supported commands are "get", "set", "random".`);
                 process.exit(1);
         }
 

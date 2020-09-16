@@ -1,9 +1,9 @@
 # Simple benchmark for Hazelcast IMDG Node.js Client
 
 A simple benchmark that runs operations on `Map` concurrently, measures the execution time and calculates the throughput:
-* `put` - runs `map.put('foo', 'bar')` operations.
-* `get` - runs `map.get` operations that read string value with >100 KB size.
-* `random` - runs randomly selected operations (`get`, `put`, `remove`).
+* `set` - runs `map.set(key, value)` operations.
+* `get` - runs `map.get(key)` operations that read string value with >100 KB size.
+* `random` - runs randomly selected operations (`get`, `set`, `remove`).
 
 ## Running the benchmark
 
@@ -24,21 +24,21 @@ docker run -p 5701:5701 hazelcast/hazelcast:4.0.2
 
 Finally, run one of the benchmarks, e.g.:
 ```bash
-node benchmark/Benchmark.js put
+node benchmark/Benchmark.js set
 ```
 
 You can also override the total number of operations (`-t` argument) and the concurrency level (`-c` argument) for the benchmark:
 ```bash
-node benchmark/Benchmark.js put -t 3000000 -c 256
+node benchmark/Benchmark.js set -t 3000000 -c 256
 ```
 
 The benchmark will run and produce its results into the console:
 ```bash
-Benchmark type: put
+Benchmark type: set
 Value size: 1024
-Starting warm-up for 300000 operations
+Starting warm-up with 300000 operations
 Warm-up finished
-Took 18.345385751 seconds for 3000000 operations
-Ops/s: 163528.85901221627
+Took 38.000682676 seconds for 3000000 operations
+Ops/s: 78945.95014459314
 Benchmark finished
 ```
