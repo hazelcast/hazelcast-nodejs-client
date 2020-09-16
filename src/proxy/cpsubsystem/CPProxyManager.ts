@@ -22,6 +22,7 @@ import {
 } from '../../core';
 import {HazelcastClient} from '../../HazelcastClient';
 import {AtomicLongProxy} from './AtomicLongProxy';
+import {AtomicRefProxy} from './AtomicRefProxy';
 import {CountDownLatchProxy} from './CountDownLatchProxy';
 import {FencedLock} from '../FencedLock';
 import {FencedLockProxy} from './FencedLockProxy';
@@ -70,9 +71,10 @@ export function getObjectNameForProxy(name: string): string {
 export class CPProxyManager {
 
     static readonly ATOMIC_LONG_SERVICE = 'hz:raft:atomicLongService';
+    static readonly ATOMIC_REF_SERVICE = 'hz:raft:atomicRefService';
+    static readonly LATCH_SERVICE = 'hz:raft:countDownLatchService';
     static readonly LOCK_SERVICE = 'hz:raft:lockService';
     static readonly SEMAPHORE_SERVICE = 'hz:raft:semaphoreService';
-    static readonly LATCH_SERVICE = 'hz:raft:countDownLatchService';
 
     private readonly client: HazelcastClient;
     private readonly lockProxies: Map<string, FencedLockProxy> = new Map();
@@ -88,6 +90,8 @@ export class CPProxyManager {
         return this.getGroupId(proxyName).then((groupId): DistributedObject | Promise<DistributedObject> => {
             if (serviceName === CPProxyManager.ATOMIC_LONG_SERVICE) {
                 return new AtomicLongProxy(this.client, groupId, proxyName, objectName);
+            } else if (serviceName === CPProxyManager.ATOMIC_REF_SERVICE) {
+                return new AtomicRefProxy(this.client, groupId, proxyName, objectName);
             } else if (serviceName === CPProxyManager.LATCH_SERVICE) {
                 return new CountDownLatchProxy(this.client, groupId, proxyName, objectName);
             } else if (serviceName === CPProxyManager.LOCK_SERVICE) {
