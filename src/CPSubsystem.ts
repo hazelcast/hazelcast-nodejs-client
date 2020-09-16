@@ -16,6 +16,7 @@
 
 import {
     IAtomicLong,
+    IAtomicReference,
     ICountDownLatch,
     FencedLock,
     ISemaphore
@@ -63,6 +64,30 @@ export interface CPSubsystem {
     getAtomicLong(name: string): Promise<IAtomicLong>;
 
     /**
+     * Returns the distributed AtomicReference instance with given name.
+     * The instance is created on CP Subsystem.
+     *
+     * If no group name is given within the `name` argument, then the
+     * AtomicLong instance will be created on the DEFAULT CP group.
+     * If a group name is given, like `.getAtomicReference('myRef@group1')`,
+     * the given group will be initialized first, if not initialized
+     * already, and then the instance will be created on this group.
+     */
+    getAtomicReference<E>(name: string): Promise<IAtomicReference<E>>;
+
+    /**
+     * Returns the distributed CountDownLatch instance with given name.
+     * The instance is created on CP Subsystem.
+     *
+     * If no group name is given within the `name` argument, then the
+     * ICountDownLatch instance will be created on the DEFAULT CP group.
+     * If a group name is given, like `.getCountDownLatch('myLatch@group1')`,
+     * the given group will be initialized first, if not initialized
+     * already, and then the instance will be created on this group.
+     */
+    getCountDownLatch(name: string): Promise<ICountDownLatch>;
+
+    /**
      * Returns the distributed FencedLock instance instance with given name.
      * The instance is created on CP Subsystem.
      *
@@ -86,18 +111,6 @@ export interface CPSubsystem {
      */
     getSemaphore(name: string): Promise<ISemaphore>;
 
-    /**
-     * Returns the distributed CountDownLatch instance with given name.
-     * The instance is created on CP Subsystem.
-     *
-     * If no group name is given within the `name` argument, then the
-     * ICountDownLatch instance will be created on the DEFAULT CP group.
-     * If a group name is given, like `.getCountDownLatch('myLatch@group1')`,
-     * the given group will be initialized first, if not initialized
-     * already, and then the instance will be created on this group.
-     */
-    getCountDownLatch(name: string): Promise<ICountDownLatch>;
-
 }
 
 /** @internal */
@@ -115,16 +128,20 @@ export class CPSubsystemImpl implements CPSubsystem {
         return this.cpProxyManager.getOrCreateProxy(name, CPProxyManager.ATOMIC_LONG_SERVICE) as Promise<IAtomicLong>;
     }
 
+    getAtomicReference<E>(name: string): Promise<IAtomicReference<E>> {
+        return this.cpProxyManager.getOrCreateProxy(name, CPProxyManager.ATOMIC_REF_SERVICE) as Promise<IAtomicReference<E>>;
+    }
+
+    getCountDownLatch(name: string): Promise<ICountDownLatch> {
+        return this.cpProxyManager.getOrCreateProxy(name, CPProxyManager.LATCH_SERVICE) as Promise<ICountDownLatch>;
+    }
+
     getLock(name: string): Promise<FencedLock> {
         return this.cpProxyManager.getOrCreateProxy(name, CPProxyManager.LOCK_SERVICE) as Promise<FencedLock>;
     }
 
     getSemaphore(name: string): Promise<ISemaphore> {
         return this.cpProxyManager.getOrCreateProxy(name, CPProxyManager.SEMAPHORE_SERVICE) as Promise<ISemaphore>;
-    }
-
-    getCountDownLatch(name: string): Promise<ICountDownLatch> {
-        return this.cpProxyManager.getOrCreateProxy(name, CPProxyManager.LATCH_SERVICE) as Promise<ICountDownLatch>;
     }
 
     getCPSessionManager(): CPSessionManager {

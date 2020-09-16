@@ -20,6 +20,7 @@ import {ClientMessage} from '../../protocol/ClientMessage';
 import {RaftGroupId} from './RaftGroupId';
 import {CPGroupDestroyCPObjectCodec} from '../../codec/CPGroupDestroyCPObjectCodec';
 import {UnsupportedOperationError} from '../../core';
+import {Data} from '../../serialization/Data';
 
 /**
  * Common super class for any CP Subsystem proxy.
@@ -64,6 +65,14 @@ export abstract class BaseCPProxy {
     destroy(): Promise<void> {
         return this.encodeInvokeOnRandomTarget(CPGroupDestroyCPObjectCodec,
             this.groupId, this.serviceName, this.objectName).then();
+    }
+
+    protected toData(object: any): Data {
+        return this.client.getSerializationService().toData(object);
+    }
+
+    protected toObject(data: Data): any {
+        return this.client.getSerializationService().toObject(data);
     }
 
     /**

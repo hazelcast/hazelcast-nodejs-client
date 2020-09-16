@@ -36,6 +36,7 @@ export * from './Ringbuffer';
 export * from './MessageListener';
 export * from './TopicOverloadPolicy';
 export * from './IAtomicLong';
+export * from './IAtomicReference';
+export * from './ICountDownLatch';
 export * from './FencedLock';
 export * from './ISemaphore';
-export * from './ICountDownLatch';
