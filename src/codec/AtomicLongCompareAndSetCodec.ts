@@ -33,10 +33,6 @@ const REQUEST_UPDATED_OFFSET = REQUEST_EXPECTED_OFFSET + BitsUtil.LONG_SIZE_IN_B
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_UPDATED_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
-/** @internal */
-export interface AtomicLongCompareAndSetResponseParams {
-    response: boolean;
-}
 
 /** @internal */
 export class AtomicLongCompareAndSetCodec {
@@ -56,12 +52,9 @@ export class AtomicLongCompareAndSetCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): AtomicLongCompareAndSetResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): boolean {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as AtomicLongCompareAndSetResponseParams;
-        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 }

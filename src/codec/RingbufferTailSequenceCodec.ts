@@ -29,10 +29,6 @@ const REQUEST_MESSAGE_TYPE = 1507840;
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
-/** @internal */
-export interface RingbufferTailSequenceResponseParams {
-    response: Long;
-}
 
 /** @internal */
 export class RingbufferTailSequenceCodec {
@@ -49,12 +45,9 @@ export class RingbufferTailSequenceCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): RingbufferTailSequenceResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): Long {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as RingbufferTailSequenceResponseParams;
-        response.response = FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 }

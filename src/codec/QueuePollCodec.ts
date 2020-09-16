@@ -32,10 +32,6 @@ const REQUEST_MESSAGE_TYPE = 197888;
 const REQUEST_TIMEOUT_MILLIS_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_TIMEOUT_MILLIS_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
-/** @internal */
-export interface QueuePollResponseParams {
-    response: Data;
-}
 
 /** @internal */
 export class QueuePollCodec {
@@ -53,13 +49,10 @@ export class QueuePollCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): QueuePollResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): Data {
         // empty initial frame
         clientMessage.nextFrame();
 
-        const response = {} as QueuePollResponseParams;
-        response.response = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
-
-        return response;
+        return CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
     }
 }

@@ -34,6 +34,7 @@ const REQUEST_MESSAGE_TYPE = 81152;
 const REQUEST_UUID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_UUID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
 
+
 /** @internal */
 export interface MapFetchNearCacheInvalidationMetadataResponseParams {
     namePartitionSequenceList: Array<[string, Array<[number, Long]>]>;
@@ -56,7 +57,7 @@ export class MapFetchNearCacheInvalidationMetadataCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): MapFetchNearCacheInvalidationMetadataResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): FetchNearCacheInvalidationMetadataResponseParams {
         // empty initial frame
         clientMessage.nextFrame();
 

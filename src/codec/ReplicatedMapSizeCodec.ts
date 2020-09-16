@@ -28,10 +28,6 @@ const REQUEST_MESSAGE_TYPE = 852480;
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
-/** @internal */
-export interface ReplicatedMapSizeResponseParams {
-    response: number;
-}
 
 /** @internal */
 export class ReplicatedMapSizeCodec {
@@ -48,12 +44,9 @@ export class ReplicatedMapSizeCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): ReplicatedMapSizeResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): number {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as ReplicatedMapSizeResponseParams;
-        response.response = FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 }

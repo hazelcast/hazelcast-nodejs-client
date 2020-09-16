@@ -30,10 +30,6 @@ const REQUEST_MESSAGE_TYPE = 328960;
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
-/** @internal */
-export interface ListRemoveResponseParams {
-    response: boolean;
-}
 
 /** @internal */
 export class ListRemoveCodec {
@@ -51,12 +47,9 @@ export class ListRemoveCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): ListRemoveResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): boolean {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as ListRemoveResponseParams;
-        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 }

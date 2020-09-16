@@ -32,10 +32,6 @@ const REQUEST_MESSAGE_TYPE = 131584;
 const REQUEST_THREAD_ID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_THREAD_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
-/** @internal */
-export interface MultiMapGetResponseParams {
-    response: Data[];
-}
 
 /** @internal */
 export class MultiMapGetCodec {
@@ -54,13 +50,10 @@ export class MultiMapGetCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): MultiMapGetResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): Data[] {
         // empty initial frame
         clientMessage.nextFrame();
 
-        const response = {} as MultiMapGetResponseParams;
-        response.response = ListMultiFrameCodec.decode(clientMessage, DataCodec.decode);
-
-        return response;
+        return ListMultiFrameCodec.decode(clientMessage, DataCodec.decode);
     }
 }

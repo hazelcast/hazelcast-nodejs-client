@@ -28,10 +28,6 @@ const REQUEST_MESSAGE_TYPE = 852736;
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
-/** @internal */
-export interface ReplicatedMapIsEmptyResponseParams {
-    response: boolean;
-}
 
 /** @internal */
 export class ReplicatedMapIsEmptyCodec {
@@ -48,12 +44,9 @@ export class ReplicatedMapIsEmptyCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): ReplicatedMapIsEmptyResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): boolean {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as ReplicatedMapIsEmptyResponseParams;
-        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 }

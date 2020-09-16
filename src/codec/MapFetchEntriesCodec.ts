@@ -32,6 +32,7 @@ const REQUEST_MESSAGE_TYPE = 79872;
 const REQUEST_BATCH_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_BATCH_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+
 /** @internal */
 export interface MapFetchEntriesResponseParams {
     iterationPointers: Array<[number, number]>;
@@ -55,7 +56,7 @@ export class MapFetchEntriesCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): MapFetchEntriesResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): FetchEntriesResponseParams {
         // empty initial frame
         clientMessage.nextFrame();
 

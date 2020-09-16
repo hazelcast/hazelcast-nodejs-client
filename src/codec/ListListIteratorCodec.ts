@@ -31,10 +31,6 @@ const REQUEST_MESSAGE_TYPE = 333568;
 const REQUEST_INDEX_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_INDEX_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
-/** @internal */
-export interface ListListIteratorResponseParams {
-    response: Data[];
-}
 
 /** @internal */
 export class ListListIteratorCodec {
@@ -52,13 +48,10 @@ export class ListListIteratorCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): ListListIteratorResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): Data[] {
         // empty initial frame
         clientMessage.nextFrame();
 
-        const response = {} as ListListIteratorResponseParams;
-        response.response = ListMultiFrameCodec.decode(clientMessage, DataCodec.decode);
-
-        return response;
+        return ListMultiFrameCodec.decode(clientMessage, DataCodec.decode);
     }
 }

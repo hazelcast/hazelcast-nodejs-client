@@ -35,10 +35,6 @@ const REQUEST_INVOCATION_UID_OFFSET = REQUEST_THREAD_ID_OFFSET + BitsUtil.LONG_S
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_INVOCATION_UID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
-/** @internal */
-export interface FencedLockUnlockResponseParams {
-    response: boolean;
-}
 
 /** @internal */
 export class FencedLockUnlockCodec {
@@ -59,12 +55,9 @@ export class FencedLockUnlockCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): FencedLockUnlockResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): boolean {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as FencedLockUnlockResponseParams;
-        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 }

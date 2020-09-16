@@ -33,6 +33,7 @@ const RESPONSE_SESSION_ID_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_S
 const RESPONSE_TTL_MILLIS_OFFSET = RESPONSE_SESSION_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 const RESPONSE_HEARTBEAT_MILLIS_OFFSET = RESPONSE_TTL_MILLIS_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
+
 /** @internal */
 export interface CPSessionCreateSessionResponseParams {
     sessionId: Long;
@@ -56,7 +57,7 @@ export class CPSessionCreateSessionCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): CPSessionCreateSessionResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): CreateSessionResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
         const response = {} as CPSessionCreateSessionResponseParams;

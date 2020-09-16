@@ -36,10 +36,6 @@ const REQUEST_PERMITS_OFFSET = REQUEST_INVOCATION_UID_OFFSET + BitsUtil.UUID_SIZ
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_PERMITS_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
-/** @internal */
-export interface SemaphoreReleaseResponseParams {
-    response: boolean;
-}
 
 /** @internal */
 export class SemaphoreReleaseCodec {
@@ -61,12 +57,9 @@ export class SemaphoreReleaseCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): SemaphoreReleaseResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): boolean {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as SemaphoreReleaseResponseParams;
-        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 }

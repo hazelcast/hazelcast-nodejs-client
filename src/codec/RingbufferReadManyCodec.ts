@@ -38,6 +38,7 @@ const REQUEST_INITIAL_FRAME_SIZE = REQUEST_MAX_COUNT_OFFSET + BitsUtil.INT_SIZE_
 const RESPONSE_READ_COUNT_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 const RESPONSE_NEXT_SEQ_OFFSET = RESPONSE_READ_COUNT_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+
 /** @internal */
 export interface RingbufferReadManyResponseParams {
     readCount: number;
@@ -65,7 +66,7 @@ export class RingbufferReadManyCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): RingbufferReadManyResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): ReadManyResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
         const response = {} as RingbufferReadManyResponseParams;

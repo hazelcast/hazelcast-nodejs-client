@@ -31,10 +31,6 @@ const REQUEST_MESSAGE_TYPE = 332288;
 const REQUEST_INDEX_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_INDEX_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
-/** @internal */
-export interface ListRemoveWithIndexResponseParams {
-    response: Data;
-}
 
 /** @internal */
 export class ListRemoveWithIndexCodec {
@@ -52,13 +48,10 @@ export class ListRemoveWithIndexCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): ListRemoveWithIndexResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): Data {
         // empty initial frame
         clientMessage.nextFrame();
 
-        const response = {} as ListRemoveWithIndexResponseParams;
-        response.response = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
-
-        return response;
+        return CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
     }
 }

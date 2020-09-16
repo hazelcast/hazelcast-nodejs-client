@@ -38,10 +38,6 @@ const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZ
 const EVENT_ITEM_UUID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const EVENT_ITEM_EVENT_TYPE_OFFSET = EVENT_ITEM_UUID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
 
-/** @internal */
-export interface SetAddListenerResponseParams {
-    response: UUID;
-}
 
 /** @internal */
 export class SetAddListenerCodec {
@@ -60,13 +56,10 @@ export class SetAddListenerCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): SetAddListenerResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): UUID {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as SetAddListenerResponseParams;
-        response.response = FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 
     static handle(clientMessage: ClientMessage, handleItemEvent: (item: Data, uuid: UUID, eventType: number) => void = null): void {

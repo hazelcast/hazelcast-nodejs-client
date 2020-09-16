@@ -32,6 +32,7 @@ const REQUEST_INVOCATION_UID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN
 const REQUEST_EXPECTED_ROUND_OFFSET = REQUEST_INVOCATION_UID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_EXPECTED_ROUND_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+
 /** @internal */
 export class CountDownLatchCountDownCodec {
     static encodeRequest(groupId: RaftGroupId, name: string, invocationUid: UUID, expectedRound: number): ClientMessage {
@@ -49,4 +50,5 @@ export class CountDownLatchCountDownCodec {
         StringCodec.encode(clientMessage, name);
         return clientMessage;
     }
+
 }

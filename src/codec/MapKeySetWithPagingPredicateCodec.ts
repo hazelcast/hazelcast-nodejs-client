@@ -33,6 +33,7 @@ const REQUEST_MESSAGE_TYPE = 78848;
 
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+
 /** @internal */
 export interface MapKeySetWithPagingPredicateResponseParams {
     response: Data[];
@@ -55,7 +56,7 @@ export class MapKeySetWithPagingPredicateCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): MapKeySetWithPagingPredicateResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): KeySetWithPagingPredicateResponseParams {
         // empty initial frame
         clientMessage.nextFrame();
 

@@ -41,6 +41,7 @@ const RESPONSE_PARTITION_COUNT_OFFSET = RESPONSE_SERIALIZATION_VERSION_OFFSET + 
 const RESPONSE_CLUSTER_ID_OFFSET = RESPONSE_PARTITION_COUNT_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const RESPONSE_FAILOVER_SUPPORTED_OFFSET = RESPONSE_CLUSTER_ID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
 
+
 /** @internal */
 export interface ClientAuthenticationCustomResponseParams {
     status: number;
@@ -75,7 +76,7 @@ export class ClientAuthenticationCustomCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): ClientAuthenticationCustomResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): AuthenticationCustomResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
         const response = {} as ClientAuthenticationCustomResponseParams;

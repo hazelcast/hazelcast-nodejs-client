@@ -31,10 +31,6 @@ const REQUEST_MESSAGE_TYPE = 329472;
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
-/** @internal */
-export interface ListCompareAndRemoveAllResponseParams {
-    response: boolean;
-}
 
 /** @internal */
 export class ListCompareAndRemoveAllCodec {
@@ -52,12 +48,9 @@ export class ListCompareAndRemoveAllCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): ListCompareAndRemoveAllResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): boolean {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as ListCompareAndRemoveAllResponseParams;
-        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 }

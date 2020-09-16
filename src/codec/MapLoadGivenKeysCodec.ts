@@ -31,6 +31,7 @@ const REQUEST_MESSAGE_TYPE = 73984;
 const REQUEST_REPLACE_EXISTING_VALUES_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_REPLACE_EXISTING_VALUES_OFFSET + BitsUtil.BOOLEAN_SIZE_IN_BYTES;
 
+
 /** @internal */
 export class MapLoadGivenKeysCodec {
     static encodeRequest(name: string, keys: Data[], replaceExistingValues: boolean): ClientMessage {
@@ -47,4 +48,5 @@ export class MapLoadGivenKeysCodec {
         ListMultiFrameCodec.encode(clientMessage, keys, DataCodec.encode);
         return clientMessage;
     }
+
 }

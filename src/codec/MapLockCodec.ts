@@ -33,6 +33,7 @@ const REQUEST_TTL_OFFSET = REQUEST_THREAD_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTE
 const REQUEST_REFERENCE_ID_OFFSET = REQUEST_TTL_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_REFERENCE_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
+
 /** @internal */
 export class MapLockCodec {
     static encodeRequest(name: string, key: Data, threadId: Long, ttl: Long, referenceId: Long): ClientMessage {
@@ -51,4 +52,5 @@ export class MapLockCodec {
         DataCodec.encode(clientMessage, key);
         return clientMessage;
     }
+
 }

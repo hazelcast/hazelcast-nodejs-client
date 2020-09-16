@@ -30,10 +30,6 @@ const REQUEST_MESSAGE_TYPE = 787968;
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
-/** @internal */
-export interface SemaphoreAvailablePermitsResponseParams {
-    response: number;
-}
 
 /** @internal */
 export class SemaphoreAvailablePermitsCodec {
@@ -51,12 +47,9 @@ export class SemaphoreAvailablePermitsCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): SemaphoreAvailablePermitsResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): number {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as SemaphoreAvailablePermitsResponseParams;
-        response.response = FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 }

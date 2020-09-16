@@ -32,6 +32,7 @@ const RESPONSE_BASE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN
 const RESPONSE_INCREMENT_OFFSET = RESPONSE_BASE_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 const RESPONSE_BATCH_SIZE_OFFSET = RESPONSE_INCREMENT_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
+
 /** @internal */
 export interface FlakeIdGeneratorNewIdBatchResponseParams {
     base: Long;
@@ -55,7 +56,7 @@ export class FlakeIdGeneratorNewIdBatchCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): FlakeIdGeneratorNewIdBatchResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): NewIdBatchResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
         const response = {} as FlakeIdGeneratorNewIdBatchResponseParams;

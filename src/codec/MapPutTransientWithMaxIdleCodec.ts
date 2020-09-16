@@ -34,10 +34,6 @@ const REQUEST_TTL_OFFSET = REQUEST_THREAD_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTE
 const REQUEST_MAX_IDLE_OFFSET = REQUEST_TTL_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_MAX_IDLE_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
-/** @internal */
-export interface MapPutTransientWithMaxIdleResponseParams {
-    response: Data;
-}
 
 /** @internal */
 export class MapPutTransientWithMaxIdleCodec {
@@ -59,13 +55,10 @@ export class MapPutTransientWithMaxIdleCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): MapPutTransientWithMaxIdleResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): Data {
         // empty initial frame
         clientMessage.nextFrame();
 
-        const response = {} as MapPutTransientWithMaxIdleResponseParams;
-        response.response = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
-
-        return response;
+        return CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
     }
 }

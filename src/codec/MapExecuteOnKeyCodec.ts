@@ -32,10 +32,6 @@ const REQUEST_MESSAGE_TYPE = 77312;
 const REQUEST_THREAD_ID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_THREAD_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
-/** @internal */
-export interface MapExecuteOnKeyResponseParams {
-    response: Data;
-}
 
 /** @internal */
 export class MapExecuteOnKeyCodec {
@@ -55,13 +51,10 @@ export class MapExecuteOnKeyCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): MapExecuteOnKeyResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): Data {
         // empty initial frame
         clientMessage.nextFrame();
 
-        const response = {} as MapExecuteOnKeyResponseParams;
-        response.response = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
-
-        return response;
+        return CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
     }
 }

@@ -29,10 +29,6 @@ const REQUEST_MESSAGE_TYPE = 132608;
 
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
-/** @internal */
-export interface MultiMapEntrySetResponseParams {
-    response: Array<[Data, Data]>;
-}
 
 /** @internal */
 export class MultiMapEntrySetCodec {
@@ -49,13 +45,10 @@ export class MultiMapEntrySetCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): MultiMapEntrySetResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): Array<[Data, Data]> {
         // empty initial frame
         clientMessage.nextFrame();
 
-        const response = {} as MultiMapEntrySetResponseParams;
-        response.response = EntryListCodec.decode(clientMessage, DataCodec.decode, DataCodec.decode);
-
-        return response;
+        return EntryListCodec.decode(clientMessage, DataCodec.decode, DataCodec.decode);
     }
 }

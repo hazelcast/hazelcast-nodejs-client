@@ -30,6 +30,7 @@ const REQUEST_MESSAGE_TYPE = 136960;
 
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
+
 /** @internal */
 export class MultiMapPutAllCodec {
     static encodeRequest(name: string, entries: Array<[Data, Data[]]>): ClientMessage {
@@ -45,4 +46,5 @@ export class MultiMapPutAllCodec {
         EntryListCodec.encode(clientMessage, entries, DataCodec.encode, ListDataCodec.encode);
         return clientMessage;
     }
+
 }

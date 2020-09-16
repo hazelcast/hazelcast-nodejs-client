@@ -34,6 +34,7 @@ const RESPONSE_LOCK_COUNT_OFFSET = RESPONSE_FENCE_OFFSET + BitsUtil.LONG_SIZE_IN
 const RESPONSE_SESSION_ID_OFFSET = RESPONSE_LOCK_COUNT_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const RESPONSE_THREAD_ID_OFFSET = RESPONSE_SESSION_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
+
 /** @internal */
 export interface FencedLockGetLockOwnershipResponseParams {
     fence: Long;
@@ -58,7 +59,7 @@ export class FencedLockGetLockOwnershipCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): FencedLockGetLockOwnershipResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): GetLockOwnershipResponseParams {
         const initialFrame = clientMessage.nextFrame();
 
         const response = {} as FencedLockGetLockOwnershipResponseParams;

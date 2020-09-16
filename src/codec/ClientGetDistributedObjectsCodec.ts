@@ -28,10 +28,6 @@ const REQUEST_MESSAGE_TYPE = 2048;
 
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
-/** @internal */
-export interface ClientGetDistributedObjectsResponseParams {
-    response: DistributedObjectInfo[];
-}
 
 /** @internal */
 export class ClientGetDistributedObjectsCodec {
@@ -47,13 +43,10 @@ export class ClientGetDistributedObjectsCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): ClientGetDistributedObjectsResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): DistributedObjectInfo[] {
         // empty initial frame
         clientMessage.nextFrame();
 
-        const response = {} as ClientGetDistributedObjectsResponseParams;
-        response.response = ListMultiFrameCodec.decode(clientMessage, DistributedObjectInfoCodec.decode);
-
-        return response;
+        return ListMultiFrameCodec.decode(clientMessage, DistributedObjectInfoCodec.decode);
     }
 }
