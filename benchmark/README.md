@@ -3,7 +3,7 @@
 A simple benchmark that runs operations on `Map` concurrently, measures the execution time and calculates the throughput:
 * `set` - runs `map.set(key, value)` operations.
 * `get` - runs `map.get(key)` operations that read string value with >100 KB size.
-* `random` - runs randomly selected operations (`get`, `set`, `remove`).
+* `random` - runs randomly selected operations (`get`, `set`, `delete`).
 
 ## Running the benchmark
 

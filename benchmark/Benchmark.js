@@ -19,7 +19,7 @@ const argv = require('yargs')
     .usage('Usage: $0 <command> [options]')
     .command('get', 'Run get benchmark')
     .command('set', 'Run set benchmark')
-    .command('random', 'Run random op (get, set, remove) benchmark')
+    .command('random', 'Run random op (get, set, delete) benchmark')
     .number('t')
     .describe('t', 'Total number of operations to run')
     .number('c')
@@ -56,7 +56,7 @@ function randomOp(map) {
     } else if (opType < RANDOM_GET_PERCENTAGE + RANDOM_SET_PERCENTAGE) {
         return map.set(key, VAL);
     }
-    return map.remove(key);
+    return map.delete(key);
 }
 
 (async () => {
