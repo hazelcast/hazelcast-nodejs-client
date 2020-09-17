@@ -44,9 +44,7 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
             delta = Long.fromNumber(delta as number);
         }
         return this.encodeInvokeOnRandomTarget(AtomicLongAddAndGetCodec, this.groupId, this.objectName, delta)
-            .then((clientMessage) => {
-                return AtomicLongAddAndGetCodec.decodeResponse(clientMessage);
-            });
+            .then(AtomicLongAddAndGetCodec.decodeResponse);
     }
 
     compareAndSet(expect: Long | number, update: Long | number): Promise<boolean> {

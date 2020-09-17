@@ -106,9 +106,7 @@ export class CPProxyManager {
     private getGroupId(proxyName: string): Promise<RaftGroupId> {
         const clientMessage = CPGroupCreateCPGroupCodec.encodeRequest(proxyName);
         return this.client.getInvocationService().invokeOnRandomTarget(clientMessage)
-            .then((clientMessage) => {
-                return CPGroupCreateCPGroupCodec.decodeResponse(clientMessage);
-            });
+            .then(CPGroupCreateCPGroupCodec.decodeResponse);
     }
 
     private createFencedLock(groupId: RaftGroupId, proxyName: string, objectName: string): FencedLock {
