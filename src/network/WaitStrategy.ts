@@ -73,7 +73,8 @@ export class WaitStrategy {
 
         return delayedPromise(actualSleepTime)
             .then(() => {
-                this.currentBackoffMillis = Math.min(Math.round(currentTimeMillis * this.multiplier), this.maxBackoffMillis);
+                const nextCurrentBackoffMillis = Math.round(this.currentBackoffMillis * this.multiplier);
+                this.currentBackoffMillis = Math.min(nextCurrentBackoffMillis, this.maxBackoffMillis);
                 return true;
             });
     }
