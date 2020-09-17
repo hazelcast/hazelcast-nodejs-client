@@ -116,7 +116,7 @@ export interface IMap<K, V> extends DistributedObject {
      * Returns `true` if this map has an item associated with key.
      * @param key
      * @throws RangeError if key is `null` or `undefined`
-     * @returns `true` if the map contains the key, `false` otherwise.
+     * @returns `true` if the map contains the key, `false` otherwise
      */
     containsKey(key: K): Promise<boolean>;
 
@@ -137,8 +137,8 @@ export interface IMap<K, V> extends DistributedObject {
      * @param ttl Time to live in milliseconds. 0 means infinite.
      * If ttl is not an integer, it is rounded up to the nearest integer value.
      * @throws RangeError if specified key or value is `undefined` or `null`
-     *                    or ttl is negative.
-     * @returns old value if there was any, `undefined` otherwise
+     *                    or ttl is negative
+     * @returns old value if there was any, `null` otherwise
      */
     put(key: K, value: V, ttl?: number): Promise<V>;
 
@@ -211,7 +211,7 @@ export interface IMap<K, V> extends DistributedObject {
      * Retrieves the value associated with given key.
      * @param key
      * @throws RangeError if key is `null` or `undefined`
-     * @returns value associated with key, `undefined` if the key does not exist
+     * @returns value associated with key, `null` if the key does not exist
      */
     get(key: K): Promise<V>;
 
@@ -229,7 +229,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param key
      * @param value
      * @throws RangeError if key is `null` or `undefined`
-     * @returns value associated with key, `undefined` if the key did not exist
+     * @returns value associated with key, `null` if the key did not exist
      *          before. If optional value is specified, a `boolean` representing
      *          whether or not entry is removed is returned
      */
@@ -350,7 +350,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param value
      * @param ttl if set, key will be evicted automatically after `ttl` milliseconds
      * @throws RangeError if key or value is `null` or `undefined`
-     * @returns old value of the entry.
+     * @returns old value of the entry
      */
     putIfAbsent(key: K, value: V, ttl?: number): Promise<V>;
 
