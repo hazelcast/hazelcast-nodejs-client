@@ -31,7 +31,7 @@ export interface MultiMap<K, V> extends DistributedObject {
      * will not replace the old value. Instead, both values will be associated with the same key.
      * @param key key to add.
      * @param value value to associate with the key.
-     * @return `true` if this multi-map did not have the specified value associated
+     * @returns `true` if this multi-map did not have the specified value associated
      * with the specified key, `false` otherwise.
      */
     put(key: K, value: V): Promise<boolean>;
@@ -39,7 +39,7 @@ export interface MultiMap<K, V> extends DistributedObject {
     /**
      * Retrieves a list of values associated with the specified key.
      * @param key key to search for.
-     * @return a list of values associated with the specified key.
+     * @returns a list of values associated with the specified key.
      */
     get(key: K): Promise<ReadOnlyLazyList<V>>;
 
@@ -48,31 +48,31 @@ export interface MultiMap<K, V> extends DistributedObject {
      * other values associated with the same key.
      * @param key key from which the value should be detached.
      * @param value value to be removed.
-     * @return `true` if the value was detached from the specified key, `false` if it was not.
+     * @returns `true` if the value was detached from the specified key, `false` if it was not.
      */
     remove(key: K, value: V): Promise<boolean>;
 
     /**
      * Detaches all values from the specified key.
      * @param key key from which all entries should be removed.
-     * @return a list of old values that were associated with this key prior to this method call.
+     * @returns a list of old values that were associated with this key prior to this method call.
      */
     removeAll(key: K): Promise<ReadOnlyLazyList<V>>;
 
     /**
-     * @return an array of all keys in this multi-map.
+     * @returns an array of all keys in this multi-map.
      */
     keySet(): Promise<K[]>;
 
     /**
-     * @return a flat list of all values stored in this multi-map.
+     * @returns a flat list of all values stored in this multi-map.
      */
     values(): Promise<ReadOnlyLazyList<V>>;
 
     /**
      * Returns all entries in this multi-map. If a certain key has multiple values associated with it,
      * then one pair will be returned for each value.
-     * @return an array of all key value pairs stored in this multi-map.
+     * @returns an array of all key value pairs stored in this multi-map.
      */
     entrySet(): Promise<Array<[K, V]>>;
 
@@ -85,7 +85,7 @@ export interface MultiMap<K, V> extends DistributedObject {
 
     /**
      * @param value value to search for.
-     * @return `true` if the specified value is associated with at least one key in this multi-map,
+     * @returns `true` if the specified value is associated with at least one key in this multi-map,
      * `false` otherwise.
      */
     containsValue(value: V): Promise<boolean>;
@@ -93,13 +93,13 @@ export interface MultiMap<K, V> extends DistributedObject {
     /**
      * @param key key to match against.
      * @param value value to match against.
-     * @return `true` if this multi-map has an association between
+     * @returns `true` if this multi-map has an association between
      * the specified key and the specified value, `false` otherwise.
      */
     containsEntry(key: K, value: V): Promise<boolean>;
 
     /**
-     * @return the total number of values in this multi-map.
+     * @returns the total number of values in this multi-map.
      */
     size(): Promise<number>;
 
@@ -110,7 +110,7 @@ export interface MultiMap<K, V> extends DistributedObject {
 
     /**
      * @param key key to search for.
-     * @return the number of values associated with the specified key.
+     * @returns the number of values associated with the specified key.
      */
     valueCount(key: K): Promise<number>;
 
@@ -119,7 +119,7 @@ export interface MultiMap<K, V> extends DistributedObject {
      * @param listener entry listener to be attached
      * @param key if specified then this entry listener will only be notified of updates related to this key.
      * @param includeValue if `true`, then the event will include the modified value.
-     * @return registration ID for this entry listener
+     * @returns registration ID for this entry listener
      */
     addEntryListener(listener: EntryListener<K, V>, key?: K, includeValue?: boolean): Promise<string>;
 
@@ -135,14 +135,15 @@ export interface MultiMap<K, V> extends DistributedObject {
      * only when the lock becomes available.
      * All attempts to access the locked key will block until the lock is released.
      *
-     * Locking is reentrant, meaning that the lock owner can obtain the lock multiple times.
-     * If the lock was acquired multiple times, then `unlock` method must be called the same amount of
+     * Locking is reentrant, meaning that the lock owner client can obtain the lock multiple times.
+     * If the lock was acquired multiple times, then `unlock()` method must be called the same amount of
      * times, otherwise the lock will remain unavailable.
      *
      * If lease time is specified, then the lock will automatically become available
      * after the specified time has passed.
      * If lease time is not specified or is less than zero,
      * then lock owner must call `unlock` to make the lock available.
+     *
      * @param key key to be locked.
      * @param leaseMillis lease time in milliseconds.
      */
@@ -150,7 +151,7 @@ export interface MultiMap<K, V> extends DistributedObject {
 
     /**
      * @param key key to be checked
-     * @return `true` if this key is locked, `false` otherwise
+     * @returns `true` if this key is locked, `false` otherwise
      */
     isLocked(key: K): Promise<boolean>;
 
@@ -163,14 +164,15 @@ export interface MultiMap<K, V> extends DistributedObject {
      * only when the lock becomes available.
      * All attempts to access the locked key will block until the lock is released.
      *
-     * Locking is reentrant, meaning that the lock owner can obtain the lock multiple times.
-     * If the lock was acquired multiple times, then `unlock` method must be called the same amount of
+     * Locking is reentrant, meaning that the lock owner client can obtain the lock multiple times.
+     * If the lock was acquired multiple times, then `unlock()` method must be called the same amount of
      * times, otherwise the lock will remain unavailable.
      *
      * If lease time is specified, then the lock will automatically become available
      * after the specified time has passed.
      * If lease time is not specified or is less than zero,
      * then lock owner must call `unlock` to make the lock available.
+     *
      * @param key key to be locked
      * @param timeoutMillis timeout for locking, in milliseconds
      * @param leaseMillis lease time in milliseconds
@@ -193,14 +195,14 @@ export interface MultiMap<K, V> extends DistributedObject {
 
     /**
      * Stores the given key, value array pairs in the MultiMap.
-     * <p>
+     *
      * The behaviour of this operation is undefined if the specified pairs are modified
      * while this operation is in progress.
-     * <p>
+     *
      * No atomicity guarantees are given. It could be that in case of failure
      * some of the key/value-pairs get written, while others are not.
-     * <p>
-     * @param pairs key, value array pairs
+     *
+     * @param pairs key-value array pairs
      */
     putAll(pairs: Array<[K, V[]]>): Promise<void>;
 }
