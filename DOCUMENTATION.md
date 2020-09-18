@@ -500,6 +500,11 @@ Hazelcast Node.js client supports the following data structures and features:
 * Reliable Topic
 * CRDT PN Counter
 * Flake Id Generator
+* FencedLock (CP Subsystem)
+* Semaphore (CP Subsystem)
+* AtomicLong (CP Subsystem)
+* AtomicReference (CP Subsystem)
+* CountDownLatch (CP Subsystem)
 * Event Listeners
 * Entry Processor
 * Query (Predicates)
