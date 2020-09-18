@@ -88,10 +88,10 @@ export class HeartbeatManager {
         }
 
         if (now - connection.getLastReadTimeMillis() > this.heartbeatTimeout) {
-            if (connection.isAlive()) {
-                this.logger.warn('HeartbeatManager', `Heartbeat failed over connection: ${connection}`);
-                this.onHeartbeatStopped(connection, 'Heartbeat timed out');
-            }
+            this.logger.warn('HeartbeatManager', `Heartbeat failed over connection: ${connection}`);
+            connection.close('Heartbeat timed out',
+                new TargetDisconnectedError(`Heartbeat timed out to connection ${connection}`));
+            return;
         }
 
         if (now - connection.getLastWriteTimeMillis() > this.heartbeatInterval) {
@@ -104,9 +104,5 @@ export class HeartbeatManager {
                     // No-op
                 });
         }
-    }
-
-    private onHeartbeatStopped(connection: ClientConnection, reason: string): void {
-        connection.close(reason, new TargetDisconnectedError(`Heartbeat timed out to connection ${connection}`));
     }
 }
