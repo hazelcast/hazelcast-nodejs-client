@@ -30,11 +30,6 @@ const REQUEST_MESSAGE_TYPE = 80640;
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
 /** @internal */
-export interface MapProjectResponseParams {
-    response: Data[];
-}
-
-/** @internal */
 export class MapProjectCodec {
     static encodeRequest(name: string, projection: Data): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -50,13 +45,10 @@ export class MapProjectCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): MapProjectResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): Data[] {
         // empty initial frame
         clientMessage.nextFrame();
 
-        const response = {} as MapProjectResponseParams;
-        response.response = ListMultiFrameCodec.decodeContainsNullable(clientMessage, DataCodec.decode);
-
-        return response;
+        return ListMultiFrameCodec.decodeContainsNullable(clientMessage, DataCodec.decode);
     }
 }

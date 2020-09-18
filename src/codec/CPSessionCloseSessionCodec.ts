@@ -32,11 +32,6 @@ const REQUEST_INITIAL_FRAME_SIZE = REQUEST_SESSION_ID_OFFSET + BitsUtil.LONG_SIZ
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
 /** @internal */
-export interface CPSessionCloseSessionResponseParams {
-    response: boolean;
-}
-
-/** @internal */
 export class CPSessionCloseSessionCodec {
     static encodeRequest(groupId: RaftGroupId, sessionId: Long): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -52,12 +47,9 @@ export class CPSessionCloseSessionCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): CPSessionCloseSessionResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): boolean {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as CPSessionCloseSessionResponseParams;
-        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 }

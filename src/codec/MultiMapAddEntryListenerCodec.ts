@@ -40,11 +40,6 @@ const EVENT_ENTRY_UUID_OFFSET = EVENT_ENTRY_EVENT_TYPE_OFFSET + BitsUtil.INT_SIZ
 const EVENT_ENTRY_NUMBER_OF_AFFECTED_ENTRIES_OFFSET = EVENT_ENTRY_UUID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
 
 /** @internal */
-export interface MultiMapAddEntryListenerResponseParams {
-    response: UUID;
-}
-
-/** @internal */
 export class MultiMapAddEntryListenerCodec {
     static encodeRequest(name: string, includeValue: boolean, localOnly: boolean): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -61,13 +56,10 @@ export class MultiMapAddEntryListenerCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): MultiMapAddEntryListenerResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): UUID {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as MultiMapAddEntryListenerResponseParams;
-        response.response = FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 
     static handle(clientMessage: ClientMessage, handleEntryEvent: (key: Data, value: Data, oldValue: Data, mergingValue: Data, eventType: number, uuid: UUID, numberOfAffectedEntries: number) => void = null): void {

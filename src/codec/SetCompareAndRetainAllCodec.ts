@@ -32,11 +32,6 @@ const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BY
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
 /** @internal */
-export interface SetCompareAndRetainAllResponseParams {
-    response: boolean;
-}
-
-/** @internal */
 export class SetCompareAndRetainAllCodec {
     static encodeRequest(name: string, values: Data[]): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -52,12 +47,9 @@ export class SetCompareAndRetainAllCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): SetCompareAndRetainAllResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): boolean {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as SetCompareAndRetainAllResponseParams;
-        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 }

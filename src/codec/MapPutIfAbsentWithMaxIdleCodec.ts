@@ -35,11 +35,6 @@ const REQUEST_MAX_IDLE_OFFSET = REQUEST_TTL_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_MAX_IDLE_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
 /** @internal */
-export interface MapPutIfAbsentWithMaxIdleResponseParams {
-    response: Data;
-}
-
-/** @internal */
 export class MapPutIfAbsentWithMaxIdleCodec {
     static encodeRequest(name: string, key: Data, value: Data, threadId: Long, ttl: Long, maxIdle: Long): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -59,13 +54,10 @@ export class MapPutIfAbsentWithMaxIdleCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): MapPutIfAbsentWithMaxIdleResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): Data {
         // empty initial frame
         clientMessage.nextFrame();
 
-        const response = {} as MapPutIfAbsentWithMaxIdleResponseParams;
-        response.response = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
-
-        return response;
+        return CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
     }
 }

@@ -36,11 +36,6 @@ const REQUEST_INITIAL_FRAME_SIZE = REQUEST_INVOCATION_UID_OFFSET + BitsUtil.UUID
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
 /** @internal */
-export interface SemaphoreDrainResponseParams {
-    response: number;
-}
-
-/** @internal */
 export class SemaphoreDrainCodec {
     static encodeRequest(groupId: RaftGroupId, name: string, sessionId: Long, threadId: Long, invocationUid: UUID): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -59,12 +54,9 @@ export class SemaphoreDrainCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): SemaphoreDrainResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): number {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as SemaphoreDrainResponseParams;
-        response.response = FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeInt(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 }

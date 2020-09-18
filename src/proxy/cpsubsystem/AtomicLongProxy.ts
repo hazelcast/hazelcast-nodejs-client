@@ -44,10 +44,7 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
             delta = Long.fromNumber(delta as number);
         }
         return this.encodeInvokeOnRandomTarget(AtomicLongAddAndGetCodec, this.groupId, this.objectName, delta)
-            .then((clientMessage) => {
-                const response = AtomicLongAddAndGetCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(AtomicLongAddAndGetCodec.decodeResponse);
     }
 
     compareAndSet(expect: Long | number, update: Long | number): Promise<boolean> {
@@ -60,10 +57,7 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
             update = Long.fromNumber(update as number);
         }
         return this.encodeInvokeOnRandomTarget(AtomicLongCompareAndSetCodec, this.groupId, this.objectName, expect, update)
-            .then((clientMessage) => {
-                const response = AtomicLongCompareAndSetCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(AtomicLongCompareAndSetCodec.decodeResponse);
     }
 
     decrementAndGet(): Promise<Long> {
@@ -72,10 +66,7 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
 
     get(): Promise<Long> {
         return this.encodeInvokeOnRandomTarget(AtomicLongGetCodec, this.groupId, this.objectName)
-            .then((clientMessage) => {
-                const response = AtomicLongGetCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(AtomicLongGetCodec.decodeResponse);
     }
 
     getAndAdd(delta: Long | number): Promise<Long> {
@@ -84,10 +75,7 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
             delta = Long.fromNumber(delta as number);
         }
         return this.encodeInvokeOnRandomTarget(AtomicLongGetAndAddCodec, this.groupId, this.objectName, delta)
-            .then((clientMessage) => {
-                const response = AtomicLongGetAndAddCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(AtomicLongGetAndAddCodec.decodeResponse);
     }
 
     getAndSet(newValue: Long | number): Promise<Long> {
@@ -96,10 +84,7 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
             newValue = Long.fromNumber(newValue as number);
         }
         return this.encodeInvokeOnRandomTarget(AtomicLongGetAndSetCodec, this.groupId, this.objectName, newValue)
-            .then((clientMessage) => {
-                const response = AtomicLongGetAndSetCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(AtomicLongGetAndSetCodec.decodeResponse);
     }
 
     incrementAndGet(): Promise<Long> {

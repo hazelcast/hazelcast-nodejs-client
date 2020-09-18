@@ -30,11 +30,6 @@ const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BY
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
 /** @internal */
-export interface RingbufferTailSequenceResponseParams {
-    response: Long;
-}
-
-/** @internal */
 export class RingbufferTailSequenceCodec {
     static encodeRequest(name: string): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -49,12 +44,9 @@ export class RingbufferTailSequenceCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): RingbufferTailSequenceResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): Long {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as RingbufferTailSequenceResponseParams;
-        response.response = FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 }

@@ -34,11 +34,6 @@ const REQUEST_INITIAL_FRAME_SIZE = REQUEST_TIMEOUT_OFFSET + BitsUtil.LONG_SIZE_I
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
 /** @internal */
-export interface MapTryRemoveResponseParams {
-    response: boolean;
-}
-
-/** @internal */
 export class MapTryRemoveCodec {
     static encodeRequest(name: string, key: Data, threadId: Long, timeout: Long): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -56,12 +51,9 @@ export class MapTryRemoveCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): MapTryRemoveResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): boolean {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as MapTryRemoveResponseParams;
-        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 }

@@ -34,11 +34,6 @@ const REQUEST_TTL_OFFSET = REQUEST_THREAD_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTE
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_TTL_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
 /** @internal */
-export interface MapPutResponseParams {
-    response: Data;
-}
-
-/** @internal */
 export class MapPutCodec {
     static encodeRequest(name: string, key: Data, value: Data, threadId: Long, ttl: Long): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -57,13 +52,10 @@ export class MapPutCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): MapPutResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): Data {
         // empty initial frame
         clientMessage.nextFrame();
 
-        const response = {} as MapPutResponseParams;
-        response.response = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
-
-        return response;
+        return CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
     }
 }

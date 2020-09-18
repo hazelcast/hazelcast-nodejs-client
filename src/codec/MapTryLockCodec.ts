@@ -36,11 +36,6 @@ const REQUEST_INITIAL_FRAME_SIZE = REQUEST_REFERENCE_ID_OFFSET + BitsUtil.LONG_S
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
 /** @internal */
-export interface MapTryLockResponseParams {
-    response: boolean;
-}
-
-/** @internal */
 export class MapTryLockCodec {
     static encodeRequest(name: string, key: Data, threadId: Long, lease: Long, timeout: Long, referenceId: Long): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -60,12 +55,9 @@ export class MapTryLockCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): MapTryLockResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): boolean {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as MapTryLockResponseParams;
-        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 }

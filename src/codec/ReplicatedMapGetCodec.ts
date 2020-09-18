@@ -30,11 +30,6 @@ const REQUEST_MESSAGE_TYPE = 853504;
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
 /** @internal */
-export interface ReplicatedMapGetResponseParams {
-    response: Data;
-}
-
-/** @internal */
 export class ReplicatedMapGetCodec {
     static encodeRequest(name: string, key: Data): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -50,13 +45,10 @@ export class ReplicatedMapGetCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): ReplicatedMapGetResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): Data {
         // empty initial frame
         clientMessage.nextFrame();
 
-        const response = {} as ReplicatedMapGetResponseParams;
-        response.response = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
-
-        return response;
+        return CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
     }
 }

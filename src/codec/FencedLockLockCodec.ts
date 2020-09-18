@@ -36,11 +36,6 @@ const REQUEST_INITIAL_FRAME_SIZE = REQUEST_INVOCATION_UID_OFFSET + BitsUtil.UUID
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
 /** @internal */
-export interface FencedLockLockResponseParams {
-    response: Long;
-}
-
-/** @internal */
 export class FencedLockLockCodec {
     static encodeRequest(groupId: RaftGroupId, name: string, sessionId: Long, threadId: Long, invocationUid: UUID): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -59,12 +54,9 @@ export class FencedLockLockCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): FencedLockLockResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): Long {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as FencedLockLockResponseParams;
-        response.response = FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 }

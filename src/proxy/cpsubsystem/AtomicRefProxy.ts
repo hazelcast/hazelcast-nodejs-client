@@ -44,10 +44,7 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
             this.objectName,
             expectedData,
             newData
-        ).then((clientMessage) => {
-            const response = AtomicRefCompareAndSetCodec.decodeResponse(clientMessage);
-            return response.response;
-        });
+        ).then(AtomicRefCompareAndSetCodec.decodeResponse);
     }
 
     get(): Promise<E> {
@@ -57,7 +54,7 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
             this.objectName
         ).then((clientMessage) => {
             const response = AtomicRefGetCodec.decodeResponse(clientMessage);
-            return this.toObject(response.response);
+            return this.toObject(response);
         });
     }
 
@@ -82,7 +79,7 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
             true
         ).then((clientMessage) => {
             const response = AtomicRefSetCodec.decodeResponse(clientMessage);
-            return this.toObject(response.response);
+            return this.toObject(response);
         });
     }
 
@@ -101,9 +98,6 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
             this.groupId,
             this.objectName,
             valueData
-        ).then((clientMessage) => {
-            const response = AtomicRefContainsCodec.decodeResponse(clientMessage);
-            return response.response;
-        });
+        ).then(AtomicRefContainsCodec.decodeResponse);
     }
 }

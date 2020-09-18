@@ -29,11 +29,6 @@ const REQUEST_MESSAGE_TYPE = 1966336;
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
 /** @internal */
-export interface CPGroupCreateCPGroupResponseParams {
-    groupId: RaftGroupId;
-}
-
-/** @internal */
 export class CPGroupCreateCPGroupCodec {
     static encodeRequest(proxyName: string): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -48,13 +43,10 @@ export class CPGroupCreateCPGroupCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): CPGroupCreateCPGroupResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): RaftGroupId {
         // empty initial frame
         clientMessage.nextFrame();
 
-        const response = {} as CPGroupCreateCPGroupResponseParams;
-        response.groupId = RaftGroupIdCodec.decode(clientMessage);
-
-        return response;
+        return RaftGroupIdCodec.decode(clientMessage);
     }
 }
