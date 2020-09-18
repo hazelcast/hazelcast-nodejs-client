@@ -33,11 +33,6 @@ const REQUEST_INITIAL_FRAME_SIZE = REQUEST_THREAD_ID_OFFSET + BitsUtil.LONG_SIZE
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
 /** @internal */
-export interface MultiMapContainsKeyResponseParams {
-    response: boolean;
-}
-
-/** @internal */
 export class MultiMapContainsKeyCodec {
     static encodeRequest(name: string, key: Data, threadId: Long): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -54,12 +49,9 @@ export class MultiMapContainsKeyCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): MultiMapContainsKeyResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): boolean {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as MultiMapContainsKeyResponseParams;
-        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 }

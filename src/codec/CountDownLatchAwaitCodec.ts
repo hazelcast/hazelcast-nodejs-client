@@ -35,11 +35,6 @@ const REQUEST_INITIAL_FRAME_SIZE = REQUEST_TIMEOUT_MS_OFFSET + BitsUtil.LONG_SIZ
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
 /** @internal */
-export interface CountDownLatchAwaitResponseParams {
-    response: boolean;
-}
-
-/** @internal */
 export class CountDownLatchAwaitCodec {
     static encodeRequest(groupId: RaftGroupId, name: string, invocationUid: UUID, timeoutMs: Long): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -57,12 +52,9 @@ export class CountDownLatchAwaitCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): CountDownLatchAwaitResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): boolean {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as CountDownLatchAwaitResponseParams;
-        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 }

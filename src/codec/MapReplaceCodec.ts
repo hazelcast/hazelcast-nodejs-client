@@ -33,11 +33,6 @@ const REQUEST_THREAD_ID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTE
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_THREAD_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
 /** @internal */
-export interface MapReplaceResponseParams {
-    response: Data;
-}
-
-/** @internal */
 export class MapReplaceCodec {
     static encodeRequest(name: string, key: Data, value: Data, threadId: Long): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -55,13 +50,10 @@ export class MapReplaceCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): MapReplaceResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): Data {
         // empty initial frame
         clientMessage.nextFrame();
 
-        const response = {} as MapReplaceResponseParams;
-        response.response = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
-
-        return response;
+        return CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
     }
 }

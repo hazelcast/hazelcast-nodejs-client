@@ -33,11 +33,6 @@ const REQUEST_INITIAL_FRAME_SIZE = REQUEST_INDEX_OFFSET + BitsUtil.INT_SIZE_IN_B
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
 /** @internal */
-export interface ListAddAllWithIndexResponseParams {
-    response: boolean;
-}
-
-/** @internal */
 export class ListAddAllWithIndexCodec {
     static encodeRequest(name: string, index: number, valueList: Data[]): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -54,12 +49,9 @@ export class ListAddAllWithIndexCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): ListAddAllWithIndexResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): boolean {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as ListAddAllWithIndexResponseParams;
-        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 }

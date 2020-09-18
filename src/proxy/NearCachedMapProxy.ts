@@ -219,7 +219,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
 
             },
             decodeAddResponse(msg: ClientMessage): UUID {
-                return MapAddNearCacheInvalidationListenerCodec.decodeResponse(msg).response;
+                return MapAddNearCacheInvalidationListenerCodec.decodeResponse(msg);
             },
             encodeRemoveRequest(listenerId: UUID): ClientMessage {
                 return MapRemoveEntryListenerCodec.encodeRequest(name, listenerId);

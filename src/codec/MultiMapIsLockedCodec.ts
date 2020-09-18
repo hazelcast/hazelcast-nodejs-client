@@ -31,11 +31,6 @@ const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BY
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
 /** @internal */
-export interface MultiMapIsLockedResponseParams {
-    response: boolean;
-}
-
-/** @internal */
 export class MultiMapIsLockedCodec {
     static encodeRequest(name: string, key: Data): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -51,12 +46,9 @@ export class MultiMapIsLockedCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): MultiMapIsLockedResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): boolean {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as MultiMapIsLockedResponseParams;
-        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 }

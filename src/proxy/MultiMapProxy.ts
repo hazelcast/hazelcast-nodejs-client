@@ -64,10 +64,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
         const keyData = this.toData(key);
         const valueData = this.toData(value);
         return this.encodeInvokeOnKey(MultiMapPutCodec, keyData, keyData, valueData, 1)
-            .then((clientMessage) => {
-                const response = MultiMapPutCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(MultiMapPutCodec.decodeResponse);
     }
 
     get(key: K): Promise<ReadOnlyLazyList<V>> {
@@ -75,7 +72,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
         return this.encodeInvokeOnKey(MultiMapGetCodec, keyData, keyData, 1)
             .then((clientMessage) => {
                 const response = MultiMapGetCodec.decodeResponse(clientMessage);
-                return new ReadOnlyLazyList<V>(response.response, this.client.getSerializationService());
+                return new ReadOnlyLazyList<V>(response, this.client.getSerializationService());
             });
     }
 
@@ -83,10 +80,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
         const keyData = this.toData(key);
         const valueData = this.toData(value);
         return this.encodeInvokeOnKey(MultiMapRemoveEntryCodec, keyData, keyData, valueData, 1)
-            .then((clientMessage) => {
-                const response = MultiMapRemoveEntryCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(MultiMapRemoveEntryCodec.decodeResponse);
     }
 
     removeAll(key: K): Promise<ReadOnlyLazyList<V>> {
@@ -94,7 +88,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
         return this.encodeInvokeOnKey(MultiMapRemoveCodec, keyData, keyData, 1)
             .then((clientMessage) => {
                 const response = MultiMapRemoveCodec.decodeResponse(clientMessage);
-                return new ReadOnlyLazyList<V>(response.response, this.client.getSerializationService());
+                return new ReadOnlyLazyList<V>(response, this.client.getSerializationService());
             });
     }
 
@@ -102,7 +96,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
         return this.encodeInvokeOnRandomTarget(MultiMapKeySetCodec)
             .then((clientMessage) => {
                 const response = MultiMapKeySetCodec.decodeResponse(clientMessage);
-                return this.deserializeList(response.response);
+                return this.deserializeList(response);
             });
     }
 
@@ -110,7 +104,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
         return this.encodeInvokeOnRandomTarget(MultiMapValuesCodec)
             .then((clientMessage) => {
                 const response = MultiMapValuesCodec.decodeResponse(clientMessage);
-                return new ReadOnlyLazyList<V>(response.response, this.client.getSerializationService());
+                return new ReadOnlyLazyList<V>(response, this.client.getSerializationService());
             });
     }
 
@@ -118,44 +112,32 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
         return this.encodeInvokeOnRandomTarget(MultiMapEntrySetCodec)
             .then((clientMessage) => {
                 const response = MultiMapEntrySetCodec.decodeResponse(clientMessage);
-                return SerializationUtil.deserializeEntryList(this.toObject.bind(this), response.response);
+                return SerializationUtil.deserializeEntryList(this.toObject.bind(this), response);
             });
     }
 
     containsKey(key: K): Promise<boolean> {
         const keyData = this.toData(key);
         return this.encodeInvokeOnKey(MultiMapContainsKeyCodec, keyData, keyData, 1)
-            .then((clientMessage) => {
-                const response = MultiMapContainsKeyCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(MultiMapContainsKeyCodec.decodeResponse);
     }
 
     containsValue(value: V): Promise<boolean> {
         const valueData = this.toData(value);
         return this.encodeInvokeOnRandomTarget(MultiMapContainsValueCodec, valueData)
-            .then((clientMessage) => {
-                const response = MultiMapContainsValueCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(MultiMapContainsValueCodec.decodeResponse);
     }
 
     containsEntry(key: K, value: V): Promise<boolean> {
         const keyData = this.toData(key);
         const valueData = this.toData(value);
         return this.encodeInvokeOnKey(MultiMapContainsEntryCodec, keyData, keyData, valueData, 1)
-            .then((clientMessage) => {
-                const response = MultiMapContainsEntryCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(MultiMapContainsEntryCodec.decodeResponse);
     }
 
     size(): Promise<number> {
         return this.encodeInvokeOnRandomTarget(MultiMapSizeCodec)
-            .then((clientMessage) => {
-                const response = MultiMapSizeCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(MultiMapSizeCodec.decodeResponse);
     }
 
     clear(): Promise<void> {
@@ -165,10 +147,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     valueCount(key: K): Promise<number> {
         const keyData = this.toData(key);
         return this.encodeInvokeOnKey(MultiMapValueCountCodec, keyData, keyData, 1)
-            .then((clientMessage) => {
-                const response = MultiMapValueCountCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(MultiMapValueCountCodec.decodeResponse);
     }
 
     addEntryListener(listener: EntryListener<K, V>, key?: K, includeValue = true): Promise<string> {
@@ -239,19 +218,13 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     isLocked(key: K): Promise<boolean> {
         const keyData = this.toData(key);
         return this.encodeInvokeOnKey(MultiMapIsLockedCodec, keyData, keyData)
-            .then((clientMessage) => {
-                const response = MultiMapIsLockedCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(MultiMapIsLockedCodec.decodeResponse);
     }
 
     tryLock(key: K, timeoutMillis = 0, leaseMillis = -1): Promise<boolean> {
         const keyData = this.toData(key);
         return this.encodeInvokeOnKey(MultiMapTryLockCodec, keyData, keyData, 1, leaseMillis, timeoutMillis, this.nextSequence())
-            .then((clientMessage) => {
-                const response = MultiMapTryLockCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(MultiMapTryLockCodec.decodeResponse);
     }
 
     unlock(key: K): Promise<void> {
@@ -307,7 +280,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
                 return MultiMapAddEntryListenerToKeyCodec.encodeRequest(name, keyData, includeValue, localOnly);
             },
             decodeAddResponse(msg: ClientMessage): UUID {
-                return MultiMapAddEntryListenerToKeyCodec.decodeResponse(msg).response;
+                return MultiMapAddEntryListenerToKeyCodec.decodeResponse(msg);
             },
             encodeRemoveRequest(listenerId: UUID): ClientMessage {
                 return MultiMapRemoveEntryListenerCodec.encodeRequest(name, listenerId);
@@ -321,7 +294,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
                 return MultiMapAddEntryListenerCodec.encodeRequest(name, includeValue, localOnly);
             },
             decodeAddResponse(msg: ClientMessage): UUID {
-                return MultiMapAddEntryListenerCodec.decodeResponse(msg).response;
+                return MultiMapAddEntryListenerCodec.decodeResponse(msg);
             },
             encodeRemoveRequest(listenerId: UUID): ClientMessage {
                 return MultiMapRemoveEntryListenerCodec.encodeRequest(name, listenerId);

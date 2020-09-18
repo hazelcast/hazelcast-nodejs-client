@@ -55,10 +55,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
     init(permits: number): Promise<boolean> {
         assertNonNegativeNumber(permits);
         return this.encodeInvokeOnRandomTarget(SemaphoreInitCodec, this.groupId, this.objectName, permits)
-            .then((clientMessage) => {
-                const response = SemaphoreInitCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(SemaphoreInitCodec.decodeResponse);
     }
 
     acquire(permits = 1): Promise<void> {
@@ -89,10 +86,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
                     Long.fromNumber(timeout)
                 )
             )
-            .then((clientMessage) => {
-                const response = SemaphoreAcquireCodec.decodeResponse(clientMessage);
-                return response.response;
-            })
+            .then(SemaphoreAcquireCodec.decodeResponse)
             .catch((err) => {
                 if (err instanceof WaitKeyCancelledError) {
                     throw new IllegalStateError('Semaphore[' + this.objectName
@@ -123,10 +117,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
 
     availablePermits(): Promise<number> {
         return this.encodeInvokeOnRandomTarget(SemaphoreAvailablePermitsCodec, this.groupId, this.objectName)
-            .then((clientMessage) => {
-                const response = SemaphoreAvailablePermitsCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(SemaphoreAvailablePermitsCodec.decodeResponse);
     }
 
     drainPermits(): Promise<number> {
@@ -142,10 +133,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
                     invocationUid
                 )
             )
-            .then((clientMessage) => {
-                const response = SemaphoreDrainCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(SemaphoreDrainCodec.decodeResponse);
     }
 
     reducePermits(reduction: number): Promise<void> {

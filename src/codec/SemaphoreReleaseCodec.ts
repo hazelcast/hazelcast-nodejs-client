@@ -37,11 +37,6 @@ const REQUEST_INITIAL_FRAME_SIZE = REQUEST_PERMITS_OFFSET + BitsUtil.INT_SIZE_IN
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
 /** @internal */
-export interface SemaphoreReleaseResponseParams {
-    response: boolean;
-}
-
-/** @internal */
 export class SemaphoreReleaseCodec {
     static encodeRequest(groupId: RaftGroupId, name: string, sessionId: Long, threadId: Long, invocationUid: UUID, permits: number): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -61,12 +56,9 @@ export class SemaphoreReleaseCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): SemaphoreReleaseResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): boolean {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as SemaphoreReleaseResponseParams;
-        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 }

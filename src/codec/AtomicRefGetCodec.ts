@@ -32,11 +32,6 @@ const REQUEST_MESSAGE_TYPE = 656384;
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
 /** @internal */
-export interface AtomicRefGetResponseParams {
-    response: Data;
-}
-
-/** @internal */
 export class AtomicRefGetCodec {
     static encodeRequest(groupId: RaftGroupId, name: string): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -52,13 +47,10 @@ export class AtomicRefGetCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): AtomicRefGetResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): Data {
         // empty initial frame
         clientMessage.nextFrame();
 
-        const response = {} as AtomicRefGetResponseParams;
-        response.response = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
-
-        return response;
+        return CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
     }
 }

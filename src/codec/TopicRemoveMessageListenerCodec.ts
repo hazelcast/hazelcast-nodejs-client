@@ -31,11 +31,6 @@ const REQUEST_INITIAL_FRAME_SIZE = REQUEST_REGISTRATION_ID_OFFSET + BitsUtil.UUI
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
 /** @internal */
-export interface TopicRemoveMessageListenerResponseParams {
-    response: boolean;
-}
-
-/** @internal */
 export class TopicRemoveMessageListenerCodec {
     static encodeRequest(name: string, registrationId: UUID): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -51,12 +46,9 @@ export class TopicRemoveMessageListenerCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): TopicRemoveMessageListenerResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): boolean {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as TopicRemoveMessageListenerResponseParams;
-        response.response = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 }

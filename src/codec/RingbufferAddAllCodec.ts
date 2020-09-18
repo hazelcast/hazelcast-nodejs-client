@@ -34,11 +34,6 @@ const REQUEST_INITIAL_FRAME_SIZE = REQUEST_OVERFLOW_POLICY_OFFSET + BitsUtil.INT
 const RESPONSE_RESPONSE_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
 /** @internal */
-export interface RingbufferAddAllResponseParams {
-    response: Long;
-}
-
-/** @internal */
 export class RingbufferAddAllCodec {
     static encodeRequest(name: string, valueList: Data[], overflowPolicy: number): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -55,12 +50,9 @@ export class RingbufferAddAllCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): RingbufferAddAllResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): Long {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as RingbufferAddAllResponseParams;
-        response.response = FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 }

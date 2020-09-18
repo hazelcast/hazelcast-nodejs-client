@@ -185,7 +185,7 @@ export class HazelcastClient {
                     localDistributedObjects.add(obj.getServiceName() + NAMESPACE_SEPARATOR + obj.getName());
                 });
 
-                const newDistributedObjectInfos = ClientGetDistributedObjectsCodec.decodeResponse(responseMessage).response;
+                const newDistributedObjectInfos = ClientGetDistributedObjectsCodec.decodeResponse(responseMessage);
                 const createLocalProxiesPromise = newDistributedObjectInfos.map((doi) => {
                     return this.proxyManager.getOrCreateProxy(doi.name, doi.serviceName, false)
                         .then(() => localDistributedObjects.delete(doi.serviceName + NAMESPACE_SEPARATOR + doi.name));

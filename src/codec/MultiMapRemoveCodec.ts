@@ -33,11 +33,6 @@ const REQUEST_THREAD_ID_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTE
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_THREAD_ID_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
 /** @internal */
-export interface MultiMapRemoveResponseParams {
-    response: Data[];
-}
-
-/** @internal */
 export class MultiMapRemoveCodec {
     static encodeRequest(name: string, key: Data, threadId: Long): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -54,13 +49,10 @@ export class MultiMapRemoveCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): MultiMapRemoveResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): Data[] {
         // empty initial frame
         clientMessage.nextFrame();
 
-        const response = {} as MultiMapRemoveResponseParams;
-        response.response = ListMultiFrameCodec.decode(clientMessage, DataCodec.decode);
-
-        return response;
+        return ListMultiFrameCodec.decode(clientMessage, DataCodec.decode);
     }
 }

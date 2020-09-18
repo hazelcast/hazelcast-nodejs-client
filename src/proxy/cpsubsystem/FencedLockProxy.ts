@@ -193,37 +193,25 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
     private requestLock(sessionId: Long, threadId: Long, invocationUid: UUID): Promise<Long> {
         return this.encodeInvokeOnRandomTarget(
             FencedLockLockCodec, this.groupId, this.objectName, sessionId, threadId, invocationUid
-        ).then((clientMessage) => {
-            const response = FencedLockLockCodec.decodeResponse(clientMessage);
-            return response.response;
-        });
+        ).then(FencedLockLockCodec.decodeResponse);
     }
 
     private requestTryLock(sessionId: Long, threadId: Long, invocationUid: UUID, timeout: number): Promise<Long> {
         return this.encodeInvokeOnRandomTarget(
             FencedLockTryLockCodec, this.groupId, this.objectName, sessionId, threadId, invocationUid, timeout
-        ).then((clientMessage) => {
-            const response = FencedLockTryLockCodec.decodeResponse(clientMessage);
-            return response.response;
-        });
+        ).then(FencedLockTryLockCodec.decodeResponse);
     }
 
     private requestUnlock(sessionId: Long, threadId: Long, invocationUid: UUID): Promise<boolean> {
         return this.encodeInvokeOnRandomTarget(
             FencedLockUnlockCodec, this.groupId, this.objectName, sessionId, threadId, invocationUid
-        ).then((clientMessage) => {
-            const response = FencedLockUnlockCodec.decodeResponse(clientMessage);
-            return response.response;
-        });
+        ).then(FencedLockUnlockCodec.decodeResponse);
     }
 
     private requestLockOwnershipState(): Promise<FencedLockGetLockOwnershipResponseParams> {
         return this.encodeInvokeOnRandomTarget(
             FencedLockGetLockOwnershipCodec, this.groupId, this.objectName
-        ).then((clientMessage) => {
-            const response = FencedLockGetLockOwnershipCodec.decodeResponse(clientMessage);
-            return response;
-        });
+        ).then(FencedLockGetLockOwnershipCodec.decodeResponse);
     }
 
     private extractThreadId(fence: Fence): number {

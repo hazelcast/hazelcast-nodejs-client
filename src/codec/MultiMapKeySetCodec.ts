@@ -30,11 +30,6 @@ const REQUEST_MESSAGE_TYPE = 132096;
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
 /** @internal */
-export interface MultiMapKeySetResponseParams {
-    response: Data[];
-}
-
-/** @internal */
 export class MultiMapKeySetCodec {
     static encodeRequest(name: string): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -49,13 +44,10 @@ export class MultiMapKeySetCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): MultiMapKeySetResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): Data[] {
         // empty initial frame
         clientMessage.nextFrame();
 
-        const response = {} as MultiMapKeySetResponseParams;
-        response.response = ListMultiFrameCodec.decode(clientMessage, DataCodec.decode);
-
-        return response;
+        return ListMultiFrameCodec.decode(clientMessage, DataCodec.decode);
     }
 }

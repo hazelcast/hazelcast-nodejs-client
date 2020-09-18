@@ -106,10 +106,7 @@ export class CPProxyManager {
     private getGroupId(proxyName: string): Promise<RaftGroupId> {
         const clientMessage = CPGroupCreateCPGroupCodec.encodeRequest(proxyName);
         return this.client.getInvocationService().invokeOnRandomTarget(clientMessage)
-            .then((clientMessage) => {
-                const response = CPGroupCreateCPGroupCodec.decodeResponse(clientMessage);
-                return response.groupId;
-            });
+            .then(CPGroupCreateCPGroupCodec.decodeResponse);
     }
 
     private createFencedLock(groupId: RaftGroupId, proxyName: string, objectName: string): FencedLock {
@@ -129,10 +126,7 @@ export class CPProxyManager {
     private createSemaphore(groupId: RaftGroupId, proxyName: string, objectName: string): Promise<ISemaphore> {
         const clientMessage = SemaphoreGetSemaphoreTypeCodec.encodeRequest(proxyName);
         return this.client.getInvocationService().invokeOnRandomTarget(clientMessage)
-            .then((clientMessage) => {
-                const response = SemaphoreGetSemaphoreTypeCodec.decodeResponse(clientMessage);
-                return response.response;
-            })
+            .then(SemaphoreGetSemaphoreTypeCodec.decodeResponse)
             .then((jdkCompatible) => {
                 return jdkCompatible
                     ? new SessionlessSemaphoreProxy(this.client, groupId, proxyName, objectName)

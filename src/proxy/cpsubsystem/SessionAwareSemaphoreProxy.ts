@@ -61,10 +61,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
     init(permits: number): Promise<boolean> {
         assertNonNegativeNumber(permits);
         return this.encodeInvokeOnRandomTarget(SemaphoreInitCodec, this.groupId, this.objectName, permits)
-            .then((clientMessage) => {
-                const response = SemaphoreInitCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(SemaphoreInitCodec.decodeResponse);
     }
 
     acquire(permits = 1): Promise<void> {
@@ -163,10 +160,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
 
     availablePermits(): Promise<number> {
         return this.encodeInvokeOnRandomTarget(SemaphoreAvailablePermitsCodec, this.groupId, this.objectName)
-            .then((clientMessage) => {
-                const response = SemaphoreAvailablePermitsCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(SemaphoreAvailablePermitsCodec.decodeResponse);
     }
 
     drainPermits(): Promise<number> {
@@ -247,10 +241,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
             invocationUid,
             permits,
             Long.fromNumber(timeout)
-        ).then((clientMessage) => {
-            const response = SemaphoreAcquireCodec.decodeResponse(clientMessage);
-            return response.response;
-        });
+        ).then(SemaphoreAcquireCodec.decodeResponse);
     }
 
     private requestRelease(sessionId: Long,
@@ -278,10 +269,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
             sessionId,
             threadId,
             invocationUid
-        ).then((clientMessage) => {
-            const response = SemaphoreDrainCodec.decodeResponse(clientMessage);
-            return response.response;
-        });
+        ).then(SemaphoreDrainCodec.decodeResponse);
     }
 
     private requestChange(sessionId: Long,

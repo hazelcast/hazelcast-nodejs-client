@@ -191,7 +191,7 @@ export class ProxyManager {
                 return ClientAddDistributedObjectListenerCodec.encodeRequest(localOnly);
             },
             decodeAddResponse(msg: ClientMessage): UUID {
-                return ClientAddDistributedObjectListenerCodec.decodeResponse(msg).response;
+                return ClientAddDistributedObjectListenerCodec.decodeResponse(msg);
             },
             encodeRemoveRequest(listenerId: UUID): ClientMessage {
                 return ClientRemoveDistributedObjectListenerCodec.encodeRequest(listenerId);

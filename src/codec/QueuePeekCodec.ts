@@ -30,11 +30,6 @@ const REQUEST_MESSAGE_TYPE = 198400;
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
 /** @internal */
-export interface QueuePeekResponseParams {
-    response: Data;
-}
-
-/** @internal */
 export class QueuePeekCodec {
     static encodeRequest(name: string): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -49,13 +44,10 @@ export class QueuePeekCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): QueuePeekResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): Data {
         // empty initial frame
         clientMessage.nextFrame();
 
-        const response = {} as QueuePeekResponseParams;
-        response.response = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
-
-        return response;
+        return CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
     }
 }

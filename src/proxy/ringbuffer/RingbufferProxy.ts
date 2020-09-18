@@ -38,51 +38,33 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbu
 
     capacity(): Promise<Long> {
         return this.encodeInvoke(RingbufferCapacityCodec)
-            .then((clientMessage) => {
-                const response = RingbufferCapacityCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(RingbufferCapacityCodec.decodeResponse);
     }
 
     size(): Promise<Long> {
         return this.encodeInvoke(RingbufferSizeCodec)
-            .then((clientMessage) => {
-                const response = RingbufferSizeCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(RingbufferSizeCodec.decodeResponse);
     }
 
     tailSequence(): Promise<Long> {
         return this.encodeInvoke(RingbufferTailSequenceCodec)
-            .then((clientMessage) => {
-                const response = RingbufferTailSequenceCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(RingbufferTailSequenceCodec.decodeResponse);
     }
 
     headSequence(): Promise<Long> {
         return this.encodeInvoke(RingbufferHeadSequenceCodec)
-            .then((clientMessage) => {
-                const response = RingbufferHeadSequenceCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(RingbufferHeadSequenceCodec.decodeResponse);
     }
 
     remainingCapacity(): Promise<Long> {
         return this.encodeInvoke(RingbufferRemainingCapacityCodec)
-            .then((clientMessage) => {
-                const response = RingbufferRemainingCapacityCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(RingbufferRemainingCapacityCodec.decodeResponse);
     }
 
     add(item: E, overflowPolicy: OverflowPolicy = OverflowPolicy.OVERWRITE): Promise<Long> {
         const policyId = overflowPolicyToId(overflowPolicy);
         return this.encodeInvoke(RingbufferAddCodec, policyId, this.toData(item))
-            .then((clientMessage) => {
-                const response = RingbufferAddCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(RingbufferAddCodec.decodeResponse);
     }
 
     addAll(items: E[], overflowPolicy: OverflowPolicy = OverflowPolicy.OVERWRITE): Promise<Long> {
@@ -90,10 +72,7 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbu
         const dataList = items.map(this.toData.bind(this));
 
         return this.encodeInvoke(RingbufferAddAllCodec, dataList, policyId)
-            .then((clientMessage) => {
-                const response = RingbufferAddAllCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(RingbufferAddAllCodec.decodeResponse);
     }
 
     readOne(sequence: number | Long): Promise<E> {
@@ -104,7 +83,7 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbu
         return this.encodeInvoke(RingbufferReadOneCodec, sequence)
             .then((clientMessage) => {
                 const response = RingbufferReadOneCodec.decodeResponse(clientMessage);
-                return this.toObject(response.response);
+                return this.toObject(response);
             });
     }
 

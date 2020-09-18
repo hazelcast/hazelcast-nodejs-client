@@ -34,11 +34,6 @@ const REQUEST_RETURN_OLD_VALUE_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_RETURN_OLD_VALUE_OFFSET + BitsUtil.BOOLEAN_SIZE_IN_BYTES;
 
 /** @internal */
-export interface AtomicRefSetResponseParams {
-    response: Data;
-}
-
-/** @internal */
 export class AtomicRefSetCodec {
     static encodeRequest(groupId: RaftGroupId, name: string, newValue: Data, returnOldValue: boolean): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -56,13 +51,10 @@ export class AtomicRefSetCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): AtomicRefSetResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): Data {
         // empty initial frame
         clientMessage.nextFrame();
 
-        const response = {} as AtomicRefSetResponseParams;
-        response.response = CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
-
-        return response;
+        return CodecUtil.decodeNullable(clientMessage, DataCodec.decode);
     }
 }

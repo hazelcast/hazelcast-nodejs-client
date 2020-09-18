@@ -175,10 +175,7 @@ export class CPSessionManager {
     private requestCloseSession(groupId: RaftGroupId, sessionId: Long): Promise<boolean> {
         const clientMessage = CPSessionCloseSessionCodec.encodeRequest(groupId, sessionId);
         return this.client.getInvocationService().invokeOnRandomTarget(clientMessage)
-            .then((clientMessage) => {
-                const response = CPSessionCloseSessionCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(CPSessionCloseSessionCodec.decodeResponse);
     }
 
     private requestHeartbeat(groupId: RaftGroupId, sessionId: Long): Promise<void> {
@@ -189,10 +186,7 @@ export class CPSessionManager {
     private requestGenerateThreadId(groupId: RaftGroupId): Promise<Long> {
         const clientMessage = CPSessionGenerateThreadIdCodec.encodeRequest(groupId);
         return this.client.getInvocationService().invokeOnRandomTarget(clientMessage)
-            .then((clientMessage) => {
-                const response = CPSessionGenerateThreadIdCodec.decodeResponse(clientMessage);
-                return response.response;
-            });
+            .then(CPSessionGenerateThreadIdCodec.decodeResponse);
     }
 
     private scheduleHeartbeatTask(heartbeatMillis: number): void {

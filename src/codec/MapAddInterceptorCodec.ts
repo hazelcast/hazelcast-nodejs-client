@@ -29,11 +29,6 @@ const REQUEST_MESSAGE_TYPE = 70656;
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
 /** @internal */
-export interface MapAddInterceptorResponseParams {
-    response: string;
-}
-
-/** @internal */
 export class MapAddInterceptorCodec {
     static encodeRequest(name: string, interceptor: Data): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -49,13 +44,10 @@ export class MapAddInterceptorCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): MapAddInterceptorResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): string {
         // empty initial frame
         clientMessage.nextFrame();
 
-        const response = {} as MapAddInterceptorResponseParams;
-        response.response = StringCodec.decode(clientMessage);
-
-        return response;
+        return StringCodec.decode(clientMessage);
     }
 }

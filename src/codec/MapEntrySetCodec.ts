@@ -30,11 +30,6 @@ const REQUEST_MESSAGE_TYPE = 75008;
 const REQUEST_INITIAL_FRAME_SIZE = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
 /** @internal */
-export interface MapEntrySetResponseParams {
-    response: Array<[Data, Data]>;
-}
-
-/** @internal */
 export class MapEntrySetCodec {
     static encodeRequest(name: string): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -49,13 +44,10 @@ export class MapEntrySetCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): MapEntrySetResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): Array<[Data, Data]> {
         // empty initial frame
         clientMessage.nextFrame();
 
-        const response = {} as MapEntrySetResponseParams;
-        response.response = EntryListCodec.decode(clientMessage, DataCodec.decode, DataCodec.decode);
-
-        return response;
+        return EntryListCodec.decode(clientMessage, DataCodec.decode, DataCodec.decode);
     }
 }

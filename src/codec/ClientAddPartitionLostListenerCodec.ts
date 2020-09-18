@@ -35,11 +35,6 @@ const EVENT_PARTITION_LOST_LOST_BACKUP_COUNT_OFFSET = EVENT_PARTITION_LOST_PARTI
 const EVENT_PARTITION_LOST_SOURCE_OFFSET = EVENT_PARTITION_LOST_LOST_BACKUP_COUNT_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 
 /** @internal */
-export interface ClientAddPartitionLostListenerResponseParams {
-    response: UUID;
-}
-
-/** @internal */
 export class ClientAddPartitionLostListenerCodec {
     static encodeRequest(localOnly: boolean): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
@@ -54,13 +49,10 @@ export class ClientAddPartitionLostListenerCodec {
         return clientMessage;
     }
 
-    static decodeResponse(clientMessage: ClientMessage): ClientAddPartitionLostListenerResponseParams {
+    static decodeResponse(clientMessage: ClientMessage): UUID {
         const initialFrame = clientMessage.nextFrame();
 
-        const response = {} as ClientAddPartitionLostListenerResponseParams;
-        response.response = FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
-
-        return response;
+        return FixSizedTypesCodec.decodeUUID(initialFrame.content, RESPONSE_RESPONSE_OFFSET);
     }
 
     static handle(clientMessage: ClientMessage, handlePartitionLostEvent: (partitionId: number, lostBackupCount: number, source: UUID) => void = null): void {

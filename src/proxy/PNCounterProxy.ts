@@ -154,8 +154,7 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
         } else {
             return this.encodeInvokeOnRandomTarget(PNCounterGetConfiguredReplicaCountCodec)
                 .then((clientMessage) => {
-                    const response = PNCounterGetConfiguredReplicaCountCodec.decodeResponse(clientMessage);
-                    this.maximumReplicaCount = response.response;
+                    this.maximumReplicaCount = PNCounterGetConfiguredReplicaCountCodec.decodeResponse(clientMessage);
                     return this.maximumReplicaCount;
                 });
         }
