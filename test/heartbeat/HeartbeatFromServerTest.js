@@ -39,9 +39,8 @@ describe('HeartbeatFromServerTest', function () {
         } else if (conn == null && retryCount > 0) {
             await Util.promiseWaitMilliseconds(300);
             return warmUpConnectionToAddressWithRetry(client, address, retryCount - 1);
-        } else {
-            throw new Error('Could not warm up connection to ' + address);
         }
+        throw new Error('Could not warm up connection to ' + address);
     }
 
     beforeEach(async function () {
@@ -56,6 +55,7 @@ describe('HeartbeatFromServerTest', function () {
     });
 
     it('connectionRemoved fired when second member stops heartbeating', function (done) {
+        let member2;
         const memberAddedPromise = deferredPromise();
         RC.startMember(cluster.id).then(() => {
             return Client.newHazelcastClient({
@@ -67,22 +67,22 @@ describe('HeartbeatFromServerTest', function () {
             });
         }).then((c) => {
             client = c;
-        }).then(() => {
-            const membershipListener = {
+            client.clusterService.addMembershipListener({
                 memberAdded: (membershipEvent) => {
-                    const address = new AddressImpl(membershipEvent.member.address.host, membershipEvent.member.address.port);
-                    warmUpConnectionToAddressWithRetry(client, address)
-                        .then(() => {
-                            memberAddedPromise.resolve();
-                        })
-                        .catch(done);
+                    const address =
+                        new AddressImpl(membershipEvent.member.address.host, membershipEvent.member.address.port);
+                    warmUpConnectionToAddressWithRetry(client, address, 3)
+                        .then(() => memberAddedPromise.resolve())
+                        .catch((err) => memberAddedPromise.reject(err));
                 }
-            };
-
-            client.clusterService.addMembershipListener(membershipListener);
-        }).then(() => {
+            });
             return RC.startMember(cluster.id);
-        }).then((member2) => {
+        }).then((m2) => {
+            member2 = m2;
+            return memberAddedPromise.promise;
+        }).then(() => {
+            simulateHeartbeatLost(client, new AddressImpl(member2.host, member2.port), 2000);
+        }).then(() => {
             client.getConnectionManager().once('connectionRemoved', (connection) => {
                 const remoteAddress = connection.getRemoteAddress();
                 if (remoteAddress.host === member2.host && remoteAddress.port === member2.port) {
@@ -90,17 +90,13 @@ describe('HeartbeatFromServerTest', function () {
                             && connection.closedCause instanceof TargetDisconnectedError) {
                         done();
                     } else {
-                        done(new Error('Connection does not closed due to heartbeat timeout. Reason: '
+                        done(new Error('Connection was not closed due to heartbeat timeout. Reason: '
                             + connection.closedReason + ', cause: ' + connection.closedCause));
                     }
                 } else {
                     done(new Error(remoteAddress.host + ':' + remoteAddress.port + ' is removed instead of '
                         + member2.host + ':' + member2.port));
                 }
-            });
-
-            return memberAddedPromise.promise.then(() => {
-                simulateHeartbeatLost(client, new AddressImpl(member2.host, member2.port), 2000);
             });
         }).catch(done);
     });
@@ -118,10 +114,9 @@ describe('HeartbeatFromServerTest', function () {
             });
         }).then((c) => {
             client = c;
-            const membershipListener = {
+            client.clusterService.addMembershipListener({
                 memberAdded: memberAddedPromise.resolve
-            };
-            client.clusterService.addMembershipListener(membershipListener);
+            });
             return RC.startMember(cluster.id);
         }).then((m) => {
             member2 = m;
@@ -134,7 +129,7 @@ describe('HeartbeatFromServerTest', function () {
                 if (remoteAddress.host === member2.host && remoteAddress.port === member2.port) {
                     if (!(connection.closedReason === 'Heartbeat timed out'
                             || connection.closedCause instanceof TargetDisconnectedError)) {
-                        done(new Error('Connection does not closed due to heartbeat timeout. Reason: '
+                        done(new Error('Connection was closed due to heartbeat timeout. Reason: '
                             + connection.closedReason + ', cause: ' + connection.closedCause));
                     }
                 } else {
