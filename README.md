@@ -120,13 +120,11 @@ Refer to [the documentation](DOCUMENTATION.md) to learn more about supported con
 * Additional data structures and simple messaging constructs such as **Set**, **MultiMap**, **Queue**, **Topic**
 * Cluster-wide unique ID generator, called **FlakeIdGenerator**
 * Distributed, CRDT based counter, called **PNCounter**
-* Primitives for distributed computing such as **Lock**, **Semaphore**, **Atomic Long** *
+* Distributed concurrency primitives from CP Subsystem such as **Lock**, **Semaphore**, **AtomicLong**
 * Integration with [Hazelcast Cloud](https://cloud.hazelcast.com/)
 * Support for serverless and traditional web service architectures with **Unisocket** and **Smart** operation modes
 * Ability to listen client lifecycle, cluster state and distributed data structure events
 * and [many more](https://hazelcast.org/imdg/clients-languages/node-js/#client-features).
-
-> *: Make sure to use 3.x versions of Hazelcast Node.js client and IMDG to access these primitives as the work to support them in 4.x versions is in progress.
 
 ## Getting Help
 
