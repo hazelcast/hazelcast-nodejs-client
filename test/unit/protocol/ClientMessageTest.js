@@ -44,7 +44,7 @@ describe('ClientMessageTest', function () {
         return frameLengthAndFlags;
     }
 
-    it('should be encoded and decoded', function () {
+    it('should restore message when encoded and decoded', function () {
         const cmEncode = ClientMessage.createForEncode();
 
         cmEncode.addFrame(Frame.createInitialFrame(50));
@@ -61,7 +61,7 @@ describe('ClientMessageTest', function () {
         expect(cmEncode.getTotalLength()).to.equal(cmDecode.getTotalLength());
     });
 
-    it('should be copied with new correlation id and share the non-header frames', function () {
+    it('copyWithNewCorrelationId: should assign new correlation id and share the non-header frames', function () {
         const originalMessage = ClientMessage.createForEncode();
 
         originalMessage.addFrame(Frame.createInitialFrame(50));
@@ -109,7 +109,7 @@ describe('ClientMessageTest', function () {
         expect(clientMessage.hasNextFrame()).to.be.false;
     });
 
-    it('should calculate total length correctly', function () {
+    it('getTotalLength: should calculate total length correctly', function () {
         const clientMessage = ClientMessage.createForEncode();
         expect(clientMessage.getTotalLength()).to.be.equal(0);
 
@@ -120,7 +120,7 @@ describe('ClientMessageTest', function () {
         expect(clientMessage.getTotalLength()).to.be.equal(2 * SIZE_OF_FRAME_LENGTH_AND_FLAGS + 43);
     });
 
-    it('should write to given buffer of sufficient length', function () {
+    it('writeTo: should write to given buffer of sufficient length', function () {
         const clientMessage = ClientMessage.createForEncode();
 
         const frame1 = Frame.createInitialFrame(16);
@@ -133,7 +133,9 @@ describe('ClientMessageTest', function () {
         clientMessage.addFrame(frame2);
 
         const buffer = Buffer.allocUnsafe(42 + clientMessage.getTotalLength());
-        clientMessage.writeTo(buffer, 42);
+        const newPos = clientMessage.writeTo(buffer, 42);
+
+        expect(newPos).to.be.equal(42 + clientMessage.getTotalLength());
 
         const expected = Buffer.concat([
             createFrameLengthAndFlagsBuffer(frame1, false),
@@ -142,6 +144,24 @@ describe('ClientMessageTest', function () {
             frame2.content
         ]);
         const actual = buffer.slice(42, 42 + clientMessage.getTotalLength());
+
+        expect(Buffer.compare(actual, expected)).to.be.equal(0);
+    });
+
+    it('toBuffer: should return buffer with message contents', function () {
+        const clientMessage = ClientMessage.createForEncode();
+
+        const frame = Frame.createInitialFrame(16);
+        clientMessage.addFrame(frame);
+        clientMessage.setMessageType(1);
+        clientMessage.setCorrelationId(Long.fromString('123'));
+        clientMessage.setPartitionId(11223344);
+
+        const actual = clientMessage.toBuffer();
+        const expected = Buffer.concat([
+            createFrameLengthAndFlagsBuffer(frame, true),
+            frame.content
+        ]);
 
         expect(Buffer.compare(actual, expected)).to.be.equal(0);
     });

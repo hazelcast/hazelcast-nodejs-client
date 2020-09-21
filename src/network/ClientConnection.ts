@@ -135,8 +135,7 @@ export class PipelinedWriter extends Writer {
             // coalesce buffers
             let pos = 0;
             for (const item of writeBatch) {
-                item.message.writeTo(this.coalesceBuf, pos);
-                pos += item.message.getTotalLength();
+                pos = item.message.writeTo(this.coalesceBuf, pos);
             }
             buf = this.coalesceBuf.slice(0, totalLength);
         }
