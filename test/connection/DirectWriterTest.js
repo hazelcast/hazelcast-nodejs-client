@@ -16,17 +16,27 @@
 
 'use strict';
 
-const Socket = require('net').Socket;
+const { Socket } = require('net');
 const sinon = require('sinon');
-const expect = require('chai').expect;
+const { expect } = require('chai');
 
 const { deferredPromise } = require('../../lib/util/Util');
 const { DirectWriter } = require('../../lib/network/ClientConnection');
+const {
+    ClientMessage,
+    Frame
+} = require('../../lib/protocol/ClientMessage');
 
 describe('DirectWriterTest', function () {
 
     let queue;
     let mockSocket;
+
+    function createMessage(content) {
+        const clientMessage = ClientMessage.createForEncode();
+        clientMessage.addFrame(new Frame(Buffer.from(content, 'utf8')));
+        return clientMessage;
+    }
 
     const setUpWriteSuccess = () => {
         mockSocket = new Socket({});
@@ -45,39 +55,40 @@ describe('DirectWriterTest', function () {
         queue = new DirectWriter(mockSocket);
     }
 
-    it('writes single message into socket (without copying it)', (done) => {
+    it('writes single message into socket', (done) => {
         setUpWriteSuccess();
 
-        const buffer = Buffer.from('test');
+        const msg = createMessage('test');
         mockSocket.on('data', function(data) {
-            expect(data).to.be.equal(buffer);
+            expect(Buffer.compare(data, msg.toBuffer())).to.be.equal(0);
             done();
         });
 
-        queue.write(buffer, deferredPromise());
+        queue.write(msg, deferredPromise());
     });
 
     it('writes multiple messages separately into socket', (done) => {
         setUpWriteSuccess();
 
+        const msg = createMessage('test');
         let cnt = 0;
         mockSocket.on('data', function(data) {
-            expect(data).to.be.deep.equal(Buffer.from('test'));
+            expect(Buffer.compare(data, msg.toBuffer())).to.be.equal(0);
             if (++cnt === 3) {
                 done();
             }
         });
 
-        queue.write(Buffer.from('test'), deferredPromise());
-        queue.write(Buffer.from('test'), deferredPromise());
-        queue.write(Buffer.from('test'), deferredPromise());
+        queue.write(msg, deferredPromise());
+        queue.write(msg, deferredPromise());
+        queue.write(msg, deferredPromise());
     });
 
     it('resolves promise on write success', (done) => {
         setUpWriteSuccess();
 
         const resolver = deferredPromise();
-        queue.write(Buffer.from('test'), resolver);
+        queue.write(createMessage('test'), resolver);
         resolver.promise.then(done);
     });
 
@@ -86,7 +97,7 @@ describe('DirectWriterTest', function () {
         setUpWriteFailure(err);
 
         const resolver = deferredPromise();
-        queue.write(Buffer.from('test'), resolver);
+        queue.write(createMessage('test'), resolver);
         resolver.promise.catch((err) => {
             expect(err).to.be.equal(err);
             done();
@@ -97,7 +108,7 @@ describe('DirectWriterTest', function () {
         setUpWriteSuccess();
 
         queue.on('write', done);
-        queue.write(Buffer.from('test'), deferredPromise());
+        queue.write(createMessage('test'), deferredPromise());
     });
 
     it('does not emit write event on write failure', (done) => {
@@ -105,7 +116,7 @@ describe('DirectWriterTest', function () {
 
         queue.on('write', () => done(new Error()));
         const resolver = deferredPromise();
-        queue.write(Buffer.from('test'), resolver);
+        queue.write(createMessage('test'), resolver);
         resolver.promise.catch(_ => {
             done();
         });

@@ -22,7 +22,7 @@ import {BuildInfo} from '../BuildInfo';
 import {HazelcastClient} from '../HazelcastClient';
 import {AddressImpl, IOError, UUID} from '../core';
 import {ClientMessageHandler} from '../protocol/ClientMessage';
-import {copyBuffers, deferredPromise, DeferredPromise} from '../util/Util';
+import {deferredPromise, DeferredPromise} from '../util/Util';
 import {ILogger} from '../logging/ILogger';
 import {
     ClientMessage,
@@ -37,16 +37,18 @@ const PROPERTY_NO_DELAY = 'hazelcast.client.socket.no.delay';
 
 abstract class Writer extends EventEmitter {
 
-    abstract write(buffer: Buffer, resolver: DeferredPromise<void>): void;
+    abstract write(message: ClientMessage, resolver: DeferredPromise<void>): void;
 
     abstract close(): void;
+
 }
 
 interface OutputQueueItem {
 
-    buffer: Buffer;
+    message: ClientMessage;
 
     resolver: DeferredPromise<void>;
+
 }
 
 /** @internal */
@@ -75,12 +77,12 @@ export class PipelinedWriter extends Writer {
         });
     }
 
-    write(buffer: Buffer, resolver: DeferredPromise<void>): void {
+    write(message: ClientMessage, resolver: DeferredPromise<void>): void {
         if (this.error) {
             // if there was a write error, it's useless to keep writing to the socket
             return process.nextTick(() => resolver.reject(this.error));
         }
-        this.queue.push({ buffer, resolver });
+        this.queue.push({ message, resolver });
         this.schedule();
     }
 
@@ -106,13 +108,14 @@ export class PipelinedWriter extends Writer {
         let totalLength = 0;
         let queueIdx = 0;
         while (queueIdx < this.queue.length && totalLength < this.threshold) {
-            const buf = this.queue[queueIdx].buffer;
+            const msg = this.queue[queueIdx].message;
+            const msgLength = msg.getTotalLength();
             // if the next buffer exceeds the threshold,
             // try to take multiple queued buffers which fit this.coalesceBuf
-            if (queueIdx > 0 && totalLength + buf.length > this.threshold) {
+            if (queueIdx > 0 && totalLength + msgLength > this.threshold) {
                 break;
             }
-            totalLength += buf.length;
+            totalLength += msgLength;
             queueIdx++;
         }
 
@@ -125,12 +128,16 @@ export class PipelinedWriter extends Writer {
         this.queue = this.queue.slice(queueIdx);
 
         let buf;
-        if (writeBatch.length === 1) {
-            // take the only buffer
-            buf = writeBatch[0].buffer;
+        if (writeBatch.length === 1 && totalLength > this.threshold) {
+            // take the only large message
+            buf = writeBatch[0].message.toBuffer();
         } else {
             // coalesce buffers
-            copyBuffers(this.coalesceBuf, writeBatch, totalLength);
+            let pos = 0;
+            for (const item of writeBatch) {
+                item.message.writeTo(this.coalesceBuf, pos);
+                pos += item.message.getTotalLength();
+            }
             buf = this.coalesceBuf.slice(0, totalLength);
         }
 
@@ -177,8 +184,9 @@ export class DirectWriter extends Writer {
         this.socket = socket;
     }
 
-    write(buffer: Buffer, resolver: DeferredPromise<void>): void {
-        this.socket.write(buffer as any, (err: any) => {
+    write(message: ClientMessage, resolver: DeferredPromise<void>): void {
+        const buffer = message.toBuffer();
+        this.socket.write(buffer, (err: any) => {
             if (err) {
                 resolver.reject(new IOError(err));
                 return;
@@ -385,9 +393,9 @@ export class ClientConnection {
         this.remoteUuid = remoteUuid;
     }
 
-    write(buffer: Buffer): Promise<void> {
+    write(message: ClientMessage): Promise<void> {
         const deferred = deferredPromise<void>();
-        this.writer.write(buffer, deferred);
+        this.writer.write(message, deferred);
         return deferred.promise;
     }
 
