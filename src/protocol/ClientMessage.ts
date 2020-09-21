@@ -138,6 +138,8 @@ export class ClientMessage {
     private retryable: boolean;
     private connection: ClientConnection;
     private _nextFrame: Frame;
+    // cached total length for encode case
+    private cachedTotalLength: number;
 
     private constructor(startFrame?: Frame, endFrame?: Frame) {
         this.startFrame = startFrame;
@@ -174,6 +176,7 @@ export class ClientMessage {
     }
 
     addFrame(frame: Frame): void {
+        this.cachedTotalLength = undefined;
         frame.next = null;
         if (this.startFrame == null) {
             this.startFrame = frame;
@@ -230,12 +233,16 @@ export class ClientMessage {
     }
 
     getTotalLength(): number {
+        if (this.cachedTotalLength !== undefined) {
+            return this.cachedTotalLength;
+        }
         let totalLength = 0;
         let currentFrame = this.startFrame;
         while (currentFrame != null) {
             totalLength += currentFrame.getLength();
             currentFrame = currentFrame.next;
         }
+        this.cachedTotalLength = totalLength;
         return totalLength;
     }
 
@@ -247,11 +254,13 @@ export class ClientMessage {
         // Should be called after calling dropFragmentationFrame() on the fragment
         this.endFrame.next = fragment.startFrame;
         this.endFrame = fragment.endFrame;
+        this.cachedTotalLength = undefined;
     }
 
     dropFragmentationFrame(): void {
         this.startFrame = this.startFrame.next;
         this._nextFrame = this._nextFrame.next;
+        this.cachedTotalLength = undefined;
     }
 
     copyWithNewCorrelationId(): ClientMessage {
