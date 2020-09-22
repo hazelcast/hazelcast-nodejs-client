@@ -23,12 +23,28 @@ const {
     ClientMessage,
     Frame,
     BEGIN_FRAME,
-    END_FRAME
+    END_FRAME,
+    SIZE_OF_FRAME_LENGTH_AND_FLAGS
 } = require('../../../lib/protocol/ClientMessage');
 const { CodecUtil } = require('../../../lib/codec/builtin/CodecUtil');
 
 describe('ClientMessageTest', function () {
-    it('should be encoded and decoded', function () {
+
+    const IS_FINAL_FLAG = 1 << 13;
+    const INT_SIZE_IN_BYTES = 4;
+
+    function createFrameLengthAndFlagsBuffer(frame, isLastFrame) {
+        const frameLengthAndFlags = Buffer.allocUnsafe(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+        frameLengthAndFlags.writeInt32LE(frame.content.length + SIZE_OF_FRAME_LENGTH_AND_FLAGS, 0);
+        if (isLastFrame) {
+            frameLengthAndFlags.writeUInt16LE(frame.flags | IS_FINAL_FLAG, INT_SIZE_IN_BYTES);
+        } else {
+            frameLengthAndFlags.writeUInt16LE(frame.flags, INT_SIZE_IN_BYTES);
+        }
+        return frameLengthAndFlags;
+    }
+
+    it('should restore message when encoded and decoded', function () {
         const cmEncode = ClientMessage.createForEncode();
 
         cmEncode.addFrame(Frame.createInitialFrame(50));
@@ -42,10 +58,10 @@ describe('ClientMessageTest', function () {
         expect(cmEncode.getStartFrame().flags).to.equal(cmDecode.getStartFrame().flags);
         expect(cmEncode.getCorrelationId()).to.equal(cmDecode.getCorrelationId());
         expect(cmEncode.getPartitionId()).to.equal(cmDecode.getPartitionId());
-        expect(cmEncode.getTotalFrameLength()).to.equal(cmDecode.getTotalFrameLength());
+        expect(cmEncode.getTotalLength()).to.equal(cmDecode.getTotalLength());
     });
 
-    it('should be copied with new correlation id and share the non-header frames', function () {
+    it('copyWithNewCorrelationId: should assign new correlation id and share the non-header frames', function () {
         const originalMessage = ClientMessage.createForEncode();
 
         originalMessage.addFrame(Frame.createInitialFrame(50));
@@ -70,7 +86,7 @@ describe('ClientMessageTest', function () {
         expect(originalMessage.getMessageType()).to.equal(copyMessage.getMessageType());
         expect(originalMessage.getStartFrame().flags).to.equal(copyMessage.getStartFrame().flags);
         expect(originalMessage.getPartitionId()).to.equal(copyMessage.getPartitionId());
-        expect(originalMessage.getTotalFrameLength()).to.equal(copyMessage.getTotalFrameLength());
+        expect(originalMessage.getTotalLength()).to.equal(copyMessage.getTotalLength());
         expect(copyMessage.getCorrelationId()).to.equal(-1);
     });
 
@@ -91,5 +107,62 @@ describe('ClientMessageTest', function () {
         CodecUtil.fastForwardToEndFrame(clientMessage);
 
         expect(clientMessage.hasNextFrame()).to.be.false;
+    });
+
+    it('getTotalLength: should calculate total length correctly', function () {
+        const clientMessage = ClientMessage.createForEncode();
+        expect(clientMessage.getTotalLength()).to.be.equal(0);
+
+        clientMessage.addFrame(Frame.createInitialFrame(42));
+        expect(clientMessage.getTotalLength()).to.be.equal(SIZE_OF_FRAME_LENGTH_AND_FLAGS + 42);
+
+        clientMessage.addFrame(Frame.createInitialFrame(1));
+        expect(clientMessage.getTotalLength()).to.be.equal(2 * SIZE_OF_FRAME_LENGTH_AND_FLAGS + 43);
+    });
+
+    it('writeTo: should write to given buffer of sufficient length', function () {
+        const clientMessage = ClientMessage.createForEncode();
+
+        const frame1 = Frame.createInitialFrame(16);
+        clientMessage.addFrame(frame1);
+        clientMessage.setMessageType(1);
+        clientMessage.setCorrelationId(Long.fromString('123'));
+        clientMessage.setPartitionId(11223344);
+
+        const frame2 = new Frame(Buffer.from('foo', 'utf8'));
+        clientMessage.addFrame(frame2);
+
+        const buffer = Buffer.allocUnsafe(42 + clientMessage.getTotalLength());
+        const newPos = clientMessage.writeTo(buffer, 42);
+
+        expect(newPos).to.be.equal(42 + clientMessage.getTotalLength());
+
+        const expected = Buffer.concat([
+            createFrameLengthAndFlagsBuffer(frame1, false),
+            frame1.content,
+            createFrameLengthAndFlagsBuffer(frame2, true),
+            frame2.content
+        ]);
+        const actual = buffer.slice(42, 42 + clientMessage.getTotalLength());
+
+        expect(Buffer.compare(actual, expected)).to.be.equal(0);
+    });
+
+    it('toBuffer: should return buffer with message contents', function () {
+        const clientMessage = ClientMessage.createForEncode();
+
+        const frame = Frame.createInitialFrame(16);
+        clientMessage.addFrame(frame);
+        clientMessage.setMessageType(1);
+        clientMessage.setCorrelationId(Long.fromString('123'));
+        clientMessage.setPartitionId(11223344);
+
+        const actual = clientMessage.toBuffer();
+        const expected = Buffer.concat([
+            createFrameLengthAndFlagsBuffer(frame, true),
+            frame.content
+        ]);
+
+        expect(Buffer.compare(actual, expected)).to.be.equal(0);
     });
 });
