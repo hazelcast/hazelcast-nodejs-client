@@ -1,0 +1,18 @@
+#!/bin/bash
+
+HAZELCAST_TEST_VERSION="4.0.2"
+HAZELCAST_VERSION="4.0.2"
+PID=$$
+
+CLASSPATH="../../hazelcast-${HAZELCAST_VERSION}.jar:../../hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar"
+CMD_CONFIGS="-Dhazelcast.multicast.group=224.206.1.1 -Djava.net.preferIPv4Stack=true"
+java ${CMD_CONFIGS} -cp ${CLASSPATH} \
+    com.hazelcast.core.server.HazelcastMemberStarter \
+    > hazelcast-${HAZELCAST_VERSION}-out.log 2>hazelcast-${HAZELCAST_VERSION}-err.log &
+SERVER_PID=$!
+
+sleep 8
+
+node map_soak_test.js localhost:5701 > client-out.log 2>client-err.log
+echo "Client shutdown"
+kill -9 $SERVER_PID
