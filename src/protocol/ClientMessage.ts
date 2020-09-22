@@ -138,6 +138,8 @@ export class ClientMessage {
     private retryable: boolean;
     private connection: ClientConnection;
     private _nextFrame: Frame;
+    // cached total length for encode case
+    private cachedTotalLength: number;
 
     private constructor(startFrame?: Frame, endFrame?: Frame) {
         this.startFrame = startFrame;
@@ -174,6 +176,7 @@ export class ClientMessage {
     }
 
     addFrame(frame: Frame): void {
+        this.cachedTotalLength = undefined;
         frame.next = null;
         if (this.startFrame == null) {
             this.startFrame = frame;
@@ -181,7 +184,6 @@ export class ClientMessage {
             this._nextFrame = frame;
             return;
         }
-
         this.endFrame.next = frame;
         this.endFrame = frame;
     }
@@ -230,14 +232,18 @@ export class ClientMessage {
         this.connection = connection;
     }
 
-    getTotalFrameLength(): number {
-        let frameLength = 0;
+    getTotalLength(): number {
+        if (this.cachedTotalLength !== undefined) {
+            return this.cachedTotalLength;
+        }
+        let totalLength = 0;
         let currentFrame = this.startFrame;
         while (currentFrame != null) {
-            frameLength += currentFrame.getLength();
+            totalLength += currentFrame.getLength();
             currentFrame = currentFrame.next;
         }
-        return frameLength;
+        this.cachedTotalLength = totalLength;
+        return totalLength;
     }
 
     getFragmentationId(): number {
@@ -248,11 +254,13 @@ export class ClientMessage {
         // Should be called after calling dropFragmentationFrame() on the fragment
         this.endFrame.next = fragment.startFrame;
         this.endFrame = fragment.endFrame;
+        this.cachedTotalLength = undefined;
     }
 
     dropFragmentationFrame(): void {
         this.startFrame = this.startFrame.next;
         this._nextFrame = this._nextFrame.next;
+        this.cachedTotalLength = undefined;
     }
 
     copyWithNewCorrelationId(): ClientMessage {
@@ -264,27 +272,30 @@ export class ClientMessage {
         return newMessage;
     }
 
-    toBuffer(): Buffer {
-        const buffers: Buffer[] = [];
-        let totalLength = 0;
+    writeTo(buffer: Buffer, offset = 0): number {
+        let pos = offset;
         let currentFrame = this.startFrame;
         while (currentFrame != null) {
             const isLastFrame = currentFrame.next == null;
-            const frameLengthAndFlags = Buffer.allocUnsafe(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
-            frameLengthAndFlags.writeInt32LE(currentFrame.content.length + SIZE_OF_FRAME_LENGTH_AND_FLAGS, 0);
-
+            buffer.writeInt32LE(currentFrame.content.length + SIZE_OF_FRAME_LENGTH_AND_FLAGS, pos);
             if (isLastFrame) {
-                frameLengthAndFlags.writeUInt16LE(currentFrame.flags | IS_FINAL_FLAG, BitsUtil.INT_SIZE_IN_BYTES);
+                buffer.writeUInt16LE(currentFrame.flags | IS_FINAL_FLAG, pos + BitsUtil.INT_SIZE_IN_BYTES);
             } else {
-                frameLengthAndFlags.writeUInt16LE(currentFrame.flags, BitsUtil.INT_SIZE_IN_BYTES);
+                buffer.writeUInt16LE(currentFrame.flags, pos + BitsUtil.INT_SIZE_IN_BYTES);
             }
-            totalLength += SIZE_OF_FRAME_LENGTH_AND_FLAGS;
-            buffers.push(frameLengthAndFlags);
-            totalLength += currentFrame.content.length;
-            buffers.push(currentFrame.content);
+            pos += SIZE_OF_FRAME_LENGTH_AND_FLAGS;
+            currentFrame.content.copy(buffer, pos);
+            pos += currentFrame.content.length;
             currentFrame = currentFrame.next;
         }
-        return Buffer.concat(buffers, totalLength);
+        return pos;
+    }
+
+    toBuffer(): Buffer {
+        const totalLength = this.getTotalLength();
+        const buffer = Buffer.allocUnsafe(totalLength);
+        this.writeTo(buffer);
+        return buffer;
     }
 }
 
