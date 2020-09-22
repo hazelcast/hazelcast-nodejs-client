@@ -1,4 +1,8 @@
 {
     "timeout": 8000,
-    "exit": true
+    "exit": true,
+    "exclude": [
+        "test/soak_test/**",
+        "test/user_code/**"
+    ]
 }
