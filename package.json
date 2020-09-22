@@ -35,10 +35,10 @@
         "clean": "rimraf lib *.jar *.log",
         "compile": "tsc",
         "pretest": "node download-remote-controller.js",
-        "test": "mocha --recursive",
+        "test": "mocha",
         "validate-user-code": "tsc --build test/user_code/tsconfig.json",
         "precoverage": "node download-remote-controller.js",
-        "coverage": "rimraf coverage && nyc node_modules/mocha/bin/_mocha -- --recursive --reporter-options mochaFile=report.xml --reporter mocha-junit-reporter",
+        "coverage": "rimraf coverage && nyc node_modules/mocha/bin/_mocha -- --reporter-options mochaFile=report.xml --reporter mocha-junit-reporter",
         "pregenerate-docs": "rimraf docs",
         "generate-docs": "typedoc --options typedoc.json",
         "lint": "eslint --ext .ts ."
