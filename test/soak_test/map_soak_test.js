@@ -19,8 +19,9 @@ const { Client, Predicates } = require('../../');
 const IdentifiedEntryProcessor = require('./IdentifiedEntryProcessor');
 const identifiedFactory = require('./IdentifiedFactory');
 
+const MS_IN_SEC = 1e3;
 const NS_IN_MS = 1e6;
-const MS_IN_SEC = 1e6;
+const NS_IN_SEC = 1e9;
 
 /**
  * Test variables
@@ -51,11 +52,11 @@ function fancyDuration(millisec) {
 }
 
 function hrtimeToNanoSec(t) {
-    return t[0] * NS_IN_MS + t[1];
+    return t[0] * NS_IN_SEC + t[1];
 }
 
 function hrtimeToMilliSec(t) {
-    return t[0] * MS_IN_SEC + t[1] / NS_IN_MS;
+    return t[0] * MS_IN_SEC + (t[1] / NS_IN_MS);
 }
 
 function randomString(max) {
@@ -130,9 +131,9 @@ function completeOperation() {
     totalOps++;
     if (totalOps % 10000 === 0) {
         console.log(`Completed operation count: ${totalOps}`);
-        const lagTimeSt = process.hrtime();
+        const lagStartTime = process.hrtime();
         setImmediate(function () {
-            const eventLoopLag = process.hrtime(lagTimeSt);
+            const eventLoopLag = process.hrtime(lagStartTime);
             if (hrtimeToNanoSec(eventLoopLag) > 40 * NS_IN_MS) {
                 console.log(`Experiencing event loop lag: ${hrtimeToMilliSec(eventLoopLag)} ms.`);
             }
