@@ -189,10 +189,10 @@ for (let i = 2; i < process.argv.length; i++) {
                 let promise;
                 if (operation < 30) {
                     promise = map.get(key).then(completeOperation);
-                } else if (operation < 80) {
+                } else if (operation < 60) {
                     promise = map.put(key, value).then(completeOperation);
-                } else if (operation < 90) {
-                    promise = map.values(Predicates.between('this', 0, 10)).then(completeOperation);
+                } else if (operation < 80) {
+                    promise = map.valuesWithPredicate(Predicates.between('this', 0, 10)).then(completeOperation);
                 } else {
                     promise = map.executeOnKey(key, new IdentifiedEntryProcessor(key)).then(completeOperation);
                 }
