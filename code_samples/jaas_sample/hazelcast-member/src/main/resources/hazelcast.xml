@@ -18,14 +18,21 @@
 <hazelcast xmlns="http://www.hazelcast.com/schema/config"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://www.hazelcast.com/schema/config
-           http://www.hazelcast.com/schema/config/hazelcast-config-3.12.xsd">
+           http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
 
     <license-key>YOUR-LICENSE-KEY</license-key>
 
     <security enabled="true">
-        <client-login-modules>
-            <login-module class-name="com.company.security.ClientLoginModule" usage="REQUIRED"/>
-        </client-login-modules>
+        <realms>
+            <realm name="cr">
+                <authentication>
+                    <jaas>
+                        <login-module class-name="com.company.security.ClientLoginModule" usage="REQUIRED"/>
+                    </jaas>
+                </authentication>
+            </realm>
+        </realms>
+        <client-authentication realm="cr"/>
         <client-permissions>
             <map-permission name="importantReaderMap" principal="readerGroup">
                 <actions>

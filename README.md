@@ -1,10 +1,3 @@
-
-This client is under heavy development for version 4.0.
-
-Please switch to a 3.12.x branch or tag if you are using a 3.12.x version of Hazelcast IMDG.
-
----
-
 <p align="center">
     <a href="https://github.com/hazelcast/hazelcast-nodejs-client/">
         <img src="https://3l0wd94f0qdd10om8642z9se-wpengine.netdna-ssl.com/images/logos/hazelcast-logo-horz_md.png" />
@@ -14,7 +7,7 @@ Please switch to a 3.12.x branch or tag if you are using a 3.12.x version of Haz
 
 <p align="center">
     <a href="https://www.npmjs.com/package/hazelcast-client"><img src="https://img.shields.io/npm/v/hazelcast-client" alt="NPM version"></a>
-    <a href="https://gitter.im/hazelcast/hazelcast?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"><img src="https://img.shields.io/gitter/room/gitterHQ/gitter.svg" alt="Chat on Gitter"></a>
+    <a href="https://slack.hazelcast.com"><img src="https://img.shields.io/badge/slack-chat-green.svg" alt="Chat on Slack"></a>
     <a href="https://twitter.com/Hazelcast"><img src="https://img.shields.io/twitter/follow/Hazelcast.svg?style=flat-square&colorA=1da1f2&colorB=&label=Follow%20on%20Twitter" alt="Follow on Twitter"></a>
 </p>
 
@@ -133,7 +126,7 @@ You can use the following channels for your questions and development/usage issu
 * [GitHub repository](https://github.com/hazelcast/hazelcast-nodejs-client)
 * [Complete documentation](DOCUMENTATION.md)
 * [API documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/)
-* [Gitter](https://gitter.im/hazelcast/hazelcast)
+* [Slack](https://slack.hazelcast.com)
 * [Google Groups](https://groups.google.com/forum/#!forum/hazelcast)
 * [Stack Overflow](https://stackoverflow.com/questions/tagged/hazelcast)
 
