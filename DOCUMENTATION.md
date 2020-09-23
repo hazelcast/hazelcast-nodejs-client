@@ -3187,10 +3187,9 @@ Test script automatically downloads `hazelcast-remote-controller` and Hazelcast 
 You can use the following channels for your questions and development/usage issues:
 
 * This repository by opening an issue.
-* Hazelcast Node.js client channel on Gitter:
-[![Join the chat at https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/hazelcast-incubator/hazelcast-nodejs-client?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-* Our Google Groups directory: https://groups.google.com/forum/#!forum/hazelcast
-* Stack Overflow: https://stackoverflow.com/questions/tagged/hazelcast
+* [Slack](https://slack.hazelcast.com)
+* [Google Groups](https://groups.google.com/forum/#!forum/hazelcast)
+* [Stack Overflow](https://stackoverflow.com/questions/tagged/hazelcast)
 
 # 11. Contributing
 
