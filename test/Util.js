@@ -111,3 +111,39 @@ exports.findMemberByAddress = function (client, address) {
 
 exports.promiseLater = promiseLater;
 exports.expectAlmostEqual = expectAlmostEqual;
+
+class CountingMembershipListener {
+
+    constructor(expectedAdds, expectedRemoves) {
+        this.adds = 0;
+        this.expectedAdds = expectedAdds;
+        this.removes = 0;
+        this.expectedRemoves = expectedRemoves;
+        this.expectedPromise = new Promise((resolve) => {
+            this._resolve = resolve;
+        });
+    }
+
+    memberAdded() {
+        this.adds++;
+        this.checkCounts();
+    }
+
+    memberRemoved() {
+        this.removes++;
+        this.checkCounts();
+    }
+
+    checkCounts() {
+        if (this.adds < this.expectedAdds) {
+            return;
+        }
+        if (this.removes < this.expectedRemoves) {
+            return;
+        }
+        this._resolve();
+    }
+
+}
+
+exports.CountingMembershipListener = CountingMembershipListener;
