@@ -4,9 +4,9 @@
   "description": "Hazelcast - open source In-Memory Data Grid - client for NodeJS",
   "main": "lib/index.js",
   "dependencies": {
-    "bluebird": "3.5.4",
-    "long": "3.2.0",
-    "safe-buffer": "5.1.2"
+    "bluebird": "3.7.2",
+    "long": "4.0.0",
+    "safe-buffer": "5.2.1"
   },
   "devDependencies": {
     "@types/bluebird": "3.5.21",
@@ -24,7 +24,7 @@
     "rimraf": "2.6.2",
     "sinon": "4.0.0",
     "tslint": "5.7.0",
-    "typescript": "2.5.2",
+    "typescript": "2.8.4",
     "winston": "2.3.1"
   },
   "scripts": {
@@ -32,7 +32,6 @@
     "compile": "tsc",
     "pretest": "node download-remote-controller.js",
     "test": "mocha --recursive --reporter-options mochaFile=report.xml --reporter mocha-junit-reporter",
-    "validate-user-code": "tsc",
     "precoverage": "node download-remote-controller.js",
     "coverage": "rimraf coverage && istanbul cover --root lib/ --include-all-sources node_modules/mocha/bin/_mocha -- --recursive --reporter-options mochaFile=report.xml --reporter mocha-junit-reporter",
     "coverage-without-codecs": "rimraf coverage && istanbul cover -x **/codec/**/* --root lib/ --include-all-sources node_modules/mocha/bin/_mocha -- --recursive --reporter spec",
