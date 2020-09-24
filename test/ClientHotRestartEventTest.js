@@ -15,14 +15,11 @@
  */
 'use strict';
 
-const { expect } = require('chai');
+const expect = require('chai').expect;
 const RC = require('./RC');
-const { Client, Config } = require('../.');
-const {
-    markEnterprise,
-    getRandomInt,
-    CountingMembershipListener
-} = require('./Util');
+const Client = require('../.').Client;
+const Config = require('../.').Config;
+const Util = require('./Util');
 
 /**
  * Verifies correct update of client member list in case when
@@ -35,13 +32,13 @@ describe('ClientHotRestartEventTest', function () {
     let client;
     let cluster;
 
-    const hotRestartDir = `/tmp/hot-restart-test-${getRandomInt(0, 10000)}`;
+    const hotRestartDir = '/tmp/hot-restart-test-' + Util.getRandomInt(0, 10000);
 
     function createClusterConfig(port) {
         return '<?xml version="1.0" encoding="UTF-8"?>' +
                '<hazelcast xmlns="http://www.hazelcast.com/schema/config"' +
                '    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' +
-               '    xsi:schemaLocation="http://www.hazelcast.com/schema/config'
+               '    xsi:schemaLocation="http://www.hazelcast.com/schema/config' +
                '    http://www.hazelcast.com/schema/config/hazelcast-config-3.12.xsd">' +
                '    <network>' +
                '        <port>' + port + '</port>' +
@@ -53,7 +50,7 @@ describe('ClientHotRestartEventTest', function () {
     }
 
     before(function () {
-        markEnterprise(this);
+        Util.markEnterprise(this);
     });
 
     beforeEach(function () {
@@ -69,6 +66,7 @@ describe('ClientHotRestartEventTest', function () {
     });
 
     it('should receive membership events when the member is restarted with another port and same uuid', function () {
+        const listener = new Util.CountingMembershipListener(1, 1);
         let member;
         return RC.startMember(cluster.id)
             .then((m) => {
@@ -76,28 +74,24 @@ describe('ClientHotRestartEventTest', function () {
                 return Client.newHazelcastClient(new Config.ClientConfig());
             })
             .then((c) => {
-                console.log('client started');
                 client = c;
-                const listener = new CountingMembershipListener(1, 1);
-                client.getCluster().addMembershipListener(listener);
+                client.getClusterService().addMembershipListener(listener);
                 return RC.shutdownCluster(cluster.id);
             })
             .then(() => {
-                console.log('cluster shut down');
                 // now stop cluster, restart it with the same name and then start member with port 5702
                 return RC.createCluster(null, createClusterConfig(5702));
             })
-            .then(() => {
-                console.log('cluster restarted');
+            .then((c) => {
+                cluster = c;
                 return RC.startMember(cluster.id);
             })
             .then(() => {
-                console.log('member restarted');
                 return listener.expectedPromise;
             })
             .then(() => {
-                expect(client.getCluster().getMembers().length).to.be.equal(1);
-                expect(client.getCluster().getMembers()[0].uuid.toString()).to.be.equal(member.uuid);
+                expect(client.getClusterService().getMembers().length).to.be.equal(1);
+                expect(client.getClusterService().getMembers()[0].uuid.toString()).to.be.equal(member.uuid);
             });
     });
 });
