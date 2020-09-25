@@ -428,6 +428,10 @@ export class InvocationService {
         }
 
         const pendingInvocation = this.pending.get(correlationId);
+        if (pendingInvocation === undefined) {
+            this.logger.trace('InvocationService', 'Found no registration for invocation id ' + correlationId);
+            return;
+        }
         const messageType = clientMessage.getMessageType();
         if (messageType === EXCEPTION_MESSAGE_TYPE) {
             const remoteError = this.client.getErrorFactory().createErrorFromClientMessage(clientMessage);
