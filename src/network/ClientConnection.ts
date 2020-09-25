@@ -430,6 +430,10 @@ export class ClientConnection {
         return this.closedTime === 0;
     }
 
+    getClosedReason(): string {
+        return this.closedReason;
+    }
+
     getStartTime(): number {
         return this.startTime;
     }

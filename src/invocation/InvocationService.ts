@@ -87,6 +87,11 @@ export class Invocation {
     connection: ClientConnection;
 
     /**
+     * Connection on which the request was written. May be different from `connection`.
+     */
+    sendConnection: ClientConnection;
+
+    /**
      * Promise managing object.
      */
     deferred: DeferredPromise<ClientMessage>;
@@ -293,6 +298,14 @@ export class InvocationService {
     private scheduleCleanResourcesTask(periodMillis: number): Task {
         return scheduleWithRepetition(() => {
             for (const invocation of this.pending.values()) {
+                const connection = invocation.sendConnection;
+                if (connection === undefined) {
+                    continue;
+                }
+                if (!connection.isAlive()) {
+                    this.notifyError(invocation, new TargetDisconnectedError(connection.getClosedReason()));
+                    continue;
+                }
                 invocation.detectAndHandleBackupTimeout(this.operationBackupTimeoutMillis);
             }
         }, periodMillis, periodMillis);
@@ -435,7 +448,7 @@ export class InvocationService {
         }
 
         let invocationPromise: Promise<void>;
-        if (invocation.hasOwnProperty('connection')) {
+        if (invocation.connection !== undefined) {
             invocationPromise = this.send(invocation, invocation.connection);
             invocationPromise.catch((err) => {
                 this.notifyError(invocation, err);
@@ -469,7 +482,7 @@ export class InvocationService {
         }
 
         let invocationPromise: Promise<void>;
-        if (invocation.hasOwnProperty('connection')) {
+        if (invocation.connection !== undefined) {
             invocationPromise = this.send(invocation, invocation.connection);
         } else {
             invocationPromise = this.invokeOnRandomConnection(invocation);
@@ -514,11 +527,10 @@ export class InvocationService {
             invocation.request.getStartFrame().addFlag(IS_BACKUP_AWARE_FLAG);
         }
         this.registerInvocation(invocation);
-        return this.write(invocation, connection);
-    }
-
-    private write(invocation: Invocation, connection: ClientConnection): Promise<void> {
-        return connection.write(invocation.request);
+        return connection.write(invocation.request)
+            .then(() => {
+                invocation.sendConnection = connection;
+            });
     }
 
     private notifyError(invocation: Invocation, error: Error): void {
