@@ -291,8 +291,8 @@ export class InvocationService {
         if (this.backupAckToClientEnabled) {
             const listenerService = this.client.getListenerService();
             listenerService.registerListener(backupListenerCodec, this.backupEventHandler.bind(this));
-            this.cleanResourcesTask = this.scheduleCleanResourcesTask(this.cleanResourcesMillis);
         }
+        this.cleanResourcesTask = this.scheduleCleanResourcesTask(this.cleanResourcesMillis);
     }
 
     private scheduleCleanResourcesTask(periodMillis: number): Task {
@@ -306,7 +306,9 @@ export class InvocationService {
                     this.notifyError(invocation, new TargetDisconnectedError(connection.getClosedReason()));
                     continue;
                 }
-                invocation.detectAndHandleBackupTimeout(this.operationBackupTimeoutMillis);
+                if (this.backupAckToClientEnabled) {
+                    invocation.detectAndHandleBackupTimeout(this.operationBackupTimeoutMillis);
+                }
             }
         }, periodMillis, periodMillis);
     }
@@ -316,7 +318,7 @@ export class InvocationService {
             return;
         }
         this.isShutdown = true;
-        if (this.cleanResourcesTask != null) {
+        if (this.cleanResourcesTask !== undefined) {
             cancelRepetitionTask(this.cleanResourcesTask);
         }
         for (const invocation of this.pending.values()) {
