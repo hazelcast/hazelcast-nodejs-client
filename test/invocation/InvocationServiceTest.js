@@ -24,7 +24,8 @@ const sandbox = sinon.createSandbox();
 const {
     Client,
     ClientConfigImpl,
-    ClientNotActiveError
+    ClientNotActiveError,
+    TargetDisconnectedError
 } = require('../../');
 const { Invocation, InvocationService } = require('../../lib/invocation/InvocationService');
 const { ListenerService } = require('../../lib/listener/ListenerService');
@@ -32,6 +33,7 @@ const { PartitionServiceImpl } = require('../../lib/PartitionService');
 const { LifecycleServiceImpl } = require('../../lib/LifecycleService');
 const { LoggingService } = require('../../lib/logging/LoggingService');
 const { ClientMessage } = require('../../lib/protocol/ClientMessage');
+const { ClientConnection } = require('../../lib/network/ClientConnection');
 const { deferredPromise } = require('../../lib/util/Util');
 
 describe('InvocationServiceTest', function () {
@@ -48,8 +50,28 @@ describe('InvocationServiceTest', function () {
         const loggingServiceStub = sandbox.stub(LoggingService.prototype);
         clientStub.getLoggingService.returns(loggingServiceStub);
         const lifecycleServiceStub = sandbox.stub(LifecycleServiceImpl.prototype);
+        lifecycleServiceStub.isRunning.returns(true);
         clientStub.getLifecycleService.returns(lifecycleServiceStub);
         return clientStub;
+    }
+
+    function preparePendingInvocationWithClosedConn() {
+        const config = new ClientConfigImpl();
+        const clientStub = mockClient(config);
+        service = new InvocationService(clientStub);
+        clientStub.getInvocationService.returns(service);
+        service.start();
+
+        const messageStub = sandbox.stub(ClientMessage.prototype);
+        messageStub.getCorrelationId.returns(0);
+        const invocation = new Invocation(clientStub, messageStub);
+        const connStub = sandbox.stub(ClientConnection.prototype);
+        connStub.isAlive.returns(false);
+        invocation.sendConnection = connStub;
+        invocation.deferred = deferredPromise();
+        service.pending.set(0, invocation);
+
+        return invocation;
     }
 
     afterEach(function () {
@@ -95,18 +117,16 @@ describe('InvocationServiceTest', function () {
     });
 
     it('should reject pending invocations on shut down', async function () {
-        const config = new ClientConfigImpl();
-        const clientStub = mockClient(config);
-        service = new InvocationService(clientStub);
-        clientStub.getInvocationService.returns(service);
-        service.start();
+        const invocation = preparePendingInvocationWithClosedConn();
 
-        const messageStub = sandbox.stub(ClientMessage.prototype);
-        const invocation = new Invocation(clientStub, messageStub);
-        invocation.deferred = deferredPromise();
-        service.pending.set(0, invocation);
-        service.shutdown();
+        invocation.invocationService.shutdown();
 
-        expect(invocation.deferred.promise).to.be.rejectedWith(ClientNotActiveError);
+        await expect(invocation.deferred.promise).to.be.rejectedWith(ClientNotActiveError);
+    });
+
+    it('should reject pending invocations with closed connections when clean resource task runs', async function () {
+        const invocation = preparePendingInvocationWithClosedConn();
+
+        await expect(invocation.deferred.promise).to.be.rejectedWith(TargetDisconnectedError);
     });
 });
