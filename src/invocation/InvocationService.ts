@@ -429,7 +429,10 @@ export class InvocationService {
 
         const pendingInvocation = this.pending.get(correlationId);
         if (pendingInvocation === undefined) {
-            this.logger.trace('InvocationService', 'Found no registration for invocation id ' + correlationId);
+            if (!this.isShutdown) {
+                this.logger.warn('InvocationService',
+                    'Found no registration for invocation id ' + correlationId);
+            }
             return;
         }
         const messageType = clientMessage.getMessageType();
@@ -452,7 +455,7 @@ export class InvocationService {
         }
 
         let invocationPromise: Promise<void>;
-        if (invocation.connection !== undefined) {
+        if (invocation.hasOwnProperty('connection')) {
             invocationPromise = this.send(invocation, invocation.connection);
             invocationPromise.catch((err) => {
                 this.notifyError(invocation, err);
@@ -486,7 +489,7 @@ export class InvocationService {
         }
 
         let invocationPromise: Promise<void>;
-        if (invocation.connection !== undefined) {
+        if (invocation.hasOwnProperty('connection')) {
             invocationPromise = this.send(invocation, invocation.connection);
         } else {
             invocationPromise = this.invokeOnRandomConnection(invocation);
