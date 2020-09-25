@@ -52,7 +52,7 @@ describe('ClientRedoEnabledTest', function () {
         });
 
         const list = await client.getList('list');
-        expect(list.get(0)).to.be.rejectedWith(IndexOutOfBoundsError);
+        await expect(list.get(0)).to.be.rejectedWith(IndexOutOfBoundsError);
     });
 
     it('Map.unlock should throw when not locked', async function () {
@@ -64,7 +64,7 @@ describe('ClientRedoEnabledTest', function () {
         });
 
         const map = await client.getMap('map');
-        expect(map.unlock('foo')).to.be.rejectedWith(IllegalMonitorStateError);
+        await expect(map.unlock('foo')).to.be.rejectedWith(IllegalMonitorStateError);
     });
 
     it('should redo operations in smart mode when member goes down', async function () {
