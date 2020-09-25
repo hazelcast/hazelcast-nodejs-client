@@ -306,7 +306,9 @@ export class InvocationService {
                     this.notifyError(invocation, new TargetDisconnectedError(connection.getClosedReason()));
                     continue;
                 }
-                invocation.detectAndHandleBackupTimeout(this.operationBackupTimeoutMillis);
+                if (this.backupAckToClientEnabled) {
+                    invocation.detectAndHandleBackupTimeout(this.operationBackupTimeoutMillis);
+                }
             }
         }, periodMillis, periodMillis);
     }
