@@ -87,6 +87,11 @@ export class Invocation {
     connection: ClientConnection;
 
     /**
+     * Connection on which the request was written. May be different from `connection`.
+     */
+    sendConnection: ClientConnection;
+
+    /**
      * Promise managing object.
      */
     deferred: DeferredPromise<ClientMessage>;
@@ -292,8 +297,16 @@ export class InvocationService {
 
     private scheduleCleanResourcesTask(periodMillis: number): Task {
         return scheduleWithRepetition(() => {
-            for (const pendingInvocation of this.pending.values()) {
-                pendingInvocation.detectAndHandleBackupTimeout(this.operationBackupTimeoutMillis);
+            for (const invocation of this.pending.values()) {
+                const connection = invocation.sendConnection;
+                if (connection === undefined) {
+                    continue;
+                }
+                if (!connection.isAlive()) {
+                    this.notifyError(invocation, new TargetDisconnectedError(connection.getClosedReason()));
+                    continue;
+                }
+                invocation.detectAndHandleBackupTimeout(this.operationBackupTimeoutMillis);
             }
         }, periodMillis, periodMillis);
     }
@@ -305,6 +318,9 @@ export class InvocationService {
         this.isShutdown = true;
         if (this.cleanResourcesTask != null) {
             cancelRepetitionTask(this.cleanResourcesTask);
+        }
+        for (const invocation of this.pending.values()) {
+            this.notifyError(invocation, new ClientNotActiveError('Client is shutting down.'));
         }
     }
 
@@ -412,6 +428,13 @@ export class InvocationService {
         }
 
         const pendingInvocation = this.pending.get(correlationId);
+        if (pendingInvocation === undefined) {
+            if (!this.isShutdown) {
+                this.logger.warn('InvocationService',
+                    'Found no registration for invocation id ' + correlationId);
+            }
+            return;
+        }
         const messageType = clientMessage.getMessageType();
         if (messageType === EXCEPTION_MESSAGE_TYPE) {
             const remoteError = this.client.getErrorFactory().createErrorFromClientMessage(clientMessage);
@@ -505,17 +528,16 @@ export class InvocationService {
     private send(invocation: Invocation, connection: ClientConnection): Promise<void> {
         assert(connection != null);
         if (this.isShutdown) {
-            return Promise.reject(new ClientNotActiveError('Client is shutdown.'));
+            return Promise.reject(new ClientNotActiveError('Client is shutting down.'));
         }
         if (this.backupAckToClientEnabled) {
             invocation.request.getStartFrame().addFlag(IS_BACKUP_AWARE_FLAG);
         }
         this.registerInvocation(invocation);
-        return this.write(invocation, connection);
-    }
-
-    private write(invocation: Invocation, connection: ClientConnection): Promise<void> {
-        return connection.write(invocation.request);
+        return connection.write(invocation.request)
+            .then(() => {
+                invocation.sendConnection = connection;
+            });
     }
 
     private notifyError(invocation: Invocation, error: Error): void {
