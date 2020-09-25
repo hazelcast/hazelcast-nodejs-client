@@ -75,7 +75,7 @@ describe('SemaphoreCommonTest', function () {
         // the next destroy call should be ignored
         await semaphore.destroy();
 
-        expect(semaphore.availablePermits()).to.be.rejectedWith(DistributedObjectDestroyedError);
+        await expect(semaphore.availablePermits()).to.be.rejectedWith(DistributedObjectDestroyedError);
     });
 
     for (const type of testTypes) {

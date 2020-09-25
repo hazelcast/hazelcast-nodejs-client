@@ -117,7 +117,7 @@ describe('FencedLockTest', function () {
         // the next destroy call should be ignored
         await anotherLock.destroy();
 
-        expect(anotherLock.isLocked()).to.be.rejectedWith(DistributedObjectDestroyedError);
+        await expect(anotherLock.isLocked()).to.be.rejectedWith(DistributedObjectDestroyedError);
     });
 
     it('isLocked: should return false when not locked', async function () {

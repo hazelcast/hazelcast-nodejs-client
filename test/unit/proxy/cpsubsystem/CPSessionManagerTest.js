@@ -167,7 +167,7 @@ describe('CPSessionManagerTest', function () {
         it('acquireSession: should reject when shut down', async function () {
             await sessionManager.shutdown();
 
-            expect(sessionManager.acquireSession(prepareGroupId(42))).to.be.rejectedWith(IllegalStateError);
+            await expect(sessionManager.acquireSession(prepareGroupId(42))).to.be.rejectedWith(IllegalStateError);
         });
 
         it('acquireSession: should create new session for unknown group id', async function () {
@@ -248,7 +248,7 @@ describe('CPSessionManagerTest', function () {
         it('createUniqueThreadId: should reject when shut down', async function () {
             await sessionManager.shutdown();
 
-            expect(sessionManager.createUniqueThreadId(prepareGroupId(42))).to.be.rejectedWith(IllegalStateError);
+            await expect(sessionManager.createUniqueThreadId(prepareGroupId(42))).to.be.rejectedWith(IllegalStateError);
         });
 
         it('createUniqueThreadId: should generate new thread id', async function () {
