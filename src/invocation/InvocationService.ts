@@ -292,8 +292,8 @@ export class InvocationService {
 
     private scheduleCleanResourcesTask(periodMillis: number): Task {
         return scheduleWithRepetition(() => {
-            for (const pendingInvocation of this.pending.values()) {
-                pendingInvocation.detectAndHandleBackupTimeout(this.operationBackupTimeoutMillis);
+            for (const invocation of this.pending.values()) {
+                invocation.detectAndHandleBackupTimeout(this.operationBackupTimeoutMillis);
             }
         }, periodMillis, periodMillis);
     }
@@ -305,6 +305,9 @@ export class InvocationService {
         this.isShutdown = true;
         if (this.cleanResourcesTask != null) {
             cancelRepetitionTask(this.cleanResourcesTask);
+        }
+        for (const invocation of this.pending.values()) {
+            this.notifyError(invocation, new ClientNotActiveError('Client is shutting down.'));
         }
     }
 
@@ -505,7 +508,7 @@ export class InvocationService {
     private send(invocation: Invocation, connection: ClientConnection): Promise<void> {
         assert(connection != null);
         if (this.isShutdown) {
-            return Promise.reject(new ClientNotActiveError('Client is shutdown.'));
+            return Promise.reject(new ClientNotActiveError('Client is shutting down.'));
         }
         if (this.backupAckToClientEnabled) {
             invocation.request.getStartFrame().addFlag(IS_BACKUP_AWARE_FLAG);

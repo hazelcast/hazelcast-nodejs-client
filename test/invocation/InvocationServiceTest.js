@@ -15,14 +15,24 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const chai = require('chai');
+chai.should();
+chai.use(require('chai-as-promised'));
+const expect = chai.expect;
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
-const { Client, ClientConfigImpl } = require('../../');
-const { InvocationService } = require('../../lib/invocation/InvocationService');
+const {
+    Client,
+    ClientConfigImpl,
+    ClientNotActiveError
+} = require('../../');
+const { Invocation, InvocationService } = require('../../lib/invocation/InvocationService');
 const { ListenerService } = require('../../lib/listener/ListenerService');
 const { PartitionServiceImpl } = require('../../lib/PartitionService');
+const { LifecycleServiceImpl } = require('../../lib/LifecycleService');
 const { LoggingService } = require('../../lib/logging/LoggingService');
+const { ClientMessage } = require('../../lib/protocol/ClientMessage');
+const { deferredPromise } = require('../../lib/util/Util');
 
 describe('InvocationServiceTest', function () {
 
@@ -37,6 +47,8 @@ describe('InvocationServiceTest', function () {
         clientStub.getPartitionService.returns(partitionServiceStub);
         const loggingServiceStub = sandbox.stub(LoggingService.prototype);
         clientStub.getLoggingService.returns(loggingServiceStub);
+        const lifecycleServiceStub = sandbox.stub(LifecycleServiceImpl.prototype);
+        clientStub.getLifecycleService.returns(lifecycleServiceStub);
         return clientStub;
     }
 
@@ -80,5 +92,21 @@ describe('InvocationServiceTest', function () {
 
         expect(service.cleanResourcesTask).to.be.undefined;
         expect(client.getListenerService().registerListener.notCalled).to.be.true;
+    });
+
+    it('should reject pending invocations on shut down', async function () {
+        const config = new ClientConfigImpl();
+        const clientStub = mockClient(config);
+        service = new InvocationService(clientStub);
+        clientStub.getInvocationService.returns(service);
+        service.start();
+
+        const messageStub = sandbox.stub(ClientMessage.prototype);
+        const invocation = new Invocation(clientStub, messageStub);
+        invocation.deferred = deferredPromise();
+        service.pending.set(0, invocation);
+        service.shutdown();
+
+        expect(invocation.deferred.promise).to.be.rejectedWith(ClientNotActiveError);
     });
 });
