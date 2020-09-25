@@ -92,7 +92,7 @@ describe('InvocationServiceTest', function () {
         expect(client.getListenerService().registerListener.calledOnce).to.be.true;
     });
 
-    it('should not start clean resource task and register listener when client is unisocket', function () {
+    it('should start clean resource task without listener registration when client is unisocket', function () {
         const config = new ClientConfigImpl();
         config.network.smartRouting = false;
         const client = mockClient(config);
@@ -100,11 +100,11 @@ describe('InvocationServiceTest', function () {
         service = new InvocationService(client);
         service.start();
 
-        expect(service.cleanResourcesTask).to.be.undefined;
+        expect(service.cleanResourcesTask).to.be.not.undefined;
         expect(client.getListenerService().registerListener.notCalled).to.be.true;
     });
 
-    it('should not start clean resource task and register listener when acks are disabled', function () {
+    it('should start clean resource task without listener registration when acks are disabled', function () {
         const config = new ClientConfigImpl();
         config.backupAckToClientEnabled = false;
         const client = mockClient(config);
@@ -112,7 +112,7 @@ describe('InvocationServiceTest', function () {
         service = new InvocationService(client);
         service.start();
 
-        expect(service.cleanResourcesTask).to.be.undefined;
+        expect(service.cleanResourcesTask).to.be.not.undefined;
         expect(client.getListenerService().registerListener.notCalled).to.be.true;
     });
 
