@@ -311,13 +311,12 @@ export class ClusterService {
             }
         }
 
+        // removal events should be added before added events
+        for (const member of deletedMembers) {
+            events.push(new MembershipEvent(member, MemberEvent.REMOVED, eventMembers));
+        }
         for (const member of addedMembers) {
             events.push(new MembershipEvent(member, MemberEvent.ADDED, eventMembers));
-        }
-        for (const member of deletedMembers) {
-            if (member !== null) {
-                events.push(new MembershipEvent(member, MemberEvent.REMOVED, eventMembers));
-            }
         }
 
         return events;
