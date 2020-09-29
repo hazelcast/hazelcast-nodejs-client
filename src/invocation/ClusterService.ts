@@ -286,9 +286,54 @@ export class ClusterService {
     }
 
     private handleMemberList(members: Member[]): void {
+        const prevMembers = this.members;
         this.members = members;
         this.client.getPartitionService().refresh();
         this.logger.info('ClusterService', 'Members received.', this.members);
+        const events = this.detectMembershipEvents(prevMembers);
+        for (const event of events) {
+            this.fireMembershipEvent(event);
+        }
+    }
+
+    private detectMembershipEvents(prevMembers: Member[]): MembershipEvent[] {
+        const events: MembershipEvent[] = [];
+        const eventMembers = Array.from(this.members);
+        const addedMembers: Member[] = [];
+        let deletedMembers = Array.from(prevMembers);
+
+        for (const member of this.members) {
+            const idx = deletedMembers.findIndex(member.equals, member);
+            if (idx === -1) {
+                addedMembers.push(member);
+            } else {
+                deletedMembers = deletedMembers.splice(idx, 1);
+            }
+        }
+
+        // removal events should be added before added events
+        for (const member of deletedMembers) {
+            events.push(new MembershipEvent(member, MemberEvent.REMOVED, eventMembers));
+        }
+        for (const member of addedMembers) {
+            events.push(new MembershipEvent(member, MemberEvent.ADDED, eventMembers));
+        }
+
+        return events;
+    }
+
+    private fireMembershipEvent(membershipEvent: MembershipEvent): void {
+        this.membershipListeners.forEach((membershipListener, registrationId) => {
+            if (membershipEvent.eventType === MemberEvent.ADDED) {
+                if (membershipListener && membershipListener.memberAdded) {
+                    membershipListener.memberAdded(membershipEvent);
+                }
+            } else if (membershipEvent.eventType === MemberEvent.REMOVED) {
+                if (membershipListener && membershipListener.memberRemoved) {
+                    membershipListener.memberRemoved(membershipEvent);
+                }
+            }
+        });
     }
 
     private handleMemberAttributeChange(
@@ -305,12 +350,8 @@ export class ClusterService {
 
     private memberAdded(member: Member): void {
         this.members.push(member);
-        this.membershipListeners.forEach((membershipListener, registrationId) => {
-            if (membershipListener && membershipListener.memberAdded) {
-                const membershipEvent = new MembershipEvent(member, MemberEvent.ADDED, this.members);
-                membershipListener.memberAdded(membershipEvent);
-            }
-        });
+        const membershipEvent = new MembershipEvent(member, MemberEvent.ADDED, this.members);
+        this.fireMembershipEvent(membershipEvent);
     }
 
     private memberRemoved(member: Member): void {
@@ -320,11 +361,7 @@ export class ClusterService {
             assert(removedMemberList.length === 1);
         }
         this.client.getConnectionManager().destroyConnection(member.address);
-        this.membershipListeners.forEach((membershipListener, registrationId) => {
-            if (membershipListener && membershipListener.memberRemoved) {
-                const membershipEvent = new MembershipEvent(member, MemberEvent.REMOVED, this.members);
-                membershipListener.memberRemoved(membershipEvent);
-            }
-        });
+        const membershipEvent = new MembershipEvent(member, MemberEvent.REMOVED, this.members);
+        this.fireMembershipEvent(membershipEvent);
     }
 }
