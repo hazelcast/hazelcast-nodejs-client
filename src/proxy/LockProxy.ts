@@ -34,12 +34,13 @@ export class LockProxy extends PartitionSpecificProxy implements ILock {
     private lockReferenceIdGenerator: LockReferenceIdGenerator = this.client.getLockReferenceIdGenerator();
 
     lock(leaseMillis: number = -1): Promise<void> {
-        return this.encodeInvoke<void>(LockLockCodec, leaseMillis, 1, this.nextSequence());
+        return this.encodeInvokeWithTimeout<void>(
+            Number.MAX_SAFE_INTEGER, LockLockCodec, leaseMillis, 1, this.nextSequence());
     }
 
     tryLock(timeoutMillis: number = 0, leaseMillis: number = -1): Promise<boolean> {
-        return this.encodeInvoke<boolean>(LockTryLockCodec, 1,
-            leaseMillis, timeoutMillis, this.nextSequence());
+        return this.encodeInvokeWithTimeout<boolean>(
+            Number.MAX_SAFE_INTEGER, LockTryLockCodec, 1, leaseMillis, timeoutMillis, this.nextSequence());
     }
 
     unlock(): Promise<void> {

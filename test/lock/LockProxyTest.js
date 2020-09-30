@@ -13,21 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-var expect = require("chai").expect;
-var HazelcastClient = require("../../lib/index.js").Client;
-var Controller = require('./../RC');
-var Util = require('./../Util');
-var Promise = require('bluebird');
+const expect = require("chai").expect;
+const HazelcastClient = require("../../lib/index.js").Client;
+const Config = require("../../lib/index.js").Config;
+const Controller = require('./../RC');
+const Util = require('./../Util');
+const Promise = require('bluebird');
 
 describe("Lock Proxy", function () {
 
-    var cluster;
-    var clientOne;
-    var clientTwo;
+    const INVOCATION_TIMEOUT_FOR_TWO = 1000;
 
-    var lockOne;
-    var lockTwo;
+    let cluster;
+    let clientOne;
+    let clientTwo;
+
+    let lockOne;
+    let lockTwo;
+
+    function warmupPartitions(client) {
+        const partitionService = client.getPartitionService();
+        return partitionService.refresh();
+    }
+
+    function generateKeyOwnedBy(client, member) {
+        const partitionService = client.getPartitionService();
+        while (true) {
+            const id = Util.getRandomInt(0, 1000);
+            const partition = partitionService.getPartitionId(id);
+            const address = partitionService.getAddressForPartition(partition);
+            if (address.host === member.host && address.port === member.port) {
+                return id;
+            }
+        }
+    }
 
     before(function () {
         this.timeout(10000);
@@ -67,25 +88,25 @@ describe("Lock Proxy", function () {
 
     it("locks and unlocks", function () {
         this.timeout(10000);
-        var startTime = Date.now();
+        const startTime = Date.now();
         return lockOne.lock().then(function () {
             setTimeout(function () {
                 lockOne.unlock();
             }, 1000);
             return lockTwo.lock()
         }).then(function () {
-            var elapsed = Date.now() - startTime;
+            const elapsed = Date.now() - startTime;
             expect(elapsed).to.be.greaterThan(1000);
         });
     });
 
     it("unlocks after lease expired", function () {
         this.timeout(10000);
-        var startTime = Date.now();
+        const startTime = Date.now();
         return lockOne.lock(1000).then(function () {
             return lockTwo.lock();
         }).then(function () {
-            var elapsed = Date.now() - startTime;
+            const elapsed = Date.now() - startTime;
             expect(elapsed).to.be.greaterThan(1000);
         });
     });
@@ -101,11 +122,11 @@ describe("Lock Proxy", function () {
 
     it("acquires lock before timeout is exceeded", function () {
         this.timeout(10000);
-        var startTime = Date.now();
+        const startTime = Date.now();
         return lockOne.lock(1000).then(function () {
             return lockTwo.tryLock(2000);
         }).then(function (acquired) {
-            var elasped = Date.now() - startTime;
+            const elasped = Date.now() - startTime;
             expect(acquired).to.be.true;
             expect(elasped).to.be.greaterThan(995);
         })
@@ -113,17 +134,62 @@ describe("Lock Proxy", function () {
 
     it("acquires the lock before timeout and unlocks after lease expired", function () {
         this.timeout(10000);
-        var startTime = Date.now();
+        const startTime = Date.now();
         return lockOne.lock(1000).then(function () {
             return lockTwo.tryLock(2000, 1000);
         }).then(function () {
-            var elapsed = Date.now() - startTime;
+            const elapsed = Date.now() - startTime;
             expect(elapsed).to.be.at.least(1000);
             return lockOne.lock(2000);
         }).then(function () {
-            var elapsed = Date.now() - startTime;
+            const elapsed = Date.now() - startTime;
             expect(elapsed).to.be.at.least(1000);
         });
+    });
+
+    it("acquires the lock when key owner terminates", function (done) {
+        this.timeout(20000);
+        let client;
+        let keyOwner;
+        let key;
+        let alienLock;
+
+        const clientTwoCfg = new Config.ClientConfig();
+        clientTwoCfg.properties['hazelcast.client.invocation.timeout.millis'] = INVOCATION_TIMEOUT_FOR_TWO;
+        HazelcastClient.newHazelcastClient(clientTwoCfg).then(function (c) {
+                client = c;
+                return Controller.startMember(cluster.id)
+            }).then(function (m) {
+                keyOwner = m;
+                return warmupPartitions(client);
+            }).then(function () {
+                key = generateKeyOwnedBy(client, keyOwner);
+                return clientOne.getLock('' + key);
+            }).then(function (lock) {
+                alienLock = lock;
+                return alienLock.lock();
+            }).then(function () {
+                return client.getLock('' + key);
+            }).then(function (lock) {
+                // try to lock concurrently
+                lock.lock()
+                    .then(function () {
+                        return lock.unlock();
+                    })
+                    .then(done)
+                    .catch(done)
+                    .finally(function () {
+                        client.shutdown();
+                    });
+                return Util.promiseWaitMilliseconds(2 * INVOCATION_TIMEOUT_FOR_TWO);
+            }).then(function () {
+                return alienLock.isLocked();
+            }).then(function (locked) {
+                expect(locked).to.be.true;
+                return Controller.terminateMember(cluster.id, keyOwner.uuid);
+            }).then(function () {
+                return alienLock.unlock();
+            }).catch(done);
     });
 
     it("correctly reports lock status when unlocked", function () {
@@ -152,7 +218,6 @@ describe("Lock Proxy", function () {
             expect(remaining).to.be.lessThan(971);
         })
     });
-
 
     it("correctly reports that lock is being held by a specific client", function () {
         return lockOne.lock().then(function () {

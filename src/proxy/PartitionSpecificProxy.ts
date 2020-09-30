@@ -30,4 +30,10 @@ export class PartitionSpecificProxy extends BaseProxy {
     protected encodeInvoke<T>(codec: any, ...codecArguments: any[]): Promise<T> {
         return this.encodeInvokeOnPartition<T>(codec, this.partitionId, ...codecArguments);
     }
+
+    protected encodeInvokeWithTimeout<T>(timeoutMillis: number,
+                                         codec: any,
+                                         ...codecArguments: any[]): Promise<T> {
+        return this.encodeInvokeOnPartitionWithTimeout<T>(timeoutMillis, codec, this.partitionId, ...codecArguments);
+    }
 }

@@ -84,6 +84,23 @@ export class BaseProxy {
     }
 
     /**
+     * Encodes a request from a codec and invokes it on owner node of given key.
+     * This method also overrides invocation timeout.
+     * @param timeoutMillis
+     * @param codec
+     * @param partitionKey
+     * @param codecArguments
+     * @returns
+     */
+    protected encodeInvokeOnKeyWithTimeout<T>(timeoutMillis: number,
+                                              codec: any,
+                                              partitionKey: any,
+                                              ...codecArguments: any[]): Promise<T> {
+        const partitionId: number = this.client.getPartitionService().getPartitionId(partitionKey);
+        return this.encodeInvokeOnPartitionWithTimeout<T>(timeoutMillis, codec, partitionId, ...codecArguments);
+    }
+
+    /**
      * Encodes a request from a codec and invokes it on any node.
      * @param codec
      * @param codecArguments
@@ -112,6 +129,25 @@ export class BaseProxy {
         const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
         const invocationResponse: Promise<ClientMessage> = this.client.getInvocationService()
             .invokeOnPartition(clientMessage, partitionId);
+
+        return this.createPromise<T>(codec, invocationResponse);
+    }
+
+    /**
+     * Encodes a request from a codec and invokes it on owner node of given partition.
+     * This method also overrides invocation timeout.
+     * @param codec
+     * @param partitionId
+     * @param codecArguments
+     * @returns
+     */
+    protected encodeInvokeOnPartitionWithTimeout<T>(timeoutMillis: number,
+                                                    codec: any,
+                                                    partitionId: number,
+                                                    ...codecArguments: any[]): Promise<T> {
+        const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
+        const invocationResponse: Promise<ClientMessage> = this.client.getInvocationService()
+            .invokeOnPartition(clientMessage, partitionId, timeoutMillis);
 
         return this.createPromise<T>(codec, invocationResponse);
     }
