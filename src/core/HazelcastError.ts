@@ -443,7 +443,7 @@ export class StaleAppendRequestError extends HazelcastError {
     }
 }
 
-export class CannotReplicateError extends HazelcastError {
+export class CannotReplicateError extends RetryableHazelcastError {
     constructor(msg: string, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
         super(msg, cause, serverStackTrace);
         Object.setPrototypeOf(this, CannotReplicateError.prototype);
