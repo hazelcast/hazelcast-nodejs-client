@@ -98,7 +98,7 @@ describe('Statistics with default period', function () {
             } else {
                 expect(extractStringStatValue(stats, 'os.processCpuTime')).to.equal('');
             }
-            expect(extractFloatStatValue(stats, 'os.systemLoadAverage')).to.be.greaterThan(0);
+            expect(extractFloatStatValue(stats, 'os.systemLoadAverage')).to.be.at.least(0);
             expect(extractIntStatValue(stats, 'os.totalPhysicalMemorySize')).to.equal(os.totalmem());
             expect(extractStringStatValue(stats, 'os.totalSwapSpaceSize')).to.equal('');
             expect(extractIntStatValue(stats, 'runtime.availableProcessors')).to.equal(os.cpus().length);
