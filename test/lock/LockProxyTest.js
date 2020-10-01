@@ -148,7 +148,7 @@ describe("Lock Proxy", function () {
     });
 
     it("acquires the lock when key owner terminates", function (done) {
-        this.timeout(20000);
+        this.timeout(30000);
         let client;
         let keyOwner;
         let key;
