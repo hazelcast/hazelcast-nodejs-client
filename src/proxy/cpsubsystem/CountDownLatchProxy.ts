@@ -59,17 +59,17 @@ export class CountDownLatchProxy extends BaseCPProxy implements ICountDownLatch 
     }
 
     countDown(): Promise<void> {
-        let round: number;
         const invocationUid = UuidUtil.generate();
         return this.getRound()
-            .then((r) => {
-                round = r;
-                return this.requestCountDown(round, invocationUid);
-            })
+            .then((round) => this.doCountDown(round, invocationUid));
+    }
+
+    private doCountDown(round: number, invocationUid: UUID): Promise<void> {
+        return this.requestCountDown(round, invocationUid)
             .catch((err) => {
                 if (err instanceof OperationTimeoutError) {
                     // we can retry safely because the retry is idempotent
-                    return this.requestCountDown(round, invocationUid);
+                    return this.doCountDown(round, invocationUid);
                 }
                 throw err;
             });
