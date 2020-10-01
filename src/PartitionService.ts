@@ -75,7 +75,8 @@ export class PartitionServiceImpl implements PartitionService {
     /**
      * The partitions can be empty on the response, client will not apply the empty partition table.
      */
-    handlePartitionViewEvent(connection: ClientConnection, partitions: Array<[UUID, number[]]>,
+    handlePartitionViewEvent(connection: ClientConnection,
+                             partitions: Array<[UUID, number[]]>,
                              partitionStateVersion: number): void {
         this.logger.debug('PartitionService',
             'Handling new partition table with partitionStateVersion: ' + partitionStateVersion);
@@ -151,8 +152,10 @@ export class PartitionServiceImpl implements PartitionService {
         return this.partitionTable.partitions;
     }
 
-    private shouldBeApplied(connection: ClientConnection, partitions: Array<[UUID, number[]]>,
-                            partitionStateVersion: number, current: PartitionTable): boolean {
+    private shouldBeApplied(connection: ClientConnection,
+                            partitions: Array<[UUID, number[]]>,
+                            partitionStateVersion: number,
+                            current: PartitionTable): boolean {
         if (partitions.length === 0) {
             this.logFailure(connection, partitionStateVersion, current, 'response is empty');
             return false;

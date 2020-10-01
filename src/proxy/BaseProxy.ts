@@ -65,10 +65,6 @@ export abstract class BaseProxy {
 
     /**
      * Encodes a request from a codec and invokes it on owner node of given key.
-     * @param codec
-     * @param partitionKey
-     * @param codecArguments
-     * @returns
      */
     protected encodeInvokeOnKey(codec: any, partitionKey: any, ...codecArguments: any[]): Promise<ClientMessage> {
         const partitionId: number = this.client.getPartitionService().getPartitionId(partitionKey);
@@ -76,10 +72,19 @@ export abstract class BaseProxy {
     }
 
     /**
+     * Encodes a request from a codec and invokes it on owner node of given key.
+     * This method also overrides invocation timeout.
+     */
+    protected encodeInvokeOnKeyWithTimeout(timeoutMillis: number,
+                                           codec: any,
+                                           partitionKey: any,
+                                           ...codecArguments: any[]): Promise<ClientMessage> {
+        const partitionId: number = this.client.getPartitionService().getPartitionId(partitionKey);
+        return this.encodeInvokeOnPartitionWithTimeout(timeoutMillis, codec, partitionId, ...codecArguments);
+    }
+
+    /**
      * Encodes a request from a codec and invokes it on any node.
-     * @param codec
-     * @param codecArguments
-     * @returns
      */
     protected encodeInvokeOnRandomTarget(codec: any, ...codecArguments: any[]): Promise<ClientMessage> {
         const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
@@ -93,10 +98,6 @@ export abstract class BaseProxy {
 
     /**
      * Encodes a request from a codec and invokes it on owner node of given partition.
-     * @param codec
-     * @param partitionId
-     * @param codecArguments
-     * @returns
      */
     protected encodeInvokeOnPartition(codec: any, partitionId: number, ...codecArguments: any[]): Promise<ClientMessage> {
         const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
@@ -104,9 +105,19 @@ export abstract class BaseProxy {
     }
 
     /**
+     * Encodes a request from a codec and invokes it on owner node of given partition.
+     * This method also overrides invocation timeout.
+     */
+    protected encodeInvokeOnPartitionWithTimeout(timeoutMillis: number,
+                                                 codec: any,
+                                                 partitionId: number,
+                                                 ...codecArguments: any[]): Promise<ClientMessage> {
+        const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
+        return this.client.getInvocationService().invokeOnPartition(clientMessage, partitionId, timeoutMillis);
+    }
+
+    /**
      * Serializes an object according to serialization settings of the client.
-     * @param object
-     * @returns
      */
     protected toData(object: any): Data {
         return this.client.getSerializationService().toData(object);
@@ -114,8 +125,6 @@ export abstract class BaseProxy {
 
     /**
      * De-serializes an object from binary form according to serialization settings of the client.
-     * @param data
-     * @returns {any}
      */
     protected toObject(data: Data): any {
         return this.client.getSerializationService().toObject(data);
