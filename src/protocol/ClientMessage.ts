@@ -201,7 +201,7 @@ export class ClientMessage {
     }
 
     setCorrelationId(correlationId: any): void {
-        FixSizedTypesCodec.encodeNumberAsLong(this.startFrame.content, CORRELATION_ID_OFFSET, correlationId);
+        FixSizedTypesCodec.encodeNonNegativeNumberAsLong(this.startFrame.content, CORRELATION_ID_OFFSET, correlationId);
     }
 
     getPartitionId(): number {

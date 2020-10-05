@@ -19,34 +19,10 @@ import {BitsUtil} from '../../util/BitsUtil';
 import {UUID} from '../../core/UUID';
 
 // Taken from long.js, https://github.com/dcodeIO/long.js/blob/master/src/long.js
-
-/**
- * @type {number}
- * @const
- * @inner
- */
-var TWO_PWR_16_DBL = 1 << 16;
-
-/**
- * @type {number}
- * @const
- * @inner
- */
-var TWO_PWR_32_DBL = TWO_PWR_16_DBL * TWO_PWR_16_DBL;
-
-/**
- * @type {number}
- * @const
- * @inner
- */
-var TWO_PWR_64_DBL = TWO_PWR_32_DBL * TWO_PWR_32_DBL;
-
-/**
- * @type {number}
- * @const
- * @inner
- */
-var TWO_PWR_63_DBL = TWO_PWR_64_DBL / 2;
+const TWO_PWR_16_DBL = 1 << 16;
+const TWO_PWR_32_DBL = TWO_PWR_16_DBL * TWO_PWR_16_DBL;
+const TWO_PWR_64_DBL = TWO_PWR_32_DBL * TWO_PWR_32_DBL;
+const TWO_PWR_63_DBL = TWO_PWR_64_DBL / 2;
 
 /** @internal */
 export class FixSizedTypesCodec {
@@ -73,11 +49,9 @@ export class FixSizedTypesCodec {
         return new Long(low, high);
     }
 
-    static encodeNumberAsLong(buffer: Buffer, offset: number, value: any): void {
-       if (value <= -TWO_PWR_63_DBL) {
-            // MIN_VALUE
-            buffer.writeInt32LE(0, offset);
-            buffer.writeInt32LE(0x80000000|0, offset + BitsUtil.INT_SIZE_IN_BYTES);
+    static encodeNonNegativeNumberAsLong(buffer: Buffer, offset: number, value: number): void {
+        if (value < 0) {
+            throw new Error("Only positive numbers are allowed in this method, received: " + value);
         }
 
         if (value + 1 >= TWO_PWR_63_DBL) {
