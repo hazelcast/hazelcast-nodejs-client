@@ -18,6 +18,36 @@ import * as Long from 'long';
 import {BitsUtil} from '../../util/BitsUtil';
 import {UUID} from '../../core/UUID';
 
+// Taken from long.js, https://github.com/dcodeIO/long.js/blob/master/src/long.js
+
+/**
+ * @type {number}
+ * @const
+ * @inner
+ */
+var TWO_PWR_16_DBL = 1 << 16;
+
+/**
+ * @type {number}
+ * @const
+ * @inner
+ */
+var TWO_PWR_32_DBL = TWO_PWR_16_DBL * TWO_PWR_16_DBL;
+
+/**
+ * @type {number}
+ * @const
+ * @inner
+ */
+var TWO_PWR_64_DBL = TWO_PWR_32_DBL * TWO_PWR_32_DBL;
+
+/**
+ * @type {number}
+ * @const
+ * @inner
+ */
+var TWO_PWR_63_DBL = TWO_PWR_64_DBL / 2;
+
 /** @internal */
 export class FixSizedTypesCodec {
     static encodeInt(buffer: Buffer, offset: number, value: number): void {
@@ -41,6 +71,29 @@ export class FixSizedTypesCodec {
         const low = buffer.readInt32LE(offset);
         const high = buffer.readInt32LE(offset + BitsUtil.INT_SIZE_IN_BYTES);
         return new Long(low, high);
+    }
+
+    static encodeNumberAsLong(buffer: Buffer, offset: number, value: any): void {
+       if (value <= -TWO_PWR_63_DBL) {
+            // MIN_VALUE
+            buffer.writeInt32LE(0, offset);
+            buffer.writeInt32LE(0x80000000|0, offset + BitsUtil.INT_SIZE_IN_BYTES);
+        }
+
+        if (value + 1 >= TWO_PWR_63_DBL) {
+            // MAX_VALUE
+            buffer.writeInt32LE(0xFFFFFFFF|0, offset);
+            buffer.writeInt32LE(0x7FFFFFFF|0, offset + BitsUtil.INT_SIZE_IN_BYTES);
+        }
+
+        buffer.writeInt32LE((value % TWO_PWR_32_DBL) | 0, offset);
+        buffer.writeInt32LE((value / TWO_PWR_32_DBL) | 0, offset + BitsUtil.INT_SIZE_IN_BYTES);
+    }
+
+    static decodeNumberFromLong(buffer: Buffer, offset: number): number {
+        const low = buffer.readInt32LE(offset);
+        const high = buffer.readInt32LE(offset + BitsUtil.INT_SIZE_IN_BYTES);
+        return high * TWO_PWR_32_DBL + (low >>> 0);
     }
 
     static encodeBoolean(buffer: Buffer, offset: number, value: boolean): void {

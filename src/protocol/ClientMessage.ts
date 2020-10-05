@@ -197,11 +197,11 @@ export class ClientMessage {
     }
 
     getCorrelationId(): number {
-        return FixSizedTypesCodec.decodeLong(this.startFrame.content, CORRELATION_ID_OFFSET).toNumber();
+        return FixSizedTypesCodec.decodeNumberFromLong(this.startFrame.content, CORRELATION_ID_OFFSET);
     }
 
     setCorrelationId(correlationId: any): void {
-        FixSizedTypesCodec.encodeLong(this.startFrame.content, CORRELATION_ID_OFFSET, correlationId);
+        FixSizedTypesCodec.encodeNumberAsLong(this.startFrame.content, CORRELATION_ID_OFFSET, correlationId);
     }
 
     getPartitionId(): number {
