@@ -43,32 +43,23 @@ describe('LostConnectionTest', function () {
         return RC.terminateCluster(cluster.id);
     });
 
-    it('M2 starts, M1 goes down, client connects to M2', function (done) {
+    it('M2 starts, M1 goes down, client connects to M2', async function () {
         this.timeout(32000);
 
         let newMember;
         const membershipListener = {
-            memberAdded: () => {
-                RC.shutdownMember(cluster.id, oldMember.uuid).then(function () {
-                    return Util.promiseWaitMilliseconds(4000);
-                }).then(function () {
-                    try {
-                        const address = client.getConnectionManager().getRandomConnection().getRemoteAddress();
-                        expect(address.host).to.equal(newMember.host);
-                        expect(address.port).to.equal(newMember.port);
-                        done();
-                    } catch (e) {
-                        done(e);
-                    }
-                });
+            memberAdded: async () => {
+                await RC.shutdownMember(cluster.id, oldMember.uuid)
+                await Util.promiseWaitMilliseconds(4000);
+                const address = client.getConnectionManager()
+                    .getRandomConnection()
+                    .getRemoteAddress();
+                expect(address.host).to.equal(newMember.host);
+                expect(address.port).to.equal(newMember.port);
             }
-        };
+        }
 
         client.clusterService.addMembershipListener(membershipListener);
-        RC.startMember(cluster.id)
-            .then((m) => {
-                newMember = m;
-            })
-            .catch(done);
+        newMember = await RC.startMember(cluster.id);
     });
 });
