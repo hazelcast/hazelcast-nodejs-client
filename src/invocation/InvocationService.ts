@@ -75,10 +75,12 @@ export class Invocation {
      */
     handler: (...args: any[]) => any;
 
-    constructor(client: HazelcastClient, request: ClientMessage) {
+    constructor(client: HazelcastClient, request: ClientMessage, timeoutMillis?: number) {
         this.client = client;
         this.invocationService = client.getInvocationService();
-        this.deadline = Date.now() + this.invocationService.getInvocationTimeoutMillis();
+        this.deadline = timeoutMillis === undefined
+            ? Date.now() + this.invocationService.getInvocationTimeoutMillis()
+            : Date.now() + timeoutMillis;
         this.request = request;
     }
 
@@ -160,10 +162,11 @@ export class InvocationService {
      * Invokes given invocation on the node that owns given partition.
      * @param request
      * @param partitionId
+     * @param timeoutMillis optional override for the invocation timeout
      * @returns
      */
-    invokeOnPartition(request: ClientMessage, partitionId: number): Promise<ClientMessage> {
-        const invocation = new Invocation(this.client, request);
+    invokeOnPartition(request: ClientMessage, partitionId: number, timeoutMillis?: number): Promise<ClientMessage> {
+        const invocation = new Invocation(this.client, request, timeoutMillis);
         invocation.partitionId = partitionId;
         return this.invoke(invocation);
     }
