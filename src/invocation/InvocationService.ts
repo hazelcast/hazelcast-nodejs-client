@@ -129,10 +129,12 @@ export class Invocation {
      */
     urgent = false;
 
-    constructor(client: HazelcastClient, request: ClientMessage) {
+    constructor(client: HazelcastClient, request: ClientMessage, timeoutMillis?: number) {
         this.client = client;
         this.invocationService = client.getInvocationService();
-        this.deadline = Date.now() + this.invocationService.invocationTimeoutMillis;
+        this.deadline = timeoutMillis === undefined
+            ? Date.now() + this.invocationService.invocationTimeoutMillis
+            : Date.now() + timeoutMillis;
         this.request = request;
     }
 
@@ -350,7 +352,8 @@ export class InvocationService {
      * @param handler called with values returned from server for this invocation.
      * @returns
      */
-    invokeOnConnection(connection: ClientConnection, request: ClientMessage,
+    invokeOnConnection(connection: ClientConnection,
+                       request: ClientMessage,
                        handler?: (...args: any[]) => any): Promise<ClientMessage> {
         const invocation = new Invocation(this.client, request);
         invocation.connection = connection;
@@ -362,21 +365,18 @@ export class InvocationService {
 
     /**
      * Invokes given invocation on the node that owns given partition.
-     * @param request
-     * @param partitionId
-     * @returns
+     * Optionally overrides invocation timeout.
      */
-    invokeOnPartition(request: ClientMessage, partitionId: number): Promise<ClientMessage> {
-        const invocation = new Invocation(this.client, request);
+    invokeOnPartition(request: ClientMessage,
+                      partitionId: number,
+                      timeoutMillis?: number): Promise<ClientMessage> {
+        const invocation = new Invocation(this.client, request, timeoutMillis);
         invocation.partitionId = partitionId;
         return this.invoke(invocation);
     }
 
     /**
      * Invokes given invocation on the host with given UUID.
-     * @param request
-     * @param target
-     * @returns
      */
     invokeOnTarget(request: ClientMessage, target: UUID): Promise<ClientMessage> {
         const invocation = new Invocation(this.client, request);
@@ -387,8 +387,6 @@ export class InvocationService {
     /**
      * Invokes given invocation on any host.
      * Useful when an operation is not bound to any host but a generic operation.
-     * @param request
-     * @returns
      */
     invokeOnRandomTarget(request: ClientMessage): Promise<ClientMessage> {
         return this.invoke(new Invocation(this.client, request));
