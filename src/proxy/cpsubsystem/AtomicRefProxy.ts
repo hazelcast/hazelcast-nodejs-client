@@ -66,7 +66,7 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
             this.objectName,
             newData,
             false
-        ).then();
+        ).then(() => {});
     }
 
     getAndSet(newValue: E): Promise<E> {
