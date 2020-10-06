@@ -30,23 +30,16 @@ describe('RestValueTest', function () {
     let client;
     let member;
 
-    before(function () {
+    before(async function () {
         this.timeout(32000);
-        return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_rest.xml', 'utf8'))
-            .then(c => {
-                cluster = c;
-                return RC.startMember(cluster.id);
-            }).then(m => {
-                member = m;
-                return Client.newHazelcastClient({ clusterName: cluster.id });
-            }).then(c => {
-                client = c;
-            });
+        cluster = await RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_rest.xml', 'utf8'));
+        member = await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({ clusterName: cluster.id });
     });
 
-    after(function () {
-        return client.shutdown()
-            .then(() => RC.terminateCluster(cluster.id));
+    after(async function () {
+        await client.shutdown();
+        return RC.terminateCluster(cluster.id);
     });
 
     it('client should receive REST events from server as RestValue', function (done) {

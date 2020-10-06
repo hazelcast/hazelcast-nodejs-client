@@ -35,7 +35,7 @@ const Util = require('./Util');
                 network: {
                     smartRouting: isSmartService
                 }
-            })
+            });
         });
 
         afterEach(async function () {
@@ -46,44 +46,56 @@ const Util = require('./Util');
             return RC.terminateCluster(cluster.id);
         });
 
-        it('listener is invoked when a new object is created', async function () {
-            let listenerId = await client.addDistributedObjectListener(async function (distributedObjectEvent) {
+        it('listener is invoked when a new object is created', function (done) {
+            let listenerId;
+            client.addDistributedObjectListener(function (distributedObjectEvent) {
                 expect(distributedObjectEvent.objectName).to.eq('mapToListen');
                 expect(distributedObjectEvent.serviceName).to.eq('hz:impl:mapService');
                 expect(distributedObjectEvent.eventType).to.eq('created');
-                await client.removeDistributedObjectListener(listenerId);
-                return;
-            })
-            await client.getMap('mapToListen');
+                client.removeDistributedObjectListener(listenerId).then(function () {
+                    done();
+                });
+            }).then(function (id) {
+                listenerId = id;
+                client.getMap('mapToListen');
+            });
         });
 
-        it('listener is invoked when an object is removed[smart=' + isSmartService + ']', async function () {
+        it('listener is invoked when an object is removed[smart=' + isSmartService + ']', function (done) {
             let map, listenerId;
-            listenerId = await client.addDistributedObjectListener(async function (distributedObjectEvent) {
+            client.addDistributedObjectListener(function (distributedObjectEvent) {
                 if (distributedObjectEvent.eventType === 'destroyed' &&
                     distributedObjectEvent.objectName === 'mapToRemove') {
                     expect(distributedObjectEvent.objectName).to.eq('mapToRemove');
                     expect(distributedObjectEvent.serviceName).to.eq('hz:impl:mapService');
                     expect(distributedObjectEvent.eventType).to.eq('destroyed');
-                    await client.removeDistributedObjectListener(listenerId);
-                    return;
+                    client.removeDistributedObjectListener(listenerId).then(function () {
+                        done();
+                    });
                 } else if (distributedObjectEvent.eventType === 'created' &&
                     distributedObjectEvent.objectName === 'mapToRemove') {
-                    await Util.promiseWaitMilliseconds(1000);
-                    map.destroy();
+                    Util.promiseWaitMilliseconds(1000).then(function () {
+                        map.destroy();
+                    });
                 }
-            })
-            map = await client.getMap('mapToRemove');
+            }).then(function (id) {
+                listenerId = id;
+                client.getMap('mapToRemove').then(function (mp) {
+                    map = mp;
+                });
+            });
         });
 
-        it('listener is not invoked when listener was already removed by user', async function () {
-            let listenerId;
-            listenerId = await client.addDistributedObjectListener(function () {
-                throw (new Error('Should not have run!'));
+        it('listener is not invoked when listener was already removed by user', function (done) {
+            client.addDistributedObjectListener(function () {
+                done(new Error('Should not have run!'));
+            }).then(function (listenerId) {
+                return client.removeDistributedObjectListener(listenerId)
+            }).then(function () {
+                return client.getMap('testMap');
+            }).then(function () {
+                setTimeout(done, 1000);
             });
-
-            await client.removeDistributedObjectListener(listenerId)
-            await client.getMap('testMap');
         });
     });
 });

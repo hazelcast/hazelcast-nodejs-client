@@ -25,7 +25,7 @@ describe('LifecycleServiceTest', function () {
 
     before(async function () {
         cluster = await RC.createCluster(null, null);
-        return RC.startMember(cluster.id);
+        await RC.startMember(cluster.id);
     });
 
     after(async function () {
@@ -33,8 +33,8 @@ describe('LifecycleServiceTest', function () {
     });
 
     // expected order is: STARTING, STARTED, CONNECTED, SHUTTING_DOWN, DISCONNECTED and SHUTDOWN
-    it('client should emit events in order', async function () {
-        let client, expectedState = 'STARTING';
+    it('client should emit events in order', function (done) {
+        let expectedState = 'STARTING';
         const listener = (state) => {
             if (state === 'STARTING' && expectedState === 'STARTING') {
                 expectedState = 'STARTED'
@@ -47,55 +47,67 @@ describe('LifecycleServiceTest', function () {
             } else if (state === 'DISCONNECTED' && expectedState === 'DISCONNECTED') {
                 expectedState = 'SHUTDOWN';
             } else if (state === 'SHUTDOWN' && expectedState === 'SHUTDOWN') {
-                return;
+                done();
             } else {
-                throw new Error('Got lifecycle event ' + state + ' instead of ' + expectedState);
+                done('Got lifecycle event ' + state + ' instead of ' + expectedState);
             }
         };
-        client = await Client.newHazelcastClient({
+
+        Client.newHazelcastClient({
             clusterName: cluster.id,
             lifecycleListeners: [listener]
-        });
-        await client.shutdown();
+        })
+            .then(function (client) {
+                return client.shutdown();
+            })
+            .catch(done);
     });
 
-    it('event listener should get SHUTTING_DOWN, DISCONNECTED and SHUTDOWN events when added after startup', async function () {
-        let client, expectedState = 'SHUTTING_DOWN';
-        client = await Client.newHazelcastClient({ clusterName: cluster.id })
-        client.lifecycleService.on('lifecycleEvent', function (state) {
-            if (state === 'SHUTTING_DOWN' && expectedState === 'SHUTTING_DOWN') {
-                expectedState = 'DISCONNECTED';
-            } else if (state === 'DISCONNECTED' && expectedState === 'DISCONNECTED') {
-                expectedState = 'SHUTDOWN';
-            } else if (state === 'SHUTDOWN' && expectedState === 'SHUTDOWN') {
-                return;
-            } else {
-                throw new Error('Got lifecycle event ' + state + ' instead of ' + expectedState);
-            }
-        });
-        await client.shutdown();
+    it('event listener should get SHUTTING_DOWN, DISCONNECTED and SHUTDOWN events when added after startup', function (done) {
+        let expectedState = 'SHUTTING_DOWN';
+        Client.newHazelcastClient({ clusterName: cluster.id })
+            .then(function (client) {
+                client.lifecycleService.on('lifecycleEvent', function (state) {
+                    if (state === 'SHUTTING_DOWN' && expectedState === 'SHUTTING_DOWN') {
+                        expectedState = 'DISCONNECTED';
+                    } else if (state === 'DISCONNECTED' && expectedState === 'DISCONNECTED') {
+                        expectedState = 'SHUTDOWN';
+                    } else if (state === 'SHUTDOWN' && expectedState === 'SHUTDOWN') {
+                        done();
+                    } else {
+                        done('Got lifecycle event ' + state + ' instead of ' + expectedState);
+                    }
+                });
+                return client.shutdown();
+            })
+            .catch(done);
     });
 
-    it('isRunning returns correct values at lifecycle stages', async function () {
-        let client = await Client.newHazelcastClient({ clusterName: cluster.id })
-        client.lifecycleService.on('lifecycleEvent',
-            function (state) {
-                if (state === 'STARTING') {
-                    expect(client.lifecycleService.isRunning()).to.be.false;
-                } else if (state === 'STARTED') {
-                    expect(client.lifecycleService.isRunning()).to.be.true;
-                } else if (state === 'CONNECTED') {
-                    expect(client.lifecycleService.isRunning()).to.be.true;
-                } else if (state === 'SHUTTING_DOWN') {
-                    expect(client.lifecycleService.isRunning()).to.be.false;
-                } else if (state === 'DISCONNECTED') {
-                    expect(client.lifecycleService.isRunning()).to.be.false;
-                } else if (state === 'SHUTDOWN') {
-                    expect(client.lifecycleService.isRunning()).to.be.false;
-                } else {
-                    throw new Error('Got unexpected lifecycle event: ' + state);
-                }
-            });
-        await client.shutdown();
+    it('isRunning returns correct values at lifecycle stages', function (done) {
+        Client.newHazelcastClient({ clusterName: cluster.id })
+            .then(function (client) {
+                client.lifecycleService.on('lifecycleEvent',
+                    function (state) {
+                        if (state === 'STARTING') {
+                            expect(client.lifecycleService.isRunning()).to.be.false;
+                        } else if (state === 'STARTED') {
+                            expect(client.lifecycleService.isRunning()).to.be.true;
+                        } else if (state === 'CONNECTED') {
+                            expect(client.lifecycleService.isRunning()).to.be.true;
+                        } else if (state === 'SHUTTING_DOWN') {
+                            expect(client.lifecycleService.isRunning()).to.be.false;
+                        } else if (state === 'DISCONNECTED') {
+                            expect(client.lifecycleService.isRunning()).to.be.false;
+                        } else if (state === 'SHUTDOWN') {
+                            expect(client.lifecycleService.isRunning()).to.be.false;
+                            done();
+                        } else {
+                            done('Got unexpected lifecycle event: ' + state);
+                        }
+                    }
+                );
+                return client.shutdown();
+            })
+            .catch(done);
     });
 });
