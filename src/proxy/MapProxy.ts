@@ -345,7 +345,9 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     lock(key: K, ttl = -1): Promise<void> {
         assertNotNull(key);
         const keyData = this.toData(key);
-        return this.encodeInvokeOnKey(MapLockCodec, keyData, keyData, 0, ttl, 0).then();
+        return this.encodeInvokeOnKeyWithTimeout(
+            Number.MAX_SAFE_INTEGER, MapLockCodec, keyData, keyData, 0, ttl, 0
+        ).then();
     }
 
     isLocked(key: K): Promise<boolean> {
@@ -462,8 +464,9 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     tryLock(key: K, timeout = 0, lease = -1): Promise<boolean> {
         assertNotNull(key);
         const keyData = this.toData(key);
-        return this.encodeInvokeOnKey(MapTryLockCodec, keyData, keyData, 0, lease, timeout, 0)
-            .then(MapTryLockCodec.decodeResponse);
+        return this.encodeInvokeOnKeyWithTimeout(
+            Number.MAX_SAFE_INTEGER, MapTryLockCodec, keyData, keyData, 0, lease, timeout, 0
+        ).then(MapTryLockCodec.decodeResponse);
     }
 
     tryPut(key: K, value: V, timeout: number): Promise<boolean> {

@@ -21,7 +21,7 @@ const fs = require('fs');
 const RC = require('./../RC');
 const { Client, Predicates } = require('../../');
 const Util = require('./../Util');
-const fillMap = require('../Util').fillMap;
+const { fillMap } = require('../Util');
 
 function createController(nearCacheEnabled) {
     if (nearCacheEnabled) {
@@ -913,4 +913,3 @@ describe('MapProxyTest', function () {
         });
     });
 });
-
