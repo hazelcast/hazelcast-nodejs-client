@@ -18,7 +18,7 @@
 const expect = require('chai').expect;
 const fs = require('fs');
 const RC = require('../RC');
-const { Client } = require('../../lib/index.js');
+const { Client } = require('../../');
 const { fillMap } = require('../Util');
 const { promiseWaitMilliseconds } = require('../Util');
 const Util = require('../Util');
@@ -31,30 +31,30 @@ describe('MapStoreTest', function () {
 
     before(async function () {
         this.timeout(32000);
-        cluster = await RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_mapstore.xml', 'utf8'))
+        cluster = await RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_mapstore.xml', 'utf8'));
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({ clusterName: cluster.id });
     });
 
     beforeEach(async function () {
         map = await client.getMap('mapstore-test');
-        await fillMap(map);
+        return fillMap(map);
     });
 
     afterEach(async function () {
-        await map.destroy();
+        return map.destroy();
     });
 
     after(async function () {
-        await client.shutdown()
+        await client.shutdown();
         return RC.terminateCluster(cluster.id);
     });
 
     it('loadAll with no arguments loads all keys', async function () {
-        await fillMap(map)
+        await fillMap(map);
         await map.evictAll();
         await map.loadAll();
-        let values = await map.getAll([
+        const values = await map.getAll([
             'key0', 'key1', 'key2', 'key3', 'key4',
             'key5', 'key6', 'key7', 'key8', 'key9'
         ]);
@@ -70,14 +70,14 @@ describe('MapStoreTest', function () {
     it('loadAll with empty keyset loads nothing', async function () {
         await map.evictAll();
         await map.loadAll([]);
-        let val = await map.size()
+        const val = await map.size();
         expect(val).to.equal(0);
     });
 
     it('loadAll with keyset loads all keys', async function () {
         await map.evictAll();
         await map.loadAll(['key0', 'key1']);
-        let values = await map.getAll(['key0', 'key1']);
+        const values = await map.getAll(['key0', 'key1']);
         expect(values).to.deep.have.members([
             ['key0', 'val0'], ['key1', 'val1']
         ]);
@@ -88,7 +88,7 @@ describe('MapStoreTest', function () {
         await map.putTransient('key0', 'newval0');
         await map.putTransient('key1', 'newval1');
         await map.loadAll(['key0', 'key1']);
-        let values = await map.getAll(['key0', 'key1']);
+        const values = await map.getAll(['key0', 'key1']);
         expect(values).to.deep.have.members([
             ['key0', 'val0'], ['key1', 'val1']
         ]);
@@ -99,7 +99,7 @@ describe('MapStoreTest', function () {
         await map.putTransient('key0', 'newval0');
         await map.putTransient('key1', 'newval1');
         await map.loadAll(['key0', 'key1'], true);
-        let values = await map.getAll(['key0', 'key1']);
+        const values = await map.getAll(['key0', 'key1']);
         expect(values).to.deep.have.members([
             ['key0', 'val0'], ['key1', 'val1']
         ]);
@@ -110,7 +110,7 @@ describe('MapStoreTest', function () {
         await map.putTransient('key0', 'newval0');
         await map.putTransient('key1', 'newval1');
         await map.loadAll(['key0', 'key1'], false);
-        let values = await map.getAll(['key0', 'key1']);
+        const values = await map.getAll(['key0', 'key1']);
         expect(values).to.deep.have.members([
             ['key0', 'newval0'], ['key1', 'newval1']
         ]);
@@ -118,19 +118,19 @@ describe('MapStoreTest', function () {
 
     it('evict', async function () {
         await map.evict('key0');
-        let s = await map.size();
+        const s = await map.size();
         expect(s).to.equal(9);
     });
 
-    it('evict_nonexist_key', async function () {
+    it('evict non-existing key', async function () {
         await map.evict('non-key');
-        let s = await map.size();
+        const s = await map.size();
         expect(s).to.equal(10);
     });
 
     it('evictAll', async function () {
         await map.evictAll();
-        let s = await map.size();
+        const s = await map.size();
         expect(s).to.equal(0);
     });
 

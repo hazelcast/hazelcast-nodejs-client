@@ -92,7 +92,7 @@ describe('StatisticsTest (default period)', function () {
         map = await client.getMap('nearCachedMap' + Math.random());
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         return map.destroy();
     });
 
@@ -102,15 +102,15 @@ describe('StatisticsTest (default period)', function () {
     }
 
     it('should be enabled via configuration', async function () {
-        await TestUtil.promiseWaitMilliseconds(1000)
-        let stats = await getClientStatisticsFromServer(cluster, client);
+        await TestUtil.promiseWaitMilliseconds(1000);
+        const stats = await getClientStatisticsFromServer(cluster, client);
         expect(stats).to.not.null;
         expect(stats).to.not.equal('');
     });
 
     it('should contain statistics content', async function () {
         await TestUtil.promiseWaitMilliseconds(1000);
-        let stats = await getClientStatisticsFromServer(cluster, client);
+        const stats = await getClientStatisticsFromServer(cluster, client);
         expect(stats).to.not.be.null;
         expect(extractStringStatValue(stats, 'clientName')).to.equal(client.getName());
         expect(extractIntStatValue(stats, 'lastStatisticsCollectionTime')).to.be
@@ -139,11 +139,11 @@ describe('StatisticsTest (default period)', function () {
     });
 
     it('should contain near cache statistics content', async function () {
-        await map.put('key', 'value')
+        await map.put('key', 'value');
         await map.get('key');
         await map.get('key');
         await TestUtil.promiseWaitMilliseconds(5000);
-        let stats = await getClientStatisticsFromServer(cluster, client);
+        const stats = await getClientStatisticsFromServer(cluster, client);
         const nearCacheStats = 'nc.' + map.getName();
         expect(contains(stats, nearCacheStats + '.hits=1')).to.be.true;
         expect(contains(stats, nearCacheStats + '.creationTime=')).to.be.true;
@@ -158,7 +158,7 @@ describe('StatisticsTest (non-default period)', function () {
     let client;
 
     before(async function () {
-        cluster = await RC.createCluster(null, null)
+        cluster = await RC.createCluster(null, null);
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({
             clusterName: cluster.id,
@@ -176,16 +176,16 @@ describe('StatisticsTest (non-default period)', function () {
 
     it('should not change before period', async function () {
         await TestUtil.promiseWaitMilliseconds(1000);
-        let stats1 = await getClientStatisticsFromServer(cluster, client);
-        let stats2 = await getClientStatisticsFromServer(cluster, client);
+        const stats1 = await getClientStatisticsFromServer(cluster, client);
+        const stats2 = await getClientStatisticsFromServer(cluster, client);
         expect(stats1).to.be.equal(stats2);
     });
 
     it('should change after period', async function () {
         await TestUtil.promiseWaitMilliseconds(1000);
-        let stats1 = await getClientStatisticsFromServer(cluster, client);
-        await TestUtil.promiseWaitMilliseconds(2000)
-        let stats2 = await getClientStatisticsFromServer(cluster, client);
+        const stats1 = await getClientStatisticsFromServer(cluster, client);
+        await TestUtil.promiseWaitMilliseconds(2000);
+        const stats2 = await getClientStatisticsFromServer(cluster, client);
         expect(stats1).not.to.be.equal(stats2);
     });
 });

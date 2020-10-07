@@ -25,7 +25,7 @@ describe('LifecycleServiceTest', function () {
 
     before(async function () {
         cluster = await RC.createCluster(null, null);
-        await RC.startMember(cluster.id);
+        return RC.startMember(cluster.id);
     });
 
     after(async function () {

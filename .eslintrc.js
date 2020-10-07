@@ -19,13 +19,7 @@ module.exports = {
     parser: '@typescript-eslint/parser',
     plugins: [
         '@typescript-eslint',
-        'mocha'
     ],
-    env: {
-        mocha: true,
-        node: true,
-        es6: true
-    },
     extends: [
         'eslint:recommended',
         'plugin:@typescript-eslint/eslint-recommended',

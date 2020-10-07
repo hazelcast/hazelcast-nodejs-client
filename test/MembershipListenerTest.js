@@ -39,7 +39,6 @@ describe('MembershipListenerTest', function () {
     });
 
     it('sees member added event', async function () {
-        let newMember, membershipEvent;
         const listenerCalledResolver = deferredPromise();
 
         const membershipListener = {
@@ -49,8 +48,8 @@ describe('MembershipListenerTest', function () {
         };
         client.clusterService.addMembershipListener(membershipListener);
 
-        newMember = await RC.startMember(cluster.id);
-        membershipEvent = await listenerCalledResolver.promise;
+        let newMember = await RC.startMember(cluster.id);
+        let membershipEvent = await listenerCalledResolver.promise;
 
         expect(membershipEvent.member.address.host).to.equal(newMember.host);
         expect(membershipEvent.member.address.port).to.equal(newMember.port);
@@ -59,7 +58,6 @@ describe('MembershipListenerTest', function () {
     });
 
     it('sees member added event and other listener\'s event ', async function () {
-        let newMember, membershipEvent;
         const listenerCalledResolver = deferredPromise();
         let listenedSecondListener = false;
 
@@ -76,8 +74,8 @@ describe('MembershipListenerTest', function () {
         client.clusterService.addMembershipListener(membershipListener);
         client.clusterService.addMembershipListener(membershipListener2);
 
-        newMember = await RC.startMember(cluster.id);
-        membershipEvent = await listenerCalledResolver.promise;
+        let newMember = await RC.startMember(cluster.id);
+        let membershipEvent = await listenerCalledResolver.promise;
 
         expect(membershipEvent.member.address.host).to.equal(newMember.host);
         expect(membershipEvent.member.address.port).to.equal(newMember.port);
@@ -102,7 +100,6 @@ describe('MembershipListenerTest', function () {
     });
 
     it('sees member removed event', async function () {
-        let newMember, membershipEvent;
         const listenerCalledResolver = deferredPromise();
 
         const membershipListener = {
@@ -112,9 +109,10 @@ describe('MembershipListenerTest', function () {
         };
         client.clusterService.addMembershipListener(membershipListener);
 
-        newMember = await RC.startMember(cluster.id);
+        let newMember = await RC.startMember(cluster.id);
         await RC.shutdownMember(cluster.id, newMember.uuid);
-        membershipEvent = await listenerCalledResolver.promise;
+        let membershipEvent = await listenerCalledResolver.promise;
+
         expect(membershipEvent.member.address.host).to.equal(newMember.host);
         expect(membershipEvent.member.address.port).to.equal(newMember.port);
         expect(membershipEvent.eventType).to.equal(MemberEvent.REMOVED);

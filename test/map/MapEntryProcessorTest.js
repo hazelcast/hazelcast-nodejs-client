@@ -16,8 +16,8 @@
 'use strict';
 
 const expect = require('chai').expect;
-const Client = require('../../lib').Client;
-const Predicates = require('../../lib').Predicates;
+const { Client } = require('../../');
+const { Predicates } = require('../../');
 const RC = require('../RC');
 const fs = require('fs');
 const fillMap = require('../Util').fillMap;
@@ -54,14 +54,14 @@ describe('Entry Processor', function () {
         await fillMap(map, MAP_SIZE, '', '');
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         return map.destroy();
     });
 
     it('executeOnEntries should modify entries', async function () {
         this.timeout(4000);
-        await map.executeOnEntries(new IdentifiedEntryProcessor('processed'))
-        let entries = await map.entrySet();
+        await map.executeOnEntries(new IdentifiedEntryProcessor('processed'));
+        const entries = await map.entrySet();
         expect(entries.every(function (entry) {
             return entry[1] == 'processed';
         })).to.be.true;
@@ -69,7 +69,7 @@ describe('Entry Processor', function () {
 
     it('executeOnEntries should return modified entries', async function () {
         this.timeout(4000);
-        let entries = await map.executeOnEntries(new IdentifiedEntryProcessor('processed'));
+        const entries = await map.executeOnEntries(new IdentifiedEntryProcessor('processed'));
         expect(entries).to.have.lengthOf(MAP_SIZE);
         expect(entries.every(function (entry) {
             return entry[1] == 'processed';
@@ -79,13 +79,13 @@ describe('Entry Processor', function () {
     it('executeOnEntries with predicate should modify entries', async function () {
         this.timeout(4000);
         await map.executeOnEntries(new IdentifiedEntryProcessor('processed'), Predicates.regex('this', '^[01]$'));
-        let entries = await map.getAll(["0", "1", "2"]);
+        const entries = await map.getAll(["0", "1", "2"]);
         expect(entries).to.deep.have.members([['0', 'processed'], ['1', 'processed'], ['2', '2']]);
     });
 
     it('executeOnEntries with predicate should return modified entries', async function () {
         this.timeout(4000);
-        let entries = await map.executeOnEntries(new IdentifiedEntryProcessor('processed'), Predicates.regex('this', '^[01]$'));
+        const entries = await map.executeOnEntries(new IdentifiedEntryProcessor('processed'), Predicates.regex('this', '^[01]$'));
         expect(entries).to.have.lengthOf(2);
         expect(entries.every(function (entry) {
             return entry[1] == 'processed';
@@ -94,33 +94,33 @@ describe('Entry Processor', function () {
 
     it('executeOnKey should return modified value', async function () {
         this.timeout(4000);
-        let retVal = await map.executeOnKey('4', new IdentifiedEntryProcessor('processed'));
+        const retVal = await map.executeOnKey('4', new IdentifiedEntryProcessor('processed'));
         expect(retVal).to.equal('processed');
     });
 
     it('executeOnKey should modify the value', async function () {
         this.timeout(4000);
         await map.executeOnKey('4', new IdentifiedEntryProcessor('processed'));
-        let value = await map.get('4');
+        const value = await map.get('4');
         expect(value).to.equal('processed');
     });
 
     it('executeOnKeys should return modified entries', async function () {
         this.timeout(4000);
-        let entries = await map.executeOnKeys(['4', '5'], new IdentifiedEntryProcessor('processed'));
+        const entries = await map.executeOnKeys(['4', '5'], new IdentifiedEntryProcessor('processed'));
         expect(entries).to.deep.have.members([['4', 'processed'], ['5', 'processed']]);
     });
 
     it('executeOnKeys should modify the entries', async function () {
         this.timeout(4000);
         await map.executeOnKeys(['4', '5'], new IdentifiedEntryProcessor('processed'));
-        let entries = await map.getAll(['4', '5']);
+        const entries = await map.getAll(['4', '5']);
         expect(entries).to.deep.have.members([['4', 'processed'], ['5', 'processed']]);
     });
 
     it('executeOnKeys with empty array should return empty array', async function () {
         this.timeout(4000);
-        let entries = await map.executeOnKeys([], new IdentifiedEntryProcessor('processed'));
+        const entries = await map.executeOnKeys([], new IdentifiedEntryProcessor('processed'));
         expect(entries).to.have.lengthOf(0);
     });
 
