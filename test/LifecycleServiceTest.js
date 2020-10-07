@@ -55,7 +55,7 @@ describe('LifecycleServiceTest', function () {
 
         Client.newHazelcastClient({
             clusterName: cluster.id,
-            lifecycleListeners: [ listener ]
+            lifecycleListeners: [listener]
         })
             .then(function (client) {
                 return client.shutdown();

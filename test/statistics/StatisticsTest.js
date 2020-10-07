@@ -30,7 +30,7 @@ function getClientStatisticsFromServer(cluster, client) {
         'stats = instance_0.getOriginal().node.getClientEngine().getClientStatistics()\n' +
         'keys = stats.keySet().toArray()\n' +
         'for(i=0; i < keys.length; i++) {\n' +
-        '  if (keys[i].toString().equals("'+ clientUuid + '")) {\n' +
+        '  if (keys[i].toString().equals("' + clientUuid + '")) {\n' +
         '    result = stats.get(keys[i]).clientAttributes()\n' +
         '    break\n' +
         '  }\n' +
@@ -67,40 +67,32 @@ describe('StatisticsTest (default period)', function () {
     let client;
     let map;
 
-    before(function () {
-        return RC.createCluster(null, null).then(function (res) {
-            cluster = res;
-        }).then(function () {
-            return RC.startMember(cluster.id);
-        }).then(function () {
-            return Client.newHazelcastClient({
-                clusterName: cluster.id,
-                nearCaches: {
-                    'nearCachedMap*': {
-                        invalidateOnChange: false
-                    }
-                },
-                properties: {
-                    'hazelcast.client.statistics.enabled': true
+    before(async function () {
+        cluster = await RC.createCluster(null, null);
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            nearCaches: {
+                'nearCachedMap*': {
+                    invalidateOnChange: false
                 }
-            }).then(function (cl) {
-                client = cl;
-            })
+            },
+            properties: {
+                'hazelcast.client.statistics.enabled': true
+            }
         });
     });
 
-    after(function () {
-        return client.shutdown()
-            .then(() => RC.terminateCluster(cluster.id));
+    after(async function () {
+        await client.shutdown();
+        return RC.terminateCluster(cluster.id);
     });
 
-    beforeEach(function () {
-        return client.getMap('nearCachedMap' + Math.random()).then(function (mp) {
-            map = mp;
-        });
+    beforeEach(async function () {
+        map = await client.getMap('nearCachedMap' + Math.random());
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         return map.destroy();
     });
 
@@ -109,63 +101,54 @@ describe('StatisticsTest (default period)', function () {
         return firstIndex > -1 && firstIndex == base.lastIndexOf(search);
     }
 
-    it('should be enabled via configuration', function () {
-        return TestUtil.promiseWaitMilliseconds(1000).then(function () {
-            return getClientStatisticsFromServer(cluster, client);
-        }).then(function (stats) {
-            expect(stats).to.not.null;
-            expect(stats).to.not.equal('');
-        });
+    it('should be enabled via configuration', async function () {
+        await TestUtil.promiseWaitMilliseconds(1000);
+        const stats = await getClientStatisticsFromServer(cluster, client);
+        expect(stats).to.not.null;
+        expect(stats).to.not.equal('');
     });
 
-    it('should contain statistics content', function () {
-        return TestUtil.promiseWaitMilliseconds(1000).then(function () {
-            return getClientStatisticsFromServer(cluster, client);
-        }).then(function (stats) {
-            expect(stats).to.not.be.null;
-            expect(extractStringStatValue(stats, 'clientName')).to.equal(client.getName());
-            expect(extractIntStatValue(stats, 'lastStatisticsCollectionTime')).to.be
-                .within(Date.now() - Statistics.PERIOD_SECONDS_DEFAULT_VALUE * 2000, Date.now());
-            expect(extractBooleanStatValue(stats, 'enterprise')).to.be.false;
-            expect(extractStringStatValue(stats, 'clientType')).to.equal('NodeJS');
-            expect(extractStringStatValue(stats, 'clientVersion')).to.equal(BuildInfo.getClientVersion());
-            const connection = client.getConnectionManager().getRandomConnection();
-            expect(extractIntStatValue(stats, 'clusterConnectionTimestamp')).to.equal(connection.getStartTime());
-            expect(extractStringStatValue(stats, 'clientAddress')).to.equal(connection.getLocalAddress().toString());
-            expect(extractStringStatValue(stats, 'os.committedVirtualMemorySize')).to.equal('');
-            expect(extractStringStatValue(stats, 'os.freeSwapSpaceSize')).to.equal('');
-            expect(extractStringStatValue(stats, 'os.maxFileDescriptorCount')).to.equal('');
-            expect(extractStringStatValue(stats, 'os.openFileDescriptorCount')).to.equal('');
-            expect(extractIntStatValue(stats, 'os.processCpuTime')).to.greaterThan(1000);
-            expect(extractFloatStatValue(stats, 'os.systemLoadAverage')).to.be.at.least(0);
-            expect(extractIntStatValue(stats, 'os.totalPhysicalMemorySize')).to.equal(os.totalmem());
-            expect(extractStringStatValue(stats, 'os.totalSwapSpaceSize')).to.equal('');
-            expect(extractIntStatValue(stats, 'runtime.availableProcessors')).to.equal(os.cpus().length);
-            expect(extractStringStatValue(stats, 'runtime.freeMemory')).to.equal('');
-            expect(extractStringStatValue(stats, 'runtime.maxMemory')).to.equal('');
-            expect(extractIntStatValue(stats, 'runtime.totalMemory')).to.greaterThan(0);
-            expect(extractIntStatValue(stats, 'runtime.uptime')).to.greaterThan(0);
-            expect(extractIntStatValue(stats, 'runtime.usedMemory')).to.greaterThan(0);
-            expect(extractStringStatValue(stats, 'executionService.userExecutorQueueSize')).to.equal('');
-        });
+    it('should contain statistics content', async function () {
+        await TestUtil.promiseWaitMilliseconds(1000);
+        const stats = await getClientStatisticsFromServer(cluster, client);
+        expect(stats).to.not.be.null;
+        expect(extractStringStatValue(stats, 'clientName')).to.equal(client.getName());
+        expect(extractIntStatValue(stats, 'lastStatisticsCollectionTime')).to.be
+            .within(Date.now() - Statistics.PERIOD_SECONDS_DEFAULT_VALUE * 2000, Date.now());
+        expect(extractBooleanStatValue(stats, 'enterprise')).to.be.false;
+        expect(extractStringStatValue(stats, 'clientType')).to.equal('NodeJS');
+        expect(extractStringStatValue(stats, 'clientVersion')).to.equal(BuildInfo.getClientVersion());
+        const connection = client.getConnectionManager().getRandomConnection();
+        expect(extractIntStatValue(stats, 'clusterConnectionTimestamp')).to.equal(connection.getStartTime());
+        expect(extractStringStatValue(stats, 'clientAddress')).to.equal(connection.getLocalAddress().toString());
+        expect(extractStringStatValue(stats, 'os.committedVirtualMemorySize')).to.equal('');
+        expect(extractStringStatValue(stats, 'os.freeSwapSpaceSize')).to.equal('');
+        expect(extractStringStatValue(stats, 'os.maxFileDescriptorCount')).to.equal('');
+        expect(extractStringStatValue(stats, 'os.openFileDescriptorCount')).to.equal('');
+        expect(extractIntStatValue(stats, 'os.processCpuTime')).to.greaterThan(1000);
+        expect(extractFloatStatValue(stats, 'os.systemLoadAverage')).to.be.at.least(0);
+        expect(extractIntStatValue(stats, 'os.totalPhysicalMemorySize')).to.equal(os.totalmem());
+        expect(extractStringStatValue(stats, 'os.totalSwapSpaceSize')).to.equal('');
+        expect(extractIntStatValue(stats, 'runtime.availableProcessors')).to.equal(os.cpus().length);
+        expect(extractStringStatValue(stats, 'runtime.freeMemory')).to.equal('');
+        expect(extractStringStatValue(stats, 'runtime.maxMemory')).to.equal('');
+        expect(extractIntStatValue(stats, 'runtime.totalMemory')).to.greaterThan(0);
+        expect(extractIntStatValue(stats, 'runtime.uptime')).to.greaterThan(0);
+        expect(extractIntStatValue(stats, 'runtime.usedMemory')).to.greaterThan(0);
+        expect(extractStringStatValue(stats, 'executionService.userExecutorQueueSize')).to.equal('');
     });
 
-    it('should contain near cache statistics content', function () {
-        return map.put('key', 'value').then(function () {
-            return map.get('key');
-        }).then(function () {
-            return map.get('key');
-        }).then(function () {
-            return TestUtil.promiseWaitMilliseconds(5000);
-        }).then(function () {
-            return getClientStatisticsFromServer(cluster, client);
-        }).then(function (stats) {
-            const nearCacheStats = 'nc.' + map.getName();
-            expect(contains(stats, nearCacheStats + '.hits=1')).to.be.true;
-            expect(contains(stats, nearCacheStats + '.creationTime=')).to.be.true;
-            expect(contains(stats, nearCacheStats + '.misses=1')).to.be.true;
-            expect(contains(stats, nearCacheStats + '.ownedEntryCount=1')).to.be.true;
-        });
+    it('should contain near cache statistics content', async function () {
+        await map.put('key', 'value');
+        await map.get('key');
+        await map.get('key');
+        await TestUtil.promiseWaitMilliseconds(5000);
+        const stats = await getClientStatisticsFromServer(cluster, client);
+        const nearCacheStats = 'nc.' + map.getName();
+        expect(contains(stats, nearCacheStats + '.hits=1')).to.be.true;
+        expect(contains(stats, nearCacheStats + '.creationTime=')).to.be.true;
+        expect(contains(stats, nearCacheStats + '.misses=1')).to.be.true;
+        expect(contains(stats, nearCacheStats + '.ownedEntryCount=1')).to.be.true;
     });
 });
 
@@ -174,53 +157,36 @@ describe('StatisticsTest (non-default period)', function () {
     let cluster;
     let client;
 
-    before(function () {
-        return RC.createCluster(null, null).then(function (res) {
-            cluster = res;
-        }).then(function () {
-            return RC.startMember(cluster.id);
-        }).then(function () {
-            return Client.newHazelcastClient({
-                clusterName: cluster.id,
-                properties: {
-                    'hazelcast.client.statistics.enabled': true,
-                    'hazelcast.client.statistics.period.seconds': 2
-                }
-            }).then(function (cl) {
-                client = cl;
-            });
+    before(async function () {
+        cluster = await RC.createCluster(null, null);
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            properties: {
+                'hazelcast.client.statistics.enabled': true,
+                'hazelcast.client.statistics.period.seconds': 2
+            }
         });
     });
 
-    after(function () {
-        return client.shutdown()
-            .then(() => RC.terminateCluster(cluster.id));
+    after(async function () {
+        await client.shutdown()
+        return RC.terminateCluster(cluster.id);
     });
 
-    it('should not change before period', function () {
-        let stats1;
-        return TestUtil.promiseWaitMilliseconds(1000).then(function () {
-            return getClientStatisticsFromServer(cluster, client);
-        }).then(function (st) {
-            stats1 = st;
-            return getClientStatisticsFromServer(cluster, client)
-        }).then(function (stats2) {
-            expect(stats1).to.be.equal(stats2);
-        });
+    it('should not change before period', async function () {
+        await TestUtil.promiseWaitMilliseconds(1000);
+        const stats1 = await getClientStatisticsFromServer(cluster, client);
+        const stats2 = await getClientStatisticsFromServer(cluster, client);
+        expect(stats1).to.be.equal(stats2);
     });
 
-    it('should change after period', function () {
-        let stats1;
-        return TestUtil.promiseWaitMilliseconds(1000).then(function () {
-            return getClientStatisticsFromServer(cluster, client);
-        }).then(function (st) {
-            stats1 = st;
-            return TestUtil.promiseWaitMilliseconds(2000)
-        }).then(function () {
-            return getClientStatisticsFromServer(cluster, client);
-        }).then(function (stats2) {
-            expect(stats1).not.to.be.equal(stats2);
-        });
+    it('should change after period', async function () {
+        await TestUtil.promiseWaitMilliseconds(1000);
+        const stats1 = await getClientStatisticsFromServer(cluster, client);
+        await TestUtil.promiseWaitMilliseconds(2000);
+        const stats2 = await getClientStatisticsFromServer(cluster, client);
+        expect(stats1).not.to.be.equal(stats2);
     });
 });
 
@@ -229,34 +195,26 @@ describe('StatisticsTest (negative period)', function () {
     let client;
     let cluster;
 
-    before(function () {
-        return RC.createCluster(null, null).then(function (res) {
-            cluster = res;
-        }).then(function () {
-            return RC.startMember(cluster.id);
-        }).then(function () {
-            return Client.newHazelcastClient({
-                clusterName: cluster.id,
-                properties: {
-                    'hazelcast.client.statistics.enabled': true,
-                    'hazelcast.client.statistics.period.seconds': -2
-                }
-            });
-        }).then(function (cl) {
-            client = cl;
+    before(async function () {
+        cluster = await RC.createCluster(null, null);
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            properties: {
+                'hazelcast.client.statistics.enabled': true,
+                'hazelcast.client.statistics.period.seconds': -2
+            }
         });
     });
 
-    after(function () {
-        return client.shutdown()
-            .then(() => RC.terminateCluster(cluster.id));
+    after(async function () {
+        await client.shutdown();
+        return RC.terminateCluster(cluster.id);
     });
 
-    it('should be enabled via configuration', function () {
-        return TestUtil.promiseWaitMilliseconds(1000).then(function () {
-            return getClientStatisticsFromServer(cluster, client);
-        }).then(function (stats) {
-            expect(stats).to.not.equal('');
-        });
+    it('should be enabled via configuration', async function () {
+        await TestUtil.promiseWaitMilliseconds(1000);
+        let stats = await getClientStatisticsFromServer(cluster, client);
+        expect(stats).to.not.equal('');
     });
 });

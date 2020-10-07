@@ -21,52 +21,43 @@ const TestUtil = require('./Util');
 
 describe('RepetitionTaskTest', function () {
 
-    it('should be cancelled before timeout', function () {
+    it('should be cancelled before timeout', async function () {
         let counter = 0;
         const task = Util.scheduleWithRepetition(function () {
             counter++;
         }, 50, 75);
 
-        return TestUtil.promiseWaitMilliseconds(40).then(function () {
-            Util.cancelRepetitionTask(task);
-            expect(counter).to.be.equal(0);
-        }).then(function () {
-            return TestUtil.promiseWaitMilliseconds(130)
-        }).then(function () {
-            expect(counter).to.be.equal(0);
-        });
+        await TestUtil.promiseWaitMilliseconds(40);
+        Util.cancelRepetitionTask(task);
+        expect(counter).to.be.equal(0);
+        await TestUtil.promiseWaitMilliseconds(130);
+        expect(counter).to.be.equal(0);
     });
 
-    it('should be cancelled after timeout', function () {
+    it('should be cancelled after timeout', async function () {
         let counter = 0;
         const task = Util.scheduleWithRepetition(function () {
             counter++;
         }, 50, 75);
 
-        return TestUtil.promiseWaitMilliseconds(60).then(function () {
-            Util.cancelRepetitionTask(task);
-            expect(counter).to.be.equal(1);
-        }).then(function () {
-            return TestUtil.promiseWaitMilliseconds(75)
-        }).then(function () {
-            expect(counter).to.be.equal(1);
-        });
+        await TestUtil.promiseWaitMilliseconds(60);
+        Util.cancelRepetitionTask(task);
+        expect(counter).to.be.equal(1);
+        await TestUtil.promiseWaitMilliseconds(75);
+        expect(counter).to.be.equal(1);
     });
 
-    it('should be cancelled after interval', function () {
+    it('should be cancelled after interval', async function () {
         let counter = 0;
         const task = Util.scheduleWithRepetition(function () {
             counter++;
         }, 50, 75);
 
-        return TestUtil.promiseWaitMilliseconds(130).then(function () {
-            Util.cancelRepetitionTask(task);
-            expect(counter).to.be.equal(2);
-        }).then(function () {
-            return TestUtil.promiseWaitMilliseconds(75)
-        }).then(function () {
-            expect(counter).to.be.equal(2);
-        });
+        await TestUtil.promiseWaitMilliseconds(130);
+        Util.cancelRepetitionTask(task);
+        expect(counter).to.be.equal(2);
+        await TestUtil.promiseWaitMilliseconds(75);
+        expect(counter).to.be.equal(2);
     });
 
     it('should not throw when cancelled twice', function () {

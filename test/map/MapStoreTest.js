@@ -17,8 +17,8 @@
 
 const expect = require('chai').expect;
 const fs = require('fs');
-const RC = require('./../RC');
-const { Client } = require('../../lib/index.js');
+const RC = require('../RC');
+const { Client } = require('../../');
 const { fillMap } = require('../Util');
 const { promiseWaitMilliseconds } = require('../Util');
 const Util = require('../Util');
@@ -29,150 +29,109 @@ describe('MapStoreTest', function () {
     let client;
     let map;
 
-    before(function () {
+    before(async function () {
         this.timeout(32000);
-        return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_mapstore.xml', 'utf8'))
-            .then(function (res) {
-                cluster = res;
-                return RC.startMember(cluster.id);
-            })
-            .then(function (member) {
-                return Client.newHazelcastClient({ clusterName: cluster.id });
-            })
-            .then(function (hazelcastClient) {
-                client = hazelcastClient;
-            });
+        cluster = await RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_mapstore.xml', 'utf8'));
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({ clusterName: cluster.id });
     });
 
-    beforeEach(function () {
-        return client.getMap('mapstore-test').then(function (mp) {
-            map = mp;
-            return fillMap(map);
-        });
+    beforeEach(async function () {
+        map = await client.getMap('mapstore-test');
+        return fillMap(map);
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         return map.destroy();
     });
 
-    after(function () {
-        return client.shutdown()
-            .then(() => RC.terminateCluster(cluster.id));
+    after(async function () {
+        await client.shutdown();
+        return RC.terminateCluster(cluster.id);
     });
 
-    it('loadAll with no arguments loads all keys', function () {
-        return fillMap(map).then(function () {
-            return map.evictAll();
-        }).then(function () {
-            return map.loadAll();
-        }).then(function () {
-            return map.getAll([
-                'key0', 'key1', 'key2', 'key3', 'key4',
-                'key5', 'key6', 'key7', 'key8', 'key9'
-            ]);
-        }).then(function (values) {
-            return expect(values).to.deep.have.members([
-                ['key0', 'val0'], ['key1', 'val1'],
-                ['key2', 'val2'], ['key3', 'val3'],
-                ['key4', 'val4'], ['key5', 'val5'],
-                ['key6', 'val6'], ['key7', 'val7'],
-                ['key8', 'val8'], ['key9', 'val9']
-            ]);
-        });
+    it('loadAll with no arguments loads all keys', async function () {
+        await fillMap(map);
+        await map.evictAll();
+        await map.loadAll();
+        const values = await map.getAll([
+            'key0', 'key1', 'key2', 'key3', 'key4',
+            'key5', 'key6', 'key7', 'key8', 'key9'
+        ]);
+        expect(values).to.deep.have.members([
+            ['key0', 'val0'], ['key1', 'val1'],
+            ['key2', 'val2'], ['key3', 'val3'],
+            ['key4', 'val4'], ['key5', 'val5'],
+            ['key6', 'val6'], ['key7', 'val7'],
+            ['key8', 'val8'], ['key9', 'val9']
+        ]);
     });
 
-    it('loadAll with empty keyset loads nothing', function () {
-        return map.evictAll().then(function () {
-            return map.loadAll([]);
-        }).then(function () {
-            return map.size()
-        }).then(function (val) {
-            expect(val).to.equal(0);
-        })
+    it('loadAll with empty keyset loads nothing', async function () {
+        await map.evictAll();
+        await map.loadAll([]);
+        const val = await map.size();
+        expect(val).to.equal(0);
     });
 
-    it('loadAll with keyset loads all keys', function () {
-        return map.evictAll().then(function () {
-            return map.loadAll(['key0', 'key1']);
-        }).then(function () {
-            return map.getAll(['key0', 'key1']);
-        }).then(function (values) {
-            return expect(values).to.deep.have.members([
-                ['key0', 'val0'], ['key1', 'val1']
-            ]);
-        });
+    it('loadAll with keyset loads all keys', async function () {
+        await map.evictAll();
+        await map.loadAll(['key0', 'key1']);
+        const values = await map.getAll(['key0', 'key1']);
+        expect(values).to.deep.have.members([
+            ['key0', 'val0'], ['key1', 'val1']
+        ]);
     });
 
-    it('loadAll overrides entries in memory by default', function () {
-        return map.evictAll().then(function () {
-            return map.putTransient('key0', 'newval0');
-        }).then(function () {
-            return map.putTransient('key1', 'newval1');
-        }).then(function () {
-            return map.loadAll(['key0', 'key1']);
-        }).then(function () {
-            return map.getAll(['key0', 'key1']);
-        }).then(function (values) {
-            return expect(values).to.deep.have.members([
-                ['key0', 'val0'], ['key1', 'val1']
-            ]);
-        });
+    it('loadAll overrides entries in memory by default', async function () {
+        await map.evictAll();
+        await map.putTransient('key0', 'newval0');
+        await map.putTransient('key1', 'newval1');
+        await map.loadAll(['key0', 'key1']);
+        const values = await map.getAll(['key0', 'key1']);
+        expect(values).to.deep.have.members([
+            ['key0', 'val0'], ['key1', 'val1']
+        ]);
     });
 
-    it('loadAll with replaceExisting=true overrides the entries', function () {
-        return map.evictAll().then(function () {
-            return map.putTransient('key0', 'newval0');
-        }).then(function () {
-            return map.putTransient('key1', 'newval1');
-        }).then(function () {
-            return map.loadAll(['key0', 'key1'], true);
-        }).then(function () {
-            return map.getAll(['key0', 'key1']);
-        }).then(function (values) {
-            return expect(values).to.deep.have.members([
-                ['key0', 'val0'], ['key1', 'val1']
-            ]);
-        });
+    it('loadAll with replaceExisting=true overrides the entries', async function () {
+        await map.evictAll();
+        await map.putTransient('key0', 'newval0');
+        await map.putTransient('key1', 'newval1');
+        await map.loadAll(['key0', 'key1'], true);
+        const values = await map.getAll(['key0', 'key1']);
+        expect(values).to.deep.have.members([
+            ['key0', 'val0'], ['key1', 'val1']
+        ]);
     });
 
-    it('loadAll with replaceExisting=false does not override', function () {
-        return map.evictAll().then(function () {
-            return map.putTransient('key0', 'newval0');
-        }).then(function () {
-            return map.putTransient('key1', 'newval1');
-        }).then(function () {
-            return map.loadAll(['key0', 'key1'], false);
-        }).then(function () {
-            return map.getAll(['key0', 'key1']);
-        }).then(function (values) {
-            return expect(values).to.deep.have.members([
-                ['key0', 'newval0'], ['key1', 'newval1']
-            ]);
-        });
+    it('loadAll with replaceExisting=false does not override', async function () {
+        await map.evictAll();
+        await map.putTransient('key0', 'newval0');
+        await map.putTransient('key1', 'newval1');
+        await map.loadAll(['key0', 'key1'], false);
+        const values = await map.getAll(['key0', 'key1']);
+        expect(values).to.deep.have.members([
+            ['key0', 'newval0'], ['key1', 'newval1']
+        ]);
     });
 
-    it('evict', function () {
-        return map.evict('key0').then(function () {
-            return map.size();
-        }).then(function (s) {
-            return expect(s).to.equal(9);
-        });
+    it('evict', async function () {
+        await map.evict('key0');
+        const s = await map.size();
+        expect(s).to.equal(9);
     });
 
-    it('evict_nonexist_key', function () {
-        return map.evict('non-key').then(function () {
-            return map.size();
-        }).then(function (s) {
-            return expect(s).to.equal(10);
-        });
+    it('evict non-existing key', async function () {
+        await map.evict('non-key');
+        const s = await map.size();
+        expect(s).to.equal(10);
     });
 
-    it('evictAll', function () {
-        return map.evictAll().then(function () {
-            return map.size();
-        }).then(function (s) {
-            return expect(s).to.equal(0);
-        });
+    it('evictAll', async function () {
+        await map.evictAll();
+        const s = await map.size();
+        expect(s).to.equal(0);
     });
 
     it('addEntryListener on map entryLoaded includeValue=true', function (done) {
@@ -196,10 +155,10 @@ describe('MapStoreTest', function () {
             .then(function () {
                 return map.put('some-key', 'some-value', 100)
             }).then(function () {
-            return promiseWaitMilliseconds(2000);
-        }).then(function () {
-            return map.get('some-key');
-        });
+                return promiseWaitMilliseconds(2000);
+            }).then(function () {
+                return map.get('some-key');
+            });
     });
 
     it('listener contains old value after putAll', function (done) {
