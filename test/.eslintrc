@@ -1,0 +1,13 @@
+{
+    "env": {
+        "mocha": true,
+        "es6": true,
+        "node": true
+    },
+    "plugins": [
+        "mocha"
+    ],
+    "extends": [
+        "plugin:mocha/recommended"
+    ]
+}
