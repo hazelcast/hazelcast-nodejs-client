@@ -26,133 +26,97 @@ describe('SetProxyTest', function () {
     let client;
     let setInstance;
 
-    before(function () {
+    before(async function () {
         this.timeout(10000);
-        return RC.createCluster().then(function (response) {
-            cluster = response;
-            return RC.startMember(cluster.id);
-        }).then(function () {
-            return Client.newHazelcastClient({ clusterName: cluster.id });
-        }).then(function (hazelcastClient) {
-            client = hazelcastClient;
-        });
+        cluster = await RC.createCluster();
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({ clusterName: cluster.id });
     });
 
-    beforeEach(function () {
-        return client.getSet('test').then(function (s) {
-            setInstance = s;
-        });
+    beforeEach(async function () {
+        setInstance = await client.getSet('test');
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         return setInstance.destroy();
     });
 
-    after(function () {
-        return client.shutdown()
-            .then(() => RC.terminateCluster(cluster.id));
+    after(async function () {
+        await client.shutdown();
+        return RC.terminateCluster(cluster.id);
     });
 
-    it('adds one item', function () {
-        return setInstance.add(1).then(function () {
-            return setInstance.size().then(function (size) {
-                expect(size).to.equal(1);
-            });
-        });
+    it('adds one item', async function () {
+        await setInstance.add(1);
+        const size = await setInstance.size();
+        expect(size).to.equal(1);
     });
 
-    it('adds all', function () {
-        return setInstance.addAll([1, 2, 3]).then(function () {
-            return setInstance.size().then(function (size) {
-                expect(size).to.equal(3);
-            });
-        });
+    it('adds all', async function () {
+        await setInstance.addAll([1, 2, 3]);
+        const size = await setInstance.size();
+        expect(size).to.equal(3);
     });
 
-    it('toArray', function () {
+    it('toArray', async function () {
         const input = [1, 2, 3];
-        return setInstance.addAll(input).then(function () {
-            return setInstance.toArray().then(function (all) {
-                expect(all.sort()).to.deep.equal(input);
-            });
-        });
+        await setInstance.addAll(input);
+        const all = await setInstance.toArray();
+        expect(all.sort()).to.deep.equal(input);
     });
 
-    it('contains', function () {
+    it('contains', async function () {
         const input = [1, 2, 3];
-        return setInstance.addAll(input).then(function () {
-            return setInstance.contains(1).then(function (contains) {
-                expect(contains).to.be.true;
-            });
-        }).then(function () {
-            return setInstance.contains(5).then(function (contains) {
-                expect(contains).to.be.false;
-            });
-        });
+        await setInstance.addAll(input);
+        let contains = await setInstance.contains(1);
+        expect(contains).to.be.true;
+        contains = await setInstance.contains(5);
+        expect(contains).to.be.false;
     });
 
-    it('contains all', function () {
-        return setInstance.addAll([1, 2, 3]).then(function () {
-            return setInstance.containsAll([1, 2]).then(function (contains) {
-                expect(contains).to.be.true;
-            });
-        }).then(function () {
-            return setInstance.containsAll([3, 4]).then(function (contains) {
-                expect(contains).to.be.false;
-            });
-        });
+    it('contains all', async function () {
+        await setInstance.addAll([1, 2, 3]);
+        let contains = await setInstance.containsAll([1, 2]);
+        expect(contains).to.be.true;
+        contains = await setInstance.containsAll([3, 4]);
+        expect(contains).to.be.false;
     });
 
 
-    it('is empty', function () {
-        return setInstance.isEmpty().then(function (empty) {
-            expect(empty).to.be.true;
-            return setInstance.add(1);
-        }).then(function () {
-            return setInstance.isEmpty().then(function (empty) {
-                expect(empty).to.be.false;
-            });
-        });
+    it('is empty', async function () {
+        let empty = await setInstance.isEmpty();
+        expect(empty).to.be.true;
+        await setInstance.add(1);
+        empty = await setInstance.isEmpty();
+        expect(empty).to.be.false;
     });
 
-    it('removes an entry', function () {
-        return setInstance.addAll([1, 2, 3]).then(function () {
-            return setInstance.remove(1)
-        }).then(function () {
-            return setInstance.toArray().then(function (all) {
-                expect(all.sort()).to.deep.equal([2, 3]);
-            });
-        });
+    it('removes an entry', async function () {
+        await setInstance.addAll([1, 2, 3]);
+        await setInstance.remove(1);
+        const all = await setInstance.toArray();
+        expect(all.sort()).to.deep.equal([2, 3]);
     });
 
-    it('removes multiple entries', function () {
-        return setInstance.addAll([1, 2, 3, 4]).then(function () {
-            return setInstance.removeAll([1, 2]);
-        }).then(function () {
-            return setInstance.toArray().then(function (all) {
-                expect(all.sort()).to.deep.equal([3, 4]);
-            });
-        });
+    it('removes multiple entries', async function () {
+        await setInstance.addAll([1, 2, 3, 4]);
+        await setInstance.removeAll([1, 2]);
+        const all = await setInstance.toArray();
+        expect(all.sort()).to.deep.equal([3, 4]);
     });
 
-    it('retains multiple entries', function () {
-        return setInstance.addAll([1, 2, 3, 4]).then(function () {
-            return setInstance.retainAll([1, 2]);
-        }).then(function () {
-            return setInstance.toArray().then(function (all) {
-                expect(all.sort()).to.deep.equal([1, 2]);
-            });
-        });
+    it('retains multiple entries', async function () {
+        await setInstance.addAll([1, 2, 3, 4]);
+        await setInstance.retainAll([1, 2]);
+        const all = await setInstance.toArray();
+        expect(all.sort()).to.deep.equal([1, 2]);
     });
 
-    it('clear', function () {
-        return setInstance.addAll([1, 2, 3, 4]).then(function () {
-            return setInstance.clear();
-        }).then(function () {
-            return setInstance.size();
-        }).then(function (s) {
-            return expect(s).to.equal(0);
-        });
+    it('clear', async function () {
+        await setInstance.addAll([1, 2, 3, 4]);
+        await setInstance.clear();
+        const s = await setInstance.size();
+        expect(s).to.equal(0);
     });
 
     it('listens for added entry', function (done) {
@@ -216,9 +180,9 @@ describe('SetProxyTest', function () {
         });
     });
 
-    it('remove entry listener', function () {
+    it('remove entry listener', async function () {
         this.timeout(5000);
-        return setInstance.addItemListener({
+        const registrationId = await setInstance.addItemListener({
             itemRemoved: function (itemEvent) {
                 expect(itemEvent.name).to.be.equal('test');
                 expect(itemEvent.item).to.be.equal(1);
@@ -226,10 +190,8 @@ describe('SetProxyTest', function () {
                 expect(itemEvent.member).to.not.be.equal(null);
                 done();
             }
-        }).then(function (registrationId) {
-            return setInstance.removeItemListener(registrationId);
-        }).then(function (removed) {
-            expect(removed).to.be.true;
         });
+        const removed = await setInstance.removeItemListener(registrationId);
+        expect(removed).to.be.true;
     });
 });
