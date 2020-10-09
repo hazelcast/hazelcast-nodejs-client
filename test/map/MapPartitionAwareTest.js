@@ -41,7 +41,7 @@ describe('MapPartitionAwareTest', function () {
             'result=""+getLocalMapStats();';
     }
 
-    function fillMap(map, size) {
+    async function fillMap(map, size) {
         const entryList = [];
         for (let i = 0; i < size; i++) {
             entryList.push([new PartitionAwareKey('' + i, 'specificKey'), '' + Math.random()]);
@@ -49,64 +49,51 @@ describe('MapPartitionAwareTest', function () {
         return map.putAll(entryList);
     }
 
-    before(function () {
+    before(async function () {
         expect(memberCount, 'This test should have at least 2 members.').to.be.at.least(2);
         this.timeout(30000);
-        return RC.createCluster(null, null).then(function (c) {
-            cluster = c;
-            for (let i = 0; i < memberCount; i++) {
-                members.push(RC.startMember(cluster.id));
-            }
-            return Promise.all(members);
-        }).then(function (m) {
-            members = m;
-            return Client.newHazelcastClient({ clusterName: cluster.id });
-        }).then(function (cl) {
-            client = cl;
-        });
+        cluster = await RC.createCluster(null, null);
+        for (let i = 0; i < memberCount; i++) {
+            members.push(await RC.startMember(cluster.id));
+        }
+        members = await Promise.all(members);
+        client = await Client.newHazelcastClient({ clusterName: cluster.id });
     });
 
-    after(function () {
-        return client.shutdown()
-            .then(() => RC.terminateCluster(cluster.id));
+    after(async function () {
+        await client.shutdown();
+        return RC.terminateCluster(cluster.id);
     });
 
-    beforeEach(function () {
-        return client.getMap(mapName).then(function (mp) {
-            map = mp;
-        });
+    beforeEach(async function () {
+        map = await client.getMap(mapName);
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         return map.destroy();
     });
 
-    it('put', function () {
+    it('put', async function () {
         this.timeout(15000);
-        return fillMap(map, numOfEntries).then(function (newVal) {
-            const promises = members.map(function (member, index) {
-                return RC.executeOnController(cluster.id, getLocalMapStats(index), 1);
-            });
-            return Promise.all(promises);
-        }).then(function (stats) {
-            const entriesPerMember = stats.map(function (item) {
-                return Number(item.result);
-            });
-            const expectedArray = [numOfEntries];
-            for (let i = 0; i < memberCount - 1; i++) {
-                expectedArray.push(0);
-            }
-            return expect(entriesPerMember, 'One member should have all of the entries. The rest will have 0 entries.')
-                .to.have.members(expectedArray);
+        await fillMap(map, numOfEntries);
+        const stats = await Promise.all(members.map(async function (member, index) {
+            return RC.executeOnController(cluster.id, getLocalMapStats(index), 1);
+        }));
+        const entriesPerMember = stats.map(function (item) {
+            return Number(item.result);
         });
+        const expectedArray = [numOfEntries];
+        for (let i = 0; i < memberCount - 1; i++) {
+            expectedArray.push(0);
+        }
+        expect(entriesPerMember, 'One member should have all of the entries. The rest will have 0 entries.')
+            .to.have.members(expectedArray);
     });
 
-    it('get', function () {
+    it('get', async function () {
         const key = new PartitionAwareKey('key', 'partKey');
-        return map.put(key, 'value').then(function () {
-            return map.get(key);
-        }).then(function (val) {
-            return expect(val).to.equal('value');
-        });
-    })
+        await map.put(key, 'value');
+        const val = await map.get(key);
+        expect(val).to.equal('value');
+    });
 });

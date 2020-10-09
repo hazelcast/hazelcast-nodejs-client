@@ -26,215 +26,159 @@ describe('ListProxyTest', function () {
     let client;
     let listInstance;
 
-    before(function () {
+    before(async function () {
         this.timeout(10000);
-        return RC.createCluster().then(function (response) {
-            cluster = response;
-            return RC.startMember(cluster.id);
-        }).then(function () {
-            return Client.newHazelcastClient({ clusterName: cluster.id })
-                .then(function (hazelcastClient) {
-                    client = hazelcastClient;
-                });
-        });
+        cluster = await RC.createCluster();
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({ clusterName: cluster.id });
     });
 
-    beforeEach(function () {
-        return client.getList('test').then(function (list) {
-            listInstance = list;
-        });
+    beforeEach(async function () {
+        listInstance = await client.getList('test');
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         return listInstance.destroy();
     });
 
-    after(function () {
-        return client.shutdown()
-            .then(() => RC.terminateCluster(cluster.id));
+    after(async function () {
+        await client.shutdown();
+        return RC.terminateCluster(cluster.id);
     });
 
-    it('appends one item', function () {
-        return listInstance.add(1).then(function () {
-            return listInstance.size();
-        }).then(function (size) {
-            expect(size).to.equal(1);
-        });
+    it('appends one item', async function () {
+        await listInstance.add(1);
+        const size = await listInstance.size();
+        expect(size).to.equal(1);
     });
 
-    it('inserts one item at index', function () {
-        return listInstance.addAll([1, 2, 3]).then(function () {
-            return listInstance.addAt(1, 5);
-        }).then(function () {
-            return listInstance.toArray();
-        }).then(function (all) {
-            expect(all).to.deep.equal([1, 5, 2, 3]);
-        });
+    it('inserts one item at index', async function () {
+        await listInstance.addAll([1, 2, 3]);
+        await listInstance.addAt(1, 5);
+        const all = await listInstance.toArray();
+        expect(all).to.deep.equal([1, 5, 2, 3]);
     });
 
-    it('clears', function () {
-        return listInstance.addAll([1, 2, 3]).then(function () {
-            return listInstance.clear();
-        }).then(function () {
-            return listInstance.size();
-        }).then(function (size) {
-            expect(size).to.equal(0);
-        });
+    it('clears', async function () {
+        await listInstance.addAll([1, 2, 3]);
+        await listInstance.clear();
+        const size = await listInstance.size();
+        expect(size).to.equal(0);
     });
 
-    it('inserts all elements of array at index', function () {
-        return listInstance.addAll([1, 2, 3]).then(function () {
-            return listInstance.addAllAt(1, [5, 6]);
-        }).then(function () {
-            return listInstance.toArray();
-        }).then(function (all) {
-            expect(all).to.deep.equal([1, 5, 6, 2, 3])
-        });
+    it('inserts all elements of array at index', async function () {
+        await listInstance.addAll([1, 2, 3]);
+        await listInstance.addAllAt(1, [5, 6]);
+        const all = await listInstance.toArray();
+        expect(all).to.deep.equal([1, 5, 6, 2, 3]);
     });
 
-    it('gets item at index', function () {
+    it('gets item at index', async function () {
         const input = [1, 2, 3];
-        return listInstance.addAll(input).then(function () {
-            return listInstance.get(1);
-        }).then(function (result) {
-            expect(result).to.equal(2);
-        });
+        await listInstance.addAll(input);
+        const result = await listInstance.get(1);
+        expect(result).to.equal(2);
     });
 
-    it('removes item at index', function () {
+    it('removes item at index', async function () {
         const input = [1, 2, 3];
-        return listInstance.addAll(input).then(function () {
-            return listInstance.removeAt(1);
-        }).then(function (removed) {
-            expect(removed).to.equal(2);
-            return listInstance.toArray();
-        }).then(function (all) {
-            expect(all).to.deep.equal([1, 3]);
-        });
+        await listInstance.addAll(input);
+        const removed = await listInstance.removeAt(1);
+        expect(removed).to.equal(2);
+        const all = await listInstance.toArray();
+        expect(all).to.deep.equal([1, 3]);
     });
 
-    it('replaces item at index', function () {
+    it('replaces item at index', async function () {
         const input = [1, 2, 3];
-        return listInstance.addAll(input).then(function () {
-            return listInstance.set(1, 6);
-        }).then(function (replaced) {
-            expect(replaced).to.equal(2);
-            return listInstance.toArray();
-        }).then(function (all) {
-            expect(all).to.deep.equal([1, 6, 3]);
-        });
+        await listInstance.addAll(input);
+        const replaced = await listInstance.set(1, 6);
+        expect(replaced).to.equal(2);
+        const all = await listInstance.toArray();
+        expect(all).to.deep.equal([1, 6, 3]);
     });
 
-    it('contains', function () {
+    it('contains', async function () {
         const input = [1, 2, 3];
-        return listInstance.addAll(input).then(function () {
-            return listInstance.contains(1);
-        }).then(function (contains) {
-            expect(contains).to.be.true;
-        });
+        await listInstance.addAll(input);
+        const contains = await listInstance.contains(1);
+        expect(contains).to.be.true;
     });
 
-    it('does not contain', function () {
+    it('does not contain', async function () {
         const input = [1, 2, 3];
-        return listInstance.addAll(input).then(function () {
-            return listInstance.contains(5);
-        }).then(function (contains) {
-            expect(contains).to.be.false;
-        });
+        await listInstance.addAll(input);
+        const contains = await listInstance.contains(5);
+        expect(contains).to.be.false;
     });
 
-    it('contains all', function () {
-        return listInstance.addAll([1, 2, 3]).then(function () {
-            return listInstance.containsAll([1, 2]);
-        }).then(function (contains) {
-            expect(contains).to.be.true;
-        });
+    it('contains all', async function () {
+        await listInstance.addAll([1, 2, 3]);
+        const contains = await listInstance.containsAll([1, 2]);
+        expect(contains).to.be.true;
     });
 
-    it('does not contain all', function () {
-        return listInstance.addAll([1, 2, 3]).then(function () {
-            return listInstance.containsAll([3, 4]);
-        }).then(function (contains) {
-            expect(contains).to.be.false;
-        });
+    it('does not contain all', async function () {
+        await listInstance.addAll([1, 2, 3]);
+        const contains = await listInstance.containsAll([3, 4]);
+        expect(contains).to.be.false;
     });
 
-    it('is empty', function () {
-        return listInstance.isEmpty().then(function (empty) {
-            expect(empty).to.be.true;
-        });
+    it('is empty', async function () {
+        const empty = await listInstance.isEmpty();
+        expect(empty).to.be.true;
     });
 
-    it('is not empty', function () {
-        return listInstance.add(1).then(function (empty) {
-            return listInstance.isEmpty();
-        }).then(function (empty) {
-            expect(empty).to.be.false;
-        });
+    it('is not empty', async function () {
+        await listInstance.add(1);
+        const empty = await listInstance.isEmpty();
+        expect(empty).to.be.false;
     });
 
-    it('removes an entry', function () {
-        return listInstance.addAll([1, 2, 3]).then(function () {
-            return listInstance.remove(1)
-        }).then(function () {
-            return listInstance.toArray();
-        }).then(function (all) {
-            expect(all).to.deep.equal([2, 3]);
-        });
+    it('removes an entry', async function () {
+        await listInstance.addAll([1, 2, 3]);
+        await listInstance.remove(1);
+        const all = await listInstance.toArray();
+        expect(all).to.deep.equal([2, 3]);
     });
 
-    it('removes an entry by index', function () {
-        return listInstance.addAll([1, 2, 3]).then(function () {
-            return listInstance.removeAt(1)
-        }).then(function () {
-            return listInstance.toArray();
-        }).then(function (all) {
-            expect(all).to.deep.equal([1, 3]);
-        });
+    it('removes an entry by index', async function () {
+        await listInstance.addAll([1, 2, 3]);
+        await listInstance.removeAt(1);
+        const all = await listInstance.toArray();
+        expect(all).to.deep.equal([1, 3]);
     });
 
-    it('removes multiple entries', function () {
-        return listInstance.addAll([1, 2, 3, 4]).then(function () {
-            return listInstance.removeAll([1, 2]);
-        }).then(function () {
-            return listInstance.toArray();
-        }).then(function (all) {
-            expect(all).to.deep.equal([3, 4]);
-        });
+    it('removes multiple entries', async function () {
+        await listInstance.addAll([1, 2, 3, 4]);
+        await listInstance.removeAll([1, 2]);
+        const all = await listInstance.toArray();
+        expect(all).to.deep.equal([3, 4]);
     });
 
-    it('retains multiple entries', function () {
-        return listInstance.addAll([1, 2, 3, 4]).then(function () {
-            return listInstance.retainAll([1, 2]);
-        }).then(function () {
-            return listInstance.toArray();
-        }).then(function (all) {
-            expect(all).to.deep.equal([1, 2]);
-        });
+    it('retains multiple entries', async function () {
+        await listInstance.addAll([1, 2, 3, 4]);
+        await listInstance.retainAll([1, 2]);
+        const all = await listInstance.toArray();
+        expect(all).to.deep.equal([1, 2]);
     });
 
-    it('finds index of the element', function () {
-        return listInstance.addAll([1, 2, 4, 4]).then(function () {
-            return listInstance.indexOf(4);
-        }).then(function (index) {
-            expect(index).to.equal(2);
-        });
+    it('finds index of the element', async function () {
+        await listInstance.addAll([1, 2, 4, 4]);
+        const index = await listInstance.indexOf(4);
+        expect(index).to.equal(2);
     });
 
-    it('finds last index of the element', function () {
-        return listInstance.addAll([1, 2, 4, 4]).then(function () {
-            return listInstance.lastIndexOf(4);
-        }).then(function (index) {
-            expect(index).to.equal(3);
-        });
+    it('finds last index of the element', async function () {
+        await listInstance.addAll([1, 2, 4, 4]);
+        const index = await listInstance.lastIndexOf(4);
+        expect(index).to.equal(3);
     });
 
-    it('returns a sub list', function () {
-        return listInstance.addAll([1, 2, 3, 4, 5, 6]).then(function () {
-            return listInstance.subList(1, 5);
-        }).then(function (subList) {
-            expect(subList.toArray()).to.deep.equal([2, 3, 4, 5]);
-        });
+    it('returns a sub list', async function () {
+        await listInstance.addAll([1, 2, 3, 4, 5, 6]);
+        const subList = await listInstance.subList(1, 5);
+        expect(subList.toArray()).to.deep.equal([2, 3, 4, 5]);
     });
 
     it('listens for added entry', function (done) {
@@ -324,19 +268,17 @@ describe('ListProxyTest', function () {
         });
     });
 
-    it('remove entry listener', function () {
+    it('remove entry listener', async function () {
         this.timeout(5000);
-        return listInstance.addItemListener({
+        const registrationId = await listInstance.addItemListener({
             itemRemoved: function (itemEvent) {
                 expect(itemEvent.name).to.be.equal('test');
                 expect(itemEvent.item).to.be.equal(1);
                 expect(itemEvent.eventType).to.be.equal(ItemEventType.REMOVED);
                 expect(itemEvent.member).to.not.be.equal(null);
             }
-        }).then(function (registrationId) {
-            return listInstance.removeItemListener(registrationId);
-        }).then(function (removed) {
-            expect(removed).to.be.true;
         });
+        const removed = await listInstance.removeItemListener(registrationId);
+        expect(removed).to.be.true;
     });
 });

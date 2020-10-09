@@ -28,31 +28,24 @@ describe('MapAggregatorsLongTest', function () {
     let map;
     const entryCount = 50;
 
-    before(function () {
-        return RC.createCluster(null, null).then(function (cl) {
-            cluster = cl;
-            return RC.startMember(cluster.id);
-        }).then(function () {
-            return Client.newHazelcastClient({
-                clusterName: cluster.id,
-                serialization: {
-                    defaultNumberType: 'long'
-                }
-            });
-        }).then(function (cl) {
-            client = cl;
-            return client.getMap('aggregatorsMap');
-        }).then(function (mp) {
-            map = mp;
+    before(async function () {
+        cluster = await RC.createCluster(null, null);
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            serialization: {
+                defaultNumberType: 'long'
+            }
         });
+        map = await client.getMap('aggregatorsMap');
     });
 
-    after(function () {
-        return client.shutdown()
-            .then(() => RC.terminateCluster(cluster.id));
+    after(async function () {
+        await client.shutdown();
+        return RC.terminateCluster(cluster.id);
     });
 
-    beforeEach(function () {
+    beforeEach(async function () {
         const entries = [];
         for (let i = 0; i < entryCount; i++) {
             entries.push(['key' + i, Long.fromNumber(i)]);
@@ -60,45 +53,37 @@ describe('MapAggregatorsLongTest', function () {
         return map.putAll(entries);
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         return map.destroy();
     });
 
-    it('longAvg', function () {
-        return map.aggregate(Aggregators.longAvg()).then(function (avg) {
-            return expect(avg).to.equal(24.5);
-        });
+    it('longAvg', async function () {
+        const avg = await map.aggregate(Aggregators.longAvg());
+        expect(avg).to.equal(24.5);
     });
 
-    it('longAvg with attribute path', function () {
-        return map.aggregate(Aggregators.longAvg('this')).then(function (avg) {
-            return expect(avg).to.equal(24.5);
-        });
+    it('longAvg with attribute path', async function () {
+        const avg = await map.aggregate(Aggregators.longAvg('this'));
+        expect(avg).to.equal(24.5);
     });
 
-    it('longAvg with predicate', function () {
-        return map.aggregateWithPredicate(Aggregators.longAvg(), Predicates.greaterEqual('this', Long.fromNumber(47)))
-            .then(function (avg) {
-                return expect(avg).to.equal(48);
-            });
+    it('longAvg with predicate', async function () {
+        const avg = await map.aggregateWithPredicate(Aggregators.longAvg(), Predicates.greaterEqual('this', Long.fromNumber(47)));
+        expect(avg).to.equal(48);
     });
 
-    it('longSum', function () {
-        return map.aggregate(Aggregators.longSum()).then(function (sum) {
-            return expect(sum.toNumber()).to.equal(1225);
-        });
+    it('longSum', async function () {
+        const sum = await map.aggregate(Aggregators.longSum());
+        expect(sum.toNumber()).to.equal(1225);
     });
 
-    it('longSum with attribute path', function () {
-        return map.aggregate(Aggregators.longSum('this')).then(function (sum) {
-            return expect(sum.toNumber()).to.equal(1225);
-        });
+    it('longSum with attribute path', async function () {
+        const sum = await map.aggregate(Aggregators.longSum('this'));
+        expect(sum.toNumber()).to.equal(1225);
     });
 
-    it('longSum with predicate', function () {
-        return map.aggregateWithPredicate(Aggregators.longSum(), Predicates.greaterEqual('this', Long.fromNumber(47)))
-            .then(function (sum) {
-                return expect(sum.toNumber()).to.equal(144);
-            });
+    it('longSum with predicate', async function () {
+        const sum = await map.aggregateWithPredicate(Aggregators.longSum(), Predicates.greaterEqual('this', Long.fromNumber(47)));
+        expect(sum.toNumber()).to.equal(144);
     });
 });
