@@ -86,7 +86,7 @@ describe('QueueProxyTest', function () {
 
     it('add throws if queue is full', async function () {
         await offerToQueue(5, 'new');
-        expect(queue.add('excess_item')).to.eventually.rejected;
+        return expect(queue.add('excess_item')).to.eventually.rejected;
     });
 
     it('poll decreases queue size', async function () {

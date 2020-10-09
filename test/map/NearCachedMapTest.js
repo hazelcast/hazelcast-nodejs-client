@@ -63,12 +63,12 @@ describe('NearCachedMapTest', function () {
                 return RC.terminateCluster(cluster.id);
             });
 
-            async function getNearCacheStats(map) {
+            function getNearCacheStats(map) {
                 return map.nearCache.getStatistics();
             }
 
-            async function expectStats(map, hit, miss, entryCount) {
-                const stats = await getNearCacheStats(map);
+            function expectStats(map, hit, miss, entryCount) {
+                const stats = getNearCacheStats(map);
                 expect(stats.hitCount).to.equal(hit);
                 expect(stats.missCount).to.equal(miss);
                 expect(stats.entryCount).to.equal(entryCount);
@@ -77,33 +77,24 @@ describe('NearCachedMapTest', function () {
             it('second get should hit', async function () {
                 await map1.get('key0');
                 const val = await map1.get('key0');
-                const stats = await getNearCacheStats(map1);
                 expect(val).to.equal('val0');
-                expect(stats.missCount).to.equal(1);
-                expect(stats.entryCount).to.equal(1);
-                expect(stats.hitCount).to.equal(1);
+                expectStats(map, 1, 1, 1);
             });
 
             it('remove operation removes entry from near cache', async function () {
                 await map1.get('key1');
                 await map1.remove('key1');
                 const val = await map1.get('key1');
-                const stats = await getNearCacheStats(map1);
                 expect(val).to.be.null;
-                expect(stats.hitCount).to.equal(0);
-                expect(stats.missCount).to.equal(2);
-                expect(stats.entryCount).to.equal(1);
+                expectStats(map1, 0, 2, 1);
             });
 
             it('update invalidates the near cache', async function () {
                 await map1.get('key1');
                 await map1.put('key1', 'something else');
                 const val = await map1.get('key1');
-                const stats = await getNearCacheStats(map1);
                 expect(val).to.be.equal('something else');
-                expect(stats.hitCount).to.equal(0);
-                expect(stats.missCount).to.equal(2);
-                expect(stats.entryCount).to.equal(1);
+                expectStats(map1, 0, 2, 1);
             });
 
             it('get returns null if the entry was removed by another client', async function () {
@@ -113,58 +104,58 @@ describe('NearCachedMapTest', function () {
                 await map1.get('key1');
                 await map2.remove('key1');
                 const val = await Util.promiseLater(1000, map1.get.bind(map1, 'key1'));
-                await expectStats(map1, 0, 2, 1);
+                expectStats(map1, 0, 2, 1);
                 expect(val).to.be.null;
             });
 
             it('clear clears nearcache', async function () {
                 await map1.get('key1');
                 await map1.clear();
-                return expectStats(map1, 0, 1, 0);
+                expectStats(map1, 0, 1, 0);
             });
 
             it('containsKey true(in near cache)', async function () {
                 await map1.get('key1');
                 const c = await map1.containsKey('key1');
-                await expectStats(map1, 1, 1, 1);
+                expectStats(map1, 1, 1, 1);
                 expect(c).to.be.true;
             });
 
             it('containsKey false(in near cache)', async function () {
                 await map1.get('exx');
                 const c = await map1.containsKey('exx');
-                await expectStats(map1, 1, 1, 1);
+                expectStats(map1, 1, 1, 1);
                 expect(c).to.be.false;
             });
 
             it('containsKey true', async function () {
                 const c = await map1.containsKey('key1');
-                await expectStats(map1, 0, 1, 0);
+                expectStats(map1, 0, 1, 0);
                 expect(c).to.be.true;
             });
 
             it('containsKey false', async function () {
                 const c = await map1.containsKey('exx');
-                await expectStats(map1, 0, 1, 0);
+                expectStats(map1, 0, 1, 0);
                 expect(c).to.be.false;
             });
 
             it('delete invalidates the cache', async function () {
                 await map1.get('key1');
                 await map1.delete('key1');
-                return expectStats(map1, 0, 1, 0);
+                expectStats(map1, 0, 1, 0);
             });
 
             it('evictAll evicts near cache', async function () {
                 await map1.get('key1');
                 await map1.evictAll();
-                return expectStats(map1, 0, 1, 0);
+                expectStats(map1, 0, 1, 0);
             });
 
             it('evict evicts the entry', async function () {
                 await map1.getAll(['key1', 'key2']);
                 await map1.evict('key1');
-                return expectStats(map1, 0, 2, 1);
+                expectStats(map1, 0, 2, 1);
             });
 
             it('getAll', async function () {
@@ -173,7 +164,7 @@ describe('NearCachedMapTest', function () {
                     ['key1', 'val1'],
                     ['key2', 'val2']
                 ]);
-                return expectStats(map1, 0, 2, 2);
+                expectStats(map1, 0, 2, 2);
             });
 
             it('getAll second call should hit', async function () {
@@ -184,7 +175,7 @@ describe('NearCachedMapTest', function () {
                     ['key2', 'val2'],
                     ['key3', 'val3']
                 ]);
-                return expectStats(map1, 2, 3, 3);
+                expectStats(map1, 2, 3, 3);
             });
 
             it('executeOnKey invalidates the entry');
@@ -212,43 +203,43 @@ describe('NearCachedMapTest', function () {
             it('putIfAbsent (existing key) invalidates the entry', async function () {
                 await map1.get('key1');
                 await map1.putIfAbsent('key1', 'valnew');
-                return expectStats(map1, 0, 1, 0);
+                expectStats(map1, 0, 1, 0);
             });
 
             it('putTransient invalidates the entry', async function () {
                 await map1.get('key1');
                 await map1.putTransient('key1', 'vald');
-                return expectStats(map1, 0, 1, 0);
+                expectStats(map1, 0, 1, 0);
             });
 
             it('replace invalidates the entry', async function () {
                 await map1.get('key1');
                 await map1.replace('key1', 'newVal');
-                return expectStats(map1, 0, 1, 0);
+                expectStats(map1, 0, 1, 0);
             });
 
             it('replaceIfSame invalidates the entry', async function () {
                 await map1.get('key1');
                 await map1.replaceIfSame('key1', 'val1', 'newVal');
-                return expectStats(map1, 0, 1, 0);
+                expectStats(map1, 0, 1, 0);
             });
 
             it('set invalidates the entry', async function () {
                 await map1.get('key1');
                 await map1.set('key1', 'newVal');
-                return expectStats(map1, 0, 1, 0);
+                expectStats(map1, 0, 1, 0);
             });
 
             it('tryPut invalidates the entry', async function () {
                 await map1.get('key1');
                 await map1.tryPut('key1', 'newVal', 1000);
-                return expectStats(map1, 0, 1, 0);
+                expectStats(map1, 0, 1, 0);
             });
 
             it('tryRemove invalidates the entry', async function () {
                 await map1.get('key1');
                 await map1.tryRemove('key1', 1000);
-                return expectStats(map1, 0, 1, 0);
+                expectStats(map1, 0, 1, 0);
             });
         });
     });

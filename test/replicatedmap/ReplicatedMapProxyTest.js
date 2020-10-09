@@ -21,6 +21,7 @@ const path = require('path');
 const RC = require('./../RC');
 const { Client } = require('../..');
 const { Predicates } = require('../..');
+const TestUtil = require('./../Util');
 
 describe('ReplicatedMapProxyTest', function () {
 
@@ -64,11 +65,7 @@ describe('ReplicatedMapProxyTest', function () {
 
     it('puts entry with 1000 ttl', async function () {
         await rm.put('1000ttl', 'value', 1000);
-        await new Promise(function (resolve) {
-            setTimeout(function () {
-                resolve();
-            }, 2000);
-        });
+        await TestUtil.promiseWaitMilliseconds(2000);
         const val = await rm.get('1000ttl');
         expect(val).to.be.null;
     }).timeout(5000);

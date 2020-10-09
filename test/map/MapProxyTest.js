@@ -238,9 +238,9 @@ describe('MapProxyTest', function () {
 
                 const entryMap = await client.getMap('entry-map');
                 await Promise.all([
-                        entryMap.put(samples[0][0], samples[0][1]),
-                        entryMap.put(samples[1][0], samples[1][1]),
-                        entryMap.put(samples[2][0], samples[2][1])
+                    entryMap.put(samples[0][0], samples[0][1]),
+                    entryMap.put(samples[1][0], samples[1][1]),
+                    entryMap.put(samples[2][0], samples[2][1])
                 ]);
                 const entrySet = await entryMap.entrySet();
                 expect(entrySet).to.deep.have.members(samples);
@@ -287,8 +287,8 @@ describe('MapProxyTest', function () {
             it('keySet', async function () {
                 const keySet = await map.keySet();
                 expect(keySet).to.deep.have.members([
-                        'key0', 'key1', 'key2', 'key3', 'key4',
-                        'key5', 'key6', 'key7', 'key8', 'key9'
+                    'key0', 'key1', 'key2', 'key3', 'key4',
+                    'key5', 'key6', 'key7', 'key8', 'key9'
                 ]);
             });
 
@@ -434,9 +434,14 @@ describe('MapProxyTest', function () {
 
             it('tryLock_success with timeout', async function () {
                 await RC.executeOnController(cluster.id, generateLockScript(map.getName(), '"key0"'), 1);
-                await RC.executeOnController(cluster.id, generateUnlockScript(map.getName(), '"key0"'), 1);
-                const success = await map.tryLock('key0', 1000);
+                const startTime = Date.now();
+                setTimeout(async function () {
+                    await RC.executeOnController(cluster.id, generateUnlockScript(map.getName(), '"key0"'), 1);
+                }, 1000);
+                const success = await map.tryLock('key0', 2000);
+                const elapsed = Date.now() - startTime;
                 expect(success).to.be.true;
+                expect(elapsed).to.be.greaterThan(995);
             });
 
             it('tryLock_fail with timeout', async function () {
@@ -462,7 +467,7 @@ describe('MapProxyTest', function () {
             });
 
             it('tryRemove fail', async function () {
-                return RC.executeOnController(cluster.id, generateLockScript(map.getName(), '"key0"'), 1);
+                await RC.executeOnController(cluster.id, generateLockScript(map.getName(), '"key0"'), 1);
                 const success = await map.tryRemove('key0', 200);
                 expect(success).to.be.false;
             });
