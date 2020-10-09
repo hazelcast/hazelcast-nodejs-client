@@ -28,140 +28,104 @@ describe('MultiMapProxyLockTest', function () {
     let mapOne;
     let mapTwo;
 
-    before(function () {
+    before(async function () {
         this.timeout(10000);
-        return RC.createCluster().then(function (response) {
-            cluster = response;
-            return RC.startMember(cluster.id);
-        }).then(function () {
-            const cfg = { clusterName: cluster.id };
-            return Promise.all([
-                Client.newHazelcastClient(cfg).then(function (client) {
-                    clientOne = client;
-                }),
-                Client.newHazelcastClient(cfg).then(function (client) {
-                    clientTwo = client;
-                })
-            ]);
-        });
+        cluster = await RC.createCluster();
+        await RC.startMember(cluster.id);
+        const cfg = { clusterName: cluster.id };
+        clientOne = await Client.newHazelcastClient(cfg);
+        clientTwo = await Client.newHazelcastClient(cfg);
     });
 
-    beforeEach(function () {
-        return clientOne.getMultiMap('test').then(function (mp) {
-            mapOne = mp;
-            return clientTwo.getMultiMap('test')
-        }).then(function (mp) {
-            mapTwo = mp;
-        });
+    beforeEach(async function () {
+        mapOne = await clientOne.getMultiMap('test');
+        mapTwo = await clientTwo.getMultiMap('test');
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         return Promise.all([mapOne.destroy(), mapTwo.destroy()]);
     });
 
-    after(function () {
-        return clientOne.shutdown()
-            .then(() => clientTwo.shutdown())
-            .then(() => RC.terminateCluster(cluster.id));
+    after(async function () {
+        await clientOne.shutdown();
+        await clientTwo.shutdown();
+        return RC.terminateCluster(cluster.id);
     });
 
 
-    it('locks and unlocks', function () {
+    it('locks and unlocks', async function () {
         this.timeout(10000);
         const startTime = Date.now();
-        return mapOne.put(1, 2).then(function () {
-            return mapOne.lock(1);
-        }).then(function () {
-            setTimeout(function () {
-                mapOne.unlock(1);
-            }, 1000);
-            return mapTwo.lock(1)
-        }).then(function () {
-            const elapsed = Date.now() - startTime;
-            expect(elapsed).to.be.greaterThan(995);
-        });
+        await mapOne.put(1, 2);
+        await mapOne.lock(1);
+        setTimeout(async function () {
+            await mapOne.unlock(1);
+        }, 1000);
+        await mapTwo.lock(1);
+        const elapsed = Date.now() - startTime;
+        expect(elapsed).to.be.greaterThan(995);
     });
 
-    it('unlocks after lease expired', function () {
+    it('unlocks after lease expired', async function () {
         this.timeout(10000);
         const startTime = Date.now();
-        return mapOne.lock(1, 1000).then(function () {
-            return mapTwo.lock(1);
-        }).then(function () {
-            const elapsed = Date.now() - startTime;
-            expect(elapsed).to.be.greaterThan(995);
-        });
+        await mapOne.lock(1, 1000);
+        await mapTwo.lock(1);
+        const elapsed = Date.now() - startTime;
+        expect(elapsed).to.be.greaterThan(995);
     });
 
-    it('gives up attempt to lock after timeout is exceeded', function () {
+    it('gives up attempt to lock after timeout is exceeded', async function () {
         this.timeout(10000);
-        return mapOne.lock(1).then(function () {
-            return mapTwo.tryLock(1, 1000);
-        }).then(function (acquired) {
-            expect(acquired).to.be.false;
-        });
+        await mapOne.lock(1);
+        const acquired = await mapTwo.tryLock(1, 1000);
+        expect(acquired).to.be.false;
     });
 
-    it('acquires lock before timeout is exceeded', function () {
+    it('acquires lock before timeout is exceeded', async function () {
         this.timeout(10000);
         const startTime = Date.now();
-        return mapOne.lock(1, 1000).then(function () {
-            return mapTwo.tryLock(1, 2000);
-        }).then(function (acquired) {
-            const elapsed = Date.now() - startTime;
-            expect(acquired).to.be.true;
-            expect(elapsed).to.be.greaterThan(995);
-        })
+        await mapOne.lock(1, 1000);
+        const acquired = await mapTwo.tryLock(1, 2000);
+        const elapsed = Date.now() - startTime;
+        expect(acquired).to.be.true;
+        expect(elapsed).to.be.greaterThan(995);
     });
 
-    it('acquires the lock before timeout and unlocks after lease expired', function () {
+    it('acquires the lock before timeout and unlocks after lease expired', async function () {
         this.timeout(10000);
         const startTime = Date.now();
-        return mapOne.lock(1, 1000).then(function () {
-            return mapTwo.tryLock(1, 2000, 1000);
-        }).then(function () {
-            const elapsed = Date.now() - startTime;
-            expect(elapsed).to.be.greaterThan(995);
-            return mapOne.lock(1, 2000);
-        }).then(function () {
-            const elapsed = Date.now() - startTime;
-            expect(elapsed).to.be.greaterThan(995);
-        });
+        await mapOne.lock(1, 1000);
+        await mapTwo.tryLock(1, 2000, 1000);
+        let elapsed = Date.now() - startTime;
+        expect(elapsed).to.be.greaterThan(995);
+        await mapOne.lock(1, 2000);
+        elapsed = Date.now() - startTime;
+        expect(elapsed).to.be.greaterThan(995);
     });
 
-    it('correctly reports lock status when unlocked', function () {
-        return mapOne.isLocked(1).then(function (locked) {
-            expect(locked).to.be.false;
-        });
+    it('correctly reports lock status when unlocked', async function () {
+        const locked = await mapOne.isLocked(1);
+        expect(locked).to.be.false;
     });
 
-    it('correctly reports lock status when locked', function () {
-        return mapOne.lock(1).then(function () {
-            return mapOne.isLocked(1);
-        }).then(function (locked) {
-            expect(locked).to.be.true;
-            return mapTwo.isLocked(1);
-        }).then(function (locked) {
-            expect(locked).to.be.true;
-        });
+    it('correctly reports lock status when locked', async function () {
+        await mapOne.lock(1);
+        let locked = await mapOne.isLocked(1);
+        expect(locked).to.be.true;
+        locked = await mapTwo.isLocked(1);
+        expect(locked).to.be.true;
     });
 
-    it('force unlocks', function () {
-        return mapOne.lock(1).then(function () {
-            return mapOne.lock(1);
-        }).then(function () {
-            return mapOne.lock(1);
-        }).then(function () {
-            return mapOne.unlock(1)
-        }).then(function () {
-            return mapOne.isLocked(1);
-        }).then(function (locked) {
-            expect(locked).to.be.true;
-            return mapOne.forceUnlock(1);
-        }).then(function () {
-            return mapOne.isLocked(1);
-        }).then(function (locked) {
-            expect(locked).to.be.false;
-        });
+    it('force unlocks', async function () {
+        await mapOne.lock(1);
+        await mapOne.lock(1);
+        await mapOne.lock(1);
+        await mapOne.unlock(1);
+        let locked = await mapOne.isLocked(1);
+        expect(locked).to.be.true;
+        await mapOne.forceUnlock(1);
+        locked = await mapOne.isLocked(1);
+        expect(locked).to.be.false;
     });
 });
