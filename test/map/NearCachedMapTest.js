@@ -78,7 +78,7 @@ describe('NearCachedMapTest', function () {
                 await map1.get('key0');
                 const val = await map1.get('key0');
                 expect(val).to.equal('val0');
-                expectStats(map, 1, 1, 1);
+                expectStats(map1, 1, 1, 1);
             });
 
             it('remove operation removes entry from near cache', async function () {
