@@ -27,93 +27,73 @@ describe('MapAggregatorsIntTest', function () {
     let cluster, client;
     let map;
 
-    before(function () {
-        return RC.createCluster(null, null).then(function (cl) {
-            cluster = cl;
-            return RC.startMember(cluster.id);
-        }).then(function () {
-            return Client.newHazelcastClient({
-                clusterName: cluster.id,
-                serialization: {
-                    defaultNumberType: 'integer'
-                }
-            });
-        }).then(function (cl) {
-            client = cl;
-            return client.getMap('aggregatorsMap');
-        }).then(function (mp) {
-            map = mp;
+    before(async function () {
+        cluster = await RC.createCluster(null, null);
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            serialization: {
+                defaultNumberType: 'integer'
+            }
         });
+        map = await client.getMap('aggregatorsMap');
     });
 
-    after(function () {
-        return client.shutdown()
-            .then(() => RC.terminateCluster(cluster.id));
+    after(async function () {
+        await client.shutdown();
+        return RC.terminateCluster(cluster.id);
     });
 
-    beforeEach(function () {
+    beforeEach(async function () {
         return fillMap(map, 50, 'key', 0);
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         return map.destroy();
     });
 
-    it('intAvg', function () {
-        return map.aggregate(Aggregators.integerAvg()).then(function (avg) {
-            return expect(avg).to.equal(24.5);
-        });
+    it('intAvg', async function () {
+        const avg = await map.aggregate(Aggregators.integerAvg());
+        expect(avg).to.equal(24.5);
     });
 
-    it('intAvg with attribute path', function () {
-        return map.aggregate(Aggregators.integerAvg('this')).then(function (avg) {
-            return expect(avg).to.equal(24.5);
-        });
+    it('intAvg with attribute path', async function () {
+        const avg = await map.aggregate(Aggregators.integerAvg('this'));
+        expect(avg).to.equal(24.5);
     });
 
-    it('intAvg with predicate', function () {
-        return map.aggregateWithPredicate(Aggregators.integerAvg(), Predicates.greaterEqual('this', 47))
-            .then(function (avg) {
-                return expect(avg).to.equal(48);
-            });
+    it('intAvg with predicate', async function () {
+        const avg = await map.aggregateWithPredicate(Aggregators.integerAvg(), Predicates.greaterEqual('this', 47));
+        expect(avg).to.equal(48);
     });
 
-    it('intSum', function () {
-        return map.aggregate(Aggregators.integerSum()).then(function (sum) {
-            return expect(sum.toNumber()).to.equal(1225);
-        });
+    it('intSum', async function () {
+        const sum = await map.aggregate(Aggregators.integerSum());
+        expect(sum.toNumber()).to.equal(1225);
     });
 
-    it('intSum with attribute path', function () {
-        return map.aggregate(Aggregators.integerSum('this')).then(function (sum) {
-            return expect(sum.toNumber()).to.equal(1225);
-        });
+    it('intSum with attribute path', async function () {
+        const sum = await map.aggregate(Aggregators.integerSum('this'));
+        expect(sum.toNumber()).to.equal(1225);
     });
 
-    it('intSum with predicate', function () {
-        return map.aggregateWithPredicate(Aggregators.integerSum(), Predicates.greaterEqual('this', 47))
-            .then(function (sum) {
-                return expect(sum.toNumber()).to.equal(144);
-            });
+    it('intSum with predicate', async function () {
+        const sum = await map.aggregateWithPredicate(Aggregators.integerSum(), Predicates.greaterEqual('this', 47));
+        expect(sum.toNumber()).to.equal(144);
     });
 
-
-    it('fixedPointSum', function () {
-        return map.aggregate(Aggregators.fixedPointSum()).then(function (sum) {
-            return expect(sum.toNumber()).to.equal(1225);
-        });
+    it('fixedPointSum', async function () {
+        const sum = await map.aggregate(Aggregators.fixedPointSum());
+        expect(sum.toNumber()).to.equal(1225);
     });
 
-    it('fixedPointSum with attribute path', function () {
-        return map.aggregate(Aggregators.fixedPointSum('this')).then(function (sum) {
-            return expect(sum.toNumber()).to.equal(1225);
-        });
+    it('fixedPointSum with attribute path', async function () {
+        const sum = await map.aggregate(Aggregators.fixedPointSum('this'));
+        expect(sum.toNumber()).to.equal(1225);
     });
 
-    it('fixedPointSum with predicate', function () {
-        return map.aggregateWithPredicate(Aggregators.fixedPointSum(), Predicates.greaterEqual('this', 47))
-            .then(function (sum) {
-                return expect(sum.toNumber()).to.equal(144);
-            });
+    it('fixedPointSum with predicate', async function () {
+        const sum = await map.aggregateWithPredicate(Aggregators.fixedPointSum(), Predicates.greaterEqual('this', 47));
+        expect(sum.toNumber()).to.equal(144);
     });
 });

@@ -31,32 +31,23 @@ describe('QueueProxyTest', function () {
     let client;
     let queue;
 
-    before(function () {
+    before(async function () {
         this.timeout(10000);
-        return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_queue.xml', 'utf8'))
-            .then(function (response) {
-                cluster = response;
-                return RC.startMember(cluster.id);
-            })
-            .then(function () {
-                return Client.newHazelcastClient({ clusterName: cluster.id });
-            }).then(function (hazelcastClient) {
-                client = hazelcastClient;
-            });
+        cluster = await RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_queue.xml', 'utf8'));
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({ clusterName: cluster.id });
     });
 
-    beforeEach(function () {
-        return client.getQueue('ClientQueueTest').then(function (q) {
-            queue = q;
-            return offerToQueue(10);
-        });
+    beforeEach(async function () {
+        queue = await client.getQueue('ClientQueueTest');
+        return offerToQueue(10);
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         return queue.destroy();
     });
 
-    function offerToQueue(size, prefix) {
+    async function offerToQueue(size, prefix) {
         if (prefix == null) {
             prefix = '';
         }
@@ -67,161 +58,132 @@ describe('QueueProxyTest', function () {
         return Promise.all(promises);
     }
 
-    after(function () {
-        return client.shutdown()
-            .then(() => RC.terminateCluster(cluster.id));
+    after(async function () {
+        await client.shutdown();
+        return RC.terminateCluster(cluster.id);
     });
 
-    it('size', function () {
-        return queue.size().then(function (s) {
-            return expect(s).to.equal(10);
-        })
+    it('size', async function () {
+        const s = await queue.size();
+        expect(s).to.equal(10);
     });
 
-    it('peek', function () {
-        return queue.peek().then(function (head) {
-            return expect(head).to.equal('item0');
-        })
+    it('peek', async function () {
+        const head = await queue.peek();
+        expect(head).to.equal('item0');
     });
 
-    it('add return true', function () {
-        return queue.add('item_new').then(function (retVal) {
-            return expect(retVal).to.be.true;
-        });
+    it('add return true', async function () {
+        const retVal = await queue.add('item_new');
+        expect(retVal).to.be.true;
     });
 
-    it('add increases queue size', function () {
-        return queue.add('item_new').then(function () {
-            return queue.size();
-        }).then(function (s) {
-            return expect(s).to.equal(11);
-        });
+    it('add increases queue size', async function () {
+        await queue.add('item_new');
+        const s = await queue.size();
+        expect(s).to.equal(11);
     });
 
-    it('add throws if queue is full', function () {
-        return offerToQueue(5, 'new').then(function () {
-            return expect(queue.add('excess_item')).to.eventually.rejected;
-        });
+    it('add throws if queue is full', async function () {
+        await offerToQueue(5, 'new');
+        return expect(queue.add('excess_item')).to.eventually.rejected;
     });
 
-    it('poll decreases queue size', function () {
-        return queue.poll().then(function () {
-            return queue.size();
-        }).then(function (s) {
-            return expect(s).to.equal(9);
-        });
+    it('poll decreases queue size', async function () {
+        await queue.poll();
+        const s = await queue.size();
+        expect(s).to.equal(9);
     });
 
-    it('poll returns the head of the queue', function () {
-        return queue.poll().then(function (ret) {
-            return expect(ret).to.equal('item0');
-        });
+    it('poll returns the head of the queue', async function () {
+        const ret = await queue.poll();
+        expect(ret).to.equal('item0');
     });
 
-    it('poll returns null after timeout', function () {
-        return queue.clear().then(function () {
-            return queue.poll(1000);
-        }).then(function (ret) {
-            return expect(ret).to.be.null;
-        });
+    it('poll returns null after timeout', async function () {
+        await queue.clear();
+        const ret = await queue.poll(1000);
+        expect(ret).to.be.null;
     });
 
-    it('poll returns head after a new element added', function () {
-        return queue.clear().then(function () {
-            setTimeout(function () {
-                queue.offer('new_item');
-            }, 500);
-            return queue.poll(1000);
-        }).then(function (ret) {
-            return expect(ret).to.equal('new_item');
-        });
+    it('poll returns head after a new element added', async function () {
+        await queue.clear();
+        setTimeout(async function () {
+            await queue.offer('new_item');
+        }, 500);
+        const ret = await queue.poll(1000);
+        expect(ret).to.equal('new_item');
     });
 
-    it('offer with timeout', function () {
-        return queue.offer('new_item', 1000).then(function () {
-            return queue.size();
-        }).then(function (s) {
-            return expect(s).to.equal(11);
-        });
+    it('offer with timeout', async function () {
+        await queue.offer('new_item', 1000);
+        const s = await queue.size();
+        expect(s).to.equal(11);
     });
 
-    it('remaining capacity', function () {
-        return queue.remainingCapacity().then(function (c) {
-            return expect(c).to.equal(5);
-        });
+    it('remaining capacity', async function () {
+        const c = await queue.remainingCapacity();
+        expect(c).to.equal(5);
     });
 
-    it('contains returns false for absent', function () {
-        return queue.contains('item_absent').then(function (ret) {
-            return expect(ret).to.be.false;
-        });
+    it('contains returns false for absent', async function () {
+        const ret = await queue.contains('item_absent');
+        expect(ret).to.be.false;
     });
 
-    it('contains returns true for present', function () {
-        return queue.contains('item0').then(function (ret) {
-            return expect(ret).to.be.true;
-        });
+    it('contains returns true for present', async function () {
+        const ret = await queue.contains('item0');
+        expect(ret).to.be.true;
     });
 
-    it('remove', function () {
-        return queue.remove('item5').then(function (ret) {
-            return expect(ret).to.be.true;
-        });
+    it('remove', async function () {
+        const ret = await queue.remove('item5');
+        expect(ret).to.be.true;
     });
 
-    it('remove decreases size', function () {
-        return queue.remove('item5').then(function () {
-            return queue.size();
-        }).then(function (s) {
-            return expect(s).to.equal(9);
-        });
+    it('remove decreases size', async function () {
+        await queue.remove('item5');
+        const s = await queue.size();
+        expect(s).to.equal(9);
     });
 
-    it('toArray', function () {
-        return queue.toArray().then(function (arr) {
-            expect(arr).to.be.instanceof(Array);
-            expect(arr).to.have.lengthOf(10);
-            expect(arr).to.include.members(['item0', 'item2', 'item9']);
-        });
+    it('toArray', async function () {
+        const arr = await queue.toArray();
+        expect(arr).to.be.instanceof(Array);
+        expect(arr).to.have.lengthOf(10);
+        expect(arr).to.include.members(['item0', 'item2', 'item9']);
     });
 
-    it('clear', function () {
-        return queue.clear().then(function () {
-            return queue.size();
-        }).then(function (s) {
-            return expect(s).to.equal(0);
-        });
+    it('clear', async function () {
+        await queue.clear();
+        const s = await queue.size();
+        expect(s).to.equal(0);
     });
 
-    it('drainTo', function () {
+    it('drainTo', async function () {
         const dummyArr = ['dummy_item'];
-        return queue.drainTo(dummyArr).then(function () {
-            expect(dummyArr).to.have.lengthOf(11);
-            expect(dummyArr).to.include.members(['item0', 'dummy_item', 'item3', 'item9']);
-        });
+        await queue.drainTo(dummyArr);
+        expect(dummyArr).to.have.lengthOf(11);
+        expect(dummyArr).to.include.members(['item0', 'dummy_item', 'item3', 'item9']);
     });
 
-    it('drainTo with max elements', function () {
+    it('drainTo with max elements', async function () {
         const dummyArr = ['dummy_item'];
-        return queue.drainTo(dummyArr, 2).then(function () {
-            expect(dummyArr).to.have.lengthOf(3);
-            expect(dummyArr).to.include.members(['item0', 'dummy_item', 'item1']);
-            expect(dummyArr).to.not.include.members(['item2', 'item9']);
-        });
+        await queue.drainTo(dummyArr, 2);
+        expect(dummyArr).to.have.lengthOf(3);
+        expect(dummyArr).to.include.members(['item0', 'dummy_item', 'item1']);
+        expect(dummyArr).to.not.include.members(['item2', 'item9']);
     });
 
-    it('isEmpty false', function () {
-        return queue.isEmpty().then(function (ret) {
-            return expect(ret).to.be.false;
-        });
+    it('isEmpty false', async function () {
+        const ret = await queue.isEmpty();
+        expect(ret).to.be.false;
     });
 
-    it('isEmpty true', function () {
-        return queue.clear().then(function (ret) {
-            return queue.isEmpty();
-        }).then(function (ret) {
-            return expect(ret).to.be.true;
-        })
+    it('isEmpty true', async function () {
+        await queue.clear();
+        const ret = await queue.isEmpty();
+        expect(ret).to.be.true;
     });
 
     it('take waits', function (done) {
@@ -234,86 +196,66 @@ describe('QueueProxyTest', function () {
         }).catch(done);
     });
 
-    it('take immediately returns', function () {
-        return queue.take().then(function (ret) {
-            return expect(ret).to.equal('item0');
-        });
+    it('take immediately returns', async function () {
+        const ret = await queue.take();
+        expect(ret).to.equal('item0');
     });
 
-    it('addAll', function () {
+    it('addAll', async function () {
         const values = ['a', 'b', 'c'];
-        return queue.addAll(values).then(function (retVal) {
-            expect(retVal).to.be.true;
-            return queue.toArray();
-        }).then(function (vals) {
-            return expect(vals).to.include.members(values);
-        })
+        const retVal = await queue.addAll(values);
+        expect(retVal).to.be.true;
+        const vals = await queue.toArray();
+        expect(vals).to.include.members(values);
     });
 
-    it('containsAll true', function () {
+    it('containsAll true', async function () {
         const values = ['item0', 'item1'];
-        return queue.containsAll(values).then(function (ret) {
-            return expect(ret).to.be.true;
-        });
+        const ret = await queue.containsAll(values);
+        expect(ret).to.be.true;
     });
 
-    it('containsAll true', function () { //eslint-disable-line
+    it('containsAll true', async function () { //eslint-disable-line
         const values = ['item0', 'item_absent'];
-        return queue.containsAll(values).then(function (ret) {
-            return expect(ret).to.be.false;
-        });
+        const ret = await queue.containsAll(values);
+        expect(ret).to.be.false;
     });
 
-    it('containsAll true', function () { //eslint-disable-line
+    it('containsAll true', async function () { //eslint-disable-line
         const values = [];
-        return queue.containsAll(values).then(function (ret) {
-            return expect(ret).to.be.true;
-        });
+        const ret = await queue.containsAll(values);
+        expect(ret).to.be.true;
     });
 
-    it('put', function () {
-        return queue.put('item_new').then(function () {
-            return queue.size();
-        }).then(function (s) {
-            return expect(s).to.equal(11);
-        });
+    it('put', async function () {
+        await queue.put('item_new');
+        const s = await queue.size();
+        expect(s).to.equal(11);
     });
 
-    it('removeAll', function () {
+    it('removeAll', async function () {
         const cand = ['item1', 'item2'];
-        return queue.removeAll(cand).then(function (retVal) {
-            return expect(retVal).to.be.true;
-        }).then(function () {
-            return queue.toArray();
-        }).then(function (arr) {
-            return expect(arr).to.not.include.members(cand);
-        });
+        const retVal = await queue.removeAll(cand);
+        expect(retVal).to.be.true;
+        const arr = await queue.toArray();
+        expect(arr).to.not.include.members(cand);
     });
 
-    it('retainAll changes queue', function () {
+    it('retainAll changes queue', async function () {
         const retains = ['item1', 'item2'];
-        return queue.retainAll(retains).then(function (r) {
-            return expect(r).to.be.true;
-        }).then(function () {
-            return queue.toArray();
-        }).then(function (arr) {
-            return expect(arr).to.deep.equal(retains);
-        });
+        const r = await queue.retainAll(retains);
+        expect(r).to.be.true;
+        const arr = await queue.toArray();
+        expect(arr).to.deep.equal(retains);
     });
 
 
-    it('retainAll does not change queue', function () {
-        let retains;
-        return queue.toArray().then(function (r) {
-            retains = r;
-            return queue.retainAll(r);
-        }).then(function (r) {
-            return expect(r).to.be.false;
-        }).then(function () {
-            return queue.toArray();
-        }).then(function (arr) {
-            return expect(arr).to.deep.equal(retains);
-        });
+    it('retainAll does not change queue', async function () {
+        const retains = await queue.toArray();
+        const r = await queue.retainAll(retains);
+        expect(r).to.be.false;
+        const arr = await queue.toArray();
+        expect(arr).to.deep.equal(retains);
     });
 
     it('addItemListener itemAdded', function (done) {
@@ -327,7 +269,7 @@ describe('QueueProxyTest', function () {
             }
         }, true).then(function () {
             queue.add('item_new');
-        })
+        });
     });
 
     it('addItemListener itemAdded with includeValue=false', function (done) {
@@ -355,19 +297,15 @@ describe('QueueProxyTest', function () {
         });
     });
 
-    it('removeItemListener', function () {
-        return queue.addItemListener({}, false).then(function (regId) {
-            return queue.removeItemListener(regId);
-        }).then(function (ret) {
-            return expect(ret).to.be.true;
-        });
+    it('removeItemListener', async function () {
+        const regId = await queue.addItemListener({}, false);
+        const ret = await queue.removeItemListener(regId);
+        expect(ret).to.be.true;
     });
 
-    it('removeItemListener with wrong id returns null', function () {
-        return queue.addItemListener({}, false).then(function () {
-            return queue.removeItemListener('wrongId');
-        }).then(function (ret) {
-            return expect(ret).to.be.false;
-        });
+    it('removeItemListener with wrong id returns null', async function () {
+        await queue.addItemListener({}, false);
+        const ret = await queue.removeItemListener('wrongId');
+        expect(ret).to.be.false;
     });
 });

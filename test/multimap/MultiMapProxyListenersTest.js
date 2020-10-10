@@ -28,35 +28,28 @@ describe("MultiMap Proxy Listener", function () {
     let client;
     let map;
 
-    before(function () {
+    before(async function () {
         this.timeout(10000);
-        return RC.createCluster().then(function (response) {
-            cluster = response;
-            return RC.startMember(cluster.id);
-        }).then(function () {
-            return HazelcastClient.newHazelcastClient({ clusterName: cluster.id });
-        }).then(function (hazelcastClient) {
-            client = hazelcastClient;
-        });
+        cluster = await RC.createCluster();
+        await RC.startMember(cluster.id);
+        client = await HazelcastClient.newHazelcastClient({ clusterName: cluster.id });
     });
 
-    beforeEach(function () {
-        return client.getMultiMap('test').then(function (mp) {
-            map = mp;
-        });
+    beforeEach(async function () {
+        map = await client.getMultiMap('test');
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         return map.destroy();
     });
 
-    after(function () {
-        return client.shutdown()
-            .then(() => RC.terminateCluster(cluster.id));
+    after(async function () {
+        await client.shutdown();
+        return RC.terminateCluster(cluster.id);
     });
 
     function Listener(eventName, doneCallback, expectedName, expectedKey, expectedValue, expectedOldValue,
-                      expectedMergingValue) {
+        expectedMergingValue) {
         this[eventName] = function (entryEvent) {
             try {
                 expect(entryEvent.name).to.equal(expectedName);
@@ -69,7 +62,7 @@ describe("MultiMap Proxy Listener", function () {
             } catch (err) {
                 doneCallback(err);
             }
-        }
+        };
     }
 
     // Add tests
@@ -190,18 +183,15 @@ describe("MultiMap Proxy Listener", function () {
         });
     });
 
-    it("removes present listener", function () {
-        return map.addEntryListener({}, null, true).then(function (registrationId) {
-            return map.removeEntryListener(registrationId);
-        }).then(function (removed) {
-            expect(removed).to.be.true;
-        });
+    it("removes present listener", async function () {
+        const registrationId = await map.addEntryListener({}, null, true);
+        const removed = await map.removeEntryListener(registrationId);
+        expect(removed).to.be.true;
     });
 
-    it("removes present listener", function () {
-        return map.removeEntryListener("foo").then(function (removed) {
-            expect(removed).to.be.false;
-        });
+    it("removes present listener", async function () {
+        const removed = await map.removeEntryListener("foo");
+        expect(removed).to.be.false;
     });
 
     it('fires event for each pair of putAll', function (done) {
@@ -219,7 +209,7 @@ describe("MultiMap Proxy Listener", function () {
                         done(new Error('Received too many events'));
                     }
                 }
-            }
+            };
         };
 
         map.addEntryListener(listener('a', [1]), 'a')

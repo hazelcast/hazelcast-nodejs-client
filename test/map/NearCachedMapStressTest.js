@@ -41,7 +41,7 @@ describe('NearCachedMapStress', function () {
     const removePercent = 20;
     const getPercent = 100 - putPercent - removePercent;
 
-    before(function () {
+    before(async function () {
         const cfg = {
             nearCaches: {
                 [mapName]: {
@@ -49,32 +49,20 @@ describe('NearCachedMapStress', function () {
                 }
             }
         };
-
-        return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_nearcache_batchinvalidation_false.xml', 'utf8'))
-            .then(function (res) {
-                cluster = res;
-                return RC.startMember(cluster.id);
-            })
-            .then(function (member) {
-                cfg.clusterName = cluster.id;
-                return Client.newHazelcastClient(cfg);
-            })
-            .then(function (cl) {
-                client1 = cl;
-                return Client.newHazelcastClient({ clusterName: cluster.id });
-            })
-            .then(function (cl) {
-                validatingClient = cl;
-            });
+        cluster = await RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_nearcache_batchinvalidation_false.xml', 'utf8'));
+        await RC.startMember(cluster.id);
+        cfg.clusterName = cluster.id;
+        client1 = await Client.newHazelcastClient(cfg);
+        validatingClient = await Client.newHazelcastClient({ clusterName: cluster.id });
     });
 
-    after(function () {
-        return client1.shutdown()
-            .then(() => validatingClient.shutdown())
-            .then(() => RC.terminateCluster(cluster.id));
+    after(async function () {
+        await client1.shutdown();
+        await validatingClient.shutdown();
+        return RC.terminateCluster(cluster.id);
     });
 
-    function completeOperation() {
+    async function completeOperation() {
         runningOperations--;
         completedOperations++;
         if (completedOperations >= totalNumOperations && runningOperations === 0) {
@@ -122,7 +110,7 @@ describe('NearCachedMapStress', function () {
                             return mp.get(key);
                         }).then(function (actual) {
                             return expect(actual).to.be.equal(expected);
-                        })
+                        });
                     });
                     p.push(promise);
                 })();
@@ -142,5 +130,5 @@ describe('NearCachedMapStress', function () {
                 done(e);
             });
         });
-    })
+    });
 });

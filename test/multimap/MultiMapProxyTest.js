@@ -26,243 +26,188 @@ describe('MultiMapProxyTest', function () {
     let client;
     let map;
 
-    before(function () {
+    before(async function () {
         this.timeout(10000);
-        return RC.createCluster().then(function (response) {
-            cluster = response;
-            return RC.startMember(cluster.id);
-        }).then(function () {
-            return Client.newHazelcastClient({
-                clusterName: cluster.id
-            });
-        }).then(function (hazelcastClient) {
-            client = hazelcastClient;
+        cluster = await RC.createCluster();
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id
         });
     });
 
-    beforeEach(function () {
-        return client.getMultiMap('test').then(function (mp) {
-            map = mp;
-        });
+    beforeEach(async function () {
+        map = await client.getMultiMap('test');
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         return map.destroy();
     });
 
-    after(function () {
-        return client.shutdown()
-            .then(() => RC.terminateCluster(cluster.id));
+    after(async function () {
+        await client.shutdown();
+        return RC.terminateCluster(cluster.id);
     });
 
-    it('adds and retrieves a single item', function () {
-        return map.put(1, 1).then(function () {
-            return map.get(1);
-        }).then(function (values) {
-            expect(values.toArray()).to.deep.equal([1]);
-        });
+    it('adds and retrieves a single item', async function () {
+        await map.put(1, 1);
+        const values = await map.get(1);
+        expect(values.toArray()).to.deep.equal([1]);
     });
 
-    it('adds and retrieves multiple items', function () {
-        return map.put(1, 1).then(function () {
-            return map.put(1, 2);
-        }).then(function () {
-            return map.get(1);
-        }).then(function (values) {
-            expect(values.toArray().sort()).to.deep.equal([1, 2]);
-        });
+    it('adds and retrieves multiple items', async function () {
+        await map.put(1, 1);
+        await map.put(1, 2);
+        const values = await map.get(1);
+        expect(values.toArray().sort()).to.deep.equal([1, 2]);
     });
 
-    it('reports change after put', function () {
-        return map.put(1, 1).then(function () {
-            return map.put(1, 2);
-        }).then(function (changed) {
-            expect(changed).to.be.true;
-        });
+    it('reports change after put', async function () {
+        await map.put(1, 1);
+        const changed = await map.put(1, 2);
+        expect(changed).to.be.true;
     });
 
-    it('reports no change after put', function () {
-        return map.put(1, 1).then(function () {
-            return map.put(1, 1);
-        }).then(function (changed) {
-            expect(changed).to.be.false;
-        });
+    it('reports no change after put', async function () {
+        await map.put(1, 1);
+        const changed = await map.put(1, 1);
+        expect(changed).to.be.false;
     });
 
-    it('adds and removes a single entry', function () {
+    it('adds and removes a single entry', async function () {
         const puts = [map.put(1, 1), map.put(1, 3), map.put(1, 5)];
-        return Promise.all(puts).then(function () {
-            return map.remove(1, 3);
-        }).then(function () {
-            return map.get(1)
-        }).then(function (values) {
-            expect(values.toArray().sort()).to.deep.equal([1, 5])
-        });
+        await Promise.all(puts);
+        await map.remove(1, 3);
+        const values = await map.get(1);
+        expect(values.toArray().sort()).to.deep.equal([1, 5]);
     });
 
-    it('reports change after remove', function () {
-        return map.put(1, 1).then(function () {
-            return map.remove(1, 1);
-        }).then(function (removed) {
-            expect(removed).to.be.true;
-        });
+    it('reports change after remove', async function () {
+        await map.put(1, 1);
+        const removed = await map.remove(1, 1);
+        expect(removed).to.be.true;
     });
 
-    it('reports no change after remove', function () {
-        return map.put(1, 1).then(function () {
-            return map.remove(1, 2);
-        }).then(function (removed) {
-            expect(removed).to.be.false;
-        });
+    it('reports no change after remove', async function () {
+        await map.put(1, 1);
+        const removed = await map.remove(1, 2);
+        expect(removed).to.be.false;
     });
 
-    it('removes all values from key', function () {
+    it('removes all values from key', async function () {
         const puts = [map.put(1, 1), map.put(1, 3), map.put(1, 5)];
-        return Promise.all(puts).then(function () {
-            return map.removeAll(1);
-        }).then(function (oldValues) {
-            expect(oldValues.toArray().sort()).to.deep.equal([1, 3, 5]);
-            return map.get(1)
-        }).then(function (values) {
-            expect(values.toArray()).to.be.empty;
-        });
+        await Promise.all(puts);
+        const oldValues = await map.removeAll(1);
+        expect(oldValues.toArray().sort()).to.deep.equal([1, 3, 5]);
+        const values = await map.get(1);
+        expect(values.toArray()).to.be.empty;
     });
 
-    it('returns a key set', function () {
+    it('returns a key set', async function () {
         const puts = [map.put(1, 1), map.put(2, 3), map.put(3, 5)];
-        return Promise.all(puts).then(function () {
-            return map.keySet();
-        }).then(function (keySet) {
-            expect(keySet.sort()).to.deep.equal([1, 2, 3]);
-        });
+        await Promise.all(puts);
+        const keySet = await map.keySet();
+        expect(keySet.sort()).to.deep.equal([1, 2, 3]);
     });
 
-    it('returns all values', function () {
+    it('returns all values', async function () {
         const puts = [map.put(1, 1), map.put(2, 3), map.put(3, 5)];
-        return Promise.all(puts).then(function () {
-            return map.values();
-        }).then(function (values) {
-            expect(values.toArray().sort()).to.deep.equal([1, 3, 5]);
-        });
+        await Promise.all(puts);
+        const values = await map.values();
+        expect(values.toArray().sort()).to.deep.equal([1, 3, 5]);
     });
 
-    it('returns entry set', function () {
+    it('returns entry set', async function () {
         const puts = [map.put(1, 1), map.put(2, 3), map.put(3, 5)];
-        return Promise.all(puts).then(function () {
-            return map.entrySet();
-        }).then(function (entrySet) {
-            const initialValue = {};
-            const entries = entrySet.reduce(function (obj, tuple) {
-                obj[tuple[0]] = tuple[1];
-                return obj;
-            }, initialValue);
-            const expected = {
-                1: 1,
-                2: 3,
-                3: 5
-            };
-            expect(entries).to.deep.equal(expected);
-        });
+        await Promise.all(puts);
+        const entrySet = await map.entrySet();
+        const initialValue = {};
+        const entries = entrySet.reduce(function (obj, tuple) {
+            obj[tuple[0]] = tuple[1];
+            return obj;
+        }, initialValue);
+        const expected = {
+            1: 1,
+            2: 3,
+            3: 5
+        };
+        expect(entries).to.deep.equal(expected);
     });
 
-    it('contains a key', function () {
-        return map.put(1, 1).then(function () {
-            return map.containsKey(1);
-        }).then(function (contains) {
-            expect(contains).to.be.true;
-        });
+    it('contains a key', async function () {
+        await map.put(1, 1);
+        const contains = await map.containsKey(1);
+        expect(contains).to.be.true;
     });
 
-    it('does not contain a key', function () {
-        return map.put(1, 1).then(function () {
-            return map.containsKey(4);
-        }).then(function (contains) {
-            expect(contains).to.be.false;
-        });
+    it('does not contain a key', async function () {
+        await map.put(1, 1);
+        const contains = await map.containsKey(4);
+        expect(contains).to.be.false;
     });
 
-    it('contains a value', function () {
+    it('contains a value', async function () {
         const puts = [map.put(1, 2), map.put(1, 3), map.put(3, 5)];
-        return Promise.all(puts).then(function () {
-            return map.containsValue(3);
-        }).then(function (contains) {
-            expect(contains).to.be.true;
-        });
+        await Promise.all(puts);
+        const contains = await map.containsValue(3);
+        expect(contains).to.be.true;
     });
 
-    it('contains an entry', function () {
+    it('contains an entry', async function () {
         const puts = [map.put(1, 2), map.put(1, 3), map.put(3, 5)];
-        return Promise.all(puts).then(function () {
-            return map.containsEntry(1, 3);
-        }).then(function (contains) {
-            expect(contains).to.be.true;
-        });
+        await Promise.all(puts);
+        const contains = await map.containsEntry(1, 3);
+        expect(contains).to.be.true;
     });
 
-    it('does not contain an entry', function () {
+    it('does not contain an entry', async function () {
         const puts = [map.put(1, 2), map.put(1, 3), map.put(3, 5)];
-        return Promise.all(puts).then(function () {
-            return map.containsEntry(1, 5);
-        }).then(function (contains) {
-            expect(contains).to.be.false;
-        });
+        await Promise.all(puts);
+        const contains = await map.containsEntry(1, 5);
+        expect(contains).to.be.false;
     });
 
-    it('returns correct size', function () {
+    it('returns correct size', async function () {
         const puts = [map.put(1, 1), map.put(1, 3), map.put(3, 5)];
-        return Promise.all(puts).then(function () {
-            return map.size();
-        }).then(function (size) {
-            expect(size).to.equal(3);
-        });
+        await Promise.all(puts);
+        const size = await map.size();
+        expect(size).to.equal(3);
     });
 
-    it('returns correct value count', function () {
+    it('returns correct value count', async function () {
         const puts = [map.put(1, 1), map.put(1, 3), map.put(3, 5)];
-        return Promise.all(puts).then(function () {
-            return map.valueCount(1);
-        }).then(function (valueCount) {
-            expect(valueCount).to.equal(2);
-        });
+        await Promise.all(puts);
+        const valueCount = await map.valueCount(1);
+        expect(valueCount).to.equal(2);
     });
 
-    it('clears', function () {
+    it('clears', async function () {
         const puts = [map.put(1, 1), map.put(1, 3), map.put(3, 5)];
-        return Promise.all(puts).then(function () {
-            return map.clear();
-        }).then(function () {
-            return map.size();
-        }).then(function (size) {
-            expect(size).to.equal(0);
-        });
+        await Promise.all(puts);
+        await map.clear();
+        const size = await map.size();
+        expect(size).to.equal(0);
     });
 
-    it('putAll with empty pairs', function () {
-        return map.putAll([])
-            .then(() => map.size())
-            .then(size => expect(size).to.equal(0));
+    it('putAll with empty pairs', async function () {
+        await map.putAll([]);
+        const size = await map.size();
+        expect(size).to.equal(0);
     });
 
-    it('putAll', function () {
+    it('putAll', async function () {
         Util.markServerVersionAtLeast(this, client, '4.1');
         const pairs = [["a", [1]], ["b", [2, 22]], ["c", [3, 33, 333]]];
         const checkValues = (expected, actual) => {
             expect(actual.length).to.equal(expected.length);
             expect(actual).to.have.members(expected);
-        }
+        };
+        await map.putAll(pairs);
+        let values = await map.get("a");
+        checkValues([1], values.toArray());
+        values = await map.get("b");
+        checkValues([2, 22], values.toArray());
+        values = await map.get("c");
+        checkValues([3, 33, 333], values.toArray());
 
-        return map.putAll(pairs)
-            .then(() => map.get("a"))
-            .then(values => {
-                checkValues([1], values.toArray());
-                return map.get("b");
-            })
-            .then(values => {
-                checkValues([2, 22], values.toArray())
-                return map.get("c");
-            })
-            .then(values => {
-                checkValues([3, 33, 333], values.toArray());
-            })
     });
 });

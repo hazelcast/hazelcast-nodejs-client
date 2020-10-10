@@ -23,7 +23,7 @@ const { Client, Predicates } = require('../../');
 const Util = require('./../Util');
 const { fillMap } = require('../Util');
 
-function createController(nearCacheEnabled) {
+async function createController(nearCacheEnabled) {
     if (nearCacheEnabled) {
         return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_nearcache_batchinvalidation_false.xml', 'utf8'));
     } else {
@@ -31,7 +31,7 @@ function createController(nearCacheEnabled) {
     }
 }
 
-function createClient(nearCacheEnabled, clusterName) {
+async function createClient(nearCacheEnabled, clusterName) {
     const cfg = {
         clusterName,
         nearCaches: {}
@@ -49,32 +49,25 @@ describe('MapProxyTest', function () {
             let cluster, client;
             let map;
 
-            before(function () {
+            before(async function () {
                 this.timeout(32000);
-                return createController(nearCacheEnabled).then(function (res) {
-                    cluster = res;
-                    return RC.startMember(cluster.id);
-                }).then(function (m) {
-                    return createClient(nearCacheEnabled, cluster.id).then(function (hazelcastClient) {
-                        client = hazelcastClient;
-                    });
-                });
+                cluster = await createController(nearCacheEnabled);
+                await RC.startMember(cluster.id);
+                client = await createClient(nearCacheEnabled, cluster.id);
             });
 
-            beforeEach(function () {
-                return client.getMap('test').then(function (mp) {
-                    map = mp;
-                    return fillMap(map);
-                });
+            beforeEach(async function () {
+                map = await client.getMap('test');
+                return fillMap(map);
             });
 
-            afterEach(function () {
+            afterEach(async function () {
                 return map.destroy();
             });
 
-            after(function () {
-                return client.shutdown()
-                    .then(() => RC.terminateCluster(cluster.id));
+            after(async function () {
+                await client.shutdown();
+                return RC.terminateCluster(cluster.id);
             });
 
             function generateLockScript(mapName, keyName) {
@@ -95,106 +88,85 @@ describe('MapProxyTest', function () {
                     'result=""+lockByServer();';
             }
 
-            it('get_basic', function () {
-                return map.get('key0').then(function (v) {
-                    return expect(v).to.equal('val0');
-                })
+            it('get_basic', async function () {
+                const val = await map.get('key0');
+                expect(val).to.equal('val0');
             });
 
-            it('get_return_null_on_non_existent', function () {
-                return map.get('non-existent').then(function (val) {
-                    return expect(val).to.be.null;
-                });
+            it('get_return_null_on_non_existent', async function () {
+                const val = await map.get('non-existent');
+                expect(val).to.be.null;
             });
 
-            it('put_return_value_not_null', function () {
-                return map.put('key0', 'new-val').then(function (val) {
-                    return expect(val).to.equal('val0');
-                });
+            it('put_return_value_not_null', async function () {
+                const val = await map.put('key0', 'new-val');
+                expect(val).to.equal('val0');
             });
 
-            it('put with ttl puts value to map', function () {
-                return map.put('key-with-ttl', 'val-with-ttl', 3000).then(function () {
-                    return map.get('key-with-ttl').then(function (val) {
-                        return expect(val).to.equal('val-with-ttl');
-                    });
-                });
+            it('put with ttl puts value to map', async function () {
+                await map.put('key-with-ttl', 'val-with-ttl', 3000);
+                const val = await map.get('key-with-ttl');
+                expect(val).to.equal('val-with-ttl');
             });
 
-            it('put with ttl removes value after ttl', function () {
-                return map.put('key10', 'val10', 1000).then(function () {
-                    return map.get('key10');
-                }).then(function (val) {
-                    return expect(val).to.equal('val10');
-                }).then(function () {
-                    return Util.promiseLater(1100, map.get.bind(map, 'key10'));
-                }).then(function (val) {
-                    return expect(val).to.be.null;
-                });
+            it('put with ttl removes value after ttl', async function () {
+                await map.put('key10', 'val10', 1000);
+                let val = await map.get('key10');
+                expect(val).to.equal('val10');
+                val = await Util.promiseLater(1100, map.get.bind(map, 'key10'));
+                expect(val).to.be.null;
             });
 
-            it('clear', function () {
-                return map.clear().then(function () {
-                    return map.isEmpty();
-                }).then(function (val) {
-                    return expect(val).to.be.true;
-                });
+            it('clear', async function () {
+                await map.clear();
+                const val = await map.isEmpty();
+                expect(val).to.be.true;
             });
 
-            it('size', function () {
-                return map.size().then(function (size) {
-                    expect(size).to.equal(10);
-                })
+            it('size', async function () {
+                const size = await map.size();
+                expect(size).to.equal(10);
             });
 
-            it('basic_remove_return_value', function () {
-                return map.remove('key9').then(function (val) {
-                    return expect(val).to.equal('val9');
-                });
+            it('basic_remove_return_value', async function () {
+                const val = await map.remove('key9');
+                expect(val).to.equal('val9');
             });
 
-            it('basic_remove', function () {
-                return map.remove('key1').then(function () {
-                    return map.get('key1');
-                }).then(function (val) {
-                    return expect(val).to.be.null;
-                });
+            it('basic_remove', async function () {
+                await map.remove('key1');
+                const val = await map.get('key1');
+                expect(val).to.be.null;
             });
 
-            it('remove_if_equal_false', function () {
-                return map.remove('key1', 'wrong').then(function (val) {
-                    return expect(val).to.be.false;
-                });
+            it('remove_if_equal_false', async function () {
+                const val = await map.remove('key1', 'wrong');
+                expect(val).to.be.false;
             });
 
-            it('remove_if_equal_true', function () {
-                return map.remove('key1', 'val1').then(function (val) {
-                    return expect(val).to.be.true;
-                });
+            it('remove_if_equal_true', async function () {
+                const val = await map.remove('key1', 'val1');
+                expect(val).to.be.true;
             });
 
-            it('containsKey_true', function () {
-                return map.containsKey('key1').then(function (val) {
-                    return expect(val).to.be.true;
-                });
+            it('containsKey_true', async function () {
+                const val = await map.containsKey('key1');
+                expect(val).to.be.true;
             });
 
-            it('containsKey_false', function () {
-                return map.containsKey('non-existent').then(function (val) {
-                    return expect(val).to.be.false;
-                });
+            it('containsKey_false', async function () {
+                const val = await map.containsKey('non-existent');
+                expect(val).to.be.false;
             });
 
-            it('containsValue_true', function () {
-                return map.containsValue('val1').then(function (val) {
-                    return expect(val).to.be.true;
-                });
+            it('containsValue_true', async function () {
+                const val = await map.containsValue('val1');
+                expect(val).to.be.true;
             });
 
-            it('containsValue_false', function () {
-                return map.containsValue('non-existent').then(function (val) {
-                    return expect(val).to.be.false;
-                });
+            it('containsValue_false', async function () {
+                const val = await map.containsValue('non-existent');
+                expect(val).to.be.false;
             });
 
             [true, false].forEach(function (shouldUsePutAll) { //eslint-disable-line
@@ -232,92 +204,73 @@ describe('MapProxyTest', function () {
                         map.get(arr[2][0]).then(verify(arr[2][1]));
                         map.get(arr[3][0]).then(verify(arr[3][1]));
                         map.get(arr[4][0]).then(verify(arr[4][1]));
-                    })
+                    });
                 });
             });
 
-            it('getAll', function () {
-                return map.getAll([
+            it('getAll', async function () {
+                const values = await map.getAll([
                     'key0', 'key1', 'key2', 'key3', 'key4',
                     'key5', 'key6', 'key7', 'key8', 'key9'
-                ]).then(function (values) {
-                    return expect(values).to.deep.have.members([
-                        ['key0', 'val0'], ['key1', 'val1'],
-                        ['key2', 'val2'], ['key3', 'val3'],
-                        ['key4', 'val4'], ['key5', 'val5'],
-                        ['key6', 'val6'], ['key7', 'val7'],
-                        ['key8', 'val8'], ['key9', 'val9']
-                    ]);
-                })
+                ]);
+                expect(values).to.deep.have.members([
+                    ['key0', 'val0'], ['key1', 'val1'],
+                    ['key2', 'val2'], ['key3', 'val3'],
+                    ['key4', 'val4'], ['key5', 'val5'],
+                    ['key6', 'val6'], ['key7', 'val7'],
+                    ['key8', 'val8'], ['key9', 'val9']
+                ]);
             });
 
-            it('delete', function () {
-                return map.put('key-to-delete', 'value').then(function () {
-                    return map.delete('key-to-delete');
-                }).then(function () {
-                    return map.get('key-to-delete');
-                }).then(function (val) {
-                    return expect(val).to.be.null;
-                })
+            it('delete', async function () {
+                await map.put('key-to-delete', 'value');
+                await map.delete('key-to-delete');
+                const val = await map.get('key-to-delete');
+                expect(val).to.be.null;
             });
 
-            it('entrySet_notNull', function () {
-                let entryMap;
+            it('entrySet_notNull', async function () {
                 const samples = [
                     ['k1', 'v1'],
                     ['k2', 'v2'],
                     ['k3', 'v3']
                 ];
 
-                return client.getMap('entry-map').then(function (mp) {
-                    entryMap = mp;
-                    return Promise.all([
-                        entryMap.put(samples[0][0], samples[0][1]),
-                        entryMap.put(samples[1][0], samples[1][1]),
-                        entryMap.put(samples[2][0], samples[2][1])
-                    ]);
-                }).then(function () {
-                    return entryMap.entrySet();
-                }).then(function (entrySet) {
-                    return expect(entrySet).to.deep.have.members(samples);
-                });
+                const entryMap = await client.getMap('entry-map');
+                await Promise.all([
+                    entryMap.put(samples[0][0], samples[0][1]),
+                    entryMap.put(samples[1][0], samples[1][1]),
+                    entryMap.put(samples[2][0], samples[2][1])
+                ]);
+                const entrySet = await entryMap.entrySet();
+                expect(entrySet).to.deep.have.members(samples);
             });
 
-            it('entrySet_null', function () {
-                let entryMap;
-                return client.getMap('null-entry-map').then(function (mp) {
-                    entryMap = mp;
-                    return entryMap.entrySet();
-                }).then(function (entrySet) {
-                    return expect(entrySet).to.be.empty;
-                });
+            it('entrySet_null', async function () {
+                const entryMap = await client.getMap('null-entry-map');
+                const entrySet = await entryMap.entrySet();
+                expect(entrySet).to.be.empty;
             });
 
-            it('flush', function () {
+            it('flush', async function () {
                 return map.flush();
             });
 
-            it('lock', function () {
-                return map.lock('key0').then(function () {
-                    return map.isLocked('key0');
-                }).then(function (isLocked) {
-                    return expect(isLocked).to.be.true;
-                }).finally(function () {
-                    return map.unlock('key0');
-                });
+            it('lock', async function () {
+                await map.lock('key0');
+                const isLocked = await map.isLocked('key0');
+                expect(isLocked).to.be.true;
+                return map.unlock('key0');
             });
 
-            it('unlock', function () {
-                return map.lock('key0').then(function () {
-                    return map.unlock('key0');
-                }).then(function () {
-                    return map.isLocked('key0');
-                }).then(function (isLocked) {
-                    return expect(isLocked).to.be.false;
-                });
+            it('unlock', async function () {
+                await map.lock('key0');
+                await map.unlock('key0');
+                const isLocked = await map.isLocked('key0');
+                expect(isLocked).to.be.false;
             });
 
-            it('forceUnlock', function () {
+            it('forceUnlock', async function () {
                 const script =
                     'function lockByServer() {' +
                     '   var map = instance_0.getMap("' + map.getName() + '");' +
@@ -325,140 +278,102 @@ describe('MapProxyTest', function () {
                     '   return map.isLocked("key0")' +
                     '}' +
                     'result=""+lockByServer();';
-                return RC.executeOnController(cluster.id, script, 1).then(function (s) {
-                    return map.forceUnlock('key0');
-                }).then(function () {
-                    return map.isLocked('key0');
-                }).then(function (isLocked) {
-                    return expect(isLocked).to.be.false;
-                });
+                await RC.executeOnController(cluster.id, script, 1);
+                await map.forceUnlock('key0');
+                const isLocked = await map.isLocked('key0');
+                expect(isLocked).to.be.false;
             });
 
-            it('keySet', function () {
-                return map.keySet().then(function (keySet) {
-                    return expect(keySet).to.deep.have.members([
-                        'key0', 'key1', 'key2', 'key3', 'key4',
-                        'key5', 'key6', 'key7', 'key8', 'key9'
-                    ]);
-                });
+            it('keySet', async function () {
+                const keySet = await map.keySet();
+                expect(keySet).to.deep.have.members([
+                    'key0', 'key1', 'key2', 'key3', 'key4',
+                    'key5', 'key6', 'key7', 'key8', 'key9'
+                ]);
             });
 
-            it('putIfAbsent_success', function () {
-                return map.putIfAbsent('key10', 'new-val').then(function (oldVal) {
-                    return expect(oldVal).to.be.null;
-                }).then(function () {
-                    return map.get('key10');
-                }).then(function (val) {
-                    return expect(val).to.equal('new-val');
-                });
+            it('putIfAbsent_success', async function () {
+                const oldVal = await map.putIfAbsent('key10', 'new-val');
+                expect(oldVal).to.be.null;
+                const val = await map.get('key10');
+                expect(val).to.equal('new-val');
             });
 
-            it('putIfAbsent_fail', function () {
-                return map.putIfAbsent('key9', 'new-val').then(function () {
-                    return map.get('key9');
-                }).then(function (val) {
-                    return expect(val).to.equal('val9');
-                });
+            it('putIfAbsent_fail', async function () {
+                await map.putIfAbsent('key9', 'new-val');
+                const val = await map.get('key9');
+                expect(val).to.equal('val9');
             });
 
-            it('putIfAbsent_with_ttl', function () {
-                return map.putIfAbsent('key10', 'new-val', 1000).then(function () {
-                    return map.get('key10');
-                }).then(function (val) {
-                    return expect(val).to.equal('new-val');
-                }).then(function () {
-                    return Util.promiseLater(1050, map.get.bind(map, 'key10'));
-                }).then(function (val) {
-                    return expect(val).to.be.null;
-                });
-
+            it('putIfAbsent_with_ttl', async function () {
+                await map.putIfAbsent('key10', 'new-val', 1000);
+                let val = await map.get('key10');
+                expect(val).to.equal('new-val');
+                val = await Util.promiseLater(1050, map.get.bind(map, 'key10'));
+                expect(val).to.be.null;
             });
 
-            it('putTransient', function () {
-                return map.putTransient('key10', 'val10').then(function () {
-                    return map.get('key10');
-                }).then(function (val) {
-                    return expect(val).to.equal('val10');
-                });
+            it('putTransient', async function () {
+                await map.putTransient('key10', 'val10');
+                const val = await map.get('key10');
+                expect(val).to.equal('val10');
             });
 
-            it('putTransient_withTTL', function () {
-                return map.putTransient('key10', 'val10', 1000).then(function () {
-                    return map.get('key10');
-                }).then(function (val) {
-                    return expect(val).to.equal('val10');
-                }).then(function () {
-                    return Util.promiseLater(1050, map.get.bind(map, 'key10'));
-                }).then(function (val) {
-                    return expect(val).to.be.null;
-                });
+            it('putTransient_withTTL', async function () {
+                await map.putTransient('key10', 'val10', 1000);
+                let val = await map.get('key10');
+                expect(val).to.equal('val10');
+                val = await Util.promiseLater(1050, map.get.bind(map, 'key10'));
+                expect(val).to.be.null;
             });
 
-            it('replace', function () {
-                return map.replace('key9', 'new-val').then(function (oldVal) {
-                    return expect(oldVal).to.equal('val9');
-                }).then(function () {
-                    return map.get('key9');
-                }).then(function (val) {
-                    return expect(val).to.equal('new-val');
-                });
+            it('replace', async function () {
+                const oldVal = await map.replace('key9', 'new-val');
+                expect(oldVal).to.equal('val9');
+                const val = await map.get('key9');
+                expect(val).to.equal('new-val');
             });
 
-            it('replaceIfSame_success', function () {
-                return map.replaceIfSame('key9', 'val9', 'new-val').then(function (success) {
-                    return expect(success).to.be.true;
-                }).then(function () {
-                    return map.get('key9');
-                }).then(function (val) {
-                    return expect(val).to.equal('new-val');
-                });
+            it('replaceIfSame_success', async function () {
+                const success = await map.replaceIfSame('key9', 'val9', 'new-val');
+                expect(success).to.be.true;
+                const val = await map.get('key9');
+                expect(val).to.equal('new-val');
             });
 
-            it('replaceIfSame_fail', function () {
-                return map.replaceIfSame('key9', 'wrong', 'new-val', function (success) {
-                    return expect(success).to.be.false;
-                }).then(function () {
-                    return map.get('key9');
-                }).then(function (val) {
-                    return expect(val).to.equal('val9');
-                });
+            it('replaceIfSame_fail', async function () {
+                const success = await map.replaceIfSame('key9', 'wrong', 'new-val');
+                expect(success).to.be.false;
+                const val = await map.get('key9');
+                expect(val).to.equal('val9');
             });
 
-            it('set', function () {
-                return map.set('key10', 'val10').then(function () {
-                    return map.get('key10');
-                }).then(function (val) {
-                    return expect(val).to.equal('val10');
-                })
+            it('set', async function () {
+                await map.set('key10', 'val10');
+                const val = await map.get('key10');
+                expect(val).to.equal('val10');
             });
 
-            it('set_withTTL', function () {
-                return map.set('key10', 'val10', 1000).then(function () {
-                    return map.get('key10');
-                }).then(function (val) {
-                    return expect(val).to.equal('val10');
-                }).then(function () {
-                    return Util.promiseLater(1050, map.get.bind(map, 'key10'));
-                }).then(function (val) {
-                    return expect(val).to.be.null;
-                })
+            it('set_withTTL', async function () {
+                await map.set('key10', 'val10', 1000);
+                let val = await map.get('key10');
+                expect(val).to.equal('val10');
+                val = await Util.promiseLater(1050, map.get.bind(map, 'key10'));
+                expect(val).to.be.null;
             });
 
-            it('values', function () {
-                return map.values().then(function (vals) {
-                    return expect(vals.toArray()).to.deep.have.members([
-                        'val0', 'val1', 'val2', 'val3', 'val4',
-                        'val5', 'val6', 'val7', 'val8', 'val9'
-                    ]);
-                });
+            it('values', async function () {
+                const vals = await map.values();
+                expect(vals.toArray()).to.deep.have.members([
+                    'val0', 'val1', 'val2', 'val3', 'val4',
+                    'val5', 'val6', 'val7', 'val8', 'val9'
+                ]);
             });
 
-            it('values_null', function () {
-                return map.clear().then(function () {
-                    return map.values();
-                }).then(function (vals) {
-                    return expect(vals.toArray()).to.have.lengthOf(0);
-                })
+            it('values_null', async function () {
+                await map.clear();
+                const vals = await map.values();
+                expect(vals.toArray()).to.have.lengthOf(0);
             });
 
             it('getEntryView', function (done) {
@@ -484,13 +399,12 @@ describe('MapProxyTest', function () {
                 });
             });
 
-            it('getEntryView_null', function () {
-                return map.getEntryView('non-exist').then(function (entry) {
-                    return expect(entry).to.be.null;
-                });
+            it('getEntryView_null', async function () {
+                const entry = await map.getEntryView('non-exist');
+                expect(entry).to.be.null;
             });
 
-            it('addIndex', function () {
+            it('addIndex', async function () {
                 const orderedIndexCfg = {
                     name: 'length',
                     attributes: ['this']
@@ -507,74 +421,55 @@ describe('MapProxyTest', function () {
                 ]);
             });
 
-            it('tryLock_success', function () {
-                return map.tryLock('key0').then(function (success) {
-                    return expect(success).to.be.true;
-                });
+            it('tryLock_success', async function () {
+                const success = await map.tryLock('key0');
+                expect(success).to.be.true;
             });
 
-            it('tryLock_fail', function () {
-                return RC.executeOnController(cluster.id, generateLockScript(map.getName(), '"key0"'), 1)
-                    .then(function (s) {
-                        return map.tryLock('key0');
-                    })
-                    .then(function (success) {
-                        return expect(success).to.be.false;
-                    });
+            it('tryLock_fail', async function () {
+                await RC.executeOnController(cluster.id, generateLockScript(map.getName(), '"key0"'), 1);
+                const success = await map.tryLock('key0');
+                expect(success).to.be.false;
             });
 
-            it('tryLock_success with timeout', function () {
-                return RC.executeOnController(cluster.id, generateLockScript(map.getName(), '"key0"'), 1)
-                    .then(function () {
-                        const promise = map.tryLock('key0', 1000);
-                        RC.executeOnController(cluster.id, generateUnlockScript(map.getName(), '"key0"'), 1);
-                        return promise;
-                    })
-                    .then(function (success) {
-                        return expect(success).to.be.true;
-                    });
+            it('tryLock_success with timeout', async function () {
+                await RC.executeOnController(cluster.id, generateLockScript(map.getName(), '"key0"'), 1);
+                const startTime = Date.now();
+                setTimeout(async function () {
+                    await RC.executeOnController(cluster.id, generateUnlockScript(map.getName(), '"key0"'), 1);
+                }, 1000);
+                const success = await map.tryLock('key0', 2000);
+                const elapsed = Date.now() - startTime;
+                expect(success).to.be.true;
+                expect(elapsed).to.be.greaterThan(995);
             });
 
-            it('tryLock_fail with timeout', function () {
-                return RC.executeOnController(cluster.id, generateLockScript(map.getName(), '"key0"'), 1)
-                    .then(function () {
-                        return map.tryLock('key0', 1000);
-                    })
-                    .then(function (success) {
-                        return expect(success).to.be.false;
-                    });
+            it('tryLock_fail with timeout', async function () {
+                await RC.executeOnController(cluster.id, generateLockScript(map.getName(), '"key0"'), 1);
+                const success = await map.tryLock('key0', 1000);
+                expect(success).to.be.false;
             });
 
-            it('tryPut success', function () {
-                return map.tryPut('key0', 'val0', 1000).then(function (success) {
-                    return expect(success).to.be.true;
-                })
+            it('tryPut success', async function () {
+                const success = await map.tryPut('key0', 'val0', 1000);
+                expect(success).to.be.true;
             });
 
-            it('tryPut fail', function () {
-                return RC.executeOnController(cluster.id, generateLockScript(map.getName(), '"key0"'), 1)
-                    .then(function () {
-                        return map.tryPut('key0', 'val0', 200);
-                    })
-                    .then(function (success) {
-                        return expect(success).to.be.false;
-                    });
+            it('tryPut fail', async function () {
+                await RC.executeOnController(cluster.id, generateLockScript(map.getName(), '"key0"'), 1);
+                const success = await map.tryPut('key0', 'val0', 200);
+                expect(success).to.be.false;
             });
 
-            it('tryRemove success', function () {
-                return map.tryRemove('key0', 1000).then(function (success) {
-                    return expect(success).to.be.true;
-                });
+            it('tryRemove success', async function () {
+                const success = await map.tryRemove('key0', 1000);
+                expect(success).to.be.true;
             });
 
-            it('tryRemove fail', function () {
-                return RC.executeOnController(cluster.id, generateLockScript(map.getName(), '"key0"'), 1)
-                    .then(function () {
-                        return map.tryRemove('key0', 200);
-                    })
-                    .then(function (success) {
-                        return expect(success).to.be.false;
-                    });
+            it('tryRemove fail', async function () {
+                await RC.executeOnController(cluster.id, generateLockScript(map.getName(), '"key0"'), 1);
+                const success = await map.tryRemove('key0', 200);
+                expect(success).to.be.false;
             });
 
             it('addEntryListener on map, entryAdded fires because predicate returns true for that entry', function (done) {
@@ -766,7 +661,7 @@ describe('MapProxyTest', function () {
                     }
                 };
                 map.addEntryListener(listenerObject, 'key1', true).then(function () {
-                    map.evict('key1')
+                    map.evict('key1');
                 });
             });
 
@@ -808,19 +703,19 @@ describe('MapProxyTest', function () {
 
             it('addEntryListener on map entryExpired includeValue=true', function (done) {
                 const listenerObj = {
-                  expired: function (entryEvent) {
-                      try {
-                          expect(entryEvent.name).to.equal('test');
-                          expect(entryEvent.key).to.equal('expiringKey');
-                          expect(entryEvent.value).to.be.equal(null);
-                          expect(entryEvent.oldValue).to.equal('expiringValue');
-                          expect(entryEvent.mergingValue).to.be.equal(null);
-                          expect(entryEvent.member).to.not.be.equal(null);
-                          done();
-                      } catch (err) {
-                          done(err);
-                      }
-                  }
+                    expired: function (entryEvent) {
+                        try {
+                            expect(entryEvent.name).to.equal('test');
+                            expect(entryEvent.key).to.equal('expiringKey');
+                            expect(entryEvent.value).to.be.equal(null);
+                            expect(entryEvent.oldValue).to.equal('expiringValue');
+                            expect(entryEvent.mergingValue).to.be.equal(null);
+                            expect(entryEvent.member).to.not.be.equal(null);
+                            done();
+                        } catch (err) {
+                            done(err);
+                        }
+                    }
                 };
                 map.addEntryListener(listenerObj, undefined, true)
                     .then(function () {
@@ -828,88 +723,66 @@ describe('MapProxyTest', function () {
                     });
             });
 
-            it('removeEntryListener with correct id', function () {
-                return map.addEntryListener({}).then(function (listenerId) {
-                    return map.removeEntryListener(listenerId);
-                }).then(function (success) {
-                    return expect(success).to.be.true;
-                });
+            it('removeEntryListener with correct id', async function () {
+                const listenerId = await map.addEntryListener({});
+                const success = await map.removeEntryListener(listenerId);
+                expect(success).to.be.true;
             });
 
-            it('removeEntryListener with wrong id', function () {
-                return map.removeEntryListener('aaa').then(function (success) {
-                    return expect(success).to.be.false;
-                });
+            it('removeEntryListener with wrong id', async function () {
+                const success = await map.removeEntryListener('aaa');
+                expect(success).to.be.false;
             });
 
-            it('entrySetWithPredicate', function () {
-                return map.entrySetWithPredicate(Predicates.sql('this == val3')).then(function (entrySet) {
-                    expect(entrySet.length).to.equal(1);
-                    expect(entrySet[0][0]).to.equal('key3');
-                    expect(entrySet[0][1]).to.equal('val3');
-                });
+            it('entrySetWithPredicate', async function () {
+                const entrySet = await map.entrySetWithPredicate(Predicates.sql('this == val3'));
+                expect(entrySet.length).to.equal(1);
+                expect(entrySet[0][0]).to.equal('key3');
+                expect(entrySet[0][1]).to.equal('val3');
             });
 
-            it('keySetWithPredicate', function () {
-                return map.keySetWithPredicate(Predicates.sql('this == val3')).then(function (keySet) {
-                    expect(keySet.length).to.equal(1);
-                    expect(keySet[0]).to.equal('key3');
-                });
+            it('keySetWithPredicate', async function () {
+                const keySet = await map.keySetWithPredicate(Predicates.sql('this == val3'));
+                expect(keySet.length).to.equal(1);
+                expect(keySet[0]).to.equal('key3');
             });
 
-            it('keySetWithPredicate null response', function () {
-                return map.keySetWithPredicate(Predicates.sql('this == nonexisting')).then(function (keySet) {
-                    expect(keySet.length).to.equal(0);
-                });
+            it('keySetWithPredicate null response', async function () {
+                const keySet = await map.keySetWithPredicate(Predicates.sql('this == nonexisting'));
+                expect(keySet.length).to.equal(0);
             });
 
-            it('valuesWithPredicate', function () {
-                return map.valuesWithPredicate(Predicates.sql('this == val3')).then(function (valueList) {
-                    expect(valueList.toArray().length).to.equal(1);
-                    expect(valueList.toArray()[0]).to.equal('val3');
-                });
+            it('valuesWithPredicate', async function () {
+                const valueList = await map.valuesWithPredicate(Predicates.sql('this == val3'));
+                expect(valueList.toArray().length).to.equal(1);
+                expect(valueList.toArray()[0]).to.equal('val3');
             });
 
-            it('entrySetWithPredicate paging', function () {
-                return map.entrySetWithPredicate(Predicates.paging(Predicates.greaterEqual('this', 'val3'), 1))
-                    .then(function (entrySet) {
-                        expect(entrySet.length).to.equal(1);
-                        expect(entrySet[0]).to.deep.equal(['key3', 'val3']);
-                    });
+            it('entrySetWithPredicate paging', async function () {
+                const entrySet = await map.entrySetWithPredicate(Predicates.paging(Predicates.greaterEqual('this', 'val3'), 1));
+                expect(entrySet.length).to.equal(1);
+                expect(entrySet[0]).to.deep.equal(['key3', 'val3']);
             });
 
-            it('keySetWithPredicate paging', function () {
-                return map.keySetWithPredicate(Predicates.paging(Predicates.greaterEqual('this', 'val3'), 1))
-                    .then(function (keySet) {
-                        expect(keySet.length).to.equal(1);
-                        expect(keySet[0]).to.equal('key3');
-                    });
+            it('keySetWithPredicate paging', async function () {
+                const keySet = await map.keySetWithPredicate(Predicates.paging(Predicates.greaterEqual('this', 'val3'), 1));
+                expect(keySet.length).to.equal(1);
+                expect(keySet[0]).to.equal('key3');
             });
 
-            it('valuesWithPredicate paging', function () {
-                return map.valuesWithPredicate(Predicates.paging(Predicates.greaterEqual('this', 'val3'), 1))
-                    .then(function (values) {
-                        expect(values.toArray().length).to.equal(1);
-                        expect(values.toArray()[0]).to.equal('val3');
-                    });
+            it('valuesWithPredicate paging', async function () {
+                const values = await map.valuesWithPredicate(Predicates.paging(Predicates.greaterEqual('this', 'val3'), 1));
+                expect(values.toArray().length).to.equal(1);
+                expect(values.toArray()[0]).to.equal('val3');
             });
 
-            it('destroy', function () {
-                let dmap;
-                let newMap;
-                return client.getMap('map-to-be-destroyed').then(function (mp) {
-                    dmap = mp;
-                    return dmap.put('key', 'val');
-                }).then(function () {
-                    return dmap.destroy();
-                }).then(function () {
-                    return client.getMap('map-to-be-destroyed');
-                }).then(function (mp) {
-                    newMap = mp;
-                    return newMap.size();
-                }).then(function (s) {
-                    expect(s).to.equal(0);
-                });
+            it('destroy', async function () {
+                const dmap = await client.getMap('map-to-be-destroyed');
+                await dmap.put('key', 'val');
+                await dmap.destroy();
+                const newMap = await client.getMap('map-to-be-destroyed');
+                const s = await newMap.size();
+                expect(s).to.equal(0);
             });
         });
     });
