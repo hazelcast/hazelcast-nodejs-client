@@ -15,10 +15,10 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
+const expect = chai.expect;
 
 const RC = require('../RC');
 const { Client, ClientOfflineError, ClientNotActiveError } = require('../../');
@@ -142,7 +142,7 @@ describe('ConnectionStrategyTest', function () {
             }
         });
 
-        cluster = await RC.createCluster(null, null)
+        cluster = await RC.createCluster(null, null);
         config.clusterName = cluster.id;
         const member = await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient(config);

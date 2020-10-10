@@ -87,7 +87,7 @@ describe('HeartbeatFromServerTest', function () {
                 const remoteAddress = connection.getRemoteAddress();
                 if (remoteAddress.host === member2.host && remoteAddress.port === member2.port) {
                     if (connection.closedReason === 'Heartbeat timed out'
-                            && connection.closedCause instanceof TargetDisconnectedError) {
+                        && connection.closedCause instanceof TargetDisconnectedError) {
                         done();
                     } else {
                         done(new Error('Connection was not closed due to heartbeat timeout. Reason: '
@@ -128,7 +128,7 @@ describe('HeartbeatFromServerTest', function () {
                 const remoteAddress = connection.getRemoteAddress();
                 if (remoteAddress.host === member2.host && remoteAddress.port === member2.port) {
                     if (!(connection.closedReason === 'Heartbeat timed out'
-                            || connection.closedCause instanceof TargetDisconnectedError)) {
+                        || connection.closedCause instanceof TargetDisconnectedError)) {
                         done(new Error('Connection was closed due to heartbeat timeout. Reason: '
                             + connection.closedReason + ', cause: ' + connection.closedCause));
                     }

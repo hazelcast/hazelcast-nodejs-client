@@ -22,7 +22,7 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 const RC = require('../RC');
-const Client = require('../../.').Client;
+const { Client } = require('../../.');
 
 describe('NearCacheSimpleInvalidationTest', function () {
 
@@ -32,67 +32,55 @@ describe('NearCacheSimpleInvalidationTest', function () {
 
     [false, true].forEach(function (batchInvalidationEnabled) {
         describe('batch invalidations enabled=' + batchInvalidationEnabled, function () {
-            before(function () {
+            before(async function () {
                 let clusterConfig = null;
                 if (!batchInvalidationEnabled) {
                     clusterConfig = fs.readFileSync(__dirname + '/hazelcast_nearcache_batchinvalidation_false.xml', 'utf8');
                 }
-                return RC.createCluster(null, clusterConfig).then(function (res) {
-                    cluster = res;
-                    return RC.startMember(cluster.id);
-                }).then(function () {
-                    return Client.newHazelcastClient({
-                        clusterName: cluster.id,
-                        nearCaches: {
-                            [mapName]: {}
-                        }
-                    });
-                }).then(function (cl) {
-                    client = cl;
-                    return Client.newHazelcastClient({ clusterName: cluster.id });
-                }).then(function (cl) {
-                    updaterClient = cl;
+                cluster = await RC.createCluster(null, clusterConfig);
+                await RC.startMember(cluster.id);
+                client = await Client.newHazelcastClient({
+                    clusterName: cluster.id,
+                    nearCaches: {
+                        [mapName]: {}
+                    }
                 });
+                updaterClient = await Client.newHazelcastClient({ clusterName: cluster.id });
             });
 
-            after(function () {
-                return client.shutdown()
-                    .then(() => updaterClient.shutdown())
-                    .then(() => RC.terminateCluster(cluster.id));
+            after(async function () {
+                await client.shutdown();
+                await updaterClient.shutdown();
+                return RC.terminateCluster(cluster.id);
             });
 
-            it('client observes outside invalidations', function () {
+            it('client observes outside invalidations', async function () {
                 this.timeout(10000);
                 const entryCount = 1000;
-                let map;
-                return client.getMap(mapName).then(function (mp) {
-                    map = mp;
-                    let getPromise = Promise.resolve();
-                    for (let i = 0; i < entryCount; i++) {
-                        getPromise = getPromise.then(map.get.bind(map, '' + i));
-                    }
-                    return getPromise;
-                }).then(function () {
-                    const stats = map.nearCache.getStatistics();
-                    expect(stats.missCount).to.equal(entryCount);
-                    expect(stats.entryCount).to.equal(entryCount);
-                    let putPromise = Promise.resolve();
-                    for (let i = 0; i < entryCount; i++) {
-                        putPromise = putPromise.then(map.put.bind(map, '' + i, 'changedvalue', undefined));
-                    }
-                    return putPromise;
-                }).then(function () {
-                    let getPromise = Promise.resolve();
-                    for (let i = 0; i < entryCount; i++) {
-                        getPromise = getPromise.then(map.get.bind(map, '' + i));
-                    }
-                    return getPromise;
-                }).then(function () {
-                    const stats = map.nearCache.getStatistics();
-                    expect(stats.entryCount).to.equal(entryCount);
-                    expect(stats.hitCount).to.equal(0);
-                    expect(stats.missCount).to.equal(entryCount * 2);
-                });
+                let map = await client.getMap(mapName);
+                let getPromise = Promise.resolve();
+                for (let i = 0; i < entryCount; i++) {
+                    await getPromise;
+                    await map.get('' + i);
+                }
+                await getPromise;
+                let stats = map.nearCache.getStatistics();
+                expect(stats.missCount).to.equal(entryCount);
+                expect(stats.entryCount).to.equal(entryCount);
+                let putPromise = Promise.resolve();
+                for (let i = 0; i < entryCount; i++) {
+                    putPromise = putPromise.then(map.put.bind(map, '' + i, 'changedvalue', undefined));
+                }
+                await putPromise;
+                getPromise = Promise.resolve();
+                for (let i = 0; i < entryCount; i++) {
+                    getPromise = getPromise.then(map.get.bind(map, '' + i));
+                }
+                await getPromise;
+                stats = map.nearCache.getStatistics();
+                expect(stats.entryCount).to.equal(entryCount);
+                expect(stats.hitCount).to.equal(0);
+                expect(stats.missCount).to.equal(entryCount * 2);
             });
         });
     });

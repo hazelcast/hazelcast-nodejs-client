@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const path = require('path');
 const Util = require('../../lib/util/Util');
 
@@ -24,5 +24,5 @@ describe('ResolvePathTest', function () {
         expect(Util.resolvePath('.')).to.equal(process.cwd());
         expect(Util.resolvePath('filename')).to.equal(path.join(process.cwd(), 'filename'));
         expect(Util.resolvePath('..')).to.equal(path.join(process.cwd(), '..'));
-    })
+    });
 });

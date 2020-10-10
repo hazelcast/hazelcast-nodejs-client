@@ -16,7 +16,7 @@
 'use strict';
 
 const fs = require('fs');
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const RC = require('../RC');
 const Util = require('../Util');
 const { Client } = require('../../');
@@ -26,18 +26,16 @@ describe('HeartbeatFromClientTest', function () {
     this.timeout(30000);
     let cluster;
 
-    beforeEach(function () {
+    beforeEach(async function () {
         const serverConfig = fs.readFileSync(__dirname + '/short-heartbeat.xml', 'utf8');
-        return RC.createCluster(null, serverConfig).then(function (resp) {
-            cluster = resp;
-        });
+        cluster = await RC.createCluster(null, serverConfig);
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         return RC.terminateCluster(cluster.id);
     });
 
-    it('client sends heartbeat periodically even when server continuously pushes messages', function () {
+    it('client sends heartbeat periodically even when server continuously pushes messages', async function () {
         const MAP_NAME = 'testmap';
         let client1, client2;
         let connectionClosedEventCount = 0;
@@ -52,43 +50,31 @@ describe('HeartbeatFromClientTest', function () {
                 'hazelcast.client.heartbeat.interval': 1000
             }
         };
-        return RC.startMember(cluster.id).then(function (m) {
-            return Client.newHazelcastClient(clientConfig);
-        }).then(function (c) {
-            client1 = c;
-            client1.getConnectionManager().on('connectionClosed', function () {
-                connectionClosedEventCount++;
-            });
-            return Client.newHazelcastClient(clientConfig);
-        }).then(function (c) {
-            client2 = c;
-            return client1.getMap(MAP_NAME);
-        }).then(function (m) {
-            mapFromClient1 = m;
-            return mapFromClient1.addEntryListener({
-                added: function () {
-                    // no-op
-                },
-                updated: function () {
-                    // no-op
-                }
-            })
-        }).then(function () {
-            return client2.getMap(MAP_NAME);
-        }).then(function (m) {
-            let counter = 0;
-            mapFromClient2 = m;
-            pushTask = setInterval(function () {
-                mapFromClient2.put('testkey', counter++);
-            }, 1000);
-            return Util.promiseLater(15000, () => {});
-        }).then(function () {
-            clearInterval(pushTask);
-            expect(connectionClosedEventCount).to.equal(0);
-            return client1.shutdown();
-        }).then(function () {
-            return client2.shutdown();
+        await RC.startMember(cluster.id);
+        client1 = await Client.newHazelcastClient(clientConfig);
+        client1.getConnectionManager().on('connectionClosed', function () {
+            connectionClosedEventCount++;
         });
+        client2 = await Client.newHazelcastClient(clientConfig);
+        mapFromClient1 = await client1.getMap(MAP_NAME);
+        await mapFromClient1.addEntryListener({
+            added: function () {
+                // no-op
+            },
+            updated: function () {
+                // no-op
+            }
+        });
+        mapFromClient2 = await client2.getMap(MAP_NAME);
+        let counter = 0;
+        pushTask = setInterval(function () {
+            mapFromClient2.put('testkey', counter++);
+        }, 1000);
+        await Util.promiseLater(15000, () => { });
+        clearInterval(pushTask);
+        expect(connectionClosedEventCount).to.equal(0);
+        await client1.shutdown();
+        await client2.shutdown();
     });
 });
 

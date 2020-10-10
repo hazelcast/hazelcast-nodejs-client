@@ -15,9 +15,9 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const RC = require('../RC');
-const Client = require('../../').Client;
+const { Client } = require('../../');
 
 describe('PNCounterBasicTest', function () {
 
@@ -25,78 +25,67 @@ describe('PNCounterBasicTest', function () {
     let client;
     let pnCounter;
 
-    before(function () {
-        return RC.createCluster(null, null).then(function (cl) {
-            cluster = cl;
-            return RC.startMember(cluster.id);
-        }).then(function (member) {
-            return Client.newHazelcastClient({ clusterName: cluster.id });
-        }).then(function (cl) {
-            client = cl;
-        });
+    before(async function () {
+        cluster = await RC.createCluster(null, null);
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({ clusterName: cluster.id });
     });
 
-    after(function () {
-        return client.shutdown()
-            .then(() => RC.terminateCluster(cluster.id));
+    after(async function () {
+        await client.shutdown();
+        return RC.terminateCluster(cluster.id);
     });
 
-    beforeEach(function () {
-        return client.getPNCounter('pncounter').then(function (counter) {
-            pnCounter = counter;
-        });
+    beforeEach(async function () {
+        pnCounter = await client.getPNCounter('pncounter');
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         return pnCounter.destroy();
     });
 
-    function testPNCounterMethod(promise, returnVal, postOperation) {
-        return promise.then(function (value) {
-            expect(value.toNumber()).to.equal(returnVal);
-            return pnCounter.get();
-        }).then(function (value) {
-            return expect(value.toNumber()).to.equal(postOperation);
-        });
+    async function testPNCounterMethod(promise, returnVal, postOperation) {
+        let value = await promise;
+        expect(value.toNumber()).to.equal(returnVal);
+        value = await pnCounter.get();
+        return expect(value.toNumber()).to.equal(postOperation);
     }
 
-    it('get', function () {
-        return pnCounter.getAndAdd(4).then(function (value) {
-            return pnCounter.get();
-        }).then(function (value) {
-            return expect(value.toNumber()).to.equal(4);
-        });
+    it('get', async function () {
+        let value = await pnCounter.getAndAdd(4);
+        value = await pnCounter.get();
+        return expect(value.toNumber()).to.equal(4);
     });
 
-    it('getAndAdd', function () {
+    it('getAndAdd', async function () {
         return testPNCounterMethod(pnCounter.getAndAdd(3), 0, 3);
     });
 
-    it('addAndGet', function () {
+    it('addAndGet', async function () {
         return testPNCounterMethod(pnCounter.addAndGet(3), 3, 3);
     });
 
-    it('getAndSubtract', function () {
+    it('getAndSubtract', async function () {
         return testPNCounterMethod(pnCounter.getAndSubtract(3), 0, -3);
     });
 
-    it('subtractAndGet', function () {
+    it('subtractAndGet', async function () {
         return testPNCounterMethod(pnCounter.subtractAndGet(3), -3, -3);
     });
 
-    it('decrementAndGet', function () {
+    it('decrementAndGet', async function () {
         return testPNCounterMethod(pnCounter.decrementAndGet(3), -1, -1);
     });
 
-    it('incrementAndGet', function () {
+    it('incrementAndGet', async function () {
         return testPNCounterMethod(pnCounter.incrementAndGet(), 1, 1);
     });
 
-    it('getAndDecrement', function () {
+    it('getAndDecrement', async function () {
         return testPNCounterMethod(pnCounter.getAndDecrement(), 0, -1);
     });
 
-    it('getAndIncrement', function () {
+    it('getAndIncrement', async function () {
         return testPNCounterMethod(pnCounter.getAndIncrement(), 0, 1);
     });
 });

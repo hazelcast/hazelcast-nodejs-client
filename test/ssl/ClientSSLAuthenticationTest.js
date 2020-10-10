@@ -16,14 +16,14 @@
 'use strict';
 
 const chai = require('chai');
-const expect = chai.expect;
 const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
+const expect = chai.expect;
 const fs = require('fs');
 const path = require('path');
 
-const RC = require('./../RC');
-const { Client, IllegalStateError } = require('../../');
+const RC = require('../RC');
+const { Client, IllegalStateError } = require('../../lib');
 const { markEnterprise } = require('../Util');
 
 describe('ClientSSLAuthenticationTest', function () {
@@ -37,11 +37,9 @@ describe('ClientSSLAuthenticationTest', function () {
         markEnterprise(this);
     });
 
-    function createMemberWithXML(serverXML) {
-        return RC.createCluster(null, fs.readFileSync(serverXML, 'utf8')).then(function (cl) {
-            cluster = cl;
-            return RC.startMember(cluster.id);
-        });
+    async function createMemberWithXML(serverXML) {
+        const cluster = await RC.createCluster(null, fs.readFileSync(serverXML, 'utf8'));
+        return RC.startMember(cluster.id);
     }
 
     function createClientConfigWithBasicSSLOptionsFactory(key, cert, ca) {
@@ -110,76 +108,66 @@ describe('ClientSSLAuthenticationTest', function () {
                 this.timeout(10000);
             });
 
-            afterEach(function () {
+            afterEach(async function () {
                 return RC.terminateCluster(cluster.id);
             });
 
-            it('ma:required, they both know each other should connect', function () {
-                return createMemberWithXML(maRequiredXML).then(function () {
-                    return Client.newHazelcastClient(createClientConfigFn(
-                        './client1-key.pem', './client1-cert.pem', './server1-cert.pem'
-                    ));
-                }).then(function (client) {
-                    return client.shutdown();
-                });
+            it('ma:required, they both know each other should connect', async function () {
+                await createMemberWithXML(maRequiredXML);
+                const client = await Client.newHazelcastClient(createClientConfigFn(
+                    './client1-key.pem', './client1-cert.pem', './server1-cert.pem'
+                ));
+                return client.shutdown();
             });
 
-            it('ma:required, server knows client, client does not know server should fail', function () {
-                return createMemberWithXML(maRequiredXML).then(function () {
-                    return expect(Client.newHazelcastClient(createClientConfigFn(
-                        './client1-key.pem', './client1-cert.pem', './server2-cert.pem'
-                    ))).to.be.rejectedWith(IllegalStateError);
-                });
+            it('ma:required, server knows client, client does not know server should fail', async function () {
+                await createMemberWithXML(maRequiredXML);
+                return expect(Client.newHazelcastClient(createClientConfigFn(
+                    './client1-key.pem', './client1-cert.pem', './server2-cert.pem'
+                ))).to.be.rejectedWith(IllegalStateError);
             });
 
-            it('ma:required, server does not know client, client knows server should fail', function () {
-                return createMemberWithXML(maRequiredXML).then(function () {
-                    return expect(Client.newHazelcastClient(createClientConfigFn(
-                        './client2-key.pem', './client2-cert.pem', './server1-cert.pem'
-                    ))).to.be.rejectedWith(IllegalStateError);
-                });
+            it('ma:required, server does not know client, client knows server should fail', async function () {
+                await createMemberWithXML(maRequiredXML);
+                return expect(Client.newHazelcastClient(createClientConfigFn(
+                    './client2-key.pem', './client2-cert.pem', './server1-cert.pem'
+                ))).to.be.rejectedWith(IllegalStateError);
             });
 
-            it('ma:required, neither one knows the other should fail', function () {
-                return createMemberWithXML(maRequiredXML).then(function () {
-                    return expect(Client.newHazelcastClient(createClientConfigFn(
-                        './client2-key.pem', './client2-cert.pem', './server2-cert.pem'
-                    ))).to.be.rejectedWith(IllegalStateError);
-                });
+            it('ma:required, neither one knows the other should fail', async function () {
+                await createMemberWithXML(maRequiredXML);
+                return expect(Client.newHazelcastClient(createClientConfigFn(
+                    './client2-key.pem', './client2-cert.pem', './server2-cert.pem'
+                ))).to.be.rejectedWith(IllegalStateError);
             });
 
-            it('ma:optional, they both know each other should connect', function () {
-                return createMemberWithXML(maOptionalXML).then(function () {
-                    return Client.newHazelcastClient(createClientConfigFn(
-                        './client1-key.pem', './client1-cert.pem', './server1-cert.pem'
-                    ));
-                }).then(function (client) {
-                    return client.shutdown();
-                });
+            it('ma:optional, they both know each other should connect', async function () {
+                await createMemberWithXML(maOptionalXML);
+                const client = await Client.newHazelcastClient(createClientConfigFn(
+                    './client1-key.pem', './client1-cert.pem', './server1-cert.pem'
+                ));
+                return client.shutdown();
             });
 
-            it('ma:optional, server knows client, client does not know server should fail', function () {
-                return createMemberWithXML(maOptionalXML).then(function () {
-                    return expect(Client.newHazelcastClient(createClientConfigFn(
-                        './client1-key.pem', './client1-cert.pem', './server2-cert.pem'
-                    ))).to.be.rejectedWith(IllegalStateError);
-                });
+            it('ma:optional, server knows client, client does not know server should fail', async function () {
+                await createMemberWithXML(maOptionalXML);
+                return expect(Client.newHazelcastClient(createClientConfigFn(
+                    './client1-key.pem', './client1-cert.pem', './server2-cert.pem'
+                ))).to.be.rejectedWith(IllegalStateError);
             });
 
-            it('ma:optional, server does not know client, client knows server should fail', function () {
-                return createMemberWithXML(maOptionalXML).then(function () {
-                    return expect(Client.newHazelcastClient(createClientConfigFn(
-                        './client2-key.pem', './client2-cert.pem', './server1-cert.pem'
-                    ))).to.be.rejectedWith(IllegalStateError);
-                });
+            it('ma:optional, server does not know client, client knows server should fail', async function () {
+                await createMemberWithXML(maOptionalXML);
+                return expect(Client.newHazelcastClient(createClientConfigFn(
+                    './client2-key.pem', './client2-cert.pem', './server1-cert.pem'
+                ))).to.be.rejectedWith(IllegalStateError);
             });
 
-            it('ma:optional, neither knows the other should fail', function () {
-                return createMemberWithXML(maOptionalXML).then(function () {
-                    return expect(Client.newHazelcastClient(createClientConfigFn(
-                        './client2-key.pem', './client2-cert.pem', './server2-cert.pem'
-                    ))).to.be.rejectedWith(IllegalStateError);
-                });
+            it('ma:optional, neither knows the other should fail', async function () {
+                await createMemberWithXML(maOptionalXML);
+                return expect(Client.newHazelcastClient(createClientConfigFn(
+                    './client2-key.pem', './client2-cert.pem', './server2-cert.pem'
+                ))).to.be.rejectedWith(IllegalStateError);
             });
         });
     });

@@ -16,7 +16,7 @@
 'use strict';
 
 const sinon = require('sinon');
-const expect = require('chai').expect;
+const { expect } = require('chai');
 
 const { LogLevel } = require('../../lib/');
 const { IllegalStateError } = require('../../');
@@ -52,57 +52,51 @@ describe('HazelcastCloudProviderTest', function () {
         }
     });
 
-    it('loadAddresses', function () {
-        return provider.loadAddresses().then((res) => {
-            return expect(res).to.have.length(3);
-        });
+    it('loadAddresses', async function () {
+        const res = await provider.loadAddresses();
+        expect(res).to.have.length(3);
     });
 
-    it('loadAddresses_whenErrorIsThrown', function () {
+    it('loadAddresses_whenErrorIsThrown', async function () {
         HazelcastCloudDiscovery.prototype.discoverNodes.restore();
         sinon.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes').callsFake(function () {
             return Promise.reject(new IllegalStateError('Expected exception'));
         });
 
-        return provider.loadAddresses().then((res) => {
-            return expect(res).to.have.length(0);
-        });
+        const res = await provider.loadAddresses();
+        expect(res).to.have.length(0);
     });
 
-    it('translate_whenAddressIsNull_thenReturnNull', function () {
-        return provider.translate(null).then((res) => {
-            return expect(res).to.be.null;
-        });
+    it('translate_whenAddressIsNull_thenReturnNull', async function () {
+        const res = await provider.translate(null);
+        expect(res).to.be.null;
     });
 
-    it('translate', function () {
-        return provider.translate('10.0.0.1:5701').then((res) => {
-            expect('198.51.100.1').to.equal(res.host);
-            expect(5701).to.equal(res.port);
-        });
+    it('translate', async function () {
+        const res = await provider.translate('10.0.0.1:5701');
+        expect('198.51.100.1').to.equal(res.host);
+        expect(5701).to.equal(res.port);
     });
 
-    it('refresh_and_translate', function () {
-        return provider.refresh().then(
-            provider.translate('10.0.0.1:5701').then((res) => {
-                    expect('198.51.100.1').to.equal(res.host);
-                    expect(5701).to.equal(res.port);
-                }));
+    it('refresh_and_translate', async function () {
+        await provider.refresh();
+        const res = await provider.translate('10.0.0.1:5701');
+        expect('198.51.100.1').to.equal(res.host);
+        expect(5701).to.equal(res.port);
     });
 
-    it('translate_whenNotFound_thenReturnNull', function () {
+    it('translate_whenNotFound_thenReturnNull', async function () {
         const notAvailableAddress = new AddressImpl('127.0.0.3', 5701);
-        return provider.translate(notAvailableAddress).then((res) => {
-            return expect(res).to.be.null;
-        });
+        const res = await provider.translate(notAvailableAddress);
+        expect(res).to.be.null;
     });
 
-    it('refresh_whenException_thenLogWarning', function () {
+    it('refresh_whenException_thenLogWarning', async function () {
         HazelcastCloudDiscovery.prototype.discoverNodes.restore();
         sinon.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes').callsFake(function () {
             return Promise.reject(new IllegalStateError('Expected exception'));
         });
-        provider.refresh();
+        return provider.refresh();
     });
 
 });
