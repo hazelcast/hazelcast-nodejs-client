@@ -93,7 +93,7 @@ describe('ClientSSLAuthenticationTest', function () {
         };
     }
 
-    [false, true].forEach(function (value) {
+    [false, true].forEach(function (value) { //eslint-disable-line
         let createClientConfigFn;
         let title;
         if (value) {

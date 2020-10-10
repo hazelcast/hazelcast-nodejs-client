@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/* eslint-disable */
 'use strict';
 
 const expect = require('chai').expect;
@@ -64,7 +66,8 @@ describe('MigratedDataTest', function () {
     }
 
     before(function () {
-        return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_eventual_nearcache.xml', 'utf8')).then(function (resp) {
+        return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_eventual_nearcache.xml', 'utf8'))
+        .then(function (resp) {
             cluster = resp;
             return RC.startMember(cluster.id);
         }).then(function (m) {
@@ -98,7 +101,8 @@ describe('MigratedDataTest', function () {
         return RC.terminateCluster(cluster.id);
     });
 
-    it('killing a server migrates data to the other node, migrated data has new uuid, near cache discards data with old uuid', () => {
+    it('killing a server migrates data to the other node, migrated data has new uuid, near cache discards data with old uuid',
+     function() {
         let map;
         let survivingMember;
         const key = 1;

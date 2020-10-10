@@ -257,14 +257,14 @@ describe('QueueProxyTest', function () {
         });
     });
 
-    it('containsAll true', function () {
+    it('containsAll true', function () { //eslint-disable-line
         const values = ['item0', 'item_absent'];
         return queue.containsAll(values).then(function (ret) {
             return expect(ret).to.be.false;
         });
     });
 
-    it('containsAll true', function () {
+    it('containsAll true', function () { //eslint-disable-line
         const values = [];
         return queue.containsAll(values).then(function (ret) {
             return expect(ret).to.be.true;

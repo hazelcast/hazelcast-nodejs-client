@@ -61,7 +61,8 @@ describe('ClassDefinitionTest', function () {
         expect(a.getFieldById.bind(a, 0)).to.not.throw(Error);
     });
 
-    it('getFieldById():When index is more than or equal to total number of fields it should throw an range exception.', function () {
+    it('getFieldById():When index is more than or equal to total number of fields it should throw an range exception.',
+     function () {
         expect(a.getFieldById.bind(a, 3)).to.throw(Error);
     });
 

@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/* eslint-disable */
 'use strict';
 
 const chai = require('chai');
@@ -28,12 +30,19 @@ const { NearCacheConfigImpl } = require('../../lib/config/NearCacheConfig');
 const { SerializationConfigImpl } = require('../../lib/config/SerializationConfig');
 const { promiseLater } = require('../Util');
 
+ const evictionPolicy = [
+     EvictionPolicy.LFU,
+     EvictionPolicy.LRU,
+     EvictionPolicy.RANDOM,
+     EvictionPolicy.NONE,
+ ];
+
 describe('NearCacheTest', function () {
 
     const invalidateOnChange = [false, true];
     const ttls = [0, 1];
-    const evictionPolicy = [EvictionPolicy.LFU, EvictionPolicy.LRU, EvictionPolicy.RANDOM, EvictionPolicy.NONE];
     const testConfigs = [];
+    
     evictionPolicy.forEach(function (evictionPolicy) {
         invalidateOnChange.forEach(function (ioc) {
             ttls.forEach(function (ttl) {

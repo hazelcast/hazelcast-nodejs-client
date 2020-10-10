@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/* eslint-disable */
 'use strict';
 
 const { expect } = require('chai');
@@ -29,13 +30,14 @@ const {
  * all members of a Hot Restart cluster were restarted.
  * This test assumes cluster with a single member.
  */
+
+const hotRestartDir = `/tmp/hot-restart-test-${randomString()}`;
+
 describe('ClientHotRestartEventTest', function () {
 
     this.timeout(60000);
     let client;
     let cluster;
-
-    const hotRestartDir = `/tmp/hot-restart-test-${randomString()}`;
 
     function createClusterConfig(port) {
         return `<?xml version="1.0" encoding="UTF-8"?>

@@ -27,7 +27,7 @@ describe('GlobalSerializerTest', function () {
         this.surname = surname;
     }
 
-    before(function () {
+    before(function () { //eslint-disable-line
         const cfg = new SerializationConfigImpl();
         cfg.globalSerializer = {
             id: 10,

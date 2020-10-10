@@ -224,7 +224,7 @@ describe('SetProxyTest', function () {
                 expect(itemEvent.item).to.be.equal(1);
                 expect(itemEvent.eventType).to.be.equal(ItemEventType.REMOVED);
                 expect(itemEvent.member).to.not.be.equal(null);
-                done();
+                done(); //eslint-disable-line
             }
         }).then(function (registrationId) {
             return setInstance.removeItemListener(registrationId);

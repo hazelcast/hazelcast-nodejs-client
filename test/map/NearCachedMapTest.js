@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/* eslint-disable */
 'use strict';
 
 const expect = require('chai').expect;
@@ -39,7 +40,8 @@ describe('NearCachedMapTest', function () {
                         }
                     }
                 };
-                return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_nearcache_batchinvalidation_false.xml', 'utf8'))
+                return RC.createCluster(null, 
+                    fs.readFileSync(__dirname + '/hazelcast_nearcache_batchinvalidation_false.xml', 'utf8'))
                     .then(function (res) {
                         cluster = res;
                         return RC.startMember(cluster.id);
@@ -231,9 +233,7 @@ describe('NearCachedMapTest', function () {
             });
 
             it('executeOnKey invalidates the entry');
-
             it('executeOnKeys invalidates entries');
-
             it('loadAll invalidates the cache');
 
             [true, false].forEach(function (shouldUsePutAll) {

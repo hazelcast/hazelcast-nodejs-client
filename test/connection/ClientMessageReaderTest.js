@@ -26,18 +26,18 @@ describe('ClientMessageReader', function () {
 
     let reader;
 
-    beforeEach(() => {
+    beforeEach(function() {
         reader = new ClientMessageReader();
     });
 
-    it('reads single message', () => {
+    it('reads single message', function() {
         const buffer = prepareMessage(8);
         reader.append(buffer);
 
         expect(reader.read().startFrame.content).to.be.deep.equal(buffer.slice(headerSize));
     });
 
-    it('reads multiple messages', () => {
+    it('reads multiple messages', function() {
         const buffer = Buffer.concat([prepareMessage(8), prepareMessage(8)]);
         reader.append(buffer);
 
@@ -45,7 +45,7 @@ describe('ClientMessageReader', function () {
         expect(reader.read().startFrame.content).to.be.deep.equal(buffer.slice(2 * headerSize + 8));
     });
 
-    it('reads chunked message', () => {
+    it('reads chunked message', function() {
         const chunkSize = 64;
         const chunkCnt = 4;
         const buffer = prepareMessage(chunkSize * chunkCnt);
@@ -60,7 +60,7 @@ describe('ClientMessageReader', function () {
         expect(reader.read().startFrame.content).to.be.deep.equal(buffer.slice(headerSize));
     });
 
-    it('reads chunked message with small first chunk', () => {
+    it('reads chunked message with small first chunk', function() {
         const buffer = prepareMessage(128);
         reader.append(buffer.slice(0, 2));
 
@@ -70,7 +70,7 @@ describe('ClientMessageReader', function () {
         expect(reader.read().startFrame.content).to.be.deep.equal(buffer.slice(headerSize));
     });
 
-    it('returns slices for multiple messages in single chunk', () => {
+    it('returns slices for multiple messages in single chunk', function() {
         const buffer = Buffer.concat([prepareMessage(8), prepareMessage(8)]);
         reader.append(buffer);
 
@@ -80,11 +80,11 @@ describe('ClientMessageReader', function () {
         expect(read.startFrame.content).to.be.deep.equal(buffer.slice(headerSize, headerSize + 8));
     });
 
-    it('returns null on read initially', () => {
+    it('returns null on read initially', function() {
         expect(reader.read()).to.be.equal(null);
     });
 
-    it('returns null on read when all messages are read', () => {
+    it('returns null on read when all messages are read', function() {
         const buffer = prepareMessage(8);
         reader.append(buffer);
         reader.read();

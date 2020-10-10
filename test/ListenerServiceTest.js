@@ -77,7 +77,8 @@ const Util = require('./Util');
                     client.removeDistributedObjectListener(listenerId).then(function () {
                         done();
                     });
-                } else if (distributedObjectEvent.eventType === 'created' && distributedObjectEvent.objectName === 'mapToRemove') {
+                } else if (distributedObjectEvent.eventType === 'created' && distributedObjectEvent.objectName === 'mapToRemove')
+                {
                     Util.promiseWaitMilliseconds(1000).then(function () {
                         map.destroy();
                     });

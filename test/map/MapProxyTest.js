@@ -43,7 +43,7 @@ function createClient(nearCacheEnabled, clusterName) {
 }
 
 describe('MapProxyTest', function () {
-    [false, true].forEach(function (nearCacheEnabled) {
+    [false, true].forEach(function (nearCacheEnabled) { //eslint-disable-line
         describe('Near Cache: ' + nearCacheEnabled, function () {
 
             let cluster, client;
@@ -197,7 +197,7 @@ describe('MapProxyTest', function () {
                 });
             });
 
-            [true, false].forEach(function (shouldUsePutAll) {
+            [true, false].forEach(function (shouldUsePutAll) { //eslint-disable-line
                 it(shouldUsePutAll ? 'putAll' : 'setAll', function (done) {
                     const arr = [
                         ['pa_k0', 'pa_v0'],
@@ -621,7 +621,8 @@ describe('MapProxyTest', function () {
                     });
             });
 
-            it('addEntryListener on key, entryAdded fires because predicate returns true for that entry, inlVal=yes', (done) => {
+            it('addEntryListener on key, entryAdded fires because predicate returns true for that entry, inlVal=yes',
+             function(done) {
                 const listenerObject = {
                     added: function (entryEvent) {
                         try {

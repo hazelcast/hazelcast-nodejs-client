@@ -37,7 +37,7 @@ describe('HazelcastCloudProviderTest', function () {
         expectedAddresses.set('10.0.0.2:5701', new AddressImpl('198.51.100.2', 5701));
     });
 
-    beforeEach(() => {
+    beforeEach(function() {
         const logger = new LoggingService(null, LogLevel.INFO).getLogger();
         hazelcastCloudDiscovery = new HazelcastCloudDiscovery();
         sinon.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes').callsFake(() => Promise.resolve(expectedAddresses));

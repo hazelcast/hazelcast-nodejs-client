@@ -55,7 +55,7 @@ describe('DirectWriterTest', function () {
         queue = new DirectWriter(mockSocket);
     }
 
-    it('writes single message into socket', (done) => {
+    it('writes single message into socket', function(done) {
         setUpWriteSuccess();
 
         const msg = createMessage('test');
@@ -67,7 +67,7 @@ describe('DirectWriterTest', function () {
         queue.write(msg, deferredPromise());
     });
 
-    it('writes multiple messages separately into socket', (done) => {
+    it('writes multiple messages separately into socket', function(done) {
         setUpWriteSuccess();
 
         const msg = createMessage('test');
@@ -84,7 +84,7 @@ describe('DirectWriterTest', function () {
         queue.write(msg, deferredPromise());
     });
 
-    it('resolves promise on write success', (done) => {
+    it('resolves promise on write success', function(done) {
         setUpWriteSuccess();
 
         const resolver = deferredPromise();
@@ -92,7 +92,7 @@ describe('DirectWriterTest', function () {
         resolver.promise.then(done);
     });
 
-    it('rejects promise on write failure', (done) => {
+    it('rejects promise on write failure', function(done) {
         const err = new Error();
         setUpWriteFailure(err);
 
@@ -104,14 +104,14 @@ describe('DirectWriterTest', function () {
         });
     });
 
-    it('emits write event on write success', (done) => {
+    it('emits write event on write success', function(done) {
         setUpWriteSuccess();
 
         queue.on('write', done);
         queue.write(createMessage('test'), deferredPromise());
     });
 
-    it('does not emit write event on write failure', (done) => {
+    it('does not emit write event on write failure', function(done) {
         setUpWriteFailure(new Error());
 
         queue.on('write', () => done(new Error()));

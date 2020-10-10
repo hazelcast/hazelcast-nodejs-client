@@ -31,7 +31,7 @@ describe('FragmentedClientMessageHandlerTest', function () {
     let reader;
     let handler;
 
-    beforeEach(() => {
+    beforeEach(function() { //eslint-disable-line
         reader = new ClientMessageReader();
         handler = new FragmentedClientMessageHandler({
             debug: () => {}

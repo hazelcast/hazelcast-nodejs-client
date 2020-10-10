@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/* eslint-disable */
 'use strict';
 
 const fs = require('fs');
@@ -29,14 +30,13 @@ const { CustomByteArraySerializable } = require('./CustomSerializable');
 const { CustomStreamSerializable } = require('./CustomSerializable');
 const { expectAlmostEqual } = require('../Util');
 
+const objects = ReferenceObjects.testObjects;
+const NULL_LENGTH = -1;
+const versions = [1];
+const isBigEndianValues = [true, false];
+const dataMap = {};
+
 describe('BinaryCompatibilityTest', function () {
-
-    const NULL_LENGTH = -1;
-    const versions = [1];
-    const objects = ReferenceObjects.testObjects;
-    const isBigEndianValues = [true, false];
-
-    const dataMap = {};
 
     function createFileName(version) {
         return version + '.serialization.compatibility.binary';

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/* eslint-disable */
 'use strict';
 
 const expect = require('chai').expect;
@@ -22,6 +23,8 @@ const RC = require('../RC');
 const Client = require('../../.').Client;
 const { deferredPromise } = require('../../lib/util/Util');
 const { getRandomInt } = require('../Util');
+
+const completedDeferred = deferredPromise();
 
 describe('NearCachedMapStress', function () {
 
@@ -34,7 +37,6 @@ describe('NearCachedMapStress', function () {
     const mapName = 'stressncmap';
     const concurrencyLevel = 32;
     const totalNumOperations = 100000;
-    const completedDeferred = deferredPromise();
     const putPercent = 15;
     const removePercent = 20;
     const getPercent = 100 - putPercent - removePercent;

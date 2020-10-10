@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/* eslint-disable */
 'use strict';
 
 const { expect } = require('chai');
@@ -22,12 +23,12 @@ const { SerializationConfigImpl } = require('../../lib/config/SerializationConfi
 const { Predicates } = require('../../');
 const { RestValue, UUID } = require('../../lib/');
 
-describe('DefaultSerializersTest', function () {
+const restValue = new RestValue();
+restValue.value = '{"test":"data"}';
+restValue.contentType = "text/plain";
+const uuid = new UUID(Long.fromNumber(1), Long.fromNumber(2));
 
-    const restValue = new RestValue();
-    restValue.value = '{"test":"data"}';
-    restValue.contentType = 'text/plain';
-    const uuid = new UUID(Long.fromNumber(1), Long.fromNumber(2));
+describe('DefaultSerializersTest', function () {
 
     const parameters = [
         14,
