@@ -21,7 +21,7 @@ const { HazelcastError, BasicSSLOptionsFactory } = require('../..');
 
 describe('BasicSSLOptionsFactoryTest', function () {
 
-    it('factory creates sslOptions object with all supported fields', function () {
+    it('factory creates sslOptions object with all supported fields', async function () {
         const options = {
             servername: 'foo.bar.com',
             rejectUnauthorized: true,
@@ -31,15 +31,14 @@ describe('BasicSSLOptionsFactoryTest', function () {
             ciphers: 'cipherliststring'
         };
         const factory = new BasicSSLOptionsFactory();
-        return factory.init(options).then(function () {
-            const optsObject = factory.getSSLOptions();
-            expect(optsObject.servername).to.equal('foo.bar.com');
-            expect(optsObject.rejectUnauthorized).to.be.true;
-            expect(optsObject.ca).to.be.instanceOf(Buffer);
-            expect(optsObject.key).to.be.instanceOf(Buffer);
-            expect(optsObject.cert).to.be.instanceOf(Buffer);
-            expect(optsObject.ciphers).to.equal('cipherliststring');
-        });
+        await factory.init(options);
+        const optsObject = factory.getSSLOptions();
+        expect(optsObject.servername).to.equal('foo.bar.com');
+        expect(optsObject.rejectUnauthorized).to.be.true;
+        expect(optsObject.ca).to.be.instanceOf(Buffer);
+        expect(optsObject.key).to.be.instanceOf(Buffer);
+        expect(optsObject.cert).to.be.instanceOf(Buffer);
+        expect(optsObject.ciphers).to.equal('cipherliststring');
     });
 
     it('BasicSSLOptionsFactory throws when provided with non-object properties', function () {

@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const RC = require('./RC');
 const { Client } = require('../.');
 const Util = require('./Util');
@@ -29,26 +29,24 @@ const Util = require('./Util');
                 cluster = res;
                 return Promise.resolve(cluster.id);
             }).then(function (clusterId) {
-                return RC.startMember(clusterId)
+                return RC.startMember(clusterId);
             });
         });
 
-        beforeEach(function () {
-            return Client.newHazelcastClient({
+        beforeEach(async function () {
+            client = await Client.newHazelcastClient({
                 clusterName: cluster.id,
                 network: {
                     smartRouting: isSmartService
                 }
-            }).then(function (c) {
-                client = c;
             });
         });
 
-        afterEach(function () {
+        afterEach(async function () {
             return client.shutdown();
         });
 
-        after(function () {
+        after(async function () {
             return RC.terminateCluster(cluster.id);
         });
 
@@ -94,7 +92,7 @@ const Util = require('./Util');
             client.addDistributedObjectListener(function () {
                 done(new Error('Should not have run!'));
             }).then(function (listenerId) {
-                return client.removeDistributedObjectListener(listenerId)
+                return client.removeDistributedObjectListener(listenerId);
             }).then(function () {
                 return client.getMap('testMap');
             }).then(function () {

@@ -26,23 +26,15 @@ describe('DefaultSerializersLiveTest', function () {
     let map;
 
     before(async function () {
-        return RC.createCluster(null, null).then(function (res) {
-            cluster = res;
-        }).then(function () {
-            return RC.startMember(cluster.id);
-        }).then(function () {
-            return Client.newHazelcastClient({ clusterName: cluster.id });
-        }).then(function (cl) {
-            client = cl;
-            return client.getMap('test').then(function (mp) {
-                map = mp;
-            });
-        });
+        cluster = await RC.createCluster(null, null);
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({ clusterName: cluster.id });
+        map = await client.getMap('test');
     });
 
     after(async function () {
-        return client.shutdown()
-            .then(() => RC.terminateCluster(cluster.id));
+        await client.shutdown();
+        return RC.terminateCluster(cluster.id);
     });
 
     function generateGet(key) {
@@ -56,7 +48,7 @@ describe('DefaultSerializersLiveTest', function () {
             '       return res;' +
             '   }' +
             '}' +
-            'result = ""+foo();'
+            'result = ""+foo();';
     }
 
     it('string', async function () {
