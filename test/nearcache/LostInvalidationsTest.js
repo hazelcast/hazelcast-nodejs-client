@@ -91,14 +91,13 @@ describe('LostInvalidationTest', function () {
         const value = 'val';
         const updatedval = 'updatedval';
 
-        let map = await client.getMap(mapName);
+        const map = await client.getMap(mapName);
         await Util.promiseWaitMilliseconds(100);
         const invalidationHandlerStub = blockInvalidationEvents(client, map, 1);
-        map = await modifyingClient.getMap(mapName);
-        await map.put(key, value);
+        const mp = await modifyingClient.getMap(mapName);
+        await mp.put(key, value);
         await map.get(key);
-        map = await modifyingClient.getMap(mapName);
-        await map.put(key, updatedval);
+        await mp.put(key, updatedval);
         await Util.promiseWaitMilliseconds(1000);
         unblockInvalidationEvents(client, invalidationHandlerStub);
         await Util.promiseWaitMilliseconds(1000);
@@ -108,15 +107,15 @@ describe('LostInvalidationTest', function () {
 
     it('lost invalidation stress test', async function () {
 
-        let map = await client.getMap(mapName);
+        const map = await client.getMap(mapName);
         await Util.promiseWaitMilliseconds(100);
         const invalidationHandlerStub = blockInvalidationEvents(client, map);
         let entries = [];
         for (let i = 0; i < entryCount; i++) {
             entries.push([i, i]);
         }
-        map = await modifyingClient.getMap(mapName);
-        await map.putAll(entries);
+        const mp = await modifyingClient.getMap(mapName);
+        await mp.putAll(entries);
         const requestedKeys = [];
         for (let i = 0; i < entryCount; i++) {
             requestedKeys.push(i);
@@ -127,8 +126,7 @@ describe('LostInvalidationTest', function () {
         for (let i = 0; i < entryCount; i++) {
             entries.push([i, i + entryCount]);
         }
-        map = await modifyingClient.getMap(mapName);
-        await map.putAll(entries);
+        await mp.putAll(entries);
         unblockInvalidationEvents(client, invalidationHandlerStub);
         await Util.promiseWaitMilliseconds(2000);
         const promises = [];

@@ -66,20 +66,10 @@ describe("FlakeIdGeneratorProxyTest", function () {
 
     it('newId returns a unique long', async function () {
         flakeIdGenerator = await client.getFlakeIdGenerator('test');
-        let promise = Promise.resolve();
         const idList = [];
-        for (let i = 0; i < 10; i++) {
-            await promise;
-            await Promise.all([
-                flakeIdGenerator.newId().then(addToListFunction(idList)),
-                flakeIdGenerator.newId().then(addToListFunction(idList)),
-                flakeIdGenerator.newId().then(addToListFunction(idList)),
-                flakeIdGenerator.newId().then(addToListFunction(idList)),
-                flakeIdGenerator.newId().then(addToListFunction(idList))
-            ]);
+        for (let i = 0; i < 50; i++) {
+            addToListFunction(idList)(await flakeIdGenerator.newId());
         }
-
-        await promise;
         expect(idList.length).to.be.equal(50);
         idList.sort(function (a, b) {
             return (a.greaterThan(b) ? 1 : (a.lessThan(b) ? -1 : 0));

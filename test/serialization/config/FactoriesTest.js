@@ -60,12 +60,12 @@ describe('FactoriesTest', function () {
         const map = await client.getMap('furkan');
         await map.put('foo', new Foo('elma'));
         await map.put('address', new Address('Sahibiata', 42000, 'Konya', 'Turkey'));
-        const res = await map.get('foo');
+        let res = await map.get('foo');
         expect(res.foo).to.be.equal('elma');
-        const res_1 = await map.get('address');
-        expect(res_1.street).to.be.equal('Sahibiata');
-        expect(res_1.zipCode).to.be.equal(42000);
-        expect(res_1.city).to.be.equal('Konya');
-        expect(res_1.state).to.be.equal('Turkey');
+        res = await map.get('address');
+        expect(res.street).to.be.equal('Sahibiata');
+        expect(res.zipCode).to.be.equal(42000);
+        expect(res.city).to.be.equal('Konya');
+        expect(res.state).to.be.equal('Turkey');
     });
 });

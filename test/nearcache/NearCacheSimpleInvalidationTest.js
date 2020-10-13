@@ -58,25 +58,18 @@ describe('NearCacheSimpleInvalidationTest', function () {
                 this.timeout(10000);
                 const entryCount = 1000;
                 let map = await client.getMap(mapName);
-                let getPromise = Promise.resolve();
                 for (let i = 0; i < entryCount; i++) {
-                    await getPromise;
                     await map.get('' + i);
                 }
-                await getPromise;
                 let stats = map.nearCache.getStatistics();
                 expect(stats.missCount).to.equal(entryCount);
                 expect(stats.entryCount).to.equal(entryCount);
-                let putPromise = Promise.resolve();
                 for (let i = 0; i < entryCount; i++) {
-                    putPromise = putPromise.then(map.put.bind(map, '' + i, 'changedvalue', undefined));
+                    await map.put('' + i, 'changedvalue');
                 }
-                await putPromise;
-                getPromise = Promise.resolve();
                 for (let i = 0; i < entryCount; i++) {
-                    getPromise = getPromise.then(map.get.bind(map, '' + i));
+                    await map.get('' + i);
                 }
-                await getPromise;
                 stats = map.nearCache.getStatistics();
                 expect(stats.entryCount).to.equal(entryCount);
                 expect(stats.hitCount).to.equal(0);

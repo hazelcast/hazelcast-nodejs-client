@@ -37,12 +37,7 @@ describe('HeartbeatFromClientTest', function () {
 
     it('client sends heartbeat periodically even when server continuously pushes messages', async function () {
         const MAP_NAME = 'testmap';
-        let client1, client2;
         let connectionClosedEventCount = 0;
-
-        let mapFromClient1;
-        let mapFromClient2;
-        let pushTask;
 
         const clientConfig = {
             clusterName: cluster.id,
@@ -51,12 +46,12 @@ describe('HeartbeatFromClientTest', function () {
             }
         };
         await RC.startMember(cluster.id);
-        client1 = await Client.newHazelcastClient(clientConfig);
+        const client1 = await Client.newHazelcastClient(clientConfig);
         client1.getConnectionManager().on('connectionClosed', function () {
             connectionClosedEventCount++;
         });
-        client2 = await Client.newHazelcastClient(clientConfig);
-        mapFromClient1 = await client1.getMap(MAP_NAME);
+        const client2 = await Client.newHazelcastClient(clientConfig);
+        const mapFromClient1 = await client1.getMap(MAP_NAME);
         await mapFromClient1.addEntryListener({
             added: function () {
                 // no-op
@@ -65,9 +60,9 @@ describe('HeartbeatFromClientTest', function () {
                 // no-op
             }
         });
-        mapFromClient2 = await client2.getMap(MAP_NAME);
+        const mapFromClient2 = await client2.getMap(MAP_NAME);
         let counter = 0;
-        pushTask = setInterval(function () {
+        const pushTask = setInterval(function () {
             mapFromClient2.put('testkey', counter++);
         }, 1000);
         await Util.promiseLater(15000, () => { });
@@ -77,6 +72,3 @@ describe('HeartbeatFromClientTest', function () {
         await client2.shutdown();
     });
 });
-
-
-
