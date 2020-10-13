@@ -106,7 +106,7 @@ describe('LostInvalidationTest', function () {
     });
 
     it('lost invalidation stress test', async function () {
-
+        let val;
         const map = await client.getMap(mapName);
         await Util.promiseWaitMilliseconds(100);
         const invalidationHandlerStub = blockInvalidationEvents(client, map);
@@ -129,15 +129,9 @@ describe('LostInvalidationTest', function () {
         await mp.putAll(entries);
         unblockInvalidationEvents(client, invalidationHandlerStub);
         await Util.promiseWaitMilliseconds(2000);
-        const promises = [];
         for (let i = 0; i < entryCount; i++) {
-            const promise = (function (key) {
-                return map.get(key).then((val) => {
-                    return expect(val).to.equal(key + entryCount);
-                });
-            })(i);
-            promises.push(promise);
+            val = await map.get(i);
+            expect(val).to.equal(i + entryCount);
         }
-        return Promise.all(promises);
     });
 });
