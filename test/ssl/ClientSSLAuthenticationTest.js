@@ -22,8 +22,8 @@ const expect = chai.expect;
 const fs = require('fs');
 const path = require('path');
 
-const RC = require('../RC');
-const { Client, IllegalStateError } = require('../../lib');
+const RC = require('./../RC');
+const { Client, IllegalStateError } = require('../../');
 const { markEnterprise } = require('../Util');
 
 describe('ClientSSLAuthenticationTest', function () {
@@ -38,7 +38,7 @@ describe('ClientSSLAuthenticationTest', function () {
     });
 
     async function createMemberWithXML(serverXML) {
-        const cluster = await RC.createCluster(null, fs.readFileSync(serverXML, 'utf8'));
+        cluster = await RC.createCluster(null, fs.readFileSync(serverXML, 'utf8'));
         return RC.startMember(cluster.id);
     }
 

@@ -16,7 +16,7 @@
 'use strict';
 
 const { expect } = require('chai');
-const { SerializationService } = require('../../lib/serialization/SerializationService');
+const { SerializationServiceV1: SerializationService } = require('../../lib/serialization/SerializationService');
 const { SerializationConfigImpl } = require('../../lib/config/SerializationConfig');
 
 function IDataSerializable(val) {
