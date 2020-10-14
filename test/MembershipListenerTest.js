@@ -15,9 +15,9 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const RC = require('./RC');
-const Client = require('../.').Client;
+const { Client } = require('../.');
 const { deferredPromise } = require('../lib/util/Util');
 const { MemberEvent } = require('../lib/core');
 

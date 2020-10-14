@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const { ClassDefinition, FieldDefinition } = require('../../../lib/serialization/portable/ClassDefinition');
 
 describe('ClassDefinitionTest', function () {

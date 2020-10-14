@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const fs = require('fs');
 const Long = require('long');
 
@@ -33,7 +33,7 @@ describe('ReliableTopicTest', function () {
     function createConfig(clusterName) {
         return {
             clusterName,
-            reliableTopics : {
+            reliableTopics: {
                 'discard': {
                     overloadPolicy: TopicOverloadPolicy.DISCARD_NEWEST
                 },
@@ -67,9 +67,9 @@ describe('ReliableTopicTest', function () {
     });
 
     after(async function () {
-        return clientOne.shutdown()
-            .then(() => clientTwo.shutdown())
-            .then(() => RC.terminateCluster(cluster.id));
+        await clientOne.shutdown();
+        await clientTwo.shutdown();
+        return RC.terminateCluster(cluster.id);
     });
 
     it('writes and reads messages', function (done) {
@@ -87,7 +87,7 @@ describe('ReliableTopicTest', function () {
                 }
             });
             setTimeout(function () {
-                topicOne.publish({'value': 'foo'});
+                topicOne.publish({ 'value': 'foo' });
             }, 500);
         }).catch(done);
     });
@@ -109,14 +109,14 @@ describe('ReliableTopicTest', function () {
                 }
             });
 
-            topicOne.publish({'value0': 'foo0'});
-            topicOne.publish({'value1': 'foo1'});
+            topicOne.publish({ 'value0': 'foo0' });
+            topicOne.publish({ 'value1': 'foo1' });
             setTimeout(function () {
                 topicTwo.removeMessageListener(id);
-                topicOne.publish({'value2': 'foo2'});
-                topicOne.publish({'value3': 'foo3'});
-                topicOne.publish({'value4': 'foo4'});
-                topicOne.publish({'value5': 'foo5'});
+                topicOne.publish({ 'value2': 'foo2' });
+                topicOne.publish({ 'value3': 'foo3' });
+                topicOne.publish({ 'value4': 'foo4' });
+                topicOne.publish({ 'value5': 'foo5' });
                 setTimeout(done, 500);
             }, 500);
         }).catch(done);
@@ -177,7 +177,7 @@ describe('ReliableTopicTest', function () {
 
     it('overwrites the oldest item when there is no more space', async function () {
         const topic = await clientOne.getReliableTopic('overwrite');
-        const ringbuffer =  topic.getRingbuffer();
+        const ringbuffer = topic.getRingbuffer();
 
         const all = generateItems(clientOne, 10);
         await ringbuffer.addAll(all);

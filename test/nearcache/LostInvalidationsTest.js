@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const fs = require('fs');
 const RC = require('../RC');
 const { Client } = require('../../');
@@ -57,16 +57,13 @@ describe('LostInvalidationTest', function () {
         client.getInvocationService().eventHandlers.get(metadata.correlationId).handler = metadata.handler;
     }
 
-    before(function () {
-        return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_eventual_nearcache.xml', 'utf8'))
-            .then(function (resp) {
-                cluster = resp;
-                return RC.startMember(cluster.id);
-            });
+    before(async function () {
+        cluster = await RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_eventual_nearcache.xml', 'utf8'));
+        return RC.startMember(cluster.id);
     });
 
-    beforeEach(function () {
-        return Client.newHazelcastClient({
+    beforeEach(async function () {
+        client = await Client.newHazelcastClient({
             clusterName: cluster.id,
             nearCaches: {
                 [mapName]: {}
@@ -76,101 +73,65 @@ describe('LostInvalidationTest', function () {
                 'hazelcast.invalidation.min.reconciliation.interval.seconds': 1,
                 'hazelcast.invalidation.max.tolerated.miss.count': 2
             }
-        }).then(function (resp) {
-            client = resp;
-            return Client.newHazelcastClient({ clusterName: cluster.id });
-        }).then(function (resp) {
-            modifyingClient = resp;
         });
+        modifyingClient = await Client.newHazelcastClient({ clusterName: cluster.id });
     });
 
-    afterEach(function () {
-        return client.shutdown()
-            .then(() => modifyingClient.shutdown());
+    afterEach(async function () {
+        await client.shutdown();
+        return modifyingClient.shutdown();
     });
 
-    after(function () {
+    after(async function () {
         return RC.terminateCluster(cluster.id);
     });
 
-    it('client eventually receives an update for which the invalidation event was dropped', function () {
+    it('client eventually receives an update for which the invalidation event was dropped', async function () {
         const key = 'key';
         const value = 'val';
         const updatedval = 'updatedval';
-        let map;
-        let invalidationHandlerStub;
 
-        return client.getMap(mapName).then(function (mp) {
-            map = mp;
-            return Util.promiseWaitMilliseconds(100)
-        }).then(function (resp) {
-            invalidationHandlerStub = blockInvalidationEvents(client, map, 1);
-            return modifyingClient.getMap(mapName);
-        }).then(function (mp) {
-            return mp.put(key, value);
-        }).then(function () {
-            return map.get(key);
-        }).then(function () {
-            return modifyingClient.getMap(mapName);
-        }).then(function (mp) {
-            return mp.put(key, updatedval);
-        }).then(function () {
-            return Util.promiseWaitMilliseconds(1000);
-        }).then(function () {
-            unblockInvalidationEvents(client, invalidationHandlerStub);
-            return Util.promiseWaitMilliseconds(1000);
-        }).then(function () {
-            return map.get(key);
-        }).then(function (result) {
-            return expect(result).to.equal(updatedval);
-        });
+        const map = await client.getMap(mapName);
+        await Util.promiseWaitMilliseconds(100);
+        const invalidationHandlerStub = blockInvalidationEvents(client, map, 1);
+        const mp = await modifyingClient.getMap(mapName);
+        await mp.put(key, value);
+        await map.get(key);
+        await mp.put(key, updatedval);
+        await Util.promiseWaitMilliseconds(1000);
+        unblockInvalidationEvents(client, invalidationHandlerStub);
+        await Util.promiseWaitMilliseconds(1000);
+        const result = await map.get(key);
+        expect(result).to.equal(updatedval);
     });
 
-    it('lost invalidation stress test', function () {
-        let invalidationHandlerStub;
-        let map;
+    it('lost invalidation stress test', async function () {
+        let val;
+        const map = await client.getMap(mapName);
+        await Util.promiseWaitMilliseconds(100);
+        const invalidationHandlerStub = blockInvalidationEvents(client, map);
         let entries = [];
-
-        return client.getMap(mapName).then(function (mp) {
-            map = mp;
-            return Util.promiseWaitMilliseconds(100);
-        }).then(function (resp) {
-            invalidationHandlerStub = blockInvalidationEvents(client, map);
-            for (let i = 0; i < entryCount; i++) {
-                entries.push([i, i]);
-            }
-            return modifyingClient.getMap(mapName);
-        }).then(function (mp) {
-            return mp.putAll(entries);
-        }).then(function () {
-            const requestedKeys = [];
-            for (let i = 0; i < entryCount; i++) {
-                requestedKeys.push(i);
-            }
-            // populate near cache
-            return map.getAll(requestedKeys);
-        }).then(function () {
-            entries = [];
-            for (let i = 0; i < entryCount; i++) {
-                entries.push([i, i + entryCount]);
-            }
-            return modifyingClient.getMap(mapName);
-        }).then(function (mp) {
-            return mp.putAll(entries);
-        }).then(function () {
-            unblockInvalidationEvents(client, invalidationHandlerStub);
-            return Util.promiseWaitMilliseconds(2000);
-        }).then(function () {
-            const promises = [];
-            for (let i = 0; i < entryCount; i++) {
-                const promise = (function (key) {
-                    return map.get(key).then((val) => {
-                        return expect(val).to.equal(key + entryCount);
-                    });
-                })(i);
-                promises.push(promise);
-            }
-            return Promise.all(promises);
-        });
+        for (let i = 0; i < entryCount; i++) {
+            entries.push([i, i]);
+        }
+        const mp = await modifyingClient.getMap(mapName);
+        await mp.putAll(entries);
+        const requestedKeys = [];
+        for (let i = 0; i < entryCount; i++) {
+            requestedKeys.push(i);
+        }
+        // populate near cache
+        await map.getAll(requestedKeys);
+        entries = [];
+        for (let i = 0; i < entryCount; i++) {
+            entries.push([i, i + entryCount]);
+        }
+        await mp.putAll(entries);
+        unblockInvalidationEvents(client, invalidationHandlerStub);
+        await Util.promiseWaitMilliseconds(2000);
+        for (let i = 0; i < entryCount; i++) {
+            val = await map.get(i);
+            expect(val).to.equal(i + entryCount);
+        }
     });
 });

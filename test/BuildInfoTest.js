@@ -15,8 +15,8 @@
  */
 'use strict';
 
-const BuildInfo = require('../lib/BuildInfo').BuildInfo;
-const assert = require('chai').assert;
+const { BuildInfo } = require('../lib/BuildInfo');
+const { assert } = require('chai');
 
 describe('BuildInfo', function () {
     it('version calculation test', function () {

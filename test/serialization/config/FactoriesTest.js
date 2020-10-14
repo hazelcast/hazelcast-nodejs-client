@@ -15,9 +15,9 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const RC = require('../../RC');
-const Client = require('../../../').Client;
+const { Client } = require('../../../');
 const { myPortableFactory, Foo } = require('./Foo');
 const { myIdentifiedFactory, Address } = require('./Address');
 
@@ -26,18 +26,16 @@ describe('FactoriesTest', function () {
     let cluster;
     let client;
 
-    before(function () {
-        return RC.createCluster(null, null).then(function (cl) {
-            cluster = cl;
-            return RC.startMember(cluster.id);
-        });
+    before(async function () {
+        cluster = await RC.createCluster(null, null);
+        return RC.startMember(cluster.id);
     });
 
-    after(function () {
+    after(async function () {
         return RC.terminateCluster(cluster.id);
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         if (client != null) {
             return client.shutdown();
         }
@@ -57,27 +55,17 @@ describe('FactoriesTest', function () {
         };
     }
 
-    it('should be configured programmatically', function () {
-        return Client.newHazelcastClient(createConfig(cluster.id))
-            .then(function (cl) {
-                client = cl;
-                let map;
-                return client.getMap('furkan').then(function (mp) {
-                    map = mp;
-                    return map.put('foo', new Foo("elma"));
-                }).then(function () {
-                    return map.put('address', new Address('Sahibiata', 42000, 'Konya', 'Turkey'))
-                }).then(function () {
-                    return map.get('foo');
-                }).then(function (res) {
-                    expect(res.foo).to.be.equal('elma');
-                    return map.get('address');
-                }).then(function (res) {
-                    expect(res.street).to.be.equal('Sahibiata');
-                    expect(res.zipCode).to.be.equal(42000);
-                    expect(res.city).to.be.equal('Konya');
-                    expect(res.state).to.be.equal('Turkey');
-                });
-            });
+    it('should be configured programmatically', async function () {
+        client = await Client.newHazelcastClient(createConfig(cluster.id));
+        const map = await client.getMap('furkan');
+        await map.put('foo', new Foo('elma'));
+        await map.put('address', new Address('Sahibiata', 42000, 'Konya', 'Turkey'));
+        let res = await map.get('foo');
+        expect(res.foo).to.be.equal('elma');
+        res = await map.get('address');
+        expect(res.street).to.be.equal('Sahibiata');
+        expect(res.zipCode).to.be.equal(42000);
+        expect(res.city).to.be.equal('Konya');
+        expect(res.state).to.be.equal('Turkey');
     });
 });

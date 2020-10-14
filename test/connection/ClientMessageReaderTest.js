@@ -16,7 +16,7 @@
 
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 
 const { ClientMessageReader } = require('../../lib/network/ClientConnection');
 const cm = require('../../lib/protocol/ClientMessage');
@@ -97,6 +97,6 @@ describe('ClientMessageReader', function () {
         buffer.writeInt32LE(buffer.length, 0);
         buffer.writeUInt16LE(1 << 15 | 1 << 14 | 1 << 13, 4);
         return buffer;
-    }
+    };
 
 });
