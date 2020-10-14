@@ -15,10 +15,10 @@
  */
 'use strict';
 
-const SerializationConfigImpl = require('../../../lib/config/SerializationConfig').SerializationConfigImpl;
-const SerializationServiceV1 = require('../../../lib/serialization/SerializationService').SerializationServiceV1;
-const Parent = require('../PortableObjects').Parent;
-const Child = require('../PortableObjects').Child;
+const { SerializationConfigImpl } = require('../../../lib/config/SerializationConfig');
+const { SerializationServiceV1 } = require('../../../lib/serialization/SerializationService');
+const { Parent } = require('../PortableObjects');
+const { Child } = require('../PortableObjects');
 const Util = require('../../Util');
 
 describe('NestedPortableVersionTest', function () {

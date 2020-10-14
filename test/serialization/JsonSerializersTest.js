@@ -15,11 +15,11 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
-const SerializationServiceV1 = require('../../lib/serialization/SerializationService').SerializationServiceV1;
-const SerializationConfigImpl = require('../../lib/config/SerializationConfig').SerializationConfigImpl;
-const JsonStringDeserializationPolicy = require('../../.').JsonStringDeserializationPolicy;
-const HazelcastJsonValue = require('../../.').HazelcastJsonValue;
+const { expect } = require('chai');
+const { SerializationServiceV1 } = require('../../lib/serialization/SerializationService');
+const { SerializationConfigImpl } = require('../../lib/config/SerializationConfig');
+const { JsonStringDeserializationPolicy } = require('../../.');
+const { HazelcastJsonValue } = require('../../.');
 
 describe('JsonSerializersTest', function () {
 

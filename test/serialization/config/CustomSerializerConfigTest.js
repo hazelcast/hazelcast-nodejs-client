@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const RC = require('../../RC');
 const { Client } = require('../../../');
 const { Musician, MusicianSerializer } = require('./Musician');
@@ -25,16 +25,14 @@ describe('CustomSerializerConfigTest', function () {
     let cluster;
     let client;
 
-    before(function () {
-        return RC.createCluster(null, null).then(function (cl) {
-            cluster = cl;
-            return RC.startMember(cluster.id);
-        });
+    before(async function () {
+        cluster = await RC.createCluster(null, null);
+        return RC.startMember(cluster.id);
     });
 
-    after(function () {
-        return client.shutdown()
-            .then(() => RC.terminateCluster(cluster.id));
+    after(async function () {
+        await client.shutdown();
+        return RC.terminateCluster(cluster.id);
     });
 
     function createConfig(clusterName) {
@@ -46,21 +44,13 @@ describe('CustomSerializerConfigTest', function () {
         };
     }
 
-    it('should be configured programmatically', function () {
+    it('should be configured programmatically', async function () {
         const musician = new Musician('Furkan');
-        return Client.newHazelcastClient(createConfig(cluster.id))
-            .then(function (cl) {
-                client = cl;
-                expect(client.getSerializationService().findSerializerFor(musician).id).to.be.equal(10);
-                let map;
-                return client.getMap('musicians').then(function (mp) {
-                    map = mp;
-                    return map.put('neyzen', musician);
-                }).then(function () {
-                    return map.get('neyzen');
-                }).then(function (res) {
-                    expect(res.name).to.be.equal('Furkan');
-                });
-            });
+        client = await Client.newHazelcastClient(createConfig(cluster.id));
+        expect(client.getSerializationService().findSerializerFor(musician).id).to.be.equal(10);
+        const map = await client.getMap('musicians');
+        await map.put('neyzen', musician);
+        const res = await map.get('neyzen');
+        expect(res.name).to.be.equal('Furkan');
     });
 });

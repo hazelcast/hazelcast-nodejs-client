@@ -17,7 +17,7 @@
 
 const chai = require('chai');
 chai.use(require('chai-as-promised'));
-const expect = require('chai').expect;
+const expect = chai.expect;
 const fs = require('fs');
 const path = require('path');
 
@@ -33,7 +33,7 @@ describe('PNCounterConsistencyTest', function () {
 
     beforeEach(async function () {
         cluster = await RC.createCluster(null,
-                fs.readFileSync(path.resolve(__dirname, 'hazelcast_crdtreplication_delayed.xml'), 'utf8'));
+            fs.readFileSync(path.resolve(__dirname, 'hazelcast_crdtreplication_delayed.xml'), 'utf8'));
         await RC.startMember(cluster.id);
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({ clusterName: cluster.id });
@@ -46,7 +46,7 @@ describe('PNCounterConsistencyTest', function () {
 
     it('target replica killed, no replica is up-to-date, get operation throws ConsistencyLostError', async function () {
         const pnCounter = await client.getPNCounter('pncounter');
-        await pnCounter.getAndAdd(3)
+        await pnCounter.getAndAdd(3);
         const currentReplicaAddress = pnCounter.currentTargetReplicaAddress;
         await RC.terminateMember(cluster.id, currentReplicaAddress.uuid.toString());
 
@@ -60,5 +60,5 @@ describe('PNCounterConsistencyTest', function () {
         await RC.terminateMember(cluster.id, currentReplicaAddress.uuid.toString());
         await pnCounter.reset();
         await pnCounter.addAndGet(10);
-    })
+    });
 });

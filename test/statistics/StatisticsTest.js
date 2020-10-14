@@ -24,7 +24,7 @@ const { BuildInfo } = require('../../lib/BuildInfo');
 const { Statistics } = require("../../lib/statistics/Statistics");
 const TestUtil = require('../Util');
 
-function getClientStatisticsFromServer(cluster, client) {
+async function getClientStatisticsFromServer(cluster, client) {
     const clientUuid = client.getConnectionManager().getClientUuid();
     const script =
         'stats = instance_0.getOriginal().node.getClientEngine().getClientStatistics()\n' +
@@ -35,12 +35,11 @@ function getClientStatisticsFromServer(cluster, client) {
         '    break\n' +
         '  }\n' +
         '}\n';
-    return RC.executeOnController(cluster.id, script, 1).then(function (response) {
-        if (response.result != null) {
-            return response.result.toString();
-        }
-        return null;
-    });
+    const response = await RC.executeOnController(cluster.id, script, 1);
+    if (response.result != null) {
+        return response.result.toString();
+    }
+    return null;
 }
 
 function extractStringStatValue(stats, statName) {
@@ -170,7 +169,7 @@ describe('StatisticsTest (non-default period)', function () {
     });
 
     after(async function () {
-        await client.shutdown()
+        await client.shutdown();
         return RC.terminateCluster(cluster.id);
     });
 

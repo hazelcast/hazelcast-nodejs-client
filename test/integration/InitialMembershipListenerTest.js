@@ -19,7 +19,7 @@
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
-const { expect } = require('chai');
+const expect = chai.expect;
 
 const RC = require('../RC');
 const { Client } = require('../../.');
@@ -34,8 +34,8 @@ describe('InitialMembershipListenerTest', function () {
     let client;
 
     beforeEach(async function () {
-       cluster = await RC.createCluster(null, null);
-       initialMember = await RC.startMember(cluster.id);
+        cluster = await RC.createCluster(null, null);
+        initialMember = await RC.startMember(cluster.id);
     });
 
     afterEach(async function () {

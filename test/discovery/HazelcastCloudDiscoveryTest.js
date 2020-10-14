@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const { AddressImpl } = require('../../lib/core/Address');
 const { HazelcastCloudDiscovery } = require('../../lib/discovery/HazelcastCloudDiscovery');
 

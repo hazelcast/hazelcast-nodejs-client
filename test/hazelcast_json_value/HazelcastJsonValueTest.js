@@ -15,9 +15,9 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const assert = require('assert');
-const HazelcastJsonValue = require('../../.').HazelcastJsonValue;
+const { HazelcastJsonValue } = require('../../.');
 
 describe('HazelcastJsonValue', function () {
     it('constructing HazelcastJsonValue with null or undefined', function () {
@@ -31,8 +31,8 @@ describe('HazelcastJsonValue', function () {
     });
 
     it('constructing HazelcastJsonValue with non-string value', function () {
-       expect(function () {
-           new HazelcastJsonValue(123);
-       }).to.throw(assert.AssertionError);
+        expect(function () {
+            new HazelcastJsonValue(123);
+        }).to.throw(assert.AssertionError);
     });
 });

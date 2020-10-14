@@ -16,7 +16,7 @@
 'use strict';
 
 const RC = require('./RC');
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const { Client } = require('../.');
 
 describe('ClusterServiceTest', function () {
