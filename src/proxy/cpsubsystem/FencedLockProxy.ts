@@ -94,8 +94,8 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
                     this.invalidateSession(sessionId);
                     return this.doLock(threadId, invocationUid);
                 }
+                this.releaseSession(sessionId);
                 if (err instanceof WaitKeyCancelledError) {
-                    this.releaseSession(sessionId);
                     throw new IllegalMonitorStateError('Lock[' + this.objectName
                         + '] not acquired because the lock call on the CP group was cancelled.');
                 }
@@ -130,10 +130,6 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
                 return undefined;
             })
             .catch((err) => {
-                if (err instanceof WaitKeyCancelledError) {
-                    this.releaseSession(sessionId);
-                    return undefined;
-                }
                 if (err instanceof SessionExpiredError) {
                     this.invalidateSession(sessionId);
 
@@ -142,6 +138,10 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
                         return undefined;
                     }
                     return this.doTryLock(timeout, threadId, invocationUid);
+                }
+                this.releaseSession(sessionId);
+                if (err instanceof WaitKeyCancelledError) {
+                    return undefined;
                 }
                 throw err;
             });
