@@ -16,7 +16,7 @@
 
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const crypto = require('crypto');
 
 const {
@@ -34,7 +34,7 @@ describe('FragmentedClientMessageHandlerTest', function () {
     beforeEach(function() { //eslint-disable-line
         reader = new ClientMessageReader();
         handler = new FragmentedClientMessageHandler({
-            debug: () => {}
+            debug: () => { }
         });
     });
 
@@ -80,8 +80,8 @@ describe('FragmentedClientMessageHandlerTest', function () {
         expect(handler.fragmentedMessages.size).to.equal(0);
 
         // If a message with a missing begin part is received, we should do nothing
-        handler.handleFragmentedMessage(fragment1, () => done(new Error("It should ignore invalid messages.")))
-        handler.handleFragmentedMessage(fragment2, () => done(new Error("It should ignore invalid messages.")))
+        handler.handleFragmentedMessage(fragment1, () => done(new Error("It should ignore invalid messages.")));
+        handler.handleFragmentedMessage(fragment2, () => done(new Error("It should ignore invalid messages.")));
         expect(handler.fragmentedMessages.size).to.equal(0);
 
         done();
@@ -165,7 +165,7 @@ describe('FragmentedClientMessageHandlerTest', function () {
         fragments[0].startFrame.flags |= 1 << 15;
         fragments[fragments.length - 1].startFrame.flags |= 1 << 14;
         return fragments;
-    }
+    };
 
     const createFragment = (fragmentId) => {
         const fragment = cm.ClientMessage.createForEncode();
@@ -173,6 +173,6 @@ describe('FragmentedClientMessageHandlerTest', function () {
         FixSizedTypesCodec.encodeLong(frame.content, 0, fragmentId);
         fragment.addFrame(frame);
         return fragment;
-    }
+    };
 
 });

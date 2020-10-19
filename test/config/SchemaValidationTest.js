@@ -15,8 +15,8 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
-const validate = require('jsonschema').validate;
+const { expect } = require('chai');
+const { validate } = require('jsonschema');
 const fs = require('fs');
 const path = require('path');
 
@@ -30,7 +30,7 @@ describe('SchemaValidationTest', function () {
 
     function validateCandidate(candidate) {
         const candidateJson = JSON.parse(candidate);
-        return validate(candidateJson, schema, {nestedErrors: true});
+        return validate(candidateJson, schema, { nestedErrors: true });
     }
 
     it('hazelcast-client-full.json passes validation', function () {

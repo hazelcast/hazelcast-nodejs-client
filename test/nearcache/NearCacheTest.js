@@ -73,11 +73,11 @@ describe('NearCacheTest', function () {
         return new SerializationServiceV1(cfg);
     }
 
-    function promiseBefore(boundaryInSec, func) {
+    async function promiseBefore(boundaryInSec, func) {
         return promiseLater(boundaryInSec * 250, func);
     }
 
-    function promiseAfter(boundaryInSec, func) {
+    async function promiseAfter(boundaryInSec, func) {
         return promiseLater(boundaryInSec * 1500, func);
     }
 
@@ -151,20 +151,18 @@ describe('NearCacheTest', function () {
                 nearCache.setReady();
             });
 
-            it('simple put/get', function () {
+            it('simple put/get', async function () {
                 nearCache.put(ds('key'), 'val');
-                return nearCache.get(ds('key')).then((res) => {
-                    return expect(res).to.equal('val');
-                });
+                const res = await nearCache.get(ds('key'));
+                expect(res).to.equal('val');
             });
 
-            it('returns undefined for non existing value', function () {
-                return nearCache.get(ds('random')).then(() => {
-                    return expect(nearCache.getStatistics().missCount).to.equal(1);
-                });
+            it('returns undefined for non existing value', async function () {
+                await nearCache.get(ds('random'));
+                expect(nearCache.getStatistics().missCount).to.equal(1);
             });
 
-            it('record does not expire if ttl is 0', function () {
+            it('record does not expire if ttl is 0', async function () {
                 if (nearCache.timeToLiveSeconds !== 0) {
                     this.skip();
                 }
@@ -173,7 +171,7 @@ describe('NearCacheTest', function () {
                     .to.eventually.equal('val');
             });
 
-            it('ttl expire', function () {
+            it('ttl expire', async function () {
                 if (nearCache.timeToLiveSeconds === 0) {
                     this.skip();
                 }
@@ -182,13 +180,13 @@ describe('NearCacheTest', function () {
                     .to.eventually.be.undefined;
             });
 
-            it('ttl does not expire early', function () {
+            it('ttl does not expire early', async function () {
                 nearCache.put(ds('key'), 'val');
                 return expect(promiseBefore(testConfig.timeToLiveSeconds, nearCache.get.bind(nearCache, ds('key'))))
                     .to.eventually.equal('val');
             });
 
-            it('evicted after maxIdleSeconds', function () {
+            it('evicted after maxIdleSeconds', async function () {
                 if (nearCache.maxIdleSeconds === 0) {
                     this.skip();
                 }
@@ -197,7 +195,7 @@ describe('NearCacheTest', function () {
                     .to.eventually.be.undefined;
             });
 
-            it('not evicted after maxIdleSeconds if maxIdleSeconds is 0(unlimited)', function () {
+            it('not evicted after maxIdleSeconds if maxIdleSeconds is 0(unlimited)', async function () {
                 if (nearCache.maxIdleSeconds !== 0) {
                     this.skip();
                 }
@@ -206,7 +204,7 @@ describe('NearCacheTest', function () {
                     .to.eventually.equal('val');
             });
 
-            it('not evicted before maxIdleSeconds', function () {
+            it('not evicted before maxIdleSeconds', async function () {
                 nearCache.put(ds('key'), 'val');
                 return expect(promiseBefore(testConfig.maxIdleSeconds, nearCache.get.bind(nearCache, ds('key'))))
                     .to.eventually.equal('val');

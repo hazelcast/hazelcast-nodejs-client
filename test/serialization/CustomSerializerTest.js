@@ -16,9 +16,9 @@
 /* eslint-disable */
 'use strict';
 
-const expect = require('chai').expect;
-const SerializationServiceV1 = require('../../lib/serialization/SerializationService').SerializationServiceV1;
-const SerializationConfigImpl = require('../../lib/config/SerializationConfig').SerializationConfigImpl;
+const { expect } = require('chai');
+const { SerializationServiceV1 } = require('../../lib/serialization/SerializationService');
+const { SerializationConfigImpl } = require('../../lib/config/SerializationConfig');
 
 describe('CustomSerializerTest', function () {
 

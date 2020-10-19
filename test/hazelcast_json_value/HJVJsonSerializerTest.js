@@ -18,10 +18,10 @@
 
 const chai = require('chai');
 chai.use(require('chai-as-promised'));
-const expect = require('chai').expect;
-const Client = require('../../.').Client;
+const expect = chai.expect;
+const { Client } = require('../../.');
 const RC = require('./../RC');
-const HazelcastJsonValue = require('../../.').HazelcastJsonValue;
+const { HazelcastJsonValue } = require('../../.');
 
 describe('HazelcastJsonValue with JsonSerializer', function () {
 
@@ -30,83 +30,62 @@ describe('HazelcastJsonValue with JsonSerializer', function () {
     const object = { 'a': 1 };
     const hzJsonValue = new HazelcastJsonValue(JSON.stringify(object));
 
-    before(function () {
-        return RC.createCluster().then(function (response) {
-            cluster = response;
-            return RC.startMember(cluster.id);
-        }).then(function () {
-            return Client.newHazelcastClient({
-                clusterName: cluster.id
-            }).then(function (hazelcastClient) {
-                client = hazelcastClient;
-            });
+    before(async function () {
+        cluster = await RC.createCluster();
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id
         });
     });
 
-    beforeEach(function () {
-        return client.getMap('jsonTest').then(function (mp) {
-            map = mp;
-        });
+    beforeEach(async function () {
+        map = await client.getMap('jsonTest');
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         return map.destroy();
     });
 
-    after(function () {
-        return client.shutdown()
-            .then(() => RC.terminateCluster(cluster.id));
+    after(async function () {
+        await client.shutdown();
+        return RC.terminateCluster(cluster.id);
     });
 
-    it('storing JavaScript objects', function () {
-        return map.put(1, object).then(function () {
-            return map.get(1);
-        }).then(function (value) {
-            expect(value).to.deep.equal(object);
-        });
+    it('storing JavaScript objects', async function () {
+        await map.put(1, object);
+        const value = await map.get(1);
+        expect(value).to.deep.equal(object);
     });
 
-    it('storing HazelcastJsonValue objects', function () {
-        return map.put(1, hzJsonValue).then(function () {
-            return map.get(1);
-        }).then(function (value) {
-            expect(value).to.deep.equal(object);
-        });
+    it('storing HazelcastJsonValue objects', async function () {
+        await map.put(1, hzJsonValue);
+        const value = await map.get(1);
+        expect(value).to.deep.equal(object);
     });
 
-    it('storing invalid Json strings', function () {
+    it('storing invalid Json strings', async function () {
         const invalidString = '{a}';
-        return map.put(1, new HazelcastJsonValue(invalidString)).then(function () {
-            return expect(map.get(1)).to.be.rejectedWith(SyntaxError);
-        });
+        await map.put(1, new HazelcastJsonValue(invalidString));
+        return expect(map.get(1)).to.be.rejectedWith(SyntaxError);
     });
 
-    it('storing JavaScript and HazelcastJsonValue objects as keys', function () {
-        return map.put(object, 1).then(function () {
-            return map.get(object);
-        }).then(function (value) {
-            expect(value).to.equal(1);
-            return map.put(hzJsonValue, 2);
-        }).then(function () {
-            return map.get(hzJsonValue);
-        }).then(function (value) {
-            expect(value).to.equal(2);
-            return map.size();
-        }).then(function (size) {
-            expect(size).to.equal(1);
-        });
+    it('storing JavaScript and HazelcastJsonValue objects as keys', async function () {
+        await map.put(object, 1);
+        let value = await map.get(object);
+        expect(value).to.equal(1);
+        await map.put(hzJsonValue, 2);
+        value = await map.get(hzJsonValue);
+        expect(value).to.equal(2);
+        const size = await map.size();
+        expect(size).to.equal(1);
     });
 
-    it('storing JavaScript and HazelcastJsonValue objects together', function () {
-        return map.put(1, object).then(function () {
-            return map.put(2, hzJsonValue);
-        }).then(function () {
-            return map.get(1);
-        }).then(function (value) {
-            expect(value).to.deep.equal(object);
-            return map.get(2);
-        }).then(function (value) {
-            expect(value).to.deep.equal(object);
-        });
+    it('storing JavaScript and HazelcastJsonValue objects together', async function () {
+        await map.put(1, object);
+        await map.put(2, hzJsonValue);
+        let value = await map.get(1);
+        expect(value).to.deep.equal(object);
+        value = await map.get(2);
+        expect(value).to.deep.equal(object);
     });
 });

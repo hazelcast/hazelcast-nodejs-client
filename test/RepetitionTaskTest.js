@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const Util = require("../lib/util/Util");
 const TestUtil = require('./Util');
 
@@ -61,7 +61,7 @@ describe('RepetitionTaskTest', function () {
     });
 
     it('should not throw when cancelled twice', function () {
-        const task = Util.scheduleWithRepetition(() => {}, 100, 200);
+        const task = Util.scheduleWithRepetition(() => { }, 100, 200);
 
         Util.cancelRepetitionTask(task);
         Util.cancelRepetitionTask(task);

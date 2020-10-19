@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const RC = require('./RC');
 const { Client } = require('../.');
 const { deferredPromise } = require('../lib/util/Util');
@@ -128,7 +128,7 @@ configParams.forEach(function (cfg) {
                     } catch (e) {
                         done(e);
                     }
-                })
+                });
             }, 300);
         });
 

@@ -15,9 +15,9 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
-const ClientConfigImpl = require('../../lib/config/Config').ClientConfigImpl;
-const HazelcastCloudDiscovery = require('../../lib/discovery/HazelcastCloudDiscovery').HazelcastCloudDiscovery;
+const { expect } = require('chai');
+const { ClientConfigImpl } = require('../../lib/config/Config');
+const { HazelcastCloudDiscovery } = require('../../lib/discovery/HazelcastCloudDiscovery');
 
 describe('HazelcastClientCloudConfigTest', function () {
 

@@ -15,12 +15,13 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const Long = require('long');
 
-const ObjectData = require('../../lib/serialization/ObjectData');
-const ODInp = ObjectData.ObjectDataInput;
-const ODOut = ObjectData.ObjectDataOutput;
+const {
+    ObjectDataInput: ODInp,
+    ObjectDataOutput: ODOut
+} = require('../../lib/serialization/ObjectData');
 
 describe('ObjectDataTest', function () {
 

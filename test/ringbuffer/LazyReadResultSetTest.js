@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const { LazyReadResultSet } = require('../../lib/proxy/ringbuffer/LazyReadResultSet');
 
 describe('LazyReadResultSetTest', function () {

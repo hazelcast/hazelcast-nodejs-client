@@ -16,7 +16,7 @@
 
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const Long = require('long');
 
 const {
