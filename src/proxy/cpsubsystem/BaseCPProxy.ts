@@ -63,8 +63,9 @@ export abstract class BaseCPProxy {
     }
 
     destroy(): Promise<void> {
-        return this.encodeInvokeOnRandomTarget(CPGroupDestroyCPObjectCodec,
-            this.groupId, this.serviceName, this.objectName).then();
+        return this.encodeInvokeOnRandomTarget(
+            CPGroupDestroyCPObjectCodec, this.groupId, this.serviceName, this.objectName
+        ).then(() => {});
     }
 
     protected toData(object: any): Data {

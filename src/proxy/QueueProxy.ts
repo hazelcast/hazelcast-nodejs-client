@@ -92,7 +92,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     clear(): Promise<void> {
-        return this.encodeInvoke(QueueClearCodec).then();
+        return this.encodeInvoke(QueueClearCodec).then(() => {});
     }
 
     contains(item: E): Promise<boolean> {
@@ -155,7 +155,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
 
     put(item: E): Promise<void> {
         const itemData = this.toData(item);
-        return this.encodeInvoke(QueuePutCodec, itemData).then();
+        return this.encodeInvoke(QueuePutCodec, itemData).then(() => {});
     }
 
     remainingCapacity(): Promise<number> {
