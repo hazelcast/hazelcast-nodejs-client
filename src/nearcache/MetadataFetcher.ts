@@ -96,7 +96,7 @@ export class MetadataFetcher {
 
     private getObjectNames(handlers: Map<string, RepairingHandler>): string[] {
         const names: string[] = [];
-        handlers.forEach((handler: RepairingHandler) => {
+        handlers.forEach((handler) => {
             names.push(handler.getName());
         });
         return names;
