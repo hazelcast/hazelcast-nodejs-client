@@ -90,7 +90,7 @@ export class CountDownLatchProxy extends BaseCPProxy implements ICountDownLatch 
             this.objectName,
             invocationUid,
             round
-        ).then();
+        ).then(() => {});
     }
 
     getCount(): Promise<number> {
