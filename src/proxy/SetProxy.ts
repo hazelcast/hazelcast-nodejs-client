@@ -58,7 +58,7 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
     }
 
     clear(): Promise<void> {
-        return this.encodeInvoke(SetClearCodec).then();
+        return this.encodeInvoke(SetClearCodec).then(() => {});
     }
 
     contains(entry: E): Promise<boolean> {
