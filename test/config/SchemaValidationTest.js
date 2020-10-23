@@ -40,6 +40,8 @@ describe('SchemaValidationTest', function () {
 
     it('invalid configuration is caught by the validator', function () {
         const invalidJson = fs.readFileSync(path.resolve(__dirname, 'configurations/invalid.json'), 'utf8');
-        expect(validateCandidate(invalidJson).errors[0]).to.exist.with.property('message', 'must have a minimum value of 1000');
+        const result = validateCandidate(invalidJson);
+        expect(result.errors[0]).to.exist.with.property('message');
+        expect(result.errors[0].message).to.have.string('1000');
     });
 });
