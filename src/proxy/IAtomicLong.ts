@@ -77,6 +77,13 @@ export interface IAtomicLong extends DistributedObject {
     getAndAdd(delta: Long | number): Promise<Long>;
 
     /**
+     * Atomically decrements the current value by one.
+     *
+     * @returns the old value
+     */
+    getAndDecrement(): Promise<Long>;
+
+    /**
      * Atomically sets the given value and returns the old value.
      *
      * @param newValue the new value

@@ -210,4 +210,15 @@ describe('AtomicLongTest', function () {
         const value = await long.get();
         expectLong(1, value);
     });
+
+    it('getAndDecrement: should return old value', async function () {
+        const value = await long.getAndDecrement();
+        expectLong(0, value);
+    });
+
+    it('getAndDecrement: should decrement', async function () {
+        await long.getAndDecrement();
+        const value = await long.get();
+        expectLong(-1, value);
+    });
 });
