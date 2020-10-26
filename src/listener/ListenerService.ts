@@ -196,6 +196,10 @@ export class ListenerService {
     private deregisterListenerOnTarget(userKey: string,
                                        eventRegistration: ClientEventRegistration): void {
         const clientMessage = eventRegistration.codec.encodeRemoveRequest(eventRegistration.serverRegistrationId);
+        // null message means no remote registration (e.g. for backup acks)
+        if (clientMessage === null) {
+            return;
+        }
         const invocation = new Invocation(this.client, clientMessage, Number.MAX_SAFE_INTEGER);
         invocation.connection = eventRegistration.subscriber;
         this.client.getInvocationService().invoke(invocation).catch((err) => {
