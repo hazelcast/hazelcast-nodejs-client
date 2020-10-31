@@ -13,30 +13,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 'use strict';
 
-const expect = require('chai').expect;
-const {FixSizedTypesCodec} = require('../../../../lib/codec/builtin/FixSizedTypesCodec');
-const {BitsUtil} = require('../../../../lib/util/BitsUtil');
-const TWO_PWR_63_DBL = 9223372036854776000
+const { expect } = require('chai');
+const { FixSizedTypesCodec } = require('../../../../lib/codec/builtin/FixSizedTypesCodec');
 
 describe('FixSizedTypesCodecTest', function () {
-    it('should throw error when using negative number', function () {
-        expect(() => FixSizedTypesCodec.encodeNonNegativeNumberAsLong(null, 0, -5)).to.throw
+
+    const TWO_PWR_63_DBL = 9223372036854776000;
+
+    it('should throw error when trying to encode negative number as long', function () {
+        expect(() => FixSizedTypesCodec.encodeNonNegativeNumberAsLong(null, 0, -5)).to.throw;
     });
 
-    it('should encode value as long and then decode it back', function () {
-        var buffer = Buffer.alloc(12)
-        FixSizedTypesCodec.encodeNonNegativeNumberAsLong(buffer, 0, 12)
-        let decodeNumberFromLong = FixSizedTypesCodec.decodeNumberFromLong(buffer, 0);
-        expect(decodeNumberFromLong).to.equal(12)
+    it('should encode non-negative number as long and then decode it back', function () {
+        const buffer = Buffer.allocUnsafe(8);
+        FixSizedTypesCodec.encodeNonNegativeNumberAsLong(buffer, 0, 12);
+        const decodeNumberFromLong = FixSizedTypesCodec.decodeNumberFromLong(buffer, 0);
+        expect(decodeNumberFromLong).to.equal(12);
     });
 
-    it('should encode max value when value greater or equals than TWO_PWR_63_DBL then decode it back', function () {
-        var buffer = Buffer.allocUnsafe(9 * BitsUtil.LONG_SIZE_IN_BYTES)
-        FixSizedTypesCodec.encodeNonNegativeNumberAsLong(buffer, 0, TWO_PWR_63_DBL)
-        let decodeNumberFromLong = FixSizedTypesCodec.decodeNumberFromLong(buffer, 0);
-        expect(decodeNumberFromLong).to.equal(TWO_PWR_63_DBL)
+    it('should encode Number.MAX_SAFE_INTEGER as long then decode it back', function () {
+        const buffer = Buffer.allocUnsafe(8);
+        FixSizedTypesCodec.encodeNonNegativeNumberAsLong(buffer, 0, Number.MAX_SAFE_INTEGER);
+        const decodeNumberFromLong = FixSizedTypesCodec.decodeNumberFromLong(buffer, 0);
+        expect(decodeNumberFromLong).to.equal(Number.MAX_SAFE_INTEGER);
+    });
+
+    it('should encode max value for numbers greater or equal to TWO_PWR_63_DBL then decode it back', function () {
+        const buffer = Buffer.allocUnsafe(8);
+        FixSizedTypesCodec.encodeNonNegativeNumberAsLong(buffer, 0, TWO_PWR_63_DBL);
+        const decodeNumberFromLong = FixSizedTypesCodec.decodeNumberFromLong(buffer, 0);
+        expect(decodeNumberFromLong).to.equal(TWO_PWR_63_DBL);
+    });
+
+    it('should encode long greater or equal to TWO_PWR_63_DBL then decode it back', function () {
+        const buffer = Buffer.allocUnsafe(8);
+        FixSizedTypesCodec.encodeLong(buffer, 0, TWO_PWR_63_DBL);
+        const decodedLong = FixSizedTypesCodec.decodeLong(buffer, 0);
+        expect(decodedLong.toNumber()).to.equal(TWO_PWR_63_DBL);
     });
 });
