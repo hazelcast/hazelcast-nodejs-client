@@ -15,14 +15,14 @@
  */
 'use strict';
 
-const expect = require("chai").expect;
-const HazelcastClient = require("../../lib/index.js").Client;
-const Config = require("../../lib/index.js").Config;
+const expect = require('chai').expect;
+const HazelcastClient = require('../../lib/index.js').Client;
+const Config = require('../../lib/index.js').Config;
 const Controller = require('./../RC');
 const Util = require('./../Util');
 const Promise = require('bluebird');
 
-describe("Lock Proxy", function () {
+describe('LockProxyTest', function () {
 
     const INVOCATION_TIMEOUT_FOR_TWO = 1000;
 
@@ -86,7 +86,7 @@ describe("Lock Proxy", function () {
         return Controller.shutdownCluster(cluster.id);
     });
 
-    it("locks and unlocks", function () {
+    it('locks and unlocks', function () {
         this.timeout(10000);
         const startTime = Date.now();
         return lockOne.lock().then(function () {
@@ -100,7 +100,7 @@ describe("Lock Proxy", function () {
         });
     });
 
-    it("unlocks after lease expired", function () {
+    it('unlocks after lease expired', function () {
         this.timeout(10000);
         const startTime = Date.now();
         return lockOne.lock(1000).then(function () {
@@ -111,7 +111,7 @@ describe("Lock Proxy", function () {
         });
     });
 
-    it("gives up attempt to lock after timeout is exceeded", function () {
+    it('gives up attempt to lock after timeout is exceeded', function () {
         this.timeout(10000);
         return lockOne.lock().then(function () {
             return lockTwo.tryLock(1000);
@@ -120,7 +120,7 @@ describe("Lock Proxy", function () {
         });
     });
 
-    it("acquires lock before timeout is exceeded", function () {
+    it('acquires lock before timeout is exceeded', function () {
         this.timeout(10000);
         const startTime = Date.now();
         return lockOne.lock(1000).then(function () {
@@ -132,7 +132,7 @@ describe("Lock Proxy", function () {
         })
     });
 
-    it("acquires the lock before timeout and unlocks after lease expired", function () {
+    it('acquires the lock before timeout and unlocks after lease expired', function () {
         this.timeout(10000);
         const startTime = Date.now();
         return lockOne.lock(1000).then(function () {
@@ -147,8 +147,8 @@ describe("Lock Proxy", function () {
         });
     });
 
-    it("acquires the lock when key owner terminates", function (done) {
-        this.timeout(30000);
+    it('acquires the lock when key owner terminates', function (done) {
+        this.timeout(60000);
         let client;
         let keyOwner;
         let key;
@@ -192,13 +192,13 @@ describe("Lock Proxy", function () {
             }).catch(done);
     });
 
-    it("correctly reports lock status when unlocked", function () {
+    it('correctly reports lock status when unlocked', function () {
         return lockOne.isLocked().then(function (locked) {
             expect(locked).to.be.false;
         });
     });
 
-    it("correctly reports lock status when locked", function () {
+    it('correctly reports lock status when locked', function () {
         return lockOne.lock().then(function () {
             return lockOne.isLocked();
         }).then(function (locked) {
@@ -209,7 +209,7 @@ describe("Lock Proxy", function () {
         });
     });
 
-    it("correctly reports remaining lease time", function () {
+    it('correctly reports remaining lease time', function () {
         return lockOne.lock(1000).then(function () {
             return Util.promiseWaitMilliseconds(30)
         }).then(function (remaining) {
@@ -219,7 +219,7 @@ describe("Lock Proxy", function () {
         })
     });
 
-    it("correctly reports that lock is being held by a specific client", function () {
+    it('correctly reports that lock is being held by a specific client', function () {
         return lockOne.lock().then(function () {
             return lockOne.isLockedByThisClient();
         }).then(function (locked) {
@@ -230,7 +230,7 @@ describe("Lock Proxy", function () {
         });
     });
 
-    it("correctly reports lock acquire count", function () {
+    it('correctly reports lock acquire count', function () {
         return lockOne.lock().then(function () {
             return lockOne.getLockCount();
         }).then(function (count) {
@@ -243,7 +243,7 @@ describe("Lock Proxy", function () {
         });
     });
 
-    it("force unlocks", function () {
+    it('force unlocks', function () {
         return lockOne.lock().then(function () {
             return lockOne.lock();
         }).then(function () {
