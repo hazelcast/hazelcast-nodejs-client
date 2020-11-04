@@ -197,11 +197,28 @@ export class ClientMessage {
     }
 
     getCorrelationId(): number {
-        return FixSizedTypesCodec.decodeLong(this.startFrame.content, CORRELATION_ID_OFFSET).toNumber();
+        return FixSizedTypesCodec.decodeNumberFromLong(this.startFrame.content, CORRELATION_ID_OFFSET);
     }
 
-    setCorrelationId(correlationId: any): void {
-        FixSizedTypesCodec.encodeLong(this.startFrame.content, CORRELATION_ID_OFFSET, correlationId);
+    /**
+     * Resets correlation id to -1.
+     *
+     * Important note: after this call a proper (non-negative) correlation id
+     * must be set before sending the message to the cluster.
+     */
+    resetCorrelationId(): void {
+        this.startFrame.content.writeInt32LE(0xFFFFFFFF|0, CORRELATION_ID_OFFSET);
+        this.startFrame.content.writeInt32LE(0xFFFFFFFF|0, CORRELATION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES);
+    }
+
+    /**
+     * Sets correlation id for the message. The id must be a non-negative
+     * integer.
+     *
+     * @param correlationId correlation id
+     */
+    setCorrelationId(correlationId: number): void {
+        FixSizedTypesCodec.encodeNonNegativeNumberAsLong(this.startFrame.content, CORRELATION_ID_OFFSET, correlationId);
     }
 
     getPartitionId(): number {
@@ -267,7 +284,7 @@ export class ClientMessage {
         const startFrameCopy = this.startFrame.deepCopy();
         const newMessage = new ClientMessage(startFrameCopy, this.endFrame);
 
-        newMessage.setCorrelationId(-1);
+        newMessage.resetCorrelationId();
         newMessage.retryable = this.retryable;
         return newMessage;
     }

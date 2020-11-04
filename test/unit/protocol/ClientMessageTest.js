@@ -17,7 +17,6 @@
 'use strict';
 
 const { expect } = require('chai');
-const Long = require('long');
 
 const {
     ClientMessage,
@@ -49,7 +48,7 @@ describe('ClientMessageTest', function () {
 
         cmEncode.addFrame(Frame.createInitialFrame(50));
         cmEncode.setMessageType(1);
-        cmEncode.setCorrelationId(Long.fromString('1234567812345678'));
+        cmEncode.setCorrelationId(1234567812345678);
         cmEncode.setPartitionId(11223344);
 
         const cmDecode = ClientMessage.createForDecode(cmEncode.startFrame);
@@ -66,7 +65,7 @@ describe('ClientMessageTest', function () {
 
         originalMessage.addFrame(Frame.createInitialFrame(50));
         originalMessage.setMessageType(1);
-        originalMessage.setCorrelationId(Long.fromString('1234567812345678'));
+        originalMessage.setCorrelationId(1234567812345678);
         originalMessage.setPartitionId(11223344);
         originalMessage.setRetryable(true);
         originalMessage.addFrame(Frame.createInitialFrame(20));
@@ -126,7 +125,7 @@ describe('ClientMessageTest', function () {
         const frame1 = Frame.createInitialFrame(16);
         clientMessage.addFrame(frame1);
         clientMessage.setMessageType(1);
-        clientMessage.setCorrelationId(Long.fromString('123'));
+        clientMessage.setCorrelationId(123);
         clientMessage.setPartitionId(11223344);
 
         const frame2 = new Frame(Buffer.from('foo', 'utf8'));
@@ -154,7 +153,7 @@ describe('ClientMessageTest', function () {
         const frame = Frame.createInitialFrame(16);
         clientMessage.addFrame(frame);
         clientMessage.setMessageType(1);
-        clientMessage.setCorrelationId(Long.fromString('123'));
+        clientMessage.setCorrelationId(123);
         clientMessage.setPartitionId(11223344);
 
         const actual = clientMessage.toBuffer();
