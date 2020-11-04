@@ -18,6 +18,12 @@ import * as Long from 'long';
 import {BitsUtil} from '../../util/BitsUtil';
 import {UUID} from '../../core/UUID';
 
+// Taken from long.js, https://github.com/dcodeIO/long.js/blob/master/src/long.js
+const TWO_PWR_16_DBL = 1 << 16;
+const TWO_PWR_32_DBL = TWO_PWR_16_DBL * TWO_PWR_16_DBL;
+const TWO_PWR_64_DBL = TWO_PWR_32_DBL * TWO_PWR_32_DBL;
+const TWO_PWR_63_DBL = TWO_PWR_64_DBL / 2;
+
 /** @internal */
 export class FixSizedTypesCodec {
     static encodeInt(buffer: Buffer, offset: number, value: number): void {
@@ -41,6 +47,50 @@ export class FixSizedTypesCodec {
         const low = buffer.readInt32LE(offset);
         const high = buffer.readInt32LE(offset + BitsUtil.INT_SIZE_IN_BYTES);
         return new Long(low, high);
+    }
+
+    /**
+     * Writes the given number as long (signed 64-bit integer) into the specified
+     * position in buffer. Supports only non-negative numbers. On overflow, i.e.
+     * for numbers larger than max possible value for signed 64-bit integer, writes
+     * falls back to the max value.
+     *
+     * Use this method to avoid creating an intermediate Long object, but be aware
+     * of possible precision loss for inputs larger than Number.MAX_SAFE_INTEGER.
+     *
+     * @param buffer output Buffer
+     * @param offset offset to start writing from
+     * @param value number to write
+     */
+    static encodeNonNegativeNumberAsLong(buffer: Buffer, offset: number, value: number): void {
+        if (value < 0) {
+            throw new Error("Only positive numbers are allowed in this method, received: " + value);
+        }
+
+        if (value + 1 >= TWO_PWR_63_DBL) {
+            // MAX_VALUE
+            buffer.writeInt32LE(0xFFFFFFFF|0, offset);
+            buffer.writeInt32LE(0x7FFFFFFF|0, offset + BitsUtil.INT_SIZE_IN_BYTES);
+            return;
+        }
+
+        buffer.writeInt32LE((value % TWO_PWR_32_DBL) | 0, offset);
+        buffer.writeInt32LE((value / TWO_PWR_32_DBL) | 0, offset + BitsUtil.INT_SIZE_IN_BYTES);
+    }
+
+    /**
+     * Reads a long (signed 64-bit integer) from the specified position in buffer.
+     *
+     * Use this method to avoid creating a Long object, but be aware of possible
+     * precision loss for inputs larger than Number.MAX_SAFE_INTEGER.
+     *
+     * @param buffer input Buffer
+     * @param offset offset to start reading from
+     */
+    static decodeNumberFromLong(buffer: Buffer, offset: number): number {
+        const low = buffer.readInt32LE(offset);
+        const high = buffer.readInt32LE(offset + BitsUtil.INT_SIZE_IN_BYTES);
+        return high * TWO_PWR_32_DBL + (low >>> 0);
     }
 
     static encodeBoolean(buffer: Buffer, offset: number, value: boolean): void {
