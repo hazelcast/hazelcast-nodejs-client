@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const RC = require('./RC');
 const { Client } = require('../.');
 
@@ -37,7 +37,7 @@ describe('LifecycleServiceTest', function () {
         let expectedState = 'STARTING';
         const listener = (state) => {
             if (state === 'STARTING' && expectedState === 'STARTING') {
-                expectedState = 'STARTED'
+                expectedState = 'STARTED';
             } else if (state === 'STARTED' && expectedState === 'STARTED') {
                 expectedState = 'CONNECTED';
             } else if (state === 'CONNECTED' && expectedState === 'CONNECTED') {
@@ -55,7 +55,7 @@ describe('LifecycleServiceTest', function () {
 
         Client.newHazelcastClient({
             clusterName: cluster.id,
-            lifecycleListeners: [ listener ]
+            lifecycleListeners: [listener]
         })
             .then(function (client) {
                 return client.shutdown();

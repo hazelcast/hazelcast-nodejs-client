@@ -61,7 +61,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
     acquire(permits = 1): Promise<void> {
         assertPositiveNumber(permits);
 
-        return this.doTryAcquire(permits, -1).then();
+        return this.doTryAcquire(permits, -1).then(() => {});
     }
 
     tryAcquire(permits = 1, timeout = 0): Promise<boolean> {
@@ -112,7 +112,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
                     permits
                 )
             )
-            .then();
+            .then(() => {});
     }
 
     availablePermits(): Promise<number> {
@@ -166,7 +166,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
                     delta
                 )
             )
-            .then();
+            .then(() => {});
     }
 
     private getClusterWideThreadId(): Promise<Long> {

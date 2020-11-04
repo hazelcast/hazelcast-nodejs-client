@@ -78,6 +78,10 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
             .then(AtomicLongGetAndAddCodec.decodeResponse);
     }
 
+    getAndDecrement(): Promise<Long> {
+        return this.getAndAdd(-1);
+    }
+
     getAndSet(newValue: Long | number): Promise<Long> {
         if (!Long.isLong(newValue)) {
             assertNumber(newValue);
@@ -96,6 +100,6 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
     }
 
     set(newValue: Long | number): Promise<void> {
-        return this.getAndSet(newValue).then();
+        return this.getAndSet(newValue).then(() => {});
     }
 }

@@ -31,21 +31,18 @@ describe('Invalidation metadata distortion', function () {
     const mapName = 'nc-map';
     const mapSize = 10;
 
-    before(function () {
-        return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_eventual_nearcache.xml', 'utf8'))
-            .then(function (cl) {
-                cluster = cl;
-                return RC.startMember(cluster.id);
-            });
+    before(async function () {
+        cluster = await RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_eventual_nearcache.xml', 'utf8'));
+        return RC.startMember(cluster.id);
     });
 
-    after(function () {
+    after(async function () {
         return RC.terminateCluster(cluster.id);
     });
 
-    afterEach(function () {
-        return client.shutdown()
-            .then(() => validationClient.shutdown());
+    afterEach(async function () {
+        await client.shutdown();
+        return validationClient.shutdown();
     });
 
     function createConfig(withNearCache) {
@@ -65,15 +62,10 @@ describe('Invalidation metadata distortion', function () {
         return cfg;
     }
 
-    beforeEach(function () {
-        return Client.newHazelcastClient(createConfig(true)).then(function (cl) {
-            client = cl;
-            return Client.newHazelcastClient(createConfig(false));
-        }).then(function (cl) {
-            validationClient = cl;
-        });
+    beforeEach(async function () {
+        client = await Client.newHazelcastClient(createConfig(true));
+        validationClient = await Client.newHazelcastClient(createConfig(false));
     });
-
 
     it('lost invalidation', function (done) {
         this.timeout(13000);
@@ -97,9 +89,8 @@ describe('Invalidation metadata distortion', function () {
                         done(err);
                     });
                 setTimeout(populateNearCacheAndCompare, 100);
-            })
+            });
         });
-
 
         function compareActualAndExpected(actualMap, verificationMap, index) {
             return actualMap.get(index).then(function (actual) {
@@ -130,6 +121,5 @@ describe('Invalidation metadata distortion', function () {
                 }).catch(done);
             }
         }
-
     });
 });

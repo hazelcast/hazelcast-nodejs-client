@@ -137,6 +137,7 @@ describe('FencedLockProxyTest', function () {
         stubRequestLock(2, new Error());
 
         await expect(proxy.lock()).to.be.rejectedWith(Error);
+        expect(cpSessionManagerStub.releaseSession.calledOnce).to.be.true;
     });
 
     it('tryLock: should not release session on successful acquire', async function () {
@@ -200,6 +201,7 @@ describe('FencedLockProxyTest', function () {
         stubRequestTryLock(2, new Error());
 
         await expect(proxy.tryLock()).to.be.rejectedWith(Error);
+        expect(cpSessionManagerStub.releaseSession.calledOnce).to.be.true;
     });
 
     it('tryLock: should throw when timeout is not a number', function () {

@@ -16,8 +16,8 @@
 'use strict';
 
 const expect = require('chai').expect;
-const Client = require('../../').Client;
-const Predicates = require('../../.').Predicates;
+const { Client } = require('../../');
+const { Predicates } = require('../../');
 const RC = require('../RC');
 const fs = require('fs');
 const fillMap = require('../Util').fillMap;
@@ -31,124 +31,97 @@ describe('Entry Processor', function () {
     let cluster, client;
     let map;
 
-    before(function () {
-        return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_identifiedfactory.xml', 'utf8'))
-            .then(function (res) {
-                cluster = res;
-                return RC.startMember(cluster.id);
-            })
-            .then(function (member) {
-                return Client.newHazelcastClient({
-                    clusterName: cluster.id,
-                    serialization: {
-                        dataSerializableFactories: {
-                            66: identifiedFactory
-                        }
-                    }
-                });
-            })
-            .then(function (cli) {
-                client = cli;
-            });
-    });
-
-    after(function () {
-        return client.shutdown()
-            .then(() => RC.terminateCluster(cluster.id));
-    });
-
-    beforeEach(function () {
-        return client.getMap('map-to-be-processed').then(function (mp) {
-            map = mp;
-            return fillMap(map, MAP_SIZE, '', '');
+    before(async function () {
+        cluster = await RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_identifiedfactory.xml', 'utf8'));
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            serialization: {
+                dataSerializableFactories: {
+                    66: identifiedFactory
+                }
+            }
         });
     });
 
-    afterEach(function () {
+    after(async function () {
+        await client.shutdown()
+        return RC.terminateCluster(cluster.id);
+    });
+
+    beforeEach(async function () {
+        map = await client.getMap('map-to-be-processed');
+        await fillMap(map, MAP_SIZE, '', '');
+    });
+
+    afterEach(async function () {
         return map.destroy();
     });
 
-    it('executeOnEntries should modify entries', function () {
+    it('executeOnEntries should modify entries', async function () {
         this.timeout(4000);
-        return map.executeOnEntries(new IdentifiedEntryProcessor('processed')).then(function () {
-            return map.entrySet();
-        }).then(function (entries) {
-            expect(entries.every(function (entry) {
-                return entry[1] == 'processed';
-            })).to.be.true;
-        });
+        await map.executeOnEntries(new IdentifiedEntryProcessor('processed'));
+        const entries = await map.entrySet();
+        expect(entries.every(function (entry) {
+            return entry[1] == 'processed';
+        })).to.be.true;
     });
 
-    it('executeOnEntries should return modified entries', function () {
+    it('executeOnEntries should return modified entries', async function () {
         this.timeout(4000);
-        return map.executeOnEntries(new IdentifiedEntryProcessor('processed')).then(function (entries) {
-            expect(entries).to.have.lengthOf(MAP_SIZE);
-            expect(entries.every(function (entry) {
-                return entry[1] == 'processed';
-            })).to.be.true;
-        });
+        const entries = await map.executeOnEntries(new IdentifiedEntryProcessor('processed'));
+        expect(entries).to.have.lengthOf(MAP_SIZE);
+        expect(entries.every(function (entry) {
+            return entry[1] == 'processed';
+        })).to.be.true;
     });
 
-    it('executeOnEntries with predicate should modify entries', function () {
+    it('executeOnEntries with predicate should modify entries', async function () {
         this.timeout(4000);
-        return map.executeOnEntries(new IdentifiedEntryProcessor('processed'), Predicates.regex('this', '^[01]$'))
-            .then(function () {
-                return map.getAll(["0", "1", "2"]);
-            })
-            .then(function (entries) {
-                return expect(entries).to.deep.have.members([['0', 'processed'], ['1', 'processed'], ['2', '2']]);
-            });
+        await map.executeOnEntries(new IdentifiedEntryProcessor('processed'), Predicates.regex('this', '^[01]$'));
+        const entries = await map.getAll(["0", "1", "2"]);
+        expect(entries).to.deep.have.members([['0', 'processed'], ['1', 'processed'], ['2', '2']]);
     });
 
-    it('executeOnEntries with predicate should return modified entries', function () {
+    it('executeOnEntries with predicate should return modified entries', async function () {
         this.timeout(4000);
-        return map.executeOnEntries(new IdentifiedEntryProcessor('processed'), Predicates.regex('this', '^[01]$'))
-            .then(function (entries) {
-                expect(entries).to.have.lengthOf(2);
-                expect(entries.every(function (entry) {
-                    return entry[1] == 'processed';
-                })).to.be.true;
-            });
+        const entries = await map.executeOnEntries(new IdentifiedEntryProcessor('processed'), Predicates.regex('this', '^[01]$'));
+        expect(entries).to.have.lengthOf(2);
+        expect(entries.every(function (entry) {
+            return entry[1] == 'processed';
+        })).to.be.true;
     });
 
-    it('executeOnKey should return modified value', function () {
+    it('executeOnKey should return modified value', async function () {
         this.timeout(4000);
-        return map.executeOnKey('4', new IdentifiedEntryProcessor('processed')).then(function (retVal) {
-            return expect(retVal).to.equal('processed');
-        });
+        const retVal = await map.executeOnKey('4', new IdentifiedEntryProcessor('processed'));
+        expect(retVal).to.equal('processed');
     });
 
-    it('executeOnKey should modify the value', function () {
+    it('executeOnKey should modify the value', async function () {
         this.timeout(4000);
-        return map.executeOnKey('4', new IdentifiedEntryProcessor('processed')).then(function () {
-            return map.get('4');
-        }).then(function (value) {
-            return expect(value).to.equal('processed');
-        });
+        await map.executeOnKey('4', new IdentifiedEntryProcessor('processed'));
+        const value = await map.get('4');
+        expect(value).to.equal('processed');
     });
 
-    it('executeOnKeys should return modified entries', function () {
+    it('executeOnKeys should return modified entries', async function () {
         this.timeout(4000);
-        return map.executeOnKeys(['4', '5'], new IdentifiedEntryProcessor('processed'))
-            .then(function (entries) {
-                return expect(entries).to.deep.have.members([['4', 'processed'], ['5', 'processed']]);
-            });
+        const entries = await map.executeOnKeys(['4', '5'], new IdentifiedEntryProcessor('processed'));
+        expect(entries).to.deep.have.members([['4', 'processed'], ['5', 'processed']]);
     });
 
-    it('executeOnKeys should modify the entries', function () {
+    it('executeOnKeys should modify the entries', async function () {
         this.timeout(4000);
-        return map.executeOnKeys(['4', '5'], new IdentifiedEntryProcessor('processed')).then(function () {
-            return map.getAll(['4', '5']);
-        }).then(function (entries) {
-            return expect(entries).to.deep.have.members([['4', 'processed'], ['5', 'processed']]);
-        });
+        await map.executeOnKeys(['4', '5'], new IdentifiedEntryProcessor('processed'));
+        const entries = await map.getAll(['4', '5']);
+        expect(entries).to.deep.have.members([['4', 'processed'], ['5', 'processed']]);
     });
 
-    it('executeOnKeys with empty array should return empty array', function () {
+    it('executeOnKeys with empty array should return empty array', async function () {
         this.timeout(4000);
-        return map.executeOnKeys([], new IdentifiedEntryProcessor('processed')).then(function (entries) {
-            return expect(entries).to.have.lengthOf(0);
-        });
+        const entries = await map.executeOnKeys([], new IdentifiedEntryProcessor('processed'));
+        expect(entries).to.have.lengthOf(0);
     });
 
 });

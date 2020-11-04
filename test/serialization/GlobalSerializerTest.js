@@ -15,9 +15,9 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
-const SerializationConfigImpl = require('../../lib/config/SerializationConfig').SerializationConfigImpl;
-const SerializationServiceV1 = require('../../lib/serialization/SerializationService').SerializationServiceV1;
+const { expect } = require('chai');
+const { SerializationConfigImpl } = require('../../lib/config/SerializationConfig');
+const { SerializationServiceV1 } = require('../../lib/serialization/SerializationService');
 
 describe('GlobalSerializerTest', function () {
 

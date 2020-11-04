@@ -30,126 +30,84 @@ describe("FlakeIdGeneratorProxyTest", function () {
     let cluster, client;
     let flakeIdGenerator;
 
-    before(function () {
-        return RC.createCluster().then(function (response) {
-            cluster = response;
-            return RC.startMember(cluster.id);
-        }).then(function () {
-            return Client.newHazelcastClient({
-                clusterName: cluster.id,
-                flakeIdGenerators: {
-                    'shortterm': {
-                        prefetchValidityMillis: SHORT_TERM_VALIDITY_MILLIS,
-                        prefetchCount: SHORT_TERM_BATCH_SIZE
-                    }
+    before(async function () {
+        cluster = await RC.createCluster();
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            flakeIdGenerators: {
+                'shortterm': {
+                    prefetchValidityMillis: SHORT_TERM_VALIDITY_MILLIS,
+                    prefetchCount: SHORT_TERM_BATCH_SIZE
                 }
-            }).then(function (hazelcastClient) {
-                client = hazelcastClient;
-            });
+            }
         });
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         return flakeIdGenerator.destroy();
     });
 
-    after(function () {
-        return client.shutdown()
-            .then(() => RC.terminateCluster(cluster.id));
+    after(async function () {
+        await client.shutdown();
+        return RC.terminateCluster(cluster.id);
     });
 
     function addToListFunction(l) {
         return function (val) {
             l.push(val);
-        }
+        };
     }
 
-    it('newId succeeds', function () {
-        return client.getFlakeIdGenerator('test').then(function (idGenerator) {
-            flakeIdGenerator = idGenerator;
-            return flakeIdGenerator.newId();
-        });
+    it('newId succeeds', async function () {
+        flakeIdGenerator = await client.getFlakeIdGenerator('test');
+        return flakeIdGenerator.newId();
     });
 
-    it('newId returns a unique long', function () {
-        return client.getFlakeIdGenerator('test').then(function (idGenerator) {
-            flakeIdGenerator = idGenerator;
-            let promise = Promise.resolve();
-            const idList = [];
-            for (let i = 0; i < 10; i++) {
-                promise = promise.then(function () {
-                    return Promise.all([
-                        flakeIdGenerator.newId().then(addToListFunction(idList)),
-                        flakeIdGenerator.newId().then(addToListFunction(idList)),
-                        flakeIdGenerator.newId().then(addToListFunction(idList)),
-                        flakeIdGenerator.newId().then(addToListFunction(idList)),
-                        flakeIdGenerator.newId().then(addToListFunction(idList))
-                    ]);
-                });
-            }
-            return promise.then(function () {
-                expect(idList.length).to.be.equal(50);
-                idList.sort(function (a, b) {
-                    return (a.greaterThan(b) ? 1 : (a.lessThan(b) ? -1 : 0));
-                });
-                for (let i = 1; i < idList.length; i++) {
-                    expect(idList[i]).to.be.instanceOf(Long);
-                    expect(idList[i - 1].equals(idList[i]), 'Expected ' + idList[i - 1] + ' ' + idList[i] + 'to be different.')
-                        .to.be.false;
-                }
-            });
+    it('newId returns a unique long', async function () {
+        flakeIdGenerator = await client.getFlakeIdGenerator('test');
+        const idList = [];
+        for (let i = 0; i < 50; i++) {
+            addToListFunction(idList)(await flakeIdGenerator.newId());
+        }
+        expect(idList.length).to.be.equal(50);
+        idList.sort(function (a, b) {
+            return (a.greaterThan(b) ? 1 : (a.lessThan(b) ? -1 : 0));
         });
+        for (let i = 1; i < idList.length; i++) {
+            expect(idList[i]).to.be.instanceOf(Long);
+            expect(idList[i - 1].equals(idList[i]), 'Expected ' + idList[i - 1] + ' ' + idList[i] + 'to be different.')
+                .to.be.false;
+        }
     });
 
-    it('subsequent ids are from the same batch', function () {
-        let firstId;
-        return client.getFlakeIdGenerator('test').then(function (idGenerator) {
-            flakeIdGenerator = idGenerator;
-            return flakeIdGenerator.newId()
-        }).then(function (id) {
-            firstId = id;
-            return flakeIdGenerator.newId();
-        }).then(function (secondId) {
-            return expect(secondId.equals(firstId.add(FLAKE_ID_STEP))).to.be.true;
-        });
+    it('subsequent ids are from the same batch', async function () {
+        flakeIdGenerator = await client.getFlakeIdGenerator('test');
+        const firstId = await flakeIdGenerator.newId();
+        const secondId = await flakeIdGenerator.newId();
+        expect(secondId.equals(firstId.add(FLAKE_ID_STEP))).to.be.true;
     });
 
-    it('ids are from new batch after validity period', function () {
-        let firstId;
-        return client.getFlakeIdGenerator('shortterm').then(function (idGenerator) {
-            flakeIdGenerator = idGenerator;
-            return flakeIdGenerator.newId()
-        }).then(function (id) {
-            firstId = id;
-            return Util.promiseWaitMilliseconds(SHORT_TERM_VALIDITY_MILLIS + 1000);
-        }).then(function () {
-            return flakeIdGenerator.newId();
-        }).then(function (secondId) {
-            const borderId = firstId.add(FLAKE_ID_STEP * SHORT_TERM_BATCH_SIZE);
-            return expect(secondId.greaterThan(borderId), 'Expected ' + secondId + ' to be greater than ' + borderId)
-                .to.be.true;
-        });
+    it('ids are from new batch after validity period', async function () {
+        flakeIdGenerator = await client.getFlakeIdGenerator('shortterm');
+        const firstId = await flakeIdGenerator.newId();
+        await Util.promiseWaitMilliseconds(SHORT_TERM_VALIDITY_MILLIS + 1000);
+        const secondId = await flakeIdGenerator.newId();
+        const borderId = firstId.add(FLAKE_ID_STEP * SHORT_TERM_BATCH_SIZE);
+        expect(secondId.greaterThan(borderId), 'Expected ' + secondId + ' to be greater than ' + borderId)
+            .to.be.true;
     });
 
-    it('ids are from new batch after prefetched ones are exhausted', function () {
-        let firstId;
-        return client.getFlakeIdGenerator('shortterm').then(function (idGenerator) {
-            flakeIdGenerator = idGenerator;
-            return flakeIdGenerator.newId()
-        }).then(function (id) {
-            firstId = id;
-            return flakeIdGenerator.newId();
-        }).then(function () {
-            // after this we exhausted the batch at hand
-            return flakeIdGenerator.newId();
-        }).then(function () {
-            return Util.promiseWaitMilliseconds(100);
-        }).then(function () {
-            return flakeIdGenerator.newId();
-        }).then(function (secondId) {
-            const borderId = firstId.add(FLAKE_ID_STEP * SHORT_TERM_BATCH_SIZE);
-            return expect(secondId.greaterThan(borderId), 'Expected ' + secondId + ' to be greater than ' + borderId)
-                .to.be.true;
-        });
+    it('ids are from new batch after prefetched ones are exhausted', async function () {
+        flakeIdGenerator = await client.getFlakeIdGenerator('shortterm');
+        const firstId = await flakeIdGenerator.newId();
+        await flakeIdGenerator.newId();
+        // after this we exhausted the batch at hand
+        await flakeIdGenerator.newId();
+        await Util.promiseWaitMilliseconds(100);
+        const secondId = await flakeIdGenerator.newId();
+        const borderId = firstId.add(FLAKE_ID_STEP * SHORT_TERM_BATCH_SIZE);
+        expect(secondId.greaterThan(borderId), 'Expected ' + secondId + ' to be greater than ' + borderId)
+            .to.be.true;
     });
 });

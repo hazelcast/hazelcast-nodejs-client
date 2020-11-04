@@ -17,11 +17,10 @@
 
 const chai = require('chai');
 chai.use(require('chai-as-promised'));
-const expect = require('chai').expect;
-const Client = require('../../.').Client;
+const expect = chai.expect;
 const RC = require('./../RC');
-const Predicates = require('../../.').Predicates;
-const HazelcastJsonValue = require('../../.').HazelcastJsonValue;
+const { Client, Predicates } = require('../../.');
+const { HazelcastJsonValue } = require('../../.');
 
 describe('HazelcastJsonValue query test', function () {
 
@@ -29,81 +28,64 @@ describe('HazelcastJsonValue query test', function () {
     let map;
     const object = { 'a': 1 };
 
-    before(function () {
-        return RC.createCluster().then(function (response) {
-            cluster = response;
-            return RC.startMember(cluster.id);
-        }).then(function () {
-            return Client.newHazelcastClient({
-                clusterName: cluster.id
-            }).then(function (hazelcastClient) {
-                client = hazelcastClient;
-            });
+    before(async function () {
+        cluster = await RC.createCluster();
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id
         });
     });
 
-    beforeEach(function () {
-        return client.getMap('jsonTest').then(function (mp) {
-            map = mp;
-        });
+    beforeEach(async function () {
+        map = await client.getMap('jsonTest');
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         return map.destroy();
     });
 
-    after(function () {
+    after(async function () {
         if (!client) {
             return;
         }
-        return client.shutdown()
-            .then(() => RC.terminateCluster(cluster.id));
+        await client.shutdown();
+        return RC.terminateCluster(cluster.id);
     });
 
-    it('querying over JavaScript objects', function () {
+    it('querying over JavaScript objects', async function () {
         const objects = [
-            [0, {'a': 1}],
-            [1, {'a': 3}]
+            [0, { 'a': 1 }],
+            [1, { 'a': 3 }]
         ];
-        return map.putAll(objects).then(function () {
-            return map.valuesWithPredicate(Predicates.greaterThan('a', 2));
-        }).then(function (values) {
-            expect(values.toArray()).to.deep.equal([objects[1][1]]);
-        });
+        await map.putAll(objects);
+        const values = await map.valuesWithPredicate(Predicates.greaterThan('a', 2));
+        expect(values.toArray()).to.deep.equal([objects[1][1]]);
     });
 
-    it('querying over nested attributes', function () {
+    it('querying over nested attributes', async function () {
         const objects = [
-            [0, {'a': 1, 'b': {'c': 1}}],
-            [1, {'a': 3, 'b': {'c': 3}}]
+            [0, { 'a': 1, 'b': { 'c': 1 } }],
+            [1, { 'a': 3, 'b': { 'c': 3 } }]
         ];
-        return map.putAll(objects).then(function () {
-            return map.valuesWithPredicate(Predicates.greaterThan('b.c', 2));
-        }).then(function (values) {
-            expect(values.toArray()).to.deep.equal([objects[1][1]]);
-        });
+        await map.putAll(objects);
+        const values = await map.valuesWithPredicate(Predicates.greaterThan('b.c', 2));
+        expect(values.toArray()).to.deep.equal([objects[1][1]]);
     });
 
-    it('querying over keys', function () {
+    it('querying over keys', async function () {
         const hzJsonValue2 = new HazelcastJsonValue('{ "a": 3 }');
-        return map.put(object, 1).then(function () {
-            return map.put(hzJsonValue2, 2);
-        }).then(function () {
-            return map.valuesWithPredicate(Predicates.sql('__key.a > 2'));
-        }).then(function (values) {
-            expect(values.toArray()).to.deep.equal([2]);
-        });
+        await map.put(object, 1);
+        await map.put(hzJsonValue2, 2);
+        const values = await map.valuesWithPredicate(Predicates.sql('__key.a > 2'));
+        expect(values.toArray()).to.deep.equal([2]);
     });
 
-    it('querying nested attributes over keys', function () {
-        const object1 = {'a': 1, 'b': {'c': 1}};
-        const object2 = {'a': 1, 'b': {'c': 3}};
-        return map.put(object1, 1).then(function () {
-            return map.put(object2, 2);
-        }).then(function () {
-            return map.keySetWithPredicate(Predicates.equal('__key.b.c', 3));
-        }).then(function (keySet) {
-            expect(keySet).to.deep.equal([object2]);
-        });
+    it('querying nested attributes over keys', async function () {
+        const object1 = { 'a': 1, 'b': { 'c': 1 } };
+        const object2 = { 'a': 1, 'b': { 'c': 3 } };
+        await map.put(object1, 1);
+        await map.put(object2, 2);
+        const keySet = await map.keySetWithPredicate(Predicates.equal('__key.b.c', 3));
+        expect(keySet).to.deep.equal([object2]);
     });
 });

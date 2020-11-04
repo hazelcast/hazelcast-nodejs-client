@@ -15,8 +15,9 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
-require('chai').use(require('chai-as-promised'));
+const chai = require('chai');
+chai.use(require('chai-as-promised'));
+const expect = chai.expect;
 const path = require('path');
 
 const { ClientConfigImpl } = require('../../lib/config/Config');

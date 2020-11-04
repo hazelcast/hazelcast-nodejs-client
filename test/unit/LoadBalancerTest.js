@@ -16,7 +16,7 @@
 
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const { RandomLB } = require('../../lib/util/RandomLB');
 const { RoundRobinLB } = require('../../lib/util/RoundRobinLB');
 
@@ -24,11 +24,11 @@ describe('LoadBalancerTest', function () {
 
     const mockMembers = [0, 1, 2];
     const mockCluster = {
-        addMembershipListener: function () {},
+        addMembershipListener: function () { },
         getMembers: function () {
             return mockMembers;
         }
-    }
+    };
 
     it('RandomLB with no members', function () {
         const lb = new RandomLB();
@@ -48,7 +48,7 @@ describe('LoadBalancerTest', function () {
 
         expect(members.size).to.be.below(4);
         members.forEach((member) => {
-           expect(mockMembers).to.include(member);
+            expect(mockMembers).to.include(member);
         });
     });
 

@@ -91,7 +91,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
                 }
                 throw err;
             })
-            .then();
+            .then(() => {});
     }
 
     tryAcquire(permits = 1, timeout = 0): Promise<boolean> {
@@ -256,7 +256,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
             threadId,
             invocationUid,
             permits
-        ).then();
+        ).then(() => {});
     }
 
     private requestDrain(sessionId: Long,
@@ -284,7 +284,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
             threadId,
             invocationUid,
             delta
-        ).then();
+        ).then(() => {});
     }
 
     private newIllegalStateError(cause?: SessionExpiredError) {

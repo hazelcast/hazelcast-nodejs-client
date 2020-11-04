@@ -96,11 +96,15 @@ export class RepairingTask {
                     this.updateLastKnownStaleSequences(handler);
                 }
             });
-            this.metadataFetcher.fetchMetadata(this.handlers);
+            this.metadataFetcher.fetchMetadata(this.handlers)
+                .catch((err) => {
+                    this.logger.debug('RepairingTask', 'Anti entropy task could not fetch metadata. '
+                        + 'Going to retry later.', err);
+                });
         } else {
             this.shutdown();
-            this.logger.debug('RepairingTask', 'Anti entropy task was on although client was not running.' +
-                'Anti entropy task was shutdown forcibly.');
+            this.logger.debug('RepairingTask', 'Anti entropy task was on although client was not running. '
+                + 'Anti entropy task was shutdown forcibly.');
         }
     }
 
@@ -131,9 +135,9 @@ export class RepairingTask {
         if (seconds === 0 || seconds >= this.minAllowedReconciliationSeconds) {
             return seconds * 1000;
         } else {
-            const message = 'Reconciliation interval can be at least ' + this.minAllowedReconciliationSeconds + ' seconds ' +
-                'if not 0. Configured interval is ' + seconds + ' seconds. ' +
-                'Note: configuring a value of 0 seconds disables the reconciliation task.';
+            const message = 'Reconciliation interval can be at least ' + this.minAllowedReconciliationSeconds
+                + ' seconds if not 0. Configured interval is ' + seconds + ' seconds. '
+                + 'Note: configuring a value of 0 seconds disables the reconciliation task.';
             throw new RangeError(message);
         }
     }

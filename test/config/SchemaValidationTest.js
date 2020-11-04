@@ -15,8 +15,8 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
-const validate = require('jsonschema').validate;
+const { expect } = require('chai');
+const { validate } = require('jsonschema');
 const fs = require('fs');
 const path = require('path');
 
@@ -30,7 +30,7 @@ describe('SchemaValidationTest', function () {
 
     function validateCandidate(candidate) {
         const candidateJson = JSON.parse(candidate);
-        return validate(candidateJson, schema, {nestedErrors: true});
+        return validate(candidateJson, schema, { nestedErrors: true });
     }
 
     it('hazelcast-client-full.json passes validation', function () {
@@ -40,6 +40,8 @@ describe('SchemaValidationTest', function () {
 
     it('invalid configuration is caught by the validator', function () {
         const invalidJson = fs.readFileSync(path.resolve(__dirname, 'configurations/invalid.json'), 'utf8');
-        expect(validateCandidate(invalidJson).errors[0]).to.exist.with.property('message', 'must have a minimum value of 1000');
+        const result = validateCandidate(invalidJson);
+        expect(result.errors[0]).to.exist.with.property('message');
+        expect(result.errors[0].message).to.have.string('1000');
     });
 });
