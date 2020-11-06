@@ -84,8 +84,8 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
                     this.invalidateSession(sessionId);
                     return this.doAcquire(permits, invocationUid);
                 }
+                this.releaseSession(sessionId, permits);
                 if (err instanceof WaitKeyCancelledError) {
-                    this.releaseSession(sessionId, permits);
                     throw new IllegalStateError('Semaphore[' + this.objectName
                         + '] not acquired because the acquire call on the CP group was cancelled.');
                 }
@@ -118,10 +118,6 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
                 return acquired;
             })
             .catch((err) => {
-                if (err instanceof WaitKeyCancelledError) {
-                    this.releaseSession(sessionId, permits);
-                    return false;
-                }
                 if (err instanceof SessionExpiredError) {
                     this.invalidateSession(sessionId);
 
@@ -130,6 +126,10 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
                         return false;
                     }
                     return this.doTryAcquire(permits, timeout, invocationUid);
+                }
+                this.releaseSession(sessionId, permits);
+                if (err instanceof WaitKeyCancelledError) {
+                    return false;
                 }
                 throw err;
             });
@@ -145,6 +145,9 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
         const threadId = Long.fromNumber(this.nextThreadId());
         const invocationUid = UuidUtil.generate();
         return this.requestRelease(sessionId, threadId, invocationUid, permits)
+            .then(() => {
+                this.releaseSession(sessionId, permits);
+            })
             .catch((err) => {
                 if (err instanceof SessionExpiredError) {
                     this.invalidateSession(sessionId);
@@ -152,9 +155,6 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
                 }
                 this.releaseSession(sessionId, permits);
                 throw err;
-            })
-            .then(() => {
-                this.releaseSession(sessionId, permits);
             });
     }
 
@@ -185,6 +185,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
                     this.invalidateSession(sessionId);
                     return this.doDrainPermits(invocationUid);
                 }
+                this.releaseSession(sessionId, DRAIN_SESSION_ACQ_COUNT);
                 throw err;
             });
     }
@@ -214,6 +215,9 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
                 sessionId = id;
                 return this.requestChange(sessionId, threadId, invocationUid, delta);
             })
+            .then(() => {
+                this.releaseSession(sessionId);
+            })
             .catch((err) => {
                 if (err instanceof SessionExpiredError) {
                     this.invalidateSession(sessionId);
@@ -221,9 +225,6 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
                 }
                 this.releaseSession(sessionId);
                 throw err;
-            })
-            .then(() => {
-                this.releaseSession(sessionId);
             });
     }
 

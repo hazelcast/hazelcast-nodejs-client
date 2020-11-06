@@ -141,6 +141,7 @@ describe('SessionAwareSemaphoreProxyTest', function () {
         stubRequestAcquire(true, new Error());
 
         await expect(proxy.acquire()).to.be.rejectedWith(Error);
+        expectReleaseSession(1);
     });
 
     it('tryAcquire: should not release session when acquired', async function () {
@@ -203,7 +204,8 @@ describe('SessionAwareSemaphoreProxyTest', function () {
         prepareAcquireSession(1);
         stubRequestAcquire(true, new Error());
 
-        await expect(proxy.tryAcquire(1)).to.be.rejectedWith(Error);
+        await expect(proxy.tryAcquire(2)).to.be.rejectedWith(Error);
+        expectReleaseSession(2);
     });
 
     it('release: should release session when acquired previously', async function () {
@@ -260,6 +262,7 @@ describe('SessionAwareSemaphoreProxyTest', function () {
         stubRequestDrain(100, new Error());
 
         await expect(proxy.drainPermits()).to.be.rejectedWith(Error);
+        expectReleaseSession(DRAIN_SESSION_ACQ_COUNT);
     });
 
     it('reducePermits: should release session when no errors', async function () {
