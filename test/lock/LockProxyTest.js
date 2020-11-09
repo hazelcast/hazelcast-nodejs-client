@@ -41,7 +41,7 @@ describe('LockProxyTest', function () {
     function generateKeyOwnedBy(client, member) {
         const partitionService = client.getPartitionService();
         while (true) {
-            const id = Util.getRandomInt(0, 1000);
+            const id = '' + Util.getRandomInt(0, 1000);
             const partition = partitionService.getPartitionId(id);
             const address = partitionService.getAddressForPartition(partition);
             if (address.host === member.host && address.port === member.port) {
@@ -148,48 +148,48 @@ describe('LockProxyTest', function () {
     });
 
     it('acquires the lock when key owner terminates', function (done) {
-        this.timeout(60000);
+        this.timeout(30000);
         let client;
         let keyOwner;
         let key;
         let alienLock;
 
-        const clientTwoCfg = new Config.ClientConfig();
-        clientTwoCfg.properties['hazelcast.client.invocation.timeout.millis'] = INVOCATION_TIMEOUT_FOR_TWO;
-        HazelcastClient.newHazelcastClient(clientTwoCfg).then(function (c) {
-                client = c;
-                return Controller.startMember(cluster.id)
-            }).then(function (m) {
-                keyOwner = m;
-                return warmupPartitions(client);
-            }).then(function () {
-                key = generateKeyOwnedBy(client, keyOwner);
-                return clientOne.getLock('' + key);
-            }).then(function (lock) {
-                alienLock = lock;
-                return alienLock.lock();
-            }).then(function () {
-                return client.getLock('' + key);
-            }).then(function (lock) {
-                // try to lock concurrently
-                lock.lock()
-                    .then(function () {
-                        return lock.unlock();
-                    })
-                    .then(done)
-                    .catch(done)
-                    .finally(function () {
-                        client.shutdown();
-                    });
-                return Util.promiseWaitMilliseconds(2 * INVOCATION_TIMEOUT_FOR_TWO);
-            }).then(function () {
-                return alienLock.isLocked();
-            }).then(function (locked) {
-                expect(locked).to.be.true;
-                return Controller.terminateMember(cluster.id, keyOwner.uuid);
-            }).then(function () {
-                return alienLock.unlock();
-            }).catch(done);
+        const cfg = new Config.ClientConfig();
+        cfg.properties['hazelcast.client.invocation.timeout.millis'] = INVOCATION_TIMEOUT_FOR_TWO;
+        HazelcastClient.newHazelcastClient(cfg).then(function (c) {
+            client = c;
+            return Controller.startMember(cluster.id)
+        }).then(function (m) {
+            keyOwner = m;
+            return warmupPartitions(client);
+        }).then(function () {
+            key = generateKeyOwnedBy(client, keyOwner);
+            return clientOne.getLock(key);
+        }).then(function (lock) {
+            alienLock = lock;
+            return alienLock.lock();
+        }).then(function () {
+            return client.getLock(key);
+        }).then(function (lock) {
+            // try to lock concurrently
+            lock.lock()
+                .then(function () {
+                    return lock.unlock();
+                })
+                .then(done)
+                .catch(done)
+                .finally(function () {
+                    client.shutdown();
+                });
+            return Util.promiseWaitMilliseconds(2 * INVOCATION_TIMEOUT_FOR_TWO);
+        }).then(function () {
+            return alienLock.isLocked();
+        }).then(function (locked) {
+            expect(locked).to.be.true;
+            return Controller.terminateMember(cluster.id, keyOwner.uuid);
+        }).then(function () {
+            return alienLock.unlock();
+        }).catch(done);
     });
 
     it('correctly reports lock status when unlocked', function () {

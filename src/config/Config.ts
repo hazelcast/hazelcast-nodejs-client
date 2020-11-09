@@ -44,6 +44,7 @@ export class ClientConfig {
         'hazelcast.client.heartbeat.timeout': 60000,
         'hazelcast.client.invocation.retry.pause.millis': 1000,
         'hazelcast.client.invocation.timeout.millis': 120000,
+        'hazelcast.client.internal.clean.resources.millis': 100,
         'hazelcast.client.cloud.url': 'https://coordinator.hazelcast.cloud',
         'hazelcast.client.statistics.enabled': false,
         'hazelcast.client.statistics.period.seconds': Statistics.PERIOD_SECONDS_DEFAULT_VALUE,

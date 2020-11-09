@@ -46,7 +46,7 @@ class ClientMessage {
 
     private buffer: Buffer;
     private cursor: number = BitsUtil.HEADER_SIZE;
-    private isRetryable: boolean;
+    private retryable: boolean;
 
     constructor(buffer: Buffer) {
         this.buffer = buffer;
@@ -66,7 +66,7 @@ class ClientMessage {
 
     clone(): ClientMessage {
         const message = new ClientMessage(Buffer.from(this.buffer));
-        message.isRetryable = this.isRetryable;
+        message.retryable = this.retryable;
         return message;
     }
 
@@ -132,7 +132,11 @@ class ClientMessage {
     }
 
     setRetryable(value: boolean): void {
-        this.isRetryable = value;
+        this.retryable = value;
+    }
+
+    isRetryable(): boolean {
+        return this.retryable;
     }
 
     appendByte(value: number): void {
