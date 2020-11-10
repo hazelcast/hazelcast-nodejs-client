@@ -277,6 +277,13 @@ export class InvocationService {
         }
 
         const pendingInvocation = this.pending.get(correlationId);
+        if (pendingInvocation === undefined) {
+            if (!this.isShutdown) {
+                this.logger.warn('InvocationService',
+                    'Found no registration for invocation id ' + correlationId);
+            }
+            return;
+        }
         const deferred = pendingInvocation.deferred;
         if (messageType === EXCEPTION_MESSAGE_TYPE) {
             const remoteError = this.client.getErrorFactory().createErrorFromClientMessage(clientMessage);
