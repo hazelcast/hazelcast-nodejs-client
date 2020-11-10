@@ -397,6 +397,7 @@ export default class HazelcastClient {
         }).then(() => {
             this.proxyManager.init();
             this.listenerService.start();
+            this.invocationService.start();
             this.statistics.start();
             return this;
         }).catch((e) => {

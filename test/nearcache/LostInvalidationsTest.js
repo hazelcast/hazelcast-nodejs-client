@@ -19,11 +19,10 @@ var HazelcastClient = require('../../').Client;
 var expect = require('chai').expect;
 var Config = require('../../').Config;
 var fs = require('fs');
-var Long = require('long');
 var Util = require('../Util');
 var DeferredPromise = require('../../lib/Util').DeferredPromise;
 
-describe('LostInvalidation', function () {
+describe('LostInvalidationsTest', function () {
     this.timeout(30000);
 
     var cluster;
@@ -157,10 +156,10 @@ describe('LostInvalidation', function () {
         var listenerId = nearCachedMap.invalidationListenerId;
         var clientRegistrationKey = client.getListenerService().activeRegistrations.get(listenerId).get(client.clusterService.getOwnerConnection());
         var correlationId = clientRegistrationKey.correlationId;
-        var handler = client.getInvocationService().eventHandlers[correlationId].handler;
+        var handler = client.getInvocationService().eventHandlers.get(correlationId).handler;
         var numberOfBlockedInvalidations = 0;
         var deferred = DeferredPromise();
-        client.getInvocationService().eventHandlers[correlationId].handler = function () {
+        client.getInvocationService().eventHandlers.get(correlationId).handler = function () {
             numberOfBlockedInvalidations++;
             if (notifyAfterNumberOfEvents !== undefined && notifyAfterNumberOfEvents === numberOfBlockedInvalidations) {
                 deferred.resolve();
@@ -170,6 +169,6 @@ describe('LostInvalidation', function () {
     }
 
     function unblockInvalidationEvents(client, metadata) {
-        client.getInvocationService().eventHandlers[metadata.correlationId].handler = metadata.handler;
+        client.getInvocationService().eventHandlers.get(metadata.correlationId).handler = metadata.handler;
     }
 });
