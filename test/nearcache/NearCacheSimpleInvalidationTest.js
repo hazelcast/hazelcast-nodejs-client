@@ -23,7 +23,7 @@ var Config = require('../../.').Config;
 var Controller = require('../RC');
 var HazelcastClient = require('../../.').Client;
 
-describe('NearCacheSimpleInvalidation', function () {
+describe('NearCacheSimpleInvalidationTest', function () {
     var cluster;
     var client;
     var updaterClient;
@@ -65,7 +65,7 @@ describe('NearCacheSimpleInvalidation', function () {
             });
 
             it('client observes outside invalidations', function () {
-                this.timeout(4000);
+                this.timeout(10000);
                 var entryCount = 1000;
                 var map;
                 return client.getMap(mapName).then(function (mp) {
