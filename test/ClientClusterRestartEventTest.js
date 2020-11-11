@@ -23,7 +23,7 @@ const MemberEvent = require('../lib/invocation/ClusterService').MemberEvent;
 
 describe('ClientClusterRestartEventTest', function () {
 
-    this.timeout(20000);
+    this.timeout(40000);
 
     let cluster;
     let client;
