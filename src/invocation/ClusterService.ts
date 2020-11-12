@@ -300,7 +300,7 @@ export class ClusterService {
         const events: MembershipEvent[] = [];
         const eventMembers = Array.from(this.members);
         const addedMembers: Member[] = [];
-        let deletedMembers = Array.from(prevMembers);
+        const deletedMembers = Array.from(prevMembers);
 
         for (const member of this.members) {
             const idx = deletedMembers.findIndex(member.equals, member);
