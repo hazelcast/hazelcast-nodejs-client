@@ -19,8 +19,10 @@ npm run compile
 
 Next, run at least one instance of IMDG. The most simple way to do it would be to use the [official Docker image](https://hub.docker.com/r/hazelcast/hazelcast/):
 ```bash
-docker run -p 5701:5701 hazelcast/hazelcast:4.0.2
+docker run --net=host hazelcast/hazelcast:4.1
 ```
+
+Note: it's important to use host network when benchmarking to avoid the [overhead](https://github.com/hazelcast/hazelcast-docker/issues/165#issuecomment-725901950) introduced by Docker's NAT.
 
 Finally, run one of the benchmarks, e.g.:
 ```bash
