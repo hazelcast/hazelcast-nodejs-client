@@ -2009,7 +2009,7 @@ The following is the Java counterpart of the entry processor in Node.js client g
 ```java
 package com.example;
 
-import com.hazelcast.map.AbstractEntryProcessor;
+import com.hazelcast.map.EntryProcessor;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
@@ -2017,8 +2017,7 @@ import java.io.IOException;
 import java.util.Map;
 
 public class IdentifiedEntryProcessor
-        extends AbstractEntryProcessor<String, String>
-        implements IdentifiedDataSerializable {
+        implements EntryProcessor<String, String, String>, IdentifiedDataSerializable {
 
     static final int CLASS_ID = 1;
     private String value;
@@ -2047,7 +2046,7 @@ public class IdentifiedEntryProcessor
     }
 
     @Override
-    public Object process(Map.Entry<String, String> entry) {
+    public String process(Map.Entry<String, String> entry) {
         entry.setValue(value);
         return value;
     }
