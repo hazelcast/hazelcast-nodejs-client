@@ -39,7 +39,8 @@ describe('NearCachedMapTest', function () {
                         }
                     }
                 };
-                return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_nearcache_batchinvalidation_false.xml', 'utf8'))
+                const clusterCfg = fs.readFileSync(__dirname + '/hazelcast_nearcache_batchinvalidation_false.xml', 'utf8');
+                return RC.createCluster(null, clusterCfg)
                     .then(function (res) {
                         cluster = res;
                         return RC.startMember(cluster.id);
