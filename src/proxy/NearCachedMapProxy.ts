@@ -136,17 +136,17 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         return super.removeInternal(keyData, value).then<V>(this.invalidateCacheEntryAndReturn.bind(this, keyData));
     }
 
-    protected getAllInternal(partitionsToKeys: { [id: string]: any }, result: any[] = []): Promise<any[]> {
+    protected getAllInternal(partitionsToKeys: { [id: string]: Data[] }, result: any[] = []): Promise<any[]> {
         const promises = [];
         try {
             for (const partition in partitionsToKeys) {
-                let partitionArray = partitionsToKeys[partition];
+                const partitionArray = partitionsToKeys[partition];
                 for (let i = partitionArray.length - 1; i >= 0; i--) {
                     const key = partitionArray[i];
                     promises.push(this.nearCache.get(key).then((cachedResult) => {
                         if (cachedResult !== undefined) {
                             result.push([this.toObject(partitionArray[i]), cachedResult]);
-                            partitionArray = partitionArray.splice(i, 1);
+                            partitionArray.splice(i, 1);
                         }
                     }));
                 }
