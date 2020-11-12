@@ -307,7 +307,7 @@ export class ClusterService {
             if (idx === -1) {
                 addedMembers.push(member);
             } else {
-                deletedMembers = deletedMembers.splice(idx, 1);
+                deletedMembers.splice(idx, 1);
             }
         }
 

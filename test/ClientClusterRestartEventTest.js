@@ -89,16 +89,14 @@ describe('ClientClusterRestartEventTest', function () {
 
         const membershipListener = {
             memberAdded: function (membershipEvent) {
-                addedCount++;
                 added.push(membershipEvent.member);
-                if (addedCount === 2) {
+                if (++addedCount === 2) {
                     addedPromise.resolve();
                 }
             },
             memberRemoved: function (membershipEvent) {
                 removed.push(membershipEvent.member);
-                removedCount++;
-                if (removedCount === 2) {
+                if (++removedCount === 2) {
                     removedPromise.resolve();
                 }
             }
