@@ -4,6 +4,8 @@ import com.hazelcast.internal.json.Json;
 import com.hazelcast.internal.json.JsonObject;
 import com.hazelcast.security.SimpleTokenCredentials;
 
+import java.nio.charset.StandardCharsets;
+
 import static java.util.Objects.requireNonNull;
 
 public class UsernamePasswordCredentials {
@@ -31,7 +33,7 @@ public class UsernamePasswordCredentials {
     }
 
     public static UsernamePasswordCredentials readFromToken(SimpleTokenCredentials token) {
-        String tokenContents = new String(token.getToken());
+        String tokenContents = new String(token.getToken(), StandardCharsets.UTF_8);
         int jsonStartIdx = tokenContents.indexOf('{');
         if (jsonStartIdx < 0) {
             throw new IllegalArgumentException("JSON object expected");
