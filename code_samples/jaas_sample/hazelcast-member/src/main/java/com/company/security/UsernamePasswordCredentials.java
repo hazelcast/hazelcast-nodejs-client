@@ -1,71 +1,47 @@
 package com.company.security;
 
-import com.hazelcast.nio.serialization.Portable;
-import com.hazelcast.nio.serialization.PortableReader;
-import com.hazelcast.nio.serialization.PortableWriter;
-import com.hazelcast.security.Credentials;
+import com.hazelcast.internal.json.Json;
+import com.hazelcast.internal.json.JsonObject;
+import com.hazelcast.security.SimpleTokenCredentials;
 
-import java.io.IOException;
+import static java.util.Objects.requireNonNull;
 
-public class UsernamePasswordCredentials implements Credentials, Portable {
-    public static final int CLASS_ID = 1;
+public class UsernamePasswordCredentials {
 
-    private String username;
-    private String password;
-    private String endpoint;
-
-    public UsernamePasswordCredentials() {
-    }
+    private final String username;
+    private final String password;
+    private final String endpoint;
 
     public UsernamePasswordCredentials(String username, String password, String endpoint) {
-        this.username = username;
-        this.password = password;
-        this.endpoint = endpoint;
+        this.username = requireNonNull(username, "username required");
+        this.password = requireNonNull(password, "password required");
+        this.endpoint = requireNonNull(endpoint, "endpoint required");
     }
 
-    @Override
     public String getEndpoint() {
         return endpoint;
     }
 
-    @Override
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
-    }
-
-    @Override
-    public String getPrincipal() {
-        return getUsername();
-    }
-
-    public String getUsername(){
+    public String getName() {
         return username;
     }
+
     public String getPassword() {
         return password;
     }
 
-    @Override
-    public void readPortable(PortableReader portableReader) throws IOException {
-        username = portableReader.readUTF("username");
-        password = portableReader.readUTF("password");
-        endpoint = portableReader.readUTF("endpoint");
-    }
-
-    @Override
-    public void writePortable(PortableWriter portableWriter) throws IOException {
-        portableWriter.writeUTF("username", username);
-        portableWriter.writeUTF("password", password);
-        portableWriter.writeUTF("endpoint", endpoint);
-    }
-
-    @Override
-    public int getClassId() {
-        return UsernamePasswordCredentials.CLASS_ID;
-    }
-
-    @Override
-    public int getFactoryId() {
-        return UsernamePasswordCredentialsFactory.FACTORY_ID;
+    public static UsernamePasswordCredentials readFromToken(SimpleTokenCredentials token) {
+        String tokenContents = new String(token.getToken());
+        int jsonStartIdx = tokenContents.indexOf('{');
+        if (jsonStartIdx < 0) {
+            throw new IllegalArgumentException("JSON object expected");
+        }
+        // need to trim the header part
+        tokenContents = tokenContents.substring(jsonStartIdx);
+        JsonObject object = Json.parse(tokenContents).asObject();
+        String username = object.getString("username", null);
+        String password = object.getString("password", null);
+        String endpoint = object.getString("endpoint", null);
+        return new UsernamePasswordCredentials(username, password, endpoint);
     }
 }

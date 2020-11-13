@@ -27,7 +27,7 @@
             <realm name="cr">
                 <authentication>
                     <jaas>
-                        <login-module class-name="com.company.security.ClientLoginModule" usage="REQUIRED"/>
+                        <login-module class-name="com.company.security.ClientLoginModule"/>
                     </jaas>
                 </authentication>
             </realm>
@@ -50,10 +50,4 @@
             </map-permission>
         </client-permissions>
     </security>
-
-    <serialization>
-        <portable-factories>
-            <portable-factory factory-id="1">com.company.security.UsernamePasswordCredentialsFactory</portable-factory>
-        </portable-factories>
-    </serialization>
 </hazelcast>

@@ -1,13 +1,14 @@
 package com.company.security;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class DummyAuthenticator {
-    private Map<String, String> users;
-    private Map<String, List<String>> userGrous;
+
+    private final Map<String, String> users;
+    private final Map<String, List<String>> userGrous;
 
     public DummyAuthenticator(){
         userGrous = new HashMap<>();
@@ -16,13 +17,13 @@ public class DummyAuthenticator {
         users.put("admin", "password1");
         users.put("reader", "password2");
 
-        userGrous.put("admin", Arrays.asList("adminGroup"));
-        userGrous.put("reader", Arrays.asList("readerGroup"));
+        userGrous.put("admin", Collections.singletonList("adminGroup"));
+        userGrous.put("reader", Collections.singletonList("readerGroup"));
     }
 
     public boolean authenticate(String username, String password){
         String userPassword = users.get(username);
-        if (userPassword != null){
+        if (userPassword != null) {
             return userPassword.equals(password);
         }
         return false;
