@@ -39,7 +39,8 @@ describe('NearCachedMapTest', function () {
                         }
                     }
                 };
-                cluster = await RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_nearcache_batchinvalidation_false.xml', 'utf8'));
+                const clusterCfg = fs.readFileSync(__dirname + '/hazelcast_nearcache_batchinvalidation_false.xml', 'utf8');
+                cluster = await RC.createCluster(null, clusterCfg);
                 await RC.startMember(cluster.id);
                 cfg.clusterName = cluster.id;
                 client1 = await Client.newHazelcastClient(cfg);
