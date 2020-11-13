@@ -18,11 +18,9 @@ var Controller = require('./RC');
 var expect = require('chai').expect;
 var HazelcastClient = require('../.').Client;
 var Config = require('../.').Config;
-var Address = require('../.').Address;
 var Promise = require('bluebird');
-var Address = require('../.').Address;
 
-describe('ClusterService', function () {
+describe('ClusterServiceTest', function () {
     this.timeout(25000);
     var cluster;
     var ownerMember;
@@ -89,7 +87,7 @@ describe('ClusterService', function () {
     });
 
     it('getMembers returns correct list after a member is removed', function (done) {
-        this.timeout(20000);
+        this.timeout(40000);
         var member2;
         var member3;
 

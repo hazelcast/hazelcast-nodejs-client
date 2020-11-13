@@ -21,7 +21,7 @@ var Config = require('../../').Config;
 var Util = require('../Util');
 var fs = require('fs');
 
-describe('Heartbeat', function () {
+describe('HeartbeatFromClientTest', function () {
     this.timeout(30000);
 
     var cluster;

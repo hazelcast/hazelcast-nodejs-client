@@ -21,10 +21,30 @@ var Util = require('../Util');
 var DeferredPromise = require('../../lib/Util').DeferredPromise;
 var Address = require('../../').Address;
 
-describe('Heartbeat', function () {
+describe('HeartbeatFromServerTest', function () {
+
     this.timeout(50000);
 
     var cluster;
+
+    function simulateHeartbeatLost(client, address, timeout) {
+        const conn = client.connectionManager.establishedConnections[address];
+        conn.lastReadTimeMillis -= timeout;
+    }
+
+    function warmUpConnectionToAddressWithRetry(client, address, retryCount) {
+        return client.connectionManager.getOrConnect(address).then(function (conn) {
+            if (conn != null) {
+                return conn;
+            } else if (conn == null && retryCount > 0) {
+                return Util.promiseWaitMilliseconds(300).then(function () {
+                    return warmUpConnectionToAddressWithRetry(client, address, retryCount - 1);
+                });
+            } else {
+                throw new Error('Could not warm up connection to ' + address);
+            }
+        });
+    }
 
     beforeEach(function () {
         return RC.createCluster(null, null).then(function (resp) {
@@ -36,7 +56,7 @@ describe('Heartbeat', function () {
         return RC.shutdownCluster(cluster.id);
     });
 
-    it('Heartbeat stopped fired when second member stops heartbeating', function (done) {
+    it('should receive heartbeat stopped event when second member stops heartbeating', function (done) {
         var client;
         var memberAddedPromise = new DeferredPromise();
         RC.startMember(cluster.id).then(function () {
@@ -50,8 +70,8 @@ describe('Heartbeat', function () {
             var membershipListener = {
                 memberAdded: function (membershipEvent) {
                     var address = new Address(membershipEvent.member.address.host, membershipEvent.member.address.port);
-                    warmUpConnectionToAddressWithRetry(client, address);
-                    memberAddedPromise.resolve();
+                    warmUpConnectionToAddressWithRetry(client, address)
+                        .then(memberAddedPromise.resolve);
                 }
             };
 
@@ -67,11 +87,11 @@ describe('Heartbeat', function () {
         }).then(function (member2) {
             return memberAddedPromise.promise.then(function () {
                 simulateHeartbeatLost(client, member2.host + ':' + member2.port, 2000);
-            })
+            });
         }).catch(done);
     });
 
-    it('Heartbeat restored fired when second member comes back', function (done) {
+    it('should received heartbeat restored event when second member comes back', function (done) {
         var client;
         var member1;
         var member2;
@@ -104,7 +124,7 @@ describe('Heartbeat', function () {
         }).catch(done);
     });
 
-    it('emits shutdown when lost connection to cluster', function (done) {
+    it('should emit shutdown when lost connection to cluster', function (done) {
         var member;
         RC.startMember(cluster.id).then(function (m) {
             member = m;
@@ -126,22 +146,4 @@ describe('Heartbeat', function () {
             RC.terminateMember(cluster.id, member.uuid);
         });
     });
-
-    function simulateHeartbeatLost(client, address, timeout) {
-        client.connectionManager.establishedConnections[address].lastReadTimeMillis = client.connectionManager.establishedConnections[address].getLastReadTimeMillis() - timeout;
-    }
-
-    function warmUpConnectionToAddressWithRetry(client, address, retryCount) {
-        return client.connectionManager.getOrConnect(address).then(function (conn) {
-            if (conn != null) {
-                return conn;
-            } else if (conn == null && retryCount > 0) {
-                return Util.promiseWaitMilliseconds(300).then(function () {
-                    return warmUpConnectionToAddressWithRetry(client, address, retryCount - 1);
-                });
-            } else {
-                throw new Error('Could not warm up connection to ' + address);
-            }
-        });
-    }
 });

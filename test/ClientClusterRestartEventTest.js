@@ -23,7 +23,7 @@ const MemberEvent = require('../lib/invocation/ClusterService').MemberEvent;
 
 describe('ClientClusterRestartEventTest', function () {
 
-    this.timeout(20000);
+    this.timeout(40000);
 
     let cluster;
     let client;
@@ -73,8 +73,8 @@ describe('ClientClusterRestartEventTest', function () {
                 const members = Array.from(client.clusterService.getMembers()).map(function (m) {
                     return m.uuid;
                 });
-                expect(members).to.includes(newMember.uuid);
-                expect(members.length).to.equal(1);
+                expect(members).to.have.lengthOf(1);
+                expect(members).to.include(newMember.uuid);
             });
     });
 
@@ -89,16 +89,14 @@ describe('ClientClusterRestartEventTest', function () {
 
         const membershipListener = {
             memberAdded: function (membershipEvent) {
-                addedCount++;
                 added.push(membershipEvent.member);
-                if (addedCount === 2) {
+                if (++addedCount === 2) {
                     addedPromise.resolve();
                 }
             },
             memberRemoved: function (membershipEvent) {
                 removed.push(membershipEvent.member);
-                removedCount++;
-                if (removedCount === 2) {
+                if (++removedCount === 2) {
                     removedPromise.resolve();
                 }
             }
@@ -122,19 +120,28 @@ describe('ClientClusterRestartEventTest', function () {
             newMember2 = m;
             return removedPromise.promise;
         }).then(function () {
-            expect(removed[0].uuid).to.equal(member.uuid);
-            expect(removed[1].uuid).to.equal(member2.uuid);
+            const removedUuids = removed.map(function (m) {
+                return m.uuid;
+            });
+            expect(removedUuids).to.have.lengthOf(2);
+            expect(removedUuids).to.include(member.uuid);
+            expect(removedUuids).to.include(member2.uuid);
         }).then(function () {
             return addedPromise.promise;
         }).then(function () {
-            expect(added[0].uuid).to.equal(newMember1.uuid);
-            expect(added[1].uuid).to.equal(newMember2.uuid);
-            const members = Array.from(client.clusterService.getMembers()).map(function (m) {
+            const addedUuids = added.map(function (m) {
                 return m.uuid;
             });
-            expect(members).to.includes(newMember1.uuid);
-            expect(members).to.includes(newMember2.uuid);
-            expect(members.length).to.equal(2);
+            expect(addedUuids).to.have.lengthOf(2);
+            expect(addedUuids).to.include(newMember1.uuid);
+            expect(addedUuids).to.include(newMember2.uuid);
+
+            const localMemberUuids = Array.from(client.clusterService.getMembers()).map(function (m) {
+                return m.uuid;
+            });
+            expect(localMemberUuids).to.have.lengthOf(2);
+            expect(localMemberUuids).to.include(newMember1.uuid);
+            expect(localMemberUuids).to.include(newMember2.uuid);
         });
     });
 });
