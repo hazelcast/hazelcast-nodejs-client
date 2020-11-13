@@ -297,7 +297,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         assertNotNull(keys);
         assertArray(keys);
         const partitionService = this.client.getPartitionService();
-        const partitionsToKeys: { [id: string]: any } = {};
+        const partitionsToKeys: { [id: string]: Data[] } = {};
         let key: K;
         for (const i in keys) {
             key = keys[i];
@@ -309,9 +309,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             partitionsToKeys[pId].push(keyData);
         }
         const result: Array<[any, any]> = [];
-        return this.getAllInternal(partitionsToKeys, result).then(function (): Array<[any, any]> {
-            return result;
-        });
+        return this.getAllInternal(partitionsToKeys, result).then(() => result);
     }
 
     delete(key: K): Promise<void> {
@@ -540,7 +538,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         }
     }
 
-    protected getAllInternal(partitionsToKeys: { [id: string]: any }, result: any[] = []): Promise<Array<[Data, Data]>> {
+    protected getAllInternal(partitionsToKeys: { [id: string]: Data[] },
+                             result: Array<[any, any]> = []): Promise<Array<[Data, Data]>> {
         const partitionPromises: Array<Promise<Array<[Data, Data]>>> = [];
         for (const partition in partitionsToKeys) {
             partitionPromises.push(
