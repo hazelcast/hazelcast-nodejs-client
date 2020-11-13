@@ -16,12 +16,12 @@
 'use strict';
 
 const { Client } = require('hazelcast-client');
-const { CustomCredentials } = require('./custom_cred');
+const { UsernamePasswordCredentials } = require('./user_pass_cred');
 
 (async () => {
     try {
         const adminClient = await Client.newHazelcastClient({
-            customCredentials: new CustomCredentials('admin', 'password1', '127.0.0.1')
+            customCredentials: new UsernamePasswordCredentials('admin', 'password1', '127.0.0.1')
         });
         console.log('Admin client connected');
 

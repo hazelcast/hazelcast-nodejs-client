@@ -15,7 +15,7 @@
  */
 'use strict';
 
-class CustomCredentials {
+class UsernamePasswordCredentials {
     constructor(username, password, endpoint) {
         this.username = username;
         this.password = password;
@@ -23,4 +23,4 @@ class CustomCredentials {
     }
 }
 
-exports.CustomCredentials = CustomCredentials;
+exports.UsernamePasswordCredentials = UsernamePasswordCredentials;
