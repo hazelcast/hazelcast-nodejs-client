@@ -1,12 +1,11 @@
 package com.company.security;
 
 import com.hazelcast.security.ClusterEndpointPrincipal;
-import com.hazelcast.security.ClusterNameCallback;
 import com.hazelcast.security.ClusterRolePrincipal;
-import com.hazelcast.security.ConfigCallback;
 import com.hazelcast.security.Credentials;
 import com.hazelcast.security.CredentialsCallback;
-import com.hazelcast.security.SimpleTokenCredentials;
+import com.hazelcast.security.TokenCredentials;
+import com.hazelcast.security.TokenDeserializerCallback;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -56,45 +55,48 @@ public class ClientLoginModule implements LoginModule {
 
     private UsernamePasswordCredentials getCredentials() throws LoginException {
         CredentialsCallback credcb = new CredentialsCallback();
-        ConfigCallback ccb = new ConfigCallback();
-        ClusterNameCallback cncb = new ClusterNameCallback();
+        // Warning: this callback is used for code conciseness purposes.
+        // We strongly recommend to avoid object deserialization during the authentication
+        // to prevent serialization based attacks.
+        TokenDeserializerCallback tdcb = new TokenDeserializerCallback();
         try {
-            callbackHandler.handle(new Callback[] { credcb, ccb, cncb });
+            callbackHandler.handle(new Callback[] { credcb, tdcb });
         } catch (IOException | UnsupportedCallbackException e) {
             throw new LoginException("Unable to retrieve necessary data");
         }
         Credentials credentials = credcb.getCredentials();
-
         if (credentials == null) {
             throw new LoginException("Credentials could not be retrieved!");
         }
-        if (!(credentials instanceof SimpleTokenCredentials)) {
-            throw new LoginException("SimpleTokenCredentials expected! Got " + credentials.getClass().getSimpleName());
+
+        if (credentials instanceof TokenCredentials) {
+            TokenCredentials tokenCreds = (TokenCredentials) credentials;
+            credentials = (Credentials) tdcb.getTokenDeserializer().deserialize(tokenCreds);
         }
 
-        try {
-            usernamePasswordCredentials = UsernamePasswordCredentials.readFromToken((SimpleTokenCredentials) credentials);
+        if (credentials instanceof UsernamePasswordCredentials) {
+            usernamePasswordCredentials = (UsernamePasswordCredentials) credentials;
             return usernamePasswordCredentials;
-        } catch (Exception e) {
-            throw new LoginException("Could not parse credentials: " + e.getMessage());
+        } else {
+            throw new LoginException("Credentials is not an instance of UsernamePasswordCredentials!");
         }
     }
 
     private boolean authenticateUser(UsernamePasswordCredentials credentials) {
-        String username = credentials.getName();
+        String username = credentials.getUsername();
         String password = credentials.getPassword();
         return authenticator.authenticate(username, password);
     }
 
     private void storeRolesOnPrincipal() throws LoginException {
-        List<String> userGroups = authenticator.getRoles(usernamePasswordCredentials.getName());
+        List<String> userGroups = authenticator.getRoles(usernamePasswordCredentials.getUsername());
         if (userGroups != null) {
             for (String userGroup : userGroups) {
                 subject.getPrincipals().add(new ClusterEndpointPrincipal(usernamePasswordCredentials.getEndpoint()));
                 subject.getPrincipals().add(new ClusterRolePrincipal(userGroup));
             }
         } else {
-            throw new LoginException("User Group(s) not found for user " + usernamePasswordCredentials.getName());
+            throw new LoginException("User Group(s) not found for user " + usernamePasswordCredentials.getUsername());
         }
     }
 

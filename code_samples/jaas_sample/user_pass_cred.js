@@ -20,6 +20,20 @@ class UsernamePasswordCredentials {
         this.username = username;
         this.password = password;
         this.endpoint = endpoint;
+        this.factoryId = 1;
+        this.classId = 1;
+    }
+
+    readPortable(reader) {
+        this.username = reader.readUTF('username');
+        this.endpoint = reader.readUTF('password');
+        this.password = reader.readUTF('endpoint');
+    }
+
+    writePortable(writer) {
+        writer.writeUTF('username', this.username);
+        writer.writeUTF('password', this.password);
+        writer.writeUTF('endpoint', this.endpoint);
     }
 }
 
