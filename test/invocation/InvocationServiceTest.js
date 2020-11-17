@@ -44,6 +44,7 @@ describe('InvocationServiceTest', function () {
         const clientStub = sandbox.stub(Client.prototype);
         clientStub.getConfig.returns(config);
         const listenerServiceStub = sandbox.stub(ListenerService.prototype);
+        listenerServiceStub.registerListener.returns(Promise.resolve('mock-uuid'));
         clientStub.getListenerService.returns(listenerServiceStub);
         const partitionServiceStub = sandbox.stub(PartitionServiceImpl.prototype);
         clientStub.getPartitionService.returns(partitionServiceStub);
@@ -55,12 +56,12 @@ describe('InvocationServiceTest', function () {
         return clientStub;
     }
 
-    function preparePendingInvocationWithClosedConn() {
+    async function preparePendingInvocationWithClosedConn() {
         const config = new ClientConfigImpl();
         const clientStub = mockClient(config);
         service = new InvocationService(clientStub);
         clientStub.getInvocationService.returns(service);
-        service.start();
+        await service.start();
 
         const messageStub = sandbox.stub(ClientMessage.prototype);
         messageStub.getCorrelationId.returns(0);
@@ -81,43 +82,43 @@ describe('InvocationServiceTest', function () {
         }
     });
 
-    it('should start clean resource task and register listener when client is smart and acks are enabled', function () {
+    it('should start clean resource task and register listener for smart client and enabled acks', async function () {
         const config = new ClientConfigImpl();
         const client = mockClient(config);
 
         service = new InvocationService(client);
-        service.start();
+        await service.start();
 
         expect(service.cleanResourcesTask).to.be.not.undefined;
         expect(client.getListenerService().registerListener.calledOnce).to.be.true;
     });
 
-    it('should start clean resource task without listener registration when client is unisocket', function () {
+    it('should start clean resource task without listener registration for unisocket client', async function () {
         const config = new ClientConfigImpl();
         config.network.smartRouting = false;
         const client = mockClient(config);
 
         service = new InvocationService(client);
-        service.start();
+        await service.start();
 
         expect(service.cleanResourcesTask).to.be.not.undefined;
         expect(client.getListenerService().registerListener.notCalled).to.be.true;
     });
 
-    it('should start clean resource task without listener registration when acks are disabled', function () {
+    it('should start clean resource task without listener registration for disabled acks', async function () {
         const config = new ClientConfigImpl();
         config.backupAckToClientEnabled = false;
         const client = mockClient(config);
 
         service = new InvocationService(client);
-        service.start();
+        await service.start();
 
         expect(service.cleanResourcesTask).to.be.not.undefined;
         expect(client.getListenerService().registerListener.notCalled).to.be.true;
     });
 
     it('should reject pending invocations on shut down', async function () {
-        const invocation = preparePendingInvocationWithClosedConn();
+        const invocation = await preparePendingInvocationWithClosedConn();
 
         invocation.invocationService.shutdown();
 
@@ -125,7 +126,7 @@ describe('InvocationServiceTest', function () {
     });
 
     it('should reject pending invocations with closed connections when clean resource task runs', async function () {
-        const invocation = preparePendingInvocationWithClosedConn();
+        const invocation = await preparePendingInvocationWithClosedConn();
 
         await expect(invocation.deferred.promise).to.be.rejectedWith(TargetDisconnectedError);
     });

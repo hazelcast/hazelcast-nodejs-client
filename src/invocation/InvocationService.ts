@@ -289,12 +289,16 @@ export class InvocationService {
         this.isShutdown = false;
     }
 
-    start(): void {
+    start(): Promise<void> {
+        this.cleanResourcesTask = this.scheduleCleanResourcesTask(this.cleanResourcesMillis);
         if (this.backupAckToClientEnabled) {
             const listenerService = this.client.getListenerService();
-            listenerService.registerListener(backupListenerCodec, this.backupEventHandler.bind(this));
+            return listenerService.registerListener(
+                    backupListenerCodec,
+                    this.backupEventHandler.bind(this)
+                ).then(() => {});
         }
-        this.cleanResourcesTask = this.scheduleCleanResourcesTask(this.cleanResourcesMillis);
+        return Promise.resolve();
     }
 
     private scheduleCleanResourcesTask(periodMillis: number): Task {
