@@ -1,5 +1,5 @@
 Make sure you have
-* [Java 6+](https://www.java.com/en/download/) installed on your system.
+* [Java 8+](https://www.java.com/en/download/) installed on your system.
 * [Hazelcast IMDG Enterprise JAR](https://hazelcast.com/download/) available in your system.
 
 Then, put your Hazelcast IMDG Enterprise license key into the [hazelcast.xml](src/main/resources/hazelcast.xml).
