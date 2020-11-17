@@ -452,7 +452,13 @@ export class HazelcastClient {
                 const connectionStrategyConfig = this.config.connectionStrategy;
                 if (!connectionStrategyConfig.asyncStart) {
                     return this.clusterService.waitInitialMemberListFetched()
-                        .then(() => this.connectionManager.connectToAllClusterMembers());
+                        .then(() => this.connectionManager.connectToAllClusterMembers())
+                        .then(() => this.invocationService.start());
+                } else {
+                    this.invocationService.start()
+                        .catch((e) => {
+                            logger.warn('HazelcastClient', 'InvocationService failed to start', e);
+                        });
                 }
             })
             .then(() => {
