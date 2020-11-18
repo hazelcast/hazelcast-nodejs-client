@@ -34,6 +34,7 @@ const { LifecycleServiceImpl } = require('../../lib/LifecycleService');
 const { LoggingService } = require('../../lib/logging/LoggingService');
 const { ClientMessage } = require('../../lib/protocol/ClientMessage');
 const { ClientConnection } = require('../../lib/network/ClientConnection');
+const { ClientConnectionManager } = require('../../lib/network/ClientConnectionManager');
 const { deferredPromise } = require('../../lib/util/Util');
 
 describe('InvocationServiceTest', function () {
@@ -43,6 +44,8 @@ describe('InvocationServiceTest', function () {
     function mockClient(config) {
         const clientStub = sandbox.stub(Client.prototype);
         clientStub.getConfig.returns(config);
+        const connectionManagerStub = sandbox.stub(ClientConnectionManager.prototype);
+        clientStub.getConnectionManager.returns(connectionManagerStub);
         const listenerServiceStub = sandbox.stub(ListenerService.prototype);
         listenerServiceStub.registerListener.returns(Promise.resolve('mock-uuid'));
         clientStub.getListenerService.returns(listenerServiceStub);
