@@ -17,6 +17,10 @@
 module.exports = {
     root: true,
     parser: '@typescript-eslint/parser',
+    parserOptions: {
+        project: './tsconfig.eslint.json',
+        tsconfigRootDir: __dirname
+    },
     plugins: [
         '@typescript-eslint',
     ],
@@ -26,20 +30,16 @@ module.exports = {
         'plugin:@typescript-eslint/recommended',
     ],
     rules: {
-        '@typescript-eslint/no-var-requires': 0,
-        '@typescript-eslint/explicit-module-boundary-types': 0,
-        '@typescript-eslint/interface-name-prefix': 0,
-        '@typescript-eslint/no-empty-interface': 0,
-        '@typescript-eslint/no-explicit-any': 0,
-        '@typescript-eslint/no-empty-function': 0,
-        '@typescript-eslint/no-unused-vars': [
-            'error',
-            {
-                'args': 'none',
-            }
-        ],
-        'no-prototype-builtins': 0,
-        'prefer-rest-params': 0,
-        'max-len': [2, 130, 4]
+        '@typescript-eslint/no-floating-promises': [ 'error', { ignoreIIFE: true } ],
+        '@typescript-eslint/no-var-requires': 'off',
+        '@typescript-eslint/explicit-module-boundary-types': 'off',
+        '@typescript-eslint/interface-name-prefix': 'off',
+        '@typescript-eslint/no-empty-interface': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-empty-function': 'off',
+        '@typescript-eslint/no-unused-vars': [ 'error', { args: 'none' } ],
+        'no-prototype-builtins': 'off',
+        'prefer-rest-params': 'off',
+        'max-len': [ 'error', 130, 4 ]
     }
 };
