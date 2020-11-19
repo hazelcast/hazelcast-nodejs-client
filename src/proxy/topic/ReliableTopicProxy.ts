@@ -64,15 +64,17 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
 
     addMessageListener(listener: MessageListener<E>): string {
         const listenerId = UuidUtil.generate().toString();
-
+        const logger = this.client.getLoggingService().getLogger();
         const runner = new ReliableTopicListenerRunner(listenerId, listener, this.ringbuffer,
-            this.batchSize, this.serializationService, this.client.getLoggingService().getLogger(), this);
+            this.batchSize, this.serializationService, logger, this);
 
         this.runners[listenerId] = runner;
 
         this.ringbuffer.tailSequence().then((sequence: Long) => {
             runner.sequenceNumber = sequence.toNumber() + 1;
             runner.next();
+        }).catch((e) => {
+            logger.warn('ReliableTopicProxy', 'Failed to fetch sequence for runner.', e);
         });
 
         return listenerId;
