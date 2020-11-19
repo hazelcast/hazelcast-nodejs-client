@@ -436,13 +436,14 @@ export class HazelcastClient {
 
     /** @internal */
     private init(): Promise<HazelcastClient> {
+        const logger = this.loggingService.getLogger();
         try {
             this.lifecycleService.start();
             const configuredMembershipListeners = this.config.membershipListeners;
             this.clusterService.start(configuredMembershipListeners);
             this.clusterViewListenerService.start();
         } catch (e) {
-            this.loggingService.getLogger().error('HazelcastClient', 'Client failed to start', e);
+            logger.error('HazelcastClient', 'Client failed to start', e);
             throw e;
         }
 
@@ -457,16 +458,18 @@ export class HazelcastClient {
             .then(() => {
                 this.listenerService.start();
                 this.proxyManager.init();
-                this.invocationService.start();
                 this.loadBalancer.initLoadBalancer(this.clusterService, this.config);
                 this.statistics.start();
+                return this.invocationService.start();
+            })
+            .then(() => {
                 return this.sendStateToCluster();
             })
             .then(() => {
                 return this;
             })
             .catch((e) => {
-                this.loggingService.getLogger().error('HazelcastClient', 'Client failed to start', e);
+                logger.error('HazelcastClient', 'Client failed to start', e);
                 throw e;
             });
     }
