@@ -339,15 +339,16 @@ export class ClientConnectionManager extends EventEmitter {
 
     private connectToCluster(): Promise<void> {
         if (this.asyncStart) {
-            return this.submitConnectToClusterTask();
+            this.submitConnectToClusterTask();
+            return Promise.resolve();
         } else {
             return this.doConnectToCluster();
         }
     }
 
-    private submitConnectToClusterTask(): Promise<void> {
+    private submitConnectToClusterTask(): void {
         if (this.connectToClusterTaskSubmitted) {
-            return Promise.resolve();
+            return;
         }
 
         this.doConnectToCluster()
@@ -355,7 +356,7 @@ export class ClientConnectionManager extends EventEmitter {
                 this.connectToClusterTaskSubmitted = false;
                 if (this.activeConnections.size === 0) {
                     this.logger.warn('ConnectionManager', 'No connection to cluster ' + this.clusterId);
-                    return this.submitConnectToClusterTask();
+                    this.submitConnectToClusterTask();
                 }
             })
             .catch((error: Error) => {
@@ -365,7 +366,6 @@ export class ClientConnectionManager extends EventEmitter {
             });
 
         this.connectToClusterTaskSubmitted = true;
-        return Promise.resolve();
     }
 
     private doConnectToCluster(): Promise<void> {
@@ -602,11 +602,10 @@ export class ClientConnectionManager extends EventEmitter {
     }
 
     private shutdownClient(): void {
-        try {
-            (this.client.getLifecycleService() as LifecycleServiceImpl).shutdown();
-        } catch (e) {
-            this.logger.error('ConnectionManager', `Error during client shutdown ${e}`);
-        }
+        (this.client.getLifecycleService() as LifecycleServiceImpl).shutdown()
+            .catch((e) => {
+                this.logger.error('ConnectionManager', 'Failed to shut down client.', e);
+            });
     }
 
     // This method makes sure that the smart client has connection to all cluster members.
@@ -746,14 +745,14 @@ export class ClientConnectionManager extends EventEmitter {
         }
     }
 
-    private initializeClientOnCluster(targetClusterId: UUID): Promise<void> {
+    private initializeClientOnCluster(targetClusterId: UUID): void {
         if (!targetClusterId.equals(this.clusterId)) {
             this.logger.warn('ConnectionManager', 'Will not send client state to cluster: '
                 + targetClusterId + ', switched to a new cluster: ' + this.clusterId);
             return;
         }
 
-        return this.client.sendStateToCluster()
+        this.client.sendStateToCluster()
             .then(() => {
                 if (targetClusterId.equals(this.clusterId)) {
                     this.logger.trace('ConnectionManager', 'Client state is sent to cluster: '
@@ -774,7 +773,7 @@ export class ClientConnectionManager extends EventEmitter {
                 if (targetClusterId.equals(this.clusterId)) {
                     this.logger.warn('ConnectionManager', 'Retrying sending state to the cluster: '
                         + targetClusterId + ', name: ' + clusterName);
-                    return this.initializeClientOnCluster(targetClusterId);
+                    this.initializeClientOnCluster(targetClusterId);
                 }
             });
     }
