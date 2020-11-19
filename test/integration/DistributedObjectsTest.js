@@ -76,7 +76,7 @@ describe('DistributedObjectsTest', function () {
         objects = await otherClient.getDistributedObjects();
         // Make sure that live objects are not deleted
         expect(toNamespace(objects)).to.have.deep.members(toNamespace([map, set, queue]));
-        return otherClient.shutdown();
+        await otherClient.shutdown();
     });
 
     it('get distributed objects should clear local instances of destroyed proxies', async function () {
@@ -97,6 +97,6 @@ describe('DistributedObjectsTest', function () {
         expect(objects).to.have.lengthOf(0);
         objects = await otherClient.getDistributedObjects();
         expect(objects).to.have.lengthOf(0);
-        return otherClient.shutdown();
+        await otherClient.shutdown();
     });
 });

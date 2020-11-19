@@ -84,7 +84,7 @@ describe('StatisticsTest (default period)', function () {
 
     after(async function () {
         await client.shutdown();
-        return RC.terminateCluster(cluster.id);
+        await RC.terminateCluster(cluster.id);
     });
 
     beforeEach(async function () {
@@ -92,7 +92,7 @@ describe('StatisticsTest (default period)', function () {
     });
 
     afterEach(async function () {
-        return map.destroy();
+        await map.destroy();
     });
 
     function contains(base, search) {
@@ -170,7 +170,7 @@ describe('StatisticsTest (non-default period)', function () {
 
     after(async function () {
         await client.shutdown();
-        return RC.terminateCluster(cluster.id);
+        await RC.terminateCluster(cluster.id);
     });
 
     it('should not change before period', async function () {
@@ -208,7 +208,7 @@ describe('StatisticsTest (negative period)', function () {
 
     after(async function () {
         await client.shutdown();
-        return RC.terminateCluster(cluster.id);
+        await RC.terminateCluster(cluster.id);
     });
 
     it('should be enabled via configuration', async function () {
