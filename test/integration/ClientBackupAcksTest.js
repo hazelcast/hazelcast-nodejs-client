@@ -54,13 +54,11 @@ describe('ClientBackupAcksTest', function () {
     });
 
     it('should receive backup acks in smart mode', async function () {
-        this.timeout(15000);
-
         client = await Client.newHazelcastClient({
             clusterName: cluster.id,
             properties: {
                 'hazelcast.client.operation.fail.on.indeterminate.state': true,
-                'hazelcast.client.operation.backup.timeout.millis': 10000
+                'hazelcast.client.operation.backup.timeout.millis': 7000
             }
         });
         const map = await client.getMap('test-map');

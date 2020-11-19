@@ -125,7 +125,6 @@ export class ListenerService {
         const activeConnections = this.client.getConnectionManager().getActiveConnections();
         const userKey = UuidUtil.generate().toString();
         let connectionsOnUserKey: Map<ClientConnection, ClientEventRegistration>;
-        const deferred = deferredPromise<string>();
         const registerRequest = codec.encodeAddRequest(this.isSmart());
         connectionsOnUserKey = this.activeRegistrations.get(userKey);
         if (connectionsOnUserKey === undefined) {
@@ -134,36 +133,42 @@ export class ListenerService {
             this.userKeyInformation.set(userKey,
                 new RegistrationKey(userKey, codec, registerRequest, listenerHandlerFn));
         }
+
+        const registrationPromises = [];
         for (const connection of activeConnections) {
             if (connectionsOnUserKey.has(connection)) {
                 continue;
             }
+
             // new correlation id will be set on the invoke call
             const requestCopy = registerRequest.copyWithNewCorrelationId();
             const invocation = new Invocation(this.client, requestCopy);
             invocation.handler = listenerHandlerFn as any;
             invocation.connection = connection;
-            this.client.getInvocationService().invokeUrgent(invocation).then((responseMessage) => {
-                const correlationId = responseMessage.getCorrelationId();
-                const response = codec.decodeAddResponse(responseMessage);
-                const clientEventRegistration = new ClientEventRegistration(
-                    response, correlationId, invocation.connection, codec);
-                this.logger.debug('ListenerService',
-                    'Listener ' + userKey + ' registered on ' + invocation.connection.toString());
-                connectionsOnUserKey.set(connection, clientEventRegistration);
-            }).then(() => {
-                deferred.resolve(userKey);
-            }).catch((err) => {
-                if (invocation.connection.isAlive()) {
-                    this.deregisterListener(userKey)
-                        .catch(() => {
-                            // no-op
-                        });
-                    deferred.reject(new HazelcastError('Listener cannot be added!', err));
-                }
-            });
+
+            const registrationPromise = this.client.getInvocationService().invokeUrgent(invocation)
+                .then((responseMessage) => {
+                    const correlationId = responseMessage.getCorrelationId();
+                    const response = codec.decodeAddResponse(responseMessage);
+                    const clientEventRegistration = new ClientEventRegistration(
+                        response, correlationId, invocation.connection, codec);
+                    this.logger.debug('ListenerService',
+                        'Listener ' + userKey + ' registered on ' + invocation.connection.toString());
+                    connectionsOnUserKey.set(connection, clientEventRegistration);
+                })
+                .catch((err) => {
+                    if (invocation.connection.isAlive()) {
+                        this.deregisterListener(userKey)
+                            .catch(() => {
+                                // no-op
+                            });
+                        throw new HazelcastError('Listener cannot be added!', err);
+                    }
+                });
+            registrationPromises.push(registrationPromise);
         }
-        return deferred.promise;
+        return Promise.all(registrationPromises)
+            .then(() => userKey);
     }
 
     deregisterListener(userKey: string): Promise<boolean> {
