@@ -47,6 +47,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
             }).catch((e) => {
                 logger.warn('NearCachedMapProxy', 'Failed to register Near Cache invalidation listener for '
                     + name + ' map.', e);
+                this.nearCache.setReady(e);
             });
         } else {
             this.nearCache.setReady();
