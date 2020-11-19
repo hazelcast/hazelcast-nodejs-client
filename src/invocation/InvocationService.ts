@@ -407,8 +407,8 @@ export class InvocationService {
         ClientLocalBackupListenerCodec.handle(clientMessage, (correlationId: Long) => {
             const invocation = this.pending.get(correlationId.toNumber());
             if (invocation === undefined) {
-                this.logger.trace('InvocationService', 'Invocation not found for backup event, '
-                    + 'invocation id ' + correlationId);
+                this.logger.trace('InvocationService', 'Invocation not found for backup event, invocation id '
+                    + correlationId);
                 return;
             }
             invocation.notifyBackupComplete();
