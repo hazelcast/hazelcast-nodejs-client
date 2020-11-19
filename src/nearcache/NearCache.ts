@@ -65,7 +65,7 @@ export interface NearCache {
 
     tryPublishReserved(key: Data, value: any, reservationId: Long): any;
 
-    setReady(): void;
+    setReady(error?: Error): void;
 }
 
 /** @internal */
@@ -120,8 +120,12 @@ export class NearCacheImpl implements NearCache {
         this.ready = deferredPromise();
     }
 
-    setReady(): void {
-        this.ready.resolve();
+    setReady(error?: Error): void {
+        if (error) {
+            this.ready.reject(error);
+        } else {
+            this.ready.resolve();
+        }
     }
 
     getName(): string {
