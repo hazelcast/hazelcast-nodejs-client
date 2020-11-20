@@ -49,11 +49,11 @@ const Util = require('./Util');
         });
 
         afterEach(async function () {
-            return client.shutdown();
+            await client.shutdown();
         });
 
         after(async function () {
-            return RC.terminateCluster(cluster.id);
+            await RC.terminateCluster(cluster.id);
         });
 
         it('listener is invoked when new object is created[smart=' + isSmartService + ']', function (done) {

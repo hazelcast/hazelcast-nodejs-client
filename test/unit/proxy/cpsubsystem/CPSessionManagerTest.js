@@ -148,9 +148,9 @@ describe('CPSessionManagerTest', function () {
         });
 
         afterEach(async function () {
-            // prevents from requestCloseSession calls
+            // prevents requestCloseSession calls
             sessionManager.sessions.clear();
-            return sessionManager.shutdown();
+            await sessionManager.shutdown();
         });
 
         it('getSessionId: should return no session id for unknown session', function () {

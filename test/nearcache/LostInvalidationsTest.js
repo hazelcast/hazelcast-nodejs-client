@@ -79,11 +79,11 @@ describe('LostInvalidationTest', function () {
 
     afterEach(async function () {
         await client.shutdown();
-        return modifyingClient.shutdown();
+        await modifyingClient.shutdown();
     });
 
     after(async function () {
-        return RC.terminateCluster(cluster.id);
+        await RC.terminateCluster(cluster.id);
     });
 
     it('client eventually receives an update for which the invalidation event was dropped', async function () {

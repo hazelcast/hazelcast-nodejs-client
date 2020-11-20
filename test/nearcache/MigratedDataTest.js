@@ -83,11 +83,11 @@ describe('MigratedDataTest', function () {
     });
 
     afterEach(async function () {
-        return client.shutdown();
+        await client.shutdown();
     });
 
     after(async function () {
-        return RC.terminateCluster(cluster.id);
+        await RC.terminateCluster(cluster.id);
     });
 
     it('killing a server migrates data to the other node, migrated data has new uuid, near cache discards data with old uuid', async () => {

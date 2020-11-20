@@ -46,11 +46,11 @@ describe('ClientBackupAcksTest', function () {
 
     afterEach(async function () {
         sandbox.restore();
-        return client.shutdown();
+        await client.shutdown();
     });
 
     after(async function () {
-        return RC.terminateCluster(cluster.id);
+        await RC.terminateCluster(cluster.id);
     });
 
     it('should receive backup acks in smart mode', async function () {
