@@ -424,7 +424,7 @@ export class HazelcastClient {
     /** @internal */
     onClusterRestart(): void {
         this.getLoggingService().getLogger()
-            .info('HazelcastClient', 'Clearing local state of the client, because of a cluster restart');
+            .info('HazelcastClient', 'Clearing local state of the client, because of a cluster restart.');
         this.nearCacheManager.clearAllNearCaches();
         this.clusterService.clearMemberListVersion();
     }
@@ -443,7 +443,7 @@ export class HazelcastClient {
             this.clusterService.start(configuredMembershipListeners);
             this.clusterViewListenerService.start();
         } catch (e) {
-            logger.error('HazelcastClient', 'Client failed to start', e);
+            logger.error('HazelcastClient', 'Client failed to start.', e);
             throw e;
         }
 
@@ -469,7 +469,11 @@ export class HazelcastClient {
                 return this;
             })
             .catch((e) => {
-                logger.error('HazelcastClient', 'Client failed to start', e);
+                this.shutdown()
+                    .catch((e) => {
+                        logger.debug('HazelcastClient', 'Could not shut down after start failure.', e);
+                    });
+                logger.error('HazelcastClient', 'Client failed to start.', e);
                 throw e;
             });
     }
@@ -499,7 +503,7 @@ export class HazelcastClient {
         if (addressListProvided && hazelcastCloudToken != null) {
             throw new IllegalStateError('Only one discovery method can be enabled at a time. '
                 + 'Cluster members given explicitly: ' + addressListProvided
-                + ', hazelcastCloud enabled');
+                + ', hazelcastCloud enabled.');
         }
 
         const cloudAddressProvider = this.initCloudAddressProvider();

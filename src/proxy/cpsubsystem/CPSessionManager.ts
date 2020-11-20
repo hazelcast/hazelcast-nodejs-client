@@ -128,7 +128,7 @@ export class CPSessionManager {
 
     shutdown(): Promise<void> {
         if (this.isShutdown) {
-            return;
+            return Promise.resolve();
         }
         this.isShutdown = true;
         this.cancelHeartbeatTask();
