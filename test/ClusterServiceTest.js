@@ -15,36 +15,37 @@
  */
 'use strict';
 
+const chai = require('chai');
+chai.should();
+chai.use(require('chai-as-promised'));
+const expect = chai.expect;
+
 const RC = require('./RC');
-const { expect } = require('chai');
 const { Client } = require('../.');
 
 describe('ClusterServiceTest', function () {
 
     this.timeout(25000);
-    let cluster, member1, client;
 
-    beforeEach(function () {
-        return RC.createCluster(null, null).then(function (res) {
-            cluster = res;
-            return RC.startMember(cluster.id);
-        }).then(function (res) {
-            member1 = res;
-            return Client.newHazelcastClient({
-                clusterName: cluster.id,
-                properties: {
-                    'hazelcast.client.heartbeat.interval': 1000,
-                    'hazelcast.client.heartbeat.timeout': 5000
-                }
-            });
-        }).then(function (res) {
-            client = res;
+    let cluster;
+    let member1;
+    let client;
+
+    beforeEach(async function () {
+        cluster = await RC.createCluster(null, null);
+        member1 = await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            properties: {
+                'hazelcast.client.heartbeat.interval': 1000,
+                'hazelcast.client.heartbeat.timeout': 5000
+            }
         });
     });
 
-    afterEach(function () {
-        return client.shutdown()
-            .then(() => RC.terminateCluster(cluster.id));
+    afterEach(async function () {
+        await client.shutdown();
+        await RC.terminateCluster(cluster.id);
     });
 
     it('should know when a new member joins to cluster', function (done) {
@@ -75,7 +76,7 @@ describe('ClusterServiceTest', function () {
 
         RC.startMember(cluster.id).then(function (res) {
             member2 = res;
-            RC.shutdownMember(cluster.id, member2.uuid);
+            return RC.shutdownMember(cluster.id, member2.uuid);
         }).catch(done);
     });
 
@@ -101,13 +102,12 @@ describe('ClusterServiceTest', function () {
             return RC.startMember(cluster.id);
         }).then(function (res) {
             member3 = res;
-            RC.shutdownMember(cluster.id, member2.uuid);
+            return RC.shutdownMember(cluster.id, member2.uuid);
         }).catch(done);
     });
 
-    it('should throw when wrong host addresses given in config', function (done) {
-        let falseStart = false;
-        Client.newHazelcastClient({
+    it('should throw when wrong host addresses given in config', async function () {
+        await expect(Client.newHazelcastClient({
             clusterName: cluster.id,
             network: {
                 clusterMembers: [
@@ -120,37 +120,21 @@ describe('ClusterServiceTest', function () {
                     clusterConnectTimeoutMillis: 2000
                 }
             }
-        }).catch(function () {
-            done();
-        }).then(function (client) {
-            if (client) {
-                falseStart = true;
-                return client.shutdown();
-            }
-        }).then(function () {
-            if (falseStart) {
-                done(new Error('Client falsely started with wrong addresses'));
-            }
-        });
+        })).to.be.rejected;
     });
 
-    it('should throw with wrong cluster name', function (done) {
-        Client.newHazelcastClient({
+    it('should throw with wrong cluster name', async function () {
+        await expect(Client.newHazelcastClient({
             clusterName: 'wrong',
             connectionStrategy: {
                 connectionRetry: {
                     clusterConnectTimeoutMillis: 2000
                 }
             }
-        }).then(function (newClient) {
-            return newClient.shutdown()
-                .then(() => done(new Error('Client falsely started with wrong cluster name')));
-        }).catch(function () {
-            done();
-        });
+        })).to.be.rejected;
     });
 
-    it('should not run when listener was removed', function (done) {
+    it('membership listener should not run once removed', function (done) {
         const membershipListener = {
             memberAdded: () => {
                 done(new Error('Listener falsely fired'));

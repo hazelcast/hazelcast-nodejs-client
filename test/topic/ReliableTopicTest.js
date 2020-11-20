@@ -69,7 +69,7 @@ describe('ReliableTopicTest', function () {
     after(async function () {
         await clientOne.shutdown();
         await clientTwo.shutdown();
-        return RC.terminateCluster(cluster.id);
+        await RC.terminateCluster(cluster.id);
     });
 
     it('writes and reads messages', function (done) {

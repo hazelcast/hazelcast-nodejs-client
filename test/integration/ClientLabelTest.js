@@ -27,15 +27,15 @@ describe('ClientLabelTest', function () {
 
     before(async function () {
         cluster = await RC.createCluster(null, null);
-        return RC.startMember(cluster.id);
+        await RC.startMember(cluster.id);
     });
 
     afterEach(async function () {
-        return client.shutdown();
+        await client.shutdown();
     });
 
     after(async function () {
-        return RC.terminateCluster(cluster.id);
+        await RC.terminateCluster(cluster.id);
     });
 
     it('labels should be received on member side', async function () {

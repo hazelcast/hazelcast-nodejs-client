@@ -104,12 +104,10 @@ describe('ClientSSLAuthenticationTest', function () {
 
         describe(title, function () {
 
-            beforeEach(function () {
-                this.timeout(10000);
-            });
+            this.timeout(10000);
 
             afterEach(async function () {
-                return RC.terminateCluster(cluster.id);
+                await RC.terminateCluster(cluster.id);
             });
 
             it('ma:required, they both know each other should connect', async function () {
@@ -117,26 +115,26 @@ describe('ClientSSLAuthenticationTest', function () {
                 const client = await Client.newHazelcastClient(createClientConfigFn(
                     './client1-key.pem', './client1-cert.pem', './server1-cert.pem'
                 ));
-                return client.shutdown();
+                await client.shutdown();
             });
 
             it('ma:required, server knows client, client does not know server should fail', async function () {
                 await createMemberWithXML(maRequiredXML);
-                return expect(Client.newHazelcastClient(createClientConfigFn(
+                await expect(Client.newHazelcastClient(createClientConfigFn(
                     './client1-key.pem', './client1-cert.pem', './server2-cert.pem'
                 ))).to.be.rejectedWith(IllegalStateError);
             });
 
             it('ma:required, server does not know client, client knows server should fail', async function () {
                 await createMemberWithXML(maRequiredXML);
-                return expect(Client.newHazelcastClient(createClientConfigFn(
+                await expect(Client.newHazelcastClient(createClientConfigFn(
                     './client2-key.pem', './client2-cert.pem', './server1-cert.pem'
                 ))).to.be.rejectedWith(IllegalStateError);
             });
 
             it('ma:required, neither one knows the other should fail', async function () {
                 await createMemberWithXML(maRequiredXML);
-                return expect(Client.newHazelcastClient(createClientConfigFn(
+                await expect(Client.newHazelcastClient(createClientConfigFn(
                     './client2-key.pem', './client2-cert.pem', './server2-cert.pem'
                 ))).to.be.rejectedWith(IllegalStateError);
             });
@@ -146,26 +144,26 @@ describe('ClientSSLAuthenticationTest', function () {
                 const client = await Client.newHazelcastClient(createClientConfigFn(
                     './client1-key.pem', './client1-cert.pem', './server1-cert.pem'
                 ));
-                return client.shutdown();
+                await client.shutdown();
             });
 
             it('ma:optional, server knows client, client does not know server should fail', async function () {
                 await createMemberWithXML(maOptionalXML);
-                return expect(Client.newHazelcastClient(createClientConfigFn(
+                await expect(Client.newHazelcastClient(createClientConfigFn(
                     './client1-key.pem', './client1-cert.pem', './server2-cert.pem'
                 ))).to.be.rejectedWith(IllegalStateError);
             });
 
             it('ma:optional, server does not know client, client knows server should fail', async function () {
                 await createMemberWithXML(maOptionalXML);
-                return expect(Client.newHazelcastClient(createClientConfigFn(
+                await expect(Client.newHazelcastClient(createClientConfigFn(
                     './client2-key.pem', './client2-cert.pem', './server1-cert.pem'
                 ))).to.be.rejectedWith(IllegalStateError);
             });
 
             it('ma:optional, neither knows the other should fail', async function () {
                 await createMemberWithXML(maOptionalXML);
-                return expect(Client.newHazelcastClient(createClientConfigFn(
+                await expect(Client.newHazelcastClient(createClientConfigFn(
                     './client2-key.pem', './client2-cert.pem', './server2-cert.pem'
                 ))).to.be.rejectedWith(IllegalStateError);
             });

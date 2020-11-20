@@ -30,29 +30,6 @@ describe('ConnectionManagerTest', function () {
     let cluster, client;
     let testend, server;
 
-    before(function () {
-        return Controller.createCluster(null, null).then(function (cl) {
-            cluster = cl;
-            return Controller.startMember(cluster.id);
-        });
-    });
-
-    beforeEach(function () {
-        testend = false;
-    });
-
-    afterEach(function () {
-        testend = true;
-        stopUnresponsiveServer();
-        if (client != null) {
-            return client.shutdown();
-        }
-    });
-
-    after(function () {
-        return Controller.terminateCluster(cluster.id);
-    });
-
     function startUnresponsiveServer(port) {
         server = net.createServer(function (socket) {
             // no-response
@@ -64,18 +41,41 @@ describe('ConnectionManagerTest', function () {
         server.close();
     }
 
-    it('gives up connecting after timeout', function () {
+    before(function () {
+        return Controller.createCluster(null, null).then(function (cl) {
+            cluster = cl;
+            return Controller.startMember(cluster.id);
+        });
+    });
+
+    beforeEach(function () {
+        testend = false;
+    });
+
+    afterEach(async function () {
+        testend = true;
+        stopUnresponsiveServer();
+        if (client != null) {
+            await client.shutdown();
+        }
+    });
+
+    after(async function () {
+        await Controller.terminateCluster(cluster.id);
+    });
+
+    it('gives up connecting after timeout', async function () {
         const timeoutTime = 1000;
         startUnresponsiveServer(9999);
-        return Client.newHazelcastClient({
+        client = await Client.newHazelcastClient({
             clusterName: cluster.id,
             network: {
                 connectionTimeout: timeoutTime
             }
-        }).then(function (cl) {
-            client = cl;
-            return client.getConnectionManager().getOrConnect(new AddressImpl('localhost', 9999));
-        }).should.eventually.be.rejected;
+        });
+
+        const connectionManager = client.getConnectionManager();
+        await expect(connectionManager.getOrConnect(new AddressImpl('localhost', 9999))).to.be.rejected;
     });
 
     it('does not give up when timeout=0', function (done) {
@@ -106,12 +106,12 @@ describe('ConnectionManagerTest', function () {
         });
     });
 
-    it('should throw IllegalStateError if there is an incompatible server', function () {
+    it('should throw IllegalStateError if there is an incompatible server', async function () {
         client = null;
         const timeoutTime = 100;
         startUnresponsiveServer(9999);
 
-        return expect(Client.newHazelcastClient({
+        await expect(Client.newHazelcastClient({
             clusterName: cluster.id,
             network: {
                 clusterMembers: ['127.0.0.1:9999'],

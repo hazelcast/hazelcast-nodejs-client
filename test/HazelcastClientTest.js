@@ -46,7 +46,7 @@ ManagedObjects.prototype.getObject = function (func, name) {
     });
 };
 
-ManagedObjects.prototype.destroyAll = function () {
+ManagedObjects.prototype.destroyAll = async function () {
     const promises = [];
     this.managedObjects.forEach(function (obj) {
         promises.push(obj.destroy());
@@ -67,42 +67,36 @@ ManagedObjects.prototype.destroy = function (name) {
 };
 
 configParams.forEach(function (cfg) {
-    describe('HazelcastClient', function () {
-        this.timeout(4000);
-        let cluster, client, managed;
+    describe('HazelcastClientTest', function () {
 
-        before(function () {
-            return RC.createCluster(null, null).then(function (res) {
-                cluster = res;
-                return RC.startMember(cluster.id);
-            }).then(function (member) {
-                cfg.clusterName = cluster.id;
-                return Client.newHazelcastClient(cfg);
-            }).then(function (res) {
-                client = res;
-            });
+        let cluster;
+        let client;
+        let managed;
+
+        before(async function () {
+            cluster = await RC.createCluster(null, null);
+            await RC.startMember(cluster.id);
+            cfg.clusterName = cluster.id;
+            client = await Client.newHazelcastClient(cfg);
         });
 
         beforeEach(function () {
             managed = new ManagedObjects();
         });
 
-        afterEach(function () {
-            return managed.destroyAll();
+        afterEach(async function () {
+            await managed.destroyAll();
         });
 
-        after(function () {
-            return client.shutdown()
-                .then(() => RC.terminateCluster(cluster.id));
+        after(async function () {
+            await client.shutdown();
+            await RC.terminateCluster(cluster.id);
         });
 
-        it('getDistributedObject returns empty array when there is no distributed object', function () {
-            return client.getDistributedObjects().then(function (distributedObjects) {
-                return Promise.all([
-                    expect(distributedObjects).to.be.an('array'),
-                    expect(distributedObjects).to.be.empty
-                ]);
-            });
+        it('getDistributedObject returns empty array when there is no distributed object', async function () {
+            const distributedObjects = await client.getDistributedObjects();
+            expect(distributedObjects).to.be.an('array');
+            expect(distributedObjects).to.be.empty;
         });
 
         it('getLocalEndpoint returns correct info', function () {

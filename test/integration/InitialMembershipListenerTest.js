@@ -42,7 +42,7 @@ describe('InitialMembershipListenerTest', function () {
         if (client != null) {
             await client.shutdown();
         }
-        return RC.terminateCluster(cluster.id);
+        await RC.terminateCluster(cluster.id);
     });
 
     it('should receive available member when added before client start', function (done) {

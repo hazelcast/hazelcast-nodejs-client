@@ -81,7 +81,7 @@ describe('FencedLockTest', function () {
 
     after(async function () {
         await client.shutdown();
-        return RC.shutdownCluster(cluster.id);
+        await RC.shutdownCluster(cluster.id);
     });
 
     it('should create FencedLock with respect to given CP group', async function () {
