@@ -20,54 +20,60 @@ const RC = require('./RC');
 const { Client } = require('../.');
 const { deferredPromise } = require('../lib/util/Util');
 
+class ManagedObjects {
+
+    constructor() {
+        this.managedObjects = [];
+    }
+
+    getObject(func, name) {
+        return func(name).then((obj) => {
+            this.managedObjects.push(obj);
+            return obj;
+        });
+    };
+
+    async destroyAll() {
+        const promises = [];
+        this.managedObjects.forEach(function (obj) {
+            promises.push(obj.destroy());
+        });
+        return Promise.all(promises);
+    };
+
+    destroy(name) {
+        const deferred = deferredPromise();
+        this.managedObjects.filter((el) => {
+            if (el.getName() === name) {
+                el.destroy().then(function () {
+                    deferred.resolve();
+                });
+            }
+        });
+        return deferred.promise;
+    };
+
+}
+
 const dummyConfig = {
     network: {
         smartRouting: false
     }
 };
+
 const smartConfig = {
     network: {
         smartRouting: true
     }
 };
+
 const configParams = [
     dummyConfig,
     smartConfig
 ];
 
-function ManagedObjects() {
-    this.managedObjects = [];
-}
-
-ManagedObjects.prototype.getObject = function (func, name) {
-    return func(name).then((obj) => {
-        this.managedObjects.push(obj);
-        return obj;
-    });
-};
-
-ManagedObjects.prototype.destroyAll = async function () {
-    const promises = [];
-    this.managedObjects.forEach(function (obj) {
-        promises.push(obj.destroy());
-    });
-    return Promise.all(promises);
-};
-
-ManagedObjects.prototype.destroy = function (name) {
-    const deferred = deferredPromise();
-    this.managedObjects.filter((el) => {
-        if (el.getName() === name) {
-            el.destroy().then(function () {
-                deferred.resolve();
-            });
-        }
-    });
-    return deferred.promise;
-};
-
 configParams.forEach(function (cfg) {
-    describe('HazelcastClientTest', function () {
+    describe('HazelcastClientTest[smart=' + cfg.network.smartRouting + ']', function () {
 
         let cluster;
         let client;
