@@ -471,7 +471,7 @@ export class HazelcastClient {
             .catch((e) => {
                 this.shutdown()
                     .catch((e) => {
-                        logger.debug('HazelcastClient', 'Could not shut down after start failure.', e);
+                        logger.warn('HazelcastClient', 'Could not shut down after start failure.', e);
                     });
                 logger.error('HazelcastClient', 'Client failed to start.', e);
                 throw e;
