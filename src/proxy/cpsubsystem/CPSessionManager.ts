@@ -30,6 +30,7 @@ import {
 import {CPSessionCloseSessionCodec} from '../../codec/CPSessionCloseSessionCodec';
 import {CPSessionHeartbeatSessionCodec} from '../../codec/CPSessionHeartbeatSessionCodec';
 import {CPSessionGenerateThreadIdCodec} from '../../codec/CPSessionGenerateThreadIdCodec';
+import {ILogger} from '../../logging/ILogger';
 import {
     scheduleWithRepetition,
     cancelRepetitionTask,
@@ -85,6 +86,7 @@ export const NO_SESSION_ID = Long.fromNumber(-1);
 export class CPSessionManager {
 
     private readonly client: HazelcastClient;
+    private readonly logger: ILogger;
     // <group_id, session_state> map
     private readonly sessions: Map<string, SessionState> = new Map();
     private heartbeatTask: Task;
@@ -92,6 +94,7 @@ export class CPSessionManager {
 
     constructor(client: HazelcastClient) {
         this.client = client;
+        this.logger = this.client.getLoggingService().getLogger();
     }
 
     getSessionId(groupId: RaftGroupId): Long {
@@ -128,7 +131,7 @@ export class CPSessionManager {
 
     shutdown(): Promise<void> {
         if (this.isShutdown) {
-            return;
+            return Promise.resolve();
         }
         this.isShutdown = true;
         this.cancelHeartbeatTask();
@@ -137,8 +140,8 @@ export class CPSessionManager {
             closePromises.push(this.requestCloseSession(session.groupId, session.id));
         }
         return Promise.all(closePromises)
-            .catch(() => {
-                // no-op
+            .catch((e) => {
+                this.logger.debug('CPSessionManager', 'Could not close CP sessions.', e);
             })
             .then(() => this.sessions.clear());
     }
