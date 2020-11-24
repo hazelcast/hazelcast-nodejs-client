@@ -175,6 +175,12 @@ export class Invocation {
         assert(clientMessage != null, 'Response can not be null');
         const expectedBackups = clientMessage.getNumberOfBackupAcks();
         if (expectedBackups > this.backupsAcksReceived) {
+            this.client.getLoggingService().getLogger()
+                .debug('Invocation', '>>> notify', {
+                    backupsAcksExpected: expectedBackups,
+                    backupsAcksReceived: this.backupsAcksReceived,
+                    correlationId: clientMessage.getCorrelationId()
+                });
             this.pendingResponseReceivedMillis = Date.now();
             this.backupsAcksExpected = expectedBackups;
             this.pendingResponseMessage = clientMessage;
@@ -185,6 +191,13 @@ export class Invocation {
 
     notifyBackupComplete(): void {
         this.backupsAcksReceived++;
+        this.client.getLoggingService().getLogger()
+            .debug('Invocation', '>>> notifyBackupComplete', {
+                backupsAcksExpected: this.backupsAcksExpected,
+                backupsAcksReceived: this.backupsAcksReceived,
+                correlationId: this.pendingResponseMessage.getCorrelationId(),
+                pendingResponseMessage: this.pendingResponseMessage
+            });
         if (this.pendingResponseMessage == null) {
             return;
         }
@@ -420,6 +433,7 @@ export class InvocationService {
      */
     processResponse(clientMessage: ClientMessage): void {
         const correlationId = clientMessage.getCorrelationId();
+        this.logger.trace('InvocationService', '>>> processResponse for invocation id ' + correlationId);
 
         if (clientMessage.startFrame.hasEventFlag() || clientMessage.startFrame.hasBackupEventFlag()) {
             process.nextTick(() => {
@@ -476,6 +490,9 @@ export class InvocationService {
         }
 
         invocationPromise.catch(() => {
+            this.logger.debug('InvocationService', '>>> Retrying on random connection', {
+                correlationId: invocation.request.getCorrelationId()
+            });
             return this.invokeOnRandomConnection(invocation);
         }).catch((err) => {
             this.notifyError(invocation, err);
@@ -505,7 +522,9 @@ export class InvocationService {
 
     private invokeOnRandomConnection(invocation: Invocation): Promise<void> {
         const connection = this.connectionManager.getRandomConnection();
+        this.logger.trace('InvocationService', `>>> invokeOnRandomConnection: ${connection.toString()}`);
         if (connection == null) {
+            this.logger.trace('InvocationService', '>>> invokeOnRandomConnection no connection found');
             return Promise.reject(new IOError('No connection found to invoke'));
         }
         return this.send(invocation, connection);

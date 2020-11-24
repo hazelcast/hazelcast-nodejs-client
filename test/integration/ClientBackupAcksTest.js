@@ -58,7 +58,8 @@ describe('ClientBackupAcksTest', function () {
             clusterName: cluster.id,
             properties: {
                 'hazelcast.client.operation.fail.on.indeterminate.state': true,
-                'hazelcast.client.operation.backup.timeout.millis': 7000
+                'hazelcast.client.operation.backup.timeout.millis': 7000,
+                'hazelcast.logging.level': 'TRACE'
             }
         });
         const map = await client.getMap('test-map');

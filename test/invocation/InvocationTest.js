@@ -22,6 +22,7 @@ const { Client, IndeterminateOperationStateError } = require('../../');
 const { Invocation, InvocationService } = require('../../lib/invocation/InvocationService');
 const { LifecycleServiceImpl } = require('../../lib/LifecycleService');
 const { ClientMessage } = require('../../lib/protocol/ClientMessage');
+const { DefaultLogger } = require('../../lib/logging/DefaultLogger');
 
 describe('InvocationTest', function () {
 
@@ -33,6 +34,8 @@ describe('InvocationTest', function () {
         serviceStub = sandbox.stub(InvocationService.prototype);
         clientStub.getInvocationService.returns(serviceStub);
         clientStub.getLifecycleService.returns(sandbox.stub(LifecycleServiceImpl.prototype));
+        const loggerStub = sandbox.stub(DefaultLogger.prototype);
+        clientStub.getLoggingService.returns({ getLogger: () => loggerStub });
     });
 
     afterEach(function () {
