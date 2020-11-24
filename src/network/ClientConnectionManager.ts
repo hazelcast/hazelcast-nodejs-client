@@ -175,7 +175,7 @@ export class ClientConnectionManager extends EventEmitter {
         }
 
         this.alive = false;
-        if (this.isSmartRoutingEnabled) {
+        if (this.reconnectToMembersTask !== undefined) {
             cancelRepetitionTask(this.reconnectToMembersTask);
         }
         this.pendingConnections.forEach((pending) => {
