@@ -20,67 +20,70 @@ const RC = require('./RC');
 const { Client } = require('../.');
 const { deferredPromise } = require('../lib/util/Util');
 
+class ManagedObjects {
+
+    constructor() {
+        this.managedObjects = [];
+    }
+
+    getObject(func, name) {
+        return func(name).then((obj) => {
+            this.managedObjects.push(obj);
+            return obj;
+        });
+    };
+
+    async destroyAll() {
+        const promises = [];
+        this.managedObjects.forEach(function (obj) {
+            promises.push(obj.destroy());
+        });
+        return Promise.all(promises);
+    };
+
+    destroy(name) {
+        const deferred = deferredPromise();
+        this.managedObjects.filter((el) => {
+            if (el.getName() === name) {
+                el.destroy().then(function () {
+                    deferred.resolve();
+                });
+            }
+        });
+        return deferred.promise;
+    };
+
+}
+
 const dummyConfig = {
     network: {
         smartRouting: false
     }
 };
+
 const smartConfig = {
     network: {
         smartRouting: true
     }
 };
+
 const configParams = [
     dummyConfig,
     smartConfig
 ];
 
-function ManagedObjects() {
-    this.managedObjects = [];
-}
-
-ManagedObjects.prototype.getObject = function (func, name) {
-    return func(name).then((obj) => {
-        this.managedObjects.push(obj);
-        return obj;
-    });
-};
-
-ManagedObjects.prototype.destroyAll = function () {
-    const promises = [];
-    this.managedObjects.forEach(function (obj) {
-        promises.push(obj.destroy());
-    });
-    return Promise.all(promises);
-};
-
-ManagedObjects.prototype.destroy = function (name) {
-    const deferred = deferredPromise();
-    this.managedObjects.filter((el) => {
-        if (el.getName() === name) {
-            el.destroy().then(function () {
-                deferred.resolve();
-            });
-        }
-    });
-    return deferred.promise;
-};
-
 configParams.forEach(function (cfg) {
-    describe('HazelcastClient', function () {
-        this.timeout(4000);
-        let cluster, client, managed;
+    describe('HazelcastClientTest[smart=' + cfg.network.smartRouting + ']', function () {
 
-        before(function () {
-            return RC.createCluster(null, null).then(function (res) {
-                cluster = res;
-                return RC.startMember(cluster.id);
-            }).then(function (member) {
-                cfg.clusterName = cluster.id;
-                return Client.newHazelcastClient(cfg);
-            }).then(function (res) {
-                client = res;
-            });
+        let cluster;
+        let client;
+        let managed;
+
+        before(async function () {
+            cluster = await RC.createCluster(null, null);
+            await RC.startMember(cluster.id);
+            cfg.clusterName = cluster.id;
+            client = await Client.newHazelcastClient(cfg);
         });
 
         beforeEach(function () {

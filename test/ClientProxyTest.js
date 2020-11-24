@@ -42,7 +42,7 @@ describe('ClientProxyTest', function () {
         }
     });
 
-    it('Client without active connection should return unknown version', function () {
+    it('client without active connection should return unknown version', function () {
         const connectionManagerStub = sandbox.stub(ClientConnectionManager.prototype);
         connectionManagerStub.getActiveConnections.returns({});
         const clientStub = sandbox.stub(Client.prototype);
@@ -52,9 +52,9 @@ describe('ClientProxyTest', function () {
         assert.equal(mapProxy.getConnectedServerVersion(), -1);
     });
 
-    it('Client with a 3.7 server connection should return the version', function () {
+    it('client with a 4.1 server connection should return the version', function () {
         const connectionStub = sandbox.stub(ClientConnection.prototype);
-        connectionStub.getConnectedServerVersion.returns('30700');
+        connectionStub.getConnectedServerVersion.returns('40100');
         const connectionManagerStub = sandbox.stub(ClientConnectionManager.prototype);
         connectionManagerStub.getActiveConnections.returns({
             'localhost': connectionStub
@@ -63,10 +63,10 @@ describe('ClientProxyTest', function () {
         clientStub.getConnectionManager.returns(connectionManagerStub);
 
         const mapProxy = new MapProxy(clientStub, 'mockMapService', 'mockMap');
-        assert.equal(mapProxy.getConnectedServerVersion(), 30700);
+        assert.equal(mapProxy.getConnectedServerVersion(), 40100);
     });
 
-    it('Proxies with the same name should be different for different services', async function () {
+    it('proxies with the same name should be different for different services', async function () {
         cluster = await RC.createCluster();
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({ clusterName: cluster.id });

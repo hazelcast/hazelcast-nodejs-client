@@ -31,6 +31,7 @@ const {
     SessionState,
     CPSessionManager
 } = require('../../../../lib/proxy/cpsubsystem/CPSessionManager');
+const { DefaultLogger } = require('../../../../lib/logging/DefaultLogger');
 const { RaftGroupId } = require('../../../../lib/proxy/cpsubsystem/RaftGroupId');
 
 describe('CPSessionManagerTest', function () {
@@ -144,6 +145,8 @@ describe('CPSessionManagerTest', function () {
 
         beforeEach(function () {
             clientStub = sandbox.stub(Client.prototype);
+            const loggerStub = sandbox.stub(DefaultLogger.prototype);
+            clientStub.getLoggingService.returns({ getLogger: () => loggerStub });
             sessionManager = new CPSessionManager(clientStub);
         });
 
