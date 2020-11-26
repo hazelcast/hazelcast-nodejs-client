@@ -63,6 +63,10 @@ describe('ClientBackupAcksTest', function () {
         });
         const map = await client.getMap('test-map');
 
+        // TODO(puzpuzpuz): remove the next line once
+        // https://github.com/hazelcast/hazelcast/issues/9398 is fixed
+        await map.get('foo');
+
         // it's enough for this operation to succeed
         await map.set('foo', 'bar');
     });
