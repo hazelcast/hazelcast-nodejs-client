@@ -18,6 +18,7 @@
 import {AddressImpl} from './Address';
 import {UUID} from './UUID';
 import {MemberVersion} from './MemberVersion';
+import {EndpointQualifier} from './EndpointQualifier';
 
 /** @internal */
 export class MemberInfo {
@@ -27,17 +28,23 @@ export class MemberInfo {
     liteMember: boolean;
     attributes: Map<string, string>;
     version: MemberVersion;
+    addressMap: Map<EndpointQualifier, AddressImpl>;
 
     constructor(address: AddressImpl,
                 uuid: UUID,
                 attributes: Map<string, string>,
                 liteMember: boolean,
-                version: MemberVersion) {
+                version: MemberVersion,
+                isAddressMapExists: boolean,
+                addressMap: Map<EndpointQualifier, AddressImpl>) {
         this.address = address;
         this.uuid = uuid;
         this.attributes = attributes;
         this.liteMember = liteMember;
         this.version = version;
+        if (isAddressMapExists) {
+            this.addressMap = addressMap;
+        }
     }
 
     equals(other: MemberInfo): boolean {
