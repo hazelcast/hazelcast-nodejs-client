@@ -37,7 +37,7 @@ export interface ClientNetworkConfig {
      * Timeout value in milliseconds for nodes to accept client connection requests.
      * By default, set to `5000`.
      */
-    connectionTimeout: number;
+    connectionTimeout?: number;
 
     /**
      * When set to `true`, the client will redo the operations that were executing on
