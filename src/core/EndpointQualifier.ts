@@ -41,3 +41,14 @@ export class EndpointQualifier {
             + ', identifier: ' + this.identifier + ']';
     }
 }
+
+/** @internal */
+export enum ProtocolType {
+
+    MEMBER = 0,
+    CLIENT = 1,
+    WAN = 2,
+    REST = 3,
+    MEMCACHE = 4,
+
+}

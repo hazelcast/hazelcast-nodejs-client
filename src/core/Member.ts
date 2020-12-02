@@ -17,6 +17,7 @@
 import {Address, AddressImpl} from './Address';
 import {UUID} from './UUID';
 import {MemberVersion} from './MemberVersion';
+import {EndpointQualifier} from './EndpointQualifier';
 
 export interface Member {
 
@@ -45,22 +46,25 @@ export interface Member {
 /** @internal */
 export class MemberImpl implements Member {
 
-    address: AddressImpl;
-    uuid: UUID;
-    liteMember: boolean;
-    attributes: Map<string, string>;
-    version: MemberVersion;
+    readonly address: AddressImpl;
+    readonly uuid: UUID;
+    readonly liteMember: boolean;
+    readonly attributes: Map<string, string>;
+    readonly version: MemberVersion;
+    readonly addressMap: Map<EndpointQualifier, AddressImpl>;
 
     constructor(address: AddressImpl,
                 uuid: UUID,
                 attributes: Map<string, string>,
                 liteMember: boolean,
-                version: MemberVersion) {
+                version: MemberVersion,
+                addressMap: Map<EndpointQualifier, AddressImpl>) {
         this.address = address;
         this.uuid = uuid;
         this.attributes = attributes;
         this.liteMember = liteMember;
         this.version = version;
+        this.addressMap = addressMap;
     }
 
     equals(other: MemberImpl): boolean {

@@ -22,7 +22,7 @@ const expect = chai.expect;
 const sinon = require('sinon');
 const net = require('net');
 
-const Controller = require('./RC');
+const RC = require('./RC');
 const { Client, IllegalStateError } = require('../');
 const { AddressImpl } = require('../lib/core/Address');
 
@@ -45,9 +45,9 @@ describe('ConnectionManagerTest', function () {
     }
 
     before(function () {
-        return Controller.createCluster(null, null).then(function (cl) {
+        return RC.createCluster(null, null).then(function (cl) {
             cluster = cl;
-            return Controller.startMember(cluster.id);
+            return RC.startMember(cluster.id);
         });
     });
 
@@ -64,7 +64,7 @@ describe('ConnectionManagerTest', function () {
     });
 
     after(async function () {
-        await Controller.terminateCluster(cluster.id);
+        await RC.terminateCluster(cluster.id);
     });
 
     it('gives up connecting after timeout', async function () {
@@ -78,7 +78,9 @@ describe('ConnectionManagerTest', function () {
         });
 
         const connectionManager = client.getConnectionManager();
-        await expect(connectionManager.getOrConnect(new AddressImpl('localhost', 9999))).to.be.rejected;
+        await expect(
+            connectionManager.getOrConnectToAddress(new AddressImpl('localhost', 9999))
+        ).to.be.rejected;
     });
 
     it('does not give up when timeout=0', function (done) {
@@ -97,8 +99,8 @@ describe('ConnectionManagerTest', function () {
             }
         }).then(function (cl) {
             client = cl;
-            return client.getConnectionManager().getOrConnect(new AddressImpl('localhost',9999));
-        }).then(function (value) {
+            return client.getConnectionManager().getOrConnectToAddress(new AddressImpl('localhost', 9999));
+        }).then(function () {
             clearTimeout(scheduled);
             done(new Error('Client should be retrying!'));
         }).catch(function (e) {

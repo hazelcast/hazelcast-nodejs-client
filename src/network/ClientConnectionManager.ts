@@ -31,6 +31,7 @@ import {
     AddressImpl,
     MemberImpl
 } from '../core';
+import {lookupPublicAddress} from '../core/MemberInfo';
 import {ClientConnection} from './ClientConnection';
 import * as net from 'net';
 import * as tls from 'tls';
@@ -126,7 +127,8 @@ export class ClientConnectionManager extends EventEmitter {
     private clientState = ClientState.INITIAL;
     private connectToClusterTaskSubmitted: boolean;
     private reconnectToMembersTask: Task;
-    private connectingAddresses = new Set<AddressImpl>();
+    // contains string representations of member UUIDs
+    private connectingMembers = new Set<string>();
 
     constructor(client: HazelcastClient) {
         super();
@@ -229,16 +231,34 @@ export class ClientConnectionManager extends EventEmitter {
         return this.clientUuid;
     }
 
-    getOrConnect(address: AddressImpl): Promise<ClientConnection> {
+    getOrConnectToAddress(address: AddressImpl): Promise<ClientConnection> {
         if (!this.client.getLifecycleService().isRunning()) {
             return Promise.reject(new ClientNotActiveError('Client is not active.'));
         }
 
-        const connection = this.getConnectionFromAddress(address);
+        const connection = this.getConnectionForAddress(address);
         if (connection) {
             return Promise.resolve(connection);
         }
 
+        return this.getOrConnect(address, () => this.translateAddress(address));
+    }
+
+    getOrConnectToMember(member: MemberImpl): Promise<ClientConnection> {
+        if (!this.client.getLifecycleService().isRunning()) {
+            return Promise.reject(new ClientNotActiveError('Client is not active.'));
+        }
+
+        const connection = this.getConnection(member.uuid);
+        if (connection) {
+            return Promise.resolve(connection);
+        }
+
+        return this.getOrConnect(member.address, () => this.translateMemberAddress(member));
+    }
+
+    private getOrConnect(address: AddressImpl,
+                         translateAddressFn: () => Promise<AddressImpl>): Promise<ClientConnection> {
         const addressKey = address.toString();
         const pendingConnection = this.pendingConnections.get(addressKey);
         if (pendingConnection) {
@@ -254,7 +274,7 @@ export class ClientConnectionManager extends EventEmitter {
 
         let translatedAddress: AddressImpl;
         let clientConnection: ClientConnection;
-        this.translate(address)
+        translateAddressFn()
             .then((translated) => {
                 translatedAddress = translated;
                 if (translatedAddress == null) {
@@ -446,7 +466,7 @@ export class ClientConnectionManager extends EventEmitter {
 
     private connect(address: AddressImpl): Promise<ClientConnection> {
         this.logger.info('ConnectionManager', 'Trying to connect to ' + address);
-        return this.getOrConnect(address)
+        return this.getOrConnectToAddress(address)
             .catch((error) => {
                 this.logger.warn('ConnectionManager', 'Error during initial connection to '
                     + address + ' ' + error);
@@ -487,7 +507,7 @@ export class ClientConnectionManager extends EventEmitter {
             });
     }
 
-    private getConnectionFromAddress(address: AddressImpl): ClientConnection {
+    private getConnectionForAddress(address: AddressImpl): ClientConnection {
         for (const connection of this.getActiveConnections()) {
             if (connection.getRemoteAddress().equals(address)) {
                 return connection;
@@ -571,7 +591,7 @@ export class ClientConnectionManager extends EventEmitter {
         this.emit(CONNECTION_REMOVED_EVENT_NAME, connection);
     }
 
-    private translate(target: AddressImpl): Promise<AddressImpl> {
+    private translateAddress(target: AddressImpl): Promise<AddressImpl> {
         const addressProvider = this.client.getAddressProvider();
         return addressProvider.translate(target)
             .catch((error: Error) => {
@@ -579,6 +599,20 @@ export class ClientConnectionManager extends EventEmitter {
                     + target + ' via address provider ' + error.message);
                 return Promise.reject(error);
             });
+    }
+
+    private translateMemberAddress(member: MemberImpl): Promise<AddressImpl> {
+        if (member.addressMap == null) {
+            return this.translateAddress(member.address);
+        }
+        if (this.client.getClusterService().translateToPublicAddress()) {
+            const publicAddress = lookupPublicAddress(member);
+            if (publicAddress !== undefined) {
+                return Promise.resolve(publicAddress);
+            }
+            return Promise.resolve(member.address);
+        }
+        return this.translateAddress(member.address);
     }
 
     private triggerClusterReconnection(): void {
@@ -608,22 +642,21 @@ export class ClientConnectionManager extends EventEmitter {
         }
 
         for (const member of this.client.getClusterService().getMembers()) {
-            const address = member.address;
-            if (this.getConnectionFromAddress(address) == null) {
-                if (this.connectingAddresses.has(address)) {
-                    continue;
-                }
-                if (this.getConnection(member.uuid) == null) {
-                    this.connectingAddresses.add(address);
-                    this.getOrConnect(address)
-                        .catch(() => {
-                            // no-op
-                        })
-                        .finally(() => {
-                            this.connectingAddresses.delete(address);
-                        });
-                }
+            if (this.getConnection(member.uuid) != null) {
+                continue;
             }
+            const memberUuid = member.uuid.toString();
+            if (this.connectingMembers.has(memberUuid)) {
+                continue;
+            }
+            this.connectingMembers.add(memberUuid);
+            this.getOrConnectToMember(member)
+                .catch(() => {
+                    // no-op
+                })
+                .finally(() => {
+                    this.connectingMembers.delete(memberUuid);
+                });
         }
     }
 
@@ -773,7 +806,7 @@ export class ClientConnectionManager extends EventEmitter {
     private tryConnectToAllClusterMembers(members: MemberImpl[]): Promise<void> {
         const promises: Array<Promise<void | ClientConnection>> = [];
         for (const member of members) {
-            promises.push(this.getOrConnect(member.address)
+            promises.push(this.getOrConnectToMember(member)
                 .catch(() => {
                     // no-op
                 }));
