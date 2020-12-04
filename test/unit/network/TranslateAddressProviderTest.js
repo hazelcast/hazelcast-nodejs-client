@@ -94,7 +94,7 @@ describe('TranslateAddressProviderTest', function () {
         expect(provider.get()).to.be.false;
     });
 
-    it('should provide false for disabled public IP property', async function () {
+    it('should provide false for property set to false', async function () {
         const provider = new TranslateAddressProvider(clientConfig({ publicIpEnabled: false }), loggerStub);
 
         await provider.refresh(defaultProvider(), [ member({ internalHost: REACHABLE_HOST }) ]);
@@ -102,7 +102,7 @@ describe('TranslateAddressProviderTest', function () {
         expect(provider.get()).to.be.false;
     });
 
-    it('should provide true for enabled public IP property', async function () {
+    it('should provide true for property set to true', async function () {
         const provider = new TranslateAddressProvider(clientConfig({ publicIpEnabled: true }), loggerStub);
 
         await provider.refresh(defaultProvider(), [ member({ internalHost: REACHABLE_HOST }) ]);
@@ -110,7 +110,7 @@ describe('TranslateAddressProviderTest', function () {
         expect(provider.get()).to.be.true;
     });
 
-    it('should provide false for enabled public IP property and non-default address provider', async function () {
+    it('should provide false for property set to true and non-default address provider', async function () {
         const provider = new TranslateAddressProvider(clientConfig({ publicIpEnabled: true }), loggerStub);
 
         await provider.refresh(nonDefaultProvider(), [ member({ internalHost: REACHABLE_HOST }) ]);

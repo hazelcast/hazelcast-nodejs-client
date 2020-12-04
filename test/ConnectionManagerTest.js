@@ -26,6 +26,9 @@ const RC = require('./RC');
 const { Client, IllegalStateError } = require('../');
 const { AddressImpl } = require('../lib/core/Address');
 
+/**
+ * Basic tests for `ClientConnectionManager`.
+ */
 describe('ConnectionManagerTest', function () {
 
     let cluster, client;
@@ -44,11 +47,9 @@ describe('ConnectionManagerTest', function () {
         }
     }
 
-    before(function () {
-        return RC.createCluster(null, null).then(function (cl) {
-            cluster = cl;
-            return RC.startMember(cluster.id);
-        });
+    before(async function () {
+        cluster = await RC.createCluster(null, null);
+        await RC.startMember(cluster.id);
     });
 
     beforeEach(function () {
@@ -67,7 +68,7 @@ describe('ConnectionManagerTest', function () {
         await RC.terminateCluster(cluster.id);
     });
 
-    it('gives up connecting after timeout', async function () {
+    it('should give up connecting after timeout', async function () {
         const timeoutTime = 1000;
         await startUnresponsiveServer(9999);
         client = await Client.newHazelcastClient({
@@ -83,7 +84,7 @@ describe('ConnectionManagerTest', function () {
         ).to.be.rejected;
     });
 
-    it('does not give up when timeout=0', function (done) {
+    it('should not give up when timeout set to 0', function (done) {
         this.timeout(8000);
 
         const timeoutTime = 0;
