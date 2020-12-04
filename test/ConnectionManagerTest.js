@@ -31,11 +31,11 @@ describe('ConnectionManagerTest', function () {
     let cluster, client;
     let testend, server;
 
-    function startUnresponsiveServer(port) {
-        server = net.createServer(function (socket) {
+    async function startUnresponsiveServer(port) {
+        server = net.createServer(() => {
             // no-response
         });
-        server.listen(port);
+        await new Promise((resolve) => server.listen(port, resolve));
     }
 
     function stopUnresponsiveServer() {
@@ -69,7 +69,7 @@ describe('ConnectionManagerTest', function () {
 
     it('gives up connecting after timeout', async function () {
         const timeoutTime = 1000;
-        startUnresponsiveServer(9999);
+        await startUnresponsiveServer(9999);
         client = await Client.newHazelcastClient({
             clusterName: cluster.id,
             network: {
@@ -87,16 +87,18 @@ describe('ConnectionManagerTest', function () {
         this.timeout(8000);
 
         const timeoutTime = 0;
-        startUnresponsiveServer(9999);
-        const scheduled = setTimeout(function () {
-            done();
-        }, 6000); // 5000 is default timeout. The client should be still trying
+        let scheduled;
 
-        Client.newHazelcastClient({
-            clusterName: cluster.id,
-            network: {
-                connectionTimeout: timeoutTime
-            }
+        startUnresponsiveServer(9999).then(() => {
+            scheduled = setTimeout(function () {
+                done();
+            }, 6000); // 5000 is default timeout. The client should be still trying
+            return Client.newHazelcastClient({
+                clusterName: cluster.id,
+                network: {
+                    connectionTimeout: timeoutTime
+                }
+            });
         }).then(function (cl) {
             client = cl;
             return client.getConnectionManager().getOrConnectToAddress(new AddressImpl('localhost', 9999));
@@ -114,7 +116,7 @@ describe('ConnectionManagerTest', function () {
     it('should throw IllegalStateError if there is an incompatible server', async function () {
         client = null;
         const timeoutTime = 100;
-        startUnresponsiveServer(9999);
+        await startUnresponsiveServer(9999);
 
         await expect(Client.newHazelcastClient({
             clusterName: cluster.id,

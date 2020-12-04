@@ -25,8 +25,8 @@ import {shuffleArray} from '../util/Util';
 import * as net from 'net';
 
 const PROPERTY_DISCOVERY_PUBLIC_IP_ENABLED = 'hazelcast.discovery.public.ip.enabled';
-const REACHABLE_ADDRESS_TIMEOUT_MILLIS = 1000;
-const NON_REACHABLE_ADDRESS_TIMEOUT_MILLIS = 3000;
+const INTERNAL_ADDRESS_TIMEOUT_MILLIS = 1000;
+const PUBLIC_ADDRESS_TIMEOUT_MILLIS = 3000;
 const REACHABLE_CHECK_LIMIT = 3;
 
 /**
@@ -50,7 +50,7 @@ export class TranslateAddressProvider {
     private readonly config: ClientConfig;
     private readonly publicIpEnabled: boolean;
     private readonly logger: ILogger;
-    private translateToPublicAddress: boolean;
+    private translateToPublicAddress = false;
 
     constructor(config: ClientConfig, logger: ILogger) {
         this.config = config;
@@ -130,8 +130,8 @@ export class TranslateAddressProvider {
         }
         const internalAddress = member.address;
         return Promise.all([
-            this.isReachable(internalAddress, REACHABLE_ADDRESS_TIMEOUT_MILLIS),
-            this.isReachable(publicAddress, NON_REACHABLE_ADDRESS_TIMEOUT_MILLIS)
+            this.isReachable(internalAddress, INTERNAL_ADDRESS_TIMEOUT_MILLIS),
+            this.isReachable(publicAddress, PUBLIC_ADDRESS_TIMEOUT_MILLIS)
         ]).then(([internallyReachable, publiclyReachable]) => {
             if (internallyReachable) {
                 return false;
