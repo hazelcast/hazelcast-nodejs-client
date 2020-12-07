@@ -29,6 +29,7 @@ const { TranslateAddressProvider } = require('../../../lib/network/TranslateAddr
 const { ClientConfigImpl } = require('../../../lib/config/Config');
 const { DefaultLogger } = require('../../../lib/logging/DefaultLogger');
 const { DefaultAddressProvider } = require('../../../lib/connection/DefaultAddressProvider');
+const { UuidUtil } = require('../../../lib/util/UuidUtil');
 
 describe('TranslateAddressProviderTest', function () {
 
@@ -70,6 +71,7 @@ describe('TranslateAddressProviderTest', function () {
             throw new Error('Internal host must be provided');
         }
         const member = {
+            uuid: UuidUtil.generate(),
             address: new AddressImpl(internalHost, 5701),
             addressMap: new Map()
         };

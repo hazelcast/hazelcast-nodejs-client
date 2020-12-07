@@ -80,10 +80,9 @@ export class TranslateAddressProvider {
         if (this.publicIpEnabled === undefined) {
             const sslConfig = this.config.network.ssl;
             if (sslConfig.enabled) {
-                this.logger.debug('TranslateAddressProvider', 'SSL is configured. The client will '
-                    + 'use internal addresses to communicate with the cluster. If members are not '
-                    + 'reachable via private addresses, please set "'
-                    + PROPERTY_DISCOVERY_PUBLIC_IP_ENABLED + '" property to true');
+                this.logger.debug('TranslateAddressProvider', 'SSL is configured. Client will use internal '
+                    + 'addresses to communicate with the cluster. If members are not reachable via private '
+                    + 'addresses, please set "' + PROPERTY_DISCOVERY_PUBLIC_IP_ENABLED + '" property to true.');
                 return Promise.resolve(false);
             }
             if (members.length === 0 || this.internalMemberAddressMatchesConfig(members)) {
@@ -134,6 +133,8 @@ export class TranslateAddressProvider {
         const member = shuffledMembers[0];
         const publicAddress = lookupPublicAddress(member);
         if (publicAddress === undefined) {
+            this.logger.debug('TranslateAddressProvider', 'Public address is not available '
+                + 'on member ' + member.uuid.toString() + '. Client will use internal addresses.');
             return Promise.resolve(false);
         }
         const internalAddress = member.address;
@@ -142,9 +143,13 @@ export class TranslateAddressProvider {
             this.isReachable(publicAddress, this.publicAddressTimeoutMs)
         ]).then(([internallyReachable, publiclyReachable]) => {
             if (internallyReachable) {
+                this.logger.debug('TranslateAddressProvider', 'Internal address ' + internalAddress.toString()
+                    + ' is reachable. Client will use the internal addresses.');
                 return false;
             }
             if (!publiclyReachable) {
+                this.logger.debug('TranslateAddressProvider', 'Public address ' + publicAddress.toString()
+                    + ' is not reachable. Client will use the internal addresses.');
                 return false;
             }
             if (shuffledMembers.length > 1) {
@@ -162,7 +167,7 @@ export class TranslateAddressProvider {
             const onError = (err: Error) => {
                 socket.destroy();
                 this.logger.debug('TranslateAddressProvider', 'Provider can not reach to address '
-                    + address.toString() + ' in ' + timeoutMs + 'ms', err);
+                    + address.toString() + ' in ' + timeoutMs + 'ms.', err);
                 resolve(false);
             };
             socket.once('error', onError);
