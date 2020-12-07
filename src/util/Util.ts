@@ -19,7 +19,7 @@ import * as assert from 'assert';
 import * as Long from 'long';
 import * as Path from 'path';
 import * as net from 'net';
-// import * as dns from 'dns';
+import * as dns from 'dns';
 import {AddressImpl, UUID} from '../core';
 
 /** @internal */
@@ -254,6 +254,35 @@ export function isAddressReachable(host: string,
             resolve(true);
         });
     });
+}
+
+/**
+ * Resolves the given address to IP address.
+ * @param address address in one of 'host'/'host:port'/'ip'/'ip:host' formats
+ * @returns IP (IPv4 or IPv6) address string
+ * @internal
+ */
+export function resolveAddress(address: string): Promise<string> {
+    return Promise.resolve()
+        .then(() => {
+            if (address == null || address.length === 0) {
+                throw new Error('Address must be non-null and non-empty');
+            }
+            return AddressHelper.createAddressFromString(address);
+        })
+        .then(({ host }) => {
+            if (host == null || host.length === 0) {
+                throw new Error('Parsed host must be non-null and non-empty');
+            }
+            return new Promise((resolve, reject) => {
+                dns.lookup(host, (err, ipAddress) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    resolve(ipAddress);
+                });
+            });
+        });
 }
 
 /**

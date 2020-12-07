@@ -20,7 +20,11 @@ import {MemberInfo, lookupPublicAddress} from '../core/MemberInfo';
 import {AddressProvider} from '../connection/AddressProvider';
 import {DefaultAddressProvider} from '../connection/DefaultAddressProvider';
 import {ILogger} from '../logging/ILogger';
-import {isAddressReachable, shuffleArray} from '../util/Util';
+import {
+    isAddressReachable,
+    resolveAddress,
+    shuffleArray
+} from '../util/Util';
 
 const PROPERTY_DISCOVERY_PUBLIC_IP_ENABLED = 'hazelcast.discovery.public.ip.enabled';
 const REACHABLE_CHECK_LIMIT = 3;
@@ -83,10 +87,16 @@ export class TranslateAddressProvider {
                     + 'addresses, please set "' + PROPERTY_DISCOVERY_PUBLIC_IP_ENABLED + '" property to true.');
                 return Promise.resolve(false);
             }
-            if (members.length === 0 || this.internalMemberAddressMatchesConfig(members)) {
+            if (members.length === 0) {
                 return Promise.resolve(false);
             }
-            return this.reachableOnlyViaPublicAddress(members);
+            return this.internalMemberAddressMatchesConfig(members)
+                .then((addressMatchConfig) => {
+                    if (addressMatchConfig) {
+                        return false;
+                    }
+                    return this.reachableOnlyViaPublicAddress(members);
+                });
         }
         return Promise.resolve(this.publicIpEnabled);
     }
@@ -97,19 +107,33 @@ export class TranslateAddressProvider {
      * If any member has its internal/private address the same as configured in client config,
      * then it means that the client is able to connect to members via configured address.
      * No need to use make any address translation.
+     *
+     * Hosts are resolved to IP addresses before doing the check to have correct behavior
+     * when members/clients are configured differently (addresses/host names).
      */
-    private internalMemberAddressMatchesConfig(members: MemberInfo[]): boolean {
-        const addresses = this.config.network.clusterMembers;
-        for (const member of members) {
-            const memberAddress = member.address;
-            if (addresses.includes(memberAddress.host)) {
-                return true;
-            }
-            if (addresses.includes(memberAddress.toString())) {
-                return true;
-            }
-        }
-        return false;
+    private internalMemberAddressMatchesConfig(members: MemberInfo[]): Promise<boolean> {
+        const pHostsFromConfig = this.config.network.clusterMembers
+            .map((address) => {
+                return resolveAddress(address).catch(() => null);
+            });
+
+        let addressesFromConfig: string[];
+        return Promise.all(pHostsFromConfig)
+            .then((addresses: string[]) => {
+                addressesFromConfig = addresses;
+                const memberHostPromises = members
+                    .map((member) => {
+                        return resolveAddress(member.address.host).catch(() => null);
+                    });
+                return Promise.all(memberHostPromises);
+            }).then((addressesFromMembers: string[]) => {
+                for (const address of addressesFromMembers) {
+                    if (addressesFromConfig.includes(address)) {
+                        return true;
+                    }
+                }
+                return false;
+            });
     }
 
     /**
