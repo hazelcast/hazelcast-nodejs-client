@@ -39,6 +39,13 @@ describe('TranslateAddressProviderTest', function () {
     let loggerStub;
     let fakeMemberServer;
 
+    function translateAddressProvider(clientConfig, logger) {
+        const provider = new TranslateAddressProvider(clientConfig, logger);
+        provider.internalAddressTimeoutMs = 50;
+        provider.publicAddressTimeoutMs = 150;
+        return provider;
+    }
+
     function clientConfig({ publicIpEnabled, memberAddresses } = {}) {
         const clientConfig = new ClientConfigImpl();
         if (publicIpEnabled !== undefined) {
@@ -50,11 +57,11 @@ describe('TranslateAddressProviderTest', function () {
         return clientConfig;
     }
 
-    function defaultProvider() {
+    function defaultAddressProvider() {
         return new DefaultAddressProvider();
     }
 
-    function nonDefaultProvider() {
+    function nonDefaultAddressProvider() {
         return {};
     }
 
@@ -89,74 +96,99 @@ describe('TranslateAddressProviderTest', function () {
     });
 
     it('should provide false before refresh for default config', function () {
-        const provider = new TranslateAddressProvider(clientConfig(), loggerStub);
+        const provider = translateAddressProvider(clientConfig(), loggerStub);
 
         expect(provider.get()).to.be.false;
     });
 
     it('should provide false for property set to false', async function () {
-        const provider = new TranslateAddressProvider(clientConfig({ publicIpEnabled: false }), loggerStub);
+        const provider = translateAddressProvider(clientConfig({ publicIpEnabled: false }), loggerStub);
 
-        await provider.refresh(defaultProvider(), [ member({ internalHost: REACHABLE_HOST }) ]);
+        await provider.refresh(
+            defaultAddressProvider(),
+            [
+                member({ internalHost: UNREACHABLE_HOST, publicHost: REACHABLE_HOST })
+            ]
+        );
 
         expect(provider.get()).to.be.false;
     });
 
     it('should provide true for property set to true', async function () {
-        const provider = new TranslateAddressProvider(clientConfig({ publicIpEnabled: true }), loggerStub);
+        const provider = translateAddressProvider(clientConfig({ publicIpEnabled: true }), loggerStub);
 
-        await provider.refresh(defaultProvider(), [ member({ internalHost: REACHABLE_HOST }) ]);
+        await provider.refresh(defaultAddressProvider(), []);
 
         expect(provider.get()).to.be.true;
     });
 
     it('should provide false for property set to true and non-default address provider', async function () {
-        const provider = new TranslateAddressProvider(clientConfig({ publicIpEnabled: true }), loggerStub);
+        const provider = translateAddressProvider(clientConfig({ publicIpEnabled: true }), loggerStub);
 
-        await provider.refresh(nonDefaultProvider(), [ member({ internalHost: REACHABLE_HOST }) ]);
+        await provider.refresh(
+            nonDefaultAddressProvider(),
+            [
+                member({ internalHost: UNREACHABLE_HOST, publicHost: REACHABLE_HOST })
+            ]
+        );
+
+        expect(provider.get()).to.be.false;
+    });
+
+    it('should provide false for default config and enabled SSL config', async function () {
+        const config = clientConfig();
+        config.network.ssl.enabled = true;
+        const provider = translateAddressProvider(config, loggerStub);
+
+        await provider.refresh(
+            defaultAddressProvider(),
+            [
+                member({ internalHost: UNREACHABLE_HOST, publicHost: REACHABLE_HOST })
+            ]
+        );
 
         expect(provider.get()).to.be.false;
     });
 
     it('should provide false for default config and empty member list', async function () {
-        const provider = new TranslateAddressProvider(clientConfig(), loggerStub);
+        const provider = translateAddressProvider(clientConfig(), loggerStub);
 
-        await provider.refresh(defaultProvider(), []);
+        await provider.refresh(defaultAddressProvider(), []);
 
         expect(provider.get()).to.be.false;
     });
 
     it('should provide false for default config and matching public-internal addresses (host and port)', async function () {
-        const provider = new TranslateAddressProvider(
+        const provider = translateAddressProvider(
             clientConfig({
                 memberAddresses: [ `${REACHABLE_HOST}:5701` ]
             }),
             loggerStub
         );
 
-        await provider.refresh(defaultProvider(), [ member({ internalHost: REACHABLE_HOST }) ]);
+        await provider.refresh(defaultAddressProvider(), [ member({ internalHost: REACHABLE_HOST }) ]);
 
         expect(provider.get()).to.be.false;
     });
 
     it('should provide false for default config and matching public-internal addresses (host only)', async function () {
-        const provider = new TranslateAddressProvider(
+        const provider = translateAddressProvider(
             clientConfig({
                 memberAddresses: [ REACHABLE_HOST ]
             }),
             loggerStub
         );
 
-        await provider.refresh(defaultProvider(), [ member({ internalHost: REACHABLE_HOST }) ]);
+        await provider.refresh(defaultAddressProvider(), [ member({ internalHost: REACHABLE_HOST }) ]);
 
         expect(provider.get()).to.be.false;
     });
 
     it('should provide false for default config and unreachable members', async function () {
-        const provider = new TranslateAddressProvider(clientConfig(), loggerStub);
+        const provider = translateAddressProvider(clientConfig(), loggerStub);
 
         await provider.refresh(
-            defaultProvider(),
+            defaultAddressProvider(),
             [
                 member({ internalHost: UNREACHABLE_HOST, publicHost: UNREACHABLE_HOST }),
                 member({ internalHost: UNREACHABLE_HOST, publicHost: UNREACHABLE_HOST })
@@ -167,10 +199,10 @@ describe('TranslateAddressProviderTest', function () {
     });
 
     it('should provide false for default config and internally reachable members', async function () {
-        const provider = new TranslateAddressProvider(clientConfig(), loggerStub);
+        const provider = translateAddressProvider(clientConfig(), loggerStub);
 
         await provider.refresh(
-            defaultProvider(),
+            defaultAddressProvider(),
             [
                 member({ internalHost: REACHABLE_HOST, publicHost: UNREACHABLE_HOST }),
                 member({ internalHost: REACHABLE_HOST, publicHost: UNREACHABLE_HOST })
@@ -181,10 +213,10 @@ describe('TranslateAddressProviderTest', function () {
     });
 
     it('should provide false for default config and members with no public address', async function () {
-        const provider = new TranslateAddressProvider(clientConfig(), loggerStub);
+        const provider = translateAddressProvider(clientConfig(), loggerStub);
 
         await provider.refresh(
-            defaultProvider(),
+            defaultAddressProvider(),
             [ member({ internalHost: UNREACHABLE_HOST }) ]
         );
 
@@ -192,10 +224,10 @@ describe('TranslateAddressProviderTest', function () {
     });
 
     it('should provide true for default config and publicly reachable single member', async function () {
-        const provider = new TranslateAddressProvider(clientConfig(), loggerStub);
+        const provider = translateAddressProvider(clientConfig(), loggerStub);
 
         await provider.refresh(
-            defaultProvider(),
+            defaultAddressProvider(),
             [
                 member({ internalHost: UNREACHABLE_HOST, publicHost: REACHABLE_HOST })
             ]
@@ -205,10 +237,10 @@ describe('TranslateAddressProviderTest', function () {
     });
 
     it('should provide true for default config and publicly reachable members', async function () {
-        const provider = new TranslateAddressProvider(clientConfig(), loggerStub);
+        const provider = translateAddressProvider(clientConfig(), loggerStub);
 
         await provider.refresh(
-            defaultProvider(),
+            defaultAddressProvider(),
             [
                 member({ internalHost: UNREACHABLE_HOST, publicHost: REACHABLE_HOST }),
                 member({ internalHost: UNREACHABLE_HOST, publicHost: REACHABLE_HOST }),

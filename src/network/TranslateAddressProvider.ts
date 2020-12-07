@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import {ClientConfig} from '../config';
+import {ClientConfigImpl} from '../config';
 import {AddressImpl} from '../core';
 import {MemberInfo, lookupPublicAddress} from '../core/MemberInfo';
 import {AddressProvider} from '../connection/AddressProvider';
@@ -25,8 +25,6 @@ import {shuffleArray} from '../util/Util';
 import * as net from 'net';
 
 const PROPERTY_DISCOVERY_PUBLIC_IP_ENABLED = 'hazelcast.discovery.public.ip.enabled';
-const INTERNAL_ADDRESS_TIMEOUT_MILLIS = 1000;
-const PUBLIC_ADDRESS_TIMEOUT_MILLIS = 3000;
 const REACHABLE_CHECK_LIMIT = 3;
 
 /**
@@ -47,12 +45,14 @@ const REACHABLE_CHECK_LIMIT = 3;
  */
 export class TranslateAddressProvider {
 
-    private readonly config: ClientConfig;
+    private readonly config: ClientConfigImpl;
     private readonly publicIpEnabled: boolean;
     private readonly logger: ILogger;
+    private readonly internalAddressTimeoutMs = 1000;
+    private readonly publicAddressTimeoutMs = 3000;
     private translateToPublicAddress = false;
 
-    constructor(config: ClientConfig, logger: ILogger) {
+    constructor(config: ClientConfigImpl, logger: ILogger) {
         this.config = config;
         this.publicIpEnabled = config.properties[PROPERTY_DISCOVERY_PUBLIC_IP_ENABLED] as boolean;
         this.logger = logger;
@@ -78,6 +78,14 @@ export class TranslateAddressProvider {
         // to `true`/`false`, we don't know the intention of the user, we will try
         // to decide if we should use private/public address automatically in that case.
         if (this.publicIpEnabled === undefined) {
+            const sslConfig = this.config.network.ssl;
+            if (sslConfig.enabled) {
+                this.logger.debug('TranslateAddressProvider', 'SSL is configured. The client will '
+                    + 'use internal addresses to communicate with the cluster. If members are not '
+                    + 'reachable via private addresses, please set "'
+                    + PROPERTY_DISCOVERY_PUBLIC_IP_ENABLED + '" property to true');
+                return Promise.resolve(false);
+            }
             if (members.length === 0 || this.internalMemberAddressMatchesConfig(members)) {
                 return Promise.resolve(false);
             }
@@ -130,8 +138,8 @@ export class TranslateAddressProvider {
         }
         const internalAddress = member.address;
         return Promise.all([
-            this.isReachable(internalAddress, INTERNAL_ADDRESS_TIMEOUT_MILLIS),
-            this.isReachable(publicAddress, PUBLIC_ADDRESS_TIMEOUT_MILLIS)
+            this.isReachable(internalAddress, this.internalAddressTimeoutMs),
+            this.isReachable(publicAddress, this.publicAddressTimeoutMs)
         ]).then(([internallyReachable, publiclyReachable]) => {
             if (internallyReachable) {
                 return false;

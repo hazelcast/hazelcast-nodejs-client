@@ -17,6 +17,7 @@
 
 import {ClientConnection} from '../network/ClientConnection';
 import {HazelcastClient} from '../HazelcastClient';
+import {ClientConfigImpl} from '../config/Config';
 import {MemberSelector} from '../core/MemberSelector';
 import {
     assertNotNull,
@@ -78,7 +79,8 @@ export class ClusterService implements Cluster {
         this.labels = new Set(client.getConfig().clientLabels);
         const logger = client.getLoggingService().getLogger();
         this.logger = logger;
-        this.translateToAddressProvider = new TranslateAddressProvider(client.getConfig(), logger);
+        this.translateToAddressProvider =
+            new TranslateAddressProvider(client.getConfig() as ClientConfigImpl, logger);
     }
 
     /**
