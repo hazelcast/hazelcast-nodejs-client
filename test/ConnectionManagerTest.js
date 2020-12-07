@@ -31,8 +31,10 @@ const { AddressImpl } = require('../lib/core/Address');
  */
 describe('ConnectionManagerTest', function () {
 
-    let cluster, client;
-    let testend, server;
+    let cluster;
+    let client;
+    let server;
+    let testend;
 
     async function startUnresponsiveServer(port) {
         server = net.createServer(() => {

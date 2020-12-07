@@ -120,7 +120,7 @@ describe('InvocationServiceTest', function () {
         expect(client.getListenerService().registerListener.notCalled).to.be.true;
     });
 
-    it('should reject pending invocations on shut down', async function () {
+    it('should reject pending invocations on shutdown', async function () {
         const invocation = await preparePendingInvocationWithClosedConn();
 
         invocation.invocationService.shutdown();

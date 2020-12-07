@@ -99,7 +99,7 @@ describe('UtilTest', function () {
         });
     });
 
-    it('isAddressReachable: return true for reachable IPv4 address', async function () {
+    it('isAddressReachable: returns true for reachable address', async function () {
         const server = net.createServer(() => {
             // no-response
         });
@@ -113,14 +113,14 @@ describe('UtilTest', function () {
         }
     });
 
-    it('isAddressReachable: return true for reachable IPv6 address', async function () {
+    it('isAddressReachable: returns true for reachable host', async function () {
         const server = net.createServer(() => {
             // no-response
         });
         await new Promise((resolve) => server.listen(5701, resolve));
 
         try {
-            const result = await isAddressReachable('0:0:0:0:0:0:0:1', 5701, 1000);
+            const result = await isAddressReachable('localhost', 5701, 1000);
             expect(result).to.be.true;
         } finally {
             server.close();
@@ -142,12 +142,12 @@ describe('UtilTest', function () {
         expect(result).to.be.equal('127.0.0.1');
     });
 
-    it('resolveAddress: returns IPv4 for 127.0.0.1 with port', async function () {
+    it('resolveAddress: returns IPv4 for IPv4 address with port', async function () {
         const result = await resolveAddress('127.0.0.1:5701');
         expect(result).to.be.equal('127.0.0.1');
     });
 
-    it('resolveAddress: returns IPv6 for 0:0:0:0:0:0:0:1 with port', async function () {
+    it('resolveAddress: returns IPv6 for IPv6 address with port', async function () {
         const result = await resolveAddress('[0:0:0:0:0:0:0:1]:5701');
         expect(result).to.be.equal('0:0:0:0:0:0:0:1');
     });
