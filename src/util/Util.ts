@@ -18,6 +18,8 @@
 import * as assert from 'assert';
 import * as Long from 'long';
 import * as Path from 'path';
+import * as net from 'net';
+// import * as dns from 'dns';
 import {AddressImpl, UUID} from '../core';
 
 /** @internal */
@@ -224,6 +226,34 @@ export class AddressHelper {
         return new AddressImpl(host, port);
     }
 
+}
+
+/**
+ * Checks if the target address (host:port) is reachable via trying to
+ * open a plain TCP connection.
+ * @param host      target host.
+ * @param port      target port.
+ * @param timeoutMs connection timeout in milliseconds.
+ * @returns check result
+ * @internal
+ */
+export function isAddressReachable(host: string,
+                                   port: number,
+                                   timeoutMs: number): Promise<boolean> {
+    return new Promise((resolve) => {
+        const socket = new net.Socket();
+        socket.setTimeout(timeoutMs);
+        const onError = () => {
+            socket.destroy();
+            resolve(false);
+        };
+        socket.once('error', onError);
+        socket.once('timeout', onError);
+        socket.connect(port, host, () => {
+            socket.end();
+            resolve(true);
+        });
+    });
 }
 
 /**

@@ -16,13 +16,11 @@
 /** @ignore *//** */
 
 import {ClientConfigImpl} from '../config';
-import {AddressImpl} from '../core';
 import {MemberInfo, lookupPublicAddress} from '../core/MemberInfo';
 import {AddressProvider} from '../connection/AddressProvider';
 import {DefaultAddressProvider} from '../connection/DefaultAddressProvider';
 import {ILogger} from '../logging/ILogger';
-import {shuffleArray} from '../util/Util';
-import * as net from 'net';
+import {isAddressReachable, shuffleArray} from '../util/Util';
 
 const PROPERTY_DISCOVERY_PUBLIC_IP_ENABLED = 'hazelcast.discovery.public.ip.enabled';
 const REACHABLE_CHECK_LIMIT = 3;
@@ -130,6 +128,7 @@ export class TranslateAddressProvider {
         if (attempt >= REACHABLE_CHECK_LIMIT) {
             return Promise.resolve(true);
         }
+
         const member = shuffledMembers[0];
         const publicAddress = lookupPublicAddress(member);
         if (publicAddress === undefined) {
@@ -138,9 +137,10 @@ export class TranslateAddressProvider {
             return Promise.resolve(false);
         }
         const internalAddress = member.address;
+
         return Promise.all([
-            this.isReachable(internalAddress, this.internalAddressTimeoutMs),
-            this.isReachable(publicAddress, this.publicAddressTimeoutMs)
+            isAddressReachable(internalAddress.host, internalAddress.port, this.internalAddressTimeoutMs),
+            isAddressReachable(publicAddress.host, publicAddress.port, this.publicAddressTimeoutMs)
         ]).then(([internallyReachable, publiclyReachable]) => {
             if (internallyReachable) {
                 this.logger.debug('TranslateAddressProvider', 'Internal address ' + internalAddress.toString()
@@ -157,25 +157,6 @@ export class TranslateAddressProvider {
                 shuffledMembers.splice(0, 1);
             }
             return this.reachableOnlyViaPublicAddressInternal(shuffledMembers, ++attempt);
-        });
-    }
-
-    private isReachable(address: AddressImpl, timeoutMs: number): Promise<boolean> {
-        return new Promise((resolve) => {
-            const socket = new net.Socket();
-            socket.setTimeout(timeoutMs);
-            const onError = (err: Error) => {
-                socket.destroy();
-                this.logger.debug('TranslateAddressProvider', 'Provider can not reach to address '
-                    + address.toString() + ' in ' + timeoutMs + 'ms.', err);
-                resolve(false);
-            };
-            socket.once('error', onError);
-            socket.once('timeout', onError);
-            socket.connect(address.port, address.host, () => {
-                socket.end();
-                resolve(true);
-            });
         });
     }
 }
