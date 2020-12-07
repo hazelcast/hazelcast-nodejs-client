@@ -76,10 +76,10 @@ export class TranslateAddressProvider {
             return Promise.resolve(false);
         }
 
-        // Default value of the property is `undefined` intentionally. If it's not set
+        // Default value of the property is `null` intentionally. If it's not set
         // to `true`/`false`, we don't know the intention of the user, we will try
         // to decide if we should use private/public address automatically in that case.
-        if (this.publicIpEnabled === undefined) {
+        if (this.publicIpEnabled == null) {
             const sslConfig = this.config.network.ssl;
             if (sslConfig.enabled) {
                 this.logger.debug('TranslateAddressProvider', 'SSL is configured. Client will use internal '
