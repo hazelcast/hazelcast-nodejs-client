@@ -264,6 +264,12 @@ export class ClientConnectionManager extends EventEmitter {
             })
             .then((socket) => {
                 clientConnection = new ClientConnection(this.client, translatedAddress, socket, this.connectionIdCounter++);
+                // close the connection proactively on errors
+                socket.on('error', (err: any) => {
+                    if (err.code === 'EPIPE' || err.code === 'ECONNRESET') {
+                        clientConnection.close('Connection closed by other side', err);
+                    }
+                });
                 return this.initiateCommunication(socket);
             })
             .then(() => clientConnection.registerResponseCallback(processResponseCallback))
@@ -539,15 +545,9 @@ export class ClientConnectionManager extends EventEmitter {
         socket.once('secureConnect', () => {
             connectionResolver.resolve(socket);
         });
-        socket.on('error', (e: any) => {
+        socket.once('error', (e: Error) => {
             this.logger.warn('ConnectionManager', 'Could not connect to address ' + address.toString(), e);
             connectionResolver.reject(e);
-            if (e.code === 'EPIPE' || e.code === 'ECONNRESET') {
-                const connection = this.getConnectionFromAddress(address);
-                if (connection != null) {
-                    this.onConnectionClose(connection);
-                }
-            }
         });
         return connectionResolver.promise;
     }
@@ -558,15 +558,9 @@ export class ClientConnectionManager extends EventEmitter {
         socket.once('connect', () => {
             connectionResolver.resolve(socket);
         });
-        socket.on('error', (e: any) => {
+        socket.once('error', (e: Error) => {
             this.logger.warn('ConnectionManager', 'Could not connect to address ' + address.toString(), e);
             connectionResolver.reject(e);
-            if (e.code === 'EPIPE' || e.code === 'ECONNRESET') {
-                const connection = this.getConnectionFromAddress(address);
-                if (connection != null) {
-                    this.onConnectionClose(connection);
-                }
-            }
         });
         return connectionResolver.promise;
     }
