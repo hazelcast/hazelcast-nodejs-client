@@ -176,7 +176,7 @@ export class ClientConfigImpl implements ClientConfig {
         'hazelcast.client.shuffle.member.list': true,
         'hazelcast.client.operation.backup.timeout.millis': 5000,
         'hazelcast.client.operation.fail.on.indeterminate.state': false,
-        // null is set as the default value here to use this property
+        // `null` is set as the default value here to use this property
         // as a tri-state boolean (see TranslateAddressProvider)
         'hazelcast.discovery.public.ip.enabled': null,
     };

@@ -70,6 +70,8 @@ export class MemberInfo {
 
 /**
  * Looks up client public address for the given member.
+ *
+ * @returns found address or `null`
  * @internal
  */
 export function lookupPublicAddress(member: MemberInfo | MemberImpl): AddressImpl {
@@ -78,4 +80,5 @@ export function lookupPublicAddress(member: MemberInfo | MemberImpl): AddressImp
             return address;
         }
     }
+    return null;
 }

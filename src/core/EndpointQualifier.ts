@@ -18,8 +18,8 @@
 /** @internal */
 export class EndpointQualifier {
 
-    type: number;
-    identifier: string;
+    readonly type: number;
+    readonly identifier: string;
 
     constructor(type: number, identifier: string) {
         this.type = type;

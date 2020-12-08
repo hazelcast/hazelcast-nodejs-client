@@ -181,7 +181,7 @@ export class ClusterService implements Cluster {
             this.applyInitialState(memberListVersion, memberInfos)
                 .then(this.initialListFetched.resolve)
                 .catch((err) => {
-                    this.logger.warn('ClusterService', 'Could not apply initial state.', err);
+                    this.logger.warn('ClusterService', 'Could not apply initial member list.', err);
                 });
             return;
         }

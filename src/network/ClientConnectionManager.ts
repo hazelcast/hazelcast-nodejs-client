@@ -127,7 +127,7 @@ export class ClientConnectionManager extends EventEmitter {
     private clientState = ClientState.INITIAL;
     private connectToClusterTaskSubmitted: boolean;
     private reconnectToMembersTask: Task;
-    // contains string representations of member UUIDs
+    // contains member UUIDs (strings) for members with in-flight connection attempt
     private connectingMembers = new Set<string>();
 
     constructor(client: HazelcastClient) {
@@ -607,7 +607,7 @@ export class ClientConnectionManager extends EventEmitter {
         }
         if (this.client.getClusterService().translateToPublicAddress()) {
             const publicAddress = lookupPublicAddress(member);
-            if (publicAddress !== undefined) {
+            if (publicAddress != null) {
                 return Promise.resolve(publicAddress);
             }
             return Promise.resolve(member.address);

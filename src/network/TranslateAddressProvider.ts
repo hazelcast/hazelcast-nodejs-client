@@ -155,7 +155,7 @@ export class TranslateAddressProvider {
 
         const member = shuffledMembers[0];
         const publicAddress = lookupPublicAddress(member);
-        if (publicAddress === undefined) {
+        if (publicAddress == null) {
             this.logger.debug('TranslateAddressProvider', 'Public address is not available '
                 + 'on member ' + member.uuid.toString() + '. Client will use internal addresses.');
             return Promise.resolve(false);
