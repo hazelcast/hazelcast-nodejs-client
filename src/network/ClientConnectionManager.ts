@@ -265,10 +265,8 @@ export class ClientConnectionManager extends EventEmitter {
             .then((socket) => {
                 clientConnection = new ClientConnection(this.client, translatedAddress, socket, this.connectionIdCounter++);
                 // close the connection proactively on errors
-                socket.on('error', (err: any) => {
-                    if (err.code === 'EPIPE' || err.code === 'ECONNRESET') {
-                        clientConnection.close('Connection closed by other side', err);
-                    }
+                socket.on('error', (err: Error) => {
+                    clientConnection.close('Connection closed by other side', err);
                 });
                 return this.initiateCommunication(socket);
             })
@@ -545,9 +543,9 @@ export class ClientConnectionManager extends EventEmitter {
         socket.once('secureConnect', () => {
             connectionResolver.resolve(socket);
         });
-        socket.once('error', (e: Error) => {
-            this.logger.warn('ConnectionManager', 'Could not connect to address ' + address.toString(), e);
-            connectionResolver.reject(e);
+        socket.once('error', (err: Error) => {
+            this.logger.warn('ConnectionManager', 'Could not connect to address ' + address.toString(), err);
+            connectionResolver.reject(err);
         });
         return connectionResolver.promise;
     }
@@ -558,9 +556,9 @@ export class ClientConnectionManager extends EventEmitter {
         socket.once('connect', () => {
             connectionResolver.resolve(socket);
         });
-        socket.once('error', (e: Error) => {
-            this.logger.warn('ConnectionManager', 'Could not connect to address ' + address.toString(), e);
-            connectionResolver.reject(e);
+        socket.once('error', (err: Error) => {
+            this.logger.warn('ConnectionManager', 'Could not connect to address ' + address.toString(), err);
+            connectionResolver.reject(err);
         });
         return connectionResolver.promise;
     }
