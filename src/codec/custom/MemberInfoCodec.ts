@@ -24,6 +24,7 @@ import {AddressCodec} from './AddressCodec';
 import {MapCodec} from '../builtin/MapCodec';
 import {StringCodec} from '../builtin/StringCodec';
 import {MemberVersionCodec} from './MemberVersionCodec';
+import {EndpointQualifierCodec} from './EndpointQualifierCodec';
 
 const UUID_OFFSET = 0;
 const LITE_MEMBER_OFFSET = UUID_OFFSET + BitsUtil.UUID_SIZE_IN_BYTES;
@@ -42,6 +43,7 @@ export class MemberInfoCodec {
         AddressCodec.encode(clientMessage, memberInfo.address);
         MapCodec.encode(clientMessage, memberInfo.attributes, StringCodec.encode, StringCodec.encode);
         MemberVersionCodec.encode(clientMessage, memberInfo.version);
+        MapCodec.encode(clientMessage, memberInfo.addressMap, EndpointQualifierCodec.encode, AddressCodec.encode);
 
         clientMessage.addFrame(END_FRAME.copy());
     }
@@ -57,9 +59,15 @@ export class MemberInfoCodec {
         const address = AddressCodec.decode(clientMessage);
         const attributes = MapCodec.decode(clientMessage, StringCodec.decode, StringCodec.decode);
         const version = MemberVersionCodec.decode(clientMessage);
+        let isAddressMapExists = false;
+        let addressMap = null;
+        if (!clientMessage.peekNextFrame().isEndFrame()) {
+            addressMap = MapCodec.decode(clientMessage, EndpointQualifierCodec.decode, AddressCodec.decode);
+            isAddressMapExists = true;
+        }
 
         CodecUtil.fastForwardToEndFrame(clientMessage);
 
-        return new MemberInfo(address, uuid, attributes, liteMember, version);
+        return new MemberInfo(address, uuid, attributes, liteMember, version, isAddressMapExists, addressMap);
     }
 }
