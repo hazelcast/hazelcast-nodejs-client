@@ -22,20 +22,25 @@ const expect = chai.expect;
 const sinon = require('sinon');
 const net = require('net');
 
-const Controller = require('./RC');
+const RC = require('./RC');
 const { Client, IllegalStateError } = require('../');
 const { AddressImpl } = require('../lib/core/Address');
 
+/**
+ * Basic tests for `ClientConnectionManager`.
+ */
 describe('ConnectionManagerTest', function () {
 
-    let cluster, client;
-    let testend, server;
+    let cluster;
+    let client;
+    let server;
+    let testend;
 
-    function startUnresponsiveServer(port) {
-        server = net.createServer(function (socket) {
+    async function startUnresponsiveServer(port) {
+        server = net.createServer(() => {
             // no-response
         });
-        server.listen(port);
+        await new Promise((resolve) => server.listen(port, resolve));
     }
 
     function stopUnresponsiveServer() {
@@ -44,11 +49,9 @@ describe('ConnectionManagerTest', function () {
         }
     }
 
-    before(function () {
-        return Controller.createCluster(null, null).then(function (cl) {
-            cluster = cl;
-            return Controller.startMember(cluster.id);
-        });
+    before(async function () {
+        cluster = await RC.createCluster(null, null);
+        await RC.startMember(cluster.id);
     });
 
     beforeEach(function () {
@@ -64,12 +67,12 @@ describe('ConnectionManagerTest', function () {
     });
 
     after(async function () {
-        await Controller.terminateCluster(cluster.id);
+        await RC.terminateCluster(cluster.id);
     });
 
-    it('gives up connecting after timeout', async function () {
+    it('should give up connecting after timeout', async function () {
         const timeoutTime = 1000;
-        startUnresponsiveServer(9999);
+        await startUnresponsiveServer(9999);
         client = await Client.newHazelcastClient({
             clusterName: cluster.id,
             network: {
@@ -78,27 +81,31 @@ describe('ConnectionManagerTest', function () {
         });
 
         const connectionManager = client.getConnectionManager();
-        await expect(connectionManager.getOrConnect(new AddressImpl('localhost', 9999))).to.be.rejected;
+        await expect(
+            connectionManager.getOrConnectToAddress(new AddressImpl('localhost', 9999))
+        ).to.be.rejected;
     });
 
-    it('does not give up when timeout=0', function (done) {
+    it('should not give up when timeout set to 0', function (done) {
         this.timeout(8000);
 
         const timeoutTime = 0;
-        startUnresponsiveServer(9999);
-        const scheduled = setTimeout(function () {
-            done();
-        }, 6000); // 5000 is default timeout. The client should be still trying
+        let scheduled;
 
-        Client.newHazelcastClient({
-            clusterName: cluster.id,
-            network: {
-                connectionTimeout: timeoutTime
-            }
+        startUnresponsiveServer(9999).then(() => {
+            scheduled = setTimeout(function () {
+                done();
+            }, 6000); // 5000 is default timeout. The client should be still trying
+            return Client.newHazelcastClient({
+                clusterName: cluster.id,
+                network: {
+                    connectionTimeout: timeoutTime
+                }
+            });
         }).then(function (cl) {
             client = cl;
-            return client.getConnectionManager().getOrConnect(new AddressImpl('localhost',9999));
-        }).then(function (value) {
+            return client.getConnectionManager().getOrConnectToAddress(new AddressImpl('localhost', 9999));
+        }).then(function () {
             clearTimeout(scheduled);
             done(new Error('Client should be retrying!'));
         }).catch(function (e) {
@@ -112,7 +119,7 @@ describe('ConnectionManagerTest', function () {
     it('should throw IllegalStateError if there is an incompatible server', async function () {
         client = null;
         const timeoutTime = 100;
-        startUnresponsiveServer(9999);
+        await startUnresponsiveServer(9999);
 
         await expect(Client.newHazelcastClient({
             clusterName: cluster.id,
@@ -131,13 +138,11 @@ describe('ConnectionManagerTest', function () {
     it('should close connection on socket error', async function () {
         client = await Client.newHazelcastClient({ clusterName: cluster.id });
         // we should get existing connection here
-        const conn = await client.getConnectionManager().getOrConnect(new AddressImpl('localhost', 5701));
+        const conn = await client.getConnectionManager().getOrConnectToAddress(new AddressImpl('localhost', 5701));
         expect(conn.isAlive()).to.be.true;
 
         const closeSpy = sinon.spy(conn, 'close');
-        const err = new Error('boom');
-        err.code = 'ECONNRESET';
-        conn.socket.emit('error', err);
+        conn.socket.emit('error', new Error('boom'));
 
         expect(conn.isAlive()).to.be.false;
         expect(closeSpy.calledOnce).to.be.true;

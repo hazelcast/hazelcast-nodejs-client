@@ -17,27 +17,37 @@
 
 import {AddressImpl} from './Address';
 import {UUID} from './UUID';
+import {MemberImpl} from './Member';
 import {MemberVersion} from './MemberVersion';
+import {EndpointQualifier, ProtocolType} from './EndpointQualifier';
 
 /** @internal */
 export class MemberInfo {
 
-    address: AddressImpl;
-    uuid: UUID;
-    liteMember: boolean;
-    attributes: Map<string, string>;
-    version: MemberVersion;
+    readonly address: AddressImpl;
+    readonly uuid: UUID;
+    readonly liteMember: boolean;
+    readonly attributes: Map<string, string>;
+    readonly version: MemberVersion;
+    readonly addressMap: Map<EndpointQualifier, AddressImpl>;
 
     constructor(address: AddressImpl,
                 uuid: UUID,
                 attributes: Map<string, string>,
                 liteMember: boolean,
-                version: MemberVersion) {
+                version: MemberVersion,
+                isAddressMapExists: boolean,
+                addressMap: Map<EndpointQualifier, AddressImpl>) {
         this.address = address;
         this.uuid = uuid;
         this.attributes = attributes;
         this.liteMember = liteMember;
         this.version = version;
+        if (isAddressMapExists) {
+            this.addressMap = addressMap;
+        } else {
+            this.addressMap = new Map();
+        }
     }
 
     equals(other: MemberInfo): boolean {
@@ -56,4 +66,19 @@ export class MemberInfo {
             + ', liteMember: ' + this.liteMember
             + ', memberListJoinVersion' + this.version + ']';
     }
+}
+
+/**
+ * Looks up client public address for the given member.
+ *
+ * @returns found address or `null`
+ * @internal
+ */
+export function lookupPublicAddress(member: MemberInfo | MemberImpl): AddressImpl {
+    for (const [qualifier, address] of member.addressMap.entries()) {
+        if (qualifier.type === ProtocolType.CLIENT && qualifier.identifier === 'public') {
+            return address;
+        }
+    }
+    return null;
 }

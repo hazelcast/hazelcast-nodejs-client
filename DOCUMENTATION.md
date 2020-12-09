@@ -37,6 +37,7 @@
   * [5.5. Enabling Client TLS/SSL](#55-enabling-client-tlsssl)
   * [5.6. Enabling Hazelcast Cloud Discovery](#56-enabling-hazelcast-cloud-discovery)
   * [5.7. Configuring Backup Acknowledgment](#57-configuring-backup-acknowledgment)
+  * [5.8. External Client Public Address Discovery](#58-external-client-public-address-discovery)
 * [6. Client Connection Strategy](#6-client-connection-strategy)
   * [6.1. Configuring Client Connection Retry](#61-configuring-client-connection-retry)
 * [7. Using Node.js Client with Hazelcast IMDG](#7-using-nodejs-client-with-hazelcast-imdg)
@@ -1042,6 +1043,25 @@ You can also fine-tune this feature using entries of the `properties` config opt
 backups, this property specifies how long (in milliseconds) the invocation waits for acks from the backup replicas. If acks are not received from some of the backups, there will not be any rollback on the other successful replicas.
 
 - `hazelcast.client.operation.fail.on.indeterminate.state`: Default value is `false`. When it is `true`, if an operation has sync backups and acks are not received from backup replicas in time, or the member which owns primary replica of the target partition leaves the cluster, then the invocation fails. However, even if the invocation fails, there will not be any rollback on other successful replicas.
+
+## 5.8. External Client Public Address Discovery
+
+When you set up a Hazelcast cluster in the Cloud (AWS, Azure, GCP, Kubernetes) and would like to use it from outside the Cloud network, the client needs to communicate with all cluster members via their public IP addresses. Whenever Hazelcast cluster members are able to resolve their own public external IP addresses, they pass this information to the client. As a result, the client can use public addresses for communication, if it cannot access members via private IPs.
+
+Hazelcast Node.js client has a built-in mechanism to detect such situation. When the client starts, it executes the following steps:
+
+1. Check if private addresses reported by members are the same as defined in the client configuration. If they are the same, no need to use public addresses. If not, then
+2. Check if every member is reachable via public address but not reachable via private address (for the performance reason, only 3 members are checked). If the check succeeds, the client uses public addresses for further communication.
+
+For more details on member-side configuration, refer to the [Discovery SPI section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#discovery-spi) in the Hazelcast IMDG Reference Manual.
+
+You can disable the detection mechanism and specify the client behavior by using the following `properties` config option:
+
+- `hazelcast.discovery.public.ip.enabled`: Default value is `null` (detection enabled). When set to `true`, the client will assume that it needs to use public IP addresses reported by members. When set to `false`, the client will always use private addresses reported by members.
+
+> **NOTE: The detection mechanism is disabled when the client is configured to use [TLS/SSL encryption](#81-tlsssl). In such setup you should explicitly set the `hazelcast.discovery.public.ip.enabled` property.**
+
+> **NOTE: This feature is disabled when the client is configured to use [Hazelcast Cloud Discovery](#56-enabling-hazelcast-cloud-discovery).**
 
 # 6. Client Connection Strategy
 

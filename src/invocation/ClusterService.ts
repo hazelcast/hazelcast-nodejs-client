@@ -17,6 +17,7 @@
 
 import {ClientConnection} from '../network/ClientConnection';
 import {HazelcastClient} from '../HazelcastClient';
+import {ClientConfigImpl} from '../config/Config';
 import {MemberSelector} from '../core/MemberSelector';
 import {
     assertNotNull,
@@ -26,6 +27,7 @@ import {
 import {UuidUtil} from '../util/UuidUtil';
 import {ILogger} from '../logging/ILogger';
 import {ClientConnectionManager} from '../network/ClientConnectionManager';
+import {TranslateAddressProvider} from '../network/TranslateAddressProvider';
 import {
     Cluster,
     MemberImpl,
@@ -62,19 +64,23 @@ const INITIAL_MEMBERS_TIMEOUT_IN_MILLIS = 120 * 1000; // 120 seconds
  */
 export class ClusterService implements Cluster {
 
-    private client: HazelcastClient;
     private memberListSnapshot: MemberListSnapshot = EMPTY_SNAPSHOT;
-    private listeners: Map<string, MembershipListener> = new Map();
-    private logger: ILogger;
-    private initialListFetched = deferredPromise<void>();
-    private connectionManager: ClientConnectionManager;
+    private readonly client: HazelcastClient;
+    private readonly listeners: Map<string, MembershipListener> = new Map();
+    private readonly logger: ILogger;
+    private readonly initialListFetched = deferredPromise<void>();
+    private readonly connectionManager: ClientConnectionManager;
     private readonly labels: Set<string>;
+    private readonly translateToAddressProvider: TranslateAddressProvider;
 
     constructor(client: HazelcastClient) {
         this.client = client;
-        this.labels = new Set(client.getConfig().clientLabels);
-        this.logger = client.getLoggingService().getLogger();
         this.connectionManager = client.getConnectionManager();
+        this.labels = new Set(client.getConfig().clientLabels);
+        const logger = client.getLoggingService().getLogger();
+        this.logger = logger;
+        this.translateToAddressProvider =
+            new TranslateAddressProvider(client.getConfig() as ClientConfigImpl, logger);
     }
 
     /**
@@ -156,7 +162,7 @@ export class ClusterService implements Cluster {
         }
     }
 
-    waitInitialMemberListFetched(): Promise<void> {
+    waitForInitialMemberList(): Promise<void> {
         return timedPromise(this.initialListFetched.promise, INITIAL_MEMBERS_TIMEOUT_IN_MILLIS)
             .catch((error) => {
                 return Promise.reject(new IllegalStateError('Could not get initial member list from the cluster!', error));
@@ -164,7 +170,7 @@ export class ClusterService implements Cluster {
     }
 
     clearMemberListVersion(): void {
-        this.logger.trace('ClusterService', 'Resetting the member list version');
+        this.logger.trace('ClusterService', 'Resetting the member list version.');
         if (this.memberListSnapshot !== EMPTY_SNAPSHOT) {
             this.memberListSnapshot.version = 0;
         }
@@ -172,8 +178,11 @@ export class ClusterService implements Cluster {
 
     handleMembersViewEvent(memberListVersion: number, memberInfos: MemberInfo[]): void {
         if (this.memberListSnapshot === EMPTY_SNAPSHOT) {
-            this.applyInitialState(memberListVersion, memberInfos);
-            this.initialListFetched.resolve();
+            this.applyInitialState(memberListVersion, memberInfos)
+                .then(this.initialListFetched.resolve)
+                .catch((err) => {
+                    this.logger.warn('ClusterService', 'Could not apply initial member list.', err);
+                });
             return;
         }
 
@@ -185,6 +194,10 @@ export class ClusterService implements Cluster {
             const events = this.detectMembershipEvents(prevMembers, currentMembers);
             this.fireEvents(events);
         }
+    }
+
+    translateToPublicAddress(): boolean {
+        return this.translateToAddressProvider.get();
     }
 
     private fireEvents(events: MembershipEvent[]): void {
@@ -203,7 +216,7 @@ export class ClusterService implements Cluster {
         return (listener as InitialMembershipListener).init !== undefined;
     }
 
-    private applyInitialState(memberListVersion: number, memberInfos: MemberInfo[]): void {
+    private applyInitialState(memberListVersion: number, memberInfos: MemberInfo[]): Promise<void> {
         const snapshot = this.createSnapshot(memberListVersion, memberInfos);
         this.memberListSnapshot = snapshot;
         this.logger.info('ClusterService', this.membersString(snapshot));
@@ -214,6 +227,7 @@ export class ClusterService implements Cluster {
                 listener.init(event);
             }
         });
+        return this.translateToAddressProvider.refresh(this.client.getAddressProvider(), memberInfos);
     }
 
     private detectMembershipEvents(prevMembers: MemberImpl[], currentMembers: MemberImpl[]): MembershipEvent[] {
@@ -260,8 +274,8 @@ export class ClusterService implements Cluster {
         const newMemberList = new Array<MemberImpl>(memberInfos.length);
         let index = 0;
         for (const memberInfo of memberInfos) {
-            const member = new MemberImpl(memberInfo.address, memberInfo.uuid, memberInfo.attributes, memberInfo.liteMember,
-                memberInfo.version);
+            const member = new MemberImpl(memberInfo.address, memberInfo.uuid, memberInfo.attributes,
+                memberInfo.liteMember, memberInfo.version, memberInfo.addressMap);
             newMembers.set(memberInfo.uuid.toString(), member);
             newMemberList[index++] = member;
         }

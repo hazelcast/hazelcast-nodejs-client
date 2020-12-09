@@ -28,12 +28,12 @@ describe('HeartbeatFromServerTest', function () {
     let client;
 
     function simulateHeartbeatLost(client, address, timeout) {
-        const connection = client.connectionManager.getConnectionFromAddress(address);
+        const connection = client.getConnectionManager().getConnectionForAddress(address);
         connection.lastReadTimeMillis = connection.getLastReadTimeMillis() - timeout;
     }
 
     async function warmUpConnectionToAddressWithRetry(client, address, retryCount) {
-        const conn = await client.connectionManager.getOrConnect(address);
+        const conn = await client.getConnectionManager().getOrConnectToAddress(address);
         if (conn != null) {
             return conn;
         } else if (conn == null && retryCount > 0) {
@@ -87,7 +87,7 @@ describe('HeartbeatFromServerTest', function () {
                 const remoteAddress = connection.getRemoteAddress();
                 if (remoteAddress.host === member2.host && remoteAddress.port === member2.port) {
                     if (connection.closedReason === 'Heartbeat timed out'
-                        && connection.closedCause instanceof TargetDisconnectedError) {
+                            && connection.closedCause instanceof TargetDisconnectedError) {
                         done();
                     } else {
                         done(new Error('Connection was not closed due to heartbeat timeout. Reason: '
@@ -128,7 +128,7 @@ describe('HeartbeatFromServerTest', function () {
                 const remoteAddress = connection.getRemoteAddress();
                 if (remoteAddress.host === member2.host && remoteAddress.port === member2.port) {
                     if (!(connection.closedReason === 'Heartbeat timed out'
-                        || connection.closedCause instanceof TargetDisconnectedError)) {
+                            || connection.closedCause instanceof TargetDisconnectedError)) {
                         done(new Error('Connection was closed due to heartbeat timeout. Reason: '
                             + connection.closedReason + ', cause: ' + connection.closedCause));
                     }
