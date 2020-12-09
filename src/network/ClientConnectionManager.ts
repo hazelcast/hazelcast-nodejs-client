@@ -154,12 +154,7 @@ export class ClientConnectionManager extends EventEmitter {
         this.alive = true;
 
         this.heartbeatManager.start();
-        return this.connectToCluster()
-            .then(() => {
-                if (this.isSmartRoutingEnabled) {
-                    this.reconnectToMembersTask = scheduleWithRepetition(this.reconnectToMembers.bind(this), 1000, 1000);
-                }
-            });
+        return this.connectToCluster();
     }
 
     connectToAllClusterMembers(): Promise<void> {
@@ -168,7 +163,10 @@ export class ClientConnectionManager extends EventEmitter {
         }
 
         const members = this.client.getClusterService().getMembers();
-        return this.tryConnectToAllClusterMembers(members);
+        return this.tryConnectToAllClusterMembers(members)
+            .then(() => {
+                this.reconnectToMembersTask = scheduleWithRepetition(this.reconnectToMembers.bind(this), 1000, 1000);
+            });
     }
 
     shutdown(): void {

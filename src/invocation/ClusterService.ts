@@ -162,7 +162,7 @@ export class ClusterService implements Cluster {
         }
     }
 
-    waitInitialMemberListFetched(): Promise<void> {
+    waitForInitialMemberList(): Promise<void> {
         return timedPromise(this.initialListFetched.promise, INITIAL_MEMBERS_TIMEOUT_IN_MILLIS)
             .catch((error) => {
                 return Promise.reject(new IllegalStateError('Could not get initial member list from the cluster!', error));
