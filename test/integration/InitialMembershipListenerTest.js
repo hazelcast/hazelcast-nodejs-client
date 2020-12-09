@@ -130,4 +130,9 @@ describe('InitialMembershipListenerTest', function () {
             })
             .catch(done);
     });
+
+    it('loooooooong timeout', function (done) {
+        this.timeout(60000);
+        setTimeout(done, 55000);
+    });
 });

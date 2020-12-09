@@ -466,6 +466,7 @@ export class HazelcastClient {
                 return this.sendStateToCluster();
             })
             .then(() => {
+                logger.info('HazelcastClient', '>>> client started:', this.getName());
                 return this;
             })
             .catch((e) => {
