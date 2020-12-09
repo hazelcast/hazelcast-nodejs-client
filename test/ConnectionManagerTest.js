@@ -138,13 +138,11 @@ describe('ConnectionManagerTest', function () {
     it('should close connection on socket error', async function () {
         client = await Client.newHazelcastClient({ clusterName: cluster.id });
         // we should get existing connection here
-        const conn = await client.getConnectionManager().getOrConnect(new AddressImpl('localhost', 5701));
+        const conn = await client.getConnectionManager().getOrConnectToAddress(new AddressImpl('localhost', 5701));
         expect(conn.isAlive()).to.be.true;
 
         const closeSpy = sinon.spy(conn, 'close');
-        const err = new Error('boom');
-        err.code = 'ECONNRESET';
-        conn.socket.emit('error', err);
+        conn.socket.emit('error', new Error('boom'));
 
         expect(conn.isAlive()).to.be.false;
         expect(closeSpy.calledOnce).to.be.true;
