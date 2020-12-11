@@ -635,7 +635,6 @@ export class ClientConnectionManager extends EventEmitter {
     // This method makes sure that the smart client has connection to all cluster members.
     // This is called periodically.
     private reconnectToMembers(): void {
-        this.logger.info('ConnectionManager', '>>> reconnectToMembers:', this.client.getName());
         if (!this.client.getLifecycleService().isRunning()) {
             return;
         }
