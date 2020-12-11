@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import {HazelcastError} from '../core';
+import {InvalidConfigurationError} from '../core';
 import {TopicOverloadPolicy} from '../proxy';
 import {
     tryGetArray,
@@ -52,8 +52,8 @@ export class ConfigBuilder {
         try {
             this.handleConfig(this.originalConfig);
             return this.effectiveConfig;
-        } catch (e) {
-            throw new HazelcastError('Config validation error: ' + e.message, e);
+        } catch (err) {
+            throw new InvalidConfigurationError('Config validation error: ' + err.message, err);
         }
     }
 

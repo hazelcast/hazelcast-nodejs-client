@@ -24,7 +24,9 @@ import {
 } from './core';
 import {ClientGetDistributedObjectsCodec} from './codec/ClientGetDistributedObjectsCodec';
 import {ClientConfig, ClientConfigImpl} from './config/Config';
+import {ClientFailoverConfig, ClientFailoverConfigImpl} from './config/FailoverConfig';
 import {ConfigBuilder} from './config/ConfigBuilder';
+import {FailoverConfigBuilder} from './config/FailoverConfigBuilder';
 import {ClientConnectionManager} from './network/ClientConnectionManager';
 import {ClusterService} from './invocation/ClusterService';
 import {InvocationService} from './invocation/InvocationService';
@@ -81,6 +83,8 @@ export class HazelcastClient {
     /** @internal */
     private readonly config: ClientConfigImpl;
     /** @internal */
+    private readonly failoverConfig?: ClientFailoverConfigImpl;
+    /** @internal */
     private readonly loggingService: LoggingService;
     /** @internal */
     private readonly serializationService: SerializationService;
@@ -118,8 +122,13 @@ export class HazelcastClient {
     private mapRepairingTask: RepairingTask;
 
     /** @internal */
-    constructor(config: ClientConfigImpl) {
-        this.config = config;
+    constructor(config?: ClientConfigImpl, failoverConfig?: ClientFailoverConfigImpl) {
+        if (config != null) {
+            this.config = config;
+        } else {
+            this.config = failoverConfig.clientConfigs[0];
+        }
+        this.failoverConfig = failoverConfig;
         this.instanceName = config.instanceName || 'hz.client_' + this.id;
         this.loggingService = new LoggingService(this.config.customLogger,
             this.config.properties['hazelcast.logging.level'] as string);
@@ -143,13 +152,30 @@ export class HazelcastClient {
 
     /**
      * Creates a new client object and automatically connects to cluster.
-     * @param config Default client config is used when this parameter is absent.
+     * @param config Client config. Default client config is used when this parameter
+     *               is absent.
      * @returns a new client instance
      */
     static newHazelcastClient(config?: ClientConfig): Promise<HazelcastClient> {
         const configBuilder = new ConfigBuilder(config);
         const effectiveConfig = configBuilder.build();
         const client = new HazelcastClient(effectiveConfig);
+        return client.init();
+    }
+
+    /**
+     * Creates a client with cluster switch capability. Client will try to connect
+     * to alternative clusters according to failover configuration when it disconnects
+     * from a cluster.
+     *
+     * @param config Configuration object describing the failover client configs and try count
+     * @returns a new client instance
+     * @throws InvalidConfigurationError if the provided failover configuration is not valid
+     */
+    static newHazelcastFailoverClient(failoverConfig?: ClientFailoverConfig): Promise<HazelcastClient> {
+        const configBuilder = new FailoverConfigBuilder(failoverConfig);
+        const effectiveConfig = configBuilder.build();
+        const client = new HazelcastClient(null, effectiveConfig);
         return client.init();
     }
 
@@ -290,6 +316,11 @@ export class HazelcastClient {
      */
     getConfig(): ClientConfig {
         return this.config;
+    }
+
+    /** @internal */
+    getFailoverConfig(): ClientFailoverConfig {
+        return this.failoverConfig;
     }
 
     /**

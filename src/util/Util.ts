@@ -49,9 +49,9 @@ export function assertNonNegativeNumber(v: any): void {
 }
 
 /** @internal */
-export function assertPositiveNumber(v: any): void {
-    assert(typeof v === 'number', 'Number value expected.');
-    assert(v > 0, 'Positive value expected.');
+export function assertPositiveNumber(v: any, m?: string): void {
+    assert(typeof v === 'number', m || 'Number value expected.');
+    assert(v > 0, m || 'Positive value expected.');
 }
 
 /** @internal */
