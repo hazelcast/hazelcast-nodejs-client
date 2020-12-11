@@ -39,59 +39,64 @@ describe('InitialMembershipListenerTest', function () {
     });
 
     afterEach(async function () {
-        if (client != null) {
-            await client.shutdown();
-        }
+        await client.shutdown();
         await RC.terminateCluster(cluster.id);
     });
 
-    it('should receive available member when added before client start', function (done) {
+    it('should receive available member when added before client start', async function () {
+        const initTriggered = deferredPromise();
         const config = {
             clusterName: cluster.id,
             membershipListeners: [
                 {
                     init: (event) => {
-                        const members = event.members;
-                        expect(members).to.have.lengthOf(1);
-                        const member = members[0];
-                        expect(member.address.host).to.equal(initialMember.host);
-                        expect(member.address.port).to.equal(initialMember.port);
-                        done();
+                        try {
+                            const members = event.members;
+                            expect(members).to.have.lengthOf(1);
+                            const member = members[0];
+                            expect(member.address.host).to.equal(initialMember.host);
+                            expect(member.address.port).to.equal(initialMember.port);
+                            initTriggered.resolve();
+                        } catch (err) {
+                            initTriggered.reject(err);
+                        }
                     }
                 }
             ]
         };
 
-        Client.newHazelcastClient(config)
-            .then((c) => {
-                client = c;
-            })
-            .catch(done);
+        client = await Client.newHazelcastClient(config);
+
+        await initTriggered.promise;
     });
 
-    it('should receive available member when added after client start', function (done) {
+    it('should receive available member when added after client start', async function () {
+        const initTriggered = deferredPromise();
         const membershipListener = {
             init: (event) => {
-                const members = event.members;
-                expect(members).to.have.lengthOf(1);
-                const member = members[0];
-                expect(member.address.host).to.equal(initialMember.host);
-                expect(member.address.port).to.equal(initialMember.port);
-                done();
+                try {
+                    const members = event.members;
+                    expect(members).to.have.lengthOf(1);
+                    const member = members[0];
+                    expect(member.address.host).to.equal(initialMember.host);
+                    expect(member.address.port).to.equal(initialMember.port);
+                    initTriggered.resolve();
+                } catch (err) {
+                    initTriggered.reject(err);
+                }
             }
         };
 
-        Client.newHazelcastClient({ clusterName: cluster.id })
-            .then((c) => {
-                client = c;
-                client.getClusterService().addMembershipListener(membershipListener);
-            })
-            .catch(done);
+        client = await Client.newHazelcastClient({ clusterName: cluster.id });
+        client.getClusterService().addMembershipListener(membershipListener);
+
+        await initTriggered.promise;
     });
 
-    it('should receive events after initial event', function (done) {
+    it('should receive events after initial event', async function () {
         let newMember;
-        const newMemberResolved = deferredPromise();
+        const newMemberStarted = deferredPromise();
+        const memberAddedTriggered = deferredPromise();
 
         const membershipListener = {
             init: (event) => {
@@ -102,15 +107,16 @@ describe('InitialMembershipListenerTest', function () {
                 expect(member.address.port).to.equal(initialMember.port);
             },
             memberAdded: (event) => {
-                newMemberResolved.promise
+                newMemberStarted.promise
                     .then(() => {
-                        const member = event.member;
-                        expect(member.address.host).to.equal(newMember.host);
-                        expect(member.address.port).to.equal(newMember.port);
-                        done();
-                    })
-                    .catch((e) => {
-                        done(e);
+                        try {
+                            const member = event.member;
+                            expect(member.address.host).to.equal(newMember.host);
+                            expect(member.address.port).to.equal(newMember.port);
+                            memberAddedTriggered.resolve();
+                        } catch (err) {
+                            memberAddedTriggered.reject(err);
+                        }
                     });
             }
         };
@@ -119,15 +125,10 @@ describe('InitialMembershipListenerTest', function () {
             membershipListeners: [membershipListener]
         };
 
-        Client.newHazelcastClient(config)
-            .then((c) => {
-                client = c;
-                return RC.startMember(cluster.id);
-            })
-            .then((m) => {
-                newMember = m;
-                newMemberResolved.resolve();
-            })
-            .catch(done);
+        client = await Client.newHazelcastClient(config);
+        newMember = await RC.startMember(cluster.id);
+        newMemberStarted.resolve();
+
+        await memberAddedTriggered.promise;
     });
 });
