@@ -1007,7 +1007,7 @@ As explained in the [TLS/SSL section](#81-tlsssl), Hazelcast members have key st
 
 ## 5.6. Enabling Hazelcast Cloud Discovery
 
-The purpose of [Hazelcast Cloud](https://cloud.hazelcast.com/) Discovery is to provide the clients to use IP addresses provided by Hazelcast orchestrator. To enable Hazelcast Cloud Discovery, specify a token for the `discoveryToken` option.
+Hazelcast Node.js client can discover and connect to Hazelcast clusters running on [Hazelcast Cloud](https://cloud.hazelcast.com/). For this, provide authentication information as `clusterName` and enable cloud discovery by setting your `discoveryToken` as shown below.
 
 ```javascript
 const cfg = {
@@ -1020,7 +1020,7 @@ const cfg = {
 };
 ```
 
-To be able to connect to the provided IP addresses, you should use secure TLS/SSL connection between the client and members. Therefore, you should set an SSL configuration as described in the previous section.
+If you have enabled encryption for your cluster, you should also enable TLS/SSL configuration for the client to secure communication between your client and cluster members as described in the [TLS/SSL section](#81-tlsssl).
 
 ## 5.7. Configuring Backup Acknowledgment
 
