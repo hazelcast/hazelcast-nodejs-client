@@ -270,7 +270,7 @@ export class ClientConnectionManager extends EventEmitter {
             })
             .then(() => clientConnection.registerResponseCallback(processResponseCallback))
             .then(() => this.authenticateOnCluster(clientConnection))
-            .then(() => connectionResolver.resolve(clientConnection))
+            .then((conn) => connectionResolver.resolve(conn))
             .catch((error) => connectionResolver.reject(error));
 
         return timedPromise(
@@ -310,7 +310,10 @@ export class ClientConnectionManager extends EventEmitter {
             return;
         }
 
-        if (memberUuid != null && this.activeConnections.delete(memberUuid.toString())) {
+        // do the clean up only if connection is active
+        const activeConnection = memberUuid != null ? this.activeConnections.get(memberUuid.toString()) : null;
+        if (connection === activeConnection) {
+            this.activeConnections.delete(memberUuid.toString());
             this.logger.info('ConnectionManager', 'Removed connection to endpoint: '
                 + endpoint + ':' + memberUuid + ', connection: ' + connection);
             if (this.activeConnections.size === 0) {
@@ -625,7 +628,7 @@ export class ClientConnectionManager extends EventEmitter {
         }
     }
 
-    private authenticateOnCluster(connection: ClientConnection): Promise<void> {
+    private authenticateOnCluster(connection: ClientConnection): Promise<ClientConnection> {
         const request = this.encodeAuthenticationRequest();
         const invocation = new Invocation(this.client, request);
         invocation.connection = connection;
@@ -638,7 +641,7 @@ export class ClientConnectionManager extends EventEmitter {
         }).then((responseMessage) => {
             const response = ClientAuthenticationCodec.decodeResponse(responseMessage);
             if (response.status === AuthenticationStatus.AUTHENTICATED) {
-                this.handleSuccessfulAuth(connection, response);
+                return this.onAuthenticated(connection, response);
             } else {
                 let error: Error;
                 switch (response.status) {
@@ -663,11 +666,19 @@ export class ClientConnectionManager extends EventEmitter {
         });
     }
 
-    private handleSuccessfulAuth(connection: ClientConnection, response: ClientAuthenticationResponseParams): void {
+    private onAuthenticated(connection: ClientConnection,
+                            response: ClientAuthenticationResponseParams): ClientConnection {
         this.checkPartitionCount(response.partitionCount);
         connection.setConnectedServerVersion(response.serverHazelcastVersion);
         connection.setRemoteAddress(response.address);
         connection.setRemoteUuid(response.memberUuid);
+
+        const existingConnection = this.getConnection(response.memberUuid);
+        if (existingConnection != null) {
+            connection.close('Duplicate connection to same member with uuid: '
+                + response.memberUuid.toString(), null);
+            return existingConnection;
+        }
 
         const newClusterId = response.clusterId;
 
@@ -704,6 +715,7 @@ export class ClientConnectionManager extends EventEmitter {
         if (!connection.isAlive()) {
             this.onConnectionClose(connection);
         }
+        return connection;
     }
 
     private encodeAuthenticationRequest(): ClientMessage {
