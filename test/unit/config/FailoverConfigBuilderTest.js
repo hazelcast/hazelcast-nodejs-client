@@ -31,9 +31,9 @@ describe('FailoverConfigBuilderTest', function () {
         expect(() => builder.build()).to.throw(HazelcastError);
     });
 
-    it('should throw for zero tryCount', function () {
+    it('should throw for negative tryCount', function () {
         const builder = new FailoverConfigBuilder({
-            tryCount: 0,
+            tryCount: -1,
             clientConfigs: [{}, {}]
         });
 

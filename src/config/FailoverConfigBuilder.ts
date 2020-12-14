@@ -19,6 +19,7 @@ import * as assert from 'assert';
 import {InvalidConfigurationError} from '../core';
 import {
     assertPositiveNumber,
+    assertNonNegativeNumber,
     tryGetArray,
     tryGetNumber
 } from '../util/Util';
@@ -54,7 +55,7 @@ export class FailoverConfigBuilder {
             const value = jsonObject[key];
             if (key === 'tryCount') {
                 const tryCount = tryGetNumber(value);
-                assertPositiveNumber(tryCount, 'tryCount must be a positive integer.');
+                assertNonNegativeNumber(tryCount, 'tryCount must be a non-negative integer.');
                 this.effectiveConfig.tryCount = tryCount;
             } else if (key === 'clientConfigs') {
                 const configs = tryGetArray(value);

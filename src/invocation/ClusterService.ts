@@ -64,14 +64,14 @@ const INITIAL_MEMBERS_TIMEOUT_IN_MILLIS = 120 * 1000; // 120 seconds
  */
 export class ClusterService implements Cluster {
 
-    private memberListSnapshot: MemberListSnapshot = EMPTY_SNAPSHOT;
     private readonly client: HazelcastClient;
     private readonly listeners: Map<string, MembershipListener> = new Map();
     private readonly logger: ILogger;
-    private readonly initialListFetched = deferredPromise<void>();
     private readonly connectionManager: ClientConnectionManager;
     private readonly labels: Set<string>;
     private readonly translateToAddressProvider: TranslateAddressProvider;
+    private initialListFetched = deferredPromise<void>();
+    private memberListSnapshot = EMPTY_SNAPSHOT;
 
     constructor(client: HazelcastClient) {
         this.client = client;
@@ -162,6 +162,12 @@ export class ClusterService implements Cluster {
         }
     }
 
+    reset(): void {
+        this.logger.debug('ClusterService', 'Resetting the cluster snapshot.');
+        this.initialListFetched = deferredPromise<void>();
+        this.memberListSnapshot = EMPTY_SNAPSHOT;
+    }
+
     waitForInitialMemberList(): Promise<void> {
         return timedPromise(this.initialListFetched.promise, INITIAL_MEMBERS_TIMEOUT_IN_MILLIS)
             .catch((error) => {
@@ -227,7 +233,9 @@ export class ClusterService implements Cluster {
                 listener.init(event);
             }
         });
-        return this.translateToAddressProvider.refresh(this.client.getAddressProvider(), memberInfos);
+        const addressProvider =
+            this.client.getClusterFailoverService().current().addressProvider;
+        return this.translateToAddressProvider.refresh(addressProvider, memberInfos);
     }
 
     private detectMembershipEvents(prevMembers: MemberImpl[], currentMembers: MemberImpl[]): MembershipEvent[] {
@@ -295,5 +303,4 @@ export class ClusterService implements Cluster {
     private getMemberList(): MemberImpl[] {
         return this.memberListSnapshot.memberList;
     }
-
 }

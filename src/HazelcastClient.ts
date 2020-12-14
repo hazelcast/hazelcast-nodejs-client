@@ -50,12 +50,12 @@ import {
 } from './proxy';
 import {ProxyManager, NAMESPACE_SEPARATOR} from './proxy/ProxyManager';
 import {CPSubsystem, CPSubsystemImpl} from './CPSubsystem';
+import {
+    ClusterFailoverService,
+    ClusterDiscoveryServiceBuilder
+} from './ClusterFailoverService';
 import {LockReferenceIdGenerator} from './proxy/LockReferenceIdGenerator';
 import {SerializationService, SerializationServiceV1} from './serialization/SerializationService';
-import {AddressProvider} from './connection/AddressProvider';
-import {HazelcastCloudAddressProvider} from './discovery/HazelcastCloudAddressProvider';
-import {DefaultAddressProvider} from './connection/DefaultAddressProvider';
-import {HazelcastCloudDiscovery} from './discovery/HazelcastCloudDiscovery';
 import {Statistics} from './statistics/Statistics';
 import {NearCacheManager} from './nearcache/NearCacheManager';
 import {LoadBalancerType} from './config/LoadBalancerConfig';
@@ -85,6 +85,8 @@ export class HazelcastClient {
     /** @internal */
     private readonly failoverConfig?: ClientFailoverConfigImpl;
     /** @internal */
+    private readonly clusterFailoverService: ClusterFailoverService;
+    /** @internal */
     private readonly loggingService: LoggingService;
     /** @internal */
     private readonly serializationService: SerializationService;
@@ -113,8 +115,6 @@ export class HazelcastClient {
     /** @internal */
     private readonly statistics: Statistics;
     /** @internal */
-    private readonly addressProvider: AddressProvider;
-    /** @internal */
     private readonly loadBalancer: LoadBalancer;
     /** @internal */
     private readonly clusterViewListenerService: ClusterViewListenerService;
@@ -137,7 +137,6 @@ export class HazelcastClient {
         this.serializationService = new SerializationServiceV1(this.config.serialization);
         this.nearCacheManager = new NearCacheManager(this);
         this.partitionService = new PartitionServiceImpl(this);
-        this.addressProvider = this.createAddressProvider();
         this.connectionManager = new ClientConnectionManager(this);
         this.invocationService = new InvocationService(this);
         this.proxyManager = new ProxyManager(this);
@@ -148,6 +147,7 @@ export class HazelcastClient {
         this.errorFactory = new ClientErrorFactory();
         this.statistics = new Statistics(this);
         this.clusterViewListenerService = new ClusterViewListenerService(this);
+        this.clusterFailoverService = this.initClusterDiscoveryService();
     }
 
     /**
@@ -421,13 +421,13 @@ export class HazelcastClient {
     }
 
     /** @internal */
-    getAddressProvider(): AddressProvider {
-        return this.addressProvider;
+    getLoadBalancer(): LoadBalancer {
+        return this.loadBalancer;
     }
 
     /** @internal */
-    getLoadBalancer(): LoadBalancer {
-        return this.loadBalancer;
+    getClusterFailoverService(): ClusterFailoverService {
+        return this.clusterFailoverService;
     }
 
     /** @internal */
@@ -463,6 +463,22 @@ export class HazelcastClient {
     /** @internal */
     sendStateToCluster(): Promise<void> {
         return this.proxyManager.createDistributedObjectsOnCluster();
+    }
+
+    /** @internal */
+    onClusterChange(): void {
+        this.getLoggingService().getLogger()
+            .info('HazelcastClient', 'Resetting local state of the client, because of a cluster change.');
+        // clear near caches
+        this.nearCacheManager.clearAllNearCaches();
+        // clear the member lists
+        this.clusterService.reset();
+        // clear partition service
+        this.partitionService.reset();
+        // close all the connections, consequently waiting invocations get TargetDisconnectedError;
+        // non retryable client messages will fail immediately;
+        // retryable client messages will be retried, but they will wait for new partition table
+        this.connectionManager.reset();
     }
 
     /** @internal */
@@ -526,41 +542,18 @@ export class HazelcastClient {
     }
 
     /** @internal */
-    private createAddressProvider(): AddressProvider {
-        const networkConfig = this.config.network;
-
-        const addressListProvided = networkConfig.clusterMembers.length !== 0;
-        const hazelcastCloudToken = networkConfig.hazelcastCloud.discoveryToken;
-        if (addressListProvided && hazelcastCloudToken != null) {
-            throw new IllegalStateError('Only one discovery method can be enabled at a time. '
-                + 'Cluster members given explicitly: ' + addressListProvided
-                + ', hazelcastCloud enabled.');
+    private initClusterDiscoveryService(): ClusterFailoverService {
+        let tryCount: number;
+        let clientConfigs: ClientConfigImpl[];
+        if (this.failoverConfig == null) {
+            tryCount = 0;
+            clientConfigs = [this.config];
+        } else {
+            tryCount = this.failoverConfig.tryCount;
+            clientConfigs = this.failoverConfig.clientConfigs;
         }
-
-        const cloudAddressProvider = this.initCloudAddressProvider();
-        if (cloudAddressProvider != null) {
-            return cloudAddressProvider;
-        }
-
-        return new DefaultAddressProvider(networkConfig);
-    }
-
-    /** @internal */
-    private initCloudAddressProvider(): HazelcastCloudAddressProvider {
-        const cloudConfig = this.getConfig().network.hazelcastCloud;
-        const discoveryToken = cloudConfig.discoveryToken;
-        if (discoveryToken != null) {
-            const urlEndpoint = HazelcastCloudDiscovery.createUrlEndpoint(this.getConfig().properties, discoveryToken);
-            return new HazelcastCloudAddressProvider(urlEndpoint, this.getConnectionTimeoutMillis(),
-                this.loggingService.getLogger());
-        }
-        return null;
-    }
-
-    /** @internal */
-    private getConnectionTimeoutMillis(): number {
-        const networkConfig = this.getConfig().network;
-        const connTimeout = networkConfig.connectionTimeout;
-        return connTimeout === 0 ? Number.MAX_VALUE : connTimeout;
+        const builder = new ClusterDiscoveryServiceBuilder(
+            tryCount, clientConfigs, this.lifecycleService, this.loggingService);
+        return builder.build();
     }
 }
