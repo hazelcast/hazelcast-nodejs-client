@@ -30,7 +30,6 @@ describe('ReplicatedMapProxyTest', function () {
     const ONE_HOUR = 3600000;
 
     before(function () {
-        this.timeout(10000);
         const config = fs.readFileSync(path.join(__dirname, 'hazelcast_replicatedmap.xml'), 'utf8');
         return RC.createCluster(null, config).then(function (response) {
             cluster = response;
@@ -92,7 +91,7 @@ describe('ReplicatedMapProxyTest', function () {
             .then(function (val) {
                 expect(val).to.be.null;
             });
-    }).timeout(5000);
+    });
 
     it('should contain the key', function () {
         return rm.put('key', 'value', ONE_HOUR)

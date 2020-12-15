@@ -82,8 +82,6 @@ describe('ConnectionManagerTest', function () {
     });
 
     it('does not give up when timeout=0', function (done) {
-        this.timeout(8000);
-
         const timeoutTime = 0;
         startUnresponsiveServer(9999);
         const scheduled = setTimeout(function () {

@@ -67,7 +67,6 @@ describe('MapLockTest', function () {
     });
 
     it('should acquire the lock when key owner terminates', function (done) {
-        this.timeout(30000);
         let clientTwo;
         let keyOwner;
         let key;
@@ -78,6 +77,7 @@ describe('MapLockTest', function () {
                 ['hazelcast.client.invocation.timeout.millis']: INVOCATION_TIMEOUT_FOR_TWO
             }
         };
+
         RC.startMember(cluster.id).then(function (m) {
                 keyOwner = m;
                 return Client.newHazelcastClient(clientTwoCfg);

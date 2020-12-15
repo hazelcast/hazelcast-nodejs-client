@@ -25,9 +25,8 @@ const Util = require('../Util');
 
 describe('FlakeIdGeneratorOutOfRangeTest', function () {
 
-    this.timeout(30000);
-
-    let cluster, client;
+    let cluster;
+    let client;
     let flakeIdGenerator;
 
     afterEach(async function () {

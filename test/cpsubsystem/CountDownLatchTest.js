@@ -29,11 +29,8 @@ const {
 
 describe('CountDownLatchTest', function () {
 
-    this.timeout(30000);
-
     let cluster;
     let client;
-
     let groupSeq = 0;
 
     // we use a separate latch (and group) per each test to enforce test isolation

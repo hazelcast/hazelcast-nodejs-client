@@ -50,7 +50,6 @@ describe('MapProxyTest', function () {
             let map;
 
             before(function () {
-                this.timeout(32000);
                 return createController(nearCacheEnabled).then(function (res) {
                     cluster = res;
                     return RC.startMember(cluster.id);

@@ -26,8 +26,6 @@ const { Client, ConsistencyLostError } = require('../../');
 
 describe('PNCounterConsistencyTest', function () {
 
-    this.timeout(10000);
-
     let cluster;
     let client;
 

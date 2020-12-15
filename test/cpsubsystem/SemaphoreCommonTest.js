@@ -28,8 +28,6 @@ const {
 
 describe('SemaphoreCommonTest', function () {
 
-    this.timeout(30000);
-
     let cluster;
     let client;
     const testTypes = ['sessionless', 'sessionaware'];

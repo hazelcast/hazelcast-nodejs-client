@@ -27,8 +27,6 @@ const { deferredPromise } = require('../../lib/util/Util');
 
 describe('InitialMembershipListenerTest', function () {
 
-    this.timeout(32000);
-
     let cluster;
     let initialMember;
     let client;

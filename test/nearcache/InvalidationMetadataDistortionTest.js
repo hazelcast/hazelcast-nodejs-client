@@ -76,7 +76,6 @@ describe('Invalidation metadata distortion', function () {
 
 
     it('lost invalidation', function (done) {
-        this.timeout(13000);
         let stopTest = false;
         let map;
         const populatePromises = [];

@@ -32,7 +32,6 @@ describe('QueueProxyTest', function () {
     let queue;
 
     before(function () {
-        this.timeout(10000);
         return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_queue.xml', 'utf8'))
             .then(function (response) {
                 cluster = response;

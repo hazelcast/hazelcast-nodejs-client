@@ -30,7 +30,6 @@ describe('RingbufferProxyTest', function () {
     let limitedCapacityRb;
 
     before(async function () {
-        this.timeout(10000);
         const config = fs.readFileSync(__dirname + '/hazelcast_ringbuffer.xml', 'utf8');
         cluster = await RC.createCluster(null, config);
         await RC.startMember(cluster.id);

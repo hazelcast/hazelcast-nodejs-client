@@ -23,8 +23,8 @@ const { MemberEvent } = require('../lib/core');
 
 describe('MembershipListenerTest', function () {
 
-    this.timeout(20000);
-    let cluster, client;
+    let cluster;
+    let client;
 
     beforeEach(function () {
         return RC.createCluster(null, null).then(function (res) {
