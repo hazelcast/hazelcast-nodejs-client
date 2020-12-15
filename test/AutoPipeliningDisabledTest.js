@@ -26,7 +26,6 @@ describe('AutoPipeliningDisabledTest', function () {
     let map;
 
     before(async function () {
-        this.timeout(32000);
         cluster = await RC.createCluster(null, null);
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({

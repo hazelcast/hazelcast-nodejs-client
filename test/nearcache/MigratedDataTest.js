@@ -24,10 +24,9 @@ const { deferredPromise } = require('../../lib/util/Util');
 
 describe('MigratedDataTest', function () {
 
-    this.timeout(20000);
-
     let cluster;
-    let member1, member2;
+    let member1;
+    let member2;
     let client;
 
     const mapName = 'ncmap';

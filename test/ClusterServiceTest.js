@@ -25,8 +25,6 @@ const { Client } = require('../.');
 
 describe('ClusterServiceTest', function () {
 
-    this.timeout(25000);
-
     let cluster;
     let member1;
     let client;

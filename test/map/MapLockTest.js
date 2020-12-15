@@ -67,7 +67,6 @@ describe('MapLockTest', function () {
     });
 
     it('should acquire the lock when key owner terminates', function (done) {
-        this.timeout(30000);
         let clientTwo;
         let keyOwner;
         let key;

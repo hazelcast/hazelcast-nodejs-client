@@ -27,7 +27,6 @@ describe('MultiMapProxyTest', function () {
     let map;
 
     before(async function () {
-        this.timeout(10000);
         cluster = await RC.createCluster();
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({

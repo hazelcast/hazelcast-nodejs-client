@@ -138,15 +138,14 @@ describe('BinaryCompatibilityTest', function () {
             versions.forEach(function (version) {
                 isBigEndianValues.forEach(function (isBigEndian) {
                     it(varName + '-' + convertEndiannesToByteOrder(isBigEndian) + '-' + version, function () {
-                        this.timeout(10000);
                         const key = createObjectKey(varName, version, isBigEndian);
                         const service = createSerializationService(isBigEndian, 'integer');
                         const deserialized = service.toObject(dataMap[key]);
                         expectAlmostEqual(deserialized, object);
                     });
+
                     if (!ReferenceObjects.skipOnSerialize[varName]) {
                         it(varName + '-' + convertEndiannesToByteOrder(isBigEndian) + '-' + version + ' serialize deserialize', function () {
-                            this.timeout(10000);
                             const service = createSerializationService(isBigEndian, stripArticle(varName).toLowerCase());
                             const data = service.toData(object);
                             const deserialized = service.toObject(data);

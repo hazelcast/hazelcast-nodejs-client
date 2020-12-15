@@ -25,7 +25,6 @@ const { ReliableTopicMessage } = require('../../lib/proxy/topic/ReliableTopicMes
 
 describe('ReliableTopicTest', function () {
 
-    this.timeout(40000);
     let cluster;
     let clientOne;
     let clientTwo;
@@ -57,7 +56,6 @@ describe('ReliableTopicTest', function () {
     }
 
     before(async function () {
-        this.timeout(40000);
         const memberConfig = fs.readFileSync(__dirname + '/hazelcast_topic.xml', 'utf8');
         cluster = await RC.createCluster(null, memberConfig);
         await RC.startMember(cluster.id);

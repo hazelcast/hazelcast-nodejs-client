@@ -32,7 +32,6 @@ describe('QueueProxyTest', function () {
     let queue;
 
     before(async function () {
-        this.timeout(10000);
         cluster = await RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_queue.xml', 'utf8'));
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({ clusterName: cluster.id });
