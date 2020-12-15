@@ -51,7 +51,6 @@ describe('MapPartitionAwareTest', function () {
 
     before(async function () {
         expect(memberCount, 'This test should have at least 2 members.').to.be.at.least(2);
-        this.timeout(30000);
         cluster = await RC.createCluster(null, null);
         for (let i = 0; i < memberCount; i++) {
             members.push(await RC.startMember(cluster.id));
@@ -74,7 +73,6 @@ describe('MapPartitionAwareTest', function () {
     });
 
     it('put', async function () {
-        this.timeout(15000);
         await fillMap(map, numOfEntries);
         const stats = await Promise.all(members.map(async function (member, index) {
             return RC.executeOnController(cluster.id, getLocalMapStats(index), 1);

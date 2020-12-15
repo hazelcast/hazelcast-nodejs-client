@@ -22,8 +22,9 @@ const { deferredPromise } = require('../lib/util/Util');
 const { MemberEvent } = require('../lib/core');
 
 describe('MembershipListenerTest', function () {
-    this.timeout(20000);
-    let cluster, client;
+
+    let cluster;
+    let client;
 
     beforeEach(async function () {
         cluster = await RC.createCluster(null, null);

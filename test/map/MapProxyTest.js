@@ -46,11 +46,11 @@ describe('MapProxyTest', function () {
     [false, true].forEach(function (nearCacheEnabled) {
         describe('Near Cache: ' + nearCacheEnabled, function () {
 
-            let cluster, client;
+            let cluster;
+            let client;
             let map;
 
             before(async function () {
-                this.timeout(32000);
                 cluster = await createController(nearCacheEnabled);
                 await RC.startMember(cluster.id);
                 client = await createClient(nearCacheEnabled, cluster.id);

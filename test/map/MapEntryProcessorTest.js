@@ -59,7 +59,6 @@ describe('Entry Processor', function () {
     });
 
     it('executeOnEntries should modify entries', async function () {
-        this.timeout(4000);
         await map.executeOnEntries(new IdentifiedEntryProcessor('processed'));
         const entries = await map.entrySet();
         expect(entries.every(function (entry) {
@@ -68,7 +67,6 @@ describe('Entry Processor', function () {
     });
 
     it('executeOnEntries should return modified entries', async function () {
-        this.timeout(4000);
         const entries = await map.executeOnEntries(new IdentifiedEntryProcessor('processed'));
         expect(entries).to.have.lengthOf(MAP_SIZE);
         expect(entries.every(function (entry) {
@@ -77,15 +75,14 @@ describe('Entry Processor', function () {
     });
 
     it('executeOnEntries with predicate should modify entries', async function () {
-        this.timeout(4000);
         await map.executeOnEntries(new IdentifiedEntryProcessor('processed'), Predicates.regex('this', '^[01]$'));
         const entries = await map.getAll(["0", "1", "2"]);
         expect(entries).to.deep.have.members([['0', 'processed'], ['1', 'processed'], ['2', '2']]);
     });
 
     it('executeOnEntries with predicate should return modified entries', async function () {
-        this.timeout(4000);
-        const entries = await map.executeOnEntries(new IdentifiedEntryProcessor('processed'), Predicates.regex('this', '^[01]$'));
+        const entries = await map.executeOnEntries(new IdentifiedEntryProcessor('processed'),
+            Predicates.regex('this', '^[01]$'));
         expect(entries).to.have.lengthOf(2);
         expect(entries.every(function (entry) {
             return entry[1] == 'processed';
@@ -93,35 +90,29 @@ describe('Entry Processor', function () {
     });
 
     it('executeOnKey should return modified value', async function () {
-        this.timeout(4000);
         const retVal = await map.executeOnKey('4', new IdentifiedEntryProcessor('processed'));
         expect(retVal).to.equal('processed');
     });
 
     it('executeOnKey should modify the value', async function () {
-        this.timeout(4000);
         await map.executeOnKey('4', new IdentifiedEntryProcessor('processed'));
         const value = await map.get('4');
         expect(value).to.equal('processed');
     });
 
     it('executeOnKeys should return modified entries', async function () {
-        this.timeout(4000);
         const entries = await map.executeOnKeys(['4', '5'], new IdentifiedEntryProcessor('processed'));
         expect(entries).to.deep.have.members([['4', 'processed'], ['5', 'processed']]);
     });
 
     it('executeOnKeys should modify the entries', async function () {
-        this.timeout(4000);
         await map.executeOnKeys(['4', '5'], new IdentifiedEntryProcessor('processed'));
         const entries = await map.getAll(['4', '5']);
         expect(entries).to.deep.have.members([['4', 'processed'], ['5', 'processed']]);
     });
 
     it('executeOnKeys with empty array should return empty array', async function () {
-        this.timeout(4000);
         const entries = await map.executeOnKeys([], new IdentifiedEntryProcessor('processed'));
         expect(entries).to.have.lengthOf(0);
     });
-
 });

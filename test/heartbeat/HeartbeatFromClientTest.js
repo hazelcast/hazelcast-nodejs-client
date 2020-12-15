@@ -23,7 +23,6 @@ const { Client } = require('../../');
 
 describe('HeartbeatFromClientTest', function () {
 
-    this.timeout(30000);
     let cluster;
 
     beforeEach(async function () {

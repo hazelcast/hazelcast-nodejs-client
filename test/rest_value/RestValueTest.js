@@ -31,7 +31,6 @@ describe('RestValueTest', function () {
     let member;
 
     before(async function () {
-        this.timeout(32000);
         cluster = await RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_rest.xml', 'utf8'));
         member = await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({ clusterName: cluster.id });
