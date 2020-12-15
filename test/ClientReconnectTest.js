@@ -21,8 +21,6 @@ const { Client } = require('../.');
 
 describe('ClientReconnectTest', function () {
 
-    this.timeout(10000);
-
     let cluster;
     let client;
 

@@ -26,8 +26,6 @@ const { markEnterprise } = require('../Util');
 
 describe('ClientSSLTest', function () {
 
-    this.timeout(20000);
-
     let cluster;
     let client;
     let serverConfig;

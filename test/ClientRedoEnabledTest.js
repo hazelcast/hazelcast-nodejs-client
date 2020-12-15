@@ -28,8 +28,6 @@ const {
 
 describe('ClientRedoEnabledTest', function () {
 
-    this.timeout(10000);
-
     let cluster;
     let client;
 

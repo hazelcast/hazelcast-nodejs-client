@@ -87,8 +87,6 @@ describe('ConnectionManagerTest', function () {
     });
 
     it('should not give up when timeout set to 0', function (done) {
-        this.timeout(8000);
-
         const timeoutTime = 0;
         let scheduled;
 

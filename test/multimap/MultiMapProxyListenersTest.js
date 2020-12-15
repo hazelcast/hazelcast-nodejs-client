@@ -22,13 +22,11 @@ const Util = require('./../Util');
 
 describe("MultiMap Proxy Listener", function () {
 
-    this.timeout(10000);
     let cluster;
     let client;
     let map;
 
     before(async function () {
-        this.timeout(10000);
         cluster = await RC.createCluster();
         await RC.startMember(cluster.id);
         client = await HazelcastClient.newHazelcastClient({ clusterName: cluster.id });
@@ -160,7 +158,6 @@ describe("MultiMap Proxy Listener", function () {
     // Other
 
     it("listens for clear", function (done) {
-        this.timeout(10000);
         const listener = {
             mapCleared: function (mapEvent) {
                 try {
@@ -171,7 +168,6 @@ describe("MultiMap Proxy Listener", function () {
                 } catch (err) {
                     done(err);
                 }
-
             }
         };
 

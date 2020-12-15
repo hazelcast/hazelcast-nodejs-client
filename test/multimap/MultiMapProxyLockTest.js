@@ -29,7 +29,6 @@ describe('MultiMapProxyLockTest', function () {
     let mapTwo;
 
     before(async function () {
-        this.timeout(10000);
         cluster = await RC.createCluster();
         await RC.startMember(cluster.id);
         const cfg = { clusterName: cluster.id };
@@ -54,7 +53,6 @@ describe('MultiMapProxyLockTest', function () {
 
 
     it('locks and unlocks', async function () {
-        this.timeout(10000);
         const startTime = Date.now();
         await mapOne.put(1, 2);
         await mapOne.lock(1);
@@ -67,7 +65,6 @@ describe('MultiMapProxyLockTest', function () {
     });
 
     it('unlocks after lease expired', async function () {
-        this.timeout(10000);
         const startTime = Date.now();
         await mapOne.lock(1, 1000);
         await mapTwo.lock(1);
@@ -76,14 +73,12 @@ describe('MultiMapProxyLockTest', function () {
     });
 
     it('gives up attempt to lock after timeout is exceeded', async function () {
-        this.timeout(10000);
         await mapOne.lock(1);
         const acquired = await mapTwo.tryLock(1, 1000);
         expect(acquired).to.be.false;
     });
 
     it('acquires lock before timeout is exceeded', async function () {
-        this.timeout(10000);
         const startTime = Date.now();
         await mapOne.lock(1, 1000);
         const acquired = await mapTwo.tryLock(1, 2000);
@@ -93,7 +88,6 @@ describe('MultiMapProxyLockTest', function () {
     });
 
     it('acquires the lock before timeout and unlocks after lease expired', async function () {
-        this.timeout(10000);
         const startTime = Date.now();
         await mapOne.lock(1, 1000);
         await mapTwo.tryLock(1, 2000, 1000);

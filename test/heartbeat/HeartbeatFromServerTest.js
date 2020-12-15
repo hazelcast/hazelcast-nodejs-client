@@ -23,7 +23,6 @@ const { AddressImpl, TargetDisconnectedError } = require('../../lib/core');
 
 describe('HeartbeatFromServerTest', function () {
 
-    this.timeout(50000);
     let cluster;
     let client;
 

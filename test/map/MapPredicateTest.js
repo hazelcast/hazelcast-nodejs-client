@@ -39,7 +39,6 @@ describe('MapPredicateTest', function () {
     }
 
     before(async function () {
-        this.timeout(32000);
         cluster = await RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_identifiedfactory.xml', 'utf8'));
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({

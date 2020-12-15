@@ -44,8 +44,6 @@ describe('LostConnectionTest', function () {
     });
 
     it('M2 starts, M1 goes down, client connects to M2', function (done) {
-        this.timeout(32000);
-
         let newMember;
         const membershipListener = {
             memberAdded: () => {

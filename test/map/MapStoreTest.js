@@ -30,7 +30,6 @@ describe('MapStoreTest', function () {
     let map;
 
     before(async function () {
-        this.timeout(32000);
         cluster = await RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_mapstore.xml', 'utf8'));
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({ clusterName: cluster.id });

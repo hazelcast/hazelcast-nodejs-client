@@ -22,7 +22,6 @@ const Util = require('./Util');
 
 describe('ListenersOnReconnectTest', function () {
 
-    this.timeout(40000);
     let client;
     let cluster;
     let map;

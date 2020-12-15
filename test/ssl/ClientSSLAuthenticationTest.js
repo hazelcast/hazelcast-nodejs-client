@@ -104,8 +104,6 @@ describe('ClientSSLAuthenticationTest', function () {
 
         describe(title, function () {
 
-            this.timeout(10000);
-
             afterEach(async function () {
                 await RC.terminateCluster(cluster.id);
             });

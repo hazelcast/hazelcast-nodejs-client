@@ -27,7 +27,6 @@ describe('SetProxyTest', function () {
     let setInstance;
 
     before(async function () {
-        this.timeout(10000);
         cluster = await RC.createCluster();
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({ clusterName: cluster.id });
@@ -120,7 +119,6 @@ describe('SetProxyTest', function () {
     });
 
     it('listens for added entry', function (done) {
-        this.timeout(5000);
         setInstance.addItemListener({
             itemAdded: function (itemEvent) {
                 expect(itemEvent.name).to.be.equal('test');
@@ -137,7 +135,6 @@ describe('SetProxyTest', function () {
     });
 
     it('listens for added and removed entry', function (done) {
-        this.timeout(5000);
         setInstance.addItemListener({
             itemAdded: function (itemEvent) {
                 expect(itemEvent.name).to.be.equal('test');
@@ -162,7 +159,6 @@ describe('SetProxyTest', function () {
     });
 
     it('listens for removed entry', function (done) {
-        this.timeout(5000);
         setInstance.addItemListener({
             itemRemoved: function (itemEvent) {
                 expect(itemEvent.name).to.be.equal('test');
@@ -181,7 +177,6 @@ describe('SetProxyTest', function () {
     });
 
     it('remove entry listener', async function () {
-        this.timeout(5000);
         const registrationId = await setInstance.addItemListener({
             itemRemoved: function (itemEvent) {
                 expect(itemEvent.name).to.be.equal('test');

@@ -55,9 +55,8 @@ describe('NearCacheSimpleInvalidationTest', function () {
             });
 
             it('client observes outside invalidations', async function () {
-                this.timeout(10000);
                 const entryCount = 1000;
-                let map = await client.getMap(mapName);
+                const map = await client.getMap(mapName);
                 for (let i = 0; i < entryCount; i++) {
                     await map.get('' + i);
                 }

@@ -25,8 +25,6 @@ const { Client } = require('../../');
 
 describe('SessionlessSemaphoreTest', function () {
 
-    this.timeout(30000);
-
     let cluster;
     let client;
     let groupSeq = 0;
