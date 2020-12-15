@@ -23,7 +23,6 @@ const { deferredPromise } = require('../../lib/util/Util');
 const Util = require('../Util');
 
 describe('LostInvalidationTest', function () {
-    this.timeout(30000);
 
     let cluster;
     let client;

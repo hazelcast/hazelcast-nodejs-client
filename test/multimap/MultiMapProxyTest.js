@@ -27,7 +27,6 @@ describe('MultiMapProxyTest', function () {
     let map;
 
     before(function () {
-        this.timeout(10000);
         return RC.createCluster().then(function (response) {
             cluster = response;
             return RC.startMember(cluster.id);

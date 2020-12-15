@@ -81,7 +81,6 @@ describe('NearCachedMapStress', function () {
     }
 
     it('stress test with put, get and remove', function (done) {
-        this.timeout(120000);
         let map;
         client1.getMap(mapName).then(function (mp) {
             map = mp;

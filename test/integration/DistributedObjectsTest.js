@@ -27,8 +27,8 @@ const Util = require('../Util');
 
 describe('DistributedObjectsTest', function () {
 
-    this.timeout(32000);
-    let cluster, client;
+    let cluster;
+    let client;
 
     const toNamespace = (distributedObjects) => {
         return distributedObjects.map((distObj) => distObj.getServiceName() + distObj.getName());

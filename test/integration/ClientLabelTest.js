@@ -22,8 +22,8 @@ const RC = require('../RC');
 
 describe('ClientLabelTest', function () {
 
-    this.timeout(32000);
-    let cluster, client;
+    let cluster;
+    let client;
 
     before(async function () {
         cluster = await RC.createCluster(null, null);

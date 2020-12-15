@@ -31,7 +31,6 @@ describe('RestValueTest', function () {
     let member;
 
     before(function () {
-        this.timeout(32000);
         return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_rest.xml', 'utf8'))
             .then(c => {
                 cluster = c;

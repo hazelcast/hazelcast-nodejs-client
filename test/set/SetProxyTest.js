@@ -27,7 +27,6 @@ describe('SetProxyTest', function () {
     let setInstance;
 
     before(function () {
-        this.timeout(10000);
         return RC.createCluster().then(function (response) {
             cluster = response;
             return RC.startMember(cluster.id);
@@ -156,7 +155,6 @@ describe('SetProxyTest', function () {
     });
 
     it('listens for added entry', function (done) {
-        this.timeout(5000);
         setInstance.addItemListener({
             itemAdded: function (itemEvent) {
                 expect(itemEvent.name).to.be.equal('test');
@@ -173,7 +171,6 @@ describe('SetProxyTest', function () {
     });
 
     it('listens for added and removed entry', function (done) {
-        this.timeout(5000);
         setInstance.addItemListener({
             itemAdded: function (itemEvent) {
                 expect(itemEvent.name).to.be.equal('test');
@@ -198,7 +195,6 @@ describe('SetProxyTest', function () {
     });
 
     it('listens for removed entry', function (done) {
-        this.timeout(5000);
         setInstance.addItemListener({
             itemRemoved: function (itemEvent) {
                 expect(itemEvent.name).to.be.equal('test');
@@ -217,7 +213,6 @@ describe('SetProxyTest', function () {
     });
 
     it('remove entry listener', function () {
-        this.timeout(5000);
         return setInstance.addItemListener({
             itemRemoved: function (itemEvent) {
                 expect(itemEvent.name).to.be.equal('test');

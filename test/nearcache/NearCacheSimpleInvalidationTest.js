@@ -62,7 +62,6 @@ describe('NearCacheSimpleInvalidationTest', function () {
             });
 
             it('client observes outside invalidations', function () {
-                this.timeout(10000);
                 const entryCount = 1000;
                 let map;
                 return client.getMap(mapName).then(function (mp) {

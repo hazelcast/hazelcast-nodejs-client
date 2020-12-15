@@ -108,7 +108,6 @@ describe('NearCacheTest', function () {
         });
 
         it('expires after maxIdleSeconds', function (done) {
-            this.timeout(4000);
             const rec = new DataRecord(ds('key'), 'value', undefined, 100);
             setTimeout(function () {
                 if (rec.isExpired(1)) {

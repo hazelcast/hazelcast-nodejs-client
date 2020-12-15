@@ -35,7 +35,6 @@ describe('MapPredicateTest', function () {
     }
 
     before(function () {
-        this.timeout(32000);
         return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_identifiedfactory.xml', 'utf8'))
             .then(function (res) {
                 cluster = res;

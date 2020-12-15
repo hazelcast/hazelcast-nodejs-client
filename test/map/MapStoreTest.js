@@ -30,7 +30,6 @@ describe('MapStoreTest', function () {
     let map;
 
     before(function () {
-        this.timeout(32000);
         return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_mapstore.xml', 'utf8'))
             .then(function (res) {
                 cluster = res;

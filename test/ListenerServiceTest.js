@@ -98,8 +98,6 @@ const Util = require('./Util');
         });
 
         it('listener is not invoked when it is removed[smart=' + isSmartService + ']', function (done) {
-            this.timeout(10000);
-
             let listenerId;
             client.addDistributedObjectListener(() => {
                 done(new Error('Should not have run!'));
@@ -121,8 +119,6 @@ const Util = require('./Util');
         });
 
         it('listener is not invoked when it is removed and new member starts[smart=' + isSmartService + ']', function (done) {
-            this.timeout(20000);
-
             let listenerId;
             let member2Promise;
             client.addDistributedObjectListener(() => {

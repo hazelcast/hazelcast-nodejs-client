@@ -27,11 +27,13 @@ describe('NearCachedMapTest', function () {
     [true, false].forEach(function (invalidateOnChange) {
         describe('invalidate on change=' + invalidateOnChange, function () {
 
-            let cluster, client1, client2;
-            let map1, map2;
+            let cluster;
+            let client1;
+            let client2;
+            let map1;
+            let map2;
 
             before(function () {
-                this.timeout(32000);
                 const cfg = {
                     nearCaches: {
                         'ncc-map': {
@@ -59,7 +61,6 @@ describe('NearCachedMapTest', function () {
             });
 
             beforeEach(function () {
-                this.timeout(10000);
                 return client1.getMap('ncc-map').then(function (mp) {
                     map1 = mp
                     return client2.getMap('ncc-map');

@@ -30,8 +30,6 @@ const {
 
 describe('AtomicLongTest', function () {
 
-    this.timeout(30000);
-
     let cluster;
     let client;
     let long;

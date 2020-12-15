@@ -21,8 +21,9 @@ const { Client } = require('../.');
 
 describe('ClusterServiceTest', function () {
 
-    this.timeout(25000);
-    let cluster, member1, client;
+    let cluster;
+    let member1;
+    let client;
 
     beforeEach(function () {
         return RC.createCluster(null, null).then(function (res) {

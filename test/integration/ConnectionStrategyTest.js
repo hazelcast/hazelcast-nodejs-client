@@ -29,8 +29,8 @@ const { LifecycleState } = require('../../lib/LifecycleService');
 
 describe('ConnectionStrategyTest', function () {
 
-    this.timeout(32000);
-    let cluster, client;
+    let cluster;
+    let client;
 
     beforeEach(function () {
         client = null;
