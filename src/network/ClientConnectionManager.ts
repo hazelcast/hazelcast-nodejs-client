@@ -261,10 +261,11 @@ export class ClientConnectionManager extends EventEmitter {
                 return this.triggerConnect(translatedAddress);
             })
             .then((socket) => {
-                clientConnection = new ClientConnection(this.client, translatedAddress, socket, this.connectionIdCounter++);
+                clientConnection = new ClientConnection(
+                    this.client, translatedAddress, socket, this.connectionIdCounter++);
                 // close the connection proactively on errors
-                socket.on('error', (err: Error) => {
-                    clientConnection.close('Connection closed by other side', err);
+                socket.once('error', (err: NodeJS.ErrnoException) => {
+                    clientConnection.close('Socket error. Connection might be closed by other side', err);
                 });
                 return this.initiateCommunication(socket);
             })
@@ -544,10 +545,7 @@ export class ClientConnectionManager extends EventEmitter {
         socket.once('secureConnect', () => {
             connectionResolver.resolve(socket);
         });
-        socket.once('error', (err: Error) => {
-            this.logger.warn('ConnectionManager', 'Could not connect to address ' + address.toString(), err);
-            connectionResolver.reject(err);
-        });
+        socket.once('error', connectionResolver.reject);
         return connectionResolver.promise;
     }
 
@@ -557,10 +555,7 @@ export class ClientConnectionManager extends EventEmitter {
         socket.once('connect', () => {
             connectionResolver.resolve(socket);
         });
-        socket.once('error', (err: Error) => {
-            this.logger.warn('ConnectionManager', 'Could not connect to address ' + address.toString(), err);
-            connectionResolver.reject(err);
-        });
+        socket.once('error', connectionResolver.reject);
         return connectionResolver.promise;
     }
 
