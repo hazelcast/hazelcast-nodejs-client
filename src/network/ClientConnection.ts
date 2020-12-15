@@ -486,10 +486,17 @@ export class ClientConnection {
         let message = this.toString() + ' closed. Reason: ';
         if (this.closedReason != null) {
             message += this.closedReason;
-        } else if (this.closedCause != null) {
-            message += this.closedCause.name + '[' + this.closedCause.message + ']';
         } else {
             message += 'Socket explicitly closed';
+        }
+
+        if (this.closedCause != null) {
+            message += ' - ';
+            const cause = this.closedCause as NodeJS.ErrnoException;
+            if (cause.code != null) {
+                message += cause.code + ': ';
+            }
+            message += cause.message;
         }
 
         if (this.client.getLifecycleService().isRunning()) {
