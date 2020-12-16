@@ -89,8 +89,7 @@ export class HeartbeatManager {
 
         if (now - connection.getLastReadTimeMillis() > this.heartbeatTimeout) {
             this.logger.warn('HeartbeatManager', `Heartbeat failed over connection: ${connection}`);
-            connection.close('Heartbeat timed out',
-                new TargetDisconnectedError(`Heartbeat timed out to connection ${connection}`));
+            connection.close(null, new TargetDisconnectedError(`Heartbeat timed out to connection ${connection}`));
             return;
         }
 
