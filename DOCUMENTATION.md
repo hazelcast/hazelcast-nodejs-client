@@ -1046,6 +1046,8 @@ backups, this property specifies how long (in milliseconds) the invocation waits
 
 ## 5.8. External Client Public Address Discovery
 
+> **NOTE: This feature requires Hazelcast IMDG 4.2 or higher version.**
+
 When you set up a Hazelcast cluster in the Cloud (AWS, Azure, GCP, Kubernetes) and would like to use it from outside the Cloud network, the client needs to communicate with all cluster members via their public IP addresses. Whenever Hazelcast cluster members are able to resolve their own public external IP addresses, they pass this information to the client. As a result, the client can use public addresses for communication, if it cannot access members via private IPs.
 
 Hazelcast Node.js client has a built-in mechanism to detect such situation. When the client starts, it executes the following steps:
