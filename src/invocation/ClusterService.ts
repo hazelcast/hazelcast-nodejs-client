@@ -238,8 +238,8 @@ export class ClusterService implements Cluster {
             events[index++] = new MembershipEvent(member, MemberEvent.REMOVED, currentMembers);
             const connection: ClientConnection = this.connectionManager.getConnection(member.uuid);
             if (connection != null) {
-                connection.close(null, new TargetDisconnectedError('The client has closed the connection to this ' +
-                    'member, after receiving a member left event from the cluster ' + connection));
+                connection.close(null, new TargetDisconnectedError('The client has closed the connection to this '
+                    + 'member, after receiving a member left event from the cluster ' + connection));
             }
         });
 
