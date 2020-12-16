@@ -663,33 +663,33 @@ export class ClientConnectionManager extends EventEmitter {
         return timedPromise(
             this.client.getInvocationService().invokeUrgent(invocation),
             this.authenticationTimeout
-        ).catch((e) => {
-            connection.close('Failed to authenticate connection', e);
-            throw e;
+        ).catch((err) => {
+            connection.close('Authentication failed', err);
+            throw err;
         }).then((responseMessage) => {
             const response = ClientAuthenticationCodec.decodeResponse(responseMessage);
             if (response.status === AuthenticationStatus.AUTHENTICATED) {
                 return this.onAuthenticated(connection, response);
             } else {
-                let error: Error;
+                let err: Error;
                 switch (response.status) {
                     case AuthenticationStatus.CREDENTIALS_FAILED:
-                        error = new AuthenticationError('Authentication failed. The configured cluster name on '
-                            + 'the client does not match the one configured in the cluster or '
-                            + 'the credentials set in the client security config could not be authenticated');
+                        err = new AuthenticationError('The configured cluster name on the client '
+                            + 'does not match the one configured in the cluster or the credentials '
+                            + 'set in the client security config could not be authenticated.');
                         break;
                     case AuthenticationStatus.SERIALIZATION_VERSION_MISMATCH:
-                        error = new IllegalStateError('Server serialization version does not match to client.');
+                        err = new IllegalStateError('Server serialization version does not match to client.');
                         break;
                     case AuthenticationStatus.NOT_ALLOWED_IN_CLUSTER:
-                        error = new ClientNotAllowedInClusterError('Client is not allowed in the cluster');
+                        err = new ClientNotAllowedInClusterError('Client is not allowed in the cluster.');
                         break;
                     default:
-                        error = new AuthenticationError('Authentication status code not supported. Status: '
+                        err = new AuthenticationError('Authentication status code not supported. Status: '
                             + response.status);
                 }
-                connection.close('Failed to authenticate connection', error);
-                throw error;
+                connection.close('Authentication failed', err);
+                throw err;
             }
         });
     }
