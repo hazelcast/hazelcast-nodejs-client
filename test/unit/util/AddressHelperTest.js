@@ -15,8 +15,8 @@
  */
 'use strict';
 
-const { AddressHelper } = require('../../lib/util/Util');
 const { expect } = require('chai');
+const { AddressHelper } = require('../../../lib/util/Util');
 
 describe('AddressHelperTest', function () {
 

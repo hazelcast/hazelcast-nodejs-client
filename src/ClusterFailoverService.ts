@@ -28,7 +28,6 @@ type TryNextFn = (nextCtx: CandidateClusterContext) => Promise<boolean>;
 
 /**
  * Responsible for cluster failover state and attempts management.
- * TODO cover with tests
  * @internal
  */
 export class ClusterFailoverService {

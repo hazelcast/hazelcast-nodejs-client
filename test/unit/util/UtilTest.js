@@ -25,7 +25,7 @@ const {
     deferredPromise,
     resolveAddress,
     timedPromise
-} = require('../../lib/util/Util');
+} = require('../../../lib/util/Util');
 
 describe('UtilTest', function () {
 
