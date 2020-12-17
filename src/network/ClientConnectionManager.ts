@@ -420,7 +420,7 @@ export class ClientConnectionManager extends EventEmitter {
         return this.doConnectToCandidateCluster(ctx)
             .then((connected) => {
                 if (connected) {
-                    return;
+                    return true;
                 }
                 return this.clusterDiscoveryService.tryNextCluster(this.cleanupAndTryNextCluster.bind(this));
             })
@@ -429,7 +429,7 @@ export class ClientConnectionManager extends EventEmitter {
                     return;
                 }
                 const message = this.client.getLifecycleService().isRunning()
-                    ? 'Unable to connect any cluster.' : 'Client is being shutdown.';
+                    ? 'Unable to connect to any cluster.' : 'Client is being shutdown.';
                 throw new IllegalStateError(message);
             });
     }
@@ -834,11 +834,11 @@ export class ClientConnectionManager extends EventEmitter {
     }
 
     private encodeAuthenticationRequest(): ClientMessage {
-        const clusterName = this.client.getConfig().clusterName;
-        const clientVersion = BuildInfo.getClientVersion();
-        // TODO change
-        const customCredentials = this.client.getConfig().customCredentials;
+        const ctx = this.clusterDiscoveryService.current();
+        const clusterName = ctx.clusterName;
+        const customCredentials = ctx.customCredentials;
         const clientName = this.client.getName();
+        const clientVersion = BuildInfo.getClientVersion();
 
         let clientMessage: ClientMessage;
         if (customCredentials != null) {
@@ -885,7 +885,7 @@ export class ClientConnectionManager extends EventEmitter {
                 }
             })
             .catch((error: Error) => {
-                const clusterName = this.client.getConfig().clusterName;
+                const clusterName = this.clusterDiscoveryService.current().clusterName;
                 this.logger.warn('ConnectionManager', 'Failure during sending state to the cluster: '
                     + error.message);
                 if (targetClusterId.equals(this.clusterId)) {

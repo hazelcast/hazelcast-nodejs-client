@@ -107,6 +107,7 @@ export class ClusterDiscoveryServiceBuilder {
         this.maxTryCount = maxTryCount;
         this.clientConfigs = clientConfigs.slice();
         this.lifecycleService = lifecycleService;
+        this.loggingService = loggingService;
     }
 
     build(): ClusterFailoverService {

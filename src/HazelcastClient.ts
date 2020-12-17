@@ -137,17 +137,17 @@ export class HazelcastClient {
         this.serializationService = new SerializationServiceV1(this.config.serialization);
         this.nearCacheManager = new NearCacheManager(this);
         this.partitionService = new PartitionServiceImpl(this);
+        this.lifecycleService = new LifecycleServiceImpl(this);
+        this.clusterFailoverService = this.initClusterDiscoveryService();
         this.connectionManager = new ClientConnectionManager(this);
         this.invocationService = new InvocationService(this);
         this.proxyManager = new ProxyManager(this);
         this.cpSubsystem = new CPSubsystemImpl(this);
         this.clusterService = new ClusterService(this);
-        this.lifecycleService = new LifecycleServiceImpl(this);
         this.lockReferenceIdGenerator = new LockReferenceIdGenerator();
         this.errorFactory = new ClientErrorFactory();
         this.statistics = new Statistics(this);
         this.clusterViewListenerService = new ClusterViewListenerService(this);
-        this.clusterFailoverService = this.initClusterDiscoveryService();
     }
 
     /**
