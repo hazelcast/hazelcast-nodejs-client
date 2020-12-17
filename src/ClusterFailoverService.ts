@@ -92,7 +92,7 @@ export class CandidateClusterContext {
 }
 
 /** @internal */
-export class ClusterDiscoveryServiceBuilder {
+export class ClusterFailoverServiceBuilder {
 
     private readonly maxTryCount: number;
     private readonly clientConfigs: ClientConfigImpl[];

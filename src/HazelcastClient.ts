@@ -52,7 +52,7 @@ import {ProxyManager, NAMESPACE_SEPARATOR} from './proxy/ProxyManager';
 import {CPSubsystem, CPSubsystemImpl} from './CPSubsystem';
 import {
     ClusterFailoverService,
-    ClusterDiscoveryServiceBuilder
+    ClusterFailoverServiceBuilder
 } from './ClusterFailoverService';
 import {LockReferenceIdGenerator} from './proxy/LockReferenceIdGenerator';
 import {SerializationService, SerializationServiceV1} from './serialization/SerializationService';
@@ -552,7 +552,7 @@ export class HazelcastClient {
             tryCount = this.failoverConfig.tryCount;
             clientConfigs = this.failoverConfig.clientConfigs;
         }
-        const builder = new ClusterDiscoveryServiceBuilder(
+        const builder = new ClusterFailoverServiceBuilder(
             tryCount, clientConfigs, this.lifecycleService, this.loggingService);
         return builder.build();
     }
