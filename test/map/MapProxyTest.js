@@ -44,7 +44,7 @@ async function createClient(nearCacheEnabled, clusterName) {
 
 describe('MapProxyTest', function () {
     [false, true].forEach(function (nearCacheEnabled) {
-        describe('Near Cache: ' + nearCacheEnabled, function () {
+        describe(' - Near Cache enabled: ' + nearCacheEnabled, function () {
 
             let cluster;
             let client;
@@ -309,7 +309,7 @@ describe('MapProxyTest', function () {
                 await map.putIfAbsent('key10', 'new-val', 1000);
                 let val = await map.get('key10');
                 expect(val).to.equal('new-val');
-                val = await Util.promiseLater(1050, map.get.bind(map, 'key10'));
+                val = await Util.promiseLater(1100, map.get.bind(map, 'key10'));
                 expect(val).to.be.null;
             });
 
@@ -323,7 +323,7 @@ describe('MapProxyTest', function () {
                 await map.putTransient('key10', 'val10', 1000);
                 let val = await map.get('key10');
                 expect(val).to.equal('val10');
-                val = await Util.promiseLater(1050, map.get.bind(map, 'key10'));
+                val = await Util.promiseLater(1100, map.get.bind(map, 'key10'));
                 expect(val).to.be.null;
             });
 
@@ -358,7 +358,7 @@ describe('MapProxyTest', function () {
                 await map.set('key10', 'val10', 1000);
                 let val = await map.get('key10');
                 expect(val).to.equal('val10');
-                val = await Util.promiseLater(1050, map.get.bind(map, 'key10'));
+                val = await Util.promiseLater(1100, map.get.bind(map, 'key10'));
                 expect(val).to.be.null;
             });
 
@@ -441,7 +441,7 @@ describe('MapProxyTest', function () {
                 const success = await map.tryLock('key0', 2000);
                 const elapsed = Date.now() - startTime;
                 expect(success).to.be.true;
-                expect(elapsed).to.be.greaterThan(995);
+                expect(elapsed).to.be.greaterThan(990);
             });
 
             it('tryLock_fail with timeout', async function () {
