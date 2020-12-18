@@ -122,7 +122,6 @@ export class ClientConnectionManager extends EventEmitter {
     private readonly smartRoutingEnabled: boolean;
     private readonly clusterDiscoveryService: ClusterFailoverService;
     private readonly failoverConfigProvided: boolean;
-    // TODO
     private switchingToNextCluster = false;
     private connectionTimeoutMillis: number;
     private heartbeatManager: HeartbeatManager;
@@ -796,19 +795,19 @@ export class ClientConnectionManager extends EventEmitter {
 
         const newClusterId = response.clusterId;
 
-        const initialConnection = this.activeConnections.size === 0;
-        // TODO port Java client changes
-        const changedCluster = initialConnection && this.clusterId != null && !newClusterId.equals(this.clusterId);
-        if (changedCluster) {
+        const clusterIdChanged = this.clusterId != null && !newClusterId.equals(this.clusterId);
+        if (clusterIdChanged) {
+            this.checkClientStateOnClusterIdChange(connection);
             this.logger.warn('ConnectionManager', 'Switching from current cluster: '
                 + this.clusterId + ' to new cluster: ' + newClusterId);
             this.client.onClusterRestart();
         }
 
+        const connectionsEmpty = this.activeConnections.size === 0;
         this.activeConnections.set(response.memberUuid.toString(), connection);
-        if (initialConnection) {
+        if (connectionsEmpty) {
             this.clusterId = newClusterId;
-            if (changedCluster) {
+            if (clusterIdChanged) {
                 this.clientState = ClientState.CONNECTED_TO_CLUSTER;
                 this.initializeClientOnCluster(newClusterId);
             } else {
@@ -831,6 +830,31 @@ export class ClientConnectionManager extends EventEmitter {
             this.onConnectionClose(connection);
         }
         return connection;
+    }
+
+    private checkClientStateOnClusterIdChange(connection: ClientConnection): void {
+        if (this.activeConnections.size === 0) {
+            // We only have single connection established
+            if (this.failoverConfigProvided) {
+                // If failover is provided and this single connection is established after,
+                // failover logic kicks in (checked via `switchingToNextCluster`), then it
+                // is OK to continue. Otherwise, we force the failover logic
+                // to be used by throwing `ClientNotAllowedInClusterError`
+                if (this.switchingToNextCluster) {
+                    this.switchingToNextCluster = false;
+                } else {
+                    const reason = 'Force to hard cluster switch';
+                    connection.close(reason, null);
+                    throw new ClientNotAllowedInClusterError(reason);
+                }
+            }
+        } else {
+            // If there are other connections, then we have a connection
+            // to wrong cluster. We should not stay connected
+            const reason = 'Connection does not belong to this cluster';
+            connection.close(reason, null);
+            throw new IllegalStateError(reason);
+        }
     }
 
     private encodeAuthenticationRequest(): ClientMessage {
