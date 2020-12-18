@@ -501,14 +501,14 @@ export class ClientConnectionManager extends EventEmitter {
                         return false;
                     });
             })
-            .catch((error: Error) => {
-                if (error instanceof ClientNotAllowedInClusterError
-                        || error instanceof InvalidConfigurationError) {
+            .catch((err: Error) => {
+                if (err instanceof ClientNotAllowedInClusterError
+                        || err instanceof InvalidConfigurationError) {
                     this.logger.warn('ConnectionManager', 'Stopped trying on the cluster: '
-                        + ctx.clusterName + ' reason: ' + error.message);
+                        + ctx.clusterName + ' reason: ' + err.message);
                     return false;
                 }
-                throw error;
+                throw err;
             });
     }
 
@@ -556,9 +556,13 @@ export class ClientConnectionManager extends EventEmitter {
                     getOrConnectFn: () => Promise<ClientConnection>): Promise<ClientConnection> {
         this.logger.info('ConnectionManager', 'Trying to connect to ' + target.toString());
         return getOrConnectFn()
-            .catch((error) => {
+            .catch((err) => {
                 this.logger.warn('ConnectionManager', 'Error during initial connection to '
-                    + target.toString() + ' ' + error);
+                    + target.toString() + ' ' + err);
+                if (err instanceof InvalidConfigurationError
+                        || err instanceof ClientNotAllowedInClusterError) {
+                    throw err;
+                }
                 return null;
             });
     }
@@ -873,9 +877,9 @@ export class ClientConnectionManager extends EventEmitter {
     private checkPartitionCount(newPartitionCount: number): void {
         const partitionService = this.client.getPartitionService() as PartitionServiceImpl;
         if (!partitionService.checkAndSetPartitionCount(newPartitionCount)) {
-            throw new ClientNotAllowedInClusterError('Client can not work with this cluster because it has a different '
-                + 'partition count. Expected partition count: ' + partitionService.getPartitionCount()
-                + ', member partition count: ' + newPartitionCount);
+            throw new ClientNotAllowedInClusterError('Client can not work with this cluster '
+                + 'because it has a different partition count. Expected partition count: '
+                + partitionService.getPartitionCount() + ', member partition count: ' + newPartitionCount);
         }
     }
 

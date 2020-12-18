@@ -129,7 +129,7 @@ export class HazelcastClient {
             this.config = failoverConfig.clientConfigs[0];
         }
         this.failoverConfig = failoverConfig;
-        this.instanceName = config.instanceName || 'hz.client_' + this.id;
+        this.instanceName = this.config.instanceName || 'hz.client_' + this.id;
         this.loggingService = new LoggingService(this.config.customLogger,
             this.config.properties['hazelcast.logging.level'] as string);
         this.loadBalancer = this.initLoadBalancer();

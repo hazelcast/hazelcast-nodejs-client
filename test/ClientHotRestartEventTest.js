@@ -49,7 +49,7 @@ describe('ClientHotRestartEventTest', function () {
                     <hot-restart-persistence enabled="true">
                         <base-dir>${hotRestartDir}</base-dir>
                     </hot-restart-persistence>
-                 </hazelcast>`;
+                </hazelcast>`;
     }
 
     before(function () {
@@ -81,7 +81,7 @@ describe('ClientHotRestartEventTest', function () {
 
         await listener.expectedPromise;
 
-        expect(client.getCluster().getMembers().length).to.be.equal(1);
+        expect(client.getCluster().getMembers()).to.have.lengthOf(1);
         expect(client.getCluster().getMembers()[0].uuid.toString()).to.be.equal(member.uuid);
     });
 });

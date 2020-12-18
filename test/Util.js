@@ -79,10 +79,13 @@ exports.fillMap = function (map, size, keyPrefix, valuePrefix) {
     return map.putAll(entries);
 };
 
-exports.markEnterprise = function (_this) {
-    if (process.env.SERVER_TYPE === 'oss' || process.env.HZ_TYPE === 'oss') {
+exports.markCommunity = function (_this) {
+    if (process.env.HAZELCAST_ENTERPRISE_KEY) {
         _this.skip();
     }
+};
+
+exports.markEnterprise = function (_this) {
     if (!process.env.HAZELCAST_ENTERPRISE_KEY) {
         _this.skip();
     }
