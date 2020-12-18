@@ -821,14 +821,6 @@ export class ClientConnectionManager extends EventEmitter {
             + response.serverHazelcastVersion + ', local address: ' + connection.getLocalAddress());
         this.emitConnectionAddedEvent(connection);
 
-        // It could happen that this connection is already closed and
-        // onConnectionClose() is called even before the block
-        // above is executed. In this case, now we have a closed but registered
-        // connection. We do a final check here to remove this connection
-        // if needed.
-        if (!connection.isAlive()) {
-            this.onConnectionClose(connection);
-        }
         return connection;
     }
 
