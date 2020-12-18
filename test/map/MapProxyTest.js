@@ -44,7 +44,7 @@ function createClient(nearCacheEnabled, clusterName) {
 
 describe('MapProxyTest', function () {
     [false, true].forEach(function (nearCacheEnabled) {
-        describe('Near Cache: ' + nearCacheEnabled, function () {
+        describe(' - Near Cache enabled: ' + nearCacheEnabled, function () {
 
             let cluster, client;
             let map;
@@ -366,7 +366,7 @@ describe('MapProxyTest', function () {
                 }).then(function (val) {
                     return expect(val).to.equal('new-val');
                 }).then(function () {
-                    return Util.promiseLater(1050, map.get.bind(map, 'key10'));
+                    return Util.promiseLater(1100, map.get.bind(map, 'key10'));
                 }).then(function (val) {
                     return expect(val).to.be.null;
                 });
@@ -387,7 +387,7 @@ describe('MapProxyTest', function () {
                 }).then(function (val) {
                     return expect(val).to.equal('val10');
                 }).then(function () {
-                    return Util.promiseLater(1050, map.get.bind(map, 'key10'));
+                    return Util.promiseLater(1100, map.get.bind(map, 'key10'));
                 }).then(function (val) {
                     return expect(val).to.be.null;
                 });
@@ -437,7 +437,7 @@ describe('MapProxyTest', function () {
                 }).then(function (val) {
                     return expect(val).to.equal('val10');
                 }).then(function () {
-                    return Util.promiseLater(1050, map.get.bind(map, 'key10'));
+                    return Util.promiseLater(1100, map.get.bind(map, 'key10'));
                 }).then(function (val) {
                     return expect(val).to.be.null;
                 })
