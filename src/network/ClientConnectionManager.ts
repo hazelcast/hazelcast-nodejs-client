@@ -467,7 +467,11 @@ export class ClientConnectionManager extends EventEmitter {
         }
 
         // try to connect to a member in the member list first
-        return this.tryConnectingToMember(0, members, triedAddressesPerAttempt)
+        return this.tryConnecting(
+                0, members, triedAddressesPerAttempt,
+                (m) => m.address,
+                (m) => this.getOrConnectToMember(m)
+            )
             .then((connected) => {
                 if (connected) {
                     return true;
@@ -475,7 +479,12 @@ export class ClientConnectionManager extends EventEmitter {
                 // try to connect to a member given via config (explicit config/discovery mechanism)
                 return this.loadAddressesFromProvider(ctx.addressProvider)
                     .then((addresses) => {
-                        return this.tryConnectingToAddress(0, addresses, triedAddressesPerAttempt);
+                        //return this.tryConnectingToAddress(0, addresses, triedAddressesPerAttempt);
+                        return this.tryConnecting(
+                            0, addresses, triedAddressesPerAttempt,
+                            (a) => a,
+                            (a) => this.getOrConnectToAddress(a)
+                        );
                     });
             })
             .then((connected) => {
@@ -512,43 +521,28 @@ export class ClientConnectionManager extends EventEmitter {
             });
     }
 
-    private tryConnectingToMember(index: number,
-                                  members: MemberImpl[],
-                                  triedAddresses: Set<string>): Promise<boolean> {
-        if (index >= members.length) {
+    private tryConnecting<T extends MemberImpl | AddressImpl>(
+        index: number,
+        items: T[],
+        triedAddresses: Set<string>,
+        getAddressFn: (item: T) => AddressImpl,
+        connectToFn: (item: T) => Promise<ClientConnection>
+    ): Promise<boolean> {
+        if (index >= items.length) {
             return Promise.resolve(false);
         }
-        const member = members[index];
         if (!this.client.getLifecycleService().isRunning()) {
             return Promise.reject(new ClientNotActiveError('Client is not active.'));
         }
-        triedAddresses.add(member.address.toString());
-        return this.connect(member, () => this.getOrConnectToMember(member))
-            .then((connection) => {
-                if (connection != null) {
-                    return true;
-                }
-                return this.tryConnectingToMember(index + 1, members, triedAddresses);
-            });
-    }
-
-    private tryConnectingToAddress(index: number,
-                                   addresses: AddressImpl[],
-                                   triedAddresses: Set<string>): Promise<boolean> {
-        if (index >= addresses.length) {
-            return Promise.resolve(false);
-        }
-        const address = addresses[index];
-        if (!this.client.getLifecycleService().isRunning()) {
-            return Promise.reject(new ClientNotActiveError('Client is not active.'));
-        }
+        const item = items[index];
+        const address = getAddressFn(item);
         triedAddresses.add(address.toString());
-        return this.connect(address, () => this.getOrConnectToAddress(address))
+        return this.connect(item, () => connectToFn(item))
             .then((connection) => {
                 if (connection != null) {
                     return true;
                 }
-                return this.tryConnectingToAddress(index + 1, addresses, triedAddresses);
+                return this.tryConnecting(index + 1, items, triedAddresses, getAddressFn, connectToFn);
             });
     }
 
