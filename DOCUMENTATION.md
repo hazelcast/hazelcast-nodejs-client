@@ -1007,7 +1007,7 @@ Its default value is `5000` milliseconds.
 You can use TLS/SSL to secure the connection between the clients and members. If you want to enable TLS/SSL
 for the client-cluster connection, you should set an SSL configuration. Please see [TLS/SSL section](#91-tlsssl).
 
-As explained in the [TLS/SSL section](#91-tlsssl), Hazelcast members have key stores used to identify themselves (to other members) and Hazelcast Node.js clients have certificate authorities used to define which members they can trust. Hazelcast has the mutual authentication feature which allows the Node.js clients also to have their private keys and public certificates, and members to have their certificate authorities so that the members can know which clients they can trust. See the [Mutual Authentication section](#913-mutual-authentication).
+As explained in the TLS/SSL section, Hazelcast members have key stores used to identify themselves (to other members) and Hazelcast Node.js clients have certificate authorities used to define which members they can trust. Hazelcast has the mutual authentication feature which allows the Node.js clients also to have their private keys and public certificates, and members to have their certificate authorities so that the members can know which clients they can trust. See the [Mutual Authentication section](#913-mutual-authentication).
 
 ## 5.6. Enabling Hazelcast Cloud Discovery
 
@@ -1155,7 +1155,9 @@ In order to configure the client for blue-green deployment or disaster recovery 
 ```javascript
 const client = await Client.newHazelcastFailoverClient({
     tryCount: 3,
-    clientConfigs: [ // Client configs for alternative clusters go here:
+    // Client configs for alternative clusters go here:
+    clientConfigs: [
+        // Each config has the same structure as in `Client.newHazelcastClient`.
         {
             clusterName: 'clusterA',
             network: {
