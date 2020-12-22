@@ -30,6 +30,7 @@ import {
     IllegalStateError,
     InvalidConfigurationError,
     IOError,
+    TargetDisconnectedError,
     UUID,
     LoadBalancer,
     AddressImpl,
@@ -194,8 +195,8 @@ export class ClientConnectionManager extends EventEmitter {
 
         // HeartbeatManager should be shut down before connections are closed
         this.heartbeatManager.shutdown();
-        this.activeConnections.forEach((connection) => {
-            connection.close('Hazelcast client is shutting down', null);
+        this.activeConnections.forEach((conn) => {
+            conn.close('Hazelcast client is shutting down', null);
         });
 
         this.removeAllListeners(CONNECTION_REMOVED_EVENT_NAME);
@@ -203,11 +204,8 @@ export class ClientConnectionManager extends EventEmitter {
     }
 
     reset(): void {
-        this.pendingConnections.forEach((pending) => {
-            pending.reject(new ClientNotActiveError('Hazelcast client is switching cluster'));
-        });
-        this.activeConnections.forEach((connection) => {
-            connection.close('Hazelcast client is switching cluster', null);
+        this.activeConnections.forEach((conn) => {
+            conn.close(null, new TargetDisconnectedError('Hazelcast client is switching cluster'));
         });
     }
 

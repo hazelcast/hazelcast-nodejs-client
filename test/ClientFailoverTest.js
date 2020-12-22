@@ -119,12 +119,28 @@ describe('ClientFailoverTest', function () {
         });
     });
 
+    it('should shut down when tryCount is reached', async function () {
+        markEnterprise(this);
+
+        // shut down dev1, but keep dev2 alive
+        await RC.terminateCluster(cluster1.id);
+
+        // should not switch to the alive cluster, but instead fail
+        await expect(Client.newHazelcastFailoverClient({
+            tryCount: 0, // no retries
+            clientConfigs: [
+                createClientConfig({ clusterName: 'dev1', connectTimeoutMs: 1000 }),
+                createClientConfig({ clusterName: 'dev2', connectTimeoutMs: 1000 })
+            ]
+        })).to.be.rejectedWith(IllegalStateError);
+    });
+
     it('should retry read ops when switched to next cluster', async function () {
         markEnterprise(this);
 
         let clusterChanged = false;
         const clusterChangedDeferred = deferredPromise();
-        const listener = (state) => {
+        const lifecycleListener = (state) => {
             if (state === 'CHANGED_CLUSTER') {
                 clusterChangedDeferred.resolve();
                 clusterChanged = true;
@@ -133,8 +149,8 @@ describe('ClientFailoverTest', function () {
         client = await Client.newHazelcastFailoverClient({
             tryCount: 1,
             clientConfigs: [
-                createClientConfig({ clusterName: 'dev1', lifecycleListener: listener, connectTimeoutMs: 1000 }),
-                createClientConfig({ clusterName: 'dev2', lifecycleListener: listener, connectTimeoutMs: 1000 })
+                createClientConfig({ clusterName: 'dev1', lifecycleListener, connectTimeoutMs: 1000 }),
+                createClientConfig({ clusterName: 'dev2', lifecycleListener, connectTimeoutMs: 1000 })
             ]
         });
 
@@ -200,7 +216,7 @@ describe('ClientFailoverTest', function () {
         await RC.startMember(cluster3.id);
 
         const shutdownTriggeredDeferred = deferredPromise();
-        const listener = (state) => {
+        const lifecycleListener = (state) => {
             if (state === 'SHUTDOWN') {
                 shutdownTriggeredDeferred.resolve();
             }
@@ -208,8 +224,8 @@ describe('ClientFailoverTest', function () {
         client = await Client.newHazelcastFailoverClient({
             tryCount: 1,
             clientConfigs: [
-                createClientConfig({ clusterName: 'dev1', lifecycleListener: listener, connectTimeoutMs: 1000 }),
-                createClientConfig({ clusterName: 'dev3', lifecycleListener: listener, connectTimeoutMs: 1000 })
+                createClientConfig({ clusterName: 'dev1', lifecycleListener, connectTimeoutMs: 1000 }),
+                createClientConfig({ clusterName: 'dev3', lifecycleListener, connectTimeoutMs: 1000 })
             ]
         });
 

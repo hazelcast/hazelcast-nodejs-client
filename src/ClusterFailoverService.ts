@@ -153,6 +153,6 @@ export class ClusterFailoverServiceBuilder {
     private getConnectionTimeoutMillis(config: ClientConfigImpl): number {
         const networkConfig = config.network;
         const connTimeout = networkConfig.connectionTimeout;
-        return connTimeout === 0 ? Number.MAX_VALUE : connTimeout;
+        return connTimeout === 0 ? Number.MAX_SAFE_INTEGER : connTimeout;
     }
 }

@@ -138,7 +138,7 @@ export class HazelcastClient {
         this.nearCacheManager = new NearCacheManager(this);
         this.partitionService = new PartitionServiceImpl(this);
         this.lifecycleService = new LifecycleServiceImpl(this);
-        this.clusterFailoverService = this.initClusterDiscoveryService();
+        this.clusterFailoverService = this.initClusterFailoverService();
         this.connectionManager = new ClientConnectionManager(this);
         this.invocationService = new InvocationService(this);
         this.proxyManager = new ProxyManager(this);
@@ -542,7 +542,7 @@ export class HazelcastClient {
     }
 
     /** @internal */
-    private initClusterDiscoveryService(): ClusterFailoverService {
+    private initClusterFailoverService(): ClusterFailoverService {
         let tryCount: number;
         let clientConfigs: ClientConfigImpl[];
         if (this.failoverConfig == null) {
