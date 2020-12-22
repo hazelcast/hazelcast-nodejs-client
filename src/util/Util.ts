@@ -91,23 +91,6 @@ export function enumFromString<T>(enumType: any, value: string): T {
 }
 
 /** @internal */
-export function copyObjectShallow<T>(obj: T): T {
-    if (obj === undefined || obj === null) {
-        return obj;
-    }
-    if (typeof obj === 'object') {
-        const newObj: any = {};
-        for (const prop in obj) {
-            if (obj.hasOwnProperty(prop)) {
-                newObj[prop] = obj[prop];
-            }
-        }
-        return newObj;
-    }
-    assert(false, 'Object should be undefined or type of object.');
-}
-
-/** @internal */
 export function tryGetBoolean(val: any): boolean {
     if (typeof val === 'boolean') {
         return val;

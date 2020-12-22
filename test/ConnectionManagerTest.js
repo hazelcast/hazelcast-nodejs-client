@@ -147,7 +147,7 @@ describe('ConnectionManagerTest', function () {
         expect(closeSpy.calledOnce).to.be.true;
     });
 
-    it('should close connections when shut down', async function () {
+    it('should close all connections when shut down', async function () {
         client = await Client.newHazelcastClient({ clusterName: cluster.id });
         const connectionManager = client.getConnectionManager();
         expect(connectionManager.pendingConnections).to.have.lengthOf(0);
@@ -170,7 +170,7 @@ describe('ConnectionManagerTest', function () {
         expect(connectionManager.activeConnections).to.have.lengthOf(0);
     });
 
-    it('should clean up active connections when reset', async function () {
+    it('should close active connections when reset', async function () {
         client = await Client.newHazelcastClient({ clusterName: cluster.id });
         const connectionManager = client.getConnectionManager();
         expect(connectionManager.activeConnections).to.have.lengthOf(1);

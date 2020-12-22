@@ -153,7 +153,7 @@ describe('FailoverConfigBuilderTest', function () {
         expect(config.clientConfigs[1]).to.be.instanceOf(ClientConfigImpl);
     });
 
-    it('should throw for objects with forbidden different options', function () {
+    it('should throw for config objects with forbidden different options', function () {
         const builder = new FailoverConfigBuilder({
             tryCount: 1,
             clientConfigs: [
@@ -173,7 +173,7 @@ describe('FailoverConfigBuilderTest', function () {
         expect(() => builder.build()).to.throw(HazelcastError);
     });
 
-    it('should throw for objects with different root-level options', function () {
+    it('should throw for config objects with different root-level options', function () {
         const builder = new FailoverConfigBuilder({
             tryCount: 1,
             clientConfigs: [
@@ -187,7 +187,7 @@ describe('FailoverConfigBuilderTest', function () {
         expect(() => builder.build()).to.throw(HazelcastError);
     });
 
-    it('should throw for objects with different nested options', function () {
+    it('should throw for config objects with different nested options', function () {
         const builder = new FailoverConfigBuilder({
             tryCount: 1,
             clientConfigs: [
@@ -207,7 +207,7 @@ describe('FailoverConfigBuilderTest', function () {
         expect(() => builder.build()).to.throw(HazelcastError);
     });
 
-    it('should throw for objects with different properties', function () {
+    it('should throw for config objects with different properties', function () {
         const builder = new FailoverConfigBuilder({
             tryCount: 1,
             clientConfigs: [
@@ -221,5 +221,42 @@ describe('FailoverConfigBuilderTest', function () {
         });
 
         expect(() => builder.build()).to.throw(HazelcastError);
+    });
+
+    it('should throw for config objects with different listeners', function () {
+        const builder = new FailoverConfigBuilder({
+            tryCount: 1,
+            clientConfigs: [
+                {
+                    lifecycleListeners: [ () => console.log('foo') ]
+                },
+                {
+                    lifecycleListeners: [ () => console.log('bar') ]
+                }
+            ]
+        });
+
+        expect(() => builder.build()).to.throw(HazelcastError);
+    });
+
+    it('should build valid client config for objects with equal listeners', function () {
+        const listener1 = () => console.log('foo');
+        const listener2 = () => console.log('bar');
+        const builder = new FailoverConfigBuilder({
+            tryCount: 1,
+            clientConfigs: [
+                {
+                    lifecycleListeners: [ listener1, listener2 ]
+                },
+                {
+                    lifecycleListeners: [ listener1, listener2 ]
+                }
+            ]
+        });
+
+        const config = builder.build();
+        expect(config.clientConfigs).to.have.lengthOf(2);
+        expect(config.clientConfigs[0]).to.be.instanceOf(ClientConfigImpl);
+        expect(config.clientConfigs[1]).to.be.instanceOf(ClientConfigImpl);
     });
 });
