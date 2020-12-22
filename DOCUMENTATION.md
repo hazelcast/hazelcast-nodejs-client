@@ -40,82 +40,84 @@
   * [5.8. External Client Public Address Discovery](#58-external-client-public-address-discovery)
 * [6. Client Connection Strategy](#6-client-connection-strategy)
   * [6.1. Configuring Client Connection Retry](#61-configuring-client-connection-retry)
-* [7. Using Node.js Client with Hazelcast IMDG](#7-using-nodejs-client-with-hazelcast-imdg)
-  * [7.1. Node.js Client API Overview](#71-nodejs-client-api-overview)
-  * [7.2. Node.js Client Operation Modes](#72-nodejs-client-operation-modes)
-      * [7.2.1. Smart Client](#721-smart-client)
-      * [7.2.2. Unisocket Client](#722-unisocket-client)
-  * [7.3. Handling Failures](#73-handling-failures)
-    * [7.3.1. Handling Client Connection Failure](#731-handling-client-connection-failure)
-    * [7.3.2. Handling Retry-able Operation Failure](#732-handling-retry-able-operation-failure)
-  * [7.4. Using Distributed Data Structures](#74-using-distributed-data-structures)
-    * [7.4.1. Using Map](#741-using-map)
-    * [7.4.2. Using MultiMap](#742-using-multimap)
-    * [7.4.3. Using Replicated Map](#743-using-replicated-map)
-    * [7.4.4. Using Queue](#744-using-queue)
-    * [7.4.5. Using Set](#745-using-set)
-    * [7.4.6. Using List](#746-using-list)
-    * [7.4.7. Using Ringbuffer](#747-using-ringbuffer)
-    * [7.4.8. Using Reliable Topic](#748-using-reliable-topic)
-      * [7.4.8.1. Configuring Reliable Topic](#7481-configuring-reliable-topic)
-    * [7.4.9. Using PN Counter](#749-using-pn-counter)
-    * [7.4.10. Using Flake ID Generator](#7410-using-flake-id-generator)
-      * [7.4.10.1. Configuring Flake ID Generator](#74101-configuring-flake-id-generator)
-    * [7.4.11. CP Subsystem](#7411-cp-subsystem)
-      * [7.4.11.1. Using Atomic Long](#74111-using-atomic-long)
-      * [7.4.11.2. Using Lock](#74112-using-lock)
-      * [7.4.11.3. Using Semaphore](#74113-using-semaphore)
-      * [7.4.11.4. Using CountDownLatch](#74114-using-countdownlatch)
-      * [7.4.11.5. Using AtomicReference](#74115-using-atomicreference)
-  * [7.5. Distributed Events](#75-distributed-events)
-    * [7.5.1. Listening for Cluster Events](#751-listening-for-cluster-events)
-      * [7.5.1.1. Membership Listener](#7511-membership-listener)
-      * [7.5.1.2. Distributed Object Listener](#7512-distributed-object-listener)
-      * [7.5.1.3. Lifecycle Listener](#7513-lifecycle-listener)
-    * [7.5.2. Listening for Distributed Data Structure Events](#752-listening-for-distributed-data-structure-events)
-      * [7.5.2.1. Map Listener](#7521-map-listener)
-      * [7.5.2.2. Entry Listener](#7522-entry-listener)
-      * [7.5.2.3. Item Listener](#7523-item-listener)
-      * [7.5.2.4. Message Listener](#7524-message-listener)
-  * [7.6. Distributed Computing](#76-distributed-computing)
-    * [7.6.1. Using EntryProcessor](#761-using-entryprocessor)
-  * [7.7. Distributed Query](#77-distributed-query)
-    * [7.7.1. How Distributed Query Works](#771-how-distributed-query-works)
-      * [7.7.1.1. Employee Map Query Example](#7711-employee-map-query-example)
-      * [7.7.1.2. Querying by Combining Predicates with AND, OR, NOT](#7712-querying-by-combining-predicates-with-and-or-not)
-      * [7.7.1.3. Querying with SQL](#7713-querying-with-sql)
-      * [7.7.1.4. Querying with JSON Strings](#7714-querying-with-json-strings)
-      * [7.7.1.5. Filtering with Paging Predicates](#7715-filtering-with-paging-predicates)
-    * [7.7.2. Fast-Aggregations](#772-fast-aggregations)
-  * [7.8. Performance](#78-performance)
-    * [7.8.1. Partition Aware](#781-partition-aware)
-    * [7.8.2. Near Cache](#782-near-cache)
-      * [7.8.2.1. Configuring Near Cache](#7821-configuring-near-cache)
-      * [7.8.2.2. Near Cache Example for Map](#7822-near-cache-example-for-map)
-      * [7.8.2.3. Near Cache Eviction](#7823-near-cache-eviction)
-      * [7.8.2.4. Near Cache Expiration](#7824-near-cache-expiration)
-      * [7.8.2.5. Near Cache Invalidation](#7825-near-cache-invalidation)
-      * [7.8.2.6. Near Cache Eventual Consistency](#7826-near-cache-eventual-consistency)
-    * [7.8.3. Automated Pipelining](#783-automated-pipelining)
-  * [7.9. Monitoring and Logging](#79-monitoring-and-logging)
-    * [7.9.1. Enabling Client Statistics](#791-enabling-client-statistics)
-    * [7.9.2. Logging Configuration](#792-logging-configuration)
-  * [7.10. Defining Client Labels](#710-defining-client-labels)
-  * [7.11. Defining Instance Name](#711-defining-instance-name)
-  * [7.12. Configuring Load Balancer](#712-configuring-load-balancer)
-* [8. Securing Client Connection](#8-securing-client-connection)
-  * [8.1. TLS/SSL](#81-tlsssl)
-    * [8.1.1. TLS/SSL for Hazelcast Members](#811-tlsssl-for-hazelcast-members)
-    * [8.1.2. TLS/SSL for Hazelcast Node.js Clients](#812-tlsssl-for-hazelcast-nodejs-clients)
-    * [8.1.3. Mutual Authentication](#813-mutual-authentication)
-  * [8.2. Credentials](#82-credentials)
-* [9. Development and Testing](#9-development-and-testing)
-  * [9.1. Building and Using Client From Sources](#91-building-and-using-client-from-sources)
-  * [9.2. Testing](#92-testing)
-* [10. Getting Help](#10-getting-help)
-* [11. Contributing](#11-contributing)
-* [12. License](#12-license)
-* [13. Copyright](#13-copyright)
+* [7. Blue-Green Deployment and Disaster Recovery](#7-blue-green-deployment-and-disaster-recovery)
+  * [7.1. Configuring Client](#71-configuring-client)
+* [8. Using Node.js Client with Hazelcast IMDG](#8-using-nodejs-client-with-hazelcast-imdg)
+  * [8.1. Node.js Client API Overview](#81-nodejs-client-api-overview)
+  * [8.2. Node.js Client Operation Modes](#82-nodejs-client-operation-modes)
+      * [8.2.1. Smart Client](#821-smart-client)
+      * [8.2.2. Unisocket Client](#822-unisocket-client)
+  * [8.3. Handling Failures](#83-handling-failures)
+    * [8.3.1. Handling Client Connection Failure](#831-handling-client-connection-failure)
+    * [8.3.2. Handling Retry-able Operation Failure](#832-handling-retry-able-operation-failure)
+  * [8.4. Using Distributed Data Structures](#84-using-distributed-data-structures)
+    * [8.4.1. Using Map](#841-using-map)
+    * [8.4.2. Using MultiMap](#842-using-multimap)
+    * [8.4.3. Using Replicated Map](#843-using-replicated-map)
+    * [8.4.4. Using Queue](#844-using-queue)
+    * [8.4.5. Using Set](#845-using-set)
+    * [8.4.6. Using List](#846-using-list)
+    * [8.4.7. Using Ringbuffer](#847-using-ringbuffer)
+    * [8.4.8. Using Reliable Topic](#848-using-reliable-topic)
+      * [8.4.8.1. Configuring Reliable Topic](#8481-configuring-reliable-topic)
+    * [8.4.9. Using PN Counter](#849-using-pn-counter)
+    * [8.4.10. Using Flake ID Generator](#8410-using-flake-id-generator)
+      * [8.4.10.1. Configuring Flake ID Generator](#84101-configuring-flake-id-generator)
+    * [8.4.11. CP Subsystem](#8411-cp-subsystem)
+      * [8.4.11.1. Using Atomic Long](#84111-using-atomic-long)
+      * [8.4.11.2. Using Lock](#84112-using-lock)
+      * [8.4.11.3. Using Semaphore](#84113-using-semaphore)
+      * [8.4.11.4. Using CountDownLatch](#84114-using-countdownlatch)
+      * [8.4.11.5. Using AtomicReference](#84115-using-atomicreference)
+  * [8.5. Distributed Events](#85-distributed-events)
+    * [8.5.1. Listening for Cluster Events](#851-listening-for-cluster-events)
+      * [8.5.1.1. Membership Listener](#8511-membership-listener)
+      * [8.5.1.2. Distributed Object Listener](#8512-distributed-object-listener)
+      * [8.5.1.3. Lifecycle Listener](#8513-lifecycle-listener)
+    * [8.5.2. Listening for Distributed Data Structure Events](#852-listening-for-distributed-data-structure-events)
+      * [8.5.2.1. Map Listener](#8521-map-listener)
+      * [8.5.2.2. Entry Listener](#8522-entry-listener)
+      * [8.5.2.3. Item Listener](#8523-item-listener)
+      * [8.5.2.4. Message Listener](#8524-message-listener)
+  * [8.6. Distributed Computing](#86-distributed-computing)
+    * [8.6.1. Using EntryProcessor](#861-using-entryprocessor)
+  * [8.7. Distributed Query](#87-distributed-query)
+    * [8.7.1. How Distributed Query Works](#871-how-distributed-query-works)
+      * [8.7.1.1. Employee Map Query Example](#8711-employee-map-query-example)
+      * [8.7.1.2. Querying by Combining Predicates with AND, OR, NOT](#8712-querying-by-combining-predicates-with-and-or-not)
+      * [8.7.1.3. Querying with SQL](#8713-querying-with-sql)
+      * [8.7.1.4. Querying with JSON Strings](#8714-querying-with-json-strings)
+      * [8.7.1.5. Filtering with Paging Predicates](#8715-filtering-with-paging-predicates)
+    * [8.7.2. Fast-Aggregations](#872-fast-aggregations)
+  * [8.8. Performance](#88-performance)
+    * [8.8.1. Partition Aware](#881-partition-aware)
+    * [8.8.2. Near Cache](#882-near-cache)
+      * [8.8.2.1. Configuring Near Cache](#8821-configuring-near-cache)
+      * [8.8.2.2. Near Cache Example for Map](#8822-near-cache-example-for-map)
+      * [8.8.2.3. Near Cache Eviction](#8823-near-cache-eviction)
+      * [8.8.2.4. Near Cache Expiration](#8824-near-cache-expiration)
+      * [8.8.2.5. Near Cache Invalidation](#8825-near-cache-invalidation)
+      * [8.8.2.6. Near Cache Eventual Consistency](#8826-near-cache-eventual-consistency)
+    * [8.8.3. Automated Pipelining](#883-automated-pipelining)
+  * [8.9. Monitoring and Logging](#89-monitoring-and-logging)
+    * [8.9.1. Enabling Client Statistics](#891-enabling-client-statistics)
+    * [8.9.2. Logging Configuration](#892-logging-configuration)
+  * [8.10. Defining Client Labels](#810-defining-client-labels)
+  * [8.11. Defining Instance Name](#811-defining-instance-name)
+  * [8.12. Configuring Load Balancer](#812-configuring-load-balancer)
+* [9. Securing Client Connection](#9-securing-client-connection)
+  * [9.1. TLS/SSL](#91-tlsssl)
+    * [9.1.1. TLS/SSL for Hazelcast Members](#911-tlsssl-for-hazelcast-members)
+    * [9.1.2. TLS/SSL for Hazelcast Node.js Clients](#912-tlsssl-for-hazelcast-nodejs-clients)
+    * [9.1.3. Mutual Authentication](#913-mutual-authentication)
+  * [9.2. Credentials](#92-credentials)
+* [10. Development and Testing](#10-development-and-testing)
+  * [10.1. Building and Using Client From Sources](#101-building-and-using-client-from-sources)
+  * [10.2. Testing](#102-testing)
+* [11. Getting Help](#11-getting-help)
+* [12. Contributing](#12-contributing)
+* [13. License](#13-license)
+* [14. Copyright](#14-copyright)
 
 
 # Introduction
@@ -515,7 +517,6 @@ Hazelcast Node.js client supports the following data structures and features:
 * Fast Aggregations
 * Near Cache Support
 * Eventual Consistency Control
-* Declarative Configuration (JSON)
 * Programmatic Configuration
 * Client Configuration Import
 * Fail Fast on Invalid Configuration
@@ -536,6 +537,8 @@ Hazelcast Node.js client supports the following data structures and features:
 * Global Serialization
 * Connection Strategy
 * Connection Retry
+* External Client Public Address Discovery
+* Blue-Green Deployment and Disaster Recovery (requires Enterprise server)
 
 
 # 3. Configuration Overview
@@ -959,7 +962,7 @@ You can specify multiple addresses with or without the port information as seen 
 
 ## 5.2. Setting Smart Routing
 
-Smart routing defines whether the client mode is smart or unisocket. See the [Node.js Client Operation Modes section](#72-nodejs-client-operation-modes) for the description of smart and unisocket modes.
+Smart routing defines whether the client mode is smart or unisocket. See the [Node.js Client Operation Modes section](#82-nodejs-client-operation-modes) for the description of smart and unisocket modes.
 
 ```javascript
 const cfg = {
@@ -1002,9 +1005,9 @@ Its default value is `5000` milliseconds.
 ## 5.5. Enabling Client TLS/SSL
 
 You can use TLS/SSL to secure the connection between the clients and members. If you want to enable TLS/SSL
-for the client-cluster connection, you should set an SSL configuration. Please see [TLS/SSL section](#81-tlsssl).
+for the client-cluster connection, you should set an SSL configuration. Please see [TLS/SSL section](#91-tlsssl).
 
-As explained in the [TLS/SSL section](#81-tlsssl), Hazelcast members have key stores used to identify themselves (to other members) and Hazelcast Node.js clients have certificate authorities used to define which members they can trust. Hazelcast has the mutual authentication feature which allows the Node.js clients also to have their private keys and public certificates, and members to have their certificate authorities so that the members can know which clients they can trust. See the [Mutual Authentication section](#813-mutual-authentication).
+As explained in the TLS/SSL section, Hazelcast members have key stores used to identify themselves (to other members) and Hazelcast Node.js clients have certificate authorities used to define which members they can trust. Hazelcast has the mutual authentication feature which allows the Node.js clients also to have their private keys and public certificates, and members to have their certificate authorities so that the members can know which clients they can trust. See the [Mutual Authentication section](#913-mutual-authentication).
 
 ## 5.6. Enabling Hazelcast Cloud Discovery
 
@@ -1021,7 +1024,7 @@ const cfg = {
 };
 ```
 
-If you have enabled encryption for your cluster, you should also enable TLS/SSL configuration for the client to secure communication between your client and cluster members as described in the [TLS/SSL section](#81-tlsssl).
+If you have enabled encryption for your cluster, you should also enable TLS/SSL configuration for the client to secure communication between your client and cluster members as described in the [TLS/SSL section](#91-tlsssl).
 
 ## 5.7. Configuring Backup Acknowledgment
 
@@ -1061,7 +1064,7 @@ You can disable the detection mechanism and specify the client behavior by using
 
 - `hazelcast.discovery.public.ip.enabled`: Default value is `null` (detection enabled). When set to `true`, the client will assume that it needs to use public IP addresses reported by members. When set to `false`, the client will always use private addresses reported by members.
 
-> **NOTE: The detection mechanism is disabled when the client is configured to use [TLS/SSL encryption](#81-tlsssl). In such setup you should explicitly set the `hazelcast.discovery.public.ip.enabled` property.**
+> **NOTE: The detection mechanism is disabled when the client is configured to use [TLS/SSL encryption](#91-tlsssl). In such setup you should explicitly set the `hazelcast.discovery.public.ip.enabled` property.**
 
 > **NOTE: This feature is disabled when the client is configured to use [Hazelcast Cloud Discovery](#56-enabling-hazelcast-cloud-discovery).**
 
@@ -1137,11 +1140,57 @@ while (tryConnect(connectionTimeout)) != SUCCESS) {
 Note that, `tryConnect` above tries to connect to any member that the client knows, and for each connection we have a connection timeout; see the [Setting Connection Timeout](#54-setting-connection-timeout) section.
 
 
-# 7. Using Node.js Client with Hazelcast IMDG
+# 7. Blue-Green Deployment and Disaster Recovery
+
+Hazelcast provides disaster recovery for the client-cluster connections and can use the well-known blue-green mechanism, so that a Node.js client is automatically diverted to another cluster on demand or when the intended cluster becomes unavailable. These features require **Hazelcast IMDG Enterprise** edition.
+
+Using the blue-green system, the clients can connect to another cluster automatically when they are blacklisted from their currently connected cluster. See the [Blue-Green Mechanism section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#blue-green-mechanism) in the Hazelcast IMDG Reference Manual for information on the blue-green deployment support.
+
+With the disaster recovery, the clients tries to connect to alternative clusters described in the failover config when one of your clusters is gone due to a failure. See the [Disaster Recovery Mechanism section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#disaster-recovery-mechanism) in the Hazelcast IMDG Reference Manual for information on the disaster recovery.
+
+## 7.1. Configuring Client
+
+In order to configure the client for blue-green deployment or disaster recovery you need to start it with the `Client.newHazelcastFailoverClient` function and provide the client failover configuration, like shown below.
+
+```javascript
+const client = await Client.newHazelcastFailoverClient({
+    tryCount: 3,
+    // Client configs for alternative clusters go here:
+    clientConfigs: [
+        // Each config has the same structure as in `Client.newHazelcastClient`.
+        {
+            clusterName: 'clusterA',
+            network: {
+                clusterMembers: ['clusterA.member1', 'clusterA.member2']
+            }
+        },
+        {
+            clusterName: 'clusterB',
+            network: {
+                clusterMembers: ['clusterB.member1', 'clusterB.member2']
+            }
+        }
+    ]
+});
+// Some operations
+```
+
+The following are configuration element descriptions:
+
+* `tryCount`: Specifies the count of attempts to connect to a cluster. Its default value is `Number.MAX_SAFE_INTEGER`. It must be non-negative. For each alternative cluster, the client will try to connect to the cluster respecting related `connectionRetry`. When the client can not connect a cluster, it will try to connect `tryCount` times going over the alternative client configs in a round-robin fashion. This is triggered at the start and also when the client disconnects from the cluster and can not connect back to it by exhausting attempts described in connectionRetry config. In that case, the client will continue from where it is left off in `clientConfigs` list, and try the next one again in round-robin `tryCount` times. For example, if two alternative clusters are given in the `clientConfigs` list and the tryCount is set as 4, the maximum number of subsequent connection attempts done by the client is 4 x 2 = 8.
+* `clientConfigs`: The list of client configs for alternative clusters to be used by the client. The client configurations must be exactly the same except the following configuration options:
+  - `clusterName`
+  - `customCredentials`
+  - `network.clusterMembers`
+  - `network.ssl`
+  - `network.hazelcastCloud`
+
+
+# 8. Using Node.js Client with Hazelcast IMDG
 
 This chapter provides information on how you can use Hazelcast IMDG's data structures in the Node.js client, after giving some basic information including an overview to the client API, operation modes of the client and how it handles the failures.
 
-## 7.1. Node.js Client API Overview
+## 8.1. Node.js Client API Overview
 
 Most of the functions in the API return Promises. Therefore, you need to be familiar with the concept of promises to use the Node.js client. If not, you can learn about them using various online resources. Also, you can use async/await.
 
@@ -1160,7 +1209,7 @@ const client = await Client.newHazelcastClient({
         clusterMembers: ['10.90.0.1', '10.90.0.2:5702']
     }
 });
-// Some operation
+// Some operations
 ```
 
 This client object is your gateway to access all the Hazelcast distributed objects.
@@ -1182,31 +1231,31 @@ As the final step, if you are done with your client, you can shut it down as sho
 await client.shutdown();
 ```
 
-## 7.2. Node.js Client Operation Modes
+## 8.2. Node.js Client Operation Modes
 
 The client has two operation modes because of the distributed nature of the data and cluster: smart and unisocket. Refer to the [Setting Smart Routing](#52-setting-smart-routing) section to see how to configure the client for different operation modes.
 
-### 7.2.1. Smart Client
+### 8.2.1. Smart Client
 
 In the smart mode, the clients connect to each cluster member. Since each data partition uses the well-known and consistent hashing algorithm, each client can send an operation to the relevant cluster member, which increases the overall throughput and efficiency. Smart mode is the default mode.
 
-### 7.2.2. Unisocket Client
+### 8.2.2. Unisocket Client
 
 For some cases, the clients can be required to connect to a single member instead of each member in the cluster. Firewalls, security or some custom networking issues can be the reason for these cases.
 
 In the unisocket client mode, the client will only connect to one of the configured addresses. This single member will behave as a gateway to the other members. For any operation requested from the client, it will redirect the request to the relevant member and return the response back to the client connected to this member.
 
-## 7.3. Handling Failures
+## 8.3. Handling Failures
 
 There are two main failure cases you should be aware of. Below sections explain these, and the configuration options you can use to achieve proper behavior.
 
-### 7.3.1. Handling Client Connection Failure
+### 8.3.1. Handling Client Connection Failure
 
 While the client is trying to connect initially to one of the members for the `network.addresses` array, all the members might not be available. Instead of giving up, throwing an error and stopping the client, the client retries to connect as configured. This behavior is described in the [Configuring Client Connection Retry](#61-configuring-client-connection-retry) section.
 
 The client executes each operation through the already established connection to the cluster. If this connection(s) disconnects or drops, the client will try to reconnect as configured.
 
-### 7.3.2. Handling Retry-able Operation Failure
+### 8.3.2. Handling Retry-able Operation Failure
 
 While sending requests to cluster members, the operations may fail due to various reasons. Read-only operations are retried by default. If you want to enable retrying for non-read-only operations, you can set the `redoOperation` to `true`. See the [Enabling Redo Operation section](#53-enabling-redo-operation).
 
@@ -1218,11 +1267,11 @@ You can set a timeout for retrying the operations sent to a member. This can be 
 
 When a connection problem occurs, an operation is retried if it is certain that it has not run on the member yet or if it is idempotent such as a read-only operation, i.e., retrying does not have a side effect. If it is not certain whether the operation has run on the member, then the non-idempotent operations are not retried. However, as explained in the first paragraph of this section, you can force all the client operations to be retried (`redoOperation`) when there is a connection failure between the client and member. But in this case, you should know that some operations may run multiple times causing conflicts. For example, assume that your client sent a `queue.offer` operation to the member and then the connection is lost. Since there will be no response for this operation, you will not know whether it has run on the member or not. If you enabled `redoOperation`, it means this operation may run again, which may cause two instances of the same object in the queue.
 
-## 7.4. Using Distributed Data Structures
+## 8.4. Using Distributed Data Structures
 
 Most of the distributed data structures available in IMDG are supported by the Node.js client. In this chapter, you will learn how to use these distributed data structures.
 
-### 7.4.1. Using Map
+### 8.4.1. Using Map
 
 Hazelcast Map (`IMap`) is a distributed map. Through the Node.js client, you can perform operations like reading and writing from/to a Hazelcast Map with the well known get and put methods. For details, see the [Map section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#map) in the Hazelcast IMDG Reference Manual.
 
@@ -1239,11 +1288,11 @@ await map.putIfAbsent('somekey', 'somevalue');
 await map.replace('key', 'value', 'newvalue');
 ```
 
-Hazelcast Map supports a Near Cache for remotely stored entries to increase the performance of read operations. See the [Near Cache section](#782-near-cache) for a detailed explanation of the Near Cache feature and its configuration.
+Hazelcast Map supports a Near Cache for remotely stored entries to increase the performance of read operations. See the [Near Cache section](#882-near-cache) for a detailed explanation of the Near Cache feature and its configuration.
 
-Hazelcast Map uses `MapListener` to listen to the events that occur when the entries are added to, updated/merged in or evicted/removed from the Map. See the [Map Listener section](#7521-map-listener) for information on how to create a map listener object and register it.
+Hazelcast Map uses `MapListener` to listen to the events that occur when the entries are added to, updated/merged in or evicted/removed from the Map. See the [Map Listener section](#8521-map-listener) for information on how to create a map listener object and register it.
 
-### 7.4.2. Using MultiMap
+### 8.4.2. Using MultiMap
 
 Hazelcast `MultiMap` is a distributed and specialized map where you can store multiple values under a single key. For details, see the [MultiMap section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#multimap) in the Hazelcast IMDG Reference Manual.
 
@@ -1265,9 +1314,9 @@ for (value of values) {
 await multiMap.remove('my-key', 'value2');
 ```
 
-Hazelcast MultiMap uses `EntryListener` to listen to the events that occur when the entries are added to or removed from the MultiMap. See the [Entry Listener section](#7522-entry-listener) for information on how to create an entry listener object and register it.
+Hazelcast MultiMap uses `EntryListener` to listen to the events that occur when the entries are added to or removed from the MultiMap. See the [Entry Listener section](#8522-entry-listener) for information on how to create an entry listener object and register it.
 
-### 7.4.3. Using Replicated Map
+### 8.4.3. Using Replicated Map
 
 Hazelcast `ReplicatedMap` is a distributed key-value data structure where the data is replicated to all members in the cluster. It provides full replication of entries to all members for high speed access. For details, see the [Replicated Map section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#replicated-map) in the Hazelcast IMDG Reference Manual.
 
@@ -1286,9 +1335,9 @@ const value = map.get('key');
 console.log('Value:', value);
 ```
 
-Hazelcast Replicated Map uses `EntryListener` to listen to the events that occur when the entries are added to, updated in or evicted/removed from the Replicated Map. See the [Entry Listener section](#7522-entry-listener) for information on how to create an entry listener object and register it.
+Hazelcast Replicated Map uses `EntryListener` to listen to the events that occur when the entries are added to, updated in or evicted/removed from the Replicated Map. See the [Entry Listener section](#8522-entry-listener) for information on how to create an entry listener object and register it.
 
-### 7.4.4. Using Queue
+### 8.4.4. Using Queue
 
 Hazelcast Queue (`IQueue`) is a distributed queue which enables all cluster members to interact with it. For details, see the [Queue section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#queue) in the Hazelcast IMDG Reference Manual.
 
@@ -1310,9 +1359,9 @@ const item = queue.take();
 console.log('Item:', item);
 ```
 
-Hazelcast Queue uses `ItemListener` to listen to the events that occur when the items are added to or removed from the Queue. See the [Item Listener section](#7523-item-listener) for information on how to create an item listener object and register it.
+Hazelcast Queue uses `ItemListener` to listen to the events that occur when the items are added to or removed from the Queue. See the [Item Listener section](#8523-item-listener) for information on how to create an item listener object and register it.
 
-### 7.4.5. Using Set
+### 8.4.5. Using Set
 
 Hazelcast Set (`ISet`) is a distributed set which does not allow duplicate elements. For details, see the [Set section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#set) in the Hazelcast IMDG Reference Manual.
 
@@ -1333,9 +1382,9 @@ const values = await set.toArray();
 console.log('Values:', values);
 ```
 
-Hazelcast Set uses `ItemListener` to listen to the events that occur when the items are added to or removed from the Set. See the [Item Listener section](#7523-item-listener) for information on how to create an item listener object and register it.
+Hazelcast Set uses `ItemListener` to listen to the events that occur when the items are added to or removed from the Set. See the [Item Listener section](#8523-item-listener) for information on how to create an item listener object and register it.
 
-### 7.4.6. Using List
+### 8.4.6. Using List
 
 Hazelcast List (`IList`) is a distributed list which allows duplicate elements and preserves the order of elements. For details, see the [List section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#list) in the Hazelcast IMDG Reference Manual.
 
@@ -1357,9 +1406,9 @@ console.log('Length:', len);
 await list.clear();
 ```
 
-Hazelcast List uses `ItemListener` to listen to the events that occur when the items are added to or removed from the List. See the [Item Listener section](#7523-item-listener) for information on how to create an item listener object and register it.
+Hazelcast List uses `ItemListener` to listen to the events that occur when the items are added to or removed from the List. See the [Item Listener section](#8523-item-listener) for information on how to create an item listener object and register it.
 
-### 7.4.7. Using Ringbuffer
+### 8.4.7. Using Ringbuffer
 
 Hazelcast `Ringbuffer` is a replicated but not partitioned data structure that stores its data in a ring-like structure. You can think of it as a circular array with a given capacity. Each Ringbuffer has a tail and a head. The tail is where the items are added and the head is where the items are overwritten or expired. You can reach each element in a Ringbuffer using a sequence ID, which is mapped to the elements between the head and tail (inclusive) of the Ringbuffer. For details, see the [Ringbuffer section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#ringbuffer) in the Hazelcast IMDG Reference Manual.
 
@@ -1380,7 +1429,7 @@ value = await rb.readOne(sequence.add(1));
 console.log('Next value:', value);
 ```
 
-### 7.4.8. Using Reliable Topic
+### 8.4.8. Using Reliable Topic
 
 Hazelcast `ReliableTopic` is a distributed topic implementation backed up by the `Ringbuffer` data structure. For details, see the [Reliable Topic section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#reliable-topic) in the Hazelcast IMDG Reference Manual.
 
@@ -1397,9 +1446,9 @@ topic.addMessageListener((message) => {
 await topic.publish('Hello to the distributed world!');
 ```
 
-Hazelcast Reliable Topic uses `MessageListener` to listen to the events that occur when a message is received. See the [Message Listener section](#7524-message-listener) for information on how to create a message listener object and register it.
+Hazelcast Reliable Topic uses `MessageListener` to listen to the events that occur when a message is received. See the [Message Listener section](#8524-message-listener) for information on how to create a message listener object and register it.
 
-#### 7.4.8.1 Configuring Reliable Topic
+#### 8.4.8.1 Configuring Reliable Topic
 
 You may configure `ReliableTopic`s as the following:
 
@@ -1422,7 +1471,7 @@ The following are the descriptions of configuration elements and attributes:
 
 > **NOTE: When you use `default` as the Reliable Topic configuration key, it has a special meaning. Hazelcast client will use that configuration as the default one for all Reliable Topics, unless there is a specific configuration for the topic.**
 
-### 7.4.9. Using PN Counter
+### 8.4.9. Using PN Counter
 
 Hazelcast `PNCounter` (Positive-Negative Counter) is a CRDT positive-negative counter implementation. It is an eventually consistent counter given there is no member failure. For details, see the [PN Counter section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#pn-counter) in the Hazelcast IMDG Reference Manual.
 
@@ -1448,7 +1497,7 @@ value = await pnCounter.decrementAndGet();
 console.log('Decremented counter by one. New value:', value); // 6
 ```
 
-### 7.4.10. Using Flake ID Generator
+### 8.4.10. Using Flake ID Generator
 
 Hazelcast `FlakeIdGenerator` is used to generate cluster-wide unique identifiers. Generated identifiers are long primitive values and are k-ordered (roughly ordered). IDs are in the range from `0` to `2^63-1` (maximum value for Java's `long` type). For details, see the [FlakeIdGenerator section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#flakeidgenerator) in the Hazelcast IMDG Reference Manual.
 
@@ -1462,7 +1511,7 @@ const id = flakeIdGenerator.newId();
 console.log('New id:', id.toString());
 ```
 
-#### 7.4.10.1 Configuring Flake ID Generator
+#### 8.4.10.1 Configuring Flake ID Generator
 
 You may configure `FlakeIdGenerator`s as the following:
 
@@ -1486,7 +1535,7 @@ The following are the descriptions of configuration elements and attributes:
 
 > **NOTE: When you use `default` as the Flake ID Generator configuration key, it has a special meaning. Hazelcast client will use that configuration as the default one for all Flake ID Generators, unless there is a specific configuration for the generator.**
 
-### 7.4.11. CP Subsystem
+### 8.4.11. CP Subsystem
 
 Hazelcast IMDG 4.0 introduces CP concurrency primitives with respect to the [CAP principle](http://awoc.wolski.fi/dlib/big-data/Brewer_podc_keynote_2000.pdf), i.e., they always maintain [linearizability](https://aphyr.com/posts/313-strong-consistency-models) and prefer consistency to availability during network partitions and client or server failures.
 
@@ -1496,7 +1545,7 @@ Before using Atomic Long, Lock, and Semaphore, CP Subsystem has to be enabled on
 
 Data structures in CP Subsystem run in CP groups. Each CP group elects its own Raft leader and runs the Raft consensus algorithm independently. The CP data structures differ from the other Hazelcast data structures in two aspects. First, an internal commit is performed on the METADATA CP group every time you fetch a proxy from this interface. Hence, callers should cache returned proxy objects. Second, if you call `DistributedObject.destroy()` on a CP data structure proxy, that data structure is terminated on the underlying CP group and cannot be reinitialized until the CP group is force-destroyed. For this reason, please make sure that you are completely done with a CP data structure before destroying its proxy.
 
-#### 7.4.11.1. Using Atomic Long
+#### 8.4.11.1. Using Atomic Long
 
 Hazelcast `IAtomicLong` is the distributed implementation of atomic 64-bit integer counter. It offers various atomic operations such as `get`, `set`, `getAndSet`, `compareAndSet` and `incrementAndGet`. This data structure is a part of CP Subsystem.
 
@@ -1521,7 +1570,7 @@ console.log('CAS operation result:', result);
 
 AtomicLong implementation does not offer exactly-once / effectively-once execution semantics. It goes with at-least-once execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to offer at-most-once execution semantics. Please see [`fail-on-indeterminate-operation-state`](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-subsystem-configuration) server-side setting.
 
-#### 7.4.11.2. Using Lock
+#### 8.4.11.2. Using Lock
 
 Hazelcast `FencedLock` is the distributed implementation of a linearizable lock. It offers multiple  operations for acquiring the lock. This data structure is a part of CP Subsystem.
 
@@ -1575,7 +1624,7 @@ if (fence !== undefined) {
 }
 ```
 
-#### 7.4.11.3. Using Semaphore
+#### 8.4.11.3. Using Semaphore
 
 Hazelcast `ISemaphore` is the distributed implementation of a linearizable and distributed semaphore. It offers multiple operations for acquiring the permits. This data structure is a part of CP Subsystem.
 
@@ -1623,7 +1672,7 @@ if (success) {
  * The default implementation is session-aware. In this one, when a caller makes its very first `acquire()` call, it starts a new CP session with the underlying CP group. Then, liveliness of the caller is tracked via this CP session. When the caller fails, permits acquired by this caller are automatically and safely released. However, the session-aware version comes with a limitation, that is, a Hazelcast client cannot release permits before acquiring them first. In other words, a client can release only the permits it has acquired earlier.
  * The second implementation is sessionless. This one does not perform auto-cleanup of acquired permits on failures. Acquired permits are not bound to callers and permits can be released without acquiring first. However, you need to handle failed permit owners on your own. If a Hazelcast server or a client fails while holding some permits, they will not be automatically released. You can use the sessionless CP Semaphore implementation by enabling JDK compatibility `jdk-compatible` server-side setting. Refer to [Semaphore configuration](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#semaphore-configuration) documentation for more details.
 
-#### 7.4.11.4. Using CountDownLatch
+#### 8.4.11.4. Using CountDownLatch
 
 Hazelcast `ICountDownLatch` is the distributed implementation of a linearizable and distributed countdown latch. This data structure is a cluster-wide synchronization aid that allows one or more callers to wait until a set of operations being performed in other callers completes. This data structure is a part of CP Subsystem.
 
@@ -1652,7 +1701,7 @@ console.log('Count is zero:', countIsZero);
 
 > **NOTE: CountDownLatch count can be reset with `trySetCount()` after a countdown has finished, but not during an active count.**
 
-#### 7.4.11.5. Using AtomicReference
+#### 8.4.11.5. Using AtomicReference
 
 Hazelcast `IAtomicReference` is the distributed implementation of a linearizable object reference. It provides a set of atomic operations allowing to modify the value behind the reference. This data structure is a part of CP Subsystem.
 
@@ -1687,11 +1736,11 @@ The following are some considerations you need to know when you use AtomicRefere
 
 AtomicReference does not offer exactly-once / effectively-once execution semantics. It goes with at-least-once execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to offer at-most-once execution semantics. Please see [`fail-on-indeterminate-operation-state`](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-subsystem-configuration) server-side setting.
 
-## 7.5. Distributed Events
+## 8.5. Distributed Events
 
 This chapter explains when various events are fired and describes how you can add event listeners on a Hazelcast Node.js client. These events can be categorized as cluster and distributed data structure events.
 
-### 7.5.1. Listening for Cluster Events
+### 8.5.1. Listening for Cluster Events
 
 You can add event listeners to a Hazelcast Node.js client. You can configure the following listeners to listen to the events on the client side:
 
@@ -1699,7 +1748,7 @@ You can add event listeners to a Hazelcast Node.js client. You can configure the
 * Distributed Object Listener: Notifies when a distributed object is created or destroyed throughout the cluster.
 * Lifecycle Listener: Notifies when the client is starting, started, shutting down and shutdown.
 
-#### 7.5.1.1. Membership Listener
+#### 8.5.1.1. Membership Listener
 
 The Membership Listener interface has methods that are invoked for the following events.
 
@@ -1741,7 +1790,7 @@ const cfg = {
 };
 ```
 
-#### 7.5.1.2. Distributed Object Listener
+#### 8.5.1.2. Distributed Object Listener
 
 The events for distributed objects are invoked when they are created and destroyed in the cluster. After the events, a listener callback function is called. The interface of the callback function should be `DistributedObjectListener`. The parameter of the function is `DistributedObjectEvent` including following fields:
 
@@ -1766,13 +1815,14 @@ await client.getMap(mapname);
 await client.getMap(mapname);
 ```
 
-#### 7.5.1.3. Lifecycle Listener
+#### 8.5.1.3. Lifecycle Listener
 
 The `LifecycleListener` interface notifies for the following events:
 
 * `STARTING`: The client is starting.
 * `STARTED`: The client has started.
 * `CONNECTED`: The client connected to a member.
+* `CHANGED_CLUSTER`: The client connected to a new cluster.
 * `SHUTTING_DOWN`: The client is shutting down.
 * `DISCONNECTED`: The client disconnected from a member.
 * `SHUTDOWN`: The client has shutdown.
@@ -1817,13 +1867,13 @@ Lifecycle Event >>> DISCONNECTED
 Lifecycle Event >>> SHUTDOWN
 ```
 
-### 7.5.2. Listening for Distributed Data Structure Events
+### 8.5.2. Listening for Distributed Data Structure Events
 
 You can add event listeners to the distributed data structures.
 
 > **NOTE: Hazelcast Node.js client is a TypeScript-based project but JavaScript does not have interfaces. Therefore, some interfaces are given to the user by using the TypeScript files that have `.ts` extension. In this guide, implementing an interface means creating an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as "an instance of the interface". You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or GitHub repository for the required interface.**
 
-#### 7.5.2.1. Map Listener
+#### 8.5.2.1. Map Listener
 
 The Map Listener is used by the Hazelcast Map (`IMap`).
 
@@ -1870,7 +1920,7 @@ await map.clear();
 // Map cleared: 3
 ```
 
-#### 7.5.2.2. Entry Listener
+#### 8.5.2.2. Entry Listener
 
 The Entry Listener is used by the Hazelcast `MultiMap` and `ReplicatedMap`.
 
@@ -1931,7 +1981,7 @@ Note that some methods in the `EntryListener` interface are not supported by Mul
 - `evicted`
 - `mapCleared`
 
-#### 7.5.2.3. Item Listener
+#### 8.5.2.3. Item Listener
 
 The Item Listener is used by the Hazelcast `Queue`, `Set` and `List`.
 
@@ -1960,7 +2010,7 @@ await set.remove('Item1');
 
 The second argument in the `addItemListener` function is `includeValue`. It is a boolean parameter, and if it is `true`, the item event contains the item value.
 
-#### 7.5.2.4. Message Listener
+#### 8.5.2.4. Message Listener
 
 The Message Listener is used by the Hazelcast `ReliableTopic`.
 
@@ -1978,11 +2028,11 @@ topic.publish('Message1');
 // Message received: Message1
 ```
 
-## 7.6. Distributed Computing
+## 8.6. Distributed Computing
 
 This chapter explains how you can use Hazelcast IMDG's entry processor implementation in the Node.js client.
 
-### 7.6.1. Using EntryProcessor
+### 8.6.1. Using EntryProcessor
 
 Hazelcast supports entry processing. An entry processor is a function that executes your code on a map entry in an atomic way.
 
@@ -2130,11 +2180,11 @@ const value = await map.get('key');
 console.log(value);
 ```
 
-## 7.7. Distributed Query
+## 8.7. Distributed Query
 
 Hazelcast partitions your data and spreads it across cluster of members. You can iterate over the map entries and look for certain entries (specified by predicates) you are interested in. However, this is not very efficient because you will have to bring the entire entry set and iterate locally. Instead, Hazelcast allows you to run distributed queries on your distributed map.
 
-### 7.7.1. How Distributed Query Works
+### 8.7.1. How Distributed Query Works
 
 1. The requested predicate is sent to each member in the cluster.
 2. Each member looks at its own local entries and filters them according to the predicate. At this stage, key-value pairs of the entries are deserialized and then passed to the predicate.
@@ -2164,7 +2214,7 @@ Hazelcast offers the following ways for distributed query purposes:
 * Combining Predicates with AND, OR, NOT
 * Distributed SQL Query
 
-#### 7.7.1.1. Employee Map Query Example
+#### 8.7.1.1. Employee Map Query Example
 
 Assume that you have an `employee` map containing the values of `Employee` objects, as shown below.
 
@@ -2201,7 +2251,7 @@ For the non-portable types, you need to implement its Java counterpart and its s
 
 > **NOTE: Querying with `Portable` object is faster as compared to `IdentifiedDataSerializable`.**
 
-#### 7.7.1.2. Querying by Combining Predicates with AND, OR, NOT
+#### 8.7.1.2. Querying by Combining Predicates with AND, OR, NOT
 
 You can combine predicates by using the `and`, `or` and `not` operators, as shown in the below example.
 
@@ -2223,7 +2273,7 @@ In the above example code, `predicate` verifies whether the entry is active and 
 
 > **NOTE: Predicates can also be applied to `keySet` and `entrySet` methods of the Hazelcast IMDG's distributed map.**
 
-#### 7.7.1.3. Querying with SQL
+#### 8.7.1.3. Querying with SQL
 
 You can query with SQL by using the predicate returned from the `Predicates.sql` function. Its argument takes a regular SQL `where` clause, as shown in the below example.
 
@@ -2323,7 +2373,7 @@ console.log(olderThan27.get(0), olderThan27.get(1));
 
 In this example, the code creates a list with the values greater than or equal to `27`.
 
-#### 7.7.1.4. Querying with JSON Strings
+#### 8.7.1.4. Querying with JSON Strings
 
 You can query the JSON strings stored inside your Hazelcast clusters. To query a JSON string, you can use `HazelcastJsonValue` or plain JavaScript objects.
 
@@ -2453,7 +2503,7 @@ You can configure this using `metadata-policy` element for the map configuration
 </hazelcast>
 ```
 
-#### 7.7.1.5. Filtering with Paging Predicates
+#### 8.7.1.5. Filtering with Paging Predicates
 
 The Node.js client provides paging for defined predicates. With its `PagingPredicate` object, you can get a list of keys, values or entries page by page by filtering them with predicates and giving the size of the pages. Also, you can sort the entries by specifying comparators.
 
@@ -2479,7 +2529,7 @@ If you want to sort the result before paging, you need to specify a comparator o
 
 Also, you can access a specific page more easily with the help of the `setPage` function. This way, if you make a query for the 100th page, for example, it will get all 100 pages at once instead of reaching the 100th page one by one using the `nextPage` function.
 
-### 7.7.2. Fast-Aggregations
+### 8.7.2. Fast-Aggregations
 
 Fast-Aggregations feature provides some aggregate functions, such as `sum`, `average`, `max`, and `min`, on top of Hazelcast `IMap` entries. Their performance is high since they run in parallel for each partition and are highly optimized for speed and low memory consumption.
 
@@ -2531,9 +2581,9 @@ const avgAge = await map.aggregate(Aggregators.numberAvg());
 console.log('Average age is ' + avgAge);
 ```
 
-## 7.8. Performance
+## 8.8. Performance
 
-### 7.8.1. Partition Aware
+### 8.8.1. Partition Aware
 
 Partition Aware ensures that the related entries exist on the same member. If the related data is on the same member, operations can be executed without the cost of extra network calls and extra wire data, and this improves the performance. This feature is provided by using the same partition keys for related data.
 
@@ -2587,7 +2637,7 @@ await ordersMap.putAll([
 
 For more details, see the [PartitionAware section](https://docs.hazelcast.org/docs/latest/manual/html-single/#partitionaware) in the Hazelcast IMDG Reference Manual.
 
-### 7.8.2. Near Cache
+### 8.8.2. Near Cache
 
 Map entries in Hazelcast are partitioned across the cluster members. Hazelcast clients do not have local data at all. Suppose you read the key `k` a number of times from a Hazelcast client and `k` is owned by a member in your cluster. Then each `map.get('k')` will be a remote operation, which creates a lot of network trips. If you have a map that is mostly read, then you should consider creating a local Near Cache, so that reads are sped up and less network traffic is created.
 
@@ -2601,7 +2651,7 @@ These benefits do not come for free, please consider the following trade-offs:
 
 Near Cache is highly recommended for maps that are mostly read.
 
-#### 7.8.2.1. Configuring Near Cache
+#### 8.8.2.1. Configuring Near Cache
 
 The following snippets show how a Near Cache is configured in the Node.js client, presenting all available values for each element:
 
@@ -2648,7 +2698,7 @@ Following are the descriptions of all configuration elements:
 
 > **NOTE: When you use `default` as the Near Cache configuration key, it has a special meaning. Hazelcast client will use that configuration as the default one for all Maps, unless there is a specific configuration for a Map.**
 
-#### 7.8.2.2. Near Cache Example for Map
+#### 8.8.2.2. Near Cache Example for Map
 
 The following is an example configuration for a Near Cache defined in the `mostlyReadMap` map. According to this configuration, the entries are stored as `OBJECT`'s in this Near Cache and eviction starts when the count of entries reaches `5000`; entries are evicted based on the `LRU` (Least Recently Used) policy. In addition, when an entry is updated or removed on the member side, it is eventually evicted on the client side.
 
@@ -2665,7 +2715,7 @@ const cfg = {
 };
 ```
 
-#### 7.8.2.3. Near Cache Eviction
+#### 8.8.2.3. Near Cache Eviction
 
 In the scope of Near Cache, eviction means evicting (clearing) the entries selected according to the given `evictionPolicy` when the specified `evictionMaxSize` has been reached.
 
@@ -2673,7 +2723,7 @@ The `evictionMaxSize` defines the entry count when the Near Cache is full and de
 
 Once the eviction is triggered the configured `evictionPolicy` determines which, if any, entries must be evicted.
 
-#### 7.8.2.4. Near Cache Expiration
+#### 8.8.2.4. Near Cache Expiration
 
 Expiration means the eviction of expired records. A record is expired:
 
@@ -2683,11 +2733,11 @@ Expiration means the eviction of expired records. A record is expired:
 
 The actual expiration is performed when a record is accessed: it is checked if the record is expired or not. If it is expired, it is evicted and `undefined` is returned as the value to the caller.
 
-#### 7.8.2.5. Near Cache Invalidation
+#### 8.8.2.5. Near Cache Invalidation
 
 Invalidation is the process of removing an entry from the Near Cache when its value is updated or it is removed from the original map (to prevent stale reads). See the [Near Cache Invalidation section](https://docs.hazelcast.org/docs/latest/manual/html-single/#near-cache-invalidation) in the Hazelcast IMDG Reference Manual.
 
-#### 7.8.2.6. Near Cache Eventual Consistency
+#### 8.8.2.6. Near Cache Eventual Consistency
 
 Near Caches are invalidated by invalidation events. Invalidation events can be lost due to the fire-and-forget fashion of eventing system. If an event is lost, reads from Near Cache can indefinitely be stale.
 
@@ -2699,7 +2749,7 @@ You can configure eventual consistency with entries of the `properties` config o
 
 - `hazelcast.invalidation.reconciliation.interval.seconds`: Default value is `60` seconds. This is a periodic task that scans cluster members periodically to compare generated invalidation events with the received ones from the client Near Cache.
 
-### 7.8.3. Automated Pipelining
+### 8.8.3. Automated Pipelining
 
 Hazelcast Node.js client performs automated pipelining of operations. It means that the library pushes all operations into an internal queue and tries to send them in batches. This reduces the count of executed `Socket.write()` calls and significantly improves throughtput for read operations.
 
@@ -2709,9 +2759,9 @@ You can configure automated operation pipelining with entries of the `properties
 
 - `hazelcast.client.autopipelining.threshold.bytes`: Default value is `8192` bytes. This is the coalescing threshold for the internal queue used by automated pipelining. Once the total size of operation payloads taken from the queue reaches this value during batch preparation, these operations are written to the socket. Notice that automated pipelining will still send operations if their total size is smaller than the threshold and there are no more operations in the internal queue.
 
-## 7.9. Monitoring and Logging
+## 8.9. Monitoring and Logging
 
-### 7.9.1. Enabling Client Statistics
+### 8.9.1. Enabling Client Statistics
 
 You can monitor your clients using Hazelcast Management Center.
 
@@ -2736,7 +2786,7 @@ After enabling the client statistics, you can monitor your clients using Hazelca
 
 > **NOTE: Statistics sent by Hazelcast Node.js client 4.0 are compatible with Management Center 4.0. Management Center 4.2020.08 and newer versions will be supported in version 4.1 of the client.**
 
-### 7.9.2. Logging Configuration
+### 8.9.2. Logging Configuration
 
  By default, Hazelcast Node.js client uses a default logger which logs to the `stdout` with the `INFO` log level. You can change the log level using the `hazelcast.logging.level` entry of the `properties` config option.
 
@@ -2795,7 +2845,7 @@ const cfg = {
 };
 ```
 
-## 7.10. Defining Client Labels
+## 8.10. Defining Client Labels
 
 Through the client labels, you can assign special roles for your clients and use these roles to perform some actions
 specific to those client connections.
@@ -2813,7 +2863,7 @@ const cfg = {
 };
 ```
 
-## 7.11. Defining Instance Name
+## 8.11. Defining Instance Name
 
 Each client has a name associated with it. By default, it is set to `hz.client_${CLIENT_ID}`. Here `CLIENT_ID` starts from `0` and it is incremented by `1` for each new client. This id is incremented and set by the client, so it may not be unique between different clients used by different applications.
 
@@ -2825,11 +2875,11 @@ const cfg = {
 };
 ```
 
-## 7.12. Configuring Load Balancer
+## 8.12. Configuring Load Balancer
 
 Load Balancer configuration allows you to specify which cluster member to send next operation when queried.
 
-If it is a [smart client](#721-smart-client), only the operations that are not key-based are routed to the member
+If it is a [smart client](#821-smart-client), only the operations that are not key-based are routed to the member
 that is returned by the `LoadBalancer`. If it is not a smart client, `LoadBalancer` is ignored.
 
 By default, client uses round robin Load Balancer which picks each cluster member in turn. Also, the client provides random Load Balancer which picks the next member randomly as the name suggests. You can use one of them by specifying `ROUND_ROBIN` or `RANDOM` value on the `loadBalancer.type` config option.
@@ -2846,11 +2896,11 @@ const cfg = {
 
 You can also provide a custom Load Balancer implementation to use different load balancing policies. To do so, you should implement the `LoadBalancer` interface or extend the `AbstractLoadBalancer` class for that purpose and provide the Load Balancer object into the `loadBalancer.customLoadBalancer` config option.
 
-# 8. Securing Client Connection
+# 9. Securing Client Connection
 
 This chapter describes the security features of Hazelcast Node.js client. These include using TLS/SSL for connections between members and between clients and members, mutual authentication and credentials. These security features require **Hazelcast IMDG Enterprise** edition.
 
-## 8.1. TLS/SSL
+## 9.1. TLS/SSL
 
 One of the offers of Hazelcast is the TLS/SSL protocol which you can use to establish an encrypted communication across your cluster with key stores and trust stores.
 
@@ -2859,11 +2909,11 @@ One of the offers of Hazelcast is the TLS/SSL protocol which you can use to esta
 
 You should set `keyStore` and `trustStore` before starting the members. See the next section on setting `keyStore` and `trustStore` on the server side.
 
-### 8.1.1. TLS/SSL for Hazelcast Members
+### 9.1.1. TLS/SSL for Hazelcast Members
 
 Hazelcast allows you to encrypt socket level communication between Hazelcast members and between Hazelcast clients and members, for end to end encryption. To use it, see the [TLS/SSL for Hazelcast Members section](http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#tls-ssl-for-hazelcast-members).
 
-### 8.1.2. TLS/SSL for Hazelcast Node.js Clients
+### 9.1.2. TLS/SSL for Hazelcast Node.js Clients
 
 TLS/SSL for the Hazelcast Node.js client can be configured using the `SSLConfig` class. In order to turn it on, `enabled` property of the `network.ssl` config option should be set to `true`:
 
@@ -2879,7 +2929,7 @@ const cfg = {
 
 SSL config takes various SSL options defined in the [Node.js TLS Documentation](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback). You can set your custom options object to `network.ssl.sslOptions`.
 
-### 8.1.3. Mutual Authentication
+### 9.1.3. Mutual Authentication
 
 As explained above, Hazelcast members have key stores used to identify themselves (to other members) and Hazelcast clients have trust stores used to define which members they can trust.
 
@@ -3004,23 +3054,23 @@ const cfg = {
 
 The client calls the `init()` method with the `properties` configuration option. Then the client calls the `getSSLOptions()` method of `SSLOptionsFactory` to create the `options` object.
 
-## 8.2. Credentials
+## 9.2. Credentials
 
 One of the key elements in Hazelcast security is the `Credentials` object, which can be used to carry all security attributes of the Hazelcast Node.js client to Hazelcast members. Then, Hazelcast members can authenticate the clients and perform access control checks on the client operations using this `Credentials` object.
 
 With Hazelcast's extensible, `JAAS` based security features you can do much more than just authentication.
 See the [JAAS code sample](code_samples/jaas_sample) to learn how to perform access control checks on the client operations based on user groups.
 
-> **NOTE: It is almost always a bad idea to write the credentials to wire in a clear-text format. Therefore, using TLS/SSL encryption is highly recommended while using the custom credentials as described in [TLS/SSL section]((#81-tlsssl)).**
+> **NOTE: It is almost always a bad idea to write the credentials to wire in a clear-text format. Therefore, using TLS/SSL encryption is highly recommended while using the custom credentials as described in [TLS/SSL section]((#91-tlsssl)).**
 
 Also, see the [Security section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#security) of Hazelcast IMDG Reference Manual for more information.
 
 
-# 9. Development and Testing
+# 10. Development and Testing
 
 Hazelcast Node.js client is developed using TypeScript. If you want to help with bug fixes, develop new features or tweak the implementation to your application's needs, you can follow the steps in this section.
 
-## 9.1. Building and Using Client From Sources
+## 10.1. Building and Using Client From Sources
 
 Follow the below steps to build and install Hazelcast Node.js client from its source:
 
@@ -3048,7 +3098,7 @@ If you are planning to contribute, please run the style checker, as shown below,
 npm run lint
 ```
 
-## 9.2. Testing
+## 10.2. Testing
 
 In order to test Hazelcast Node.js client locally, you will need the following:
 
@@ -3063,7 +3113,7 @@ npm test
 
 Test script automatically downloads `hazelcast-remote-controller` and Hazelcast IMDG. The script uses Maven to download those.
 
-# 10. Getting Help
+# 11. Getting Help
 
 You can use the following channels for your questions and development/usage issues:
 
@@ -3072,15 +3122,15 @@ You can use the following channels for your questions and development/usage issu
 * [Google Groups](https://groups.google.com/forum/#!forum/hazelcast)
 * [Stack Overflow](https://stackoverflow.com/questions/tagged/hazelcast)
 
-# 11. Contributing
+# 12. Contributing
 
-Besides your development contributions as explained in the [Development and Testing chapter](#9-development-and-testing) above, you can always open a pull request on this repository for your other requests such as documentation changes.
+Besides your development contributions as explained in the [Development and Testing chapter](#10-development-and-testing) above, you can always open a pull request on this repository for your other requests such as documentation changes.
 
-# 12. License
+# 13. License
 
 [Apache 2 License](https://github.com/hazelcast/hazelcast-nodejs-client/blob/master/LICENSE).
 
-# 13. Copyright
+# 14. Copyright
 
 Copyright (c) 2008-2020, Hazelcast, Inc. All Rights Reserved.
 

@@ -52,9 +52,7 @@ export class HazelcastCloudDiscovery {
     }
 
     discoverNodes(): Promise<Map<string, AddressImpl>> {
-        return this.callService().catch((e) => {
-            throw e;
-        });
+        return this.callService();
     }
 
     callService(): Promise<Map<string, AddressImpl>> {
@@ -73,13 +71,10 @@ export class HazelcastCloudDiscovery {
             res.on('data', (chunk) => {
                 dataAsAString += chunk;
             });
-
             res.on('end', () => {
                 deferred.resolve(this.parseResponse(dataAsAString));
             });
-        }).on('error', (e) => {
-            deferred.reject(e);
-        });
+        }).on('error', deferred.reject);
 
         return deferred.promise;
     }

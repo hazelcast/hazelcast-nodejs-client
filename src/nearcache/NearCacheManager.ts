@@ -66,5 +66,4 @@ export class NearCacheManager {
             nearCache.clear();
         }
     }
-
 }

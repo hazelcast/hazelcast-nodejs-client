@@ -93,6 +93,11 @@ export class ClientNotActiveError extends HazelcastError {
     }
 }
 
+/**
+ * Thrown when the client can not use a cluster. Examples:
+ * - Cluster blacklisted the client
+ * - Cluster partition counts are different between alternative clusters
+ */
 export class ClientNotAllowedInClusterError extends HazelcastError {
     constructor(msg: string, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
         super(msg, cause, serverStackTrace);
