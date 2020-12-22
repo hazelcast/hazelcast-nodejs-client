@@ -477,6 +477,9 @@ export class ClientConnectionManager extends EventEmitter {
                 // try to connect to a member given via config (explicit config/discovery mechanism)
                 return this.loadAddressesFromProvider(ctx.addressProvider)
                     .then((addresses) => {
+                        // filter out already tried addresses
+                        addresses = addresses.filter((addr) => !triedAddressesPerAttempt.has(addr.toString()));
+
                         return this.tryConnecting(
                             0, addresses, triedAddressesPerAttempt,
                             (a) => a,
