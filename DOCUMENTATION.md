@@ -2757,7 +2757,7 @@ You can configure automated operation pipelining with entries of the `properties
 
 - `hazelcast.client.autopipelining.enabled`: Default value is `true`. Turns automated pipelining feature on/off. If your application does only writes operations, like `IMap.set()`, you can try disabling automated pipelining to get a slightly better throughtput.
 
-- `hazelcast.client.autopipelining.threshold.bytes`: Default value is `8192` bytes. This is the coalescing threshold for the internal queue used by automated pipelining. Once the total size of operation payloads taken from the queue reaches this value during batch preparation, these operations are written to the socket. Notice that automated pipelining will still send operations if their total size is smaller than the threshold and there are no more operations in the internal queue.
+- `hazelcast.client.autopipelining.threshold.bytes`: Default value is `65536` bytes (64 KB). This is the coalescing threshold for the internal queue used by automated pipelining. Once the total size of operation payloads taken from the queue reaches this value during batch preparation, these operations are written to the socket. Notice that automated pipelining will still send operations if their total size is smaller than the threshold and there are no more operations in the internal queue.
 
 ## 8.9. Monitoring and Logging
 

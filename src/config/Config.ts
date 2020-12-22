@@ -171,7 +171,7 @@ export class ClientConfigImpl implements ClientConfig {
         'hazelcast.invalidation.min.reconciliation.interval.seconds': 30,
         'hazelcast.logging.level': 'INFO',
         'hazelcast.client.autopipelining.enabled': true,
-        'hazelcast.client.autopipelining.threshold.bytes': 8192,
+        'hazelcast.client.autopipelining.threshold.bytes': 65536,
         'hazelcast.client.socket.no.delay': true,
         'hazelcast.client.shuffle.member.list': true,
         'hazelcast.client.operation.backup.timeout.millis': 5000,
