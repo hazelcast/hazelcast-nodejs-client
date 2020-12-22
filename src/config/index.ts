@@ -23,6 +23,7 @@ export * from './BitmapIndexOptions';
 export * from './ClientCloudConfig';
 export * from './ClientNetworkConfig';
 export * from './Config';
+export * from './FailoverConfig';
 export * from './ConnectionRetryConfig';
 export * from './ConnectionStrategyConfig';
 export * from './EvictionPolicy';

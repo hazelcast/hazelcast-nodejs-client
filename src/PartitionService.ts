@@ -72,6 +72,10 @@ export class PartitionServiceImpl implements PartitionService {
         this.logger = client.getLoggingService().getLogger();
     }
 
+    reset(): void {
+        this.partitionTable = new PartitionTable();
+    }
+
     /**
      * The partitions can be empty on the response, client will not apply the empty partition table.
      */

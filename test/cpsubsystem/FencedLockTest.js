@@ -26,6 +26,7 @@ const {
     DistributedObjectDestroyedError,
     IllegalMonitorStateError
 } = require('../../');
+const { promiseWaitMilliseconds } = require('../Util');
 
 describe('FencedLockTest', function () {
 
@@ -104,7 +105,7 @@ describe('FencedLockTest', function () {
 
         await anotherClient.shutdown();
 
-        await new Promise((resolve) => setTimeout(resolve, 5000));
+        await promiseWaitMilliseconds(5000);
         locked = await lock.isLocked();
         expect(locked).to.be.false;
     });

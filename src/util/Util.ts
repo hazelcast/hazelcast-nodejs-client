@@ -43,15 +43,15 @@ export function assertNumber(v: any): void {
 }
 
 /** @internal */
-export function assertNonNegativeNumber(v: any): void {
-    assert(typeof v === 'number', 'Number value expected.');
-    assert(v >= 0, 'Non-negative value expected.');
+export function assertNonNegativeNumber(v: any, m?: string): void {
+    assert(typeof v === 'number', m || 'Number value expected.');
+    assert(v >= 0, m || 'Non-negative value expected.');
 }
 
 /** @internal */
-export function assertPositiveNumber(v: any): void {
-    assert(typeof v === 'number', 'Number value expected.');
-    assert(v > 0, 'Positive value expected.');
+export function assertPositiveNumber(v: any, m?: string): void {
+    assert(typeof v === 'number', m || 'Number value expected.');
+    assert(v > 0, m || 'Positive value expected.');
 }
 
 /** @internal */
@@ -88,23 +88,6 @@ export function getType(obj: any): string {
 /** @internal */
 export function enumFromString<T>(enumType: any, value: string): T {
     return enumType[value];
-}
-
-/** @internal */
-export function copyObjectShallow<T>(obj: T): T {
-    if (obj === undefined || obj === null) {
-        return obj;
-    }
-    if (typeof obj === 'object') {
-        const newObj: any = {};
-        for (const prop in obj) {
-            if (obj.hasOwnProperty(prop)) {
-                newObj[prop] = obj[prop];
-            }
-        }
-        return newObj;
-    }
-    assert(false, 'Object should be undefined or type of object.');
 }
 
 /** @internal */
