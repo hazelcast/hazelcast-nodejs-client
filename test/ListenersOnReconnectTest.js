@@ -75,7 +75,7 @@ describe('ListenersOnReconnectTest', function () {
             turnoffMember(cluster.id, members[membersToClose[1]].uuid)
         ]);
 
-        await Util.promiseWaitMilliseconds(5000);
+        await Util.promiseWaitMilliseconds(8000);
         return map.put('keyx', 'valx');
     }
 
@@ -146,7 +146,7 @@ describe('ListenersOnReconnectTest', function () {
                 await RC.terminateMember(cluster.id, member.uuid);
                 await RC.startMember(cluster.id);
 
-                await Util.promiseWaitMilliseconds(5000);
+                await Util.promiseWaitMilliseconds(8000);
                 return map.put('keyx', 'valx');
             }
 
