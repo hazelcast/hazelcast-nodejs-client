@@ -86,7 +86,7 @@ export class FailoverConfigBuilder {
         assert(
             util.isDeepStrictEqual(mainCopy, alternativeCopy),
             'Alternative config with cluster name ' + alternative.clusterName
-                + ' must have the same config than the initial config with cluster name '
+                + ' must have the same config as the initial config with cluster name '
                 + main.clusterName + ' except for the following options: '
                 + 'clusterName, customCredentials, network.clusterMembers, '
                 + 'network.ssl, network.hazelcastCloud'

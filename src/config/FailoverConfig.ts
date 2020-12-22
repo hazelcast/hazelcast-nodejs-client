@@ -28,7 +28,7 @@ export interface ClientFailoverConfig {
      * Count of attempts to connect to a cluster. For each alternative cluster,
      * the client will try to connect to the cluster respecting related `connectionRetry`.
      *
-     * When the client can not connect a cluster, it will try to connect tryCount times going
+     * When the client can not connect a cluster, it will try to connect `tryCount` times going
      * over the alternative client configs in a round-robin fashion. This is triggered at the
      * start and also when the client disconnects from the cluster and can not connect back
      * to it by exhausting attempts described in connectionRetry config. In that case,

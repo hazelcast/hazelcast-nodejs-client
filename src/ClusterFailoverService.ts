@@ -128,7 +128,7 @@ export class ClusterFailoverServiceBuilder {
         if (addressListProvided && hazelcastCloudToken != null) {
             throw new IllegalStateError('Only one discovery method can be enabled at a time. '
                 + 'Cluster members given explicitly: ' + addressListProvided
-                + ', hazelcastCloud enabled.');
+                + ', Hazelcast Cloud enabled.');
         }
 
         const cloudAddressProvider = this.initCloudAddressProvider(config);

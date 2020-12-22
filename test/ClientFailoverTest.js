@@ -38,6 +38,8 @@ const {
  */
 describe('ClientFailoverTest', function () {
 
+    markEnterprise(this);
+
     let cluster1;
     let member1;
     let cluster2;
@@ -69,7 +71,7 @@ describe('ClientFailoverTest', function () {
         if (connectTimeoutMs !== undefined) {
             config.connectionStrategy = {
                 connectionRetry: {
-                    clusterConnectTimeoutMillis: 1000
+                    clusterConnectTimeoutMillis: connectTimeoutMs
                 }
             };
         }
@@ -109,8 +111,6 @@ describe('ClientFailoverTest', function () {
     });
 
     it('should be able to connect to enterprise cluster', async function () {
-        markEnterprise(this);
-
         client = await Client.newHazelcastFailoverClient({
             tryCount: 1,
             clientConfigs: [
@@ -120,8 +120,6 @@ describe('ClientFailoverTest', function () {
     });
 
     it('should shut down when tryCount is reached', async function () {
-        markEnterprise(this);
-
         // shut down dev1, but keep dev2 alive
         await RC.terminateCluster(cluster1.id);
 
@@ -136,8 +134,6 @@ describe('ClientFailoverTest', function () {
     });
 
     it('should retry read ops when switched to next cluster', async function () {
-        markEnterprise(this);
-
         let clusterChanged = false;
         const clusterChangedDeferred = deferredPromise();
         const lifecycleListener = (state) => {
@@ -177,8 +173,6 @@ describe('ClientFailoverTest', function () {
     });
 
     it('should reject with offline error when retrying read ops while switching in async mode', async function () {
-        markEnterprise(this);
-
         const config = createClientConfig({ clusterName: 'dev1', connectTimeoutMs: 1000 });
         config.connectionStrategy.reconnectMode = 'ASYNC';
         client = await Client.newHazelcastFailoverClient({
@@ -209,8 +203,6 @@ describe('ClientFailoverTest', function () {
     });
 
     it('should shutdown when switching to cluster with different partition count', async function () {
-        markEnterprise(this);
-
         cluster3 = await RC.createClusterKeepClusterName(null,
             createClusterConfig({ clusterName: 'dev3', partitionCount: 42 }));
         await RC.startMember(cluster3.id);
@@ -238,8 +230,6 @@ describe('ClientFailoverTest', function () {
     });
 
     it('should throw when starting with invalid failover config', async function () {
-        markEnterprise(this);
-
         expect(() => Client.newHazelcastFailoverClient({
             tryCount: 1,
             clientConfigs: [
