@@ -75,6 +75,7 @@ export class ClusterViewListenerService {
         invocation.handler = handler;
 
         this.logger.trace('ClusterViewListenerService', `Register attempt of cluster view handler to ${connection}`);
+        this.clusterService.clearMemberListVersion();
         this.client.getInvocationService().invokeUrgent(invocation)
             .then(() => {
                 this.logger.trace('ClusterViewListenerService', `Registered cluster view handler to ${connection}`);
@@ -106,5 +107,4 @@ export class ClusterViewListenerService {
                 });
         };
     }
-
 }
