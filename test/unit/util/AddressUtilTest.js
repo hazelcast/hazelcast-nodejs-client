@@ -32,66 +32,85 @@ describe('AddressUtilTest', function () {
     const port = 8080;
     const defaultPort = 5701;
 
-    it('getSocketAddresses: should return a single address when the port is specified', function () {
+    it('getSocketAddresses: should return a single address when the port is specified for IPv4', function () {
         const addresses = getSocketAddresses(`${v4Address}:${port}`);
-        expect(addresses.length).to.equal(1);
+        expect(addresses.primary).to.have.lengthOf(1);
+        expect(addresses.secondary).to.have.lengthOf(0);
 
-        const address = addresses[0];
+        const address = addresses.primary[0];
         expect(address.host).to.equal(v4Address);
         expect(address.port).to.equal(port);
     });
 
-    it('getSocketAddresses: should return multiple addresses when the port is not specified', function () {
+    it('getSocketAddresses: should return multiple addresses when the port is not specified for IPv4', function () {
         const addresses = getSocketAddresses(`${v4Address}`);
-        expect(addresses.length).to.equal(3);
+        expect(addresses.primary).to.have.lengthOf(1);
+        expect(addresses.secondary).to.have.lengthOf(2);
 
-        for (let i = 0; i < 3; i++) {
-            expect(addresses[i].host).to.equal(v4Address);
-            expect(addresses[i].port).to.equal(defaultPort + i);
+        const primaryAddress = addresses.primary[0];
+        expect(primaryAddress.host).to.equal(v4Address);
+        expect(primaryAddress.port).to.equal(defaultPort);
+
+        for (let i = 0; i < 2; i++) {
+            expect(addresses.secondary[i].host).to.equal(v4Address);
+            expect(addresses.secondary[i].port).to.equal(defaultPort + i + 1);
         }
     });
 
-    it('getSocketAddresses: should return a single address when the port is specified with IPv6 address', function () {
+    it('getSocketAddresses: should return a single address when the port is specified for IPv6', function () {
         const addresses = getSocketAddresses(`[${v6Address}]:${port}`);
-        expect(addresses.length).to.equal(1);
+        expect(addresses.primary).to.have.lengthOf(1);
+        expect(addresses.secondary).to.have.lengthOf(0);
 
-        const address = addresses[0];
+        const address = addresses.primary[0];
         expect(address.host).to.equal(v6Address);
         expect(address.port).to.equal(port);
     });
 
-    it('getSocketAddresses: should return multiple addresses when the port is not specified with IPv6 address', function () {
+    it('getSocketAddresses: should return multiple addresses when the port is not specified for IPv6', function () {
         const addresses = getSocketAddresses(v6Address);
-        expect(addresses.length).to.equal(3);
+        expect(addresses.primary).to.have.lengthOf(1);
+        expect(addresses.secondary).to.have.lengthOf(2);
 
-        for (let i = 0; i < 3; i++) {
-            expect(addresses[i].host).to.equal(v6Address);
-            expect(addresses[i].port).to.equal(defaultPort + i);
+        const primaryAddress = addresses.primary[0];
+        expect(primaryAddress.host).to.equal(v6Address);
+        expect(primaryAddress.port).to.equal(defaultPort);
+
+        for (let i = 0; i < 2; i++) {
+            expect(addresses.secondary[i].host).to.equal(v6Address);
+            expect(addresses.secondary[i].port).to.equal(defaultPort + i + 1);
         }
     });
 
-    it('createAddressFromString: should return host address with specified port', function () {
+    it('createAddressFromString: should return host address with port', function () {
         const address = createAddressFromString(`${host}:${port}`);
 
         expect(address.host).to.equal(host);
         expect(address.port).to.equal(port);
     });
 
-    it('createAddressFromString: should return IPv4 address with specified port', function () {
+    it('createAddressFromString: should return IPv4 address with port', function () {
         const address = createAddressFromString(`${v4Address}:${port}`);
 
         expect(address.host).to.equal(v4Address);
         expect(address.port).to.equal(port);
     });
 
-    it('createAddressFromString: should return IPv6 address with specified port', function () {
+    it('createAddressFromString: should return IPv6 address with port', function () {
         const address = createAddressFromString(`[${v6Address}]:${port}`);
 
         expect(address.host).to.equal(v6Address);
         expect(address.port).to.equal(port);
     });
 
-    it('createAddressFromString: should use default port when not specified', function () {
+    it('createAddressFromString: should return IPv6 address with brackets and port', function () {
+        const address = createAddressFromString(`[${v6Address}]:${port}`);
+
+        expect(address.host).to.equal(v6Address);
+        expect(address.port).to.equal(port);
+    });
+
+    it('createAddressFromString: should use default port when not specified in address', function () {
         const address = createAddressFromString(v4Address, defaultPort);
 
         expect(address.host).to.equal(v4Address);

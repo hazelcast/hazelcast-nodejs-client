@@ -17,7 +17,7 @@
 
 import * as dns from 'dns';
 import * as net from 'net';
-import {AddressImpl} from '../core';
+import {AddressImpl, Addresses} from '../core';
 
 /** @internal */
 const MAX_PORT_TRIES = 3;
@@ -25,7 +25,7 @@ const MAX_PORT_TRIES = 3;
 const INITIAL_FIRST_PORT = 5701;
 
 /** @internal */
-export function getSocketAddresses(address: string): AddressImpl[] {
+export function getSocketAddresses(address: string): Addresses {
     const addressHolder = createAddressFromString(address, -1);
     let possiblePort = addressHolder.port;
     let maxPortTryCount = 1;
@@ -34,16 +34,24 @@ export function getSocketAddresses(address: string): AddressImpl[] {
         possiblePort = INITIAL_FIRST_PORT;
     }
 
-    const addresses: AddressImpl[] = [];
+    const addressList: AddressImpl[] = [];
     for (let i = 0; i < maxPortTryCount; i++) {
-        addresses.push(new AddressImpl(addressHolder.host, possiblePort + i));
+        addressList.push(new AddressImpl(addressHolder.host, possiblePort + i));
     }
 
+    let addresses;
+    if (addressList.length > 0) {
+        const primary = [ addressList[0] ];
+        const secondary = addressList.slice(1);
+        addresses = new Addresses(primary, secondary);
+    } else {
+        addresses = new Addresses();
+    }
     return addresses;
 }
 
 /** @internal */
-export function createAddressFromString(address: string, defaultPort?: number): AddressImpl {
+export function createAddressFromString(address: string, defaultPort: number): AddressImpl {
     const indexBracketStart = address.indexOf('[');
     const indexBracketEnd = address.indexOf(']', indexBracketStart);
     const indexColon = address.indexOf(':');
@@ -81,7 +89,7 @@ export function resolveAddress(address: string): Promise<string> {
             if (address == null || address.length === 0) {
                 throw new Error('Address must be non-null and non-empty');
             }
-            return createAddressFromString(address);
+            return createAddressFromString(address, -1);
         })
         .then(({ host }) => {
             if (host == null || host.length === 0) {
