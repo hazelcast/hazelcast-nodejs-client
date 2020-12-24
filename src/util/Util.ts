@@ -18,9 +18,7 @@
 import * as assert from 'assert';
 import * as Long from 'long';
 import * as Path from 'path';
-import * as net from 'net';
-import * as dns from 'dns';
-import {AddressImpl, UUID} from '../core';
+import {UUID} from '../core';
 
 /** @internal */
 export function assertNotNull(v: any): void {
@@ -159,117 +157,8 @@ export function resolvePath(path: string): string {
     return Path.resolve(basePath, path);
 }
 
-/** @internal */
-export class AddressHelper {
-
-    private static readonly MAX_PORT_TRIES: number = 3;
-    private static readonly INITIAL_FIRST_PORT: number = 5701;
-
-    static getSocketAddresses(address: string): AddressImpl[] {
-        const addressHolder = this.createAddressFromString(address, -1);
-        let possiblePort = addressHolder.port;
-        let maxPortTryCount = 1;
-        if (possiblePort === -1) {
-            maxPortTryCount = AddressHelper.MAX_PORT_TRIES;
-            possiblePort = AddressHelper.INITIAL_FIRST_PORT;
-        }
-
-        const addresses: AddressImpl[] = [];
-
-        for (let i = 0; i < maxPortTryCount; i++) {
-            addresses.push(new AddressImpl(addressHolder.host, possiblePort + i));
-        }
-
-        return addresses;
-    }
-
-    static createAddressFromString(address: string, defaultPort?: number): AddressImpl {
-        const indexBracketStart = address.indexOf('[');
-        const indexBracketEnd = address.indexOf(']', indexBracketStart);
-        const indexColon = address.indexOf(':');
-        const lastIndexColon = address.lastIndexOf(':');
-        let host: string;
-        let port = defaultPort;
-        if (indexColon > -1 && lastIndexColon > indexColon) {
-            // IPv6
-            if (indexBracketStart === 0 && indexBracketEnd > indexBracketStart) {
-                host = address.substring(indexBracketStart + 1, indexBracketEnd);
-                if (lastIndexColon === indexBracketEnd + 1) {
-                    port = Number.parseInt(address.substring(lastIndexColon + 1));
-                }
-            } else {
-                host = address;
-            }
-        } else if (indexColon > 0 && indexColon === lastIndexColon) {
-            host = address.substring(0, indexColon);
-            port = Number.parseInt(address.substring(indexColon + 1));
-        } else {
-            host = address;
-        }
-        return new AddressImpl(host, port);
-    }
-
-}
-
 /**
- * Checks if the target address (host:port) is reachable via trying to
- * open a plain TCP connection.
- * @param host      target host.
- * @param port      target port.
- * @param timeoutMs connection timeout in milliseconds.
- * @returns check result
- * @internal
- */
-export function isAddressReachable(host: string,
-                                   port: number,
-                                   timeoutMs: number): Promise<boolean> {
-    return new Promise((resolve) => {
-        const socket = new net.Socket();
-        socket.setTimeout(timeoutMs);
-        const onError = () => {
-            socket.destroy();
-            resolve(false);
-        };
-        socket.once('error', onError);
-        socket.once('timeout', onError);
-        socket.connect(port, host, () => {
-            socket.end();
-            resolve(true);
-        });
-    });
-}
-
-/**
- * Resolves the given address to IP address.
- * @param address address in one of 'host'/'host:port'/'ip'/'ip:host' formats
- * @returns IP (IPv4 or IPv6) address string
- * @internal
- */
-export function resolveAddress(address: string): Promise<string> {
-    return Promise.resolve()
-        .then(() => {
-            if (address == null || address.length === 0) {
-                throw new Error('Address must be non-null and non-empty');
-            }
-            return AddressHelper.createAddressFromString(address);
-        })
-        .then(({ host }) => {
-            if (host == null || host.length === 0) {
-                throw new Error('Parsed host must be non-null and non-empty');
-            }
-            return new Promise((resolve, reject) => {
-                dns.lookup(host, (err, ipAddress) => {
-                    if (err) {
-                        return reject(err);
-                    }
-                    resolve(ipAddress);
-                });
-            });
-        });
-}
-
-/**
- * Returns a random integer between 0(inclusive) and `upperBound`(exclusive)
+ * Returns a random integer between `0` (inclusive) and `upperBound` (exclusive).
  * Upper bound should be an integer.
  * @param upperBound
  * @returns A random integer between [0-upperBound)

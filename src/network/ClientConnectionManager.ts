@@ -41,7 +41,6 @@ import {ClientConnection} from './ClientConnection';
 import * as net from 'net';
 import * as tls from 'tls';
 import {
-    AddressHelper,
     cancelRepetitionTask,
     deferredPromise,
     DeferredPromise,
@@ -50,6 +49,7 @@ import {
     Task,
     timedPromise
 } from '../util/Util';
+import {getSocketAddresses} from '../util/AddressUtil';
 import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
 import {ILogger} from '../logging/ILogger';
 import {HeartbeatManager} from './HeartbeatManager';
@@ -578,7 +578,7 @@ export class ClientConnectionManager extends EventEmitter {
                 }
                 const result: AddressImpl[] = [];
                 for (const address of providerAddresses) {
-                    result.push(...AddressHelper.getSocketAddresses(address));
+                    result.push(...getSocketAddresses(address));
                 }
                 return result;
             });
