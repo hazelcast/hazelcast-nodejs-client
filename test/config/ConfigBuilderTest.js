@@ -102,23 +102,25 @@ describe('ConfigBuilderTest', function () {
         const networkCfg = fullConfig.network;
 
         const addresses0 = getSocketAddresses(networkCfg.clusterMembers[0]);
-        expect(addresses0[0].host).to.equal('127.0.0.9');
-        expect(addresses0[0].port).to.equal(5701);
-        expect(addresses0[1].host).to.equal('127.0.0.9');
-        expect(addresses0[1].port).to.equal(5702);
-        expect(addresses0[2].host).to.equal('127.0.0.9');
-        expect(addresses0[2].port).to.equal(5703);
-        expect(addresses0.length).to.equal(3);
+        expect(addresses0.primary).to.have.lengthOf(1);
+        expect(addresses0.primary[0].host).to.equal('127.0.0.9');
+        expect(addresses0.primary[0].port).to.equal(5701);
+        expect(addresses0.secondary).to.have.lengthOf(2);
+        expect(addresses0.secondary[0].host).to.equal('127.0.0.9');
+        expect(addresses0.secondary[0].port).to.equal(5702);
+        expect(addresses0.secondary[1].host).to.equal('127.0.0.9');
+        expect(addresses0.secondary[1].port).to.equal(5703);
 
         const addresses1 = getSocketAddresses(networkCfg.clusterMembers[1]);
-        expect(addresses1[0].host).to.equal('127.0.0.2');
-        expect(addresses1[0].port).to.equal(5702);
-        expect(addresses1.length).to.equal(1);
+        expect(addresses0.primary).to.have.lengthOf(1);
+        expect(addresses1.primary[0].host).to.equal('127.0.0.2');
+        expect(addresses1.primary[0].port).to.equal(5702);
+        expect(addresses1.secondary).to.have.lengthOf(0);
 
         const address0 = createAddressFromString(networkCfg.clusterMembers[0]);
         const address1 = createAddressFromString(networkCfg.clusterMembers[1]);
         expect(address0.host).to.equal('127.0.0.9');
-        expect(address0.port).to.be.undefined;
+        expect(address0.port).to.equal(-1);
         expect(address1.host).to.equal('127.0.0.2');
         expect(address1.port).to.equal(5702);
         expect(networkCfg.redoOperation).to.be.true;
