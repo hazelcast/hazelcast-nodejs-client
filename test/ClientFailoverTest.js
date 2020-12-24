@@ -38,8 +38,6 @@ const {
  */
 describe('ClientFailoverTest', function () {
 
-    markEnterprise(this);
-
     let cluster1;
     let member1;
     let cluster2;
@@ -77,6 +75,10 @@ describe('ClientFailoverTest', function () {
         }
         return config;
     }
+
+    before(function () {
+        markEnterprise(this);
+    });
 
     beforeEach(async function () {
         cluster1 = await RC.createClusterKeepClusterName(null,
