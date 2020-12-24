@@ -40,7 +40,7 @@ export class HazelcastCloudAddressProvider implements AddressProvider {
                 const addressList = Array.from(res.keys());
                 const primary: AddressImpl[] = []
                 for (const address of addressList) {
-                    primary.push(createAddressFromString(address, -1));
+                    primary.push(createAddressFromString(address));
                 }
                 return new Addresses(primary);
             }).catch((e) => {

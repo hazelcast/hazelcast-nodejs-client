@@ -26,7 +26,7 @@ const INITIAL_FIRST_PORT = 5701;
 
 /** @internal */
 export function getSocketAddresses(address: string): Addresses {
-    const addressHolder = createAddressFromString(address, -1);
+    const addressHolder = createAddressFromString(address);
     let possiblePort = addressHolder.port;
     let maxPortTryCount = 1;
     if (possiblePort === -1) {
@@ -51,7 +51,7 @@ export function getSocketAddresses(address: string): Addresses {
 }
 
 /** @internal */
-export function createAddressFromString(address: string, defaultPort: number): AddressImpl {
+export function createAddressFromString(address: string, defaultPort = -1): AddressImpl {
     const indexBracketStart = address.indexOf('[');
     const indexBracketEnd = address.indexOf(']', indexBracketStart);
     const indexColon = address.indexOf(':');
@@ -89,7 +89,7 @@ export function resolveAddress(address: string): Promise<string> {
             if (address == null || address.length === 0) {
                 throw new Error('Address must be non-null and non-empty');
             }
-            return createAddressFromString(address, -1);
+            return createAddressFromString(address);
         })
         .then(({ host }) => {
             if (host == null || host.length === 0) {
