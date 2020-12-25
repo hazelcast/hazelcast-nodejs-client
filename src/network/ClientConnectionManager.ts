@@ -277,8 +277,15 @@ export class ClientConnectionManager extends EventEmitter {
         return timedPromise(
             connectionResolver.promise,
             this.connectionTimeoutMillis,
-            new HazelcastError(`Connection timed out to address ${address}.`)
-        ).finally(() => this.pendingConnections.delete(addressKey));
+            new HazelcastError('Connection timed out to address ' + address.toString())
+        ).catch((err) => {
+            // make sure to close connection on errors
+            if (clientConnection != null) {
+                clientConnection.close(null, err);
+            }
+            throw err;
+        })
+        .finally(() => this.pendingConnections.delete(addressKey));
     }
 
     getRandomConnection(): ClientConnection {
@@ -542,20 +549,42 @@ export class ClientConnectionManager extends EventEmitter {
     private connectTLSSocket(address: AddressImpl, configOpts: any): Promise<tls.TLSSocket> {
         const connectionResolver = deferredPromise<tls.TLSSocket>();
         const socket = tls.connect(address.port, address.host, configOpts);
+
+        const connectTimeoutTimer = setTimeout(() => {
+            socket.destroy();
+            connectionResolver.reject(new HazelcastError('Connection timed out to address ' + address.toString()));
+        }, this.connectionTimeoutMillis);
+
         socket.once('secureConnect', () => {
+            clearInterval(connectTimeoutTimer);
             connectionResolver.resolve(socket);
         });
-        socket.once('error', connectionResolver.reject);
+        socket.once('error', (err) => {
+            clearInterval(connectTimeoutTimer);
+            connectionResolver.reject(err);
+        });
+
         return connectionResolver.promise;
     }
 
     private connectNetSocket(address: AddressImpl): Promise<net.Socket> {
         const connectionResolver = deferredPromise<net.Socket>();
         const socket = net.connect(address.port, address.host);
+
+        const connectTimeoutTimer = setTimeout(() => {
+            socket.destroy();
+            connectionResolver.reject(new HazelcastError('Connection timed out to address ' + address.toString()));
+        }, this.connectionTimeoutMillis);
+
         socket.once('connect', () => {
+            clearInterval(connectTimeoutTimer);
             connectionResolver.resolve(socket);
         });
-        socket.once('error', connectionResolver.reject);
+        socket.once('error', (err) => {
+            clearInterval(connectTimeoutTimer);
+            connectionResolver.reject(err);
+        });
+
         return connectionResolver.promise;
     }
 
