@@ -34,6 +34,7 @@ import {
     UUID,
     LoadBalancer,
     AddressImpl,
+    Addresses,
     MemberImpl
 } from '../core';
 import {lookupPublicAddress} from '../core/MemberInfo';
@@ -41,7 +42,6 @@ import {ClientConnection} from './ClientConnection';
 import * as net from 'net';
 import * as tls from 'tls';
 import {
-    AddressHelper,
     cancelRepetitionTask,
     deferredPromise,
     DeferredPromise,
@@ -570,16 +570,20 @@ export class ClientConnectionManager extends EventEmitter {
             .catch((error: Error) => {
                 this.logger.warn('ConnectionManager', 'Failed to load addresses from '
                     + addressProvider + ' address provider, error: ' + error.message);
-                return new Array<string>();
+                return new Addresses();
             })
             .then((providerAddresses) => {
                 if (this.shuffleMemberList) {
-                    shuffleArray(providerAddresses);
+                    // The relative order between primary and secondary addresses should not
+                    // be changed. So we shuffle the lists separately and then add them to
+                    // the final list so that secondary addresses are not tried before all
+                    // primary addresses have been tried. Otherwise we can get startup delays.
+                    shuffleArray(providerAddresses.primary);
+                    shuffleArray(providerAddresses.secondary);
                 }
                 const result: AddressImpl[] = [];
-                for (const address of providerAddresses) {
-                    result.push(...AddressHelper.getSocketAddresses(address));
-                }
+                providerAddresses.primary.forEach((addr) => result.push(addr));
+                providerAddresses.secondary.forEach((addr) => result.push(addr));
                 return result;
             });
     }

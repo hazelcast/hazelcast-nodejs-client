@@ -15,7 +15,8 @@
  */
 /** @ignore *//** */
 
-import {AddressHelper, deferredPromise} from '../util/Util';
+import {deferredPromise} from '../util/Util';
+import {createAddressFromString} from '../util/AddressUtil';
 import {get} from 'https';
 import {IncomingMessage} from 'http';
 import {Properties} from '../config/Properties';
@@ -87,9 +88,9 @@ export class HazelcastCloudDiscovery {
             const privateAddress = value[HazelcastCloudDiscovery.PRIVATE_ADDRESS_PROPERTY];
             const publicAddress = value[HazelcastCloudDiscovery.PUBLIC_ADDRESS_PROPERTY];
 
-            const publicAddr = AddressHelper.createAddressFromString(publicAddress.toString(), -1);
+            const publicAddr = createAddressFromString(publicAddress.toString());
             // If not explicitly given, create the private address with the public addresses port
-            const privateAddr = AddressHelper.createAddressFromString(privateAddress.toString(), publicAddr.port);
+            const privateAddr = createAddressFromString(privateAddress.toString(), publicAddr.port);
             privateToPublicAddresses.set(privateAddr.toString(), publicAddr);
         }
 

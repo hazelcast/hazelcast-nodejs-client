@@ -33,12 +33,77 @@ const {
     markEnterprise
 } = require('./Util');
 
-/**
- * Tests blue/green failover support.
- */
-describe('ClientFailoverTest', function () {
+function createClusterConfig({ clusterName, partitionCount }) {
+    partitionCount = partitionCount || 271;
+    return `<?xml version="1.0" encoding="UTF-8"?>
+            <hazelcast xmlns="http://www.hazelcast.com/schema/config"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://www.hazelcast.com/schema/config
+                http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
+                <cluster-name>${clusterName}</cluster-name>
+                <properties>
+                    <property name="hazelcast.partition.count">${partitionCount}</property>
+                </properties>
+            </hazelcast>`;
+}
 
-    markEnterprise(this);
+function createClientConfig({ clusterName, lifecycleListener, connectTimeoutMs }) {
+    const config =  {
+        clusterName: clusterName
+    };
+    if (lifecycleListener !== undefined) {
+        config.lifecycleListeners = [ lifecycleListener ];
+    }
+    if (connectTimeoutMs !== undefined) {
+        config.connectionStrategy = {
+            connectionRetry: {
+                clusterConnectTimeoutMillis: connectTimeoutMs
+            }
+        };
+    }
+    return config;
+}
+
+/**
+ * Tests blue/green failover support for OSS.
+ */
+describe('ClientFailoverTest - community', function () {
+
+    let cluster1;
+    let cluster2;
+
+    before(function () {
+        markCommunity(this);
+    });
+
+    beforeEach(async function () {
+        cluster1 = await RC.createClusterKeepClusterName(null,
+            createClusterConfig({ clusterName: 'dev1' }));
+        await RC.startMember(cluster1.id);
+        cluster2 = await RC.createClusterKeepClusterName(null,
+            createClusterConfig({ clusterName: 'dev2' }));
+    });
+
+    afterEach(async function () {
+        await RC.terminateCluster(cluster1.id);
+        await RC.terminateCluster(cluster2.id);
+    });
+
+    it('should reject when connecting to community cluster', async function () {
+        await expect(Client.newHazelcastFailoverClient({
+            tryCount: 1,
+            clientConfigs: [
+                createClientConfig({ clusterName: 'dev1' }),
+                createClientConfig({ clusterName: 'dev2' })
+            ]
+        })).to.be.rejectedWith(IllegalStateError);
+    });
+});
+
+/**
+ * Tests blue/green failover support for EE.
+ */
+describe('ClientFailoverTest - enterprise', function () {
 
     let cluster1;
     let member1;
@@ -47,36 +112,9 @@ describe('ClientFailoverTest', function () {
     let cluster3;
     let client;
 
-    function createClusterConfig({ clusterName, partitionCount }) {
-        partitionCount = partitionCount || 271;
-        return `<?xml version="1.0" encoding="UTF-8"?>
-                <hazelcast xmlns="http://www.hazelcast.com/schema/config"
-                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                    xsi:schemaLocation="http://www.hazelcast.com/schema/config
-                    http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
-                    <cluster-name>${clusterName}</cluster-name>
-                    <properties>
-                        <property name="hazelcast.partition.count">${partitionCount}</property>
-                    </properties>
-                </hazelcast>`;
-    }
-
-    function createClientConfig({ clusterName, lifecycleListener, connectTimeoutMs }) {
-        const config =  {
-            clusterName: clusterName
-        };
-        if (lifecycleListener !== undefined) {
-            config.lifecycleListeners = [ lifecycleListener ];
-        }
-        if (connectTimeoutMs !== undefined) {
-            config.connectionStrategy = {
-                connectionRetry: {
-                    clusterConnectTimeoutMillis: connectTimeoutMs
-                }
-            };
-        }
-        return config;
-    }
+    before(function () {
+        markEnterprise(this);
+    });
 
     beforeEach(async function () {
         cluster1 = await RC.createClusterKeepClusterName(null,
@@ -96,18 +134,6 @@ describe('ClientFailoverTest', function () {
         if (cluster3 != null) {
             await RC.terminateCluster(cluster3.id);
         }
-    });
-
-    it('should reject when connecting to community cluster', async function () {
-        markCommunity(this);
-
-        await expect(Client.newHazelcastFailoverClient({
-            tryCount: 1,
-            clientConfigs: [
-                createClientConfig({ clusterName: 'dev1' }),
-                createClientConfig({ clusterName: 'dev2' })
-            ]
-        })).to.be.rejectedWith(IllegalStateError);
     });
 
     it('should be able to connect to enterprise cluster', async function () {
