@@ -62,7 +62,7 @@ describe('ClientHotRestartEventTest', function () {
 
     afterEach(async function () {
         await client.shutdown();
-        return RC.terminateCluster(cluster.id);
+        await RC.terminateCluster(cluster.id);
     });
 
     it('should receive membership events when the member is restarted with another port and same uuid', async function () {

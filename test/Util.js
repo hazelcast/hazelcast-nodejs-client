@@ -38,6 +38,30 @@ exports.promiseWaitMilliseconds = function (milliseconds) {
     });
 };
 
+exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutMs = 60000) {
+    return new Promise(function (resolve, reject) {
+        let intervalTimer;
+        function scheduleNext() {
+            intervalTimer = setTimeout(() => {
+                taskAsyncFn()
+                    .then(() => {
+                        clearInterval(timeoutTimer);
+                        resolve();
+                    })
+                    .catch(() => {
+                        scheduleNext();
+                    });
+            }, intervalMs);
+        }
+        scheduleNext();
+
+        const timeoutTimer = setTimeout(() => {
+            clearInterval(intervalTimer);
+            reject(new Error('Rejected due to timeout of ' + timeoutMs + 'ms'));
+        }, timeoutMs);
+    });
+};
+
 const expectAlmostEqual = function (actual, expected) {
     if (expected === null) {
         return expect(actual).to.equal(expected);
