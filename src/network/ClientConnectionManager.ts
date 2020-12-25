@@ -433,7 +433,7 @@ export class ClientConnectionManager extends EventEmitter {
 
     private cleanupAndTryNextCluster(nextCtx: CandidateClusterContext): Promise<boolean> {
         this.client.onClusterChange();
-        this.logger.warn('ConnectionManager', 'Trying to connect to next cluster: '
+        this.logger.info('ConnectionManager', 'Trying to connect to next cluster: '
             + nextCtx.clusterName);
         this.switchingToNextCluster = true;
         return this.doConnectToCandidateCluster(nextCtx)
