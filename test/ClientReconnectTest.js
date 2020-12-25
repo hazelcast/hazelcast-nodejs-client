@@ -19,6 +19,9 @@ const { expect } = require('chai');
 const RC = require('./RC');
 const { Client } = require('../.');
 
+/**
+ * Basic tests for reconnection to cluster scenarios.
+ */
 describe('ClientReconnectTest', function () {
 
     let cluster;
@@ -26,7 +29,7 @@ describe('ClientReconnectTest', function () {
 
     afterEach(async function () {
         await client.shutdown();
-        return RC.terminateCluster(cluster.id);
+        await RC.terminateCluster(cluster.id);
     });
 
     it('member restarts, while map.put in progress', async function () {
