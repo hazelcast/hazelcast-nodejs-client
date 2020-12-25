@@ -16,8 +16,8 @@
 'use strict';
 
 const { expect } = require('chai');
-const { ClientConfigImpl } = require('../../lib/config/Config');
-const { HazelcastCloudDiscovery } = require('../../lib/discovery/HazelcastCloudDiscovery');
+const { ClientConfigImpl } = require('../../../lib/config/Config');
+const { HazelcastCloudDiscovery } = require('../../../lib/discovery/HazelcastCloudDiscovery');
 
 describe('HazelcastClientCloudConfigTest', function () {
 
@@ -41,5 +41,4 @@ describe('HazelcastClientCloudConfigTest', function () {
 
         expect(urlEndpoint).to.be.equal('https://custom/cluster/discovery?token=TOKEN');
     });
-
 });

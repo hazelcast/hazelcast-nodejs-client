@@ -18,28 +18,36 @@
 import {HazelcastCloudDiscovery} from './HazelcastCloudDiscovery';
 import {AddressProvider} from '../connection/AddressProvider';
 import {ILogger} from '../logging/ILogger';
-import {AddressImpl} from '../core/Address';
+import {AddressImpl, Addresses} from '../core/Address';
+import {createAddressFromString} from '../util/AddressUtil';
 
 /** @internal */
 export class HazelcastCloudAddressProvider implements AddressProvider {
 
     private readonly logger: ILogger;
     private readonly cloudDiscovery: HazelcastCloudDiscovery;
-    private privateToPublic: Map<string, AddressImpl> = new Map<string, AddressImpl>();
+    private privateToPublic: Map<string, AddressImpl> = new Map();
 
     constructor(endpointUrl: string, connectionTimeoutMillis: number, logger: ILogger) {
         this.cloudDiscovery = new HazelcastCloudDiscovery(endpointUrl, connectionTimeoutMillis);
         this.logger = logger;
     }
 
-    loadAddresses(): Promise<string[]> {
-        return this.cloudDiscovery.discoverNodes().then((res) => {
-            return Array.from(res.keys());
-        }).catch((e) => {
-            this.logger.warn('HazelcastCloudAddressProvider',
-                'Failed to load addresses from hazelcast.cloud : ' + e.message);
-            return [];
-        });
+    loadAddresses(): Promise<Addresses> {
+        return this.cloudDiscovery.discoverNodes()
+            .then((res) => {
+                this.privateToPublic = res;
+                const addressList = Array.from(res.keys());
+                const primary: AddressImpl[] = []
+                for (const address of addressList) {
+                    primary.push(createAddressFromString(address));
+                }
+                return new Addresses(primary);
+            }).catch((e) => {
+                this.logger.warn('HazelcastCloudAddressProvider',
+                    'Failed to load addresses from Hazelcast Cloud: ' + e.message);
+                return new Addresses();
+            });
     }
 
     translate(address: AddressImpl): Promise<AddressImpl> {
@@ -51,22 +59,24 @@ export class HazelcastCloudAddressProvider implements AddressProvider {
             return Promise.resolve(publicAddress);
         }
 
-        return this.refresh().then(() => {
-            publicAddress = this.privateToPublic.get(address.toString());
-            if (publicAddress != null) {
-                return publicAddress;
-            } else {
-                return null;
-            }
-        });
+        return this.refresh()
+            .then(() => {
+                publicAddress = this.privateToPublic.get(address.toString());
+                if (publicAddress != null) {
+                    return publicAddress;
+                } else {
+                    return null;
+                }
+            });
     }
 
     refresh(): Promise<void> {
-        return this.cloudDiscovery.discoverNodes().then((res) => {
-            this.privateToPublic = res;
-        }).catch((e) => {
-            this.logger.warn('HazelcastCloudAddressTranslator',
-                'Failed to load addresses from hazelcast.cloud : ' + e.message);
-        });
+        return this.cloudDiscovery.discoverNodes()
+            .then((res) => {
+                this.privateToPublic = res;
+            }).catch((err) => {
+                this.logger.warn('HazelcastCloudAddressProvider',
+                    'Failed to load addresses from Hazelcast Cloud: ' + err.message);
+            });
     }
 }

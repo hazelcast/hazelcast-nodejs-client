@@ -17,7 +17,8 @@
 
 import {AddressProvider} from './AddressProvider';
 import {ClientNetworkConfigImpl} from '../config/ClientNetworkConfig';
-import {AddressImpl} from '../core/Address';
+import {AddressImpl, Addresses} from '../core/Address';
+import {getSocketAddresses} from '../util/AddressUtil';
 
 /**
  * Default address provider of Hazelcast.
@@ -32,12 +33,15 @@ export class DefaultAddressProvider implements AddressProvider {
         this.networkConfig = networkConfig;
     }
 
-    loadAddresses(): Promise<string[]> {
-        const addresses: string[] = this.networkConfig.clusterMembers;
-        if (addresses.length === 0) {
-            addresses.push('localhost');
+    loadAddresses(): Promise<Addresses> {
+        const addressList: string[] = this.networkConfig.clusterMembers;
+        if (addressList.length === 0) {
+            addressList.push('127.0.0.1');
         }
-
+        const addresses = new Addresses();
+        for (const address of addressList) {
+            addresses.addAll(getSocketAddresses(address));
+        }
         return Promise.resolve(addresses);
     }
 

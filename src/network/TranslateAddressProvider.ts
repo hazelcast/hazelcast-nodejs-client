@@ -20,11 +20,11 @@ import {MemberInfo, lookupPublicAddress} from '../core/MemberInfo';
 import {AddressProvider} from '../connection/AddressProvider';
 import {DefaultAddressProvider} from '../connection/DefaultAddressProvider';
 import {ILogger} from '../logging/ILogger';
+import {shuffleArray} from '../util/Util';
 import {
     isAddressReachable,
-    resolveAddress,
-    shuffleArray
-} from '../util/Util';
+    resolveAddress
+} from '../util/AddressUtil';
 
 const PROPERTY_DISCOVERY_PUBLIC_IP_ENABLED = 'hazelcast.discovery.public.ip.enabled';
 const REACHABLE_CHECK_LIMIT = 3;

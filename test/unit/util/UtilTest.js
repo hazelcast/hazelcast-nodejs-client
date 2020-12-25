@@ -19,11 +19,8 @@ const chai = require('chai');
 chai.should();
 chai.use(require('chai-as-promised'));
 const expect = chai.expect;
-const net = require('net');
 const {
-    isAddressReachable,
     deferredPromise,
-    resolveAddress,
     timedPromise
 } = require('../../../lib/util/Util');
 
@@ -97,70 +94,5 @@ describe('UtilTest', function () {
         await timed.catch((err) => {
             expect(err).to.be.equal(rejectWith);
         });
-    });
-
-    it('isAddressReachable: returns true for reachable address', async function () {
-        const server = net.createServer(() => {
-            // no-response
-        });
-        await new Promise((resolve) => server.listen(5701, resolve));
-
-        try {
-            const result = await isAddressReachable('127.0.0.1', 5701, 1000);
-            expect(result).to.be.true;
-        } finally {
-            server.close();
-        }
-    });
-
-    it('isAddressReachable: returns true for reachable host', async function () {
-        const server = net.createServer(() => {
-            // no-response
-        });
-        await new Promise((resolve) => server.listen(5701, resolve));
-
-        try {
-            const result = await isAddressReachable('localhost', 5701, 1000);
-            expect(result).to.be.true;
-        } finally {
-            server.close();
-        }
-    });
-
-    it('isAddressReachable: returns false for unreachable address', async function () {
-        const result = await isAddressReachable('192.168.0.1', 5701, 100);
-        expect(result).to.be.false;
-    });
-
-    it('resolveAddress: returns IPv4 for localhost with port', async function () {
-        const result = await resolveAddress('localhost:5701');
-        expect(result).to.be.equal('127.0.0.1');
-    });
-
-    it('resolveAddress: returns IPv4 for localhost without port', async function () {
-        const result = await resolveAddress('localhost');
-        expect(result).to.be.equal('127.0.0.1');
-    });
-
-    it('resolveAddress: returns IPv4 for IPv4 address with port', async function () {
-        const result = await resolveAddress('127.0.0.1:5701');
-        expect(result).to.be.equal('127.0.0.1');
-    });
-
-    it('resolveAddress: returns IPv6 for IPv6 address with port', async function () {
-        const result = await resolveAddress('[0:0:0:0:0:0:0:1]:5701');
-        expect(result).to.be.equal('0:0:0:0:0:0:0:1');
-    });
-
-    it('resolveAddress: rejects for invalid address', async function () {
-        await expect(resolveAddress('...')).to.be.rejected;
-    });
-
-    it('resolveAddress: rejects for empty address', async function () {
-        await expect(resolveAddress('')).to.be.rejected;
-    });
-
-    it('resolveAddress: rejects for null address', async function () {
-        await expect(resolveAddress(null)).to.be.rejected;
     });
 });

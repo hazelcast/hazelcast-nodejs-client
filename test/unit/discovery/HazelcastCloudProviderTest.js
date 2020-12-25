@@ -15,15 +15,15 @@
  */
 'use strict';
 
-const sinon = require('sinon');
 const { expect } = require('chai');
+const sinon = require('sinon');
+const sandbox = sinon.createSandbox();
 
-const { LogLevel } = require('../../lib/');
-const { IllegalStateError } = require('../../');
-const { LoggingService } = require('../../lib/logging/LoggingService');
-const { AddressImpl } = require('../../lib/core/Address');
-const { HazelcastCloudAddressProvider } = require('../../lib/discovery/HazelcastCloudAddressProvider');
-const { HazelcastCloudDiscovery } = require('../../lib/discovery/HazelcastCloudDiscovery');
+const { LogLevel, IllegalStateError } = require('../../../');
+const { LoggingService } = require('../../../lib/logging/LoggingService');
+const { AddressImpl } = require('../../../lib/core/Address');
+const { HazelcastCloudAddressProvider } = require('../../../lib/discovery/HazelcastCloudAddressProvider');
+const { HazelcastCloudDiscovery } = require('../../../lib/discovery/HazelcastCloudDiscovery');
 
 describe('HazelcastCloudProviderTest', function () {
 
@@ -40,31 +40,39 @@ describe('HazelcastCloudProviderTest', function () {
     beforeEach(() => {
         const logger = new LoggingService(null, LogLevel.INFO).getLogger();
         hazelcastCloudDiscovery = new HazelcastCloudDiscovery();
-        sinon.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes').callsFake(() => Promise.resolve(expectedAddresses));
+        sandbox.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes')
+            .callsFake(() => Promise.resolve(expectedAddresses));
 
         provider = new HazelcastCloudAddressProvider(hazelcastCloudDiscovery, null, logger);
     });
 
     afterEach(function () {
+        sandbox.restore();
         if (HazelcastCloudDiscovery.prototype.discoverNodes.restore
-            && HazelcastCloudDiscovery.prototype.discoverNodes.restore.sinon) {
+                && HazelcastCloudDiscovery.prototype.discoverNodes.restore.sinon) {
             HazelcastCloudDiscovery.prototype.discoverNodes.restore();
         }
     });
 
     it('loadAddresses', async function () {
-        const res = await provider.loadAddresses();
-        expect(res).to.have.length(3);
+        const addresses = await provider.loadAddresses();
+
+        expect(addresses.primary).to.have.lengthOf(3);
+        expect(addresses.secondary).to.have.lengthOf(0);
+
+        const expectedAddressList = Array.from(expectedAddresses.keys());
+        const primary = addresses.primary.map((addr) => addr.toString());
+        expect(primary).to.have.all.ordered.members(expectedAddressList);
     });
 
     it('loadAddresses_whenErrorIsThrown', async function () {
         HazelcastCloudDiscovery.prototype.discoverNodes.restore();
-        sinon.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes').callsFake(function () {
-            return Promise.reject(new IllegalStateError('Expected exception'));
-        });
+        sandbox.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes')
+            .callsFake(()  => Promise.reject(new IllegalStateError('Expected exception')));
 
-        const res = await provider.loadAddresses();
-        expect(res).to.have.length(0);
+        const addresses = await provider.loadAddresses();
+        expect(addresses.primary).to.have.lengthOf(0);
+        expect(addresses.secondary).to.have.lengthOf(0);
     });
 
     it('translate_whenAddressIsNull_thenReturnNull', async function () {
@@ -93,7 +101,7 @@ describe('HazelcastCloudProviderTest', function () {
 
     it('refresh_whenException_thenLogWarning', async function () {
         HazelcastCloudDiscovery.prototype.discoverNodes.restore();
-        sinon.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes').callsFake(function () {
+        sandbox.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes').callsFake(function () {
             return Promise.reject(new IllegalStateError('Expected exception'));
         });
         return provider.refresh();

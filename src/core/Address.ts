@@ -98,3 +98,34 @@ export class AddressImpl implements Address, IdentifiedDataSerializable {
         return this.host + ':' + this.port;
     }
 }
+
+/**
+ * A collection of addresses. It is split in a group of primary
+ * addresses (so the ones that should be tried first) and a group
+ * of secondary addresses (addresses that should be tried when the
+ * primary group of addresses could not be connected to).
+ * @internal
+*/
+export class Addresses {
+
+    readonly primary: AddressImpl[];
+    readonly secondary: AddressImpl[];
+
+    constructor(primary?: AddressImpl[], secondary?: AddressImpl[]) {
+        if (primary) {
+            this.primary = primary;
+        } else {
+            this.primary = [];
+        }
+        if (secondary) {
+            this.secondary = secondary;
+        } else {
+            this.secondary = [];
+        }
+    }
+
+    addAll(addresses: Addresses) {
+        addresses.primary.forEach((addr) => this.primary.push(addr));
+        addresses.secondary.forEach((addr) => this.secondary.push(addr));
+    }
+}
