@@ -58,6 +58,7 @@ import {MapRemoveIfSameCodec} from '../codec/MapRemoveIfSameCodec';
 import {MapReplaceCodec} from '../codec/MapReplaceCodec';
 import {MapReplaceIfSameCodec} from '../codec/MapReplaceIfSameCodec';
 import {MapSetCodec} from '../codec/MapSetCodec';
+import {MapSetTtlCodec} from '../codec/MapSetTtlCodec';
 import {MapSizeCodec} from '../codec/MapSizeCodec';
 import {MapTryLockCodec} from '../codec/MapTryLockCodec';
 import {MapTryPutCodec} from '../codec/MapTryPutCodec';
@@ -340,11 +341,11 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.encodeInvokeOnRandomTarget(MapFlushCodec).then(() => {});
     }
 
-    lock(key: K, ttl = -1): Promise<void> {
+    lock(key: K, leaseTime = -1): Promise<void> {
         assertNotNull(key);
         const keyData = this.toData(key);
         return this.encodeInvokeOnKeyWithTimeout(
-            Number.MAX_SAFE_INTEGER, MapLockCodec, keyData, keyData, 0, ttl, 0
+            Number.MAX_SAFE_INTEGER, MapLockCodec, keyData, keyData, 0, leaseTime, 0
         ).then(() => {});
     }
 
@@ -461,17 +462,18 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.encodeInvokeOnRandomTarget(MapAddIndexCodec, normalizedConfig).then(() => {});
     }
 
-    tryLock(key: K, timeout = 0, lease = -1): Promise<boolean> {
+    tryLock(key: K, timeout = 0, leaseTime = -1): Promise<boolean> {
         assertNotNull(key);
         const keyData = this.toData(key);
         return this.encodeInvokeOnKeyWithTimeout(
-            Number.MAX_SAFE_INTEGER, MapTryLockCodec, keyData, keyData, 0, lease, timeout, 0
+            Number.MAX_SAFE_INTEGER, MapTryLockCodec, keyData, keyData, 0, leaseTime, timeout, 0
         ).then(MapTryLockCodec.decodeResponse);
     }
 
     tryPut(key: K, value: V, timeout: number): Promise<boolean> {
         assertNotNull(key);
         assertNotNull(value);
+        assertNotNull(timeout);
         const keyData = this.toData(key);
         const valueData = this.toData(value);
         return this.tryPutInternal(keyData, valueData, timeout);
@@ -479,6 +481,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 
     tryRemove(key: K, timeout: number): Promise<boolean> {
         assertNotNull(key);
+        assertNotNull(timeout);
         const keyData = this.toData(key);
         return this.tryRemoveInternal(keyData, timeout);
     }
@@ -489,6 +492,13 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 
     removeEntryListener(listenerId: string): Promise<boolean> {
         return this.client.getListenerService().deregisterListener(listenerId);
+    }
+
+    setTtl(key: K, ttl: number): Promise<boolean> {
+        assertNotNull(key);
+        assertNotNull(ttl);
+        const keyData = this.toData(key);
+        return this.setTtlInternal(keyData, ttl);
     }
 
     protected executeOnKeyInternal(keyData: Data, proData: Data): Promise<V> {
@@ -605,6 +615,11 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     protected tryRemoveInternal(keyData: Data, timeout: number): Promise<boolean> {
         return this.encodeInvokeOnKey(MapTryRemoveCodec, keyData, keyData, 0, timeout)
             .then(MapTryRemoveCodec.decodeResponse);
+    }
+
+    protected setTtlInternal(keyData: Data, ttl: number): Promise<boolean> {
+        return this.encodeInvokeOnKey(MapSetTtlCodec, keyData, keyData, ttl)
+            .then(MapSetTtlCodec.decodeResponse);
     }
 
     private putAllInternal(pairs: Array<[K, V]>, triggerMapLoader: boolean): Promise<void> {
@@ -783,5 +798,4 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             throw new RangeError('Paging predicate is not supported.');
         }
     }
-
 }

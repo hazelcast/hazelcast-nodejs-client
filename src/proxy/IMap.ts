@@ -32,12 +32,14 @@ import {IndexConfig} from '../config/IndexConfig';
 export interface IMap<K, V> extends DistributedObject {
 
     /**
-     * Applies the aggregation logic on all map entries and returns the result
+     * Applies the aggregation logic on all map entries and returns the result.
      *
      * Fast-Aggregations are the successor of the Map-Reduce Aggregators.
-     * They are equivalent to the Map-Reduce Aggregators in most of the use-cases, but instead of running on the Map-Reduce
-     * engine they run on the Query infrastructure. Their performance is tens to hundreds times better due to the fact
-     * that they run in parallel for each partition and are highly optimized for speed and low memory consumption.
+     * They are equivalent to the Map-Reduce Aggregators in most of the
+     * use-cases, but instead of running on the Map-Reduce engine they run
+     * on the Query infrastructure. Their performance is tens to hundreds
+     * times better due to the fact that they run in parallel for each
+     * partition and are highly optimized for speed and low memory consumption.
      *
      * @param aggregator aggregator to aggregate the entries with
      * @param <R> type of the result
@@ -46,12 +48,15 @@ export interface IMap<K, V> extends DistributedObject {
     aggregate<R>(aggregator: Aggregator<R>): Promise<R>;
 
     /**
-     * Applies the aggregation logic on map entries filtered with the Predicated and returns the result
+     * Applies the aggregation logic on map entries filtered with the Predicated
+     * and returns the result.
      *
-     * Fast-Aggregations are the successor of the Map-Reduce Aggregators.
-     * They are equivalent to the Map-Reduce Aggregators in most of the use-cases, but instead of running on the Map-Reduce
-     * engine they run on the Query infrastructure. Their performance is tens to hundreds times better due to the fact
-     * that they run in parallel for each partition and are highly optimized for speed and low memory consumption.
+     * Fast-Aggregations are the successor of the Map-Reduce Aggregators. They
+     * are equivalent to the Map-Reduce Aggregators in most of the use-cases,
+     * but instead of running on the Map-Reduce engine they run on the Query
+     * infrastructure. Their performance is tens to hundreds times better
+     * due to the fact that they run in parallel for each partition and are
+     * highly optimized for speed and low memory consumption.
      *
      * @param aggregator aggregator to aggregate the entries with
      * @param predicate predicate to filter the entries with
@@ -114,16 +119,18 @@ export interface IMap<K, V> extends DistributedObject {
 
     /**
      * Returns `true` if this map has an item associated with key.
-     * @param key
-     * @throws RangeError if key is `null` or `undefined`
+     *
+     * @param key the key of the map entry
+     * @throws RangeError if `key` is `null` or `undefined`
      * @returns `true` if the map contains the key, `false` otherwise
      */
     containsKey(key: K): Promise<boolean>;
 
     /**
      * Returns `true` if this map has key(s) associated with given value.
-     * @param value
-     * @throws RangeError if value is `null` or `undefined`
+     *
+     * @param value the value of the map entry
+     * @throws RangeError if `value` is `null` or `undefined`
      * @returns `true` if the map has key or keys associated with given value
      */
     containsValue(value: V): Promise<boolean>;
@@ -132,12 +139,14 @@ export interface IMap<K, V> extends DistributedObject {
      * Associates the specified value with the specified key.
      * If key was associated with another value, it replaces the old value.
      * If specified, value is evicted after ttl seconds.
-     * @param key
-     * @param value
-     * @param ttl Time to live in milliseconds. 0 means infinite.
-     * If ttl is not an integer, it is rounded up to the nearest integer value.
-     * @throws RangeError if specified key or value is `undefined` or `null`
-     *                    or ttl is negative
+     *
+     * @param key the key of the map entry
+     * @param value new value
+     * @param ttl Time to live in milliseconds. `0` means infinite.
+     *            Time resolution for TTL is seconds. The given value is
+     *            rounded to the next closest second value.
+     * @throws RangeError if `key` or `value` is `undefined` or `null`
+     *                    or `ttl` is negative
      * @returns old value if there was any, `null` otherwise
      */
     put(key: K, value: V, ttl?: number): Promise<V>;
@@ -148,10 +157,10 @@ export interface IMap<K, V> extends DistributedObject {
      * The behaviour of this operation is undefined if the specified pairs are modified
      * while this operation is in progress.
      *
-     *<b>Interactions with the map store</b>
+     * **Interactions with the map store**
      *
      * For each element not found in memory
-     * MapLoader#load(Object) is invoked to load the value from
+     * `MapLoader#load(Object)` is invoked to load the value from
      * the map store backing the map, which may come at a significant
      * performance cost. Exceptions thrown by load fail the operation
      * and are propagated to the caller. The elements which were added
@@ -159,76 +168,75 @@ export interface IMap<K, V> extends DistributedObject {
      * will not be added.
      *
      * If write-through persistence mode is configured,
-     * MapStore#store(Object, Object) is invoked for each element
+     * `MapStore#store(Object, Object)` is invoked for each element
      * before the element is added in memory, which may come at a
      * significant performance cost. Exceptions thrown by store fail the
      * operation and are propagated to the caller. The elements which
      * were added before the exception was thrown will remain in the map,
      * the rest will not be added.
      *
-     * If write-behind persistence mode is configured with
-     * write-coalescing turned off,
-     * this call may be rejected with {@link ReachedMaxSizeError}
-     * if the write-behind queue has reached its per-node maximum
-     * capacity.
+     * If write-behind persistence mode is configured with write-coalescing
+     * turned off, this call may be rejected with `ReachedMaxSizeError`
+     * if the write-behind queue has reached its per-node maximum capacity.
      *
-     * @param pairs
+     * @param pairs entries to be put
      */
     putAll(pairs: Array<[K, V]>): Promise<void>;
 
     /**
-     * Puts all key value pairs from this array to the map as key -> value mappings without loading
-     * non-existing elements from map store (which is more efficient than {@link putAll}).
+     * Puts all key value pairs from this array to the map as key -> value
+     * mappings without loading non-existing elements from map store (which
+     * is more efficient than `putAll`.
      *
-     * This method breaks the contract of EntryListener.
-     * EntryEvent of all the updated entries will have `null` oldValue even if they exist previously.
+     * This method breaks the contract of EntryListener. EntryEvent of all
+     * the updated entries will have `null` oldValue even if they exist previously.
      *
-     * The behaviour of this operation is undefined if the specified pairs are modified
-     * while this operation is in progress.
+     * The behaviour of this operation is undefined if the specified pairs are
+     * modified while this operation is in progress.
      *
-     *<b>Interactions with the map store</b>
+     * **Interactions with the map store**
      *
      * If write-through persistence mode is configured,
-     * MapStore#store(Object, Object) is invoked for each element
+     * `MapStore#store(Object, Object)` is invoked for each element
      * before the element is added in memory, which may come at a
      * significant performance cost. Exceptions thrown by store fail the
      * operation and are propagated to the caller. The elements which
      * were added before the exception was thrown will remain in the map,
      * the rest will not be added.
      *
-     * If write-behind persistence mode is configured with
-     * write-coalescing turned off,
-     * this call may be rejected with {@link ReachedMaxSizeError}
-     * if the write-behind queue has reached its per-node maximum
-     * capacity.
+     * If write-behind persistence mode is configured with write-coalescing
+     * turned off, this call may be rejected with `ReachedMaxSizeError`
+     * if the write-behind queue has reached its per-node maximum capacity.
      *
-     * @param pairs
+     * @param pairs entries to be put
      * @requires Hazelcast IMDG 4.1
      */
     setAll(pairs: Array<[K, V]>): Promise<void>;
 
     /**
      * Retrieves the value associated with given key.
-     * @param key
-     * @throws RangeError if key is `null` or `undefined`
+     *
+     * @param key the key of the map entry
+     * @throws RangeError if `key` is `null` or `undefined`
      * @returns value associated with key, `null` if the key does not exist
      */
     get(key: K): Promise<V>;
 
     /**
      * Retrieves key value pairs of given keys.
+     *
      * @param keys the array of keys
      */
     getAll(keys: K[]): Promise<Array<[K, V]>>;
 
     /**
      * Removes specified key from map. If optional value is specified, the key
-     * is removed only if currently mapped to given value.
-     * Note that serialized version of value is used in comparison.
+     * is removed only if currently mapped to given value. Note that serialized
+     * version of the value is used in comparison.
      *
-     * @param key
-     * @param value
-     * @throws RangeError if key is `null` or `undefined`
+     * @param key the key of the map entry
+     * @param value expected value
+     * @throws RangeError if `key` is `null` or `undefined`
      * @returns value associated with key, `null` if the key did not exist
      *          before. If optional value is specified, a `boolean` representing
      *          whether or not entry is removed is returned
@@ -239,25 +247,24 @@ export interface IMap<K, V> extends DistributedObject {
      * Removes specified key from map. Unlike {@link remove} this method does not return deleted value.
      * Therefore it eliminates deserialization cost of returned value.
      *
-     * @throws RangeError if key is `null` or `undefined`
-     * @param key
+     * @param key the key of the map entry
+     * @throws RangeError if `key` is `null` or `undefined`
      */
     delete(key: K): Promise<void>;
 
     /**
-     * Retrieves the number of elements in map
+     * Retrieves the number of elements in map.
      * @returns number of elements in map
      */
     size(): Promise<number>;
 
     /**
-     * Removes all of the mappings
-     * @return
+     * Removes all of the mappings.
      */
     clear(): Promise<void>;
 
     /**
-     * Returns whether this map is empty or not
+     * Returns whether this map is empty or not.
      */
     isEmpty(): Promise<boolean>;
 
@@ -269,6 +276,7 @@ export interface IMap<K, V> extends DistributedObject {
     /**
      * Queries the map based on the specified predicate and returns matching entries.
      * Specified predicate runs on all members in parallel.
+     *
      * @param predicate specified query criteria.
      * @returns result entry set of the query.
      */
@@ -276,8 +284,9 @@ export interface IMap<K, V> extends DistributedObject {
 
     /**
      * Evicts the specified key from this map.
-     * @throws RangeError if key is `null` or `undefined`
-     * @param key
+     *
+     * @param key the key of the map entry
+     * @throws RangeError if `key` is `null` or `undefined`
      */
     evict(key: K): Promise<boolean>;
 
@@ -295,35 +304,38 @@ export interface IMap<K, V> extends DistributedObject {
      * Releases the lock for the specified key regardless of the owner.
      * This operation always unlocks the key.
      *
-     * @throws RangeError if key is `null` or `undefined`
-     * @param key
+     * @param key the key of the map entry
+     * @throws RangeError if `key` is `null` or `undefined`
      */
     forceUnlock(key: K): Promise<void>;
 
     /**
      * Checks whether given key is locked.
      *
-     * @param key
-     * @throws RangeError if key is `null` or `undefined`
+     * @param key the key of the map entry
+     * @throws RangeError if `key` is `null` or `undefined`
      * @returns `true` if key is locked, `false` otherwise
      */
     isLocked(key: K): Promise<boolean>;
 
     /**
-     * Locks the given key for this map. Promise is resolved when lock is successfully acquired.
-     * This means it may never be resolved if some other process holds the lock and does not unlock it.
-     * A lock may be acquired on non-existent keys. Other processes wait on non-existent key.
+     * Locks the given key for this map. Promise is resolved when lock is
+     * successfully acquired. This means it may never be resolved if some
+     * other process holds the lock and does not unlock it. A lock may be
+     * acquired on non-existent keys. Other processes wait on non-existent key.
      * When this client puts the non-existent key, it is allowed to do that.
      *
-     * Locking is reentrant, meaning that the lock owner client can obtain the lock multiple times.
-     * If the lock was acquired multiple times, then `unlock()` method must be called the same amount of
-     * times, otherwise the lock will remain unavailable.
+     * Locking is reentrant, meaning that the lock owner client can obtain the
+     * lock multiple times. If the lock was acquired multiple times, then `unlock()`
+     * method must be called the same amount of times, otherwise the lock will
+     * remain unavailable.
      *
-     * @param key
-     * @param ttl lock is automatically unlocked after `ttl` milliseconds
-     * @throws RangeError if key is `null` or `undefined`
+     * @param key the key of the map entry
+     * @param leaseTime lock is automatically unlocked after `leaseTime`
+     *                  milliseconds; defaults to infinity
+     * @throws RangeError if `key` is `null` or `undefined`
      */
-    lock(key: K, ttl?: number): Promise<void>;
+    lock(key: K, leaseTime?: number): Promise<void>;
 
     /**
      * Returns the keys of this map as an array.
@@ -331,25 +343,32 @@ export interface IMap<K, V> extends DistributedObject {
     keySet(): Promise<K[]>;
 
     /**
-     * Queries the map based on the specified predicate and returns the keys of matching entries.
-     * @param predicate
+     * Queries the map based on the specified predicate and returns the keys
+     * of matching entries.
+     *
+     * @param predicate predicate to filter map entries
      */
     keySetWithPredicate(predicate: Predicate): Promise<K[]>;
 
     /**
      * Loads keys to the store.
-     * @param keys loads only given keys if set.
-     * @param replaceExistingValues if `true` existing keys will be replaced by newly loaded keys.
+     *
+     * @param keys loads only given keys if set
+     * @param replaceExistingValues if set to `true` existing keys will be
+     *                              replaced by newly loaded keys.
      */
     loadAll(keys?: K[], replaceExistingValues?: boolean): Promise<void>;
 
     /**
      * Puts specified key value association if it was not present before.
      *
-     * @param key
-     * @param value
-     * @param ttl if set, key will be evicted automatically after `ttl` milliseconds
-     * @throws RangeError if key or value is `null` or `undefined`
+     * @param key the key of the map entry
+     * @param value new value
+     * @param ttl if set, key will be evicted automatically after `ttl`
+     *            milliseconds. Time resolution for TTL is seconds.
+     *            The given value is rounded to the next closest second
+     *            value.
+     * @throws RangeError if `key` or `value` is `null` or `undefined`
      * @returns old value of the entry
      */
     putIfAbsent(key: K, value: V, ttl?: number): Promise<V>;
@@ -357,9 +376,12 @@ export interface IMap<K, V> extends DistributedObject {
     /**
      * Same as {@link put} except it does not call underlying MapStore.
      *
-     * @param key
-     * @param value
-     * @param ttl
+     * @param key the key of the map entry
+     * @param value new value
+     * @param ttl if set, key will be evicted automatically after `ttl`
+     *            milliseconds. Time resolution for TTL is seconds.
+     *            The given value is rounded to the next closest second
+     *            value.
      * @throws RangeError if key or value is `null` or `undefined`
      */
     putTransient(key: K, value: V, ttl?: number): Promise<void>;
@@ -367,9 +389,9 @@ export interface IMap<K, V> extends DistributedObject {
     /**
      * Replaces value of the key if only it was associated to `oldValue`.
      *
-     * @param key
-     * @param value
-     * @param oldValue
+     * @param key the key of the map entry
+     * @param value new value
+     * @param oldValue expected old value
      * @throws RangeError if key, oldValue or newValue is `null` or `undefined`
      * @returns `true` if the value was replaced
      */
@@ -378,9 +400,9 @@ export interface IMap<K, V> extends DistributedObject {
     /**
      * Replaces value of given key with `newValue`.
      *
-     * @param key
+     * @param key the key of the map entry
      * @param newValue
-     * @throws RangeError if key or newValue is `null` or `undefined`
+     * @throws RangeError if `key` or `newValue` is `null` or `undefined`
      * @returns previous value
      */
     replace(key: K, newValue: V): Promise<V>;
@@ -388,19 +410,20 @@ export interface IMap<K, V> extends DistributedObject {
     /**
      * Similar to {@link put} except it does not return the old value.
      *
-     * @param key
-     * @param value
-     * @param ttl
-     * @throws RangeError if key or value is `null` or `undefined`
+     * @param key the key of the map entry
+     * @param value new value
+     * @param ttl Time to live in milliseconds. `0` means infinite.
+     *            Time resolution for TTL is seconds. The given value is
+     *            rounded to the next closest second value.
+     * @throws RangeError if `key` or `value` is `null` or `undefined`
      */
     set(key: K, value: V, ttl?: number): Promise<void>;
 
     /**
-     * Releases the lock for this key.
-     * If this client holds the lock, hold count is decremented.
-     * If hold count is zero, lock is released.
+     * Releases the lock for this key. If this client holds the lock,
+     * hold count is decremented. If hold count is zero, lock is released.
      *
-     * @param key
+     * @param key the key of the map entry
      * @throws RangeError if this client is not the owner of the key
      */
     unlock(key: K): Promise<void>;
@@ -420,8 +443,9 @@ export interface IMap<K, V> extends DistributedObject {
     valuesWithPredicate(predicate: Predicate): Promise<ReadOnlyLazyList<V>>;
 
     /**
-     * Returns a key-value pair representing the association of given key
-     * @param key
+     * Returns a key-value pair representing the association of given key.
+     *
+     * @param key the key of the map entry
      * @throws RangeError if key is `null` or `undefined`
      */
     getEntryView(key: K): Promise<SimpleEntryView<K, V>>;
@@ -430,58 +454,63 @@ export interface IMap<K, V> extends DistributedObject {
      * Tries to acquire the lock for the specified key.
      * If lock is not available, server immediately responds with `false`.
      *
-     * Locking is reentrant, meaning that the lock owner client can obtain the lock multiple times.
-     * If the lock was acquired multiple times, then `unlock()` method must be called the same amount of
-     * times, otherwise the lock will remain unavailable.
+     * Locking is reentrant, meaning that the lock owner client can obtain
+     * the lock multiple times. If the lock was acquired multiple times, then
+     * `unlock()` method must be called the same amount of times, otherwise the
+     * lock will remain unavailable.
      *
-     * @param key
-     * @param timeout Server waits for `timeout` milliseconds to acquire the lock before giving up
-     * @param lease lock is automatically release after `lease` milliseconds
-     * @throws RangeError if key is `null` or `undefined`
+     * @param key the key of the map entry
+     * @param timeout server waits for `timeout` milliseconds to acquire
+     *                the lock before giving up; defaults to `0`
+     * @param leaseTime lock is automatically release after `leaseTime`
+     *                  milliseconds; defaults to infinity
+     * @throws RangeError if `key` is `null` or `undefined`
      */
-    tryLock(key: K, timeout?: number, lease?: number): Promise<boolean>;
+    tryLock(key: K, timeout?: number, leaseTime?: number): Promise<boolean>;
 
     /**
      * Tries to put specified key value pair into map. If this method returns
      * false, it indicates that caller thread was not able to acquire the lock for
      * given key in `timeout` milliseconds.
      *
-     * @param key
-     * @param value
-     * @param timeout
-     * @throws RangeError if key or value is `null` or `undefined`
+     * @param key the key of the map entry
+     * @param value new value
+     * @param timeout maximum time to wait in milliseconds
+     * @throws RangeError if `key` or `value` or `timeout` is `null` or `undefined`
      */
     tryPut(key: K, value: V, timeout: number): Promise<boolean>;
 
     /**
      * Tries to remove specified key from map. If this method returns
-     * false, it indicates that caller thread was not able to acquire the lock for
-     * given key in `timeout` milliseconds.
+     * false, it indicates that caller thread was not able to acquire the lock
+     * for given key in `timeout` milliseconds.
      *
-     * @param key
-     * @param timeout
-     * @throws RangeError if key is `null` or `undefined`
+     * @param key the key of the map entry
+     * @param timeout maximum time to wait in milliseconds
+     * @throws RangeError if `key` or `timeout` is `null` or `undefined`
      */
     tryRemove(key: K, timeout: number): Promise<boolean>;
 
     /**
      * Adds a {@link MapListener} for this map.
      *
-     * @param listener
-     * @param key Events are triggered for only this key if set
-     * @param includeValue Event message contains new value of the key if set to {true}
+     * @param listener listener object
+     * @param key optional key to restrict events to associated entry
+     * @param includeValue if set to `true`, event message will contain
+     *                     new value of the key
      * @returns registration id of the listener
      */
     addEntryListener(listener: MapListener<K, V>, key?: K, includeValue?: boolean): Promise<string>;
 
     /**
-     * Adds a {@link MapListener} for this map.
-     * Listener will get notified for map add/remove/update/evict events filtered by the given predicate.
+     * Adds a {@link MapListener} for this map. Listener will get notified
+     * for map add/remove/update/evict events filtered by the given predicate.
      *
-     * @param listener
-     * @param predicate
-     * @param key Events are triggered for only this key if set
-     * @param includeValue Event message contains new value of the key if set to `true`
+     * @param listener listener object
+     * @param predicate predicate
+     * @param key optional key to restrict events to associated entry
+     * @param includeValue if set to `true`, event message will contain
+     *                     new value of the key
      * @returns registration id of the listener
      */
     addEntryListenerWithPredicate(listener: MapListener<K, V>, predicate: Predicate,
@@ -491,38 +520,64 @@ export interface IMap<K, V> extends DistributedObject {
      * Removes a {@link MapListener} from this map.
      *
      * @param listenerId registration Id of the listener
-     * @returns `true` if remove operation is successful, `false` if unsuccessful or this listener
-     *          did not exist
+     * @returns `true` if remove operation is successful, `false` if
+     *          unsuccessful or this listener did not exist
      */
     removeEntryListener(listenerId: string): Promise<boolean>;
 
     /**
      * Applies the user defined EntryProcessor to the all entries in the map.
-     * Returns the results mapped by each key in the map
-     * Note that {entryProcessor} should be registered at server side too.
+     * Returns the results mapped by each key in the map.
+     * Note that `entryProcessor` should be registered at server side too.
      *
-     * @param entryProcessor
-     * @param predicate if specified, entry processor is applied to the entries that satisfies
-     *                  this predicate
-     * @returns entries after entryprocessor is applied
+     * @param entryProcessor EntryProcessor object
+     * @param predicate if specified, entry processor is applied to the entries
+     *                  that satisfy this predicate
+     * @returns entries after EntryProcessor is applied
      */
     executeOnEntries(entryProcessor: IdentifiedDataSerializable | Portable, predicate?: Predicate): Promise<Array<[K, V]>>;
 
     /**
      * Applies the user defined EntryProcessor to the entry mapped by the key.
      *
-     * @param key entry processor is applied only to the value that is mapped with this key
+     * @param key entry processor is applied only to the value that is mapped
+     *            with this key
      * @param entryProcessor entry processor to be applied
      * @returns result of entry process
      */
     executeOnKey(key: K, entryProcessor: IdentifiedDataSerializable | Portable): Promise<V>;
 
     /**
-     * Applies the user defined EntryProcessor to the entries mapped by the given keys.
+     * Applies the user defined EntryProcessor to the entries mapped by the
+     * given keys.
      *
      * @param keys keys to be processed
      * @param entryProcessor
      * @returns result of entry process
      */
     executeOnKeys(keys: K[], entryProcessor: IdentifiedDataSerializable | Portable): Promise<Array<[K, V]>>;
+
+    /**
+     * Updates the TTL (time to live) value of the entry specified by `key`
+     * with a new TTL value. New TTL value is valid starting from the time
+     * this operation is invoked, not since the time the entry was created.
+     * If the entry does not exist or is already expired, this call has no
+     * effect.
+     *
+     * The entry will expire and get evicted after the TTL. If the TTL is `0`,
+     * then the entry lives forever. If the TTL is negative, then the TTL
+     * from the map configuration will be used (default: forever).
+     *
+     * If there is no entry with key `key` or is already expired, this call
+     * makes no changes to entries stored in this map.
+     *
+     * @param key the key of the map entry
+     * @param ttl Time to live in milliseconds. `0` means infinite.
+     *            Time resolution for TTL is seconds. The given value is
+     *            rounded to the next closest second value.
+     * @return `true` if the entry exists and its TTL value is changed,
+     *          `false` otherwise
+     * @throws RangeError if `key` or `ttl` is `null` or `undefined`
+     */
+    setTtl(key: K, ttl: number): Promise<boolean>;
 }
