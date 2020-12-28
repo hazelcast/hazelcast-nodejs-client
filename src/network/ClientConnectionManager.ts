@@ -309,20 +309,16 @@ export class ClientConnectionManager extends EventEmitter {
             .then(() => clientConnection.registerResponseCallback(processResponseCallback))
             .then(() => this.authenticateOnCluster(clientConnection))
             .then((conn) => connectionResolver.resolve(conn))
-            .catch((error) => connectionResolver.reject(error));
+            .catch((err) => {
+                // make sure to close connection on errors
+                if (clientConnection != null) {
+                    clientConnection.close(null, err);
+                }
+                connectionResolver.reject(err);
+            });
 
-        return timedPromise(
-            connectionResolver.promise,
-            this.connectionTimeoutMillis,
-            new HazelcastError('Connection timed out to address ' + address.toString())
-        ).catch((err) => {
-            // make sure to close connection on errors
-            if (clientConnection != null) {
-                clientConnection.close(null, err);
-            }
-            throw err;
-        })
-        .finally(() => this.pendingConnections.delete(addressKey));
+        return connectionResolver.promise
+            .finally(() => this.pendingConnections.delete(addressKey));
     }
 
     getRandomConnection(): ClientConnection {
