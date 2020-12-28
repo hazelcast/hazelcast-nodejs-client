@@ -48,10 +48,6 @@ describe('HazelcastCloudProviderTest', function () {
 
     afterEach(function () {
         sandbox.restore();
-        if (HazelcastCloudDiscovery.prototype.discoverNodes.restore
-                && HazelcastCloudDiscovery.prototype.discoverNodes.restore.sinon) {
-            HazelcastCloudDiscovery.prototype.discoverNodes.restore();
-        }
     });
 
     it('loadAddresses', async function () {

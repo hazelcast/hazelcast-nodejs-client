@@ -17,11 +17,12 @@
 
 import {deferredPromise} from '../util/Util';
 import {createAddressFromString} from '../util/AddressUtil';
-import {get} from 'https';
+import {get, RequestOptions} from 'https';
 import {IncomingMessage} from 'http';
 import {Properties} from '../config/Properties';
 import * as URL from 'url';
 import {AddressImpl} from '../core/Address';
+import {HazelcastError} from '../core';
 
 /**
  * Discovery service that discover nodes via hazelcast.cloud
@@ -42,9 +43,9 @@ export class HazelcastCloudDiscovery {
     private readonly endpointUrl: string;
     private readonly connectionTimeoutMillis: number;
 
-    constructor(endpointUrl: string, connectionTimeoutInMillis: number) {
+    constructor(endpointUrl: string, connectionTimeoutMillis: number) {
         this.endpointUrl = endpointUrl;
-        this.connectionTimeoutMillis = connectionTimeoutInMillis;
+        this.connectionTimeoutMillis = connectionTimeoutMillis;
     }
 
     public static createUrlEndpoint(properties: Properties, cloudToken: string): string {
@@ -60,14 +61,18 @@ export class HazelcastCloudDiscovery {
         const deferred = deferredPromise<Map<string, AddressImpl>>();
 
         const url = URL.parse(this.endpointUrl);
-        const endpointUrlOptions = {
-            host: url.host,
+        const endpointUrlOptions: RequestOptions = {
+            host: url.hostname,
             path: url.path,
-            timeout: this.connectionTimeoutMillis,
+            timeout: this.connectionTimeoutMillis
         };
+        // non-default port is used in tests
+        if (url.port != null) {
+            endpointUrlOptions.port = url.port;
+        }
 
         let dataAsAString = '';
-        get(endpointUrlOptions, (res: IncomingMessage) => {
+        const req = get(endpointUrlOptions, (res: IncomingMessage) => {
             res.setEncoding('utf8');
             res.on('data', (chunk) => {
                 dataAsAString += chunk;
@@ -75,7 +80,14 @@ export class HazelcastCloudDiscovery {
             res.on('end', () => {
                 deferred.resolve(this.parseResponse(dataAsAString));
             });
-        }).on('error', deferred.reject);
+        });
+
+        req.on('error', (err) => {
+            deferred.reject(err);
+        });
+        req.on('timeout', () => {
+            req.destroy(new HazelcastError('Hazelcast Cloud request timed out'));
+        });
 
         return deferred.promise;
     }

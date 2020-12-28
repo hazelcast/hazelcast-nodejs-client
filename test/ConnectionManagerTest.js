@@ -20,6 +20,7 @@ chai.should();
 chai.use(require('chai-as-promised'));
 const expect = chai.expect;
 const sinon = require('sinon');
+const sandbox = sinon.createSandbox();
 const net = require('net');
 
 const RC = require('./RC');
@@ -56,6 +57,7 @@ describe('ConnectionManagerTest', function () {
     });
 
     beforeEach(function () {
+        sandbox.restore();
         testend = false;
     });
 
@@ -72,8 +74,9 @@ describe('ConnectionManagerTest', function () {
     });
 
     it('should give up connecting after timeout', async function () {
-        const timeoutTime = 1000;
         await startUnresponsiveServer(9999);
+
+        const timeoutTime = 1000;
         client = await Client.newHazelcastClient({
             clusterName: cluster.id,
             network: {
@@ -85,6 +88,28 @@ describe('ConnectionManagerTest', function () {
         await expect(
             connectionManager.getOrConnectToAddress(new AddressImpl('localhost', 9999))
         ).to.be.rejected;
+    });
+
+    it('destroys socket after connection timeout', async function () {
+        const timeoutTime = 1000;
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            network: {
+                connectionTimeout: timeoutTime
+            }
+        });
+
+        // emulate connection timeout with a stub socket
+        const socketStub = sandbox.stub(net.Socket.prototype);
+        sandbox.stub(net, 'connect').returns(socketStub);
+
+        const connectionManager = client.getConnectionManager();
+        await expect(
+            connectionManager.getOrConnectToAddress(new AddressImpl('localhost', 9999))
+        ).to.be.rejected;
+
+        await promiseWaitMilliseconds(100);
+        expect(socketStub.destroy.callCount).to.be.equal(1);
     });
 
     it('should not give up when timeout set to 0', function (done) {
@@ -140,7 +165,7 @@ describe('ConnectionManagerTest', function () {
         const conn = await client.getConnectionManager().getOrConnectToAddress(new AddressImpl('localhost', 5701));
         expect(conn.isAlive()).to.be.true;
 
-        const closeSpy = sinon.spy(conn, 'close');
+        const closeSpy = sandbox.spy(conn, 'close');
         conn.socket.emit('error', new Error('boom'));
 
         expect(conn.isAlive()).to.be.false;
