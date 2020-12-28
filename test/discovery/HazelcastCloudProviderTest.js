@@ -15,8 +15,9 @@
  */
 'use strict';
 
+const { expect } = require('chai');
 const sinon = require('sinon');
-const expect = require('chai').expect;
+const sandbox = sinon.createSandbox();
 
 const { LogLevel } = require('../../lib/');
 const { IllegalStateError } = require('../../');
@@ -40,16 +41,13 @@ describe('HazelcastCloudProviderTest', function () {
     beforeEach(() => {
         const logger = new LoggingService(null, LogLevel.INFO).getLogger();
         hazelcastCloudDiscovery = new HazelcastCloudDiscovery();
-        sinon.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes').callsFake(() => Promise.resolve(expectedAddresses));
+        sandbox.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes').callsFake(() => Promise.resolve(expectedAddresses));
 
         provider = new HazelcastCloudAddressProvider(hazelcastCloudDiscovery, null, logger);
     });
 
     afterEach(function () {
-        if (HazelcastCloudDiscovery.prototype.discoverNodes.restore
-            && HazelcastCloudDiscovery.prototype.discoverNodes.restore.sinon) {
-            HazelcastCloudDiscovery.prototype.discoverNodes.restore();
-        }
+        sandbox.restore();
     });
 
     it('loadAddresses', function () {
@@ -60,7 +58,7 @@ describe('HazelcastCloudProviderTest', function () {
 
     it('loadAddresses_whenErrorIsThrown', function () {
         HazelcastCloudDiscovery.prototype.discoverNodes.restore();
-        sinon.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes').callsFake(function () {
+        sandbox.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes').callsFake(function () {
             return Promise.reject(new IllegalStateError('Expected exception'));
         });
 
@@ -99,7 +97,7 @@ describe('HazelcastCloudProviderTest', function () {
 
     it('refresh_whenException_thenLogWarning', function () {
         HazelcastCloudDiscovery.prototype.discoverNodes.restore();
-        sinon.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes').callsFake(function () {
+        sandbox.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes').callsFake(function () {
             return Promise.reject(new IllegalStateError('Expected exception'));
         });
         provider.refresh();

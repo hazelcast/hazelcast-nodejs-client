@@ -20,11 +20,13 @@ chai.should();
 chai.use(require('chai-as-promised'));
 const expect = chai.expect;
 const sinon = require('sinon');
+const sandbox = sinon.createSandbox();
 const net = require('net');
 
-const Controller = require('./RC');
+const RC = require('./RC');
 const { Client, IllegalStateError } = require('../');
 const { AddressImpl } = require('../lib/core/Address');
+const { promiseWaitMilliseconds } = require('./Util');
 
 describe('ConnectionManagerTest', function () {
 
@@ -32,9 +34,9 @@ describe('ConnectionManagerTest', function () {
     let testend, server;
 
     before(function () {
-        return Controller.createCluster(null, null).then(function (cl) {
+        return RC.createCluster(null, null).then(function (cl) {
             cluster = cl;
-            return Controller.startMember(cluster.id);
+            return RC.startMember(cluster.id);
         });
     });
 
@@ -43,6 +45,7 @@ describe('ConnectionManagerTest', function () {
     });
 
     afterEach(function () {
+        sandbox.restore();
         testend = true;
         stopUnresponsiveServer();
         if (client != null) {
@@ -51,7 +54,7 @@ describe('ConnectionManagerTest', function () {
     });
 
     after(function () {
-        return Controller.terminateCluster(cluster.id);
+        return RC.terminateCluster(cluster.id);
     });
 
     function startUnresponsiveServer(port) {
@@ -70,6 +73,7 @@ describe('ConnectionManagerTest', function () {
     it('gives up connecting after timeout', function () {
         const timeoutTime = 1000;
         startUnresponsiveServer(9999);
+
         return Client.newHazelcastClient({
             clusterName: cluster.id,
             network: {
@@ -79,6 +83,30 @@ describe('ConnectionManagerTest', function () {
             client = cl;
             return client.getConnectionManager().getOrConnect(new AddressImpl('localhost', 9999));
         }).should.eventually.be.rejected;
+    });
+
+    it('destroys socket after connection timeout', function () {
+        const timeoutTime = 1000;
+        let socketStub;
+
+        return Client.newHazelcastClient({
+            clusterName: cluster.id,
+            network: {
+                connectionTimeout: timeoutTime
+            }
+        }).then(function (cl) {
+            client = cl;
+
+            // emulate connection timeout with a stub socket
+            socketStub = sandbox.stub(net.Socket.prototype);
+            sandbox.stub(net, 'connect').returns(socketStub);
+
+            return client.getConnectionManager().getOrConnect(new AddressImpl('localhost', 9999));
+        }).catch(() => {
+            return promiseWaitMilliseconds(100);
+        }).then(function () {
+            expect(socketStub.destroy.callCount).to.be.equal(1);
+        });
     });
 
     it('does not give up when timeout=0', function (done) {
@@ -132,7 +160,7 @@ describe('ConnectionManagerTest', function () {
         const conn = await client.getConnectionManager().getOrConnect(new AddressImpl('localhost', 5701));
         expect(conn.isAlive()).to.be.true;
 
-        const closeSpy = sinon.spy(conn, 'close');
+        const closeSpy = sandbox.spy(conn, 'close');
         const err = new Error('boom');
         err.code = 'ECONNRESET';
         conn.socket.emit('error', err);
