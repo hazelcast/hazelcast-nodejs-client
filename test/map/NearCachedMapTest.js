@@ -243,6 +243,12 @@ describe('NearCachedMapTest', function () {
                 await map1.tryRemove('key1', 1000);
                 expectStats(map1, 0, 1, 0);
             });
+
+            it('setTtl invalidates the entry', async function () {
+                await map1.get('key1');
+                await map1.setTtl('key1', 60000);
+                expectStats(map1, 0, 1, 0);
+            });
         });
     });
 });

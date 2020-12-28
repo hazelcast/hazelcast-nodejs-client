@@ -117,6 +117,17 @@ describe('MapProxyTest', function () {
                 expect(val).to.be.null;
             });
 
+            it('setTtl updates ttl for entry', async function () {
+                await map.put('key10', 'val10', 1000);
+                let val = await map.get('key10');
+                expect(val).to.equal('val10');
+
+                await map.setTtl('key10', 60000);
+
+                val = await Util.promiseLater(1100, map.get.bind(map, 'key10'));
+                expect(val).to.equal('val10');
+            });
+
             it('clear', async function () {
                 await map.clear();
                 const val = await map.isEmpty();
