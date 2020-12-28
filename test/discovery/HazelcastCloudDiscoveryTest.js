@@ -15,19 +15,44 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const chai = require('chai');
+chai.should();
+chai.use(require('chai-as-promised'));
+const expect = chai.expect;
+const net = require('net');
+
+const { HazelcastError } = require('../../lib/core');
 const { AddressImpl } = require('../../lib/core/Address');
 const { HazelcastCloudDiscovery } = require('../../lib/discovery/HazelcastCloudDiscovery');
 
 describe('HazelcastCloudDiscoveryTest', function () {
 
-    const hazelcastCloudDiscovery = new HazelcastCloudDiscovery();
+    let server;
+
+    function startUnresponsiveServer(port) {
+        server = net.createServer(function (socket) {
+            // no-response
+        });
+        server.listen(port);
+    }
+
+    function stopUnresponsiveServer() {
+        if (server != null) {
+            server.close();
+        }
+    }
+
+    afterEach(function () {
+        stopUnresponsiveServer();
+    });
 
     it('should parse response', function () {
+        const discovery = new HazelcastCloudDiscovery();
+
         const response = '[{"private-address":"100.96.5.1","public-address":"10.113.44.139:31115"},'
             + '{"private-address":"100.96.4.2","public-address":"10.113.44.130:31115"}]';
 
-        const privateToPublicAddresses = hazelcastCloudDiscovery.parseResponse(response);
+        const privateToPublicAddresses = discovery.parseResponse(response);
 
         expect(privateToPublicAddresses.size).to.equal(2);
         expect(new AddressImpl('10.113.44.139', 31115))
@@ -37,15 +62,27 @@ describe('HazelcastCloudDiscoveryTest', function () {
     });
 
     it('should parse response with different port on private address', function () {
+        const discovery = new HazelcastCloudDiscovery();
+
         const response = '[{"private-address":"100.96.5.1:5701","public-address":"10.113.44.139:31115"},'
             + '{"private-address":"100.96.4.2:5701","public-address":"10.113.44.130:31115"}]';
 
-        const privateToPublicAddresses = hazelcastCloudDiscovery.parseResponse(response);
+        const privateToPublicAddresses = discovery.parseResponse(response);
 
         expect(privateToPublicAddresses.size).to.equal(2);
         expect(new AddressImpl('10.113.44.139', 31115))
             .to.deep.equal(privateToPublicAddresses.get(new AddressImpl('100.96.5.1', 5701).toString()));
         expect(new AddressImpl('10.113.44.130', 31115))
             .to.deep.equal(privateToPublicAddresses.get(new AddressImpl('100.96.4.2', 5701).toString()));
+    });
+
+    it('should cancel request on timeout', async function () {
+        startUnresponsiveServer(9999);
+
+        const connectionTimeoutMs = 100;
+        const discovery = new HazelcastCloudDiscovery('https://localhost', connectionTimeoutMs);
+        discovery.overridePort(9999);
+
+        await expect(discovery.discoverNodes()).to.be.rejectedWith(HazelcastError);
     });
 });
