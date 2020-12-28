@@ -27,7 +27,6 @@ const RC = require('./RC');
 const { Client, IllegalStateError } = require('../');
 const { AddressImpl } = require('../lib/core/Address');
 const { promiseWaitMilliseconds } = require('./Util');
-const { ClientConnection } = require('../lib/network/ClientConnection');
 
 describe('ConnectionManagerTest', function () {
 
@@ -84,27 +83,6 @@ describe('ConnectionManagerTest', function () {
             client = cl;
             return client.getConnectionManager().getOrConnect(new AddressImpl('localhost', 9999));
         }).should.eventually.be.rejected;
-    });
-
-    it('closes connection after initial communication timeout', function () {
-        const timeoutTime = 1000;
-        startUnresponsiveServer(9999);
-        let closeConnSpy;
-
-        return Client.newHazelcastClient({
-            clusterName: cluster.id,
-            network: {
-                connectionTimeout: timeoutTime
-            }
-        }).then(function (cl) {
-            client = cl;
-            closeConnSpy = sandbox.spy(ClientConnection.prototype, 'close');
-            return client.getConnectionManager().getOrConnect(new AddressImpl('localhost', 9999));
-        }).catch(function () {
-            // no-op
-        }).then(function () {
-            expect(closeConnSpy.calledOnce).to.be.true;
-        });
     });
 
     it('destroys socket after connection timeout', function () {
