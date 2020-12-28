@@ -204,6 +204,11 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
             .then<boolean>(this.invalidateCacheEntryAndReturn.bind(this, keyData));
     }
 
+    protected setTtlInternal(keyData: Data, ttl: number): Promise<boolean> {
+        return super.setTtlInternal(keyData, ttl)
+            .then<boolean>(this.invalidateCacheEntryAndReturn.bind(this, keyData));
+    }
+
     private removeNearCacheInvalidationListener(): Promise<boolean> {
         this.client.getRepairingTask().deregisterHandler(this.name);
         return this.client.getListenerService().deregisterListener(this.invalidationListenerId);
