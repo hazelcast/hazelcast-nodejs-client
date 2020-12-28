@@ -80,8 +80,7 @@ describe('HazelcastCloudDiscoveryTest', function () {
         startUnresponsiveServer(9999);
 
         const connectionTimeoutMs = 100;
-        const discovery = new HazelcastCloudDiscovery('https://localhost', connectionTimeoutMs);
-        discovery.overridePort(9999);
+        const discovery = new HazelcastCloudDiscovery('https://localhost:9999', connectionTimeoutMs);
 
         await expect(discovery.discoverNodes()).to.be.rejectedWith(HazelcastError);
     });

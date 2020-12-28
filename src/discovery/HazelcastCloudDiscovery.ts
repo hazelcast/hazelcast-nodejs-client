@@ -41,8 +41,6 @@ export class HazelcastCloudDiscovery {
 
     private readonly endpointUrl: string;
     private readonly connectionTimeoutMillis: number;
-    // only used in tests
-    private port: number;
 
     constructor(endpointUrl: string, connectionTimeoutMillis: number) {
         this.endpointUrl = endpointUrl;
@@ -63,12 +61,13 @@ export class HazelcastCloudDiscovery {
 
         const url = URL.parse(this.endpointUrl);
         const endpointUrlOptions: RequestOptions = {
-            host: url.host,
+            host: url.hostname,
             path: url.path,
             timeout: this.connectionTimeoutMillis
         };
-        if (this.port !== undefined) {
-            endpointUrlOptions.port = this.port;
+        // non-default port is used in tests
+        if (url.port != null) {
+            endpointUrlOptions.port = url.port;
         }
 
         let dataAsAString = '';
@@ -107,10 +106,5 @@ export class HazelcastCloudDiscovery {
         }
 
         return privateToPublicAddresses;
-    }
-
-    // only used in tests
-    private overridePort(port: number) {
-        this.port = port;
     }
 }
