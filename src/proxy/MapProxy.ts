@@ -50,7 +50,9 @@ import {MapLoadGivenKeysCodec} from '../codec/MapLoadGivenKeysCodec';
 import {MapLockCodec} from '../codec/MapLockCodec';
 import {MapPutAllCodec} from '../codec/MapPutAllCodec';
 import {MapPutCodec} from '../codec/MapPutCodec';
+import {MapPutWithMaxIdleCodec} from '../codec/MapPutWithMaxIdleCodec';
 import {MapPutIfAbsentCodec} from '../codec/MapPutIfAbsentCodec';
+import {MapPutIfAbsentWithMaxIdleCodec} from '../codec/MapPutIfAbsentWithMaxIdleCodec';
 import {MapPutTransientCodec} from '../codec/MapPutTransientCodec';
 import {MapRemoveCodec} from '../codec/MapRemoveCodec';
 import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
@@ -58,6 +60,7 @@ import {MapRemoveIfSameCodec} from '../codec/MapRemoveIfSameCodec';
 import {MapReplaceCodec} from '../codec/MapReplaceCodec';
 import {MapReplaceIfSameCodec} from '../codec/MapReplaceIfSameCodec';
 import {MapSetCodec} from '../codec/MapSetCodec';
+import {MapSetWithMaxIdleCodec} from '../codec/MapSetWithMaxIdleCodec';
 import {MapSetTtlCodec} from '../codec/MapSetTtlCodec';
 import {MapSizeCodec} from '../codec/MapSizeCodec';
 import {MapTryLockCodec} from '../codec/MapTryLockCodec';
@@ -252,12 +255,12 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             .then(MapContainsValueCodec.decodeResponse);
     }
 
-    put(key: K, value: V, ttl = -1): Promise<V> {
+    put(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<V> {
         assertNotNull(key);
         assertNotNull(value);
         const keyData: Data = this.toData(key);
         const valueData: Data = this.toData(value);
-        return this.putInternal(keyData, valueData, ttl);
+        return this.putInternal(keyData, valueData, ttl, maxIdle);
     }
 
     putAll(pairs: Array<[K, V]>): Promise<void> {
@@ -388,12 +391,12 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         }
     }
 
-    putIfAbsent(key: K, value: V, ttl = -1): Promise<V> {
+    putIfAbsent(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<V> {
         assertNotNull(key);
         assertNotNull(value);
         const keyData = this.toData(key);
         const valueData = this.toData(value);
-        return this.putIfAbsentInternal(keyData, valueData, ttl);
+        return this.putIfAbsentInternal(keyData, valueData, ttl, maxIdle);
     }
 
     putTransient(key: K, value: V, ttl = -1): Promise<void> {
@@ -422,12 +425,12 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.replaceIfSameInternal(keyData, oldValueData, newValueData);
     }
 
-    set(key: K, value: V, ttl = -1): Promise<void> {
+    set(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<void> {
         assertNotNull(key);
         assertNotNull(value);
         const keyData = this.toData(key);
         const valueData = this.toData(value);
-        return this.setInternal(keyData, valueData, ttl);
+        return this.setInternal(keyData, valueData, ttl, maxIdle);
     }
 
     values(): Promise<ReadOnlyLazyList<V>> {
@@ -514,8 +517,19 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             .then(MapContainsKeyCodec.decodeResponse);
     }
 
-    protected putInternal(keyData: Data, valueData: Data, ttl: number): Promise<V> {
-        return this.encodeInvokeOnKey(MapPutCodec, keyData, keyData, valueData, 0, ttl)
+    protected putInternal(keyData: Data,
+                          valueData: Data,
+                          ttl: number | Long = -1,
+                          maxIdle?: number | Long): Promise<V> {
+        let request: Promise<ClientMessage>;
+        if (maxIdle != null) {
+            request = this.encodeInvokeOnKey(MapPutWithMaxIdleCodec,
+                keyData, keyData, valueData, 0, ttl, maxIdle);
+        } else {
+            request = this.encodeInvokeOnKey(MapPutCodec,
+                keyData, keyData, valueData, 0, ttl);
+        }
+        return request
             .then((clientMessage) => {
                 const response = MapPutCodec.decodeResponse(clientMessage);
                 return this.toObject(response);
@@ -561,11 +575,12 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         const deserializeEntry = function (entry: [Data, Data]): any[] {
             return [toObject(entry[0]), toObject(entry[1])];
         };
-        return Promise.all(partitionPromises).then(function (serializedEntryArrayArray: Array<Array<[Data, Data]>>): any[] {
-            const serializedEntryArray = Array.prototype.concat.apply([], serializedEntryArrayArray);
-            result.push(...(serializedEntryArray.map(deserializeEntry)));
-            return serializedEntryArray;
-        });
+        return Promise.all(partitionPromises)
+            .then(function (serializedEntryArrayArray: Array<Array<[Data, Data]>>): any[] {
+                const serializedEntryArray = Array.prototype.concat.apply([], serializedEntryArrayArray);
+                result.push(...(serializedEntryArray.map(deserializeEntry)));
+                return serializedEntryArray;
+            });
     }
 
     protected deleteInternal(keyData: Data): Promise<void> {
@@ -577,8 +592,20 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             .then(MapEvictCodec.decodeResponse);
     }
 
-    protected putIfAbsentInternal(keyData: Data, valueData: Data, ttl: number): Promise<V> {
-        return this.encodeInvokeOnKey(MapPutIfAbsentCodec, keyData, keyData, valueData, 0, ttl)
+    protected putIfAbsentInternal(keyData: Data,
+                                  valueData: Data,
+                                  ttl: number | Long = -1,
+                                  maxIdle?: number | Long): Promise<V> {
+        let request: Promise<ClientMessage>;
+        if (maxIdle != null) {
+            // TODO timeInMsOrOneIfResultIsZero
+            request = this.encodeInvokeOnKey(MapPutIfAbsentWithMaxIdleCodec,
+                keyData, keyData, valueData, 0, ttl, maxIdle);
+        } else {
+            request = this.encodeInvokeOnKey(MapPutIfAbsentCodec,
+                keyData, keyData, valueData, 0, ttl);
+        }
+        return request
             .then((clientMessage) => {
                 const response = MapPutIfAbsentCodec.decodeResponse(clientMessage);
                 return this.toObject(response);
@@ -603,8 +630,20 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             .then(MapReplaceIfSameCodec.decodeResponse);
     }
 
-    protected setInternal(keyData: Data, valueData: Data, ttl: number): Promise<void> {
-        return this.encodeInvokeOnKey(MapSetCodec, keyData, keyData, valueData, 0, ttl).then(() => {});
+    protected setInternal(keyData: Data,
+                          valueData: Data,
+                          ttl: number | Long = -1,
+                          maxIdle?: number | Long): Promise<void> {
+        let request: Promise<ClientMessage>;
+        if (maxIdle != null) {
+            // TODO timeInMsOrOneIfResultIsZero
+            request = this.encodeInvokeOnKey(MapSetWithMaxIdleCodec,
+                keyData, keyData, valueData, 0, ttl, maxIdle);
+        } else {
+            request = this.encodeInvokeOnKey(MapSetCodec,
+                keyData, keyData, valueData, 0, ttl);
+        }
+        return request.then(() => {});
     }
 
     protected tryPutInternal(keyData: Data, valueData: Data, timeout: number): Promise<boolean> {

@@ -38,7 +38,7 @@ export interface ReplicatedMap<K, V> extends DistributedObject {
      * @param ttl milliseconds to be associated with the specified key-value pair.
      * @returns old value if there was any, `null` otherwise.
      */
-    put(key: K, value: V, ttl?: Long | number): Promise<V>;
+    put(key: K, value: V, ttl?: number | Long): Promise<V>;
 
     /**
      * The clear operation wipes data out of the replicated maps.

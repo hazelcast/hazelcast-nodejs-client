@@ -25,7 +25,8 @@ const { fillMap } = require('../Util');
 
 async function createController(nearCacheEnabled) {
     if (nearCacheEnabled) {
-        return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_nearcache_batchinvalidation_false.xml', 'utf8'));
+        return RC.createCluster(
+            null, fs.readFileSync(__dirname + '/hazelcast_nearcache_batchinvalidation_false.xml', 'utf8'));
     } else {
         return RC.createCluster(null, null);
     }
@@ -111,6 +112,14 @@ describe('MapProxyTest', function () {
 
             it('put with ttl removes value after ttl', async function () {
                 await map.put('key10', 'val10', 1000);
+                let val = await map.get('key10');
+                expect(val).to.equal('val10');
+                val = await Util.promiseLater(1100, map.get.bind(map, 'key10'));
+                expect(val).to.be.null;
+            });
+
+            it('put with maxIdle removes value after maxIdle', async function () {
+                await map.put('key10', 'val10', undefined, 1000);
                 let val = await map.get('key10');
                 expect(val).to.equal('val10');
                 val = await Util.promiseLater(1100, map.get.bind(map, 'key10'));
@@ -324,13 +333,21 @@ describe('MapProxyTest', function () {
                 expect(val).to.be.null;
             });
 
+            it('putIfAbsent_with_maxIdle', async function () {
+                await map.putIfAbsent('key10', 'new-val', undefined, 1000);
+                let val = await map.get('key10');
+                expect(val).to.equal('new-val');
+                val = await Util.promiseLater(1100, map.get.bind(map, 'key10'));
+                expect(val).to.be.null;
+            });
+
             it('putTransient', async function () {
                 await map.putTransient('key10', 'val10');
                 const val = await map.get('key10');
                 expect(val).to.equal('val10');
             });
 
-            it('putTransient_withTTL', async function () {
+            it('putTransient_with_ttl', async function () {
                 await map.putTransient('key10', 'val10', 1000);
                 let val = await map.get('key10');
                 expect(val).to.equal('val10');
@@ -365,8 +382,16 @@ describe('MapProxyTest', function () {
                 expect(val).to.equal('val10');
             });
 
-            it('set_withTTL', async function () {
+            it('set_with_ttl', async function () {
                 await map.set('key10', 'val10', 1000);
+                let val = await map.get('key10');
+                expect(val).to.equal('val10');
+                val = await Util.promiseLater(1100, map.get.bind(map, 'key10'));
+                expect(val).to.be.null;
+            });
+
+            it('set_with_maxIdle', async function () {
+                await map.set('key10', 'val10', undefined, 1000);
                 let val = await map.get('key10');
                 expect(val).to.equal('val10');
                 val = await Util.promiseLater(1100, map.get.bind(map, 'key10'));
@@ -489,10 +514,10 @@ describe('MapProxyTest', function () {
                         try {
                             expect(entryEvent.name).to.equal('test');
                             expect(entryEvent.key).to.equal('key10');
-                            expect(entryEvent.value).to.be.equal(null);
-                            expect(entryEvent.oldValue).be.equal(null);
-                            expect(entryEvent.mergingValue).to.be.equal(null);
-                            expect(entryEvent.member).to.not.be.equal(null);
+                            expect(entryEvent.value).to.be.null;
+                            expect(entryEvent.oldValue).be.null;
+                            expect(entryEvent.mergingValue).to.be.null;
+                            expect(entryEvent.member).to.not.be.null;
                             done();
                         } catch (err) {
                             done(err);
@@ -511,10 +536,10 @@ describe('MapProxyTest', function () {
                         try {
                             expect(entryEvent.name).to.equal('test');
                             expect(entryEvent.key).to.equal('key10');
-                            expect(entryEvent.value).to.be.equal(null);
-                            expect(entryEvent.oldValue).to.be.equal(null);
-                            expect(entryEvent.mergingValue).to.be.equal(null);
-                            expect(entryEvent.member).to.not.be.equal(null);
+                            expect(entryEvent.value).to.be.null;
+                            expect(entryEvent.oldValue).to.be.null;
+                            expect(entryEvent.mergingValue).to.be.null;
+                            expect(entryEvent.member).to.not.be.null;
                             done();
                         } catch (err) {
                             done(err);
@@ -534,8 +559,8 @@ describe('MapProxyTest', function () {
                             expect(entryEvent.name).to.equal('test');
                             expect(entryEvent.key).to.equal('key10');
                             expect(entryEvent.value).to.equal('val10');
-                            expect(entryEvent.mergingValue).to.be.equal(null);
-                            expect(entryEvent.member).to.not.be.equal(null);
+                            expect(entryEvent.mergingValue).to.be.null;
+                            expect(entryEvent.member).to.not.be.null;
                             done();
                         } catch (err) {
                             done(err);
@@ -554,10 +579,10 @@ describe('MapProxyTest', function () {
                         try {
                             expect(entryEvent.name).to.equal('test');
                             expect(entryEvent.key).to.equal('key10');
-                            expect(entryEvent.mergingValue).to.be.equal(null);
-                            expect(entryEvent.member).to.not.be.equal(null);
-                            expect(entryEvent.oldValue).to.be.equal(null);
-                            expect(entryEvent.member).to.not.be.equal(null);
+                            expect(entryEvent.mergingValue).to.be.null;
+                            expect(entryEvent.member).to.not.be.null;
+                            expect(entryEvent.oldValue).to.be.null;
+                            expect(entryEvent.member).to.not.be.null;
                             done();
                         } catch (err) {
                             done(err);
@@ -577,9 +602,9 @@ describe('MapProxyTest', function () {
                             expect(entryEvent.name).to.equal('test');
                             expect(entryEvent.key).to.equal('key10');
                             expect(entryEvent.value).to.equal('val10');
-                            expect(entryEvent.oldValue).to.be.equal(null);
-                            expect(entryEvent.mergingValue).to.be.equal(null);
-                            expect(entryEvent.member).to.not.be.equal(null);
+                            expect(entryEvent.oldValue).to.be.null;
+                            expect(entryEvent.mergingValue).to.be.null;
+                            expect(entryEvent.member).to.not.be.null;
                             done();
                         } catch (err) {
                             done(err);
@@ -597,10 +622,10 @@ describe('MapProxyTest', function () {
                         try {
                             expect(entryEvent.name).to.equal('test');
                             expect(entryEvent.key).to.equal('key0');
-                            expect(entryEvent.value).to.be.equal(null);
-                            expect(entryEvent.oldValue).to.be.equal(null);
-                            expect(entryEvent.mergingValue).be.equal(null);
-                            expect(entryEvent.member).to.not.be.equal(null);
+                            expect(entryEvent.value).to.be.null;
+                            expect(entryEvent.oldValue).to.be.null;
+                            expect(entryEvent.mergingValue).be.null;
+                            expect(entryEvent.member).to.not.be.null;
                             done();
                         } catch (err) {
                             done(err);
@@ -618,10 +643,10 @@ describe('MapProxyTest', function () {
                         try {
                             expect(entryEvent.name).to.equal('test');
                             expect(entryEvent.key).to.equal('key1');
-                            expect(entryEvent.value).to.be.equal(null);
-                            expect(entryEvent.oldValue).to.be.equal(null);
-                            expect(entryEvent.mergingValue).to.be.equal(null);
-                            expect(entryEvent.member).to.not.be.equal(null);
+                            expect(entryEvent.value).to.be.null;
+                            expect(entryEvent.oldValue).to.be.null;
+                            expect(entryEvent.mergingValue).to.be.null;
+                            expect(entryEvent.member).to.not.be.null;
                             done();
                         } catch (err) {
                             done(err);
@@ -639,10 +664,10 @@ describe('MapProxyTest', function () {
                         try {
                             expect(entryEvent.name).to.equal('test');
                             expect(entryEvent.key).to.equal('key1');
-                            expect(entryEvent.value).to.be.equal(null);
+                            expect(entryEvent.value).to.be.null;
                             expect(entryEvent.oldValue).to.equal('val1');
-                            expect(entryEvent.mergingValue).to.be.equal(null);
-                            expect(entryEvent.member).to.not.be.equal(null);
+                            expect(entryEvent.mergingValue).to.be.null;
+                            expect(entryEvent.member).to.not.be.null;
                             done();
                         } catch (err) {
                             done(err);
@@ -660,10 +685,10 @@ describe('MapProxyTest', function () {
                         try {
                             expect(entryEvent.name).to.equal('test');
                             expect(entryEvent.key).to.equal('key1');
-                            expect(entryEvent.value).to.be.equal(null);
+                            expect(entryEvent.value).to.be.null;
                             expect(entryEvent.oldValue).to.equal('val1');
-                            expect(entryEvent.mergingValue).to.be.equal(null);
-                            expect(entryEvent.member).to.not.be.equal(null);
+                            expect(entryEvent.mergingValue).to.be.null;
+                            expect(entryEvent.member).to.not.be.null;
                             done();
                         } catch (err) {
                             done(err);
@@ -681,7 +706,7 @@ describe('MapProxyTest', function () {
                         try {
                             expect(mapEvent.name).to.equal('test');
                             expect(mapEvent.numberOfAffectedEntries).to.equal(10);
-                            expect(mapEvent.member).to.not.be.equal(null);
+                            expect(mapEvent.member).to.not.be.null;
                             done();
                         } catch (err) {
                             done(err);
@@ -699,7 +724,7 @@ describe('MapProxyTest', function () {
                         try {
                             expect(mapEvent.name).to.equal('test');
                             expect(mapEvent.numberOfAffectedEntries).to.equal(10);
-                            expect(mapEvent.member).to.not.be.equal(null);
+                            expect(mapEvent.member).to.not.be.null;
                             done();
                         } catch (err) {
                             done(err);
@@ -717,10 +742,10 @@ describe('MapProxyTest', function () {
                         try {
                             expect(entryEvent.name).to.equal('test');
                             expect(entryEvent.key).to.equal('expiringKey');
-                            expect(entryEvent.value).to.be.equal(null);
+                            expect(entryEvent.value).to.be.null;
                             expect(entryEvent.oldValue).to.equal('expiringValue');
-                            expect(entryEvent.mergingValue).to.be.equal(null);
-                            expect(entryEvent.member).to.not.be.equal(null);
+                            expect(entryEvent.mergingValue).to.be.null;
+                            expect(entryEvent.member).to.not.be.null;
                             done();
                         } catch (err) {
                             done(err);
