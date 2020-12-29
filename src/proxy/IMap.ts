@@ -262,7 +262,7 @@ export interface IMap<K, V> extends DistributedObject {
     remove(key: K, value?: V): Promise<V | boolean>;
 
     /**
-     * Removes specified key from map. Unlike `remove` this method does not
+     * Removes specified key from map. Unlike {@link remove} this method does not
      * return the deleted value. Therefore, it eliminates deserialization cost
      * of the returned value.
      *
@@ -410,7 +410,7 @@ export interface IMap<K, V> extends DistributedObject {
     putIfAbsent(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<V>;
 
     /**
-     * Same as `put` except it does not call underlying MapStore.
+     * Same as {@link put} except it does not call underlying MapStore.
      *
      * @param key the key of the map entry
      * @param value new value
@@ -447,7 +447,7 @@ export interface IMap<K, V> extends DistributedObject {
     replace(key: K, newValue: V): Promise<V>;
 
     /**
-     * Similar to `put` except it does not return the old value.
+     * Similar to {@link put} except it does not return the old value.
      *
      * The entry will expire and get evicted after the TTL. It limits the
      * lifetime of the entries relative to the time of the last write access
