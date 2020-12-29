@@ -598,7 +598,6 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                                   maxIdle?: number | Long): Promise<V> {
         let request: Promise<ClientMessage>;
         if (maxIdle != null) {
-            // TODO timeInMsOrOneIfResultIsZero
             request = this.encodeInvokeOnKey(MapPutIfAbsentWithMaxIdleCodec,
                 keyData, keyData, valueData, 0, ttl, maxIdle);
         } else {
@@ -636,7 +635,6 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                           maxIdle?: number | Long): Promise<void> {
         let request: Promise<ClientMessage>;
         if (maxIdle != null) {
-            // TODO timeInMsOrOneIfResultIsZero
             request = this.encodeInvokeOnKey(MapSetWithMaxIdleCodec,
                 keyData, keyData, valueData, 0, ttl, maxIdle);
         } else {
