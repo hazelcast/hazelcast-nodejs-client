@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import * as Long from 'long';
 import {Aggregator} from '../aggregation/Aggregator';
 import {SimpleEntryView} from '../core/SimpleEntryView';
 import {MapListener} from './MapListener';
@@ -138,18 +139,35 @@ export interface IMap<K, V> extends DistributedObject {
     /**
      * Associates the specified value with the specified key.
      * If key was associated with another value, it replaces the old value.
-     * If specified, value is evicted after ttl seconds.
+     *
+     * The entry will expire and get evicted after the TTL. It limits the
+     * lifetime of the entries relative to the time of the last write access
+     * performed on them. If the TTL is `0`, then the entry lives forever.
+     * If the TTL is negative, then the TTL from the map configuration will
+     * be used (default: forever).
+     *
+     * The entry will expire and get evicted after the Max Idle time. It limits
+     * the lifetime of the entries relative to the time of the last read or write
+     * access performed on them. If the Max Idle is `0`, then the entry lives
+     * forever. If the Max Idle is negative, then the Max Idle from the map
+     * configuration will be used (default: forever). The time precision is
+     * limited by `1` second. The Max Idle that is less than `1` second can
+     * lead to unexpected behaviour.
      *
      * @param key the key of the map entry
      * @param value new value
-     * @param ttl Time to live in milliseconds. `0` means infinite.
-     *            Time resolution for TTL is seconds. The given value is
-     *            rounded to the next closest second value.
+     * @param ttl optional time to live in milliseconds. `0` means infinite,
+     *            negative means map config default. Time resolution for TTL
+     *            is seconds. The given value is rounded to the next closest
+     *            second value.
+     * @param maxIdle optional maximum time in milliseconds for this entry to
+     *                stay idle in the map. `0` means infinite, negative means
+     *                map config default.
      * @throws RangeError if `key` or `value` is `undefined` or `null`
      *                    or `ttl` is negative
      * @returns old value if there was any, `null` otherwise
      */
-    put(key: K, value: V, ttl?: number): Promise<V>;
+    put(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<V>;
 
     /**
      * Puts all key value pairs from this array to the map as key -> value mappings.
@@ -244,8 +262,9 @@ export interface IMap<K, V> extends DistributedObject {
     remove(key: K, value?: V): Promise<V | boolean>;
 
     /**
-     * Removes specified key from map. Unlike {@link remove} this method does not return deleted value.
-     * Therefore it eliminates deserialization cost of returned value.
+     * Removes specified key from map. Unlike {@link remove} this method does not
+     * return the deleted value. Therefore, it eliminates deserialization cost
+     * of the returned value.
      *
      * @param key the key of the map entry
      * @throws RangeError if `key` is `null` or `undefined`
@@ -362,29 +381,49 @@ export interface IMap<K, V> extends DistributedObject {
     /**
      * Puts specified key value association if it was not present before.
      *
+     * The entry will expire and get evicted after the TTL. It limits the
+     * lifetime of the entries relative to the time of the last write access
+     * performed on them. If the TTL is `0`, then the entry lives forever.
+     * If the TTL is negative, then the TTL from the map configuration will
+     * be used (default: forever).
+     *
+     * The entry will expire and get evicted after the Max Idle time. It limits
+     * the lifetime of the entries relative to the time of the last read or write
+     * access performed on them. If the Max Idle is `0`, then the entry lives
+     * forever. If the Max Idle is negative, then the Max Idle from the map
+     * configuration will be used (default: forever). The time precision is
+     * limited by `1` second. The Max Idle that is less than `1` second can
+     * lead to unexpected behaviour.
+     *
      * @param key the key of the map entry
      * @param value new value
-     * @param ttl if set, key will be evicted automatically after `ttl`
-     *            milliseconds. Time resolution for TTL is seconds.
-     *            The given value is rounded to the next closest second
-     *            value.
+     * @param ttl optional time to live in milliseconds. `0` means infinite,
+     *            negative means map config default. Time resolution for TTL
+     *            is seconds. The given value is rounded to the next closest
+     *            second value.
+     * @param maxIdle optional maximum time in milliseconds for this entry to
+     *                stay idle in the map. `0` means infinite, negative means
+     *                map config default.
      * @throws RangeError if `key` or `value` is `null` or `undefined`
      * @returns old value of the entry
      */
-    putIfAbsent(key: K, value: V, ttl?: number): Promise<V>;
+    putIfAbsent(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<V>;
 
     /**
      * Same as {@link put} except it does not call underlying MapStore.
      *
      * @param key the key of the map entry
      * @param value new value
-     * @param ttl if set, key will be evicted automatically after `ttl`
-     *            milliseconds. Time resolution for TTL is seconds.
-     *            The given value is rounded to the next closest second
-     *            value.
+     * @param ttl optional time to live in milliseconds. `0` means infinite,
+     *            negative means map config default. Time resolution for TTL
+     *            is seconds. The given value is rounded to the next closest
+     *            second value.
+     * @param maxIdle optional maximum time in milliseconds for this entry to
+     *                stay idle in the map. `0` means infinite, negative means
+     *                map config default.
      * @throws RangeError if key or value is `null` or `undefined`
      */
-    putTransient(key: K, value: V, ttl?: number): Promise<void>;
+    putTransient(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<void>;
 
     /**
      * Replaces value of the key if only it was associated to `oldValue`.
@@ -410,14 +449,32 @@ export interface IMap<K, V> extends DistributedObject {
     /**
      * Similar to {@link put} except it does not return the old value.
      *
+     * The entry will expire and get evicted after the TTL. It limits the
+     * lifetime of the entries relative to the time of the last write access
+     * performed on them. If the TTL is `0`, then the entry lives forever.
+     * If the TTL is negative, then the TTL from the map configuration will
+     * be used (default: forever).
+     *
+     * The entry will expire and get evicted after the Max Idle time. It limits
+     * the lifetime of the entries relative to the time of the last read or write
+     * access performed on them. If the Max Idle is `0`, then the entry lives
+     * forever. If the Max Idle is negative, then the Max Idle from the map
+     * configuration will be used (default: forever). The time precision is
+     * limited by `1` second. The Max Idle that is less than `1` second can
+     * lead to unexpected behaviour.
+     *
      * @param key the key of the map entry
      * @param value new value
-     * @param ttl Time to live in milliseconds. `0` means infinite.
-     *            Time resolution for TTL is seconds. The given value is
-     *            rounded to the next closest second value.
+     * @param ttl optional time to live in milliseconds. `0` means infinite,
+     *            negative means map config default. Time resolution for TTL
+     *            is seconds. The given value is rounded to the next closest
+     *            second value.
+     * @param maxIdle optional maximum time in milliseconds for this entry to
+     *                stay idle in the map. `0` means infinite, negative means
+     *                map config default.
      * @throws RangeError if `key` or `value` is `null` or `undefined`
      */
-    set(key: K, value: V, ttl?: number): Promise<void>;
+    set(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<void>;
 
     /**
      * Releases the lock for this key. If this client holds the lock,
@@ -572,12 +629,12 @@ export interface IMap<K, V> extends DistributedObject {
      * makes no changes to entries stored in this map.
      *
      * @param key the key of the map entry
-     * @param ttl Time to live in milliseconds. `0` means infinite.
-     *            Time resolution for TTL is seconds. The given value is
-     *            rounded to the next closest second value.
+     * @param ttl time to live in milliseconds. `0` means infinite, negative
+     *            means map config default. Time resolution for TTL is seconds.
+     *            The given value is rounded to the next closest second value.
      * @return `true` if the entry exists and its TTL value is changed,
      *          `false` otherwise
      * @throws RangeError if `key` or `ttl` is `null` or `undefined`
      */
-    setTtl(key: K, ttl: number): Promise<boolean>;
+    setTtl(key: K, ttl: number | Long): Promise<boolean>;
 }

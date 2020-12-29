@@ -33,18 +33,16 @@ export interface ReplicatedMap<K, V> extends DistributedObject {
      * cluster. If there is an old value, it will be replaced by the specified
      * one and returned from the call.
      *
-     * @param key key with which the specified value is to be associated.
-     * @param value value to be associated with the specified key.
-     * @param ttl milliseconds to be associated with the specified key-value pair.
-     * @returns old value if there was any, `null` otherwise.
+     * @param key the key of the map entry
+     * @param value new value
+     * @param ttl optional time to live in milliseconds. `0` means infinite.
+     * @returns old value if there was any, `null` otherwise
      */
-    put(key: K, value: V, ttl?: Long | number): Promise<V>;
+    put(key: K, value: V, ttl?: number | Long): Promise<V>;
 
     /**
-     * The clear operation wipes data out of the replicated maps.
-     * If some node fails on executing the operation, it is retried for at most
-     * 5 times (on the failing nodes only).
-     * @return
+     * Wipes data out of the replicated maps. If some node fails on executing
+     * the operation, it is retried for at most 5 times (on the failing nodes only).
      */
     clear(): Promise<void>;
 
@@ -58,79 +56,81 @@ export interface ReplicatedMap<K, V> extends DistributedObject {
      * operation may be used to distinguish these two cases. This message is
      * idempotent.
      *
-     * @param key key to search for.
-     * @returns value associated with the specified key.
+     * @param key the key of the map entry
+     * @returns value associated with the specified key
      */
     get(key: K): Promise<V>;
 
     /**
-     * Returns true if this map contains a mapping for the specified key. This message is idempotent.
+     * Returns `true` if this map contains a mapping for the specified key. This
+     * message is idempotent.
      *
-     * @param key key to search for.
-     * @returns `true` if this map contains the specified key, `false` otherwise.
+     * @param key the key to search for
+     * @returns `true` if this map contains the specified key, `false` otherwise
      */
     containsKey(key: K): Promise<boolean>;
 
     /**
-     * Returns true if this map maps one or more keys to the specified value.
+     * Returns `true` if this map maps one or more keys to the specified value.
      *
-     * @param value value to search for.
-     * @returns `true` if the specified value is associated with at least one key.
+     * @param value the value to search for
+     * @returns `true` if the specified value is associated with at least one key
      */
     containsValue(value: V): Promise<boolean>;
 
     /**
-     * If the map contains more than Integer.MAX_VALUE elements, returns Integer.MAX_VALUE.
-     * @returns Returns the number of key-value mappings in this map.
+     * Returns the number of key-value mappings in this map. If the map contains
+     * more than `Integer.MAX_VALUE` (Java; 2^31-1) elements, returns
+     * `Integer.MAX_VALUE`.
+     *
+     * @returns the number of key-value mappings in this map.
      */
     size(): Promise<number>;
 
     /**
-     * @returns `true` if this map has no entries, `false` otherwise.
+     * @returns `true` if this map has no entries, `false` otherwise
      */
     isEmpty(): Promise<boolean>;
 
     /**
-     * Removes the mapping for a key from this map if it is present (optional operation).
-     * Returns the value to which this map previously associated the key,
-     * or `null` if the map contained no mapping for the key. If this map permits `null` values,
-     * then a return value of `null` does not necessarily indicate that the map contained
-     * no mapping for the key; it's also possible that the map explicitly mapped the key to null.
-     * The map will not contain a mapping for the specified key once the call returns.
+     * Removes the mapping for a key from this map if it is present.
      *
-     * @param key key to remove.
-     * @returns value associated with key, `null` if the key did not exist before.
+     * @param key the key of the map entry
+     * @returns value associated with key, `null` if the key did not exist before
      */
     remove(key: K): Promise<V>;
 
     /**
-     * Copies all of the mappings from the specified key-value pairs array to this map
-     * (optional operation).
-     * The effect of this call is equivalent to that of calling put(Object,Object)
-     * put(k, v) on this map once for each mapping from key k to value v in the specified
-     * map. The behavior of this operation is undefined if the specified map is modified
-     * while the operation is in progress
+     * Copies all of the mappings from the specified key-value pairs array to this map.
      *
-     * @param pairs
-     * @return
+     * The behavior of this operation is undefined if the specified map is modified
+     * while the operation is in progress.
+     *
+     * @param pairs entries to be put
      */
     putAll(pairs: Array<[K, V]>): Promise<void>;
 
     /**
      * Returns a view of the key contained in this map.
      *
-     * @returns keys of this map as an array.
+     * @returns keys of this map as an array
      */
     keySet(): Promise<K[]>;
 
     /**
-     * @param comparator optional ListComparator function to sort the returned elements.
-     * @returns a list of values contained in this map.
+     * Returns an eagerly populated collection view of the values contained in
+     * this map.
+     *
+     * @param comparator optional ListComparator function to sort
+     *                   the returned elements
+     * @returns a list of values contained in this map
      */
     values(comparator?: ListComparator<V>): Promise<ReadOnlyLazyList<V>>;
 
     /**
-     * @returns Returns entries as an array of key-value pairs.
+     * Returns map entries as an array of key-value pairs.
+     *
+     * @returns map entries as an array of key-value pairs
      */
     entrySet(): Promise<Array<[K, V]>>;
 
@@ -138,11 +138,10 @@ export interface ReplicatedMap<K, V> extends DistributedObject {
      * Adds an continuous entry listener for this map. The listener will be notified for
      * map add/remove/update/evict events filtered by the given predicate.
      *
-     * @param listener
-     * @param key
-     * @param predicate
-     * @param localOnly
-     * @returns Registration id of the listener.
+     * @param listener listener object
+     * @param key key to restrict events to associated entry
+     * @param predicate predicate
+     * @returns registration id of the listener
      */
     addEntryListenerToKeyWithPredicate(listener: EntryListener<K, V>, key: K, predicate: Predicate): Promise<string>;
 
@@ -150,9 +149,9 @@ export interface ReplicatedMap<K, V> extends DistributedObject {
      * Adds an continuous entry listener for this map. The listener will be notified for
      * map add/remove/update/evict events filtered by the given predicate.
      *
-     * @param listener
-     * @param predicate
-     * @returns Registration id of the listener.
+     * @param listener listener object
+     * @param predicate predicate
+     * @returns registration id of the listener
      */
     addEntryListenerWithPredicate(listener: EntryListener<K, V>, predicate: Predicate): Promise<string>;
 
@@ -160,8 +159,8 @@ export interface ReplicatedMap<K, V> extends DistributedObject {
      * Adds the specified entry listener for the specified key. The listener will be
      * notified for all add/remove/update/evict events of the specified key only.
      *
-     * @param listener
-     * @param key
+     * @param listener listener object
+     * @param key key to restrict events to associated entry
      * @returns Registration id of the listener.
      */
     addEntryListenerToKey(listener: EntryListener<K, V>, key: K): Promise<string>;
@@ -171,7 +170,7 @@ export interface ReplicatedMap<K, V> extends DistributedObject {
      * map add/remove/update/evict events.
      *
      * @param listener
-     * @returns Registration id of the listener.
+     * @returns registration id of the listener
      */
     addEntryListener(listener: EntryListener<K, V>): Promise<string>;
 
@@ -179,8 +178,9 @@ export interface ReplicatedMap<K, V> extends DistributedObject {
      * Removes the specified entry listener. Returns silently if there was no such
      * listener added before. This message is idempotent.
      *
-     * @param listenerId
-     * @returns `true` if remove operation is successful, `false` if unsuccessful or this listener did not exist.
+     * @param listenerId registration id of the listener
+     * @returns `true` if remove operation is successful, `false` if unsuccessful
+     *          or this listener did not exist
      */
     removeEntryListener(listenerId: string): Promise<boolean>;
 }

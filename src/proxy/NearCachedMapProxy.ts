@@ -100,13 +100,19 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         });
     }
 
-    protected putIfAbsentInternal(keyData: Data, valueData: Data, ttl: number): Promise<V> {
-        return super.putIfAbsentInternal(keyData, valueData, ttl)
+    protected putIfAbsentInternal(keyData: Data,
+                                  valueData: Data,
+                                  ttl: number | Long = -1,
+                                  maxIdle?: number | Long): Promise<V> {
+        return super.putIfAbsentInternal(keyData, valueData, ttl, maxIdle)
             .then<V>(this.invalidateCacheEntryAndReturn.bind(this, keyData));
     }
 
-    protected putTransientInternal(keyData: Data, valueData: Data, ttl: number): Promise<void> {
-        return super.putTransientInternal(keyData, valueData, ttl)
+    protected putTransientInternal(keyData: Data,
+                                   valueData: Data,
+                                   ttl: number | Long = -1,
+                                   maxIdle?: number | Long): Promise<void> {
+        return super.putTransientInternal(keyData, valueData, ttl, maxIdle)
             .then<void>(this.invalidateCacheEntryAndReturn.bind(this, keyData));
     }
 
@@ -115,8 +121,11 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
             .then<V>(this.invalidateCacheEntryAndReturn.bind(this, keyData));
     }
 
-    protected putInternal(keyData: Data, valueData: Data, ttl: number): Promise<V> {
-        return super.putInternal(keyData, valueData, ttl)
+    protected putInternal(keyData: Data,
+                          valueData: Data,
+                          ttl: number | Long = -1,
+                          maxIdle?: number | Long): Promise<V> {
+        return super.putInternal(keyData, valueData, ttl, maxIdle)
             .then<V>(this.invalidateCacheEntryAndReturn.bind(this, keyData));
     }
 
@@ -194,8 +203,11 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
             .then<V>(this.invalidateCacheEntryAndReturn.bind(this, keyData));
     }
 
-    protected setInternal(keyData: Data, valueData: Data, ttl: number): Promise<void> {
-        return super.setInternal(keyData, valueData, ttl)
+    protected setInternal(keyData: Data,
+                          valueData: Data,
+                          ttl: number | Long = -1,
+                          maxIdle?: number | Long): Promise<void> {
+        return super.setInternal(keyData, valueData, ttl, maxIdle)
             .then<void>(this.invalidateCacheEntryAndReturn.bind(this, keyData));
     }
 
