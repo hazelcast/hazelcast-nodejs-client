@@ -410,7 +410,7 @@ export interface IMap<K, V> extends DistributedObject {
     putIfAbsent(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<V>;
 
     /**
-     * Same as {@link put} except it does not call underlying MapStore.
+     * Same as `put` except it does not call underlying MapStore.
      *
      * @param key the key of the map entry
      * @param value new value
@@ -418,9 +418,12 @@ export interface IMap<K, V> extends DistributedObject {
      *            negative means map config default. Time resolution for TTL
      *            is seconds. The given value is rounded to the next closest
      *            second value.
+     * @param maxIdle optional maximum time in milliseconds for this entry to
+     *                stay idle in the map. `0` means infinite, negative means
+     *                map config default.
      * @throws RangeError if key or value is `null` or `undefined`
      */
-    putTransient(key: K, value: V, ttl?: number | Long): Promise<void>;
+    putTransient(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<void>;
 
     /**
      * Replaces value of the key if only it was associated to `oldValue`.

@@ -108,8 +108,11 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
             .then<V>(this.invalidateCacheEntryAndReturn.bind(this, keyData));
     }
 
-    protected putTransientInternal(keyData: Data, valueData: Data, ttl: number): Promise<void> {
-        return super.putTransientInternal(keyData, valueData, ttl)
+    protected putTransientInternal(keyData: Data,
+                                   valueData: Data,
+                                   ttl: number | Long = -1,
+                                   maxIdle?: number | Long): Promise<void> {
+        return super.putTransientInternal(keyData, valueData, ttl, maxIdle)
             .then<void>(this.invalidateCacheEntryAndReturn.bind(this, keyData));
     }
 

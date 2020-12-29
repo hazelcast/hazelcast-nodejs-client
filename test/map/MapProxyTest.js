@@ -355,6 +355,14 @@ describe('MapProxyTest', function () {
                 expect(val).to.be.null;
             });
 
+            it('putTransient_with_maxIdle', async function () {
+                await map.putTransient('key10', 'val10', undefined, 1000);
+                let val = await map.get('key10');
+                expect(val).to.equal('val10');
+                val = await Util.promiseLater(1100, map.get.bind(map, 'key10'));
+                expect(val).to.be.null;
+            });
+
             it('replace', async function () {
                 const oldVal = await map.replace('key9', 'new-val');
                 expect(oldVal).to.equal('val9');

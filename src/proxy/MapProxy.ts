@@ -54,6 +54,7 @@ import {MapPutWithMaxIdleCodec} from '../codec/MapPutWithMaxIdleCodec';
 import {MapPutIfAbsentCodec} from '../codec/MapPutIfAbsentCodec';
 import {MapPutIfAbsentWithMaxIdleCodec} from '../codec/MapPutIfAbsentWithMaxIdleCodec';
 import {MapPutTransientCodec} from '../codec/MapPutTransientCodec';
+import {MapPutTransientWithMaxIdleCodec} from '../codec/MapPutTransientWithMaxIdleCodec';
 import {MapRemoveCodec} from '../codec/MapRemoveCodec';
 import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
 import {MapRemoveIfSameCodec} from '../codec/MapRemoveIfSameCodec';
@@ -399,12 +400,12 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.putIfAbsentInternal(keyData, valueData, ttl, maxIdle);
     }
 
-    putTransient(key: K, value: V, ttl = -1): Promise<void> {
+    putTransient(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<void> {
         assertNotNull(key);
         assertNotNull(value);
         const keyData = this.toData(key);
         const valueData = this.toData(value);
-        return this.putTransientInternal(keyData, valueData, ttl);
+        return this.putTransientInternal(keyData, valueData, ttl, maxIdle);
     }
 
     replace(key: K, newValue: V): Promise<V> {
@@ -611,9 +612,19 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             });
     }
 
-    protected putTransientInternal(keyData: Data, valueData: Data, ttl: number): Promise<void> {
-        return this.encodeInvokeOnKey(MapPutTransientCodec, keyData, keyData, valueData, 0, ttl)
-            .then(() => {});
+    protected putTransientInternal(keyData: Data,
+                                   valueData: Data,
+                                   ttl: number | Long = -1,
+                                   maxIdle?: number | Long): Promise<void> {
+        let request: Promise<ClientMessage>;
+        if (maxIdle != null) {
+            request = this.encodeInvokeOnKey(MapPutTransientWithMaxIdleCodec,
+                keyData, keyData, valueData, 0, ttl, maxIdle);
+        } else {
+            request = this.encodeInvokeOnKey(MapPutTransientCodec,
+                keyData, keyData, valueData, 0, ttl)
+        }
+        return request.then(() => {});
     }
 
     protected replaceInternal(keyData: Data, newValueData: Data): Promise<V> {
