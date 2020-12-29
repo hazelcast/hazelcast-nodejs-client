@@ -138,18 +138,34 @@ export interface IMap<K, V> extends DistributedObject {
     /**
      * Associates the specified value with the specified key.
      * If key was associated with another value, it replaces the old value.
-     * If specified, value is evicted after ttl seconds.
+     *
+     * The entry will expire and get evicted after the TTL. It limits the
+     * lifetime of the entries relative to the time of the last write access
+     * performed on them. If the TTL is `0`, then the entry lives forever.
+     * If the TTL is negative, then the TTL from the map configuration will
+     * be used (default: forever).
+     *
+     * The entry will expire and get evicted after the Max Idle time. It limits
+     * the lifetime of the entries relative to the time of the last read or write
+     * access performed on them. If the Max Idle is `0`, then the entry lives
+     * forever. If the Max Idle is negative, then the Max Idle from the map
+     * configuration will be used (default: forever). The time precision is
+     * limited by `1` second. The Max Idle that is less than `1` second can
+     * lead to unexpected behaviour.
      *
      * @param key the key of the map entry
      * @param value new value
-     * @param ttl Time to live in milliseconds. `0` means infinite.
-     *            Time resolution for TTL is seconds. The given value is
-     *            rounded to the next closest second value.
+     * @param ttl time to live in milliseconds. `0` means infinite, negative
+     *            means map config default. Time resolution for TTL is seconds.
+     *            The given value is rounded to the next closest second value.
+     * @param maxIdle maximum time in milliseconds for this entry to stay idle
+     *                in the map. `0` means infinite, negative means map config
+     *                default.
      * @throws RangeError if `key` or `value` is `undefined` or `null`
      *                    or `ttl` is negative
      * @returns old value if there was any, `null` otherwise
      */
-    put(key: K, value: V, ttl?: number): Promise<V>;
+    put(key: K, value: V, ttl?: number, maxIdle?: number): Promise<V>;
 
     /**
      * Puts all key value pairs from this array to the map as key -> value mappings.
@@ -408,16 +424,19 @@ export interface IMap<K, V> extends DistributedObject {
     replace(key: K, newValue: V): Promise<V>;
 
     /**
-     * Similar to {@link put} except it does not return the old value.
+     * Similar to `put` except it does not return the old value.
      *
      * @param key the key of the map entry
      * @param value new value
-     * @param ttl Time to live in milliseconds. `0` means infinite.
-     *            Time resolution for TTL is seconds. The given value is
-     *            rounded to the next closest second value.
+     * @param ttl time to live in milliseconds. `0` means infinite, negative
+     *            means map config default. Time resolution for TTL is seconds.
+     *            The given value is rounded to the next closest second value.
+     * @param maxIdle maximum time in milliseconds for this entry to stay idle
+     *                in the map. `0` means infinite, negative means map config
+     *                default.
      * @throws RangeError if `key` or `value` is `null` or `undefined`
      */
-    set(key: K, value: V, ttl?: number): Promise<void>;
+    set(key: K, value: V, ttl?: number, maxIdle?: number): Promise<void>;
 
     /**
      * Releases the lock for this key. If this client holds the lock,
@@ -572,9 +591,9 @@ export interface IMap<K, V> extends DistributedObject {
      * makes no changes to entries stored in this map.
      *
      * @param key the key of the map entry
-     * @param ttl Time to live in milliseconds. `0` means infinite.
-     *            Time resolution for TTL is seconds. The given value is
-     *            rounded to the next closest second value.
+     * @param ttl time to live in milliseconds. `0` means infinite, negative
+     *            means map config default. Time resolution for TTL is seconds.
+     *            The given value is rounded to the next closest second value.
      * @return `true` if the entry exists and its TTL value is changed,
      *          `false` otherwise
      * @throws RangeError if `key` or `ttl` is `null` or `undefined`
