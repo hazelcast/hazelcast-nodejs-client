@@ -20,12 +20,16 @@ const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-const RC = require('../RC');
-const { Client, ClientOfflineError, ClientNotActiveError } = require('../../');
-const TestUtil = require('../Util');
+const RC = require('./RC');
+const {
+    Client,
+    ClientOfflineError,
+    ClientNotActiveError
+} = require('../../');
 const { deferredPromise } = require('../../lib/util/Util');
 const { ReconnectMode } = require('../../lib/config/ConnectionStrategyConfig');
 const { LifecycleState } = require('../../lib/LifecycleService');
+const TestUtil = require('../TestUtil');
 
 describe('ConnectionStrategyTest', function () {
 

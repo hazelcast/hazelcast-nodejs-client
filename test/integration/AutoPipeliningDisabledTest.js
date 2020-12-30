@@ -13,42 +13,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 'use strict';
 
 const { expect } = require('chai');
 const RC = require('./RC');
 const { Client } = require('../../');
 
-describe('ClientLabelTest', function () {
+describe('AutoPipeliningDisabledTest', function () {
 
     let cluster;
     let client;
+    let map;
 
     before(async function () {
         cluster = await RC.createCluster(null, null);
         await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            properties: {
+                ['hazelcast.client.autopipelining.enabled']: false
+            }
+        });
+    });
+
+    beforeEach(async function () {
+        map = await client.getMap('test');
     });
 
     afterEach(async function () {
-        await client.shutdown();
+        return map.destroy();
     });
 
     after(async function () {
-        await RC.terminateCluster(cluster.id);
+        await client.shutdown();
+        return RC.terminateCluster(cluster.id);
     });
 
-    it('labels should be received on member side', async function () {
-        client = await Client.newHazelcastClient({
-            clusterName: cluster.id,
-            clientLabels: ['testLabel']
-        });
-
-        const script = 'var client = instance_0.getClientService().getConnectedClients().iterator().next();\n' +
-            'result = client.getLabels().iterator().next();\n';
-        const res = await RC.executeOnController(cluster.id, script, 1);
-        expect(res.result).to.not.be.null;
-        expect(res.result.toString()).to.equal('testLabel');
+    it('basic map operations work fine', async function () {
+        await map.set('foo', 'bar');
+        const value = await map.get('foo');
+        expect(value).to.equal('bar');
     });
-
 });
+

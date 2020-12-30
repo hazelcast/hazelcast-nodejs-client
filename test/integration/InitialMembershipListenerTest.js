@@ -21,8 +21,8 @@ const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-const RC = require('../RC');
-const { Client } = require('../../.');
+const RC = require('./RC');
+const { Client } = require('../../');
 const { deferredPromise } = require('../../lib/util/Util');
 
 describe('InitialMembershipListenerTest', function () {
