@@ -35,8 +35,8 @@ export interface ConnectionRetryConfig {
 
     /**
      * Defines timeout value in milliseconds for the client to give up a connection
-     * attempt to the cluster. Must be non-negative. By default, set to `20000`
-     * (20 seconds).
+     * attempt to the cluster. Must be non-negative. By default, set to `120000`
+     * (2 minutes).
      */
     clusterConnectTimeoutMillis?: number;
 
@@ -65,7 +65,7 @@ export class ConnectionRetryConfigImpl implements ConnectionRetryConfig {
 
     initialBackoffMillis = 1000;
     maxBackoffMillis = 30000;
-    clusterConnectTimeoutMillis = 20000;
+    clusterConnectTimeoutMillis = 120000;
     multiplier = 1;
     jitter = 0;
 
