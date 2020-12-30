@@ -15,6 +15,7 @@
  */
 'use strict';
 
+const { expect } = require('chai');
 const Long = require('long');
 const RC = require('../RC');
 const {
@@ -25,9 +26,11 @@ const {
 
 describe('MapAggregatorsLongTest', function () {
 
-    let cluster, client;
+    const ENTRY_COUNT = 50;
+
+    let cluster;
+    let client;
     let map;
-    const entryCount = 50;
 
     before(async function () {
         cluster = await RC.createCluster(null, null);
@@ -48,7 +51,7 @@ describe('MapAggregatorsLongTest', function () {
 
     beforeEach(async function () {
         const entries = [];
-        for (let i = 0; i < entryCount; i++) {
+        for (let i = 0; i < ENTRY_COUNT; i++) {
             entries.push(['key' + i, Long.fromNumber(i)]);
         }
         await map.putAll(entries);
