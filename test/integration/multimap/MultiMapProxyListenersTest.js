@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/* eslint-disable mocha/handle-done-callback */
 'use strict';
 
 const { expect } = require('chai');
@@ -45,8 +46,14 @@ describe('MultiMap Proxy Listener', function () {
         return RC.terminateCluster(cluster.id);
     });
 
-    function Listener(eventName, doneCallback, expectedName, expectedKey, expectedValue, expectedOldValue,
-        expectedMergingValue) {
+    function Listener(eventName,
+                      doneCallback,
+                      expectedName,
+                      expectedKey,
+                      expectedValue,
+                      expectedOldValue,
+                      expectedMergingValue) {
+
         this[eventName] = function (entryEvent) {
             try {
                 expect(entryEvent.name).to.equal(expectedName);
@@ -184,7 +191,7 @@ describe('MultiMap Proxy Listener', function () {
         expect(removed).to.be.true;
     });
 
-    it('removes present listener', async function () {
+    it('does nothing on remove non-present listener', async function () {
         const removed = await map.removeEntryListener('foo');
         expect(removed).to.be.false;
     });

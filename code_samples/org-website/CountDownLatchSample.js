@@ -23,7 +23,7 @@ const { Client } = require('hazelcast-client');
         // Hazelcast Cluster on 127.0.0.1
         const hz = await Client.newHazelcastClient();
         // Get the Distributed CountDownLatch from CP Subsystem
-        const latch = await client.getCPSubsystem().getCountDownLatch('my-latch');
+        const latch = await hz.getCPSubsystem().getCountDownLatch('my-latch');
         // Initialize the latch
         const initialized = await latch.trySetCount(3);
         console.log('Initialized:', initialized);
@@ -31,11 +31,12 @@ const { Client } = require('hazelcast-client');
         let count = await latch.getCount();
         console.log('Count:', count);
         // Wait up to 5 seconds for the count to become zero
-        latch.await(5000)
-            .then(() => {
-                console.log('Returned from await()');
-            })
-            .catch(console.error);
+        try {
+            await latch.await(5000);
+            console.log('Returned from await()');
+        } catch (err) {
+            console.error('await() call failed:', err);
+        }
         // Bring the count down to zero
         for (let i = 0; i < 3; i++) {
             await latch.countDown();

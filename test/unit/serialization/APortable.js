@@ -149,10 +149,9 @@ class APortable {
         this.data = dataInput.readData();
     }
 
-    writeData(writer) {
+    writeData() {
         // no-op
     }
-
 }
 
 module.exports = APortable;

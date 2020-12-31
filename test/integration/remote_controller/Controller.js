@@ -18,9 +18,9 @@
 const thrift = require('thrift');
 const RemoteController = require('./RemoteController');
 
-function HzRemoteController(host, port) {
+function HzRemoteController() {
     const transport = thrift.TBufferedTransport();
-    const protocol =  thrift.TBinaryProtocol();
+    const protocol = thrift.TBinaryProtocol();
 
     const connection = thrift.createConnection('localhost', 9701, {
         transport: transport,

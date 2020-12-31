@@ -31,7 +31,7 @@ class ManagedObjects {
             this.managedObjects.push(obj);
             return obj;
         });
-    };
+    }
 
     async destroyAll() {
         const promises = [];
@@ -39,7 +39,7 @@ class ManagedObjects {
             promises.push(obj.destroy());
         });
         return Promise.all(promises);
-    };
+    }
 
     destroy(name) {
         const deferred = deferredPromise();
@@ -51,7 +51,7 @@ class ManagedObjects {
             }
         });
         return deferred.promise;
-    };
+    }
 
 }
 

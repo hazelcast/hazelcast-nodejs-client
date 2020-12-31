@@ -22,12 +22,12 @@ class GlobalSerializer {
         this.id = 20;
     }
 
-    read(input) {
+    read(input) { // eslint-disable-line no-unused-vars
         // return MyFavoriteSerializer.deserialize(input.readByteArray());
     }
 
-    write(output, obj) {
-        // output.writeByteArray(MyFavoriteSerializer.serialize(obj))
+    write(output, obj) { // eslint-disable-line no-unused-vars
+        // output.writeByteArray(MyFavoriteSerializer.serialize(obj));
     }
 }
 

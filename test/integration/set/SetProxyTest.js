@@ -177,15 +177,7 @@ describe('SetProxyTest', function () {
     });
 
     it('remove entry listener', async function () {
-        const registrationId = await setInstance.addItemListener({
-            itemRemoved: function (itemEvent) {
-                expect(itemEvent.name).to.be.equal('test');
-                expect(itemEvent.item).to.be.equal(1);
-                expect(itemEvent.eventType).to.be.equal(ItemEventType.REMOVED);
-                expect(itemEvent.member).to.not.be.equal(null);
-                done();
-            }
-        });
+        const registrationId = await setInstance.addItemListener({});
         const removed = await setInstance.removeItemListener(registrationId);
         expect(removed).to.be.true;
     });

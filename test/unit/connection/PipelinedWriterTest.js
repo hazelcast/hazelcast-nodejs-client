@@ -64,7 +64,7 @@ describe('PipelinedWriterTest', function () {
         return clientMessage;
     }
 
-    it('writes single small message into socket', (done) => {
+    it('writes single small message into socket', function(done) {
         setUpWriteSuccess(true);
 
         const msg = createMessageFromString('test');
@@ -75,7 +75,7 @@ describe('PipelinedWriterTest', function () {
         });
     });
 
-    it('writes single large message into socket', (done) => {
+    it('writes single large message into socket', function(done) {
         setUpWriteSuccess(true);
 
         const msg = createMessageFromBuffer(Buffer.allocUnsafe(THRESHOLD * 2));
@@ -86,7 +86,7 @@ describe('PipelinedWriterTest', function () {
         });
     });
 
-    it('writes multiple small messages as one into socket', (done) => {
+    it('writes multiple small messages as one into socket', function(done) {
         setUpWriteSuccess(true);
 
         const msg1 = createMessageFromString('1');
@@ -103,7 +103,7 @@ describe('PipelinedWriterTest', function () {
         });
     });
 
-    it('coalesces buffers when writing into socket (1/2 of threshold)', (done) => {
+    it('coalesces buffers when writing into socket (1/2 of threshold)', function(done) {
         setUpWriteSuccess(true);
 
         // frame has header part, so we need some padding
@@ -143,7 +143,7 @@ describe('PipelinedWriterTest', function () {
         });
     });
 
-    it('allows I/O in between coalesced writes into socket', (done) => {
+    it('allows I/O in between coalesced writes into socket', function(done) {
         setUpWriteSuccess(true);
 
         const size = THRESHOLD * 2;
@@ -164,7 +164,7 @@ describe('PipelinedWriterTest', function () {
         });
     });
 
-    it('resolves single promise on write success', (done) => {
+    it('resolves single promise on write success', function(done) {
         setUpWriteSuccess(true);
 
         const resolver = deferredPromise();
@@ -172,7 +172,7 @@ describe('PipelinedWriterTest', function () {
         resolver.promise.then(done);
     });
 
-    it('resolves multiple promises on write success', (done) => {
+    it('resolves multiple promises on write success', function(done) {
         setUpWriteSuccess(true);
 
         const resolver1 = deferredPromise();
@@ -182,7 +182,7 @@ describe('PipelinedWriterTest', function () {
         Promise.all([resolver1.promise, resolver2.promise]).then(() => done());
     });
 
-    it('rejects single promise on write failure', (done) => {
+    it('rejects single promise on write failure', function(done) {
         const err = new Error();
         setUpWriteFailure(err);
 
@@ -194,7 +194,7 @@ describe('PipelinedWriterTest', function () {
         });
     });
 
-    it('rejects multiple promises on write failure', (done) => {
+    it('rejects multiple promises on write failure', function(done) {
         const err = new Error();
         setUpWriteFailure(err);
 
@@ -211,14 +211,14 @@ describe('PipelinedWriterTest', function () {
         Promise.all([resolver1.promise, resolver2.promise]).catch(() => done());
     });
 
-    it('emits write event on write success', (done) => {
+    it('emits write event on write success', function(done) {
         setUpWriteSuccess(true);
 
         writer.on('write', done);
         writer.write(createMessageFromString('test'), deferredPromise());
     });
 
-    it('does not emit write event on write failure', (done) => {
+    it('does not emit write event on write failure', function(done) {
         setUpWriteFailure(new Error());
 
         writer.on('write', () => done(new Error()));
@@ -229,7 +229,7 @@ describe('PipelinedWriterTest', function () {
         });
     });
 
-    it('waits for drain event when necessary', (done) => {
+    it('waits for drain event when necessary', function(done) {
         setUpWriteSuccess(false);
 
         const msg = createMessageFromString('test');
@@ -245,7 +245,7 @@ describe('PipelinedWriterTest', function () {
         });
     });
 
-    it('writes queued items on drain event', (done) => {
+    it('writes queued items on drain event', function(done) {
         setUpWriteSuccess(false);
 
         const msg = createMessageFromString('test');

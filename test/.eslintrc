@@ -1,0 +1,21 @@
+{
+    "env": {
+        "mocha": true,
+        "es6": true,
+        "node": true
+    },
+    "parserOptions": {
+        "ecmaVersion": 8
+    },
+    "plugins": [
+        "mocha"
+    ],
+    "extends": [
+        "eslint:recommended",
+        "plugin:mocha/recommended"
+    ],
+    "rules": {
+        "mocha/no-hooks-for-single-case": "off",
+        "mocha/no-setup-in-describe": "off"
+    }
+}

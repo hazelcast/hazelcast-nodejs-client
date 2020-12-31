@@ -31,7 +31,7 @@ describe('FragmentedClientMessageHandlerTest', function () {
     let reader;
     let handler;
 
-    beforeEach(() => {
+    beforeEach(function() {
         reader = new ClientMessageReader();
         handler = new FragmentedClientMessageHandler({
             debug: () => { }
