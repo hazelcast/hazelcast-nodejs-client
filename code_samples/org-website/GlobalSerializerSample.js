@@ -22,12 +22,18 @@ class GlobalSerializer {
         this.id = 20;
     }
 
-    read(input) { // eslint-disable-line no-unused-vars
-        // return MyFavoriteSerializer.deserialize(input.readByteArray());
+    read(input) {
+        // synthetic deserialization sample:
+        // replace with your implementation
+        const rawString = input.readUTF();
+        return JSON.parse(rawString);
     }
 
-    write(output, obj) { // eslint-disable-line no-unused-vars
-        // output.writeByteArray(MyFavoriteSerializer.serialize(obj));
+    write(output, obj) {
+        // synthetic serialization sample:
+        // replace with your implementation
+        const rawString = JSON.stringify(Function.prototype.toString(obj));
+        output.writeUTF(rawString);
     }
 }
 
