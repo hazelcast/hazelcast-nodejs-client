@@ -34,8 +34,9 @@
     "scripts": {
         "clean": "rimraf lib *.jar *.log",
         "compile": "tsc",
-        "pretest": "node download-remote-controller.js",
-        "test": "mocha 'test/**/*.js'",
+        "test": "node download-remote-controller.js && mocha 'test/**/*.js'",
+        "test:unit": "mocha 'test/unit/**/*.js'",
+        "test:integration": "node download-remote-controller.js && mocha 'test/integration/**/*.js'",
         "validate-user-code": "tsc --build test/user_code/tsconfig.json",
         "precoverage": "node download-remote-controller.js",
         "coverage": "rimraf coverage && nyc node_modules/mocha/bin/_mocha 'test/**/*.js' -- --reporter-options mochaFile=report.xml --reporter mocha-junit-reporter",

@@ -20,9 +20,10 @@ const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-const { Client } = require('../../.');
-const RC = require('../RC');
-const Util = require('../Util');
+
+const RC = require('./RC');
+const { Client } = require('../../');
+const TestUtil = require('../TestUtil');
 
 describe('DistributedObjectsTest', function () {
 
@@ -52,9 +53,9 @@ describe('DistributedObjectsTest', function () {
     });
 
     it('get distributed objects', async function () {
-        const map = await client.getMap(Util.randomString());
-        const set = await client.getSet(Util.randomString());
-        const queue = await client.getQueue(Util.randomString());
+        const map = await client.getMap(TestUtil.randomString());
+        const set = await client.getSet(TestUtil.randomString());
+        const queue = await client.getQueue(TestUtil.randomString());
         let objects = await client.getDistributedObjects();
         expect(objects).to.have.deep.members([map, set, queue]);
         objects = await client.getDistributedObjects();
@@ -63,9 +64,9 @@ describe('DistributedObjectsTest', function () {
     });
 
     it('get distributed objects creates local instances of received proxies', async function () {
-        const map = await client.getMap(Util.randomString());
-        const set = await client.getSet(Util.randomString());
-        const queue = await client.getQueue(Util.randomString());
+        const map = await client.getMap(TestUtil.randomString());
+        const set = await client.getSet(TestUtil.randomString());
+        const queue = await client.getQueue(TestUtil.randomString());
         let objects = await client.getDistributedObjects();
         expect(objects).to.have.deep.members([map, set, queue]);
         const otherClient = await Client.newHazelcastClient({ clusterName: cluster.id });
@@ -81,9 +82,9 @@ describe('DistributedObjectsTest', function () {
 
     it('get distributed objects should clear local instances of destroyed proxies', async function () {
         const otherClient = await Client.newHazelcastClient({ clusterName: cluster.id });
-        const map = await client.getMap(Util.randomString());
-        const set = await otherClient.getSet(Util.randomString());
-        const queue = await client.getQueue(Util.randomString());
+        const map = await client.getMap(TestUtil.randomString());
+        const set = await otherClient.getSet(TestUtil.randomString());
+        const queue = await client.getQueue(TestUtil.randomString());
         let objects = await client.getDistributedObjects();
         expect(toNamespace(objects)).to.have.deep.members(toNamespace([map, set, queue]));
         await map.destroy();
