@@ -21,8 +21,9 @@ chai.use(require('chai-as-promised'));
 const expect = chai.expect;
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
+
+const RC = require('./RC');
 const { Client, IndeterminateOperationStateError } = require('../../');
-const RC = require('../RC');
 const { ClientLocalBackupListenerCodec } = require('../../lib/codec/ClientLocalBackupListenerCodec');
 
 /**
