@@ -131,7 +131,7 @@ describe('AtomicReferenceTest', function () {
         expect(isNull).to.be.false;
     });
 
-    it('isNull: should return false when not null', async function () {
+    it('clear: should reset value to null', async function () {
         await ref.set('foo');
         await ref.clear();
         const isNull = await ref.isNull();

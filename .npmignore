@@ -11,8 +11,6 @@ test/
 tsconfig.json
 typedoc.json
 .editorconfig
-.eslintignore
-.eslintrc.js
 .mocharc.json
 .nycrc.json
 report.xml

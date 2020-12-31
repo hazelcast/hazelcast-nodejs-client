@@ -258,7 +258,7 @@ describe('FencedLockProxyTest', function () {
         expect(result).to.be.true;
     });
 
-    it('isLocked: should return true when lock is held', async function () {
+    it('isLocked: should return false when lock is not held', async function () {
         prepareGetSession(1);
         stubRequestLockOwnershipState({
             fence: 0,

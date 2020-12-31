@@ -214,13 +214,13 @@ describe('QueueProxyTest', function () {
         expect(ret).to.be.true;
     });
 
-    it('containsAll true', async function () {
+    it('containsAll false', async function () {
         const values = ['item0', 'item_absent'];
         const ret = await queue.containsAll(values);
         expect(ret).to.be.false;
     });
 
-    it('containsAll true', async function () {
+    it('containsAll true - empty list', async function () {
         const values = [];
         const ret = await queue.containsAll(values);
         expect(ret).to.be.true;
@@ -273,7 +273,7 @@ describe('QueueProxyTest', function () {
 
     it('addItemListener itemAdded with includeValue=false', function (done) {
         queue.addItemListener({
-            itemAdded: function (itemEvent) {
+            itemAdded: () => {
                 done();
             }
         }, false).then(function () {
@@ -297,14 +297,14 @@ describe('QueueProxyTest', function () {
     });
 
     it('removeItemListener', async function () {
-        const regId = await queue.addItemListener({}, false);
-        const ret = await queue.removeItemListener(regId);
-        expect(ret).to.be.true;
+        const registrationId = await queue.addItemListener({}, false);
+        const removed = await queue.removeItemListener(registrationId);
+        expect(removed).to.be.true;
     });
 
-    it('removeItemListener with wrong id returns null', async function () {
+    it('removeItemListener with wrong id returns false', async function () {
         await queue.addItemListener({}, false);
-        const ret = await queue.removeItemListener('wrongId');
-        expect(ret).to.be.false;
+        const removed = await queue.removeItemListener('wrongId');
+        expect(removed).to.be.false;
     });
 });

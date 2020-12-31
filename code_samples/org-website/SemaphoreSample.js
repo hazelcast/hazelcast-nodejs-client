@@ -23,7 +23,7 @@ const { Client } = require('hazelcast-client');
         // Hazelcast Cluster on 127.0.0.1
         const hz = await Client.newHazelcastClient();
         // Get the Distributed Semaphore from CP Subsystem
-        const semaphore = await client.getCPSubsystem().getSemaphore('my-semaphore');
+        const semaphore = await hz.getCPSubsystem().getSemaphore('my-semaphore');
         // Initialize the semaphore
         const initialized = await semaphore.init(3);
         console.log('Initialized:', initialized);
