@@ -84,18 +84,6 @@ describe('CPSessionManagerTest', function () {
             expect(state.isValid()).to.be.true;
         });
 
-        it('isValid: should consider current acquire count', function () {
-            sandbox.useFakeTimers(0);
-            const state = new SessionState(Long.fromNumber(42), null, 1000);
-
-            // session should be expired now
-            sandbox.useFakeTimers(2000);
-            expect(state.isValid()).to.be.false;
-
-            state.acquire(1);
-            expect(state.isValid()).to.be.true;
-        });
-
         it('isValid: should consider current time', function () {
             sandbox.useFakeTimers(0);
             const state = new SessionState(Long.fromNumber(42), null, 1000);

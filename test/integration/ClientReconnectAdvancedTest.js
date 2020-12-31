@@ -162,19 +162,19 @@ describe('ClientReconnectAdvancedTest', function () {
         await testConnectionCountAfterClientReconnect('127.0.0.1', 'localhost');
     });
 
-    it('connections should be restored after client reconnect - member hostname, client IP', async function () {
+    it('listeners should be restored after client reconnect - member hostname, client IP', async function () {
         await testListenersAfterClientDisconnected('localhost', '127.0.0.1');
     });
 
-    it('connections should be restored after client reconnect - member hostname, client hostname', async function () {
+    it('listeners should be restored after client reconnect - member hostname, client hostname', async function () {
         await testListenersAfterClientDisconnected('localhost', 'localhost');
     });
 
-    it('connections should be restored after client reconnect - member IP, client IP', async function () {
+    it('listeners should be restored after client reconnect - member IP, client IP', async function () {
         await testListenersAfterClientDisconnected('127.0.0.1', '127.0.0.1');
     });
 
-    it('connections should be restored after client reconnect - member IP, client hostname', async function () {
+    it('listeners should be restored after client reconnect - member IP, client hostname', async function () {
         await testListenersAfterClientDisconnected('127.0.0.1', 'localhost');
     });
 });

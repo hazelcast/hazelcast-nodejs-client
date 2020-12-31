@@ -23,11 +23,17 @@ class GlobalSerializer {
     }
 
     read(input) {
-        // return MyFavoriteSerializer.deserialize(input.readByteArray());
+        // synthetic deserialization sample:
+        // replace with your implementation
+        const rawString = input.readUTF();
+        return JSON.parse(rawString);
     }
 
     write(output, obj) {
-        // output.writeByteArray(MyFavoriteSerializer.serialize(obj))
+        // synthetic serialization sample:
+        // replace with your implementation
+        const rawString = JSON.stringify(Function.prototype.toString(obj));
+        output.writeUTF(rawString);
     }
 }
 

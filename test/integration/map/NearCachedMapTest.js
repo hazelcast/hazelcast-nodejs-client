@@ -179,11 +179,13 @@ describe('NearCachedMapTest', function () {
                 expectStats(map1, 2, 3, 3);
             });
 
-            it('executeOnKey invalidates the entry');
+            // TODO implement missing tests
 
-            it('executeOnKeys invalidates entries');
+            // it('executeOnKey invalidates the entry');
 
-            it('loadAll invalidates the cache');
+            // it('executeOnKeys invalidates entries');
+
+            // it('loadAll invalidates the cache');
 
             [true, false].forEach(function (shouldUsePutAll) {
                 it((shouldUsePutAll ? 'putAll' : 'setAll') + ' invalidates entries', async function () {

@@ -134,7 +134,7 @@ describe('BinaryCompatibilityTest', function () {
     for (const vn in objects) {
         const varName = vn;
         const object = objects[varName];
-        if (objects.hasOwnProperty(varName)) {
+        if (Object.prototype.hasOwnProperty.call(objects, varName)) {
             versions.forEach(function (version) {
                 isBigEndianValues.forEach(function (isBigEndian) {
                     it(varName + '-' + convertEndiannesToByteOrder(isBigEndian) + '-' + version, function () {

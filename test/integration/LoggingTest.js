@@ -23,7 +23,8 @@ const { Client, LogLevel } = require('../../');
 
 describe('LoggingTest', function () {
 
-    let cluster, client;
+    let cluster;
+    let client;
 
     const winstonAdapter = {
         logger: winston.createLogger({
@@ -81,7 +82,7 @@ describe('LoggingTest', function () {
 
     it('winston should emit logging event', async function () {
         let loggingHappened = false;
-        winstonAdapter.logger.transports[0].on('logged', function (transport, level, msg, meta) {
+        winstonAdapter.logger.transports[0].on('logged', () => {
             loggingHappened = true;
         });
 

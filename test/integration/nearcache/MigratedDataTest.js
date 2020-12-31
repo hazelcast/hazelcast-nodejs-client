@@ -89,15 +89,17 @@ describe('MigratedDataTest', function () {
         await RC.terminateCluster(cluster.id);
     });
 
-    it('killing a server migrates data to the other node, migrated data has new uuid, near cache discards data with old uuid', async () => {
+    it('killing a server migrates data to the other node, migrated data has new uuid, near cache discards data with old uuid', async function () {
         let survivingMember;
         const key = 1;
         const partitionService = client.getPartitionService();
         const map = await client.getMap(mapName);
+
         await map.put(key, 1);
         await map.get(key);
         await map.get(key);
         await waitForPartitionTableEvent(partitionService);
+
         let partitionIdForKey = partitionService.getPartitionId(key);
         const keyOwner = partitionService.getPartitionOwner(partitionIdForKey).toString();
         if (keyOwner === member1.uuid) {
@@ -107,10 +109,13 @@ describe('MigratedDataTest', function () {
             survivingMember = member1;
             await RC.terminateMember(cluster.id, member2.uuid);
         }
+
         partitionIdForKey = partitionService.getPartitionId(key);
         await waitUntilPartitionMovesTo(partitionService, partitionIdForKey, survivingMember.uuid);
         await TestUtil.promiseWaitMilliseconds(1500);
+
         await map.get(key);
+
         const stats = map.nearCache.getStatistics();
         expect(stats.hitCount).to.equal(1);
         expect(stats.missCount).to.equal(2);

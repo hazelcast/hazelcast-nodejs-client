@@ -211,11 +211,7 @@ describe('ClientFailoverTest - enterprise', function () {
         let getErr;
         const getFn = () => {
             map.get('foo')
-                .then(() => {
-                    if (!clusterChanged) {
-                        getFn();
-                    }
-                })
+                .then(getFn)
                 .catch((err) => {
                     getErr = err;
                     getErrDeferred.resolve();

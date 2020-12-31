@@ -559,7 +559,7 @@ describe('MapProxyTest', function () {
                     });
             });
 
-            it('addEntryListener on key, entryAdded fires because predicate returns true for that entry, inlVal=yes', (done) => {
+            it('addEntryListener on key, entryAdded fires because predicate returns true for that entry, inlVal=yes', function (done) {
                 const listenerObject = {
                     added: function (entryEvent) {
                         try {

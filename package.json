@@ -15,6 +15,7 @@
         "chai": "^4.2.0",
         "chai-as-promised": "^7.1.1",
         "eslint": "^7.7.0",
+        "eslint-plugin-mocha": "^8.0.0",
         "jsonschema": "^1.2.6",
         "mocha": "^8.1.1",
         "mocha-junit-reporter": "^2.0.0",
@@ -42,7 +43,7 @@
         "coverage": "rimraf coverage && nyc node_modules/mocha/bin/_mocha 'test/**/*.js' -- --reporter-options mochaFile=report.xml --reporter mocha-junit-reporter",
         "pregenerate-docs": "rimraf docs",
         "generate-docs": "typedoc --options typedoc.json",
-        "lint": "eslint --ext .ts ."
+        "lint": "eslint --ext .ts src && eslint --plugin mocha test && eslint code_samples"
     },
     "repository": {
         "type": "git",

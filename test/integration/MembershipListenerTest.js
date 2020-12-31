@@ -67,7 +67,7 @@ describe('MembershipListenerTest', function () {
             }
         };
         const membershipListener2 = {
-            memberAdded: (membershipEvent) => {
+            memberAdded: () => {
                 listenedSecondListener = true;
             }
         };
@@ -88,7 +88,7 @@ describe('MembershipListenerTest', function () {
         let counter = 0;
 
         const membershipListener = {
-            memberAdded: (membershipEvent) => {
+            memberAdded: () => {
                 counter++;
             }
         };

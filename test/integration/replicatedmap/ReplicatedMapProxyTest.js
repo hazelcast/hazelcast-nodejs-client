@@ -320,7 +320,7 @@ describe('ReplicatedMapProxyTest', function () {
     it('addEntryListenerToKey should be fired only for selected key', function (done) {
         let listeners = [];
         const listener1 = {
-            added: function (entryEvent) {
+            added: () => {
                 done(new Error('This listener must not be fired'));
             }
         };
