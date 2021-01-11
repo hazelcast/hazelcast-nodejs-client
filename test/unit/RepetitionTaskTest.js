@@ -52,7 +52,7 @@ describe('RepetitionTaskTest', function () {
         await TestUtil.promiseWaitMilliseconds(200);
         Util.cancelRepetitionTask(task);
         expect(counter).to.be.equal(2);
-        await TestUtil.promiseWaitMilliseconds(50);
+        await TestUtil.promiseWaitMilliseconds(75);
         expect(counter).to.be.equal(2);
     });
 
