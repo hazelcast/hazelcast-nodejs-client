@@ -23,45 +23,41 @@ describe('RepetitionTaskTest', function () {
 
     it('should be cancelled before timeout', async function () {
         let counter = 0;
-        const task = Util.scheduleWithRepetition(function () {
-            counter++;
-        }, 50, 75);
+        const task = Util.scheduleWithRepetition(() => counter++, 50, 100);
 
-        await TestUtil.promiseWaitMilliseconds(40);
+        await TestUtil.promiseWaitMilliseconds(25);
         Util.cancelRepetitionTask(task);
         expect(counter).to.be.equal(0);
-        await TestUtil.promiseWaitMilliseconds(130);
+        await TestUtil.promiseWaitMilliseconds(150);
         expect(counter).to.be.equal(0);
     });
 
     it('should be cancelled after timeout', async function () {
         let counter = 0;
-        const task = Util.scheduleWithRepetition(function () {
+        const task = Util.scheduleWithRepetition(() => {
             counter++;
-        }, 50, 75);
+        }, 50, 100);
 
-        await TestUtil.promiseWaitMilliseconds(60);
+        await TestUtil.promiseWaitMilliseconds(100);
         Util.cancelRepetitionTask(task);
         expect(counter).to.be.equal(1);
-        await TestUtil.promiseWaitMilliseconds(75);
+        await TestUtil.promiseWaitMilliseconds(100);
         expect(counter).to.be.equal(1);
     });
 
     it('should be cancelled after interval', async function () {
         let counter = 0;
-        const task = Util.scheduleWithRepetition(function () {
-            counter++;
-        }, 50, 75);
+        const task = Util.scheduleWithRepetition(() => counter++, 50, 100);
 
-        await TestUtil.promiseWaitMilliseconds(130);
+        await TestUtil.promiseWaitMilliseconds(200);
         Util.cancelRepetitionTask(task);
         expect(counter).to.be.equal(2);
-        await TestUtil.promiseWaitMilliseconds(75);
+        await TestUtil.promiseWaitMilliseconds(50);
         expect(counter).to.be.equal(2);
     });
 
     it('should not throw when cancelled twice', function () {
-        const task = Util.scheduleWithRepetition(() => { }, 100, 200);
+        const task = Util.scheduleWithRepetition(() => {}, 100, 200);
 
         Util.cancelRepetitionTask(task);
         Util.cancelRepetitionTask(task);
