@@ -1417,7 +1417,7 @@ clientConfig.networkConfig.cloudConfig.enabled = true;
 clientConfig.networkConfig.cloudConfig.discoveryToken = 'YOUR_CLUSTER_DISCOVERY_TOKEN';
 ```
 
-If you have enabled encryption for your cluster, you should also enable TLS/SSL configuration to secure communication between your 
+If you have enabled encryption for your cluster, you should also enable TLS/SSL configuration to secure communication between your
 client and cluster members as described in the [TLS/SSL for Hazelcast Node.js Client section](#612-tlsssl-for-hazelcast-nodejs-clients).
 
 # 6. Securing Client Connection
@@ -3464,6 +3464,6 @@ Besides your development contributions as explained in the [Development and Test
 
 # 12. Copyright
 
-Copyright (c) 2008-2020, Hazelcast, Inc. All Rights Reserved.
+Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
 
 Visit [www.hazelcast.com](http://www.hazelcast.com) for more information.
