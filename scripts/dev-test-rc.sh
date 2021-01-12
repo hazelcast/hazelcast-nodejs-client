@@ -1,6 +1,6 @@
 #!/bin/sh
-HZ_VERSION="4.1"
-HAZELCAST_TEST_VERSION="4.1"
+HZ_VERSION="4.1.1"
+HAZELCAST_TEST_VERSION="4.1.1"
 HAZELCAST_VERSION=${HZ_VERSION}
 HAZELCAST_ENTERPRISE_VERSION=${HZ_VERSION}
 HAZELCAST_RC_VERSION="0.8-SNAPSHOT"
@@ -90,4 +90,3 @@ else
 fi
 
 java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} -cp ${CLASSPATH} com.hazelcast.remotecontroller.Main --use-simple-server
-
