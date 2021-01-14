@@ -27,12 +27,12 @@ const TestUtil = require('../../TestUtil');
 async function getClientStatisticsFromServer(cluster, client) {
     const clientUuid = client.getConnectionManager().getClientUuid();
     const script =
-        'stats = instance_0.getOriginal().node.getClientEngine().getClientStatistics()\n' +
-        'keys = stats.keySet().toArray()\n' +
-        'for(i=0; i < keys.length; i++) {\n' +
+        'var stats = instance_0.getOriginal().node.getClientEngine().getClientStatistics();\n' +
+        'var keys = stats.keySet().toArray();\n' +
+        'for (var i = 0; i < keys.length; i++) {\n' +
         '  if (keys[i].toString().equals("' + clientUuid + '")) {\n' +
-        '    result = stats.get(keys[i]).clientAttributes()\n' +
-        '    break\n' +
+        '    result = stats.get(keys[i]).clientAttributes();\n' +
+        '    break;\n' +
         '  }\n' +
         '}\n';
     const response = await RC.executeOnController(cluster.id, script, 1);
