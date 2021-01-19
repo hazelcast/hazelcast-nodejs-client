@@ -114,7 +114,8 @@ describe('MetricsCompressorTest', function () {
             unit: ProbeUnit.COUNT
         }, -4.2);
         compressor.addLong({
-            metric: 'differentMetric1',
+            prefix: 'a'.repeat(254),
+            metric: 'differentMetric',
             unit: ProbeUnit.BYTES
         }, 2147483647);
 
