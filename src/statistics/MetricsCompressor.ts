@@ -115,27 +115,34 @@ export class MetricsCompressor {
     }
 
     generateBlob(): Promise<Buffer> {
-        this.writeDictionary();
+        // start with Promise.resolve() to catch all errors
+        return Promise.resolve()
+            .then(() => {
+                this.writeDictionary();
 
-        const metricsBuf = this.metricsBuffer.toBuffer();
-        const dictionaryBuf = this.dictionaryBuffer.toBuffer();
+                const metricsBuf = this.metricsBuffer.toBuffer();
+                const dictionaryBuf = this.dictionaryBuffer.toBuffer();
 
-        return Promise.all([
-            this.compressBuffer(metricsBuf),
-            this.compressBuffer(dictionaryBuf)
-        ]).then(([compressedMetricsBuf, compressedDictionaryBuf]) => {
-            const completeSize = SIZE_VERSION
-                + SIZE_DICTIONARY_BLOB + compressedDictionaryBuf.length
-                + SIZE_COUNT_METRICS + compressedMetricsBuf.length;
-            const finalBuf = new OutputBuffer(completeSize);
-            finalBuf.writeByte((BINARY_FORMAT_VERSION >>> BITS_IN_BYTE) & BYTE_MASK);
-            finalBuf.writeByte(BINARY_FORMAT_VERSION & BYTE_MASK);
-            finalBuf.writeInt(compressedDictionaryBuf.length);
-            finalBuf.writeBuffer(compressedDictionaryBuf);
-            finalBuf.writeInt(this.metricsCount);
-            finalBuf.writeBuffer(compressedMetricsBuf);
-            return finalBuf.toBuffer();
-        });
+                return Promise.all([
+                    this.compressBuffer(metricsBuf),
+                    this.compressBuffer(dictionaryBuf)
+                ]);
+            })
+            .then(([compressedMetricsBuf, compressedDictionaryBuf]) => {
+                const completeSize = SIZE_VERSION
+                    + SIZE_DICTIONARY_BLOB + compressedDictionaryBuf.length
+                    + SIZE_COUNT_METRICS + compressedMetricsBuf.length;
+                const finalBuf = new OutputBuffer(completeSize);
+
+                finalBuf.writeByte((BINARY_FORMAT_VERSION >>> BITS_IN_BYTE) & BYTE_MASK);
+                finalBuf.writeByte(BINARY_FORMAT_VERSION & BYTE_MASK);
+                finalBuf.writeInt(compressedDictionaryBuf.length);
+                finalBuf.writeBuffer(compressedDictionaryBuf);
+                finalBuf.writeInt(this.metricsCount);
+                finalBuf.writeBuffer(compressedMetricsBuf);
+
+                return finalBuf.toBuffer();
+            });
     }
 
     private writeDescriptor(descriptor: MetricDescriptor): void {
@@ -319,7 +326,7 @@ export class OutputBuffer {
     }
 
     private available(): number {
-        return this.buffer == null ? 0 : this.buffer.length - this.pos;
+        return this.buffer.length - this.pos;
     }
 
     private ensureAvailable(size: number): void {
@@ -364,7 +371,6 @@ export class MetricsDictionary {
         if (id === undefined) {
             id = this.ids.size;
             this.ids.set(word, id);
-            return id;
         }
         return id;
     }
