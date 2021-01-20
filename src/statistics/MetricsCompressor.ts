@@ -45,6 +45,12 @@ export enum ProbeUnit {
     COUNT = 4,
     BOOLEAN = 5,
     ENUM = 6,
+    /**
+     * Note: This unit and subsequent ones should be processed
+     * in a backwards-compatible way (see ProbeUnit#newUnit
+     * handling in Java). If we start using it, we need to
+     * port this functionality.
+     */
     US = 7
 }
 
@@ -67,6 +73,7 @@ const MASK_EXCLUDED_TARGETS = 1 << 5;
 const MASK_TAG_COUNT = 1 << 6;
 
 const NULL_DICTIONARY_ID = -1;
+const NULL_UNIT = -1;
 const UNSIGNED_BYTE_MAX_VALUE = 255;
 
 const BITS_IN_BYTE = 8;
@@ -148,7 +155,11 @@ export class MetricsCompressor {
             this.metricsBuffer.writeInt(this.getDictionaryId(descriptor.discriminatorValue));
         }
         if ((mask & MASK_UNIT) == 0) {
-            this.metricsBuffer.writeByte(descriptor.unit);
+            if (descriptor.unit === undefined) {
+                this.metricsBuffer.writeByte(NULL_UNIT);
+            } else {
+                this.metricsBuffer.writeByte(descriptor.unit);
+            }
         }
 
         // include excludedTargets and tags bytes for compatibility purposes
