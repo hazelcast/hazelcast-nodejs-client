@@ -120,21 +120,13 @@ describe('StatisticsTest (default period)', function () {
         const connection = client.getConnectionManager().getRandomConnection();
         expect(extractIntStatValue(stats, 'clusterConnectionTimestamp')).to.equal(connection.getStartTime());
         expect(extractStringStatValue(stats, 'clientAddress')).to.equal(connection.getLocalAddress().toString());
-        expect(extractStringStatValue(stats, 'os.committedVirtualMemorySize')).to.equal('');
-        expect(extractStringStatValue(stats, 'os.freeSwapSpaceSize')).to.equal('');
-        expect(extractStringStatValue(stats, 'os.maxFileDescriptorCount')).to.equal('');
-        expect(extractStringStatValue(stats, 'os.openFileDescriptorCount')).to.equal('');
         expect(extractIntStatValue(stats, 'os.processCpuTime')).to.greaterThan(1000);
         expect(extractFloatStatValue(stats, 'os.systemLoadAverage')).to.be.at.least(0);
         expect(extractIntStatValue(stats, 'os.totalPhysicalMemorySize')).to.equal(os.totalmem());
-        expect(extractStringStatValue(stats, 'os.totalSwapSpaceSize')).to.equal('');
         expect(extractIntStatValue(stats, 'runtime.availableProcessors')).to.equal(os.cpus().length);
-        expect(extractStringStatValue(stats, 'runtime.freeMemory')).to.equal('');
-        expect(extractStringStatValue(stats, 'runtime.maxMemory')).to.equal('');
         expect(extractIntStatValue(stats, 'runtime.totalMemory')).to.greaterThan(0);
         expect(extractIntStatValue(stats, 'runtime.uptime')).to.greaterThan(0);
         expect(extractIntStatValue(stats, 'runtime.usedMemory')).to.greaterThan(0);
-        expect(extractStringStatValue(stats, 'executionService.userExecutorQueueSize')).to.equal('');
     });
 
     it('should contain near cache statistics content', async function () {
