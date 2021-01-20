@@ -127,7 +127,7 @@ describe('StatisticsTest (default period)', function () {
             expect(extractIntStatValue(stats, 'lastStatisticsCollectionTime')).to.be
                 .within(Date.now() - Statistics.PERIOD_SECONDS_DEFAULT_VALUE * 2000, Date.now());
             expect(extractBooleanStatValue(stats, 'enterprise')).to.be.false;
-            expect(extractStringStatValue(stats, 'clientType')).to.equal('NodeJS');
+            expect(extractStringStatValue(stats, 'clientType')).to.equal('NJS');
             expect(extractStringStatValue(stats, 'clientVersion')).to.equal(BuildInfo.getClientVersion());
             const connection = client.getConnectionManager().getRandomConnection();
             expect(extractIntStatValue(stats, 'clusterConnectionTimestamp')).to.equal(connection.getStartTime());

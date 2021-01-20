@@ -66,7 +66,8 @@ import {PartitionServiceImpl} from '../PartitionService';
 const CONNECTION_REMOVED_EVENT_NAME = 'connectionRemoved';
 const CONNECTION_ADDED_EVENT_NAME = 'connectionAdded';
 
-const CLIENT_TYPE = 'NJS';
+/** @internal */
+export const CLIENT_TYPE = 'NJS';
 const SERIALIZATION_VERSION = 1;
 const SET_TIMEOUT_MAX_DELAY = 2147483647;
 const BINARY_PROTOCOL_VERSION = Buffer.from('CP2');
