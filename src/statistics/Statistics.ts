@@ -141,25 +141,17 @@ export class Statistics {
     }
 
     private registerMetrics(): void {
-        this.registerGauge('os.committedVirtualMemorySize', () => null);
         this.registerGauge('os.freePhysicalMemorySize', () => os.freemem());
-        this.registerGauge('os.freeSwapSpaceSize', () => null);
-        this.registerGauge('os.maxFileDescriptorCount', () => null);
-        this.registerGauge('os.openFileDescriptorCount', () => null);
         this.registerGauge('os.processCpuTime', () => {
             // process.cpuUsage returns microseconds, so we convert to nanoseconds
             return process.cpuUsage().user * 1000;
         });
         this.registerGauge('os.systemLoadAverage', () => os.loadavg()[0], ValueType.DOUBLE);
         this.registerGauge('os.totalPhysicalMemorySize', () => os.totalmem());
-        this.registerGauge('os.totalSwapSpaceSize', () => null);
         this.registerGauge('runtime.availableProcessors', () => os.cpus().length);
-        this.registerGauge('runtime.freeMemory', () => null);
-        this.registerGauge('runtime.maxMemory', () => null);
         this.registerGauge('runtime.totalMemory', () => process.memoryUsage().heapTotal);
         this.registerGauge('runtime.uptime', () => process.uptime() * 1000);
         this.registerGauge('runtime.usedMemory', () => process.memoryUsage().heapUsed);
-        this.registerGauge('executionService.userExecutorQueueSize', () => null);
     }
 
     private registerGauge(gaugeName: string,
@@ -195,12 +187,6 @@ export class Statistics {
         } else {
             stats.push('' + value);
         }
-    }
-
-    private addEmptyAttribute(stats: string[],
-                              name: string,
-                              keyPrefix: string): void {
-        this.addAttribute(stats, name, Statistics.EMPTY_STAT_VALUE, keyPrefix);
     }
 
     private addMetric(compressor: MetricsCompressor,
@@ -262,9 +248,7 @@ export class Statistics {
             const gauge = this.allGauges[gaugeName];
             try {
                 const value = gauge.gaugeFn();
-                if (value !== null) {
-                    this.addSimpleMetric(compressor, gaugeName, value, gauge.type);
-                }
+                this.addSimpleMetric(compressor, gaugeName, value, gauge.type);
                 // necessary for compatibility with Management Center 4.0
                 this.addAttribute(stats, gaugeName, value);
             } catch (err) {
@@ -321,14 +305,6 @@ export class Statistics {
             this.addNearCacheMetric(stats, compressor,
                 'expirations', name, nameWithPrefix, nearCacheStats.expiredCount,
                 ValueType.LONG, ProbeUnit.COUNT);
-
-            // kept for backwards-compatibility purposes with Management Center 4.0
-            this.addEmptyAttribute(stats, 'lastPersistenceDuration', nameWithPrefix);
-            this.addEmptyAttribute(stats, 'lastPersistenceKeyCount', nameWithPrefix);
-            this.addEmptyAttribute(stats, 'lastPersistenceTime', nameWithPrefix);
-            this.addEmptyAttribute(stats, 'lastPersistenceWrittenBytes', nameWithPrefix);
-            this.addEmptyAttribute(stats, 'ownedEntryMemoryCost', nameWithPrefix);
-            this.addEmptyAttribute(stats, 'lastPersistenceFailure', nameWithPrefix);
         }
     }
 
