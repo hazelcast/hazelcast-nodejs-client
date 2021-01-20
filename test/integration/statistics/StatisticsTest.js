@@ -27,12 +27,12 @@ const TestUtil = require('../../TestUtil');
 async function getClientStatisticsFromServer(cluster, client) {
     const clientUuid = client.getConnectionManager().getClientUuid();
     const script =
-        'stats = instance_0.getOriginal().node.getClientEngine().getClientStatistics()\n' +
-        'keys = stats.keySet().toArray()\n' +
-        'for(i=0; i < keys.length; i++) {\n' +
+        'var stats = instance_0.getOriginal().node.getClientEngine().getClientStatistics();\n' +
+        'var keys = stats.keySet().toArray();\n' +
+        'for (var i = 0; i < keys.length; i++) {\n' +
         '  if (keys[i].toString().equals("' + clientUuid + '")) {\n' +
-        '    result = stats.get(keys[i]).clientAttributes()\n' +
-        '    break\n' +
+        '    result = stats.get(keys[i]).clientAttributes();\n' +
+        '    break;\n' +
         '  }\n' +
         '}\n';
     const response = await RC.executeOnController(cluster.id, script, 1);
@@ -115,26 +115,18 @@ describe('StatisticsTest (default period)', function () {
         expect(extractIntStatValue(stats, 'lastStatisticsCollectionTime')).to.be
             .within(Date.now() - Statistics.PERIOD_SECONDS_DEFAULT_VALUE * 2000, Date.now());
         expect(extractBooleanStatValue(stats, 'enterprise')).to.be.false;
-        expect(extractStringStatValue(stats, 'clientType')).to.equal('NodeJS');
+        expect(extractStringStatValue(stats, 'clientType')).to.equal('NJS');
         expect(extractStringStatValue(stats, 'clientVersion')).to.equal(BuildInfo.getClientVersion());
         const connection = client.getConnectionManager().getRandomConnection();
         expect(extractIntStatValue(stats, 'clusterConnectionTimestamp')).to.equal(connection.getStartTime());
         expect(extractStringStatValue(stats, 'clientAddress')).to.equal(connection.getLocalAddress().toString());
-        expect(extractStringStatValue(stats, 'os.committedVirtualMemorySize')).to.equal('');
-        expect(extractStringStatValue(stats, 'os.freeSwapSpaceSize')).to.equal('');
-        expect(extractStringStatValue(stats, 'os.maxFileDescriptorCount')).to.equal('');
-        expect(extractStringStatValue(stats, 'os.openFileDescriptorCount')).to.equal('');
         expect(extractIntStatValue(stats, 'os.processCpuTime')).to.greaterThan(1000);
         expect(extractFloatStatValue(stats, 'os.systemLoadAverage')).to.be.at.least(0);
         expect(extractIntStatValue(stats, 'os.totalPhysicalMemorySize')).to.equal(os.totalmem());
-        expect(extractStringStatValue(stats, 'os.totalSwapSpaceSize')).to.equal('');
         expect(extractIntStatValue(stats, 'runtime.availableProcessors')).to.equal(os.cpus().length);
-        expect(extractStringStatValue(stats, 'runtime.freeMemory')).to.equal('');
-        expect(extractStringStatValue(stats, 'runtime.maxMemory')).to.equal('');
         expect(extractIntStatValue(stats, 'runtime.totalMemory')).to.greaterThan(0);
         expect(extractIntStatValue(stats, 'runtime.uptime')).to.greaterThan(0);
         expect(extractIntStatValue(stats, 'runtime.usedMemory')).to.greaterThan(0);
-        expect(extractStringStatValue(stats, 'executionService.userExecutorQueueSize')).to.equal('');
     });
 
     it('should contain near cache statistics content', async function () {

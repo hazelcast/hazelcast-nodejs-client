@@ -17,8 +17,15 @@
 
 import {HazelcastClient} from '../HazelcastClient';
 import {ClientConnection} from '../network/ClientConnection';
+import {CLIENT_TYPE} from '../network/ClientConnectionManager';
 import {Properties} from '../config/Properties';
 import {ClientStatisticsCodec} from '../codec/ClientStatisticsCodec';
+import {
+    MetricsCompressor,
+    MetricDescriptor,
+    ProbeUnit,
+    ValueType
+} from './MetricsCompressor';
 import {
     scheduleWithRepetition,
     cancelRepetitionTask,
@@ -28,6 +35,11 @@ import * as os from 'os';
 import {BuildInfo} from '../BuildInfo';
 import {ILogger} from '../logging/ILogger';
 import * as Long from 'long';
+
+type GaugeDescription = {
+    gaugeFn: () => number;
+    type: ValueType;
+}
 
 /**
  * This class is the main entry point for collecting and sending the client
@@ -46,12 +58,13 @@ export class Statistics {
     private static readonly KEY_VALUE_SEPARATOR: string = '=';
     private static readonly ESCAPE_CHAR: string = '\\';
     private static readonly EMPTY_STAT_VALUE: string = '';
-    private readonly allGauges: { [name: string]: () => any } = {};
+    private readonly allGauges: { [name: string]: GaugeDescription } = {};
     private readonly enabled: boolean;
     private readonly properties: Properties;
     private readonly logger: ILogger;
     private client: HazelcastClient;
     private task: Task;
+    private compressorErrorLogged = false;
 
     constructor(clientInstance: HazelcastClient) {
         this.properties = clientInstance.getConfig().properties;
@@ -95,6 +108,7 @@ export class Statistics {
      */
     schedulePeriodicStatisticsSendTask(periodSeconds: number): Task {
         return scheduleWithRepetition(() => {
+            this.compressorErrorLogged = false;
             const collectionTimestamp = Long.fromNumber(Date.now());
 
             const connection = this.client.getConnectionManager().getRandomConnection();
@@ -104,59 +118,61 @@ export class Statistics {
             }
 
             const stats: string[] = [];
+            const compressor = new MetricsCompressor();
 
-            this.fillMetrics(stats, connection);
-
-            this.addNearCacheStats(stats);
-
-            this.sendStats(collectionTimestamp, stats.join(''), connection);
+            this.fillMetrics(stats, compressor, connection);
+            this.addNearCacheStats(stats, compressor);
+            this.sendStats(collectionTimestamp, stats.join(''), compressor, connection);
         }, 0, periodSeconds * 1000);
     }
 
-    sendStats(collectionTimestamp: Long, newStats: string, connection: ClientConnection): void {
-        const request = ClientStatisticsCodec.encodeRequest(collectionTimestamp, newStats, Buffer.allocUnsafe(0));
-        this.client.getInvocationService()
-            .invokeOnConnection(connection, request)
+    sendStats(collectionTimestamp: Long,
+              stats: string,
+              compressor: MetricsCompressor,
+              connection: ClientConnection): void {
+        compressor.generateBlob()
+            .then((blob) => {
+                const request = ClientStatisticsCodec.encodeRequest(collectionTimestamp, stats, blob);
+                return this.client.getInvocationService()
+                    .invokeOnConnection(connection, request);
+            })
             .catch((err) => {
-                this.logger.trace('Statistics', 'Could not send stats ', err);
+                this.logger.trace('Statistics', 'Could not send stats', err);
             });
     }
 
     private registerMetrics(): void {
-        this.registerGauge('os.committedVirtualMemorySize', () => Statistics.EMPTY_STAT_VALUE);
         this.registerGauge('os.freePhysicalMemorySize', () => os.freemem());
-        this.registerGauge('os.freeSwapSpaceSize', () => Statistics.EMPTY_STAT_VALUE);
-        this.registerGauge('os.maxFileDescriptorCount', () => Statistics.EMPTY_STAT_VALUE);
-        this.registerGauge('os.openFileDescriptorCount', () => Statistics.EMPTY_STAT_VALUE);
         this.registerGauge('os.processCpuTime', () => {
-            // process.cpuUsage returns micoseconds. We convert to nanoseconds
+            // process.cpuUsage returns microseconds, so we convert to nanoseconds
             return process.cpuUsage().user * 1000;
         });
-        this.registerGauge('os.systemLoadAverage', () => os.loadavg()[0]);
+        this.registerGauge('os.systemLoadAverage', () => os.loadavg()[0], ValueType.DOUBLE);
         this.registerGauge('os.totalPhysicalMemorySize', () => os.totalmem());
-        this.registerGauge('os.totalSwapSpaceSize', () => Statistics.EMPTY_STAT_VALUE);
         this.registerGauge('runtime.availableProcessors', () => os.cpus().length);
-        this.registerGauge('runtime.freeMemory', () => Statistics.EMPTY_STAT_VALUE);
-        this.registerGauge('runtime.maxMemory', () => Statistics.EMPTY_STAT_VALUE);
         this.registerGauge('runtime.totalMemory', () => process.memoryUsage().heapTotal);
         this.registerGauge('runtime.uptime', () => process.uptime() * 1000);
         this.registerGauge('runtime.usedMemory', () => process.memoryUsage().heapUsed);
-        this.registerGauge('executionService.userExecutorQueueSize', () => Statistics.EMPTY_STAT_VALUE);
     }
 
-    private registerGauge(gaugeName: string, gaugeFunc: () => any): void {
+    private registerGauge(gaugeName: string,
+                          gaugeFn: () => number,
+                          type: ValueType = ValueType.LONG): void {
         try {
             // try a gauge function read, we will register it if it succeeds.
-            gaugeFunc();
-            this.allGauges[gaugeName] = gaugeFunc;
-        } catch (e) {
-            this.logger.warn('Statistics', 'Could not collect data for gauge ' + gaugeName
-                + ' , it won\'t be registered', e);
-            this.allGauges[gaugeName] = (): string => Statistics.EMPTY_STAT_VALUE;
+            gaugeFn();
+            this.allGauges[gaugeName] = { gaugeFn, type };
+        } catch (err) {
+            this.logger.warn('Statistics', 'Could not collect data for gauge '
+                + gaugeName + ', it will not be registered', err);
+            this.allGauges[gaugeName] = { gaugeFn: () => null, type };
         }
     }
 
-    private addStat(stats: string[], name: string, value: any, keyPrefix?: string): void {
+    private addAttribute(stats: string[],
+                         name: string,
+                         value: number | string,
+                         keyPrefix?: string): void {
         if (stats.length !== 0) {
             stats.push(Statistics.STAT_SEPARATOR);
         }
@@ -167,31 +183,77 @@ export class Statistics {
 
         stats.push(name);
         stats.push(Statistics.KEY_VALUE_SEPARATOR);
-        stats.push(value);
+        if (value === null) {
+            stats.push(Statistics.EMPTY_STAT_VALUE);
+        } else {
+            stats.push('' + value);
+        }
     }
 
-    private addEmptyStat(stats: string[], name: string, keyPrefix: string): void {
-        this.addStat(stats, name, Statistics.EMPTY_STAT_VALUE, keyPrefix);
+    private addMetric(compressor: MetricsCompressor,
+                      descriptor: MetricDescriptor,
+                      value: number,
+                      type: ValueType): void {
+        try {
+            switch (type) {
+                case ValueType.LONG:
+                    compressor.addLong(descriptor, value);
+                    break;
+                case ValueType.DOUBLE:
+                    compressor.addDouble(descriptor, value);
+                    break;
+                default:
+                    throw new Error('Unexpected type: ' + type);
+            }
+        } catch (err) {
+            this.logCompressorError(err);
+        }
     }
 
-    private fillMetrics(stats: string[], connection: ClientConnection): void {
-        this.addStat(stats, 'lastStatisticsCollectionTime', Date.now());
-        this.addStat(stats, 'enterprise', 'false');
-        this.addStat(stats, 'clientType', this.client.getClusterService().getLocalClient().type);
-        this.addStat(stats, 'clientVersion', BuildInfo.getClientVersion());
-        this.addStat(stats, 'clusterConnectionTimestamp', connection.getStartTime());
-        this.addStat(stats, 'clientAddress', connection.getLocalAddress().toString());
-        this.addStat(stats, 'clientName', this.client.getName());
+    private addSimpleMetric(compressor: MetricsCompressor,
+                            metric: string,
+                            value: number,
+                            type: ValueType,
+                            unit?: ProbeUnit): void {
+        const dotIdx = metric.lastIndexOf('.');
+        let descriptor: MetricDescriptor;
+        if (dotIdx < 0) {
+            // simple metric name
+            descriptor = { metric };
+        } else {
+            descriptor = {
+                prefix: metric.substring(0, dotIdx),
+                metric: metric.substring(dotIdx + 1)
+            };
+        }
+
+        if (unit !== undefined) {
+            descriptor.unit = unit;
+        }
+
+        this.addMetric(compressor, descriptor, value, type);
+    }
+
+    private fillMetrics(stats: string[],
+                        compressor: MetricsCompressor,
+                        connection: ClientConnection): void {
+        this.addAttribute(stats, 'lastStatisticsCollectionTime', Date.now());
+        this.addAttribute(stats, 'enterprise', 'false');
+        this.addAttribute(stats, 'clientType', CLIENT_TYPE);
+        this.addAttribute(stats, 'clientVersion', BuildInfo.getClientVersion());
+        this.addAttribute(stats, 'clusterConnectionTimestamp', connection.getStartTime());
+        this.addAttribute(stats, 'clientAddress', connection.getLocalAddress().toString());
+        this.addAttribute(stats, 'clientName', this.client.getName());
 
         for (const gaugeName in this.allGauges) {
-            const gaugeValueFunc = this.allGauges[gaugeName];
-
+            const gauge = this.allGauges[gaugeName];
             try {
-                const value = gaugeValueFunc();
-                this.addStat(stats, gaugeName, value);
-            } catch (e) {
-                this.logger.trace('Could not collect data for gauge ' + gaugeName, e);
-
+                const value = gauge.gaugeFn();
+                this.addSimpleMetric(compressor, gaugeName, value, gauge.type);
+                // necessary for compatibility with Management Center 4.0
+                this.addAttribute(stats, gaugeName, value);
+            } catch (err) {
+                this.logger.trace('Statistics', 'Could not collect data for gauge ' + gaugeName, err);
             }
         }
     }
@@ -218,25 +280,71 @@ export class Statistics {
         }
     }
 
-    private addNearCacheStats(stats: string[]): void {
+    private addNearCacheStats(stats: string[], compressor: MetricsCompressor): void {
         for (const nearCache of this.client.getNearCacheManager().listAllNearCaches()) {
-            const nearCacheNameWithPrefix = this.getNameWithPrefix(nearCache.getName());
+            const name = nearCache.getName();
+            const nearCacheNameWithPrefix = this.getNameWithPrefix(name);
             nearCacheNameWithPrefix.push('.');
+            const nameWithPrefix = nearCacheNameWithPrefix.join('');
+
             const nearCacheStats = nearCache.getStatistics();
-            const prefix = nearCacheNameWithPrefix.join('');
-            this.addStat(stats, 'creationTime', nearCacheStats.creationTime, prefix);
-            this.addStat(stats, 'evictions', nearCacheStats.evictedCount, prefix);
-            this.addStat(stats, 'hits', nearCacheStats.hitCount, prefix);
-            this.addEmptyStat(stats, 'lastPersistenceDuration', prefix);
-            this.addEmptyStat(stats, 'lastPersistenceKeyCount', prefix);
-            this.addEmptyStat(stats, 'lastPersistenceTime', prefix);
-            this.addEmptyStat(stats, 'lastPersistenceWrittenBytes', prefix);
-            this.addStat(stats, 'misses', nearCacheStats.missCount, prefix);
-            this.addStat(stats, 'ownedEntryCount', nearCacheStats.entryCount, prefix);
-            this.addStat(stats, 'expirations', nearCacheStats.expiredCount, prefix);
-            this.addEmptyStat(stats, 'ownedEntryMemoryCost', prefix);
-            this.addEmptyStat(stats, 'lastPersistenceFailure', prefix);
+            this.addNearCacheMetric(stats, compressor,
+                'creationTime', name, nameWithPrefix, nearCacheStats.creationTime,
+                ValueType.LONG, ProbeUnit.MS);
+            this.addNearCacheMetric(stats, compressor,
+                'evictions', name, nameWithPrefix, nearCacheStats.evictedCount,
+                ValueType.LONG, ProbeUnit.COUNT);
+            this.addNearCacheMetric(stats, compressor,
+                'hits', name, nameWithPrefix, nearCacheStats.hitCount,
+                ValueType.LONG, ProbeUnit.COUNT);
+            this.addNearCacheMetric(stats, compressor,
+                'misses', name, nameWithPrefix, nearCacheStats.missCount,
+                ValueType.LONG, ProbeUnit.COUNT);
+            this.addNearCacheMetric(stats, compressor,
+                'ownedEntryCount', name, nameWithPrefix, nearCacheStats.entryCount,
+                ValueType.LONG, ProbeUnit.COUNT);
+            this.addNearCacheMetric(stats, compressor,
+                'expirations', name, nameWithPrefix, nearCacheStats.expiredCount,
+                ValueType.LONG, ProbeUnit.COUNT);
         }
     }
 
+    private addNearCacheMetric(stats: string[],
+                               compressor: MetricsCompressor,
+                               metric: string,
+                               nearCacheName: string,
+                               nearCacheNameWithPrefix: string,
+                               value: number,
+                               type: ValueType,
+                               unit: ProbeUnit): void {
+        this.addMetric(compressor,
+            this.nearCacheDescriptor(metric, nearCacheName, unit),
+            value, type);
+        // necessary for compatibility with Management Center 4.0
+        this.addAttribute(stats, metric, value, nearCacheNameWithPrefix);
+    }
+
+    private nearCacheDescriptor(metric: string,
+                                nearCacheName: string,
+                                unit?: ProbeUnit): MetricDescriptor {
+        const descriptor: MetricDescriptor = {
+            prefix: 'nearcache',
+            metric,
+            discriminator: 'name',
+            discriminatorValue: nearCacheName
+        };
+        if (unit !== undefined) {
+            descriptor.unit = unit;
+        }
+        return descriptor;
+    }
+
+    private logCompressorError(err: Error): void {
+        if (!this.compressorErrorLogged) {
+            this.logger.warn('Statistics', 'Could not add metric to compressed binary', err);
+            this.compressorErrorLogged = true;
+        } else {
+            this.logger.trace('Statistics', 'Could not add metric to compressed binary', err);
+        }
+    }
 }
