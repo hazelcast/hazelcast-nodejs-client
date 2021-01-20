@@ -17,6 +17,7 @@
 
 import {HazelcastClient} from '../HazelcastClient';
 import {ClientConnection} from '../network/ClientConnection';
+import {CLIENT_TYPE} from '../network/ClientConnectionManager';
 import {Properties} from '../config/Properties';
 import {ClientStatisticsCodec} from '../codec/ClientStatisticsCodec';
 import {
@@ -177,7 +178,7 @@ export class Statistics {
     private fillMetrics(stats: string[], connection: ClientConnection): void {
         this.addStat(stats, 'lastStatisticsCollectionTime', Date.now());
         this.addStat(stats, 'enterprise', 'false');
-        this.addStat(stats, 'clientType', this.client.getClusterService().getLocalClient().type);
+        this.addStat(stats, 'clientType', CLIENT_TYPE);
         this.addStat(stats, 'clientVersion', BuildInfo.getClientVersion());
         this.addStat(stats, 'clusterConnectionTimestamp', connection.getStartTime());
         this.addStat(stats, 'clientAddress', connection.getLocalAddress().toString());
