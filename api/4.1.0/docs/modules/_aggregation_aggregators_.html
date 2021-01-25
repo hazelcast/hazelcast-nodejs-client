@@ -1,0 +1,577 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>&quot;aggregation/Aggregators&quot; | hazelcast-client</title>
+	<meta name="description" content="Documentation for hazelcast-client">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">hazelcast-client</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../globals.html">Globals</a>
+				</li>
+				<li>
+					<a href="_aggregation_aggregators_.html">&quot;aggregation/Aggregators&quot;</a>
+				</li>
+			</ul>
+			<h1>Module &quot;aggregation/Aggregators&quot;</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Functions</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="_aggregation_aggregators_.html#count" class="tsd-kind-icon">count</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="_aggregation_aggregators_.html#doubleavg" class="tsd-kind-icon">double<wbr>Avg</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="_aggregation_aggregators_.html#doublesum" class="tsd-kind-icon">double<wbr>Sum</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="_aggregation_aggregators_.html#fixedpointsum" class="tsd-kind-icon">fixed<wbr>Point<wbr>Sum</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="_aggregation_aggregators_.html#floatingpointsum" class="tsd-kind-icon">floating<wbr>Point<wbr>Sum</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="_aggregation_aggregators_.html#integeravg" class="tsd-kind-icon">integer<wbr>Avg</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="_aggregation_aggregators_.html#integersum" class="tsd-kind-icon">integer<wbr>Sum</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="_aggregation_aggregators_.html#longavg" class="tsd-kind-icon">long<wbr>Avg</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="_aggregation_aggregators_.html#longsum" class="tsd-kind-icon">long<wbr>Sum</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter"><a href="_aggregation_aggregators_.html#max" class="tsd-kind-icon">max</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter"><a href="_aggregation_aggregators_.html#min" class="tsd-kind-icon">min</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="_aggregation_aggregators_.html#numberavg" class="tsd-kind-icon">number<wbr>Avg</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Functions</h2>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="count" class="tsd-anchor"></a>
+					<h3>count</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">count<span class="tsd-signature-symbol">(</span>attributePath<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Long</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/aggregation/Aggregators.ts:39</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> attributePath: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>extracts values from this path if given</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Long</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>an aggregator that counts the input values.
+								Accepts nulls as input values.
+							Aggregation result type <code>Long</code>.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="doubleavg" class="tsd-anchor"></a>
+					<h3>double<wbr>Avg</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">double<wbr>Avg<span class="tsd-signature-symbol">(</span>attributePath<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/aggregation/Aggregators.ts:50</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> attributePath: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>extracts values from this path if given</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>an aggregator that calculates the average of the input values.
+								Does NOT accept <code>null</code> input values.
+								Accepts only Double input values (primitive and boxed).
+							Aggregation result type is <code>number</code>.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="doublesum" class="tsd-anchor"></a>
+					<h3>double<wbr>Sum</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">double<wbr>Sum<span class="tsd-signature-symbol">(</span>attributePath<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/aggregation/Aggregators.ts:61</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> attributePath: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>extracts values from this path if given</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>an aggregator that calculates the sum of the input values.
+								Does NOT accept <code>null</code> input values.
+								Accepts only Double input values (primitive and boxed).
+							Aggregation result type is <code>number</code>.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="fixedpointsum" class="tsd-anchor"></a>
+					<h3>fixed<wbr>Point<wbr>Sum</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">fixed<wbr>Point<wbr>Sum<span class="tsd-signature-symbol">(</span>attributePath<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Long</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/aggregation/Aggregators.ts:83</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> attributePath: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>extracts values from this path if given</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Long</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>an aggregator that calculates the sum of the input values.
+								Does NOT accept <code>null</code> input values.
+								Accepts generic Number input values.
+							Aggregation result type is <code>Long</code>.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="floatingpointsum" class="tsd-anchor"></a>
+					<h3>floating<wbr>Point<wbr>Sum</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">floating<wbr>Point<wbr>Sum<span class="tsd-signature-symbol">(</span>attributePath<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/aggregation/Aggregators.ts:94</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> attributePath: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>extracts values from this path if given</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>an aggregator that calculates the sum of the input values.
+								Does NOT accept <code>null</code> input values.
+								Accepts generic Number input values.
+							Aggregation result type is <code>number</code>.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="integeravg" class="tsd-anchor"></a>
+					<h3>integer<wbr>Avg</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">integer<wbr>Avg<span class="tsd-signature-symbol">(</span>attributePath<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/aggregation/Aggregators.ts:127</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> attributePath: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>extracts values from this path if given</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>an aggregator that calculates the average of the input values.
+								Does NOT accept <code>null</code> input values.
+								Accepts only Integer input values (primitive and boxed).
+							Aggregation result type is <code>number</code>.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="integersum" class="tsd-anchor"></a>
+					<h3>integer<wbr>Sum</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">integer<wbr>Sum<span class="tsd-signature-symbol">(</span>attributePath<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Long</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/aggregation/Aggregators.ts:138</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> attributePath: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>extracts values from this path if given</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Long</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>an aggregator that calculates the sum of the input values.
+								Does NOT accept <code>null</code> input values.
+								Accepts only Integer input values (primitive and boxed).
+							Aggregation result type is <code>Long</code>.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="longavg" class="tsd-anchor"></a>
+					<h3>long<wbr>Avg</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">long<wbr>Avg<span class="tsd-signature-symbol">(</span>attributePath<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/aggregation/Aggregators.ts:149</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> attributePath: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>extracts values from this path if given</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>an aggregator that calculates the average of the input values.
+								Does NOT accept <code>null</code> input values.
+								Accepts only Long input values (primitive and boxed).
+							Aggregation result type is <code>number</code>.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="longsum" class="tsd-anchor"></a>
+					<h3>long<wbr>Sum</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">long<wbr>Sum<span class="tsd-signature-symbol">(</span>attributePath<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Long</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/aggregation/Aggregators.ts:160</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> attributePath: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>extracts values from this path if given</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Long</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>an aggregator that calculates the sum of the input values.
+								Does NOT accept <code>null</code> input values.
+								Accepts only Long input values (primitive and boxed).
+							Aggregation result type is <code>Long</code>.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter">
+					<a name="max" class="tsd-anchor"></a>
+					<h3>max</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter">
+						<li class="tsd-signature tsd-kind-icon">max&lt;R&gt;<span class="tsd-signature-symbol">(</span>attributePath<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/aggregation/Aggregators.ts:105</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>R</h4>
+									<div class="tsd-comment tsd-typography">
+										<p>type of the input object.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> attributePath: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>extracts values from this path if given</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>an aggregator that calculates the max of the input values.
+								Accepts <code>null</code> input values.
+							Aggregation result type is <code>R</code>.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter">
+					<a name="min" class="tsd-anchor"></a>
+					<h3>min</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter">
+						<li class="tsd-signature tsd-kind-icon">min&lt;R&gt;<span class="tsd-signature-symbol">(</span>attributePath<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/aggregation/Aggregators.ts:116</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>R</h4>
+									<div class="tsd-comment tsd-typography">
+										<p>type of the input object.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> attributePath: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>extracts values from this path if given</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>an aggregator that calculates the min of the input values.
+								Accepts <code>null</code> input values.
+							Aggregation result type is <code>R</code>.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+					<a name="numberavg" class="tsd-anchor"></a>
+					<h3>number<wbr>Avg</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+						<li class="tsd-signature tsd-kind-icon">number<wbr>Avg<span class="tsd-signature-symbol">(</span>attributePath<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/aggregation/Aggregators.ts:72</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> attributePath: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>extracts values from this path if given</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_aggregation_aggregator_.aggregator.html" class="tsd-signature-type">Aggregator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>an aggregator that calculates the average of the input values.
+								Does NOT accept <code>null</code> input values.
+								Accepts generic Number input values.
+							Aggregation result type is <code>number</code>.</p>
+						</li>
+					</ul>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="../globals.html"><em>Globals</em></a>
+					</li>
+					<li class="current tsd-kind-module">
+						<a href="_aggregation_aggregators_.html">&quot;aggregation/<wbr>Aggregators&quot;</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="_aggregation_aggregators_.html#count" class="tsd-kind-icon">count</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="_aggregation_aggregators_.html#doubleavg" class="tsd-kind-icon">double<wbr>Avg</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="_aggregation_aggregators_.html#doublesum" class="tsd-kind-icon">double<wbr>Sum</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="_aggregation_aggregators_.html#fixedpointsum" class="tsd-kind-icon">fixed<wbr>Point<wbr>Sum</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="_aggregation_aggregators_.html#floatingpointsum" class="tsd-kind-icon">floating<wbr>Point<wbr>Sum</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="_aggregation_aggregators_.html#integeravg" class="tsd-kind-icon">integer<wbr>Avg</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="_aggregation_aggregators_.html#integersum" class="tsd-kind-icon">integer<wbr>Sum</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="_aggregation_aggregators_.html#longavg" class="tsd-kind-icon">long<wbr>Avg</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="_aggregation_aggregators_.html#longsum" class="tsd-kind-icon">long<wbr>Sum</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter">
+						<a href="_aggregation_aggregators_.html#max" class="tsd-kind-icon">max</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter">
+						<a href="_aggregation_aggregators_.html#min" class="tsd-kind-icon">min</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="_aggregation_aggregators_.html#numberavg" class="tsd-kind-icon">number<wbr>Avg</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>
