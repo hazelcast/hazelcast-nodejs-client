@@ -25,13 +25,13 @@ describe('RepetitionTaskTest', function () {
         let counter = 0;
         const task = Util.scheduleWithRepetition(function () {
             counter++;
-        }, 50, 75);
+        }, 50, 100);
 
-        return TestUtil.promiseWaitMilliseconds(40).then(function () {
+        return TestUtil.promiseWaitMilliseconds(25).then(function () {
             Util.cancelRepetitionTask(task);
             expect(counter).to.be.equal(0);
         }).then(function () {
-            return TestUtil.promiseWaitMilliseconds(130)
+            return TestUtil.promiseWaitMilliseconds(150)
         }).then(function () {
             expect(counter).to.be.equal(0);
         });
@@ -41,13 +41,13 @@ describe('RepetitionTaskTest', function () {
         let counter = 0;
         const task = Util.scheduleWithRepetition(function () {
             counter++;
-        }, 50, 75);
+        }, 50, 100);
 
-        return TestUtil.promiseWaitMilliseconds(60).then(function () {
+        return TestUtil.promiseWaitMilliseconds(100).then(function () {
             Util.cancelRepetitionTask(task);
             expect(counter).to.be.equal(1);
         }).then(function () {
-            return TestUtil.promiseWaitMilliseconds(75)
+            return TestUtil.promiseWaitMilliseconds(100)
         }).then(function () {
             expect(counter).to.be.equal(1);
         });
@@ -57,9 +57,9 @@ describe('RepetitionTaskTest', function () {
         let counter = 0;
         const task = Util.scheduleWithRepetition(function () {
             counter++;
-        }, 50, 75);
+        }, 50, 100);
 
-        return TestUtil.promiseWaitMilliseconds(130).then(function () {
+        return TestUtil.promiseWaitMilliseconds(200).then(function () {
             Util.cancelRepetitionTask(task);
             expect(counter).to.be.equal(2);
         }).then(function () {
