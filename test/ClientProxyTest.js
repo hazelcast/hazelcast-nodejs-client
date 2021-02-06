@@ -42,7 +42,7 @@ describe('Generic proxy test', function () {
         }
     );
 
-    it('Client without active connection should return unknown version', function () {
+    it('client without active connection should return unknown version', function () {
         var connectionManagerStub = sandbox.stub(ConnectionManager.prototype);
         connectionManagerStub.getActiveConnections.returns({});
         var clientStub = sandbox.stub(HazelcastClient.prototype);
@@ -52,7 +52,7 @@ describe('Generic proxy test', function () {
         assert.equal(mapProxy.getConnectedServerVersion(), -1);
     });
 
-    it('Client with a 3.7 server connection should return the version', function () {
+    it('client with a 3.7 server connection should return the version', function () {
         var connectionStub = sandbox.stub(ClientConnection.prototype);
         connectionStub.getConnectedServerVersion.returns('30700');
         var connectionManagerStub = sandbox.stub(ConnectionManager.prototype);
@@ -66,7 +66,7 @@ describe('Generic proxy test', function () {
         assert.equal(mapProxy.getConnectedServerVersion(), 30700);
     });
 
-    it('Proxies with the same name should be different for different services', function () {
+    it('proxies with the same name should be different for different services', function () {
         return Controller.createCluster().then(function (response) {
             cluster = response;
             return Controller.startMember(cluster.id);

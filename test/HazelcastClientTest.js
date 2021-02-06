@@ -64,7 +64,7 @@ ManagedObjects.prototype.destroy = function (name) {
 };
 
 configParams.forEach(function (cfg) {
-    describe('HazelcastClient', function () {
+    describe('HazelcastClient[smart=' + cfg.networkConfig.smartRouting + ']', function () {
         this.timeout(4000);
         var cluster;
         var client;
