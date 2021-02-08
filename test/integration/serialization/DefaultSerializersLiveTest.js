@@ -152,4 +152,32 @@ describe('DefaultSerializersLiveTest', function () {
         const result = JSON.parse(response.result);
         expect(result).to.equal(uuid.toString());
     });
+
+    it('should deserialize ArrayList', async function () {
+        const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
+            'var list = new java.util.ArrayList();\n' +
+            'list.add(1);\n' +
+            'list.add(2);\n' +
+            'list.add(3);\n' +
+            'map.set("key", list);\n';
+
+        await RC.executeOnController(cluster.id, script, 1);
+
+        const actualValue = await map.get('key');
+        expect(actualValue).to.deep.equal([1, 2, 3]);
+    });
+
+    it('should deserialize LinkedList', async function () {
+        const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
+            'var list = new java.util.LinkedList();\n' +
+            'list.add(1);\n' +
+            'list.add(2);\n' +
+            'list.add(3);\n' +
+            'map.set("key", list);\n';
+
+        await RC.executeOnController(cluster.id, script, 1);
+
+        const actualValue = await map.get('key');
+        expect(actualValue).to.deep.equal([1, 2, 3]);
+    });
 });
