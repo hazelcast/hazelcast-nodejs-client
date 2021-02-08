@@ -16,7 +16,6 @@
 /** @ignore *//** */
 
 import * as Long from 'long';
-import {HazelcastClient} from '../../HazelcastClient';
 import {BaseCPProxy} from './BaseCPProxy';
 import {IAtomicLong} from '../IAtomicLong';
 import {CPProxyManager} from './CPProxyManager';
@@ -27,15 +26,30 @@ import {AtomicLongCompareAndSetCodec} from '../../codec/AtomicLongCompareAndSetC
 import {AtomicLongGetCodec} from '../../codec/AtomicLongGetCodec';
 import {AtomicLongGetAndAddCodec} from '../../codec/AtomicLongGetAndAddCodec';
 import {AtomicLongGetAndSetCodec} from '../../codec/AtomicLongGetAndSetCodec';
+import {InvocationService} from "../../invocation/InvocationService";
+import {SerializationService} from "../../serialization/SerializationService";
+import {ClientConnectionManager} from "../../network/ClientConnectionManager";
 
 /** @internal */
 export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
 
-    constructor(client: HazelcastClient,
-                groupId: RaftGroupId,
-                proxyName: string,
-                objectName: string) {
-        super(client, CPProxyManager.ATOMIC_LONG_SERVICE, groupId, proxyName, objectName);
+    constructor(
+        groupId: RaftGroupId,
+        proxyName: string,
+        objectName: string,
+        invocationService: InvocationService,
+        serializationService: SerializationService,
+        connectionManager: ClientConnectionManager
+    ) {
+        super(
+            CPProxyManager.ATOMIC_LONG_SERVICE,
+            groupId,
+            proxyName,
+            objectName,
+            invocationService,
+            serializationService,
+            connectionManager
+        );
     }
 
     addAndGet(delta: Long | number): Promise<Long> {

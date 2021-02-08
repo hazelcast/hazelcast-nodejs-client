@@ -20,7 +20,6 @@ import {
     DistributedObject,
     IllegalStateError
 } from '../../core';
-import {HazelcastClient} from '../../HazelcastClient';
 import {AtomicLongProxy} from './AtomicLongProxy';
 import {AtomicRefProxy} from './AtomicRefProxy';
 import {CountDownLatchProxy} from './CountDownLatchProxy';
@@ -33,6 +32,10 @@ import {RaftGroupId} from './RaftGroupId';
 import {CPGroupCreateCPGroupCodec} from '../../codec/CPGroupCreateCPGroupCodec';
 import {SemaphoreGetSemaphoreTypeCodec} from '../../codec/SemaphoreGetSemaphoreTypeCodec';
 import {assertString} from '../../util/Util';
+import {InvocationService} from "../../invocation/InvocationService";
+import {SerializationService} from "../../serialization/SerializationService";
+import {CPSubsystem} from "../../CPSubsystem";
+import {ClientConnectionManager} from "../../network/ClientConnectionManager";
 
 const DEFAULT_GROUP_NAME = 'default';
 
@@ -76,11 +79,21 @@ export class CPProxyManager {
     static readonly LOCK_SERVICE = 'hz:raft:lockService';
     static readonly SEMAPHORE_SERVICE = 'hz:raft:semaphoreService';
 
-    private readonly client: HazelcastClient;
     private readonly lockProxies: Map<string, FencedLockProxy> = new Map();
-
-    constructor(client: HazelcastClient) {
-        this.client = client;
+    private readonly invocationService: InvocationService;
+    private readonly serializationService: SerializationService;
+    private readonly cpSubsystem: CPSubsystem;
+    private readonly connectionManager: ClientConnectionManager;
+    constructor(
+        invocationService: InvocationService,
+        serializationService: SerializationService,
+        cpSubsystem: CPSubsystem,
+        connectionManager: ClientConnectionManager
+    ) {
+        this.invocationService = invocationService;
+        this.serializationService = serializationService;
+        this.cpSubsystem = cpSubsystem;
+        this.connectionManager = connectionManager;
     }
 
     getOrCreateProxy(proxyName: string, serviceName: string): Promise<DistributedObject> {
@@ -89,11 +102,32 @@ export class CPProxyManager {
 
         return this.getGroupId(proxyName).then((groupId): DistributedObject | Promise<DistributedObject> => {
             if (serviceName === CPProxyManager.ATOMIC_LONG_SERVICE) {
-                return new AtomicLongProxy(this.client, groupId, proxyName, objectName);
+                return new AtomicLongProxy(
+                    groupId,
+                    proxyName,
+                    objectName,
+                    this.invocationService,
+                    this.serializationService,
+                    this.connectionManager
+                );
             } else if (serviceName === CPProxyManager.ATOMIC_REF_SERVICE) {
-                return new AtomicRefProxy(this.client, groupId, proxyName, objectName);
+                return new AtomicRefProxy(
+                    groupId,
+                    proxyName,
+                    objectName,
+                    this.invocationService,
+                    this.serializationService,
+                    this.connectionManager
+                );
             } else if (serviceName === CPProxyManager.LATCH_SERVICE) {
-                return new CountDownLatchProxy(this.client, groupId, proxyName, objectName);
+                return new CountDownLatchProxy(
+                    groupId,
+                    proxyName,
+                    objectName,
+                    this.invocationService,
+                    this.serializationService,
+                    this.connectionManager
+                );
             } else if (serviceName === CPProxyManager.LOCK_SERVICE) {
                 return this.createFencedLock(groupId, proxyName, objectName);
             } else if (serviceName === CPProxyManager.SEMAPHORE_SERVICE) {
@@ -105,7 +139,7 @@ export class CPProxyManager {
 
     private getGroupId(proxyName: string): Promise<RaftGroupId> {
         const clientMessage = CPGroupCreateCPGroupCodec.encodeRequest(proxyName);
-        return this.client.getInvocationService().invokeOnRandomTarget(clientMessage)
+        return this.invocationService.invokeOnRandomTarget(clientMessage, this.connectionManager)
             .then(CPGroupCreateCPGroupCodec.decodeResponse);
     }
 
@@ -118,19 +152,43 @@ export class CPProxyManager {
                 return proxy;
             }
         }
-        proxy = new FencedLockProxy(this.client, groupId, proxyName, objectName);
+        proxy = new FencedLockProxy(
+            groupId,
+            proxyName,
+            objectName,
+            this.serializationService,
+            this.invocationService,
+            this.cpSubsystem,
+            this.connectionManager
+        );
         this.lockProxies.set(proxyName, proxy);
         return proxy;
     }
 
     private createSemaphore(groupId: RaftGroupId, proxyName: string, objectName: string): Promise<ISemaphore> {
         const clientMessage = SemaphoreGetSemaphoreTypeCodec.encodeRequest(proxyName);
-        return this.client.getInvocationService().invokeOnRandomTarget(clientMessage)
+        return this.invocationService.invokeOnRandomTarget(clientMessage, this.connectionManager)
             .then(SemaphoreGetSemaphoreTypeCodec.decodeResponse)
             .then((jdkCompatible) => {
                 return jdkCompatible
-                    ? new SessionlessSemaphoreProxy(this.client, groupId, proxyName, objectName)
-                    : new SessionAwareSemaphoreProxy(this.client, groupId, proxyName, objectName);
+                    ? new SessionlessSemaphoreProxy(
+                        groupId,
+                        proxyName,
+                        objectName,
+                        this.invocationService,
+                        this.serializationService,
+                        this.cpSubsystem,
+                        this.connectionManager
+                    )
+                    : new SessionAwareSemaphoreProxy(
+                        groupId,
+                        proxyName,
+                        objectName,
+                        this.invocationService,
+                        this.serializationService,
+                        this.cpSubsystem,
+                        this.connectionManager
+                    );
             });
     }
 }

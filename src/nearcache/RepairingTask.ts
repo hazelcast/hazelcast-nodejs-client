@@ -17,13 +17,16 @@
 
 import * as assert from 'assert';
 import * as Long from 'long';
-import {HazelcastClient} from '../HazelcastClient';
 import {MetadataFetcher} from './MetadataFetcher';
 import {NearCache} from './NearCache';
 import {RepairingHandler} from './RepairingHandler';
-import {PartitionServiceImpl} from '../PartitionService';
+import {PartitionService, PartitionServiceImpl} from '../PartitionService';
 import {ILogger} from '../logging/ILogger';
 import {UUID} from '../core/UUID';
+import {LifecycleService, Properties} from "../index";
+import {InvocationService} from "../invocation/InvocationService";
+import {ClusterService} from "../invocation/ClusterService";
+import {ClientConnectionManager} from "../network/ClientConnectionManager";
 
 const PROPERTY_MAX_RECONCILIATION_INTERVAL_SECONDS = 'hazelcast.invalidation.reconciliation.interval.seconds';
 const PROPERTY_MIN_RECONCILIATION_INTERVAL_SECONDS = 'hazelcast.invalidation.min.reconciliation.interval.seconds';
@@ -36,25 +39,40 @@ export class RepairingTask {
     private handlers: Map<string, RepairingHandler>;
     private reconcilliationInterval: number;
     private maxToleratedMissCount: number;
-    private localUuid: UUID;
+    private clientUuid: UUID;
     private metadataFetcher: MetadataFetcher;
-    private client: HazelcastClient;
     private partitionCount: number;
     private readonly minAllowedReconciliationSeconds: number;
     private readonly logger: ILogger;
+    private readonly partitionService: PartitionService;
+    private readonly lifecycleService: LifecycleService;
 
-    constructor(client: HazelcastClient) {
-        this.client = client;
-        this.logger = this.client.getLoggingService().getLogger();
-        const config = this.client.getConfig();
-        this.minAllowedReconciliationSeconds = config.properties[PROPERTY_MIN_RECONCILIATION_INTERVAL_SECONDS] as number;
-        const requestedReconciliationSeconds = config.properties[PROPERTY_MAX_RECONCILIATION_INTERVAL_SECONDS] as number;
+    constructor(
+        clientProperties: Properties,
+        logger: ILogger,
+        clientUuid: UUID,
+        partitionService: PartitionService,
+        lifecycleService: LifecycleService,
+        invocationService: InvocationService,
+        clusterService: ClusterService,
+        connectionManager: ClientConnectionManager
+    ) {
+        this.logger = logger;
+        this.partitionService = partitionService;
+        this.lifecycleService = lifecycleService;
+        this.minAllowedReconciliationSeconds = clientProperties[PROPERTY_MIN_RECONCILIATION_INTERVAL_SECONDS] as number;
+        const requestedReconciliationSeconds = clientProperties[PROPERTY_MAX_RECONCILIATION_INTERVAL_SECONDS] as number;
         this.reconcilliationInterval = this.getReconciliationIntervalMillis(requestedReconciliationSeconds);
         this.handlers = new Map<string, RepairingHandler>();
-        this.localUuid = this.client.getLocalEndpoint().uuid;
-        this.maxToleratedMissCount = config.properties[PROPERTY_MAX_TOLERATED_MISS_COUNT] as number;
-        this.metadataFetcher = new MetadataFetcher(client);
-        this.partitionCount = this.client.getPartitionService().getPartitionCount();
+        this.clientUuid = clientUuid;
+        this.maxToleratedMissCount = clientProperties[PROPERTY_MAX_TOLERATED_MISS_COUNT] as number;
+        this.metadataFetcher = new MetadataFetcher(
+            this.logger,
+            invocationService,
+            clusterService,
+            connectionManager
+        );
+        this.partitionCount = this.partitionService.getPartitionCount();
     }
 
     registerAndGetHandler(objectName: string, nearCache: NearCache): Promise<RepairingHandler> {
@@ -63,8 +81,8 @@ export class RepairingTask {
             return Promise.resolve(handler);
         }
 
-        const partitionService = this.client.getPartitionService() as PartitionServiceImpl;
-        handler = new RepairingHandler(objectName, partitionService, nearCache, this.localUuid);
+        const partitionService = this.partitionService as PartitionServiceImpl;
+        handler = new RepairingHandler(objectName, partitionService, nearCache, this.clientUuid);
         return this.metadataFetcher.initHandler(handler).then(() => {
             this.handlers.set(objectName, handler);
             if (this.antientropyTaskHandle === undefined) {
@@ -90,7 +108,7 @@ export class RepairingTask {
     }
 
     antiEntropyTask(): void {
-        if (this.client.getLifecycleService().isRunning()) {
+        if (this.lifecycleService.isRunning()) {
             this.handlers.forEach((handler: RepairingHandler) => {
                 if (this.isAboveMaxToleratedMissCount(handler)) {
                     this.updateLastKnownStaleSequences(handler);

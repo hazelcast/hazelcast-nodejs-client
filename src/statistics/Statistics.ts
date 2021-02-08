@@ -15,9 +15,8 @@
  */
 /** @ignore *//** */
 
-import {HazelcastClient} from '../HazelcastClient';
 import {ClientConnection} from '../network/ClientConnection';
-import {CLIENT_TYPE} from '../network/ClientConnectionManager';
+import {CLIENT_TYPE, ClientConnectionManager,} from '../network/ClientConnectionManager';
 import {Properties} from '../config/Properties';
 import {ClientStatisticsCodec} from '../codec/ClientStatisticsCodec';
 import {
@@ -35,6 +34,9 @@ import * as os from 'os';
 import {BuildInfo} from '../BuildInfo';
 import {ILogger} from '../logging/ILogger';
 import * as Long from 'long';
+import {ClientConfig} from "../config";
+import {InvocationService} from "../invocation/InvocationService";
+import {NearCacheManager} from "../nearcache/NearCacheManager";
 
 type GaugeDescription = {
     gaugeFn: () => number;
@@ -62,15 +64,28 @@ export class Statistics {
     private readonly enabled: boolean;
     private readonly properties: Properties;
     private readonly logger: ILogger;
-    private client: HazelcastClient;
+    private readonly connectionManager: ClientConnectionManager;
+    private readonly invocationService: InvocationService;
+    private readonly clientName: string;
+    private readonly nearCacheManager: NearCacheManager;
     private task: Task;
     private compressorErrorLogged = false;
 
-    constructor(clientInstance: HazelcastClient) {
-        this.properties = clientInstance.getConfig().properties;
+    constructor(
+        logger: ILogger,
+        clientConfig: ClientConfig,
+        clientName: string,
+        connectionManager: ClientConnectionManager,
+        invocationService: InvocationService,
+        nearCacheManager: NearCacheManager
+    ) {
+        this.properties = clientConfig.properties;
         this.enabled = this.properties[Statistics.ENABLED] as boolean;
-        this.client = clientInstance;
-        this.logger = this.client.getLoggingService().getLogger();
+        this.logger = logger;
+        this.connectionManager = connectionManager;
+        this.invocationService = invocationService;
+        this.clientName = clientName;
+        this.nearCacheManager = nearCacheManager;
     }
 
     /**
@@ -111,7 +126,7 @@ export class Statistics {
             this.compressorErrorLogged = false;
             const collectionTimestamp = Long.fromNumber(Date.now());
 
-            const connection = this.client.getConnectionManager().getRandomConnection();
+            const connection = this.connectionManager.getRandomConnection();
             if (connection == null) {
                 this.logger.trace('Statistics', 'Can not send client statistics to the server. No connection found.');
                 return;
@@ -133,8 +148,7 @@ export class Statistics {
         compressor.generateBlob()
             .then((blob) => {
                 const request = ClientStatisticsCodec.encodeRequest(collectionTimestamp, stats, blob);
-                return this.client.getInvocationService()
-                    .invokeOnConnection(connection, request);
+                return this.invocationService.invokeOnConnection(connection, request, this.connectionManager);
             })
             .catch((err) => {
                 this.logger.trace('Statistics', 'Could not send stats', err);
@@ -243,7 +257,7 @@ export class Statistics {
         this.addAttribute(stats, 'clientVersion', BuildInfo.getClientVersion());
         this.addAttribute(stats, 'clusterConnectionTimestamp', connection.getStartTime());
         this.addAttribute(stats, 'clientAddress', connection.getLocalAddress().toString());
-        this.addAttribute(stats, 'clientName', this.client.getName());
+        this.addAttribute(stats, 'clientName', this.clientName);
 
         for (const gaugeName in this.allGauges) {
             const gauge = this.allGauges[gaugeName];
@@ -281,7 +295,7 @@ export class Statistics {
     }
 
     private addNearCacheStats(stats: string[], compressor: MetricsCompressor): void {
-        for (const nearCache of this.client.getNearCacheManager().listAllNearCaches()) {
+        for (const nearCache of this.nearCacheManager.listAllNearCaches()) {
             const name = nearCache.getName();
             const nearCacheNameWithPrefix = this.getNameWithPrefix(name);
             nearCacheNameWithPrefix.push('.');

@@ -16,10 +16,9 @@
 /** @ignore *//** */
 
 import * as Long from 'long';
-import {HazelcastClient} from '../../HazelcastClient';
 import {BaseCPProxy} from './BaseCPProxy';
 import {ISemaphore} from '../ISemaphore';
-import {CPSubsystemImpl} from '../../CPSubsystem';
+import {CPSubsystem, CPSubsystemImpl} from '../../CPSubsystem';
 import {CPProxyManager} from './CPProxyManager';
 import {CPSessionManager, NO_SESSION_ID} from './CPSessionManager';
 import {RaftGroupId} from './RaftGroupId';
@@ -38,18 +37,35 @@ import {
     IllegalStateError,
     WaitKeyCancelledError
 } from '../../core';
+import {SerializationService} from "../../serialization/SerializationService";
+import {InvocationService} from "../../invocation/InvocationService";
+import {ClientConnectionManager} from "../../network/ClientConnectionManager";
+
 
 /** @internal */
 export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore {
 
     private readonly sessionManager: CPSessionManager;
 
-    constructor(client: HazelcastClient,
-                groupId: RaftGroupId,
-                proxyName: string,
-                objectName: string) {
-        super(client, CPProxyManager.SEMAPHORE_SERVICE, groupId, proxyName, objectName);
-        this.sessionManager = (client.getCPSubsystem() as CPSubsystemImpl).getCPSessionManager();
+    constructor(
+        groupId: RaftGroupId,
+        proxyName: string,
+        objectName: string,
+        invocationService: InvocationService,
+        serializationService: SerializationService,
+        cpSubsystem: CPSubsystem,
+        connectionManager: ClientConnectionManager
+    ) {
+        super(
+            CPProxyManager.SEMAPHORE_SERVICE,
+            groupId,
+            proxyName,
+            objectName,
+            invocationService,
+            serializationService,
+            connectionManager
+        );
+        this.sessionManager = (cpSubsystem as CPSubsystemImpl).getCPSessionManager();
     }
 
     init(permits: number): Promise<boolean> {

@@ -15,7 +15,6 @@
  */
 /** @ignore *//** */
 
-import {HazelcastClient} from '../../HazelcastClient';
 import {BaseCPProxy} from './BaseCPProxy';
 import {ICountDownLatch} from '../ICountDownLatch';
 import {CPProxyManager} from './CPProxyManager';
@@ -34,15 +33,31 @@ import {
     OperationTimeoutError,
     UUID
 } from '../../core';
+import {InvocationService} from "../../invocation/InvocationService";
+import {SerializationService} from "../../serialization/SerializationService";
+import {ClientConnectionManager} from "../../network/ClientConnectionManager";
+
 
 /** @internal */
 export class CountDownLatchProxy extends BaseCPProxy implements ICountDownLatch {
 
-    constructor(client: HazelcastClient,
-                groupId: RaftGroupId,
-                proxyName: string,
-                objectName: string) {
-        super(client, CPProxyManager.LATCH_SERVICE, groupId, proxyName, objectName);
+    constructor(
+        groupId: RaftGroupId,
+        proxyName: string,
+        objectName: string,
+        invocationService: InvocationService,
+        serializationService: SerializationService,
+        connectionManager: ClientConnectionManager
+    ) {
+        super(
+            CPProxyManager.LATCH_SERVICE,
+            groupId,
+            proxyName,
+            objectName,
+            invocationService,
+            serializationService,
+            connectionManager
+        );
     }
 
     await(timeout: number): Promise<boolean> {

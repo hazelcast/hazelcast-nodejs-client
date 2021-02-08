@@ -20,14 +20,12 @@ import {ClientCreateProxyCodec} from '../codec/ClientCreateProxyCodec';
 import {ClientDestroyProxyCodec} from '../codec/ClientDestroyProxyCodec';
 import {ClientRemoveDistributedObjectListenerCodec} from '../codec/ClientRemoveDistributedObjectListenerCodec';
 import {DistributedObject} from '../core/DistributedObject';
-import {HazelcastClient} from '../HazelcastClient';
-import {Invocation} from '../invocation/InvocationService';
+import {Invocation, InvocationService} from '../invocation/InvocationService';
 import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
 import {FlakeIdGeneratorProxy} from './flakeid/FlakeIdGeneratorProxy';
 import {ListProxy} from './ListProxy';
 import {MapProxy} from './MapProxy';
 import {MultiMapProxy} from './MultiMapProxy';
-import {NearCachedMapProxy} from './NearCachedMapProxy';
 import {PNCounterProxy} from './PNCounterProxy';
 import {QueueProxy} from './QueueProxy';
 import {ReplicatedMapProxy} from './ReplicatedMapProxy';
@@ -41,7 +39,18 @@ import {UUID} from '../core/UUID';
 import {ClientCreateProxiesCodec} from '../codec/ClientCreateProxiesCodec';
 import {BaseProxy} from './BaseProxy';
 import {Ringbuffer} from './Ringbuffer';
-import {ClientConfigImpl} from '../config/Config';
+import {ClientConfig, ClientConfigImpl} from '../config/Config';
+import {ListenerService} from "../listener/ListenerService";
+import {NearCachedMapProxy} from "./NearCachedMapProxy";
+import {ILogger} from "../logging";
+import {PartitionService} from "../PartitionService";
+import {SerializationService} from "../serialization/SerializationService";
+import {ClientConnectionManager} from "../network/ClientConnectionManager";
+import {NearCacheManager} from "../nearcache/NearCacheManager";
+import {RepairingTask} from "../nearcache/RepairingTask";
+import {ClusterService} from "../invocation/ClusterService";
+import {LockReferenceIdGenerator} from "./LockReferenceIdGenerator";
+import {Address} from "../core";
 
 /** @internal */
 export const NAMESPACE_SEPARATOR = '/';
@@ -64,10 +73,45 @@ export class ProxyManager {
 
     public readonly service: { [serviceName: string]: any } = {};
     private readonly proxies = new Map<string, Promise<DistributedObject>>();
-    private readonly client: HazelcastClient;
+    private readonly clientConfig: ClientConfig;
+    private readonly invocationService: InvocationService;
+    private readonly listenerService: ListenerService;
+    private readonly logger: ILogger;
+    private readonly partitionService: PartitionService
+    private readonly serializationService: SerializationService;
+    private readonly connectionManager: ClientConnectionManager;
+    private readonly nearCacheManager: NearCacheManager;
+    private readonly repairingTask: RepairingTask;
+    private readonly clusterService: ClusterService;
+    private readonly lockReferenceIdGenerator: LockReferenceIdGenerator;
+    private readonly localAddress: Address;
 
-    constructor(client: HazelcastClient) {
-        this.client = client;
+    constructor(
+        clientConfig: ClientConfig,
+        logger: ILogger,
+        invocationService: InvocationService,
+        listenerService: ListenerService,
+        partitionService: PartitionService,
+        serializationService: SerializationService,
+        connectionManager: ClientConnectionManager,
+        nearCacheManager: NearCacheManager,
+        repairingTask: RepairingTask,
+        clusterService: ClusterService,
+        lockReferenceIdGenerator: LockReferenceIdGenerator,
+        localAddress: Address
+    ) {
+        this.invocationService = invocationService;
+        this.clientConfig = clientConfig;
+        this.listenerService = listenerService;
+        this.logger = logger;
+        this.partitionService = partitionService;
+        this.serializationService = serializationService;
+        this.connectionManager = connectionManager;
+        this.nearCacheManager = nearCacheManager;
+        this.repairingTask = repairingTask;
+        this.clusterService = clusterService;
+        this.lockReferenceIdGenerator = lockReferenceIdGenerator;
+        this.localAddress = localAddress;
     }
 
     public init(): void {
@@ -128,8 +172,8 @@ export class ProxyManager {
         }
         const request = ClientCreateProxiesCodec.encodeRequest(proxyEntries);
         request.setPartitionId(-1);
-        const invocation = new Invocation(this.client, request);
-        return this.client.getInvocationService().invokeUrgent(invocation).then(() => {});
+        const invocation = new Invocation(this.invocationService, request);
+        return this.invocationService.invokeUrgent(invocation, this.connectionManager).then(() => {});
     }
 
     public getDistributedObjects(): Promise<DistributedObject[]> {
@@ -145,7 +189,7 @@ export class ProxyManager {
         this.proxies.delete(serviceName + NAMESPACE_SEPARATOR + name);
         const clientMessage = ClientDestroyProxyCodec.encodeRequest(name, serviceName);
         clientMessage.setPartitionId(-1);
-        return this.client.getInvocationService().invokeOnRandomTarget(clientMessage).then(() => {});
+        return this.invocationService.invokeOnRandomTarget(clientMessage, this.connectionManager).then(() => {});
     }
 
     public destroyProxyLocally(namespace: string): Promise<void> {
@@ -169,11 +213,11 @@ export class ProxyManager {
             ClientAddDistributedObjectListenerCodec.handle(clientMessage, converterFunc);
         };
         const codec = this.createDistributedObjectListener();
-        return this.client.getListenerService().registerListener(codec, handler);
+        return this.listenerService.registerListener(codec, handler);
     }
 
     public removeDistributedObjectListener(listenerId: string): Promise<boolean> {
-        return this.client.getListenerService().deregisterListener(listenerId);
+        return this.listenerService.deregisterListener(listenerId);
     }
 
     public destroy(): void {
@@ -182,7 +226,7 @@ export class ProxyManager {
 
     private createProxy(name: string, serviceName: string): Promise<ClientMessage> {
         const request = ClientCreateProxyCodec.encodeRequest(name, serviceName);
-        return this.client.getInvocationService().invokeOnRandomTarget(request);
+        return this.invocationService.invokeOnRandomTarget(request, this.connectionManager);
     }
 
     private createDistributedObjectListener(): ListenerMessageCodec {
@@ -202,12 +246,68 @@ export class ProxyManager {
     private initializeLocalProxy(name: string, serviceName: string, createAtServer: boolean): Promise<DistributedObject> {
         let localProxy: DistributedObject;
 
-        const config = this.client.getConfig() as ClientConfigImpl;
+        const config = this.clientConfig as ClientConfigImpl;
         if (serviceName === ProxyManager.MAP_SERVICE && config.getNearCacheConfig(name)) {
-            localProxy = new NearCachedMapProxy(this.client, serviceName, name);
+            localProxy = new NearCachedMapProxy(
+                serviceName,
+                name,
+                this.logger,
+                this.clientConfig,
+                this,
+                this.partitionService,
+                this.invocationService,
+                this.serializationService,
+                this.connectionManager,
+                this.nearCacheManager,
+                this.repairingTask,
+                this.listenerService,
+                this.clusterService
+            );
+        } else if (serviceName === ProxyManager.MULTIMAP_SERVICE){
+            localProxy = new MultiMapProxy(
+                serviceName,
+                name,
+                this.logger,
+                this.clientConfig,
+                this,
+                this.partitionService,
+                this.invocationService,
+                this.serializationService,
+                this.connectionManager,
+                this.listenerService,
+                this.clusterService,
+                this.lockReferenceIdGenerator
+            );
+        } else if (serviceName === ProxyManager.RELIABLETOPIC_SERVICE){
+            localProxy = new ReliableTopicProxy(
+                serviceName,
+                name,
+                this.logger,
+                this.clientConfig,
+                this,
+                this.partitionService,
+                this.invocationService,
+                this.serializationService,
+                this.connectionManager,
+                this.listenerService,
+                this.clusterService,
+                this.localAddress
+            );
         } else {
             // This call may throw ClientOfflineError for partition specific proxies with async start
-            localProxy = new this.service[serviceName](this.client, serviceName, name);
+            localProxy = new this.service[serviceName](
+                serviceName,
+                name,
+                this.logger,
+                this.clientConfig,
+                this,
+                this.partitionService,
+                this.invocationService,
+                this.serializationService,
+                this.connectionManager,
+                this.listenerService,
+                this.clusterService
+            );
         }
 
         if (serviceName === ProxyManager.RELIABLETOPIC_SERVICE) {

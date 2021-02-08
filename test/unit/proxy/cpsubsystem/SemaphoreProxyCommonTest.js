@@ -20,24 +20,44 @@ const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
 const Long = require('long');
 const { AssertionError } = require('assert');
-const { Client } = require('../../../../');
 const { SessionlessSemaphoreProxy } = require('../../../../lib/proxy/cpsubsystem/SessionlessSemaphoreProxy');
 const { SessionAwareSemaphoreProxy } = require('../../../../lib/proxy/cpsubsystem/SessionAwareSemaphoreProxy');
 const { CPSessionManager } = require('../../../../lib/proxy/cpsubsystem/CPSessionManager');
 const { RaftGroupId } = require('../../../../lib/proxy/cpsubsystem/RaftGroupId');
+const { CPSubsystemImpl } = require('../../../../lib/CPSubsystem');
+const { InvocationService } = require('../../../../lib/invocation/InvocationService');
+const { SerializationServiceV1 } = require('../../../../lib/serialization/SerializationService');
+
 
 describe('SemaphoreProxyCommonTest', function () {
 
-    let clientStub;
     let cpSessionManagerStub;
+    let invocationServiceStub;
+    let serializationServiceStub;
+    let cpSubsystemStub;
+
     const testTypes = ['sessionless', 'sessionaware'];
 
     function createProxy(type) {
         switch (type) {
             case 'sessionless':
-                return new SessionlessSemaphoreProxy(clientStub, prepareGroupId(), 'semaphore@mygroup', 'semaphore');
+                return new SessionlessSemaphoreProxy(
+                    prepareGroupId(),
+                    'semaphore@mygroup',
+                    'semaphore',
+                    invocationServiceStub,
+                    serializationServiceStub,
+                    cpSubsystemStub
+                );
             case 'sessionaware':
-                return new SessionAwareSemaphoreProxy(clientStub, prepareGroupId(), 'semaphore@mygroup', 'semaphore');
+                return new SessionAwareSemaphoreProxy(
+                    prepareGroupId(),
+                    'semaphore@mygroup',
+                    'semaphore',
+                    invocationServiceStub,
+                    serializationServiceStub,
+                    cpSubsystemStub
+                );
             default:
                 throw new Error('Unknown type: ' + type);
         }
@@ -48,11 +68,11 @@ describe('SemaphoreProxyCommonTest', function () {
     }
 
     beforeEach(function () {
-        clientStub = sandbox.stub(Client.prototype);
+        serializationServiceStub = sandbox.stub(SerializationServiceV1.prototype);
+        invocationServiceStub = sandbox.stub(InvocationService.prototype);
+        cpSubsystemStub = sandbox.stub(CPSubsystemImpl.prototype);
+        cpSubsystemStub.getCPSessionManager.returns(cpSessionManagerStub);
         cpSessionManagerStub = sandbox.stub(CPSessionManager.prototype);
-        clientStub.getCPSubsystem.returns({
-            getCPSessionManager: () => cpSessionManagerStub
-        });
     });
 
     afterEach(function () {

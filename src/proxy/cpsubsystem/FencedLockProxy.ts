@@ -17,7 +17,6 @@
 
 import * as assert from 'assert';
 import * as Long from 'long';
-import {HazelcastClient} from '../../HazelcastClient';
 import {CPSessionAwareProxy} from './CPSessionAwareProxy';
 import {FencedLock} from '../FencedLock';
 import {CPProxyManager} from './CPProxyManager';
@@ -39,6 +38,10 @@ import {
     WaitKeyCancelledError,
     UUID
 } from '../../core';
+import {SerializationService} from "../../serialization/SerializationService";
+import {InvocationService} from "../../invocation/InvocationService";
+import {CPSubsystem} from "../../CPSubsystem";
+import {ClientConnectionManager} from "../../network/ClientConnectionManager";
 
 const fenceThreadIdSymbol = Symbol('FenceThreadIdSymbol');
 
@@ -58,11 +61,25 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
     // "thread id" -> id of the session that has acquired the lock
     private readonly lockedSessionIds: Map<number, Long> = new Map();
 
-    constructor(client: HazelcastClient,
-                groupId: RaftGroupId,
-                proxyName: string,
-                objectName: string) {
-        super(client, CPProxyManager.LOCK_SERVICE, groupId, proxyName, objectName);
+    constructor(
+        groupId: RaftGroupId,
+        proxyName: string,
+        objectName: string,
+        serializationService: SerializationService,
+        invocationService: InvocationService,
+        cpSubsystem: CPSubsystem,
+        connectionManager: ClientConnectionManager
+    ) {
+        super(
+            CPProxyManager.LOCK_SERVICE,
+            groupId,
+            proxyName,
+            objectName,
+            invocationService,
+            serializationService,
+            cpSubsystem,
+            connectionManager
+        );
     }
 
     destroy(): Promise<void> {

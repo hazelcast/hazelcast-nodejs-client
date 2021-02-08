@@ -17,7 +17,6 @@
 
 import * as Long from 'long';
 import {RaftGroupId} from './RaftGroupId';
-import {HazelcastClient} from '../../HazelcastClient';
 import {
     IllegalStateError,
     SessionExpiredError,
@@ -36,6 +35,9 @@ import {
     cancelRepetitionTask,
     Task
 } from '../../util/Util';
+import {InvocationService} from '../../invocation/InvocationService';
+import {ClientConfig} from "../../config";
+import {ClientConnectionManager} from "../../network/ClientConnectionManager";
 
 /** @internal */
 export class SessionState {
@@ -85,16 +87,28 @@ export const NO_SESSION_ID = Long.fromNumber(-1);
 /** @internal */
 export class CPSessionManager {
 
-    private readonly client: HazelcastClient;
     private readonly logger: ILogger;
     // <group_id, session_state> map
     private readonly sessions: Map<string, SessionState> = new Map();
     private heartbeatTask: Task;
     private isShutdown = false;
+    private readonly clientConfig: ClientConfig;
+    private readonly invocationService: InvocationService;
+    private readonly clientName: string;
+    private readonly connectionManager: ClientConnectionManager;
 
-    constructor(client: HazelcastClient) {
-        this.client = client;
-        this.logger = this.client.getLoggingService().getLogger();
+    constructor(
+        clientConfig: ClientConfig,
+        logger: ILogger,
+        clientName: string,
+        invocationService: InvocationService,
+        connectionManager: ClientConnectionManager
+    ) {
+        this.clientConfig = clientConfig;
+        this.logger = logger;
+        this.invocationService = invocationService;
+        this.clientName = clientName;
+        this.connectionManager = connectionManager;
     }
 
     getSessionId(groupId: RaftGroupId): Long {
@@ -167,8 +181,8 @@ export class CPSessionManager {
     }
 
     private requestNewSession(groupId: RaftGroupId): Promise<CPSessionCreateSessionResponseParams> {
-        const clientMessage = CPSessionCreateSessionCodec.encodeRequest(groupId, this.client.getName());
-        return this.client.getInvocationService().invokeOnRandomTarget(clientMessage)
+        const clientMessage = CPSessionCreateSessionCodec.encodeRequest(groupId, this.clientName);
+        return this.invocationService.invokeOnRandomTarget(clientMessage, this.connectionManager)
             .then((clientMessage) => {
                 const response = CPSessionCreateSessionCodec.decodeResponse(clientMessage);
                 return response;
@@ -177,19 +191,20 @@ export class CPSessionManager {
 
     private requestCloseSession(groupId: RaftGroupId, sessionId: Long): Promise<boolean> {
         const clientMessage = CPSessionCloseSessionCodec.encodeRequest(groupId, sessionId);
-        return this.client.getInvocationService().invokeOnRandomTarget(clientMessage)
+        return this.invocationService.invokeOnRandomTarget(clientMessage, this.connectionManager)
             .then(CPSessionCloseSessionCodec.decodeResponse);
     }
 
     private requestHeartbeat(groupId: RaftGroupId, sessionId: Long): Promise<void> {
         const clientMessage = CPSessionHeartbeatSessionCodec.encodeRequest(groupId, sessionId);
-        return this.client.getInvocationService().invokeOnRandomTarget(clientMessage)
-            .then(() => {});
+        return this.invocationService.invokeOnRandomTarget(clientMessage, this.connectionManager)
+            .then(() => {
+            });
     }
 
     private requestGenerateThreadId(groupId: RaftGroupId): Promise<Long> {
         const clientMessage = CPSessionGenerateThreadIdCodec.encodeRequest(groupId);
-        return this.client.getInvocationService().invokeOnRandomTarget(clientMessage)
+        return this.invocationService.invokeOnRandomTarget(clientMessage, this.connectionManager)
             .then(CPSessionGenerateThreadIdCodec.decodeResponse);
     }
 

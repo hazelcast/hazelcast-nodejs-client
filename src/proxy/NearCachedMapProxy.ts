@@ -20,27 +20,66 @@ import {MapAddNearCacheInvalidationListenerCodec} from '../codec/MapAddNearCache
 import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
 import {EventType} from './EventType';
 import {UUID} from '../core/UUID';
-import {HazelcastClient} from '../HazelcastClient';
-import {PartitionServiceImpl} from '../PartitionService';
+import {PartitionService, PartitionServiceImpl} from '../PartitionService';
 import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
 import {NearCache} from '../nearcache/NearCache';
 import {StaleReadDetectorImpl} from '../nearcache/StaleReadDetector';
 import {Data} from '../serialization/Data';
 import {MapProxy} from './MapProxy';
 import {ClientMessage, ClientMessageHandler} from '../protocol/ClientMessage';
+import {NearCacheManager} from '../nearcache/NearCacheManager';
+import {RepairingTask} from '../nearcache/RepairingTask';
+import {ListenerService} from '../listener/ListenerService';
+import {ILogger} from "../logging";
+import {ClientConfig} from "../config";
+import {ProxyManager} from "./ProxyManager";
+import {InvocationService} from "../invocation/InvocationService";
+import {SerializationService} from "../serialization/SerializationService";
+import {ClientConnectionManager} from "../network/ClientConnectionManager";
+import {ClusterService} from "../invocation/ClusterService";
 
 /** @internal */
 export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
 
     private nearCache: NearCache;
     private invalidationListenerId: string;
+    private readonly nearCacheManager: NearCacheManager;
+    private readonly repairingTask: RepairingTask;
+    protected readonly listenerService: ListenerService;
 
-    constructor(client: HazelcastClient, servicename: string, name: string) {
-        super(client, servicename, name);
-
-        this.nearCache = this.client.getNearCacheManager().getOrCreateNearCache(name);
+    constructor(
+        servicename: string,
+        name: string,
+        logger: ILogger,
+        clientConfig: ClientConfig,
+        proxyManager: ProxyManager,
+        partitionService: PartitionService,
+        invocationService: InvocationService,
+        serializationService: SerializationService,
+        connectionManager: ClientConnectionManager,
+        nearCacheManager: NearCacheManager,
+        repairingTask: RepairingTask,
+        listenerService: ListenerService,
+        clusterService: ClusterService
+    ) {
+        super(
+            servicename,
+            name,
+            logger,
+            clientConfig,
+            proxyManager,
+            partitionService,
+            invocationService,
+            serializationService,
+            connectionManager,
+            listenerService,
+            clusterService
+        );
+        this.repairingTask = repairingTask;
+        this.nearCacheManager = nearCacheManager;
+        this.listenerService = listenerService;
+        this.nearCache = this.nearCacheManager.getOrCreateNearCache(name);
         if (this.nearCache.isInvalidatedOnChange()) {
-            const logger = this.client.getLoggingService().getLogger();
             this.addNearCacheInvalidationListener().then((id) => {
                 this.invalidationListenerId = id;
                 this.nearCache.setReady();
@@ -94,7 +133,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
 
     protected postDestroy(): Promise<void> {
         return this.removeNearCacheInvalidationListener().then(() => {
-            this.client.getNearCacheManager().destroyNearCache(this.name);
+            this.nearCacheManager.destroyNearCache(this.name);
         }).then(() => {
             return super.postDestroy();
         });
@@ -222,8 +261,8 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
     }
 
     private removeNearCacheInvalidationListener(): Promise<boolean> {
-        this.client.getRepairingTask().deregisterHandler(this.name);
-        return this.client.getListenerService().deregisterListener(this.invalidationListenerId);
+        this.repairingTask.deregisterHandler(this.name);
+        return this.listenerService.deregisterListener(this.invalidationListenerId);
     }
 
     private invalidateCacheEntryAndReturn<T>(keyData: Data, retVal: T): T {
@@ -239,7 +278,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
     private addNearCacheInvalidationListener(): Promise<string> {
         const codec = this.createInvalidationListenerCodec(this.name, EventType.INVALIDATION);
         return this.createNearCacheEventHandler().then((handler) => {
-            return this.client.getListenerService().registerListener(codec, handler);
+            return this.listenerService.registerListener(codec, handler);
         });
     }
 
@@ -259,10 +298,9 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
     }
 
     private createNearCacheEventHandler(): Promise<ClientMessageHandler> {
-        const repairingTask = this.client.getRepairingTask();
-        return repairingTask.registerAndGetHandler(this.getName(), this.nearCache).then((repairingHandler) => {
+        return this.repairingTask.registerAndGetHandler(this.getName(), this.nearCache).then((repairingHandler) => {
             const staleReadDetector = new StaleReadDetectorImpl(
-                repairingHandler, this.client.getPartitionService() as PartitionServiceImpl);
+                repairingHandler, (this.partitionService as PartitionServiceImpl));
             this.nearCache.setStaleReadDetector(staleReadDetector);
 
             const handle = (key: Data, sourceUuid: UUID, partitionUuid: UUID, sequence: Long) => {

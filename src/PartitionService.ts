@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {HazelcastClient} from './HazelcastClient';
 import {ILogger} from './logging/ILogger';
 import {ClientConnection} from './network/ClientConnection';
 import {ClientOfflineError, UUID} from './core';
+import {SerializationService} from './serialization/SerializationService';
 
 /**
  * Partition service for Hazelcast clients. Allows to retrieve information
@@ -62,14 +62,17 @@ class PartitionTable {
 /** @internal */
 export class PartitionServiceImpl implements PartitionService {
 
-    private client: HazelcastClient;
     private partitionTable = new PartitionTable();
     private partitionCount = 0;
-    private logger: ILogger;
+    private readonly logger: ILogger;
+    private readonly serializationService: SerializationService;
 
-    constructor(client: HazelcastClient) {
-        this.client = client;
-        this.logger = client.getLoggingService().getLogger();
+    constructor(
+        logger: ILogger,
+        serializationService: SerializationService
+    ) {
+        this.logger = logger;
+        this.serializationService = serializationService;
     }
 
     reset(): void {
@@ -109,7 +112,7 @@ export class PartitionServiceImpl implements PartitionService {
         if (typeof key === 'object' && 'getPartitionHash' in key) {
             partitionHash = key.getPartitionHash();
         } else {
-            partitionHash = this.client.getSerializationService().toData(key).getPartitionHash();
+            partitionHash = this.serializationService.toData(key).getPartitionHash();
         }
         return Math.abs(partitionHash) % this.partitionCount;
     }

@@ -15,16 +15,15 @@
  */
 /** @ignore *//** */
 
-import {HazelcastClient} from '../HazelcastClient';
 import {ClientConnectionManager} from '../network/ClientConnectionManager';
-import {PartitionServiceImpl} from '../PartitionService';
+import {PartitionService, PartitionServiceImpl} from '../PartitionService';
 import {ClusterService} from '../invocation/ClusterService';
 import {ILogger} from '../logging/ILogger';
 import {ClientConnection} from '../network/ClientConnection';
 import {ClientAddClusterViewListenerCodec} from '../codec/ClientAddClusterViewListenerCodec';
 import {ClientMessage} from '../protocol/ClientMessage';
 import {UUID} from '../core/UUID';
-import {Invocation} from '../invocation/InvocationService';
+import {Invocation, InvocationService} from '../invocation/InvocationService';
 
 /**
  * Adds cluster listener to one of the connections. If that connection is removed,
@@ -33,19 +32,25 @@ import {Invocation} from '../invocation/InvocationService';
  */
 export class ClusterViewListenerService {
 
-    private readonly client: HazelcastClient;
     private readonly clusterService: ClusterService;
     private readonly connectionManager: ClientConnectionManager;
     private readonly partitionService: PartitionServiceImpl;
     private readonly logger: ILogger;
+    private readonly invocationService: InvocationService;
     private listenerAddedConnection: ClientConnection;
 
-    constructor(client: HazelcastClient) {
-        this.client = client;
-        this.logger = client.getLoggingService().getLogger();
-        this.connectionManager = client.getConnectionManager();
-        this.partitionService = client.getPartitionService() as PartitionServiceImpl;
-        this.clusterService = client.getClusterService();
+    constructor(
+        logger: ILogger,
+        connectionManager: ClientConnectionManager,
+        partitionService: PartitionService,
+        clusterService: ClusterService,
+        invocationService: InvocationService
+    ) {
+        this.logger = logger;
+        this.connectionManager = connectionManager;
+        this.partitionService = partitionService as PartitionServiceImpl;
+        this.clusterService = clusterService;
+        this.invocationService = invocationService;
     }
 
     public start(): void {
@@ -70,13 +75,13 @@ export class ClusterViewListenerService {
 
         const request = ClientAddClusterViewListenerCodec.encodeRequest();
         const handler = this.createClusterViewEventHandler(connection);
-        const invocation = new Invocation(this.client, request);
+        const invocation = new Invocation(this.invocationService, request);
         invocation.connection = connection;
         invocation.handler = handler;
 
         this.logger.trace('ClusterViewListenerService', `Register attempt of cluster view handler to ${connection}`);
         this.clusterService.clearMemberListVersion();
-        this.client.getInvocationService().invokeUrgent(invocation)
+        this.invocationService.invokeUrgent(invocation, this.connectionManager)
             .then(() => {
                 this.logger.trace('ClusterViewListenerService', `Registered cluster view handler to ${connection}`);
             })
@@ -100,11 +105,14 @@ export class ClusterViewListenerService {
 
     private createClusterViewEventHandler(connection: ClientConnection): (msg: ClientMessage) => void {
         return (clientMessage: ClientMessage): void => {
-            ClientAddClusterViewListenerCodec.handle(clientMessage,
+            ClientAddClusterViewListenerCodec.handle(
+                clientMessage,
                 this.clusterService.handleMembersViewEvent.bind(this.clusterService),
                 (version: number, partitions: Array<[UUID, number[]]>) => {
                     this.partitionService.handlePartitionViewEvent(connection, partitions, version);
-                });
+                },
+                this.connectionManager
+            );
         };
     }
 }

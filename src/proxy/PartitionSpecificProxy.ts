@@ -15,18 +15,50 @@
  */
 /** @ignore *//** */
 
-import {HazelcastClient} from '../HazelcastClient';
 import {BaseProxy} from './BaseProxy';
 import {ClientMessage} from '../protocol/ClientMessage';
+import {ILogger} from "../logging";
+import {ClientConfig} from "../config";
+import {ProxyManager} from "./ProxyManager";
+import {PartitionService} from "../PartitionService";
+import {InvocationService} from "../invocation/InvocationService";
+import {SerializationService} from "../serialization/SerializationService";
+import {ClientConnectionManager} from "../network/ClientConnectionManager";
+import {ListenerService} from "../listener/ListenerService";
+import {ClusterService} from "../invocation/ClusterService";
 
 /** @internal */
 export class PartitionSpecificProxy extends BaseProxy {
 
     private partitionId: number;
 
-    constructor(client: HazelcastClient, serviceName: string, name: string) {
-        super(client, serviceName, name);
-        this.partitionId = this.client.getPartitionService().getPartitionId(this.getPartitionKey());
+    constructor(
+        serviceName: string,
+        name: string,
+        logger: ILogger,
+        clientConfig: ClientConfig,
+        proxyManager: ProxyManager,
+        partitionService: PartitionService,
+        invocationService: InvocationService,
+        serializationService: SerializationService,
+        connectionManager: ClientConnectionManager,
+        listenerService: ListenerService,
+        clusterService: ClusterService
+    ) {
+        super(
+            serviceName,
+            name,
+            logger,
+            clientConfig,
+            proxyManager,
+            partitionService,
+            invocationService,
+            serializationService,
+            connectionManager,
+            listenerService,
+            clusterService
+        );
+        this.partitionId = this.partitionService.getPartitionId(this.getPartitionKey());
     }
 
     protected encodeInvoke(codec: any, ...codecArguments: any[]): Promise<ClientMessage> {

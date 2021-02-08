@@ -16,13 +16,13 @@
 /** @ignore *//** */
 
 import {ClientPingCodec} from '../codec/ClientPingCodec';
-import {HazelcastClient} from '../HazelcastClient';
 import {ClientConnection} from './ClientConnection';
 import {ILogger} from '../logging/ILogger';
 import {ClientConnectionManager} from './ClientConnectionManager';
 import {cancelRepetitionTask, scheduleWithRepetition, Task} from '../util/Util';
 import {TargetDisconnectedError} from '../core';
-import {Invocation} from '../invocation/InvocationService';
+import {Invocation, InvocationService} from '../invocation/InvocationService';
+import {ClientConfig} from '../config';
 
 const PROPERTY_HEARTBEAT_INTERVAL = 'hazelcast.client.heartbeat.interval';
 const PROPERTY_HEARTBEAT_TIMEOUT = 'hazelcast.client.heartbeat.timeout';
@@ -33,27 +33,29 @@ const PROPERTY_HEARTBEAT_TIMEOUT = 'hazelcast.client.heartbeat.timeout';
  */
 export class HeartbeatManager {
 
-    private client: HazelcastClient;
     private connectionManager: ClientConnectionManager;
     private readonly heartbeatTimeout: number;
     private readonly heartbeatInterval: number;
     private logger: ILogger;
     private task: Task;
 
-    constructor(client: HazelcastClient, connectionManager: ClientConnectionManager) {
-        this.client = client;
+    constructor(
+        clientConfig: ClientConfig,
+        logger: ILogger,
+        connectionManager: ClientConnectionManager
+    ) {
         this.connectionManager = connectionManager;
-        this.logger = this.client.getLoggingService().getLogger();
-        this.heartbeatInterval = this.client.getConfig().properties[PROPERTY_HEARTBEAT_INTERVAL] as number;
-        this.heartbeatTimeout = this.client.getConfig().properties[PROPERTY_HEARTBEAT_TIMEOUT] as number;
+        this.logger = logger;
+        this.heartbeatInterval = clientConfig.properties[PROPERTY_HEARTBEAT_INTERVAL] as number;
+        this.heartbeatTimeout = clientConfig.properties[PROPERTY_HEARTBEAT_TIMEOUT] as number;
     }
 
     /**
      * Starts sending periodic heartbeat operations.
      */
-    start(): void {
+    start(invocationService: InvocationService): void {
         this.task = scheduleWithRepetition(
-            this.heartbeatFunction.bind(this), this.heartbeatInterval, this.heartbeatInterval);
+            this.heartbeatFunction.bind(this, invocationService), this.heartbeatInterval, this.heartbeatInterval);
     }
 
     /**
@@ -70,7 +72,7 @@ export class HeartbeatManager {
         return this.heartbeatTimeout;
     }
 
-    private heartbeatFunction(): void {
+    private heartbeatFunction(invocationService: InvocationService): void {
         if (!this.connectionManager.isAlive()) {
             return;
         }
@@ -78,11 +80,11 @@ export class HeartbeatManager {
         const now = Date.now();
         const activeConnections = this.connectionManager.getActiveConnections();
         for (const connection of activeConnections) {
-            this.checkConnection(now, connection);
+            this.checkConnection(now, connection, invocationService);
         }
     }
 
-    private checkConnection(now: number, connection: ClientConnection): void {
+    private checkConnection(now: number, connection: ClientConnection, invocationService: InvocationService): void {
         if (!connection.isAlive()) {
             return;
         }
@@ -95,10 +97,10 @@ export class HeartbeatManager {
 
         if (now - connection.getLastWriteTimeMillis() > this.heartbeatInterval) {
             const request = ClientPingCodec.encodeRequest();
-            const invocation = new Invocation(this.client, request);
+            const invocation = new Invocation(invocationService, request);
             invocation.connection = connection;
-            this.client.getInvocationService()
-                .invokeUrgent(invocation)
+            invocationService
+                .invokeUrgent(invocation, this.connectionManager)
                 .catch(() => {
                     // No-op
                 });

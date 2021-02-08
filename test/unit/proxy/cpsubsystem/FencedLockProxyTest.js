@@ -24,7 +24,6 @@ const sandbox = sinon.createSandbox();
 const Long = require('long');
 const { AssertionError } = require('assert');
 const {
-    Client,
     IllegalMonitorStateError,
     LockOwnershipLostError,
     SessionExpiredError,
@@ -33,11 +32,16 @@ const {
 const { FencedLockProxy } = require('../../../../lib/proxy/cpsubsystem/FencedLockProxy');
 const { CPSessionManager } = require('../../../../lib/proxy/cpsubsystem/CPSessionManager');
 const { RaftGroupId } = require('../../../../lib/proxy/cpsubsystem/RaftGroupId');
+const { CPSubsystemImpl } = require('../../../../lib/CPSubsystem');
+const { InvocationService } = require('../../../../lib/invocation/InvocationService');
+const { SerializationServiceV1 } = require('../../../../lib/serialization/SerializationService');
 
 describe('FencedLockProxyTest', function () {
 
-    let clientStub;
+    let cpSubsystemStub;
     let cpSessionManagerStub;
+    let serializationServiceStub;
+    let invocationServiceStub;
     let proxy;
 
     function prepareGroupId() {
@@ -62,7 +66,7 @@ describe('FencedLockProxyTest', function () {
 
     function stubRequest(methodName, result, firstCallErr) {
         let called = 0;
-        const stub = sandbox.stub(proxy, methodName).callsFake(() => {
+        return sandbox.stub(proxy, methodName).callsFake(() => {
             if (++called === 1 && firstCallErr !== undefined) {
                 return Promise.reject(firstCallErr);
             }
@@ -71,7 +75,6 @@ describe('FencedLockProxyTest', function () {
             }
             return Promise.resolve(result);
         });
-        return stub;
     }
 
     function stubRequestLock(fence, firstCallErr) {
@@ -95,12 +98,20 @@ describe('FencedLockProxyTest', function () {
     }
 
     beforeEach(function () {
-        clientStub = sandbox.stub(Client.prototype);
         cpSessionManagerStub = sandbox.stub(CPSessionManager.prototype);
-        clientStub.getCPSubsystem.returns({
-            getCPSessionManager: () => cpSessionManagerStub
-        });
-        proxy = new FencedLockProxy(clientStub, prepareGroupId(), 'mylock@mygroup', 'mylock');
+        serializationServiceStub = sandbox.stub(SerializationServiceV1.prototype);
+        invocationServiceStub = sandbox.stub(InvocationService.prototype);
+        cpSubsystemStub = sandbox.stub(CPSubsystemImpl.prototype);
+        cpSubsystemStub.getCPSessionManager.returns(cpSessionManagerStub);
+
+        proxy = new FencedLockProxy(
+            prepareGroupId(),
+            'mylock@mygroup',
+            'mylock',
+            serializationServiceStub,
+            invocationServiceStub,
+            cpSubsystemStub
+        );
     });
 
     afterEach(function () {

@@ -16,7 +16,6 @@
 /** @ignore *//** */
 
 import * as assert from 'assert';
-import {HazelcastClient} from '../HazelcastClient';
 import {
     ClientNotActiveError,
     HazelcastInstanceNotActiveError,
@@ -35,7 +34,7 @@ import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
 import {ClientLocalBackupListenerCodec} from '../codec/ClientLocalBackupListenerCodec';
 import {EXCEPTION_MESSAGE_TYPE} from '../codec/builtin/ErrorsCodec';
 import {ClientConnectionManager} from '../network/ClientConnectionManager';
-import {PartitionServiceImpl} from '../PartitionService';
+import {PartitionService, PartitionServiceImpl} from '../PartitionService';
 import {
     scheduleWithRepetition,
     cancelRepetitionTask,
@@ -43,6 +42,10 @@ import {
     deferredPromise,
     DeferredPromise
 } from '../util/Util';
+import {ClientConfig} from '../config';
+import {ListenerService} from '../listener/ListenerService';
+import {ClientErrorFactory} from "../protocol/ErrorFactory";
+import {LifecycleService} from "../LifecycleService";
 
 const MAX_FAST_INVOCATION_COUNT = 5;
 const PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS = 'hazelcast.client.invocation.retry.pause.millis';
@@ -56,8 +59,6 @@ const PROPERTY_FAIL_ON_INDETERMINATE_STATE = 'hazelcast.client.operation.fail.on
  * @internal
  */
 export class Invocation {
-
-    client: HazelcastClient;
 
     invocationService: InvocationService;
 
@@ -129,9 +130,8 @@ export class Invocation {
      */
     urgent = false;
 
-    constructor(client: HazelcastClient, request: ClientMessage, timeoutMillis?: number) {
-        this.client = client;
-        this.invocationService = client.getInvocationService();
+    constructor(invocationService: InvocationService, request: ClientMessage, timeoutMillis?: number) {
+        this.invocationService = invocationService;
         this.deadline = timeoutMillis === undefined
             ? Date.now() + this.invocationService.invocationTimeoutMillis
             : Date.now() + timeoutMillis;
@@ -147,7 +147,7 @@ export class Invocation {
 
     shouldRetry(err: Error): boolean {
         if (this.connection != null
-                && (err instanceof IOError || err instanceof TargetDisconnectedError)) {
+            && (err instanceof IOError || err instanceof TargetDisconnectedError)) {
             return false;
         }
 
@@ -159,8 +159,8 @@ export class Invocation {
         }
 
         if (err instanceof IOError
-                || err instanceof HazelcastInstanceNotActiveError
-                || err instanceof RetryableHazelcastError) {
+            || err instanceof HazelcastInstanceNotActiveError
+            || err instanceof RetryableHazelcastError) {
             return true;
         }
 
@@ -245,10 +245,9 @@ const backupListenerCodec: ListenerMessageCodec = {
  */
 export class InvocationService {
 
-    private readonly doInvoke: (invocation: Invocation) => void;
+    private readonly doInvoke: (invocation: Invocation, connectionManager: ClientConnectionManager) => void;
     private readonly eventHandlers: Map<number, Invocation> = new Map();
     private readonly pending: Map<number, Invocation> = new Map();
-    private readonly client: HazelcastClient;
     readonly invocationRetryPauseMillis: number;
     readonly invocationTimeoutMillis: number;
     readonly shouldFailOnIndeterminateState: boolean;
@@ -262,46 +261,53 @@ export class InvocationService {
     private correlationCounter = 1;
     private cleanResourcesTask: Task;
     private isShutdown: boolean;
+    private readonly errorFactory: ClientErrorFactory;
+    private readonly lifecycleService: LifecycleService;
 
-    constructor(client: HazelcastClient) {
-        this.client = client;
-        this.connectionManager = client.getConnectionManager();
-        this.partitionService = client.getPartitionService() as PartitionServiceImpl;
-        this.logger = this.client.getLoggingService().getLogger();
-        const config = client.getConfig();
-        if (config.network.smartRouting) {
+    constructor(
+        clientConfig: ClientConfig,
+        logger: ILogger,
+        partitionService: PartitionService,
+        errorFactory: ClientErrorFactory,
+        lifecycleService: LifecycleService
+    ) {
+        this.partitionService = partitionService as PartitionServiceImpl;
+        this.logger = logger;
+        this.errorFactory = errorFactory;
+        this.lifecycleService = lifecycleService;
+        if (clientConfig.network.smartRouting) {
             this.doInvoke = this.invokeSmart;
         } else {
             this.doInvoke = this.invokeNonSmart;
         }
         this.invocationRetryPauseMillis =
-            config.properties[PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS] as number;
+            clientConfig.properties[PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS] as number;
         this.invocationTimeoutMillis =
-            config.properties[PROPERTY_INVOCATION_TIMEOUT_MILLIS] as number;
+            clientConfig.properties[PROPERTY_INVOCATION_TIMEOUT_MILLIS] as number;
         this.operationBackupTimeoutMillis =
-            config.properties[PROPERTY_BACKUP_TIMEOUT_MILLIS] as number;
+            clientConfig.properties[PROPERTY_BACKUP_TIMEOUT_MILLIS] as number;
         this.shouldFailOnIndeterminateState =
-            config.properties[PROPERTY_FAIL_ON_INDETERMINATE_STATE] as boolean;
+            clientConfig.properties[PROPERTY_FAIL_ON_INDETERMINATE_STATE] as boolean;
         this.cleanResourcesMillis =
-            config.properties[PROPERTY_CLEAN_RESOURCES_MILLIS] as number;
-        this.redoOperation = config.network.redoOperation;
-        this.backupAckToClientEnabled = config.network.smartRouting && config.backupAckToClientEnabled;
+            clientConfig.properties[PROPERTY_CLEAN_RESOURCES_MILLIS] as number;
+        this.redoOperation = clientConfig.network.redoOperation;
+        this.backupAckToClientEnabled = clientConfig.network.smartRouting && clientConfig.backupAckToClientEnabled;
         this.isShutdown = false;
     }
 
-    start(): Promise<void> {
-        this.cleanResourcesTask = this.scheduleCleanResourcesTask(this.cleanResourcesMillis);
+    start(listenerService: ListenerService, connectionManager: ClientConnectionManager): Promise<void> {
+        this.cleanResourcesTask = this.scheduleCleanResourcesTask(this.cleanResourcesMillis, connectionManager);
         if (this.backupAckToClientEnabled) {
-            const listenerService = this.client.getListenerService();
             return listenerService.registerListener(
-                    backupListenerCodec,
-                    this.backupEventHandler.bind(this)
-                ).then(() => {});
+                backupListenerCodec,
+                this.backupEventHandler.bind(this)
+            ).then(() => {
+            });
         }
         return Promise.resolve();
     }
 
-    private scheduleCleanResourcesTask(periodMillis: number): Task {
+    private scheduleCleanResourcesTask(periodMillis: number, connectionManager: ClientConnectionManager): Task {
         return scheduleWithRepetition(() => {
             for (const invocation of this.pending.values()) {
                 const connection = invocation.sendConnection;
@@ -309,7 +315,10 @@ export class InvocationService {
                     continue;
                 }
                 if (!connection.isAlive()) {
-                    this.notifyError(invocation, new TargetDisconnectedError(connection.getClosedReason()));
+                    this.notifyError(
+                        invocation,
+                        new TargetDisconnectedError(connection.getClosedReason()),
+                        connectionManager);
                     continue;
                 }
                 if (this.backupAckToClientEnabled) {
@@ -319,7 +328,7 @@ export class InvocationService {
         }, periodMillis, periodMillis);
     }
 
-    shutdown(): void {
+    shutdown(connectionManager: ClientConnectionManager): void {
         if (this.isShutdown) {
             return;
         }
@@ -328,7 +337,11 @@ export class InvocationService {
             cancelRepetitionTask(this.cleanResourcesTask);
         }
         for (const invocation of this.pending.values()) {
-            this.notifyError(invocation, new ClientNotActiveError('Client is shutting down.'));
+            this.notifyError(
+                invocation,
+                new ClientNotActiveError('Client is shutting down.'),
+                connectionManager
+            );
         }
     }
 
@@ -336,35 +349,38 @@ export class InvocationService {
         return this.redoOperation;
     }
 
-    invoke(invocation: Invocation): Promise<ClientMessage> {
+    invoke(invocation: Invocation, connectionManager: ClientConnectionManager): Promise<ClientMessage> {
         invocation.deferred = deferredPromise<ClientMessage>();
         const newCorrelationId = this.correlationCounter++;
         invocation.request.setCorrelationId(newCorrelationId);
-        this.doInvoke(invocation);
+        this.doInvoke(invocation, connectionManager);
         return invocation.deferred.promise;
     }
 
-    invokeUrgent(invocation: Invocation): Promise<ClientMessage> {
+    invokeUrgent(invocation: Invocation, connectionManager: ClientConnectionManager): Promise<ClientMessage> {
         invocation.urgent = true;
-        return this.invoke(invocation);
+        return this.invoke(invocation, connectionManager);
     }
 
     /**
      * Invokes given invocation on specified connection.
      * @param connection
      * @param request
+     * @param connectionManager
      * @param handler called with values returned from server for this invocation.
      * @returns
      */
     invokeOnConnection(connection: ClientConnection,
                        request: ClientMessage,
-                       handler?: (...args: any[]) => any): Promise<ClientMessage> {
-        const invocation = new Invocation(this.client, request);
+                       connectionManager: ClientConnectionManager,
+                       handler?: (...args: any[]) => any
+    ): Promise<ClientMessage> {
+        const invocation = new Invocation(this, request);
         invocation.connection = connection;
         if (handler) {
             invocation.handler = handler;
         }
-        return this.invoke(invocation);
+        return this.invoke(invocation, connectionManager);
     }
 
     /**
@@ -373,27 +389,32 @@ export class InvocationService {
      */
     invokeOnPartition(request: ClientMessage,
                       partitionId: number,
+                      connectionManager: ClientConnectionManager,
                       timeoutMillis?: number): Promise<ClientMessage> {
-        const invocation = new Invocation(this.client, request, timeoutMillis);
+        const invocation = new Invocation(this, request, timeoutMillis);
         invocation.partitionId = partitionId;
-        return this.invoke(invocation);
+        return this.invoke(invocation, connectionManager);
     }
 
     /**
      * Invokes given invocation on the host with given UUID.
      */
-    invokeOnTarget(request: ClientMessage, target: UUID): Promise<ClientMessage> {
-        const invocation = new Invocation(this.client, request);
+    invokeOnTarget(
+        request: ClientMessage,
+        target: UUID,
+        connectionManager: ClientConnectionManager
+    ): Promise<ClientMessage> {
+        const invocation = new Invocation(this, request);
         invocation.uuid = target;
-        return this.invoke(invocation);
+        return this.invoke(invocation, connectionManager);
     }
 
     /**
      * Invokes given invocation on any host.
      * Useful when an operation is not bound to any host but a generic operation.
      */
-    invokeOnRandomTarget(request: ClientMessage): Promise<ClientMessage> {
-        return this.invoke(new Invocation(this.client, request));
+    invokeOnRandomTarget(request: ClientMessage, connectionManager: ClientConnectionManager): Promise<ClientMessage> {
+        return this.invoke(new Invocation(this, request), connectionManager);
     }
 
     /**
@@ -418,7 +439,7 @@ export class InvocationService {
     /**
      * Extracts codec specific properties in a protocol message and resolves waiting promise.
      */
-    processResponse(clientMessage: ClientMessage): void {
+    processResponse(clientMessage: ClientMessage, connectionManager: ClientConnectionManager): void {
         const correlationId = clientMessage.getCorrelationId();
 
         if (clientMessage.startFrame.hasEventFlag() || clientMessage.startFrame.hasBackupEventFlag()) {
@@ -441,19 +462,22 @@ export class InvocationService {
         }
         const messageType = clientMessage.getMessageType();
         if (messageType === EXCEPTION_MESSAGE_TYPE) {
-            const remoteError = this.client.getErrorFactory().createErrorFromClientMessage(clientMessage);
-            this.notifyError(pendingInvocation, remoteError);
+            const remoteError = this.errorFactory.createErrorFromClientMessage(clientMessage);
+            this.notifyError(pendingInvocation, remoteError, connectionManager);
         } else {
             pendingInvocation.notify(clientMessage);
         }
     }
 
-    private invokeSmart(invocation: Invocation): void {
+    private invokeSmart(
+        invocation: Invocation,
+        connectionManager: ClientConnectionManager
+    ): void {
         invocation.invokeCount++;
         if (!invocation.urgent) {
-            const error = this.connectionManager.checkIfInvocationAllowed();
+            const error = connectionManager.checkIfInvocationAllowed();
             if (error != null) {
-                this.notifyError(invocation, error);
+                this.notifyError(invocation, error, connectionManager);
                 return;
             }
         }
@@ -462,7 +486,7 @@ export class InvocationService {
         if (invocation.hasOwnProperty('connection')) {
             invocationPromise = this.send(invocation, invocation.connection);
             invocationPromise.catch((err) => {
-                this.notifyError(invocation, err);
+                this.notifyError(invocation, err, connectionManager);
             });
             return;
         }
@@ -478,16 +502,19 @@ export class InvocationService {
         invocationPromise.catch(() => {
             return this.invokeOnRandomConnection(invocation);
         }).catch((err) => {
-            this.notifyError(invocation, err);
+            this.notifyError(invocation, err, connectionManager);
         });
     }
 
-    private invokeNonSmart(invocation: Invocation): void {
+    private invokeNonSmart(
+        invocation: Invocation,
+        connectionManager: ClientConnectionManager
+    ): void {
         invocation.invokeCount++;
         if (!invocation.urgent) {
-            const error = this.connectionManager.checkIfInvocationAllowed();
+            const error = connectionManager.checkIfInvocationAllowed();
             if (error != null) {
-                this.notifyError(invocation, error);
+                this.notifyError(invocation, error, connectionManager);
                 return;
             }
         }
@@ -499,7 +526,7 @@ export class InvocationService {
             invocationPromise = this.invokeOnRandomConnection(invocation);
         }
         invocationPromise.catch((err) => {
-            this.notifyError(invocation, err);
+            this.notifyError(invocation, err, connectionManager);
         });
     }
 
@@ -544,7 +571,11 @@ export class InvocationService {
             });
     }
 
-    private notifyError(invocation: Invocation, error: Error): void {
+    private notifyError(
+        invocation: Invocation,
+        error: Error,
+        connectionManager: ClientConnectionManager
+    ): void {
         const correlationId = invocation.request.getCorrelationId();
         if (this.rejectIfNotRetryable(invocation, error)) {
             this.pending.delete(correlationId);
@@ -553,7 +584,7 @@ export class InvocationService {
         this.logger.debug('InvocationService',
             'Retrying(' + invocation.invokeCount + ') on correlation-id=' + correlationId, error);
         if (invocation.invokeCount < MAX_FAST_INVOCATION_COUNT) {
-            this.doInvoke(invocation);
+            this.doInvoke(invocation, connectionManager);
         } else {
             setTimeout(this.doInvoke.bind(this, invocation), this.invocationRetryPauseMillis);
         }
@@ -568,7 +599,7 @@ export class InvocationService {
      * @returns `true` if invocation is rejected, `false` otherwise
      */
     private rejectIfNotRetryable(invocation: Invocation, error: Error): boolean {
-        if (!this.client.getLifecycleService().isRunning()) {
+        if (!this.lifecycleService.isRunning()) {
             invocation.deferred.reject(new ClientNotActiveError('Client is shutting down.', error));
             return true;
         }

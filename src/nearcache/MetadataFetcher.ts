@@ -18,21 +18,31 @@
 import {MapFetchNearCacheInvalidationMetadataCodec} from '../codec/MapFetchNearCacheInvalidationMetadataCodec';
 import {dataMemberSelector} from '../core/MemberSelector';
 import {UUID} from '../core/UUID';
-import {HazelcastClient} from '../HazelcastClient';
-import {Invocation} from '../invocation/InvocationService';
+import {Invocation, InvocationService} from '../invocation/InvocationService';
 import {RepairingHandler} from './RepairingHandler';
 import {ILogger} from '../logging/ILogger';
 import {ClientMessage} from '../protocol/ClientMessage';
+import {ClusterService} from "../invocation/ClusterService";
+import {ClientConnectionManager} from "../network/ClientConnectionManager";
 
 /** @internal */
 export class MetadataFetcher {
 
-    private client: HazelcastClient;
-    private logger: ILogger;
+    private readonly logger: ILogger;
+    private readonly invocationService: InvocationService;
+    private readonly clusterService: ClusterService;
+    private readonly connectionManager: ClientConnectionManager;
 
-    constructor(client: HazelcastClient) {
-        this.logger = client.getLoggingService().getLogger();
-        this.client = client;
+    constructor(
+        logger: ILogger,
+        invocationService: InvocationService,
+        clusterService: ClusterService,
+        connectionManager: ClientConnectionManager
+    ) {
+        this.invocationService = invocationService;
+        this.logger = logger;
+        this.clusterService = clusterService;
+        this.connectionManager = connectionManager;
     }
 
     initHandler(handler: RepairingHandler): Promise<void> {
@@ -84,11 +94,14 @@ export class MetadataFetcher {
     }
 
     protected scanMembers(objectNames: string[]): Array<Promise<ClientMessage>> {
-        const members = this.client.getClusterService().getMembers(dataMemberSelector);
+        const members = this.clusterService.getMembers(dataMemberSelector);
         const promises: Array<Promise<any>> = [];
         members.forEach((member) => {
             const request = MapFetchNearCacheInvalidationMetadataCodec.encodeRequest(objectNames, member.uuid);
-            const promise = this.client.getInvocationService().invoke(new Invocation(this.client, request));
+            const promise = this.invocationService.invoke(
+                new Invocation(this.invocationService, request),
+                this.connectionManager
+            );
             promises.push(promise);
         });
         return promises;

@@ -63,6 +63,7 @@ import {RandomLB} from './util/RandomLB';
 import {RoundRobinLB} from './util/RoundRobinLB';
 import {ClusterViewListenerService} from './listener/ClusterViewListenerService';
 import {ClientMessage} from './protocol/ClientMessage';
+import {ClientConnection} from "./network/ClientConnection";
 
 /**
  * Hazelcast client instance. When you want to use Hazelcast's distributed
@@ -129,25 +130,102 @@ export class HazelcastClient {
             this.config = failoverConfig.clientConfigs[0];
         }
         this.failoverConfig = failoverConfig;
+        this.errorFactory = new ClientErrorFactory();
+        this.serializationService = new SerializationServiceV1(this.config.serialization);
         this.instanceName = this.config.instanceName || 'hz.client_' + this.id;
         this.loggingService = new LoggingService(this.config.customLogger,
             this.config.properties['hazelcast.logging.level'] as string);
         this.loadBalancer = this.initLoadBalancer();
-        this.listenerService = new ListenerService(this);
-        this.serializationService = new SerializationServiceV1(this.config.serialization);
-        this.nearCacheManager = new NearCacheManager(this);
-        this.partitionService = new PartitionServiceImpl(this);
-        this.lifecycleService = new LifecycleServiceImpl(this);
+        this.nearCacheManager = new NearCacheManager(
+            this.config,
+            this.serializationService
+        );
+        this.partitionService = new PartitionServiceImpl(
+            this.loggingService.getLogger(),
+            this.serializationService
+        );
         this.clusterFailoverService = this.initClusterFailoverService();
-        this.connectionManager = new ClientConnectionManager(this);
-        this.invocationService = new InvocationService(this);
-        this.proxyManager = new ProxyManager(this);
-        this.cpSubsystem = new CPSubsystemImpl(this);
-        this.clusterService = new ClusterService(this);
+        this.lifecycleService = new LifecycleServiceImpl(
+            this,
+            this.config,
+            this.loggingService.getLogger()
+        );
+
+        this.clusterService = new ClusterService(
+            this.config,
+            this.loggingService.getLogger(),
+            this.clusterFailoverService
+        );
+
+        this.invocationService = new InvocationService(
+            this.config,
+            this.loggingService.getLogger(),
+            this.partitionService,
+            this.errorFactory,
+            this.lifecycleService
+        );
+
+        this.connectionManager = new ClientConnectionManager(
+            this,
+            this.instanceName,
+            this.config,
+            this.loggingService.getLogger(),
+            this.partitionService,
+            this.serializationService,
+            this.lifecycleService,
+            this.loadBalancer,
+            this.clusterFailoverService,
+            this.failoverConfig,
+            this.clusterService,
+            this.invocationService
+        );
+
+        this.listenerService = new ListenerService(
+            this.loggingService.getLogger(),
+            this.config.network.smartRouting,
+            this.connectionManager,
+            this.invocationService
+        );
+
         this.lockReferenceIdGenerator = new LockReferenceIdGenerator();
-        this.errorFactory = new ClientErrorFactory();
-        this.statistics = new Statistics(this);
-        this.clusterViewListenerService = new ClusterViewListenerService(this);
+
+        this.proxyManager = new ProxyManager(
+            this.config,
+            this.loggingService.getLogger(),
+            this.invocationService,
+            this.listenerService,
+            this.partitionService,
+            this.serializationService,
+            this.connectionManager,
+            this.nearCacheManager,
+            this.getRepairingTask(),
+            this.clusterService,
+            this.lockReferenceIdGenerator,
+            this.getLocalClient().localAddress
+        );
+        this.statistics = new Statistics(
+            this.loggingService.getLogger(),
+            this.config,
+            this.instanceName,
+            this.connectionManager,
+            this.invocationService,
+            this.nearCacheManager
+        );
+        this.clusterViewListenerService = new ClusterViewListenerService(
+            this.loggingService.getLogger(),
+            this.connectionManager,
+            this.partitionService,
+            this.clusterService,
+            this.invocationService
+        );
+        this.cpSubsystem = new CPSubsystemImpl(
+            this.config,
+            this.loggingService.getLogger(),
+            this.instanceName,
+            this.invocationService,
+            this.serializationService,
+            this.connectionManager
+        );
     }
 
     /**
@@ -187,20 +265,13 @@ export class HazelcastClient {
     }
 
     /**
-     * Gathers information of this local client.
-     */
-     getLocalEndpoint(): ClientInfo {
-        return this.clusterService.getLocalClient();
-    }
-
-    /**
      * Gives all known distributed objects in cluster.
      */
     getDistributedObjects(): Promise<DistributedObject[]> {
         const clientMessage = ClientGetDistributedObjectsCodec.encodeRequest();
         let localDistributedObjects: Set<string>;
         let responseMessage: ClientMessage;
-        return this.invocationService.invokeOnRandomTarget(clientMessage)
+        return this.invocationService.invokeOnRandomTarget(clientMessage, this.connectionManager)
             .then((resp) => {
                 responseMessage = resp;
                 return this.proxyManager.getDistributedObjects();
@@ -382,7 +453,16 @@ export class HazelcastClient {
     /** @internal */
     getRepairingTask(): RepairingTask {
         if (this.mapRepairingTask == null) {
-            this.mapRepairingTask = new RepairingTask(this);
+            this.mapRepairingTask = new RepairingTask(
+                this.config.properties,
+                this.loggingService.getLogger(),
+                this.getLocalClient().uuid,
+                this.partitionService,
+                this.lifecycleService,
+                this.invocationService,
+                this.clusterService,
+                this.connectionManager
+            );
         }
         return this.mapRepairingTask;
     }
@@ -390,6 +470,20 @@ export class HazelcastClient {
     /** @internal */
     getLoggingService(): LoggingService {
         return this.loggingService;
+    }
+
+    /**
+     * @return The {@link ClientInfo} instance representing the local client.
+     */
+    getLocalClient(): ClientInfo {
+        const connection: ClientConnection = this.connectionManager.getRandomConnection();
+        const localAddress = connection != null ? connection.getLocalAddress() : null;
+        const info = new ClientInfo();
+        info.uuid = this.connectionManager.getClientUuid();
+        info.localAddress = localAddress;
+        info.labels = new Set(this.config.clientLabels);
+        info.name = this.instanceName;
+        return info;
     }
 
     /**
@@ -440,8 +534,8 @@ export class HazelcastClient {
         this.statistics.stop();
         return this.cpSubsystem.shutdown()
             .then(() => {
+                this.invocationService.shutdown(this.connectionManager);
                 this.connectionManager.shutdown();
-                this.invocationService.shutdown();
             });
     }
 
@@ -494,7 +588,7 @@ export class HazelcastClient {
             throw e;
         }
 
-        return this.connectionManager.start()
+        return this.connectionManager.start(this.invocationService)
             .then(() => {
                 const connectionStrategyConfig = this.config.connectionStrategy;
                 if (!connectionStrategyConfig.asyncStart) {
@@ -507,7 +601,7 @@ export class HazelcastClient {
                 this.proxyManager.init();
                 this.loadBalancer.initLoadBalancer(this.clusterService, this.config);
                 this.statistics.start();
-                return this.invocationService.start();
+                return this.invocationService.start(this.listenerService, this.connectionManager);
             })
             .then(() => {
                 return this.sendStateToCluster();

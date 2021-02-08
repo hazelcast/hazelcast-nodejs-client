@@ -19,7 +19,6 @@ import * as net from 'net';
 import {EventEmitter} from 'events';
 import {BitsUtil} from '../util/BitsUtil';
 import {BuildInfo} from '../BuildInfo';
-import {HazelcastClient} from '../HazelcastClient';
 import {AddressImpl, IOError, UUID} from '../core';
 import {ClientMessageHandler} from '../protocol/ClientMessage';
 import {deferredPromise, DeferredPromise} from '../util/Util';
@@ -29,6 +28,9 @@ import {
     Frame,
     SIZE_OF_FRAME_LENGTH_AND_FLAGS
 } from '../protocol/ClientMessage';
+import {ClientConfig} from '../config';
+import {ClientConnectionManager} from './ClientConnectionManager';
+import {LifecycleService} from "../LifecycleService";
 
 const FROZEN_ARRAY = Object.freeze([]) as OutputQueueItem[];
 const PROPERTY_PIPELINING_ENABLED = 'hazelcast.client.autopipelining.enabled';
@@ -329,7 +331,7 @@ export class ClientConnection {
     private readonly localAddress: AddressImpl;
     private lastReadTimeMillis: number;
     private lastWriteTimeMillis: number;
-    private readonly client: HazelcastClient;
+    private readonly connectionManager: ClientConnectionManager;
     private readonly startTime: number = Date.now();
     private closedTime: number;
     private closedReason: string;
@@ -340,14 +342,24 @@ export class ClientConnection {
     private readonly reader: ClientMessageReader;
     private readonly logger: ILogger;
     private readonly fragmentedMessageHandler: FragmentedClientMessageHandler;
+    private readonly lifecycleService: LifecycleService;
 
-    constructor(client: HazelcastClient, remoteAddress: AddressImpl, socket: net.Socket, connectionId: number) {
-        const enablePipelining = client.getConfig().properties[PROPERTY_PIPELINING_ENABLED] as boolean;
-        const pipeliningThreshold = client.getConfig().properties[PROPERTY_PIPELINING_THRESHOLD] as number;
-        const noDelay = client.getConfig().properties[PROPERTY_NO_DELAY] as boolean;
+    constructor(
+        connectionManager: ClientConnectionManager,
+        clientConfig: ClientConfig,
+        logger: ILogger,
+        remoteAddress: AddressImpl,
+        socket: net.Socket,
+        connectionId: number,
+        lifecycleService: LifecycleService
+    ) {
+        const enablePipelining = clientConfig.properties[PROPERTY_PIPELINING_ENABLED] as boolean;
+        const pipeliningThreshold = clientConfig.properties[PROPERTY_PIPELINING_THRESHOLD] as number;
+        const noDelay = clientConfig.properties[PROPERTY_NO_DELAY] as boolean;
         socket.setNoDelay(noDelay);
 
-        this.client = client;
+        this.connectionManager = connectionManager;
+        this.lifecycleService = lifecycleService;
         this.socket = socket;
         this.remoteAddress = remoteAddress;
         this.localAddress = new AddressImpl(socket.localAddress, socket.localPort);
@@ -360,7 +372,7 @@ export class ClientConnection {
         });
         this.reader = new ClientMessageReader();
         this.connectionId = connectionId;
-        this.logger = this.client.getLoggingService().getLogger();
+        this.logger = logger;
         this.fragmentedMessageHandler = new FragmentedClientMessageHandler(this.logger);
     }
 
@@ -423,7 +435,7 @@ export class ClientConnection {
         this.writer.close();
         this.socket.end();
 
-        this.client.getConnectionManager().onConnectionClose(this);
+        this.connectionManager.onConnectionClose(this);
     }
 
     isAlive(): boolean {
@@ -499,7 +511,7 @@ export class ClientConnection {
             message += cause.message;
         }
 
-        if (this.client.getLifecycleService().isRunning()) {
+        if (this.lifecycleService.isRunning()) {
             if (this.closedCause == null) {
                 this.logger.info('Connection', message);
             } else {

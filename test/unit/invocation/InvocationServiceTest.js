@@ -62,14 +62,23 @@ describe('InvocationServiceTest', function () {
 
     async function preparePendingInvocationWithClosedConn() {
         const config = new ClientConfigImpl();
-        const clientStub = mockClient(config);
-        service = new InvocationService(clientStub);
-        clientStub.getInvocationService.returns(service);
+        const client = mockClient(config);
+        service = new InvocationService(
+            client,
+            client.getConfig(),
+            client.getLoggingService().getLogger(),
+            client.getPartitionService(),
+            client.getErrorFactory(),
+            client.getLifecycleService(),
+            client.getConnectionManager()
+        );
+
+        client.getInvocationService.returns(service);
         await service.start();
 
         const messageStub = sandbox.stub(ClientMessage.prototype);
         messageStub.getCorrelationId.returns(0);
-        const invocation = new Invocation(clientStub, messageStub);
+        const invocation = new Invocation(service, messageStub);
         const connStub = sandbox.stub(ClientConnection.prototype);
         connStub.isAlive.returns(false);
         invocation.sendConnection = connStub;
@@ -90,7 +99,15 @@ describe('InvocationServiceTest', function () {
         const config = new ClientConfigImpl();
         const client = mockClient(config);
 
-        service = new InvocationService(client);
+        service = new InvocationService(
+            client,
+            client.getConfig(),
+            client.getLoggingService().getLogger(),
+            client.getPartitionService(),
+            client.getErrorFactory(),
+            client.getLifecycleService(),
+            client.getConnectionManager()
+        );
         await service.start();
 
         expect(service.cleanResourcesTask).to.be.not.undefined;
@@ -102,7 +119,15 @@ describe('InvocationServiceTest', function () {
         config.network.smartRouting = false;
         const client = mockClient(config);
 
-        service = new InvocationService(client);
+        service = new InvocationService(
+            client,
+            client.getConfig(),
+            client.getLoggingService().getLogger(),
+            client.getPartitionService(),
+            client.getErrorFactory(),
+            client.getLifecycleService(),
+            client.getConnectionManager()
+        );
         await service.start();
 
         expect(service.cleanResourcesTask).to.be.not.undefined;
@@ -114,7 +139,15 @@ describe('InvocationServiceTest', function () {
         config.backupAckToClientEnabled = false;
         const client = mockClient(config);
 
-        service = new InvocationService(client);
+        service = new InvocationService(
+            client,
+            client.getConfig(),
+            client.getLoggingService().getLogger(),
+            client.getPartitionService(),
+            client.getErrorFactory(),
+            client.getLifecycleService(),
+            client.getConnectionManager()
+        );
         await service.start();
 
         expect(service.cleanResourcesTask).to.be.not.undefined;
