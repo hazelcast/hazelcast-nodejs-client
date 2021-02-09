@@ -15,7 +15,6 @@ typedoc.json
 .nycrc.json
 report.xml
 DOCUMENTATION.md
-download-remote-controller.js
 *.iml
 *.jar
 *.log

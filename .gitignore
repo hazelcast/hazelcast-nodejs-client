@@ -19,7 +19,6 @@ coverage/*
 hs_err_pid*
 
 typings/
-npm-debug.log
 
 **/typings/**/*.d.ts
 **/typings/tsd.cached.json
@@ -41,3 +40,7 @@ package-lock.json
 # Coverage
 .nyc_output/*
 coverage
+
+# Hazelcast Remote Controller output files
+rc_stderr.txt
+rc_stdout.txt
