@@ -69,13 +69,14 @@ describe('ClientShutdownTest', function () {
         sandbox.spy(ListenerService.prototype, 'shutdown');
         sandbox.spy(InvocationService.prototype, 'shutdown');
 
-        return RC.createCluster(null, null).then(cluster => {
-            return RC.startMember(cluster.id);
+        return RC.createCluster(null, null).then(c => {
+            cluster = c;
+            return RC.startMember(c.id);
         }).then(() => {
             return Client.newHazelcastClient();
         }).then(client => {
             client.getRepairingTask();
-            return client.shutdown();
+            client.shutdown();
         }).then(() => {
             expect(RepairingTask.prototype.shutdown.calledOnce).to.be.true;
             expect(NearCacheManager.prototype.destroyAllNearCaches.calledOnce).to.be.true;
