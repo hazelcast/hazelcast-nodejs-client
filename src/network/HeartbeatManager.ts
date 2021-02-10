@@ -22,7 +22,7 @@ import {ClientConnectionManager} from './ClientConnectionManager';
 import {cancelRepetitionTask, scheduleWithRepetition, Task} from '../util/Util';
 import {TargetDisconnectedError} from '../core';
 import {Invocation, InvocationService} from '../invocation/InvocationService';
-import {ClientConfig} from '../config';
+import {Properties} from '../config';
 
 const PROPERTY_HEARTBEAT_INTERVAL = 'hazelcast.client.heartbeat.interval';
 const PROPERTY_HEARTBEAT_TIMEOUT = 'hazelcast.client.heartbeat.timeout';
@@ -40,14 +40,14 @@ export class HeartbeatManager {
     private task: Task;
 
     constructor(
-        clientConfig: ClientConfig,
+        properties: Properties,
         logger: ILogger,
         connectionManager: ClientConnectionManager
     ) {
         this.connectionManager = connectionManager;
         this.logger = logger;
-        this.heartbeatInterval = clientConfig.properties[PROPERTY_HEARTBEAT_INTERVAL] as number;
-        this.heartbeatTimeout = clientConfig.properties[PROPERTY_HEARTBEAT_TIMEOUT] as number;
+        this.heartbeatInterval = properties[PROPERTY_HEARTBEAT_INTERVAL] as number;
+        this.heartbeatTimeout = properties[PROPERTY_HEARTBEAT_TIMEOUT] as number;
     }
 
     /**

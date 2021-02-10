@@ -185,7 +185,7 @@ export class ClientConnectionManager extends EventEmitter {
         this.logger = logger;
         this.connectionTimeoutMillis = this.initConnectionTimeoutMillis();
         this.heartbeatManager = new HeartbeatManager(
-            clientConfig,
+            clientConfig.properties,
             this.logger,
             this
         );
