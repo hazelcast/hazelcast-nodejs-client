@@ -401,7 +401,8 @@ export default class HazelcastClient {
             this.statistics.start();
             return this;
         }).catch((e) => {
-            this.loggingService.getLogger().error('HazelcastClient', 'Client failed to start', e);
+            this.shutdown();
+            this.loggingService.getLogger().error('HazelcastClient', 'Client failed to start.', e);
             throw e;
         });
     }
