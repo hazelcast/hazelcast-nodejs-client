@@ -198,8 +198,7 @@ export class CPSessionManager {
     private requestHeartbeat(groupId: RaftGroupId, sessionId: Long): Promise<void> {
         const clientMessage = CPSessionHeartbeatSessionCodec.encodeRequest(groupId, sessionId);
         return this.invocationService.invokeOnRandomTarget(clientMessage, this.connectionManager)
-            .then(() => {
-            });
+            .then(() => {});
     }
 
     private requestGenerateThreadId(groupId: RaftGroupId): Promise<Long> {

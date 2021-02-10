@@ -300,7 +300,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
     private createNearCacheEventHandler(): Promise<ClientMessageHandler> {
         return this.repairingTask.registerAndGetHandler(this.getName(), this.nearCache).then((repairingHandler) => {
             const staleReadDetector = new StaleReadDetectorImpl(
-                repairingHandler, (this.partitionService as PartitionServiceImpl));
+                repairingHandler, this.partitionService as PartitionServiceImpl);
             this.nearCache.setStaleReadDetector(staleReadDetector);
 
             const handle = (key: Data, sourceUuid: UUID, partitionUuid: UUID, sequence: Long) => {

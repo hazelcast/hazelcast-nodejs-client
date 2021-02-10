@@ -98,7 +98,6 @@ type EntryEventHander = (key: Data, value: Data, oldValue: Data, mergingValue: D
 
 /** @internal */
 export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
-
     aggregate<R>(aggregator: Aggregator<R>): Promise<R> {
         assertNotNull(aggregator);
         const aggregatorData = this.toData(aggregator);
@@ -291,8 +290,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     clear(): Promise<void> {
-        return this.encodeInvokeOnRandomTarget(MapClearCodec).then(() => {
-        });
+        return this.encodeInvokeOnRandomTarget(MapClearCodec).then(() => {});
     }
 
     isEmpty(): Promise<boolean> {
