@@ -38,10 +38,10 @@ import {
     WaitKeyCancelledError,
     UUID
 } from '../../core';
-import {InvocationService} from "../../invocation/InvocationService";
-import {SerializationService} from "../../serialization/SerializationService";
-import {CPSubsystem} from "../../CPSubsystem";
-import {ClientConnectionManager} from "../../network/ClientConnectionManager";
+import {InvocationService} from '../../invocation/InvocationService';
+import {SerializationService} from '../../serialization/SerializationService';
+import {CPSubsystem} from '../../CPSubsystem';
+import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 
 
 /**

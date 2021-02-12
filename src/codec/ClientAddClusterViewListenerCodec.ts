@@ -23,7 +23,7 @@ import {ListMultiFrameCodec} from './builtin/ListMultiFrameCodec';
 import {MemberInfoCodec} from './custom/MemberInfoCodec';
 import {EntryListUUIDListIntegerCodec} from './builtin/EntryListUUIDListIntegerCodec';
 import {UUID} from '../core/UUID';
-import {ClientConnectionManager} from "../network/ClientConnectionManager";
+import {ClientConnectionManager} from '../network/ClientConnectionManager';
 
 // hex: 0x000300
 const REQUEST_MESSAGE_TYPE = 768;

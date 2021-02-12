@@ -19,15 +19,15 @@ import {BuildInfo} from '../BuildInfo';
 import {Data} from '../serialization/Data';
 import {ClientMessage} from '../protocol/ClientMessage';
 import {UUID} from '../core/UUID';
-import {ClientConfig} from "../config";
-import {ILogger} from "../logging";
-import {ProxyManager} from "./ProxyManager";
-import {PartitionService} from "../PartitionService";
-import {InvocationService} from "../invocation/InvocationService";
-import {SerializationService} from "../serialization/SerializationService";
-import {ClientConnectionManager} from "../network/ClientConnectionManager";
-import {ListenerService} from "../listener/ListenerService";
-import {ClusterService} from "../invocation/ClusterService";
+import {ClientConfig} from '../config';
+import {ILogger} from '../logging';
+import {ProxyManager} from './ProxyManager';
+import {PartitionService} from '../PartitionService';
+import {InvocationService} from '../invocation/InvocationService';
+import {SerializationService} from '../serialization/SerializationService';
+import {ClientConnectionManager} from '../network/ClientConnectionManager';
+import {ListenerService} from '../listener/ListenerService';
+import {ClusterService} from '../invocation/ClusterService';
 
 
 /**

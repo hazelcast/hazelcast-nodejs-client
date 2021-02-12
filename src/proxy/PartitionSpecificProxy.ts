@@ -17,15 +17,15 @@
 
 import {BaseProxy} from './BaseProxy';
 import {ClientMessage} from '../protocol/ClientMessage';
-import {ILogger} from "../logging";
-import {ClientConfig} from "../config";
-import {ProxyManager} from "./ProxyManager";
-import {PartitionService} from "../PartitionService";
-import {InvocationService} from "../invocation/InvocationService";
-import {SerializationService} from "../serialization/SerializationService";
-import {ClientConnectionManager} from "../network/ClientConnectionManager";
-import {ListenerService} from "../listener/ListenerService";
-import {ClusterService} from "../invocation/ClusterService";
+import {ILogger} from '../logging';
+import {ClientConfig} from '../config';
+import {ProxyManager} from './ProxyManager';
+import {PartitionService} from '../PartitionService';
+import {InvocationService} from '../invocation/InvocationService';
+import {SerializationService} from '../serialization/SerializationService';
+import {ClientConnectionManager} from '../network/ClientConnectionManager';
+import {ListenerService} from '../listener/ListenerService';
+import {ClusterService} from '../invocation/ClusterService';
 
 /** @internal */
 export class PartitionSpecificProxy extends BaseProxy {

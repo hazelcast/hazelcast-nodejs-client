@@ -30,7 +30,7 @@ import {
 } from '../protocol/ClientMessage';
 import {ClientConfig} from '../config';
 import {ClientConnectionManager} from './ClientConnectionManager';
-import {LifecycleService} from "../LifecycleService";
+import {LifecycleService} from '../LifecycleService';
 
 const FROZEN_ARRAY = Object.freeze([]) as OutputQueueItem[];
 const PROPERTY_PIPELINING_ENABLED = 'hazelcast.client.autopipelining.enabled';

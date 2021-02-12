@@ -32,10 +32,10 @@ import {RaftGroupId} from './RaftGroupId';
 import {CPGroupCreateCPGroupCodec} from '../../codec/CPGroupCreateCPGroupCodec';
 import {SemaphoreGetSemaphoreTypeCodec} from '../../codec/SemaphoreGetSemaphoreTypeCodec';
 import {assertString} from '../../util/Util';
-import {InvocationService} from "../../invocation/InvocationService";
-import {SerializationService} from "../../serialization/SerializationService";
-import {CPSubsystem} from "../../CPSubsystem";
-import {ClientConnectionManager} from "../../network/ClientConnectionManager";
+import {InvocationService} from '../../invocation/InvocationService';
+import {SerializationService} from '../../serialization/SerializationService';
+import {CPSubsystem} from '../../CPSubsystem';
+import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 
 const DEFAULT_GROUP_NAME = 'default';
 

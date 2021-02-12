@@ -23,11 +23,11 @@ import {
 } from './proxy';
 import {CPProxyManager} from './proxy/cpsubsystem/CPProxyManager';
 import {CPSessionManager} from './proxy/cpsubsystem/CPSessionManager';
-import {InvocationService} from "./invocation/InvocationService";
-import {SerializationService} from "./serialization/SerializationService";
-import {ClientConfig} from "./config";
-import {ILogger} from "./logging";
-import {ClientConnectionManager} from "./network/ClientConnectionManager";
+import {InvocationService} from './invocation/InvocationService';
+import {SerializationService} from './serialization/SerializationService';
+import {ClientConfig} from './config';
+import {ILogger} from './logging';
+import {ClientConnectionManager} from './network/ClientConnectionManager';
 
 /**
  * CP Subsystem is a component of Hazelcast that builds a strongly consistent
@@ -131,7 +131,6 @@ export class CPSubsystemImpl implements CPSubsystem {
         serializationService: SerializationService,
         connectionManager: ClientConnectionManager
     ) {
-
         this.cpProxyManager = new CPProxyManager(
             invocationService,
             serializationService,

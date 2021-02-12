@@ -22,8 +22,8 @@ import {Invocation, InvocationService} from '../invocation/InvocationService';
 import {RepairingHandler} from './RepairingHandler';
 import {ILogger} from '../logging/ILogger';
 import {ClientMessage} from '../protocol/ClientMessage';
-import {ClusterService} from "../invocation/ClusterService";
-import {ClientConnectionManager} from "../network/ClientConnectionManager";
+import {ClusterService} from '../invocation/ClusterService';
+import {ClientConnectionManager} from '../network/ClientConnectionManager';
 
 /** @internal */
 export class MetadataFetcher {

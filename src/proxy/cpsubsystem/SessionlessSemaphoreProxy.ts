@@ -37,9 +37,9 @@ import {
     IllegalStateError,
     WaitKeyCancelledError
 } from '../../core';
-import {SerializationService} from "../../serialization/SerializationService";
-import {InvocationService} from "../../invocation/InvocationService";
-import {ClientConnectionManager} from "../../network/ClientConnectionManager";
+import {SerializationService} from '../../serialization/SerializationService';
+import {InvocationService} from '../../invocation/InvocationService';
+import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 
 
 /** @internal */

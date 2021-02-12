@@ -22,14 +22,14 @@ import {BaseProxy} from '../BaseProxy';
 import {AutoBatcher, Batch} from './AutoBatcher';
 import {FlakeIdGenerator} from '../FlakeIdGenerator';
 import {ClientConfig, ClientConfigImpl} from '../../config/Config';
-import {ILogger} from "../../logging";
-import {ProxyManager} from "../ProxyManager";
-import {PartitionService} from "../../PartitionService";
-import {InvocationService} from "../../invocation/InvocationService";
-import {SerializationService} from "../../serialization/SerializationService";
-import {ClientConnectionManager} from "../../network/ClientConnectionManager";
-import {ListenerService} from "../../listener/ListenerService";
-import {ClusterService} from "../../invocation/ClusterService";
+import {ILogger} from '../../logging';
+import {ProxyManager} from '../ProxyManager';
+import {PartitionService} from '../../PartitionService';
+import {InvocationService} from '../../invocation/InvocationService';
+import {SerializationService} from '../../serialization/SerializationService';
+import {ClientConnectionManager} from '../../network/ClientConnectionManager';
+import {ListenerService} from '../../listener/ListenerService';
+import {ClusterService} from '../../invocation/ClusterService';
 
 /** @internal */
 export class FlakeIdGeneratorProxy extends BaseProxy implements FlakeIdGenerator {

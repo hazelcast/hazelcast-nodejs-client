@@ -22,7 +22,7 @@ import {UnsupportedOperationError} from '../../core';
 import {Data} from '../../serialization/Data';
 import {SerializationService} from '../../serialization/SerializationService';
 import {InvocationService} from '../../invocation/InvocationService';
-import {ClientConnectionManager} from "../../network/ClientConnectionManager";
+import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 
 /**
  * Common super class for any CP Subsystem proxy.

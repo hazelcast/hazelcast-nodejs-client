@@ -34,12 +34,12 @@ import {MessageListener} from '../MessageListener';
 import {TopicOverloadPolicy} from '../TopicOverloadPolicy';
 import {ClientConfig, ClientConfigImpl} from '../../config/Config';
 import {ClusterService} from '../../invocation/ClusterService';
-import {ILogger} from "../../logging";
-import {ProxyManager} from "../ProxyManager";
-import {PartitionService} from "../../PartitionService";
-import {InvocationService} from "../../invocation/InvocationService";
-import {ClientConnectionManager} from "../../network/ClientConnectionManager";
-import {ListenerService} from "../../listener/ListenerService";
+import {ILogger} from '../../logging';
+import {ProxyManager} from '../ProxyManager';
+import {PartitionService} from '../../PartitionService';
+import {InvocationService} from '../../invocation/InvocationService';
+import {ClientConnectionManager} from '../../network/ClientConnectionManager';
+import {ListenerService} from '../../listener/ListenerService';
 
 /** @internal */
 export const TOPIC_INITIAL_BACKOFF = 100;

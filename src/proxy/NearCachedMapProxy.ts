@@ -30,13 +30,13 @@ import {ClientMessage, ClientMessageHandler} from '../protocol/ClientMessage';
 import {NearCacheManager} from '../nearcache/NearCacheManager';
 import {RepairingTask} from '../nearcache/RepairingTask';
 import {ListenerService} from '../listener/ListenerService';
-import {ILogger} from "../logging";
-import {ClientConfig} from "../config";
-import {ProxyManager} from "./ProxyManager";
-import {InvocationService} from "../invocation/InvocationService";
-import {SerializationService} from "../serialization/SerializationService";
-import {ClientConnectionManager} from "../network/ClientConnectionManager";
-import {ClusterService} from "../invocation/ClusterService";
+import {ILogger} from '../logging';
+import {ClientConfig} from '../config';
+import {ProxyManager} from './ProxyManager';
+import {InvocationService} from '../invocation/InvocationService';
+import {SerializationService} from '../serialization/SerializationService';
+import {ClientConnectionManager} from '../network/ClientConnectionManager';
+import {ClusterService} from '../invocation/ClusterService';
 
 /** @internal */
 export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {

@@ -38,10 +38,10 @@ import {
     WaitKeyCancelledError,
     UUID
 } from '../../core';
-import {SerializationService} from "../../serialization/SerializationService";
-import {InvocationService} from "../../invocation/InvocationService";
-import {CPSubsystem} from "../../CPSubsystem";
-import {ClientConnectionManager} from "../../network/ClientConnectionManager";
+import {SerializationService} from '../../serialization/SerializationService';
+import {InvocationService} from '../../invocation/InvocationService';
+import {CPSubsystem} from '../../CPSubsystem';
+import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 
 const fenceThreadIdSymbol = Symbol('FenceThreadIdSymbol');
 

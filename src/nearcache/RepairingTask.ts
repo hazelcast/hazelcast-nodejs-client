@@ -23,10 +23,10 @@ import {RepairingHandler} from './RepairingHandler';
 import {PartitionService, PartitionServiceImpl} from '../PartitionService';
 import {ILogger} from '../logging/ILogger';
 import {UUID} from '../core/UUID';
-import {LifecycleService, Properties} from "../index";
-import {InvocationService} from "../invocation/InvocationService";
-import {ClusterService} from "../invocation/ClusterService";
-import {ClientConnectionManager} from "../network/ClientConnectionManager";
+import {LifecycleService, Properties} from '../index';
+import {InvocationService} from '../invocation/InvocationService';
+import {ClusterService} from '../invocation/ClusterService';
+import {ClientConnectionManager} from '../network/ClientConnectionManager';
 
 const PROPERTY_MAX_RECONCILIATION_INTERVAL_SECONDS = 'hazelcast.invalidation.reconciliation.interval.seconds';
 const PROPERTY_MIN_RECONCILIATION_INTERVAL_SECONDS = 'hazelcast.invalidation.min.reconciliation.interval.seconds';

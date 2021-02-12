@@ -33,9 +33,9 @@ import {
     OperationTimeoutError,
     UUID
 } from '../../core';
-import {InvocationService} from "../../invocation/InvocationService";
-import {SerializationService} from "../../serialization/SerializationService";
-import {ClientConnectionManager} from "../../network/ClientConnectionManager";
+import {InvocationService} from '../../invocation/InvocationService';
+import {SerializationService} from '../../serialization/SerializationService';
+import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 
 
 /** @internal */

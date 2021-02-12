@@ -19,11 +19,6 @@ import {NearCache, NearCacheImpl} from './NearCache';
 import {SerializationService} from '../serialization/SerializationService';
 import {ClientConfig, ClientConfigImpl} from '../config';
 
-interface ClientForNearCacheManager {
-    getSerializationService(): SerializationService;
-    getConfig(): ClientConfig;
-}
-
 /** @internal */
 export class NearCacheManager {
 

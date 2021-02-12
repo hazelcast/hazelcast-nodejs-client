@@ -34,9 +34,9 @@ import * as os from 'os';
 import {BuildInfo} from '../BuildInfo';
 import {ILogger} from '../logging/ILogger';
 import * as Long from 'long';
-import {ClientConfig} from "../config";
-import {InvocationService} from "../invocation/InvocationService";
-import {NearCacheManager} from "../nearcache/NearCacheManager";
+import {ClientConfig} from '../config';
+import {InvocationService} from '../invocation/InvocationService';
+import {NearCacheManager} from '../nearcache/NearCacheManager';
 
 type GaugeDescription = {
     gaugeFn: () => number;

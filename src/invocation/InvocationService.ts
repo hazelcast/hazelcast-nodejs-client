@@ -44,8 +44,8 @@ import {
 } from '../util/Util';
 import {ClientConfig} from '../config';
 import {ListenerService} from '../listener/ListenerService';
-import {ClientErrorFactory} from "../protocol/ErrorFactory";
-import {LifecycleService} from "../LifecycleService";
+import {ClientErrorFactory} from '../protocol/ErrorFactory';
+import {LifecycleService} from '../LifecycleService';
 
 const MAX_FAST_INVOCATION_COUNT = 5;
 const PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS = 'hazelcast.client.invocation.retry.pause.millis';

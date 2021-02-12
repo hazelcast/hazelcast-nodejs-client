@@ -51,16 +51,16 @@ import {
 } from '../core';
 import * as SerializationUtil from '../serialization/SerializationUtil';
 import {MultiMapPutAllCodec} from '../codec/MultiMapPutAllCodec';
-import {LockReferenceIdGenerator} from "./LockReferenceIdGenerator";
-import {ILogger} from "../logging";
-import {ClientConfig} from "../config";
-import {ProxyManager} from "./ProxyManager";
-import {PartitionService} from "../PartitionService";
-import {InvocationService} from "../invocation/InvocationService";
-import {SerializationService} from "../serialization/SerializationService";
-import {ClientConnectionManager} from "../network/ClientConnectionManager";
-import {ListenerService} from "../listener/ListenerService";
-import {ClusterService} from "../invocation/ClusterService";
+import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
+import {ILogger} from '../logging';
+import {ClientConfig} from '../config';
+import {ProxyManager} from './ProxyManager';
+import {PartitionService} from '../PartitionService';
+import {InvocationService} from '../invocation/InvocationService';
+import {SerializationService} from '../serialization/SerializationService';
+import {ClientConnectionManager} from '../network/ClientConnectionManager';
+import {ListenerService} from '../listener/ListenerService';
+import {ClusterService} from '../invocation/ClusterService';
 
 /** @internal */
 export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {

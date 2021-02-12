@@ -26,9 +26,9 @@ import {AtomicLongCompareAndSetCodec} from '../../codec/AtomicLongCompareAndSetC
 import {AtomicLongGetCodec} from '../../codec/AtomicLongGetCodec';
 import {AtomicLongGetAndAddCodec} from '../../codec/AtomicLongGetAndAddCodec';
 import {AtomicLongGetAndSetCodec} from '../../codec/AtomicLongGetAndSetCodec';
-import {InvocationService} from "../../invocation/InvocationService";
-import {SerializationService} from "../../serialization/SerializationService";
-import {ClientConnectionManager} from "../../network/ClientConnectionManager";
+import {InvocationService} from '../../invocation/InvocationService';
+import {SerializationService} from '../../serialization/SerializationService';
+import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 
 /** @internal */
 export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {

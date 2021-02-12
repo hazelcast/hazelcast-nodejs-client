@@ -20,9 +20,9 @@ import {RaftGroupId} from './RaftGroupId';
 import {BaseCPProxy} from './BaseCPProxy';
 import {CPSubsystem, CPSubsystemImpl} from '../../CPSubsystem';
 import {CPSessionManager} from './CPSessionManager';
-import {InvocationService} from "../../invocation/InvocationService";
-import {SerializationService} from "../../serialization/SerializationService";
-import {ClientConnectionManager} from "../../network/ClientConnectionManager";
+import {InvocationService} from '../../invocation/InvocationService';
+import {SerializationService} from '../../serialization/SerializationService';
+import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 
 
 /**

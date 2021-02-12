@@ -36,8 +36,8 @@ import {
     Task
 } from '../../util/Util';
 import {InvocationService} from '../../invocation/InvocationService';
-import {ClientConfig} from "../../config";
-import {ClientConnectionManager} from "../../network/ClientConnectionManager";
+import {ClientConfig} from '../../config';
+import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 
 /** @internal */
 export class SessionState {

@@ -40,7 +40,7 @@ import {
 } from '../core';
 import {MemberInfo} from '../core/MemberInfo';
 import {ClusterFailoverService} from '../ClusterFailoverService';
-import {ClientConnectionManager} from "../network/ClientConnectionManager";
+import {ClientConnectionManager} from '../network/ClientConnectionManager';
 
 class MemberListSnapshot {
     version: number;

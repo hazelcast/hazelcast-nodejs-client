@@ -40,17 +40,17 @@ import {ClientCreateProxiesCodec} from '../codec/ClientCreateProxiesCodec';
 import {BaseProxy} from './BaseProxy';
 import {Ringbuffer} from './Ringbuffer';
 import {ClientConfig, ClientConfigImpl} from '../config/Config';
-import {ListenerService} from "../listener/ListenerService";
-import {NearCachedMapProxy} from "./NearCachedMapProxy";
-import {ILogger} from "../logging";
-import {PartitionService} from "../PartitionService";
-import {SerializationService} from "../serialization/SerializationService";
-import {ClientConnectionManager} from "../network/ClientConnectionManager";
-import {NearCacheManager} from "../nearcache/NearCacheManager";
-import {RepairingTask} from "../nearcache/RepairingTask";
-import {ClusterService} from "../invocation/ClusterService";
-import {LockReferenceIdGenerator} from "./LockReferenceIdGenerator";
-import {Address} from "../core";
+import {ListenerService} from '../listener/ListenerService';
+import {NearCachedMapProxy} from './NearCachedMapProxy';
+import {ILogger} from '../logging';
+import {PartitionService} from '../PartitionService';
+import {SerializationService} from '../serialization/SerializationService';
+import {ClientConnectionManager} from '../network/ClientConnectionManager';
+import {NearCacheManager} from '../nearcache/NearCacheManager';
+import {RepairingTask} from '../nearcache/RepairingTask';
+import {ClusterService} from '../invocation/ClusterService';
+import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
+import {Address} from '../core';
 
 /** @internal */
 export const NAMESPACE_SEPARATOR = '/';

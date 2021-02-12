@@ -23,9 +23,9 @@ import {AtomicRefCompareAndSetCodec} from '../../codec/AtomicRefCompareAndSetCod
 import {AtomicRefGetCodec} from '../../codec/AtomicRefGetCodec';
 import {AtomicRefSetCodec} from '../../codec/AtomicRefSetCodec';
 import {AtomicRefContainsCodec} from '../../codec/AtomicRefContainsCodec';
-import {InvocationService} from "../../invocation/InvocationService";
-import {SerializationService} from "../../serialization/SerializationService";
-import {ClientConnectionManager} from "../../network/ClientConnectionManager";
+import {InvocationService} from '../../invocation/InvocationService';
+import {SerializationService} from '../../serialization/SerializationService';
+import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 
 
 /** @internal */

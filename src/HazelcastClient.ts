@@ -63,7 +63,7 @@ import {RandomLB} from './util/RandomLB';
 import {RoundRobinLB} from './util/RoundRobinLB';
 import {ClusterViewListenerService} from './listener/ClusterViewListenerService';
 import {ClientMessage} from './protocol/ClientMessage';
-import {ClientConnection} from "./network/ClientConnection";
+import {ClientConnection} from './network/ClientConnection';
 
 /**
  * Hazelcast client instance. When you want to use Hazelcast's distributed
@@ -201,7 +201,7 @@ export class HazelcastClient {
             this.getRepairingTask(),
             this.clusterService,
             this.lockReferenceIdGenerator,
-            this.getLocalClient().localAddress
+            this.getLocalEndpoint().localAddress
         );
         this.statistics = new Statistics(
             this.loggingService.getLogger(),
@@ -263,6 +263,22 @@ export class HazelcastClient {
     getName(): string {
         return this.instanceName;
     }
+
+    /**
+     * Gathers information of this local client.
+     */
+
+    getLocalEndpoint(): ClientInfo {
+        const connection: ClientConnection = this.connectionManager.getRandomConnection();
+        const localAddress = connection != null ? connection.getLocalAddress() : null;
+        const info = new ClientInfo();
+        info.uuid = this.connectionManager.getClientUuid();
+        info.localAddress = localAddress;
+        info.labels = new Set(this.config.clientLabels);
+        info.name = this.instanceName;
+        return info;
+    }
+
 
     /**
      * Gives all known distributed objects in cluster.
@@ -456,7 +472,7 @@ export class HazelcastClient {
             this.mapRepairingTask = new RepairingTask(
                 this.config.properties,
                 this.loggingService.getLogger(),
-                this.getLocalClient().uuid,
+                this.getLocalEndpoint().uuid,
                 this.partitionService,
                 this.lifecycleService,
                 this.invocationService,
@@ -470,20 +486,6 @@ export class HazelcastClient {
     /** @internal */
     getLoggingService(): LoggingService {
         return this.loggingService;
-    }
-
-    /**
-     * @return The {@link ClientInfo} instance representing the local client.
-     */
-    getLocalClient(): ClientInfo {
-        const connection: ClientConnection = this.connectionManager.getRandomConnection();
-        const localAddress = connection != null ? connection.getLocalAddress() : null;
-        const info = new ClientInfo();
-        info.uuid = this.connectionManager.getClientUuid();
-        info.localAddress = localAddress;
-        info.labels = new Set(this.config.clientLabels);
-        info.name = this.instanceName;
-        return info;
     }
 
     /**
