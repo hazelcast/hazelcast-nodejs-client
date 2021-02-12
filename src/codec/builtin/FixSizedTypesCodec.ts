@@ -64,7 +64,7 @@ export class FixSizedTypesCodec {
      */
     static encodeNonNegativeNumberAsLong(buffer: Buffer, offset: number, value: number): void {
         if (value < 0) {
-            throw new Error('Only positive numbers are allowed in this method, received: ' + value);
+            throw new Error("Only positive numbers are allowed in this method, received: " + value);
         }
 
         if (value + 1 >= TWO_PWR_63_DBL) {
