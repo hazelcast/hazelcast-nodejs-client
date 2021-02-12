@@ -84,7 +84,7 @@ export class TranslateAddressProvider {
             if (sslConfig.enabled) {
                 this.logger.debug('TranslateAddressProvider', 'SSL is configured. Client will use internal '
                     + 'addresses to communicate with the cluster. If members are not reachable via private '
-                    + 'addresses, please set '' + PROPERTY_DISCOVERY_PUBLIC_IP_ENABLED + '' property to true.');
+                    + 'addresses, please set "' + PROPERTY_DISCOVERY_PUBLIC_IP_ENABLED + '" property to true.');
                 return Promise.resolve(false);
             }
             if (members.length === 0) {

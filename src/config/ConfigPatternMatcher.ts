@@ -42,8 +42,8 @@ export class ConfigPatternMatcher {
             }
         });
         if (duplicatePattern != null) {
-            throw new TypeError('Found ambiguous configurations for item ' + itemName + ': '' + matchingPattern +
-                '' vs '' + duplicatePattern + ''. Please specify your configuration.');
+            throw new TypeError('Found ambiguous configurations for item ' + itemName + ': "' + matchingPattern +
+                '" vs "' + duplicatePattern + '". Please specify your configuration.');
         }
         return matchingPattern;
     }
