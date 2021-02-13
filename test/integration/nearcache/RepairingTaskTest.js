@@ -15,7 +15,12 @@
  */
 'use strict';
 
-const { expect } = require('chai');
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
+chai.use(chaiAsPromised);
+
+const expect = chai.expect;
+
 const RC = require('../RC');
 const { Client } = require('../../../');
 
@@ -52,8 +57,7 @@ describe('RepairingTask', function () {
     }
 
     it('throws when reconciliation interval is set to below 30 seconds', async function () {
-        await startClientWithReconciliationInterval(2);
-        return expect(client.getRepairingTask.bind(client)).to.throw();
+        return expect(startClientWithReconciliationInterval( 2)).to.be.eventually.rejected;
     });
 
     it('reconciliation interval is used when set to 50', async function () {

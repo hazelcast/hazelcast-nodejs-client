@@ -144,11 +144,12 @@ export class HazelcastClient {
             this.loggingService.getLogger(),
             this.serializationService
         );
-        this.clusterFailoverService = this.initClusterFailoverService();
         this.lifecycleService = new LifecycleServiceImpl(
             this.config.lifecycleListeners,
             this.loggingService.getLogger()
         );
+
+        this.clusterFailoverService = this.initClusterFailoverService();
 
         this.clusterService = new ClusterService(
             this.config,

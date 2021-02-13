@@ -58,7 +58,8 @@ describe('ClientShutdownTest', function () {
     });
 
     it('client should stop services and release resources on shutdown', async function () {
-        sandbox.spy(LifecycleServiceImpl.prototype, 'shutdown');
+        sandbox.spy(LifecycleServiceImpl.prototype, 'onShutdownStart');
+        sandbox.spy(LifecycleServiceImpl.prototype, 'onShutdownFinished');
         sandbox.spy(RepairingTask.prototype, 'shutdown');
         sandbox.spy(NearCacheManager.prototype, 'destroyAllNearCaches');
         sandbox.spy(ProxyManager.prototype, 'destroy');
@@ -75,7 +76,8 @@ describe('ClientShutdownTest', function () {
         client.getRepairingTask();
         await client.shutdown();
 
-        expect(LifecycleServiceImpl.prototype.shutdown.calledOnce).to.be.true;
+        expect(LifecycleServiceImpl.prototype.onShutdownStart.calledOnce).to.be.true;
+        expect(LifecycleServiceImpl.prototype.onShutdownFinished.calledOnce).to.be.true;
         expect(RepairingTask.prototype.shutdown.calledOnce).to.be.true;
         expect(NearCacheManager.prototype.destroyAllNearCaches.calledOnce).to.be.true;
         expect(ProxyManager.prototype.destroy.calledOnce).to.be.true;
