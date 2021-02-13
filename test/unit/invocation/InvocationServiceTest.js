@@ -64,17 +64,15 @@ describe('InvocationServiceTest', function () {
         const config = new ClientConfigImpl();
         const client = mockClient(config);
         service = new InvocationService(
-            client,
             client.getConfig(),
             client.getLoggingService().getLogger(),
             client.getPartitionService(),
             client.getErrorFactory(),
-            client.getLifecycleService(),
-            client.getConnectionManager()
+            client.getLifecycleService()
         );
 
         client.getInvocationService.returns(service);
-        await service.start();
+        await service.start(client.getListenerService(), client.getConnectionManager());
 
         const messageStub = sandbox.stub(ClientMessage.prototype);
         messageStub.getCorrelationId.returns(0);
@@ -100,15 +98,13 @@ describe('InvocationServiceTest', function () {
         const client = mockClient(config);
 
         service = new InvocationService(
-            client,
             client.getConfig(),
             client.getLoggingService().getLogger(),
             client.getPartitionService(),
             client.getErrorFactory(),
-            client.getLifecycleService(),
-            client.getConnectionManager()
+            client.getLifecycleService()
         );
-        await service.start();
+        await service.start(client.getListenerService(), client.getConnectionManager());
 
         expect(service.cleanResourcesTask).to.be.not.undefined;
         expect(client.getListenerService().registerListener.calledOnce).to.be.true;
@@ -120,15 +116,13 @@ describe('InvocationServiceTest', function () {
         const client = mockClient(config);
 
         service = new InvocationService(
-            client,
             client.getConfig(),
             client.getLoggingService().getLogger(),
             client.getPartitionService(),
             client.getErrorFactory(),
-            client.getLifecycleService(),
-            client.getConnectionManager()
+            client.getLifecycleService()
         );
-        await service.start();
+        await service.start(client.getListenerService(), client.getConnectionManager());
 
         expect(service.cleanResourcesTask).to.be.not.undefined;
         expect(client.getListenerService().registerListener.notCalled).to.be.true;
@@ -140,15 +134,13 @@ describe('InvocationServiceTest', function () {
         const client = mockClient(config);
 
         service = new InvocationService(
-            client,
             client.getConfig(),
             client.getLoggingService().getLogger(),
             client.getPartitionService(),
             client.getErrorFactory(),
-            client.getLifecycleService(),
-            client.getConnectionManager()
+            client.getLifecycleService()
         );
-        await service.start();
+        await service.start(client.getListenerService(), client.getConnectionManager());
 
         expect(service.cleanResourcesTask).to.be.not.undefined;
         expect(client.getListenerService().registerListener.notCalled).to.be.true;
