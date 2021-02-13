@@ -32,13 +32,13 @@ const {
 const { FencedLockProxy } = require('../../../../lib/proxy/cpsubsystem/FencedLockProxy');
 const { CPSessionManager } = require('../../../../lib/proxy/cpsubsystem/CPSessionManager');
 const { RaftGroupId } = require('../../../../lib/proxy/cpsubsystem/RaftGroupId');
-const { CPSubsystemImpl } = require('../../../../lib/CPSubsystem');
+const { ClientConnectionManager } = require('../../../../lib/network/ClientConnectionManager');
 const { InvocationService } = require('../../../../lib/invocation/InvocationService');
 const { SerializationServiceV1 } = require('../../../../lib/serialization/SerializationService');
 
 describe('FencedLockProxyTest', function () {
 
-    let cpSubsystemStub;
+    let connectionManagerStub;
     let cpSessionManagerStub;
     let serializationServiceStub;
     let invocationServiceStub;
@@ -101,8 +101,7 @@ describe('FencedLockProxyTest', function () {
         cpSessionManagerStub = sandbox.stub(CPSessionManager.prototype);
         serializationServiceStub = sandbox.stub(SerializationServiceV1.prototype);
         invocationServiceStub = sandbox.stub(InvocationService.prototype);
-        cpSubsystemStub = sandbox.stub(CPSubsystemImpl.prototype);
-        cpSubsystemStub.getCPSessionManager.returns(cpSessionManagerStub);
+        connectionManagerStub = sandbox.stub(ClientConnectionManager.prototype);
 
         proxy = new FencedLockProxy(
             prepareGroupId(),
@@ -110,7 +109,8 @@ describe('FencedLockProxyTest', function () {
             'mylock',
             serializationServiceStub,
             invocationServiceStub,
-            cpSubsystemStub
+            cpSessionManagerStub,
+            connectionManagerStub
         );
     });
 
