@@ -105,14 +105,11 @@ export class ClusterViewListenerService {
 
     private createClusterViewEventHandler(connection: ClientConnection): (msg: ClientMessage) => void {
         return (clientMessage: ClientMessage): void => {
-            ClientAddClusterViewListenerCodec.handle(
-                clientMessage,
-                this.clusterService.handleMembersViewEvent.bind(this.clusterService),
+            ClientAddClusterViewListenerCodec.handle(clientMessage,
+                this.clusterService.handleMembersViewEvent.bind(this.clusterService, this.connectionManager),
                 (version: number, partitions: Array<[UUID, number[]]>) => {
                     this.partitionService.handlePartitionViewEvent(connection, partitions, version);
-                },
-                this.connectionManager
-            );
+                });
         };
     }
 }

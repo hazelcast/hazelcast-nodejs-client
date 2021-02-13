@@ -50,7 +50,6 @@ import {NearCacheManager} from '../nearcache/NearCacheManager';
 import {RepairingTask} from '../nearcache/RepairingTask';
 import {ClusterService} from '../invocation/ClusterService';
 import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
-import {Address} from '../core';
 
 /** @internal */
 export const NAMESPACE_SEPARATOR = '/';
@@ -84,7 +83,6 @@ export class ProxyManager {
     private readonly repairingTask: RepairingTask;
     private readonly clusterService: ClusterService;
     private readonly lockReferenceIdGenerator: LockReferenceIdGenerator;
-    private readonly localAddress: Address;
 
     constructor(
         clientConfig: ClientConfig,
@@ -98,7 +96,6 @@ export class ProxyManager {
         repairingTask: RepairingTask,
         clusterService: ClusterService,
         lockReferenceIdGenerator: LockReferenceIdGenerator,
-        localAddress: Address
     ) {
         this.invocationService = invocationService;
         this.clientConfig = clientConfig;
@@ -111,7 +108,6 @@ export class ProxyManager {
         this.repairingTask = repairingTask;
         this.clusterService = clusterService;
         this.lockReferenceIdGenerator = lockReferenceIdGenerator;
-        this.localAddress = localAddress;
     }
 
     public init(): void {
@@ -264,6 +260,7 @@ export class ProxyManager {
                 this.clusterService
             );
         } else if (serviceName === ProxyManager.MULTIMAP_SERVICE){
+            // This call may throw ClientOfflineError for partition specific proxies with async start
             localProxy = new MultiMapProxy(
                 serviceName,
                 name,
@@ -279,6 +276,7 @@ export class ProxyManager {
                 this.lockReferenceIdGenerator
             );
         } else if (serviceName === ProxyManager.RELIABLETOPIC_SERVICE){
+            // This call may throw ClientOfflineError for partition specific proxies with async start
             localProxy = new ReliableTopicProxy(
                 serviceName,
                 name,
@@ -290,8 +288,7 @@ export class ProxyManager {
                 this.serializationService,
                 this.connectionManager,
                 this.listenerService,
-                this.clusterService,
-                this.localAddress
+                this.clusterService
             );
         } else {
             // This call may throw ClientOfflineError for partition specific proxies with async start

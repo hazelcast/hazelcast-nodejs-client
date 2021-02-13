@@ -17,7 +17,7 @@
 
 import * as Long from 'long';
 import {OverflowPolicy} from '../OverflowPolicy';
-import {Address, TopicOverloadError} from '../../core';
+import {TopicOverloadError} from '../../core';
 import {AddressImpl} from '../../core/Address';
 import {SerializationService} from '../../serialization/SerializationService';
 import {UuidUtil} from '../../util/UuidUtil';
@@ -40,6 +40,7 @@ import {PartitionService} from '../../PartitionService';
 import {InvocationService} from '../../invocation/InvocationService';
 import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 import {ListenerService} from '../../listener/ListenerService';
+import {ClientConnection} from "../../network/ClientConnection";
 
 /** @internal */
 export const TOPIC_INITIAL_BACKOFF = 100;
@@ -66,8 +67,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         serializationService: SerializationService,
         connectionManager: ClientConnectionManager,
         listenerService: ListenerService,
-        clusterService: ClusterService,
-        localAddress: Address
+        clusterService: ClusterService
     ) {
         super(
             serviceName,
@@ -82,7 +82,6 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
             listenerService,
             clusterService
         );
-        this.localAddress = localAddress as AddressImpl;
         const config = (this.clientConfig as ClientConfigImpl).getReliableTopicConfig(name);
         this.batchSize = config.readBatchSize;
         this.overloadPolicy = config.overloadPolicy;
@@ -126,7 +125,9 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         const reliableTopicMessage = new ReliableTopicMessage();
         reliableTopicMessage.payload = this.serializationService.toData(message);
         reliableTopicMessage.publishTime = Long.fromNumber(Date.now());
-        reliableTopicMessage.publisherAddress = this.localAddress;
+
+        const connection: ClientConnection = this.connectionManager.getRandomConnection();
+        reliableTopicMessage.publisherAddress = connection != null ? connection.getLocalAddress() : null;
 
         switch (this.overloadPolicy) {
             case TopicOverloadPolicy.ERROR:

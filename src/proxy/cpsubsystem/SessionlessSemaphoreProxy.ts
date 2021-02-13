@@ -18,7 +18,6 @@
 import * as Long from 'long';
 import {BaseCPProxy} from './BaseCPProxy';
 import {ISemaphore} from '../ISemaphore';
-import {CPSubsystem, CPSubsystemImpl} from '../../CPSubsystem';
 import {CPProxyManager} from './CPProxyManager';
 import {CPSessionManager, NO_SESSION_ID} from './CPSessionManager';
 import {RaftGroupId} from './RaftGroupId';
@@ -53,7 +52,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
         objectName: string,
         invocationService: InvocationService,
         serializationService: SerializationService,
-        cpSubsystem: CPSubsystem,
+        cpSessionManager: CPSessionManager,
         connectionManager: ClientConnectionManager
     ) {
         super(
@@ -65,7 +64,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
             serializationService,
             connectionManager
         );
-        this.sessionManager = (cpSubsystem as CPSubsystemImpl).getCPSessionManager();
+        this.sessionManager = cpSessionManager;
     }
 
     init(permits: number): Promise<boolean> {

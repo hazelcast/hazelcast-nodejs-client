@@ -200,13 +200,13 @@ export class ClientConnectionManager extends EventEmitter {
         this.reconnectMode = connectionStrategyConfig.reconnectMode;
     }
 
-    start(invocationService: InvocationService): Promise<void> {
+    start(): Promise<void> {
         if (this.alive) {
             return Promise.resolve();
         }
         this.alive = true;
 
-        this.heartbeatManager.start(invocationService);
+        this.heartbeatManager.start(this.invocationService);
         return this.connectToCluster();
     }
 

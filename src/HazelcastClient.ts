@@ -200,8 +200,7 @@ export class HazelcastClient {
             this.nearCacheManager,
             this.getRepairingTask(),
             this.clusterService,
-            this.lockReferenceIdGenerator,
-            this.getLocalEndpoint().localAddress
+            this.lockReferenceIdGenerator
         );
         this.statistics = new Statistics(
             this.loggingService.getLogger(),
@@ -405,11 +404,6 @@ export class HazelcastClient {
         return this.config;
     }
 
-    /** @internal */
-    getFailoverConfig(): ClientFailoverConfig {
-        return this.failoverConfig;
-    }
-
     /**
      * Returns the Cluster to which this client is connected.
      */
@@ -452,16 +446,6 @@ export class HazelcastClient {
     }
 
     /** @internal */
-    getProxyManager(): ProxyManager {
-        return this.proxyManager;
-    }
-
-    /** @internal */
-    getNearCacheManager(): NearCacheManager {
-        return this.nearCacheManager;
-    }
-
-    /** @internal */
     getClusterService(): ClusterService {
         return this.clusterService;
     }
@@ -472,7 +456,6 @@ export class HazelcastClient {
             this.mapRepairingTask = new RepairingTask(
                 this.config.properties,
                 this.loggingService.getLogger(),
-                this.getLocalEndpoint().uuid,
                 this.partitionService,
                 this.lifecycleService,
                 this.invocationService,
@@ -507,23 +490,8 @@ export class HazelcastClient {
     }
 
     /** @internal */
-    getLockReferenceIdGenerator(): LockReferenceIdGenerator {
-        return this.lockReferenceIdGenerator;
-    }
-
-    /** @internal */
     getErrorFactory(): ClientErrorFactory {
         return this.errorFactory;
-    }
-
-    /** @internal */
-    getLoadBalancer(): LoadBalancer {
-        return this.loadBalancer;
-    }
-
-    /** @internal */
-    getClusterFailoverService(): ClusterFailoverService {
-        return this.clusterFailoverService;
     }
 
     /** @internal */
@@ -590,7 +558,7 @@ export class HazelcastClient {
             throw e;
         }
 
-        return this.connectionManager.start(this.invocationService)
+        return this.connectionManager.start()
             .then(() => {
                 const connectionStrategyConfig = this.config.connectionStrategy;
                 if (!connectionStrategyConfig.asyncStart) {

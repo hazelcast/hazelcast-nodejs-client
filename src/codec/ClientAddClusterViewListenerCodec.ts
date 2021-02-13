@@ -23,7 +23,6 @@ import {ListMultiFrameCodec} from './builtin/ListMultiFrameCodec';
 import {MemberInfoCodec} from './custom/MemberInfoCodec';
 import {EntryListUUIDListIntegerCodec} from './builtin/EntryListUUIDListIntegerCodec';
 import {UUID} from '../core/UUID';
-import {ClientConnectionManager} from "../network/ClientConnectionManager";
 
 // hex: 0x000300
 const REQUEST_MESSAGE_TYPE = 768;
@@ -52,18 +51,13 @@ export class ClientAddClusterViewListenerCodec {
         return clientMessage;
     }
 
-    static handle(
-        clientMessage: ClientMessage,
-        handleMembersViewEvent: (version: number, memberInfos: MemberInfo[], connectionManager: ClientConnectionManager) => void = null,
-        handlePartitionsViewEvent: (version: number, partitions: Array<[UUID, number[]]>) => void = null,
-        connectionManager: ClientConnectionManager
-    ): void {
+    static handle(clientMessage: ClientMessage, handleMembersViewEvent: (version: number, memberInfos: MemberInfo[]) => void = null, handlePartitionsViewEvent: (version: number, partitions: Array<[UUID, number[]]>) => void = null): void {
         const messageType = clientMessage.getMessageType();
         if (messageType === EVENT_MEMBERS_VIEW_MESSAGE_TYPE && handleMembersViewEvent !== null) {
             const initialFrame = clientMessage.nextFrame();
             const version = FixSizedTypesCodec.decodeInt(initialFrame.content, EVENT_MEMBERS_VIEW_VERSION_OFFSET);
             const memberInfos = ListMultiFrameCodec.decode(clientMessage, MemberInfoCodec.decode);
-            handleMembersViewEvent(version, memberInfos, connectionManager);
+            handleMembersViewEvent(version, memberInfos);
             return;
         }
         if (messageType === EVENT_PARTITIONS_VIEW_MESSAGE_TYPE && handlePartitionsViewEvent !== null) {

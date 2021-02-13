@@ -166,9 +166,9 @@ export class ClusterService implements Cluster {
     }
 
     handleMembersViewEvent(
+        connectionManager: ClientConnectionManager,
         memberListVersion: number,
-        memberInfos: MemberInfo[],
-        connectionManager: ClientConnectionManager
+        memberInfos: MemberInfo[]
     ): void {
         if (this.memberListSnapshot === EMPTY_SNAPSHOT) {
             this.applyInitialState(memberListVersion, memberInfos)

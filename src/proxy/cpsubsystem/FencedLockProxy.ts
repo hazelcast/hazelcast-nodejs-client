@@ -20,7 +20,7 @@ import * as Long from 'long';
 import {CPSessionAwareProxy} from './CPSessionAwareProxy';
 import {FencedLock} from '../FencedLock';
 import {CPProxyManager} from './CPProxyManager';
-import {NO_SESSION_ID} from './CPSessionManager';
+import {CPSessionManager, NO_SESSION_ID} from './CPSessionManager';
 import {RaftGroupId} from './RaftGroupId';
 import {FencedLockLockCodec} from '../../codec/FencedLockLockCodec';
 import {FencedLockTryLockCodec} from '../../codec/FencedLockTryLockCodec';
@@ -40,7 +40,6 @@ import {
 } from '../../core';
 import {SerializationService} from '../../serialization/SerializationService';
 import {InvocationService} from '../../invocation/InvocationService';
-import {CPSubsystem} from '../../CPSubsystem';
 import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 
 const fenceThreadIdSymbol = Symbol('FenceThreadIdSymbol');
@@ -67,7 +66,7 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
         objectName: string,
         serializationService: SerializationService,
         invocationService: InvocationService,
-        cpSubsystem: CPSubsystem,
+        cpSessionManager: CPSessionManager,
         connectionManager: ClientConnectionManager
     ) {
         super(
@@ -77,7 +76,7 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
             objectName,
             invocationService,
             serializationService,
-            cpSubsystem,
+            cpSessionManager,
             connectionManager
         );
     }

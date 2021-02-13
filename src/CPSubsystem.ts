@@ -131,17 +131,17 @@ export class CPSubsystemImpl implements CPSubsystem {
         serializationService: SerializationService,
         connectionManager: ClientConnectionManager
     ) {
-        this.cpProxyManager = new CPProxyManager(
-            invocationService,
-            serializationService,
-            this,
-            connectionManager
-        );
         this.cpSessionManager = new CPSessionManager(
             clientConfig,
             logger,
             clientName,
             invocationService,
+            connectionManager
+        );
+        this.cpProxyManager = new CPProxyManager(
+            invocationService,
+            serializationService,
+            this.cpSessionManager,
             connectionManager
         );
     }

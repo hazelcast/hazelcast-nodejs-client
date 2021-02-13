@@ -50,7 +50,6 @@ export class RepairingTask {
     constructor(
         clientProperties: Properties,
         logger: ILogger,
-        clientUuid: UUID,
         partitionService: PartitionService,
         lifecycleService: LifecycleService,
         invocationService: InvocationService,
@@ -64,7 +63,7 @@ export class RepairingTask {
         const requestedReconciliationSeconds = clientProperties[PROPERTY_MAX_RECONCILIATION_INTERVAL_SECONDS] as number;
         this.reconcilliationInterval = this.getReconciliationIntervalMillis(requestedReconciliationSeconds);
         this.handlers = new Map<string, RepairingHandler>();
-        this.clientUuid = clientUuid;
+        this.clientUuid = connectionManager.getClientUuid();
         this.maxToleratedMissCount = clientProperties[PROPERTY_MAX_TOLERATED_MISS_COUNT] as number;
         this.metadataFetcher = new MetadataFetcher(
             this.logger,

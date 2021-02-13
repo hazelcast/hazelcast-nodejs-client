@@ -34,8 +34,8 @@ import {SemaphoreGetSemaphoreTypeCodec} from '../../codec/SemaphoreGetSemaphoreT
 import {assertString} from '../../util/Util';
 import {InvocationService} from '../../invocation/InvocationService';
 import {SerializationService} from '../../serialization/SerializationService';
-import {CPSubsystem} from '../../CPSubsystem';
 import {ClientConnectionManager} from '../../network/ClientConnectionManager';
+import {CPSessionManager} from "./CPSessionManager";
 
 const DEFAULT_GROUP_NAME = 'default';
 
@@ -82,17 +82,18 @@ export class CPProxyManager {
     private readonly lockProxies: Map<string, FencedLockProxy> = new Map();
     private readonly invocationService: InvocationService;
     private readonly serializationService: SerializationService;
-    private readonly cpSubsystem: CPSubsystem;
+    private readonly cpSessionManager: CPSessionManager;
     private readonly connectionManager: ClientConnectionManager;
+
     constructor(
         invocationService: InvocationService,
         serializationService: SerializationService,
-        cpSubsystem: CPSubsystem,
+        cpSessionManager: CPSessionManager,
         connectionManager: ClientConnectionManager
     ) {
         this.invocationService = invocationService;
         this.serializationService = serializationService;
-        this.cpSubsystem = cpSubsystem;
+        this.cpSessionManager = cpSessionManager;
         this.connectionManager = connectionManager;
     }
 
@@ -158,7 +159,7 @@ export class CPProxyManager {
             objectName,
             this.serializationService,
             this.invocationService,
-            this.cpSubsystem,
+            this.cpSessionManager,
             this.connectionManager
         );
         this.lockProxies.set(proxyName, proxy);
@@ -177,7 +178,7 @@ export class CPProxyManager {
                         objectName,
                         this.invocationService,
                         this.serializationService,
-                        this.cpSubsystem,
+                        this.cpSessionManager,
                         this.connectionManager
                     )
                     : new SessionAwareSemaphoreProxy(
@@ -186,7 +187,7 @@ export class CPProxyManager {
                         objectName,
                         this.invocationService,
                         this.serializationService,
-                        this.cpSubsystem,
+                        this.cpSessionManager,
                         this.connectionManager
                     );
             });

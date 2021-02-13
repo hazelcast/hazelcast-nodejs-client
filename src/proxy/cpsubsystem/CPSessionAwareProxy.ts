@@ -18,7 +18,6 @@
 import * as Long from 'long';
 import {RaftGroupId} from './RaftGroupId';
 import {BaseCPProxy} from './BaseCPProxy';
-import {CPSubsystem, CPSubsystemImpl} from '../../CPSubsystem';
 import {CPSessionManager} from './CPSessionManager';
 import {InvocationService} from '../../invocation/InvocationService';
 import {SerializationService} from '../../serialization/SerializationService';
@@ -41,7 +40,7 @@ export abstract class CPSessionAwareProxy extends BaseCPProxy {
         objectName: string,
         invocationService: InvocationService,
         serializationService: SerializationService,
-        cpSubsystem: CPSubsystem,
+        cpSessionManager: CPSessionManager,
         connectionManager: ClientConnectionManager
     ) {
         super(
@@ -53,7 +52,7 @@ export abstract class CPSessionAwareProxy extends BaseCPProxy {
             serializationService,
             connectionManager
         );
-        this.sessionManager = (cpSubsystem as CPSubsystemImpl).getCPSessionManager();
+        this.sessionManager = cpSessionManager;
     }
 
     /**

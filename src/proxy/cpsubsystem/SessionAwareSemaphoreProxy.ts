@@ -19,7 +19,7 @@ import * as Long from 'long';
 import {CPSessionAwareProxy} from './CPSessionAwareProxy';
 import {ISemaphore} from '../ISemaphore';
 import {CPProxyManager} from './CPProxyManager';
-import {NO_SESSION_ID} from './CPSessionManager';
+import {CPSessionManager, NO_SESSION_ID} from './CPSessionManager';
 import {RaftGroupId} from './RaftGroupId';
 import {
     assertNonNegativeNumber,
@@ -40,7 +40,6 @@ import {
 } from '../../core';
 import {InvocationService} from '../../invocation/InvocationService';
 import {SerializationService} from '../../serialization/SerializationService';
-import {CPSubsystem} from '../../CPSubsystem';
 import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 
 
@@ -61,7 +60,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
         objectName: string,
         invocationService: InvocationService,
         serializationService: SerializationService,
-        cpSubsystem: CPSubsystem,
+        cpSessionManager: CPSessionManager,
         connectionManager: ClientConnectionManager
     ) {
         super(
@@ -71,7 +70,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
             objectName,
             invocationService,
             serializationService,
-            cpSubsystem,
+            cpSessionManager,
             connectionManager
         );
     }
