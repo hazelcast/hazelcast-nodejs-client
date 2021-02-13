@@ -114,7 +114,7 @@ export class LifecycleServiceImpl extends EventEmitter implements LifecycleServi
     }
 
     /**
-     * Run when client shutdown started
+     * Runs when client shutdown process started
      */
     onShutdownStart(): void {
         this.active = false;
@@ -122,7 +122,7 @@ export class LifecycleServiceImpl extends EventEmitter implements LifecycleServi
     }
 
     /**
-     * Run when client has been shutdown
+     * Runs when client has been shutdown
      */
     onShutdownFinished(): void {
         this.emitLifecycleEvent(LifecycleState.SHUTDOWN);
