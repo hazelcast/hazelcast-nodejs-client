@@ -114,6 +114,8 @@ interface ClientForClientConnectionManager {
     sendStateToCluster(): Promise<void>;
 
     onClusterRestart(): void;
+
+    shutdown(): Promise<void>;
 }
 
 /**
@@ -778,7 +780,7 @@ export class ClientConnectionManager extends EventEmitter {
     }
 
     private shutdownClient(): void {
-        (this.lifecycleService as LifecycleServiceImpl).shutdown()
+        this.client.shutdown()
             .catch((e) => {
                 this.logger.error('ConnectionManager', 'Failed to shut down client.', e);
             });

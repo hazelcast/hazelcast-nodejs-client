@@ -16,7 +16,6 @@
 
 import {EventEmitter} from 'events';
 import {ILogger} from './logging/ILogger';
-import {ClientConfig} from './config';
 
 /**
  * Lifecycle states.
@@ -76,25 +75,17 @@ export interface LifecycleService {
 
 }
 
-interface ShutdownableClient {
-    doShutdown(): Promise<void>;
-}
-
-
 /** @internal */
 export class LifecycleServiceImpl extends EventEmitter implements LifecycleService {
 
     private active: boolean;
-    private client: ShutdownableClient;
     private logger: ILogger;
 
-    constructor(client: ShutdownableClient, clientConfig: ClientConfig, logger: ILogger) {
+    constructor(lifecycleListeners: Array<(state: LifecycleState) => void>, logger: ILogger) {
         super();
         this.setMaxListeners(0);
-        this.client = client;
         this.logger = logger;
-        const listeners = clientConfig.lifecycleListeners;
-        listeners.forEach((listener) => {
+        lifecycleListeners.forEach((listener) => {
             this.on(LIFECYCLE_EVENT_NAME, listener);
         });
     }
@@ -122,14 +113,19 @@ export class LifecycleServiceImpl extends EventEmitter implements LifecycleServi
         this.emitLifecycleEvent(LifecycleState.STARTED);
     }
 
-    shutdown(): Promise<void> {
-        if (!this.active) {
-            return;
-        }
+    /**
+     * Run when client shutdown started
+     */
+    onShutdownStart(): void {
         this.active = false;
-
         this.emitLifecycleEvent(LifecycleState.SHUTTING_DOWN);
-        return this.client.doShutdown()
-            .then(() => this.emitLifecycleEvent(LifecycleState.SHUTDOWN));
     }
+
+    /**
+     * Run when client has been shutdown
+     */
+    onShutdownFinished(): void {
+        this.emitLifecycleEvent(LifecycleState.SHUTDOWN);
+    }
+
 }

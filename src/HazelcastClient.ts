@@ -146,8 +146,7 @@ export class HazelcastClient {
         );
         this.clusterFailoverService = this.initClusterFailoverService();
         this.lifecycleService = new LifecycleServiceImpl(
-            this,
-            this.config,
+            this.config.lifecycleListeners,
             this.loggingService.getLogger()
         );
 
@@ -494,8 +493,15 @@ export class HazelcastClient {
         return this.errorFactory;
     }
 
-    /** @internal */
-    doShutdown(): Promise<void> {
+    /**
+     * Shuts down this client instance.
+     */
+    shutdown(): Promise<void> {
+        if (!this.lifecycleService.isRunning()) {
+            return Promise.resolve();
+        }
+        this.lifecycleService.onShutdownStart();
+
         if (this.mapRepairingTask !== undefined) {
             this.mapRepairingTask.shutdown();
         }
@@ -506,14 +512,10 @@ export class HazelcastClient {
             .then(() => {
                 this.invocationService.shutdown(this.connectionManager);
                 this.connectionManager.shutdown();
+            })
+            .then(() => {
+                this.lifecycleService.onShutdownFinished();
             });
-    }
-
-    /**
-     * Shuts down this client instance.
-     */
-    shutdown(): Promise<void> {
-        return this.lifecycleService.shutdown();
     }
 
     /** @internal */
