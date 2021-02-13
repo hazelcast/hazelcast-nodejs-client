@@ -34,7 +34,6 @@ import * as os from 'os';
 import {BuildInfo} from '../BuildInfo';
 import {ILogger} from '../logging/ILogger';
 import * as Long from 'long';
-import {ClientConfig} from '../config';
 import {InvocationService} from '../invocation/InvocationService';
 import {NearCacheManager} from '../nearcache/NearCacheManager';
 
@@ -73,13 +72,13 @@ export class Statistics {
 
     constructor(
         logger: ILogger,
-        clientConfig: ClientConfig,
+        properties: Properties,
         clientName: string,
         connectionManager: ClientConnectionManager,
         invocationService: InvocationService,
         nearCacheManager: NearCacheManager
     ) {
-        this.properties = clientConfig.properties;
+        this.properties = properties;
         this.enabled = this.properties[Statistics.ENABLED] as boolean;
         this.logger = logger;
         this.connectionManager = connectionManager;

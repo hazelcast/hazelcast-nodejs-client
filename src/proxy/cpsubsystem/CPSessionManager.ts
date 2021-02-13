@@ -36,7 +36,6 @@ import {
     Task
 } from '../../util/Util';
 import {InvocationService} from '../../invocation/InvocationService';
-import {ClientConfig} from '../../config';
 import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 
 /** @internal */
@@ -92,19 +91,16 @@ export class CPSessionManager {
     private readonly sessions: Map<string, SessionState> = new Map();
     private heartbeatTask: Task;
     private isShutdown = false;
-    private readonly clientConfig: ClientConfig;
     private readonly invocationService: InvocationService;
     private readonly clientName: string;
     private readonly connectionManager: ClientConnectionManager;
 
     constructor(
-        clientConfig: ClientConfig,
         logger: ILogger,
         clientName: string,
         invocationService: InvocationService,
         connectionManager: ClientConnectionManager
     ) {
-        this.clientConfig = clientConfig;
         this.logger = logger;
         this.invocationService = invocationService;
         this.clientName = clientName;

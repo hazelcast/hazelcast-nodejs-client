@@ -25,7 +25,6 @@ import {CPProxyManager} from './proxy/cpsubsystem/CPProxyManager';
 import {CPSessionManager} from './proxy/cpsubsystem/CPSessionManager';
 import {InvocationService} from './invocation/InvocationService';
 import {SerializationService} from './serialization/SerializationService';
-import {ClientConfig} from './config';
 import {ILogger} from './logging';
 import {ClientConnectionManager} from './network/ClientConnectionManager';
 
@@ -124,7 +123,6 @@ export class CPSubsystemImpl implements CPSubsystem {
     private readonly cpSessionManager: CPSessionManager;
 
     constructor(
-        clientConfig: ClientConfig,
         logger: ILogger,
         clientName: string,
         invocationService: InvocationService,
@@ -132,7 +130,6 @@ export class CPSubsystemImpl implements CPSubsystem {
         connectionManager: ClientConnectionManager
     ) {
         this.cpSessionManager = new CPSessionManager(
-            clientConfig,
             logger,
             clientName,
             invocationService,

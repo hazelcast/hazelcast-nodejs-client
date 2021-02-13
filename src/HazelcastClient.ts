@@ -203,7 +203,7 @@ export class HazelcastClient {
         );
         this.statistics = new Statistics(
             this.loggingService.getLogger(),
-            this.config,
+            this.config.properties,
             this.instanceName,
             this.connectionManager,
             this.invocationService,
@@ -217,7 +217,6 @@ export class HazelcastClient {
             this.invocationService
         );
         this.cpSubsystem = new CPSubsystemImpl(
-            this.config,
             this.loggingService.getLogger(),
             this.instanceName,
             this.invocationService,
