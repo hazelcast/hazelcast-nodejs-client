@@ -191,7 +191,14 @@ export class ObjectDataOutput implements DataOutput {
         this.writeArray(this.writeShort, shorts);
     }
 
+    /** @deprecated since version 4.1.
+     * This method will be deprecated in next major version. Please use writeString instead.
+     */
     writeUTF(val: string): void {
+        this.writeString(val);
+    }
+
+    writeString(val: string): void {
         const len = (val != null) ? Buffer.byteLength(val, 'utf8') : BitsUtil.NULL_ARRAY_LENGTH;
         this.writeInt(len);
         if (len === BitsUtil.NULL_ARRAY_LENGTH) {
@@ -203,8 +210,15 @@ export class ObjectDataOutput implements DataOutput {
         this.pos += len;
     }
 
+    /** @deprecated since version 4.1.
+     * This method will be deprecated in next major version. Please use writeStringArray instead.
+     */
     writeUTFArray(val: string[]): void {
-        this.writeArray(this.writeUTF, val);
+        this.writeStringArray(val);
+    }
+
+    writeStringArray(val: string[]): void {
+        this.writeArray(this.writeString, val);
     }
 
     writeZeroBytes(count: number): void {
@@ -485,7 +499,14 @@ export class ObjectDataInput implements DataInput {
         return this.readChar(pos).charCodeAt(0);
     }
 
+    /** @deprecated since version 4.1.
+     * This method will be deprecated in next major version. Please use readString instead.
+     */
     readUTF(pos?: number): string {
+        return this.readString(pos);
+    }
+
+    readString(pos?: number): string {
         const len = this.readInt(pos);
         const readPos = this.addOrUndefined(pos, 4) || this.pos;
         if (len === BitsUtil.NULL_ARRAY_LENGTH) {
@@ -498,8 +519,15 @@ export class ObjectDataInput implements DataInput {
         return result;
     }
 
+    /** @deprecated since version 4.1.
+     * This method will be deprecated in next major version. Please use readStringArray instead.
+     */
     readUTFArray(pos?: number): string[] {
-        return this.readArray<string>(this.readUTF, pos);
+        return this.readStringArray(pos);
+    }
+
+    readStringArray(pos?: number): string[] {
+        return this.readArray<string>(this.readString, pos);
     }
 
     reset(): void {

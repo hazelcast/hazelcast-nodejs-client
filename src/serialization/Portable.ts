@@ -29,7 +29,8 @@ export enum FieldType {
     LONG = 6,
     FLOAT = 7,
     DOUBLE = 8,
-    UTF = 9,
+    UTF = 9, // Defined for backwards compatibility.
+    STRING = 9,
     PORTABLE_ARRAY = 10,
     BYTE_ARRAY = 11,
     BOOLEAN_ARRAY = 12,
@@ -39,7 +40,8 @@ export enum FieldType {
     LONG_ARRAY = 16,
     FLOAT_ARRAY = 17,
     DOUBLE_ARRAY = 18,
-    UTF_ARRAY = 19,
+    UTF_ARRAY = 19, // Defined for backwards compatibility.
+    STRING_ARRAY = 19
 }
 
 /**
@@ -50,7 +52,12 @@ export interface PortableWriter {
 
     writeLong(fieldName: string, long: Long): void;
 
+    /** @deprecated since version 4.1.
+     * This method will be deprecated in next major version. Please use writeString instead.
+     */
     writeUTF(fieldName: string, str: string): void;
+
+    writeString(fieldName: string, str: string): void;
 
     writeBoolean(fieldName: string, value: boolean): void;
 
@@ -84,7 +91,12 @@ export interface PortableWriter {
 
     writeShortArray(fieldName: string, shorts: number[]): void;
 
+    /** @deprecated since version 4.1.
+     * This method will be deprecated in next major version. Please use writeStringArray instead.
+     */
     writeUTFArray(fieldName: string, val: string[]): void;
+
+    writeStringArray(fieldName: string, val: string[]): void;
 
     writePortableArray(fieldName: string, portables: Portable[]): void;
 }
@@ -105,7 +117,12 @@ export interface PortableReader {
 
     readLong(fieldName: string): Long;
 
+    /** @deprecated since version 4.1.
+     * This method will be deprecated in next major version. Please use readString instead.
+     */
     readUTF(fieldName: string): string;
+
+    readString(fieldName: string): string;
 
     readBoolean(fieldName: string): boolean;
 
@@ -137,7 +154,12 @@ export interface PortableReader {
 
     readShortArray(fieldName: string): number[];
 
+    /** @deprecated since version 4.1.
+     * This method will be deprecated in next major version. Please use readStringArray instead.
+     */
     readUTFArray(fieldName: string): string[];
+
+    readStringArray(fieldName: string): string[];
 
     readPortableArray(fieldName: string): Portable[];
 }

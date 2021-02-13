@@ -27,12 +27,12 @@ class Employee {
 
     readData(input) {
         this.id = input.readInt();
-        this.name = input.readUTF();
+        this.name = input.readString();
     }
 
     writeData(output) {
         output.writeInt(this.id);
-        output.writeUTF(this.name);
+        output.writeString(this.name);
     }
 }
 

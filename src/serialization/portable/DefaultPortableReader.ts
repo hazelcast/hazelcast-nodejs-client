@@ -69,9 +69,16 @@ export class DefaultPortableReader implements PortableReader {
         return this.input.readLong(pos);
     }
 
+    /** @deprecated since version 4.1.
+     * This method will be deprecated in next major version. Please use readString instead.
+     */
     readUTF(fieldName: string): string {
-        const pos = this.positionByField(fieldName, FieldType.UTF);
-        return this.input.readUTF(pos);
+        return this.readString(fieldName);
+    }
+
+    readString(fieldName: string): string {
+        const pos = this.positionByField(fieldName, FieldType.STRING);
+        return this.input.readString(pos);
     }
 
     readBoolean(fieldName: string): boolean {
@@ -162,9 +169,16 @@ export class DefaultPortableReader implements PortableReader {
         return this.input.readShortArray(pos);
     }
 
+    /** @deprecated since version 4.1.
+     * This method will be deprecated in next major version. Please use readStringArray instead.
+     */
     readUTFArray(fieldName: string): string[] {
-        const pos = this.positionByField(fieldName, FieldType.UTF_ARRAY);
-        return this.input.readUTFArray(pos);
+        return this.readStringArray(fieldName);
+    }
+
+    readStringArray(fieldName: string): string[] {
+        const pos = this.positionByField(fieldName, FieldType.STRING_ARRAY);
+        return this.input.readStringArray(pos);
     }
 
     readPortableArray(fieldName: string): Portable[] {

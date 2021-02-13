@@ -625,12 +625,12 @@ class Employee {
 
     readData(input) {
         this.id = input.readInt();
-        this.name = input.readUTF();
+        this.name = input.readString();
     }
 
     writeData(output) {
         output.writeInt(this.id);
-        output.writeUTF(this.name);
+        output.writeString(this.name);
     }
 }
 ```
@@ -692,13 +692,13 @@ class Customer {
     }
 
     readPortable(reader) {
-        this.name = reader.readUTF('name');
+        this.name = reader.readString('name');
         this.id = reader.readInt('id');
         this.lastOrder = reader.readLong('lastOrder').toNumber();
     }
 
     writePortable(writer) {
-        writer.writeUTF('name', this.name);
+        writer.writeString('name', this.name);
         writer.writeInt('id', this.id);
         writer.writeLong('lastOrder', Long.fromNumber(this.lastOrder));
     }
@@ -768,13 +768,13 @@ class Foo {
     }
 
     readPortable(reader) {
-        this.foo = reader.readUTF('foo');
-        this.foo2 = reader.readUTF('foo2');
+        this.foo = reader.readString('foo');
+        this.foo2 = reader.readString('foo2');
     }
 
     writePortable(writer) {
-        writer.writeUTF('foo', this.foo);
-        writer.writeUTF('foo2', this.foo2);
+        writer.writeString('foo', this.foo);
+        writer.writeString('foo2', this.foo2);
     }
 }
 ```
@@ -2065,11 +2065,11 @@ class IdentifiedEntryProcessor {
     }
 
     readData(input) {
-        this.value = input.readUTF();
+        this.value = input.readString();
     }
 
     writeData(output) {
-        output.writeUTF(this.value);
+        output.writeString(this.value);
     }
 }
 ```
@@ -2109,12 +2109,12 @@ public class IdentifiedEntryProcessor
 
     @Override
     public void writeData(ObjectDataOutput out) throws IOException {
-        out.writeUTF(value);
+        out.writeString(value);
     }
 
     @Override
     public void readData(ObjectDataInput in) throws IOException {
-        value = in.readUTF();
+        value = in.readString();
     }
 
     @Override
@@ -2230,14 +2230,14 @@ class Employee {
     }
 
     readPortable(reader) {
-        this.name = reader.readUTF();
+        this.name = reader.readString();
         this.age = reader.readInt();
         this.active = reader.readBoolean();
         this.salary = reader.readDouble();
     }
 
     writePortable(writer) {
-        writer.writeUTF(this.name);
+        writer.writeString(this.name);
         writer.writeInt(this.age);
         writer.writeBoolean(this.active);
         writer.writeDouble(this.salary);

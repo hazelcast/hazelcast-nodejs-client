@@ -25,15 +25,15 @@ class UsernamePasswordCredentials {
     }
 
     readPortable(reader) {
-        this.username = reader.readUTF('username');
-        this.endpoint = reader.readUTF('password');
-        this.password = reader.readUTF('endpoint');
+        this.username = reader.readString('username');
+        this.endpoint = reader.readString('password');
+        this.password = reader.readString('endpoint');
     }
 
     writePortable(writer) {
-        writer.writeUTF('username', this.username);
-        writer.writeUTF('password', this.password);
-        writer.writeUTF('endpoint', this.endpoint);
+        writer.writeString('username', this.username);
+        writer.writeString('password', this.password);
+        writer.writeString('endpoint', this.endpoint);
     }
 }
 

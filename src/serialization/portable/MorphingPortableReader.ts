@@ -136,8 +136,15 @@ export class MorphingPortableReader extends DefaultPortableReader {
         return this.validateCompatibleAndRead(fieldName, FieldType.PORTABLE_ARRAY, super.readPortableArray);
     }
 
+    readStringArray(fieldName: string): string[] {
+        return this.validateCompatibleAndRead(fieldName, FieldType.STRING_ARRAY, super.readStringArray);
+    }
+
+    /** @deprecated since version 4.1.
+     * This method will be deprecated in next major version. Please use readStringArray instead.
+     */
     readUTFArray(fieldName: string): string[] {
-        return this.validateCompatibleAndRead(fieldName, FieldType.UTF_ARRAY, super.readUTFArray);
+        return this.readStringArray(fieldName);
     }
 
     readShortArray(fieldName: string): number[] {
@@ -184,8 +191,15 @@ export class MorphingPortableReader extends DefaultPortableReader {
         return this.validateCompatibleAndRead(fieldName, FieldType.BOOLEAN, super.readBoolean);
     }
 
+    readString(fieldName: string): string {
+        return this.validateCompatibleAndRead(fieldName, FieldType.STRING, super.readString);
+    }
+
+    /** @deprecated since version 4.1.
+     * This method will be deprecated in next major version. Please use readString instead.
+     */
     readUTF(fieldName: string): string {
-        return this.validateCompatibleAndRead(fieldName, FieldType.UTF, super.readUTF);
+        return this.readString(fieldName);
     }
 
     private validateCompatibleAndRead(fieldName: string,

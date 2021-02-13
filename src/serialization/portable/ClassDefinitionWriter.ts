@@ -41,8 +41,15 @@ export class ClassDefinitionWriter implements PortableWriter {
         this.builder.addLongField(fieldName);
     }
 
+    writeString(fieldName: string, str: string): void {
+        this.builder.addStringField(fieldName);
+    }
+
+    /** @deprecated since version 4.1.
+     * This method will be deprecated in next major version. Please use writeString instead.
+     */
     writeUTF(fieldName: string, str: string): void {
-        this.builder.addUTFField(fieldName);
+        this.writeString(fieldName, str);
     }
 
     writeBoolean(fieldName: string, value: boolean): void {
@@ -121,8 +128,15 @@ export class ClassDefinitionWriter implements PortableWriter {
         this.builder.addShortArrayField(fieldName);
     }
 
+    writeStringArray(fieldName: string, val: string[]): void {
+        this.builder.addStringArrayField(fieldName);
+    }
+
+    /** @deprecated since version 4.1.
+     * This method will be deprecated in next major version. Please use writeStringArray instead.
+     */
     writeUTFArray(fieldName: string, val: string[]): void {
-        this.builder.addUTFArrayField(fieldName);
+        this.writeStringArray(fieldName, val);
     }
 
     writePortableArray(fieldName: string, portables: Portable[]): void {

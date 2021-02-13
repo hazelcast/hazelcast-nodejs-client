@@ -58,9 +58,16 @@ export class DefaultPortableWriter {
         this.output.writeLong(long);
     }
 
+    /** @deprecated since version 4.1.
+     * This method will be deprecated in next major version. Please use writeString instead.
+     */
     writeUTF(fieldName: string, str: string): void {
-        this.setPosition(fieldName, FieldType.UTF);
-        this.output.writeUTF(str);
+        this.writeString(fieldName, str);
+    }
+
+    writeString(fieldName: string, str: string): void {
+        this.setPosition(fieldName, FieldType.STRING);
+        this.output.writeString(str);
     }
 
     writeBoolean(fieldName: string, value: boolean): void {
@@ -151,9 +158,16 @@ export class DefaultPortableWriter {
         this.output.writeShortArray(shorts);
     }
 
+    /** @deprecated since version 4.1.
+     * This method will be deprecated in next major version. Please use writeStringArray instead.
+     */
     writeUTFArray(fieldName: string, val: string[]): void {
-        this.setPosition(fieldName, FieldType.UTF_ARRAY);
-        this.output.writeUTFArray(val);
+        this.writeStringArray(fieldName, val);
+    }
+
+    writeStringArray(fieldName: string, val: string[]): void {
+        this.setPosition(fieldName, FieldType.STRING_ARRAY);
+        this.output.writeStringArray(val);
     }
 
     writePortableArray(fieldName: string, portables: Portable[]): void {

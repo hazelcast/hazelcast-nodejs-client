@@ -36,10 +36,10 @@ selfReferringObject.self = selfReferringObject;
                     mousseDeserialize: mousse.deserialize,
                     id: 10,
                     write: function (output, obj) {
-                        output.writeUTF(this.mousseSerialize(obj))
+                        output.writeString(this.mousseSerialize(obj))
                     },
                     read: function (input) {
-                        const representation = input.readUTF();
+                        const representation = input.readString();
                         return this.mousseDeserialize(representation).then(function (obj) {
                             return obj;
                         });

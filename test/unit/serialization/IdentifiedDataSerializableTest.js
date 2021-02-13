@@ -57,7 +57,7 @@ class IdentifiedDataClass {
         this.a_long = inp.readLong();
         this.a_float = inp.readFloat();
         this.a_double = inp.readDouble();
-        this.a_string = inp.readUTF();
+        this.a_string = inp.readString();
 
         this.bytes = inp.readByteArray();
         this.booleans = inp.readBooleanArray();
@@ -67,7 +67,7 @@ class IdentifiedDataClass {
         this.longs = inp.readLongArray();
         this.floats = inp.readFloatArray();
         this.doubles = inp.readDoubleArray();
-        this.strings = inp.readUTFArray();
+        this.strings = inp.readStringArray();
     }
 
     writeData(outp) {
@@ -79,7 +79,7 @@ class IdentifiedDataClass {
         outp.writeLong(this.a_long);
         outp.writeFloat(this.a_float);
         outp.writeDouble(this.a_double);
-        outp.writeUTF(this.a_string);
+        outp.writeString(this.a_string);
 
         outp.writeByteArray(this.bytes);
         outp.writeBooleanArray(this.booleans);
@@ -89,7 +89,7 @@ class IdentifiedDataClass {
         outp.writeLongArray(this.longs);
         outp.writeFloatArray(this.floats);
         outp.writeDoubleArray(this.doubles);
-        outp.writeUTFArray(this.strings);
+        outp.writeStringArray(this.strings);
     }
 
 }

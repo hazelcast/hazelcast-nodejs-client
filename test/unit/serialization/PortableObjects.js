@@ -25,13 +25,13 @@ class InnerPortable {
     }
 
     readPortable(reader) {
-        this.p1 = reader.readUTF('p1');
-        this.p2 = reader.readUTF('p2');
+        this.p1 = reader.readString('p1');
+        this.p2 = reader.readString('p2');
     }
 
     writePortable(writer) {
-        writer.writeUTF('p1', this.p1);
-        writer.writeUTF('p2', this.p2);
+        writer.writeString('p1', this.p1);
+        writer.writeString('p2', this.p2);
     }
 
 }
@@ -76,7 +76,7 @@ class PortableObject {
         writer.writeLong('a_long', this.a_long);
         writer.writeFloat('a_float', this.a_float);
         writer.writeDouble('a_double', this.a_double);
-        writer.writeUTF('a_string', this.a_string);
+        writer.writeString('a_string', this.a_string);
         writer.writePortable('a_portable', this.a_portable);
         const tmpInnerObj = new InnerPortable();
         writer.writeNullPortable('a_null_portable', tmpInnerObj.factoryId, tmpInnerObj.classId);
@@ -89,7 +89,7 @@ class PortableObject {
         writer.writeLongArray('longs', this.longs);
         writer.writeFloatArray('floats', this.floats);
         writer.writeDoubleArray('doubles', this.doubles);
-        writer.writeUTFArray('strings', this.strings);
+        writer.writeStringArray('strings', this.strings);
         writer.writePortableArray('portables', this.portables);
     }
 
@@ -102,7 +102,7 @@ class PortableObject {
         this.a_long = reader.readLong('a_long');
         this.a_float = reader.readFloat('a_float');
         this.a_double = reader.readDouble('a_double');
-        this.a_string = reader.readUTF('a_string');
+        this.a_string = reader.readString('a_string');
         this.a_portable = reader.readPortable('a_portable');
         this.a_null_portable = reader.readPortable('a_null_portable');
 
@@ -114,7 +114,7 @@ class PortableObject {
         this.longs = reader.readLongArray('longs');
         this.floats = reader.readFloatArray('floats');
         this.doubles = reader.readDoubleArray('doubles');
-        this.strings = reader.readUTFArray('strings');
+        this.strings = reader.readStringArray('strings');
         this.portables = reader.readPortableArray('portables');
     }
 
@@ -154,7 +154,7 @@ class PortableObjectV2{
     }
 
     writePortable(writer) {
-        writer.writeUTF('a_new_prop', this.a_new_prop);
+        writer.writeString('a_new_prop', this.a_new_prop);
         writer.writeByte('a_byte', this.a_byte);
         writer.writeBoolean('a_boolean', this.a_boolean);
         writer.writeChar('a_char', this.a_character);
@@ -175,12 +175,12 @@ class PortableObjectV2{
         writer.writeLongArray('longs', this.longs);
         writer.writeFloatArray('floats', this.floats);
         writer.writeDoubleArray('doubles', this.doubles);
-        writer.writeUTFArray('strings', this.strings);
+        writer.writeStringArray('strings', this.strings);
         writer.writePortableArray('portables', this.portables);
     }
 
     readPortable(reader) {
-        this.a_new_prop = reader.readUTF('a_new_prop');
+        this.a_new_prop = reader.readString('a_new_prop');
         this.a_byte = reader.readByte('a_byte');
         this.a_boolean = reader.readBoolean('a_boolean');
         this.a_character = reader.readChar('a_char');
@@ -200,7 +200,7 @@ class PortableObjectV2{
         this.longs = reader.readLongArray('longs');
         this.floats = reader.readFloatArray('floats');
         this.doubles = reader.readDoubleArray('doubles');
-        this.strings = reader.readUTFArray('strings');
+        this.strings = reader.readStringArray('strings');
         this.portables = reader.readPortableArray('portables');
     }
 
@@ -215,11 +215,11 @@ class SimplePortable {
     }
 
     readPortable(reader) {
-        this.aString = reader.readUTF('aString');
+        this.aString = reader.readString('aString');
     }
 
     writePortable(writer) {
-        writer.writeUTF('aString', this.aString);
+        writer.writeString('aString', this.aString);
     }
 
 }
@@ -270,11 +270,11 @@ class Child {
     }
 
     writePortable(writer) {
-        writer.writeUTF('name', this.name);
+        writer.writeString('name', this.name);
     }
 
     readPortable(reader) {
-        this.name = reader.readUTF('name');
+        this.name = reader.readString('name');
     }
 
 }
