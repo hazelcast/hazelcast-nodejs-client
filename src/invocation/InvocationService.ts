@@ -254,7 +254,6 @@ export class InvocationService {
     private readonly operationBackupTimeoutMillis: number;
     private readonly backupAckToClientEnabled: boolean;
     private readonly logger: ILogger;
-    private readonly connectionManager: ClientConnectionManager;
     private readonly partitionService: PartitionServiceImpl;
     private readonly cleanResourcesMillis: number;
     private readonly redoOperation: boolean;
@@ -492,15 +491,15 @@ export class InvocationService {
         }
 
         if (invocation.hasPartitionId()) {
-            invocationPromise = this.invokeOnPartitionOwner(invocation, invocation.partitionId);
+            invocationPromise = this.invokeOnPartitionOwner(invocation, invocation.partitionId, connectionManager);
         } else if (invocation.hasOwnProperty('uuid')) {
-            invocationPromise = this.invokeOnUuid(invocation, invocation.uuid);
+            invocationPromise = this.invokeOnUuid(invocation, invocation.uuid, connectionManager);
         } else {
-            invocationPromise = this.invokeOnRandomConnection(invocation);
+            invocationPromise = this.invokeOnRandomConnection(invocation, connectionManager);
         }
 
         invocationPromise.catch(() => {
-            return this.invokeOnRandomConnection(invocation);
+            return this.invokeOnRandomConnection(invocation, connectionManager);
         }).catch((err) => {
             this.notifyError(invocation, err, connectionManager);
         });
@@ -523,23 +522,30 @@ export class InvocationService {
         if (invocation.hasOwnProperty('connection')) {
             invocationPromise = this.send(invocation, invocation.connection);
         } else {
-            invocationPromise = this.invokeOnRandomConnection(invocation);
+            invocationPromise = this.invokeOnRandomConnection(invocation, connectionManager);
         }
         invocationPromise.catch((err) => {
             this.notifyError(invocation, err, connectionManager);
         });
     }
 
-    private invokeOnRandomConnection(invocation: Invocation): Promise<void> {
-        const connection = this.connectionManager.getRandomConnection();
+    private invokeOnRandomConnection(
+        invocation: Invocation,
+        connectionManager: ClientConnectionManager
+    ): Promise<void> {
+        const connection = connectionManager.getRandomConnection();
         if (connection == null) {
             return Promise.reject(new IOError('No connection found to invoke'));
         }
         return this.send(invocation, connection);
     }
 
-    private invokeOnUuid(invocation: Invocation, target: UUID): Promise<void> {
-        const connection = this.connectionManager.getConnection(target);
+    private invokeOnUuid(
+        invocation: Invocation,
+        target: UUID,
+        connectionManager: ClientConnectionManager
+    ): Promise<void> {
+        const connection = connectionManager.getConnection(target);
         if (connection == null) {
             this.logger.trace('InvocationService', `Client is not connected to target: ${target}`);
             return Promise.reject(new IOError('No connection found to invoke'));
@@ -547,13 +553,17 @@ export class InvocationService {
         return this.send(invocation, connection);
     }
 
-    private invokeOnPartitionOwner(invocation: Invocation, partitionId: number): Promise<void> {
+    private invokeOnPartitionOwner(
+        invocation: Invocation,
+        partitionId: number,
+        connectionManager: ClientConnectionManager
+    ): Promise<void> {
         const partitionOwner = this.partitionService.getPartitionOwner(partitionId);
         if (partitionOwner == null) {
             this.logger.trace('InvocationService', 'Partition owner is not assigned yet');
             return Promise.reject(new IOError('No connection found to invoke'));
         }
-        return this.invokeOnUuid(invocation, partitionOwner);
+        return this.invokeOnUuid(invocation, partitionOwner, connectionManager);
     }
 
     private send(invocation: Invocation, connection: ClientConnection): Promise<void> {
@@ -586,7 +596,7 @@ export class InvocationService {
         if (invocation.invokeCount < MAX_FAST_INVOCATION_COUNT) {
             this.doInvoke(invocation, connectionManager);
         } else {
-            setTimeout(this.doInvoke.bind(this, invocation), this.invocationRetryPauseMillis);
+            setTimeout(this.doInvoke.bind(this, invocation, connectionManager), this.invocationRetryPauseMillis);
         }
     }
 
