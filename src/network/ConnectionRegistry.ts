@@ -180,8 +180,6 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
         return error;
     }
 
-    // methods that mutate the state go here
-    // ...
     deleteConnection(uuid: UUID): void {
         this.activeConnections.delete(uuid.toString());
     }
