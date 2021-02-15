@@ -1,6 +1,6 @@
 import {ClientConnection} from './ClientConnection';
 import {ClientOfflineError, IOError, LoadBalancer, UUID} from '../core';
-import {ClientConfig, ConnectionStrategyConfig, ReconnectMode} from '../config';
+import {ConnectionStrategyConfig, ReconnectMode} from '../config';
 
 export enum ClientState {
     /**
