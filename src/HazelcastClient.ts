@@ -64,6 +64,7 @@ import {RoundRobinLB} from './util/RoundRobinLB';
 import {ClusterViewListenerService} from './listener/ClusterViewListenerService';
 import {ClientMessage} from './protocol/ClientMessage';
 import {ClientConnection} from './network/ClientConnection';
+import {ConnectionRegistry, ConnectionRegistryImpl} from './network/ConnectionRegistry';
 
 /**
  * Hazelcast client instance. When you want to use Hazelcast's distributed
@@ -121,6 +122,8 @@ export class HazelcastClient {
     private readonly clusterViewListenerService: ClusterViewListenerService;
     /** @internal */
     private mapRepairingTask: RepairingTask;
+    /** @internal */
+    private connectionRegistry: ConnectionRegistry;
 
     /** @internal */
     constructor(config?: ClientConfigImpl, failoverConfig?: ClientFailoverConfigImpl) {
@@ -129,6 +132,7 @@ export class HazelcastClient {
         } else {
             this.config = failoverConfig.clientConfigs[0];
         }
+        this.connectionRegistry = new ConnectionRegistryImpl(this.config.connectionStrategy);
         this.failoverConfig = failoverConfig;
         this.errorFactory = new ClientErrorFactory();
         this.serializationService = new SerializationServiceV1(this.config.serialization);
@@ -162,7 +166,8 @@ export class HazelcastClient {
             this.loggingService.getLogger(),
             this.partitionService,
             this.errorFactory,
-            this.lifecycleService
+            this.lifecycleService,
+            this.connectionRegistry
         );
 
         this.connectionManager = new ClientConnectionManager(
@@ -177,14 +182,16 @@ export class HazelcastClient {
             this.clusterFailoverService,
             this.failoverConfig,
             this.clusterService,
-            this.invocationService
+            this.invocationService,
+            this.connectionRegistry
         );
 
         this.listenerService = new ListenerService(
             this.loggingService.getLogger(),
             this.config.network.smartRouting,
             this.connectionManager,
-            this.invocationService
+            this.invocationService,
+            this.connectionRegistry
         );
 
         this.lockReferenceIdGenerator = new LockReferenceIdGenerator();
@@ -200,7 +207,8 @@ export class HazelcastClient {
             this.nearCacheManager,
             this.getRepairingTask(),
             this.clusterService,
-            this.lockReferenceIdGenerator
+            this.lockReferenceIdGenerator,
+            this.connectionRegistry
         );
         this.statistics = new Statistics(
             this.loggingService.getLogger(),
@@ -208,14 +216,16 @@ export class HazelcastClient {
             this.instanceName,
             this.connectionManager,
             this.invocationService,
-            this.nearCacheManager
+            this.nearCacheManager,
+            this.connectionRegistry
         );
         this.clusterViewListenerService = new ClusterViewListenerService(
             this.loggingService.getLogger(),
             this.connectionManager,
             this.partitionService,
             this.clusterService,
-            this.invocationService
+            this.invocationService,
+            this.connectionRegistry
         );
         this.cpSubsystem = new CPSubsystemImpl(
             this.loggingService.getLogger(),
@@ -267,7 +277,7 @@ export class HazelcastClient {
      */
 
     getLocalEndpoint(): ClientInfo {
-        const connection: ClientConnection = this.connectionManager.getRandomConnection();
+        const connection: ClientConnection = this.connectionRegistry.getRandomConnection();
         const localAddress = connection != null ? connection.getLocalAddress() : null;
         const info = new ClientInfo();
         info.uuid = this.connectionManager.getClientUuid();
@@ -285,7 +295,7 @@ export class HazelcastClient {
         const clientMessage = ClientGetDistributedObjectsCodec.encodeRequest();
         let localDistributedObjects: Set<string>;
         let responseMessage: ClientMessage;
-        return this.invocationService.invokeOnRandomTarget(clientMessage, this.connectionManager)
+        return this.invocationService.invokeOnRandomTarget(clientMessage)
             .then((resp) => {
                 responseMessage = resp;
                 return this.proxyManager.getDistributedObjects();
@@ -450,6 +460,11 @@ export class HazelcastClient {
     }
 
     /** @internal */
+    getConnectionRegistry(): ConnectionRegistry {
+        return this.connectionRegistry;
+    }
+
+    /** @internal */
     getRepairingTask(): RepairingTask {
         if (this.mapRepairingTask == null) {
             this.mapRepairingTask = new RepairingTask(
@@ -510,7 +525,7 @@ export class HazelcastClient {
         this.statistics.stop();
         return this.cpSubsystem.shutdown()
             .then(() => {
-                this.invocationService.shutdown(this.connectionManager);
+                this.invocationService.shutdown();
                 this.connectionManager.shutdown();
             })
             .then(() => {
@@ -573,7 +588,7 @@ export class HazelcastClient {
                 this.proxyManager.init();
                 this.loadBalancer.initLoadBalancer(this.clusterService, this.config);
                 this.statistics.start();
-                return this.invocationService.start(this.listenerService, this.connectionManager);
+                return this.invocationService.start(this.listenerService);
             })
             .then(() => {
                 return this.sendStateToCluster();

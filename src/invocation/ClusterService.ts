@@ -40,7 +40,7 @@ import {
 } from '../core';
 import {MemberInfo} from '../core/MemberInfo';
 import {ClusterFailoverService} from '../ClusterFailoverService';
-import {ClientConnectionManager} from '../network/ClientConnectionManager';
+import {ConnectionRegistry} from '../network/ConnectionRegistry';
 
 class MemberListSnapshot {
     version: number;
@@ -166,7 +166,7 @@ export class ClusterService implements Cluster {
     }
 
     handleMembersViewEvent(
-        connectionManager: ClientConnectionManager,
+        connectionRegistry: ConnectionRegistry,
         memberListVersion: number,
         memberInfos: MemberInfo[]
     ): void {
@@ -184,7 +184,7 @@ export class ClusterService implements Cluster {
             const snapshot = this.createSnapshot(memberListVersion, memberInfos);
             this.memberListSnapshot = snapshot;
             const currentMembers = snapshot.memberList;
-            const events = this.detectMembershipEvents(prevMembers, currentMembers, connectionManager);
+            const events = this.detectMembershipEvents(prevMembers, currentMembers, connectionRegistry);
             this.fireEvents(events);
         }
     }
@@ -228,7 +228,7 @@ export class ClusterService implements Cluster {
     private detectMembershipEvents(
         prevMembers: MemberImpl[],
         currentMembers: MemberImpl[],
-        connectionManager: ClientConnectionManager
+        connectionRegistry: ConnectionRegistry
     ): MembershipEvent[] {
         const newMembers = new Array<MemberImpl>();
 
@@ -249,7 +249,7 @@ export class ClusterService implements Cluster {
         // removal events should be added before added events
         deadMembers.forEach((member) => {
             events[index++] = new MembershipEvent(member, MemberEvent.REMOVED, currentMembers);
-            const connection: ClientConnection = connectionManager.getConnection(member.uuid);
+            const connection: ClientConnection = connectionRegistry.getConnection(member.uuid);
             if (connection != null) {
                 connection.close(null, new TargetDisconnectedError('The client has closed the connection to this '
                     + 'member, after receiving a member left event from the cluster ' + connection));

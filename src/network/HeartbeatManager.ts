@@ -23,6 +23,7 @@ import {cancelRepetitionTask, scheduleWithRepetition, Task} from '../util/Util';
 import {TargetDisconnectedError} from '../core';
 import {Invocation, InvocationService} from '../invocation/InvocationService';
 import {Properties} from '../config';
+import {ConnectionRegistry} from './ConnectionRegistry';
 
 const PROPERTY_HEARTBEAT_INTERVAL = 'hazelcast.client.heartbeat.interval';
 const PROPERTY_HEARTBEAT_TIMEOUT = 'hazelcast.client.heartbeat.timeout';
@@ -38,11 +39,13 @@ export class HeartbeatManager {
     private readonly heartbeatInterval: number;
     private logger: ILogger;
     private task: Task;
+    private readonly connectionRegistry: ConnectionRegistry;
 
     constructor(
         properties: Properties,
         logger: ILogger,
-        connectionManager: ClientConnectionManager
+        connectionManager: ClientConnectionManager,
+        connectionRegistry: ConnectionRegistry
     ) {
         this.connectionManager = connectionManager;
         this.logger = logger;
@@ -78,8 +81,7 @@ export class HeartbeatManager {
         }
 
         const now = Date.now();
-        const activeConnections = this.connectionManager.getActiveConnections();
-        for (const connection of activeConnections) {
+        for (const connection of this.connectionRegistry.getConnections()) {
             this.checkConnection(now, connection, invocationService);
         }
     }
@@ -100,7 +102,7 @@ export class HeartbeatManager {
             const invocation = new Invocation(invocationService, request);
             invocation.connection = connection;
             invocationService
-                .invokeUrgent(invocation, this.connectionManager)
+                .invokeUrgent(invocation)
                 .catch(() => {
                     // No-op
                 });

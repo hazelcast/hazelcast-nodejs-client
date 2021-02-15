@@ -28,6 +28,7 @@ import {SerializationService} from '../serialization/SerializationService';
 import {ClientConnectionManager} from '../network/ClientConnectionManager';
 import {ListenerService} from '../listener/ListenerService';
 import {ClusterService} from '../invocation/ClusterService';
+import {ConnectionRegistry} from '../network/ConnectionRegistry';
 
 
 /**
@@ -47,6 +48,7 @@ export abstract class BaseProxy {
     protected readonly clusterService: ClusterService;
     protected readonly clientConfig: ClientConfig;
     protected readonly logger: ILogger;
+    protected readonly connectionRegistry: ConnectionRegistry
 
     constructor(
         serviceName: string,
@@ -59,7 +61,8 @@ export abstract class BaseProxy {
         serializationService: SerializationService,
         connectionManager: ClientConnectionManager,
         listenerService: ListenerService,
-        clusterService: ClusterService
+        clusterService: ClusterService,
+        connectionRegistry: ConnectionRegistry
     ) {
         this.name = name;
         this.serviceName = serviceName;
@@ -72,6 +75,7 @@ export abstract class BaseProxy {
         this.clusterService = clusterService
         this.clientConfig = clientConfig;
         this.logger = logger;
+        this.connectionRegistry = connectionRegistry;
     }
 
     getPartitionKey(): string {
@@ -125,12 +129,12 @@ export abstract class BaseProxy {
      */
     protected encodeInvokeOnRandomTarget(codec: any, ...codecArguments: any[]): Promise<ClientMessage> {
         const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
-        return this.invocationService.invokeOnRandomTarget(clientMessage, this.connectionManager);
+        return this.invocationService.invokeOnRandomTarget(clientMessage);
     }
 
     protected encodeInvokeOnTarget(codec: any, target: UUID, ...codecArguments: any[]): Promise<ClientMessage> {
         const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
-        return this.invocationService.invokeOnTarget(clientMessage, target, this.connectionManager);
+        return this.invocationService.invokeOnTarget(clientMessage, target);
     }
 
     /**
@@ -138,7 +142,7 @@ export abstract class BaseProxy {
      */
     protected encodeInvokeOnPartition(codec: any, partitionId: number, ...codecArguments: any[]): Promise<ClientMessage> {
         const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
-        return this.invocationService.invokeOnPartition(clientMessage, partitionId, this.connectionManager);
+        return this.invocationService.invokeOnPartition(clientMessage, partitionId);
     }
 
     /**
@@ -153,7 +157,6 @@ export abstract class BaseProxy {
         return this.invocationService.invokeOnPartition(
             clientMessage,
             partitionId,
-            this.connectionManager,
             timeoutMillis
         );
     }
@@ -173,7 +176,7 @@ export abstract class BaseProxy {
     }
 
     protected getConnectedServerVersion(): number {
-        const activeConnections = this.connectionManager.getActiveConnections();
+        const activeConnections = this.connectionRegistry.getConnections();
         for (const address in activeConnections) {
             return activeConnections[address].getConnectedServerVersion();
         }

@@ -40,7 +40,8 @@ import {PartitionService} from '../../PartitionService';
 import {InvocationService} from '../../invocation/InvocationService';
 import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 import {ListenerService} from '../../listener/ListenerService';
-import {ClientConnection} from "../../network/ClientConnection";
+import {ClientConnection} from '../../network/ClientConnection';
+import {ConnectionRegistry} from '../../network/ConnectionRegistry';
 
 /** @internal */
 export const TOPIC_INITIAL_BACKOFF = 100;
@@ -67,7 +68,8 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         serializationService: SerializationService,
         connectionManager: ClientConnectionManager,
         listenerService: ListenerService,
-        clusterService: ClusterService
+        clusterService: ClusterService,
+        connectionRegistry: ConnectionRegistry
     ) {
         super(
             serviceName,
@@ -80,7 +82,8 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
             serializationService,
             connectionManager,
             listenerService,
-            clusterService
+            clusterService,
+            connectionRegistry
         );
         const config = (this.clientConfig as ClientConfigImpl).getReliableTopicConfig(name);
         this.batchSize = config.readBatchSize;
@@ -126,7 +129,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         reliableTopicMessage.payload = this.serializationService.toData(message);
         reliableTopicMessage.publishTime = Long.fromNumber(Date.now());
 
-        const connection: ClientConnection = this.connectionManager.getRandomConnection();
+        const connection: ClientConnection = this.connectionRegistry.getRandomConnection();
         reliableTopicMessage.publisherAddress = connection != null ? connection.getLocalAddress() : null;
 
         switch (this.overloadPolicy) {

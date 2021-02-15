@@ -35,7 +35,7 @@ import {assertString} from '../../util/Util';
 import {InvocationService} from '../../invocation/InvocationService';
 import {SerializationService} from '../../serialization/SerializationService';
 import {ClientConnectionManager} from '../../network/ClientConnectionManager';
-import {CPSessionManager} from "./CPSessionManager";
+import {CPSessionManager} from './CPSessionManager';
 
 const DEFAULT_GROUP_NAME = 'default';
 
@@ -140,7 +140,7 @@ export class CPProxyManager {
 
     private getGroupId(proxyName: string): Promise<RaftGroupId> {
         const clientMessage = CPGroupCreateCPGroupCodec.encodeRequest(proxyName);
-        return this.invocationService.invokeOnRandomTarget(clientMessage, this.connectionManager)
+        return this.invocationService.invokeOnRandomTarget(clientMessage)
             .then(CPGroupCreateCPGroupCodec.decodeResponse);
     }
 
@@ -168,7 +168,7 @@ export class CPProxyManager {
 
     private createSemaphore(groupId: RaftGroupId, proxyName: string, objectName: string): Promise<ISemaphore> {
         const clientMessage = SemaphoreGetSemaphoreTypeCodec.encodeRequest(proxyName);
-        return this.invocationService.invokeOnRandomTarget(clientMessage, this.connectionManager)
+        return this.invocationService.invokeOnRandomTarget(clientMessage)
             .then(SemaphoreGetSemaphoreTypeCodec.decodeResponse)
             .then((jdkCompatible) => {
                 return jdkCompatible

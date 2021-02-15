@@ -99,8 +99,7 @@ export class MetadataFetcher {
         members.forEach((member) => {
             const request = MapFetchNearCacheInvalidationMetadataCodec.encodeRequest(objectNames, member.uuid);
             const promise = this.invocationService.invoke(
-                new Invocation(this.invocationService, request),
-                this.connectionManager
+                new Invocation(this.invocationService, request)
             );
             promises.push(promise);
         });

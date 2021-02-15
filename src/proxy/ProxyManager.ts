@@ -50,6 +50,7 @@ import {NearCacheManager} from '../nearcache/NearCacheManager';
 import {RepairingTask} from '../nearcache/RepairingTask';
 import {ClusterService} from '../invocation/ClusterService';
 import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
+import {ConnectionRegistry} from '../network/ConnectionRegistry';
 
 /** @internal */
 export const NAMESPACE_SEPARATOR = '/';
@@ -83,6 +84,7 @@ export class ProxyManager {
     private readonly repairingTask: RepairingTask;
     private readonly clusterService: ClusterService;
     private readonly lockReferenceIdGenerator: LockReferenceIdGenerator;
+    private readonly connectionRegistry: ConnectionRegistry;
 
     constructor(
         clientConfig: ClientConfig,
@@ -96,6 +98,7 @@ export class ProxyManager {
         repairingTask: RepairingTask,
         clusterService: ClusterService,
         lockReferenceIdGenerator: LockReferenceIdGenerator,
+        connectionRegistry: ConnectionRegistry
     ) {
         this.invocationService = invocationService;
         this.clientConfig = clientConfig;
@@ -108,6 +111,7 @@ export class ProxyManager {
         this.repairingTask = repairingTask;
         this.clusterService = clusterService;
         this.lockReferenceIdGenerator = lockReferenceIdGenerator;
+        this.connectionRegistry = connectionRegistry;
     }
 
     public init(): void {
@@ -169,7 +173,7 @@ export class ProxyManager {
         const request = ClientCreateProxiesCodec.encodeRequest(proxyEntries);
         request.setPartitionId(-1);
         const invocation = new Invocation(this.invocationService, request);
-        return this.invocationService.invokeUrgent(invocation, this.connectionManager).then(() => {});
+        return this.invocationService.invokeUrgent(invocation).then(() => {});
     }
 
     public getDistributedObjects(): Promise<DistributedObject[]> {
@@ -185,7 +189,7 @@ export class ProxyManager {
         this.proxies.delete(serviceName + NAMESPACE_SEPARATOR + name);
         const clientMessage = ClientDestroyProxyCodec.encodeRequest(name, serviceName);
         clientMessage.setPartitionId(-1);
-        return this.invocationService.invokeOnRandomTarget(clientMessage, this.connectionManager).then(() => {});
+        return this.invocationService.invokeOnRandomTarget(clientMessage).then(() => {});
     }
 
     public destroyProxyLocally(namespace: string): Promise<void> {
@@ -222,7 +226,7 @@ export class ProxyManager {
 
     private createProxy(name: string, serviceName: string): Promise<ClientMessage> {
         const request = ClientCreateProxyCodec.encodeRequest(name, serviceName);
-        return this.invocationService.invokeOnRandomTarget(request, this.connectionManager);
+        return this.invocationService.invokeOnRandomTarget(request);
     }
 
     private createDistributedObjectListener(): ListenerMessageCodec {
@@ -257,7 +261,8 @@ export class ProxyManager {
                 this.nearCacheManager,
                 this.repairingTask,
                 this.listenerService,
-                this.clusterService
+                this.clusterService,
+                this.connectionRegistry
             );
         } else if (serviceName === ProxyManager.MULTIMAP_SERVICE){
             // This call may throw ClientOfflineError for partition specific proxies with async start
@@ -273,7 +278,8 @@ export class ProxyManager {
                 this.connectionManager,
                 this.listenerService,
                 this.clusterService,
-                this.lockReferenceIdGenerator
+                this.lockReferenceIdGenerator,
+                this.connectionRegistry
             );
         } else if (serviceName === ProxyManager.RELIABLETOPIC_SERVICE){
             // This call may throw ClientOfflineError for partition specific proxies with async start
@@ -288,7 +294,8 @@ export class ProxyManager {
                 this.serializationService,
                 this.connectionManager,
                 this.listenerService,
-                this.clusterService
+                this.clusterService,
+                this.connectionRegistry
             );
         } else {
             // This call may throw ClientOfflineError for partition specific proxies with async start
@@ -303,7 +310,8 @@ export class ProxyManager {
                 this.serializationService,
                 this.connectionManager,
                 this.listenerService,
-                this.clusterService
+                this.clusterService,
+                this.connectionRegistry
             );
         }
 

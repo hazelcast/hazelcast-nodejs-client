@@ -31,6 +31,7 @@ import {deferredPromise} from '../util/Util';
 import {UuidUtil} from '../util/UuidUtil';
 import {ILogger} from '../logging';
 import {ClientConnectionManager} from '../network/ClientConnectionManager';
+import {ConnectionRegistry} from '../network/ConnectionRegistry';
 
 /** @internal */
 export class ListenerService {
@@ -42,12 +43,14 @@ export class ListenerService {
 
     private readonly activeRegistrations: Map<string, Map<ClientConnection, ClientEventRegistration>>;
     private readonly userKeyInformation: Map<string, RegistrationKey>;
+    private readonly connectionRegistry: ConnectionRegistry;
 
     constructor(
         logger: ILogger,
         isSmartService: boolean,
         connectionManager: ClientConnectionManager,
-        invocationService: InvocationService
+        invocationService: InvocationService,
+        connectionRegistry: ConnectionRegistry
     ) {
         this.connectionManager = connectionManager;
         this.invocationService = invocationService;
@@ -112,7 +115,7 @@ export class ListenerService {
         const invocation = new Invocation(this.invocationService, registerRequest);
         invocation.handler = registrationKey.getHandler() as any;
         invocation.connection = connection;
-        this.invocationService.invokeUrgent(invocation, this.connectionManager).then((responseMessage) => {
+        this.invocationService.invokeUrgent(invocation).then((responseMessage) => {
             const correlationId = responseMessage.getCorrelationId();
             const response = codec.decodeAddResponse(responseMessage);
             const eventRegistration = new ClientEventRegistration(response, correlationId, invocation.connection, codec);
@@ -129,7 +132,7 @@ export class ListenerService {
 
     registerListener(codec: ListenerMessageCodec,
                      listenerHandlerFn: ClientMessageHandler): Promise<string> {
-        const activeConnections = this.connectionManager.getActiveConnections();
+        const activeConnections = this.connectionRegistry.getConnections();
         const userKey = UuidUtil.generate().toString();
         let connectionsOnUserKey: Map<ClientConnection, ClientEventRegistration>;
         const registerRequest = codec.encodeAddRequest(this.isSmart());
@@ -153,7 +156,7 @@ export class ListenerService {
             invocation.handler = listenerHandlerFn as any;
             invocation.connection = connection;
 
-            const registrationPromise = this.invocationService.invokeUrgent(invocation, this.connectionManager)
+            const registrationPromise = this.invocationService.invokeUrgent(invocation)
                 .then((responseMessage) => {
                     const correlationId = responseMessage.getCorrelationId();
                     const response = codec.decodeAddResponse(responseMessage);
@@ -214,7 +217,7 @@ export class ListenerService {
         }
         const invocation = new Invocation(this.invocationService, clientMessage, Number.MAX_SAFE_INTEGER);
         invocation.connection = eventRegistration.subscriber;
-        this.invocationService.invoke(invocation, this.connectionManager).catch((err) => {
+        this.invocationService.invoke(invocation).catch((err) => {
             if (err instanceof ClientNotActiveError
                 || err instanceof IOError
                 || err instanceof TargetDisconnectedError) {

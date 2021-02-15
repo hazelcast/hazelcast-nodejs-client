@@ -61,6 +61,7 @@ import {SerializationService} from '../serialization/SerializationService';
 import {ClientConnectionManager} from '../network/ClientConnectionManager';
 import {ListenerService} from '../listener/ListenerService';
 import {ClusterService} from '../invocation/ClusterService';
+import {ConnectionRegistry} from '../network/ConnectionRegistry';
 
 /** @internal */
 export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
@@ -79,7 +80,8 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
         connectionManager: ClientConnectionManager,
         listenerService: ListenerService,
         clusterService: ClusterService,
-        lockReferenceIdGenerator: LockReferenceIdGenerator
+        lockReferenceIdGenerator: LockReferenceIdGenerator,
+        connectionRegistry: ConnectionRegistry
     ) {
         super(
             serviceName,
@@ -92,7 +94,8 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
             serializationService,
             connectionManager,
             listenerService,
-            clusterService
+            clusterService,
+            connectionRegistry
         );
         this.lockReferenceIdGenerator = lockReferenceIdGenerator;
     }

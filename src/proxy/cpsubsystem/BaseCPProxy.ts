@@ -94,6 +94,6 @@ export abstract class BaseCPProxy {
      */
     protected encodeInvokeOnRandomTarget(codec: any, ...codecArguments: any[]): Promise<ClientMessage> {
         const clientMessage = codec.encodeRequest(...codecArguments);
-        return this.invocationService.invokeOnRandomTarget(clientMessage, this.connectionManager);
+        return this.invocationService.invokeOnRandomTarget(clientMessage);
     }
 }

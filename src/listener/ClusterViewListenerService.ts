@@ -24,6 +24,7 @@ import {ClientAddClusterViewListenerCodec} from '../codec/ClientAddClusterViewLi
 import {ClientMessage} from '../protocol/ClientMessage';
 import {UUID} from '../core/UUID';
 import {Invocation, InvocationService} from '../invocation/InvocationService';
+import {ConnectionRegistry} from '../network/ConnectionRegistry';
 
 /**
  * Adds cluster listener to one of the connections. If that connection is removed,
@@ -37,6 +38,7 @@ export class ClusterViewListenerService {
     private readonly partitionService: PartitionServiceImpl;
     private readonly logger: ILogger;
     private readonly invocationService: InvocationService;
+    protected readonly connectionRegistry: ConnectionRegistry;
     private listenerAddedConnection: ClientConnection;
 
     constructor(
@@ -44,13 +46,15 @@ export class ClusterViewListenerService {
         connectionManager: ClientConnectionManager,
         partitionService: PartitionService,
         clusterService: ClusterService,
-        invocationService: InvocationService
+        invocationService: InvocationService,
+        connectionRegistry: ConnectionRegistry
     ) {
         this.logger = logger;
         this.connectionManager = connectionManager;
         this.partitionService = partitionService as PartitionServiceImpl;
         this.clusterService = clusterService;
         this.invocationService = invocationService;
+        this.connectionRegistry = connectionRegistry;
     }
 
     public start(): void {
@@ -81,7 +85,7 @@ export class ClusterViewListenerService {
 
         this.logger.trace('ClusterViewListenerService', `Register attempt of cluster view handler to ${connection}`);
         this.clusterService.clearMemberListVersion();
-        this.invocationService.invokeUrgent(invocation, this.connectionManager)
+        this.invocationService.invokeUrgent(invocation)
             .then(() => {
                 this.logger.trace('ClusterViewListenerService', `Registered cluster view handler to ${connection}`);
             })
@@ -97,7 +101,7 @@ export class ClusterViewListenerService {
             return;
         }
         this.listenerAddedConnection = null;
-        const newConnection = this.connectionManager.getRandomConnection();
+        const newConnection = this.connectionRegistry.getRandomConnection();
         if (newConnection != null) {
             this.tryRegister(newConnection);
         }

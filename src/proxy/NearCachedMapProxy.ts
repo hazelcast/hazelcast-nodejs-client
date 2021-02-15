@@ -37,6 +37,7 @@ import {InvocationService} from '../invocation/InvocationService';
 import {SerializationService} from '../serialization/SerializationService';
 import {ClientConnectionManager} from '../network/ClientConnectionManager';
 import {ClusterService} from '../invocation/ClusterService';
+import {ConnectionRegistry} from '../network/ConnectionRegistry';
 
 /** @internal */
 export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
@@ -60,7 +61,8 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         nearCacheManager: NearCacheManager,
         repairingTask: RepairingTask,
         listenerService: ListenerService,
-        clusterService: ClusterService
+        clusterService: ClusterService,
+        connectionRegistry: ConnectionRegistry
     ) {
         super(
             servicename,
@@ -73,7 +75,8 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
             serializationService,
             connectionManager,
             listenerService,
-            clusterService
+            clusterService,
+            connectionRegistry
         );
         this.repairingTask = repairingTask;
         this.nearCacheManager = nearCacheManager;
