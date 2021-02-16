@@ -18,12 +18,11 @@
 import {ClientPingCodec} from '../codec/ClientPingCodec';
 import {ClientConnection} from './ClientConnection';
 import {ILogger} from '../logging/ILogger';
-import {ClientConnectionManager} from './ClientConnectionManager';
+import {ClientConnectionManager, ConnectionRegistry} from './ClientConnectionManager';
 import {cancelRepetitionTask, scheduleWithRepetition, Task} from '../util/Util';
 import {TargetDisconnectedError} from '../core';
 import {Invocation, InvocationService} from '../invocation/InvocationService';
 import {Properties} from '../config';
-import {ConnectionRegistry} from './ConnectionRegistry';
 
 const PROPERTY_HEARTBEAT_INTERVAL = 'hazelcast.client.heartbeat.interval';
 const PROPERTY_HEARTBEAT_TIMEOUT = 'hazelcast.client.heartbeat.timeout';

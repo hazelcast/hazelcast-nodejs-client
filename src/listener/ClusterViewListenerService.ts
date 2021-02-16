@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import {ClientConnectionManager} from '../network/ClientConnectionManager';
+import {ClientConnectionManager, ConnectionRegistry} from '../network/ClientConnectionManager';
 import {PartitionService, PartitionServiceImpl} from '../PartitionService';
 import {ClusterService} from '../invocation/ClusterService';
 import {ILogger} from '../logging/ILogger';
@@ -24,7 +24,6 @@ import {ClientAddClusterViewListenerCodec} from '../codec/ClientAddClusterViewLi
 import {ClientMessage} from '../protocol/ClientMessage';
 import {UUID} from '../core/UUID';
 import {Invocation, InvocationService} from '../invocation/InvocationService';
-import {ConnectionRegistry} from '../network/ConnectionRegistry';
 
 /**
  * Adds cluster listener to one of the connections. If that connection is removed,
@@ -38,7 +37,7 @@ export class ClusterViewListenerService {
     private readonly partitionService: PartitionServiceImpl;
     private readonly logger: ILogger;
     private readonly invocationService: InvocationService;
-    protected readonly connectionRegistry: ConnectionRegistry;
+    private readonly connectionRegistry: ConnectionRegistry;
     private listenerAddedConnection: ClientConnection;
 
     constructor(

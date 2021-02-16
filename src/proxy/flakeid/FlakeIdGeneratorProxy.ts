@@ -27,10 +27,9 @@ import {ProxyManager} from '../ProxyManager';
 import {PartitionService} from '../../PartitionService';
 import {InvocationService} from '../../invocation/InvocationService';
 import {SerializationService} from '../../serialization/SerializationService';
-import {ClientConnectionManager} from '../../network/ClientConnectionManager';
+import {ConnectionRegistry} from '../../network/ClientConnectionManager';
 import {ListenerService} from '../../listener/ListenerService';
 import {ClusterService} from '../../invocation/ClusterService';
-import {ConnectionRegistry} from '../../network/ConnectionRegistry';
 
 /** @internal */
 export class FlakeIdGeneratorProxy extends BaseProxy implements FlakeIdGenerator {
@@ -47,7 +46,6 @@ export class FlakeIdGeneratorProxy extends BaseProxy implements FlakeIdGenerator
         partitionService: PartitionService,
         invocationService: InvocationService,
         serializationService: SerializationService,
-        connectionManager: ClientConnectionManager,
         listenerService: ListenerService,
         clusterService: ClusterService,
         connectionRegistry: ConnectionRegistry
@@ -61,7 +59,6 @@ export class FlakeIdGeneratorProxy extends BaseProxy implements FlakeIdGenerator
             partitionService,
             invocationService,
             serializationService,
-            connectionManager,
             listenerService,
             clusterService,
             connectionRegistry

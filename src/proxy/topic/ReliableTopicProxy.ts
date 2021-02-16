@@ -38,10 +38,9 @@ import {ILogger} from '../../logging';
 import {ProxyManager} from '../ProxyManager';
 import {PartitionService} from '../../PartitionService';
 import {InvocationService} from '../../invocation/InvocationService';
-import {ClientConnectionManager} from '../../network/ClientConnectionManager';
+import {ConnectionRegistry} from '../../network/ClientConnectionManager';
 import {ListenerService} from '../../listener/ListenerService';
 import {ClientConnection} from '../../network/ClientConnection';
-import {ConnectionRegistry} from '../../network/ConnectionRegistry';
 
 /** @internal */
 export const TOPIC_INITIAL_BACKOFF = 100;
@@ -66,7 +65,6 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         partitionService: PartitionService,
         invocationService: InvocationService,
         serializationService: SerializationService,
-        connectionManager: ClientConnectionManager,
         listenerService: ListenerService,
         clusterService: ClusterService,
         connectionRegistry: ConnectionRegistry
@@ -80,7 +78,6 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
             partitionService,
             invocationService,
             serializationService,
-            connectionManager,
             listenerService,
             clusterService,
             connectionRegistry

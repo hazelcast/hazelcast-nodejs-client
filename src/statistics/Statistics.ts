@@ -16,7 +16,7 @@
 /** @ignore *//** */
 
 import {ClientConnection} from '../network/ClientConnection';
-import {CLIENT_TYPE, ClientConnectionManager,} from '../network/ClientConnectionManager';
+import {CLIENT_TYPE, ConnectionRegistry} from '../network/ClientConnectionManager';
 import {Properties} from '../config/Properties';
 import {ClientStatisticsCodec} from '../codec/ClientStatisticsCodec';
 import {
@@ -36,7 +36,6 @@ import {ILogger} from '../logging/ILogger';
 import * as Long from 'long';
 import {InvocationService} from '../invocation/InvocationService';
 import {NearCacheManager} from '../nearcache/NearCacheManager';
-import {ConnectionRegistry} from '../network/ConnectionRegistry';
 
 type GaugeDescription = {
     gaugeFn: () => number;
@@ -64,7 +63,6 @@ export class Statistics {
     private readonly enabled: boolean;
     private readonly properties: Properties;
     private readonly logger: ILogger;
-    private readonly connectionManager: ClientConnectionManager;
     private readonly invocationService: InvocationService;
     private readonly clientName: string;
     private readonly nearCacheManager: NearCacheManager;
@@ -76,7 +74,6 @@ export class Statistics {
         logger: ILogger,
         properties: Properties,
         clientName: string,
-        connectionManager: ClientConnectionManager,
         invocationService: InvocationService,
         nearCacheManager: NearCacheManager,
         connectionRegistry: ConnectionRegistry
@@ -84,7 +81,6 @@ export class Statistics {
         this.properties = properties;
         this.enabled = this.properties[Statistics.ENABLED] as boolean;
         this.logger = logger;
-        this.connectionManager = connectionManager;
         this.invocationService = invocationService;
         this.clientName = clientName;
         this.nearCacheManager = nearCacheManager;

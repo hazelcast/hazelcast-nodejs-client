@@ -35,9 +35,8 @@ import {ClientConfig} from '../config';
 import {ProxyManager} from './ProxyManager';
 import {InvocationService} from '../invocation/InvocationService';
 import {SerializationService} from '../serialization/SerializationService';
-import {ClientConnectionManager} from '../network/ClientConnectionManager';
+import {ConnectionRegistry} from '../network/ClientConnectionManager';
 import {ClusterService} from '../invocation/ClusterService';
-import {ConnectionRegistry} from '../network/ConnectionRegistry';
 
 /** @internal */
 export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
@@ -57,7 +56,6 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         partitionService: PartitionService,
         invocationService: InvocationService,
         serializationService: SerializationService,
-        connectionManager: ClientConnectionManager,
         nearCacheManager: NearCacheManager,
         repairingTask: RepairingTask,
         listenerService: ListenerService,
@@ -73,7 +71,6 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
             partitionService,
             invocationService,
             serializationService,
-            connectionManager,
             listenerService,
             clusterService,
             connectionRegistry

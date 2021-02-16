@@ -58,10 +58,9 @@ import {ProxyManager} from './ProxyManager';
 import {PartitionService} from '../PartitionService';
 import {InvocationService} from '../invocation/InvocationService';
 import {SerializationService} from '../serialization/SerializationService';
-import {ClientConnectionManager} from '../network/ClientConnectionManager';
+import {ConnectionRegistry} from '../network/ClientConnectionManager';
 import {ListenerService} from '../listener/ListenerService';
 import {ClusterService} from '../invocation/ClusterService';
-import {ConnectionRegistry} from '../network/ConnectionRegistry';
 
 /** @internal */
 export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
@@ -77,7 +76,6 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
         partitionService: PartitionService,
         invocationService: InvocationService,
         serializationService: SerializationService,
-        connectionManager: ClientConnectionManager,
         listenerService: ListenerService,
         clusterService: ClusterService,
         lockReferenceIdGenerator: LockReferenceIdGenerator,
@@ -92,7 +90,6 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
             partitionService,
             invocationService,
             serializationService,
-            connectionManager,
             listenerService,
             clusterService,
             connectionRegistry

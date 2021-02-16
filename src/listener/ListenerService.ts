@@ -30,8 +30,7 @@ import {ListenerMessageCodec} from './ListenerMessageCodec';
 import {deferredPromise} from '../util/Util';
 import {UuidUtil} from '../util/UuidUtil';
 import {ILogger} from '../logging';
-import {ClientConnectionManager} from '../network/ClientConnectionManager';
-import {ConnectionRegistry} from '../network/ConnectionRegistry';
+import {ClientConnectionManager, ConnectionRegistry} from '../network/ClientConnectionManager';
 
 /** @internal */
 export class ListenerService {

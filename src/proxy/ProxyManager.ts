@@ -45,12 +45,11 @@ import {NearCachedMapProxy} from './NearCachedMapProxy';
 import {ILogger} from '../logging';
 import {PartitionService} from '../PartitionService';
 import {SerializationService} from '../serialization/SerializationService';
-import {ClientConnectionManager} from '../network/ClientConnectionManager';
+import {ConnectionRegistry} from '../network/ClientConnectionManager';
 import {NearCacheManager} from '../nearcache/NearCacheManager';
 import {RepairingTask} from '../nearcache/RepairingTask';
 import {ClusterService} from '../invocation/ClusterService';
 import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
-import {ConnectionRegistry} from '../network/ConnectionRegistry';
 
 /** @internal */
 export const NAMESPACE_SEPARATOR = '/';
@@ -79,7 +78,6 @@ export class ProxyManager {
     private readonly logger: ILogger;
     private readonly partitionService: PartitionService
     private readonly serializationService: SerializationService;
-    private readonly connectionManager: ClientConnectionManager;
     private readonly nearCacheManager: NearCacheManager;
     private readonly repairingTask: RepairingTask;
     private readonly clusterService: ClusterService;
@@ -93,7 +91,6 @@ export class ProxyManager {
         listenerService: ListenerService,
         partitionService: PartitionService,
         serializationService: SerializationService,
-        connectionManager: ClientConnectionManager,
         nearCacheManager: NearCacheManager,
         repairingTask: RepairingTask,
         clusterService: ClusterService,
@@ -106,7 +103,6 @@ export class ProxyManager {
         this.logger = logger;
         this.partitionService = partitionService;
         this.serializationService = serializationService;
-        this.connectionManager = connectionManager;
         this.nearCacheManager = nearCacheManager;
         this.repairingTask = repairingTask;
         this.clusterService = clusterService;
@@ -257,7 +253,6 @@ export class ProxyManager {
                 this.partitionService,
                 this.invocationService,
                 this.serializationService,
-                this.connectionManager,
                 this.nearCacheManager,
                 this.repairingTask,
                 this.listenerService,
@@ -275,7 +270,6 @@ export class ProxyManager {
                 this.partitionService,
                 this.invocationService,
                 this.serializationService,
-                this.connectionManager,
                 this.listenerService,
                 this.clusterService,
                 this.lockReferenceIdGenerator,
@@ -292,7 +286,6 @@ export class ProxyManager {
                 this.partitionService,
                 this.invocationService,
                 this.serializationService,
-                this.connectionManager,
                 this.listenerService,
                 this.clusterService,
                 this.connectionRegistry
@@ -308,7 +301,6 @@ export class ProxyManager {
                 this.partitionService,
                 this.invocationService,
                 this.serializationService,
-                this.connectionManager,
                 this.listenerService,
                 this.clusterService,
                 this.connectionRegistry

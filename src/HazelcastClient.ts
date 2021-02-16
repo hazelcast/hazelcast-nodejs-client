@@ -64,7 +64,7 @@ import {RoundRobinLB} from './util/RoundRobinLB';
 import {ClusterViewListenerService} from './listener/ClusterViewListenerService';
 import {ClientMessage} from './protocol/ClientMessage';
 import {ClientConnection} from './network/ClientConnection';
-import {ConnectionRegistry, ConnectionRegistryImpl} from './network/ConnectionRegistry';
+import {ConnectionRegistry, ConnectionRegistryImpl} from './network/ClientConnectionManager';
 
 /**
  * Hazelcast client instance. When you want to use Hazelcast's distributed
@@ -203,7 +203,6 @@ export class HazelcastClient {
             this.listenerService,
             this.partitionService,
             this.serializationService,
-            this.connectionManager,
             this.nearCacheManager,
             this.getRepairingTask(),
             this.clusterService,
@@ -214,7 +213,6 @@ export class HazelcastClient {
             this.loggingService.getLogger(),
             this.config.properties,
             this.instanceName,
-            this.connectionManager,
             this.invocationService,
             this.nearCacheManager,
             this.connectionRegistry

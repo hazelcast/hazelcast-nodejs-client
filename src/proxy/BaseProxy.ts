@@ -25,10 +25,9 @@ import {ProxyManager} from './ProxyManager';
 import {PartitionService} from '../PartitionService';
 import {InvocationService} from '../invocation/InvocationService';
 import {SerializationService} from '../serialization/SerializationService';
-import {ClientConnectionManager} from '../network/ClientConnectionManager';
+import {ClientConnectionManager, ConnectionRegistry} from '../network/ClientConnectionManager';
 import {ListenerService} from '../listener/ListenerService';
 import {ClusterService} from '../invocation/ClusterService';
-import {ConnectionRegistry} from '../network/ConnectionRegistry';
 
 
 /**
@@ -59,7 +58,6 @@ export abstract class BaseProxy {
         partitionService: PartitionService,
         invocationService: InvocationService,
         serializationService: SerializationService,
-        connectionManager: ClientConnectionManager,
         listenerService: ListenerService,
         clusterService: ClusterService,
         connectionRegistry: ConnectionRegistry
@@ -70,7 +68,6 @@ export abstract class BaseProxy {
         this.partitionService = partitionService;
         this.invocationService = invocationService;
         this.serializationService = serializationService;
-        this.connectionManager = connectionManager;
         this.listenerService = listenerService;
         this.clusterService = clusterService
         this.clientConfig = clientConfig;
