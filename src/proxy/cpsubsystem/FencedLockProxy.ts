@@ -40,7 +40,6 @@ import {
 } from '../../core';
 import {SerializationService} from '../../serialization/SerializationService';
 import {InvocationService} from '../../invocation/InvocationService';
-import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 
 const fenceThreadIdSymbol = Symbol('FenceThreadIdSymbol');
 
@@ -66,8 +65,7 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
         objectName: string,
         serializationService: SerializationService,
         invocationService: InvocationService,
-        cpSessionManager: CPSessionManager,
-        connectionManager: ClientConnectionManager
+        cpSessionManager: CPSessionManager
     ) {
         super(
             CPProxyManager.LOCK_SERVICE,
@@ -76,8 +74,7 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
             objectName,
             invocationService,
             serializationService,
-            cpSessionManager,
-            connectionManager
+            cpSessionManager
         );
     }
 

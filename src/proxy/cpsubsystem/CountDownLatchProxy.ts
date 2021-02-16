@@ -35,7 +35,6 @@ import {
 } from '../../core';
 import {InvocationService} from '../../invocation/InvocationService';
 import {SerializationService} from '../../serialization/SerializationService';
-import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 
 
 /** @internal */
@@ -46,8 +45,7 @@ export class CountDownLatchProxy extends BaseCPProxy implements ICountDownLatch 
         proxyName: string,
         objectName: string,
         invocationService: InvocationService,
-        serializationService: SerializationService,
-        connectionManager: ClientConnectionManager
+        serializationService: SerializationService
     ) {
         super(
             CPProxyManager.LATCH_SERVICE,
@@ -55,8 +53,7 @@ export class CountDownLatchProxy extends BaseCPProxy implements ICountDownLatch 
             proxyName,
             objectName,
             invocationService,
-            serializationService,
-            connectionManager
+            serializationService
         );
     }
 

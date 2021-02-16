@@ -366,7 +366,6 @@ export class ClientConnectionManager extends EventEmitter {
         this.heartbeatManager = new HeartbeatManager(
             clientConfig.properties,
             this.logger,
-            this,
             this.connectionRegistry
         );
         this.authenticationTimeout = this.heartbeatManager.getHeartbeatTimeout();

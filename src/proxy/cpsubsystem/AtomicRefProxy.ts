@@ -25,7 +25,6 @@ import {AtomicRefSetCodec} from '../../codec/AtomicRefSetCodec';
 import {AtomicRefContainsCodec} from '../../codec/AtomicRefContainsCodec';
 import {InvocationService} from '../../invocation/InvocationService';
 import {SerializationService} from '../../serialization/SerializationService';
-import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 
 
 /** @internal */
@@ -36,8 +35,7 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
         proxyName: string,
         objectName: string,
         invocationService: InvocationService,
-        serializationService: SerializationService,
-        connectionManager: ClientConnectionManager
+        serializationService: SerializationService
     ) {
         super(
             CPProxyManager.ATOMIC_REF_SERVICE,
@@ -45,8 +43,7 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
             proxyName,
             objectName,
             invocationService,
-            serializationService,
-            connectionManager
+            serializationService
         );
     }
 

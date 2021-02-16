@@ -34,7 +34,6 @@ import {SemaphoreGetSemaphoreTypeCodec} from '../../codec/SemaphoreGetSemaphoreT
 import {assertString} from '../../util/Util';
 import {InvocationService} from '../../invocation/InvocationService';
 import {SerializationService} from '../../serialization/SerializationService';
-import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 import {CPSessionManager} from './CPSessionManager';
 
 const DEFAULT_GROUP_NAME = 'default';
@@ -83,18 +82,15 @@ export class CPProxyManager {
     private readonly invocationService: InvocationService;
     private readonly serializationService: SerializationService;
     private readonly cpSessionManager: CPSessionManager;
-    private readonly connectionManager: ClientConnectionManager;
 
     constructor(
         invocationService: InvocationService,
         serializationService: SerializationService,
-        cpSessionManager: CPSessionManager,
-        connectionManager: ClientConnectionManager
+        cpSessionManager: CPSessionManager
     ) {
         this.invocationService = invocationService;
         this.serializationService = serializationService;
         this.cpSessionManager = cpSessionManager;
-        this.connectionManager = connectionManager;
     }
 
     getOrCreateProxy(proxyName: string, serviceName: string): Promise<DistributedObject> {
@@ -108,8 +104,7 @@ export class CPProxyManager {
                     proxyName,
                     objectName,
                     this.invocationService,
-                    this.serializationService,
-                    this.connectionManager
+                    this.serializationService
                 );
             } else if (serviceName === CPProxyManager.ATOMIC_REF_SERVICE) {
                 return new AtomicRefProxy(
@@ -117,8 +112,7 @@ export class CPProxyManager {
                     proxyName,
                     objectName,
                     this.invocationService,
-                    this.serializationService,
-                    this.connectionManager
+                    this.serializationService
                 );
             } else if (serviceName === CPProxyManager.LATCH_SERVICE) {
                 return new CountDownLatchProxy(
@@ -126,8 +120,7 @@ export class CPProxyManager {
                     proxyName,
                     objectName,
                     this.invocationService,
-                    this.serializationService,
-                    this.connectionManager
+                    this.serializationService
                 );
             } else if (serviceName === CPProxyManager.LOCK_SERVICE) {
                 return this.createFencedLock(groupId, proxyName, objectName);
@@ -159,8 +152,7 @@ export class CPProxyManager {
             objectName,
             this.serializationService,
             this.invocationService,
-            this.cpSessionManager,
-            this.connectionManager
+            this.cpSessionManager
         );
         this.lockProxies.set(proxyName, proxy);
         return proxy;
@@ -178,8 +170,7 @@ export class CPProxyManager {
                         objectName,
                         this.invocationService,
                         this.serializationService,
-                        this.cpSessionManager,
-                        this.connectionManager
+                        this.cpSessionManager
                     )
                     : new SessionAwareSemaphoreProxy(
                         groupId,
@@ -187,8 +178,7 @@ export class CPProxyManager {
                         objectName,
                         this.invocationService,
                         this.serializationService,
-                        this.cpSessionManager,
-                        this.connectionManager
+                        this.cpSessionManager
                     );
             });
     }

@@ -26,7 +26,6 @@ import {UUID} from '../core/UUID';
 import {LifecycleService, Properties} from '../index';
 import {InvocationService} from '../invocation/InvocationService';
 import {ClusterService} from '../invocation/ClusterService';
-import {ClientConnectionManager} from '../network/ClientConnectionManager';
 
 const PROPERTY_MAX_RECONCILIATION_INTERVAL_SECONDS = 'hazelcast.invalidation.reconciliation.interval.seconds';
 const PROPERTY_MIN_RECONCILIATION_INTERVAL_SECONDS = 'hazelcast.invalidation.min.reconciliation.interval.seconds';
@@ -39,7 +38,7 @@ export class RepairingTask {
     private handlers: Map<string, RepairingHandler>;
     private reconcilliationInterval: number;
     private maxToleratedMissCount: number;
-    private clientUuid: UUID;
+    private readonly clientUuid: UUID;
     private metadataFetcher: MetadataFetcher;
     private partitionCount: number;
     private readonly minAllowedReconciliationSeconds: number;
@@ -54,7 +53,7 @@ export class RepairingTask {
         lifecycleService: LifecycleService,
         invocationService: InvocationService,
         clusterService: ClusterService,
-        connectionManager: ClientConnectionManager
+        clientUuid: UUID
     ) {
         this.logger = logger;
         this.partitionService = partitionService;
@@ -63,13 +62,12 @@ export class RepairingTask {
         const requestedReconciliationSeconds = clientProperties[PROPERTY_MAX_RECONCILIATION_INTERVAL_SECONDS] as number;
         this.reconcilliationInterval = this.getReconciliationIntervalMillis(requestedReconciliationSeconds);
         this.handlers = new Map<string, RepairingHandler>();
-        this.clientUuid = connectionManager.getClientUuid();
+        this.clientUuid = clientUuid;
         this.maxToleratedMissCount = clientProperties[PROPERTY_MAX_TOLERATED_MISS_COUNT] as number;
         this.metadataFetcher = new MetadataFetcher(
             this.logger,
             invocationService,
-            clusterService,
-            connectionManager
+            clusterService
         );
         this.partitionCount = this.partitionService.getPartitionCount();
     }

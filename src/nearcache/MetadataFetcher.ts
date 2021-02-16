@@ -23,7 +23,6 @@ import {RepairingHandler} from './RepairingHandler';
 import {ILogger} from '../logging/ILogger';
 import {ClientMessage} from '../protocol/ClientMessage';
 import {ClusterService} from '../invocation/ClusterService';
-import {ClientConnectionManager} from '../network/ClientConnectionManager';
 
 /** @internal */
 export class MetadataFetcher {
@@ -31,18 +30,15 @@ export class MetadataFetcher {
     private readonly logger: ILogger;
     private readonly invocationService: InvocationService;
     private readonly clusterService: ClusterService;
-    private readonly connectionManager: ClientConnectionManager;
 
     constructor(
         logger: ILogger,
         invocationService: InvocationService,
-        clusterService: ClusterService,
-        connectionManager: ClientConnectionManager
+        clusterService: ClusterService
     ) {
         this.invocationService = invocationService;
         this.logger = logger;
         this.clusterService = clusterService;
-        this.connectionManager = connectionManager;
     }
 
     initHandler(handler: RepairingHandler): Promise<void> {

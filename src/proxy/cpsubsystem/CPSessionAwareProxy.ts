@@ -21,7 +21,6 @@ import {BaseCPProxy} from './BaseCPProxy';
 import {CPSessionManager} from './CPSessionManager';
 import {InvocationService} from '../../invocation/InvocationService';
 import {SerializationService} from '../../serialization/SerializationService';
-import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 
 
 /**
@@ -40,8 +39,7 @@ export abstract class CPSessionAwareProxy extends BaseCPProxy {
         objectName: string,
         invocationService: InvocationService,
         serializationService: SerializationService,
-        cpSessionManager: CPSessionManager,
-        connectionManager: ClientConnectionManager
+        cpSessionManager: CPSessionManager
     ) {
         super(
             serviceName,
@@ -49,8 +47,7 @@ export abstract class CPSessionAwareProxy extends BaseCPProxy {
             proxyName,
             objectName,
             invocationService,
-            serializationService,
-            connectionManager
+            serializationService
         );
         this.sessionManager = cpSessionManager;
     }

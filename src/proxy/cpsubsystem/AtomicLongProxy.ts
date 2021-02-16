@@ -28,7 +28,6 @@ import {AtomicLongGetAndAddCodec} from '../../codec/AtomicLongGetAndAddCodec';
 import {AtomicLongGetAndSetCodec} from '../../codec/AtomicLongGetAndSetCodec';
 import {InvocationService} from '../../invocation/InvocationService';
 import {SerializationService} from '../../serialization/SerializationService';
-import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 
 /** @internal */
 export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
@@ -38,8 +37,7 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
         proxyName: string,
         objectName: string,
         invocationService: InvocationService,
-        serializationService: SerializationService,
-        connectionManager: ClientConnectionManager
+        serializationService: SerializationService
     ) {
         super(
             CPProxyManager.ATOMIC_LONG_SERVICE,
@@ -47,8 +45,7 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
             proxyName,
             objectName,
             invocationService,
-            serializationService,
-            connectionManager
+            serializationService
         );
     }
 

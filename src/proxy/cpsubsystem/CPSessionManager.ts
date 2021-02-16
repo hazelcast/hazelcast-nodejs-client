@@ -36,7 +36,6 @@ import {
     Task
 } from '../../util/Util';
 import {InvocationService} from '../../invocation/InvocationService';
-import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 
 /** @internal */
 export class SessionState {
@@ -93,18 +92,15 @@ export class CPSessionManager {
     private isShutdown = false;
     private readonly invocationService: InvocationService;
     private readonly clientName: string;
-    private readonly connectionManager: ClientConnectionManager;
 
     constructor(
         logger: ILogger,
         clientName: string,
-        invocationService: InvocationService,
-        connectionManager: ClientConnectionManager
+        invocationService: InvocationService
     ) {
         this.logger = logger;
         this.invocationService = invocationService;
         this.clientName = clientName;
-        this.connectionManager = connectionManager;
     }
 
     getSessionId(groupId: RaftGroupId): Long {

@@ -22,7 +22,6 @@ import {UnsupportedOperationError} from '../../core';
 import {Data} from '../../serialization/Data';
 import {SerializationService} from '../../serialization/SerializationService';
 import {InvocationService} from '../../invocation/InvocationService';
-import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 
 /**
  * Common super class for any CP Subsystem proxy.
@@ -36,7 +35,6 @@ export abstract class BaseCPProxy {
     protected readonly objectName: string;
     protected readonly invocationService: InvocationService;
     protected readonly serializationService: SerializationService;
-    protected readonly connectionManager: ClientConnectionManager;
 
     constructor(
         serviceName: string,
@@ -44,8 +42,7 @@ export abstract class BaseCPProxy {
         proxyName: string,
         objectName: string,
         invocationService: InvocationService,
-        serializationService: SerializationService,
-        connectionManager: ClientConnectionManager
+        serializationService: SerializationService
     ) {
         this.serviceName = serviceName;
         this.groupId = groupId;
@@ -53,7 +50,6 @@ export abstract class BaseCPProxy {
         this.objectName = objectName;
         this.serializationService = serializationService;
         this.invocationService = invocationService;
-        this.connectionManager = connectionManager;
     }
 
     getPartitionKey(): string {

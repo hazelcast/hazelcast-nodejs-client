@@ -51,6 +51,7 @@ export class ListenerService {
         invocationService: InvocationService,
         connectionRegistry: ConnectionRegistry
     ) {
+        this.connectionRegistry = connectionRegistry;
         this.connectionManager = connectionManager;
         this.invocationService = invocationService;
         this.logger = logger;

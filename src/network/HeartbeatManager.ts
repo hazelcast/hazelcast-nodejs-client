@@ -18,7 +18,7 @@
 import {ClientPingCodec} from '../codec/ClientPingCodec';
 import {ClientConnection} from './ClientConnection';
 import {ILogger} from '../logging/ILogger';
-import {ClientConnectionManager, ConnectionRegistry} from './ClientConnectionManager';
+import {ConnectionRegistry} from './ClientConnectionManager';
 import {cancelRepetitionTask, scheduleWithRepetition, Task} from '../util/Util';
 import {TargetDisconnectedError} from '../core';
 import {Invocation, InvocationService} from '../invocation/InvocationService';
@@ -33,7 +33,6 @@ const PROPERTY_HEARTBEAT_TIMEOUT = 'hazelcast.client.heartbeat.timeout';
  */
 export class HeartbeatManager {
 
-    private connectionManager: ClientConnectionManager;
     private readonly heartbeatTimeout: number;
     private readonly heartbeatInterval: number;
     private logger: ILogger;
@@ -43,10 +42,9 @@ export class HeartbeatManager {
     constructor(
         properties: Properties,
         logger: ILogger,
-        connectionManager: ClientConnectionManager,
         connectionRegistry: ConnectionRegistry
     ) {
-        this.connectionManager = connectionManager;
+        this.connectionRegistry = connectionRegistry;
         this.logger = logger;
         this.heartbeatInterval = properties[PROPERTY_HEARTBEAT_INTERVAL] as number;
         this.heartbeatTimeout = properties[PROPERTY_HEARTBEAT_TIMEOUT] as number;
@@ -75,7 +73,7 @@ export class HeartbeatManager {
     }
 
     private heartbeatFunction(invocationService: InvocationService): void {
-        if (!this.connectionManager.isAlive()) {
+        if (!this.connectionRegistry.isActive()) {
             return;
         }
 

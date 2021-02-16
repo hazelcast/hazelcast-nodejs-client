@@ -123,7 +123,7 @@ export class HazelcastClient {
     /** @internal */
     private mapRepairingTask: RepairingTask;
     /** @internal */
-    private connectionRegistry: ConnectionRegistry;
+    private readonly connectionRegistry: ConnectionRegistry;
 
     /** @internal */
     constructor(config?: ClientConfigImpl, failoverConfig?: ClientFailoverConfigImpl) {
@@ -229,8 +229,7 @@ export class HazelcastClient {
             this.loggingService.getLogger(),
             this.instanceName,
             this.invocationService,
-            this.serializationService,
-            this.connectionManager
+            this.serializationService
         );
     }
 
@@ -472,7 +471,7 @@ export class HazelcastClient {
                 this.lifecycleService,
                 this.invocationService,
                 this.clusterService,
-                this.connectionManager
+                this.connectionManager.getClientUuid()
             );
         }
         return this.mapRepairingTask;

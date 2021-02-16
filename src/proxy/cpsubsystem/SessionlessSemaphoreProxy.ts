@@ -38,7 +38,6 @@ import {
 } from '../../core';
 import {SerializationService} from '../../serialization/SerializationService';
 import {InvocationService} from '../../invocation/InvocationService';
-import {ClientConnectionManager} from '../../network/ClientConnectionManager';
 
 
 /** @internal */
@@ -52,8 +51,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
         objectName: string,
         invocationService: InvocationService,
         serializationService: SerializationService,
-        cpSessionManager: CPSessionManager,
-        connectionManager: ClientConnectionManager
+        cpSessionManager: CPSessionManager
     ) {
         super(
             CPProxyManager.SEMAPHORE_SERVICE,
@@ -61,8 +59,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
             proxyName,
             objectName,
             invocationService,
-            serializationService,
-            connectionManager
+            serializationService
         );
         this.sessionManager = cpSessionManager;
     }
