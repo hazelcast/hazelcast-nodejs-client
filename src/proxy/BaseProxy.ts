@@ -20,7 +20,6 @@ import {Data} from '../serialization/Data';
 import {ClientMessage} from '../protocol/ClientMessage';
 import {UUID} from '../core/UUID';
 import {ClientConfig} from '../config';
-import {ILogger} from '../logging';
 import {ProxyManager} from './ProxyManager';
 import {PartitionService} from '../PartitionService';
 import {InvocationService} from '../invocation/InvocationService';
@@ -46,14 +45,11 @@ export abstract class BaseProxy {
     protected readonly listenerService: ListenerService;
     protected readonly clusterService: ClusterService;
     protected readonly clientConfig: ClientConfig;
-    protected readonly logger: ILogger;
     protected readonly connectionRegistry: ConnectionRegistry
 
     constructor(
         serviceName: string,
         name: string,
-        logger: ILogger,
-        clientConfig: ClientConfig,
         proxyManager: ProxyManager,
         partitionService: PartitionService,
         invocationService: InvocationService,
@@ -70,8 +66,6 @@ export abstract class BaseProxy {
         this.serializationService = serializationService;
         this.listenerService = listenerService;
         this.clusterService = clusterService
-        this.clientConfig = clientConfig;
-        this.logger = logger;
         this.connectionRegistry = connectionRegistry;
     }
 

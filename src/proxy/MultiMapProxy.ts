@@ -52,8 +52,6 @@ import {
 import * as SerializationUtil from '../serialization/SerializationUtil';
 import {MultiMapPutAllCodec} from '../codec/MultiMapPutAllCodec';
 import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
-import {ILogger} from '../logging';
-import {ClientConfig} from '../config';
 import {ProxyManager} from './ProxyManager';
 import {PartitionService} from '../PartitionService';
 import {InvocationService} from '../invocation/InvocationService';
@@ -70,8 +68,6 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     constructor(
         serviceName: string,
         name: string,
-        logger: ILogger,
-        clientConfig: ClientConfig,
         proxyManager: ProxyManager,
         partitionService: PartitionService,
         invocationService: InvocationService,
@@ -84,8 +80,6 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
         super(
             serviceName,
             name,
-            logger,
-            clientConfig,
             proxyManager,
             partitionService,
             invocationService,

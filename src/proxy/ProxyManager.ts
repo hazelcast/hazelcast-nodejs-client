@@ -248,7 +248,6 @@ export class ProxyManager {
                 serviceName,
                 name,
                 this.logger,
-                this.clientConfig,
                 this,
                 this.partitionService,
                 this.invocationService,
@@ -264,8 +263,6 @@ export class ProxyManager {
             localProxy = new MultiMapProxy(
                 serviceName,
                 name,
-                this.logger,
-                this.clientConfig,
                 this,
                 this.partitionService,
                 this.invocationService,
@@ -290,13 +287,25 @@ export class ProxyManager {
                 this.clusterService,
                 this.connectionRegistry
             );
+        } else if (serviceName === ProxyManager.FLAKEID_SERVICE){
+            // This call may throw ClientOfflineError for partition specific proxies with async start
+            localProxy = new FlakeIdGeneratorProxy(
+                serviceName,
+                name,
+                this.clientConfig,
+                this,
+                this.partitionService,
+                this.invocationService,
+                this.serializationService,
+                this.listenerService,
+                this.clusterService,
+                this.connectionRegistry
+            );
         } else {
             // This call may throw ClientOfflineError for partition specific proxies with async start
             localProxy = new this.service[serviceName](
                 serviceName,
                 name,
-                this.logger,
-                this.clientConfig,
                 this,
                 this.partitionService,
                 this.invocationService,

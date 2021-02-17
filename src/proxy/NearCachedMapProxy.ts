@@ -31,7 +31,6 @@ import {NearCacheManager} from '../nearcache/NearCacheManager';
 import {RepairingTask} from '../nearcache/RepairingTask';
 import {ListenerService} from '../listener/ListenerService';
 import {ILogger} from '../logging';
-import {ClientConfig} from '../config';
 import {ProxyManager} from './ProxyManager';
 import {InvocationService} from '../invocation/InvocationService';
 import {SerializationService} from '../serialization/SerializationService';
@@ -51,7 +50,6 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         servicename: string,
         name: string,
         logger: ILogger,
-        clientConfig: ClientConfig,
         proxyManager: ProxyManager,
         partitionService: PartitionService,
         invocationService: InvocationService,
@@ -65,8 +63,6 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         super(
             servicename,
             name,
-            logger,
-            clientConfig,
             proxyManager,
             partitionService,
             invocationService,

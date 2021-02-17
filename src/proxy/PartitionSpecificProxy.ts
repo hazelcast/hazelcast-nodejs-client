@@ -17,8 +17,6 @@
 
 import {BaseProxy} from './BaseProxy';
 import {ClientMessage} from '../protocol/ClientMessage';
-import {ILogger} from '../logging';
-import {ClientConfig} from '../config';
 import {ProxyManager} from './ProxyManager';
 import {PartitionService} from '../PartitionService';
 import {InvocationService} from '../invocation/InvocationService';
@@ -35,8 +33,6 @@ export class PartitionSpecificProxy extends BaseProxy {
     constructor(
         serviceName: string,
         name: string,
-        logger: ILogger,
-        clientConfig: ClientConfig,
         proxyManager: ProxyManager,
         partitionService: PartitionService,
         invocationService: InvocationService,
@@ -48,8 +44,6 @@ export class PartitionSpecificProxy extends BaseProxy {
         super(
             serviceName,
             name,
-            logger,
-            clientConfig,
             proxyManager,
             partitionService,
             invocationService,

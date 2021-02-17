@@ -22,7 +22,6 @@ import {BaseProxy} from '../BaseProxy';
 import {AutoBatcher, Batch} from './AutoBatcher';
 import {FlakeIdGenerator} from '../FlakeIdGenerator';
 import {ClientConfig, ClientConfigImpl} from '../../config/Config';
-import {ILogger} from '../../logging';
 import {ProxyManager} from '../ProxyManager';
 import {PartitionService} from '../../PartitionService';
 import {InvocationService} from '../../invocation/InvocationService';
@@ -40,7 +39,6 @@ export class FlakeIdGeneratorProxy extends BaseProxy implements FlakeIdGenerator
     constructor(
         serviceName: string,
         name: string,
-        logger: ILogger,
         clientConfig: ClientConfig,
         proxyManager: ProxyManager,
         partitionService: PartitionService,
@@ -53,8 +51,6 @@ export class FlakeIdGeneratorProxy extends BaseProxy implements FlakeIdGenerator
         super(
             serviceName,
             name,
-            logger,
-            clientConfig,
             proxyManager,
             partitionService,
             invocationService,
