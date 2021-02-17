@@ -32,7 +32,7 @@ export abstract class CPSessionAwareProxy extends BaseCPProxy {
     protected readonly sessionManager: CPSessionManager;
     private threadIdSeq = 0;
 
-    constructor(
+    protected constructor(
         serviceName: string,
         groupId: RaftGroupId,
         proxyName: string,

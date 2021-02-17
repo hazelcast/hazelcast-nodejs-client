@@ -36,7 +36,7 @@ export abstract class BaseCPProxy {
     protected readonly invocationService: InvocationService;
     protected readonly serializationService: SerializationService;
 
-    constructor(
+    protected constructor(
         serviceName: string,
         groupId: RaftGroupId,
         proxyName: string,

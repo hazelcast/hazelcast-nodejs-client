@@ -30,7 +30,7 @@ import {ClusterService} from '../invocation/ClusterService';
 /** @internal */
 export class PartitionSpecificProxy extends BaseProxy {
 
-    private partitionId: number;
+    private readonly partitionId: number;
 
     constructor(
         serviceName: string,

@@ -30,7 +30,7 @@ export class RepairingHandler {
     private readonly partitionService: PartitionServiceImpl;
     private readonly localUuid: UUID;
     private readonly name: string;
-    private containers: MetadataContainer[];
+    private readonly containers: MetadataContainer[];
 
     constructor(name: string, partitionService: PartitionServiceImpl, nearCache: NearCache, localUuid: UUID) {
         this.nearCache = nearCache;

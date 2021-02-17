@@ -36,11 +36,11 @@ export class RepairingTask {
 
     private antientropyTaskHandle: any;
     private handlers: Map<string, RepairingHandler>;
-    private reconcilliationInterval: number;
-    private maxToleratedMissCount: number;
+    private readonly reconcilliationInterval: number;
+    private readonly maxToleratedMissCount: number;
     private readonly clientUuid: UUID;
     private metadataFetcher: MetadataFetcher;
-    private partitionCount: number;
+    private readonly partitionCount: number;
     private readonly minAllowedReconciliationSeconds: number;
     private readonly logger: ILogger;
     private readonly partitionService: PartitionService;

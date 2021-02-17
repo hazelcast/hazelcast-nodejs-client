@@ -40,8 +40,8 @@ class ReadOnlyLazyListIterator<T> implements Iterator<T> {
  */
 export class ReadOnlyLazyList<T> {
 
-    private internalArray: any[];
-    private serializationService: SerializationService;
+    private readonly internalArray: any[];
+    private readonly serializationService: SerializationService;
 
     /** @internal */
     constructor(array: any[], serializationService: SerializationService) {

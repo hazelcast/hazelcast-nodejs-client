@@ -73,15 +73,15 @@ export class NearCacheImpl implements NearCache {
 
     internalStore: DataKeyedHashMap<DataRecord>;
     private serializationService: SerializationService;
-    private name: string;
-    private invalidateOnChange: boolean;
-    private maxIdleSeconds: number;
-    private inMemoryFormat: InMemoryFormat;
-    private timeToLiveSeconds: number;
-    private evictionPolicy: EvictionPolicy;
-    private evictionMaxSize: number;
-    private evictionSamplingCount: number;
-    private evictionSamplingPoolSize: number;
+    private readonly name: string;
+    private readonly invalidateOnChange: boolean;
+    private readonly maxIdleSeconds: number;
+    private readonly inMemoryFormat: InMemoryFormat;
+    private readonly timeToLiveSeconds: number;
+    private readonly evictionPolicy: EvictionPolicy;
+    private readonly evictionMaxSize: number;
+    private readonly evictionSamplingCount: number;
+    private readonly evictionSamplingPoolSize: number;
     private evictionCandidatePool: DataRecord[];
     private staleReadDetector: StaleReadDetector = alwaysFreshDetector;
     private reservationCounter: Long = Long.ZERO;
@@ -91,7 +91,7 @@ export class NearCacheImpl implements NearCache {
     private missCount = 0;
     private hitCount = 0;
     private creationTime = Date.now();
-    private compareFunc: (x: DataRecord, y: DataRecord) => number;
+    private readonly compareFunc: (x: DataRecord, y: DataRecord) => number;
     private ready: DeferredPromise<void>;
 
     constructor(nearCacheConfig: NearCacheConfigImpl, serializationService: SerializationService) {

@@ -284,7 +284,6 @@ export class HazelcastClient {
         return info;
     }
 
-
     /**
      * Gives all known distributed objects in cluster.
      */
@@ -454,11 +453,6 @@ export class HazelcastClient {
     /** @internal */
     getClusterService(): ClusterService {
         return this.clusterService;
-    }
-
-    /** @internal */
-    getConnectionRegistry(): ConnectionRegistry {
-        return this.connectionRegistry;
     }
 
     /** @internal */
