@@ -192,16 +192,16 @@ describe('ConnectionManagerTest', function () {
         // connections should be cleaned up and no new connections should appear
         await promiseWaitMilliseconds(1000);
         expect(connectionManager.pendingConnections).to.have.lengthOf(0);
-        expect(connectionManager.activeConnections).to.have.lengthOf(0);
+        expect(connectionManager.connectionRegistry.activeConnections).to.have.lengthOf(0);
     });
 
     it('should close active connections when reset', async function () {
         client = await Client.newHazelcastClient({ clusterName: cluster.id });
         const connectionManager = client.getConnectionManager();
-        expect(connectionManager.activeConnections).to.have.lengthOf(1);
+        expect(connectionManager.connectionRegistry.activeConnections).to.have.lengthOf(1);
 
         connectionManager.reset();
 
-        expect(connectionManager.activeConnections).to.have.lengthOf(0);
+        expect(connectionManager.connectionRegistry.activeConnections).to.have.lengthOf(0);
     });
 });

@@ -72,17 +72,17 @@ describe('ConnectionManagerTranslateTest', function () {
             }
         });
 
-        const connectionManager = client.getConnectionManager();
+        const connectionRegistry = client.connectionRegistry;
         const fakeMember = member();
         const fakeConn = {};
         // inject fake connection
-        connectionManager.activeConnections.set(fakeMember.uuid.toString(), fakeConn);
+        connectionRegistry.activeConnections.set(fakeMember.uuid.toString(), fakeConn);
 
-        const conn = await connectionManager.getOrConnectToMember(fakeMember);
+        const conn = await client.connectionManager.getOrConnectToMember(fakeMember);
         expect(conn).to.be.equal(fakeConn);
 
         // clean up fake connection
-        connectionManager.activeConnections.delete(fakeMember.uuid.toString());
+        connectionRegistry.activeConnections.delete(fakeMember.uuid.toString());
     });
 
     it('should translate and connect when internal address is not reachable and property set to true', async function () {

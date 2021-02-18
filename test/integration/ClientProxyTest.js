@@ -22,7 +22,7 @@ const sandbox = sinon.createSandbox();
 const RC = require('./RC');
 const { Client } = require('../../');
 const { MapProxy } = require('../../lib/proxy/MapProxy');
-const { ClientConnectionManager } = require('../../lib/network/ClientConnectionManager');
+const { ConnectionRegistryImpl } = require('../../lib/network/ClientConnectionManager');
 const { ClientConnection } = require('../../lib/network/ClientConnection');
 const { ProxyManager } = require('../../lib/proxy/ProxyManager');
 const { ILogger } = require('../../lib/logging/ILogger');
@@ -46,8 +46,8 @@ describe('ClientProxyTest', function () {
     });
 
     it('client without active connection should return unknown version', function () {
-        const connectionManagerStub = sandbox.stub(ClientConnectionManager.prototype);
-        connectionManagerStub.getActiveConnections.returns({});
+        const connectionRegistryStub = sandbox.stub(ConnectionRegistryImpl.prototype);
+        connectionRegistryStub.getConnections.returns({});
 
         const proxyManagerStub = sandbox.stub(ProxyManager.prototype);
 
@@ -56,21 +56,18 @@ describe('ClientProxyTest', function () {
         loggingServiceStub.getLogger.returns(loggerStub);
 
         const clientStub = sandbox.stub(Client.prototype);
-        clientStub.getConnectionManager.returns(connectionManagerStub);
         clientStub.getLoggingService.returns(loggingServiceStub);
 
         const mapProxy = new MapProxy(
             'mockMapService',
             'mockMap',
-            clientStub.getLoggingService().getLogger(),
-            clientStub.clientConfig,
             proxyManagerStub,
             clientStub.getPartitionService(),
             clientStub.getInvocationService(),
             clientStub.getSerializationService(),
-            clientStub.getConnectionManager(),
             clientStub.getListenerService(),
-            clientStub.getClusterService()
+            clientStub.getClusterService(),
+            connectionRegistryStub
         );
         assert.equal(mapProxy.getConnectedServerVersion(), -1);
     });
@@ -80,8 +77,8 @@ describe('ClientProxyTest', function () {
         const connectionStub = sandbox.stub(ClientConnection.prototype);
         connectionStub.getConnectedServerVersion.returns('40100');
 
-        const connectionManagerStub = sandbox.stub(ClientConnectionManager.prototype);
-        connectionManagerStub.getActiveConnections.returns({
+        const connectionRegistryStub = sandbox.stub(ConnectionRegistryImpl.prototype);
+        connectionRegistryStub.getConnections.returns({
             'localhost': connectionStub
         });
 
@@ -92,21 +89,18 @@ describe('ClientProxyTest', function () {
         loggingServiceStub.getLogger.returns(loggerStub);
 
         const clientStub = sandbox.stub(Client.prototype);
-        clientStub.getConnectionManager.returns(connectionManagerStub);
         clientStub.getLoggingService.returns(loggingServiceStub);
 
         const mapProxy = new MapProxy(
             'mockMapService',
             'mockMap',
-            clientStub.getLoggingService().getLogger(),
-            clientStub.clientConfig,
             proxyManagerStub,
             clientStub.getPartitionService(),
             clientStub.getInvocationService(),
             clientStub.getSerializationService(),
-            clientStub.getConnectionManager(),
             clientStub.getListenerService(),
-            clientStub.getClusterService()
+            clientStub.getClusterService(),
+            connectionRegistryStub
         );
 
         assert.equal(mapProxy.getConnectedServerVersion(), 40100);
