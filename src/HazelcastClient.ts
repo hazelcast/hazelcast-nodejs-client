@@ -152,15 +152,12 @@ export class HazelcastClient {
             this.config.lifecycleListeners,
             this.loggingService.getLogger()
         );
-
         this.clusterFailoverService = this.initClusterFailoverService();
-
         this.clusterService = new ClusterService(
             this.config,
             this.loggingService.getLogger(),
             this.clusterFailoverService
         );
-
         this.invocationService = new InvocationService(
             this.config,
             this.loggingService.getLogger(),
@@ -169,7 +166,6 @@ export class HazelcastClient {
             this.lifecycleService,
             this.connectionRegistry
         );
-
         this.connectionManager = new ClientConnectionManager(
             this,
             this.instanceName,
@@ -185,7 +181,6 @@ export class HazelcastClient {
             this.invocationService,
             this.connectionRegistry
         );
-
         this.listenerService = new ListenerService(
             this.loggingService.getLogger(),
             this.config.network.smartRouting,
@@ -193,9 +188,7 @@ export class HazelcastClient {
             this.invocationService,
             this.connectionRegistry
         );
-
         this.lockReferenceIdGenerator = new LockReferenceIdGenerator();
-
         this.proxyManager = new ProxyManager(
             this.config,
             this.loggingService.getLogger(),
