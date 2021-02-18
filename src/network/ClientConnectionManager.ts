@@ -1008,9 +1008,9 @@ export class ClientConnectionManager extends EventEmitter {
                 + this.clusterId + ' to new cluster: ' + newClusterId);
             this.client.onClusterRestart();
         }
-
+        const connectionsEmpty = this.connectionRegistry.isEmpty();
         this.connectionRegistry.setConnection(response.memberUuid, connection);
-        if (this.connectionRegistry.isEmpty()) {
+        if (connectionsEmpty) {
             this.clusterId = newClusterId;
             if (clusterIdChanged) {
                 this.connectionRegistry.setClientState(ConnectionState.CONNECTED_TO_CLUSTER);
