@@ -5,6 +5,7 @@ const {spawnSync} = require('child_process');
 const rcParams = require('./rc-params');
 
 const ON_WINDOWS = os.platform() === 'win32';
+const HAZELCAST_ENTERPRISE_KEY = process.env.HAZELCAST_ENTERPRISE_KEY ? process.env.HAZELCAST_ENTERPRISE_KEY : '';
 
 let REPO;
 let ENTERPRISE_REPO;
@@ -69,7 +70,7 @@ if (fs.existsSync(`hazelcast-${rcParams.HAZELCAST_TEST_VERSION}-tests.jar`)) {
     }
 }
 
-if (rcParams.HAZELCAST_ENTERPRISE_KEY) {
+if (HAZELCAST_ENTERPRISE_KEY) {
     if (fs.existsSync(`hazelcast-enterprise-${rcParams.HAZELCAST_ENTERPRISE_VERSION}.jar`)) {
         console.log('hazelcast-enterprise.jar already exists, not downloading from maven.');
     } else {

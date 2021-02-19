@@ -10,7 +10,6 @@ const SNAPSHOT_REPO = 'https://oss.sonatype.org/content/repositories/snapshots';
 const RELEASE_REPO = 'http://repo1.maven.apache.org/maven2';
 const ENTERPRISE_RELEASE_REPO = 'https://repository.hazelcast.com/release/';
 const ENTERPRISE_SNAPSHOT_REPO = 'https://repository.hazelcast.com/snapshot/';
-const HAZELCAST_ENTERPRISE_KEY = process.env.HAZELCAST_ENTERPRISE_KEY ? process.env.HAZELCAST_ENTERPRISE_KEY : '';
 
 module.exports = {
     HZ_VERSION: HZ_VERSION,
@@ -22,7 +21,6 @@ module.exports = {
     HZ_TEST_VERSION: HZ_TEST_VERSION,
     HAZELCAST_VERSION: HAZELCAST_VERSION,
     HAZELCAST_TEST_VERSION: HAZELCAST_TEST_VERSION,
-    HAZELCAST_ENTERPRISE_KEY: HAZELCAST_ENTERPRISE_KEY,
     HAZELCAST_ENTERPRISE_VERSION: HAZELCAST_ENTERPRISE_VERSION,
     HAZELCAST_ENTERPRISE_TEST_VERSION: HAZELCAST_ENTERPRISE_TEST_VERSION
 };
