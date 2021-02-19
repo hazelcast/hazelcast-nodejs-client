@@ -129,10 +129,18 @@ const startRC = async (background) => {
 const shutdownProcesses = () => {
     console.log('Stopping remote controller and test processes...');
     shutdownRC();
-    if (testProcess && testProcess.exitCode === null) testProcess.kill('SIGKILL');
+    if (ON_WINDOWS) {
+        spawnSync('taskkill', ['/pid', testProcess.pid, '/f', '/t']); // simple sigkill not enough on windows
+    } else {
+        if (testProcess && testProcess.exitCode === null) testProcess.kill('SIGKILL');
+    }
 };
 const shutdownRC = () => {
-    if (rcProcess && rcProcess.exitCode === null) rcProcess.kill('SIGKILL');
+    if (ON_WINDOWS) {
+        spawnSync('taskkill', ['/pid', rcProcess.pid, '/f', '/t']);
+    } else {
+        if (rcProcess && rcProcess.exitCode === null) rcProcess.kill('SIGKILL');
+    }
 }
 
 if (process.argv.length === 3) {
