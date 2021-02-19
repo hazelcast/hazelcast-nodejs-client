@@ -44,34 +44,71 @@ const isAddressReachable = (host, port, timeoutMs) => {
 const startRC = async (background) => {
     if (ON_WINDOWS) {
         if (background) {
-            rcProcess = spawn('start /min "hazelcast-remote-controller" cmd /c '
-                + `java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} -cp ${CLASSPATH} `
-                + 'com.hazelcast.remotecontroller.Main --use-simple-server > rc_stdout.txt 2> rc_stderr.txt', [], {
-                stdio: ['ignore', 'inherit', 'inherit'],
+            rcProcess = spawn(
+                'start /min "hazelcast-remote-controller" cmd /c '
+              + `java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} -cp ${CLASSPATH} `
+              + 'com.hazelcast.remotecontroller.Main --use-simple-server > rc_stdout.txt 2> rc_stderr.txt', [], {
+                stdio: 'ignore',
                 shell: true
             });
         } else {
-            rcProcess = spawn(`java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} -cp ${CLASSPATH} `
-                + 'com.hazelcast.remotecontroller.Main --use-simple-server > rc_stdout.txt 2> rc_stderr.txt', [], {
-                stdio: ['ignore', 'inherit', 'inherit'],
-                shell: true
-            });
+            try {
+                const outFD = fs.openSync('rc_stdout.txt', 'w');
+                const errFD = fs.openSync('rc_stderr.txt', 'w');
+                rcProcess = spawn('java', [
+                    `-Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY}`,
+                    '-cp',
+                    CLASSPATH,
+                    'com.hazelcast.remotecontroller.Main',
+                    '--use-simple-server'
+                ], {
+                    stdio: [
+                        'ignore',
+                        outFD,
+                        errFD
+                    ]
+                });
+                rcProcess.on('close', () => {
+                    fs.closeSync(outFD);
+                    fs.closeSync(errFD);
+                });
+            } catch (err) {
+                throw err;
+            }
         }
     } else {
         if (background) {
-            rcProcess = spawn(`nohup java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} `
+            rcProcess = spawn(
+                  `nohup java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} `
                 + `-cp ${CLASSPATH} com.hazelcast.remotecontroller.Main --use-simple-server > rc_stdout.log `
                 + '2> rc_stderr.log &', [], {
-                stdio: ['ignore', 'inherit', 'inherit'],
+                stdio: 'ignore',
                 shell: true
             });
         } else {
-            rcProcess = spawn(`java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} `
-                + `-cp ${CLASSPATH} com.hazelcast.remotecontroller.Main --use-simple-server > rc_stdout.log `
-                + '2> rc_stderr.log', [], {
-                stdio: ['ignore', 'inherit', 'inherit'],
-                shell: true
-            });
+            try {
+                const outFD = fs.openSync('rc_stdout.log', 'w');
+                const errFD = fs.openSync('rc_stderr.log', 'w');
+                rcProcess = spawn('java', [
+                    `-Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY}`,
+                    '-cp',
+                    CLASSPATH,
+                    'com.hazelcast.remotecontroller.Main',
+                    '--use-simple-server'
+                ], {
+                    stdio: [
+                        'ignore',
+                        outFD,
+                        errFD
+                    ]
+                });
+                rcProcess.on('close', () => {
+                    fs.closeSync(outFD);
+                    fs.closeSync(errFD);
+                });
+            } catch (err) {
+                throw err;
+            }
         }
     }
 
