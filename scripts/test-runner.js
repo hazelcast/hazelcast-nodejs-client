@@ -9,10 +9,10 @@ const ON_WINDOWS = os.platform() === 'win32';
 const HAZELCAST_ENTERPRISE_KEY = process.env.HAZELCAST_ENTERPRISE_KEY ? process.env.HAZELCAST_ENTERPRISE_KEY : '';
 const PATH_SEPARATOR = ON_WINDOWS ? ';' : ':';
 
-let mochaCommand;
+let testCommand;
 let testType;
 let rcProcess;
-let mochaProcess;
+let testProcess;
 let CLASSPATH = `hazelcast-remote-controller-${rcParams.HAZELCAST_RC_VERSION}.jar${PATH_SEPARATOR}`
               + `hazelcast-${rcParams.HAZELCAST_TEST_VERSION}-tests.jar${PATH_SEPARATOR}`
               + 'test/javaclasses';
@@ -127,9 +127,9 @@ const startRC = async (background) => {
     throw `Could not reach to 127.0.0.1:9701 after trying ${retryCount} times.`;
 }
 const shutdownProcesses = () => {
-    console.log('Stopping remote controller and mocha processes...');
+    console.log('Stopping remote controller and test processes...');
     shutdownRC();
-    if (mochaProcess && mochaProcess.exitCode === null) mochaProcess.kill('SIGKILL');
+    if (testProcess && testProcess.exitCode === null) testProcess.kill('SIGKILL');
 };
 const shutdownRC = () => {
     if (rcProcess && rcProcess.exitCode === null) rcProcess.kill('SIGKILL');
@@ -137,13 +137,13 @@ const shutdownRC = () => {
 
 if (process.argv.length === 3) {
     if (process.argv[2] === 'unit') {
-        mochaCommand = 'node node_modules/mocha/bin/mocha "test/unit/**/*.js"';
+        testCommand = 'node node_modules/mocha/bin/mocha "test/unit/**/*.js"';
         testType = 'unit';
     } else if (process.argv[2] === 'integration') {
-        mochaCommand = 'node node_modules/mocha/bin/mocha "test/integration/**/*.js"';
+        testCommand = 'node node_modules/mocha/bin/mocha "test/integration/**/*.js"';
         testType = 'integration';
     } else if (process.argv[2] === 'alltests') {
-        mochaCommand = 'node node_modules/mocha/bin/mocha "test/**/*.js"';
+        testCommand = 'node node_modules/mocha/bin/mocha "test/**/*.js"';
         testType = 'alltests';
     } else if (process.argv[2] === 'startrc') {
         startRC(true).then(() => {
@@ -153,12 +153,16 @@ if (process.argv.length === 3) {
             console.log('Could not start Hazelcast Remote Controller due to an error:');
             throw err;
         });
+    } else if (process.argv[2] === 'coverage') {
+        testCommand = 'node node_modules/nyc/bin/nyc node_modules/mocha/bin/_mocha "test/**/*.js" -- '
+                    + '--reporter-options mochaFile=report.xml --reporter mocha-junit-reporter';
+        testType = 'coverage';
     } else {
         throw 'Operation type can be one of "unit", "integration", "alltests", "startrc"';
     }
 } else {
     throw 'Usage: node <script-file> <operation-type>. '
-        + 'Operation type can be one of "unit", "integration", "alltests", "startrc"';
+        + 'Operation type can be one of "unit", "integration", "alltests", "startrc", "coverage"';
 }
 
 if (!fs.existsSync('./lib')) {
@@ -170,8 +174,8 @@ if (!fs.existsSync('./lib')) {
 }
 
 if (testType === 'unit') {
-    console.log(`Running unit tests... Mocha command: ${mochaCommand}`);
-    spawnSync(mochaCommand, [], {
+    console.log(`Running unit tests... Test command: ${testCommand}`);
+    spawnSync(testCommand, [], {
         stdio: ['ignore', 'inherit', 'inherit'],
         shell: true
     });
@@ -184,12 +188,12 @@ process.on('SIGHUP', shutdownProcesses);
 
 startRC(false).then(() => {
     console.log('Hazelcast Remote Controller is started!');
-    console.log(`Running tests... Test type: ${testType}, Mocha command: ${mochaCommand}`);
-    mochaProcess = spawn(mochaCommand, [], {
+    console.log(`Running tests... Test type: ${testType}, Test command: ${testCommand}`);
+    testProcess = spawn(testCommand, [], {
         stdio: ['ignore', 'inherit', 'inherit'],
         shell: true
     });
-    mochaProcess.on('exit', shutdownRC);
+    testProcess.on('exit', shutdownRC);
 }).catch(err => {
     console.log('Could not start Hazelcast Remote Controller due to an error:');
     throw err;
