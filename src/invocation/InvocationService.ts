@@ -360,7 +360,6 @@ export class InvocationService {
      * Invokes given invocation on specified connection.
      * @param connection
      * @param request
-     * @param connectionRegistry
      * @param handler called with values returned from server for this invocation.
      * @returns
      */

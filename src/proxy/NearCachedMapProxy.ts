@@ -71,6 +71,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
             connectionRegistry
         );
         this.nearCacheManager = nearCacheManager;
+        this.repairingTask = repairingTask;
         this.nearCache = this.nearCacheManager.getOrCreateNearCache(name);
         if (this.nearCache.isInvalidatedOnChange()) {
             this.addNearCacheInvalidationListener().then((id) => {
@@ -84,7 +85,6 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         } else {
             this.nearCache.setReady();
         }
-        this.repairingTask = repairingTask;
     }
 
     clear(): Promise<void> {
