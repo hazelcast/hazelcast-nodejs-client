@@ -26,7 +26,6 @@ import {NearCache} from './NearCache';
 export class RepairingHandler {
 
     private readonly nearCache: NearCache;
-    private readonly partitionCount: number;
     private readonly partitionService: PartitionServiceImpl;
     private readonly localUuid: UUID;
     private readonly name: string;
@@ -36,10 +35,9 @@ export class RepairingHandler {
         this.nearCache = nearCache;
         this.name = name;
         this.partitionService = partitionService;
-        this.partitionCount = this.partitionService.getPartitionCount();
         this.localUuid = localUuid;
         this.containers = [];
-        for (let i = 0; i < this.partitionCount; i++) {
+        for (let i = 0; i < this.partitionService.getPartitionCount(); i++) {
             this.containers[i] = new MetadataContainer();
         }
     }

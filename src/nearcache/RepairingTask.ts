@@ -40,7 +40,6 @@ export class RepairingTask {
     private readonly maxToleratedMissCount: number;
     private readonly clientUuid: UUID;
     private metadataFetcher: MetadataFetcher;
-    private readonly partitionCount: number;
     private readonly minAllowedReconciliationSeconds: number;
     private readonly logger: ILogger;
     private readonly partitionService: PartitionService;
@@ -69,7 +68,6 @@ export class RepairingTask {
         );
         this.partitionService = partitionService;
         this.lifecycleService = lifecycleService;
-        this.partitionCount = this.partitionService.getPartitionCount();
     }
 
     registerAndGetHandler(objectName: string, nearCache: NearCache): Promise<RepairingHandler> {
@@ -125,7 +123,7 @@ export class RepairingTask {
 
     private isAboveMaxToleratedMissCount(handler: RepairingHandler): boolean {
         let totalMissCount = Long.fromNumber(0);
-        for (let i = 0; i < this.partitionCount; i++) {
+        for (let i = 0; i < this.partitionService.getPartitionCount(); i++) {
             const added = handler.getMetadataContainer(i).getMissedSequenceCount();
             totalMissCount = totalMissCount.add(added);
             if (totalMissCount.greaterThanOrEqual(this.maxToleratedMissCount)) {
@@ -136,7 +134,7 @@ export class RepairingTask {
     }
 
     private updateLastKnownStaleSequences(handler: RepairingHandler): void {
-        for (let i = 0; i < this.partitionCount; i++) {
+        for (let i = 0; i < this.partitionService.getPartitionCount(); i++) {
             const container = handler.getMetadataContainer(i);
             const missedCount = container.getMissedSequenceCount();
             if (missedCount.notEquals(0)) {
