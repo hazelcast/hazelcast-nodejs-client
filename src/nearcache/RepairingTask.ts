@@ -56,8 +56,6 @@ export class RepairingTask {
         clientUuid: UUID
     ) {
         this.logger = logger;
-        this.partitionService = partitionService;
-        this.lifecycleService = lifecycleService;
         this.minAllowedReconciliationSeconds = clientProperties[PROPERTY_MIN_RECONCILIATION_INTERVAL_SECONDS] as number;
         const requestedReconciliationSeconds = clientProperties[PROPERTY_MAX_RECONCILIATION_INTERVAL_SECONDS] as number;
         this.reconcilliationInterval = this.getReconciliationIntervalMillis(requestedReconciliationSeconds);
@@ -69,6 +67,8 @@ export class RepairingTask {
             invocationService,
             clusterService
         );
+        this.partitionService = partitionService;
+        this.lifecycleService = lifecycleService;
         this.partitionCount = this.partitionService.getPartitionCount();
     }
 

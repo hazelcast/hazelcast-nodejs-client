@@ -36,8 +36,8 @@ export class MetadataFetcher {
         invocationService: InvocationService,
         clusterService: ClusterService
     ) {
-        this.invocationService = invocationService;
         this.logger = logger;
+        this.invocationService = invocationService;
         this.clusterService = clusterService;
     }
 

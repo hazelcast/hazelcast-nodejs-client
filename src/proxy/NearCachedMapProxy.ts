@@ -44,7 +44,6 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
     private invalidationListenerId: string;
     private readonly nearCacheManager: NearCacheManager;
     private readonly repairingTask: RepairingTask;
-    protected readonly listenerService: ListenerService;
 
     constructor(
         servicename: string,
@@ -71,9 +70,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
             clusterService,
             connectionRegistry
         );
-        this.repairingTask = repairingTask;
         this.nearCacheManager = nearCacheManager;
-        this.listenerService = listenerService;
         this.nearCache = this.nearCacheManager.getOrCreateNearCache(name);
         if (this.nearCache.isInvalidatedOnChange()) {
             this.addNearCacheInvalidationListener().then((id) => {
@@ -87,6 +84,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         } else {
             this.nearCache.setReady();
         }
+        this.repairingTask = repairingTask;
     }
 
     clear(): Promise<void> {
@@ -294,7 +292,10 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
     }
 
     private createNearCacheEventHandler(): Promise<ClientMessageHandler> {
-        return this.repairingTask.registerAndGetHandler(this.getName(), this.nearCache).then((repairingHandler) => {
+        return this.repairingTask.registerAndGetHandler(
+            this.getName(),
+            this.nearCache
+        ).then((repairingHandler) => {
             const staleReadDetector = new StaleReadDetectorImpl(
                 repairingHandler, this.partitionService as PartitionServiceImpl);
             this.nearCache.setStaleReadDetector(staleReadDetector);
