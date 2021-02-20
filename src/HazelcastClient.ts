@@ -265,7 +265,6 @@ export class HazelcastClient {
     /**
      * Gathers information of this local client.
      */
-
     getLocalEndpoint(): ClientInfo {
         const connection: ClientConnection = this.connectionRegistry.getRandomConnection();
         const localAddress = connection != null ? connection.getLocalAddress() : null;

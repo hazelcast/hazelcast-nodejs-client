@@ -25,8 +25,6 @@ const { MapProxy } = require('../../lib/proxy/MapProxy');
 const { ConnectionRegistryImpl } = require('../../lib/network/ClientConnectionManager');
 const { ClientConnection } = require('../../lib/network/ClientConnection');
 const { ProxyManager } = require('../../lib/proxy/ProxyManager');
-const { ILogger } = require('../../lib/logging/ILogger');
-const { LoggingService } = require('../../lib/logging/LoggingService');
 
 describe('ClientProxyTest', function () {
 
@@ -47,16 +45,9 @@ describe('ClientProxyTest', function () {
 
     it('client without active connection should return unknown version', function () {
         const connectionRegistryStub = sandbox.stub(ConnectionRegistryImpl.prototype);
-        connectionRegistryStub.getConnections.returns({});
-
+        connectionRegistryStub.getConnections.returns([]);
         const proxyManagerStub = sandbox.stub(ProxyManager.prototype);
-
-        const loggingServiceStub = sandbox.stub(LoggingService.prototype);
-        const loggerStub = sandbox.stub(ILogger);
-        loggingServiceStub.getLogger.returns(loggerStub);
-
         const clientStub = sandbox.stub(Client.prototype);
-        clientStub.getLoggingService.returns(loggingServiceStub);
 
         const mapProxy = new MapProxy(
             'mockMapService',
@@ -73,23 +64,12 @@ describe('ClientProxyTest', function () {
     });
 
     it('client with a 4.1 server connection should return the version', function () {
-
         const connectionStub = sandbox.stub(ClientConnection.prototype);
         connectionStub.getConnectedServerVersion.returns('40100');
-
         const connectionRegistryStub = sandbox.stub(ConnectionRegistryImpl.prototype);
-        connectionRegistryStub.getConnections.returns({
-            'localhost': connectionStub
-        });
-
+        connectionRegistryStub.getConnections.returns([connectionStub]);
         const proxyManagerStub = sandbox.stub(ProxyManager.prototype);
-
-        const loggingServiceStub = sandbox.stub(LoggingService.prototype);
-        const loggerStub = sandbox.stub(ILogger);
-        loggingServiceStub.getLogger.returns(loggerStub);
-
         const clientStub = sandbox.stub(Client.prototype);
-        clientStub.getLoggingService.returns(loggingServiceStub);
 
         const mapProxy = new MapProxy(
             'mockMapService',

@@ -147,7 +147,8 @@ export class Statistics {
         compressor.generateBlob()
             .then((blob) => {
                 const request = ClientStatisticsCodec.encodeRequest(collectionTimestamp, stats, blob);
-                return this.invocationService.invokeOnConnection(connection, request);
+                return this.invocationService
+                    .invokeOnConnection(connection, request);
             })
             .catch((err) => {
                 this.logger.trace('Statistics', 'Could not send stats', err);
@@ -174,11 +175,11 @@ export class Statistics {
         try {
             // try a gauge function read, we will register it if it succeeds.
             gaugeFn();
-            this.allGauges[gaugeName] = {gaugeFn, type};
+            this.allGauges[gaugeName] = { gaugeFn, type };
         } catch (err) {
             this.logger.warn('Statistics', 'Could not collect data for gauge '
                 + gaugeName + ', it will not be registered', err);
-            this.allGauges[gaugeName] = {gaugeFn: () => null, type};
+            this.allGauges[gaugeName] = { gaugeFn: () => null, type };
         }
     }
 
@@ -232,7 +233,7 @@ export class Statistics {
         let descriptor: MetricDescriptor;
         if (dotIdx < 0) {
             // simple metric name
-            descriptor = {metric};
+            descriptor = { metric };
         } else {
             descriptor = {
                 prefix: metric.substring(0, dotIdx),

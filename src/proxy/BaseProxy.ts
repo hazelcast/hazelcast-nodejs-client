@@ -28,7 +28,6 @@ import {ClientConnectionManager, ConnectionRegistry} from '../network/ClientConn
 import {ListenerService} from '../listener/ListenerService';
 import {ClusterService} from '../invocation/ClusterService';
 
-
 /**
  * Common super class for any proxy.
  * @internal
@@ -145,11 +144,7 @@ export abstract class BaseProxy {
                                                  partitionId: number,
                                                  ...codecArguments: any[]): Promise<ClientMessage> {
         const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
-        return this.invocationService.invokeOnPartition(
-            clientMessage,
-            partitionId,
-            timeoutMillis
-        );
+        return this.invocationService.invokeOnPartition(clientMessage, partitionId, timeoutMillis);
     }
 
     /**

@@ -32,7 +32,9 @@ import {
     LoadBalancer,
     AddressImpl,
     Addresses,
-    MemberImpl, ClientOfflineError, IOError
+    MemberImpl,
+    ClientOfflineError,
+    IOError
 } from '../core';
 import {lookupPublicAddress} from '../core/MemberInfo';
 import {ClientConnection} from './ClientConnection';
@@ -145,7 +147,7 @@ export interface ConnectionRegistry {
     forEachConnection(fn: (conn: ClientConnection) => void): void;
 
     /**
-     * Returns if invocation allowed. Invocation is allowed only if client state is {@link INITIALIZED_ON_CLUSTER}
+     * Returns if invocation allowed. Invocation is allowed only if connection state is {@link INITIALIZED_ON_CLUSTER}
      * and there is at least one active connection.
      * @return Error if invocation is not allowed, null otherwise
      */
@@ -158,16 +160,16 @@ export interface ConnectionRegistry {
     deleteConnection(uuid: UUID): void;
 
     /**
-     * Returns client state.
+     * Returns connection state.
      * @return ConnectionState enum value
      */
-    getClientState(): ConnectionState;
+    getConnectionState(): ConnectionState;
 
     /**
-     * Sets the client state
-     * @param clientState
+     * Sets the connection state
+     * @param connectionState: ConnectionState enum value
      */
-    setClientState(clientState: ConnectionState): void;
+    setConnectionState(connectionState: ConnectionState): void;
 
     /**
      * Adds or updates a client connection by uuid
@@ -192,7 +194,7 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
     private active = false;
     private readonly activeConnections = new Map<string, ClientConnection>();
     private readonly loadBalancer: LoadBalancer;
-    private clientState = ConnectionState.INITIAL;
+    private connectionState = ConnectionState.INITIAL;
     private readonly smartRoutingEnabled: boolean;
     private readonly asyncStart: boolean;
     private readonly reconnectMode: ReconnectMode;
@@ -206,8 +208,8 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
         return this.active;
     }
 
-    getClientState(): ConnectionState {
-        return this.clientState;
+    getConnectionState(): ConnectionState {
+        return this.connectionState;
     }
 
     isEmpty(): boolean {
@@ -247,7 +249,7 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
     }
 
     checkIfInvocationAllowed(): Error {
-        const state = this.clientState;
+        const state = this.connectionState;
         if (state === ConnectionState.INITIALIZED_ON_CLUSTER && this.activeConnections.size > 0) {
             return null;
         }
@@ -275,8 +277,8 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
         this.activeConnections.set(uuid.toString(), connection);
     }
 
-    setClientState(clientState: ConnectionState): void {
-        this.clientState = clientState;
+    setConnectionState(connectionState: ConnectionState): void {
+        this.connectionState = connectionState;
     }
 
     activate(): void {
@@ -430,10 +432,6 @@ export class ClientConnectionManager extends EventEmitter {
         });
     }
 
-    isAlive(): boolean {
-        return this.connectionRegistry.isActive();
-    }
-
     getClientUuid(): UUID {
         return this.clientUuid;
     }
@@ -537,7 +535,7 @@ export class ClientConnectionManager extends EventEmitter {
             this.logger.info('ConnectionManager', 'Removed connection to endpoint: '
                 + endpoint + ':' + memberUuid + ', connection: ' + connection);
             if (this.connectionRegistry.isEmpty()) {
-                if (this.connectionRegistry.getClientState() === ConnectionState.INITIALIZED_ON_CLUSTER) {
+                if (this.connectionRegistry.getConnectionState() === ConnectionState.INITIALIZED_ON_CLUSTER) {
                     this.emitLifecycleEvent(LifecycleState.DISCONNECTED);
                 }
                 this.triggerClusterReconnection();
@@ -648,10 +646,10 @@ export class ClientConnectionManager extends EventEmitter {
 
         // try to connect to a member in the member list first
         return this.tryConnecting(
-            0, members, triedAddressesPerAttempt,
-            (m) => m.address,
-            (m) => this.getOrConnectToMember(m)
-        )
+                0, members, triedAddressesPerAttempt,
+                (m) => m.address,
+                (m) => this.getOrConnectToMember(m)
+            )
             .then((connected) => {
                 if (connected) {
                     return true;
@@ -694,7 +692,7 @@ export class ClientConnectionManager extends EventEmitter {
             })
             .catch((err: Error) => {
                 if (err instanceof ClientNotAllowedInClusterError
-                    || err instanceof InvalidConfigurationError) {
+                        || err instanceof InvalidConfigurationError) {
                     this.logger.warn('ConnectionManager', 'Stopped trying on the cluster: '
                         + ctx.clusterName + ' reason: ' + err.message);
                     return false;
@@ -736,7 +734,7 @@ export class ClientConnectionManager extends EventEmitter {
                 this.logger.warn('ConnectionManager', 'Error during initial connection to '
                     + target.toString() + ' ' + err);
                 if (err instanceof InvalidConfigurationError
-                    || err instanceof ClientNotAllowedInClusterError) {
+                        || err instanceof ClientNotAllowedInClusterError) {
                     throw err;
                 }
                 return null;
@@ -1003,7 +1001,7 @@ export class ClientConnectionManager extends EventEmitter {
 
         const clusterIdChanged = this.clusterId != null && !newClusterId.equals(this.clusterId);
         if (clusterIdChanged) {
-            this.checkClientStateOnClusterIdChange(connection);
+            this.checkConnectionStateOnClusterIdChange(connection);
             this.logger.warn('ConnectionManager', 'Switching from current cluster: '
                 + this.clusterId + ' to new cluster: ' + newClusterId);
             this.client.onClusterRestart();
@@ -1013,10 +1011,10 @@ export class ClientConnectionManager extends EventEmitter {
         if (connectionsEmpty) {
             this.clusterId = newClusterId;
             if (clusterIdChanged) {
-                this.connectionRegistry.setClientState(ConnectionState.CONNECTED_TO_CLUSTER);
+                this.connectionRegistry.setConnectionState(ConnectionState.CONNECTED_TO_CLUSTER);
                 this.initializeClientOnCluster(newClusterId);
             } else {
-                this.connectionRegistry.setClientState(ConnectionState.INITIALIZED_ON_CLUSTER);
+                this.connectionRegistry.setConnectionState(ConnectionState.INITIALIZED_ON_CLUSTER);
                 this.emitLifecycleEvent(LifecycleState.CONNECTED);
             }
         }
@@ -1029,7 +1027,7 @@ export class ClientConnectionManager extends EventEmitter {
         return connection;
     }
 
-    private checkClientStateOnClusterIdChange(connection: ClientConnection): void {
+    private checkConnectionStateOnClusterIdChange(connection: ClientConnection): void {
         if (this.connectionRegistry.isEmpty()) {
             // We only have single connection established
             if (this.failoverConfigProvided) {
@@ -1085,7 +1083,7 @@ export class ClientConnectionManager extends EventEmitter {
 
     private initializeClientOnCluster(targetClusterId: UUID): void {
         if (!targetClusterId.equals(this.clusterId)) {
-            this.logger.warn('ConnectionManager', 'Will not send client state to cluster: '
+            this.logger.warn('ConnectionManager', 'Will not send connection state to cluster: '
                 + targetClusterId + ', switched to a new cluster: ' + this.clusterId);
             return;
         }
@@ -1093,13 +1091,13 @@ export class ClientConnectionManager extends EventEmitter {
         this.client.sendStateToCluster()
             .then(() => {
                 if (targetClusterId.equals(this.clusterId)) {
-                    this.logger.trace('ConnectionManager', 'Client state is sent to cluster: '
+                    this.logger.trace('ConnectionManager', 'Connection state is sent to cluster: '
                         + targetClusterId);
 
-                    this.connectionRegistry.setClientState(ConnectionState.INITIALIZED_ON_CLUSTER);
+                    this.connectionRegistry.setConnectionState(ConnectionState.INITIALIZED_ON_CLUSTER);
                     this.emitLifecycleEvent(LifecycleState.CONNECTED);
                 } else {
-                    this.logger.warn('ConnectionManager', 'Cannot set client state to initialized on '
+                    this.logger.warn('ConnectionManager', 'Cannot set connection state to initialized on '
                         + 'cluster because current cluster id: ' + this.clusterId
                         + ' is different than expected cluster id: ' + targetClusterId);
                 }

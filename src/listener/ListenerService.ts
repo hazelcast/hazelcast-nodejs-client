@@ -219,13 +219,13 @@ export class ListenerService {
         invocation.connection = eventRegistration.subscriber;
         this.invocationService.invoke(invocation).catch((err) => {
             if (err instanceof ClientNotActiveError
-                || err instanceof IOError
-                || err instanceof TargetDisconnectedError) {
+                    || err instanceof IOError
+                    || err instanceof TargetDisconnectedError) {
                 return;
             }
             this.logger.warn('ListenerService',
                 'Deregistration of listener ' + userKey + ' has failed for address '
-                + invocation.connection.getRemoteAddress().toString());
+                    + invocation.connection.getRemoteAddress().toString());
         });
     }
 

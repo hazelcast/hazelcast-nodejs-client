@@ -77,9 +77,10 @@ describe('ClientReconnectAdvancedTest', function () {
             },
             lifecycleListeners: [ lifecycleListener ]
         });
+        const connectionManager = client.getConnectionManager();
 
         await assertTrueEventually(async () => {
-            expect(client.connectionRegistry.activeConnections).to.have.lengthOf(1);
+            expect(connectionManager.connectionRegistry.activeConnections).to.have.lengthOf(1);
         });
 
         await RC.shutdownMember(cluster.id, member.uuid);
@@ -88,7 +89,7 @@ describe('ClientReconnectAdvancedTest', function () {
         await RC.startMember(cluster.id);
         await reconnectedDeferred.promise;
 
-        expect(client.connectionRegistry.activeConnections).to.have.lengthOf(1);
+        expect(connectionManager.connectionRegistry.activeConnections).to.have.lengthOf(1);
     }
 
     async function testListenersAfterClientDisconnected(memberAddress, clientAddress) {
@@ -107,6 +108,7 @@ describe('ClientReconnectAdvancedTest', function () {
                 }
             }
         });
+        const connectionManager = client.getConnectionManager();
 
         const map = await client.getMap('test');
         let eventCount = 0;
@@ -124,7 +126,7 @@ describe('ClientReconnectAdvancedTest', function () {
         }, false);
 
         await assertTrueEventually(async () => {
-            expect(client.connectionRegistry.activeConnections).to.have.lengthOf(1);
+            expect(connectionManager.connectionRegistry.activeConnections).to.have.lengthOf(1);
         });
 
         await RC.shutdownMember(cluster.id, member.uuid);

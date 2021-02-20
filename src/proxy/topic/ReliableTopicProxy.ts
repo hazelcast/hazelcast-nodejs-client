@@ -17,7 +17,7 @@
 
 import * as Long from 'long';
 import {OverflowPolicy} from '../OverflowPolicy';
-import {TopicOverloadError} from '../../core';
+import {AddressImpl, TopicOverloadError} from '../../core';
 import {SerializationService} from '../../serialization/SerializationService';
 import {UuidUtil} from '../../util/UuidUtil';
 import {
@@ -53,6 +53,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
     private readonly runners: { [key: string]: ReliableTopicListenerRunner<E> } = {};
     private readonly overloadPolicy: TopicOverloadPolicy;
     private readonly logger: ILogger;
+    private readonly localAddress: AddressImpl;
 
     constructor(
         serviceName: string,
@@ -78,6 +79,8 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
             clusterService,
             connectionRegistry
         );
+        const connection: ClientConnection = this.connectionRegistry.getRandomConnection();
+        this.localAddress = connection != null ? connection.getLocalAddress() : null;
         this.logger = logger;
         const config = (clientConfig as ClientConfigImpl).getReliableTopicConfig(name);
         this.batchSize = config.readBatchSize;
@@ -121,9 +124,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         const reliableTopicMessage = new ReliableTopicMessage();
         reliableTopicMessage.payload = this.serializationService.toData(message);
         reliableTopicMessage.publishTime = Long.fromNumber(Date.now());
-
-        const connection: ClientConnection = this.connectionRegistry.getRandomConnection();
-        reliableTopicMessage.publisherAddress = connection != null ? connection.getLocalAddress() : null;
+        reliableTopicMessage.publisherAddress = this.localAddress;
 
         switch (this.overloadPolicy) {
             case TopicOverloadPolicy.ERROR:

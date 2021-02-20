@@ -776,7 +776,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             codec = this.createEntryListener(this.name, includeValue, flags);
             listenerHandler = MapAddEntryListenerCodec.handle;
         }
-        return this.listenerService.registerListener(codec, (m: ClientMessage): void => {
+        return this.listenerService
+            .registerListener(codec, (m: ClientMessage): void => {
                 listenerHandler(m, entryEventHandler);
             });
     }

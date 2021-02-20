@@ -147,7 +147,7 @@ export class Invocation {
 
     shouldRetry(err: Error): boolean {
         if (this.connection != null
-            && (err instanceof IOError || err instanceof TargetDisconnectedError)) {
+                && (err instanceof IOError || err instanceof TargetDisconnectedError)) {
             return false;
         }
 
@@ -159,8 +159,8 @@ export class Invocation {
         }
 
         if (err instanceof IOError
-            || err instanceof HazelcastInstanceNotActiveError
-            || err instanceof RetryableHazelcastError) {
+                || err instanceof HazelcastInstanceNotActiveError
+                || err instanceof RetryableHazelcastError) {
             return true;
         }
 
@@ -301,9 +301,9 @@ export class InvocationService {
         this.cleanResourcesTask = this.scheduleCleanResourcesTask(this.cleanResourcesMillis);
         if (this.backupAckToClientEnabled) {
             return listenerService.registerListener(
-                backupListenerCodec,
-                this.backupEventHandler.bind(this)
-            ).then(() => {});
+                    backupListenerCodec,
+                    this.backupEventHandler.bind(this)
+                ).then(() => {});
         }
         return Promise.resolve();
     }
@@ -316,10 +316,7 @@ export class InvocationService {
                     continue;
                 }
                 if (!connection.isAlive()) {
-                    this.notifyError(
-                        invocation,
-                        new TargetDisconnectedError(connection.getClosedReason())
-                    );
+                    this.notifyError(invocation, new TargetDisconnectedError(connection.getClosedReason()));
                     continue;
                 }
                 if (this.backupAckToClientEnabled) {
@@ -338,10 +335,7 @@ export class InvocationService {
             cancelRepetitionTask(this.cleanResourcesTask);
         }
         for (const invocation of this.pending.values()) {
-            this.notifyError(
-                invocation,
-                new ClientNotActiveError('Client is shutting down.')
-            );
+            this.notifyError(invocation, new ClientNotActiveError('Client is shutting down.'));
         }
     }
 
@@ -398,10 +392,7 @@ export class InvocationService {
     /**
      * Invokes given invocation on the host with given UUID.
      */
-    invokeOnTarget(
-        request: ClientMessage,
-        target: UUID
-    ): Promise<ClientMessage> {
+    invokeOnTarget(request: ClientMessage, target: UUID): Promise<ClientMessage> {
         const invocation = new Invocation(this, request);
         invocation.uuid = target;
         return this.invoke(invocation);
@@ -467,9 +458,7 @@ export class InvocationService {
         }
     }
 
-    private invokeSmart(
-        invocation: Invocation
-    ): void {
+    private invokeSmart(invocation: Invocation): void {
         invocation.invokeCount++;
         if (!invocation.urgent) {
             const error = this.connectionRegistry.checkIfInvocationAllowed();
@@ -503,9 +492,7 @@ export class InvocationService {
         });
     }
 
-    private invokeNonSmart(
-        invocation: Invocation
-    ): void {
+    private invokeNonSmart(invocation: Invocation): void {
         invocation.invokeCount++;
         if (!invocation.urgent) {
             const error = this.connectionRegistry.checkIfInvocationAllowed();
@@ -526,9 +513,7 @@ export class InvocationService {
         });
     }
 
-    private invokeOnRandomConnection(
-        invocation: Invocation
-    ): Promise<void> {
+    private invokeOnRandomConnection(invocation: Invocation): Promise<void> {
         const connection = this.connectionRegistry.getRandomConnection();
         if (connection == null) {
             return Promise.reject(new IOError('No connection found to invoke'));
@@ -536,10 +521,7 @@ export class InvocationService {
         return this.send(invocation, connection);
     }
 
-    private invokeOnUuid(
-        invocation: Invocation,
-        target: UUID
-    ): Promise<void> {
+    private invokeOnUuid(invocation: Invocation, target: UUID): Promise<void> {
         const connection = this.connectionRegistry.getConnection(target);
         if (connection == null) {
             this.logger.trace('InvocationService', `Client is not connected to target: ${target}`);
@@ -548,10 +530,7 @@ export class InvocationService {
         return this.send(invocation, connection);
     }
 
-    private invokeOnPartitionOwner(
-        invocation: Invocation,
-        partitionId: number
-    ): Promise<void> {
+    private invokeOnPartitionOwner(invocation: Invocation, partitionId: number): Promise<void> {
         const partitionOwner = this.partitionService.getPartitionOwner(partitionId);
         if (partitionOwner == null) {
             this.logger.trace('InvocationService', 'Partition owner is not assigned yet');
@@ -575,10 +554,7 @@ export class InvocationService {
             });
     }
 
-    private notifyError(
-        invocation: Invocation,
-        error: Error
-    ): void {
+    private notifyError(invocation: Invocation, error: Error): void {
         const correlationId = invocation.request.getCorrelationId();
         if (this.rejectIfNotRetryable(invocation, error)) {
             this.pending.delete(correlationId);
