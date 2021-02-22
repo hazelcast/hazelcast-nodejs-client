@@ -3,7 +3,14 @@ const fs = require('fs');
 const os = require('os');
 const net = require('net');
 const {spawnSync, spawn} = require('child_process');
-const rcParams = require('./rc-params');
+const {
+    HAZELCAST_RC_VERSION,
+    HAZELCAST_TEST_VERSION,
+    HAZELCAST_ENTERPRISE_VERSION,
+    HAZELCAST_ENTERPRISE_TEST_VERSION,
+    HAZELCAST_VERSION,
+    downloadRC
+} = require('./download-rc.js');
 
 const ON_WINDOWS = os.platform() === 'win32';
 const HAZELCAST_ENTERPRISE_KEY = process.env.HAZELCAST_ENTERPRISE_KEY ? process.env.HAZELCAST_ENTERPRISE_KEY : '';
@@ -13,16 +20,16 @@ let testCommand;
 let testType;
 let rcProcess;
 let testProcess;
-let CLASSPATH = `hazelcast-remote-controller-${rcParams.HAZELCAST_RC_VERSION}.jar${PATH_SEPARATOR}`
-              + `hazelcast-${rcParams.HAZELCAST_TEST_VERSION}-tests.jar${PATH_SEPARATOR}`
+let CLASSPATH = `hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar${PATH_SEPARATOR}`
+              + `hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar${PATH_SEPARATOR}`
               + 'test/javaclasses';
 
 if (HAZELCAST_ENTERPRISE_KEY) {
-    CLASSPATH = `hazelcast-enterprise-${rcParams.HAZELCAST_ENTERPRISE_VERSION}.jar${PATH_SEPARATOR}`
-              + `hazelcast-enterprise-${rcParams.HAZELCAST_ENTERPRISE_TEST_VERSION}-tests.jar${PATH_SEPARATOR}`
+    CLASSPATH = `hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar${PATH_SEPARATOR}`
+              + `hazelcast-enterprise-${HAZELCAST_ENTERPRISE_TEST_VERSION}-tests.jar${PATH_SEPARATOR}`
               + CLASSPATH;
 } else {
-    CLASSPATH = `hazelcast-${rcParams.HAZELCAST_VERSION}.jar${PATH_SEPARATOR}${CLASSPATH}`;
+    CLASSPATH = `hazelcast-${HAZELCAST_VERSION}.jar${PATH_SEPARATOR}${CLASSPATH}`;
 }
 
 const isAddressReachable = (host, port, timeoutMs) => {
@@ -42,6 +49,7 @@ const isAddressReachable = (host, port, timeoutMs) => {
     });
 }
 const startRC = async (background) => {
+    console.log('Starting Hazelcast Remote Controller ... oss ...');
     if (ON_WINDOWS) {
         if (background) {
             rcProcess = spawn(
@@ -117,14 +125,14 @@ const startRC = async (background) => {
     const retryCount = 10;
 
     for (let i = 0; i < retryCount; i++) {
-        console.log('Trying to connect to 127.0.0.1:9701...');
+        console.log('Trying to connect to Hazelcast Remote Controller (127.0.0.1:9701)...');
         const addressReachable = await isAddressReachable('127.0.0.1', 9701, 5000);
         if (addressReachable) {
             return;
         }
         await new Promise(r => setTimeout(r, 1000));
     }
-    throw `Could not reach to 127.0.0.1:9701 after trying ${retryCount} times.`;
+    throw `Could not reach to Hazelcast Remote Controller (127.0.0.1:9701) after trying ${retryCount} times.`;
 }
 const shutdownProcesses = () => {
     console.log('Stopping remote controller and test processes...');
@@ -143,16 +151,29 @@ const shutdownRC = () => {
     }
 }
 
-if (process.argv.length === 3) {
+if (process.argv.length === 3 || process.argv.length === 4) {
     if (process.argv[2] === 'unit') {
-        testCommand = 'node node_modules/mocha/bin/mocha "test/unit/**/*.js"';
+        if (process.argv.length === 4) {  //
+            testCommand = `node node_modules/mocha/bin/mocha --recursive -g ${process.argv[3]} "test/unit/**/*.js"`;
+        } else {
+            testCommand = 'node node_modules/mocha/bin/mocha "test/unit/**/*.js"';
+        }
         testType = 'unit';
     } else if (process.argv[2] === 'integration') {
-        testCommand = 'node node_modules/mocha/bin/mocha "test/integration/**/*.js"';
+        if (process.argv.length === 4) {
+            testCommand = 'node node_modules/mocha/bin/mocha --recursive -g ' +
+                          `${process.argv[3]} "test/integration/**/*.js"`;
+        } else {
+            testCommand = 'node node_modules/mocha/bin/mocha "test/integration/**/*.js"';
+        }
         testType = 'integration';
-    } else if (process.argv[2] === 'alltests') {
-        testCommand = 'node node_modules/mocha/bin/mocha "test/**/*.js"';
-        testType = 'alltests';
+    } else if (process.argv[2] === 'all') {
+        if (process.argv.length === 4) {
+            testCommand = `node node_modules/mocha/bin/mocha --recursive -g ${process.argv[3]} "test/**/*.js"`;
+        } else {
+            testCommand = 'node node_modules/mocha/bin/mocha "test/**/*.js"';
+        }
+        testType = 'all';
     } else if (process.argv[2] === 'startrc') {
         startRC(true).then(() => {
             console.log('Hazelcast Remote Controller is started!');
@@ -166,13 +187,15 @@ if (process.argv.length === 3) {
                     + '--reporter-options mochaFile=report.xml --reporter mocha-junit-reporter';
         testType = 'coverage';
     } else {
-        throw 'Operation type can be one of "unit", "integration", "alltests", "startrc"';
+        throw 'Operation type can be one of "unit", "integration", "all", "startrc"';
     }
 } else {
-    throw 'Usage: node <script-file> <operation-type>. '
-        + 'Operation type can be one of "unit", "integration", "alltests", "startrc", "coverage"';
+    throw 'Usage: node <script-file> <operation-type> [test regex].\n'
+        + 'Operation type can be one of "unit", "integration", "all", "startrc", "coverage".\n'
+        + '[test regex] only used in "unit", "all" and "integration" operations.';
 }
 
+// generate lib folder to be able to test if it does not exist
 if (!fs.existsSync('./lib')) {
     console.log('./lib folder does not exist, so compiling...');
     spawnSync('npm run compile', [], {
@@ -180,7 +203,7 @@ if (!fs.existsSync('./lib')) {
         shell: true
     });
 }
-
+// If running unit test, no need to start rc.
 if (testType === 'unit') {
     console.log(`Running unit tests... Test command: ${testCommand}`);
     spawnSync(testCommand, [], {
@@ -188,6 +211,13 @@ if (testType === 'unit') {
         shell: true
     });
     process.exit(0);
+}
+// For other tests, download rc files if needed.
+try {
+    downloadRC();
+} catch (err) {
+    console.log('An error occurred downloading remote controller:');
+    throw err;
 }
 
 process.on('SIGINT', shutdownProcesses);

@@ -35,11 +35,11 @@
     "scripts": {
         "clean": "rimraf lib *.jar *.log",
         "compile": "tsc",
-        "test": "node scripts/download-rc.js && node scripts/test-runner.js alltests",
+        "test": "node scripts/test-runner.js all",
         "test:unit": "node scripts/test-runner.js unit",
-        "test:integration": "node scripts/download-rc.js && node scripts/test-runner.js integration",
+        "test:integration": "node scripts/test-runner.js integration",
         "validate-user-code": "tsc --build test/user_code/tsconfig.json",
-        "coverage": "node scripts/download-rc.js && node scripts/test-runner.js coverage",
+        "coverage": "node scripts/test-runner.js coverage",
         "pregenerate-docs": "rimraf docs",
         "generate-docs": "typedoc --options typedoc.json",
         "lint": "eslint --ext .ts src && eslint --plugin mocha test && eslint code_samples"
