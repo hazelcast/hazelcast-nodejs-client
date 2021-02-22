@@ -20,6 +20,7 @@ let testCommand;
 let testType;
 let rcProcess;
 let testProcess;
+let runTests = true;
 let CLASSPATH = `hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar${PATH_SEPARATOR}`
               + `hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar${PATH_SEPARATOR}`
               + 'test/javaclasses';
@@ -52,11 +53,11 @@ const startRC = async (background) => {
     console.log('Starting Hazelcast Remote Controller ... oss ...');
     if (ON_WINDOWS) {
         if (background) {
-            rcProcess = spawn(
+            rcProcess = spawnSync(
                 'start /min "hazelcast-remote-controller" cmd /c '
               + `java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} -cp ${CLASSPATH} `
-              + 'com.hazelcast.remotecontroller.Main --use-simple-server > rc_stdout.txt 2> rc_stderr.txt', [], {
-                stdio: 'ignore',
+              + 'com.hazelcast.remotecontroller.Main --use-simple-server> rc_stdout.txt 2>rc_stderr.txt', [], {
+                stdio: 'inherit',
                 shell: true
             });
         } else {
@@ -175,13 +176,7 @@ if (process.argv.length === 3 || process.argv.length === 4) {
         }
         testType = 'all';
     } else if (process.argv[2] === 'startrc') {
-        startRC(true).then(() => {
-            console.log('Hazelcast Remote Controller is started!');
-            process.exit(0);
-        }).catch(err => {
-            console.log('Could not start Hazelcast Remote Controller due to an error:');
-            throw err;
-        });
+        runTests = false;
     } else if (process.argv[2] === 'coverage') {
         testCommand = 'node node_modules/nyc/bin/nyc node_modules/mocha/bin/_mocha "test/**/*.js" -- '
                     + '--reporter-options mochaFile=report.xml --reporter mocha-junit-reporter';
@@ -224,14 +219,16 @@ process.on('SIGINT', shutdownProcesses);
 process.on('SIGTERM', shutdownProcesses);
 process.on('SIGHUP', shutdownProcesses);
 
-startRC(false).then(() => {
+startRC(!runTests).then(() => {
     console.log('Hazelcast Remote Controller is started!');
-    console.log(`Running tests... Test type: ${testType}, Test command: ${testCommand}`);
-    testProcess = spawn(testCommand, [], {
-        stdio: ['ignore', 'inherit', 'inherit'],
-        shell: true
-    });
-    testProcess.on('exit', shutdownRC);
+    if (runTests) {
+        console.log(`Running tests... Test type: ${testType}, Test command: ${testCommand}`);
+        testProcess = spawn(testCommand, [], {
+            stdio: ['ignore', 'inherit', 'inherit'],
+            shell: true
+        });
+        testProcess.on('exit', shutdownRC);
+    }
 }).catch(err => {
     console.log('Could not start Hazelcast Remote Controller due to an error:');
     throw err;
