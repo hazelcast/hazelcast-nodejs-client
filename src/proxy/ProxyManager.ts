@@ -79,7 +79,7 @@ export class ProxyManager {
     private readonly partitionService: PartitionService
     private readonly serializationService: SerializationService;
     private readonly nearCacheManager: NearCacheManager;
-    private readonly repairingTask: RepairingTask;
+    private readonly getRepairingTask: () => RepairingTask;
     private readonly clusterService: ClusterService;
     private readonly lockReferenceIdGenerator: LockReferenceIdGenerator;
     private readonly connectionRegistry: ConnectionRegistry;
@@ -92,7 +92,7 @@ export class ProxyManager {
         partitionService: PartitionService,
         serializationService: SerializationService,
         nearCacheManager: NearCacheManager,
-        repairingTask: RepairingTask,
+        getRepairingTask: () => RepairingTask,
         clusterService: ClusterService,
         lockReferenceIdGenerator: LockReferenceIdGenerator,
         connectionRegistry: ConnectionRegistry
@@ -104,7 +104,7 @@ export class ProxyManager {
         this.partitionService = partitionService;
         this.serializationService = serializationService;
         this.nearCacheManager = nearCacheManager;
-        this.repairingTask = repairingTask;
+        this.getRepairingTask = getRepairingTask;
         this.clusterService = clusterService;
         this.lockReferenceIdGenerator = lockReferenceIdGenerator;
         this.connectionRegistry = connectionRegistry;
@@ -253,7 +253,7 @@ export class ProxyManager {
                 this.invocationService,
                 this.serializationService,
                 this.nearCacheManager,
-                this.repairingTask,
+                this.getRepairingTask,
                 this.listenerService,
                 this.clusterService,
                 this.connectionRegistry

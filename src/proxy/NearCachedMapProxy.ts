@@ -43,7 +43,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
     private nearCache: NearCache;
     private invalidationListenerId: string;
     private readonly nearCacheManager: NearCacheManager;
-    private readonly repairingTask: RepairingTask;
+    private readonly getRepairingTask: () => RepairingTask;
 
     constructor(
         servicename: string,
@@ -54,7 +54,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         invocationService: InvocationService,
         serializationService: SerializationService,
         nearCacheManager: NearCacheManager,
-        repairingTask: RepairingTask,
+        getRepairingTask: () => RepairingTask,
         listenerService: ListenerService,
         clusterService: ClusterService,
         connectionRegistry: ConnectionRegistry
@@ -71,7 +71,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
             connectionRegistry
         );
         this.nearCacheManager = nearCacheManager;
-        this.repairingTask = repairingTask;
+        this.getRepairingTask = getRepairingTask;
         this.nearCache = this.nearCacheManager.getOrCreateNearCache(name);
         if (this.nearCache.isInvalidatedOnChange()) {
             this.addNearCacheInvalidationListener().then((id) => {
@@ -255,7 +255,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
     }
 
     private removeNearCacheInvalidationListener(): Promise<boolean> {
-        this.repairingTask.deregisterHandler(this.name);
+        this.getRepairingTask().deregisterHandler(this.name);
         return this.listenerService.deregisterListener(this.invalidationListenerId);
     }
 
@@ -292,7 +292,8 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
     }
 
     private createNearCacheEventHandler(): Promise<ClientMessageHandler> {
-        return this.repairingTask.registerAndGetHandler(
+        const repairingTask = this.getRepairingTask();
+        return repairingTask.registerAndGetHandler(
             this.getName(),
             this.nearCache
         ).then((repairingHandler) => {

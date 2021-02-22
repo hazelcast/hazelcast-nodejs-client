@@ -57,7 +57,8 @@ describe('RepairingTask', function () {
     }
 
     it('throws when reconciliation interval is set to below 30 seconds', async function () {
-        return expect(startClientWithReconciliationInterval( 2)).to.be.eventually.rejected;
+        await startClientWithReconciliationInterval(2);
+        return expect(client.getRepairingTask.bind(client)).to.throw();
     });
 
     it('reconciliation interval is used when set to 50', async function () {

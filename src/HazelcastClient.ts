@@ -197,7 +197,7 @@ export class HazelcastClient {
             this.partitionService,
             this.serializationService,
             this.nearCacheManager,
-            this.getRepairingTask(),
+            () => this.getRepairingTask(),
             this.clusterService,
             this.lockReferenceIdGenerator,
             this.connectionRegistry
