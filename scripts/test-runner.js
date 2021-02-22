@@ -153,7 +153,7 @@ const shutdownRC = () => {
 
 if (process.argv.length === 3 || process.argv.length === 4) {
     if (process.argv[2] === 'unit') {
-        if (process.argv.length === 4) {  //
+        if (process.argv.length === 4) {
             testCommand = `node node_modules/mocha/bin/mocha --recursive -g ${process.argv[3]} "test/unit/**/*.js"`;
         } else {
             testCommand = 'node node_modules/mocha/bin/mocha "test/unit/**/*.js"';
