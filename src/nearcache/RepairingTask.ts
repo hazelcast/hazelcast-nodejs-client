@@ -20,7 +20,7 @@ import * as Long from 'long';
 import {MetadataFetcher} from './MetadataFetcher';
 import {NearCache} from './NearCache';
 import {RepairingHandler} from './RepairingHandler';
-import {PartitionService, PartitionServiceImpl} from '../PartitionService';
+import {PartitionService} from '../PartitionService';
 import {ILogger} from '../logging/ILogger';
 import {UUID} from '../core/UUID';
 import {LifecycleService, Properties} from '../index';
@@ -78,8 +78,7 @@ export class RepairingTask {
             return Promise.resolve(handler);
         }
 
-        const partitionService = this.partitionService as PartitionServiceImpl;
-        handler = new RepairingHandler(objectName, partitionService, nearCache, this.clientUuid);
+        handler = new RepairingHandler(objectName, this.partitionService, nearCache, this.clientUuid);
         return this.metadataFetcher.initHandler(handler).then(() => {
             this.handlers.set(objectName, handler);
             if (this.antientropyTaskHandle === undefined) {
