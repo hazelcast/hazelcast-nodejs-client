@@ -125,7 +125,7 @@ const downloadRC = () => {
             if (subprocess.status !== 0) {
                 let subprocessTrace = subprocess.error ? subprocess.error.stack : '';
                 throw 'Failed to download hazelcast enterprise test jar '
-                + `com.hazelcast:hazelcast-enterprise:${HAZELCAST_TEST_VERSION}:jar:tests ${subprocessTrace}`;
+                    + `com.hazelcast:hazelcast-enterprise:${HAZELCAST_TEST_VERSION}:jar:tests ${subprocessTrace}`;
             }
         }
         console.log('Starting Remote Controller ... enterprise ...');
