@@ -103,7 +103,7 @@ const downloadRC = () => {
             if (subprocess.status !== 0) {
                 let subprocessTrace = subprocess.error ? subprocess.error.stack : '';
                 throw `Failed download hazelcast enterprise jar `
-                + `com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION} ${subprocessTrace}`;
+                    + `com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION} ${subprocessTrace}`;
             }
         }
 
