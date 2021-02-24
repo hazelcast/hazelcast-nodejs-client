@@ -56,7 +56,7 @@ const downloadRC = () => {
                 shell: ON_WINDOWS
             });
         if (subprocess.status !== 0) {
-            let subprocessTrace = subprocess.error ? subprocess.error.stack : '';
+            const subprocessTrace = subprocess.error ? subprocess.error.stack : '';
             throw 'Failed download remote-controller jar '
                 + `com.hazelcast:hazelcast-remote-controller:${HAZELCAST_RC_VERSION} ${subprocessTrace}`;
         }
@@ -78,7 +78,7 @@ const downloadRC = () => {
                 shell: ON_WINDOWS
             });
         if (subprocess.status !== 0) {
-            let subprocessTrace = subprocess.error ? subprocess.error.stack : '';
+            const subprocessTrace = subprocess.error ? subprocess.error.stack : '';
             throw 'Failed download hazelcast test jar com.hazelcast:hazelcast:'
                 + `${HAZELCAST_TEST_VERSION}:jar:tests ${subprocessTrace}`;
         }
@@ -101,7 +101,7 @@ const downloadRC = () => {
                 shell: ON_WINDOWS
             });
             if (subprocess.status !== 0) {
-                let subprocessTrace = subprocess.error ? subprocess.error.stack : '';
+                const subprocessTrace = subprocess.error ? subprocess.error.stack : '';
                 throw `Failed download hazelcast enterprise jar `
                     + `com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION} ${subprocessTrace}`;
             }
@@ -123,7 +123,7 @@ const downloadRC = () => {
                 shell: ON_WINDOWS
             });
             if (subprocess.status !== 0) {
-                let subprocessTrace = subprocess.error ? subprocess.error.stack : '';
+                const subprocessTrace = subprocess.error ? subprocess.error.stack : '';
                 throw 'Failed to download hazelcast enterprise test jar '
                     + `com.hazelcast:hazelcast-enterprise:${HAZELCAST_TEST_VERSION}:jar:tests ${subprocessTrace}`;
             }
@@ -145,7 +145,7 @@ const downloadRC = () => {
                 shell: ON_WINDOWS
             });
             if (subprocess.status !== 0) {
-                let subprocessTrace = subprocess.error ? subprocess.error.stack : '';
+                const subprocessTrace = subprocess.error ? subprocess.error.stack : '';
                 throw `Failed download hazelcast jar com.hazelcast:hazelcast:${HAZELCAST_VERSION} ${subprocessTrace}`;
             }
         }
