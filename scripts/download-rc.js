@@ -56,8 +56,9 @@ const downloadRC = () => {
                 shell: ON_WINDOWS
             });
         if (subprocess.status !== 0) {
+            let subprocessTrace = subprocess.error ? subprocess.error.stack : '';
             throw 'Failed download remote-controller jar '
-            + `com.hazelcast:hazelcast-remote-controller:${HAZELCAST_RC_VERSION}`;
+            + `com.hazelcast:hazelcast-remote-controller:${HAZELCAST_RC_VERSION} ${subprocessTrace}`;
         }
     }
 
@@ -77,7 +78,9 @@ const downloadRC = () => {
                 shell: ON_WINDOWS
             });
         if (subprocess.status !== 0) {
-            throw `Failed download hazelcast test jar com.hazelcast:hazelcast:${HAZELCAST_TEST_VERSION}:jar:tests`;
+            let subprocessTrace = subprocess.error ? subprocess.error.stack : '';
+            throw 'Failed download hazelcast test jar com.hazelcast:hazelcast:'
+                + `${HAZELCAST_TEST_VERSION}:jar:tests ${subprocessTrace}`;
         }
     }
 
@@ -98,8 +101,9 @@ const downloadRC = () => {
                 shell: ON_WINDOWS
             });
             if (subprocess.status !== 0) {
+                let subprocessTrace = subprocess.error ? subprocess.error.stack : '';
                 throw `Failed download hazelcast enterprise jar `
-                + `com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION}`;
+                + `com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION} ${subprocessTrace}`;
             }
         }
 
@@ -119,8 +123,9 @@ const downloadRC = () => {
                 shell: ON_WINDOWS
             });
             if (subprocess.status !== 0) {
+                let subprocessTrace = subprocess.error ? subprocess.error.stack : '';
                 throw 'Failed to download hazelcast enterprise test jar '
-                + `com.hazelcast:hazelcast-enterprise:${HAZELCAST_TEST_VERSION}:jar:tests`;
+                + `com.hazelcast:hazelcast-enterprise:${HAZELCAST_TEST_VERSION}:jar:tests ${subprocessTrace}`;
             }
         }
         console.log('Starting Remote Controller ... enterprise ...');
@@ -140,16 +145,12 @@ const downloadRC = () => {
                 shell: ON_WINDOWS
             });
             if (subprocess.status !== 0) {
-                throw `Failed download hazelcast jar com.hazelcast:hazelcast:${HAZELCAST_VERSION}`;
+                let subprocessTrace = subprocess.error ? subprocess.error.stack : '';
+                throw `Failed download hazelcast jar com.hazelcast:hazelcast:${HAZELCAST_VERSION} ${subprocessTrace}`;
             }
         }
     }
 };
-
-// download the remote controller when the script is invoked directly
-if (require.main === module) {
-    downloadRC();
-}
 
 module.exports = {
     HAZELCAST_VERSION: HAZELCAST_VERSION,
