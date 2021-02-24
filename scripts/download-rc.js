@@ -58,7 +58,7 @@ const downloadRC = () => {
         if (subprocess.status !== 0) {
             let subprocessTrace = subprocess.error ? subprocess.error.stack : '';
             throw 'Failed download remote-controller jar '
-            + `com.hazelcast:hazelcast-remote-controller:${HAZELCAST_RC_VERSION} ${subprocessTrace}`;
+                + `com.hazelcast:hazelcast-remote-controller:${HAZELCAST_RC_VERSION} ${subprocessTrace}`;
         }
     }
 
