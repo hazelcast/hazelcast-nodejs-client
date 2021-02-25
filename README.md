@@ -171,6 +171,15 @@ npm test
 
 Test script automatically downloads `hazelcast-remote-controller` and Hazelcast IMDG. The script uses Maven to download those.
 
+In order to run specific tests, you can give a pattern to the test command like the following:
+
+```bash
+npm test pattern
+```
+
+This command will only run the tests matching the pattern. The pattern can be a string or regex in the same form
+`grep` command accepts.
+
 ## License
 
 [Apache 2.0 License](LICENSE).
