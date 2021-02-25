@@ -132,14 +132,18 @@ export class HazelcastClient {
         } else {
             this.config = failoverConfig.clientConfigs[0];
         }
-        this.connectionRegistry = new ConnectionRegistryImpl(this.config.connectionStrategy);
+        this.loadBalancer = this.initLoadBalancer();
+        this.connectionRegistry = new ConnectionRegistryImpl(
+            this.config.connectionStrategy,
+            this.config.network.smartRouting,
+            this.loadBalancer
+        );
         this.failoverConfig = failoverConfig;
         this.errorFactory = new ClientErrorFactory();
         this.serializationService = new SerializationServiceV1(this.config.serialization);
         this.instanceName = this.config.instanceName || 'hz.client_' + this.id;
         this.loggingService = new LoggingService(this.config.customLogger,
             this.config.properties['hazelcast.logging.level'] as string);
-        this.loadBalancer = this.initLoadBalancer();
         this.nearCacheManager = new NearCacheManager(
             this.config,
             this.serializationService

@@ -199,9 +199,15 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
     private readonly asyncStart: boolean;
     private readonly reconnectMode: ReconnectMode;
 
-    constructor(connectionStrategy: ConnectionStrategyConfig) {
+    constructor(
+        connectionStrategy: ConnectionStrategyConfig,
+        smartRoutingEnabled: boolean,
+        loadBalancer: LoadBalancer
+    ) {
+        this.smartRoutingEnabled = smartRoutingEnabled;
         this.asyncStart = connectionStrategy.asyncStart;
         this.reconnectMode = connectionStrategy.reconnectMode;
+        this.loadBalancer = loadBalancer;
     }
 
     isActive(): boolean {
