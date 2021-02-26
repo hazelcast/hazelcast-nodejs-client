@@ -81,7 +81,7 @@ const SERIALIZATION_VERSION = 1;
 const SET_TIMEOUT_MAX_DELAY = 2147483647;
 const BINARY_PROTOCOL_VERSION = Buffer.from('CP2');
 
-export enum ConnectionState {
+enum ConnectionState {
     /**
      * Clients start with this state. Once a client connects to a cluster,
      * it directly switches to {@link INITIALIZED_ON_CLUSTER} instead of
@@ -116,12 +116,6 @@ export interface ConnectionRegistry {
     isActive(): boolean;
 
     /**
-     * Returns if the registry empty
-     * @return true if the registry empty, false otherwise
-     */
-    isEmpty(): boolean;
-
-    /**
      * Returns connection by UUID
      * @param uuid UUID that identifies the connection
      * @return ClientConnection if there is a connection with the UUID, undefined otherwise
@@ -141,52 +135,11 @@ export interface ConnectionRegistry {
     getRandomConnection(): ClientConnection | null;
 
     /**
-     * Runs the given function for every active connection
-     * @param fn A function that takes ClientConnection as arg, does not return anything
-     */
-    forEachConnection(fn: (conn: ClientConnection) => void): void;
-
-    /**
      * Returns if invocation allowed. Invocation is allowed only if connection state is {@link INITIALIZED_ON_CLUSTER}
      * and there is at least one active connection.
      * @return Error if invocation is not allowed, null otherwise
      */
     checkIfInvocationAllowed(): Error | null;
-
-    /**
-     * Delete connection from active connections
-     * @param uuid UUID that identifies the connection
-     */
-    deleteConnection(uuid: UUID): void;
-
-    /**
-     * Returns connection state.
-     * @return ConnectionState enum value
-     */
-    getConnectionState(): ConnectionState;
-
-    /**
-     * Sets the connection state
-     * @param connectionState: ConnectionState enum value
-     */
-    setConnectionState(connectionState: ConnectionState): void;
-
-    /**
-     * Adds or updates a client connection by uuid
-     * @param uuid UUID to identify the connection
-     * @param connection the ClientConnection to set
-     */
-    setConnection(uuid: UUID, connection: ClientConnection): void
-
-    /**
-     * Sets the active property of the ConnectionRegistry to true
-     */
-    activate(): void;
-
-    /**
-     * Sets the active property of the ConnectionRegistry to false
-     */
-    deactivate(): void;
 }
 
 export class ConnectionRegistryImpl implements ConnectionRegistry {
@@ -222,15 +175,29 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
         return this.activeConnections.size === 0;
     }
 
+    /**
+     * Returns all active connections in the registry
+     * @return Array of ClientConnection objects
+     */
     getConnections(): ClientConnection[] {
         return Array.from(this.activeConnections.values());
     }
 
+    /**
+     * Returns connection by UUID
+     * @param uuid UUID that identifies the connection
+     * @return ClientConnection if there is a connection with the UUID, undefined otherwise
+     */
     getConnection(uuid: UUID): ClientConnection | undefined {
         return this.activeConnections.get(uuid.toString());
     }
 
-    getRandomConnection(): ClientConnection {
+    /**
+     * Returns a random connection from active connections. If smart routing enabled, connection is returned using
+     * load balancer. Otherwise, it is the first connection in connection registry.
+     * @return ClientConnection if there is at least one connection, otherwise null
+     */
+    getRandomConnection(): ClientConnection | null {
         if (this.smartRoutingEnabled) {
             const member = this.loadBalancer.next();
             if (member != null) {
@@ -254,7 +221,12 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
         this.activeConnections.forEach(fn);
     }
 
-    checkIfInvocationAllowed(): Error {
+    /**
+     * Returns if invocation allowed. Invocation is allowed only if connection state is {@link INITIALIZED_ON_CLUSTER}
+     * and there is at least one active connection.
+     * @return An error if invocation is not allowed, null if it is allowed
+     */
+    checkIfInvocationAllowed(): Error | null {
         const state = this.connectionState;
         if (state === ConnectionState.INITIALIZED_ON_CLUSTER && this.activeConnections.size > 0) {
             return null;
@@ -279,6 +251,11 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
         this.activeConnections.delete(uuid.toString());
     }
 
+    /**
+     * Adds or updates a client connection by uuid
+     * @param uuid UUID to identify the connection
+     * @param connection the ClientConnection to set
+     */
     setConnection(uuid: UUID, connection: ClientConnection): void {
         this.activeConnections.set(uuid.toString(), connection);
     }
@@ -341,7 +318,7 @@ export class ClientConnectionManager extends EventEmitter {
     private readonly lifecycleService: LifecycleService;
     private readonly clusterService: ClusterService;
     private readonly invocationService: InvocationService;
-    private readonly connectionRegistry: ConnectionRegistry;
+    private readonly connectionRegistry: ConnectionRegistryImpl;
 
     constructor(
         client: ClientForClientConnectionManager,
@@ -356,7 +333,7 @@ export class ClientConnectionManager extends EventEmitter {
         failoverConfig: ClientFailoverConfig,
         clusterService: ClusterService,
         invocationService: InvocationService,
-        connectionRegistry: ConnectionRegistry
+        connectionRegistry: ConnectionRegistryImpl
     ) {
         super();
         this.client = client;

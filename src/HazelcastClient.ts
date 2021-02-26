@@ -64,7 +64,7 @@ import {RoundRobinLB} from './util/RoundRobinLB';
 import {ClusterViewListenerService} from './listener/ClusterViewListenerService';
 import {ClientMessage} from './protocol/ClientMessage';
 import {ClientConnection} from './network/ClientConnection';
-import {ConnectionRegistry, ConnectionRegistryImpl} from './network/ClientConnectionManager';
+import {ConnectionRegistryImpl} from './network/ClientConnectionManager';
 
 /**
  * Hazelcast client instance. When you want to use Hazelcast's distributed
@@ -123,7 +123,7 @@ export class HazelcastClient {
     /** @internal */
     private mapRepairingTask: RepairingTask;
     /** @internal */
-    private readonly connectionRegistry: ConnectionRegistry;
+    private readonly connectionRegistry: ConnectionRegistryImpl;
 
     /** @internal */
     constructor(config?: ClientConfigImpl, failoverConfig?: ClientFailoverConfigImpl) {
