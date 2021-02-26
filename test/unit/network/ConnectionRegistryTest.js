@@ -71,93 +71,95 @@ describe('ConnectionRegistryTest', function () {
             lifecycleManagerStub
         );
     }
+    describe('getRandomConnection', function () {
+        it('should use load balancer in smart mode', function () {
+            const loadBalancerStub = sandbox.stub(RoundRobinLB.prototype);
+            const connectionRegistry = new ConnectionRegistryImpl(
+                new ConnectionStrategyConfigImpl(),
+                true,
+                loadBalancerStub
+            );
+            connectionRegistry.getRandomConnection();
+            expect(loadBalancerStub.next.calledOnce).to.be.true;
+        });
 
-    it('getRandomConnection should use load balancer in smart mode', function () {
-        const loadBalancerStub = sandbox.stub(RoundRobinLB.prototype);
-        const connectionRegistry = new ConnectionRegistryImpl(
-            new ConnectionStrategyConfigImpl(),
-            true,
-            loadBalancerStub
-        );
-        connectionRegistry.getRandomConnection();
-        expect(loadBalancerStub.next.calledOnce).to.be.true;
+        it('should return first active connection in non-smart mode', function () {
+            const loadBalancerStub = sandbox.stub(RandomLB.prototype);
+            const connectionRegistry = new ConnectionRegistryImpl(
+                new ConnectionStrategyConfigImpl(),
+                false,
+                loadBalancerStub
+            );
+            const firstConnection = getNewConnection(1);
+            connectionRegistry.setConnection(UuidUtil.generate(), firstConnection);
+            connectionRegistry.setConnection(UuidUtil.generate(), getNewConnection(2));
+            connectionRegistry.setConnection(UuidUtil.generate(), getNewConnection(3));
+
+            const randomConnection = connectionRegistry.getRandomConnection();
+            expect(randomConnection).to.be.equal(firstConnection);
+        });
     });
 
-    it('getRandomConnection should return first active connection in non-smart mode', function () {
-        const loadBalancerStub = sandbox.stub(RandomLB.prototype);
-        const connectionRegistry = new ConnectionRegistryImpl(
-            new ConnectionStrategyConfigImpl(),
-            false,
-            loadBalancerStub
-        );
-        const firstConnection = getNewConnection(1);
-        connectionRegistry.setConnection(UuidUtil.generate(), firstConnection);
-        connectionRegistry.setConnection(UuidUtil.generate(), getNewConnection(2));
-        connectionRegistry.setConnection(UuidUtil.generate(), getNewConnection(3));
-
-        const randomConnection = connectionRegistry.getRandomConnection();
-        expect(randomConnection).to.be.equal(firstConnection);
-    });
-
-    it('checkIfInvocationAllowed returns null when connection state is INITIALIZED_ON_CLUSTER' +
+    describe('checkIfInvocationAllowed', function () {
+        it('returns null when connection state is INITIALIZED_ON_CLUSTER' +
             ' and there are some active connections', function () {
-        const loadBalancerStub = sandbox.stub(RandomLB.prototype);
-        const connectionRegistry = new ConnectionRegistryImpl(
-            new ConnectionStrategyConfigImpl(),
-            false,
-            loadBalancerStub
-        );
-        connectionRegistry.setConnectionState(connectionState.INITIALIZED_ON_CLUSTER);
-        connectionRegistry.setConnection(UuidUtil.generate(), getNewConnection(1));
+            const loadBalancerStub = sandbox.stub(RandomLB.prototype);
+            const connectionRegistry = new ConnectionRegistryImpl(
+                new ConnectionStrategyConfigImpl(),
+                false,
+                loadBalancerStub
+            );
+            connectionRegistry.setConnectionState(connectionState.INITIALIZED_ON_CLUSTER);
+            connectionRegistry.setConnection(UuidUtil.generate(), getNewConnection(1));
 
-        const invocationAllowed = connectionRegistry.checkIfInvocationAllowed();
-        expect(invocationAllowed).to.be.equal(null);
-    });
+            const invocationAllowed = connectionRegistry.checkIfInvocationAllowed();
+            expect(invocationAllowed).to.be.equal(null);
+        });
 
-    it('checkIfInvocationAllowed returns ClientOfflineError when connection state is INITIAL and asyncStart is true', function () {
-        const loadBalancerStub = sandbox.stub(RandomLB.prototype);
-        const connectionStrategyConfig = new ConnectionStrategyConfigImpl();
-        connectionStrategyConfig.asyncStart = true;
-        const connectionRegistry = new ConnectionRegistryImpl(
-            connectionStrategyConfig,
-            false,
-            loadBalancerStub
-        );
-        connectionRegistry.setConnectionState(connectionState.INITIAL);
+        it('returns ClientOfflineError when connection state is INITIAL and asyncStart is true', function () {
+            const loadBalancerStub = sandbox.stub(RandomLB.prototype);
+            const connectionStrategyConfig = new ConnectionStrategyConfigImpl();
+            connectionStrategyConfig.asyncStart = true;
+            const connectionRegistry = new ConnectionRegistryImpl(
+                connectionStrategyConfig,
+                false,
+                loadBalancerStub
+            );
+            connectionRegistry.setConnectionState(connectionState.INITIAL);
 
-        const invocationAllowed = connectionRegistry.checkIfInvocationAllowed();
-        expect(invocationAllowed).to.be.instanceof(ClientOfflineError);
-    });
+            const invocationAllowed = connectionRegistry.checkIfInvocationAllowed();
+            expect(invocationAllowed).to.be.instanceof(ClientOfflineError);
+        });
 
-    it('checkIfInvocationAllowed returns IOError when connection state is INITIAL and asyncStart is false', function () {
-        const loadBalancerStub = sandbox.stub(RandomLB.prototype);
-        const connectionStrategyConfig = new ConnectionStrategyConfigImpl();
-        connectionStrategyConfig.asyncStart = false;
-        const connectionRegistry = new ConnectionRegistryImpl(
-            connectionStrategyConfig,
-            false,
-            loadBalancerStub
-        );
-        connectionRegistry.setConnectionState(connectionState.INITIAL);
+        it('returns IOError when connection state is INITIAL and asyncStart is false', function () {
+            const loadBalancerStub = sandbox.stub(RandomLB.prototype);
+            const connectionStrategyConfig = new ConnectionStrategyConfigImpl();
+            connectionStrategyConfig.asyncStart = false;
+            const connectionRegistry = new ConnectionRegistryImpl(
+                connectionStrategyConfig,
+                false,
+                loadBalancerStub
+            );
+            connectionRegistry.setConnectionState(connectionState.INITIAL);
 
-        const invocationAllowed = connectionRegistry.checkIfInvocationAllowed();
-        expect(invocationAllowed).to.be.instanceof(IOError);
-    });
+            const invocationAllowed = connectionRegistry.checkIfInvocationAllowed();
+            expect(invocationAllowed).to.be.instanceof(IOError);
+        });
 
-    it('checkIfInvocationAllowed returns ClientOfflineError in async reconnect mode, when ' +
+        it('returns ClientOfflineError in async reconnect mode, when ' +
             'there are no connections, and with INITIALIZED_ON_CLUSTER connection state', function () {
-        const loadBalancerStub = sandbox.stub(RandomLB.prototype);
-        const connectionStrategyConfig = new ConnectionStrategyConfigImpl();
-        connectionStrategyConfig.reconnectMode = ReconnectMode.ASYNC;
-        const connectionRegistry = new ConnectionRegistryImpl(
-            connectionStrategyConfig,
-            false,
-            loadBalancerStub
-        );
-        connectionRegistry.setConnectionState(connectionState.INITIALIZED_ON_CLUSTER);
+            const loadBalancerStub = sandbox.stub(RandomLB.prototype);
+            const connectionStrategyConfig = new ConnectionStrategyConfigImpl();
+            connectionStrategyConfig.reconnectMode = ReconnectMode.ASYNC;
+            const connectionRegistry = new ConnectionRegistryImpl(
+                connectionStrategyConfig,
+                false,
+                loadBalancerStub
+            );
+            connectionRegistry.setConnectionState(connectionState.INITIALIZED_ON_CLUSTER);
 
-        const invocationAllowed = connectionRegistry.checkIfInvocationAllowed();
-        expect(invocationAllowed).to.be.instanceof(ClientOfflineError);
+            const invocationAllowed = connectionRegistry.checkIfInvocationAllowed();
+            expect(invocationAllowed).to.be.instanceof(ClientOfflineError);
+        });
     });
-
 });
