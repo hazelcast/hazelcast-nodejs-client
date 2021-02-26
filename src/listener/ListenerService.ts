@@ -21,7 +21,7 @@ import {
     IOError,
     TargetDisconnectedError
 } from '../core';
-import {ClientConnection} from '../network/ClientConnection';
+import {Connection} from '../network/Connection';
 import {ClientEventRegistration} from '../invocation/ClientEventRegistration';
 import {Invocation, InvocationService} from '../invocation/InvocationService';
 import {RegistrationKey} from '../invocation/RegistrationKey';
@@ -30,24 +30,24 @@ import {ListenerMessageCodec} from './ListenerMessageCodec';
 import {deferredPromise} from '../util/Util';
 import {UuidUtil} from '../util/UuidUtil';
 import {ILogger} from '../logging';
-import {ClientConnectionManager, ConnectionRegistry} from '../network/ClientConnectionManager';
+import {ConnectionManager, ConnectionRegistry} from '../network/ConnectionManager';
 
 /** @internal */
 export class ListenerService {
 
-    private readonly connectionManager: ClientConnectionManager;
+    private readonly connectionManager: ConnectionManager;
     private readonly invocationService: InvocationService;
     private readonly logger: ILogger;
     private readonly isSmartService: boolean;
 
-    private readonly activeRegistrations: Map<string, Map<ClientConnection, ClientEventRegistration>>;
+    private readonly activeRegistrations: Map<string, Map<Connection, ClientEventRegistration>>;
     private readonly userKeyInformation: Map<string, RegistrationKey>;
     private readonly connectionRegistry: ConnectionRegistry;
 
     constructor(
         logger: ILogger,
         isSmartService: boolean,
-        connectionManager: ClientConnectionManager,
+        connectionManager: ConnectionManager,
         invocationService: InvocationService,
         connectionRegistry: ConnectionRegistry
     ) {
@@ -65,15 +65,15 @@ export class ListenerService {
         this.connectionManager.on('connectionRemoved', this.onConnectionRemoved.bind(this));
     }
 
-    onConnectionAdded(connection: ClientConnection): void {
+    onConnectionAdded(connection: Connection): void {
         this.reregisterListenersOnConnection(connection);
     }
 
-    onConnectionRemoved(connection: ClientConnection): void {
+    onConnectionRemoved(connection: Connection): void {
         this.removeRegistrationsOnConnection(connection);
     }
 
-    reregisterListenersOnConnection(connection: ClientConnection): void {
+    reregisterListenersOnConnection(connection: Connection): void {
         this.activeRegistrations.forEach((registrationMap, userKey) => {
             if (registrationMap.has(connection)) {
                 return;
@@ -92,7 +92,7 @@ export class ListenerService {
         }, this);
     }
 
-    removeRegistrationsOnConnection(connection: ClientConnection): void {
+    removeRegistrationsOnConnection(connection: Connection): void {
         this.activeRegistrations.forEach((registrationsOnUserKey) => {
             const eventRegistration = registrationsOnUserKey.get(connection);
             if (eventRegistration !== undefined) {
@@ -101,7 +101,7 @@ export class ListenerService {
         });
     }
 
-    invokeRegistrationFromRecord(userKey: string, connection: ClientConnection): Promise<ClientEventRegistration> {
+    invokeRegistrationFromRecord(userKey: string, connection: Connection): Promise<ClientEventRegistration> {
         const deferred = deferredPromise<ClientEventRegistration>();
         const activeRegsOnUserKey = this.activeRegistrations.get(userKey);
         if (activeRegsOnUserKey !== undefined && activeRegsOnUserKey.has(connection)) {
@@ -134,7 +134,7 @@ export class ListenerService {
                      listenerHandlerFn: ClientMessageHandler): Promise<string> {
         const activeConnections = this.connectionRegistry.getConnections();
         const userKey = UuidUtil.generate().toString();
-        let connectionsOnUserKey: Map<ClientConnection, ClientEventRegistration>;
+        let connectionsOnUserKey: Map<Connection, ClientEventRegistration>;
         const registerRequest = codec.encodeAddRequest(this.isSmart());
         connectionsOnUserKey = this.activeRegistrations.get(userKey);
         if (connectionsOnUserKey === undefined) {

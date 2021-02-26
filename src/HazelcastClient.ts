@@ -27,7 +27,7 @@ import {ClientConfig, ClientConfigImpl} from './config/Config';
 import {ClientFailoverConfig, ClientFailoverConfigImpl} from './config/FailoverConfig';
 import {ConfigBuilder} from './config/ConfigBuilder';
 import {FailoverConfigBuilder} from './config/FailoverConfigBuilder';
-import {ClientConnectionManager} from './network/ClientConnectionManager';
+import {ConnectionManager} from './network/ConnectionManager';
 import {ClusterService} from './invocation/ClusterService';
 import {InvocationService} from './invocation/InvocationService';
 import {LifecycleService, LifecycleServiceImpl} from './LifecycleService';
@@ -63,8 +63,8 @@ import {RandomLB} from './util/RandomLB';
 import {RoundRobinLB} from './util/RoundRobinLB';
 import {ClusterViewListenerService} from './listener/ClusterViewListenerService';
 import {ClientMessage} from './protocol/ClientMessage';
-import {ClientConnection} from './network/ClientConnection';
-import {ConnectionRegistryImpl} from './network/ClientConnectionManager';
+import {Connection} from './network/Connection';
+import {ConnectionRegistryImpl} from './network/ConnectionManager';
 
 /**
  * Hazelcast client instance. When you want to use Hazelcast's distributed
@@ -97,7 +97,7 @@ export class HazelcastClient {
     /** @internal */
     private readonly listenerService: ListenerService;
     /** @internal */
-    private readonly connectionManager: ClientConnectionManager;
+    private readonly connectionManager: ConnectionManager;
     /** @internal */
     private readonly partitionService: PartitionServiceImpl;
     /** @internal */
@@ -170,7 +170,7 @@ export class HazelcastClient {
             this.lifecycleService,
             this.connectionRegistry
         );
-        this.connectionManager = new ClientConnectionManager(
+        this.connectionManager = new ConnectionManager(
             this,
             this.instanceName,
             this.config,
@@ -270,7 +270,7 @@ export class HazelcastClient {
      * Gathers information of this local client.
      */
     getLocalEndpoint(): ClientInfo {
-        const connection: ClientConnection = this.connectionRegistry.getRandomConnection();
+        const connection: Connection = this.connectionRegistry.getRandomConnection();
         const localAddress = connection != null ? connection.getLocalAddress() : null;
         const info = new ClientInfo();
         info.uuid = this.connectionManager.getClientUuid();
@@ -442,7 +442,7 @@ export class HazelcastClient {
     }
 
     /** @internal */
-    getConnectionManager(): ClientConnectionManager {
+    getConnectionManager(): ConnectionManager {
         return this.connectionManager;
     }
 

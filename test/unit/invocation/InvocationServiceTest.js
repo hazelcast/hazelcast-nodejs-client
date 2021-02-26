@@ -34,8 +34,8 @@ const { PartitionServiceImpl } = require('../../../lib/PartitionService');
 const { LifecycleServiceImpl } = require('../../../lib/LifecycleService');
 const { LoggingService } = require('../../../lib/logging/LoggingService');
 const { ClientMessage } = require('../../../lib/protocol/ClientMessage');
-const { ClientConnection } = require('../../../lib/network/ClientConnection');
-const { ClientConnectionManager } = require('../../../lib/network/ClientConnectionManager');
+const { Connection } = require('../../../lib/network/Connection');
+const { ConnectionManager } = require('../../../lib/network/ConnectionManager');
 const { deferredPromise } = require('../../../lib/util/Util');
 
 describe('InvocationServiceTest', function () {
@@ -45,7 +45,7 @@ describe('InvocationServiceTest', function () {
     function mockClient(config) {
         const clientStub = sandbox.stub(Client.prototype);
         clientStub.getConfig.returns(config);
-        const connectionManagerStub = sandbox.stub(ClientConnectionManager.prototype);
+        const connectionManagerStub = sandbox.stub(ConnectionManager.prototype);
         clientStub.getConnectionManager.returns(connectionManagerStub);
         const listenerServiceStub = sandbox.stub(ListenerService.prototype);
         listenerServiceStub.registerListener.returns(Promise.resolve('mock-uuid'));
@@ -77,7 +77,7 @@ describe('InvocationServiceTest', function () {
         const messageStub = sandbox.stub(ClientMessage.prototype);
         messageStub.getCorrelationId.returns(0);
         const invocation = new Invocation(service, messageStub);
-        const connStub = sandbox.stub(ClientConnection.prototype);
+        const connStub = sandbox.stub(Connection.prototype);
         connStub.isAlive.returns(false);
         invocation.sendConnection = connStub;
         invocation.deferred = deferredPromise();

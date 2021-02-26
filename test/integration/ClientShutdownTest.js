@@ -27,7 +27,7 @@ const { NearCacheManager } = require('../../lib/nearcache/NearCacheManager');
 const { ProxyManager } = require('../../lib/proxy/ProxyManager');
 const { Statistics } = require('../../lib/statistics/Statistics');
 const { CPSubsystemImpl } = require('../../lib/CPSubsystem');
-const { ClientConnectionManager } = require('../../lib/network/ClientConnectionManager');
+const { ConnectionManager } = require('../../lib/network/ConnectionManager');
 const { InvocationService } = require('../../lib/invocation/InvocationService');
 
 describe('ClientShutdownTest', function () {
@@ -65,7 +65,7 @@ describe('ClientShutdownTest', function () {
         sandbox.spy(ProxyManager.prototype, 'destroy');
         sandbox.spy(Statistics.prototype, 'stop');
         sandbox.spy(CPSubsystemImpl.prototype, 'shutdown');
-        sandbox.spy(ClientConnectionManager.prototype, 'shutdown');
+        sandbox.spy(ConnectionManager.prototype, 'shutdown');
         sandbox.spy(InvocationService.prototype, 'shutdown');
 
         cluster = await RC.createCluster(null, null);
@@ -83,7 +83,7 @@ describe('ClientShutdownTest', function () {
         expect(ProxyManager.prototype.destroy.calledOnce).to.be.true;
         expect(Statistics.prototype.stop.calledOnce).to.be.true;
         expect(CPSubsystemImpl.prototype.shutdown.calledOnce).to.be.true;
-        expect(ClientConnectionManager.prototype.shutdown.calledOnce).to.be.true;
+        expect(ConnectionManager.prototype.shutdown.calledOnce).to.be.true;
         expect(InvocationService.prototype.shutdown.calledOnce).to.be.true;
     });
 });

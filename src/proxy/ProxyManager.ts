@@ -45,7 +45,7 @@ import {NearCachedMapProxy} from './NearCachedMapProxy';
 import {ILogger} from '../logging';
 import {PartitionService} from '../PartitionService';
 import {SerializationService} from '../serialization/SerializationService';
-import {ConnectionRegistry} from '../network/ClientConnectionManager';
+import {ConnectionRegistry} from '../network/ConnectionManager';
 import {NearCacheManager} from '../nearcache/NearCacheManager';
 import {RepairingTask} from '../nearcache/RepairingTask';
 import {ClusterService} from '../invocation/ClusterService';

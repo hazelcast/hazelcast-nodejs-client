@@ -29,7 +29,7 @@ const { AddressImpl } = require('../../lib/core/Address');
 const { promiseWaitMilliseconds } = require('../TestUtil');
 
 /**
- * Basic tests for `ClientConnectionManager`.
+ * Basic tests for `ConnectionManager`.
  */
 describe('ConnectionManagerTest', function () {
 

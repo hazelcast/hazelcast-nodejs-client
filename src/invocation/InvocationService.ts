@@ -27,7 +27,7 @@ import {
     TargetNotMemberError,
     UUID
 } from '../core';
-import {ClientConnection} from '../network/ClientConnection';
+import {Connection} from '../network/Connection';
 import {ILogger} from '../logging/ILogger';
 import {ClientMessage, IS_BACKUP_AWARE_FLAG} from '../protocol/ClientMessage';
 import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
@@ -45,7 +45,7 @@ import {ClientConfig} from '../config';
 import {ListenerService} from '../listener/ListenerService';
 import {ClientErrorFactory} from '../protocol/ErrorFactory';
 import {LifecycleService} from '../LifecycleService';
-import {ConnectionRegistry} from '../network/ClientConnectionManager';
+import {ConnectionRegistry} from '../network/ConnectionManager';
 
 const MAX_FAST_INVOCATION_COUNT = 5;
 const PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS = 'hazelcast.client.invocation.retry.pause.millis';
@@ -85,12 +85,12 @@ export class Invocation {
     /**
      * Connection of the request. If request is not bound to any specific address, should be set to null.
      */
-    connection: ClientConnection;
+    connection: Connection;
 
     /**
      * Connection on which the request was written. May be different from `connection`.
      */
-    sendConnection: ClientConnection;
+    sendConnection: Connection;
 
     /**
      * Promise managing object.
@@ -364,7 +364,7 @@ export class InvocationService {
      * @returns
      */
     invokeOnConnection(
-        connection: ClientConnection,
+        connection: Connection,
         request: ClientMessage,
         handler?: (...args: any[]) => any
     ): Promise<ClientMessage> {
@@ -538,7 +538,7 @@ export class InvocationService {
         return this.invokeOnUuid(invocation, partitionOwner);
     }
 
-    private send(invocation: Invocation, connection: ClientConnection): Promise<void> {
+    private send(invocation: Invocation, connection: Connection): Promise<void> {
         assert(connection != null);
         if (this.isShutdown) {
             return Promise.reject(new ClientNotActiveError('Client is shutting down.'));

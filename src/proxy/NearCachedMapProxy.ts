@@ -34,7 +34,7 @@ import {ILogger} from '../logging';
 import {ProxyManager} from './ProxyManager';
 import {InvocationService} from '../invocation/InvocationService';
 import {SerializationService} from '../serialization/SerializationService';
-import {ConnectionRegistry} from '../network/ClientConnectionManager';
+import {ConnectionRegistry} from '../network/ConnectionManager';
 import {ClusterService} from '../invocation/ClusterService';
 
 /** @internal */

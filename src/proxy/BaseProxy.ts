@@ -24,7 +24,7 @@ import {ProxyManager} from './ProxyManager';
 import {PartitionService} from '../PartitionService';
 import {InvocationService} from '../invocation/InvocationService';
 import {SerializationService} from '../serialization/SerializationService';
-import {ClientConnectionManager, ConnectionRegistry} from '../network/ClientConnectionManager';
+import {ConnectionManager, ConnectionRegistry} from '../network/ConnectionManager';
 import {ListenerService} from '../listener/ListenerService';
 import {ClusterService} from '../invocation/ClusterService';
 
@@ -40,7 +40,7 @@ export abstract class BaseProxy {
     protected readonly partitionService: PartitionService;
     protected readonly invocationService: InvocationService;
     protected readonly serializationService: SerializationService;
-    protected readonly connectionManager: ClientConnectionManager;
+    protected readonly connectionManager: ConnectionManager;
     protected readonly listenerService: ListenerService;
     protected readonly clusterService: ClusterService;
     protected readonly clientConfig: ClientConfig;

@@ -22,9 +22,9 @@ const sandbox = sinon.createSandbox();
 
 const {
     ConnectionRegistryImpl,
-    ClientConnectionManager
-} = require('../../../lib/network/ClientConnectionManager');
-const { ClientConnection } = require('../../../lib/network/ClientConnection');
+    ConnectionManager
+} = require('../../../lib/network/ConnectionManager');
+const { Connection } = require('../../../lib/network/Connection');
 const { ConnectionStrategyConfigImpl, ReconnectMode } = require('../../../lib/config/ConnectionStrategyConfig');
 const { RoundRobinLB } = require('../../../lib/util/RoundRobinLB');
 const { RandomLB } = require('../../../lib/util/RandomLB');
@@ -50,7 +50,7 @@ describe('ConnectionRegistryTest', function () {
     };
 
     beforeEach(function () {
-        connectionManagerStub = sandbox.stub(ClientConnectionManager.prototype);
+        connectionManagerStub = sandbox.stub(ConnectionManager.prototype);
         lifecycleManagerStub = sandbox.stub(LifecycleServiceImpl.prototype);
         loggerStub = sandbox.stub(DefaultLogger.prototype);
         addressStub = sandbox.stub(AddressImpl.prototype);
@@ -61,7 +61,7 @@ describe('ConnectionRegistryTest', function () {
     });
 
     function getNewConnection(connectionId) {
-        return new ClientConnection(
+        return new Connection(
             connectionManagerStub,
             defaultConfig,
             loggerStub,

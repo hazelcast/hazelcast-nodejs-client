@@ -22,8 +22,8 @@ const sandbox = sinon.createSandbox();
 const RC = require('./RC');
 const { Client } = require('../../');
 const { MapProxy } = require('../../lib/proxy/MapProxy');
-const { ConnectionRegistryImpl } = require('../../lib/network/ClientConnectionManager');
-const { ClientConnection } = require('../../lib/network/ClientConnection');
+const { ConnectionRegistryImpl } = require('../../lib/network/ConnectionManager');
+const { Connection } = require('../../lib/network/Connection');
 const { ProxyManager } = require('../../lib/proxy/ProxyManager');
 
 describe('ClientProxyTest', function () {
@@ -64,7 +64,7 @@ describe('ClientProxyTest', function () {
     });
 
     it('client with a 4.1 server connection should return the version', function () {
-        const connectionStub = sandbox.stub(ClientConnection.prototype);
+        const connectionStub = sandbox.stub(Connection.prototype);
         connectionStub.getConnectedServerVersion.returns('40100');
         const connectionRegistryStub = sandbox.stub(ConnectionRegistryImpl.prototype);
         connectionRegistryStub.getConnections.returns([connectionStub]);

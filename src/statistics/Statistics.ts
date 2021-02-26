@@ -15,8 +15,8 @@
  */
 /** @ignore *//** */
 
-import {ClientConnection} from '../network/ClientConnection';
-import {CLIENT_TYPE, ConnectionRegistry} from '../network/ClientConnectionManager';
+import {Connection} from '../network/Connection';
+import {CLIENT_TYPE, ConnectionRegistry} from '../network/ConnectionManager';
 import {Properties} from '../config/Properties';
 import {ClientStatisticsCodec} from '../codec/ClientStatisticsCodec';
 import {
@@ -143,7 +143,7 @@ export class Statistics {
     sendStats(collectionTimestamp: Long,
               stats: string,
               compressor: MetricsCompressor,
-              connection: ClientConnection): void {
+              connection: Connection): void {
         compressor.generateBlob()
             .then((blob) => {
                 const request = ClientStatisticsCodec.encodeRequest(collectionTimestamp, stats, blob);
@@ -250,7 +250,7 @@ export class Statistics {
 
     private fillMetrics(stats: string[],
                         compressor: MetricsCompressor,
-                        connection: ClientConnection): void {
+                        connection: Connection): void {
         this.addAttribute(stats, 'lastStatisticsCollectionTime', Date.now());
         this.addAttribute(stats, 'enterprise', 'false');
         this.addAttribute(stats, 'clientType', CLIENT_TYPE);

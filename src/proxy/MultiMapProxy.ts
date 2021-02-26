@@ -56,7 +56,7 @@ import {ProxyManager} from './ProxyManager';
 import {PartitionService} from '../PartitionService';
 import {InvocationService} from '../invocation/InvocationService';
 import {SerializationService} from '../serialization/SerializationService';
-import {ConnectionRegistry} from '../network/ClientConnectionManager';
+import {ConnectionRegistry} from '../network/ConnectionManager';
 import {ListenerService} from '../listener/ListenerService';
 import {ClusterService} from '../invocation/ClusterService';
 

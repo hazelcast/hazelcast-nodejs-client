@@ -15,7 +15,7 @@
  */
 
 import {ILogger} from './logging/ILogger';
-import {ClientConnection} from './network/ClientConnection';
+import {Connection} from './network/Connection';
 import {ClientOfflineError, UUID} from './core';
 import {SerializationService} from './serialization/SerializationService';
 
@@ -54,7 +54,7 @@ export interface PartitionService {
 }
 
 class PartitionTable {
-    connection: ClientConnection;
+    connection: Connection;
     partitionStateVersion = -1;
     partitions = new Map<number, UUID>();
 }
@@ -82,7 +82,7 @@ export class PartitionServiceImpl implements PartitionService {
     /**
      * The partitions can be empty on the response, client will not apply the empty partition table.
      */
-    handlePartitionViewEvent(connection: ClientConnection,
+    handlePartitionViewEvent(connection: Connection,
                              partitions: Array<[UUID, number[]]>,
                              partitionStateVersion: number): void {
         this.logger.debug('PartitionService',
@@ -146,7 +146,7 @@ export class PartitionServiceImpl implements PartitionService {
         return newPartitions;
     }
 
-    private logFailure(connection: ClientConnection, partitionStateVersion: number,
+    private logFailure(connection: Connection, partitionStateVersion: number,
                        current: PartitionTable, cause: string): void {
         this.logger.debug('PartitionService', 'Response will not be applied since ' + cause
             + '. Response is from ' + connection
@@ -159,7 +159,7 @@ export class PartitionServiceImpl implements PartitionService {
         return this.partitionTable.partitions;
     }
 
-    private shouldBeApplied(connection: ClientConnection,
+    private shouldBeApplied(connection: Connection,
                             partitions: Array<[UUID, number[]]>,
                             partitionStateVersion: number,
                             current: PartitionTable): boolean {

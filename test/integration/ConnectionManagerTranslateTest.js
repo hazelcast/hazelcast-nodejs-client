@@ -28,7 +28,7 @@ const { MemberImpl } = require('../../lib/core/Member');
 const { EndpointQualifier, ProtocolType } = require('../../lib/core/EndpointQualifier');
 
 /**
- * Tests address translation done by `ClientConnectionManager`.
+ * Tests address translation done by `ConnectionManager`.
  */
 describe('ConnectionManagerTranslateTest', function () {
 

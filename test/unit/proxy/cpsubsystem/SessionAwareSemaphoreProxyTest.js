@@ -31,7 +31,7 @@ const { SessionAwareSemaphoreProxy } = require('../../../../lib/proxy/cpsubsyste
 const { CPSessionManager } = require('../../../../lib/proxy/cpsubsystem/CPSessionManager');
 const { RaftGroupId } = require('../../../../lib/proxy/cpsubsystem/RaftGroupId');
 const { InvocationService } = require('../../../../lib/invocation/InvocationService');
-const { ClientConnectionManager } = require('../../../../lib/network/ClientConnectionManager');
+const { ConnectionManager } = require('../../../../lib/network/ConnectionManager');
 const { SerializationServiceV1 } = require('../../../../lib/serialization/SerializationService');
 
 describe('SessionAwareSemaphoreProxyTest', function () {
@@ -107,7 +107,7 @@ describe('SessionAwareSemaphoreProxyTest', function () {
         cpSessionManagerStub = sandbox.stub(CPSessionManager.prototype);
         serializationServiceStub = sandbox.stub(SerializationServiceV1.prototype);
         invocationServiceStub = sandbox.stub(InvocationService.prototype);
-        connectionManagerStub = sandbox.stub(ClientConnectionManager.prototype);
+        connectionManagerStub = sandbox.stub(ConnectionManager.prototype);
 
         proxy = new SessionAwareSemaphoreProxy(
             prepareGroupId(),

@@ -37,9 +37,9 @@ import {ILogger} from '../../logging';
 import {ProxyManager} from '../ProxyManager';
 import {PartitionService} from '../../PartitionService';
 import {InvocationService} from '../../invocation/InvocationService';
-import {ConnectionRegistry} from '../../network/ClientConnectionManager';
+import {ConnectionRegistry} from '../../network/ConnectionManager';
 import {ListenerService} from '../../listener/ListenerService';
-import {ClientConnection} from '../../network/ClientConnection';
+import {Connection} from '../../network/Connection';
 
 /** @internal */
 export const TOPIC_INITIAL_BACKOFF = 100;
@@ -79,7 +79,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
             clusterService,
             connectionRegistry
         );
-        const connection: ClientConnection = this.connectionRegistry.getRandomConnection();
+        const connection: Connection = this.connectionRegistry.getRandomConnection();
         this.localAddress = connection != null ? connection.getLocalAddress() : null;
         this.logger = logger;
         const config = (clientConfig as ClientConfigImpl).getReliableTopicConfig(name);

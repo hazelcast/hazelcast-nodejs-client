@@ -29,7 +29,7 @@ import {
     SIZE_OF_FRAME_LENGTH_AND_FLAGS
 } from '../protocol/ClientMessage';
 import {ClientConfig} from '../config';
-import {ClientConnectionManager} from './ClientConnectionManager';
+import {ConnectionManager} from './ConnectionManager';
 import {LifecycleService} from '../LifecycleService';
 
 const FROZEN_ARRAY = Object.freeze([]) as OutputQueueItem[];
@@ -323,7 +323,7 @@ export class FragmentedClientMessageHandler {
 }
 
 /** @internal */
-export class ClientConnection {
+export class Connection {
 
     private readonly connectionId: number;
     private remoteAddress: AddressImpl;
@@ -331,7 +331,7 @@ export class ClientConnection {
     private readonly localAddress: AddressImpl;
     private lastReadTimeMillis: number;
     private lastWriteTimeMillis: number;
-    private readonly connectionManager: ClientConnectionManager;
+    private readonly connectionManager: ConnectionManager;
     private readonly startTime: number = Date.now();
     private closedTime: number;
     private closedReason: string;
@@ -345,7 +345,7 @@ export class ClientConnection {
     private readonly lifecycleService: LifecycleService;
 
     constructor(
-        connectionManager: ClientConnectionManager,
+        connectionManager: ConnectionManager,
         clientConfig: ClientConfig,
         logger: ILogger,
         remoteAddress: AddressImpl,
@@ -458,7 +458,7 @@ export class ClientConnection {
         return this.lastWriteTimeMillis;
     }
 
-    equals(other: ClientConnection): boolean {
+    equals(other: Connection): boolean {
         if (other == null) {
             return false;
         }
@@ -467,7 +467,7 @@ export class ClientConnection {
     }
 
     toString(): string {
-        return 'ClientConnection{'
+        return 'Connection{'
             + 'alive=' + this.isAlive()
             + ', connectionId=' + this.connectionId
             + ', remoteAddress=' + this.remoteAddress

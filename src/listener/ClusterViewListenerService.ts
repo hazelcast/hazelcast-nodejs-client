@@ -15,11 +15,11 @@
  */
 /** @ignore *//** */
 
-import {ClientConnectionManager, ConnectionRegistry} from '../network/ClientConnectionManager';
+import {ConnectionManager, ConnectionRegistry} from '../network/ConnectionManager';
 import {PartitionService, PartitionServiceImpl} from '../PartitionService';
 import {ClusterService} from '../invocation/ClusterService';
 import {ILogger} from '../logging/ILogger';
-import {ClientConnection} from '../network/ClientConnection';
+import {Connection} from '../network/Connection';
 import {ClientAddClusterViewListenerCodec} from '../codec/ClientAddClusterViewListenerCodec';
 import {ClientMessage} from '../protocol/ClientMessage';
 import {UUID} from '../core/UUID';
@@ -33,16 +33,16 @@ import {Invocation, InvocationService} from '../invocation/InvocationService';
 export class ClusterViewListenerService {
 
     private readonly clusterService: ClusterService;
-    private readonly connectionManager: ClientConnectionManager;
+    private readonly connectionManager: ConnectionManager;
     private readonly partitionService: PartitionServiceImpl;
     private readonly logger: ILogger;
     private readonly invocationService: InvocationService;
     private readonly connectionRegistry: ConnectionRegistry;
-    private listenerAddedConnection: ClientConnection;
+    private listenerAddedConnection: Connection;
 
     constructor(
         logger: ILogger,
-        connectionManager: ClientConnectionManager,
+        connectionManager: ConnectionManager,
         partitionService: PartitionService,
         clusterService: ClusterService,
         invocationService: InvocationService,
@@ -61,15 +61,15 @@ export class ClusterViewListenerService {
         this.connectionManager.on('connectionRemoved', this.connectionRemoved.bind(this));
     }
 
-    private connectionAdded(connection: ClientConnection): void {
+    private connectionAdded(connection: Connection): void {
         this.tryRegister(connection);
     }
 
-    private connectionRemoved(connection: ClientConnection): void {
+    private connectionRemoved(connection: Connection): void {
         this.tryRegisterToRandomConnection(connection);
     }
 
-    private tryRegister(connection: ClientConnection): void {
+    private tryRegister(connection: Connection): void {
         if (this.listenerAddedConnection != null) {
             // already registering/registered to another connection
             return;
@@ -94,7 +94,7 @@ export class ClusterViewListenerService {
             });
     }
 
-    private tryRegisterToRandomConnection(oldConnection: ClientConnection): void {
+    private tryRegisterToRandomConnection(oldConnection: Connection): void {
         if (this.listenerAddedConnection !== oldConnection) {
             // somebody else already trying to re-register
             return;
@@ -106,7 +106,7 @@ export class ClusterViewListenerService {
         }
     }
 
-    private createClusterViewEventHandler(connection: ClientConnection): (msg: ClientMessage) => void {
+    private createClusterViewEventHandler(connection: Connection): (msg: ClientMessage) => void {
         return (clientMessage: ClientMessage): void => {
             ClientAddClusterViewListenerCodec.handle(clientMessage,
                 this.clusterService.handleMembersViewEvent.bind(this.clusterService, this.connectionRegistry),

@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import {ClientConnection} from '../network/ClientConnection';
+import {Connection} from '../network/Connection';
 import {ClientConfig, ClientConfigImpl} from '../config/Config';
 import {MemberSelector} from '../core/MemberSelector';
 import {
@@ -40,7 +40,7 @@ import {
 } from '../core';
 import {MemberInfo} from '../core/MemberInfo';
 import {ClusterFailoverService} from '../ClusterFailoverService';
-import {ConnectionRegistry} from '../network/ClientConnectionManager';
+import {ConnectionRegistry} from '../network/ConnectionManager';
 
 class MemberListSnapshot {
     version: number;
@@ -249,7 +249,7 @@ export class ClusterService implements Cluster {
         // removal events should be added before added events
         deadMembers.forEach((member) => {
             events[index++] = new MembershipEvent(member, MemberEvent.REMOVED, currentMembers);
-            const connection: ClientConnection = connectionRegistry.getConnection(member.uuid);
+            const connection: Connection = connectionRegistry.getConnection(member.uuid);
             if (connection != null) {
                 connection.close(null, new TargetDisconnectedError('The client has closed the connection to this '
                     + 'member, after receiving a member left event from the cluster ' + connection));

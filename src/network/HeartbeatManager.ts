@@ -16,9 +16,9 @@
 /** @ignore *//** */
 
 import {ClientPingCodec} from '../codec/ClientPingCodec';
-import {ClientConnection} from './ClientConnection';
+import {Connection} from './Connection';
 import {ILogger} from '../logging/ILogger';
-import {ConnectionRegistry} from './ClientConnectionManager';
+import {ConnectionRegistry} from './ConnectionManager';
 import {cancelRepetitionTask, scheduleWithRepetition, Task} from '../util/Util';
 import {TargetDisconnectedError} from '../core';
 import {Invocation, InvocationService} from '../invocation/InvocationService';
@@ -83,7 +83,7 @@ export class HeartbeatManager {
         }
     }
 
-    private checkConnection(now: number, connection: ClientConnection, invocationService: InvocationService): void {
+    private checkConnection(now: number, connection: Connection, invocationService: InvocationService): void {
         if (!connection.isAlive()) {
             return;
         }

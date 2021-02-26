@@ -37,7 +37,7 @@ import {
     IOError
 } from '../core';
 import {lookupPublicAddress} from '../core/MemberInfo';
-import {ClientConnection} from './ClientConnection';
+import {Connection} from './Connection';
 import * as net from 'net';
 import * as tls from 'tls';
 import {
@@ -118,21 +118,21 @@ export interface ConnectionRegistry {
     /**
      * Returns connection by UUID
      * @param uuid UUID that identifies the connection
-     * @return ClientConnection if there is a connection with the UUID, undefined otherwise
+     * @return Connection if there is a connection with the UUID, undefined otherwise
      */
-    getConnection(uuid: UUID): ClientConnection | undefined;
+    getConnection(uuid: UUID): Connection | undefined;
 
     /**
      * Returns all active connections in the registry
-     * @return Array of ClientConnection objects
+     * @return Array of Connection objects
      */
-    getConnections(): ClientConnection[];
+    getConnections(): Connection[];
 
     /**
      * Returns a random connection from active connections
-     * @return ClientConnection if there is at least one connection, otherwise null
+     * @return Connection if there is at least one connection, otherwise null
      */
-    getRandomConnection(): ClientConnection | null;
+    getRandomConnection(): Connection | null;
 
     /**
      * Returns if invocation allowed. Invocation is allowed only if connection state is {@link INITIALIZED_ON_CLUSTER}
@@ -145,7 +145,7 @@ export interface ConnectionRegistry {
 export class ConnectionRegistryImpl implements ConnectionRegistry {
 
     private active = false;
-    private readonly activeConnections = new Map<string, ClientConnection>();
+    private readonly activeConnections = new Map<string, Connection>();
     private readonly loadBalancer: LoadBalancer;
     private connectionState = ConnectionState.INITIAL;
     private readonly smartRoutingEnabled: boolean;
@@ -177,27 +177,27 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
 
     /**
      * Returns all active connections in the registry
-     * @return Array of ClientConnection objects
+     * @return Array of Connection objects
      */
-    getConnections(): ClientConnection[] {
+    getConnections(): Connection[] {
         return Array.from(this.activeConnections.values());
     }
 
     /**
      * Returns connection by UUID
      * @param uuid UUID that identifies the connection
-     * @return ClientConnection if there is a connection with the UUID, undefined otherwise
+     * @return Connection if there is a connection with the UUID, undefined otherwise
      */
-    getConnection(uuid: UUID): ClientConnection | undefined {
+    getConnection(uuid: UUID): Connection | undefined {
         return this.activeConnections.get(uuid.toString());
     }
 
     /**
      * Returns a random connection from active connections. If smart routing enabled, connection is returned using
      * load balancer. Otherwise, it is the first connection in connection registry.
-     * @return ClientConnection if there is at least one connection, otherwise null
+     * @return Connection if there is at least one connection, otherwise null
      */
-    getRandomConnection(): ClientConnection | null {
+    getRandomConnection(): Connection | null {
         if (this.smartRoutingEnabled) {
             const member = this.loadBalancer.next();
             if (member != null) {
@@ -217,7 +217,7 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
         }
     }
 
-    forEachConnection(fn: (conn: ClientConnection) => void): void {
+    forEachConnection(fn: (conn: Connection) => void): void {
         this.activeConnections.forEach(fn);
     }
 
@@ -254,9 +254,9 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
     /**
      * Adds or updates a client connection by uuid
      * @param uuid UUID to identify the connection
-     * @param connection the ClientConnection to set
+     * @param connection to set
      */
-    setConnection(uuid: UUID, connection: ClientConnection): void {
+    setConnection(uuid: UUID, connection: Connection): void {
         this.activeConnections.set(uuid.toString(), connection);
     }
 
@@ -273,7 +273,7 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
     }
 }
 
-interface ClientForClientConnectionManager {
+interface ClientForConnectionManager {
     onClusterChange(): void;
 
     sendStateToCluster(): Promise<void>;
@@ -287,11 +287,11 @@ interface ClientForClientConnectionManager {
  * Maintains connections between the client and members of the cluster.
  * @internal
  */
-export class ClientConnectionManager extends EventEmitter {
+export class ConnectionManager extends EventEmitter {
 
     private connectionIdCounter = 0;
     private readonly logger: ILogger;
-    private readonly client: ClientForClientConnectionManager;
+    private readonly client: ClientForConnectionManager;
     private readonly labels: string[];
     private readonly shuffleMemberList: boolean;
     private readonly asyncStart: boolean;
@@ -305,7 +305,7 @@ export class ClientConnectionManager extends EventEmitter {
     private readonly authenticationTimeout: number;
     private readonly clientUuid = UuidUtil.generate(false);
     private readonly waitStrategy: WaitStrategy;
-    private readonly pendingConnections = new Map<string, DeferredPromise<ClientConnection>>();
+    private readonly pendingConnections = new Map<string, DeferredPromise<Connection>>();
     private clusterId: UUID;
     private connectToClusterTaskSubmitted: boolean;
     private reconnectToMembersTask: Task;
@@ -321,7 +321,7 @@ export class ClientConnectionManager extends EventEmitter {
     private readonly connectionRegistry: ConnectionRegistryImpl;
 
     constructor(
-        client: ClientForClientConnectionManager,
+        client: ClientForConnectionManager,
         clientName: string,
         clientConfig: ClientConfig,
         logger: ILogger,
@@ -419,7 +419,7 @@ export class ClientConnectionManager extends EventEmitter {
         return this.clientUuid;
     }
 
-    getOrConnectToAddress(address: AddressImpl): Promise<ClientConnection> {
+    getOrConnectToAddress(address: AddressImpl): Promise<Connection> {
         if (!this.lifecycleService.isRunning()) {
             return Promise.reject(new ClientNotActiveError('Client is not active.'));
         }
@@ -432,7 +432,7 @@ export class ClientConnectionManager extends EventEmitter {
         return this.getOrConnect(address, () => this.translateAddress(address));
     }
 
-    getOrConnectToMember(member: MemberImpl): Promise<ClientConnection> {
+    getOrConnectToMember(member: MemberImpl): Promise<Connection> {
         if (!this.lifecycleService.isRunning()) {
             return Promise.reject(new ClientNotActiveError('Client is not active.'));
         }
@@ -446,14 +446,14 @@ export class ClientConnectionManager extends EventEmitter {
     }
 
     private getOrConnect(address: AddressImpl,
-                         translateAddressFn: () => Promise<AddressImpl>): Promise<ClientConnection> {
+                         translateAddressFn: () => Promise<AddressImpl>): Promise<Connection> {
         const addressKey = address.toString();
         const pendingConnection = this.pendingConnections.get(addressKey);
         if (pendingConnection) {
             return pendingConnection.promise;
         }
 
-        const connectionResolver: DeferredPromise<ClientConnection> = deferredPromise<ClientConnection>();
+        const connectionResolver: DeferredPromise<Connection> = deferredPromise<Connection>();
         this.pendingConnections.set(addressKey, connectionResolver);
 
         const processResponseCallback = (msg: ClientMessage): void => {
@@ -461,7 +461,7 @@ export class ClientConnectionManager extends EventEmitter {
         };
 
         let translatedAddress: AddressImpl;
-        let clientConnection: ClientConnection;
+        let connection: Connection;
         translateAddressFn()
             .then((translated) => {
                 translatedAddress = translated;
@@ -471,7 +471,7 @@ export class ClientConnectionManager extends EventEmitter {
                 return this.triggerConnect(translatedAddress);
             })
             .then((socket) => {
-                clientConnection = new ClientConnection(
+                connection = new Connection(
                     this,
                     this.clientConfig,
                     this.logger,
@@ -482,17 +482,17 @@ export class ClientConnectionManager extends EventEmitter {
                 );
                 // close the connection proactively on errors
                 socket.once('error', (err: NodeJS.ErrnoException) => {
-                    clientConnection.close('Socket error. Connection might be closed by other side', err);
+                    connection.close('Socket error. Connection might be closed by other side', err);
                 });
                 return this.initiateCommunication(socket);
             })
-            .then(() => clientConnection.registerResponseCallback(processResponseCallback))
-            .then(() => this.authenticateOnCluster(clientConnection))
+            .then(() => connection.registerResponseCallback(processResponseCallback))
+            .then(() => this.authenticateOnCluster(connection))
             .then((conn) => connectionResolver.resolve(conn))
             .catch((err) => {
                 // make sure to close connection on errors
-                if (clientConnection != null) {
-                    clientConnection.close(null, err);
+                if (connection != null) {
+                    connection.close(null, err);
                 }
                 connectionResolver.reject(err);
             });
@@ -501,7 +501,7 @@ export class ClientConnectionManager extends EventEmitter {
             .finally(() => this.pendingConnections.delete(addressKey));
     }
 
-    onConnectionClose(connection: ClientConnection): void {
+    onConnectionClose(connection: Connection): void {
         const endpoint = connection.getRemoteAddress();
         const memberUuid = connection.getRemoteUuid();
 
@@ -689,7 +689,7 @@ export class ClientConnectionManager extends EventEmitter {
         items: T[],
         triedAddresses: Set<string>,
         getAddressFn: (item: T) => AddressImpl,
-        connectToFn: (item: T) => Promise<ClientConnection>
+        connectToFn: (item: T) => Promise<Connection>
     ): Promise<boolean> {
         if (index >= items.length) {
             return Promise.resolve(false);
@@ -710,7 +710,7 @@ export class ClientConnectionManager extends EventEmitter {
     }
 
     private connect(target: MemberImpl | AddressImpl,
-                    getOrConnectFn: () => Promise<ClientConnection>): Promise<ClientConnection> {
+                    getOrConnectFn: () => Promise<Connection>): Promise<Connection> {
         this.logger.info('ConnectionManager', 'Trying to connect to ' + target.toString());
         return getOrConnectFn()
             .catch((err) => {
@@ -751,7 +751,7 @@ export class ClientConnectionManager extends EventEmitter {
             });
     }
 
-    private getConnectionForAddress(address: AddressImpl): ClientConnection {
+    private getConnectionForAddress(address: AddressImpl): Connection {
         for (const connection of this.connectionRegistry.getConnections()) {
             if (connection.getRemoteAddress().equals(address)) {
                 return connection;
@@ -843,11 +843,11 @@ export class ClientConnectionManager extends EventEmitter {
         return connectionResolver.promise;
     }
 
-    private emitConnectionAddedEvent(connection: ClientConnection): void {
+    private emitConnectionAddedEvent(connection: Connection): void {
         this.emit(CONNECTION_ADDED_EVENT_NAME, connection);
     }
 
-    private emitConnectionRemovedEvent(connection: ClientConnection): void {
+    private emitConnectionRemovedEvent(connection: Connection): void {
         this.emit(CONNECTION_REMOVED_EVENT_NAME, connection);
     }
 
@@ -921,7 +921,7 @@ export class ClientConnectionManager extends EventEmitter {
         }
     }
 
-    private authenticateOnCluster(connection: ClientConnection): Promise<ClientConnection> {
+    private authenticateOnCluster(connection: Connection): Promise<Connection> {
         const request = this.encodeAuthenticationRequest();
         const invocation = new Invocation(this.invocationService, request);
         invocation.connection = connection;
@@ -966,8 +966,8 @@ export class ClientConnectionManager extends EventEmitter {
         });
     }
 
-    private onAuthenticated(connection: ClientConnection,
-                            response: ClientAuthenticationResponseParams): ClientConnection {
+    private onAuthenticated(connection: Connection,
+                            response: ClientAuthenticationResponseParams): Connection {
         this.checkPartitionCount(response.partitionCount);
         connection.setConnectedServerVersion(response.serverHazelcastVersion);
         connection.setRemoteAddress(response.address);
@@ -1010,7 +1010,7 @@ export class ClientConnectionManager extends EventEmitter {
         return connection;
     }
 
-    private checkConnectionStateOnClusterIdChange(connection: ClientConnection): void {
+    private checkConnectionStateOnClusterIdChange(connection: Connection): void {
         if (this.connectionRegistry.isEmpty()) {
             // We only have single connection established
             if (this.failoverConfigProvided) {
@@ -1098,7 +1098,7 @@ export class ClientConnectionManager extends EventEmitter {
     }
 
     private tryConnectToAllClusterMembers(members: MemberImpl[]): Promise<void> {
-        const promises: Array<Promise<void | ClientConnection>> = [];
+        const promises: Array<Promise<void | Connection>> = [];
         for (const member of members) {
             promises.push(this.getOrConnectToMember(member)
                 .catch(() => {
