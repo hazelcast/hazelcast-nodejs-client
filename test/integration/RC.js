@@ -111,3 +111,4 @@ exports.shutdownCluster = shutdownCluster;
 exports.executeOnController = executeOnController;
 exports.terminateMember = terminateMember;
 exports.terminateCluster = terminateCluster;
+exports.destroyConnection = controller.destroyConnection;
