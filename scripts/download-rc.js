@@ -43,7 +43,8 @@ const downloadRC = () => {
     if (fs.existsSync(`hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar`)) {
         console.log('remote controller already exists, not downloading from maven.');
     } else {
-        console.log(`Downloading: remote-controller jar com.hazelcast:hazelcast-remote-controller:${HAZELCAST_RC_VERSION}`);
+        console.log('Downloading: remote-controller jar com.hazelcast:hazelcast-remote-controller:'
+        + HAZELCAST_RC_VERSION);
         const subprocess = spawnSync('mvn',
             [
                 '-q',
@@ -88,7 +89,7 @@ const downloadRC = () => {
         if (fs.existsSync(`hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar`)) {
             console.log('hazelcast-enterprise.jar already exists, not downloading from maven.');
         } else {
-            console.log(`Downloading: hazelcast enterprise jar `
+            console.log('Downloading: hazelcast enterprise jar '
                 + `com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION}`);
             const subprocess = spawnSync('mvn', [
                 '-q',
@@ -102,7 +103,7 @@ const downloadRC = () => {
             });
             if (subprocess.status !== 0) {
                 const subprocessTrace = subprocess.error ? subprocess.error.stack : '';
-                throw `Failed download hazelcast enterprise jar `
+                throw 'Failed download hazelcast enterprise jar '
                     + `com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION} ${subprocessTrace}`;
             }
         }
@@ -159,4 +160,4 @@ module.exports = {
     HAZELCAST_ENTERPRISE_TEST_VERSION: HAZELCAST_ENTERPRISE_TEST_VERSION,
     HAZELCAST_RC_VERSION: HAZELCAST_RC_VERSION,
     downloadRC: downloadRC
-}
+};
