@@ -18,10 +18,18 @@
 const RC = require('./remote_controller/Controller');
 const { deferredPromise } = require('../../lib/util/Util');
 
-const controller = new RC('localhost', 9701);
+let controller;
+
+function getController() {
+    if (!controller) {
+        controller = new RC('localhost', 9701);
+    }
+    return controller;
+}
 
 function createCluster(hzVersion, config) {
     const deferred = deferredPromise();
+    const controller = getController();
     controller.createCluster(hzVersion, config, function (err, cluster) {
         if (err) return deferred.reject(err);
         return deferred.resolve(cluster);
@@ -31,6 +39,7 @@ function createCluster(hzVersion, config) {
 
 function createClusterKeepClusterName(hzVersion, config) {
     const deferred = deferredPromise();
+    const controller = getController();
     controller.createClusterKeepClusterName(hzVersion, config, function (err, cluster) {
         if (err) return deferred.reject(err);
         return deferred.resolve(cluster);
@@ -40,6 +49,7 @@ function createClusterKeepClusterName(hzVersion, config) {
 
 function startMember(clusterId) {
     const deferred = deferredPromise();
+    const controller = getController();
     controller.startMember(clusterId, function (err, member) {
         if (err) return deferred.reject(err);
         return deferred.resolve(member);
@@ -49,6 +59,7 @@ function startMember(clusterId) {
 
 function exit() {
     const deferred = deferredPromise();
+    const controller = getController();
     controller.exit(function (err, res) {
         if (err) return deferred.reject(err);
         return deferred.resolve(res);
@@ -58,6 +69,7 @@ function exit() {
 
 function shutdownMember(clusterId, memberUuid) {
     const deferred = deferredPromise();
+    const controller = getController();
     controller.shutdownMember(clusterId, memberUuid, function (err, res) {
         if (err) return deferred.reject(err);
         return deferred.resolve(res);
@@ -67,7 +79,9 @@ function shutdownMember(clusterId, memberUuid) {
 
 function shutdownCluster(clusterId) {
     const deferred = deferredPromise();
+    const controller = getController();
     controller.shutdownCluster(clusterId, function (err, res) {
+        controller.destroyConnection();
         if (err) return deferred.reject(err);
         return deferred.resolve(res);
     });
@@ -76,6 +90,7 @@ function shutdownCluster(clusterId) {
 
 function terminateMember(clusterId, memberUuid) {
     const deferred = deferredPromise();
+    const controller = getController();
     controller.terminateMember(clusterId, memberUuid, function (err, res) {
         if (err) return deferred.reject(err);
         return deferred.resolve(res);
@@ -85,7 +100,9 @@ function terminateMember(clusterId, memberUuid) {
 
 function terminateCluster(clusterId) {
     const deferred = deferredPromise();
+    const controller = getController();
     controller.terminateCluster(clusterId, function (err, res) {
+        controller.destroyConnection();
         if (err) return deferred.reject(err);
         return deferred.resolve(res);
     });
@@ -94,6 +111,7 @@ function terminateCluster(clusterId) {
 
 function executeOnController(clusterId, script, lang) {
     const deferred = deferredPromise();
+    const controller = getController();
     controller.executeOnController(clusterId, script, lang, function (err, res) {
         if (err) return deferred.reject(err);
         if (res.success === false) return deferred.reject(res.message);
@@ -111,4 +129,3 @@ exports.shutdownCluster = shutdownCluster;
 exports.executeOnController = executeOnController;
 exports.terminateMember = terminateMember;
 exports.terminateCluster = terminateCluster;
-exports.destroyConnection = controller.destroyConnection;

@@ -162,25 +162,24 @@ if (process.argv.length === 3 || process.argv.length === 4) {
         testType = 'unit';
     } else if (process.argv[2] === 'integration') {
         if (process.argv.length === 4) {
-            testCommand = 'node node_modules/mocha/bin/mocha --require test/hooks.js --recursive -g ' +
+            testCommand = 'node node_modules/mocha/bin/mocha --recursive -g ' +
                           `${process.argv[3]} "test/integration/**/*.js"`;
         } else {
-            testCommand = 'node node_modules/mocha/bin/mocha --require test/hooks.js "test/integration/**/*.js"';
+            testCommand = 'node node_modules/mocha/bin/mocha "test/integration/**/*.js"';
         }
         testType = 'integration';
     } else if (process.argv[2] === 'all') {
         if (process.argv.length === 4) {
-            testCommand = `node node_modules/mocha/bin/mocha --require test/hooks.js --recursive -g ${process.argv[3]}`
-                        + '"test/**/*.js"';
+            testCommand = `node node_modules/mocha/bin/mocha --recursive -g ${process.argv[3]} "test/**/*.js"`;
         } else {
-            testCommand = 'node node_modules/mocha/bin/mocha --require test/hooks.js "test/**/*.js"';
+            testCommand = 'node node_modules/mocha/bin/mocha "test/**/*.js"';
         }
         testType = 'all';
     } else if (process.argv[2] === 'startrc') {
         runTests = false;
     } else if (process.argv[2] === 'coverage') {
-        testCommand = 'node node_modules/nyc/bin/nyc node_modules/mocha/bin/_mocha --require test/hooks.js '
-                    + '"test/**/*.js" -- --reporter-options mochaFile=report.xml --reporter mocha-junit-reporter';
+        testCommand = 'node node_modules/nyc/bin/nyc node_modules/mocha/bin/_mocha "test/**/*.js" -- '
+                    + '--reporter-options mochaFile=report.xml --reporter mocha-junit-reporter';
         testType = 'coverage';
     } else {
         throw 'Operation type can be one of "unit", "integration", "all", "startrc"';

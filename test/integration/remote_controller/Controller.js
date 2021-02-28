@@ -37,7 +37,9 @@ function HzRemoteController() {
 }
 
 HzRemoteController.prototype.destroyConnection = function () {
-    connection.destroy();
+    if (connection) {
+        connection.destroy();
+    }
 };
 
 HzRemoteController.prototype.ping = function(callback) {
