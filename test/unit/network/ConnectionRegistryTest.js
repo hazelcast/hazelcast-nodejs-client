@@ -73,7 +73,7 @@ describe('ConnectionRegistryTest', function () {
     });
 
     describe('checkIfInvocationAllowed', function () {
-        it('returns null when ConnectionState is INITIALIZED_ON_CLUSTER and there are some active connections',
+        it('returns null when ConnectionState=INITIALIZED_ON_CLUSTER and there are some active connections',
         function () {
                 const connectionRegistry = new ConnectionRegistryImpl(
                     new ConnectionStrategyConfigImpl(),
@@ -88,7 +88,7 @@ describe('ConnectionRegistryTest', function () {
             }
         );
 
-        it('returns ClientOfflineError when ConnectionState is INITIAL and asyncStart is true', function () {
+        it('returns ClientOfflineError when ConnectionState=INITIAL and asyncStart=true', function () {
             const connectionStrategyConfig = new ConnectionStrategyConfigImpl();
             connectionStrategyConfig.asyncStart = true;
 
@@ -103,7 +103,7 @@ describe('ConnectionRegistryTest', function () {
             expect(connectionRegistry.checkIfInvocationAllowed()).to.be.instanceof(ClientOfflineError);
         });
 
-        it('returns IOError when ConnectionState is INITIAL and asyncStart is false', function () {
+        it('returns IOError when ConnectionState=INITIAL and asyncStart=false', function () {
             const connectionStrategyConfig = new ConnectionStrategyConfigImpl();
             connectionStrategyConfig.asyncStart = false;
 
@@ -118,20 +118,22 @@ describe('ConnectionRegistryTest', function () {
             expect(connectionRegistry.checkIfInvocationAllowed()).to.be.instanceof(IOError);
         });
 
-        it('returns ClientOfflineError in async reconnect mode, when ' +
-            'there are no connections, and with INITIALIZED_ON_CLUSTER ConnectionState', function () {
-            const connectionStrategyConfig = new ConnectionStrategyConfigImpl();
-            connectionStrategyConfig.reconnectMode = ReconnectMode.ASYNC;
+        it('returns ClientOfflineError when reconnectMode=ReconnectMode.ASYNC mode, '
+              + 'ConnectionState=INITIALIZED_ON_CLUSTER and there are no connections ',
+        function () {
+                const connectionStrategyConfig = new ConnectionStrategyConfigImpl();
+                connectionStrategyConfig.reconnectMode = ReconnectMode.ASYNC;
 
-            const connectionRegistry = new ConnectionRegistryImpl(
-                connectionStrategyConfig,
-                false,
-                new RoundRobinLB()
-            );
+                const connectionRegistry = new ConnectionRegistryImpl(
+                    connectionStrategyConfig,
+                    false,
+                    new RoundRobinLB()
+                );
 
-            connectionRegistry.setConnectionState(connectionState.INITIALIZED_ON_CLUSTER);
+                connectionRegistry.setConnectionState(connectionState.INITIALIZED_ON_CLUSTER);
 
-            expect(connectionRegistry.checkIfInvocationAllowed()).to.be.instanceof(ClientOfflineError);
-        });
+                expect(connectionRegistry.checkIfInvocationAllowed()).to.be.instanceof(ClientOfflineError);
+            }
+        );
     });
 });
