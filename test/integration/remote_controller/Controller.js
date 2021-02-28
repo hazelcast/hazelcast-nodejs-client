@@ -18,28 +18,24 @@
 const thrift = require('thrift');
 const RemoteController = require('./RemoteController');
 
-let connection;
-
 function HzRemoteController() {
     const transport = thrift.TBufferedTransport();
     const protocol = thrift.TBinaryProtocol();
 
-    connection = thrift.createConnection('localhost', 9701, {
+    this.connection = thrift.createConnection('localhost', 9701, {
         transport: transport,
         protocol: protocol
     });
 
-    connection.on('error', function(err) {
+    this.connection.on('error', function(err) {
         console.log(err);
     });
 
-    this.client = thrift.createClient(RemoteController, connection);
+    this.client = thrift.createClient(RemoteController, this.connection);
 }
 
 HzRemoteController.prototype.destroyConnection = function () {
-    if (connection) {
-        connection.destroy();
-    }
+    this.connection.destroy();
 };
 
 HzRemoteController.prototype.ping = function(callback) {

@@ -3,5 +3,6 @@
     "exclude": [
         "test/soak_test/**",
         "test/user_code/**"
-    ]
+    ],
+    "require": "test/hooks.js"
 }
