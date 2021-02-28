@@ -37,10 +37,10 @@ const { LifecycleServiceImpl } = require('../../../lib/LifecycleService');
 
 describe('ConnectionRegistryTest', function () {
 
-    let connectionManagerStub;
-    let lifecycleManagerStub;
-    let loggerStub;
-    let addressStub;
+    const connectionManagerStub = sandbox.stub(ConnectionManager.prototype);
+    const lifecycleManagerStub = sandbox.stub(LifecycleServiceImpl.prototype);
+    const loggerStub = sandbox.stub(DefaultLogger.prototype);
+    const addressStub = sandbox.stub(AddressImpl.prototype);
 
     const defaultConfig = new ClientConfigImpl();
     const connectionState = {
@@ -49,14 +49,7 @@ describe('ConnectionRegistryTest', function () {
         INITIALIZED_ON_CLUSTER: 2
     };
 
-    beforeEach(function () {
-        connectionManagerStub = sandbox.stub(ConnectionManager.prototype);
-        lifecycleManagerStub = sandbox.stub(LifecycleServiceImpl.prototype);
-        loggerStub = sandbox.stub(DefaultLogger.prototype);
-        addressStub = sandbox.stub(AddressImpl.prototype);
-    });
-
-    afterEach(function () {
+    afterEach('restore sandbox', function () {
         sandbox.restore();
     });
 
@@ -71,6 +64,7 @@ describe('ConnectionRegistryTest', function () {
             lifecycleManagerStub
         );
     }
+
     describe('getRandomConnection', function () {
         it('should use load balancer in smart mode', function () {
             const loadBalancerStub = sandbox.stub(RoundRobinLB.prototype);
