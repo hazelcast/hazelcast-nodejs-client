@@ -50,24 +50,26 @@ describe('ConnectionRegistryTest', function () {
             expect(loadBalancerStub.next.called).to.be.true;
         });
 
-        it('should return first active connection in non-smart mode', function () {
-            const loadBalancerStub = sandbox.stub(RoundRobinLB.prototype);
-            const connectionRegistry = new ConnectionRegistryImpl(
-                new ConnectionStrategyConfigImpl(),
-                false,
-                loadBalancerStub
-            );
+        it('should return first active connection in non-smart mode without using load balancer',
+        function () {
+                const loadBalancerStub = sandbox.stub(RoundRobinLB.prototype);
+                const connectionRegistry = new ConnectionRegistryImpl(
+                    new ConnectionStrategyConfigImpl(),
+                    false,
+                    loadBalancerStub
+                );
 
-            const firstConnection = new sinon.createStubInstance(Connection);
-            connectionRegistry.setConnection(UuidUtil.generate(), firstConnection);
-            connectionRegistry.setConnection(UuidUtil.generate(), new sinon.createStubInstance(Connection));
-            connectionRegistry.setConnection(UuidUtil.generate(), new sinon.createStubInstance(Connection));
+                const firstConnection = new sinon.createStubInstance(Connection);
+                connectionRegistry.setConnection(UuidUtil.generate(), firstConnection);
+                connectionRegistry.setConnection(UuidUtil.generate(), new sinon.createStubInstance(Connection));
+                connectionRegistry.setConnection(UuidUtil.generate(), new sinon.createStubInstance(Connection));
 
-            const randomConnection = connectionRegistry.getRandomConnection();
+                const randomConnection = connectionRegistry.getRandomConnection();
 
-            expect(randomConnection).to.be.equal(firstConnection);
-            expect(loadBalancerStub.next.called).to.be.false;
-        });
+                expect(randomConnection).to.be.equal(firstConnection);
+                expect(loadBalancerStub.next.called).to.be.false;
+            }
+        );
     });
 
     describe('checkIfInvocationAllowed', function () {
