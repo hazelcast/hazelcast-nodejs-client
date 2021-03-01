@@ -126,12 +126,12 @@ describe('ClientFailoverTest - enterprise', function () {
     });
 
     afterEach(async function () {
-        if (client != null) {
+        if (client !== null) {
             await client.shutdown();
         }
         await RC.terminateCluster(cluster1.id);
         await RC.terminateCluster(cluster2.id);
-        if (cluster3 != null) {
+        if (cluster3 !== null) {
             await RC.terminateCluster(cluster3.id);
         }
     });

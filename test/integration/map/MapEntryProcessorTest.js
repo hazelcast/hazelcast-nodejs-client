@@ -49,7 +49,7 @@ describe('EntryProcessorTest', function () {
     });
 
     after(async function () {
-        await client.shutdown()
+        await client.shutdown();
         return RC.terminateCluster(cluster.id);
     });
 
@@ -66,7 +66,7 @@ describe('EntryProcessorTest', function () {
         await map.executeOnEntries(new IdentifiedEntryProcessor('processed'));
         const entries = await map.entrySet();
         expect(entries.every(function (entry) {
-            return entry[1] == 'processed';
+            return entry[1] === 'processed';
         })).to.be.true;
     });
 
@@ -74,13 +74,13 @@ describe('EntryProcessorTest', function () {
         const entries = await map.executeOnEntries(new IdentifiedEntryProcessor('processed'));
         expect(entries).to.have.lengthOf(MAP_SIZE);
         expect(entries.every(function (entry) {
-            return entry[1] == 'processed';
+            return entry[1] === 'processed';
         })).to.be.true;
     });
 
     it('executeOnEntries with predicate should modify entries', async function () {
         await map.executeOnEntries(new IdentifiedEntryProcessor('processed'), Predicates.regex('this', '^[01]$'));
-        const entries = await map.getAll(["0", "1", "2"]);
+        const entries = await map.getAll(['0', '1', '2']);
         expect(entries).to.deep.have.members([['0', 'processed'], ['1', 'processed'], ['2', '2']]);
     });
 
@@ -89,7 +89,7 @@ describe('EntryProcessorTest', function () {
             Predicates.regex('this', '^[01]$'));
         expect(entries).to.have.lengthOf(2);
         expect(entries.every(function (entry) {
-            return entry[1] == 'processed';
+            return entry[1] === 'processed';
         })).to.be.true;
     });
 

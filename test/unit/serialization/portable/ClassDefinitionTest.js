@@ -38,7 +38,6 @@ describe('ClassDefinitionTest', function () {
         expect(a.getFieldType.bind(a, 'thirdField')).to.throw(Error);
     });
 
-
     it('hasField():field was added so it should be return true.', function () {
         a.addFieldDefinition(new FieldDefinition(2, 'aField', FieldDefinition.INT, 10, 10));
         expect(a.hasField('aField')).to.be.true;
@@ -61,9 +60,11 @@ describe('ClassDefinitionTest', function () {
         expect(a.getFieldById.bind(a, 0)).to.not.throw(Error);
     });
 
-    it('getFieldById():When index is more than or equal to total number of fields it should throw an range exception.', function () {
-        expect(a.getFieldById.bind(a, 3)).to.throw(Error);
-    });
+    it('getFieldById():When index is more than or equal to total number of fields it should throw an range exception.',
+    function () {
+            expect(a.getFieldById.bind(a, 3)).to.throw(Error);
+        }
+    );
 
     it('equals():When parameter passed is not a ClassDefinitionObject.', function () {
         const a1 = new ClassDefinition();

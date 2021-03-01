@@ -146,6 +146,6 @@ describe('SemaphoreProxyCommonTest', function () {
                 const proxy = createProxy(type);
                 expect(() => proxy.increasePermits(-1)).to.throw(AssertionError);
             });
-        })
+        });
     }
 });

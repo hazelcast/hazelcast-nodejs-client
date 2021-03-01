@@ -21,7 +21,7 @@ const os = require('os');
 const RC = require('../RC');
 const { Client } = require('../../../');
 const { BuildInfo } = require('../../../lib/BuildInfo');
-const { Statistics } = require("../../../lib/statistics/Statistics");
+const { Statistics } = require('../../../lib/statistics/Statistics');
 const TestUtil = require('../../TestUtil');
 
 async function getClientStatisticsFromServer(cluster, client) {
@@ -36,7 +36,7 @@ async function getClientStatisticsFromServer(cluster, client) {
         '  }\n' +
         '}\n';
     const response = await RC.executeOnController(cluster.id, script, 1);
-    if (response.result != null) {
+    if (response.result !== null) {
         return response.result.toString();
     }
     return null;
@@ -97,7 +97,7 @@ describe('StatisticsTest (default period)', function () {
 
     function contains(base, search) {
         const firstIndex = base.indexOf(search);
-        return firstIndex > -1 && firstIndex == base.lastIndexOf(search);
+        return firstIndex > -1 && firstIndex === base.lastIndexOf(search);
     }
 
     it('should be enabled via configuration', async function () {
@@ -205,7 +205,7 @@ describe('StatisticsTest (negative period)', function () {
 
     it('should be enabled via configuration', async function () {
         await TestUtil.promiseWaitMilliseconds(1000);
-        let stats = await getClientStatisticsFromServer(cluster, client);
+        const stats = await getClientStatisticsFromServer(cluster, client);
         expect(stats).to.not.equal('');
     });
 });

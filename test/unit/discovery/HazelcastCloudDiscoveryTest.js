@@ -37,7 +37,7 @@ describe('HazelcastCloudDiscoveryTest', function () {
     }
 
     function stopUnresponsiveServer() {
-        if (server != null) {
+        if (server !== null) {
             server.close();
         }
     }

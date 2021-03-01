@@ -81,7 +81,7 @@ describe('InvocationServiceTest', function () {
 
     afterEach(function () {
         sandbox.restore();
-        if (service != null) {
+        if (service !== null) {
             service.shutdown();
         }
     });

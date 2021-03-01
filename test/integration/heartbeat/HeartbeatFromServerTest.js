@@ -36,9 +36,9 @@ describe('HeartbeatFromServerTest', function () {
 
     async function warmUpConnectionToAddressWithRetry(client, address, retryCount) {
         const conn = await client.getConnectionManager().getOrConnectToAddress(address);
-        if (conn != null) {
+        if (conn !== null) {
             return conn;
-        } else if (conn == null && retryCount > 0) {
+        } else if (conn === null && retryCount > 0) {
             await TestUtil.promiseWaitMilliseconds(300);
             return warmUpConnectionToAddressWithRetry(client, address, retryCount - 1);
         }
@@ -46,9 +46,9 @@ describe('HeartbeatFromServerTest', function () {
     }
 
     function wasClosedAfterHeartbeatTimeout(connection) {
-        return connection.closedCause != null
+        return connection.closedCause !== null
             && connection.closedCause instanceof TargetDisconnectedError
-            && connection.closedCause.message != null
+            && connection.closedCause.message !== null
             && connection.closedCause.message.includes('Heartbeat timed out');
     }
 
@@ -57,7 +57,7 @@ describe('HeartbeatFromServerTest', function () {
     });
 
     afterEach(async function () {
-        if (client != null) {
+        if (client !== null) {
             await client.shutdown();
         }
         return RC.terminateCluster(cluster.id);

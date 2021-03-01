@@ -126,5 +126,5 @@ describe('PortableSerializationTest', function () {
         const deserialized = service.toObject(serialized);
 
         TestUtil.expectAlmostEqual(deserialized, portableV3);
-    })
+    });
 });

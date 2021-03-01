@@ -47,7 +47,7 @@ describe('QueueProxyTest', function () {
     });
 
     async function offerToQueue(size, prefix) {
-        if (prefix == null) {
+        if (prefix === null) {
             prefix = '';
         }
         const promises = [];
@@ -248,7 +248,6 @@ describe('QueueProxyTest', function () {
         expect(arr).to.deep.equal(retains);
     });
 
-
     it('retainAll does not change queue', async function () {
         const retains = await queue.toArray();
         const r = await queue.retainAll(retains);
@@ -280,7 +279,6 @@ describe('QueueProxyTest', function () {
             queue.add('item_new');
         });
     });
-
 
     it('addItemListener itemRemoved', function (done) {
         queue.addItemListener({

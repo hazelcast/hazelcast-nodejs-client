@@ -150,7 +150,7 @@ describe('MapStoreTest', function () {
 
         map.addEntryListener(listener, undefined, true)
             .then(function () {
-                return map.put('some-key', 'some-value', 100)
+                return map.put('some-key', 'some-value', 100);
             }).then(function () {
                 return TestUtil.promiseWaitMilliseconds(2000);
             }).then(function () {
@@ -172,7 +172,7 @@ describe('MapStoreTest', function () {
                         }
                     });
             },
-        }
+        };
         map.evictAll()
             .then(() => map.put('1', '1'))
             .then(() => map.addEntryListener(listener, null, true))
@@ -189,7 +189,7 @@ describe('MapStoreTest', function () {
             added: event => {
                 map.removeEntryListener(listenerId)
                     .then(() => {
-                        if (event.oldValue == null) {
+                        if (event.oldValue === null) {
                             done();
                         } else {
                             done(new Error('Old value for the received event does not match with expected value! ' +
@@ -197,7 +197,7 @@ describe('MapStoreTest', function () {
                         }
                     });
             },
-        }
+        };
         map.evictAll()
             .then(() => map.put('1', '1'))
             .then(() => map.addEntryListener(listener, null, true))

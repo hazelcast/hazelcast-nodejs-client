@@ -42,7 +42,7 @@ const {
         const employees = await map.valuesWithPredicate(
             Predicates.and(
                 Predicates.sql('name like A%'),
-                Predicates.greaterThan("age", 30)
+                Predicates.greaterThan('age', 30)
             )
         );
         // Prints all the employees whose name starts with 'A' and age is greater than 30

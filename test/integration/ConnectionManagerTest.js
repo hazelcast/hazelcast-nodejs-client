@@ -46,7 +46,7 @@ describe('ConnectionManagerTest', function () {
     }
 
     function stopUnresponsiveServer() {
-        if (server != null) {
+        if (server !== null) {
             server.close();
         }
     }
@@ -64,7 +64,7 @@ describe('ConnectionManagerTest', function () {
     afterEach(async function () {
         testend = true;
         stopUnresponsiveServer();
-        if (client != null) {
+        if (client !== null) {
             await client.shutdown();
         }
     });
@@ -179,7 +179,7 @@ describe('ConnectionManagerTest', function () {
 
         // close the only existing connection
         const memberAddress = new AddressImpl('localhost', 5701);
-        let conn = await connectionManager.getOrConnectToAddress(memberAddress);
+        const conn = await connectionManager.getOrConnectToAddress(memberAddress);
         conn.close('Boom', null);
 
         // force creation of a pending connection

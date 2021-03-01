@@ -92,6 +92,6 @@ describe('RestValueTest', function () {
             })
             .catch(e => {
                 done(e);
-            })
+            });
     });
 });
