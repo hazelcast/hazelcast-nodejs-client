@@ -1,3 +1,2 @@
-src/.eslintrc.js
-scripts/.eslintrc.js
 src/codec/**/*.ts
+src/.eslintrc.js
