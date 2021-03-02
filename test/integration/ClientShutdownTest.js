@@ -36,9 +36,9 @@ describe('ClientShutdownTest', function () {
 
     afterEach(async function () {
         sandbox.restore();
-        if (cluster !== undefined) {
+        if (cluster != null) {
             await RC.terminateCluster(cluster.id);
-            cluster = undefined;
+            cluster = null;
         }
     });
 

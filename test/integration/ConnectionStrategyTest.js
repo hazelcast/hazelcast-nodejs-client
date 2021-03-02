@@ -42,10 +42,10 @@ describe('ConnectionStrategyTest', function () {
     });
 
     afterEach(async function () {
-        if (client !== null) {
+        if (client != null) {
             await client.shutdown();
         }
-        if (cluster !== null) {
+        if (cluster != null) {
             await RC.terminateCluster(cluster.id);
         }
     });

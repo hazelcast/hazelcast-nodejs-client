@@ -36,7 +36,7 @@ async function getClientStatisticsFromServer(cluster, client) {
         '  }\n' +
         '}\n';
     const response = await RC.executeOnController(cluster.id, script, 1);
-    if (response.result !== null) {
+    if (response.result != null) {
         return response.result.toString();
     }
     return null;
@@ -97,7 +97,7 @@ describe('StatisticsTest (default period)', function () {
 
     function contains(base, search) {
         const firstIndex = base.indexOf(search);
-        return firstIndex > -1 && firstIndex === base.lastIndexOf(search);
+        return firstIndex > -1 && firstIndex == base.lastIndexOf(search);
     }
 
     it('should be enabled via configuration', async function () {

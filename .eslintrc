@@ -32,7 +32,6 @@
             "last"
         ],
         "eol-last": "error",
-        "eqeqeq": "warn",
         "func-call-spacing": "warn",
         "keyword-spacing": [
             "error",

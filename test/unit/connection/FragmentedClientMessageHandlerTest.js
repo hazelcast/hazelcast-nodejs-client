@@ -89,7 +89,7 @@ describe('FragmentedClientMessageHandlerTest', function () {
 
     const compareMessages = (frame1, frame2) => {
         expect(frame1).to.not.be.null;
-        while (frame1 !== null) {
+        while (frame1 != null) {
             expect(frame1.content).to.deep.equal(frame2.content);
 
             frame1 = frame1.next;

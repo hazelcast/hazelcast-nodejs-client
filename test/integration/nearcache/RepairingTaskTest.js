@@ -30,7 +30,7 @@ describe('RepairingTask', function () {
     });
 
     afterEach(async function () {
-        if (client !== null) {
+        if (client != null) {
             await client.shutdown();
         }
     });

@@ -47,7 +47,7 @@ describe('QueueProxyTest', function () {
     });
 
     async function offerToQueue(size, prefix) {
-        if (prefix === undefined) {
+        if (prefix == null) {
             prefix = '';
         }
         const promises = [];

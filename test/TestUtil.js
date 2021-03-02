@@ -129,7 +129,7 @@ exports.markServerVersionAtLeast = function (_this, client, expectedVersion) {
     let actNumber;
     if (process.env['SERVER_VERSION']) {
         actNumber = BuildInfo.calculateServerVersionFromString(process.env['SERVER_VERSION']);
-    } else if (client !== null) {
+    } else if (client != null) {
         actNumber = client.getConnectionManager().getRandomConnection().getConnectedServerVersion();
     } else {
         return;

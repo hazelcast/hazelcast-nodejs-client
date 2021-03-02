@@ -46,7 +46,7 @@ describe('ConnectionManagerTest', function () {
     }
 
     function stopUnresponsiveServer() {
-        if (server !== null) {
+        if (server != null) {
             server.close();
         }
     }
@@ -64,7 +64,7 @@ describe('ConnectionManagerTest', function () {
     afterEach(async function () {
         testend = true;
         stopUnresponsiveServer();
-        if (client !== null) {
+        if (client != null) {
             await client.shutdown();
         }
     });

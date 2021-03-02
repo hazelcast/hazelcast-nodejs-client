@@ -92,7 +92,7 @@ describe('SessionAwareSemaphoreProxyTest', function () {
 
     function expectReleaseSession(permits) {
         expect(cpSessionManagerStub.releaseSession.calledOnce).to.be.true;
-        if (cpSessionManagerStub.releaseSession.args[0][2] !== undefined) {
+        if (cpSessionManagerStub.releaseSession.args[0][2] != undefined) {
             expect(cpSessionManagerStub.releaseSession.args[0][2]).to.be.equal(permits);
         } else {
             // undefined assumes release for 1 permit

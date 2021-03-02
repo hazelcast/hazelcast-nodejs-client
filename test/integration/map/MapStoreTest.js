@@ -189,7 +189,7 @@ describe('MapStoreTest', function () {
             added: event => {
                 map.removeEntryListener(listenerId)
                     .then(() => {
-                        if (event.oldValue === null) {
+                        if (event.oldValue == null) {
                             done();
                         } else {
                             done(new Error('Old value for the received event does not match with expected value! ' +
