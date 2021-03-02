@@ -2,7 +2,7 @@
     "env": {
         "commonjs": true,
         "node": true,
-        "es2021": true
+        "es2017": true
     },
     "extends": "eslint:recommended",
     "rules": {
@@ -73,6 +73,24 @@
                 "max": 1
             }
         ],
-        "no-useless-concat": "error"
+        "no-useless-concat": "error",
+        "indent": ["warn", 4, {
+            "CallExpression": {
+                "arguments": 1
+            },
+            "SwitchCase": 1,
+            "VariableDeclarator": "off",
+            "outerIIFEBody": "off",
+            "MemberExpression": "off",
+            "FunctionDeclaration": {
+                "parameters": "off"
+            },
+            "FunctionExpression": {
+                "parameters": "off"
+            },
+            "ArrayExpression": "off",
+            "ObjectExpression": "off",
+            "ImportDeclaration": "off"
+        }]
     }
 }

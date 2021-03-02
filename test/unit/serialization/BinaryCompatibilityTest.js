@@ -146,7 +146,7 @@ describe('BinaryCompatibilityTest', function () {
 
                     if (!ReferenceObjects.skipOnSerialize[varName]) {
                         it(varName + '-' + convertEndiannesToByteOrder(isBigEndian) + '-' + version + ' serialize deserialize',
-                        function () {
+                            function () {
                                 const service = createSerializationService(isBigEndian, stripArticle(varName).toLowerCase());
                                 const data = service.toData(object);
                                 const deserialized = service.toObject(data);
