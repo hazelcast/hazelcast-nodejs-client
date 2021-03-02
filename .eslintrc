@@ -67,6 +67,7 @@
             "always"
         ],
         "no-trailing-spaces": "warn",
+        "no-multi-spaces": "warn",
         "no-multiple-empty-lines": [
             "warn",
             {

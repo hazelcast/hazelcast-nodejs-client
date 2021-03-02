@@ -23,7 +23,7 @@ const { Client } = require('hazelcast-client');
         // Hazelcast Cluster on 127.0.0.1
         const hz = await Client.newHazelcastClient();
         // Get a Queue called 'my-distributed-queue'
-        const queue  = await hz.getQueue('my-distributed-queue');
+        const queue = await hz.getQueue('my-distributed-queue');
         // Offer a string into the Distributed Queue
         await queue.offer('item');
         // Poll the Distributed Queue and return the string
