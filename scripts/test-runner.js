@@ -155,7 +155,7 @@ const shutdownRC = () => {
 if (process.argv.length === 3 || process.argv.length === 4) {
     if (process.argv[2] === 'unit') {
         if (process.argv.length === 4) {
-            testCommand = `node node_modules/mocha/bin/mocha --recursive -g ${process.argv[3]} "test/unit/**/*.js"`;
+            testCommand = `node node_modules/mocha/bin/mocha --recursive -g "${process.argv[3]}" "test/unit/**/*.js"`;
         } else {
             testCommand = 'node node_modules/mocha/bin/mocha "test/unit/**/*.js"';
         }
@@ -163,14 +163,14 @@ if (process.argv.length === 3 || process.argv.length === 4) {
     } else if (process.argv[2] === 'integration') {
         if (process.argv.length === 4) {
             testCommand = 'node node_modules/mocha/bin/mocha --recursive -g ' +
-                          `${process.argv[3]} "test/integration/**/*.js"`;
+                          `"${process.argv[3]}" "test/integration/**/*.js"`;
         } else {
             testCommand = 'node node_modules/mocha/bin/mocha "test/integration/**/*.js"';
         }
         testType = 'integration';
     } else if (process.argv[2] === 'all') {
         if (process.argv.length === 4) {
-            testCommand = `node node_modules/mocha/bin/mocha --recursive -g ${process.argv[3]} "test/**/*.js"`;
+            testCommand = `node node_modules/mocha/bin/mocha --recursive -g "${process.argv[3]}" "test/**/*.js"`;
         } else {
             testCommand = 'node node_modules/mocha/bin/mocha "test/**/*.js"';
         }
