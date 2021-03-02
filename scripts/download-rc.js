@@ -44,7 +44,7 @@ const downloadRC = () => {
         console.log('remote controller already exists, not downloading from maven.');
     } else {
         console.log('Downloading: remote-controller jar com.hazelcast:hazelcast-remote-controller:'
-        + HAZELCAST_RC_VERSION);
+            + HAZELCAST_RC_VERSION);
         const subprocess = spawnSync('mvn',
             [
                 '-q',
