@@ -195,17 +195,17 @@ describe('MultiMapProxyTest', function () {
 
     it('putAll', async function () {
         TestUtil.markServerVersionAtLeast(this, client, '4.1');
-        const pairs = [["a", [1]], ["b", [2, 22]], ["c", [3, 33, 333]]];
+        const pairs = [['a', [1]], ['b', [2, 22]], ['c', [3, 33, 333]]];
         const checkValues = (expected, actual) => {
             expect(actual.length).to.equal(expected.length);
             expect(actual).to.have.members(expected);
         };
         await map.putAll(pairs);
-        let values = await map.get("a");
+        let values = await map.get('a');
         checkValues([1], values.toArray());
-        values = await map.get("b");
+        values = await map.get('b');
         checkValues([2, 22], values.toArray());
-        values = await map.get("c");
+        values = await map.get('c');
         checkValues([3, 33, 333], values.toArray());
 
     });

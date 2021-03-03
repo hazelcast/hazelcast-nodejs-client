@@ -92,7 +92,6 @@ describe('InitialMembershipListenerTest', function () {
     });
 
     it('should receive events after initial event', async function () {
-        let newMember;
         const newMemberStarted = deferredPromise();
         const memberAddedTriggered = deferredPromise();
 
@@ -124,7 +123,7 @@ describe('InitialMembershipListenerTest', function () {
         };
 
         client = await Client.newHazelcastClient(config);
-        newMember = await RC.startMember(cluster.id);
+        const newMember = await RC.startMember(cluster.id);
         newMemberStarted.resolve();
 
         await memberAddedTriggered.promise;

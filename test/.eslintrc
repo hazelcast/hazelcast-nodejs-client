@@ -1,21 +1,18 @@
 {
     "env": {
-        "mocha": true,
-        "es6": true,
-        "node": true
-    },
-    "parserOptions": {
-        "ecmaVersion": 8
+        "mocha": true
     },
     "plugins": [
         "mocha"
     ],
     "extends": [
-        "eslint:recommended",
+        "../.eslintrc",
         "plugin:mocha/recommended"
     ],
     "rules": {
         "mocha/no-hooks-for-single-case": "off",
-        "mocha/no-setup-in-describe": "off"
+        "mocha/no-setup-in-describe": "off",
+        "camelcase": "off",
+        "max-len": ["warn", 130]
     }
 }

@@ -179,7 +179,7 @@ describe('ConnectionManagerTest', function () {
 
         // close the only existing connection
         const memberAddress = new AddressImpl('localhost', 5701);
-        let conn = await connectionManager.getOrConnectToAddress(memberAddress);
+        const conn = await connectionManager.getOrConnectToAddress(memberAddress);
         conn.close('Boom', null);
 
         // force creation of a pending connection

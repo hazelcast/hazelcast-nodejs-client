@@ -559,26 +559,28 @@ describe('MapProxyTest', function () {
                     });
             });
 
-            it('addEntryListener on key, entryAdded fires because predicate returns true for that entry, inlVal=yes', function (done) {
-                const listenerObject = {
-                    added: function (entryEvent) {
-                        try {
-                            expect(entryEvent.name).to.equal('test');
-                            expect(entryEvent.key).to.equal('key10');
-                            expect(entryEvent.value).to.equal('val10');
-                            expect(entryEvent.mergingValue).to.be.null;
-                            expect(entryEvent.member).to.not.be.null;
-                            done();
-                        } catch (err) {
-                            done(err);
+            it('addEntryListener on key, entryAdded fires because predicate returns true for that entry, inlVal=yes',
+                function (done) {
+                    const listenerObject = {
+                        added: function (entryEvent) {
+                            try {
+                                expect(entryEvent.name).to.equal('test');
+                                expect(entryEvent.key).to.equal('key10');
+                                expect(entryEvent.value).to.equal('val10');
+                                expect(entryEvent.mergingValue).to.be.null;
+                                expect(entryEvent.member).to.not.be.null;
+                                done();
+                            } catch (err) {
+                                done(err);
+                            }
                         }
-                    }
-                };
-                map.addEntryListenerWithPredicate(listenerObject, Predicates.sql('this == val10'), 'key10', true)
-                    .then(function () {
-                        map.put('key10', 'val10');
-                    });
-            });
+                    };
+                    map.addEntryListenerWithPredicate(listenerObject, Predicates.sql('this == val10'), 'key10', true)
+                        .then(function () {
+                            map.put('key10', 'val10');
+                        });
+                }
+            );
 
             it('addEntryListener with predicate on map entryAdded', function (done) {
                 const listenerObject = {

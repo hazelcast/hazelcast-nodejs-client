@@ -51,7 +51,6 @@ describe('MultiMapProxyLockTest', function () {
         return RC.terminateCluster(cluster.id);
     });
 
-
     it('locks and unlocks', async function () {
         const startTime = Date.now();
         await mapOne.put(1, 2);

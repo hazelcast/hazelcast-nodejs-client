@@ -27,7 +27,7 @@ const { Client } = require('hazelcast-client');
         // Add elements to the list
         await list.add('item1');
         await list.add('item2');
-        //Remove the first element
+        // Remove the first element
         const value = await list.removeAt(0);
         console.log('Removed:', value);
         // There is only one element left

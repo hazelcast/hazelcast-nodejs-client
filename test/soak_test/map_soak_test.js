@@ -155,7 +155,7 @@ const cfg = {
             66: identifiedFactory
         }
     }
-}
+};
 for (let i = 2; i < process.argv.length; i++) {
     cfg.network.clusterMembers[0] = process.argv[i];
 }

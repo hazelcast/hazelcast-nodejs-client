@@ -120,6 +120,6 @@ describe('ClientReconnectTest', function () {
                 done();
             });
             RC.startMember(cluster.id);
-        })
+        });
     });
 });

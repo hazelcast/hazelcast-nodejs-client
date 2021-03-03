@@ -59,13 +59,13 @@ describe('FragmentedClientMessageHandlerTest', function () {
         expect(fragment2.startFrame.hasEndFragmentFlag()).to.be.true;
 
         // Should add to map
-        handler.handleFragmentedMessage(fragment0, () => done(new Error("It should just add to map.")));
+        handler.handleFragmentedMessage(fragment0, () => done(new Error('It should just add to map.')));
         const fragmentedMessage = handler.fragmentedMessages.get(42);
         compareMessages(fragments[0].startFrame.next, fragmentedMessage.startFrame);
         let endFrame = fragmentedMessage.endFrame;
 
         // Should merge with the above message
-        handler.handleFragmentedMessage(fragment1, () => done(new Error("It should just merge.")));
+        handler.handleFragmentedMessage(fragment1, () => done(new Error('It should just merge.')));
         expect(handler.fragmentedMessages.size).to.equal(1);
         compareMessages(fragments[1].startFrame.next, endFrame.next);
         endFrame = fragmentedMessage.endFrame;
@@ -80,8 +80,8 @@ describe('FragmentedClientMessageHandlerTest', function () {
         expect(handler.fragmentedMessages.size).to.equal(0);
 
         // If a message with a missing begin part is received, we should do nothing
-        handler.handleFragmentedMessage(fragment1, () => done(new Error("It should ignore invalid messages.")));
-        handler.handleFragmentedMessage(fragment2, () => done(new Error("It should ignore invalid messages.")));
+        handler.handleFragmentedMessage(fragment1, () => done(new Error('It should ignore invalid messages.')));
+        handler.handleFragmentedMessage(fragment2, () => done(new Error('It should ignore invalid messages.')));
         expect(handler.fragmentedMessages.size).to.equal(0);
 
         done();

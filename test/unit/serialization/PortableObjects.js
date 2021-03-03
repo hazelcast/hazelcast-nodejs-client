@@ -120,7 +120,7 @@ class PortableObject {
 
 }
 
-class PortableObjectV2{
+class PortableObjectV2 {
 
     constructor(a_new_prop, a_byte, a_boolean, a_character, a_short, an_integer,
                 a_long, a_float, a_double, a_portable, bytes, booleans, chars,
@@ -132,9 +132,9 @@ class PortableObjectV2{
         this.a_short = a_short;
         this.an_integer = an_integer;
         this.a_long = a_long;
-        this.a_float = a_float; //this is a double in this version
+        this.a_float = a_float; // this is a double in this version
         this.a_double = a_double;
-        //a_string is removed
+        // a_string is removed
         this.a_portable = a_portable;
         this.a_null_portable = null;
         this.bytes = bytes;
@@ -161,7 +161,7 @@ class PortableObjectV2{
         writer.writeShort('a_short', this.a_short);
         writer.writeInt('an_integer', this.an_integer);
         writer.writeLong('a_long', this.a_long);
-        writer.writeDouble('a_float', this.a_float); //Floats are Double
+        writer.writeDouble('a_float', this.a_float); // Floats are Double
         writer.writeDouble('a_double', this.a_double);
         writer.writePortable('a_portable', this.a_portable);
         const tmpInnerObj = new InnerPortable();

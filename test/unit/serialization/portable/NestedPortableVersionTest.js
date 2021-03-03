@@ -38,10 +38,10 @@ describe('NestedPortableVersionTest', function () {
         const ss2 = new SerializationServiceV1(sc);
 
         // make sure ss2 cached class definition of child
-        ss2.toData(new Child("Furkan"));
+        ss2.toData(new Child('Furkan'));
 
         // serialized parent from ss1
-        const p = new Parent(new Child("Furkan"));
+        const p = new Parent(new Child('Furkan'));
         const data = ss1.toData(p);
 
         // cached class definition of child and the class definition from data coming from ss1 should be compatible
