@@ -151,7 +151,7 @@ describe('CPSessionManagerTest', function () {
 
         it('getSessionId: should return session id for known session', function () {
             sessionManager.sessions.set(GROUP_ID_AS_STRING, prepareSessionState());
-            let id = sessionManager.getSessionId(prepareGroupId());
+            const id = sessionManager.getSessionId(prepareGroupId());
             expect(id.toNumber()).to.be.equal(SESSION_ID);
         });
 

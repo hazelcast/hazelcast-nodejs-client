@@ -81,7 +81,6 @@ describe('SetProxyTest', function () {
         expect(contains).to.be.false;
     });
 
-
     it('is empty', async function () {
         let empty = await setInstance.isEmpty();
         expect(empty).to.be.true;

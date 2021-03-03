@@ -23,11 +23,11 @@ function Foo(foo) {
 
 Foo.prototype.writePortable = function (portableWriter) {
     portableWriter.writeString('foo', this.foo);
-}
+};
 
 Foo.prototype.readPortable = function (portableReader) {
     this.foo = portableReader.readString('foo');
-}
+};
 
 function myPortableFactory(type) {
     if (type === 1) {

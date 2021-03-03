@@ -44,7 +44,7 @@ describe('CountDownLatchTest', function () {
     }
 
     before(async function () {
-        cluster = await RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_cpsubsystem.xml', 'utf8'))
+        cluster = await RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_cpsubsystem.xml', 'utf8'));
         await Promise.all([
             RC.startMember(cluster.id),
             RC.startMember(cluster.id),
@@ -97,7 +97,7 @@ describe('CountDownLatchTest', function () {
     it('trySetCount: should succeed when not set', async function () {
         const latch = await getLatch();
 
-        let result = await latch.trySetCount(3);
+        const result = await latch.trySetCount(3);
         expect(result).to.be.true;
 
         const count = await latch.getCount();

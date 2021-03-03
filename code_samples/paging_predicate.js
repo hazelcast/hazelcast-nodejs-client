@@ -67,7 +67,7 @@ class Comparator {
         const map = await client.getMap('test');
         await map.putAll([
             ['a', 1], ['b', 2], ['c', 3], ['d', 4],
-            ['e', 5], ['f', 6],['g', 7]
+            ['e', 5], ['f', 6], ['g', 7]
         ]);
         const mapSize = await map.size();
         console.log(`Added ${mapSize} elements`);

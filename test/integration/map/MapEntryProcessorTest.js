@@ -49,7 +49,7 @@ describe('EntryProcessorTest', function () {
     });
 
     after(async function () {
-        await client.shutdown()
+        await client.shutdown();
         return RC.terminateCluster(cluster.id);
     });
 
@@ -80,7 +80,7 @@ describe('EntryProcessorTest', function () {
 
     it('executeOnEntries with predicate should modify entries', async function () {
         await map.executeOnEntries(new IdentifiedEntryProcessor('processed'), Predicates.regex('this', '^[01]$'));
-        const entries = await map.getAll(["0", "1", "2"]);
+        const entries = await map.getAll(['0', '1', '2']);
         expect(entries).to.deep.have.members([['0', 'processed'], ['1', 'processed'], ['2', '2']]);
     });
 

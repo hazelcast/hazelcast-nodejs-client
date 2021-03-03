@@ -79,7 +79,6 @@ describe('MultiMap Proxy Listener', function () {
         });
     });
 
-
     it('listens for add with value included', function (done) {
         const listener = new Listener('added', done, 'test', 'foo', 'bar', null, null);
 

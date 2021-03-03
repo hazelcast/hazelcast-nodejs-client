@@ -60,7 +60,7 @@ describe('MapPredicateTest', function () {
     });
 
     after(async function () {
-        await client.shutdown()
+        await client.shutdown();
         return RC.terminateCluster(cluster.id);
     });
 
@@ -76,7 +76,7 @@ describe('MapPredicateTest', function () {
     }
 
     async function testPredicate(predicate, expecteds, orderMatters) {
-        let values = await map.valuesWithPredicate(predicate);
+        const values = await map.valuesWithPredicate(predicate);
         if (orderMatters) {
             return expect(values.toArray()).to.deep.equal(expecteds);
         } else {

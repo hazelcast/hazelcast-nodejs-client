@@ -21,7 +21,7 @@ const os = require('os');
 const RC = require('../RC');
 const { Client } = require('../../../');
 const { BuildInfo } = require('../../../lib/BuildInfo');
-const { Statistics } = require("../../../lib/statistics/Statistics");
+const { Statistics } = require('../../../lib/statistics/Statistics');
 const TestUtil = require('../../TestUtil');
 
 async function getClientStatisticsFromServer(cluster, client) {
@@ -205,7 +205,7 @@ describe('StatisticsTest (negative period)', function () {
 
     it('should be enabled via configuration', async function () {
         await TestUtil.promiseWaitMilliseconds(1000);
-        let stats = await getClientStatisticsFromServer(cluster, client);
+        const stats = await getClientStatisticsFromServer(cluster, client);
         expect(stats).to.not.equal('');
     });
 });

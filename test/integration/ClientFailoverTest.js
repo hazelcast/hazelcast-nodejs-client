@@ -48,7 +48,7 @@ function createClusterConfig({ clusterName, partitionCount }) {
 }
 
 function createClientConfig({ clusterName, lifecycleListener, connectTimeoutMs }) {
-    const config =  {
+    const config = {
         clusterName: clusterName
     };
     if (lifecycleListener !== undefined) {

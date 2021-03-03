@@ -21,24 +21,24 @@ const { BuildInfo } = require('../../lib/BuildInfo');
 describe('BuildInfo', function () {
     it('version calculation test', function () {
         assert.equal(-1, BuildInfo.calculateServerVersionFromString(null));
-        assert.equal(-1, BuildInfo.calculateServerVersionFromString(""));
-        assert.equal(-1, BuildInfo.calculateServerVersionFromString("a.3.7.5"));
-        assert.equal(-1, BuildInfo.calculateServerVersionFromString("3.a.5"));
-        assert.equal(-1, BuildInfo.calculateServerVersionFromString("3,7.5"));
-        assert.equal(-1, BuildInfo.calculateServerVersionFromString("3.7,5"));
-        assert.equal(-1, BuildInfo.calculateServerVersionFromString("10.99.RC1"));
+        assert.equal(-1, BuildInfo.calculateServerVersionFromString(''));
+        assert.equal(-1, BuildInfo.calculateServerVersionFromString('a.3.7.5'));
+        assert.equal(-1, BuildInfo.calculateServerVersionFromString('3.a.5'));
+        assert.equal(-1, BuildInfo.calculateServerVersionFromString('3,7.5'));
+        assert.equal(-1, BuildInfo.calculateServerVersionFromString('3.7,5'));
+        assert.equal(-1, BuildInfo.calculateServerVersionFromString('10.99.RC1'));
 
         assert.equal(30700, BuildInfo.calculateServerVersion(3, 7, 0));
         assert.equal(30702, BuildInfo.calculateServerVersion(3, 7, 2));
         assert.equal(19930, BuildInfo.calculateServerVersion(1, 99, 30));
 
-        assert.equal(30700, BuildInfo.calculateServerVersionFromString("3.7"));
-        assert.equal(30700, BuildInfo.calculateServerVersionFromString("3.7-SNAPSHOT"));
-        assert.equal(30702, BuildInfo.calculateServerVersionFromString("3.7.2"));
-        assert.equal(30702, BuildInfo.calculateServerVersionFromString("3.7.2-SNAPSHOT"));
-        assert.equal(109902, BuildInfo.calculateServerVersionFromString("10.99.2-SNAPSHOT"));
-        assert.equal(19930, BuildInfo.calculateServerVersionFromString("1.99.30"));
-        assert.equal(109930, BuildInfo.calculateServerVersionFromString("10.99.30-SNAPSHOT"));
-        assert.equal(109900, BuildInfo.calculateServerVersionFromString("10.99-RC1"));
+        assert.equal(30700, BuildInfo.calculateServerVersionFromString('3.7'));
+        assert.equal(30700, BuildInfo.calculateServerVersionFromString('3.7-SNAPSHOT'));
+        assert.equal(30702, BuildInfo.calculateServerVersionFromString('3.7.2'));
+        assert.equal(30702, BuildInfo.calculateServerVersionFromString('3.7.2-SNAPSHOT'));
+        assert.equal(109902, BuildInfo.calculateServerVersionFromString('10.99.2-SNAPSHOT'));
+        assert.equal(19930, BuildInfo.calculateServerVersionFromString('1.99.30'));
+        assert.equal(109930, BuildInfo.calculateServerVersionFromString('10.99.30-SNAPSHOT'));
+        assert.equal(109900, BuildInfo.calculateServerVersionFromString('10.99-RC1'));
     });
 });

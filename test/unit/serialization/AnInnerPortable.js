@@ -40,6 +40,6 @@ AnInnerPortable.prototype.equals = function (other) {
     if (this.aFloat > other.aFloat + Number.EPSILON || this.aFloat < other.aFloat - Number.EPSILON)
         return false;
     return true;
-}
+};
 
 module.exports = AnInnerPortable;
