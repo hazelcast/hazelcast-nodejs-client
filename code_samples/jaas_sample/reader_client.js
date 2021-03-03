@@ -37,7 +37,7 @@ const { usernamePasswordCredentialsFactory } = require('./user_pass_cred_factory
         console.log('Reader can read from map:', value);
         try {
             await readerMap.put('anotherKey', 'anotherValue'); // Should reject
-        } catch(err) {
+        } catch (err) {
             console.log('Reader cannot put to map. Reason:', err);
         }
 

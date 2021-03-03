@@ -34,7 +34,7 @@ describe('AtomicReferenceTest', function () {
     let ref;
 
     before(async function () {
-        cluster = await RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_cpsubsystem.xml', 'utf8'))
+        cluster = await RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_cpsubsystem.xml', 'utf8'));
         await Promise.all([
             RC.startMember(cluster.id),
             RC.startMember(cluster.id),
@@ -88,7 +88,7 @@ describe('AtomicReferenceTest', function () {
     it('compareAndSet: should not succeed on expected value mismatch', async function () {
         await ref.set('foo');
 
-        let result = await ref.compareAndSet(42, 'bar');
+        const result = await ref.compareAndSet(42, 'bar');
         expect(result).to.be.false;
     });
 

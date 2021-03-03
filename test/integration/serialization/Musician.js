@@ -30,7 +30,7 @@ MusicianSerializer.prototype.write = function (objectDataOutput, object) {
     for (let i = 0; i < object.name.length; i++) {
         objectDataOutput.writeInt(object.name.charCodeAt(i));
     }
-}
+};
 
 MusicianSerializer.prototype.read = function (objectDataInput) {
     const len = objectDataInput.readInt();
@@ -39,7 +39,7 @@ MusicianSerializer.prototype.read = function (objectDataInput) {
         name = name + String.fromCharCode(objectDataInput.readInt());
     }
     return new Musician(name);
-}
+};
 
 exports.MusicianSerializer = MusicianSerializer;
 exports.Musician = Musician;

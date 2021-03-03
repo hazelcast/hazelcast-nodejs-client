@@ -44,7 +44,7 @@ describe('SemaphoreCommonTest', function () {
     }
 
     before(async function () {
-        cluster = await RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_cpsubsystem.xml', 'utf8'))
+        cluster = await RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_cpsubsystem.xml', 'utf8'));
         await Promise.all([
             RC.startMember(cluster.id),
             RC.startMember(cluster.id),
@@ -230,6 +230,6 @@ describe('SemaphoreCommonTest', function () {
                 const drained = await semaphore.drainPermits();
                 expect(drained).to.be.equal(0);
             });
-        })
+        });
     }
 });

@@ -40,6 +40,7 @@ module.exports = {
         '@typescript-eslint/no-unused-vars': [ 'error', { args: 'none' } ],
         'no-prototype-builtins': 'off',
         'prefer-rest-params': 'off',
-        'max-len': [ 'error', 130, 4 ]
+        'max-len': [ 'error', 130, 4 ],
+        'quotes': ['error', 'single'],
     }
 };
