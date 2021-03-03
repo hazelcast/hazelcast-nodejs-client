@@ -78,7 +78,6 @@
             "CallExpression": {
                 "arguments": 1
             },
-            "SwitchCase": 1,
             "VariableDeclarator": "off",
             "outerIIFEBody": "off",
             "MemberExpression": "off",
@@ -90,7 +89,12 @@
             },
             "ArrayExpression": "off",
             "ObjectExpression": "off",
-            "ImportDeclaration": "off"
+            "ImportDeclaration": "off",
+            "ignoredNodes": [
+                "SwitchCase",
+                "FunctionDeclaration > BlockStatement.body",
+                "FunctionExpression > BlockStatement.body"
+            ]
         }]
     }
 }

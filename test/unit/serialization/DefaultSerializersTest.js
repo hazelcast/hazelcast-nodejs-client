@@ -74,11 +74,12 @@ describe('DefaultSerializersTest', function () {
 
     parameters.forEach(function (obj) {
         it('type: ' + typeof obj + ', isArray: ' + Array.isArray(obj) + ', value: ' + JSON.stringify(obj), function () {
-            const config = new SerializationConfigImpl();
-            const serializationService = new SerializationServiceV1(config);
-            const serialized = serializationService.toData(obj);
-            expect(serializationService.toObject(serialized)).to.deep.equal(obj);
-        });
+                const config = new SerializationConfigImpl();
+                const serializationService = new SerializationServiceV1(config);
+                const serialized = serializationService.toData(obj);
+                expect(serializationService.toObject(serialized)).to.deep.equal(obj);
+            }
+        );
     });
 
     const defaultNumberTypes = [
