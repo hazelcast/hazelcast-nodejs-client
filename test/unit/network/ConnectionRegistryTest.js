@@ -15,9 +15,13 @@
  */
 'use strict';
 
-const { expect } = require('chai');
+const sinonChai = require('sinon-chai');
+const chai = require('chai');
 const sinon = require('sinon');
+
 const sandbox = sinon.createSandbox();
+const expect = chai.expect;
+chai.use(sinonChai);
 
 const { ConnectionRegistryImpl } = require('../../../lib/network/ConnectionManager');
 const { Connection } = require('../../../lib/network/Connection');
@@ -50,6 +54,26 @@ describe('ConnectionRegistryTest', function () {
             connectionRegistry.getRandomConnection();
 
             expect(loadBalancerStub.next.called).to.be.true;
+        });
+
+        it('should use member uuid returned by load balancer to get connection in smart mode', function () {
+            const loadBalancerStub = sandbox.stub(RoundRobinLB.prototype);
+
+            const member = {
+                uuid: UuidUtil.generate()
+            };
+            const connectionRegistry = new ConnectionRegistryImpl(
+                new ConnectionStrategyConfigImpl(),
+                true,
+                loadBalancerStub
+            );
+
+            const spy = sandbox.spy(ConnectionRegistryImpl.prototype, 'getConnection');
+            loadBalancerStub.next.returns(member);
+
+            connectionRegistry.getRandomConnection();
+
+            expect(spy).to.have.been.calledOnceWithExactly(member.uuid);
         });
 
         it('should return first active connection in non-smart mode without using load balancer',
