@@ -233,7 +233,7 @@ describe('ConfigBuilderTest', function () {
         expect(flakeIdConfigs['flakeid2'].name).to.equal('flakeid2');
         expect(flakeIdConfigs['flakeid2'].prefetchCount).to.equal(1234);
         expect(1900000).to.be.equal(flakeIdConfigs['flakeid2'].prefetchValidityMillis);
-    })
+    });
 
     it('loadBalancer', function () {
         const loadBalancer = fullConfig.loadBalancer;

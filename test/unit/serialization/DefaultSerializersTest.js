@@ -101,7 +101,7 @@ describe('DefaultSerializersTest', function () {
             const serializationService = new SerializationServiceV1(config);
             const serialized = serializationService.toData(num);
             expect(serializationService.toObject(serialized)).to.deep.equal(num);
-        })
+        });
     });
 
     defaultNumberTypes.forEach(function (type) {
@@ -115,6 +115,6 @@ describe('DefaultSerializersTest', function () {
             const serializationService = new SerializationServiceV1(config);
             const serialized = serializationService.toData(nums);
             expect(serializationService.toObject(serialized)).to.deep.equal(nums);
-        })
+        });
     });
 });

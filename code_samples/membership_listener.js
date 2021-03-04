@@ -28,7 +28,7 @@ const { Client } = require('hazelcast-client');
             memberRemoved: (event) => {
                 console.log('Member Removed:', event.member.address);
             }
-        }
+        };
         // When a member is added and removed, the listener will be triggered
         client.getClusterService().addMembershipListener(membershipListener);
     } catch (err) {

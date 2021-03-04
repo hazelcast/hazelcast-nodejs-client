@@ -45,7 +45,7 @@ describe('DirectWriterTest', function () {
             mockSocket.emit('data', data);
         });
         queue = new DirectWriter(mockSocket);
-    }
+    };
 
     const setUpWriteFailure = (err) => {
         mockSocket = new Socket({});
@@ -53,7 +53,7 @@ describe('DirectWriterTest', function () {
             cb(err);
         });
         queue = new DirectWriter(mockSocket);
-    }
+    };
 
     it('writes single message into socket', function(done) {
         setUpWriteSuccess();

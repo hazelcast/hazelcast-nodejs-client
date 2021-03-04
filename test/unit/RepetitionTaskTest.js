@@ -16,7 +16,7 @@
 'use strict';
 
 const { expect } = require('chai');
-const Util = require("../../lib/util/Util");
+const Util = require('../../lib/util/Util');
 const TestUtil = require('../TestUtil');
 
 describe('RepetitionTaskTest', function () {

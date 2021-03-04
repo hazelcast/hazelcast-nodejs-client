@@ -110,7 +110,7 @@ describe('BinaryCompatibilityTest', function () {
         ];
         cfg.isBigEndian = isBigEndian;
         cfg.defaultNumberType = defaultNumberType;
-        return new SerializationServiceV1(cfg)
+        return new SerializationServiceV1(cfg);
     }
 
     before(function () {
@@ -145,12 +145,14 @@ describe('BinaryCompatibilityTest', function () {
                     });
 
                     if (!ReferenceObjects.skipOnSerialize[varName]) {
-                        it(varName + '-' + convertEndiannesToByteOrder(isBigEndian) + '-' + version + ' serialize deserialize', function () {
-                            const service = createSerializationService(isBigEndian, stripArticle(varName).toLowerCase());
-                            const data = service.toData(object);
-                            const deserialized = service.toObject(data);
-                            expectAlmostEqual(deserialized, object);
-                        });
+                        it(varName + '-' + convertEndiannesToByteOrder(isBigEndian) + '-' + version + ' serialize deserialize',
+                            function () {
+                                const service = createSerializationService(isBigEndian, stripArticle(varName).toLowerCase());
+                                const data = service.toData(object);
+                                const deserialized = service.toObject(data);
+                                expectAlmostEqual(deserialized, object);
+                            }
+                        );
                     }
                 });
             });

@@ -1,0 +1,100 @@
+{
+    "env": {
+        "commonjs": true,
+        "node": true,
+        "es2017": true
+    },
+    "extends": "eslint:recommended",
+    "rules": {
+        "arrow-spacing": [
+            "warn",
+            {
+                "after": true,
+                "before": true
+            }
+        ],
+        "strict": "error",
+        "block-spacing": "warn",
+        "brace-style": [
+            "warn",
+            "1tbs"
+        ],
+        "camelcase": "warn",
+        "comma-spacing": [
+            "warn",
+            {
+                "after": true,
+                "before": false
+            }
+        ],
+        "comma-style": [
+            "warn",
+            "last"
+        ],
+        "eol-last": "error",
+        "func-call-spacing": "warn",
+        "keyword-spacing": [
+            "error",
+            {
+                "after": true,
+                "before": true
+            }
+        ],
+        "linebreak-style": [
+            "warn",
+            "unix"
+        ],
+        "max-len": [
+            "warn",
+            {
+                "code": 120
+            }
+        ],
+        "prefer-const": "warn",
+        "quotes": [
+            "error",
+            "single"
+        ],
+        "semi": "warn",
+        "semi-style": [
+            "error",
+            "last"
+        ],
+        "space-before-blocks": "warn",
+        "spaced-comment": [
+            "warn",
+            "always"
+        ],
+        "no-trailing-spaces": "warn",
+        "no-multi-spaces": "warn",
+        "no-multiple-empty-lines": [
+            "warn",
+            {
+                "max": 1
+            }
+        ],
+        "no-useless-concat": "error",
+        "indent": ["warn", 4, {
+            "CallExpression": {
+                "arguments": 1
+            },
+            "VariableDeclarator": "off",
+            "outerIIFEBody": "off",
+            "MemberExpression": "off",
+            "FunctionDeclaration": {
+                "parameters": "off"
+            },
+            "FunctionExpression": {
+                "parameters": "off"
+            },
+            "ArrayExpression": "off",
+            "ObjectExpression": "off",
+            "ImportDeclaration": "off",
+            "ignoredNodes": [
+                "SwitchCase",
+                "FunctionDeclaration > BlockStatement.body",
+                "FunctionExpression > BlockStatement.body"
+            ]
+        }]
+    }
+}

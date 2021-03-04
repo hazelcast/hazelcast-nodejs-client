@@ -64,7 +64,7 @@ describe('HazelcastCloudProviderTest', function () {
     it('loadAddresses_whenErrorIsThrown', async function () {
         HazelcastCloudDiscovery.prototype.discoverNodes.restore();
         sandbox.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes')
-            .callsFake(()  => Promise.reject(new IllegalStateError('Expected exception')));
+            .callsFake(() => Promise.reject(new IllegalStateError('Expected exception')));
 
         const addresses = await provider.loadAddresses();
         expect(addresses.primary).to.have.lengthOf(0);

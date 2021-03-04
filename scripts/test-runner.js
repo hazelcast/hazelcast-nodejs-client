@@ -3,6 +3,7 @@ const fs = require('fs');
 const os = require('os');
 const net = require('net');
 const {spawnSync, spawn} = require('child_process');
+
 const {
     HAZELCAST_RC_VERSION,
     HAZELCAST_TEST_VERSION,
@@ -48,7 +49,8 @@ const isAddressReachable = (host, port, timeoutMs) => {
             resolve(true);
         });
     });
-}
+};
+
 const startRC = async (background) => {
     console.log('Starting Hazelcast Remote Controller ... oss ...');
     if (ON_WINDOWS) {
@@ -57,67 +59,61 @@ const startRC = async (background) => {
                 'start /min "hazelcast-remote-controller" cmd /c '
               + `java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} -cp ${CLASSPATH} `
               + 'com.hazelcast.remotecontroller.Main --use-simple-server> rc_stdout.txt 2>rc_stderr.txt', [], {
-                stdio: 'inherit',
-                shell: true
-            });
+                    stdio: 'inherit',
+                    shell: true
+                }
+            );
         } else {
-            try {
-                const outFD = fs.openSync('rc_stdout.txt', 'w');
-                const errFD = fs.openSync('rc_stderr.txt', 'w');
-                rcProcess = spawn('java', [
-                    `-Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY}`,
-                    '-cp',
-                    CLASSPATH,
-                    'com.hazelcast.remotecontroller.Main',
-                    '--use-simple-server'
-                ], {
-                    stdio: [
-                        'ignore',
-                        outFD,
-                        errFD
-                    ]
-                });
-                rcProcess.on('close', () => {
-                    fs.closeSync(outFD);
-                    fs.closeSync(errFD);
-                });
-            } catch (err) {
-                throw err;
-            }
+            const outFD = fs.openSync('rc_stdout.txt', 'w');
+            const errFD = fs.openSync('rc_stderr.txt', 'w');
+            rcProcess = spawn('java', [
+                `-Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY}`,
+                '-cp',
+                CLASSPATH,
+                'com.hazelcast.remotecontroller.Main',
+                '--use-simple-server'
+            ], {
+                stdio: [
+                    'ignore',
+                    outFD,
+                    errFD
+                ]
+            });
+            rcProcess.on('close', () => {
+                fs.closeSync(outFD);
+                fs.closeSync(errFD);
+            });
         }
     } else {
         if (background) {
             rcProcess = spawn(
-                  `nohup java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} `
-                + `-cp ${CLASSPATH} com.hazelcast.remotecontroller.Main --use-simple-server > rc_stdout.log `
-                + '2> rc_stderr.log &', [], {
-                stdio: 'ignore',
-                shell: true
-            });
+                `nohup java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} `
+              + `-cp ${CLASSPATH} com.hazelcast.remotecontroller.Main --use-simple-server > rc_stdout.log `
+              + '2> rc_stderr.log &', [], {
+                    stdio: 'ignore',
+                    shell: true
+                }
+            );
         } else {
-            try {
-                const outFD = fs.openSync('rc_stdout.log', 'w');
-                const errFD = fs.openSync('rc_stderr.log', 'w');
-                rcProcess = spawn('java', [
-                    `-Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY}`,
-                    '-cp',
-                    CLASSPATH,
-                    'com.hazelcast.remotecontroller.Main',
-                    '--use-simple-server'
-                ], {
-                    stdio: [
-                        'ignore',
-                        outFD,
-                        errFD
-                    ]
-                });
-                rcProcess.on('close', () => {
-                    fs.closeSync(outFD);
-                    fs.closeSync(errFD);
-                });
-            } catch (err) {
-                throw err;
-            }
+            const outFD = fs.openSync('rc_stdout.log', 'w');
+            const errFD = fs.openSync('rc_stderr.log', 'w');
+            rcProcess = spawn('java', [
+                `-Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY}`,
+                '-cp',
+                CLASSPATH,
+                'com.hazelcast.remotecontroller.Main',
+                '--use-simple-server'
+            ], {
+                stdio: [
+                    'ignore',
+                    outFD,
+                    errFD
+                ]
+            });
+            rcProcess.on('close', () => {
+                fs.closeSync(outFD);
+                fs.closeSync(errFD);
+            });
         }
     }
 
@@ -134,7 +130,8 @@ const startRC = async (background) => {
         await new Promise(r => setTimeout(r, 1000));
     }
     throw `Could not reach to Hazelcast Remote Controller (127.0.0.1:9701) after trying ${retryCount} times.`;
-}
+};
+
 const shutdownProcesses = () => {
     console.log('Stopping remote controller and test processes...');
     shutdownRC();
@@ -144,18 +141,19 @@ const shutdownProcesses = () => {
         if (testProcess && testProcess.exitCode === null) testProcess.kill('SIGKILL');
     }
 };
+
 const shutdownRC = () => {
     if (ON_WINDOWS) {
         spawnSync('taskkill', ['/pid', rcProcess.pid, '/f', '/t']);
     } else {
         if (rcProcess && rcProcess.exitCode === null) rcProcess.kill('SIGKILL');
     }
-}
+};
 
 if (process.argv.length === 3 || process.argv.length === 4) {
     if (process.argv[2] === 'unit') {
         if (process.argv.length === 4) {
-            testCommand = `node node_modules/mocha/bin/mocha --recursive -g ${process.argv[3]} "test/unit/**/*.js"`;
+            testCommand = `node node_modules/mocha/bin/mocha --recursive -g "${process.argv[3]}" "test/unit/**/*.js"`;
         } else {
             testCommand = 'node node_modules/mocha/bin/mocha "test/unit/**/*.js"';
         }
@@ -163,14 +161,14 @@ if (process.argv.length === 3 || process.argv.length === 4) {
     } else if (process.argv[2] === 'integration') {
         if (process.argv.length === 4) {
             testCommand = 'node node_modules/mocha/bin/mocha --recursive -g ' +
-                          `${process.argv[3]} "test/integration/**/*.js"`;
+                          `"${process.argv[3]}" "test/integration/**/*.js"`;
         } else {
             testCommand = 'node node_modules/mocha/bin/mocha "test/integration/**/*.js"';
         }
         testType = 'integration';
     } else if (process.argv[2] === 'all') {
         if (process.argv.length === 4) {
-            testCommand = `node node_modules/mocha/bin/mocha --recursive -g ${process.argv[3]} "test/**/*.js"`;
+            testCommand = `node node_modules/mocha/bin/mocha --recursive -g "${process.argv[3]}" "test/**/*.js"`;
         } else {
             testCommand = 'node node_modules/mocha/bin/mocha "test/**/*.js"';
         }
@@ -198,6 +196,7 @@ if (!fs.existsSync('./lib')) {
         shell: true
     });
 }
+
 // If running unit test, no need to start rc.
 if (testType === 'unit') {
     console.log(`Running unit tests... Test command: ${testCommand}`);
@@ -207,6 +206,7 @@ if (testType === 'unit') {
     });
     process.exit(0);
 }
+
 // For other tests, download rc files if needed.
 try {
     downloadRC();
