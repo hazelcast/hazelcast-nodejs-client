@@ -46,12 +46,14 @@ describe('ConnectionRegistryTest', function () {
                 true,
                 loadBalancerStub
             );
+
             connectionRegistry.getRandomConnection();
+
             expect(loadBalancerStub.next.called).to.be.true;
         });
 
         it('should return first active connection in non-smart mode without using load balancer',
-        function () {
+            function () {
                 const loadBalancerStub = sandbox.stub(RoundRobinLB.prototype);
                 const connectionRegistry = new ConnectionRegistryImpl(
                     new ConnectionStrategyConfigImpl(),
@@ -59,22 +61,27 @@ describe('ConnectionRegistryTest', function () {
                     loadBalancerStub
                 );
 
-                const firstConnection = new sinon.createStubInstance(Connection);
+                const firstConnection = {};
                 connectionRegistry.setConnection(UuidUtil.generate(), firstConnection);
-                connectionRegistry.setConnection(UuidUtil.generate(), new sinon.createStubInstance(Connection));
-                connectionRegistry.setConnection(UuidUtil.generate(), new sinon.createStubInstance(Connection));
+                connectionRegistry.setConnection(UuidUtil.generate(), {});
+                connectionRegistry.setConnection(UuidUtil.generate(), {});
 
-                const randomConnection = connectionRegistry.getRandomConnection();
+                const connection = connectionRegistry.getRandomConnection();
+                const otherConnection = connectionRegistry.getRandomConnection();
+                const anotherConnection = connectionRegistry.getRandomConnection();
 
-                expect(randomConnection).to.be.equal(firstConnection);
+                expect(connection).to.be.equal(firstConnection);
+                expect(otherConnection).to.be.equal(firstConnection);
+                expect(anotherConnection).to.be.equal(firstConnection);
+
                 expect(loadBalancerStub.next.called).to.be.false;
             }
         );
     });
 
     describe('checkIfInvocationAllowed', function () {
-        it('returns null when ConnectionState=INITIALIZED_ON_CLUSTER and there are some active connections',
-        function () {
+        it('should return null when ConnectionState=INITIALIZED_ON_CLUSTER and there are some active connections',
+            function () {
                 const connectionRegistry = new ConnectionRegistryImpl(
                     new ConnectionStrategyConfigImpl(),
                     false,
@@ -88,7 +95,7 @@ describe('ConnectionRegistryTest', function () {
             }
         );
 
-        it('returns ClientOfflineError when ConnectionState=INITIAL and asyncStart=true', function () {
+        it('should return ClientOfflineError when ConnectionState=INITIAL and asyncStart=true', function () {
             const connectionStrategyConfig = new ConnectionStrategyConfigImpl();
             connectionStrategyConfig.asyncStart = true;
 
@@ -103,7 +110,7 @@ describe('ConnectionRegistryTest', function () {
             expect(connectionRegistry.checkIfInvocationAllowed()).to.be.instanceof(ClientOfflineError);
         });
 
-        it('returns IOError when ConnectionState=INITIAL and asyncStart=false', function () {
+        it('should return IOError when ConnectionState=INITIAL and asyncStart=false', function () {
             const connectionStrategyConfig = new ConnectionStrategyConfigImpl();
             connectionStrategyConfig.asyncStart = false;
 
@@ -118,8 +125,8 @@ describe('ConnectionRegistryTest', function () {
             expect(connectionRegistry.checkIfInvocationAllowed()).to.be.instanceof(IOError);
         });
 
-        it('returns ClientOfflineError when reconnectMode=ReconnectMode.ASYNC mode, '
-              + 'ConnectionState=INITIALIZED_ON_CLUSTER and there are no connections ',
+        it('should return ClientOfflineError when reconnectMode=ReconnectMode.ASYNC mode, '
+         + 'ConnectionState=INITIALIZED_ON_CLUSTER and there are no connections',
         function () {
                 const connectionStrategyConfig = new ConnectionStrategyConfigImpl();
                 connectionStrategyConfig.reconnectMode = ReconnectMode.ASYNC;
@@ -133,7 +140,6 @@ describe('ConnectionRegistryTest', function () {
                 connectionRegistry.setConnectionState(connectionState.INITIALIZED_ON_CLUSTER);
 
                 expect(connectionRegistry.checkIfInvocationAllowed()).to.be.instanceof(ClientOfflineError);
-            }
-        );
+        });
     });
 });
