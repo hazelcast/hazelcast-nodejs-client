@@ -28,7 +28,6 @@ const { CPSubsystemImpl } = require('../../../../lib/CPSubsystem');
 const { InvocationService } = require('../../../../lib/invocation/InvocationService');
 const { SerializationServiceV1 } = require('../../../../lib/serialization/SerializationService');
 
-
 describe('SemaphoreProxyCommonTest', function () {
 
     let cpSessionManagerStub;
