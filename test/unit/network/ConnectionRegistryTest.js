@@ -104,7 +104,7 @@ describe('ConnectionRegistryTest', function () {
     });
 
     describe('checkIfInvocationAllowed', function () {
-        it('should return null when ConnectionState=INITIALIZED_ON_CLUSTER and there are some active connections',
+        it('should return null when connection state is INITIALIZED_ON_CLUSTER and there are some active connections',
             function () {
                 const connectionRegistry = new ConnectionRegistryImpl(
                     new ConnectionStrategyConfigImpl(),
@@ -119,7 +119,7 @@ describe('ConnectionRegistryTest', function () {
             }
         );
 
-        it('should return ClientOfflineError when ConnectionState=INITIAL and asyncStart=true', function () {
+        it('should return ClientOfflineError when connection state is INITIAL and with async start', function () {
             const connectionStrategyConfig = new ConnectionStrategyConfigImpl();
             connectionStrategyConfig.asyncStart = true;
 
@@ -134,7 +134,7 @@ describe('ConnectionRegistryTest', function () {
             expect(connectionRegistry.checkIfInvocationAllowed()).to.be.instanceof(ClientOfflineError);
         });
 
-        it('should return IOError when ConnectionState=INITIAL and asyncStart=false', function () {
+        it('should return IOError when connection state is INITIAL and without async start', function () {
             const connectionStrategyConfig = new ConnectionStrategyConfigImpl();
             connectionStrategyConfig.asyncStart = false;
 
@@ -149,8 +149,8 @@ describe('ConnectionRegistryTest', function () {
             expect(connectionRegistry.checkIfInvocationAllowed()).to.be.instanceof(IOError);
         });
 
-        it('should return ClientOfflineError when reconnectMode=ReconnectMode.ASYNC mode, '
-         + 'ConnectionState=INITIALIZED_ON_CLUSTER and there are no connections',
+        it('should return ClientOfflineError when reconnect mode is async, connection state is INITIALIZED_ON_CLUSTER '
+         + 'and there are no connections',
         function () {
                 const connectionStrategyConfig = new ConnectionStrategyConfigImpl();
                 connectionStrategyConfig.reconnectMode = ReconnectMode.ASYNC;
