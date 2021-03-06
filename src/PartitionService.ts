@@ -64,16 +64,11 @@ export class PartitionServiceImpl implements PartitionService {
 
     private partitionTable = new PartitionTable();
     private partitionCount = 0;
-    private readonly logger: ILogger;
-    private readonly serializationService: SerializationService;
 
     constructor(
-        logger: ILogger,
-        serializationService: SerializationService
-    ) {
-        this.logger = logger;
-        this.serializationService = serializationService;
-    }
+        private readonly logger: ILogger,
+        private readonly serializationService: SerializationService
+    ) {}
 
     reset(): void {
         this.partitionTable = new PartitionTable();

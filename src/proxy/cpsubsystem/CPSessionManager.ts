@@ -85,23 +85,16 @@ export const NO_SESSION_ID = Long.fromNumber(-1);
 /** @internal */
 export class CPSessionManager {
 
-    private readonly logger: ILogger;
     // <group_id, session_state> map
     private readonly sessions: Map<string, SessionState> = new Map();
     private heartbeatTask: Task;
     private isShutdown = false;
-    private readonly invocationService: InvocationService;
-    private readonly clientName: string;
 
     constructor(
-        logger: ILogger,
-        clientName: string,
-        invocationService: InvocationService
-    ) {
-        this.logger = logger;
-        this.invocationService = invocationService;
-        this.clientName = clientName;
-    }
+        private readonly logger: ILogger,
+        private readonly clientName: string,
+        private readonly invocationService: InvocationService
+    ) {}
 
     getSessionId(groupId: RaftGroupId): Long {
         const session = this.sessions.get(groupId.getStringId());

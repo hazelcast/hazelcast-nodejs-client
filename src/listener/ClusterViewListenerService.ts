@@ -16,7 +16,7 @@
 /** @ignore *//** */
 
 import {ConnectionManager, ConnectionRegistry} from '../network/ConnectionManager';
-import {PartitionService, PartitionServiceImpl} from '../PartitionService';
+import {PartitionServiceImpl} from '../PartitionService';
 import {ClusterService} from '../invocation/ClusterService';
 import {ILogger} from '../logging/ILogger';
 import {Connection} from '../network/Connection';
@@ -32,29 +32,16 @@ import {Invocation, InvocationService} from '../invocation/InvocationService';
  */
 export class ClusterViewListenerService {
 
-    private readonly clusterService: ClusterService;
-    private readonly connectionManager: ConnectionManager;
-    private readonly partitionService: PartitionServiceImpl;
-    private readonly logger: ILogger;
-    private readonly invocationService: InvocationService;
-    private readonly connectionRegistry: ConnectionRegistry;
     private listenerAddedConnection: Connection;
 
     constructor(
-        logger: ILogger,
-        connectionManager: ConnectionManager,
-        partitionService: PartitionService,
-        clusterService: ClusterService,
-        invocationService: InvocationService,
-        connectionRegistry: ConnectionRegistry
-    ) {
-        this.logger = logger;
-        this.connectionManager = connectionManager;
-        this.partitionService = partitionService as PartitionServiceImpl;
-        this.clusterService = clusterService;
-        this.invocationService = invocationService;
-        this.connectionRegistry = connectionRegistry;
-    }
+        private readonly logger: ILogger,
+        private readonly connectionManager: ConnectionManager,
+        private readonly partitionService: PartitionServiceImpl,
+        private readonly clusterService: ClusterService,
+        private readonly invocationService: InvocationService,
+        private readonly connectionRegistry: ConnectionRegistry
+    ) {}
 
     public start(): void {
         this.connectionManager.on('connectionAdded', this.connectionAdded.bind(this));

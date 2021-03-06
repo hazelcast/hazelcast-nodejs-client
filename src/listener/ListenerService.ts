@@ -35,27 +35,16 @@ import {ConnectionManager, ConnectionRegistry} from '../network/ConnectionManage
 /** @internal */
 export class ListenerService {
 
-    private readonly connectionManager: ConnectionManager;
-    private readonly invocationService: InvocationService;
-    private readonly logger: ILogger;
-    private readonly isSmartService: boolean;
-
     private readonly activeRegistrations: Map<string, Map<Connection, ClientEventRegistration>>;
     private readonly userKeyInformation: Map<string, RegistrationKey>;
-    private readonly connectionRegistry: ConnectionRegistry;
 
     constructor(
-        logger: ILogger,
-        isSmartService: boolean,
-        connectionManager: ConnectionManager,
-        invocationService: InvocationService,
-        connectionRegistry: ConnectionRegistry
+        private readonly logger: ILogger,
+        private readonly isSmartService: boolean,
+        private readonly connectionManager: ConnectionManager,
+        private readonly invocationService: InvocationService,
+        private readonly connectionRegistry: ConnectionRegistry
     ) {
-        this.connectionRegistry = connectionRegistry;
-        this.connectionManager = connectionManager;
-        this.invocationService = invocationService;
-        this.logger = logger;
-        this.isSmartService = isSmartService;
         this.activeRegistrations = new Map();
         this.userKeyInformation = new Map();
     }

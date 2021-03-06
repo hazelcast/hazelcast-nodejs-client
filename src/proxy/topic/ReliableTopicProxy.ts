@@ -52,13 +52,12 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
     private readonly batchSize: number;
     private readonly runners: { [key: string]: ReliableTopicListenerRunner<E> } = {};
     private readonly overloadPolicy: TopicOverloadPolicy;
-    private readonly logger: ILogger;
     private readonly localAddress: AddressImpl;
 
     constructor(
         serviceName: string,
         name: string,
-        logger: ILogger,
+        private readonly logger: ILogger,
         clientConfig: ClientConfig,
         proxyManager: ProxyManager,
         partitionService: PartitionService,
@@ -81,7 +80,6 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         );
         const connection: Connection = this.connectionRegistry.getRandomConnection();
         this.localAddress = connection != null ? connection.getLocalAddress() : null;
-        this.logger = logger;
         const config = (clientConfig as ClientConfigImpl).getReliableTopicConfig(name);
         this.batchSize = config.readBatchSize;
         this.overloadPolicy = config.overloadPolicy;

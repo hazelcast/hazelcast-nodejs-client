@@ -68,7 +68,6 @@ import {AuthenticationStatus} from '../protocol/AuthenticationStatus';
 import {Invocation, InvocationService} from '../invocation/InvocationService';
 import {PartitionService, PartitionServiceImpl} from '../PartitionService';
 import {AddressProvider} from '../connection/AddressProvider';
-import {ClientFailoverConfig} from '../config';
 import {ClusterService} from '../invocation/ClusterService';
 import {SerializationService} from '../serialization/SerializationService';
 
@@ -290,15 +289,11 @@ interface ClientForConnectionManager {
 export class ConnectionManager extends EventEmitter {
 
     private connectionIdCounter = 0;
-    private readonly logger: ILogger;
-    private readonly client: ClientForConnectionManager;
     private readonly labels: string[];
     private readonly shuffleMemberList: boolean;
     private readonly asyncStart: boolean;
     private readonly reconnectMode: ReconnectMode;
     private readonly smartRoutingEnabled: boolean;
-    private readonly clusterDiscoveryService: ClusterFailoverService;
-    private readonly failoverConfigProvided: boolean;
     private switchingToNextCluster = false;
     private readonly connectionTimeoutMillis: number;
     private readonly heartbeatManager: HeartbeatManager;
@@ -311,53 +306,32 @@ export class ConnectionManager extends EventEmitter {
     private reconnectToMembersTask: Task;
     // contains member UUIDs (strings) for members with in-flight connection attempt
     private readonly connectingMembers = new Set<string>();
-    private readonly clientName: string;
-    private readonly clientConfig: ClientConfig;
-    private readonly partitionService: PartitionService;
-    private readonly serializationService: SerializationService;
-    private readonly lifecycleService: LifecycleService;
-    private readonly clusterService: ClusterService;
-    private readonly invocationService: InvocationService;
-    private readonly connectionRegistry: ConnectionRegistryImpl;
 
     constructor(
-        client: ClientForConnectionManager,
-        clientName: string,
-        clientConfig: ClientConfig,
-        logger: ILogger,
-        partitionService: PartitionService,
-        serializationService: SerializationService,
-        lifecycleService: LifecycleService,
-        loadBalancer: LoadBalancer,
-        clusterFailoverService: ClusterFailoverService,
-        failoverConfig: ClientFailoverConfig,
-        clusterService: ClusterService,
-        invocationService: InvocationService,
-        connectionRegistry: ConnectionRegistryImpl
+        private readonly client: ClientForConnectionManager,
+        private readonly clientName: string,
+        private readonly clientConfig: ClientConfig,
+        private readonly logger: ILogger,
+        private readonly partitionService: PartitionService,
+        private readonly serializationService: SerializationService,
+        private readonly lifecycleService: LifecycleService,
+        private readonly clusterFailoverService: ClusterFailoverService,
+        private readonly failoverConfigProvided: boolean,
+        private readonly clusterService: ClusterService,
+        private readonly invocationService: InvocationService,
+        private readonly connectionRegistry: ConnectionRegistryImpl
     ) {
         super();
-        this.client = client;
-        this.clientConfig = clientConfig;
-        this.clientName = clientName;
-        this.invocationService = invocationService;
-        this.serializationService = serializationService;
-        this.partitionService = partitionService;
-        this.clusterService = clusterService;
-        this.lifecycleService = lifecycleService;
-        this.connectionRegistry = connectionRegistry;
         this.labels = this.clientConfig.clientLabels;
-        this.logger = logger;
         this.connectionTimeoutMillis = this.initConnectionTimeoutMillis();
         this.heartbeatManager = new HeartbeatManager(
-            clientConfig.properties,
+            this.clientConfig.properties,
             this.logger,
             this.connectionRegistry
         );
         this.authenticationTimeout = this.heartbeatManager.getHeartbeatTimeout();
         this.shuffleMemberList = this.clientConfig.properties['hazelcast.client.shuffle.member.list'] as boolean;
         this.smartRoutingEnabled = this.clientConfig.network.smartRouting;
-        this.clusterDiscoveryService = clusterFailoverService;
-        this.failoverConfigProvided = failoverConfig != null;
         this.waitStrategy = this.initWaitStrategy(this.clientConfig as ClientConfigImpl);
         const connectionStrategyConfig = this.clientConfig.connectionStrategy;
         this.asyncStart = connectionStrategyConfig.asyncStart;
@@ -575,14 +549,14 @@ export class ConnectionManager extends EventEmitter {
     }
 
     private doConnectToCluster(): Promise<void> {
-        const ctx = this.clusterDiscoveryService.current();
+        const ctx = this.clusterFailoverService.current();
 
         return this.doConnectToCandidateCluster(ctx)
             .then((connected) => {
                 if (connected) {
                     return true;
                 }
-                return this.clusterDiscoveryService.tryNextCluster(this.cleanupAndTryNextCluster.bind(this));
+                return this.clusterFailoverService.tryNextCluster(this.cleanupAndTryNextCluster.bind(this));
             })
             .then((connected) => {
                 if (connected) {
@@ -852,7 +826,7 @@ export class ConnectionManager extends EventEmitter {
     }
 
     private translateAddress(target: AddressImpl): Promise<AddressImpl> {
-        const ctx = this.clusterDiscoveryService.current()
+        const ctx = this.clusterFailoverService.current()
         const addressProvider = ctx.addressProvider;
         return addressProvider.translate(target)
             .catch((error: Error) => {
@@ -1036,7 +1010,7 @@ export class ConnectionManager extends EventEmitter {
     }
 
     private encodeAuthenticationRequest(): ClientMessage {
-        const ctx = this.clusterDiscoveryService.current();
+        const ctx = this.clusterFailoverService.current();
         const clusterName = ctx.clusterName;
         const customCredentials = ctx.customCredentials;
         const clientVersion = BuildInfo.getClientVersion();
@@ -1086,7 +1060,7 @@ export class ConnectionManager extends EventEmitter {
                 }
             })
             .catch((error: Error) => {
-                const clusterName = this.clusterDiscoveryService.current().clusterName;
+                const clusterName = this.clusterFailoverService.current().clusterName;
                 this.logger.warn('ConnectionManager', 'Failure during sending state to the cluster: '
                     + error.message);
                 if (targetClusterId.equals(this.clusterId)) {

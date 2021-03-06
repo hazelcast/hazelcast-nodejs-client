@@ -29,28 +29,14 @@ import {InvocationService} from '../../invocation/InvocationService';
  */
 export abstract class BaseCPProxy {
 
-    protected readonly proxyName: string;
-    protected readonly serviceName: string;
-    protected readonly groupId: RaftGroupId;
-    protected readonly objectName: string;
-    protected readonly invocationService: InvocationService;
-    protected readonly serializationService: SerializationService;
-
     protected constructor(
-        serviceName: string,
-        groupId: RaftGroupId,
-        proxyName: string,
-        objectName: string,
-        invocationService: InvocationService,
-        serializationService: SerializationService
-    ) {
-        this.serviceName = serviceName;
-        this.groupId = groupId;
-        this.proxyName = proxyName;
-        this.objectName = objectName;
-        this.serializationService = serializationService;
-        this.invocationService = invocationService;
-    }
+        protected readonly serviceName: string,
+        protected readonly groupId: RaftGroupId,
+        protected readonly proxyName: string,
+        protected readonly objectName: string,
+        protected readonly invocationService: InvocationService,
+        protected readonly serializationService: SerializationService
+    ) {}
 
     getPartitionKey(): string {
         throw new UnsupportedOperationError('This operation is not supported by CP Subsystem');

@@ -61,22 +61,16 @@ export class Statistics {
     private static readonly EMPTY_STAT_VALUE: string = '';
     private readonly allGauges: { [name: string]: GaugeDescription } = {};
     private readonly enabled: boolean;
-    private readonly properties: Properties;
-    private readonly logger: ILogger;
-    private readonly invocationService: InvocationService;
-    private readonly clientName: string;
-    private readonly nearCacheManager: NearCacheManager;
-    private readonly connectionRegistry: ConnectionRegistry;
     private task: Task;
     private compressorErrorLogged = false;
 
     constructor(
-        logger: ILogger,
-        properties: Properties,
-        clientName: string,
-        invocationService: InvocationService,
-        nearCacheManager: NearCacheManager,
-        connectionRegistry: ConnectionRegistry
+        private readonly logger: ILogger,
+        private readonly properties: Properties,
+        private readonly clientName: string,
+        private readonly invocationService: InvocationService,
+        private readonly nearCacheManager: NearCacheManager,
+        private readonly connectionRegistry: ConnectionRegistry
     ) {
         this.properties = properties;
         this.enabled = this.properties[Statistics.ENABLED] as boolean;

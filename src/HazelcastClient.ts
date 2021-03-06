@@ -165,7 +165,7 @@ export class HazelcastClient {
         this.invocationService = new InvocationService(
             this.config,
             this.loggingService.getLogger(),
-            this.partitionService,
+            this.partitionService as PartitionServiceImpl,
             this.errorFactory,
             this.lifecycleService,
             this.connectionRegistry
@@ -178,9 +178,8 @@ export class HazelcastClient {
             this.partitionService,
             this.serializationService,
             this.lifecycleService,
-            this.loadBalancer,
             this.clusterFailoverService,
-            this.failoverConfig,
+            this.failoverConfig != null,
             this.clusterService,
             this.invocationService,
             this.connectionRegistry
@@ -217,7 +216,7 @@ export class HazelcastClient {
         this.clusterViewListenerService = new ClusterViewListenerService(
             this.loggingService.getLogger(),
             this.connectionManager,
-            this.partitionService,
+            this.partitionService as PartitionServiceImpl,
             this.clusterService,
             this.invocationService,
             this.connectionRegistry

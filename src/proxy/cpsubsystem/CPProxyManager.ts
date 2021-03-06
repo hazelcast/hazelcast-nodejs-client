@@ -79,19 +79,12 @@ export class CPProxyManager {
     static readonly SEMAPHORE_SERVICE = 'hz:raft:semaphoreService';
 
     private readonly lockProxies: Map<string, FencedLockProxy> = new Map();
-    private readonly invocationService: InvocationService;
-    private readonly serializationService: SerializationService;
-    private readonly cpSessionManager: CPSessionManager;
 
     constructor(
-        invocationService: InvocationService,
-        serializationService: SerializationService,
-        cpSessionManager: CPSessionManager
-    ) {
-        this.invocationService = invocationService;
-        this.serializationService = serializationService;
-        this.cpSessionManager = cpSessionManager;
-    }
+        private readonly invocationService: InvocationService,
+        private readonly serializationService: SerializationService,
+        private readonly cpSessionManager: CPSessionManager
+    ) {}
 
     getOrCreateProxy(proxyName: string, serviceName: string): Promise<DistributedObject> {
         proxyName = withoutDefaultGroupName(proxyName);

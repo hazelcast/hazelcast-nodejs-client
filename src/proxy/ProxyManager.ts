@@ -72,43 +72,20 @@ export class ProxyManager {
 
     public readonly service: { [serviceName: string]: any } = {};
     private readonly proxies = new Map<string, Promise<DistributedObject>>();
-    private readonly clientConfig: ClientConfig;
-    private readonly invocationService: InvocationService;
-    private readonly listenerService: ListenerService;
-    private readonly logger: ILogger;
-    private readonly partitionService: PartitionService
-    private readonly serializationService: SerializationService;
-    private readonly nearCacheManager: NearCacheManager;
-    private readonly getRepairingTask: () => RepairingTask;
-    private readonly clusterService: ClusterService;
-    private readonly lockReferenceIdGenerator: LockReferenceIdGenerator;
-    private readonly connectionRegistry: ConnectionRegistry;
 
     constructor(
-        clientConfig: ClientConfig,
-        logger: ILogger,
-        invocationService: InvocationService,
-        listenerService: ListenerService,
-        partitionService: PartitionService,
-        serializationService: SerializationService,
-        nearCacheManager: NearCacheManager,
-        getRepairingTask: () => RepairingTask,
-        clusterService: ClusterService,
-        lockReferenceIdGenerator: LockReferenceIdGenerator,
-        connectionRegistry: ConnectionRegistry
-    ) {
-        this.invocationService = invocationService;
-        this.clientConfig = clientConfig;
-        this.listenerService = listenerService;
-        this.logger = logger;
-        this.partitionService = partitionService;
-        this.serializationService = serializationService;
-        this.nearCacheManager = nearCacheManager;
-        this.getRepairingTask = getRepairingTask;
-        this.clusterService = clusterService;
-        this.lockReferenceIdGenerator = lockReferenceIdGenerator;
-        this.connectionRegistry = connectionRegistry;
-    }
+        private readonly clientConfig: ClientConfig,
+        private readonly logger: ILogger,
+        private readonly invocationService: InvocationService,
+        private readonly listenerService: ListenerService,
+        private readonly partitionService: PartitionService,
+        private readonly serializationService: SerializationService,
+        private readonly nearCacheManager: NearCacheManager,
+        private readonly getRepairingTask: () => RepairingTask,
+        private readonly clusterService: ClusterService,
+        private readonly lockReferenceIdGenerator: LockReferenceIdGenerator,
+        private readonly connectionRegistry: ConnectionRegistry
+    ) {}
 
     public init(): void {
         this.service[ProxyManager.MAP_SERVICE] = MapProxy;

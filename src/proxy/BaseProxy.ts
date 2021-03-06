@@ -19,12 +19,11 @@ import {BuildInfo} from '../BuildInfo';
 import {Data} from '../serialization/Data';
 import {ClientMessage} from '../protocol/ClientMessage';
 import {UUID} from '../core/UUID';
-import {ClientConfig} from '../config';
 import {ProxyManager} from './ProxyManager';
 import {PartitionService} from '../PartitionService';
 import {InvocationService} from '../invocation/InvocationService';
 import {SerializationService} from '../serialization/SerializationService';
-import {ConnectionManager, ConnectionRegistry} from '../network/ConnectionManager';
+import {ConnectionRegistry} from '../network/ConnectionManager';
 import {ListenerService} from '../listener/ListenerService';
 import {ClusterService} from '../invocation/ClusterService';
 
@@ -34,39 +33,17 @@ import {ClusterService} from '../invocation/ClusterService';
  */
 export abstract class BaseProxy {
 
-    protected readonly name: string;
-    protected readonly serviceName: string;
-    protected readonly proxyManager: ProxyManager;
-    protected readonly partitionService: PartitionService;
-    protected readonly invocationService: InvocationService;
-    protected readonly serializationService: SerializationService;
-    protected readonly connectionManager: ConnectionManager;
-    protected readonly listenerService: ListenerService;
-    protected readonly clusterService: ClusterService;
-    protected readonly clientConfig: ClientConfig;
-    protected readonly connectionRegistry: ConnectionRegistry
-
     constructor(
-        serviceName: string,
-        name: string,
-        proxyManager: ProxyManager,
-        partitionService: PartitionService,
-        invocationService: InvocationService,
-        serializationService: SerializationService,
-        listenerService: ListenerService,
-        clusterService: ClusterService,
-        connectionRegistry: ConnectionRegistry
-    ) {
-        this.name = name;
-        this.serviceName = serviceName;
-        this.proxyManager = proxyManager;
-        this.partitionService = partitionService;
-        this.invocationService = invocationService;
-        this.serializationService = serializationService;
-        this.listenerService = listenerService;
-        this.clusterService = clusterService
-        this.connectionRegistry = connectionRegistry;
-    }
+        protected readonly serviceName: string,
+        protected readonly name: string,
+        protected readonly proxyManager: ProxyManager,
+        protected readonly partitionService: PartitionService,
+        protected readonly invocationService: InvocationService,
+        protected readonly serializationService: SerializationService,
+        protected readonly listenerService: ListenerService,
+        protected readonly clusterService: ClusterService,
+        protected readonly connectionRegistry: ConnectionRegistry
+    ) {}
 
     getPartitionKey(): string {
         return this.name;

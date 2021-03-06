@@ -56,20 +56,18 @@ interface OutputQueueItem {
 /** @internal */
 export class PipelinedWriter extends Writer {
 
-    private readonly socket: net.Socket;
     private queue: OutputQueueItem[] = [];
     private error: Error;
     private scheduled = false;
     private canWrite = true;
-    // coalescing threshold in bytes
-    private readonly threshold: number;
     // reusable buffer for coalescing
     private readonly coalesceBuf: Buffer;
 
-    constructor(socket: net.Socket, threshold: number) {
+    constructor(
+        private readonly socket: net.Socket,
+        private readonly threshold: number // coalescing threshold in bytes
+    ) {
         super();
-        this.socket = socket;
-        this.threshold = threshold;
         this.coalesceBuf = Buffer.allocUnsafe(threshold);
 
         // write queued items on drain event
@@ -178,11 +176,8 @@ export class PipelinedWriter extends Writer {
 /** @internal */
 export class DirectWriter extends Writer {
 
-    private readonly socket: net.Socket;
-
-    constructor(socket: net.Socket) {
+    constructor(private readonly socket: net.Socket) {
         super();
-        this.socket = socket;
     }
 
     write(message: ClientMessage, resolver: DeferredPromise<void>): void {
@@ -293,11 +288,8 @@ export class ClientMessageReader {
 /** @internal */
 export class FragmentedClientMessageHandler {
     private readonly fragmentedMessages = new Map<number, ClientMessage>();
-    private readonly logger: ILogger;
 
-    constructor(logger: ILogger) {
-        this.logger = logger;
-    }
+    constructor(private readonly logger: ILogger) {}
 
     handleFragmentedMessage(clientMessage: ClientMessage, callback: ClientMessageHandler): void {
         const fragmentationFrame = clientMessage.startFrame;
@@ -325,54 +317,42 @@ export class FragmentedClientMessageHandler {
 /** @internal */
 export class Connection {
 
-    private readonly connectionId: number;
-    private remoteAddress: AddressImpl;
     private remoteUuid: UUID;
     private readonly localAddress: AddressImpl;
     private lastReadTimeMillis: number;
     private lastWriteTimeMillis: number;
-    private readonly connectionManager: ConnectionManager;
     private readonly startTime: number = Date.now();
     private closedTime: number;
     private closedReason: string;
     private closedCause: Error;
     private connectedServerVersion: number;
-    private readonly socket: net.Socket;
     private readonly writer: Writer;
     private readonly reader: ClientMessageReader;
-    private readonly logger: ILogger;
     private readonly fragmentedMessageHandler: FragmentedClientMessageHandler;
-    private readonly lifecycleService: LifecycleService;
 
     constructor(
-        connectionManager: ConnectionManager,
+        private readonly connectionManager: ConnectionManager,
         clientConfig: ClientConfig,
-        logger: ILogger,
-        remoteAddress: AddressImpl,
-        socket: net.Socket,
-        connectionId: number,
-        lifecycleService: LifecycleService
+        private readonly logger: ILogger,
+        private remoteAddress: AddressImpl,
+        private readonly socket: net.Socket,
+        private readonly connectionId: number,
+        private readonly lifecycleService: LifecycleService
     ) {
         const enablePipelining = clientConfig.properties[PROPERTY_PIPELINING_ENABLED] as boolean;
         const pipeliningThreshold = clientConfig.properties[PROPERTY_PIPELINING_THRESHOLD] as number;
         const noDelay = clientConfig.properties[PROPERTY_NO_DELAY] as boolean;
-        socket.setNoDelay(noDelay);
+        this.socket.setNoDelay(noDelay);
 
-        this.connectionManager = connectionManager;
-        this.lifecycleService = lifecycleService;
-        this.socket = socket;
-        this.remoteAddress = remoteAddress;
-        this.localAddress = new AddressImpl(socket.localAddress, socket.localPort);
+        this.localAddress = new AddressImpl(this.socket.localAddress, this.socket.localPort);
         this.lastReadTimeMillis = 0;
         this.closedTime = 0;
         this.connectedServerVersion = BuildInfo.UNKNOWN_VERSION_ID;
-        this.writer = enablePipelining ? new PipelinedWriter(socket, pipeliningThreshold) : new DirectWriter(socket);
+        this.writer = enablePipelining ? new PipelinedWriter(this.socket, pipeliningThreshold) : new DirectWriter(this.socket);
         this.writer.on('write', () => {
             this.lastWriteTimeMillis = Date.now();
         });
         this.reader = new ClientMessageReader();
-        this.connectionId = connectionId;
-        this.logger = logger;
         this.fragmentedMessageHandler = new FragmentedClientMessageHandler(this.logger);
     }
 

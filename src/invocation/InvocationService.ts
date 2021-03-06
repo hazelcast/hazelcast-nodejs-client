@@ -33,7 +33,7 @@ import {ClientMessage, IS_BACKUP_AWARE_FLAG} from '../protocol/ClientMessage';
 import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
 import {ClientLocalBackupListenerCodec} from '../codec/ClientLocalBackupListenerCodec';
 import {EXCEPTION_MESSAGE_TYPE} from '../codec/builtin/ErrorsCodec';
-import {PartitionService, PartitionServiceImpl} from '../PartitionService';
+import {PartitionServiceImpl} from '../PartitionService';
 import {
     scheduleWithRepetition,
     cancelRepetitionTask,
@@ -253,30 +253,20 @@ export class InvocationService {
     readonly shouldFailOnIndeterminateState: boolean;
     private readonly operationBackupTimeoutMillis: number;
     private readonly backupAckToClientEnabled: boolean;
-    private readonly logger: ILogger;
-    private readonly partitionService: PartitionServiceImpl;
     private readonly cleanResourcesMillis: number;
     private readonly redoOperation: boolean;
     private correlationCounter = 1;
     private cleanResourcesTask: Task;
     private isShutdown: boolean;
-    private readonly errorFactory: ClientErrorFactory;
-    private readonly lifecycleService: LifecycleService;
-    private readonly connectionRegistry: ConnectionRegistry;
 
     constructor(
         clientConfig: ClientConfig,
-        logger: ILogger,
-        partitionService: PartitionService,
-        errorFactory: ClientErrorFactory,
-        lifecycleService: LifecycleService,
-        connectionRegistry: ConnectionRegistry
+        private readonly logger: ILogger,
+        private readonly partitionService: PartitionServiceImpl,
+        private readonly errorFactory: ClientErrorFactory,
+        private readonly lifecycleService: LifecycleService,
+        private readonly connectionRegistry: ConnectionRegistry
     ) {
-        this.connectionRegistry = connectionRegistry;
-        this.partitionService = partitionService as PartitionServiceImpl;
-        this.logger = logger;
-        this.errorFactory = errorFactory;
-        this.lifecycleService = lifecycleService;
         if (clientConfig.network.smartRouting) {
             this.doInvoke = this.invokeSmart;
         } else {

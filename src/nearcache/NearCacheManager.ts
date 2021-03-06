@@ -22,17 +22,12 @@ import {ClientConfig, ClientConfigImpl} from '../config';
 /** @internal */
 export class NearCacheManager {
 
-    protected readonly serializationService: SerializationService;
     private readonly caches: Map<string, NearCache> = new Map();
-    private readonly clientConfig: ClientConfig;
 
     constructor(
-        clientConfig: ClientConfig,
-        serializationService: SerializationService
-    ) {
-        this.serializationService = serializationService;
-        this.clientConfig = clientConfig;
-    }
+        private readonly clientConfig: ClientConfig,
+        protected readonly serializationService: SerializationService
+    ) {}
 
     public getOrCreateNearCache(name: string): NearCache {
         let nearCache = this.caches.get(name);

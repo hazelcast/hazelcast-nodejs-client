@@ -43,15 +43,11 @@ import {ClusterFailoverService} from '../ClusterFailoverService';
 import {ConnectionRegistry} from '../network/ConnectionManager';
 
 class MemberListSnapshot {
-    version: number;
-    readonly members: Map<string, MemberImpl>;
-    readonly memberList: MemberImpl[];
-
-    constructor(version: number, members: Map<string, MemberImpl>, memberList: MemberImpl[]) {
-        this.version = version;
-        this.members = members;
-        this.memberList = memberList;
-    }
+    constructor(
+        public version: number,
+        public readonly members: Map<string, MemberImpl>,
+        public readonly memberList: MemberImpl[]
+    ) {}
 }
 
 const EMPTY_SNAPSHOT = new MemberListSnapshot(-1, new Map<string, MemberImpl>(), []);
@@ -64,21 +60,16 @@ const INITIAL_MEMBERS_TIMEOUT_IN_MILLIS = 120 * 1000; // 120 seconds
 export class ClusterService implements Cluster {
 
     private readonly listeners: Map<string, MembershipListener> = new Map();
-    private readonly logger: ILogger;
     private readonly translateToAddressProvider: TranslateAddressProvider;
-    private readonly clusterFailoverService: ClusterFailoverService;
     private initialListFetched = deferredPromise<void>();
     private memberListSnapshot = EMPTY_SNAPSHOT;
 
     constructor(
         clientConfig: ClientConfig,
-        logger: ILogger,
-        clusterFailoverService: ClusterFailoverService
+        private readonly logger: ILogger,
+        private readonly clusterFailoverService: ClusterFailoverService
     ) {
-        this.clusterFailoverService = clusterFailoverService;
-        this.logger = logger;
-        this.translateToAddressProvider =
-            new TranslateAddressProvider(clientConfig as ClientConfigImpl, logger);
+        this.translateToAddressProvider = new TranslateAddressProvider(clientConfig as ClientConfigImpl, logger);
     }
 
     /**

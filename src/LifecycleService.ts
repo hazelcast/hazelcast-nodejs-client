@@ -79,12 +79,10 @@ export interface LifecycleService {
 export class LifecycleServiceImpl extends EventEmitter implements LifecycleService {
 
     private active: boolean;
-    private logger: ILogger;
 
-    constructor(lifecycleListeners: Array<(state: LifecycleState) => void>, logger: ILogger) {
+    constructor(lifecycleListeners: Array<(state: LifecycleState) => void>, private logger: ILogger) {
         super();
         this.setMaxListeners(0);
-        this.logger = logger;
         lifecycleListeners.forEach((listener) => {
             this.on(LIFECYCLE_EVENT_NAME, listener);
         });
