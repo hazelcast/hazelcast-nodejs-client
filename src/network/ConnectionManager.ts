@@ -1040,7 +1040,7 @@ export class ConnectionManager extends EventEmitter {
 
     private initializeClientOnCluster(targetClusterId: UUID): void {
         if (!targetClusterId.equals(this.clusterId)) {
-            this.logger.warn('ConnectionManager', 'Will not send connection state to cluster: '
+            this.logger.warn('ConnectionManager', 'Will not send client state to cluster: '
                 + targetClusterId + ', switched to a new cluster: ' + this.clusterId);
             return;
         }
@@ -1048,7 +1048,7 @@ export class ConnectionManager extends EventEmitter {
         this.client.sendStateToCluster()
             .then(() => {
                 if (targetClusterId.equals(this.clusterId)) {
-                    this.logger.trace('ConnectionManager', 'Connection state is sent to cluster: '
+                    this.logger.trace('ConnectionManager', 'Client state is sent to cluster: '
                         + targetClusterId);
 
                     this.connectionRegistry.setConnectionState(ConnectionState.INITIALIZED_ON_CLUSTER);
