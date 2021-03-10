@@ -236,7 +236,6 @@ export class ProxyManager {
                 this.connectionRegistry
             );
         } else if (serviceName === ProxyManager.MULTIMAP_SERVICE){
-            // This call may throw ClientOfflineError for partition specific proxies with async start
             localProxy = new MultiMapProxy(
                 serviceName,
                 name,
@@ -250,7 +249,6 @@ export class ProxyManager {
                 this.connectionRegistry
             );
         } else if (serviceName === ProxyManager.RELIABLETOPIC_SERVICE){
-            // This call may throw ClientOfflineError for partition specific proxies with async start
             localProxy = new ReliableTopicProxy(
                 serviceName,
                 name,
@@ -265,7 +263,6 @@ export class ProxyManager {
                 this.connectionRegistry
             );
         } else if (serviceName === ProxyManager.FLAKEID_SERVICE){
-            // This call may throw ClientOfflineError for partition specific proxies with async start
             localProxy = new FlakeIdGeneratorProxy(
                 serviceName,
                 name,
