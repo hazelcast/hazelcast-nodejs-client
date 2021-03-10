@@ -15,12 +15,7 @@
  */
 'use strict';
 
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
-chai.use(chaiAsPromised);
-
-const expect = chai.expect;
-
+const { expect } = require('chai');
 const RC = require('../RC');
 const { Client } = require('../../../');
 
