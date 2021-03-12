@@ -5,6 +5,7 @@
         "moduleResolution": "node",
         "noImplicitAny": true,
         "alwaysStrict": true,
+        "strictBindCallApply": true,
         "target": "es2016",
         "outDir": "lib",
         "preserveConstEnums": true,
