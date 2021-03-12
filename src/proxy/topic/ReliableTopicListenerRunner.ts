@@ -39,7 +39,7 @@ export class ReliableTopicListenerRunner<E> {
     private cancelled = false;
     private logger: ILogger;
     private proxy: ReliableTopicProxy<E>;
-    private listenerId: string;
+    private readonly listenerId: string;
 
     constructor(listenerId: string,
                 listener: MessageListener<E>,

@@ -31,7 +31,7 @@ export const HEAP_DATA_OVERHEAD: number = DATA_OFFSET;
 /** @internal */
 export class HeapData implements Data {
 
-    private payload: Buffer;
+    private readonly payload: Buffer;
 
     constructor(buffer: Buffer) {
         if (buffer != null && buffer.length > 0 && buffer.length < HEAP_DATA_OVERHEAD) {

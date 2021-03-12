@@ -100,7 +100,7 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
         const handler = (message: ClientMessage): void => {
             SetAddListenerCodec.handle(message, (item: Data, uuid: UUID, eventType: number) => {
                 const responseObject = this.toObject(item);
-                const member = this.client.getClusterService().getMember(uuid);
+                const member = this.clusterService.getMember(uuid);
                 const name = this.name;
                 const itemEvent = new ItemEvent(name, eventType, responseObject, member);
 
@@ -112,11 +112,11 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
             });
         };
         const codec = this.createEntryListener(this.name, includeValue);
-        return this.client.getListenerService().registerListener(codec, handler);
+        return this.listenerService.registerListener(codec, handler);
     }
 
     removeItemListener(registrationId: string): Promise<boolean> {
-        return this.client.getListenerService().deregisterListener(registrationId);
+        return this.listenerService.deregisterListener(registrationId);
     }
 
     private serializeList(input: any[]): Data[] {

@@ -16,7 +16,6 @@
 /** @ignore *//** */
 
 import * as assert from 'assert';
-import {HazelcastClient} from '../HazelcastClient';
 import {
     ClientNotActiveError,
     HazelcastInstanceNotActiveError,
@@ -28,13 +27,12 @@ import {
     TargetNotMemberError,
     UUID
 } from '../core';
-import {ClientConnection} from '../network/ClientConnection';
+import {Connection} from '../network/Connection';
 import {ILogger} from '../logging/ILogger';
 import {ClientMessage, IS_BACKUP_AWARE_FLAG} from '../protocol/ClientMessage';
 import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
 import {ClientLocalBackupListenerCodec} from '../codec/ClientLocalBackupListenerCodec';
 import {EXCEPTION_MESSAGE_TYPE} from '../codec/builtin/ErrorsCodec';
-import {ClientConnectionManager} from '../network/ClientConnectionManager';
 import {PartitionServiceImpl} from '../PartitionService';
 import {
     scheduleWithRepetition,
@@ -43,6 +41,11 @@ import {
     deferredPromise,
     DeferredPromise
 } from '../util/Util';
+import {ClientConfig} from '../config';
+import {ListenerService} from '../listener/ListenerService';
+import {ClientErrorFactory} from '../protocol/ErrorFactory';
+import {LifecycleService} from '../LifecycleService';
+import {ConnectionRegistry} from '../network/ConnectionManager';
 
 const MAX_FAST_INVOCATION_COUNT = 5;
 const PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS = 'hazelcast.client.invocation.retry.pause.millis';
@@ -56,8 +59,6 @@ const PROPERTY_FAIL_ON_INDETERMINATE_STATE = 'hazelcast.client.operation.fail.on
  * @internal
  */
 export class Invocation {
-
-    client: HazelcastClient;
 
     invocationService: InvocationService;
 
@@ -84,12 +85,12 @@ export class Invocation {
     /**
      * Connection of the request. If request is not bound to any specific address, should be set to null.
      */
-    connection: ClientConnection;
+    connection: Connection;
 
     /**
      * Connection on which the request was written. May be different from `connection`.
      */
-    sendConnection: ClientConnection;
+    sendConnection: Connection;
 
     /**
      * Promise managing object.
@@ -129,9 +130,8 @@ export class Invocation {
      */
     urgent = false;
 
-    constructor(client: HazelcastClient, request: ClientMessage, timeoutMillis?: number) {
-        this.client = client;
-        this.invocationService = client.getInvocationService();
+    constructor(invocationService: InvocationService, request: ClientMessage, timeoutMillis?: number) {
+        this.invocationService = invocationService;
         this.deadline = timeoutMillis === undefined
             ? Date.now() + this.invocationService.invocationTimeoutMillis
             : Date.now() + timeoutMillis;
@@ -248,51 +248,48 @@ export class InvocationService {
     private readonly doInvoke: (invocation: Invocation) => void;
     private readonly eventHandlers: Map<number, Invocation> = new Map();
     private readonly pending: Map<number, Invocation> = new Map();
-    private readonly client: HazelcastClient;
     readonly invocationRetryPauseMillis: number;
     readonly invocationTimeoutMillis: number;
     readonly shouldFailOnIndeterminateState: boolean;
     private readonly operationBackupTimeoutMillis: number;
     private readonly backupAckToClientEnabled: boolean;
-    private readonly logger: ILogger;
-    private readonly connectionManager: ClientConnectionManager;
-    private readonly partitionService: PartitionServiceImpl;
     private readonly cleanResourcesMillis: number;
     private readonly redoOperation: boolean;
     private correlationCounter = 1;
     private cleanResourcesTask: Task;
     private isShutdown: boolean;
 
-    constructor(client: HazelcastClient) {
-        this.client = client;
-        this.connectionManager = client.getConnectionManager();
-        this.partitionService = client.getPartitionService() as PartitionServiceImpl;
-        this.logger = this.client.getLoggingService().getLogger();
-        const config = client.getConfig();
-        if (config.network.smartRouting) {
+    constructor(
+        clientConfig: ClientConfig,
+        private readonly logger: ILogger,
+        private readonly partitionService: PartitionServiceImpl,
+        private readonly errorFactory: ClientErrorFactory,
+        private readonly lifecycleService: LifecycleService,
+        private readonly connectionRegistry: ConnectionRegistry
+    ) {
+        if (clientConfig.network.smartRouting) {
             this.doInvoke = this.invokeSmart;
         } else {
             this.doInvoke = this.invokeNonSmart;
         }
         this.invocationRetryPauseMillis =
-            config.properties[PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS] as number;
+            clientConfig.properties[PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS] as number;
         this.invocationTimeoutMillis =
-            config.properties[PROPERTY_INVOCATION_TIMEOUT_MILLIS] as number;
+            clientConfig.properties[PROPERTY_INVOCATION_TIMEOUT_MILLIS] as number;
         this.operationBackupTimeoutMillis =
-            config.properties[PROPERTY_BACKUP_TIMEOUT_MILLIS] as number;
+            clientConfig.properties[PROPERTY_BACKUP_TIMEOUT_MILLIS] as number;
         this.shouldFailOnIndeterminateState =
-            config.properties[PROPERTY_FAIL_ON_INDETERMINATE_STATE] as boolean;
+            clientConfig.properties[PROPERTY_FAIL_ON_INDETERMINATE_STATE] as boolean;
         this.cleanResourcesMillis =
-            config.properties[PROPERTY_CLEAN_RESOURCES_MILLIS] as number;
-        this.redoOperation = config.network.redoOperation;
-        this.backupAckToClientEnabled = config.network.smartRouting && config.backupAckToClientEnabled;
+            clientConfig.properties[PROPERTY_CLEAN_RESOURCES_MILLIS] as number;
+        this.redoOperation = clientConfig.network.redoOperation;
+        this.backupAckToClientEnabled = clientConfig.network.smartRouting && clientConfig.backupAckToClientEnabled;
         this.isShutdown = false;
     }
 
-    start(): Promise<void> {
+    start(listenerService: ListenerService): Promise<void> {
         this.cleanResourcesTask = this.scheduleCleanResourcesTask(this.cleanResourcesMillis);
         if (this.backupAckToClientEnabled) {
-            const listenerService = this.client.getListenerService();
             return listenerService.registerListener(
                     backupListenerCodec,
                     this.backupEventHandler.bind(this)
@@ -356,10 +353,12 @@ export class InvocationService {
      * @param handler called with values returned from server for this invocation.
      * @returns
      */
-    invokeOnConnection(connection: ClientConnection,
-                       request: ClientMessage,
-                       handler?: (...args: any[]) => any): Promise<ClientMessage> {
-        const invocation = new Invocation(this.client, request);
+    invokeOnConnection(
+        connection: Connection,
+        request: ClientMessage,
+        handler?: (...args: any[]) => any
+    ): Promise<ClientMessage> {
+        const invocation = new Invocation(this, request);
         invocation.connection = connection;
         if (handler) {
             invocation.handler = handler;
@@ -374,7 +373,7 @@ export class InvocationService {
     invokeOnPartition(request: ClientMessage,
                       partitionId: number,
                       timeoutMillis?: number): Promise<ClientMessage> {
-        const invocation = new Invocation(this.client, request, timeoutMillis);
+        const invocation = new Invocation(this, request, timeoutMillis);
         invocation.partitionId = partitionId;
         return this.invoke(invocation);
     }
@@ -383,7 +382,7 @@ export class InvocationService {
      * Invokes given invocation on the host with given UUID.
      */
     invokeOnTarget(request: ClientMessage, target: UUID): Promise<ClientMessage> {
-        const invocation = new Invocation(this.client, request);
+        const invocation = new Invocation(this, request);
         invocation.uuid = target;
         return this.invoke(invocation);
     }
@@ -393,7 +392,7 @@ export class InvocationService {
      * Useful when an operation is not bound to any host but a generic operation.
      */
     invokeOnRandomTarget(request: ClientMessage): Promise<ClientMessage> {
-        return this.invoke(new Invocation(this.client, request));
+        return this.invoke(new Invocation(this, request));
     }
 
     /**
@@ -441,7 +440,7 @@ export class InvocationService {
         }
         const messageType = clientMessage.getMessageType();
         if (messageType === EXCEPTION_MESSAGE_TYPE) {
-            const remoteError = this.client.getErrorFactory().createErrorFromClientMessage(clientMessage);
+            const remoteError = this.errorFactory.createErrorFromClientMessage(clientMessage);
             this.notifyError(pendingInvocation, remoteError);
         } else {
             pendingInvocation.notify(clientMessage);
@@ -451,7 +450,7 @@ export class InvocationService {
     private invokeSmart(invocation: Invocation): void {
         invocation.invokeCount++;
         if (!invocation.urgent) {
-            const error = this.connectionManager.checkIfInvocationAllowed();
+            const error = this.connectionRegistry.checkIfInvocationAllowed();
             if (error != null) {
                 this.notifyError(invocation, error);
                 return;
@@ -485,7 +484,7 @@ export class InvocationService {
     private invokeNonSmart(invocation: Invocation): void {
         invocation.invokeCount++;
         if (!invocation.urgent) {
-            const error = this.connectionManager.checkIfInvocationAllowed();
+            const error = this.connectionRegistry.checkIfInvocationAllowed();
             if (error != null) {
                 this.notifyError(invocation, error);
                 return;
@@ -504,7 +503,7 @@ export class InvocationService {
     }
 
     private invokeOnRandomConnection(invocation: Invocation): Promise<void> {
-        const connection = this.connectionManager.getRandomConnection();
+        const connection = this.connectionRegistry.getRandomConnection();
         if (connection == null) {
             return Promise.reject(new IOError('No connection found to invoke'));
         }
@@ -512,7 +511,7 @@ export class InvocationService {
     }
 
     private invokeOnUuid(invocation: Invocation, target: UUID): Promise<void> {
-        const connection = this.connectionManager.getConnection(target);
+        const connection = this.connectionRegistry.getConnection(target);
         if (connection == null) {
             this.logger.trace('InvocationService', `Client is not connected to target: ${target}`);
             return Promise.reject(new IOError('No connection found to invoke'));
@@ -529,7 +528,7 @@ export class InvocationService {
         return this.invokeOnUuid(invocation, partitionOwner);
     }
 
-    private send(invocation: Invocation, connection: ClientConnection): Promise<void> {
+    private send(invocation: Invocation, connection: Connection): Promise<void> {
         assert(connection != null);
         if (this.isShutdown) {
             return Promise.reject(new ClientNotActiveError('Client is shutting down.'));
@@ -568,7 +567,7 @@ export class InvocationService {
      * @returns `true` if invocation is rejected, `false` otherwise
      */
     private rejectIfNotRetryable(invocation: Invocation, error: Error): boolean {
-        if (!this.client.getLifecycleService().isRunning()) {
+        if (!this.lifecycleService.isRunning()) {
             invocation.deferred.reject(new ClientNotActiveError('Client is shutting down.', error));
             return true;
         }

@@ -34,7 +34,7 @@ import {ClientFailoverConfig, ClientFailoverConfigImpl} from './FailoverConfig';
  */
 export class FailoverConfigBuilder {
 
-    private originalConfig: ClientFailoverConfig;
+    private readonly originalConfig: ClientFailoverConfig;
     private effectiveConfig: ClientFailoverConfigImpl = new ClientFailoverConfigImpl();
 
     constructor(failoverConfig?: ClientFailoverConfig) {

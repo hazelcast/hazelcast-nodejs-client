@@ -16,13 +16,13 @@
 /** @ignore *//** */
 
 import {ClientPingCodec} from '../codec/ClientPingCodec';
-import {HazelcastClient} from '../HazelcastClient';
-import {ClientConnection} from './ClientConnection';
+import {Connection} from './Connection';
 import {ILogger} from '../logging/ILogger';
-import {ClientConnectionManager} from './ClientConnectionManager';
+import {ConnectionRegistry} from './ConnectionManager';
 import {cancelRepetitionTask, scheduleWithRepetition, Task} from '../util/Util';
 import {TargetDisconnectedError} from '../core';
-import {Invocation} from '../invocation/InvocationService';
+import {Invocation, InvocationService} from '../invocation/InvocationService';
+import {Properties} from '../config';
 
 const PROPERTY_HEARTBEAT_INTERVAL = 'hazelcast.client.heartbeat.interval';
 const PROPERTY_HEARTBEAT_TIMEOUT = 'hazelcast.client.heartbeat.timeout';
@@ -33,27 +33,29 @@ const PROPERTY_HEARTBEAT_TIMEOUT = 'hazelcast.client.heartbeat.timeout';
  */
 export class HeartbeatManager {
 
-    private client: HazelcastClient;
-    private connectionManager: ClientConnectionManager;
     private readonly heartbeatTimeout: number;
     private readonly heartbeatInterval: number;
     private logger: ILogger;
     private task: Task;
+    private readonly connectionRegistry: ConnectionRegistry;
 
-    constructor(client: HazelcastClient, connectionManager: ClientConnectionManager) {
-        this.client = client;
-        this.connectionManager = connectionManager;
-        this.logger = this.client.getLoggingService().getLogger();
-        this.heartbeatInterval = this.client.getConfig().properties[PROPERTY_HEARTBEAT_INTERVAL] as number;
-        this.heartbeatTimeout = this.client.getConfig().properties[PROPERTY_HEARTBEAT_TIMEOUT] as number;
+    constructor(
+        properties: Properties,
+        logger: ILogger,
+        connectionRegistry: ConnectionRegistry
+    ) {
+        this.connectionRegistry = connectionRegistry;
+        this.logger = logger;
+        this.heartbeatInterval = properties[PROPERTY_HEARTBEAT_INTERVAL] as number;
+        this.heartbeatTimeout = properties[PROPERTY_HEARTBEAT_TIMEOUT] as number;
     }
 
     /**
      * Starts sending periodic heartbeat operations.
      */
-    start(): void {
+    start(invocationService: InvocationService): void {
         this.task = scheduleWithRepetition(
-            this.heartbeatFunction.bind(this), this.heartbeatInterval, this.heartbeatInterval);
+            this.heartbeatFunction.bind(this, invocationService), this.heartbeatInterval, this.heartbeatInterval);
     }
 
     /**
@@ -70,19 +72,18 @@ export class HeartbeatManager {
         return this.heartbeatTimeout;
     }
 
-    private heartbeatFunction(): void {
-        if (!this.connectionManager.isAlive()) {
+    private heartbeatFunction(invocationService: InvocationService): void {
+        if (!this.connectionRegistry.isActive()) {
             return;
         }
 
         const now = Date.now();
-        const activeConnections = this.connectionManager.getActiveConnections();
-        for (const connection of activeConnections) {
-            this.checkConnection(now, connection);
+        for (const connection of this.connectionRegistry.getConnections()) {
+            this.checkConnection(now, connection, invocationService);
         }
     }
 
-    private checkConnection(now: number, connection: ClientConnection): void {
+    private checkConnection(now: number, connection: Connection, invocationService: InvocationService): void {
         if (!connection.isAlive()) {
             return;
         }
@@ -95,9 +96,9 @@ export class HeartbeatManager {
 
         if (now - connection.getLastWriteTimeMillis() > this.heartbeatInterval) {
             const request = ClientPingCodec.encodeRequest();
-            const invocation = new Invocation(this.client, request);
+            const invocation = new Invocation(invocationService, request);
             invocation.connection = connection;
-            this.client.getInvocationService()
+            invocationService
                 .invokeUrgent(invocation)
                 .catch(() => {
                     // No-op

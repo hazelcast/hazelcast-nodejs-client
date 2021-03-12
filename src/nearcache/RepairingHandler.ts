@@ -17,7 +17,7 @@
 
 import * as Long from 'long';
 import {UUID} from '../core/UUID';
-import {PartitionServiceImpl} from '../PartitionService';
+import {PartitionService} from '../PartitionService';
 import {Data} from '../serialization/Data';
 import {MetadataContainer} from './MetadataContainer';
 import {NearCache} from './NearCache';
@@ -26,20 +26,18 @@ import {NearCache} from './NearCache';
 export class RepairingHandler {
 
     private readonly nearCache: NearCache;
-    private readonly partitionCount: number;
-    private readonly partitionService: PartitionServiceImpl;
+    private readonly partitionService: PartitionService;
     private readonly localUuid: UUID;
     private readonly name: string;
-    private containers: MetadataContainer[];
+    private readonly containers: MetadataContainer[];
 
-    constructor(name: string, partitionService: PartitionServiceImpl, nearCache: NearCache, localUuid: UUID) {
+    constructor(name: string, partitionService: PartitionService, nearCache: NearCache, localUuid: UUID) {
         this.nearCache = nearCache;
         this.name = name;
         this.partitionService = partitionService;
-        this.partitionCount = this.partitionService.getPartitionCount();
         this.localUuid = localUuid;
         this.containers = [];
-        for (let i = 0; i < this.partitionCount; i++) {
+        for (let i = 0; i < this.partitionService.getPartitionCount(); i++) {
             this.containers[i] = new MetadataContainer();
         }
     }

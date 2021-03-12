@@ -16,7 +16,7 @@
 /** @ignore *//** */
 
 import {BitsUtil} from '../util/BitsUtil';
-import {ClientConnection} from '../network/ClientConnection';
+import {Connection} from '../network/Connection';
 import {FixSizedTypesCodec} from '../codec/builtin/FixSizedTypesCodec';
 
 const MESSAGE_TYPE_OFFSET = 0;
@@ -136,7 +136,7 @@ export class ClientMessage {
     startFrame: Frame;
     endFrame: Frame;
     private retryable: boolean;
-    private connection: ClientConnection;
+    private connection: Connection;
     private _nextFrame: Frame;
     // cached total length for encode case
     private cachedTotalLength: number;
@@ -241,11 +241,11 @@ export class ClientMessage {
         this.retryable = retryable;
     }
 
-    getConnection(): ClientConnection {
+    getConnection(): Connection {
         return this.connection;
     }
 
-    setConnection(connection: ClientConnection): void {
+    setConnection(connection: Connection): void {
         this.connection = connection;
     }
 

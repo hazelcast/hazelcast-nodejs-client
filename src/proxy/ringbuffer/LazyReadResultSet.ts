@@ -23,10 +23,10 @@ import {ReadResultSet} from '../../core';
 /** @internal */
 export class LazyReadResultSet<T> implements ReadResultSet<T> {
 
-    private readCount: number;
-    private items: any[];
-    private itemSeqs: Long[];
-    private nextSeq: Long;
+    private readonly readCount: number;
+    private readonly items: any[];
+    private readonly itemSeqs: Long[];
+    private readonly nextSeq: Long;
     private serializationService: SerializationService;
 
     constructor(serializationService: SerializationService,

@@ -149,9 +149,9 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
                 const valuesData = ReplicatedMapValuesCodec.decodeResponse(clientMessage);
                 if (comparator) {
                     const desValues = valuesData.map(this.toObject.bind(this));
-                    return new ReadOnlyLazyList(desValues.sort(comparator), this.client.getSerializationService());
+                    return new ReadOnlyLazyList(desValues.sort(comparator), this.serializationService);
                 }
-                return new ReadOnlyLazyList(valuesData, this.client.getSerializationService());
+                return new ReadOnlyLazyList(valuesData, this.serializationService);
             });
     }
 
@@ -180,7 +180,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
     }
 
     removeEntryListener(listenerId: string): Promise<boolean> {
-        return this.client.getListenerService().deregisterListener(listenerId);
+        return this.listenerService.deregisterListener(listenerId);
     }
 
     private addEntryListenerInternal(listener: EntryListener<K, V>, predicate: Predicate,
@@ -188,7 +188,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         const toObject = this.toObject.bind(this);
         const entryEventHandler = (key: Data, value: Data, oldValue: Data, mergingValue: Data,
                                    event: number, uuid: UUID, numberOfAffectedEntries: number): void => {
-            const member = this.client.getClusterService().getMember(uuid);
+            const member = this.clusterService.getMember(uuid);
             const name = this.name;
 
             key = toObject(key);
@@ -240,7 +240,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
             codec = this.createEntryListener(this.name);
             listenerHandler = ReplicatedMapAddEntryListenerCodec.handle;
         }
-        return this.client.getListenerService().registerListener(codec,
+        return this.listenerService.registerListener(codec,
             (m: ClientMessage) => {
                 listenerHandler(m, entryEventHandler, toObject);
             });

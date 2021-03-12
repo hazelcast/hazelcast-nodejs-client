@@ -87,9 +87,9 @@ const defaultPartitionStrategy = (obj: any): number => {
 /** @internal */
 export class SerializationServiceV1 implements SerializationService {
 
-    private registry: { [id: number]: Serializer };
-    private serializerNameToId: { [name: string]: number };
-    private serializationConfig: SerializationConfigImpl;
+    private readonly registry: { [id: number]: Serializer };
+    private readonly serializerNameToId: { [name: string]: number };
+    private readonly serializationConfig: SerializationConfigImpl;
 
     constructor(serializationConfig: SerializationConfigImpl) {
         this.serializationConfig = serializationConfig;

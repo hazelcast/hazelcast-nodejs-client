@@ -76,7 +76,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
                     responseObject = this.toObject(item);
                 }
 
-                const member = this.client.getClusterService().getMember(uuid);
+                const member = this.clusterService.getMember(uuid);
                 const name = this.name;
                 const itemEvent = new ItemEvent(name, eventType, responseObject, member);
 
@@ -88,7 +88,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
             });
         };
         const codec = this.createEntryListener(this.name, includeValue);
-        return this.client.getListenerService().registerListener(codec, handler);
+        return this.listenerService.registerListener(codec, handler);
     }
 
     clear(): Promise<void> {
@@ -177,7 +177,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     removeItemListener(registrationId: string): Promise<boolean> {
-        return this.client.getListenerService().deregisterListener(registrationId);
+        return this.listenerService.deregisterListener(registrationId);
     }
 
     retainAll(items: E[]): Promise<boolean> {

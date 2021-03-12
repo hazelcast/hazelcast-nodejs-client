@@ -15,9 +15,8 @@
  */
 /** @ignore *//** */
 
-import {ClientConnection} from '../network/ClientConnection';
-import {HazelcastClient} from '../HazelcastClient';
-import {ClientConfigImpl} from '../config/Config';
+import {Connection} from '../network/Connection';
+import {ClientConfig, ClientConfigImpl} from '../config/Config';
 import {MemberSelector} from '../core/MemberSelector';
 import {
     assertNotNull,
@@ -26,12 +25,10 @@ import {
 } from '../util/Util';
 import {UuidUtil} from '../util/UuidUtil';
 import {ILogger} from '../logging/ILogger';
-import {ClientConnectionManager} from '../network/ClientConnectionManager';
 import {TranslateAddressProvider} from '../network/TranslateAddressProvider';
 import {
     Cluster,
     MemberImpl,
-    ClientInfo,
     UUID,
     MembershipListener,
     MembershipEvent,
@@ -42,17 +39,15 @@ import {
     TargetDisconnectedError
 } from '../core';
 import {MemberInfo} from '../core/MemberInfo';
+import {ClusterFailoverService} from '../ClusterFailoverService';
+import {ConnectionRegistry} from '../network/ConnectionManager';
 
 class MemberListSnapshot {
-    version: number;
-    readonly members: Map<string, MemberImpl>;
-    readonly memberList: MemberImpl[];
-
-    constructor(version: number, members: Map<string, MemberImpl>, memberList: MemberImpl[]) {
-        this.version = version;
-        this.members = members;
-        this.memberList = memberList;
-    }
+    constructor(
+        public version: number,
+        public readonly members: Map<string, MemberImpl>,
+        public readonly memberList: MemberImpl[]
+    ) {}
 }
 
 const EMPTY_SNAPSHOT = new MemberListSnapshot(-1, new Map<string, MemberImpl>(), []);
@@ -64,23 +59,17 @@ const INITIAL_MEMBERS_TIMEOUT_IN_MILLIS = 120 * 1000; // 120 seconds
  */
 export class ClusterService implements Cluster {
 
-    private readonly client: HazelcastClient;
     private readonly listeners: Map<string, MembershipListener> = new Map();
-    private readonly logger: ILogger;
-    private readonly connectionManager: ClientConnectionManager;
-    private readonly labels: Set<string>;
     private readonly translateToAddressProvider: TranslateAddressProvider;
     private initialListFetched = deferredPromise<void>();
     private memberListSnapshot = EMPTY_SNAPSHOT;
 
-    constructor(client: HazelcastClient) {
-        this.client = client;
-        this.connectionManager = client.getConnectionManager();
-        this.labels = new Set(client.getConfig().clientLabels);
-        const logger = client.getLoggingService().getLogger();
-        this.logger = logger;
-        this.translateToAddressProvider =
-            new TranslateAddressProvider(client.getConfig() as ClientConfigImpl, logger);
+    constructor(
+        clientConfig: ClientConfig,
+        private readonly logger: ILogger,
+        private readonly clusterFailoverService: ClusterFailoverService
+    ) {
+        this.translateToAddressProvider = new TranslateAddressProvider(clientConfig as ClientConfigImpl, logger);
     }
 
     /**
@@ -116,21 +105,6 @@ export class ClusterService implements Cluster {
      */
     getSize(): number {
         return this.memberListSnapshot.members.size;
-    }
-
-    /**
-     * @return The {@link ClientInfo} instance representing the local client.
-     */
-    getLocalClient(): ClientInfo {
-        const connectionManager = this.client.getConnectionManager();
-        const connection: ClientConnection = connectionManager.getRandomConnection();
-        const localAddress = connection != null ? connection.getLocalAddress() : null;
-        const info = new ClientInfo();
-        info.uuid = connectionManager.getClientUuid();
-        info.localAddress = localAddress;
-        info.labels = this.labels;
-        info.name = this.client.getName();
-        return info;
     }
 
     addMembershipListener(listener: MembershipListener): string {
@@ -182,7 +156,11 @@ export class ClusterService implements Cluster {
         }
     }
 
-    handleMembersViewEvent(memberListVersion: number, memberInfos: MemberInfo[]): void {
+    handleMembersViewEvent(
+        connectionRegistry: ConnectionRegistry,
+        memberListVersion: number,
+        memberInfos: MemberInfo[]
+    ): void {
         if (this.memberListSnapshot === EMPTY_SNAPSHOT) {
             this.applyInitialState(memberListVersion, memberInfos)
                 .then(this.initialListFetched.resolve)
@@ -197,7 +175,7 @@ export class ClusterService implements Cluster {
             const snapshot = this.createSnapshot(memberListVersion, memberInfos);
             this.memberListSnapshot = snapshot;
             const currentMembers = snapshot.memberList;
-            const events = this.detectMembershipEvents(prevMembers, currentMembers);
+            const events = this.detectMembershipEvents(prevMembers, currentMembers, connectionRegistry);
             this.fireEvents(events);
         }
     }
@@ -234,11 +212,15 @@ export class ClusterService implements Cluster {
             }
         });
         const addressProvider =
-            this.client.getClusterFailoverService().current().addressProvider;
+            this.clusterFailoverService.current().addressProvider;
         return this.translateToAddressProvider.refresh(addressProvider, memberInfos);
     }
 
-    private detectMembershipEvents(prevMembers: MemberImpl[], currentMembers: MemberImpl[]): MembershipEvent[] {
+    private detectMembershipEvents(
+        prevMembers: MemberImpl[],
+        currentMembers: MemberImpl[],
+        connectionRegistry: ConnectionRegistry
+    ): MembershipEvent[] {
         const newMembers = new Array<MemberImpl>();
 
         const deadMembers = new Map<string, MemberImpl>();
@@ -258,7 +240,7 @@ export class ClusterService implements Cluster {
         // removal events should be added before added events
         deadMembers.forEach((member) => {
             events[index++] = new MembershipEvent(member, MemberEvent.REMOVED, currentMembers);
-            const connection: ClientConnection = this.connectionManager.getConnection(member.uuid);
+            const connection: Connection = connectionRegistry.getConnection(member.uuid);
             if (connection != null) {
                 connection.close(null, new TargetDisconnectedError('The client has closed the connection to this '
                     + 'member, after receiving a member left event from the cluster ' + connection));

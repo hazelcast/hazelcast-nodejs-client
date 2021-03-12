@@ -27,7 +27,7 @@ const { NearCacheManager } = require('../../lib/nearcache/NearCacheManager');
 const { ProxyManager } = require('../../lib/proxy/ProxyManager');
 const { Statistics } = require('../../lib/statistics/Statistics');
 const { CPSubsystemImpl } = require('../../lib/CPSubsystem');
-const { ClientConnectionManager } = require('../../lib/network/ClientConnectionManager');
+const { ConnectionManager } = require('../../lib/network/ConnectionManager');
 const { InvocationService } = require('../../lib/invocation/InvocationService');
 
 describe('ClientShutdownTest', function () {
@@ -58,13 +58,14 @@ describe('ClientShutdownTest', function () {
     });
 
     it('client should stop services and release resources on shutdown', async function () {
-        sandbox.spy(LifecycleServiceImpl.prototype, 'shutdown');
+        sandbox.spy(LifecycleServiceImpl.prototype, 'onShutdownStart');
+        sandbox.spy(LifecycleServiceImpl.prototype, 'onShutdownFinished');
         sandbox.spy(RepairingTask.prototype, 'shutdown');
         sandbox.spy(NearCacheManager.prototype, 'destroyAllNearCaches');
         sandbox.spy(ProxyManager.prototype, 'destroy');
         sandbox.spy(Statistics.prototype, 'stop');
         sandbox.spy(CPSubsystemImpl.prototype, 'shutdown');
-        sandbox.spy(ClientConnectionManager.prototype, 'shutdown');
+        sandbox.spy(ConnectionManager.prototype, 'shutdown');
         sandbox.spy(InvocationService.prototype, 'shutdown');
 
         cluster = await RC.createCluster(null, null);
@@ -75,13 +76,14 @@ describe('ClientShutdownTest', function () {
         client.getRepairingTask();
         await client.shutdown();
 
-        expect(LifecycleServiceImpl.prototype.shutdown.calledOnce).to.be.true;
+        expect(LifecycleServiceImpl.prototype.onShutdownStart.calledOnce).to.be.true;
+        expect(LifecycleServiceImpl.prototype.onShutdownFinished.calledOnce).to.be.true;
         expect(RepairingTask.prototype.shutdown.calledOnce).to.be.true;
         expect(NearCacheManager.prototype.destroyAllNearCaches.calledOnce).to.be.true;
         expect(ProxyManager.prototype.destroy.calledOnce).to.be.true;
         expect(Statistics.prototype.stop.calledOnce).to.be.true;
         expect(CPSubsystemImpl.prototype.shutdown.calledOnce).to.be.true;
-        expect(ClientConnectionManager.prototype.shutdown.calledOnce).to.be.true;
+        expect(ConnectionManager.prototype.shutdown.calledOnce).to.be.true;
         expect(InvocationService.prototype.shutdown.calledOnce).to.be.true;
     });
 });

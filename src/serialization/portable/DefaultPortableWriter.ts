@@ -26,11 +26,11 @@ import * as Long from 'long';
 export class DefaultPortableWriter {
 
     private serializer: PortableSerializer;
-    private output: PositionalDataOutput;
+    private readonly output: PositionalDataOutput;
     private classDefinition: ClassDefinition;
 
-    private offset: number;
-    private begin: number;
+    private readonly offset: number;
+    private readonly begin: number;
 
     constructor(serializer: PortableSerializer,
                 output: PositionalDataOutput,

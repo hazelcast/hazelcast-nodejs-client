@@ -18,11 +18,17 @@
 import * as Long from 'long';
 import {FlakeIdGeneratorNewIdBatchCodec} from '../../codec/FlakeIdGeneratorNewIdBatchCodec';
 import {FlakeIdGeneratorConfigImpl} from '../../config/FlakeIdGeneratorConfig';
-import {HazelcastClient} from '../../HazelcastClient';
 import {BaseProxy} from '../BaseProxy';
 import {AutoBatcher, Batch} from './AutoBatcher';
 import {FlakeIdGenerator} from '../FlakeIdGenerator';
-import {ClientConfigImpl} from '../../config/Config';
+import {ClientConfig, ClientConfigImpl} from '../../config/Config';
+import {ProxyManager} from '../ProxyManager';
+import {PartitionService} from '../../PartitionService';
+import {InvocationService} from '../../invocation/InvocationService';
+import {SerializationService} from '../../serialization/SerializationService';
+import {ConnectionRegistry} from '../../network/ConnectionManager';
+import {ListenerService} from '../../listener/ListenerService';
+import {ClusterService} from '../../invocation/ClusterService';
 
 /** @internal */
 export class FlakeIdGeneratorProxy extends BaseProxy implements FlakeIdGenerator {
@@ -30,9 +36,30 @@ export class FlakeIdGeneratorProxy extends BaseProxy implements FlakeIdGenerator
     private autoBatcher: AutoBatcher;
     private config: FlakeIdGeneratorConfigImpl;
 
-    constructor(client: HazelcastClient, serviceName: string, name: string) {
-        super(client, serviceName, name);
-        this.config = (client.getConfig() as ClientConfigImpl).getFlakeIdGeneratorConfig(name);
+    constructor(
+        serviceName: string,
+        name: string,
+        clientConfig: ClientConfig,
+        proxyManager: ProxyManager,
+        partitionService: PartitionService,
+        invocationService: InvocationService,
+        serializationService: SerializationService,
+        listenerService: ListenerService,
+        clusterService: ClusterService,
+        connectionRegistry: ConnectionRegistry
+    ) {
+        super(
+            serviceName,
+            name,
+            proxyManager,
+            partitionService,
+            invocationService,
+            serializationService,
+            listenerService,
+            clusterService,
+            connectionRegistry
+        );
+        this.config = (clientConfig as ClientConfigImpl).getFlakeIdGeneratorConfig(name);
         this.autoBatcher = new AutoBatcher(() => {
             return this.encodeInvokeOnRandomTarget(FlakeIdGeneratorNewIdBatchCodec, this.config.prefetchCount)
                 .then((clientMessage) => {

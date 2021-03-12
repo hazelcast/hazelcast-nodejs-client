@@ -20,9 +20,9 @@ import {HazelcastSerializationError} from '../../core';
 
 /** @internal */
 export class ClassDefinitionContext {
-    private factoryId: number;
+    private readonly factoryId: number;
 
-    private classDefs: { [classId: string]: ClassDefinition };
+    private readonly classDefs: { [classId: string]: ClassDefinition };
 
     constructor(factoryId: number) {
         this.factoryId = factoryId;
