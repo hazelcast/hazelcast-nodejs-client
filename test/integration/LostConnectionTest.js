@@ -51,7 +51,7 @@ describe('LostConnectionTest', function () {
                     return TestUtil.promiseWaitMilliseconds(4000);
                 }).then(function () {
                     try {
-                        const address = client.getConnectionManager().getRandomConnection().getRemoteAddress();
+                        const address = client.connectionRegistry.getRandomConnection().getRemoteAddress();
                         expect(address.host).to.equal(newMember.host);
                         expect(address.port).to.equal(newMember.port);
                         done();

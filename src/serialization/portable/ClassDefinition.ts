@@ -20,9 +20,9 @@ import {FieldType} from '../Portable';
 
 /** @internal */
 export class ClassDefinition {
-    private factoryId: number;
-    private classId: number;
-    private version: number;
+    private readonly factoryId: number;
+    private readonly classId: number;
+    private readonly version: number;
     private fields: { [name: string]: FieldDefinition } = {};
 
     constructor(factoryId: number, classId: number, version: number) {

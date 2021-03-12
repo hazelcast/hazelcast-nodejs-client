@@ -147,7 +147,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
         return this.encodeInvoke(ListSubCodec, start, end)
             .then((clientMessage) => {
                 const response = ListSubCodec.decodeResponse(clientMessage);
-                return new ReadOnlyLazyList<E>(response, this.client.getSerializationService());
+                return new ReadOnlyLazyList<E>(response, this.serializationService);
             });
     }
 
@@ -164,7 +164,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
             ListAddListenerCodec.handle(message, (element: Data, uuid: UUID, eventType: number) => {
                 const responseObject = element ? this.toObject(element) : null;
 
-                const member = this.client.getClusterService().getMember(uuid);
+                const member = this.clusterService.getMember(uuid);
                 const name = this.name;
                 const itemEvent = new ItemEvent(name, eventType, responseObject, member);
 
@@ -176,11 +176,11 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
             });
         };
         const codec = this.createItemListener(this.name, includeValue);
-        return this.client.getListenerService().registerListener(codec, listenerHandler);
+        return this.listenerService.registerListener(codec, listenerHandler);
     }
 
     removeItemListener(registrationId: string): Promise<boolean> {
-        return this.client.getListenerService().deregisterListener(registrationId);
+        return this.listenerService.deregisterListener(registrationId);
     }
 
     private serializeList(input: E[]): Data[] {

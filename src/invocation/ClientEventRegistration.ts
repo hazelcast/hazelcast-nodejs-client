@@ -16,17 +16,17 @@
 /** @ignore *//** */
 
 import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
-import {ClientConnection} from '../network/ClientConnection';
+import {Connection} from '../network/Connection';
 import {UUID} from '../core/UUID';
 
 /** @internal */
 export class ClientEventRegistration {
     readonly serverRegistrationId: UUID;
     readonly correlationId: number;
-    readonly subscriber: ClientConnection;
+    readonly subscriber: Connection;
     readonly codec: ListenerMessageCodec;
 
-    constructor(serverRegistrationId: UUID, correlationId: number, subscriber: ClientConnection, codec: ListenerMessageCodec) {
+    constructor(serverRegistrationId: UUID, correlationId: number, subscriber: Connection, codec: ListenerMessageCodec) {
         this.serverRegistrationId = serverRegistrationId;
         this.correlationId = correlationId;
         this.subscriber = subscriber;

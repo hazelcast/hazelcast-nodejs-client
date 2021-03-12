@@ -22,8 +22,9 @@ const sandbox = sinon.createSandbox();
 const RC = require('./RC');
 const { Client } = require('../../');
 const { MapProxy } = require('../../lib/proxy/MapProxy');
-const { ClientConnectionManager } = require('../../lib/network/ClientConnectionManager');
-const { ClientConnection } = require('../../lib/network/ClientConnection');
+const { ConnectionRegistryImpl } = require('../../lib/network/ConnectionManager');
+const { Connection } = require('../../lib/network/Connection');
+const { ProxyManager } = require('../../lib/proxy/ProxyManager');
 
 describe('ClientProxyTest', function () {
 
@@ -43,26 +44,45 @@ describe('ClientProxyTest', function () {
     });
 
     it('client without active connection should return unknown version', function () {
-        const connectionManagerStub = sandbox.stub(ClientConnectionManager.prototype);
-        connectionManagerStub.getActiveConnections.returns({});
+        const connectionRegistryStub = sandbox.stub(ConnectionRegistryImpl.prototype);
+        connectionRegistryStub.getConnections.returns([]);
+        const proxyManagerStub = sandbox.stub(ProxyManager.prototype);
         const clientStub = sandbox.stub(Client.prototype);
-        clientStub.getConnectionManager.returns(connectionManagerStub);
 
-        const mapProxy = new MapProxy(clientStub, 'mockMapService', 'mockMap');
+        const mapProxy = new MapProxy(
+            'mockMapService',
+            'mockMap',
+            proxyManagerStub,
+            clientStub.getPartitionService(),
+            clientStub.getInvocationService(),
+            clientStub.getSerializationService(),
+            clientStub.getListenerService(),
+            clientStub.getClusterService(),
+            connectionRegistryStub
+        );
         assert.equal(mapProxy.getConnectedServerVersion(), -1);
     });
 
     it('client with a 4.1 server connection should return the version', function () {
-        const connectionStub = sandbox.stub(ClientConnection.prototype);
+        const connectionStub = sandbox.stub(Connection.prototype);
         connectionStub.getConnectedServerVersion.returns('40100');
-        const connectionManagerStub = sandbox.stub(ClientConnectionManager.prototype);
-        connectionManagerStub.getActiveConnections.returns({
-            'localhost': connectionStub
-        });
+        const connectionRegistryStub = sandbox.stub(ConnectionRegistryImpl.prototype);
+        connectionRegistryStub.getConnections.returns([connectionStub]);
+        const proxyManagerStub = sandbox.stub(ProxyManager.prototype);
         const clientStub = sandbox.stub(Client.prototype);
-        clientStub.getConnectionManager.returns(connectionManagerStub);
 
-        const mapProxy = new MapProxy(clientStub, 'mockMapService', 'mockMap');
+        const mapProxy = new MapProxy(
+            'mockMapService',
+            'mockMap',
+            proxyManagerStub,
+            clientStub.getPartitionService(),
+            clientStub.getInvocationService(),
+            clientStub.getSerializationService(),
+            clientStub.getListenerService(),
+            clientStub.getClusterService(),
+            connectionRegistryStub
+        );
+
         assert.equal(mapProxy.getConnectedServerVersion(), 40100);
     });
 

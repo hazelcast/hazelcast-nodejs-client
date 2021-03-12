@@ -292,10 +292,10 @@ export class PositionalObjectDataOutput extends ObjectDataOutput implements Posi
 /** @internal */
 export class ObjectDataInput implements DataInput {
 
-    private buffer: Buffer;
-    private offset: number;
+    private readonly buffer: Buffer;
+    private readonly offset: number;
     private service: SerializationService;
-    private bigEndian: boolean;
+    private readonly bigEndian: boolean;
     private pos: number;
 
     constructor(buffer: Buffer,

@@ -107,8 +107,8 @@ configParams.forEach(function (cfg) {
 
         it('getLocalEndpoint returns correct info', function () {
             const info = client.getLocalEndpoint();
-            expect(info.localAddress.host).to.equal(client.getConnectionManager().getRandomConnection().localAddress.host);
-            expect(info.localAddress.port).to.equal(client.getConnectionManager().getRandomConnection().localAddress.port);
+            expect(info.localAddress.host).to.equal(client.connectionRegistry.getRandomConnection().localAddress.host);
+            expect(info.localAddress.port).to.equal(client.connectionRegistry.getRandomConnection().localAddress.port);
             expect(info.uuid).to.deep.equal(client.getConnectionManager().getClientUuid());
             expect(info.type).to.equal('NodeJS');
             expect(info.labels).to.deep.equal(new Set());

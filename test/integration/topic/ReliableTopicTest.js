@@ -49,7 +49,7 @@ describe('ReliableTopicTest', function () {
             const reliableTopicMessage = new ReliableTopicMessage();
             reliableTopicMessage.payload = client.getSerializationService().toData(i);
             reliableTopicMessage.publishTime = Long.fromNumber(new Date().getTime());
-            reliableTopicMessage.publisherAddress = client.getClusterService().getLocalClient().localAddress;
+            reliableTopicMessage.publisherAddress = client.getLocalEndpoint().localAddress;
             all.push(reliableTopicMessage);
         }
         return all;

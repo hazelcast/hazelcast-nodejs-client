@@ -17,26 +17,24 @@
 
 import {NearCache, NearCacheImpl} from './NearCache';
 import {SerializationService} from '../serialization/SerializationService';
-import {ClientConfigImpl} from '../config/Config';
-import {HazelcastClient} from '../HazelcastClient';
+import {ClientConfig, ClientConfigImpl} from '../config';
 
 /** @internal */
 export class NearCacheManager {
 
-    protected readonly serializationService: SerializationService;
     private readonly caches: Map<string, NearCache> = new Map();
-    private readonly client: HazelcastClient;
 
-    constructor(client: HazelcastClient) {
-        this.client = client;
-    }
+    constructor(
+        private readonly clientConfig: ClientConfig,
+        protected readonly serializationService: SerializationService
+    ) {}
 
     public getOrCreateNearCache(name: string): NearCache {
         let nearCache = this.caches.get(name);
         if (nearCache == null) {
-            const config = this.client.getConfig() as ClientConfigImpl;
+            const config = this.clientConfig as ClientConfigImpl;
             nearCache = new NearCacheImpl(config.getNearCacheConfig(name),
-                this.client.getSerializationService());
+                this.serializationService);
             this.caches.set(name, nearCache);
         }
         return nearCache;

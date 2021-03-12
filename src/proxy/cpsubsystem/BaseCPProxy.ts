@@ -15,12 +15,13 @@
  */
 /** @ignore *//** */
 
-import {HazelcastClient} from '../../HazelcastClient';
 import {ClientMessage} from '../../protocol/ClientMessage';
 import {RaftGroupId} from './RaftGroupId';
 import {CPGroupDestroyCPObjectCodec} from '../../codec/CPGroupDestroyCPObjectCodec';
 import {UnsupportedOperationError} from '../../core';
 import {Data} from '../../serialization/Data';
+import {SerializationService} from '../../serialization/SerializationService';
+import {InvocationService} from '../../invocation/InvocationService';
 
 /**
  * Common super class for any CP Subsystem proxy.
@@ -28,23 +29,14 @@ import {Data} from '../../serialization/Data';
  */
 export abstract class BaseCPProxy {
 
-    protected client: HazelcastClient;
-    protected readonly proxyName: string;
-    protected readonly serviceName: string;
-    protected readonly groupId: RaftGroupId;
-    protected readonly objectName: string;
-
-    constructor(client: HazelcastClient,
-                serviceName: string,
-                groupId: RaftGroupId,
-                proxyName: string,
-                objectName: string) {
-        this.client = client;
-        this.serviceName = serviceName;
-        this.groupId = groupId;
-        this.proxyName = proxyName;
-        this.objectName = objectName;
-    }
+    protected constructor(
+        protected readonly serviceName: string,
+        protected readonly groupId: RaftGroupId,
+        protected readonly proxyName: string,
+        protected readonly objectName: string,
+        protected readonly invocationService: InvocationService,
+        protected readonly serializationService: SerializationService
+    ) {}
 
     getPartitionKey(): string {
         throw new UnsupportedOperationError('This operation is not supported by CP Subsystem');
@@ -69,11 +61,11 @@ export abstract class BaseCPProxy {
     }
 
     protected toData(object: any): Data {
-        return this.client.getSerializationService().toData(object);
+        return this.serializationService.toData(object);
     }
 
     protected toObject(data: Data): any {
-        return this.client.getSerializationService().toObject(data);
+        return this.serializationService.toObject(data);
     }
 
     /**
@@ -84,6 +76,6 @@ export abstract class BaseCPProxy {
      */
     protected encodeInvokeOnRandomTarget(codec: any, ...codecArguments: any[]): Promise<ClientMessage> {
         const clientMessage = codec.encodeRequest(...codecArguments);
-        return this.client.getInvocationService().invokeOnRandomTarget(clientMessage);
+        return this.invocationService.invokeOnRandomTarget(clientMessage);
     }
 }

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {HazelcastClient} from './HazelcastClient';
 import {ILogger} from './logging/ILogger';
-import {ClientConnection} from './network/ClientConnection';
+import {Connection} from './network/Connection';
 import {ClientOfflineError, UUID} from './core';
+import {SerializationService} from './serialization/SerializationService';
 
 /**
  * Partition service for Hazelcast clients. Allows to retrieve information
@@ -54,7 +54,7 @@ export interface PartitionService {
 }
 
 class PartitionTable {
-    connection: ClientConnection;
+    connection: Connection;
     partitionStateVersion = -1;
     partitions = new Map<number, UUID>();
 }
@@ -62,15 +62,13 @@ class PartitionTable {
 /** @internal */
 export class PartitionServiceImpl implements PartitionService {
 
-    private client: HazelcastClient;
     private partitionTable = new PartitionTable();
     private partitionCount = 0;
-    private logger: ILogger;
 
-    constructor(client: HazelcastClient) {
-        this.client = client;
-        this.logger = client.getLoggingService().getLogger();
-    }
+    constructor(
+        private readonly logger: ILogger,
+        private readonly serializationService: SerializationService
+    ) {}
 
     reset(): void {
         this.partitionTable = new PartitionTable();
@@ -79,7 +77,7 @@ export class PartitionServiceImpl implements PartitionService {
     /**
      * The partitions can be empty on the response, client will not apply the empty partition table.
      */
-    handlePartitionViewEvent(connection: ClientConnection,
+    handlePartitionViewEvent(connection: Connection,
                              partitions: Array<[UUID, number[]]>,
                              partitionStateVersion: number): void {
         this.logger.debug('PartitionService',
@@ -109,7 +107,7 @@ export class PartitionServiceImpl implements PartitionService {
         if (typeof key === 'object' && 'getPartitionHash' in key) {
             partitionHash = key.getPartitionHash();
         } else {
-            partitionHash = this.client.getSerializationService().toData(key).getPartitionHash();
+            partitionHash = this.serializationService.toData(key).getPartitionHash();
         }
         return Math.abs(partitionHash) % this.partitionCount;
     }
@@ -143,7 +141,7 @@ export class PartitionServiceImpl implements PartitionService {
         return newPartitions;
     }
 
-    private logFailure(connection: ClientConnection, partitionStateVersion: number,
+    private logFailure(connection: Connection, partitionStateVersion: number,
                        current: PartitionTable, cause: string): void {
         this.logger.debug('PartitionService', 'Response will not be applied since ' + cause
             + '. Response is from ' + connection
@@ -156,7 +154,7 @@ export class PartitionServiceImpl implements PartitionService {
         return this.partitionTable.partitions;
     }
 
-    private shouldBeApplied(connection: ClientConnection,
+    private shouldBeApplied(connection: Connection,
                             partitions: Array<[UUID, number[]]>,
                             partitionStateVersion: number,
                             current: PartitionTable): boolean {

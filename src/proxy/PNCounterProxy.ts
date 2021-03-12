@@ -134,7 +134,7 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
     }
 
     private getReplicaAddresses(excludedAddresses: MemberImpl[]): Promise<MemberImpl[]> {
-        const dataMembers = this.client.getClusterService().getMembers(dataMemberSelector);
+        const dataMembers = this.clusterService.getMembers(dataMemberSelector);
         return this.getMaxConfiguredReplicaCount().then((replicaCount: number) => {
             const currentCount = Math.min(replicaCount, dataMembers.length);
             const replicaAddresses: MemberImpl[] = [];

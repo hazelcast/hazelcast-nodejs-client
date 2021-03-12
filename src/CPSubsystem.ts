@@ -23,7 +23,9 @@ import {
 } from './proxy';
 import {CPProxyManager} from './proxy/cpsubsystem/CPProxyManager';
 import {CPSessionManager} from './proxy/cpsubsystem/CPSessionManager';
-import {HazelcastClient} from './HazelcastClient';
+import {InvocationService} from './invocation/InvocationService';
+import {SerializationService} from './serialization/SerializationService';
+import {ILogger} from './logging';
 
 /**
  * CP Subsystem is a component of Hazelcast that builds a strongly consistent
@@ -119,9 +121,22 @@ export class CPSubsystemImpl implements CPSubsystem {
     private readonly cpProxyManager: CPProxyManager;
     private readonly cpSessionManager: CPSessionManager;
 
-    constructor(client: HazelcastClient) {
-        this.cpProxyManager = new CPProxyManager(client);
-        this.cpSessionManager = new CPSessionManager(client);
+    constructor(
+        logger: ILogger,
+        clientName: string,
+        invocationService: InvocationService,
+        serializationService: SerializationService
+    ) {
+        this.cpSessionManager = new CPSessionManager(
+            logger,
+            clientName,
+            invocationService
+        );
+        this.cpProxyManager = new CPProxyManager(
+            invocationService,
+            serializationService,
+            this.cpSessionManager
+        );
     }
 
     getAtomicLong(name: string): Promise<IAtomicLong> {

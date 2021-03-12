@@ -15,55 +15,54 @@
  */
 /** @ignore *//** */
 
-import {HazelcastClient} from '../HazelcastClient';
 import {
     ClientNotActiveError,
     HazelcastError,
     IOError,
     TargetDisconnectedError
 } from '../core';
-import {ClientConnection} from '../network/ClientConnection';
+import {Connection} from '../network/Connection';
 import {ClientEventRegistration} from '../invocation/ClientEventRegistration';
-import {Invocation} from '../invocation/InvocationService';
+import {Invocation, InvocationService} from '../invocation/InvocationService';
 import {RegistrationKey} from '../invocation/RegistrationKey';
 import {ClientMessageHandler} from '../protocol/ClientMessage';
 import {ListenerMessageCodec} from './ListenerMessageCodec';
 import {deferredPromise} from '../util/Util';
 import {UuidUtil} from '../util/UuidUtil';
-import {ILogger} from '../logging/ILogger';
+import {ILogger} from '../logging';
+import {ConnectionManager, ConnectionRegistry} from '../network/ConnectionManager';
 
 /** @internal */
 export class ListenerService {
 
-    private client: HazelcastClient;
-    private logger: ILogger;
-    private isSmartService: boolean;
+    private readonly activeRegistrations: Map<string, Map<Connection, ClientEventRegistration>>;
+    private readonly userKeyInformation: Map<string, RegistrationKey>;
 
-    private activeRegistrations: Map<string, Map<ClientConnection, ClientEventRegistration>>;
-    private userKeyInformation: Map<string, RegistrationKey>;
-
-    constructor(client: HazelcastClient) {
-        this.client = client;
-        this.logger = this.client.getLoggingService().getLogger();
-        this.isSmartService = this.client.getConfig().network.smartRouting;
+    constructor(
+        private readonly logger: ILogger,
+        private readonly isSmartService: boolean,
+        private readonly connectionManager: ConnectionManager,
+        private readonly invocationService: InvocationService,
+        private readonly connectionRegistry: ConnectionRegistry
+    ) {
         this.activeRegistrations = new Map();
         this.userKeyInformation = new Map();
     }
 
     start(): void {
-        this.client.getConnectionManager().on('connectionAdded', this.onConnectionAdded.bind(this));
-        this.client.getConnectionManager().on('connectionRemoved', this.onConnectionRemoved.bind(this));
+        this.connectionManager.on('connectionAdded', this.onConnectionAdded.bind(this));
+        this.connectionManager.on('connectionRemoved', this.onConnectionRemoved.bind(this));
     }
 
-    onConnectionAdded(connection: ClientConnection): void {
+    onConnectionAdded(connection: Connection): void {
         this.reregisterListenersOnConnection(connection);
     }
 
-    onConnectionRemoved(connection: ClientConnection): void {
+    onConnectionRemoved(connection: Connection): void {
         this.removeRegistrationsOnConnection(connection);
     }
 
-    reregisterListenersOnConnection(connection: ClientConnection): void {
+    reregisterListenersOnConnection(connection: Connection): void {
         this.activeRegistrations.forEach((registrationMap, userKey) => {
             if (registrationMap.has(connection)) {
                 return;
@@ -82,16 +81,16 @@ export class ListenerService {
         }, this);
     }
 
-    removeRegistrationsOnConnection(connection: ClientConnection): void {
+    removeRegistrationsOnConnection(connection: Connection): void {
         this.activeRegistrations.forEach((registrationsOnUserKey) => {
             const eventRegistration = registrationsOnUserKey.get(connection);
             if (eventRegistration !== undefined) {
-                this.client.getInvocationService().removeEventHandler(eventRegistration.correlationId);
+                this.invocationService.removeEventHandler(eventRegistration.correlationId);
             }
         });
     }
 
-    invokeRegistrationFromRecord(userKey: string, connection: ClientConnection): Promise<ClientEventRegistration> {
+    invokeRegistrationFromRecord(userKey: string, connection: Connection): Promise<ClientEventRegistration> {
         const deferred = deferredPromise<ClientEventRegistration>();
         const activeRegsOnUserKey = this.activeRegistrations.get(userKey);
         if (activeRegsOnUserKey !== undefined && activeRegsOnUserKey.has(connection)) {
@@ -102,10 +101,10 @@ export class ListenerService {
         // New correlation id will be set on the invoke call
         const registerRequest = registrationKey.getRegisterRequest().copyWithNewCorrelationId();
         const codec = registrationKey.getCodec();
-        const invocation = new Invocation(this.client, registerRequest);
+        const invocation = new Invocation(this.invocationService, registerRequest);
         invocation.handler = registrationKey.getHandler() as any;
         invocation.connection = connection;
-        this.client.getInvocationService().invokeUrgent(invocation).then((responseMessage) => {
+        this.invocationService.invokeUrgent(invocation).then((responseMessage) => {
             const correlationId = responseMessage.getCorrelationId();
             const response = codec.decodeAddResponse(responseMessage);
             const eventRegistration = new ClientEventRegistration(response, correlationId, invocation.connection, codec);
@@ -122,9 +121,9 @@ export class ListenerService {
 
     registerListener(codec: ListenerMessageCodec,
                      listenerHandlerFn: ClientMessageHandler): Promise<string> {
-        const activeConnections = this.client.getConnectionManager().getActiveConnections();
+        const activeConnections = this.connectionRegistry.getConnections();
         const userKey = UuidUtil.generate().toString();
-        let connectionsOnUserKey: Map<ClientConnection, ClientEventRegistration>;
+        let connectionsOnUserKey: Map<Connection, ClientEventRegistration>;
         const registerRequest = codec.encodeAddRequest(this.isSmart());
         connectionsOnUserKey = this.activeRegistrations.get(userKey);
         if (connectionsOnUserKey === undefined) {
@@ -142,11 +141,11 @@ export class ListenerService {
 
             // new correlation id will be set on the invoke call
             const requestCopy = registerRequest.copyWithNewCorrelationId();
-            const invocation = new Invocation(this.client, requestCopy);
+            const invocation = new Invocation(this.invocationService, requestCopy);
             invocation.handler = listenerHandlerFn as any;
             invocation.connection = connection;
 
-            const registrationPromise = this.client.getInvocationService().invokeUrgent(invocation)
+            const registrationPromise = this.invocationService.invokeUrgent(invocation)
                 .then((responseMessage) => {
                     const correlationId = responseMessage.getCorrelationId();
                     const response = codec.decodeAddResponse(responseMessage);
@@ -185,7 +184,7 @@ export class ListenerService {
         registrationsOnUserKey.forEach((eventRegistration, connection) => {
             // remove local handler
             registrationsOnUserKey.delete(connection);
-            this.client.getInvocationService().removeEventHandler(eventRegistration.correlationId);
+            this.invocationService.removeEventHandler(eventRegistration.correlationId);
             // the rest is for deleting remote registration
             this.deregisterListenerOnTarget(userKey, eventRegistration);
         });
@@ -205,9 +204,9 @@ export class ListenerService {
         if (clientMessage === null) {
             return;
         }
-        const invocation = new Invocation(this.client, clientMessage, Number.MAX_SAFE_INTEGER);
+        const invocation = new Invocation(this.invocationService, clientMessage, Number.MAX_SAFE_INTEGER);
         invocation.connection = eventRegistration.subscriber;
-        this.client.getInvocationService().invoke(invocation).catch((err) => {
+        this.invocationService.invoke(invocation).catch((err) => {
             if (err instanceof ClientNotActiveError
                     || err instanceof IOError
                     || err instanceof TargetDisconnectedError) {

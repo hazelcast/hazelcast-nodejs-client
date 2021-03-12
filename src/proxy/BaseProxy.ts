@@ -16,10 +16,16 @@
 /** @ignore *//** */
 
 import {BuildInfo} from '../BuildInfo';
-import {HazelcastClient} from '../HazelcastClient';
 import {Data} from '../serialization/Data';
 import {ClientMessage} from '../protocol/ClientMessage';
 import {UUID} from '../core/UUID';
+import {ProxyManager} from './ProxyManager';
+import {PartitionService} from '../PartitionService';
+import {InvocationService} from '../invocation/InvocationService';
+import {SerializationService} from '../serialization/SerializationService';
+import {ConnectionRegistry} from '../network/ConnectionManager';
+import {ListenerService} from '../listener/ListenerService';
+import {ClusterService} from '../invocation/ClusterService';
 
 /**
  * Common super class for any proxy.
@@ -27,15 +33,17 @@ import {UUID} from '../core/UUID';
  */
 export abstract class BaseProxy {
 
-    protected client: HazelcastClient;
-    protected readonly name: string;
-    protected readonly serviceName: string;
-
-    constructor(client: HazelcastClient, serviceName: string, name: string) {
-        this.client = client;
-        this.name = name;
-        this.serviceName = serviceName;
-    }
+    constructor(
+        protected readonly serviceName: string,
+        protected readonly name: string,
+        protected readonly proxyManager: ProxyManager,
+        protected readonly partitionService: PartitionService,
+        protected readonly invocationService: InvocationService,
+        protected readonly serializationService: SerializationService,
+        protected readonly listenerService: ListenerService,
+        protected readonly clusterService: ClusterService,
+        protected readonly connectionRegistry: ConnectionRegistry
+    ) {}
 
     getPartitionKey(): string {
         return this.name;
@@ -50,7 +58,7 @@ export abstract class BaseProxy {
     }
 
     destroy(): Promise<void> {
-        return this.client.getProxyManager().destroyProxy(this.name, this.serviceName).then(() => {
+        return this.proxyManager.destroyProxy(this.name, this.serviceName).then(() => {
             return this.postDestroy();
         });
     }
@@ -67,7 +75,7 @@ export abstract class BaseProxy {
      * Encodes a request from a codec and invokes it on owner node of given key.
      */
     protected encodeInvokeOnKey(codec: any, partitionKey: any, ...codecArguments: any[]): Promise<ClientMessage> {
-        const partitionId: number = this.client.getPartitionService().getPartitionId(partitionKey);
+        const partitionId: number = this.partitionService.getPartitionId(partitionKey);
         return this.encodeInvokeOnPartition(codec, partitionId, ...codecArguments);
     }
 
@@ -79,7 +87,7 @@ export abstract class BaseProxy {
                                            codec: any,
                                            partitionKey: any,
                                            ...codecArguments: any[]): Promise<ClientMessage> {
-        const partitionId: number = this.client.getPartitionService().getPartitionId(partitionKey);
+        const partitionId: number = this.partitionService.getPartitionId(partitionKey);
         return this.encodeInvokeOnPartitionWithTimeout(timeoutMillis, codec, partitionId, ...codecArguments);
     }
 
@@ -88,12 +96,12 @@ export abstract class BaseProxy {
      */
     protected encodeInvokeOnRandomTarget(codec: any, ...codecArguments: any[]): Promise<ClientMessage> {
         const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
-        return this.client.getInvocationService().invokeOnRandomTarget(clientMessage);
+        return this.invocationService.invokeOnRandomTarget(clientMessage);
     }
 
     protected encodeInvokeOnTarget(codec: any, target: UUID, ...codecArguments: any[]): Promise<ClientMessage> {
         const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
-        return  this.client.getInvocationService().invokeOnTarget(clientMessage, target);
+        return this.invocationService.invokeOnTarget(clientMessage, target);
     }
 
     /**
@@ -101,7 +109,7 @@ export abstract class BaseProxy {
      */
     protected encodeInvokeOnPartition(codec: any, partitionId: number, ...codecArguments: any[]): Promise<ClientMessage> {
         const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
-        return this.client.getInvocationService().invokeOnPartition(clientMessage, partitionId);
+        return this.invocationService.invokeOnPartition(clientMessage, partitionId);
     }
 
     /**
@@ -113,25 +121,25 @@ export abstract class BaseProxy {
                                                  partitionId: number,
                                                  ...codecArguments: any[]): Promise<ClientMessage> {
         const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
-        return this.client.getInvocationService().invokeOnPartition(clientMessage, partitionId, timeoutMillis);
+        return this.invocationService.invokeOnPartition(clientMessage, partitionId, timeoutMillis);
     }
 
     /**
      * Serializes an object according to serialization settings of the client.
      */
     protected toData(object: any): Data {
-        return this.client.getSerializationService().toData(object);
+        return this.serializationService.toData(object);
     }
 
     /**
      * De-serializes an object from binary form according to serialization settings of the client.
      */
     protected toObject(data: Data): any {
-        return this.client.getSerializationService().toObject(data);
+        return this.serializationService.toObject(data);
     }
 
     protected getConnectedServerVersion(): number {
-        const activeConnections = this.client.getConnectionManager().getActiveConnections();
+        const activeConnections = this.connectionRegistry.getConnections();
         for (const address in activeConnections) {
             return activeConnections[address].getConnectedServerVersion();
         }

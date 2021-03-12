@@ -19,7 +19,7 @@ const { Socket } = require('net');
 const sinon = require('sinon');
 const { expect } = require('chai');
 
-const { PipelinedWriter } = require('../../../lib/network/ClientConnection');
+const { PipelinedWriter } = require('../../../lib/network/Connection');
 const {
     ClientMessage,
     Frame

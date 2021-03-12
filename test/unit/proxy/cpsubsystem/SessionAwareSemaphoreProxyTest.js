@@ -23,7 +23,6 @@ const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
 const Long = require('long');
 const {
-    Client,
     IllegalStateError,
     SessionExpiredError,
     WaitKeyCancelledError
@@ -31,11 +30,16 @@ const {
 const { SessionAwareSemaphoreProxy } = require('../../../../lib/proxy/cpsubsystem/SessionAwareSemaphoreProxy');
 const { CPSessionManager } = require('../../../../lib/proxy/cpsubsystem/CPSessionManager');
 const { RaftGroupId } = require('../../../../lib/proxy/cpsubsystem/RaftGroupId');
+const { InvocationService } = require('../../../../lib/invocation/InvocationService');
+const { ConnectionManager } = require('../../../../lib/network/ConnectionManager');
+const { SerializationServiceV1 } = require('../../../../lib/serialization/SerializationService');
 
 describe('SessionAwareSemaphoreProxyTest', function () {
 
-    let clientStub;
     let cpSessionManagerStub;
+    let connectionManagerStub;
+    let serializationServiceStub;
+    let invocationServiceStub;
     let proxy;
 
     const DRAIN_SESSION_ACQ_COUNT = 1024;
@@ -62,7 +66,7 @@ describe('SessionAwareSemaphoreProxyTest', function () {
 
     function stubRequest(methodName, result, firstCallErr) {
         let called = 0;
-        const stub = sandbox.stub(proxy, methodName).callsFake(() => {
+        return sandbox.stub(proxy, methodName).callsFake(() => {
             if (++called === 1 && firstCallErr !== undefined) {
                 return Promise.reject(firstCallErr);
             }
@@ -71,7 +75,6 @@ describe('SessionAwareSemaphoreProxyTest', function () {
             }
             return Promise.resolve(result);
         });
-        return stub;
     }
 
     function stubRequestAcquire(acquired, firstCallErr) {
@@ -101,12 +104,20 @@ describe('SessionAwareSemaphoreProxyTest', function () {
     }
 
     beforeEach(function () {
-        clientStub = sandbox.stub(Client.prototype);
         cpSessionManagerStub = sandbox.stub(CPSessionManager.prototype);
-        clientStub.getCPSubsystem.returns({
-            getCPSessionManager: () => cpSessionManagerStub
-        });
-        proxy = new SessionAwareSemaphoreProxy(clientStub, prepareGroupId(), 'semaphore@mygroup', 'semaphore');
+        serializationServiceStub = sandbox.stub(SerializationServiceV1.prototype);
+        invocationServiceStub = sandbox.stub(InvocationService.prototype);
+        connectionManagerStub = sandbox.stub(ConnectionManager.prototype);
+
+        proxy = new SessionAwareSemaphoreProxy(
+            prepareGroupId(),
+            'semaphore@mygroup',
+            'semaphore',
+            invocationServiceStub,
+            serializationServiceStub,
+            cpSessionManagerStub,
+            connectionManagerStub
+        );
     });
 
     afterEach(function () {
