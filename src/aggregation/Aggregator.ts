@@ -22,6 +22,7 @@ import * as AggregatorFactory from './AggregatorFactory';
 /**
  * Base interface for all aggregators.
  */
+// eslint-disable-next-line
 export interface Aggregator<R> extends IdentifiedDataSerializable {
 }
 

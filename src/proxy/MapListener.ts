@@ -26,7 +26,7 @@ export interface MapListener<K, V> extends EntryListener<K, V> {
 /**
  * Map event hander function.
  */
-export type MapEventListener<K, V> = (mapEvent: MapEvent) => void;
+export type MapEventListener = (mapEvent: MapEvent) => void;
 
 /**
  * Used for map-wide events.

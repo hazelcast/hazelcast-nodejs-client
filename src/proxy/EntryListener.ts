@@ -28,10 +28,10 @@ export interface EntryListener<K, V> {
     evicted?: EntryEventListener<K, V>;
     expired?: EntryEventListener<K, V>;
     loaded?: EntryEventListener<K, V>;
-    mapEvicted?: MapEventListener<K, V>;
-    mapCleared?: MapEventListener<K, V>;
+    mapEvicted?: MapEventListener;
+    mapCleared?: MapEventListener;
 
-    [event: string]: EntryEventListener<K, V> | MapEventListener<K, V>;
+    [event: string]: EntryEventListener<K, V> | MapEventListener;
 }
 
 /**
