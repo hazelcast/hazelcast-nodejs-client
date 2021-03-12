@@ -5,8 +5,8 @@
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
     "dependencies": {
-        "long": "4.0.0",
-        "@types/long": "4.0.1"
+        "@types/long": "4.0.1",
+        "long": "4.0.0"
     },
     "devDependencies": {
         "@types/node": "^10.17.28",
@@ -26,7 +26,7 @@
         "sinon-chai": "^3.5.0",
         "thrift": "^0.12.0",
         "typedoc": "^0.18.0",
-        "typescript": "^3.9.7",
+        "typescript": "^4.2.3",
         "winston": "^3.3.3",
         "yargs": "^16.0.3"
     },
