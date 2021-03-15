@@ -203,7 +203,7 @@ export interface IMap<K, V> extends DistributedObject {
 
     /**
      * Puts all key value pairs from this array to the map as key -> value
-     * mappings without loading non-existing elements from map store (which
+     * mappings without loading non-existing elements from map store which
      * is more efficient than `putAll`.
      *
      * This method breaks the contract of EntryListener. EntryEvent of all
@@ -262,7 +262,7 @@ export interface IMap<K, V> extends DistributedObject {
     remove(key: K, value?: V): Promise<V | boolean>;
 
     /**
-     * Removes specified key from map. Unlike {@link remove} this method does not
+     * Removes specified key from the map. Unlike {@link remove} this method does not
      * return the deleted value. Therefore, it eliminates deserialization cost
      * of the returned value.
      *
@@ -272,7 +272,7 @@ export interface IMap<K, V> extends DistributedObject {
     delete(key: K): Promise<void>;
 
     /**
-     * Retrieves the number of elements in map.
+     * Retrieves the number of elements in the map.
      * @returns number of elements in map
      */
     size(): Promise<number>;
@@ -341,7 +341,7 @@ export interface IMap<K, V> extends DistributedObject {
      * Locks the given key for this map. Promise is resolved when lock is
      * successfully acquired. This means it may never be resolved if some
      * other process holds the lock and does not unlock it. A lock may be
-     * acquired on non-existent keys. Other processes wait on non-existent key.
+     * acquired on non-existent keys. Other processes wait on the locked non-existent key.
      * When this client puts the non-existent key, it is allowed to do that.
      *
      * Locking is reentrant, meaning that the lock owner client can obtain the
@@ -526,7 +526,7 @@ export interface IMap<K, V> extends DistributedObject {
     tryLock(key: K, timeout?: number, leaseTime?: number): Promise<boolean>;
 
     /**
-     * Tries to put specified key value pair into map. If this method returns
+     * Tries to put specified key value pair into the map. If this method returns
      * false, it indicates that caller thread was not able to acquire the lock for
      * given key in `timeout` milliseconds.
      *
@@ -538,7 +538,7 @@ export interface IMap<K, V> extends DistributedObject {
     tryPut(key: K, value: V, timeout: number): Promise<boolean>;
 
     /**
-     * Tries to remove specified key from map. If this method returns
+     * Tries to remove specified key from the map. If this method returns
      * false, it indicates that caller thread was not able to acquire the lock
      * for given key in `timeout` milliseconds.
      *

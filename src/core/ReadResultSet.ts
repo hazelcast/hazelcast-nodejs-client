@@ -27,10 +27,10 @@ export interface ReadResultSet<T> {
      * Returns the number of items that have been read before filtering.
      *
      * If no filter is set, then the readCount will be equal to `size`.
-     * But if a filter is applied, it could be that items are read, but are
+     * However, if a filter is applied, it could be that items are read, but are
      * filtered out. So if you are trying to make another read based on the
      * ReadResultSet then you should increment the sequence by readCount and
-     * not by size. Otherwise you will be re-reading the same filtered messages.
+     * not by size. Otherwise, you will be re-reading the same filtered messages.
      *
      * @returns the number of items read (including the filtered ones).
      */
@@ -74,7 +74,7 @@ export interface ReadResultSet<T> {
      * sequence and read from there.
      *
      * Similarly, if the reader requests an item in the future (e.g. because
-     * the partition was lost and the reader was unaware of this), the read
+     * the partition was lost, and the reader was unaware of this), the read
      * method will jump back to the newest available sequence.
      * Because of these jumps and only in the case when the reader is loss
      * tolerant, the next sequence must be retrieved using this method.

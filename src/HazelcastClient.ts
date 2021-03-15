@@ -247,7 +247,7 @@ export class HazelcastClient {
      * to alternative clusters according to failover configuration when it disconnects
      * from a cluster.
      *
-     * @param config Configuration object describing the failover client configs and try count
+     * @param failoverConfig Configuration object describing the failover client configs and try count
      * @returns a new client instance
      * @throws InvalidConfigurationError if the provided failover configuration is not valid
      */
@@ -280,7 +280,7 @@ export class HazelcastClient {
     }
 
     /**
-     * Gives all known distributed objects in cluster.
+     * Gives all known distributed objects in a cluster.
      */
     getDistributedObjects(): Promise<DistributedObject[]> {
         const clientMessage = ClientGetDistributedObjectsCodec.encodeRequest();
@@ -481,7 +481,7 @@ export class HazelcastClient {
     }
 
     /**
-     * Removes a distributed object listener from cluster.
+     * Removes a distributed object listener from a cluster.
      * @param listenerId id of the listener to be removed.
      * @returns `true` if registration was removed, `false` otherwise.
      */
