@@ -48,7 +48,7 @@ export enum LifecycleState {
     CONNECTED = 'CONNECTED',
 
     /**
-     * Fired when the client is disconnected from the member.
+     * Fired when the client is disconnected from the cluster.
      */
     DISCONNECTED = 'DISCONNECTED',
 
