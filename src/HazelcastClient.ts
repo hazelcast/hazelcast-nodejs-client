@@ -280,7 +280,7 @@ export class HazelcastClient {
     }
 
     /**
-     * Gives all known distributed objects in a cluster.
+     * Gives all known distributed objects in the cluster.
      */
     getDistributedObjects(): Promise<DistributedObject[]> {
         const clientMessage = ClientGetDistributedObjectsCodec.encodeRequest();
@@ -481,7 +481,7 @@ export class HazelcastClient {
     }
 
     /**
-     * Removes a distributed object listener from a cluster.
+     * Removes a distributed object listener from the cluster.
      * @param listenerId id of the listener to be removed.
      * @returns `true` if registration was removed, `false` otherwise.
      */

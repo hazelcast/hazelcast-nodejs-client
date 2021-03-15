@@ -27,7 +27,7 @@ export interface Member {
     address: Address;
 
     /**
-     * Unique id of a member in a cluster.
+     * Unique id of the member in a cluster.
      */
     uuid: UUID;
 
