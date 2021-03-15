@@ -341,8 +341,12 @@ export interface IMap<K, V> extends DistributedObject {
      * Locks the given key for this map. Promise is resolved when lock is
      * successfully acquired. This means it may never be resolved if some
      * other process holds the lock and does not unlock it. A lock may be
-     * acquired on non-existent keys. Other processes wait on the locked non-existent key.
-     * When this client puts the non-existent key, it is allowed to do that.
+     * acquired on non-existent keys. In that case, other clients would
+     * block until the non-existent key is unlocked. If the lock holder
+     * introduces the key to the map, the put operation is not blocked.
+     * If a client not holding a lock on the non-existent key tries to
+     * introduce the key while a lock exists on the non-existent key,
+     * the put operation blocks until it is unlocked.
      *
      * Locking is reentrant, meaning that the lock owner client can obtain the
      * lock multiple times. If the lock was acquired multiple times, then `unlock()`
