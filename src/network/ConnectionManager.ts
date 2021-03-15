@@ -272,6 +272,7 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
     }
 }
 
+/** @internal */
 export interface ClientForConnectionManager {
     onClusterChange(): void;
 
