@@ -64,7 +64,7 @@ import {RoundRobinLB} from './util/RoundRobinLB';
 import {ClusterViewListenerService} from './listener/ClusterViewListenerService';
 import {ClientMessage} from './protocol/ClientMessage';
 import {Connection} from './network/Connection';
-import {ConnectionRegistryImpl} from './network/ConnectionManager';
+import {ConnectionRegistryImpl, ClientForConnectionManager} from './network/ConnectionManager';
 
 /**
  * Hazelcast client instance. When you want to use Hazelcast's distributed
@@ -73,7 +73,7 @@ import {ConnectionRegistryImpl} from './network/ConnectionManager';
  *
  * Client instances should be shut down explicitly.
  */
-export class HazelcastClient {
+export class HazelcastClient implements ClientForConnectionManager {
 
     /** @internal */
     private static CLIENT_ID = 0;

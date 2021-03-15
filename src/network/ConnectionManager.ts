@@ -272,7 +272,7 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
     }
 }
 
-interface ClientForConnectionManager {
+export interface ClientForConnectionManager {
     onClusterChange(): void;
 
     sendStateToCluster(): Promise<void>;
