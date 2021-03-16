@@ -101,7 +101,7 @@ export class AddressImpl implements Address, IdentifiedDataSerializable {
 
 /**
  * A collection of addresses. It is split in a group of primary
- * addresses (so the ones that should be tried first) and a group
+ * addresses (so the ones that should be tried first), and a group
  * of secondary addresses (addresses that should be tried when the
  * primary group of addresses could not be connected to).
  * @internal

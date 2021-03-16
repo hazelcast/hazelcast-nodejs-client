@@ -101,7 +101,7 @@ export interface ReplicatedMap<K, V> extends DistributedObject {
     remove(key: K): Promise<V>;
 
     /**
-     * Copies all of the mappings from the specified key-value pairs array to this map.
+     * Copies all the mappings from the specified key-value pairs array to this map.
      *
      * The behavior of this operation is undefined if the specified map is modified
      * while the operation is in progress.
@@ -135,7 +135,7 @@ export interface ReplicatedMap<K, V> extends DistributedObject {
     entrySet(): Promise<Array<[K, V]>>;
 
     /**
-     * Adds an continuous entry listener for this map. The listener will be notified for
+     * Adds a continuous entry listener for this map. The listener will be notified for
      * map add/remove/update/evict events filtered by the given predicate.
      *
      * @param listener listener object
@@ -146,7 +146,7 @@ export interface ReplicatedMap<K, V> extends DistributedObject {
     addEntryListenerToKeyWithPredicate(listener: EntryListener<K, V>, key: K, predicate: Predicate): Promise<string>;
 
     /**
-     * Adds an continuous entry listener for this map. The listener will be notified for
+     * Adds a continuous entry listener for this map. The listener will be notified for
      * map add/remove/update/evict events filtered by the given predicate.
      *
      * @param listener listener object

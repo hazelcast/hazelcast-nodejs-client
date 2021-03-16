@@ -29,7 +29,7 @@ import {MessageListener} from './MessageListener';
 export interface ITopic<E> extends DistributedObject {
 
     /**
-     * Subscribes to this topic. When a message is published, the
+     * Subscribes to this topic. When a message is published,
      * the given MessageListener is called.
      *
      * More than one message listener can be added on one instance.
