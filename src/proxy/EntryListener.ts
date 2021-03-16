@@ -28,10 +28,13 @@ export interface EntryListener<K, V> {
     evicted?: EntryEventListener<K, V>;
     expired?: EntryEventListener<K, V>;
     loaded?: EntryEventListener<K, V>;
-    mapEvicted?: MapEventListener;
-    mapCleared?: MapEventListener;
+    // eslint-disable-next-line no-unused-vars
+    mapEvicted?: MapEventListener<K, V>;
+    // eslint-disable-next-line no-unused-vars
+    mapCleared?: MapEventListener<K, V>;
 
-    [event: string]: EntryEventListener<K, V> | MapEventListener;
+    // eslint-disable-next-line no-unused-vars
+    [event: string]: EntryEventListener<K, V> | MapEventListener<K, V>;
 }
 
 /**
