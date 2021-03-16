@@ -22,7 +22,7 @@ import {UUID} from '../core';
 
 /** @internal */
 export function assertNotNull(v: any): void {
-    assert.notEqual(v, null, 'Non null value expected.');
+    assert.notStrictEqual(v, null, 'Non null value expected.');
 }
 
 /** @internal */
