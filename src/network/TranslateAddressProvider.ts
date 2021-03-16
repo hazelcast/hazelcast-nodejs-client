@@ -32,11 +32,11 @@ const REACHABLE_CHECK_LIMIT = 3;
 /**
  * Determines if the client should use an internal or public member address.
  * The public IP enabled property acts as a tri-state boolean. When set to
- * `true` it makes the client to use public addresses. Setting it to `false`
+ * `true`, it makes the client to use public addresses. Setting it to `false`
  * makes the client to use internal addresses.
  *
  * If the property is not defined, this class tries to automatically detect
- * what to do. To do so it executes the following steps:
+ * what to do. To do so, it executes the following steps:
  * 1. Check if internal member address is the same as defined in the client
  *    configuration (if it's the same, it means we can access members via their
  *    internal addresses, so no need to use public addresses); if not then

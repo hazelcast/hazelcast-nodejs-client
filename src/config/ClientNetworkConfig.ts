@@ -42,9 +42,9 @@ export interface ClientNetworkConfig {
     /**
      * When set to `true`, the client will redo the operations that were executing on
      * the server in case if the client lost connection. This can happen because of
-     * network problems, or simply because the member died. However it is not clear
+     * network problems, or simply because the member died. However, it is not clear
      * whether the operation was performed or not. For idempotent operations this is
-     * harmless, but for non idempotent ones retrying can cause to undesirable effects.
+     * harmless, but for non-idempotent ones retrying can cause to undesirable effects.
      * Note that the redo can be processed on any member.
      *
      * By default, set to `false`.

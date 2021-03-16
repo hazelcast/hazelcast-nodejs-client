@@ -41,7 +41,7 @@ export interface ClientConfig {
 
     /**
      * Name of the client instance. By default, set to `hz.client_${CLIENT_ID}`,
-     * where `CLIENT_ID` starts from `0` and it is incremented by `1`
+     * where `CLIENT_ID` starts from `0`, and it is incremented by `1`
      * for each new client.
      */
     instanceName?: string;
@@ -138,7 +138,7 @@ export interface ClientConfig {
     customCredentials?: any;
 
     /**
-     * Enables client to get backup acknowledgements directly from
+     * Enables the client to get backup acknowledgements directly from
      * the member that backups are applied, which reduces number of hops
      * and increases performance for smart clients.
      *
