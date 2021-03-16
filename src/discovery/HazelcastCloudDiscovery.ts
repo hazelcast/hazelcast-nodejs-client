@@ -25,7 +25,7 @@ import {AddressImpl} from '../core/Address';
 import {HazelcastError} from '../core';
 
 /**
- * Discovery service that discover nodes via hazelcast.cloud
+ * Discovery service that discovers nodes via hazelcast.cloud
  * https://coordinator.hazelcast.cloud/cluster/discovery?token=<TOKEN>
  * @internal
  */

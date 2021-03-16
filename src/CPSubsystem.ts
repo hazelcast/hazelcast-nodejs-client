@@ -90,7 +90,7 @@ export interface CPSubsystem {
     getCountDownLatch(name: string): Promise<ICountDownLatch>;
 
     /**
-     * Returns the distributed FencedLock instance instance with given name.
+     * Returns the distributed FencedLock instance with given name.
      * The instance is created on CP Subsystem.
      *
      * If no group name is given within the `name` argument, then the
@@ -102,7 +102,7 @@ export interface CPSubsystem {
     getLock(name: string): Promise<FencedLock>;
 
     /**
-     * Returns the distributed Semaphore instance instance with given name.
+     * Returns the distributed Semaphore instance with given name.
      * The instance is created on CP Subsystem.
      *
      * If no group name is given within the `name` argument, then the

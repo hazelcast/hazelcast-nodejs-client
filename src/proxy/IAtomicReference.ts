@@ -45,7 +45,7 @@ import {DistributedObject} from '../core';
  * deserialized.
  * </li>
  * <li>
- * If you have an object with many fields or an object graph and you only need to
+ * If you have an object with many fields or an object graph, and you only need to
  * calculate some information or need a subset of fields, you can use the `apply()`
  * method. With the `apply()` method, the whole object does not need to be sent over
  * the line; only the information that is relevant is sent.

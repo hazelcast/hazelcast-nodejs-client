@@ -18,7 +18,7 @@
 import {AddressImpl, Addresses} from '../core/Address';
 
 /**
- * Provides initial addresses for client to find and connect to a node &
+ * Provides initial addresses for the client to find and connect to a node &
  * Translates given address if necessary when connecting a service.
  * @internal
  */

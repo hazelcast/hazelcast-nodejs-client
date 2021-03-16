@@ -23,7 +23,7 @@ import {OverflowPolicy} from './OverflowPolicy';
 
 /**
  * A Ringbuffer is a data structure where the content is stored in a ring-like
- * structure. A ringbuffer has a fixed capacity so it won't grow beyond
+ * structure. A ringbuffer has a fixed capacity, so it won't grow beyond
  * that capacity and endanger the stability of the system. If that capacity
  * is exceeded, the oldest item in the ringbuffer is overwritten.
  */
@@ -87,7 +87,7 @@ export interface Ringbuffer<E> extends DistributedObject {
      * regardless of the configured time-to-live.
      *
      * In the case when `FAIL` was specified the add operation will keep failing
-     * until an oldest item in this Ringbuffer will reach its time-to-live.
+     * until the oldest item in this Ringbuffer will reach its time-to-live.
      *
      * The returned value is the sequence number of the added item. You can
      * read the added item using this number.
@@ -139,18 +139,18 @@ export interface Ringbuffer<E> extends DistributedObject {
      * method will not wait for more items to arrive. Instead, available
      * items will be returned.
      *
-     * If there are less items available than `minCount`, then this call will
+     * If there are fewer items available than `minCount`, then this call will
      * not return a response until a necessary number of items becomes available.
      *
      * If `startSequence` is smaller than the smallest sequence still available
      * in the Ringbuffer `headSequence`, then the smallest available
-     * sequence will be used as the start sequence and the minimum/maximum
+     * sequence will be used as the start sequence, and the minimum/maximum
      * number of items will be attempted to be read from there on.
      *
      * If `startSequence` is bigger than the last available sequence in the
      * Ringbuffer `tailSequence`, then the last available sequence
-     * plus one will be used as the start sequence and the call will block
-     * until further items become available and it can read at least the
+     * plus one will be used as the start sequence, and the call will block
+     * until further items become available, and it can read at least the
      * minimum number of items.
      *
      * @param startSequence sequence number of the first item to be read.
@@ -159,7 +159,7 @@ export interface Ringbuffer<E> extends DistributedObject {
      * @throws `RangeError` if `startSequence` is smaller than `0`,
      *                      or if `minCount` smaller than `0`,
      *                      or if `minCount` larger than `maxCount`,
-     *                      or if `maxCount` larger than `1000` (to prevent overload)
+     *                      or if `maxCount` larger than `1000` (to prevent overloading)
      */
     readMany(startSequence: number | Long, minCount: number, maxCount: number): Promise<ReadResultSet<E>>;
 }

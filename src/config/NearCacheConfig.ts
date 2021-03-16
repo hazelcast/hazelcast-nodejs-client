@@ -24,7 +24,7 @@ export interface NearCacheConfig {
 
     /**
      * Enables cluster-assisted invalidate on change behavior. When set to `true`,
-     * entries are invalidated when they are changed in cluster. By default, set to `true`.
+     * entries are invalidated when they are changed in the cluster. By default, set to `true`.
      */
     invalidateOnChange?: boolean;
 
@@ -41,7 +41,7 @@ export interface NearCacheConfig {
     inMemoryFormat?: InMemoryFormat;
 
     /**
-     * Maximum number of seconds that an entry can stay in cache. By default, set to `0`.
+     * Maximum number of seconds that an entry can stay in the cache. By default, set to `0`.
      */
     timeToLiveSeconds?: number;
 

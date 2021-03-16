@@ -116,7 +116,7 @@ export class ClusterService implements Cluster {
         if (this.isInitialMembershipListener(listener)) {
             const members = this.getMemberList();
             // if members are empty,it means initial event did not arrive yet
-            // it will be redirected to listeners when it arrives see #handleInitialMembershipEvent
+            // it will be redirected to listeners when it arrives, see #handleInitialMembershipEvent
             if (members.length !== 0) {
                 const event = new InitialMembershipEvent(members);
                 listener.init(event);

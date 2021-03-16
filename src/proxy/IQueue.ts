@@ -31,7 +31,7 @@ export interface IQueue<E> extends DistributedObject {
     add(item: E): Promise<boolean>;
 
     /**
-     * Adds all items in specified item array. If items array changes during
+     * Adds all items in the specified item array to this queue. If items array changes during
      * this operation, behaviour is unspecified.
      * @param items items to be added.
      * @return `true` if this queue changed, `false` otherwise.
@@ -40,7 +40,7 @@ export interface IQueue<E> extends DistributedObject {
 
     /**
      * Adds an item listener for this queue.
-     * Listener will be invoked for any add/remove item event.
+     * Listener will be invoked for any add/remove item events.
      * @param listener
      * @param includeValue `true` if updated item should be included in the event.
      * @return Registration id of the listener.

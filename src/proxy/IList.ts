@@ -69,7 +69,7 @@ export interface IList<E> extends DistributedObject {
     clear(): Promise<void>;
 
     /**
-     * Checks if the list contains given element.
+     * Checks if the list contains the given element.
      * @param element
      * @return `true` if this list contains an element that is equal the to given element, `false` otherwise.
      */

@@ -26,7 +26,7 @@ export enum OverflowPolicy {
     OVERWRITE = 'OVERWRITE',
 
     /**
-     * Add operations will keep failing until an oldest item in this
+     * Add operations will keep failing until the oldest item in this
      * ringbuffer will reach its time-to-live.
      */
     FAIL = 'FAIL',

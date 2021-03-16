@@ -40,7 +40,7 @@ export class HazelcastJsonValue {
 
     /**
      * Creates a HazelcastJsonValue from given string.
-     * @param jsonString a non null Json string
+     * @param jsonString a non-null Json string
      */
     constructor(jsonString: string) {
         assertString(jsonString);

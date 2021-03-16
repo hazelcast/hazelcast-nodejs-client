@@ -485,7 +485,7 @@ export class ConnectionManager extends EventEmitter {
             return;
         }
 
-        // do the clean up only if connection is active
+        // do the cleanup only if connection is active
         const activeConnection = memberUuid != null ? this.connectionRegistry.getConnection(memberUuid) : null;
         if (connection === activeConnection) {
             this.connectionRegistry.deleteConnection(memberUuid);
@@ -714,7 +714,7 @@ export class ConnectionManager extends EventEmitter {
                     // The relative order between primary and secondary addresses should not
                     // be changed. So we shuffle the lists separately and then add them to
                     // the final list so that secondary addresses are not tried before all
-                    // primary addresses have been tried. Otherwise we can get startup delays.
+                    // primary addresses have been tried. Otherwise, we can get startup delays.
                     shuffleArray(providerAddresses.primary);
                     shuffleArray(providerAddresses.secondary);
                 }
