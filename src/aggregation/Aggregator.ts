@@ -22,6 +22,7 @@ import * as AggregatorFactory from './AggregatorFactory';
 /**
  * Base interface for all aggregators.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Aggregator<R> extends IdentifiedDataSerializable {
 }
 
