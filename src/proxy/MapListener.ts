@@ -26,7 +26,8 @@ export interface MapListener<K, V> extends EntryListener<K, V> {
 /**
  * Map event hander function.
  */
-export type MapEventListener = (mapEvent: MapEvent) => void;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export type MapEventListener<K, V> = (mapEvent: MapEvent) => void;
 
 /**
  * Used for map-wide events.
