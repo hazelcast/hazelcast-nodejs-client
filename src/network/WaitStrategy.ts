@@ -21,28 +21,20 @@ import {delayedPromise} from '../util/Util';
 /** @internal */
 export class WaitStrategy {
 
-    private readonly initialBackoffMillis: number;
-    private readonly maxBackoffMillis: number;
-    private readonly multiplier: number;
-    private readonly jitter: number;
     private readonly clusterConnectTimeoutMillis: number;
-    private logger: ILogger;
     private attempt: number;
     private currentBackoffMillis: number;
     private clusterConnectAttemptBegin: number;
 
-    constructor(initialBackoffMillis: number,
-                maxBackoffMillis: number,
-                multiplier: number,
-                clusterConnectTimeoutMillis: number,
-                jitter: number,
-                logger: ILogger) {
-        this.initialBackoffMillis = initialBackoffMillis;
-        this.maxBackoffMillis = maxBackoffMillis;
-        this.multiplier = multiplier;
-        this.clusterConnectTimeoutMillis = clusterConnectTimeoutMillis;
-        this.jitter = jitter;
-        this.logger = logger;
+    constructor(
+        private readonly initialBackoffMillis: number,
+        private readonly maxBackoffMillis: number,
+        private readonly multiplier: number,
+        clusterConnectTimeoutMillis: number,
+        private readonly jitter: number,
+        private logger: ILogger
+    ) {
+        this.clusterConnectTimeoutMillis = clusterConnectTimeoutMillis === -1 ? Number.MAX_VALUE: clusterConnectTimeoutMillis;
     }
 
     public reset(): void {

@@ -119,8 +119,11 @@ export class ConfigBuilder {
             } else if (key === 'multiplier') {
                 this.effectiveConfig.connectionStrategy.connectionRetry.multiplier = tryGetNumber(value);
             } else if (key === 'clusterConnectTimeoutMillis') {
-                this.effectiveConfig.connectionStrategy.connectionRetry
-                    .clusterConnectTimeoutMillis = tryGetNumber(value);
+                const clusterConnectTimeoutMillis = tryGetNumber(value);
+                if (clusterConnectTimeoutMillis != -1 && clusterConnectTimeoutMillis < 0) {
+                    throw new RangeError('clusterConnectTimeoutMillis can be only positive or -1');
+                }
+                this.effectiveConfig.connectionStrategy.connectionRetry.clusterConnectTimeoutMillis = clusterConnectTimeoutMillis;
             } else if (key === 'jitter') {
                 this.effectiveConfig.connectionStrategy.connectionRetry.jitter = tryGetNumber(value);
             }

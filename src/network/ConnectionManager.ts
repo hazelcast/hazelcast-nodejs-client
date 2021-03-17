@@ -55,7 +55,7 @@ import {HeartbeatManager} from './HeartbeatManager';
 import {UuidUtil} from '../util/UuidUtil';
 import {WaitStrategy} from './WaitStrategy';
 import {ConnectionStrategyConfig, ReconnectMode} from '../config/ConnectionStrategyConfig';
-import {ClientConfig, ClientConfigImpl} from '../config/Config';
+import {ClientConfigImpl} from '../config/Config';
 import {LifecycleState, LifecycleServiceImpl, LifecycleService} from '../LifecycleService';
 import {ClientMessage} from '../protocol/ClientMessage';
 import {BuildInfo} from '../BuildInfo';
@@ -145,21 +145,18 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
 
     private active = false;
     private readonly activeConnections = new Map<string, Connection>();
-    private readonly loadBalancer: LoadBalancer;
     private connectionState = ConnectionState.INITIAL;
-    private readonly smartRoutingEnabled: boolean;
     private readonly asyncStart: boolean;
     private readonly reconnectMode: ReconnectMode;
 
     constructor(
         connectionStrategy: ConnectionStrategyConfig,
-        smartRoutingEnabled: boolean,
-        loadBalancer: LoadBalancer
+        private readonly smartRoutingEnabled: boolean,
+        private readonly loadBalancer: LoadBalancer
     ) {
         this.smartRoutingEnabled = smartRoutingEnabled;
         this.asyncStart = connectionStrategy.asyncStart;
         this.reconnectMode = connectionStrategy.reconnectMode;
-        this.loadBalancer = loadBalancer;
     }
 
     isActive(): boolean {
@@ -310,7 +307,7 @@ export class ConnectionManager extends EventEmitter {
     constructor(
         private readonly client: ClientForConnectionManager,
         private readonly clientName: string,
-        private readonly clientConfig: ClientConfig,
+        private readonly clientConfig: ClientConfigImpl,
         private readonly logger: ILogger,
         private readonly partitionService: PartitionService,
         private readonly serializationService: SerializationService,
@@ -332,10 +329,9 @@ export class ConnectionManager extends EventEmitter {
         this.authenticationTimeout = this.heartbeatManager.getHeartbeatTimeout();
         this.shuffleMemberList = this.clientConfig.properties['hazelcast.client.shuffle.member.list'] as boolean;
         this.smartRoutingEnabled = this.clientConfig.network.smartRouting;
-        this.waitStrategy = this.initWaitStrategy(this.clientConfig as ClientConfigImpl);
-        const connectionStrategyConfig = this.clientConfig.connectionStrategy;
-        this.asyncStart = connectionStrategyConfig.asyncStart;
-        this.reconnectMode = connectionStrategyConfig.reconnectMode;
+        this.waitStrategy = this.initWaitStrategy(this.clientConfig);
+        this.asyncStart = this.clientConfig.connectionStrategy.asyncStart;
+        this.reconnectMode = this.clientConfig.connectionStrategy.reconnectMode;
     }
 
     start(): Promise<void> {
@@ -507,8 +503,14 @@ export class ConnectionManager extends EventEmitter {
     private initWaitStrategy(config: ClientConfigImpl): WaitStrategy {
         const connectionStrategyConfig = config.connectionStrategy;
         const retryConfig = connectionStrategyConfig.connectionRetry;
-        return new WaitStrategy(retryConfig.initialBackoffMillis, retryConfig.maxBackoffMillis,
-            retryConfig.multiplier, retryConfig.clusterConnectTimeoutMillis, retryConfig.jitter, this.logger);
+        return new WaitStrategy(
+            retryConfig.initialBackoffMillis,
+            retryConfig.maxBackoffMillis,
+            retryConfig.multiplier,
+            retryConfig.clusterConnectTimeoutMillis,
+            retryConfig.jitter,
+            this.logger
+        );
     }
 
     private initConnectionTimeoutMillis(): number {
