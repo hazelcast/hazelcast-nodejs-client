@@ -69,8 +69,8 @@ export class DefaultPortableReader implements PortableReader {
         return this.input.readLong(pos);
     }
 
-    /** @deprecated since version 4.1.
-     * This method will be deprecated in next major version. Please use readString instead.
+    /** @deprecated since version 4.2.
+     *  This method will be removed in next major version. Please use {@link readString} instead.
      */
     readUTF(fieldName: string): string {
         return this.readString(fieldName);
@@ -169,8 +169,8 @@ export class DefaultPortableReader implements PortableReader {
         return this.input.readShortArray(pos);
     }
 
-    /** @deprecated since version 4.1.
-     * This method will be deprecated in next major version. Please use readStringArray instead.
+    /** @deprecated since version 4.2.
+     *  This method will be removed in next major version. Please use {@link readStringArray} instead.
      */
     readUTFArray(fieldName: string): string[] {
         return this.readStringArray(fieldName);

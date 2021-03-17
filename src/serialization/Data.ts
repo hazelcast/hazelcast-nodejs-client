@@ -124,13 +124,13 @@ export interface DataOutput {
 
     writeShortArray(shorts: number[]): void;
 
-    /** @deprecated since version 4.1.
-     * This method will be deprecated in next major version. Please use writeString instead.
+    /** @deprecated since version 4.2.
+     *  This method will be removed in next major version. Please use {@link writeString} instead.
      */
     writeUTF(val: string): void;
 
-    /** @deprecated since version 4.1.
-     * This method will be deprecated in next major version. Please use writeStringArray instead.
+    /** @deprecated since version 4.2.
+     *  This method will be removed in next major version. Please use {@link writeStringArray} instead.
      */
     writeUTFArray(val: string[]): void;
 
@@ -219,13 +219,13 @@ export interface DataInput {
 
     readUnsignedShort(pos?: number): number;
 
-    /** @deprecated since version 4.1.
-     * This method will be deprecated in next major version. Please use readString instead.
+    /** @deprecated since version 4.2.
+     *  This method will be removed in next major version. Please use {@link readString} instead.
      */
     readUTF(pos?: number): string;
 
-    /** @deprecated since version 4.1.
-     * This method will be deprecated in next major version. Please use readStringArray instead.
+    /** @deprecated since version 4.2.
+     *  This method will be removed in next major version. Please use {@link readStringArray} instead.
      */
     readUTFArray(pos?: number): string[];
 

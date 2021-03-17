@@ -45,8 +45,8 @@ export class ClassDefinitionWriter implements PortableWriter {
         this.builder.addStringField(fieldName);
     }
 
-    /** @deprecated since version 4.1.
-     * This method will be deprecated in next major version. Please use writeString instead.
+    /** @deprecated since version 4.2.
+     *  This method will be removed in next major version. Please use {@link writeString} instead.
      */
     writeUTF(fieldName: string, str: string): void {
         this.writeString(fieldName, str);
@@ -132,8 +132,8 @@ export class ClassDefinitionWriter implements PortableWriter {
         this.builder.addStringArrayField(fieldName);
     }
 
-    /** @deprecated since version 4.1.
-     * This method will be deprecated in next major version. Please use writeStringArray instead.
+    /** @deprecated since version 4.2.
+     *  This method will be removed in next major version. Please use {@link writeStringArray} instead.
      */
     writeUTFArray(fieldName: string, val: string[]): void {
         this.writeStringArray(fieldName, val);

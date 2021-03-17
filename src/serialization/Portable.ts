@@ -52,8 +52,8 @@ export interface PortableWriter {
 
     writeLong(fieldName: string, long: Long): void;
 
-    /** @deprecated since version 4.1.
-     * This method will be deprecated in next major version. Please use writeString instead.
+    /** @deprecated since version 4.2.
+     *  This method will be removed in next major version. Please use {@link writeString} instead.
      */
     writeUTF(fieldName: string, str: string): void;
 
@@ -92,7 +92,7 @@ export interface PortableWriter {
     writeShortArray(fieldName: string, shorts: number[]): void;
 
     /** @deprecated since version 4.1.
-     * This method will be deprecated in next major version. Please use writeStringArray instead.
+     *  This method will be removed in next major version. Please use {@link writeStringArray} instead.
      */
     writeUTFArray(fieldName: string, val: string[]): void;
 
@@ -118,7 +118,7 @@ export interface PortableReader {
     readLong(fieldName: string): Long;
 
     /** @deprecated since version 4.1.
-     * This method will be deprecated in next major version. Please use readString instead.
+     *  This method will be removed in next major version. Please use {@link readString} instead.
      */
     readUTF(fieldName: string): string;
 
@@ -155,7 +155,7 @@ export interface PortableReader {
     readShortArray(fieldName: string): number[];
 
     /** @deprecated since version 4.1.
-     * This method will be deprecated in next major version. Please use readStringArray instead.
+     *  This method will be removed in next major version. Please use {@link readStringArray} instead.
      */
     readUTFArray(fieldName: string): string[];
 

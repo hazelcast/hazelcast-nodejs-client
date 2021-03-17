@@ -191,8 +191,8 @@ export class ObjectDataOutput implements DataOutput {
         this.writeArray(this.writeShort, shorts);
     }
 
-    /** @deprecated since version 4.1.
-     * This method will be deprecated in next major version. Please use writeString instead.
+    /** @deprecated since version 4.2.
+     *  This method will be removed in next major version. Please use {@link writeString} instead.
      */
     writeUTF(val: string): void {
         this.writeString(val);
@@ -210,8 +210,8 @@ export class ObjectDataOutput implements DataOutput {
         this.pos += len;
     }
 
-    /** @deprecated since version 4.1.
-     * This method will be deprecated in next major version. Please use writeStringArray instead.
+    /** @deprecated since version 4.2.
+     *  This method will be removed in next major version. Please use {@link writeStringArray} instead.
      */
     writeUTFArray(val: string[]): void {
         this.writeStringArray(val);
@@ -499,8 +499,8 @@ export class ObjectDataInput implements DataInput {
         return this.readChar(pos).charCodeAt(0);
     }
 
-    /** @deprecated since version 4.1.
-     * This method will be deprecated in next major version. Please use readString instead.
+    /** @deprecated since version 4.2.
+     *  This method will be removed in next major version. Please use {@link readString} instead.
      */
     readUTF(pos?: number): string {
         return this.readString(pos);
@@ -519,8 +519,8 @@ export class ObjectDataInput implements DataInput {
         return result;
     }
 
-    /** @deprecated since version 4.1.
-     * This method will be deprecated in next major version. Please use readStringArray instead.
+    /** @deprecated since version 4.2.
+     *  This method will be removed in next major version. Please use {@link readStringArray} instead.
      */
     readUTFArray(pos?: number): string[] {
         return this.readStringArray(pos);

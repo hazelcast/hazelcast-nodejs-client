@@ -58,8 +58,8 @@ export class DefaultPortableWriter {
         this.output.writeLong(long);
     }
 
-    /** @deprecated since version 4.1.
-     * This method will be deprecated in next major version. Please use writeString instead.
+    /** @deprecated since version 4.2.
+     *  This method will be removed in next major version. Please use {@link writeString} instead.
      */
     writeUTF(fieldName: string, str: string): void {
         this.writeString(fieldName, str);
@@ -158,8 +158,8 @@ export class DefaultPortableWriter {
         this.output.writeShortArray(shorts);
     }
 
-    /** @deprecated since version 4.1.
-     * This method will be deprecated in next major version. Please use writeStringArray instead.
+    /** @deprecated since version 4.2.
+     *  This method will be removed in next major version. Please use {@link writeStringArray} instead.
      */
     writeUTFArray(fieldName: string, val: string[]): void {
         this.writeStringArray(fieldName, val);
