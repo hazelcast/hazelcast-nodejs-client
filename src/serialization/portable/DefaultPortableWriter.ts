@@ -19,11 +19,11 @@ import {PortableSerializer} from './PortableSerializer';
 import {PositionalDataOutput} from '../Data';
 import {ClassDefinition, FieldDefinition} from './ClassDefinition';
 import {BitsUtil} from '../../util/BitsUtil';
-import {Portable, FieldType} from '../Portable';
+import {Portable, FieldType, PortableWriter} from '../Portable';
 import * as Long from 'long';
 
 /** @internal */
-export class DefaultPortableWriter {
+export class DefaultPortableWriter implements PortableWriter{
 
     private serializer: PortableSerializer;
     private readonly output: PositionalDataOutput;
@@ -58,9 +58,6 @@ export class DefaultPortableWriter {
         this.output.writeLong(long);
     }
 
-    /** @deprecated since version 4.2.
-     *  This method will be removed in next major version. Please use {@link writeString} instead.
-     */
     writeUTF(fieldName: string, str: string): void {
         this.writeString(fieldName, str);
     }
@@ -158,9 +155,6 @@ export class DefaultPortableWriter {
         this.output.writeShortArray(shorts);
     }
 
-    /** @deprecated since version 4.2.
-     *  This method will be removed in next major version. Please use {@link writeStringArray} instead.
-     */
     writeUTFArray(fieldName: string, val: string[]): void {
         this.writeStringArray(fieldName, val);
     }

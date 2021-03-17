@@ -140,9 +140,6 @@ export class MorphingPortableReader extends DefaultPortableReader {
         return this.validateCompatibleAndRead(fieldName, FieldType.STRING_ARRAY, super.readStringArray);
     }
 
-    /** @deprecated since version 4.2.
-     *  This method will be removed in next major version.Please use {@link readStringArray} instead.
-     */
     readUTFArray(fieldName: string): string[] {
         return this.readStringArray(fieldName);
     }
@@ -195,9 +192,6 @@ export class MorphingPortableReader extends DefaultPortableReader {
         return this.validateCompatibleAndRead(fieldName, FieldType.STRING, super.readString);
     }
 
-    /** @deprecated since version 4.2.
-     *  This method will be removed in next major version.Please use {@link readString} instead.
-     */
     readUTF(fieldName: string): string {
         return this.readString(fieldName);
     }

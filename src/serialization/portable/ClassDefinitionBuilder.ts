@@ -84,9 +84,6 @@ export class ClassDefinitionBuilder {
         return this.addField(new FieldDefinition(this.index, fieldName, FieldType.STRING, this.version));
     }
 
-    /** @deprecated since version 4.2.
-     *  This method will be removed in next major version. Please use {@link addStringField} instead.
-     */
     addUTFField(fieldName: string): ClassDefinitionBuilder {
         return this.addStringField(fieldName);
     }
@@ -136,9 +133,6 @@ export class ClassDefinitionBuilder {
         return this.addField(new FieldDefinition(this.index, fieldName, FieldType.STRING_ARRAY, this.version));
     }
 
-    /** @deprecated since version 4.2.
-     *  This method will be removed in next major version. Please use {@link addStringArrayField} instead.
-     */
     addUTFArrayField(fieldName: string): ClassDefinitionBuilder {
         return this.addStringArrayField(fieldName);
     }
