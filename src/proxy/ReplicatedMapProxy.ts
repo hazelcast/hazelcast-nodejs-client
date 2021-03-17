@@ -218,7 +218,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
             if (listener.hasOwnProperty(entryEventMethod)) {
                 (listener[entryEventMethod] as EntryEventListener<K, V>).apply(null, [entryEvent]);
             } else if (listener.hasOwnProperty(mapEventMethod)) {
-                (listener[mapEventMethod] as MapEventListener).apply(null, [mapEvent]);
+                (listener[mapEventMethod] as MapEventListener<K, V>).apply(null, [mapEvent]);
             }
         };
         let listenerHandler: (message: ClientMessage,
