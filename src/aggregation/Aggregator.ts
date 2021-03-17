@@ -48,13 +48,13 @@ export class CountAggregator extends AbstractAggregator<Long> {
     classId = AggregatorFactory.COUNT;
 
     readData(input: DataInput): any {
-        this.attributePath = input.readUTF();
+        this.attributePath = input.readString();
         // member side field, not used in client
         input.readLong();
     }
 
     writeData(output: DataOutput): void {
-        output.writeUTF(this.attributePath);
+        output.writeString(this.attributePath);
         // member side field, not used in client
         output.writeLong(Long.ZERO);
     }
@@ -66,13 +66,13 @@ export class DoubleAverageAggregator extends AbstractAggregator<number> {
     classId = AggregatorFactory.DOUBLE_AVG;
 
     readData(input: DataInput): any {
-        this.attributePath = input.readUTF();
+        this.attributePath = input.readString();
         input.readDouble();
         input.readLong();
     }
 
     writeData(output: DataOutput): void {
-        output.writeUTF(this.attributePath);
+        output.writeString(this.attributePath);
         output.writeDouble(0);
         output.writeLong(Long.ZERO);
     }
@@ -84,12 +84,12 @@ export class DoubleSumAggregator extends AbstractAggregator<number> {
     classId = AggregatorFactory.DOUBLE_SUM;
 
     readData(input: DataInput): any {
-        this.attributePath = input.readUTF();
+        this.attributePath = input.readString();
         input.readDouble();
     }
 
     writeData(output: DataOutput): void {
-        output.writeUTF(this.attributePath);
+        output.writeString(this.attributePath);
         output.writeDouble(0);
     }
 }
@@ -100,13 +100,13 @@ export class NumberAverageAggregator extends AbstractAggregator<number> {
     classId = AggregatorFactory.NUMBER_AVG;
 
     readData(input: DataInput): any {
-        this.attributePath = input.readUTF();
+        this.attributePath = input.readString();
         input.readDouble();
         input.readLong();
     }
 
     writeData(output: DataOutput): void {
-        output.writeUTF(this.attributePath);
+        output.writeString(this.attributePath);
         output.writeDouble(0);
         output.writeLong(Long.ZERO);
     }
@@ -118,12 +118,12 @@ export class FixedPointSumAggregator extends AbstractAggregator<Long> {
     classId = AggregatorFactory.FIXED_SUM;
 
     readData(input: DataInput): any {
-        this.attributePath = input.readUTF();
+        this.attributePath = input.readString();
         input.readLong();
     }
 
     writeData(output: DataOutput): void {
-        output.writeUTF(this.attributePath);
+        output.writeString(this.attributePath);
         output.writeLong(Long.ZERO);
     }
 }
@@ -134,12 +134,12 @@ export class FloatingPointSumAggregator extends AbstractAggregator<number> {
     classId = AggregatorFactory.FLOATING_POINT_SUM;
 
     readData(input: DataInput): any {
-        this.attributePath = input.readUTF();
+        this.attributePath = input.readString();
         input.readDouble();
     }
 
     writeData(output: DataOutput): void {
-        output.writeUTF(this.attributePath);
+        output.writeString(this.attributePath);
         output.writeDouble(0);
     }
 }
@@ -150,12 +150,12 @@ export class MaxAggregator<R> extends AbstractAggregator<R> {
     classId = AggregatorFactory.MAX;
 
     readData(input: DataInput): any {
-        this.attributePath = input.readUTF();
+        this.attributePath = input.readString();
         input.readObject();
     }
 
     writeData(output: DataOutput): void {
-        output.writeUTF(this.attributePath);
+        output.writeString(this.attributePath);
         output.writeObject(null);
     }
 }
@@ -166,12 +166,12 @@ export class MinAggregator<R> extends AbstractAggregator<R> {
     classId = AggregatorFactory.MIN;
 
     readData(input: DataInput): any {
-        this.attributePath = input.readUTF();
+        this.attributePath = input.readString();
         input.readObject();
     }
 
     writeData(output: DataOutput): void {
-        output.writeUTF(this.attributePath);
+        output.writeString(this.attributePath);
         output.writeObject(null);
     }
 }
@@ -182,13 +182,13 @@ export class IntegerAverageAggregator extends AbstractAggregator<number> {
     classId = AggregatorFactory.INT_AVG;
 
     readData(input: DataInput): any {
-        this.attributePath = input.readUTF();
+        this.attributePath = input.readString();
         input.readLong();
         input.readLong();
     }
 
     writeData(output: DataOutput): void {
-        output.writeUTF(this.attributePath);
+        output.writeString(this.attributePath);
         output.writeLong(Long.ZERO);
         output.writeLong(Long.ZERO);
     }
@@ -200,12 +200,12 @@ export class IntegerSumAggregator extends AbstractAggregator<Long> {
     classId = AggregatorFactory.INT_SUM;
 
     readData(input: DataInput): any {
-        this.attributePath = input.readUTF();
+        this.attributePath = input.readString();
         input.readLong();
     }
 
     writeData(output: DataOutput): void {
-        output.writeUTF(this.attributePath);
+        output.writeString(this.attributePath);
         output.writeLong(Long.ZERO);
     }
 }
@@ -216,13 +216,13 @@ export class LongAverageAggregator extends AbstractAggregator<number> {
     classId = AggregatorFactory.LONG_AVG;
 
     readData(input: DataInput): any {
-        this.attributePath = input.readUTF();
+        this.attributePath = input.readString();
         input.readLong();
         input.readLong();
     }
 
     writeData(output: DataOutput): void {
-        output.writeUTF(this.attributePath);
+        output.writeString(this.attributePath);
         output.writeLong(Long.ZERO);
         output.writeLong(Long.ZERO);
     }
@@ -234,12 +234,12 @@ export class LongSumAggregator extends AbstractAggregator<Long> {
     classId = AggregatorFactory.LONG_SUM;
 
     readData(input: DataInput): any {
-        this.attributePath = input.readUTF();
+        this.attributePath = input.readString();
         input.readLong();
     }
 
     writeData(output: DataOutput): void {
-        output.writeUTF(this.attributePath);
+        output.writeString(this.attributePath);
         output.writeLong(Long.ZERO);
     }
 }

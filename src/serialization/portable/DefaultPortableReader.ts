@@ -70,8 +70,12 @@ export class DefaultPortableReader implements PortableReader {
     }
 
     readUTF(fieldName: string): string {
-        const pos = this.positionByField(fieldName, FieldType.UTF);
-        return this.input.readUTF(pos);
+        return this.readString(fieldName);
+    }
+
+    readString(fieldName: string): string {
+        const pos = this.positionByField(fieldName, FieldType.STRING);
+        return this.input.readString(pos);
     }
 
     readBoolean(fieldName: string): boolean {
@@ -163,8 +167,12 @@ export class DefaultPortableReader implements PortableReader {
     }
 
     readUTFArray(fieldName: string): string[] {
-        const pos = this.positionByField(fieldName, FieldType.UTF_ARRAY);
-        return this.input.readUTFArray(pos);
+        return this.readStringArray(fieldName);
+    }
+
+    readStringArray(fieldName: string): string[] {
+        const pos = this.positionByField(fieldName, FieldType.STRING_ARRAY);
+        return this.input.readStringArray(pos);
     }
 
     readPortableArray(fieldName: string): Portable[] {

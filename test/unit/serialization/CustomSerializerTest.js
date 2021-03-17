@@ -36,11 +36,11 @@ describe('CustomSerializerTest', function () {
             {
                 id: 10,
                 write: function (out, emp) {
-                    out.writeUTF(emp.surname);
+                    out.writeString(emp.surname);
                 },
                 read: function (inp) {
                     const obj = new CustomObject();
-                    obj.surname = inp.readUTF();
+                    obj.surname = inp.readString();
                     return obj;
                 }
             }

@@ -24,13 +24,13 @@ function DistortInvalidationMetadataEntryProcessor(mapName, mapSize, duration) {
 }
 
 DistortInvalidationMetadataEntryProcessor.prototype.readData = function (inp) {
-    this.mapName = inp.readUTF();
+    this.mapName = inp.readString();
     this.mapSize = inp.readInt();
     this.duration = inp.readInt();
 };
 
 DistortInvalidationMetadataEntryProcessor.prototype.writeData = function (outp) {
-    outp.writeUTF(this.mapName);
+    outp.writeString(this.mapName);
     outp.writeInt(this.mapSize);
     outp.writeInt(this.duration);
 };

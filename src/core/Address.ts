@@ -65,14 +65,14 @@ export class AddressImpl implements Address, IdentifiedDataSerializable {
     readData(input: DataInput): any {
         this.port = input.readInt();
         this.type = input.readByte();
-        this.host = input.readUTF();
+        this.host = input.readString();
         this.addrStr = this.toStringInternal();
     }
 
     writeData(output: DataOutput): void {
         output.writeInt(this.port);
         output.writeByte(this.type);
-        output.writeUTF(this.host);
+        output.writeString(this.host);
     }
 
     equals(other: AddressImpl): boolean {
