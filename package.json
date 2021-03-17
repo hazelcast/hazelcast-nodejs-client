@@ -5,13 +5,13 @@
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
     "dependencies": {
-        "long": "4.0.0",
-        "@types/long": "4.0.1"
+        "@types/long": "4.0.1",
+        "long": "4.0.0"
     },
     "devDependencies": {
         "@types/node": "^10.17.28",
-        "@typescript-eslint/eslint-plugin": "^3.10.0",
-        "@typescript-eslint/parser": "^3.10.0",
+        "@typescript-eslint/eslint-plugin": "^4.17.0",
+        "@typescript-eslint/parser": "^4.17.0",
         "chai": "^4.2.0",
         "chai-as-promised": "^7.1.1",
         "eslint": "^7.7.0",
@@ -26,7 +26,7 @@
         "sinon-chai": "^3.5.0",
         "thrift": "^0.12.0",
         "typedoc": "^0.18.0",
-        "typescript": "^3.9.7",
+        "typescript": "^4.2.3",
         "winston": "^3.3.3",
         "yargs": "^16.0.3"
     },
