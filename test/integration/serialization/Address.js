@@ -25,17 +25,17 @@ function Address(street, zipCode, city, state) {
 }
 
 Address.prototype.writeData = function (objectDataOutput) {
-    objectDataOutput.writeUTF(this.street);
+    objectDataOutput.writeString(this.street);
     objectDataOutput.writeInt(this.zipCode);
-    objectDataOutput.writeUTF(this.city);
-    objectDataOutput.writeUTF(this.state);
+    objectDataOutput.writeString(this.city);
+    objectDataOutput.writeString(this.state);
 };
 
 Address.prototype.readData = function (objectDataInput) {
-    this.street = objectDataInput.readUTF();
+    this.street = objectDataInput.readString();
     this.zipCode = objectDataInput.readInt();
-    this.city = objectDataInput.readUTF();
-    this.state = objectDataInput.readUTF();
+    this.city = objectDataInput.readString();
+    this.state = objectDataInput.readString();
 };
 
 function myIdentifiedFactory(classId) {

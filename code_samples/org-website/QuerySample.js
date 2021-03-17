@@ -30,13 +30,13 @@ class User {
     }
 
     readPortable(reader) {
-        this.username = reader.readUTF('username');
+        this.username = reader.readString('username');
         this.age = reader.readInt('age');
         this.active = reader.readBoolean('active');
     }
 
     writePortable(writer) {
-        writer.writeUTF('username', this.username);
+        writer.writeString('username', this.username);
         writer.writeInt('age', this.age);
         writer.writeBoolean('active', this.active);
     }

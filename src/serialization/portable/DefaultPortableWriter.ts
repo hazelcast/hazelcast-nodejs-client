@@ -19,11 +19,11 @@ import {PortableSerializer} from './PortableSerializer';
 import {PositionalDataOutput} from '../Data';
 import {ClassDefinition, FieldDefinition} from './ClassDefinition';
 import {BitsUtil} from '../../util/BitsUtil';
-import {Portable, FieldType} from '../Portable';
+import {Portable, FieldType, PortableWriter} from '../Portable';
 import * as Long from 'long';
 
 /** @internal */
-export class DefaultPortableWriter {
+export class DefaultPortableWriter implements PortableWriter{
 
     private serializer: PortableSerializer;
     private readonly output: PositionalDataOutput;
@@ -59,8 +59,12 @@ export class DefaultPortableWriter {
     }
 
     writeUTF(fieldName: string, str: string): void {
-        this.setPosition(fieldName, FieldType.UTF);
-        this.output.writeUTF(str);
+        this.writeString(fieldName, str);
+    }
+
+    writeString(fieldName: string, str: string): void {
+        this.setPosition(fieldName, FieldType.STRING);
+        this.output.writeString(str);
     }
 
     writeBoolean(fieldName: string, value: boolean): void {
@@ -152,8 +156,12 @@ export class DefaultPortableWriter {
     }
 
     writeUTFArray(fieldName: string, val: string[]): void {
-        this.setPosition(fieldName, FieldType.UTF_ARRAY);
-        this.output.writeUTFArray(val);
+        this.writeStringArray(fieldName, val);
+    }
+
+    writeStringArray(fieldName: string, val: string[]): void {
+        this.setPosition(fieldName, FieldType.STRING_ARRAY);
+        this.output.writeStringArray(val);
     }
 
     writePortableArray(fieldName: string, portables: Portable[]): void {

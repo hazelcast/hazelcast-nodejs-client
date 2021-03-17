@@ -28,13 +28,13 @@ class Customer {
     }
 
     readPortable(reader) {
-        this.name = reader.readUTF('name');
+        this.name = reader.readString('name');
         this.id = reader.readInt('id');
         this.lastOrder = reader.readLong('lastOrder').toNumber();
     }
 
     writePortable(writer) {
-        writer.writeUTF('name', this.name);
+        writer.writeString('name', this.name);
         writer.writeInt('id', this.id);
         writer.writeLong('lastOrder', Long.fromNumber(this.lastOrder));
     }

@@ -73,7 +73,7 @@ class APortable {
         this.f = reader.readFloat('f');
         this.i = reader.readInt('i');
         this.l = reader.readLong('l');
-        this.str = reader.readUTF('str');
+        this.str = reader.readString('str');
         this.p = reader.readPortable('p');
 
         this.booleans = reader.readBooleanArray('booleans');
@@ -84,7 +84,7 @@ class APortable {
         this.floats = reader.readFloatArray('fs');
         this.ints = reader.readIntArray('is');
         this.longs = reader.readLongArray('ls');
-        this.strings = reader.readUTFArray('strs');
+        this.strings = reader.readStringArray('strs');
         this.portables = reader.readPortableArray('ps');
 
         this.booleansNull = reader.readBooleanArray('booleansNull');
@@ -95,7 +95,7 @@ class APortable {
         this.floatsNull = reader.readFloatArray('fsNull');
         this.intsNull = reader.readIntArray('isNull');
         this.longsNull = reader.readLongArray('lsNull');
-        this.stringsNull = reader.readUTFArray('strsNull');
+        this.stringsNull = reader.readStringArray('strsNull');
 
         const dataInput = reader.getRawDataInput();
 
@@ -107,7 +107,7 @@ class APortable {
         this.f = dataInput.readFloat();
         this.i = dataInput.readInt();
         this.l = dataInput.readLong();
-        this.str = dataInput.readUTF();
+        this.str = dataInput.readString();
 
         this.booleans = dataInput.readBooleanArray();
         this.bytes = dataInput.readByteArray();
@@ -117,7 +117,7 @@ class APortable {
         this.floats = dataInput.readFloatArray();
         this.ints = dataInput.readIntArray();
         this.longs = dataInput.readLongArray();
-        this.strings = dataInput.readUTFArray();
+        this.strings = dataInput.readStringArray();
 
         this.booleansNull = dataInput.readBooleanArray();
         this.bytesNull = dataInput.readByteArray();
@@ -127,7 +127,7 @@ class APortable {
         this.floatsNull = dataInput.readFloatArray();
         this.intsNull = dataInput.readIntArray();
         this.longsNull = dataInput.readLongArray();
-        this.stringsNull = dataInput.readUTFArray();
+        this.stringsNull = dataInput.readStringArray();
 
         this.byteSize = dataInput.readByte();
         this.bytesFully = dataInput.readRaw(this.byteSize);

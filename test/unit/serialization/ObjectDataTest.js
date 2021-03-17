@@ -47,8 +47,8 @@ describe('ObjectDataTest', function () {
         out.writeShort(32767);
         out.writeZeroBytes(6);
         out.writeShortArray([-32768, 0, 32767]);
-        out.writeUTF('selamœ∑®ßåç∫˙˜');
-        out.writeUTFArray([
+        out.writeString('selamœ∑®ßåç∫˙˜');
+        out.writeStringArray([
             '',
             'istanbul',
             'üsküdar',
@@ -87,8 +87,8 @@ describe('ObjectDataTest', function () {
         expect(inp.readShort()).to.equal(32767);
         inp.skipBytes(6);
         expect(inp.readShortArray()).to.deep.equal([-32768, 0, 32767]);
-        expect(inp.readUTF()).to.equal('selamœ∑®ßåç∫˙˜');
-        expect(inp.readUTFArray()).to.deep.equal([
+        expect(inp.readString()).to.equal('selamœ∑®ßåç∫˙˜');
+        expect(inp.readStringArray()).to.deep.equal([
             '',
             'istanbul',
             'üsküdar',

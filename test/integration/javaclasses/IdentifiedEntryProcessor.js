@@ -22,11 +22,11 @@ function IdentifiedEntryProcessor(value) {
 }
 
 IdentifiedEntryProcessor.prototype.readData = function (inp) {
-    this.value = inp.readUTF();
+    this.value = inp.readString();
 };
 
 IdentifiedEntryProcessor.prototype.writeData = function (outp) {
-    outp.writeUTF(this.value);
+    outp.writeString(this.value);
 };
 
 module.exports = IdentifiedEntryProcessor;

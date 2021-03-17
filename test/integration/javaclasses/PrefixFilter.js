@@ -22,11 +22,11 @@ function PrefixFilter(prefix) {
 }
 
 PrefixFilter.prototype.readData = function (inp) {
-    this.prefix = inp.readUTF();
+    this.prefix = inp.readString();
 };
 
 PrefixFilter.prototype.writeData = function (outp) {
-    outp.writeUTF(this.prefix);
+    outp.writeString(this.prefix);
 };
 
 module.exports = PrefixFilter;

@@ -23,11 +23,11 @@ class IdentifiedEntryProcessor {
     }
 
     readData(input) {
-        this.value = input.readUTF();
+        this.value = input.readString();
     }
 
     writeData(output) {
-        output.writeUTF(this.value);
+        output.writeString(this.value);
     }
 }
 

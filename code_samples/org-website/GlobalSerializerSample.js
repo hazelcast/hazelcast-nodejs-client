@@ -25,7 +25,7 @@ class GlobalSerializer {
     read(input) {
         // synthetic deserialization sample:
         // replace with your implementation
-        const rawString = input.readUTF();
+        const rawString = input.readString();
         return JSON.parse(rawString);
     }
 
@@ -33,7 +33,7 @@ class GlobalSerializer {
         // synthetic serialization sample:
         // replace with your implementation
         const rawString = JSON.stringify(Function.prototype.toString(obj));
-        output.writeUTF(rawString);
+        output.writeString(rawString);
     }
 }
 
