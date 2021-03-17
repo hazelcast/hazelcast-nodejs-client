@@ -34,7 +34,8 @@ export class WaitStrategy {
         private readonly jitter: number,
         private logger: ILogger
     ) {
-        this.clusterConnectTimeoutMillis = clusterConnectTimeoutMillis === -1 ? Number.MAX_VALUE: clusterConnectTimeoutMillis;
+        this.clusterConnectTimeoutMillis = clusterConnectTimeoutMillis === -1 ?
+            Number.POSITIVE_INFINITY : clusterConnectTimeoutMillis;
     }
 
     public reset(): void {
