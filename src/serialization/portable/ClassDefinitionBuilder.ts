@@ -80,8 +80,12 @@ export class ClassDefinitionBuilder {
         return this.addField(new FieldDefinition(this.index, fieldName, FieldType.DOUBLE, this.version));
     }
 
+    addStringField(fieldName: string): ClassDefinitionBuilder {
+        return this.addField(new FieldDefinition(this.index, fieldName, FieldType.STRING, this.version));
+    }
+
     addUTFField(fieldName: string): ClassDefinitionBuilder {
-        return this.addField(new FieldDefinition(this.index, fieldName, FieldType.UTF, this.version));
+        return this.addStringField(fieldName);
     }
 
     addPortableField(fieldName: string, def: ClassDefinition): ClassDefinitionBuilder {
@@ -125,8 +129,12 @@ export class ClassDefinitionBuilder {
         return this.addField(new FieldDefinition(this.index, fieldName, FieldType.DOUBLE_ARRAY, this.version));
     }
 
+    addStringArrayField(fieldName: string): ClassDefinitionBuilder {
+        return this.addField(new FieldDefinition(this.index, fieldName, FieldType.STRING_ARRAY, this.version));
+    }
+
     addUTFArrayField(fieldName: string): ClassDefinitionBuilder {
-        return this.addField(new FieldDefinition(this.index, fieldName, FieldType.UTF_ARRAY, this.version));
+        return this.addStringArrayField(fieldName);
     }
 
     addPortableArrayField(fieldName: string, def: ClassDefinition): ClassDefinitionBuilder {

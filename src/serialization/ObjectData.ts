@@ -192,6 +192,10 @@ export class ObjectDataOutput implements DataOutput {
     }
 
     writeUTF(val: string): void {
+        this.writeString(val);
+    }
+
+    writeString(val: string): void {
         const len = (val != null) ? Buffer.byteLength(val, 'utf8') : BitsUtil.NULL_ARRAY_LENGTH;
         this.writeInt(len);
         if (len === BitsUtil.NULL_ARRAY_LENGTH) {
@@ -204,7 +208,11 @@ export class ObjectDataOutput implements DataOutput {
     }
 
     writeUTFArray(val: string[]): void {
-        this.writeArray(this.writeUTF, val);
+        this.writeStringArray(val);
+    }
+
+    writeStringArray(val: string[]): void {
+        this.writeArray(this.writeString, val);
     }
 
     writeZeroBytes(count: number): void {
@@ -486,6 +494,10 @@ export class ObjectDataInput implements DataInput {
     }
 
     readUTF(pos?: number): string {
+        return this.readString(pos);
+    }
+
+    readString(pos?: number): string {
         const len = this.readInt(pos);
         const readPos = this.addOrUndefined(pos, 4) || this.pos;
         if (len === BitsUtil.NULL_ARRAY_LENGTH) {
@@ -499,7 +511,11 @@ export class ObjectDataInput implements DataInput {
     }
 
     readUTFArray(pos?: number): string[] {
-        return this.readArray<string>(this.readUTF, pos);
+        return this.readStringArray(pos);
+    }
+
+    readStringArray(pos?: number): string[] {
+        return this.readArray<string>(this.readString, pos);
     }
 
     reset(): void {

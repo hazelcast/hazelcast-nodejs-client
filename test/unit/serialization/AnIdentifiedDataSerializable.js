@@ -71,7 +71,7 @@ class AnIdentifiedDataSerializable {
         this.f = dataInput.readFloat();
         this.i = dataInput.readInt();
         this.l = dataInput.readLong();
-        this.str = dataInput.readUTF();
+        this.str = dataInput.readString();
 
         this.booleans = dataInput.readBooleanArray();
         this.bytes = dataInput.readByteArray();
@@ -81,7 +81,7 @@ class AnIdentifiedDataSerializable {
         this.floats = dataInput.readFloatArray();
         this.ints = dataInput.readIntArray();
         this.longs = dataInput.readLongArray();
-        this.strings = dataInput.readUTFArray();
+        this.strings = dataInput.readStringArray();
 
         this.booleansNull = dataInput.readBooleanArray();
         this.bytesNull = dataInput.readByteArray();
@@ -91,7 +91,7 @@ class AnIdentifiedDataSerializable {
         this.floatsNull = dataInput.readFloatArray();
         this.intsNull = dataInput.readIntArray();
         this.longsNull = dataInput.readLongArray();
-        this.stringsNull = dataInput.readUTFArray();
+        this.stringsNull = dataInput.readStringArray();
 
         this.byteSize = dataInput.readByte();
         this.bytesFully = dataInput.readRaw(this.byteSize);
@@ -122,7 +122,7 @@ class AnIdentifiedDataSerializable {
         dataOutput.writeFloat(this.f);
         dataOutput.writeInt(this.i);
         dataOutput.writeLong(this.l);
-        dataOutput.writeUTF(this.str);
+        dataOutput.writeString(this.str);
 
         dataOutput.writeBooleanArray(this.booleans);
         dataOutput.writeByteArray(this.bytes);
@@ -132,7 +132,7 @@ class AnIdentifiedDataSerializable {
         dataOutput.writeFloatArray(this.floats);
         dataOutput.writeIntArray(this.ints);
         dataOutput.writeLongArray(this.longs);
-        dataOutput.writeUTFArray(this.strings);
+        dataOutput.writeStringArray(this.strings);
 
         dataOutput.writeBooleanArray(this.booleansNull);
         dataOutput.writeByteArray(this.bytesNull);
@@ -142,7 +142,7 @@ class AnIdentifiedDataSerializable {
         dataOutput.writeFloatArray(this.floatsNull);
         dataOutput.writeIntArray(this.intsNull);
         dataOutput.writeLongArray(this.longsNull);
-        dataOutput.writeUTFArray(this.stringsNull);
+        dataOutput.writeStringArray(this.stringsNull);
 
         const byteSize = this.bytes.length;
         dataOutput.write(byteSize);
