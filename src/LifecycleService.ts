@@ -15,7 +15,6 @@
  */
 
 import {EventEmitter} from 'events';
-import {HazelcastClient} from './HazelcastClient';
 import {ILogger} from './logging/ILogger';
 
 /**
@@ -49,7 +48,7 @@ export enum LifecycleState {
     CONNECTED = 'CONNECTED',
 
     /**
-     * Fired when the client is disconnected from the member.
+     * Fired when the client is disconnected from the cluster.
      */
     DISCONNECTED = 'DISCONNECTED',
 
@@ -80,22 +79,17 @@ export interface LifecycleService {
 export class LifecycleServiceImpl extends EventEmitter implements LifecycleService {
 
     private active: boolean;
-    private client: HazelcastClient;
-    private logger: ILogger;
 
-    constructor(client: HazelcastClient) {
+    constructor(lifecycleListeners: Array<(state: LifecycleState) => void>, private logger: ILogger) {
         super();
         this.setMaxListeners(0);
-        this.client = client;
-        this.logger = this.client.getLoggingService().getLogger();
-        const listeners = client.getConfig().lifecycleListeners;
-        listeners.forEach((listener) => {
+        lifecycleListeners.forEach((listener) => {
             this.on(LIFECYCLE_EVENT_NAME, listener);
         });
     }
 
     /**
-     * Causes LifecycleService to emit given event to all registered listeners.
+     * Causes LifecycleService to emit the given event to all registered listeners.
      * @param state
      */
     emitLifecycleEvent(state: LifecycleState): void {
@@ -117,14 +111,19 @@ export class LifecycleServiceImpl extends EventEmitter implements LifecycleServi
         this.emitLifecycleEvent(LifecycleState.STARTED);
     }
 
-    shutdown(): Promise<void> {
-        if (!this.active) {
-            return;
-        }
+    /**
+     * Runs when client shutdown process started
+     */
+    onShutdownStart(): void {
         this.active = false;
-
         this.emitLifecycleEvent(LifecycleState.SHUTTING_DOWN);
-        return this.client.doShutdown()
-            .then(() => this.emitLifecycleEvent(LifecycleState.SHUTDOWN));
     }
+
+    /**
+     * Runs when client has been shutdown
+     */
+    onShutdownFinished(): void {
+        this.emitLifecycleEvent(LifecycleState.SHUTDOWN);
+    }
+
 }

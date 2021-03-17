@@ -15,9 +15,8 @@
  */
 /** @ignore *//** */
 
-import {HazelcastClient} from '../HazelcastClient';
-import {ClientConnection} from '../network/ClientConnection';
-import {CLIENT_TYPE} from '../network/ClientConnectionManager';
+import {Connection} from '../network/Connection';
+import {CLIENT_TYPE, ConnectionRegistry} from '../network/ConnectionManager';
 import {Properties} from '../config/Properties';
 import {ClientStatisticsCodec} from '../codec/ClientStatisticsCodec';
 import {
@@ -35,6 +34,8 @@ import * as os from 'os';
 import {BuildInfo} from '../BuildInfo';
 import {ILogger} from '../logging/ILogger';
 import * as Long from 'long';
+import {InvocationService} from '../invocation/InvocationService';
+import {NearCacheManager} from '../nearcache/NearCacheManager';
 
 type GaugeDescription = {
     gaugeFn: () => number;
@@ -60,17 +61,24 @@ export class Statistics {
     private static readonly EMPTY_STAT_VALUE: string = '';
     private readonly allGauges: { [name: string]: GaugeDescription } = {};
     private readonly enabled: boolean;
-    private readonly properties: Properties;
-    private readonly logger: ILogger;
-    private client: HazelcastClient;
     private task: Task;
     private compressorErrorLogged = false;
 
-    constructor(clientInstance: HazelcastClient) {
-        this.properties = clientInstance.getConfig().properties;
+    constructor(
+        private readonly logger: ILogger,
+        private readonly properties: Properties,
+        private readonly clientName: string,
+        private readonly invocationService: InvocationService,
+        private readonly nearCacheManager: NearCacheManager,
+        private readonly connectionRegistry: ConnectionRegistry
+    ) {
+        this.properties = properties;
         this.enabled = this.properties[Statistics.ENABLED] as boolean;
-        this.client = clientInstance;
-        this.logger = this.client.getLoggingService().getLogger();
+        this.logger = logger;
+        this.invocationService = invocationService;
+        this.clientName = clientName;
+        this.nearCacheManager = nearCacheManager;
+        this.connectionRegistry = connectionRegistry;
     }
 
     /**
@@ -111,7 +119,7 @@ export class Statistics {
             this.compressorErrorLogged = false;
             const collectionTimestamp = Long.fromNumber(Date.now());
 
-            const connection = this.client.getConnectionManager().getRandomConnection();
+            const connection = this.connectionRegistry.getRandomConnection();
             if (connection == null) {
                 this.logger.trace('Statistics', 'Can not send client statistics to the server. No connection found.');
                 return;
@@ -129,11 +137,11 @@ export class Statistics {
     sendStats(collectionTimestamp: Long,
               stats: string,
               compressor: MetricsCompressor,
-              connection: ClientConnection): void {
+              connection: Connection): void {
         compressor.generateBlob()
             .then((blob) => {
                 const request = ClientStatisticsCodec.encodeRequest(collectionTimestamp, stats, blob);
-                return this.client.getInvocationService()
+                return this.invocationService
                     .invokeOnConnection(connection, request);
             })
             .catch((err) => {
@@ -236,14 +244,14 @@ export class Statistics {
 
     private fillMetrics(stats: string[],
                         compressor: MetricsCompressor,
-                        connection: ClientConnection): void {
+                        connection: Connection): void {
         this.addAttribute(stats, 'lastStatisticsCollectionTime', Date.now());
         this.addAttribute(stats, 'enterprise', 'false');
         this.addAttribute(stats, 'clientType', CLIENT_TYPE);
         this.addAttribute(stats, 'clientVersion', BuildInfo.getClientVersion());
         this.addAttribute(stats, 'clusterConnectionTimestamp', connection.getStartTime());
         this.addAttribute(stats, 'clientAddress', connection.getLocalAddress().toString());
-        this.addAttribute(stats, 'clientName', this.client.getName());
+        this.addAttribute(stats, 'clientName', this.clientName);
 
         for (const gaugeName in this.allGauges) {
             const gauge = this.allGauges[gaugeName];
@@ -281,7 +289,7 @@ export class Statistics {
     }
 
     private addNearCacheStats(stats: string[], compressor: MetricsCompressor): void {
-        for (const nearCache of this.client.getNearCacheManager().listAllNearCaches()) {
+        for (const nearCache of this.nearCacheManager.listAllNearCaches()) {
             const name = nearCache.getName();
             const nearCacheNameWithPrefix = this.getNameWithPrefix(name);
             nearCacheNameWithPrefix.push('.');

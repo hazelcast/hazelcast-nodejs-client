@@ -28,9 +28,9 @@ import {DistributedObject} from '../core';
  * the same latch instance to be reused.
  *
  * There is no `await()` method to do an unbound wait since this is undesirable
- * in a distributed application: for example, a cluster can split or the master
+ * in a distributed application: for example, a cluster can split, or the master
  * and replicas could all die. In most cases, it is best to configure
- * an explicit timeout so you have the ability to deal with these situations.
+ * an explicit timeout, so you have the ability to deal with these situations.
  *
  * All of the API methods in the ICountDownLatch offer the exactly-once
  * execution semantics. For instance, even if a `countDown()` call is

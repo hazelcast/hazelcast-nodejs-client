@@ -16,11 +16,12 @@
 /** @ignore *//** */
 
 import * as Long from 'long';
-import {HazelcastClient} from '../../HazelcastClient';
 import {RaftGroupId} from './RaftGroupId';
 import {BaseCPProxy} from './BaseCPProxy';
-import {CPSubsystemImpl} from '../../CPSubsystem';
 import {CPSessionManager} from './CPSessionManager';
+import {InvocationService} from '../../invocation/InvocationService';
+import {SerializationService} from '../../serialization/SerializationService';
+
 
 /**
  * Common super class for CP Subsystem proxies that make use of Raft sessions.
@@ -31,13 +32,24 @@ export abstract class CPSessionAwareProxy extends BaseCPProxy {
     protected readonly sessionManager: CPSessionManager;
     private threadIdSeq = 0;
 
-    constructor(client: HazelcastClient,
-                serviceName: string,
-                groupId: RaftGroupId,
-                proxyName: string,
-                objectName: string) {
-        super(client, serviceName, groupId, proxyName, objectName);
-        this.sessionManager = (client.getCPSubsystem() as CPSubsystemImpl).getCPSessionManager();
+    protected constructor(
+        serviceName: string,
+        groupId: RaftGroupId,
+        proxyName: string,
+        objectName: string,
+        invocationService: InvocationService,
+        serializationService: SerializationService,
+        cpSessionManager: CPSessionManager
+    ) {
+        super(
+            serviceName,
+            groupId,
+            proxyName,
+            objectName,
+            invocationService,
+            serializationService
+        );
+        this.sessionManager = cpSessionManager;
     }
 
     /**

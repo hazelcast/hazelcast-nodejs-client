@@ -18,7 +18,7 @@
 
 const { expect } = require('chai');
 
-const { ClientMessageReader } = require('../../../lib/network/ClientConnection');
+const { ClientMessageReader } = require('../../../lib/network/Connection');
 const cm = require('../../../lib/protocol/ClientMessage');
 
 describe('ClientMessageReaderTest', function () {

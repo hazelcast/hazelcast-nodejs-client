@@ -1860,7 +1860,7 @@ Members [1] {
 
 [DefaultLogger] INFO at LifecycleService: HazelcastClient is SHUTTING_DOWN
 Lifecycle Event >>> SHUTTING_DOWN
-[DefaultLogger] INFO at ConnectionManager: Removed connection to endpoint: 192.168.1.10:5701:8d69d670-fa8a-4278-a91f-b43875fccfe8, connection: ClientConnection{alive=false, connectionId=0, remoteAddress=192.168.1.10:5701}
+[DefaultLogger] INFO at ConnectionManager: Removed connection to endpoint: 192.168.1.10:5701:8d69d670-fa8a-4278-a91f-b43875fccfe8, connection: Connection{alive=false, connectionId=0, remoteAddress=192.168.1.10:5701}
 [DefaultLogger] INFO at LifecycleService: HazelcastClient is DISCONNECTED
 Lifecycle Event >>> DISCONNECTED
 [DefaultLogger] INFO at LifecycleService: HazelcastClient is SHUTDOWN

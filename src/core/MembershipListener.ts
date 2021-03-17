@@ -91,7 +91,7 @@ export class InitialMembershipEvent {
 
 /**
  * The InitialMembershipListener is a {@link MembershipListener} that first
- * receives an {@link InitialMembershipEvent} when it is registered so it
+ * receives an {@link InitialMembershipEvent} when it is registered, so it
  * immediately knows which members are available. After that event has
  * been received, it will receive the normal MembershipEvents.
  *

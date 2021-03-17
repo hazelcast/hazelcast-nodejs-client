@@ -15,7 +15,6 @@
  */
 /** @ignore *//** */
 
-import {HazelcastClient} from '../../HazelcastClient';
 import {BaseCPProxy} from './BaseCPProxy';
 import {IAtomicReference} from '../IAtomicReference';
 import {CPProxyManager} from './CPProxyManager';
@@ -24,15 +23,28 @@ import {AtomicRefCompareAndSetCodec} from '../../codec/AtomicRefCompareAndSetCod
 import {AtomicRefGetCodec} from '../../codec/AtomicRefGetCodec';
 import {AtomicRefSetCodec} from '../../codec/AtomicRefSetCodec';
 import {AtomicRefContainsCodec} from '../../codec/AtomicRefContainsCodec';
+import {InvocationService} from '../../invocation/InvocationService';
+import {SerializationService} from '../../serialization/SerializationService';
+
 
 /** @internal */
 export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E> {
 
-    constructor(client: HazelcastClient,
-                groupId: RaftGroupId,
-                proxyName: string,
-                objectName: string) {
-        super(client, CPProxyManager.ATOMIC_REF_SERVICE, groupId, proxyName, objectName);
+    constructor(
+        groupId: RaftGroupId,
+        proxyName: string,
+        objectName: string,
+        invocationService: InvocationService,
+        serializationService: SerializationService
+    ) {
+        super(
+            CPProxyManager.ATOMIC_REF_SERVICE,
+            groupId,
+            proxyName,
+            objectName,
+            invocationService,
+            serializationService
+        );
     }
 
     compareAndSet(expect: E, update: E): Promise<boolean> {

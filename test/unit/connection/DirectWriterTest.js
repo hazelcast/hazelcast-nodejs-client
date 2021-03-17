@@ -20,7 +20,7 @@ const { Socket } = require('net');
 const sinon = require('sinon');
 const { expect } = require('chai');
 
-const { DirectWriter } = require('../../../lib/network/ClientConnection');
+const { DirectWriter } = require('../../../lib/network/Connection');
 const {
     ClientMessage,
     Frame

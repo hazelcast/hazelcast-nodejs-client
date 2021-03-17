@@ -26,8 +26,8 @@ import {
 export class Batch {
 
     private nextIdLong: Long;
-    private increment: Long;
-    private invalidSince: number;
+    private readonly increment: Long;
+    private readonly invalidSince: number;
     private firstInvalidId: Long;
 
     constructor(validityMillis: number, base: Long, increment: Long, batchSize: number) {

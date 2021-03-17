@@ -117,7 +117,7 @@ describe('StatisticsTest (default period)', function () {
         expect(extractBooleanStatValue(stats, 'enterprise')).to.be.false;
         expect(extractStringStatValue(stats, 'clientType')).to.equal('NJS');
         expect(extractStringStatValue(stats, 'clientVersion')).to.equal(BuildInfo.getClientVersion());
-        const connection = client.getConnectionManager().getRandomConnection();
+        const connection = client.connectionRegistry.getRandomConnection();
         expect(extractIntStatValue(stats, 'clusterConnectionTimestamp')).to.equal(connection.getStartTime());
         expect(extractStringStatValue(stats, 'clientAddress')).to.equal(connection.getLocalAddress().toString());
         expect(extractIntStatValue(stats, 'os.processCpuTime')).to.greaterThan(1000);

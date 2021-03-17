@@ -20,7 +20,6 @@ import {
     DistributedObject,
     IllegalStateError
 } from '../../core';
-import {HazelcastClient} from '../../HazelcastClient';
 import {AtomicLongProxy} from './AtomicLongProxy';
 import {AtomicRefProxy} from './AtomicRefProxy';
 import {CountDownLatchProxy} from './CountDownLatchProxy';
@@ -33,6 +32,9 @@ import {RaftGroupId} from './RaftGroupId';
 import {CPGroupCreateCPGroupCodec} from '../../codec/CPGroupCreateCPGroupCodec';
 import {SemaphoreGetSemaphoreTypeCodec} from '../../codec/SemaphoreGetSemaphoreTypeCodec';
 import {assertString} from '../../util/Util';
+import {InvocationService} from '../../invocation/InvocationService';
+import {SerializationService} from '../../serialization/SerializationService';
+import {CPSessionManager} from './CPSessionManager';
 
 const DEFAULT_GROUP_NAME = 'default';
 
@@ -76,12 +78,13 @@ export class CPProxyManager {
     static readonly LOCK_SERVICE = 'hz:raft:lockService';
     static readonly SEMAPHORE_SERVICE = 'hz:raft:semaphoreService';
 
-    private readonly client: HazelcastClient;
     private readonly lockProxies: Map<string, FencedLockProxy> = new Map();
 
-    constructor(client: HazelcastClient) {
-        this.client = client;
-    }
+    constructor(
+        private readonly invocationService: InvocationService,
+        private readonly serializationService: SerializationService,
+        private readonly cpSessionManager: CPSessionManager
+    ) {}
 
     getOrCreateProxy(proxyName: string, serviceName: string): Promise<DistributedObject> {
         proxyName = withoutDefaultGroupName(proxyName);
@@ -89,11 +92,29 @@ export class CPProxyManager {
 
         return this.getGroupId(proxyName).then((groupId): DistributedObject | Promise<DistributedObject> => {
             if (serviceName === CPProxyManager.ATOMIC_LONG_SERVICE) {
-                return new AtomicLongProxy(this.client, groupId, proxyName, objectName);
+                return new AtomicLongProxy(
+                    groupId,
+                    proxyName,
+                    objectName,
+                    this.invocationService,
+                    this.serializationService
+                );
             } else if (serviceName === CPProxyManager.ATOMIC_REF_SERVICE) {
-                return new AtomicRefProxy(this.client, groupId, proxyName, objectName);
+                return new AtomicRefProxy(
+                    groupId,
+                    proxyName,
+                    objectName,
+                    this.invocationService,
+                    this.serializationService
+                );
             } else if (serviceName === CPProxyManager.LATCH_SERVICE) {
-                return new CountDownLatchProxy(this.client, groupId, proxyName, objectName);
+                return new CountDownLatchProxy(
+                    groupId,
+                    proxyName,
+                    objectName,
+                    this.invocationService,
+                    this.serializationService
+                );
             } else if (serviceName === CPProxyManager.LOCK_SERVICE) {
                 return this.createFencedLock(groupId, proxyName, objectName);
             } else if (serviceName === CPProxyManager.SEMAPHORE_SERVICE) {
@@ -105,7 +126,7 @@ export class CPProxyManager {
 
     private getGroupId(proxyName: string): Promise<RaftGroupId> {
         const clientMessage = CPGroupCreateCPGroupCodec.encodeRequest(proxyName);
-        return this.client.getInvocationService().invokeOnRandomTarget(clientMessage)
+        return this.invocationService.invokeOnRandomTarget(clientMessage)
             .then(CPGroupCreateCPGroupCodec.decodeResponse);
     }
 
@@ -118,19 +139,40 @@ export class CPProxyManager {
                 return proxy;
             }
         }
-        proxy = new FencedLockProxy(this.client, groupId, proxyName, objectName);
+        proxy = new FencedLockProxy(
+            groupId,
+            proxyName,
+            objectName,
+            this.serializationService,
+            this.invocationService,
+            this.cpSessionManager
+        );
         this.lockProxies.set(proxyName, proxy);
         return proxy;
     }
 
     private createSemaphore(groupId: RaftGroupId, proxyName: string, objectName: string): Promise<ISemaphore> {
         const clientMessage = SemaphoreGetSemaphoreTypeCodec.encodeRequest(proxyName);
-        return this.client.getInvocationService().invokeOnRandomTarget(clientMessage)
+        return this.invocationService.invokeOnRandomTarget(clientMessage)
             .then(SemaphoreGetSemaphoreTypeCodec.decodeResponse)
             .then((jdkCompatible) => {
                 return jdkCompatible
-                    ? new SessionlessSemaphoreProxy(this.client, groupId, proxyName, objectName)
-                    : new SessionAwareSemaphoreProxy(this.client, groupId, proxyName, objectName);
+                    ? new SessionlessSemaphoreProxy(
+                        groupId,
+                        proxyName,
+                        objectName,
+                        this.invocationService,
+                        this.serializationService,
+                        this.cpSessionManager
+                    )
+                    : new SessionAwareSemaphoreProxy(
+                        groupId,
+                        proxyName,
+                        objectName,
+                        this.invocationService,
+                        this.serializationService,
+                        this.cpSessionManager
+                    );
             });
     }
 }

@@ -165,7 +165,7 @@ describe('InvocationTest', function () {
     it('detectAndHandleBackupTimeout: should complete with error when prop is set', function () {
         serviceStub.shouldFailOnIndeterminateState = true;
 
-        const invocation = new Invocation(clientStub);
+        const invocation = new Invocation(clientStub.getInvocationService());
         const messageStub = sandbox.stub(ClientMessage.prototype);
         invocation.pendingResponseMessage = messageStub;
         invocation.request = messageStub;

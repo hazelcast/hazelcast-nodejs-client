@@ -15,16 +15,15 @@
  */
 /** @ignore *//** */
 
-import {HazelcastClient} from '../HazelcastClient';
-import {ClientConnectionManager} from '../network/ClientConnectionManager';
+import {ConnectionManager, ConnectionRegistry} from '../network/ConnectionManager';
 import {PartitionServiceImpl} from '../PartitionService';
 import {ClusterService} from '../invocation/ClusterService';
 import {ILogger} from '../logging/ILogger';
-import {ClientConnection} from '../network/ClientConnection';
+import {Connection} from '../network/Connection';
 import {ClientAddClusterViewListenerCodec} from '../codec/ClientAddClusterViewListenerCodec';
 import {ClientMessage} from '../protocol/ClientMessage';
 import {UUID} from '../core/UUID';
-import {Invocation} from '../invocation/InvocationService';
+import {Invocation, InvocationService} from '../invocation/InvocationService';
 
 /**
  * Adds cluster listener to one of the connections. If that connection is removed,
@@ -33,35 +32,31 @@ import {Invocation} from '../invocation/InvocationService';
  */
 export class ClusterViewListenerService {
 
-    private readonly client: HazelcastClient;
-    private readonly clusterService: ClusterService;
-    private readonly connectionManager: ClientConnectionManager;
-    private readonly partitionService: PartitionServiceImpl;
-    private readonly logger: ILogger;
-    private listenerAddedConnection: ClientConnection;
+    private listenerAddedConnection: Connection;
 
-    constructor(client: HazelcastClient) {
-        this.client = client;
-        this.logger = client.getLoggingService().getLogger();
-        this.connectionManager = client.getConnectionManager();
-        this.partitionService = client.getPartitionService() as PartitionServiceImpl;
-        this.clusterService = client.getClusterService();
-    }
+    constructor(
+        private readonly logger: ILogger,
+        private readonly connectionManager: ConnectionManager,
+        private readonly partitionService: PartitionServiceImpl,
+        private readonly clusterService: ClusterService,
+        private readonly invocationService: InvocationService,
+        private readonly connectionRegistry: ConnectionRegistry
+    ) {}
 
     public start(): void {
         this.connectionManager.on('connectionAdded', this.connectionAdded.bind(this));
         this.connectionManager.on('connectionRemoved', this.connectionRemoved.bind(this));
     }
 
-    private connectionAdded(connection: ClientConnection): void {
+    private connectionAdded(connection: Connection): void {
         this.tryRegister(connection);
     }
 
-    private connectionRemoved(connection: ClientConnection): void {
+    private connectionRemoved(connection: Connection): void {
         this.tryRegisterToRandomConnection(connection);
     }
 
-    private tryRegister(connection: ClientConnection): void {
+    private tryRegister(connection: Connection): void {
         if (this.listenerAddedConnection != null) {
             // already registering/registered to another connection
             return;
@@ -70,13 +65,13 @@ export class ClusterViewListenerService {
 
         const request = ClientAddClusterViewListenerCodec.encodeRequest();
         const handler = this.createClusterViewEventHandler(connection);
-        const invocation = new Invocation(this.client, request);
+        const invocation = new Invocation(this.invocationService, request);
         invocation.connection = connection;
         invocation.handler = handler;
 
         this.logger.trace('ClusterViewListenerService', `Register attempt of cluster view handler to ${connection}`);
         this.clusterService.clearMemberListVersion();
-        this.client.getInvocationService().invokeUrgent(invocation)
+        this.invocationService.invokeUrgent(invocation)
             .then(() => {
                 this.logger.trace('ClusterViewListenerService', `Registered cluster view handler to ${connection}`);
             })
@@ -86,22 +81,22 @@ export class ClusterViewListenerService {
             });
     }
 
-    private tryRegisterToRandomConnection(oldConnection: ClientConnection): void {
+    private tryRegisterToRandomConnection(oldConnection: Connection): void {
         if (this.listenerAddedConnection !== oldConnection) {
             // somebody else already trying to re-register
             return;
         }
         this.listenerAddedConnection = null;
-        const newConnection = this.connectionManager.getRandomConnection();
+        const newConnection = this.connectionRegistry.getRandomConnection();
         if (newConnection != null) {
             this.tryRegister(newConnection);
         }
     }
 
-    private createClusterViewEventHandler(connection: ClientConnection): (msg: ClientMessage) => void {
+    private createClusterViewEventHandler(connection: Connection): (msg: ClientMessage) => void {
         return (clientMessage: ClientMessage): void => {
             ClientAddClusterViewListenerCodec.handle(clientMessage,
-                this.clusterService.handleMembersViewEvent.bind(this.clusterService),
+                this.clusterService.handleMembersViewEvent.bind(this.clusterService, this.connectionRegistry),
                 (version: number, partitions: Array<[UUID, number[]]>) => {
                     this.partitionService.handlePartitionViewEvent(connection, partitions, version);
                 });

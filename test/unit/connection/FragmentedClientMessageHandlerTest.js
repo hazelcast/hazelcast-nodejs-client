@@ -22,7 +22,7 @@ const crypto = require('crypto');
 const {
     ClientMessageReader,
     FragmentedClientMessageHandler
-} = require('../../../lib/network/ClientConnection');
+} = require('../../../lib/network/Connection');
 const cm = require('../../../lib/protocol/ClientMessage');
 const { FixSizedTypesCodec } = require('../../../lib/codec/builtin/FixSizedTypesCodec');
 

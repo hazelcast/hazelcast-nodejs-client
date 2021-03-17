@@ -15,14 +15,14 @@
  */
 /** @ignore *//** */
 
-import {deepEqual} from 'assert';
+import {deepStrictEqual} from 'assert';
 import {FieldType} from '../Portable';
 
 /** @internal */
 export class ClassDefinition {
-    private factoryId: number;
-    private classId: number;
-    private version: number;
+    private readonly factoryId: number;
+    private readonly classId: number;
+    private readonly version: number;
     private fields: { [name: string]: FieldDefinition } = {};
 
     constructor(factoryId: number, classId: number, version: number) {
@@ -89,7 +89,7 @@ export class ClassDefinition {
             return false;
         }
         try {
-            deepEqual(o.fields, this.fields);
+            deepStrictEqual(o.fields, this.fields);
         } catch (e) {
             return false;
         }

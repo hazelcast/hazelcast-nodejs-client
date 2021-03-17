@@ -34,7 +34,7 @@ export class DataRecord {
     private invalidationSequence: Long;
     private uuid: UUID;
     private status: Long;
-    private ttl: number;
+    private readonly ttl: number;
 
     constructor(key: Data, value: Data | any, creationTime?: number, ttl?: number) {
         this.key = key;

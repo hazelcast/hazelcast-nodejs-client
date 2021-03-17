@@ -41,7 +41,7 @@ import {LoadBalancerType} from './LoadBalancerConfig';
  */
 export class ConfigBuilder {
 
-    private originalConfig: ClientConfig;
+    private readonly originalConfig: ClientConfig;
     private effectiveConfig: ClientConfigImpl = new ClientConfigImpl();
 
     constructor(config?: ClientConfig) {

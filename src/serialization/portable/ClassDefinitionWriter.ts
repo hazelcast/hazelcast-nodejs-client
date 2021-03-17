@@ -25,7 +25,7 @@ import {HazelcastSerializationError} from '../../core';
 /** @internal */
 export class ClassDefinitionWriter implements PortableWriter {
 
-    private context: PortableContext;
+    private readonly context: PortableContext;
     private builder: ClassDefinitionBuilder;
 
     constructor(context: PortableContext, builder: ClassDefinitionBuilder) {

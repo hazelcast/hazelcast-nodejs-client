@@ -17,9 +17,7 @@
 
 import * as Long from 'long';
 import {OverflowPolicy} from '../OverflowPolicy';
-import {HazelcastClient} from '../../HazelcastClient';
-import {TopicOverloadError} from '../../core';
-import {AddressImpl} from '../../core/Address';
+import {AddressImpl, TopicOverloadError} from '../../core';
 import {SerializationService} from '../../serialization/SerializationService';
 import {UuidUtil} from '../../util/UuidUtil';
 import {
@@ -33,7 +31,15 @@ import {ReliableTopicMessage} from './ReliableTopicMessage';
 import {ReliableTopicListenerRunner} from './ReliableTopicListenerRunner';
 import {MessageListener} from '../MessageListener';
 import {TopicOverloadPolicy} from '../TopicOverloadPolicy';
-import {ClientConfigImpl} from '../../config/Config';
+import {ClientConfig, ClientConfigImpl} from '../../config/Config';
+import {ClusterService} from '../../invocation/ClusterService';
+import {ILogger} from '../../logging';
+import {ProxyManager} from '../ProxyManager';
+import {PartitionService} from '../../PartitionService';
+import {InvocationService} from '../../invocation/InvocationService';
+import {ConnectionRegistry} from '../../network/ConnectionManager';
+import {ListenerService} from '../../listener/ListenerService';
+import {Connection} from '../../network/Connection';
 
 /** @internal */
 export const TOPIC_INITIAL_BACKOFF = 100;
@@ -43,19 +49,40 @@ export const TOPIC_MAX_BACKOFF = 2000;
 /** @internal */
 export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
     private ringbuffer: Ringbuffer<ReliableTopicMessage>;
-    private readonly localAddress: AddressImpl;
     private readonly batchSize: number;
     private readonly runners: { [key: string]: ReliableTopicListenerRunner<E> } = {};
-    private readonly serializationService: SerializationService;
     private readonly overloadPolicy: TopicOverloadPolicy;
+    private readonly localAddress: AddressImpl;
 
-    constructor(client: HazelcastClient, serviceName: string, name: string) {
-        super(client, serviceName, name);
-        this.localAddress = client.getClusterService().getLocalClient().localAddress as AddressImpl;
-        const config = (client.getConfig() as ClientConfigImpl).getReliableTopicConfig(name);
+    constructor(
+        serviceName: string,
+        name: string,
+        private readonly logger: ILogger,
+        clientConfig: ClientConfig,
+        proxyManager: ProxyManager,
+        partitionService: PartitionService,
+        invocationService: InvocationService,
+        serializationService: SerializationService,
+        listenerService: ListenerService,
+        clusterService: ClusterService,
+        connectionRegistry: ConnectionRegistry
+    ) {
+        super(
+            serviceName,
+            name,
+            proxyManager,
+            partitionService,
+            invocationService,
+            serializationService,
+            listenerService,
+            clusterService,
+            connectionRegistry
+        );
+        const connection: Connection = this.connectionRegistry.getRandomConnection();
+        this.localAddress = connection != null ? connection.getLocalAddress() : null;
+        const config = (clientConfig as ClientConfigImpl).getReliableTopicConfig(name);
         this.batchSize = config.readBatchSize;
         this.overloadPolicy = config.overloadPolicy;
-        this.serializationService = client.getSerializationService();
     }
 
     setRingbuffer(ringbuffer: Ringbuffer<ReliableTopicMessage>): void {
@@ -64,9 +91,8 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
 
     addMessageListener(listener: MessageListener<E>): string {
         const listenerId = UuidUtil.generate().toString();
-        const logger = this.client.getLoggingService().getLogger();
         const runner = new ReliableTopicListenerRunner(listenerId, listener, this.ringbuffer,
-            this.batchSize, this.serializationService, logger, this);
+            this.batchSize, this.serializationService, this.logger, this);
 
         this.runners[listenerId] = runner;
 
@@ -74,7 +100,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
             runner.sequenceNumber = sequence.toNumber() + 1;
             runner.next();
         }).catch((e) => {
-            logger.warn('ReliableTopicProxy', 'Failed to fetch sequence for runner.', e);
+            this.logger.warn('ReliableTopicProxy', 'Failed to fetch sequence for runner.', e);
         });
 
         return listenerId;

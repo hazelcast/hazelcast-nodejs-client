@@ -16,11 +16,10 @@
 /** @ignore *//** */
 
 import * as Long from 'long';
-import {HazelcastClient} from '../../HazelcastClient';
 import {CPSessionAwareProxy} from './CPSessionAwareProxy';
 import {ISemaphore} from '../ISemaphore';
 import {CPProxyManager} from './CPProxyManager';
-import {NO_SESSION_ID} from './CPSessionManager';
+import {CPSessionManager, NO_SESSION_ID} from './CPSessionManager';
 import {RaftGroupId} from './RaftGroupId';
 import {
     assertNonNegativeNumber,
@@ -39,6 +38,9 @@ import {
     WaitKeyCancelledError,
     UUID
 } from '../../core';
+import {InvocationService} from '../../invocation/InvocationService';
+import {SerializationService} from '../../serialization/SerializationService';
+
 
 /**
  * Since a proxy does not know how many permits will be drained on
@@ -51,11 +53,23 @@ const DRAIN_SESSION_ACQ_COUNT = 1024;
 /** @internal */
 export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements ISemaphore {
 
-    constructor(client: HazelcastClient,
-                groupId: RaftGroupId,
-                proxyName: string,
-                objectName: string) {
-        super(client, CPProxyManager.SEMAPHORE_SERVICE, groupId, proxyName, objectName);
+    constructor(
+        groupId: RaftGroupId,
+        proxyName: string,
+        objectName: string,
+        invocationService: InvocationService,
+        serializationService: SerializationService,
+        cpSessionManager: CPSessionManager
+    ) {
+        super(
+            CPProxyManager.SEMAPHORE_SERVICE,
+            groupId,
+            proxyName,
+            objectName,
+            invocationService,
+            serializationService,
+            cpSessionManager
+        );
     }
 
     init(permits: number): Promise<boolean> {
