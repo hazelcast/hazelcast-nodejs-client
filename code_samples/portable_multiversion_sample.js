@@ -36,12 +36,12 @@ class Employee {
     }
 
     readPortable(reader) {
-        this.name = reader.readUTF('name');
+        this.name = reader.readString('name');
         this.age = reader.readInt('age');
     }
 
     writePortable(writer) {
-        writer.writeUTF('name', this.name);
+        writer.writeString('name', this.name);
         writer.writeInt('age', this.age);
     }
 }
@@ -72,15 +72,15 @@ class Employee2 {
     }
 
     readPortable(reader) {
-        this.name = reader.readUTF('name');
+        this.name = reader.readString('name');
         this.age = reader.readInt('age');
-        this.manager = reader.readUTF('manager');
+        this.manager = reader.readString('manager');
     }
 
     writePortable(writer) {
-        writer.writeUTF('name', this.name);
+        writer.writeString('name', this.name);
         writer.writeInt('age', this.age);
-        writer.writeUTF('manager', this.manager);
+        writer.writeString('manager', this.manager);
     }
 }
 
@@ -110,15 +110,15 @@ class Employee3 {
     }
 
     readPortable(reader) {
-        this.name = reader.readUTF('name');
-        this.age = reader.readUTF('age');
-        this.manager = reader.readUTF('manager');
+        this.name = reader.readString('name');
+        this.age = reader.readString('age');
+        this.manager = reader.readString('manager');
     }
 
     writePortable(writer) {
-        writer.writeUTF('name', this.name);
-        writer.writeUTF('age', this.age);
-        writer.writeUTF('manager', this.manager);
+        writer.writeString('name', this.name);
+        writer.writeString('age', this.age);
+        writer.writeString('manager', this.manager);
     }
 }
 

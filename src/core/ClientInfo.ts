@@ -23,12 +23,12 @@ import {UUID} from './UUID';
 export class ClientInfo {
 
     /**
-     * Unique id of this client instance.
+     * The unique id of this client instance.
      */
     uuid: UUID;
 
     /**
-     * Local port address that is used to communicate with cluster.
+     * Local port address that is used to communicate with a cluster.
      */
     localAddress: Address;
 

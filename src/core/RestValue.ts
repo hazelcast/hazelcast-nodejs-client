@@ -42,14 +42,14 @@ export class RestValue implements IdentifiedDataSerializable {
 
     /** @ignore */
     readData(input: DataInput): any {
-        this.value = input.readUTF();
-        this.contentType = input.readUTF();
+        this.value = input.readString();
+        this.contentType = input.readString();
     }
 
     /** @ignore */
     writeData(output: DataOutput): void {
-        output.writeUTF(this.value);
-        output.writeUTF(this.contentType);
+        output.writeString(this.value);
+        output.writeString(this.contentType);
     }
 }
 

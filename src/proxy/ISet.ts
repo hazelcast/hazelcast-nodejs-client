@@ -30,8 +30,8 @@ export interface ISet<E> extends DistributedObject {
     add(entry: E): Promise<boolean>;
 
     /**
-     * Adds the elements contained in array to this set if not already present.
-     * Set contains all elements of items array and its previous elements at the end.
+     * Adds the elements in the array `items` to this set if not already present.
+     * At the end, the set contains all elements of `items` array and its previous elements.
      * @param items
      * @throws {Error} if collection or one of its elements is null or undefined.
      * @return true if this set changed, false otherwise.
@@ -50,10 +50,10 @@ export interface ISet<E> extends DistributedObject {
     clear(): Promise<void>;
 
     /**
-     * Checks whether this set contains given element.
+     * Checks whether this set contains the given element.
      * @param entry
      * @throws {Error} if entry is null.
-     * @return true if this set contains given element, false otherwise.
+     * @return true if this set contains the given element, false otherwise.
      */
     contains(entry: E): Promise<boolean>;
 
@@ -103,7 +103,7 @@ export interface ISet<E> extends DistributedObject {
 
     /**
      * Adds an item listener for this set.
-     * Listener will be invoked for any add/remove item event.
+     * Listener will be invoked for any add/remove item events.
      * @param listener
      * @param includeValue `true` if updated item should be included in the event.
      * @return Registration id of the listener.

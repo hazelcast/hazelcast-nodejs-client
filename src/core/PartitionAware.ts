@@ -27,7 +27,7 @@
  * would be on one partition.
  * <ul>
  *     <li>a customers IMap with an entry of key "Steve"</li>
- *     <li>an orders IMap using a customer key type implementing PartitionAware with key "Steve</li>
+ *     <li>an orders IMap using a customer key type implementing PartitionAware with key "Steve"</li>
  *     <li>any queue named "Steve"</li>
  *     <li>any PartitionAware object with partition key "Steve"</li>
  * </ul>

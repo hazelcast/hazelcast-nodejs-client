@@ -37,16 +37,16 @@ public class UsernamePasswordCredentials implements Credentials, Portable {
 
     @Override
     public void readPortable(PortableReader portableReader) throws IOException {
-        username = portableReader.readUTF("username");
-        password = portableReader.readUTF("password");
-        endpoint = portableReader.readUTF("endpoint");
+        username = portableReader.readString("username");
+        password = portableReader.readString("password");
+        endpoint = portableReader.readString("endpoint");
     }
 
     @Override
     public void writePortable(PortableWriter portableWriter) throws IOException {
-        portableWriter.writeUTF("username", username);
-        portableWriter.writeUTF("password", password);
-        portableWriter.writeUTF("endpoint", endpoint);
+        portableWriter.writeString("username", username);
+        portableWriter.writeString("password", password);
+        portableWriter.writeString("endpoint", endpoint);
     }
 
     @Override

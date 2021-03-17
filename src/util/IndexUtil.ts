@@ -34,7 +34,7 @@ const THIS_PATTERN = new RegExp('^this\\.');
 export class IndexUtil {
 
     /**
-     * Validates provided index config and normalizes it's name and attribute names.
+     * Validates provided index config and normalizes its name and attribute names.
      *
      * @param mapName Name of the map
      * @param config User-provided index config.

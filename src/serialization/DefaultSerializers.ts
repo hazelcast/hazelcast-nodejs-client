@@ -34,11 +34,11 @@ export class StringSerializer implements Serializer<string> {
     id = -11;
 
     read(input: DataInput): string {
-        return input.readUTF();
+        return input.readString();
     }
 
     write(output: DataOutput, object: string): void {
-        output.writeUTF(object);
+        output.writeString(object);
     }
 }
 
@@ -233,11 +233,11 @@ export class StringArraySerializer implements Serializer<string[]> {
     id = -20;
 
     read(input: DataInput): string[] {
-        return input.readUTFArray();
+        return input.readStringArray();
     }
 
     write(output: DataOutput, object: string[]): void {
-        output.writeUTFArray(object);
+        output.writeStringArray(object);
     }
 }
 
@@ -317,11 +317,11 @@ export class JavaClassSerializer implements Serializer {
     id = -24;
 
     read(input: DataInput): any {
-        return input.readUTF();
+        return input.readString();
     }
 
     write(output: DataOutput, object: any): void {
-        output.writeUTF(object);
+        output.writeString(object);
     }
 }
 
@@ -393,14 +393,14 @@ export class JsonSerializer implements Serializer {
     id = -130;
 
     read(input: DataInput): any {
-        return JSON.parse(input.readUTF());
+        return JSON.parse(input.readString());
     }
 
     write(output: DataOutput, object: any): void {
         if (object instanceof HazelcastJsonValue) {
-            output.writeUTF(object.toString());
+            output.writeString(object.toString());
         } else {
-            output.writeUTF(JSON.stringify(object));
+            output.writeString(JSON.stringify(object));
         }
 
     }
@@ -410,7 +410,7 @@ export class JsonSerializer implements Serializer {
 export class HazelcastJsonValueSerializer extends JsonSerializer {
 
     read(input: DataInput): HazelcastJsonValue {
-        return new HazelcastJsonValue(input.readUTF());
+        return new HazelcastJsonValue(input.readString());
     }
 }
 

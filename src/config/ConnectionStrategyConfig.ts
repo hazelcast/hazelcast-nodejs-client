@@ -49,7 +49,7 @@ export interface ConnectionStrategyConfig {
      * When set to `true`, the client creation will not wait to connect to cluster.
      * The client instance will throw exceptions until it connects to cluster and becomes
      * ready. If set to `false`, {@link HazelcastClient.newHazelcastClient} will block
-     * until a cluster connection established and it is ready to use the client instance.
+     * until a cluster connection established, and it is ready to use the client instance.
      * By default, set to `false`.
      */
     asyncStart?: boolean;

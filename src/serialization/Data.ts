@@ -124,9 +124,19 @@ export interface DataOutput {
 
     writeShortArray(shorts: number[]): void;
 
+    /** @deprecated since version 4.2.
+     *  This method will be removed in next major version. Please use {@link writeString} instead.
+     */
     writeUTF(val: string): void;
 
+    /** @deprecated since version 4.2.
+     *  This method will be removed in next major version. Please use {@link writeStringArray} instead.
+     */
     writeUTFArray(val: string[]): void;
+
+    writeString(val: string): void;
+
+    writeStringArray(val: string[]): void;
 
     writeZeroBytes(count: number): void;
 
@@ -209,9 +219,19 @@ export interface DataInput {
 
     readUnsignedShort(pos?: number): number;
 
+    /** @deprecated since version 4.2.
+     *  This method will be removed in next major version. Please use {@link readString} instead.
+     */
     readUTF(pos?: number): string;
 
+    /** @deprecated since version 4.2.
+     *  This method will be removed in next major version. Please use {@link readStringArray} instead.
+     */
     readUTFArray(pos?: number): string[];
+
+    readString(pos?: number): string;
+
+    readStringArray(pos?: number): string[];
 
     reset(): void;
 

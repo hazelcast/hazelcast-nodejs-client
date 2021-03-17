@@ -49,11 +49,11 @@ export class SqlPredicate extends AbstractPredicate {
     }
 
     readData(input: DataInput): any {
-        this.sql = input.readUTF();
+        this.sql = input.readString();
     }
 
     writeData(output: DataOutput): void {
-        output.writeUTF(this.sql);
+        output.writeString(this.sql);
     }
 }
 
@@ -104,13 +104,13 @@ export class BetweenPredicate extends AbstractPredicate {
     }
 
     readData(input: DataInput): any {
-        this.field = input.readUTF();
+        this.field = input.readString();
         this.to = input.readObject();
         this.from = input.readObject();
     }
 
     writeData(output: DataOutput): void {
-        output.writeUTF(this.field);
+        output.writeString(this.field);
         output.writeObject(this.to);
         output.writeObject(this.from);
     }
@@ -132,12 +132,12 @@ export class EqualPredicate extends AbstractPredicate {
     }
 
     readData(input: DataInput): any {
-        this.field = input.readUTF();
+        this.field = input.readString();
         this.value = input.readObject();
     }
 
     writeData(output: DataOutput): void {
-        output.writeUTF(this.field);
+        output.writeString(this.field);
         output.writeObject(this.value);
     }
 }
@@ -162,7 +162,7 @@ export class GreaterLessPredicate extends AbstractPredicate {
     }
 
     readData(input: DataInput): any {
-        this.field = input.readUTF();
+        this.field = input.readString();
         this.value = input.readObject();
         this.equal = input.readBoolean();
         this.less = input.readBoolean();
@@ -170,7 +170,7 @@ export class GreaterLessPredicate extends AbstractPredicate {
     }
 
     writeData(output: DataOutput): void {
-        output.writeUTF(this.field);
+        output.writeString(this.field);
         output.writeObject(this.value);
         output.writeBoolean(this.equal);
         output.writeBoolean(this.less);
@@ -193,14 +193,14 @@ export class LikePredicate extends AbstractPredicate {
     }
 
     readData(input: DataInput): any {
-        this.field = input.readUTF();
-        this.expr = input.readUTF();
+        this.field = input.readString();
+        this.expr = input.readString();
         return this;
     }
 
     writeData(output: DataOutput): void {
-        output.writeUTF(this.field);
-        output.writeUTF(this.expr);
+        output.writeString(this.field);
+        output.writeString(this.expr);
     }
 }
 
@@ -228,7 +228,7 @@ export class InPredicate extends AbstractPredicate {
     }
 
     readData(input: DataInput): any {
-        this.field = input.readUTF();
+        this.field = input.readString();
         const s = input.readInt();
         this.values = [];
         for (let i = 0; i < s; i++) {
@@ -238,7 +238,7 @@ export class InPredicate extends AbstractPredicate {
     }
 
     writeData(output: DataOutput): void {
-        output.writeUTF(this.field);
+        output.writeString(this.field);
         output.writeInt(this.values.length);
         this.values.forEach(function (val): void {
             output.writeObject(val);
@@ -260,12 +260,12 @@ export class InstanceOfPredicate extends AbstractPredicate {
     }
 
     readData(input: DataInput): any {
-        this.className = input.readUTF();
+        this.className = input.readString();
         return this;
     }
 
     writeData(output: DataOutput): void {
-        output.writeUTF(this.className);
+        output.writeString(this.className);
     }
 }
 
@@ -346,14 +346,14 @@ export class RegexPredicate extends AbstractPredicate {
     }
 
     readData(input: DataInput): any {
-        this.field = input.readUTF();
-        this.regex = input.readUTF();
+        this.field = input.readString();
+        this.regex = input.readString();
         return this;
     }
 
     writeData(output: DataOutput): void {
-        output.writeUTF(this.field);
-        output.writeUTF(this.regex);
+        output.writeString(this.field);
+        output.writeString(this.regex);
     }
 }
 
@@ -423,7 +423,7 @@ export class PagingPredicateImpl extends AbstractPredicate implements PagingPred
         this.comparatorObject = input.readObject();
         this.page = input.readInt();
         this.pageSize = input.readInt();
-        this.iterationType = enumFromString<IterationType>(IterationType, input.readUTF());
+        this.iterationType = enumFromString<IterationType>(IterationType, input.readString());
         this.anchorList = [];
         const size = input.readInt();
         for (let i = 0; i < size; i++) {
@@ -439,7 +439,7 @@ export class PagingPredicateImpl extends AbstractPredicate implements PagingPred
         output.writeObject(this.comparatorObject);
         output.writeInt(this.page);
         output.writeInt(this.pageSize);
-        output.writeUTF(this.iterationType);
+        output.writeString(this.iterationType);
         output.writeInt(this.anchorList.length);
         this.anchorList.forEach(function (anchorEntry: [number, [any, any]]): void {
             output.writeInt(anchorEntry[0]);

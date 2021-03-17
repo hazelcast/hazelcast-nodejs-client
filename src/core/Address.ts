@@ -65,14 +65,14 @@ export class AddressImpl implements Address, IdentifiedDataSerializable {
     readData(input: DataInput): any {
         this.port = input.readInt();
         this.type = input.readByte();
-        this.host = input.readUTF();
+        this.host = input.readString();
         this.addrStr = this.toStringInternal();
     }
 
     writeData(output: DataOutput): void {
         output.writeInt(this.port);
         output.writeByte(this.type);
-        output.writeUTF(this.host);
+        output.writeString(this.host);
     }
 
     equals(other: AddressImpl): boolean {
@@ -101,7 +101,7 @@ export class AddressImpl implements Address, IdentifiedDataSerializable {
 
 /**
  * A collection of addresses. It is split in a group of primary
- * addresses (so the ones that should be tried first) and a group
+ * addresses (so the ones that should be tried first), and a group
  * of secondary addresses (addresses that should be tried when the
  * primary group of addresses could not be connected to).
  * @internal

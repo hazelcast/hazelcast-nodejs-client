@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import {deepEqual} from 'assert';
+import {deepStrictEqual} from 'assert';
 import {FieldType} from '../Portable';
 
 /** @internal */
@@ -89,7 +89,7 @@ export class ClassDefinition {
             return false;
         }
         try {
-            deepEqual(o.fields, this.fields);
+            deepStrictEqual(o.fields, this.fields);
         } catch (e) {
             return false;
         }

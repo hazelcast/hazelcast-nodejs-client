@@ -24,7 +24,7 @@ export enum TopicOverloadPolicy {
      * No matter the retention period set, the overwrite will just overwrite the item.
      *
      * This can be a problem for slow consumers because they were promised a certain time window to process messages.
-     * But it will benefit producers and fast consumers since they are able to continue.
+     * However, it will benefit producers and fast consumers since they are able to continue.
      * This policy sacrifices the slow producer in favor of fast producers/consumers.
      */
     DISCARD_OLDEST = 'DISCARD_OLDEST',

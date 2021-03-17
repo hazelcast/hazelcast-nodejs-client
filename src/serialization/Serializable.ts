@@ -17,7 +17,7 @@
 import {DataInput, DataOutput} from './Data';
 
 /**
- * Defines common interface for default and custom serializers.
+ * Defines a common interface for default and custom serializers.
  */
 export interface Serializer<T = any> {
 

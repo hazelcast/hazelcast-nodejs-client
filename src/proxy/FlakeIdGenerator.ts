@@ -30,7 +30,7 @@ import {DistributedObject} from '../core/DistributedObject';
  * is 6 bits. If more than 64 IDs are requested in single millisecond, IDs will gracefully overflow to the next
  * millisecond and uniqueness is guaranteed in this case. The implementation does not allow overflowing
  * by more than 15 seconds, if IDs are requested at higher rate, the call will block. Note, however, that
- * clients are able to generate even faster because each call goes to a different (random) member and
+ * clients are able to generate even faster because each call goes to a different (random) member, and
  * the 64 IDs/ms limit is for single member.
  *
  * <em>Node ID overflow</em>

@@ -48,7 +48,7 @@ export enum LifecycleState {
     CONNECTED = 'CONNECTED',
 
     /**
-     * Fired when the client is disconnected from the member.
+     * Fired when the client is disconnected from the cluster.
      */
     DISCONNECTED = 'DISCONNECTED',
 
@@ -89,7 +89,7 @@ export class LifecycleServiceImpl extends EventEmitter implements LifecycleServi
     }
 
     /**
-     * Causes LifecycleService to emit given event to all registered listeners.
+     * Causes LifecycleService to emit the given event to all registered listeners.
      * @param state
      */
     emitLifecycleEvent(state: LifecycleState): void {
