@@ -563,7 +563,8 @@ export class HazelcastClient {
 
         return this.connectionManager.start()
             .then(() => {
-                if (!this.config.connectionStrategy.asyncStart) {
+                const connectionStrategyConfig = this.config.connectionStrategy;
+                if (!connectionStrategyConfig.asyncStart) {
                     return this.clusterService.waitForInitialMemberList()
                         .then(() => this.connectionManager.connectToAllClusterMembers());
                 }
