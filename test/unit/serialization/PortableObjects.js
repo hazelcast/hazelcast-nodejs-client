@@ -15,6 +15,8 @@
  */
 'use strict';
 
+const TestUtil = require('../../TestUtil');
+
 class InnerPortable {
 
     constructor(p1, p2) {
@@ -25,13 +27,13 @@ class InnerPortable {
     }
 
     readPortable(reader) {
-        this.p1 = reader.readString('p1');
-        this.p2 = reader.readString('p2');
+        this.p1 = TestUtil.readStringFromReader(reader, 'p1');
+        this.p2 = TestUtil.readStringFromReader(reader, 'p2');
     }
 
     writePortable(writer) {
-        writer.writeString('p1', this.p1);
-        writer.writeString('p2', this.p2);
+        TestUtil.writeStringToWriter(writer, 'p1', this.p1);
+        TestUtil.writeStringToWriter(writer, 'p2', this.p2);
     }
 
 }
@@ -215,11 +217,11 @@ class SimplePortable {
     }
 
     readPortable(reader) {
-        this.aString = reader.readString('aString');
+        this.aString = TestUtil.readStringFromReader(reader, 'aString');
     }
 
     writePortable(writer) {
-        writer.writeString('aString', this.aString);
+        TestUtil.writeStringToWriter(writer, 'aString', this.aString);
     }
 
 }

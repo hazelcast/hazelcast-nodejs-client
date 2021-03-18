@@ -15,20 +15,27 @@
  */
 'use strict';
 
-const TestUtil = require('../../TestUtil');
+const TestUtil = require('../../../TestUtil');
 
-function PrefixFilter(prefix) {
-    this.prefix = prefix;
-    this.factoryId = 66;
-    this.classId = 4;
+function Foo(foo) {
+    this.foo = foo;
+    this.factoryId = 1;
+    this.classId = 1;
 }
 
-PrefixFilter.prototype.readData = function (inp) {
-    this.prefix = TestUtil.readStringFromInput(inp);
+Foo.prototype.writePortable = function (portableWriter) {
+    TestUtil.writeStringToWriter(portableWriter, 'foo', this.foo);
 };
 
-PrefixFilter.prototype.writeData = function (outp) {
-    TestUtil.writeStringToOutput(outp, this.prefix);
+Foo.prototype.readPortable = function (portableReader) {
+    this.foo = TestUtil.readStringFromReader(portableReader, 'foo');
 };
 
-module.exports = PrefixFilter;
+function myPortableFactory(type) {
+    if (type === 1) {
+        return new Foo();
+    }
+}
+
+exports.myPortableFactory = myPortableFactory;
+exports.Foo = Foo;
