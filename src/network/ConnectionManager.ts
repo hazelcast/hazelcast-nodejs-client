@@ -643,7 +643,7 @@ export class ConnectionManager extends EventEmitter {
                         }
                         this.logger.info('ConnectionManager', 'Unable to connect to any address '
                             + 'from the cluster with name: ' + ctx.clusterName
-                            + '. The following addresses were tried: ' + triedAddresses);
+                            + '. The following addresses were tried: ' + Array.from(triedAddresses).join(', '));
                         return false;
                     });
             })
