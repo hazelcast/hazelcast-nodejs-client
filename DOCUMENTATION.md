@@ -1120,7 +1120,7 @@ The following are configuration element descriptions:
 * `initialBackoffMillis`: Specifies how long to wait (backoff), in milliseconds, after the first failure before retrying. Its default value is `1000` ms. It must be non-negative.
 * `maxBackoffMillis`: Specifies the upper limit for the backoff in milliseconds. Its default value is `30000` ms. It must be non-negative.
 * `multiplier`: Factor to multiply the backoff after a failed retry. Its default value is `1.05`. It must be greater than or equal to `1`.
-* `clusterConnectTimeoutMillis`: Timeout value in milliseconds for the client to give up to connect to the current cluster. If set to 0, the client tries to connect forever. The default value is `0` (No timeout).
+* `clusterConnectTimeoutMillis`: Timeout value in milliseconds for the client to give up to connect to the current cluster. If set to -1, the client tries to connect forever. The default value is `-1` (No timeout).
 * `jitter`: Specifies by how much to randomize backoffs. Its default value is `0`. It must be in range `0` to `1`.
 
 A pseudo-code is as follows:
