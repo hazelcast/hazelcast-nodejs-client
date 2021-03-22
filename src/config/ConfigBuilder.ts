@@ -121,7 +121,7 @@ export class ConfigBuilder {
             } else if (key === 'clusterConnectTimeoutMillis') {
                 const clusterConnectTimeoutMillis = tryGetNumber(value);
                 if (clusterConnectTimeoutMillis != -1 && clusterConnectTimeoutMillis < 0) {
-                    throw new RangeError('clusterConnectTimeoutMillis can be only positive or -1');
+                    throw new RangeError('clusterConnectTimeoutMillis can be only non-negative or -1');
                 }
                 this.effectiveConfig.connectionStrategy.connectionRetry.clusterConnectTimeoutMillis = clusterConnectTimeoutMillis;
             } else if (key === 'jitter') {

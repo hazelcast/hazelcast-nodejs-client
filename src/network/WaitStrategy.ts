@@ -41,7 +41,7 @@ export class WaitStrategy {
         this.maxBackoffMillis = maxBackoffMillis;
         this.multiplier = multiplier;
         this.clusterConnectTimeoutMillis = clusterConnectTimeoutMillis === -1 ?
-            Number.POSITIVE_INFINITY : clusterConnectTimeoutMillis;
+            Number.MAX_SAFE_INTEGER : clusterConnectTimeoutMillis;
         this.jitter = jitter;
         this.logger = logger;
     }
