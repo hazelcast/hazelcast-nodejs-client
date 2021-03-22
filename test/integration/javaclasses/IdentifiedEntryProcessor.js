@@ -15,6 +15,8 @@
  */
 'use strict';
 
+const TestUtil = require('../../TestUtil');
+
 function IdentifiedEntryProcessor(value) {
     this.value = value;
     this.factoryId = 66;
@@ -22,11 +24,11 @@ function IdentifiedEntryProcessor(value) {
 }
 
 IdentifiedEntryProcessor.prototype.readData = function (inp) {
-    this.value = inp.readString();
+    this.value = TestUtil.readStringFromInput(inp);
 };
 
 IdentifiedEntryProcessor.prototype.writeData = function (outp) {
-    outp.writeString(this.value);
+    TestUtil.writeStringToOutput(outp, this.value);
 };
 
 module.exports = IdentifiedEntryProcessor;
