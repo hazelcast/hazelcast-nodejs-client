@@ -11,6 +11,6 @@ updates:
       versioning-strategy: increase
       ignore:
         - dependency-name: "@types/node"
-          versions: [ "^11.0.0" ]
+          versions: [ ">=11.0.0" ]
       labels:
         - "dependencies"
