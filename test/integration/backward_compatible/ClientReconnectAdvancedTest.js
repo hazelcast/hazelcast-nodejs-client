@@ -50,7 +50,7 @@ describe('ClientReconnectAdvancedTest', function () {
                 </hazelcast>`;
     }
 
-    async function testConnectionCountAfterClientReconnect(memberAddress, clientAddress) {
+    async function testConnectionRestoredAfterClientReconnect(memberAddress, clientAddress) {
         cluster = await RC.createCluster(null, createClusterConfig(memberAddress));
         const member = await RC.startMember(cluster.id);
 
@@ -92,9 +92,8 @@ describe('ClientReconnectAdvancedTest', function () {
         await TestUtil.assertTrueEventually(async () => {
             const members = client.getCluster().getMembers();
             expect(members).to.have.lengthOf(1);
-            const address = members[0].address;
-            expect(address.host).to.be.equal(newMember.host);
-            expect(address.port).to.be.equal(newMember.port);
+            const member = members[0];
+            expect(member.uuid.toString()).to.be.equal(newMember.uuid);
         });
 
     }
@@ -153,19 +152,19 @@ describe('ClientReconnectAdvancedTest', function () {
     });
 
     it('connections should be restored after client reconnect - member hostname, client IP', async function () {
-        await testConnectionCountAfterClientReconnect('localhost', '127.0.0.1');
+        await testConnectionRestoredAfterClientReconnect('localhost', '127.0.0.1');
     });
 
     it('connections should be restored after client reconnect - member hostname, client hostname', async function () {
-        await testConnectionCountAfterClientReconnect('localhost', 'localhost');
+        await testConnectionRestoredAfterClientReconnect('localhost', 'localhost');
     });
 
     it('connections should be restored after client reconnect - member IP, client IP', async function () {
-        await testConnectionCountAfterClientReconnect('127.0.0.1', '127.0.0.1');
+        await testConnectionRestoredAfterClientReconnect('127.0.0.1', '127.0.0.1');
     });
 
     it('connections should be restored after client reconnect - member IP, client hostname', async function () {
-        await testConnectionCountAfterClientReconnect('127.0.0.1', 'localhost');
+        await testConnectionRestoredAfterClientReconnect('127.0.0.1', 'localhost');
     });
 
     it('listeners should be restored after client reconnect - member hostname, client IP', async function () {
