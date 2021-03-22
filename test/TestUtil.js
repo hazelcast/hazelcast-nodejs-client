@@ -125,17 +125,39 @@ exports.markEnterprise = function (_this) {
     }
 };
 
-exports.markServerVersionAtLeast = function (_this, client, expectedVersion) {
-    let actNumber;
-    if (process.env['SERVER_VERSION']) {
-        actNumber = BuildInfo.calculateServerVersionFromString(process.env['SERVER_VERSION']);
-    } else if (client != null) {
-        actNumber = client.connectionRegistry.getRandomConnection().getConnectedServerVersion();
+exports.getRandomConnection = function(client) {
+    if (Object.prototype.hasOwnProperty.call(client, 'connectionRegistry')) {
+        return client.connectionRegistry.getRandomConnection();
     } else {
-        return;
+        return client.getConnectionManager().getRandomConnection();
     }
-    const expNumber = BuildInfo.calculateServerVersionFromString(expectedVersion);
-    if (actNumber === BuildInfo.UNKNOWN_VERSION_ID || actNumber < expNumber) {
+};
+
+exports.isServerVersionAtLeast = function(client, version) {
+    let actual = BuildInfo.UNKNOWN_VERSION_ID;
+    if (process.env['SERVER_VERSION']) {
+        actual = BuildInfo.calculateServerVersionFromString(process.env['SERVER_VERSION']);
+    } else if (client != null) {
+        actual = exports.getRandomConnection(client).getConnectedServerVersion();
+    }
+    const expected = BuildInfo.calculateServerVersionFromString(version);
+    return actual === BuildInfo.UNKNOWN_VERSION_ID || expected <= actual;
+};
+
+exports.isClientVersionAtLeast = function(version) {
+    const actual = BuildInfo.calculateServerVersionFromString(BuildInfo.getClientVersion());
+    const expected = BuildInfo.calculateServerVersionFromString(version);
+    return actual === BuildInfo.UNKNOWN_VERSION_ID || expected <= actual;
+};
+
+exports.markServerVersionAtLeast = function (_this, client, expectedVersion) {
+    if (!exports.isServerVersionAtLeast(client, expectedVersion)) {
+        _this.skip();
+    }
+};
+
+exports.markClientVersionAtLeast = function(_this, expectedVersion) {
+    if (!exports.isClientVersionAtLeast(expectedVersion)) {
         _this.skip();
     }
 };
@@ -183,3 +205,35 @@ class CountingMembershipListener {
 }
 
 exports.CountingMembershipListener = CountingMembershipListener;
+
+exports.readStringFromReader = function (reader, fieldName) {
+    if (typeof reader.readString === 'function') {
+        return reader.readString(fieldName);
+    } else {
+        return reader.readUTF(fieldName);
+    }
+};
+
+exports.readStringFromInput = function (input) {
+    if (typeof input.readString === 'function') {
+        return input.readString();
+    } else {
+        return input.readUTF();
+    }
+};
+
+exports.writeStringToWriter = function (writer, fieldName, value) {
+    if (typeof writer.writeString === 'function') {
+        writer.writeString(fieldName, value);
+    } else {
+        writer.writeUTF(fieldName, value);
+    }
+};
+
+exports.writeStringToOutput = function (output, value) {
+    if (typeof output.writeString === 'function') {
+        output.writeString(value);
+    } else {
+        output.writeUTF(value);
+    }
+};

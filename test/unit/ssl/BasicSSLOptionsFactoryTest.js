@@ -25,9 +25,9 @@ describe('BasicSSLOptionsFactoryTest', function () {
         const options = {
             servername: 'foo.bar.com',
             rejectUnauthorized: true,
-            caPath: path.join(__dirname, '../../integration/ssl/server1-cert.pem'),
-            keyPath: path.join(__dirname, '../../integration/ssl/client1-key.pem'),
-            certPath: path.join(__dirname, '../../integration/ssl/client1-cert.pem'),
+            caPath: path.join(__dirname, '../../integration/backward_compatible/ssl/server1-cert.pem'),
+            keyPath: path.join(__dirname, '../../integration/backward_compatible/ssl/client1-key.pem'),
+            certPath: path.join(__dirname, '../../integration/backward_compatible/ssl/client1-cert.pem'),
             ciphers: 'cipherliststring'
         };
         const factory = new BasicSSLOptionsFactory();
