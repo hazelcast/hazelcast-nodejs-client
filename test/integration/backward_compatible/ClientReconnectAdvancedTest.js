@@ -86,14 +86,17 @@ describe('ClientReconnectAdvancedTest', function () {
         await RC.shutdownMember(cluster.id, member.uuid);
         await disconnectedDeferred.promise;
 
-        await TestUtil.assertTrueEventually(async () => {
-            expect(client.getCluster().getMembers()).to.have.lengthOf(1);
-        });
-
-        await RC.startMember(cluster.id);
+        const newMember = await RC.startMember(cluster.id);
         await reconnectedDeferred.promise;
 
-        expect(client.getCluster().getMembers()).to.have.lengthOf(1);
+        await TestUtil.assertTrueEventually(async () => {
+            const members = client.getCluster().getMembers();
+            expect(members).to.have.lengthOf(1);
+            const address = members[0].address;
+            expect(address.host).to.be.equal(newMember.host);
+            expect(address.port).to.be.equal(newMember.port);
+        });
+
     }
 
     async function testListenersAfterClientDisconnected(memberAddress, clientAddress) {
