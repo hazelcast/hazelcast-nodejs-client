@@ -56,6 +56,7 @@ For an enhancement or larger feature, you can create a GitHub issue first to dis
 6.	Before you push, run these commands in your terminal to check if there are any errors:
     * `npm run compile`: compiles typescript into javascript
     * `npm run lint`: runs linting on the code
+    * `npm run validate-user-code`: Checks the generated type decleration files
     * `npm run test`: runs unit and integration tests against the generated javascript code
 Push your PR once it is free of errors.
 7.	If you submit a PR as the solution to a specific issue, please mention the issue number either in the PR description or commit message.
