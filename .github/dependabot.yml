@@ -1,0 +1,16 @@
+version: 2
+updates:
+    - package-ecosystem: npm
+      directory: "/"
+      schedule:
+        interval: daily
+        time: "9:00"
+        timezone: "Asia/Istanbul"
+      open-pull-requests-limit: 10
+      target-branch: master
+      versioning-strategy: increase
+      ignore:
+        - dependency-name: "@types/node"
+          versions: [ ">=11.0.0" ]
+      labels:
+        - "dependencies"
