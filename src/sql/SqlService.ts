@@ -14,21 +14,65 @@
  * limitations under the License.
  */
 
+import Long = require('long');
+
+declare type Varchar = string;
+declare type TinyInt = number;
+declare type SmallInt = number;
+declare type Integer = number;
+declare type BigInt = Long;
+declare type Decimal = number;
+declare type Real = number;
+declare type Double = number;
+declare type Time = Date;
+declare type Timestamp = Date;
+declare type TimestampWithTimezone = Date;
+
+declare type SqlColumnType = Varchar | boolean | TinyInt | SmallInt | Integer |
+    BigInt | Decimal | Real | Double | Date | Time | Timestamp | TimestampWithTimezone |
+    any | null;
 
 export interface SqlRow {
-    getObject<T>(columnIndex: number): T;
-
+    getObject(columnIndex: number): SqlColumnType;
 }
+
 
 export interface SqlResult extends Iterable<SqlRow> {
 
 }
 
+export interface SqlStatement {
+    sql: string;
+    parameters: any[];
+    timeout: number;
+    cursorBufferSize: number;
+    schema: string;
+    expectedResultType: SqlExpectedResultType;
+}
 
+declare enum SqlExpectedResultType {
+    /** The statement may produce either rows or an update count. */
+    ANY,
+
+    /** The statement must produce rows. An exception is thrown is the statement produces an update count. */
+    ROWS,
+
+    /** The statement must produce an update count. An exception is thrown is the statement produces rows. */
+    UPDATE_COUNT
+}
+
+let a: SqlResult;
+
+for (const b of a) {
+    let c: string = b.getObject(1);
+    c += 1;
+    console.log(c);
+}
 
 export interface SqlService {
 
     execute(sql: string): SqlResult;
+
     /**
      * Convenient method to execute a distributed query with the given parameters.
      * Converts passed SQL string and parameters into an {@link SqlStatement} object and invokes {@link #execute(SqlStatement)}.
@@ -40,9 +84,3 @@ export interface SqlService {
     execute(sql: string, ...params: any[]): SqlResult;
 }
 
-/** @internal */
-export class SqlServiceImpl implements SqlService {
-    public execute(sql: string, ...params: any[]): SqlResult {
-
-    }
-}
