@@ -129,9 +129,10 @@ export interface ConnectionRegistry {
 
     /**
      * Returns a random connection from active connections
+     * @param dataMember true if only data members should be considered
      * @return Connection if there is at least one connection, otherwise null
      */
-    getRandomConnection(): Connection | null;
+    getRandomConnection(dataMember?: boolean): Connection | null;
 
     /**
      * Returns if invocation allowed. Invocation is allowed only if connection state is {@link INITIALIZED_ON_CLUSTER}
@@ -194,9 +195,10 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
     /**
      * Returns a random connection from active connections. If smart routing enabled, connection is returned using
      * load balancer. Otherwise, it is the first connection in connection registry.
+     * @param dataMember if only data members should be considered
      * @return Connection if there is at least one connection, otherwise null
      */
-    getRandomConnection(): Connection | null {
+    getRandomConnection(dataMember= false): Connection | null {
         if (this.smartRoutingEnabled) {
             const member = this.loadBalancer.next();
             if (member != null) {

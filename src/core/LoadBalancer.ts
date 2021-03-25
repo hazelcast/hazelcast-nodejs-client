@@ -49,6 +49,26 @@ export interface LoadBalancer {
      */
     next(): Member;
 
+    /**
+     * Returns the next data member to route to.
+     *
+     * @return Returns the next data member or null if no data member is available
+     * TODO: change exception
+     * @throws {Exception} if the operation is not supported by this instance
+     */
+    nextDataMember(): Member;
+
+    /**
+     * Returns whether this instance supports getting data members through a call to {@link #nextDataMember()}.
+     * <p>
+     * This method is used by components that require communication with data members only, such as the SQL engine.
+     *
+     * @return true if this instance supports getting data members through a call to {@link #nextDataMember()}
+     * @see #nextDataMember()
+     */
+    canGetNextDataMember(): boolean;
+
+
 }
 
 /**

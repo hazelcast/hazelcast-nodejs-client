@@ -468,3 +468,15 @@ export class UndefinedErrorCodeError extends HazelcastError {
         Object.setPrototypeOf(this, UndefinedErrorCodeError.prototype);
     }
 }
+
+export class HazelcastSqlException extends HazelcastError {
+    constructor(
+        private readonly code: number,
+        msg: string,
+        cause?: Error,
+        serverStackTrace?: ServerErrorStackElement[]
+    ) {
+        super(msg, cause, serverStackTrace);
+        Object.setPrototypeOf(this, HazelcastSqlException.prototype);
+    }
+}
