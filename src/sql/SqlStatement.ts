@@ -23,7 +23,7 @@ export enum SqlExpectedResultType {
 }
 
 export interface SqlStatement {
-
+    new SqlStatement(): SqlStatement;
     /**
      * Gets the SQL string to be executed.
      *
@@ -131,6 +131,51 @@ export interface SqlStatement {
      * see {@link SqlConfig#statementTimeoutMillis}
      */
     setTimeoutMillis(timeout: number): SqlStatement;
+
+    /**
+     * Gets the cursor buffer size (measured in the number of rows).
+     *
+     * @returns cursor buffer size (measured in the number of rows)
+     */
+    getCursorBufferSize(): number;
+
+    /**
+     * Sets the cursor buffer size (measured in the number of rows).
+     *
+     * When a statement is submitted for execution, a {@link SqlResult} is returned as a result. When rows are ready to be
+     * consumed, they are put into an internal buffer of the cursor. This parameter defines the maximum number of rows in
+     * that buffer. When the threshold is reached, the backpressure mechanism will slow down the execution, possibly to a
+     * complete halt, to prevent out-of-memory.
+     *
+     * Only positive values are allowed.
+     *
+     * The default value is expected to work well for most workloads. A bigger buffer size may give you a slight performance
+     * boost for queries with large result sets at the cost of increased memory consumption.
+     *
+     * Defaults to {@value #SqlConfig#defaultCursorBufferSize}.
+     *
+     * @param cursorBufferSize cursor buffer size (measured in the number of rows)
+     * @returns this instance for chaining
+     *
+     * see {@link SqlService#execute}
+     * see {@link SqlResult}
+     */
+    setCursorBufferSize(cursorBufferSize: number): SqlStatement;
+
+    /**
+     * Gets the expected result type.
+     *
+     * @returns expected result type
+     */
+    getExpectedResultType(): SqlExpectedResultType;
+
+    /**
+     * Sets the expected result type.
+     *
+     * @param expectedResultType expected result type
+     * @returns this instance for chaining
+     */
+    setExpectedResultType(expectedResultType: SqlExpectedResultType): SqlStatement;
 }
 
 /** @internal */
