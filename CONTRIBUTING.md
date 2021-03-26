@@ -55,6 +55,6 @@ For an enhancement or larger feature, you can create a GitHub issue first to dis
     * `npm run compile`: Compiles TypeScript into JavaScript, checking for any errors along the way
     * `npm run lint`: Runs linting to find stylistic/structural errors in the code
     * `npm run validate-user-code`: Checks the validity of generated TypeScript type declaration files
-    * `npm run test`: Runs unit and integration tests against the generated javascript code(the generated code is in lib/ folder)
+    * `npm run test`: Runs unit and integration tests against the generated JavaScript code(the generated code is in `lib/` folder)
 Push your PR once it is free of errors.
 7.	If you submit a PR as the solution to a specific issue, please mention the issue number either in the PR description or commit message.
