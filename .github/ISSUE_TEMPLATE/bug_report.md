@@ -25,17 +25,17 @@ Please share with us the following information:
 
 1. Exact Node.js client version that you use (_e.g._ `4.1.0`):
 
-2.	Exact Hazelcast version that you use (_e.g._ `4.0.1`, also whether it is a minor release, or the latest snapshot):
+2. Exact Hazelcast version that you use (_e.g._ `4.0.1`, also whether it is a minor release, or the latest snapshot):
 
-3.	Cluster size, _i.e._ the number of Hazelcast cluster members.
+3. Cluster size, _i.e._ the number of Hazelcast cluster members.
 
-4.	Number of clients:
+4. Number of clients:
 
-5.	Java version.It is also helpful to mention the JVM parameters:
+5. Java version.It is also helpful to mention the JVM parameters:
 
-6.	Operating system. If it is Linux, kernel version is helpful:
+6. Operating system. If it is Linux, kernel version is helpful:
 
-7.	Logs and stack traces, if available:
+7. Logs and stack traces, if available:
 
 **To Reproduce**
 Steps to reproduce the behavior:
