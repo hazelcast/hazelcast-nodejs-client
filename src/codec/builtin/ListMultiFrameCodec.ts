@@ -16,6 +16,7 @@
 
 import {BEGIN_FRAME, ClientMessage, END_FRAME, NULL_FRAME} from '../../protocol/ClientMessage';
 import {CodecUtil} from './CodecUtil';
+import {DataCodec} from './DataCodec';
 
 /** @internal */
 export class ListMultiFrameCodec {
@@ -55,6 +56,18 @@ export class ListMultiFrameCodec {
         clientMessage.nextFrame();
         while (!CodecUtil.nextFrameIsDataStructureEndFrame(clientMessage)) {
             result.push(decoder(clientMessage));
+        }
+        // end frame
+        clientMessage.nextFrame();
+        return result;
+    }
+
+    static decodeContainsNullable<T>(clientMessage: ClientMessage, decoder: (msg: ClientMessage) => T): T[] {
+        const result: T[] = [];
+        // begin frame
+        clientMessage.nextFrame();
+        while (!CodecUtil.nextFrameIsDataStructureEndFrame(clientMessage)) {
+            result.push(CodecUtil.nextFrameIsNullFrame(clientMessage) ? null : decoder(clientMessage));
         }
         // end frame
         clientMessage.nextFrame();

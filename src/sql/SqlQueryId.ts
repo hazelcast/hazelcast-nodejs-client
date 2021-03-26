@@ -19,7 +19,7 @@ import {UuidUtil} from '../util/UuidUtil';
 import * as Long from 'long';
 
 /** @internal */
-export class QueryId {
+export class SqlQueryId {
     constructor(
         private readonly memberIdHigh: Long,
         private readonly memberIdLow: Long,
@@ -27,9 +27,9 @@ export class QueryId {
         private readonly localIdLow: Long
     ) {}
 
-    static create(memberId: UUID): QueryId {
+    static create(memberId: UUID): SqlQueryId {
         const localId: UUID = UuidUtil.generate();
-        return new QueryId(
+        return new SqlQueryId(
             memberId.mostSignificant,
             memberId.leastSignificant,
             localId.mostSignificant,
