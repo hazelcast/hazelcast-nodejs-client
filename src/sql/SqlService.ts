@@ -14,63 +14,53 @@
  * limitations under the License.
  */
 import {SqlResult} from './SqlResult';
-import {Connection} from '../network/Connection';
 import {ConnectionRegistry} from '../network/ConnectionManager';
-import {HazelcastSqlException} from '../core';
-import {SqlErrorCode} from './SqlErrorCode';
-import {QueryId} from './QueryId';
-import {SqlStatement, SqlStatementImpl} from './SqlStatement';
+import {SqlExpectedResultType, SqlStatement} from './SqlStatement';
+import {IllegalArgumentError} from '../core';
+
+export interface SqlStatementOptions {
+    schema?: string;
+    timeoutMillis?: number;
+    cursorBufferSize?: number;
+    expectedResultType?: SqlExpectedResultType;
+}
 
 
 export interface SqlService {
-    /**
-     * Convenient method to execute a distributed query with the given parameters.
-     * Converts passed SQL string and parameters into an SqlStatement object and invokes #execute(SqlStatement).
-     *
-     * @param sql SQL string
-     * @param params query parameters that will be passed to {@link SqlStatement#setParameters(List)}
-     * @returns {@link SqlResult}
-     */
-    execute(sql: string, ...params: any[]): SqlResult;
-
-
-    /**
-     * Executes a sql string.
-     * Converts passed SQL string into an SqlStatement object and invokes execute(SqlStatement).
-     *
-     * @param sql SQL string
-     * @returns {@link SqlResult}
-     */
     execute(sql: SqlStatement): SqlResult;
+    execute(sql: string, params?: any[], options?: SqlStatementOptions): SqlResult;
+    execute(sql: string | SqlStatement, params?: any[], options?: SqlStatementOptions): SqlResult;
 }
 
 /** @internal */
 export class SqlServiceImpl implements SqlService {
     constructor(
         private readonly connectionRegistry: ConnectionRegistry
-    ) {}
-
-    execute(sql: string, ...params: any[]): SqlResult{
-        const sqlStatement = new SqlStatementImpl();
-        this.execute();
+    ) {
     }
 
-    execute(sql: SqlStatement, ...params: any[]): SqlResult {
-        const connection: Connection = this.connectionRegistry.getRandomConnection(true);
-
-        if (connection == null) {
-            throw new HazelcastSqlException(
-                SqlErrorCode.CONNECTION_PROBLEM,
-                'Client is not currently connected to the cluster.'
-            );
+    execute(sql: SqlStatement): SqlResult;
+    execute(sql: string, params?: any[], options?: SqlStatementOptions): SqlResult;
+    execute(sql: string | SqlStatement, params?: any[], options?: SqlStatementOptions): SqlResult {
+        let sqlStatement: SqlStatement;
+        if (typeof sql === 'string') {
+            sqlStatement = {
+                sql: sql
+            };
+            if (Array.isArray(params)) {
+                sqlStatement.parameters = params;
+            }
+            if (options !== undefined && options !== null) {
+                sqlStatement.options = options;
+            }
+        } else if (typeof sql === 'object') {
+            sqlStatement = sql;
+        } else {
+            throw new IllegalArgumentError('Sql parameter must be a string or an SqlStatement object');
         }
 
-        const id = QueryId.create(connection.getRemoteUuid());
-        try {
-            const params = statement.get
-        } catch (err) {
+        console.log(sqlStatement);
 
-        }
-
+        return [];
     }
 }

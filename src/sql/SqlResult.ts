@@ -15,6 +15,7 @@
  */
 import {SqlRow} from './SqlRow';
 
-export interface SqlResult extends Iterable<SqlRow> {
+
+export interface SqlResult extends AsyncIterable<SqlRow> {
 
 }
