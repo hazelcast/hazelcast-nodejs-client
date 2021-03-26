@@ -11,7 +11,7 @@ There are multiple ways to contribute:
 Note that you don't need to be a developer to help us.
 Contributions that improve the documentation are always appreciated.
 
-If you feel yourself in need of assistance, please reach us directly via [Slack](https://slack.hazelcast.com/). We have a seperate channel for the Node.js client. 
+If you feel yourself in need of assistance, please reach us directly via [Slack](https://slack.hazelcast.com/). We have a separate [channel](https://hazelcastcommunity.slack.com/archives/C01PP55A667) for the Node.js client.
 
 ## Issue Reports
 
@@ -19,23 +19,20 @@ Thanks for reporting your issue.
 To help us resolve your issue quickly and efficiently, we need as much data for diagnostics as possible.
 Please share with us the following information:
 
-1.  Exact Node.js client version that you use (_e.g._ `4.1.0`).
-2.	Exact Hazelcast version that you use (_e.g._ `4.0.1`, also whether it is a minor release, or the latest snapshot).
-3.	Cluster size, _i.e._ the number of Hazelcast cluster members.
-4.	Number of clients.
-5.	Java version.
-It is also helpful to mention the JVM parameters.
-6.	Operating system.
-If it is Linux, kernel version is helpful.
-7.	Logs and stack traces, if available.
-8.	Detailed description of the steps to reproduce your issue.
-
+1. Exact Node.js client version that you use (_e.g._ `4.1.0`).
+2. Exact Hazelcast version that you use (_e.g._ `4.0.1`, also whether it is a minor release, or the latest snapshot).
+3. Cluster size, _i.e._ the number of Hazelcast cluster members.
+4. Number of clients.
+5. Java version. It is also helpful to mention the JVM parameters.
+6. Operating system. If it is Linux, kernel version is helpful.
+7. Logs and stack traces, if available.
+8. Detailed description of the steps to reproduce your issue.
 
 ## Pull requests
 
 Thanks a lot for creating your <abbr title="Pull Request">PR</abbr>!
 
-A PR can target many different subjects:
+A PR can target many subjects:
 
 * [Documentation](https://github.com/hazelcast/hazelcast-nodejs-client/blob/master/DOCUMENTATION.md):
 either fix typos or improve the documentation as a whole
@@ -54,9 +51,10 @@ That includes descriptive commit messages.
 5.	Please keep your PRs as small as possible, _i.e._ if you plan to perform a huge change, do not submit a single and large PR for it.
 For an enhancement or larger feature, you can create a GitHub issue first to discuss.
 6.	Before you push, run these commands in your terminal to check if there are any errors:
-    * `npm run compile`: compiles typescript into javascript
-    * `npm run lint`: runs linting on the code
-    * `npm run validate-user-code`: Checks the generated type decleration files
-    * `npm run test`: runs unit and integration tests against the generated javascript code
+    * `npm install`: Installs dependencies
+    * `npm run compile`: Compiles TypeScript into JavaScript, checking for any errors along the way
+    * `npm run lint`: Runs linting to find stylistic/structural errors in the code
+    * `npm run validate-user-code`: Checks the validity of generated TypeScript type declaration files
+    * `npm run test`: Runs unit and integration tests against the generated javascript code(the generated code is in lib/ folder)
 Push your PR once it is free of errors.
 7.	If you submit a PR as the solution to a specific issue, please mention the issue number either in the PR description or commit message.
