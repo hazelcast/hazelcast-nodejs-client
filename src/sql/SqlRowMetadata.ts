@@ -17,8 +17,6 @@
 import {SqlColumnMetadata} from './SqlColumnMetadata';
 
 export interface SqlRowMetadata {
-    // Constant number indicating that the column is not found
-    COLUMN_NOT_FOUND: number;
 
     // Gets the number of columns in the row.
     getColumnCount(): number;
@@ -31,7 +29,7 @@ export interface SqlRowMetadata {
 
     /*
       Find index of the column with the given name. Returned index can be used to get column value from SqlRow.
-      Exception is thrown if columnName is not string. If column is not found, COLUMN_NOT_FOUND is returned.
+      Exception is thrown if columnName is not string. If column is not found, -1 is returned.
     */
     findColumn(columnName: string): number;
 }

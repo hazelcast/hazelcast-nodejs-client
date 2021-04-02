@@ -59,8 +59,6 @@ export class SqlServiceImpl implements SqlService {
             throw new IllegalArgumentError('Sql parameter must be a string or an SqlStatement object');
         }
 
-        console.log(sqlStatement);
-
         return [];
     }
 }
