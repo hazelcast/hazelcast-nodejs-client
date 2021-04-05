@@ -8,7 +8,7 @@ export class ListCNLocalDateCodec {
     static encode(clientMessage: ClientMessage, items: boolean[]): void {
         ListCNFixedSizeCodec.encode(clientMessage, items);
     }
-
+    //
     static decode(clientMessage: ClientMessage): boolean[] {
         return ListCNFixedSizeCodec.decode(clientMessage);
     }
