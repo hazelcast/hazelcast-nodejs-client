@@ -26,6 +26,10 @@ export class BitsUtil {
     static readonly FLOAT_SIZE_IN_BYTES = 4;
     static readonly LONG_SIZE_IN_BYTES = 8;
     static readonly DOUBLE_SIZE_IN_BYTES = 8;
+    static readonly LOCAL_DATE_SIZE_IN_BYTES = BitsUtil.SHORT_SIZE_IN_BYTES + BitsUtil.BYTE_SIZE_IN_BYTES * 2;
+    static readonly LOCAL_TIME_SIZE_IN_BYTES = BitsUtil.INT_SIZE_IN_BYTES + BitsUtil.BYTE_SIZE_IN_BYTES * 3;
+    static readonly LOCAL_DATETIME_SIZE_IN_BYTES = BitsUtil.LOCAL_DATE_SIZE_IN_BYTES + BitsUtil.LOCAL_TIME_SIZE_IN_BYTES;
+
     static readonly UUID_SIZE_IN_BYTES = BitsUtil.BOOLEAN_SIZE_IN_BYTES + 2 * BitsUtil.LONG_SIZE_IN_BYTES;
 
     static readonly NULL_ARRAY_LENGTH = -1;

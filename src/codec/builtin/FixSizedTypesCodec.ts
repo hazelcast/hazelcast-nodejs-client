@@ -16,6 +16,7 @@
 
 import * as Long from 'long';
 import {BitsUtil} from '../../util/BitsUtil';
+import {combineTimeAndDateStrings, getTimeOfIsoString, parseTimeString} from '../../util/DatetimeUtil';
 import {UUID} from '../../core/UUID';
 
 // Taken from long.js, https://github.com/dcodeIO/long.js/blob/master/src/long.js
@@ -32,6 +33,79 @@ export class FixSizedTypesCodec {
 
     static decodeInt(buffer: Buffer, offset: number): number {
         return buffer.readInt32LE(offset);
+    }
+
+    /*
+    Encodes a local date to buffer from iso string
+    */
+    static encodeLocalDate(buffer: Buffer, offset: number, value: string): void {
+        const localDate = new Date(value);
+
+        FixSizedTypesCodec.encodeShort(buffer, offset, localDate.getFullYear());
+        FixSizedTypesCodec.encodeByte(buffer, offset + BitsUtil.SHORT_SIZE_IN_BYTES, localDate.getMonth());
+        FixSizedTypesCodec.encodeByte(
+            buffer,
+            offset + BitsUtil.SHORT_SIZE_IN_BYTES + BitsUtil.BYTE_SIZE_IN_BYTES,
+            localDate.getDate()
+        );
+    }
+
+    /*
+    Decodes local date from buffer
+    */
+    static decodeLocalDate(buffer: Buffer, offset: number): string {
+        const year = FixSizedTypesCodec.decodeShort(buffer, offset);
+        const month = FixSizedTypesCodec.decodeByte(buffer, offset + BitsUtil.SHORT_SIZE_IN_BYTES);
+        const dayOfMonth = FixSizedTypesCodec.decodeByte(
+            buffer, offset + BitsUtil.SHORT_SIZE_IN_BYTES + BitsUtil.BYTE_SIZE_IN_BYTES
+        );
+        return `${year}-${month}-${dayOfMonth}T00:00:00`;
+    }
+
+    /*
+    Encodes a local datetime to buffer from iso string
+    */
+    static encodeLocalDatetime(buffer: Buffer, offset: number, value: string): void {
+        const localTimeString = getTimeOfIsoString(value);
+        FixSizedTypesCodec.encodeLocalDate(buffer, offset, value);
+        FixSizedTypesCodec.encodeLocalTime(buffer, offset + BitsUtil.LOCAL_DATE_SIZE_IN_BYTES, localTimeString);
+    }
+
+    /*
+    Decodes local datetime from buffer
+    */
+    static decodeLocalDatetime(buffer: Buffer, offset: number): string {
+        const localDateString = FixSizedTypesCodec.decodeLocalDate(buffer, offset);
+        const localTimeString = FixSizedTypesCodec.decodeLocalTime(buffer, offset + BitsUtil.LOCAL_DATE_SIZE_IN_BYTES);
+        return combineTimeAndDateStrings(localDateString, localTimeString);
+    }
+
+    /*
+    Encodes a local time to buffer from iso string
+    */
+    static encodeLocalTime(buffer: Buffer, offset: number, value: string): void {
+        const localTime = parseTimeString(value);
+
+        FixSizedTypesCodec.encodeByte(buffer, offset, localTime.hours);
+        FixSizedTypesCodec.encodeByte(buffer, offset + BitsUtil.BYTE_SIZE_IN_BYTES, localTime.minutes);
+        FixSizedTypesCodec.encodeByte(buffer, offset + BitsUtil.BYTE_SIZE_IN_BYTES * 2, localTime.seconds);
+        FixSizedTypesCodec.encodeInt(
+            buffer,
+            offset + BitsUtil.BYTE_SIZE_IN_BYTES * 3,
+            localTime.nano
+        );
+    }
+
+    /*
+    Decodes local time from buffer
+    */
+    static decodeLocalTime(buffer: Buffer, offset: number): string {
+        const hour = FixSizedTypesCodec.decodeByte(buffer, offset);
+        const minute = FixSizedTypesCodec.decodeByte(buffer, offset + BitsUtil.BYTE_SIZE_IN_BYTES);
+        const second = FixSizedTypesCodec.decodeByte(buffer, offset + BitsUtil.BYTE_SIZE_IN_BYTES * 2);
+        const nano = FixSizedTypesCodec.decodeInt(buffer, offset + BitsUtil.BYTE_SIZE_IN_BYTES * 3);
+
+        return `${hour}:${minute}:${second}.${nano}`;
     }
 
     static encodeShort(buffer: Buffer, offset: number, value: number): void {
