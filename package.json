@@ -28,7 +28,7 @@
         "sinon": "~10.0.0",
         "sinon-chai": "~3.6.0",
         "thrift": "~0.14.1",
-        "typedoc": "~0.20.34",
+        "typedoc": "~0.20.35",
         "typescript": "~4.2.3",
         "winston": "~3.3.3",
         "yargs": "~16.2.0"
