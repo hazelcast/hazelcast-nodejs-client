@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
-import {SqlStatementOptions} from './SqlService';
-
 export enum SqlExpectedResultType {
     ANY,
     ROWS,
     UPDATE_COUNT
+}
+
+export interface SqlStatementOptions {
+    schema?: string;
+    timeoutMillis?: number;
+    cursorBufferSize?: number;
+    expectedResultType?: SqlExpectedResultType;
 }
 
 export interface SqlStatement {

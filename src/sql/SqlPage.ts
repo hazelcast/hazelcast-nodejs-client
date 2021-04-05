@@ -11,12 +11,27 @@ interface DataHolder {
 /** @internal */
 export class SqlPage {
     constructor(
-        private readonly columnTypes: (keyof typeof SqlColumnType)[],
+        private readonly columnTypes: SqlColumnType[],
         private readonly dataHolder: DataHolder,
         private readonly last: boolean
     ) {
     }
-    static fromColumns(columnTypes: (keyof typeof SqlColumnType)[], columns: any[][], last: boolean): SqlPage {
+
+    isLast(): boolean{
+        return false;
+    }
+    getColumnTypes(): SqlColumnType[]{
+        return this.columnTypes;
+    }
+
+    getColumnCount(): number{
+        return this.columnTypes.length;
+    }
+    getColumnValuesForServer(index: number) : any[] {
+        return [];
+    }
+
+    static fromColumns(columnTypes: SqlColumnType[], columns: any[][], last: boolean): SqlPage {
         return new SqlPage(columnTypes, new ColumnarDataHolder(columns), last);
     }
 }

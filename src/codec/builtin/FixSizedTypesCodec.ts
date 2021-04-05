@@ -34,6 +34,30 @@ export class FixSizedTypesCodec {
         return buffer.readInt32LE(offset);
     }
 
+    static encodeShort(buffer: Buffer, offset: number, value: number): void {
+        buffer.writeInt16LE(value, offset);
+    }
+
+    static decodeShort(buffer: Buffer, offset: number): number {
+        return buffer.readInt16LE(offset);
+    }
+
+    static encodeFloat(buffer: Buffer, offset: number, value: number): void {
+        buffer.writeFloatLE(value, offset);
+    }
+
+    static decodeFloat(buffer: Buffer, offset: number): number {
+        return buffer.readFloatLE(offset);
+    }
+
+    static encodeDouble(buffer: Buffer, offset: number, value: number): void {
+        buffer.writeDoubleLE(value, offset);
+    }
+
+    static decodeDouble(buffer: Buffer, offset: number): number {
+        return buffer.readDoubleLE(offset);
+    }
+
     static encodeLong(buffer: Buffer, offset: number, value: any): void {
         if (!Long.isLong(value)) {
             value = Long.fromValue(value);
@@ -64,13 +88,13 @@ export class FixSizedTypesCodec {
      */
     static encodeNonNegativeNumberAsLong(buffer: Buffer, offset: number, value: number): void {
         if (value < 0) {
-            throw new Error("Only positive numbers are allowed in this method, received: " + value);
+            throw new Error('Only positive numbers are allowed in this method, received: ' + value);
         }
 
         if (value + 1 >= TWO_PWR_63_DBL) {
             // MAX_VALUE
-            buffer.writeInt32LE(0xFFFFFFFF|0, offset);
-            buffer.writeInt32LE(0x7FFFFFFF|0, offset + BitsUtil.INT_SIZE_IN_BYTES);
+            buffer.writeInt32LE(0xFFFFFFFF | 0, offset);
+            buffer.writeInt32LE(0x7FFFFFFF | 0, offset + BitsUtil.INT_SIZE_IN_BYTES);
             return;
         }
 

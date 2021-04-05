@@ -16,6 +16,7 @@
 import {SqlRow} from './SqlRow';
 
 
-export interface SqlResult extends AsyncIterable<SqlRow> {
-
+export interface SqlResult extends AsyncIterable<SqlRow | {[key: string]: any}> {
+    hasNext(): Promise<boolean>;
+    next(): Promise<SqlRow>;
 }

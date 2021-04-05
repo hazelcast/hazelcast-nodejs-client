@@ -15,21 +15,21 @@
  */
 
 export enum SqlColumnType {
-    VARCHAR = 0,
-    BOOLEAN = 1,
-    TINYINT = 2,
-    SMALLINT = 3,
-    INTEGER = 4,
-    BIGINT = 5,
-    DECIMAL = 6,
-    REAL = 7,
-    DOUBLE = 8,
-    DATE = 9,
-    TIME = 10,
-    TIMESTAMP = 11,
-    TIMESTAMP_WITH_TIME_ZONE = 12,
-    OBJECT = 13,
-    NULL = 14
+    VARCHAR,
+    BOOLEAN,
+    TINYINT,
+    SMALLINT,
+    INTEGER,
+    BIGINT,
+    DECIMAL,
+    REAL,
+    DOUBLE,
+    DATE,
+    TIME,
+    TIMESTAMP,
+    TIMESTAMP_WITH_TIME_ZONE,
+    OBJECT,
+    NULL
 }
 
 

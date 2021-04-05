@@ -15,15 +15,8 @@
  */
 import {SqlResult} from './SqlResult';
 import {ConnectionRegistry} from '../network/ConnectionManager';
-import {SqlExpectedResultType, SqlStatement} from './SqlStatement';
+import {SqlStatement, SqlStatementOptions} from './SqlStatement';
 import {IllegalArgumentError} from '../core';
-
-export interface SqlStatementOptions {
-    schema?: string;
-    timeoutMillis?: number;
-    cursorBufferSize?: number;
-    expectedResultType?: SqlExpectedResultType;
-}
 
 
 export interface SqlService {
@@ -59,6 +52,6 @@ export class SqlServiceImpl implements SqlService {
             throw new IllegalArgumentError('Sql parameter must be a string or an SqlStatement object');
         }
 
-        return [];
+        return undefined;
     }
 }

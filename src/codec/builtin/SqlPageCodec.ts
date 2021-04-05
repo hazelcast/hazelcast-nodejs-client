@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-import {ClientMessage} from '../../protocol/ClientMessage';
+import {BEGIN_FRAME, ClientMessage, END_FRAME, Frame} from '../../protocol/ClientMessage';
 import {SqlPage} from '../../sql/SqlPage';
 import {ListIntegerCodec} from './ListIntegerCodec';
 import {SqlColumnType} from '../../sql/SqlColumnMetadata';
-import assert = require('assert');
 import {ListMultiFrameCodec} from './ListMultiFrameCodec';
 import {StringCodec} from './StringCodec';
 import {ListCNBooleanCodec} from './ListCNBooleanCodec';
@@ -37,12 +36,87 @@ import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 import {DataCodec} from './DataCodec';
 import {IllegalStateError} from '../../core';
 import {CodecUtil} from './CodecUtil';
-import {AssertionError} from 'assert';
+import assert = require('assert');
+import {BitsUtil} from '../../util/BitsUtil';
 
 /** @internal */
 export class SqlPageCodec {
     static encode(clientMessage: ClientMessage, sqlPage: SqlPage): void {
-        return;
+        clientMessage.addFrame(BEGIN_FRAME.copy());
+
+        // Write the "last" flag
+        const content: Buffer = Buffer.from([sqlPage.isLast() ? 1 : 0]);
+        clientMessage.addFrame(new Frame(content));
+
+        // Write column types
+        const columnTypes = sqlPage.getColumnTypes();
+        const columnTypeIds: SqlColumnType[] = [];
+
+        for (const columnTypeId of columnTypes) {
+            columnTypeIds.push(columnTypeId);
+        }
+        ListIntegerCodec.encode(clientMessage, columnTypeIds);
+
+        // Write columns.
+        for (let i = 0; i < sqlPage.getColumnCount(); i++) {
+            const columnType: SqlColumnType = columnTypes[i];
+            const column: Array<any> = sqlPage.getColumnValuesForServer(i);
+
+            switch (columnType) {
+                case SqlColumnType.VARCHAR:
+                    ListMultiFrameCodec.encodeContainsNullable(clientMessage, column, StringCodec.encode);
+                    break;
+                case SqlColumnType.BOOLEAN:
+                    ListCNBooleanCodec.encode(clientMessage, column);
+                    break;
+                case SqlColumnType.TINYINT:
+                    ListCNByteCodec.encode(clientMessage, column);
+                    break;
+                case SqlColumnType.SMALLINT:
+                    ListCNShortCodec.encode(clientMessage, column);
+                    break;
+                case SqlColumnType.INTEGER:
+                    ListCNIntegerCodec.encode(clientMessage, column);
+                    break;
+                case SqlColumnType.BIGINT:
+                    ListCNLongCodec.encode(clientMessage, column);
+                    break;
+                case SqlColumnType.REAL:
+                    ListCNFloatCodec.encode(clientMessage, column);
+                    break;
+                case SqlColumnType.DOUBLE:
+                    ListCNDoubleCodec.encode(clientMessage, column);
+                    break;
+                case SqlColumnType.DATE:
+                    ListCNLocalDateCodec.encode(clientMessage, column);
+                    break;
+                case SqlColumnType.TIME:
+                    ListCNLocalTimeCodec.encode(clientMessage, column);
+                    break;
+                case SqlColumnType.TIMESTAMP:
+                    ListCNLocalDateTimeCodec.encode(clientMessage, column);
+                    break;
+                case SqlColumnType.TIMESTAMP_WITH_TIME_ZONE:
+                    ListCNOffsetDateTimeCodec.encode(clientMessage, column);
+                    break;
+                case SqlColumnType.DECIMAL:
+                    ListMultiFrameCodec.encode(clientMessage, column, BigDecimalCodec.encodeNullable);
+                    break;
+                case SqlColumnType.NULL:
+                    const size = column.length;
+
+                    const sizeBuffer: Buffer = Buffer.allocUnsafe(BitsUtil.INT_SIZE_IN_BYTES);
+                    FixSizedTypesCodec.encodeInt(sizeBuffer, 0, size);
+                    clientMessage.addFrame(new Frame(sizeBuffer));
+                    break;
+                case SqlColumnType.OBJECT:
+                    ListMultiFrameCodec.encode(clientMessage, column, DataCodec.encodeNullable);
+                    break;
+                default:
+                    throw new IllegalStateError('Unknown type ' + columnType);
+            }
+        }
+        clientMessage.addFrame(END_FRAME.copy());
     }
 
     static decode(clientMessage: ClientMessage): SqlPage {
@@ -54,18 +128,18 @@ export class SqlPageCodec {
 
         // Read column types.
         const columnTypeIds: number[] = ListIntegerCodec.decode(clientMessage);
-        const columnTypes: (keyof typeof SqlColumnType)[] = [];
+        const columnTypes: SqlColumnType[] = [];
 
         // Read columns
         const columns: any[][] = [];
 
         for (const columnTypeId of columnTypeIds) {
             assert.notStrictEqual(SqlColumnType[columnTypeId], undefined);
-            const columnType: keyof typeof SqlColumnType = SqlColumnType[columnTypeId] as keyof typeof SqlColumnType;
+            const columnType: SqlColumnType = columnTypeId;
 
             columnTypes.push(columnType);
 
-            switch (SqlColumnType[columnType]) {
+            switch (columnType) {
                 case SqlColumnType.VARCHAR:
                     columns.push(ListMultiFrameCodec.decodeContainsNullable(clientMessage, StringCodec.decode));
                     break;
