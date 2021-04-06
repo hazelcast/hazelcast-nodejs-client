@@ -16,7 +16,7 @@
 
 import * as Long from 'long';
 import {BitsUtil} from '../../util/BitsUtil';
-import {combineTimeAndDateStrings, getTimeOfIsoString, parseTimeString} from '../../util/DatetimeUtil';
+import {combineISOStringWithTimeString, getTimeOfIsoString, parseTimeString} from '../../util/DatetimeUtil';
 import {UUID} from '../../core/UUID';
 
 // Taken from long.js, https://github.com/dcodeIO/long.js/blob/master/src/long.js
@@ -77,7 +77,7 @@ export class FixSizedTypesCodec {
     static decodeLocalDatetime(buffer: Buffer, offset: number): string {
         const localDateString = FixSizedTypesCodec.decodeLocalDate(buffer, offset);
         const localTimeString = FixSizedTypesCodec.decodeLocalTime(buffer, offset + BitsUtil.LOCAL_DATE_SIZE_IN_BYTES);
-        return combineTimeAndDateStrings(localDateString, localTimeString);
+        return combineISOStringWithTimeString(localDateString, localTimeString);
     }
 
     /*

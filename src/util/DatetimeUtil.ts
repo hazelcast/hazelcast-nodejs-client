@@ -19,7 +19,7 @@
  Parse local time string and return values in it
 
  @param {string} timeString A string in the form hh:mm:ss.sss (at most 9 digits, so nano second precision)
- @return {object} an object including hours, minutes, seconds and nano
+ @return {object} an object including hours, minutes, seconds and nano. If nano is not 0, it always includes 9 digits.
  */
 export function parseTimeString(timeString: string): {
     hours: number;
@@ -27,29 +27,38 @@ export function parseTimeString(timeString: string): {
     seconds: number;
     nano: number;
 } {
-    // TODO
     const timeStringSplit = timeString.split(':');
-    /*
-    const time = timeStringSplit[1];
-    const timeSplit = time.split(':');
-    // we have seconds YYYY-MM-DDThh:mm:(ss.sTZD)
-    if (timeSplit.length >= 3) {
-        const secondsWithTimezone = timeSplit[2];
-        const dotSplit = secondsWithTimezone.split('.');
-        if (dotSplit.length >= 2) {
-            const fractionWithTimezone = dotSplit[1];
-            const fractionString = fractionWithTimezone.split('+-Z')[0];
-            // Convert string to number
-            let fraction = +fractionString;
-            if (!isNaN(fraction)) {
-                // Convert to nanoseconds
-                while (fraction <= 99_999_999) fraction *= 10;
-                return fraction;
-            }
+    if (timeStringSplit.length != 3) {
+        return {
+            hours: 0,
+            minutes: 0,
+            seconds: 0,
+            nano: 0
         }
     }
-     */
-    return undefined;
+    const secondsSplit = timeStringSplit[2].split('.');
+    let nano = 0;
+    if (secondsSplit.length == 2) {
+        let nanoStr = secondsSplit[1];
+        // make nanoStr 9 digits if it's longer
+        if (nanoStr.length > 9) nanoStr = nanoStr.slice(0, 9);
+
+        nano = +nanoStr;
+        if (!isNaN(nano)) {
+            while (nano <= 99_999_999) nano *= 10;
+        }
+    }
+
+    const hours = +timeStringSplit[0];
+    const minutes = +timeStringSplit[1];
+    const seconds = +secondsSplit[0];
+
+    return {
+        hours: isNaN(hours) ? 0 : hours,
+        minutes: isNaN(minutes) ? 0 : minutes,
+        seconds: isNaN(seconds) ? 0 : seconds,
+        nano: isNaN(nano) ? 0 : nano
+    }
 }
 
 /**
@@ -69,11 +78,35 @@ export function getTimeOfIsoString(isoString: string): string {
 /**
  Constructs and returns ISO string from iso string only including date and time string
 
- @param {string} dateISOString ISO 8601 string containing date
+ @param {string} isoString ISO 8601 string containing date
  @param {string} timeString A string in the form hh:mm:ss.sss (at most 9 digits, so nano second precision)
  @return {string} ISO string
  */
-export function combineTimeAndDateStrings(dateISOString: string, timeString: string): string {
-    return [dateISOString.split('T')[0], timeString].join('T');
+export function combineISOStringWithTimeString(isoString: string, timeString: string): string {
+    const zLast = isoString[isoString.length - 1] === 'Z';
+    let hourFormatTimezone;
+
+    const isoStringSplit = isoString.split('T');
+
+    if (isoStringSplit.length >= 2) {
+        const timeString = isoStringSplit[1];
+        const indexOfPlus = timeString.indexOf('+');
+        const indexOfMinus = timeString.indexOf('-');
+        if (indexOfMinus != -1) {
+            hourFormatTimezone = timeString.slice(indexOfMinus);
+        } else if (indexOfPlus != -1) {
+            hourFormatTimezone = timeString.slice(indexOfPlus);
+        }
+    }
+
+    const withoutTimezone = [isoString.split('T')[0], timeString].join('T');
+
+    if (zLast) {
+        return withoutTimezone + 'Z';
+    } else if (hourFormatTimezone) {
+        return withoutTimezone + hourFormatTimezone;
+    } else {
+        return withoutTimezone;
+    }
 }
 

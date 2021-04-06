@@ -4,6 +4,7 @@ target/*
 node_modules/*
 *.iml
 report.xml
+coverage.html
 
 ### Java ###
 *.class
