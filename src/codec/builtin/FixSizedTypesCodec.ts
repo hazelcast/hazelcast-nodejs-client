@@ -16,7 +16,12 @@
 
 import * as Long from 'long';
 import {BitsUtil} from '../../util/BitsUtil';
-import {combineISOStringWithTimeString, getTimeOfIsoString, parseTimeString} from '../../util/DatetimeUtil';
+import {
+    combineISOStringWithTimeString,
+    getTimeOfIsoString,
+    parseTimeString,
+    getTimezoneOffsetFromSeconds
+} from '../../util/DatetimeUtil';
 import {UUID} from '../../core/UUID';
 
 // Taken from long.js, https://github.com/dcodeIO/long.js/blob/master/src/long.js
@@ -50,9 +55,6 @@ export class FixSizedTypesCodec {
         );
     }
 
-    /*
-    Decodes local date from buffer
-    */
     static decodeLocalDate(buffer: Buffer, offset: number): string {
         const year = FixSizedTypesCodec.decodeShort(buffer, offset);
         const month = FixSizedTypesCodec.decodeByte(buffer, offset + BitsUtil.SHORT_SIZE_IN_BYTES);
@@ -71,13 +73,18 @@ export class FixSizedTypesCodec {
         FixSizedTypesCodec.encodeLocalTime(buffer, offset + BitsUtil.LOCAL_DATE_SIZE_IN_BYTES, localTimeString);
     }
 
-    /*
-    Decodes local datetime from buffer
-    */
     static decodeLocalDatetime(buffer: Buffer, offset: number): string {
         const localDateString = FixSizedTypesCodec.decodeLocalDate(buffer, offset);
         const localTimeString = FixSizedTypesCodec.decodeLocalTime(buffer, offset + BitsUtil.LOCAL_DATE_SIZE_IN_BYTES);
         return combineISOStringWithTimeString(localDateString, localTimeString);
+    }
+
+    static decodeOffsetDateTime(buffer: Buffer, offset: number): string {
+        const localDateTimeString = FixSizedTypesCodec.decodeLocalDatetime(buffer, offset);
+        const offsetSeconds = FixSizedTypesCodec.decodeInt(buffer, offset + BitsUtil.LOCAL_DATETIME_SIZE_IN_BYTES);
+        const timezoneString = getTimezoneOffsetFromSeconds(offsetSeconds);
+
+        return localDateTimeString + timezoneString;
     }
 
     /*

@@ -110,3 +110,42 @@ export function combineISOStringWithTimeString(isoString: string, timeString: st
     }
 }
 
+/**
+ Constructs and returns timezone for iso string from offsetSeconds
+
+ @param {number} offsetSeconds Offset in seconds, can be negative or positive. must be in valid timezone range [-64800, 64800]
+ @return {string} timezone string, can be 'Z', +hh:mm or -hh:mm
+ */
+export function getTimezoneOffsetFromSeconds(offsetSeconds: number) {
+
+    if (offsetSeconds > 64800) {
+        return '+18:00';
+    } else if (offsetSeconds < -64800) {
+        return '-18:00';
+    }
+
+    const offsetMinutes = Math.floor(Math.abs(offsetSeconds) / 60);
+
+    let timezoneString = '';
+    if (offsetSeconds === 0) {
+        timezoneString = 'Z';
+    } else {
+        if (offsetSeconds < 0) {
+            timezoneString += '-';
+        } else {
+            timezoneString += '+';
+        }
+
+        const hours = Math.floor(offsetMinutes / 60);
+        if (hours < 10) timezoneString += '0';
+        timezoneString += hours.toString();
+
+        timezoneString += ':';
+
+        const minutes = offsetMinutes % 60;
+        if (minutes < 10) timezoneString += '0';
+        timezoneString += minutes.toString();
+    }
+    return timezoneString;
+}
+

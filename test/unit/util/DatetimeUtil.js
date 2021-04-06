@@ -19,7 +19,8 @@ const {expect} = require('chai');
 const {
     parseTimeString,
     getTimeOfIsoString,
-    combineISOStringWithTimeString
+    combineISOStringWithTimeString,
+    getTimezoneOffsetFromSeconds
 } = require('../../../lib/util/DatetimeUtil');
 
 describe('DatetimeUtilTest', function () {
@@ -69,6 +70,10 @@ describe('DatetimeUtilTest', function () {
             expect(getTimeOfIsoString('2021-04-06T12:00:09.401Z')).to.be.equal('12:00:09.401Z');
         });
 
+        it('should give empty string on invalid string', function () {
+            expect(getTimeOfIsoString('2021-04-0612:00:09.401Z')).to.be.equal('');
+        });
+
         it('should extract time string of iso string, with time zone', function () {
             expect(getTimeOfIsoString('2021-04-06T12:00:09.401+01:30')).to.be.equal('12:00:09.401+01:30');
         });
@@ -96,6 +101,47 @@ describe('DatetimeUtilTest', function () {
             expect(
                 combineISOStringWithTimeString('2021-04-06T12:00:09.401', '12:30:09.123456789')
             ).to.be.equal('2021-04-06T12:30:09.123456789');
+        });
+    });
+    describe('getTimezoneOffsetFromSecondsTest', function () {
+        it('should extract 0 seconds correctly', function () {
+            expect(
+                getTimezoneOffsetFromSeconds(0)
+            ).to.be.equal('Z');
+        });
+
+        it('should extract positive seconds correctly', function () {
+            expect(
+                getTimezoneOffsetFromSeconds(1500)
+            ).to.be.equal('+00:25');
+        });
+
+        it('should extract big positive seconds correctly', function () {
+            expect(
+                getTimezoneOffsetFromSeconds(7502)
+            ).to.be.equal('+02:05');
+        });
+
+        it('should extract negative seconds correctly', function () {
+            expect(
+                getTimezoneOffsetFromSeconds(-1199)
+            ).to.be.equal('-00:19');
+        });
+
+        it('should extract big negative seconds correctly', function () {
+            expect(
+                getTimezoneOffsetFromSeconds(-36061)
+            ).to.be.equal('-10:01');
+        });
+        it('should give -18:00 if too low offset is given', function () {
+            expect(
+                getTimezoneOffsetFromSeconds(-80000)
+            ).to.be.equal('-18:00');
+        });
+        it('should give +18:00 if too high offset is given', function () {
+            expect(
+                getTimezoneOffsetFromSeconds(99999)
+            ).to.be.equal('+18:00');
         });
     });
 });
