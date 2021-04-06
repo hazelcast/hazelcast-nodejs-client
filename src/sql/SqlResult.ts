@@ -15,8 +15,43 @@
  */
 import {SqlRow} from './SqlRow';
 
+export type SqlRowType = SqlRow | { [key: string]: any };
 
-export interface SqlResult extends AsyncIterable<SqlRow | {[key: string]: any}> {
+export interface SqlResult extends AsyncIterable<SqlRowType> {
     hasNext(): Promise<boolean>;
-    next(): Promise<SqlRow>;
+
+    next(): Promise<SqlRowType>;
+}
+
+/** @internal */
+export class SqlResultImpl implements SqlResult {
+    [Symbol.asyncIterator](): AsyncIterator<SqlRowType, SqlRowType, SqlRowType> {
+        return {
+            next(): Promise<IteratorResult<SqlRowType, SqlRowType>> {
+                return new Promise<IteratorResult<SqlRowType, SqlRowType>>(
+                    (resolve, reject) => {
+                        return {
+                            done: false,
+                            value: {
+                                a: 2
+                            }
+                        }
+                    }
+                );
+            }
+        }
+    }
+
+
+    onExecuteError(error: Error) {
+
+    }
+
+    hasNext(): Promise<boolean> {
+        return new Promise((resolve, reject) => true);
+    }
+
+    next(): Promise<SqlRowType> {
+        return new Promise((resolve, reject) => null);
+    }
 }

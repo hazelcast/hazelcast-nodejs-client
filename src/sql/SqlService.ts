@@ -13,29 +13,65 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {SqlResult} from './SqlResult';
+import {SqlResult, SqlResultImpl} from './SqlResult';
 import {ConnectionRegistry} from '../network/ConnectionManager';
-import {SqlStatement, SqlStatementOptions} from './SqlStatement';
-import {IllegalArgumentError} from '../core';
+import {SqlExpectedResultType, SqlStatement, SqlStatementOptions} from './SqlStatement';
+import {HazelcastSqlException, IllegalArgumentError} from '../core';
+import {SqlErrorCode} from './SqlErrorCode';
+import {SqlQueryId} from './SqlQueryId';
+import {SerializationService} from '../serialization/SerializationService';
+import {SqlExecuteCodec} from '../codec/SqlExecuteCodec';
+import * as Long from 'long';
+import {InvocationService} from '../invocation/InvocationService';
+import {ClientMessage} from '../protocol/ClientMessage';
 
 
 export interface SqlService {
     execute(sql: SqlStatement): SqlResult;
+
     execute(sql: string, params?: any[], options?: SqlStatementOptions): SqlResult;
+
     execute(sql: string | SqlStatement, params?: any[], options?: SqlStatementOptions): SqlResult;
 }
 
 /** @internal */
 export class SqlServiceImpl implements SqlService {
+    /** Value for the timeout that is not set. */
+    static readonly TIMEOUT_NOT_SET = Long.fromInt(-1);
+    /** Value for the timeout that is disabled. */
+    static readonly TIMEOUT_DISABLED = 0;
+    /** Default timeout. */
+    static readonly DEFAULT_TIMEOUT = SqlServiceImpl.TIMEOUT_NOT_SET;
+    /** Default cursor buffer size. */
+    static readonly DEFAULT_CURSOR_BUFFER_SIZE = 4096;
+
     constructor(
-        private readonly connectionRegistry: ConnectionRegistry
+        private readonly connectionRegistry: ConnectionRegistry,
+        private readonly serializationService: SerializationService,
+        private readonly invocationService: InvocationService,
     ) {
+    }
+
+    handleExecuteResponse(clientMessage: ClientMessage, res: SqlResultImpl) {
+
     }
 
     execute(sql: SqlStatement): SqlResult;
     execute(sql: string, params?: any[], options?: SqlStatementOptions): SqlResult;
+    /**
+     * Executes sql and returns SqlResult
+     * @param {string | SqlStatement} sql sql statement, either string or SqlStatement
+     * @param {array} params any list
+     * @param {SqlStatementOptions} options options that are affecting how sql is executed
+     * @throws {IllegalArgumentError} If arguments are not valid
+     * @throws {HazelcastSqlException} If there is an error running sql
+     * @returns {SqlResult} Sql result
+     */
     execute(sql: string | SqlStatement, params?: any[], options?: SqlStatementOptions): SqlResult {
         let sqlStatement: SqlStatement;
+        if (sql === undefined || sql === null) {
+            throw new IllegalArgumentError('Sql cannot be null or undefined');
+        }
         if (typeof sql === 'string') {
             sqlStatement = {
                 sql: sql
@@ -43,7 +79,7 @@ export class SqlServiceImpl implements SqlService {
             if (Array.isArray(params)) {
                 sqlStatement.parameters = params;
             }
-            if (options !== undefined && options !== null) {
+            if (options !== undefined && options !== null && typeof options === 'object') {
                 sqlStatement.options = options;
             }
         } else if (typeof sql === 'object') {
@@ -52,6 +88,43 @@ export class SqlServiceImpl implements SqlService {
             throw new IllegalArgumentError('Sql parameter must be a string or an SqlStatement object');
         }
 
-        return undefined;
+        const connection = this.connectionRegistry.getRandomConnection(true);
+        if (connection === null) {
+            throw new HazelcastSqlException(SqlErrorCode.CONNECTION_PROBLEM, 'Client is not currently connected to the cluster.');
+        }
+
+        const queryId = SqlQueryId.fromMemberId(connection.getRemoteUuid());
+
+        try {
+            const serializedParams = [];
+            for (const param of params) {
+                serializedParams.push(this.serializationService.toData(param));
+            }
+
+            const requestMessage = SqlExecuteCodec.encodeRequest(
+                sqlStatement.sql,
+                serializedParams,
+                sqlStatement.options.timeoutMillis ? sqlStatement.options.timeoutMillis : SqlServiceImpl.DEFAULT_TIMEOUT,
+                sqlStatement.options.cursorBufferSize ?
+                    sqlStatement.options.cursorBufferSize : SqlServiceImpl.DEFAULT_CURSOR_BUFFER_SIZE,
+                sqlStatement.options.schema ? sqlStatement.options.schema : null,
+                sqlStatement.options.expectedResultType ? sqlStatement.options.expectedResultType : SqlExpectedResultType.ANY,
+                queryId
+            );
+
+            const res = new SqlResultImpl(
+
+            );
+
+            this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
+                this.handleExecuteResponse(clientMessage, res);
+            }).catch(err => {
+                res.onExecuteError(err);
+            });
+
+            return res;
+        } catch (error) {
+            throw new HazelcastSqlException(SqlErrorCode.GENERIC, 'An error occured during sql exection', error);
+        }
     }
 }

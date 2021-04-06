@@ -100,7 +100,7 @@ export class SqlPageCodec {
                     ListCNOffsetDateTimeCodec.encode(clientMessage, column);
                     break;
                 case SqlColumnType.DECIMAL:
-                    ListMultiFrameCodec.encode(clientMessage, column, BigDecimalCodec.encodeNullable);
+                    // ListMultiFrameCodec.encode(clientMessage, column, BigDecimalCodec.encodeNullable);
                     break;
                 case SqlColumnType.NULL:
                     const size = column.length;

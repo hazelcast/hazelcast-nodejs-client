@@ -21,13 +21,13 @@ import * as Long from 'long';
 /** @internal */
 export class SqlQueryId {
     constructor(
-        private readonly memberIdHigh: Long,
-        private readonly memberIdLow: Long,
-        private readonly localIdHigh: Long,
-        private readonly localIdLow: Long
+        readonly memberIdHigh: Long,
+        readonly memberIdLow: Long,
+        readonly localIdHigh: Long,
+        readonly localIdLow: Long
     ) {}
 
-    static create(memberId: UUID): SqlQueryId {
+    static fromMemberId(memberId: UUID): SqlQueryId {
         const localId: UUID = UuidUtil.generate();
         return new SqlQueryId(
             memberId.mostSignificant,

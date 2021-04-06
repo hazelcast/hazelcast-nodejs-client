@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import * as Long from 'long';
+
 export enum SqlExpectedResultType {
     ANY,
     ROWS,
@@ -22,7 +24,7 @@ export enum SqlExpectedResultType {
 
 export interface SqlStatementOptions {
     schema?: string;
-    timeoutMillis?: number;
+    timeoutMillis?: Long;
     cursorBufferSize?: number;
     expectedResultType?: SqlExpectedResultType;
 }

@@ -65,7 +65,7 @@ import {ClusterViewListenerService} from './listener/ClusterViewListenerService'
 import {ClientMessage} from './protocol/ClientMessage';
 import {Connection} from './network/Connection';
 import {ConnectionRegistryImpl} from './network/ConnectionManager';
-import {SqlService} from './sql/SqlService';
+import {SqlService, SqlServiceImpl} from './sql/SqlService';
 
 /**
  * Hazelcast client instance. When you want to use Hazelcast's distributed
@@ -228,6 +228,10 @@ export class HazelcastClient {
             this.loggingService.getLogger(),
             this.instanceName,
             this.invocationService,
+            this.serializationService
+        );
+        this.sqlService = new SqlServiceImpl(
+            this.connectionRegistry,
             this.serializationService
         );
     }
