@@ -15,22 +15,33 @@
  */
 
 import {SqlColumnMetadata} from './SqlColumnMetadata';
+import {IllegalArgumentError, IllegalStateError} from '../core';
 
 export interface SqlRowMetadata {
 
-    // Gets the number of columns in the row.
+    /**
+     * Gets the number of columns in the row.
+     * @returns {number} Column count
+     */
     getColumnCount(): number;
 
-    // Gets column metadata. Returns null if column is not found.
+    /**
+     *  Gets column metadata of column with given index.
+     *  @returns {SqlColumnMetadata | null} SqlColumnMetadata of column with this index, null if column is not found.
+     */
     getColumn(index: number): SqlColumnMetadata | null;
 
-    // Gets columns metadata.
+    /**
+     *  Gets columns metadata.
+     *  @returns {SqlColumnMetadata[]} This row's columns' metadata.
+     */
     getColumns(): SqlColumnMetadata[];
 
-    /*
-      Find index of the column with the given name. Returned index can be used to get column value from SqlRow.
-      Exception is thrown if columnName is not string. If column is not found, -1 is returned.
-    */
+    /**
+     * Find index of the column with the given name. Returned index can be used to get column value from SqlRow.
+     * @returns {number} Column index. If column is not found, -1 is returned.
+     * @throws {IllegalArgumentError} is thrown if columnName is not string.
+     */
     findColumn(columnName: string): number;
 }
 
@@ -38,24 +49,43 @@ export interface SqlRowMetadata {
  * @internal
  */
 export class SqlRowMetadataImpl implements SqlRowMetadata {
-    constructor() {
+    private readonly columns: SqlColumnMetadata[];
+    private static readonly COLUMN_NOT_FOUND = -1
+    private readonly nameToIndex: { [key: string]: number };
+
+    constructor(columns: SqlColumnMetadata[]) {
+        if (columns === null || columns.length === 0) {
+            throw new IllegalStateError('Invalid columns given');
+        }
+        this.columns = columns;
+        this.nameToIndex = {};
+        for (let i = 0; i < columns.length; i++) {
+            this.nameToIndex[columns[i].name] = i;
+        }
     }
 
-    getColumnCount(): number{
-        return 0;
+    getColumnCount(): number {
+        return this.columns.length;
     }
 
-    getColumn(index: number): SqlColumnMetadata | null{
-        return null;
+    getColumn(index: number): SqlColumnMetadata | null {
+        if (index < 0 || index >= this.columns.length) {
+            return null;
+        }
+        return this.columns[index];
     }
 
-    getColumns(): SqlColumnMetadata[]{
-        return [];
+    getColumns(): SqlColumnMetadata[] {
+        return this.columns;
     }
 
 
-    findColumn(columnName: string): number{
-        return 0;
+    findColumn(columnName: string): number {
+        if (typeof columnName !== 'string') {
+            throw new IllegalArgumentError(`Expected string got type ${typeof columnName}`);
+        }
+        const columnIndex = this.nameToIndex[columnName];
+        return columnIndex ? columnIndex : SqlRowMetadataImpl.COLUMN_NOT_FOUND;
     }
 }
 
