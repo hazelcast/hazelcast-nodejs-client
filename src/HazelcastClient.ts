@@ -232,7 +232,8 @@ export class HazelcastClient {
         );
         this.sqlService = new SqlServiceImpl(
             this.connectionRegistry,
-            this.serializationService
+            this.serializationService,
+            this.invocationService
         );
     }
 

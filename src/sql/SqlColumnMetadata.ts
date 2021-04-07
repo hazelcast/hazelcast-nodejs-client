@@ -35,11 +35,33 @@ export enum SqlColumnType {
 
 export interface SqlColumnMetadata {
     // Get column name.
-    getName(): string;
+    name: string;
 
     // Gets column type.
-    getType(): SqlColumnType;
+    type: SqlColumnType;
 
     // Gets column nullability.
-    isNullable(): boolean;
+    nullable: boolean;
+}
+
+/** @internal */
+export class SqlColumnMetadataImpl implements SqlColumnMetadata {
+    public readonly name: string;
+    public readonly type: SqlColumnType;
+    public readonly nullable: boolean;
+
+    constructor(
+        name: string,
+        type: SqlColumnType,
+        isNullableExists: boolean,
+        nullable: boolean
+    ) {
+        if (isNullableExists) {
+            this.nullable = nullable;
+        } else {
+            this.nullable = true;
+        }
+        this.name = name;
+        this.type = type;
+    }
 }

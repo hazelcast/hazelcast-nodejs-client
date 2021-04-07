@@ -27,7 +27,7 @@ import {CodecUtil} from './builtin/CodecUtil';
 import {SqlQueryIdCodec} from './custom/SqlQueryIdCodec';
 import {SqlQueryId} from '../sql/SqlQueryId';
 import {SqlColumnMetadataCodec} from './custom/SqlColumnMetadataCodec';
-import {SqlColumnMetadata} from '../sql/SqlColumnMetadata';
+import {SqlColumnMetadataImpl} from '../sql/SqlColumnMetadata';
 import {SqlPage} from '../sql/SqlPage';
 import {SqlPageCodec} from './builtin/SqlPageCodec';
 import {SqlErrorCodec} from './custom/SqlErrorCodec';
@@ -46,7 +46,7 @@ const RESPONSE_UPDATE_COUNT_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE
 
 /** @internal */
 export interface SqlExecuteResponseParams {
-    rowMetadata: SqlColumnMetadata[];
+    rowMetadata: SqlColumnMetadataImpl[];
     rowPage: SqlPage;
     updateCount: Long;
     error: SqlError;

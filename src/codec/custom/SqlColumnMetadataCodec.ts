@@ -19,7 +19,7 @@ import {FixSizedTypesCodec} from '../builtin/FixSizedTypesCodec';
 import {BitsUtil} from '../../util/BitsUtil';
 import {ClientMessage, BEGIN_FRAME, END_FRAME, Frame, DEFAULT_FLAGS} from '../../protocol/ClientMessage';
 import {CodecUtil} from '../builtin/CodecUtil';
-import {SqlColumnMetadata} from '../../sql/SqlColumnMetadata';
+import {SqlColumnMetadataImpl} from '../../sql/SqlColumnMetadata';
 import {StringCodec} from '../builtin/StringCodec';
 
 const TYPE_OFFSET = 0;
@@ -28,7 +28,7 @@ const INITIAL_FRAME_SIZE = NULLABLE_OFFSET + BitsUtil.BOOLEAN_SIZE_IN_BYTES;
 
 /** @internal */
 export class SqlColumnMetadataCodec {
-    static encode(clientMessage: ClientMessage, sqlColumnMetadata: SqlColumnMetadata): void {
+    static encode(clientMessage: ClientMessage, sqlColumnMetadata: SqlColumnMetadataImpl): void {
         clientMessage.addFrame(BEGIN_FRAME.copy());
 
         const initialFrame = Frame.createInitialFrame(INITIAL_FRAME_SIZE, DEFAULT_FLAGS);
@@ -41,7 +41,7 @@ export class SqlColumnMetadataCodec {
         clientMessage.addFrame(END_FRAME.copy());
     }
 
-    static decode(clientMessage: ClientMessage): SqlColumnMetadata {
+    static decode(clientMessage: ClientMessage): SqlColumnMetadataImpl {
         // begin frame
         clientMessage.nextFrame();
 
@@ -58,6 +58,6 @@ export class SqlColumnMetadataCodec {
 
         CodecUtil.fastForwardToEndFrame(clientMessage);
 
-        return new SqlColumnMetadata(name, type, isNullableExists, nullable);
+        return new SqlColumnMetadataImpl(name, type, isNullableExists, nullable);
     }
 }
