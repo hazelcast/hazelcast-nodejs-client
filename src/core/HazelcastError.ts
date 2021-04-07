@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {UUID} from './UUID';
+
 /** @internal */
 export interface HazelcastErrorConstructor {
     readonly prototype: Error;
@@ -471,7 +473,8 @@ export class UndefinedErrorCodeError extends HazelcastError {
 
 export class HazelcastSqlException extends HazelcastError {
     constructor(
-        private readonly code: number,
+        originatingMemberId: UUID,
+        code: number,
         msg: string,
         cause?: Error,
         serverStackTrace?: ServerErrorStackElement[]

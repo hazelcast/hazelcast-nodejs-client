@@ -4,7 +4,9 @@ import assert = require('assert');
 /** @internal */
 interface DataHolder {
     getRowCount(): number;
+
     getColumnValueForClient(columnIndex: number, rowIndex: number): any;
+
     getColumnValuesForServer(columnIndex: number, columnType: SqlColumnType): any[];
 }
 
@@ -17,17 +19,27 @@ export class SqlPage {
     ) {
     }
 
-    isLast(): boolean{
+    isLast(): boolean {
         return false;
     }
-    getColumnTypes(): SqlColumnType[]{
+
+    getColumnTypes(): SqlColumnType[] {
         return this.columnTypes;
     }
 
-    getColumnCount(): number{
+    getRowCount(): number {
+        return this.dataHolder.getRowCount();
+    }
+
+    getColumnCount(): number {
         return this.columnTypes.length;
     }
-    getColumnValuesForServer(index: number) : any[] {
+
+    getColumnValuesForServer(index: number): any[] {
+        return [];
+    }
+
+    getColumnValuesForClient(columnIndex: number, rowIndex: number): any {
         return [];
     }
 

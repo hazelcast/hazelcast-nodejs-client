@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {SqlResult, SqlResultImpl} from './SqlResult';
-import {ConnectionRegistry} from '../network/ConnectionManager';
+import {ConnectionManager, ConnectionRegistry} from '../network/ConnectionManager';
 import {SqlExpectedResultType, SqlStatement, SqlStatementOptions} from './SqlStatement';
 import {HazelcastSqlException, IllegalArgumentError} from '../core';
 import {SqlErrorCode} from './SqlErrorCode';
@@ -24,6 +24,8 @@ import {SqlExecuteCodec} from '../codec/SqlExecuteCodec';
 import * as Long from 'long';
 import {InvocationService} from '../invocation/InvocationService';
 import {ClientMessage} from '../protocol/ClientMessage';
+import {Connection} from '../network/Connection';
+import {SqlRowMetadataImpl} from './SqlRowMetadata';
 
 
 export interface SqlService {
@@ -49,11 +51,28 @@ export class SqlServiceImpl implements SqlService {
         private readonly connectionRegistry: ConnectionRegistry,
         private readonly serializationService: SerializationService,
         private readonly invocationService: InvocationService,
+        private readonly connectionManager: ConnectionManager,
     ) {
     }
 
-    handleExecuteResponse(clientMessage: ClientMessage, res: SqlResultImpl) {
 
+    handleExecuteResponse(clientMessage: ClientMessage, res: SqlResultImpl, connection: Connection): void {
+        const response = SqlExecuteCodec.decodeResponse(clientMessage);
+        if (response.error !== null) {
+            const responseError = new HazelcastSqlException(
+                response.error.originatingMemberId,
+                response.error.code,
+                response.error.message,
+                null
+            )
+            res.onExecuteError(responseError);
+            return;
+        }
+        res.onExecuteResponse(
+            response.rowMetadata !== null ? new SqlRowMetadataImpl() : null,
+            response.rowPage,
+            response.updateCount
+        )
     }
 
     execute(sql: SqlStatement): SqlResult;
@@ -90,7 +109,11 @@ export class SqlServiceImpl implements SqlService {
 
         const connection = this.connectionRegistry.getRandomConnection(true);
         if (connection === null) {
-            throw new HazelcastSqlException(SqlErrorCode.CONNECTION_PROBLEM, 'Client is not currently connected to the cluster.');
+            throw new HazelcastSqlException(
+                this.connectionManager.getClientUuid(),
+                SqlErrorCode.CONNECTION_PROBLEM,
+                'Client is not currently connected to the cluster.'
+            );
         }
 
         const queryId = SqlQueryId.fromMemberId(connection.getRemoteUuid());
@@ -100,31 +123,37 @@ export class SqlServiceImpl implements SqlService {
             for (const param of params) {
                 serializedParams.push(this.serializationService.toData(param));
             }
-
+            const cursorBufferSize = sqlStatement.options.cursorBufferSize ?
+                sqlStatement.options.cursorBufferSize : SqlServiceImpl.DEFAULT_CURSOR_BUFFER_SIZE;
             const requestMessage = SqlExecuteCodec.encodeRequest(
                 sqlStatement.sql,
                 serializedParams,
                 sqlStatement.options.timeoutMillis ? sqlStatement.options.timeoutMillis : SqlServiceImpl.DEFAULT_TIMEOUT,
-                sqlStatement.options.cursorBufferSize ?
-                    sqlStatement.options.cursorBufferSize : SqlServiceImpl.DEFAULT_CURSOR_BUFFER_SIZE,
+                cursorBufferSize,
                 sqlStatement.options.schema ? sqlStatement.options.schema : null,
                 sqlStatement.options.expectedResultType ? sqlStatement.options.expectedResultType : SqlExpectedResultType.ANY,
                 queryId
             );
 
             const res = new SqlResultImpl(
-
+                this,
+                connection,
+                queryId,
+                cursorBufferSize
             );
 
             this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
-                this.handleExecuteResponse(clientMessage, res);
-            }).catch(err => {
-                res.onExecuteError(err);
-            });
+                this.handleExecuteResponse(clientMessage, res, connection);
+            }).catch(err => res.onExecuteError);
 
             return res;
         } catch (error) {
-            throw new HazelcastSqlException(SqlErrorCode.GENERIC, 'An error occured during sql exection', error);
+            throw new HazelcastSqlException(
+                connection.getRemoteUuid(),
+                SqlErrorCode.GENERIC,
+                'An error occured during sql exection',
+                error
+            );
         }
     }
 }

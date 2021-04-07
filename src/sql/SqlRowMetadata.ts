@@ -33,3 +33,29 @@ export interface SqlRowMetadata {
     */
     findColumn(columnName: string): number;
 }
+
+/**
+ * @internal
+ */
+export class SqlRowMetadataImpl implements SqlRowMetadata {
+    constructor() {
+    }
+
+    getColumnCount(): number{
+        return 0;
+    }
+
+    getColumn(index: number): SqlColumnMetadata | null{
+        return null;
+    }
+
+    getColumns(): SqlColumnMetadata[]{
+        return [];
+    }
+
+
+    findColumn(columnName: string): number{
+        return 0;
+    }
+}
+
