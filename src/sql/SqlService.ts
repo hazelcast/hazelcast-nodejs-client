@@ -69,7 +69,7 @@ export class SqlServiceImpl implements SqlService {
             return;
         }
         res.onExecuteResponse(
-            response.rowMetadata !== null ? new SqlRowMetadataImpl() : null,
+            response.rowMetadata !== null ? new SqlRowMetadataImpl(response.rowMetadata) : null,
             response.rowPage,
             response.updateCount
         )
