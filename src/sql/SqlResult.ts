@@ -20,7 +20,7 @@ import {SqlPage} from './SqlPage';
 import {SqlServiceImpl} from './SqlService';
 import {Connection} from '../network/Connection';
 import {SqlQueryId} from './SqlQueryId';
-import {deferredPromise} from '../util/Util';
+import {DeferredPromise, deferredPromise} from '../util/Util';
 
 type SqlRowAsObject = { [key: string]: any };
 export type SqlRowType = SqlRow | SqlRowAsObject;
@@ -46,7 +46,6 @@ export interface SqlResult extends AsyncIterable<SqlRowType> {
 export class SqlResultImpl implements SqlResult {
     /** Update count received as a result of sql execution. See {@link SqlExpectedResultType} */
     private updateCount: Long;
-    private error: Error | null = null;
     private currentPage: SqlPage | null;
     /* The number of rows in current page */
     private currentRowCount: number;
@@ -54,24 +53,33 @@ export class SqlResultImpl implements SqlResult {
     private currentPosition: number;
     /* Made true when last page is received */
     private last: boolean;
-    /* If true SqlResult is a SqlRow iterable, otherwise traditional objects are used */
-    private rawResults = false;
-
+    /**
+     * Deferred promise that resolves to true when page is received. If an error is occurred during execution,
+     * this promise is rejected with the error. Used by {@link hasNext}
+     */
+    private readonly executeDeferred: DeferredPromise<boolean>;
 
     /*
     Whether the result is closed or not. The result is closed if an update count or the last page is received.
     When true, there is no need to send the "cancel" request to the server.
     */
-    private closed: boolean;
-    private rowMetadata: SqlRowMetadata | null = null;
+    private closed;
+    private fetching;
+    private rowMetadata: SqlRowMetadata | null;
 
 
     constructor(
         private readonly service: SqlServiceImpl,
         private readonly connection: Connection,
         private readonly queryId: SqlQueryId,
-        private readonly cursorBufferSize: number
+        private readonly cursorBufferSize: number,
+        /* If true SqlResult is a SqlRow iterable, otherwise traditional objects are used */
+        private readonly rawResults: boolean
     ) {
+        this.closed = false;
+        this.fetching = false;
+        this.rowMetadata = null;
+        this.executeDeferred = deferredPromise<boolean>();
     }
 
     [Symbol.asyncIterator](): AsyncIterator<SqlRowType, SqlRowType, SqlRowType> {
@@ -117,7 +125,7 @@ export class SqlResultImpl implements SqlResult {
         if (this.closed) return;
         this.updateCount = Long.fromInt(-1);
         this.rowMetadata = null;
-        this.error = error;
+        this.executeDeferred.reject(error);
     }
 
 
@@ -163,26 +171,39 @@ export class SqlResultImpl implements SqlResult {
             this.updateCount = updateCount;
             this.closed = true;
         }
+        this.executeDeferred.resolve(true);
     }
 
     fetch(): SqlPage {
+
         return undefined;
     }
 
     hasNext(): Promise<boolean> {
         const deferred = deferredPromise<boolean>();
-        while (this.currentPosition === this.currentRowCount
-            ) {
-            // Reached end of the page. Try fetching the next one if possible.
-            if (!this.last) {
-                const page = this.fetch();
-                this.onNextPage(page);
-            } else {
-                // No more pages expected, so return false.
+        this.executeDeferred.promise.then(() => {
+
+            if (!this.executeDeferred) {
+
+                // If first page is not received or error is
                 deferred.resolve(false);
+                return deferred.promise;
             }
-        }
-        deferred.resolve(true);
+
+            while (this.currentPosition === this.currentRowCount) {
+                // Reached end of the page. Try fetching the next one if possible.
+                if (!this.last) {
+                    const page = this.fetch();
+                    this.onNextPage(page);
+                } else {
+                    // No more pages expected, so return false.
+                    deferred.resolve(false);
+                }
+            }
+            deferred.resolve(true);
+        }).catch(err => {
+            deferred.reject(err);
+        });
         return deferred.promise;
     }
 
