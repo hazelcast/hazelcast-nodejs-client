@@ -64,7 +64,6 @@ export class SqlResultImpl implements SqlResult {
     When true, there is no need to send the "cancel" request to the server.
     */
     private closed;
-    private fetching;
     private rowMetadata: SqlRowMetadata | null;
 
 
@@ -77,7 +76,6 @@ export class SqlResultImpl implements SqlResult {
         private readonly rawResults: boolean
     ) {
         this.closed = false;
-        this.fetching = false;
         this.rowMetadata = null;
         this.executeDeferred = deferredPromise<boolean>();
     }
@@ -89,16 +87,18 @@ export class SqlResultImpl implements SqlResult {
                 const deferred = deferredPromise<IteratorResult<SqlRowType, SqlRowType>>();
                 this.hasNext().then((hasNext: boolean) => {
                     if (hasNext) {
-                        return this.next().then((value: SqlRowType | undefined) => {
+                        return next().then((value: SqlRowType | undefined) => {
                             deferred.resolve({
-                                done: true,
+                                done: false,
                                 value: value
                             })
                         });
                     } else {
-                        deferred.resolve({
-                            done: false,
-                            value: next()
+                        return next().then((value: SqlRowType | undefined) => {
+                            deferred.resolve({
+                                done: true,
+                                value: value
+                            });
                         });
                     }
                 }).catch((err: any) => {
@@ -182,14 +182,6 @@ export class SqlResultImpl implements SqlResult {
     hasNext(): Promise<boolean> {
         const deferred = deferredPromise<boolean>();
         this.executeDeferred.promise.then(() => {
-
-            if (!this.executeDeferred) {
-
-                // If first page is not received or error is
-                deferred.resolve(false);
-                return deferred.promise;
-            }
-
             while (this.currentPosition === this.currentRowCount) {
                 // Reached end of the page. Try fetching the next one if possible.
                 if (!this.last) {

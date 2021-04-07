@@ -20,7 +20,7 @@ export class SqlPage {
     }
 
     isLast(): boolean {
-        return false;
+        return this.last;
     }
 
     getColumnTypes(): SqlColumnType[] {

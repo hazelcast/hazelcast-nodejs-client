@@ -47,6 +47,8 @@ export class SqlServiceImpl implements SqlService {
     /** Default cursor buffer size. */
     static readonly DEFAULT_CURSOR_BUFFER_SIZE = 4096;
 
+    static readonly RETURN_RAW_RESULTS = false;
+
     constructor(
         private readonly connectionRegistry: ConnectionRegistry,
         private readonly serializationService: SerializationService,
@@ -123,15 +125,15 @@ export class SqlServiceImpl implements SqlService {
             for (const param of params) {
                 serializedParams.push(this.serializationService.toData(param));
             }
-            const cursorBufferSize = sqlStatement.options.cursorBufferSize ?
+            const cursorBufferSize = sqlStatement.options?.cursorBufferSize ?
                 sqlStatement.options.cursorBufferSize : SqlServiceImpl.DEFAULT_CURSOR_BUFFER_SIZE;
             const requestMessage = SqlExecuteCodec.encodeRequest(
                 sqlStatement.sql,
                 serializedParams,
-                sqlStatement.options.timeoutMillis ? sqlStatement.options.timeoutMillis : SqlServiceImpl.DEFAULT_TIMEOUT,
+                sqlStatement.options?.timeoutMillis ? sqlStatement.options.timeoutMillis : SqlServiceImpl.DEFAULT_TIMEOUT,
                 cursorBufferSize,
-                sqlStatement.options.schema ? sqlStatement.options.schema : null,
-                sqlStatement.options.expectedResultType ? sqlStatement.options.expectedResultType : SqlExpectedResultType.ANY,
+                sqlStatement.options?.schema ? sqlStatement.options.schema : null,
+                sqlStatement.options?.expectedResultType ? sqlStatement.options.expectedResultType : SqlExpectedResultType.ANY,
                 queryId
             );
 
@@ -139,7 +141,8 @@ export class SqlServiceImpl implements SqlService {
                 this,
                 connection,
                 queryId,
-                cursorBufferSize
+                cursorBufferSize,
+                SqlServiceImpl.RETURN_RAW_RESULTS
             );
 
             this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
