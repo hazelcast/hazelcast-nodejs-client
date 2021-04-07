@@ -20,6 +20,7 @@ import {SqlPage} from './SqlPage';
 import {SqlServiceImpl} from './SqlService';
 import {Connection} from '../network/Connection';
 import {SqlQueryId} from './SqlQueryId';
+import {deferredPromise} from '../util/Util';
 
 type SqlRowAsObject = { [key: string]: any };
 export type SqlRowType = SqlRow | SqlRowAsObject;
@@ -74,34 +75,32 @@ export class SqlResultImpl implements SqlResult {
     }
 
     [Symbol.asyncIterator](): AsyncIterator<SqlRowType, SqlRowType, SqlRowType> {
-        const hasNext: () => Promise<boolean> = this.hasNext.bind(this);
-        const next: () => Promise<SqlRowType | undefined> = this.next.bind(this);
+        const next = this.next.bind(this);
         return {
             next(): Promise<IteratorResult<SqlRowType, SqlRowType>> {
-                return new Promise<IteratorResult<SqlRowType, SqlRowType>>(
-                    (resolve, reject) => {
-                        hasNext().then((hasNext) => {
-                            if (hasNext) {
-                                return next().then((value: SqlRowType | undefined) => {
-                                    resolve({
-                                        done: true,
-                                        value: value
-                                    })
-                                });
-                            } else {
-                                resolve({
-                                    done: false,
-                                    value: this.next()
-                                });
-                            }
-                        }).catch((err: any) => {
-                            reject(err);
+                const deferred = deferredPromise<IteratorResult<SqlRowType, SqlRowType>>();
+                this.hasNext().then((hasNext: boolean) => {
+                    if (hasNext) {
+                        return this.next().then((value: SqlRowType | undefined) => {
+                            deferred.resolve({
+                                done: true,
+                                value: value
+                            })
+                        });
+                    } else {
+                        deferred.resolve({
+                            done: false,
+                            value: next()
                         });
                     }
-                );
+                }).catch((err: any) => {
+                    deferred.reject(err);
+                });
+                return deferred.promise;
             }
         }
     }
+
 
     onNextPage(page: SqlPage) {
         this.currentPage = page;
@@ -166,11 +165,37 @@ export class SqlResultImpl implements SqlResult {
         }
     }
 
+    fetch(): SqlPage {
+        return undefined;
+    }
+
     hasNext(): Promise<boolean> {
-        return new Promise((resolve, reject) => true);
+        const deferred = deferredPromise<boolean>();
+        while (this.currentPosition === this.currentRowCount
+            ) {
+            // Reached end of the page. Try fetching the next one if possible.
+            if (!this.last) {
+                const page = this.fetch();
+                this.onNextPage(page);
+            } else {
+                // No more pages expected, so return false.
+                deferred.resolve(false);
+            }
+        }
+        deferred.resolve(true);
+        return deferred.promise;
     }
 
     next(): Promise<SqlRowType | undefined> {
-        return new Promise((resolve, reject) => null);
+        const deferred = deferredPromise();
+        if (!
+            this.hasNext()
+        ) {
+            deferred.resolve(undefined);
+        }
+        const row = this.getCurrentRow();
+        this.currentPosition++;
+        deferred.resolve(row);
+        return deferred.promise;
     }
 }
