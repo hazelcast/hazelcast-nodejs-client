@@ -35,12 +35,17 @@ export class SqlPage {
         return this.columnTypes.length;
     }
 
-    getColumnValuesForServer(index: number): any[] {
-        return [];
+    getColumnValuesForServer(columnIndex: number): any[] {
+        assert.strictEqual(columnIndex < this.getColumnCount(), true);
+        const columnType = this.columnTypes[columnIndex];
+
+        return this.dataHolder.getColumnValuesForServer(columnIndex, columnType);
     }
 
     getColumnValuesForClient(columnIndex: number, rowIndex: number): any {
-        return [];
+        assert.strictEqual(columnIndex < this.getColumnCount(), true);
+        assert.strictEqual(rowIndex < this.getRowCount(), true);
+        return this.dataHolder.getColumnValueForClient(columnIndex, rowIndex);
     }
 
     static fromColumns(columnTypes: SqlColumnType[], columns: any[][], last: boolean): SqlPage {
