@@ -1,30 +1,32 @@
-const {Client,HazelcastSqlException } = require('./lib');
+'use strict';
+const {Client, HazelcastSqlException} = require('./lib');
 
-const run = async function (){
+const run = async function () {
     const client = await Client.newHazelcastClient();
 
     const testMap = await client.getMap('testMap');
 
     await testMap.clear();
 
-    await testMap.put('a', 1);
-    await testMap.put('b', 2);
-    await testMap.put('c', 3);
-    await testMap.put('d', 4);
+    await testMap.put('a', new Date());
+    await testMap.put('b', new Date());
+    await testMap.put('c', new Date());
+    await testMap.put('d', new Date());
 
     try {
-        const res = client.getSqlService().execute('SELECT * FROM testMap WHERE this > ?', [2]);
+        const res = client.getSqlService().execute('SELECT * FROM testMap WHERE this < ?', [new Date()]);
 
-        while(await res.hasNext()){
-            const nextRow = await res.next();
-            console.log(nextRow);
+        for (let row = await res.next(); row !== undefined; row = await res.next()) {
+            console.log(row);
         }
 
-        for await (const row of res){
-            console.log(`row: ${row}`);
+        /*
+        for await (const row of res) {
+            console.log(row);
         }
+        */
     } catch (error) {
-        if(error instanceof HazelcastSqlException){
+        if (error instanceof HazelcastSqlException) {
             console.log(error.message);
             console.log(error.cause);
             console.log(error.name);
@@ -34,7 +36,7 @@ const run = async function (){
     }
 
     await client.shutdown();
-}
+};
 
 run().then(c => {
     console.log(c);

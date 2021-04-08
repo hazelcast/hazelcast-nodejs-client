@@ -81,20 +81,21 @@ export class SqlResultImpl implements SqlResult {
     }
 
     [Symbol.asyncIterator](): AsyncIterator<SqlRowType, SqlRowType, SqlRowType> {
-        const next = this.next.bind(this);
+        const nextFn = this.next.bind(this);
+        const hasNextFn = this.hasNext.bind(this);
         return {
             next(): Promise<IteratorResult<SqlRowType, SqlRowType>> {
                 const deferred = deferredPromise<IteratorResult<SqlRowType, SqlRowType>>();
-                this.hasNext().then((hasNext: boolean) => {
+                hasNextFn().then((hasNext: boolean) => {
                     if (hasNext) {
-                        return next().then((value: SqlRowType | undefined) => {
+                        return nextFn().then((value: SqlRowType | undefined) => {
                             deferred.resolve({
                                 done: false,
                                 value: value
                             })
                         });
                     } else {
-                        return next().then((value: SqlRowType | undefined) => {
+                        return nextFn().then((value: SqlRowType | undefined) => {
                             deferred.resolve({
                                 done: true,
                                 value: value
@@ -190,6 +191,7 @@ export class SqlResultImpl implements SqlResult {
                 } else {
                     // No more pages expected, so return false.
                     deferred.resolve(false);
+                    return;
                 }
             }
             deferred.resolve(true);
@@ -200,15 +202,18 @@ export class SqlResultImpl implements SqlResult {
     }
 
     next(): Promise<SqlRowType | undefined> {
-        const deferred = deferredPromise();
-        if (!
-            this.hasNext()
-        ) {
-            deferred.resolve(undefined);
-        }
-        const row = this.getCurrentRow();
-        this.currentPosition++;
-        deferred.resolve(row);
+        const deferred = deferredPromise<SqlRowType | undefined>();
+        this.hasNext().then(hasNext => {
+            if (!hasNext) {
+                deferred.resolve(undefined);
+            } else {
+                const row = this.getCurrentRow();
+                this.currentPosition++;
+                deferred.resolve(row);
+            }
+        }).catch(err => {
+            deferred.reject(err);
+        });
         return deferred.promise;
     }
 }

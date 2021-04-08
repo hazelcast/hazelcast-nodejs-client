@@ -20,7 +20,8 @@ import {
     combineISOStringWithTimeString,
     getTimeOfIsoString,
     parseTimeString,
-    getTimezoneOffsetFromSeconds
+    getTimezoneOffsetFromSeconds,
+    leftZeroPadInteger
 } from '../../util/DatetimeUtil';
 import {UUID} from '../../core/UUID';
 
@@ -56,11 +57,12 @@ export class FixSizedTypesCodec {
     }
 
     static decodeLocalDate(buffer: Buffer, offset: number): string {
-        const year = FixSizedTypesCodec.decodeShort(buffer, offset);
-        const month = FixSizedTypesCodec.decodeByte(buffer, offset + BitsUtil.SHORT_SIZE_IN_BYTES);
-        const dayOfMonth = FixSizedTypesCodec.decodeByte(
+        const year = leftZeroPadInteger(FixSizedTypesCodec.decodeShort(buffer, offset), 4);
+        const month = leftZeroPadInteger(FixSizedTypesCodec.decodeByte(buffer, offset + BitsUtil.SHORT_SIZE_IN_BYTES), 2);
+        const dayOfMonth = leftZeroPadInteger(FixSizedTypesCodec.decodeByte(
             buffer, offset + BitsUtil.SHORT_SIZE_IN_BYTES + BitsUtil.BYTE_SIZE_IN_BYTES
-        );
+        ), 2);
+
         return `${year}-${month}-${dayOfMonth}T00:00:00`;
     }
 
@@ -107,10 +109,10 @@ export class FixSizedTypesCodec {
     Decodes local time from buffer
     */
     static decodeLocalTime(buffer: Buffer, offset: number): string {
-        const hour = FixSizedTypesCodec.decodeByte(buffer, offset);
-        const minute = FixSizedTypesCodec.decodeByte(buffer, offset + BitsUtil.BYTE_SIZE_IN_BYTES);
-        const second = FixSizedTypesCodec.decodeByte(buffer, offset + BitsUtil.BYTE_SIZE_IN_BYTES * 2);
-        const nano = FixSizedTypesCodec.decodeInt(buffer, offset + BitsUtil.BYTE_SIZE_IN_BYTES * 3);
+        const hour = leftZeroPadInteger(FixSizedTypesCodec.decodeByte(buffer, offset), 2);
+        const minute = leftZeroPadInteger(FixSizedTypesCodec.decodeByte(buffer, offset + BitsUtil.BYTE_SIZE_IN_BYTES), 2);
+        const second = leftZeroPadInteger(FixSizedTypesCodec.decodeByte(buffer, offset + BitsUtil.BYTE_SIZE_IN_BYTES * 2), 2);
+        const nano = leftZeroPadInteger(FixSizedTypesCodec.decodeInt(buffer, offset + BitsUtil.BYTE_SIZE_IN_BYTES * 3), 9);
 
         return `${hour}:${minute}:${second}.${nano}`;
     }

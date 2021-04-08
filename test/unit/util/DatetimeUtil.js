@@ -20,7 +20,8 @@ const {
     parseTimeString,
     getTimeOfIsoString,
     combineISOStringWithTimeString,
-    getTimezoneOffsetFromSeconds
+    getTimezoneOffsetFromSeconds,
+    leftZeroPadInteger
 } = require('../../../lib/util/DatetimeUtil');
 
 describe('DatetimeUtilTest', function () {
@@ -143,5 +144,25 @@ describe('DatetimeUtilTest', function () {
                 getTimezoneOffsetFromSeconds(99999)
             ).to.be.equal('+18:00');
         });
+    });
+    describe('leftZeroPadIntegerTest', function () {
+        it('should pad length of 5 digits correctly', function () {
+            expect(
+                leftZeroPadInteger(123,5)
+            ).to.be.equal('00123');
+        });
+
+        it('should not change number if its length is same with desired length', function () {
+            expect(
+                leftZeroPadInteger(12345,5)
+            ).to.be.equal('12345');
+        });
+
+        it('should not change number if its length is longer than desired length', function () {
+            expect(
+                leftZeroPadInteger(123456,5)
+            ).to.be.equal('123456');
+        });
+
     });
 });

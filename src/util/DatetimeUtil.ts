@@ -137,15 +137,24 @@ export function getTimezoneOffsetFromSeconds(offsetSeconds: number) {
         }
 
         const hours = Math.floor(offsetMinutes / 60);
-        if (hours < 10) timezoneString += '0';
-        timezoneString += hours.toString();
+        timezoneString += leftZeroPadInteger(hours, 2);
 
         timezoneString += ':';
 
         const minutes = offsetMinutes % 60;
-        if (minutes < 10) timezoneString += '0';
-        timezoneString += minutes.toString();
+        timezoneString += leftZeroPadInteger(minutes, 2);
     }
     return timezoneString;
 }
 
+/**
+ * Give this function integer and it will zero pad to the given length.
+ * @param {number} value
+ * @param {number} length total length after padding
+ * @returns {string} Zero padded string
+ */
+export function leftZeroPadInteger(value: number, length: number): string {
+    let asStr = value.toString();
+    while (asStr.length < length) asStr = '0' + asStr;
+    return asStr;
+}
