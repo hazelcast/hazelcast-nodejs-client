@@ -66,6 +66,6 @@ export class ListCNFixedSizeCodec {
                 assert.strictEqual(readCount, res.length, 'Invalid read count');
                 break;
         }
-        return [];
+        return res;
     }
 }
