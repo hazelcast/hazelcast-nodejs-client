@@ -12,10 +12,11 @@
             "es2017.string"
         ],
         "removeComments": false,
-        "sourceMap": false,
+        "sourceMap": true,
         "stripInternal": true
     },
     "include": [
-        "src/index.ts"
+        "src/index.ts",
+        "main.ts"
     ]
 }
