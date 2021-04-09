@@ -144,7 +144,7 @@ export class SqlResultImpl implements SqlResult {
     }
 
     close(): Promise<void> {
-        // Do nothing if the result is already closed
+        // Return close promise if a close is already started
         if (this.closeResult?.promise) {
             return this.closeResult.promise;
         }
