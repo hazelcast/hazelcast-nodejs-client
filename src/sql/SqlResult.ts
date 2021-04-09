@@ -112,19 +112,15 @@ export class SqlResultImpl implements SqlResult {
     }
 
     getUpdateCount(): Promise<Long> {
-        const deferred = deferredPromise<Long>();
-        this.executeDeferred.promise.then(() => {
-            deferred.resolve(this.updateCount);
-        }).catch(deferred.reject);
-        return deferred.promise;
+        return this.executeDeferred.promise.then(() => {
+            return this.updateCount;
+        });
     }
 
     isRowSet(): Promise<boolean> {
-        const deferred = deferredPromise<boolean>();
-        this.executeDeferred.promise.then(() => {
-            deferred.resolve(this.updateCount === Long.fromInt(-1));
-        }).catch(deferred.reject);
-        return deferred.promise;
+        return this.executeDeferred.promise.then(() => {
+            return this.updateCount === Long.fromInt(-1);
+        });
     }
 
     getRowMetadata(): Promise<SqlRowMetadata> {
