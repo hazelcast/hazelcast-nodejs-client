@@ -82,12 +82,14 @@ export class SqlResultImpl implements SqlResult {
 
     // Promise for next fetch result
     private fetchResult: DeferredPromise<SqlPage>;
+    // Promise for close result
+    private closeResult: DeferredPromise<void>;
 
     /*
     Whether the result is closed or not. The result is closed if an update count or the last page is received.
     When true, there is no need to send the "cancel" request to the server.
     */
-    private closed;
+    private closed: boolean;
     private rowMetadata: SqlRowMetadata | null;
 
 
@@ -136,12 +138,12 @@ export class SqlResultImpl implements SqlResult {
     }
 
     close(): Promise<void> {
-        const deferred = deferredPromise<void>();
         // Do nothing if the result is already closed
-        if (this.closed) {
-            deferred.resolve();
-            return deferred.promise;
+        if (this.closeResult?.promise) {
+            return this.closeResult.promise;
         }
+
+        this.closeResult = deferredPromise<void>();
 
         const error = new HazelcastSqlException(null, SqlErrorCode.CANCELLED_BY_USER, 'Cancelled by user');
         this.onExecuteError(error);
@@ -149,11 +151,11 @@ export class SqlResultImpl implements SqlResult {
         this.fetchResult.reject(error);
         // Send the close request.
         this.service.close(this.connection, this.queryId).then(() => {
-            deferred.resolve();
             this.closed = true;
-        }).catch(deferred.reject);
+            this.closeResult.resolve();
+        }).catch(this.closeResult.reject);
 
-        return deferred.promise;
+        return this.closeResult.promise
     }
 
     onNextPage(page: SqlPage) {
