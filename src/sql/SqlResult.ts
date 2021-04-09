@@ -221,8 +221,7 @@ export class SqlResultImpl implements SqlResult {
     }
 
     _hasNext(): Promise<boolean> {
-        const deferred = deferredPromise<boolean>();
-        this.executeDeferred.promise.then(() => {
+        return this.executeDeferred.promise.then(() => {
             const checkHasNext = () => {
                 if (this.currentPosition === this.currentRowCount) {
                     // Reached end of the page. Try fetching the next one if possible.
@@ -230,18 +229,19 @@ export class SqlResultImpl implements SqlResult {
                         this.fetch().then(page => {
                             this.onNextPage(page);
                             checkHasNext();
-                        }).catch(deferred.reject);
+                        }).catch(err => {
+                            throw err;
+                        });
                     } else {
                         // No more pages expected, so return false.
-                        deferred.resolve(false);
+                        return false;
                     }
                 } else {
-                    deferred.resolve(true);
+                    return true;
                 }
             }
-            checkHasNext();
-        }).catch(deferred.reject);
-        return deferred.promise;
+            return checkHasNext();
+        });
     }
 
     next(): Promise<IteratorResult<SqlRowType, SqlRowType | undefined>> {
