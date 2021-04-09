@@ -48,6 +48,19 @@ export interface SqlResult extends AsyncIterable<SqlRowType> {
      * rejected with the same error.
      */
     getRowMetadata(): Promise<SqlRowMetadata | undefined>;
+
+    /**
+     * Return whether this result has rows to iterate. False if update count is returned or a response is not received yet.
+     * @returns {boolean}
+     */
+    isRowSet(): Promise<boolean>;
+
+    /**
+     * Returns the number of rows updated by the statement or -1 if this result is a row set.
+     * @returns {number} Update count
+     */
+    getUpdateCount(): Promise<Long>;
+
 }
 
 /** @internal */
@@ -96,6 +109,22 @@ export class SqlResultImpl implements SqlResult {
         return {
             next: nextFn
         }
+    }
+
+    getUpdateCount(): Promise<Long> {
+        const deferred = deferredPromise<Long>();
+        this.executeDeferred.promise.then(() => {
+            deferred.resolve(this.updateCount);
+        }).catch(deferred.reject);
+        return deferred.promise;
+    }
+
+    isRowSet(): Promise<boolean> {
+        const deferred = deferredPromise<boolean>();
+        this.executeDeferred.promise.then(() => {
+            deferred.resolve(this.updateCount === Long.fromInt(-1));
+        }).catch(deferred.reject);
+        return deferred.promise;
     }
 
     getRowMetadata(): Promise<SqlRowMetadata> {
