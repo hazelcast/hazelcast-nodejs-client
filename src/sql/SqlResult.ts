@@ -27,18 +27,12 @@ export type SqlRowType = SqlRow | SqlRowAsObject;
 
 export interface SqlResult extends AsyncIterable<SqlRowType> {
     /**
-     *  Returns a boolean promise indicating whether or not there are
-     *  more {@link SqlRowType}s to be iterated
-     *  @returns {Promise<boolean>}
+     *  Returns a promise for next {@link SqlRowType} iteration result.
+     *  @returns {IteratorResult<SqlRowType>} An object including "value" and "done" keys. The "done" key indicates if
+     *  iteration is ended, i.e when there are no more results. "value" holds iteration values which are in SqlRowType type.
+     *  "value" has undefined value if iteration has ended.
      */
-    hasNext(): Promise<boolean>;
-
-    /**
-     *  Returns a promise for next {@link SqlRowType}. The promise resolves to undefined if there
-     *  are no more rows to be iterated.
-     *  @returns {Promise<SqlRowType> | undefined}
-     */
-    next(): Promise<SqlRowType | undefined>;
+    next(): Promise<IteratorResult<SqlRowType>>;
 }
 
 
@@ -81,32 +75,9 @@ export class SqlResultImpl implements SqlResult {
     }
 
     [Symbol.asyncIterator](): AsyncIterator<SqlRowType, SqlRowType, SqlRowType> {
-        const nextFn = this.next.bind(this);
-        const hasNextFn = this.hasNext.bind(this);
+        const nextFn: () => Promise<IteratorResult<SqlRowType, SqlRowType | undefined>> = this.next.bind(this);
         return {
-            next(): Promise<IteratorResult<SqlRowType, SqlRowType>> {
-                const deferred = deferredPromise<IteratorResult<SqlRowType, SqlRowType>>();
-                hasNextFn().then((hasNext: boolean) => {
-                    if (hasNext) {
-                        return nextFn().then((value: SqlRowType | undefined) => {
-                            deferred.resolve({
-                                done: false,
-                                value: value
-                            })
-                        });
-                    } else {
-                        return nextFn().then((value: SqlRowType | undefined) => {
-                            deferred.resolve({
-                                done: true,
-                                value: value
-                            });
-                        });
-                    }
-                }).catch((err: any) => {
-                    deferred.reject(err);
-                });
-                return deferred.promise;
-            }
+            next: nextFn
         }
     }
 
@@ -180,7 +151,7 @@ export class SqlResultImpl implements SqlResult {
         return undefined;
     }
 
-    hasNext(): Promise<boolean> {
+    _hasNext(): Promise<boolean> {
         const deferred = deferredPromise<boolean>();
         this.executeDeferred.promise.then(() => {
             while (this.currentPosition === this.currentRowCount) {
@@ -201,17 +172,23 @@ export class SqlResultImpl implements SqlResult {
         return deferred.promise;
     }
 
-    next(): Promise<SqlRowType | undefined> {
-        const deferred = deferredPromise<SqlRowType | undefined>();
-        this.hasNext().then(hasNext => {
-            if (!hasNext) {
-                deferred.resolve(undefined);
-            } else {
+    next(): Promise<IteratorResult<SqlRowType, SqlRowType | undefined>> {
+        const deferred = deferredPromise<IteratorResult<SqlRowType, SqlRowType | undefined>>();
+        this._hasNext().then((hasNext: boolean) => {
+            if (hasNext) {
                 const row = this.getCurrentRow();
                 this.currentPosition++;
-                deferred.resolve(row);
+                deferred.resolve({
+                    done: false,
+                    value: row
+                })
+            } else {
+                deferred.resolve({
+                    done: true,
+                    value: undefined
+                });
             }
-        }).catch(err => {
+        }).catch((err: any) => {
             deferred.reject(err);
         });
         return deferred.promise;
