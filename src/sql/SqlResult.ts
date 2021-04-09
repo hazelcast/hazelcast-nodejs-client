@@ -51,19 +51,6 @@ export interface SqlResult extends AsyncIterable<SqlRowType> {
 }
 
 /** @internal */
-export class SqlFetchResult {
-    constructor(private readonly page: SqlPage | null, private readonly error: Error | null) {
-        this.page = page;
-        this.error = error;
-    }
-
-    isPending(): boolean {
-        return this.page === null && this.error === null;
-    }
-}
-
-
-/** @internal */
 export class SqlResultImpl implements SqlResult {
     /** Update count received as a result of sql execution. See {@link SqlExpectedResultType} */
     private updateCount: Long;
@@ -76,11 +63,12 @@ export class SqlResultImpl implements SqlResult {
     private last: boolean;
     /**
      * Deferred promise that resolves to true when page is received. If an error is occurred during execution,
-     * this promise is rejected with the error. Used by {@link hasNext}
+     * this promise is rejected with the error. Used by {@link _hasNext}
      */
     private readonly executeDeferred: DeferredPromise<boolean>;
 
-    private fetchResult: SqlFetchResult;
+    // Promise for next fetch result
+    private fetchResult: DeferredPromise<SqlPage>;
 
     /*
     Whether the result is closed or not. The result is closed if an update count or the last page is received.
@@ -124,10 +112,6 @@ export class SqlResultImpl implements SqlResult {
         return deferred.promise;
     }
 
-    onFetchFinished(page: SqlPage | null, error: Error) {
-
-    }
-
     close(): Promise<void> {
         const deferred = deferredPromise<void>();
         // Do nothing if the result is already closed
@@ -138,16 +122,16 @@ export class SqlResultImpl implements SqlResult {
 
         const error = new HazelcastSqlException(null, SqlErrorCode.CANCELLED_BY_USER, 'Cancelled by user');
         this.onExecuteError(error);
-        this.fetchResult = new SqlFetchResult(null, null);
-        this.onFetchFinished(null, error);
-
+        // Make sure that all subsequent fetches will fail.
+        this.fetchResult.reject(error);
+        // Send the close request.
         this.service.close(this.connection, this.queryId).then(() => {
             deferred.resolve();
+            this.closed = true;
         }).catch(deferred.reject);
 
         return deferred.promise;
     }
-
 
     onNextPage(page: SqlPage) {
         this.currentPage = page;
@@ -203,8 +187,14 @@ export class SqlResultImpl implements SqlResult {
     }
 
     fetch(): Promise<SqlPage> {
+        if (this.fetchResult?.promise) return this.fetchResult.promise;
+        this.fetchResult = deferredPromise<SqlPage>();
 
-        return undefined;
+        this.service.fetch(this.connection, this.queryId, this.cursorBufferSize).then(value => {
+            this.fetchResult.resolve(value);
+        }).catch(this.fetchResult.reject);
+
+        return this.fetchResult.promise;
     }
 
     _hasNext(): Promise<boolean> {

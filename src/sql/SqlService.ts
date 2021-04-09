@@ -27,6 +27,9 @@ import {ClientMessage} from '../protocol/ClientMessage';
 import {Connection} from '../network/Connection';
 import {SqlRowMetadataImpl} from './SqlRowMetadata';
 import {SqlCloseCodec} from '../codec/SqlCloseCodec';
+import {SqlFetchCodec, SqlFetchResponseParams} from '../codec/SqlFetchCodec';
+import {assertNotNull, deferredPromise} from '../util/Util';
+import {SqlPage} from './SqlPage';
 
 
 export interface SqlService {
@@ -165,5 +168,24 @@ export class SqlServiceImpl implements SqlService {
         const requestMessage = SqlCloseCodec.encodeRequest(queryId);
         return this.invocationService.invokeOnConnection(connection, requestMessage).then(() => {
         });
+    }
+
+    fetch(connection: Connection, queryId: SqlQueryId, cursorBufferSize: number): Promise<SqlPage> {
+        const requestMessage = SqlFetchCodec.encodeRequest(queryId, cursorBufferSize);
+        const deferred = deferredPromise<SqlPage>();
+        this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
+            const response: SqlFetchResponseParams = SqlFetchCodec.decodeResponse(clientMessage);
+            if (response.error !== null) {
+                return deferred.reject(new HazelcastSqlException(
+                    response.error.originatingMemberId,
+                    response.error.code,
+                    response.error.message
+                ));
+            }
+            assertNotNull(response.rowPage);
+            deferred.resolve(response.rowPage);
+
+        }).catch(deferred.reject);
+        return deferred.promise;
     }
 }

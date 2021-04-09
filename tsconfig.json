@@ -17,6 +17,6 @@
     },
     "include": [
         "src/index.ts",
-        "main.ts"
+        "src/main.ts"
     ]
 }
