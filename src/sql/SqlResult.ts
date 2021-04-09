@@ -74,15 +74,21 @@ export class SqlResultImpl implements SqlResult {
     private currentPosition: number;
     /* Made true when last page is received */
     private last: boolean;
+
     /**
      * Deferred promise that resolves to true when page is received. If an error is occurred during execution,
      * this promise is rejected with the error. Used by {@link _hasNext}
      */
     private readonly executeDeferred: DeferredPromise<boolean>;
 
-    // Promise for next fetch result
+    /**
+     * Deferred promise that resolves to a SqlPage when fetch is completed.
+     */
     private fetchResult: DeferredPromise<SqlPage>;
-    // Promise for close result
+
+    /**
+     * If closing of the result is triggered
+     */
     private closeResult: DeferredPromise<void>;
 
     /*
