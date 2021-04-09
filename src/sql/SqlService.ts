@@ -26,6 +26,7 @@ import {InvocationService} from '../invocation/InvocationService';
 import {ClientMessage} from '../protocol/ClientMessage';
 import {Connection} from '../network/Connection';
 import {SqlRowMetadataImpl} from './SqlRowMetadata';
+import {SqlCloseCodec} from '../codec/SqlCloseCodec';
 
 
 export interface SqlService {
@@ -158,5 +159,11 @@ export class SqlServiceImpl implements SqlService {
                 error
             );
         }
+    }
+
+    close(connection: Connection, queryId: SqlQueryId): Promise<void> {
+        const requestMessage = SqlCloseCodec.encodeRequest(queryId);
+        return this.invocationService.invokeOnConnection(connection, requestMessage).then(() => {
+        });
     }
 }
