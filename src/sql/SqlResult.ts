@@ -123,18 +123,16 @@ export class SqlResultImpl implements SqlResult {
         });
     }
 
-    getRowMetadata(): Promise<SqlRowMetadata> {
-        const deferred = deferredPromise<SqlRowMetadata>();
-        this.executeDeferred.promise.then(() => {
+    getRowMetadata(): Promise<SqlRowMetadata | undefined> {
+        return this.executeDeferred.promise.then(() => {
             if (this.rowMetadata !== null) {
                 // rows returned
-                deferred.resolve(this.rowMetadata);
+                return this.rowMetadata;
             } else {
                 // update count is returned
-                deferred.resolve(undefined);
+                return undefined;
             }
-        }).catch(deferred.reject);
-        return deferred.promise;
+        });
     }
 
     close(): Promise<void> {
