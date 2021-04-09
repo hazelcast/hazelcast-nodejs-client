@@ -245,24 +245,20 @@ export class SqlResultImpl implements SqlResult {
     }
 
     next(): Promise<IteratorResult<SqlRowType, SqlRowType | undefined>> {
-        const deferred = deferredPromise<IteratorResult<SqlRowType, SqlRowType | undefined>>();
-        this._hasNext().then((hasNext: boolean) => {
+        return this._hasNext().then((hasNext: boolean) => {
             if (hasNext) {
                 const row = this.getCurrentRow();
                 this.currentPosition++;
-                deferred.resolve({
+                return {
                     done: false,
                     value: row
-                })
+                };
             } else {
-                deferred.resolve({
+                return {
                     done: true,
                     value: undefined
-                });
+                };
             }
-        }).catch((err: any) => {
-            deferred.reject(err);
         });
-        return deferred.promise;
     }
 }
