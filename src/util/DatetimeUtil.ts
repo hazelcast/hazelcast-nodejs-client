@@ -20,8 +20,7 @@
 
  @param {string} timeString A string in the form hh:mm:ss.sss (at most 9 digits, so nano second precision)
  @return {object} an object including hours, minutes, seconds and nano. If nano is not 0, it always includes 9 digits.
- */
-export function parseTimeString(timeString: string): {
+ export function parseTimeString(timeString: string): {
     hours: number;
     minutes: number;
     seconds: number;
@@ -60,6 +59,7 @@ export function parseTimeString(timeString: string): {
         nano: isNaN(nano) ? 0 : nano
     }
 }
+ */
 
 /**
  Extract and return local time string from iso string
@@ -101,7 +101,7 @@ export function combineISOStringWithTimeString(isoString: string, timeString: st
 
     const withoutTimezone = [isoString.split('T')[0], timeString].join('T');
 
-    if (zLast) {
+    if (zLast) { // if Z was present in the iso string add it.
         return withoutTimezone + 'Z';
     } else if (hourFormatTimezone) {
         return withoutTimezone + hourFormatTimezone;
