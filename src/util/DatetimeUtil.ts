@@ -15,67 +15,6 @@
  */
 
 /**
- @internal
- Parse local time string and return values in it
-
- @param {string} timeString A string in the form hh:mm:ss.sss (at most 9 digits, so nano second precision)
- @return {object} an object including hours, minutes, seconds and nano. If nano is not 0, it always includes 9 digits.
- export function parseTimeString(timeString: string): {
-    hours: number;
-    minutes: number;
-    seconds: number;
-    nano: number;
-} {
-    const timeStringSplit = timeString.split(':');
-    if (timeStringSplit.length != 3) {
-        return {
-            hours: 0,
-            minutes: 0,
-            seconds: 0,
-            nano: 0
-        }
-    }
-    const secondsSplit = timeStringSplit[2].split('.');
-    let nano = 0;
-    if (secondsSplit.length == 2) {
-        let nanoStr = secondsSplit[1];
-        // make nanoStr 9 digits if it's longer
-        if (nanoStr.length > 9) nanoStr = nanoStr.slice(0, 9);
-
-        nano = +nanoStr;
-        if (!isNaN(nano)) {
-            while (nano <= 99_999_999) nano *= 10;
-        }
-    }
-
-    const hours = +timeStringSplit[0];
-    const minutes = +timeStringSplit[1];
-    const seconds = +secondsSplit[0];
-
-    return {
-        hours: isNaN(hours) ? 0 : hours,
-        minutes: isNaN(minutes) ? 0 : minutes,
-        seconds: isNaN(seconds) ? 0 : seconds,
-        nano: isNaN(nano) ? 0 : nano
-    }
-}
- */
-
-/**
- Extract and return local time string from iso string
-
- @param {string} isoString ISO 8601 string
- @return {string} local time string, empty string on error
- */
-export function getTimeOfIsoString(isoString: string): string {
-    const isoStringSplit = isoString.split('T');
-
-    if (isoStringSplit.length < 2) return '';
-
-    return isoStringSplit[1].split('+-Z')[0];
-}
-
-/**
  Constructs and returns ISO string from iso string only including date and time string
 
  @param {string} isoString ISO 8601 string containing date
