@@ -17,69 +17,12 @@
 
 const {expect} = require('chai');
 const {
-    parseTimeString,
-    getTimeOfIsoString,
     combineISOStringWithTimeString,
     getTimezoneOffsetFromSeconds,
     leftZeroPadInteger
 } = require('../../../lib/util/DatetimeUtil');
 
 describe('DatetimeUtilTest', function () {
-    // eslint-disable-next-line mocha/no-skipped-tests
-    describe.skip('parseTimeStringTest', function () {
-
-        it('should give 0 hours when hour is not a number', function () {
-            expect(parseTimeString('10as-:32:23.123').hours).to.be.equal(0);
-        });
-
-        it('should give 0 minutes when minute is not a number', function () {
-            expect(parseTimeString('10:3s-2:23.123as').minutes).to.be.equal(0);
-        });
-        it('should give 0 seconds when seconds is not a number', function () {
-            expect(parseTimeString('10:32:-.123as').seconds).to.be.equal(0);
-        });
-        it('should give 0 nano when precision is absent', function () {
-            expect(parseTimeString('10:32:23').nano).to.be.equal(0);
-        });
-
-        it('should give all 0 if invalid format string given', function () {
-            const parsed = parseTimeString('10::32:23.123456789');
-            expect(parsed.hours).to.be.equal(0);
-            expect(parsed.minutes).to.be.equal(0);
-            expect(parsed.seconds).to.be.equal(0);
-            expect(parsed.nano).to.be.equal(0);
-        });
-
-        it('should correctly parse time string', function () {
-            const parsed = parseTimeString('10:32:23.123456789');
-            expect(parsed.hours).to.be.equal(10);
-            expect(parsed.minutes).to.be.equal(32);
-            expect(parsed.seconds).to.be.equal(23);
-            expect(parsed.nano).to.be.equal(123456789);
-        });
-
-        it('should have at most 9 digits in nano', function () {
-            const parsed = parseTimeString('10:32:23.1234567891');
-            expect(parsed.hours).to.be.equal(10);
-            expect(parsed.minutes).to.be.equal(32);
-            expect(parsed.seconds).to.be.equal(23);
-            expect(parsed.nano.toString().length).to.be.equal(9);
-        });
-
-    });
-    describe('getTimeOfIsoStringTest', function () {
-        it('should extract time string of iso string, without time zone', function () {
-            expect(getTimeOfIsoString('2021-04-06T12:00:09.401Z')).to.be.equal('12:00:09.401Z');
-        });
-
-        it('should give empty string on invalid string', function () {
-            expect(getTimeOfIsoString('2021-04-0612:00:09.401Z')).to.be.equal('');
-        });
-
-        it('should extract time string of iso string, with time zone', function () {
-            expect(getTimeOfIsoString('2021-04-06T12:00:09.401+01:30')).to.be.equal('12:00:09.401+01:30');
-        });
-    });
     describe('combineTimeAndDateStringsTest', function () {
         it('should be able to combine iso string with time string', function () {
             expect(
@@ -149,19 +92,19 @@ describe('DatetimeUtilTest', function () {
     describe('leftZeroPadIntegerTest', function () {
         it('should pad length of 5 digits correctly', function () {
             expect(
-                leftZeroPadInteger(123,5)
+                leftZeroPadInteger(123, 5)
             ).to.be.equal('00123');
         });
 
         it('should not change number if its length is same with desired length', function () {
             expect(
-                leftZeroPadInteger(12345,5)
+                leftZeroPadInteger(12345, 5)
             ).to.be.equal('12345');
         });
 
         it('should not change number if its length is longer than desired length', function () {
             expect(
-                leftZeroPadInteger(123456,5)
+                leftZeroPadInteger(123456, 5)
             ).to.be.equal('123456');
         });
 
