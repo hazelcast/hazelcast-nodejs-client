@@ -1,5 +1,6 @@
 'use strict';
 import {Client, HazelcastSqlException} from '.';
+import {SqlRowAsObject} from './sql/SqlResult';
 
 const run = async function () {
     const client = await Client.newHazelcastClient();
@@ -8,18 +9,13 @@ const run = async function () {
 
     await testMap.clear();
 
-    /*
-    await testMap.put('a', new Date());
-    await testMap.put('b', new Date());
-    await testMap.put('c', new Date());
-    await testMap.put('d', new Date());
-    */
+    await testMap.put('a', -11.123);
+    await testMap.put('b', 1);
+    await testMap.put('c', 3);
+    await testMap.put('d', 4);
 
     try {
-        client.getSqlService().execute('INSERT INTO testMap (this) VALUES (?)', [new Date()]);
-        client.getSqlService().execute('INSERT INTO testMap (this) VALUES (?)', [new Date()]);
-        client.getSqlService().execute('INSERT INTO testMap (this) VALUES (?)', [new Date()]);
-        const res = client.getSqlService().execute('SELECT * FROM testMap WHERE this < ?', [new Date()]);
+        const res = client.getSqlService().execute('SELECT * FROM testMap WHERE this < ?', [2]);
 
         /*
         let next = await res.next();
@@ -30,7 +26,7 @@ const run = async function () {
         */
 
         for await (const row of res) {
-            console.log(row);
+            console.log((row as SqlRowAsObject)['this']);
         }
     } catch (error) {
         if (error instanceof HazelcastSqlException) {

@@ -25,7 +25,7 @@ import {HazelcastSqlException} from '../core';
 import {SqlErrorCode} from './SqlErrorCode';
 import {ILogger} from '../logging';
 
-type SqlRowAsObject = { [key: string]: any };
+export type SqlRowAsObject = { [key: string]: any };
 export type SqlRowType = SqlRow | SqlRowAsObject;
 
 export interface SqlResult extends AsyncIterable<SqlRowType> {
