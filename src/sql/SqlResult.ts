@@ -23,6 +23,7 @@ import {SqlQueryId} from './SqlQueryId';
 import {DeferredPromise, deferredPromise} from '../util/Util';
 import {HazelcastSqlException} from '../core';
 import {SqlErrorCode} from './SqlErrorCode';
+import {ILogger} from '../logging';
 
 type SqlRowAsObject = { [key: string]: any };
 export type SqlRowType = SqlRow | SqlRowAsObject;
@@ -105,11 +106,15 @@ export class SqlResultImpl implements SqlResult {
         private readonly queryId: SqlQueryId,
         private readonly cursorBufferSize: number,
         /* If true SqlResult is a SqlRow iterable, otherwise traditional objects are used */
-        private readonly rawResults: boolean
+        private readonly rawResults: boolean,
+        private readonly logger: ILogger
     ) {
         this.closed = false;
         this.rowMetadata = null;
         this.executeDeferred = deferredPromise<boolean>();
+        this.executeDeferred.promise.catch(err => {
+            this.logger.error('SqlResult', 'Error while executing sql', err);
+        });
     }
 
     [Symbol.asyncIterator](): AsyncIterator<SqlRowType, SqlRowType, SqlRowType> {
@@ -267,6 +272,11 @@ export class SqlResultImpl implements SqlResult {
                     value: undefined
                 };
             }
+        }).catch(() => {
+            return {
+                done: true,
+                value: undefined
+            };
         });
     }
 }

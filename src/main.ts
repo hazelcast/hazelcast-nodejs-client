@@ -16,10 +16,9 @@ const run = async function () {
     */
 
     try {
-        const res1 = client.getSqlService().execute('INSERT INTO testMap (this) VALUES (?)', [new Date()]);
-
-        const res2 = client.getSqlService().execute('INSERT INTO testMap (this) VALUES (?)', [new Date()]);
-        const res3 = client.getSqlService().execute('INSERT INTO testMap (this) VALUES (?)', [new Date()]);
+        client.getSqlService().execute('INSERT INTO testMap (this) VALUES (?)', [new Date()]);
+        client.getSqlService().execute('INSERT INTO testMap (this) VALUES (?)', [new Date()]);
+        client.getSqlService().execute('INSERT INTO testMap (this) VALUES (?)', [new Date()]);
         const res = client.getSqlService().execute('SELECT * FROM testMap WHERE this < ?', [new Date()]);
 
         /*

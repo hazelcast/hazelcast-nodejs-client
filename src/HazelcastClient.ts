@@ -234,7 +234,8 @@ export class HazelcastClient {
             this.connectionRegistry,
             this.serializationService,
             this.invocationService,
-            this.connectionManager
+            this.connectionManager,
+            this.loggingService.getLogger()
         );
     }
 

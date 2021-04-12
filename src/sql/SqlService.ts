@@ -30,6 +30,7 @@ import {SqlCloseCodec} from '../codec/SqlCloseCodec';
 import {SqlFetchCodec, SqlFetchResponseParams} from '../codec/SqlFetchCodec';
 import {assertNotNull, deferredPromise} from '../util/Util';
 import {SqlPage} from './SqlPage';
+import {ILogger} from '../logging';
 
 
 export interface SqlService {
@@ -67,6 +68,7 @@ export class SqlServiceImpl implements SqlService {
         private readonly serializationService: SerializationService,
         private readonly invocationService: InvocationService,
         private readonly connectionManager: ConnectionManager,
+        private readonly logger: ILogger
     ) {
     }
 
@@ -146,7 +148,8 @@ export class SqlServiceImpl implements SqlService {
                 connection,
                 queryId,
                 cursorBufferSize,
-                SqlServiceImpl.RETURN_RAW_RESULTS
+                SqlServiceImpl.RETURN_RAW_RESULTS,
+                this.logger
             );
 
             this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
