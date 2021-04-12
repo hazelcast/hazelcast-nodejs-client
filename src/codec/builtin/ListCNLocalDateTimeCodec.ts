@@ -8,15 +8,6 @@ import {HzLocalDateTime} from '../../sql/DataTypes';
 /** @internal */
 export class ListCNLocalDateTimeCodec {
 
-    static encode(clientMessage: ClientMessage, items: HzLocalDateTime[]): void {
-        ListCNFixedSizeCodec.encode(
-            clientMessage,
-            items,
-            BitsUtil.LOCAL_DATETIME_SIZE_IN_BYTES,
-            FixSizedTypesCodec.encodeLocalDatetime
-        );
-    }
-
     static decode(clientMessage: ClientMessage): HzLocalDateTime[] {
         return ListCNFixedSizeCodec.decode(
             clientMessage.nextFrame(),

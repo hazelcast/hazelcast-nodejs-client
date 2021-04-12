@@ -38,33 +38,12 @@ export class FixSizedTypesCodec {
         return buffer.readInt32LE(offset);
     }
 
-    /*
-    Encodes a local date to buffer from iso string
-    */
-    static encodeLocalDate(buffer: Buffer, offset: number, value: HzLocalDate): void {
-        FixSizedTypesCodec.encodeShort(buffer, offset, value.getYear());
-        FixSizedTypesCodec.encodeByte(buffer, offset + BitsUtil.SHORT_SIZE_IN_BYTES, value.getMonth());
-        FixSizedTypesCodec.encodeByte(
-            buffer,
-            offset + BitsUtil.SHORT_SIZE_IN_BYTES + BitsUtil.BYTE_SIZE_IN_BYTES,
-            value.getDate()
-        );
-    }
-
     static decodeLocalDate(buffer: Buffer, offset: number): HzLocalDate {
         const year = FixSizedTypesCodec.decodeShort(buffer, offset);
         const month = FixSizedTypesCodec.decodeByte(buffer, offset + BitsUtil.SHORT_SIZE_IN_BYTES);
         const date = FixSizedTypesCodec.decodeByte(buffer, offset + BitsUtil.SHORT_SIZE_IN_BYTES + BitsUtil.BYTE_SIZE_IN_BYTES);
 
         return new HzLocalDate(year, month, date);
-    }
-
-    /*
-    Encodes a local datetime to buffer from iso string
-    */
-    static encodeLocalDatetime(buffer: Buffer, offset: number, value: HzLocalDateTime): void {
-        FixSizedTypesCodec.encodeLocalDate(buffer, offset, value.getHzLocalDate());
-        FixSizedTypesCodec.encodeLocalTime(buffer, offset + BitsUtil.LOCAL_DATE_SIZE_IN_BYTES, value.getHzLocalTime());
     }
 
     static decodeLocalDatetime(buffer: Buffer, offset: number): HzLocalDateTime {
@@ -77,20 +56,6 @@ export class FixSizedTypesCodec {
         const localDateTime = FixSizedTypesCodec.decodeLocalDatetime(buffer, offset);
         const offsetSeconds = FixSizedTypesCodec.decodeInt(buffer, offset + BitsUtil.LOCAL_DATETIME_SIZE_IN_BYTES);
         return new HzOffsetDateTime(localDateTime, offsetSeconds);
-    }
-
-    /*
-    Encodes a local time to buffer from iso string
-    */
-    static encodeLocalTime(buffer: Buffer, offset: number, value: HzLocalTime): void {
-        FixSizedTypesCodec.encodeByte(buffer, offset, value.getHour());
-        FixSizedTypesCodec.encodeByte(buffer, offset + BitsUtil.BYTE_SIZE_IN_BYTES, value.getMinute());
-        FixSizedTypesCodec.encodeByte(buffer, offset + BitsUtil.BYTE_SIZE_IN_BYTES * 2, value.getSecond());
-        FixSizedTypesCodec.encodeInt(
-            buffer,
-            offset + BitsUtil.BYTE_SIZE_IN_BYTES * 3,
-            value.getNano()
-        );
     }
 
     /*

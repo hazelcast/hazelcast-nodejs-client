@@ -11,21 +11,6 @@ export class ListCNFixedSizeCodec {
     static readonly HEADER_SIZE = BitsUtil.BYTE_SIZE_IN_BYTES + BitsUtil.INT_SIZE_IN_BYTES;
     static readonly ITEMS_PER_BITMASK = 8;
 
-    static encode<T>(
-        clientMessage: ClientMessage,
-        items: T[],
-        itemSizeInBytes: number,
-        encoder: (buffer: Buffer, offset: number, item: T) => void
-    ): void {
-        // TODO: delete this method and other encodes
-        return;
-    }
-
-    static encodeHeader(frame: Frame, type: number, size: number): void {
-        FixSizedTypesCodec.encodeByte(frame.content, 0, type);
-        FixSizedTypesCodec.encodeInt(frame.content, 1, size);
-    }
-
     static decode<T>(
         frame: Frame,
         itemSizeInBytes: number,
