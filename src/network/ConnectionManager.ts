@@ -198,10 +198,15 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
      * @param dataMember if only data members should be considered
      * @return Connection if there is at least one connection, otherwise null
      */
-    getRandomConnection(dataMember= false): Connection | null {
+    getRandomConnection(dataMember = false): Connection | null {
         if (this.smartRoutingEnabled) {
-            const member = this.loadBalancer.next();
-            if (member != null) {
+            let member;
+            if(dataMember && this.loadBalancer.canGetNextDataMember()){
+                member = this.loadBalancer.nextDataMember();
+            } else {
+                member = this.loadBalancer.next();
+            }
+            if (member !== null) {
                 const connection = this.getConnection(member.uuid);
                 if (connection != null) {
                     return connection;

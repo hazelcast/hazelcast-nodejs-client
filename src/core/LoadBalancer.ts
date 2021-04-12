@@ -47,17 +47,21 @@ export interface LoadBalancer {
      *
      * @return Returns the next member or `null` if no member is available
      */
-    next(): Member;
+    next(): Member | null;
 
-    /*
+    /**
+     * Returns the next data member to route to.
+     *
+     * @return Returns the next data member or `null` if no data member is available
+     */
+    nextDataMember(): Member | null;
 
-    nextDataMember(): Member;
-
-
+    /**
+     * Returns whether this instance supports getting data members through a call to {@link nextDataMember()}.
+     *
+     * @return Returns the next member or `null` if no member is available
+     */
     canGetNextDataMember(): boolean;
-    */
-
-
 }
 
 /**
@@ -67,9 +71,14 @@ export interface LoadBalancer {
 export abstract class AbstractLoadBalancer implements LoadBalancer, InitialMembershipListener {
 
     private members: Member[];
+    private dataMembers: Member[];
     private cluster: Cluster;
 
-    abstract next(): Member;
+    abstract next(): Member | null;
+
+    abstract nextDataMember(): Member | null;
+
+    abstract canGetNextDataMember(): boolean;
 
     initLoadBalancer(cluster: Cluster, config: ClientConfig): void {
         this.cluster = cluster;
@@ -88,11 +97,16 @@ export abstract class AbstractLoadBalancer implements LoadBalancer, InitialMembe
         this.setMembers();
     }
 
+    protected getDataMembers(): Member[]{
+        return this.dataMembers;
+    }
+
     protected getMembers(): Member[] {
         return this.members;
     }
 
     private setMembers(): void {
         this.members = this.cluster.getMembers();
+        this.dataMembers = this.members.filter(member => !member.liteMember);
     }
 }

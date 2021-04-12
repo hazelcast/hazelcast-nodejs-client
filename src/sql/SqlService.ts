@@ -37,6 +37,15 @@ export interface SqlService {
 
     execute(sql: string, params?: any[], options?: SqlStatementOptions): SqlResult;
 
+    /**
+     * Executes sql and returns SqlResult
+     * @param {string | SqlStatement} sql sql statement, either string or SqlStatement
+     * @param {array} params any list
+     * @param {SqlStatementOptions} options options that are affecting how sql is executed
+     * @throws {IllegalArgumentError} If arguments are not valid
+     * @throws {HazelcastSqlException} If there is an error running sql
+     * @returns {SqlResult} Sql result
+     */
     execute(sql: string | SqlStatement, params?: any[], options?: SqlStatementOptions): SqlResult;
 }
 
@@ -83,15 +92,6 @@ export class SqlServiceImpl implements SqlService {
 
     execute(sql: SqlStatement): SqlResult;
     execute(sql: string, params?: any[], options?: SqlStatementOptions): SqlResult;
-    /**
-     * Executes sql and returns SqlResult
-     * @param {string | SqlStatement} sql sql statement, either string or SqlStatement
-     * @param {array} params any list
-     * @param {SqlStatementOptions} options options that are affecting how sql is executed
-     * @throws {IllegalArgumentError} If arguments are not valid
-     * @throws {HazelcastSqlException} If there is an error running sql
-     * @returns {SqlResult} Sql result
-     */
     execute(sql: string | SqlStatement, params?: any[], options?: SqlStatementOptions): SqlResult {
         let sqlStatement: SqlStatement;
         if (sql === undefined || sql === null) {
