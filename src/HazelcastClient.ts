@@ -136,11 +136,6 @@ export class HazelcastClient {
             this.config = failoverConfig.clientConfigs[0];
         }
         this.loadBalancer = this.initLoadBalancer();
-        this.connectionRegistry = new ConnectionRegistryImpl(
-            this.config.connectionStrategy,
-            this.config.network.smartRouting,
-            this.loadBalancer
-        );
         this.failoverConfig = failoverConfig;
         this.errorFactory = new ClientErrorFactory();
         this.serializationService = new SerializationServiceV1(this.config.serialization);
@@ -164,6 +159,12 @@ export class HazelcastClient {
             this.config,
             this.loggingService.getLogger(),
             this.clusterFailoverService
+        );
+        this.connectionRegistry = new ConnectionRegistryImpl(
+            this.config.connectionStrategy,
+            this.config.network.smartRouting,
+            this.loadBalancer,
+            this.clusterService
         );
         this.invocationService = new InvocationService(
             this.config,

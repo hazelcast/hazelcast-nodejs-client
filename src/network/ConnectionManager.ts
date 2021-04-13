@@ -151,16 +151,19 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
     private readonly smartRoutingEnabled: boolean;
     private readonly asyncStart: boolean;
     private readonly reconnectMode: ReconnectMode;
+    private readonly clusterService: ClusterService;
 
     constructor(
         connectionStrategy: ConnectionStrategyConfig,
         smartRoutingEnabled: boolean,
-        loadBalancer: LoadBalancer
+        loadBalancer: LoadBalancer,
+        clusterService: ClusterService
     ) {
         this.smartRoutingEnabled = smartRoutingEnabled;
         this.asyncStart = connectionStrategy.asyncStart;
         this.reconnectMode = connectionStrategy.reconnectMode;
         this.loadBalancer = loadBalancer;
+        this.clusterService = clusterService;
     }
 
     isActive(): boolean {
@@ -219,13 +222,19 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
             }
         }
 
-        const iterator = this.activeConnections.values();
-        const next = iterator.next();
-        if (!next.done) {
-            return next.value;
-        } else {
-            return null;
+
+        for (const entry of this.activeConnections.entries()) {
+            const uuid = entry[0];
+            const connection = entry[1];
+            if (dataMember) {
+                const member = this.clusterService.getMember(uuid);
+                if (!member || member.liteMember)
+                    continue;
+            }
+            return connection;
         }
+
+        return null;
     }
 
     forEachConnection(fn: (conn: Connection) => void): void {
