@@ -303,8 +303,7 @@ describe('ConnectionRegistryTest', function () {
         });
 
         it('should return ClientOfflineError when reconnect mode is async, connection state is INITIALIZED_ON_CLUSTER '
-            + 'and there are no connections',
-            function () {
+            + 'and there are no connections', function () {
                 const connectionStrategyConfig = new ConnectionStrategyConfigImpl();
                 connectionStrategyConfig.reconnectMode = ReconnectMode.ASYNC;
 

@@ -29,7 +29,6 @@ import {TranslateAddressProvider} from '../network/TranslateAddressProvider';
 import {
     Cluster,
     MemberImpl,
-    UUID,
     MembershipListener,
     MembershipEvent,
     MemberEvent,
