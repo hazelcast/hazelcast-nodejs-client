@@ -40,13 +40,13 @@ import {ReplicatedMapRemoveEntryListenerCodec} from '../codec/ReplicatedMapRemov
 import {ReplicatedMapSizeCodec} from '../codec/ReplicatedMapSizeCodec';
 import {ReplicatedMapValuesCodec} from '../codec/ReplicatedMapValuesCodec';
 import {EventType} from './EventType';
-import {EntryEvent, EntryListener} from './EntryListener';
+import {EntryEvent, EntryEventListener, EntryListener} from './EntryListener';
 import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
 import {Data} from '../serialization/Data';
 import {assertNotNull} from '../util/Util';
 import {ReplicatedMap} from './ReplicatedMap';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
-import {MapEvent} from './MapListener';
+import {MapEvent, MapEventListener} from './MapListener';
 import {ClientMessage} from '../protocol/ClientMessage';
 import {deserializeEntryList} from '../serialization/SerializationUtil';
 
@@ -191,12 +191,14 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
             const member = this.clusterService.getMember(uuid.toString());
             const name = this.name;
 
-            key = toObject(key);
-            value = toObject(value);
-            oldValue = toObject(oldValue);
-            mergingValue = toObject(mergingValue);
-
-            const entryEvent = new EntryEvent(name, key, value, oldValue, mergingValue, member);
+            const entryEvent = new EntryEvent<K,V>(
+                name,
+                toObject(key),
+                toObject(value),
+                toObject(oldValue),
+                toObject(mergingValue),
+                member
+            );
 
             const mapEvent = new MapEvent(name, numberOfAffectedEntries, member);
 
@@ -214,9 +216,9 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
             const entryEventMethod = entryEventToListenerMap[event];
             const mapEventMethod = mapEventToListenerMap[event];
             if (listener.hasOwnProperty(entryEventMethod)) {
-                listener[entryEventMethod].apply(null, [entryEvent]);
+                (listener[entryEventMethod] as EntryEventListener<K, V>).apply(null, [entryEvent]);
             } else if (listener.hasOwnProperty(mapEventMethod)) {
-                listener[mapEventMethod].apply(null, [mapEvent]);
+                (listener[mapEventMethod] as MapEventListener<K, V>).apply(null, [mapEvent]);
             }
         };
         let listenerHandler: (message: ClientMessage,
