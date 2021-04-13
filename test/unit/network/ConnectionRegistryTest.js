@@ -47,7 +47,7 @@ describe('ConnectionRegistryTest', function () {
         it('should not call nextDataMember() or next() on load balancer ' +
             'when load balancer does not support data members and data member is requested ', function () {
             const loadBalancerStub = {};
-            loadBalancerStub.canGetNextDataMember = sinon.fake.returns(false);
+            loadBalancerStub.canGetNextDataMember = sandbox.fake.returns(false);
             loadBalancerStub.next = sandbox.spy();
             loadBalancerStub.nextDataMember = sandbox.spy();
 
@@ -101,7 +101,7 @@ describe('ConnectionRegistryTest', function () {
             const loadBalancerStub = {};
             loadBalancerStub.next = sandbox.spy();
             loadBalancerStub.nextDataMember = sandbox.fake.returns(null);
-            loadBalancerStub.canGetNextDataMember = sinon.fake.returns(true);
+            loadBalancerStub.canGetNextDataMember = sandbox.fake.returns(true);
 
             const connectionRegistry = new ConnectionRegistryImpl(
                 new ConnectionStrategyConfigImpl(),
@@ -121,7 +121,7 @@ describe('ConnectionRegistryTest', function () {
             };
 
             const loadBalancerStub = {};
-            loadBalancerStub.next = sinon.fake.returns(member);
+            loadBalancerStub.next = sandbox.fake.returns(member);
 
             const connectionRegistry = new ConnectionRegistryImpl(
                 new ConnectionStrategyConfigImpl(),
@@ -173,7 +173,7 @@ describe('ConnectionRegistryTest', function () {
                 );
 
                 connectionRegistry.setConnectionState(connectionState.INITIALIZED_ON_CLUSTER);
-                connectionRegistry.setConnection(UuidUtil.generate(), new sinon.createStubInstance(Connection));
+                connectionRegistry.setConnection(UuidUtil.generate(), {});
 
                 expect(connectionRegistry.checkIfInvocationAllowed()).to.be.equal(null);
             }
