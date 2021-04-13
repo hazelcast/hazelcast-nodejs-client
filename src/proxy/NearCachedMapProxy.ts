@@ -151,7 +151,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
 
     protected executeOnKeyInternal(keyData: Data, proData: Data): Promise<V> {
         return super.executeOnKeyInternal(keyData, proData)
-            .then<V>(oldValue => this.invalidateCacheEntryAndReturn(keyData, oldValue));
+            .then<V>(result => this.invalidateCacheEntryAndReturn(keyData, result));
     }
 
     protected putInternal(keyData: Data,
