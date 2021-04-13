@@ -29,6 +29,7 @@ const { ConnectionStrategyConfigImpl, ReconnectMode } = require('../../../lib/co
 const { RoundRobinLB } = require('../../../lib/util/RoundRobinLB');
 const { UuidUtil } = require('../../../lib/util/UuidUtil');
 const { ClientOfflineError, IOError } = require('../../../lib/core/HazelcastError');
+const { AbstractLoadBalancer } = require('../../../lib/core/LoadBalancer');
 
 describe('ConnectionRegistryTest', function () {
 
@@ -38,13 +39,45 @@ describe('ConnectionRegistryTest', function () {
         INITIALIZED_ON_CLUSTER: 2
     };
 
+    class CustomRoundRobinLB extends AbstractLoadBalancer {
+
+        constructor () {
+            super();
+            this.index = Math.floor(Math.random() * (1 << 16));
+        }
+
+        next () {
+            return this._next(false);
+        }
+
+        _next (dataMember) {
+            const members = dataMember ? this.getDataMembers() : this.getMembers();
+            if (members == null || members.length === 0) {
+                return null;
+            }
+
+            const length = members.length;
+            const idx = (this.index++) % length;
+            return members[idx];
+        }
+
+        canGetNextDataMember () {
+            return false;
+        }
+
+        nextDataMember () {
+            return null;
+        }
+    }
+
     afterEach(function () {
         sandbox.restore();
     });
 
     describe('getRandomConnection', function () {
-        it('should use load balancer in smart mode', function () {
+        it('by default should call load balancer\'s next() when in smart mode', function () {
             const loadBalancerStub = sandbox.stub(RoundRobinLB.prototype);
+            loadBalancerStub.next = sandbox.stub().returns(null);
             const connectionRegistry = new ConnectionRegistryImpl(
                 new ConnectionStrategyConfigImpl(),
                 true,
@@ -54,6 +87,38 @@ describe('ConnectionRegistryTest', function () {
             connectionRegistry.getRandomConnection();
 
             expect(loadBalancerStub.next.called).to.be.true;
+            expect(loadBalancerStub.nextDataMember.called).to.be.false;
+        });
+
+        it('should call load balancer\'s next() when in smart mode and dataMember is not needed', function () {
+            const loadBalancerStub = sandbox.stub(RoundRobinLB.prototype);
+            loadBalancerStub.next = sandbox.stub().returns(null);
+            const connectionRegistry = new ConnectionRegistryImpl(
+                new ConnectionStrategyConfigImpl(),
+                true,
+                loadBalancerStub
+            );
+
+            connectionRegistry.getRandomConnection(false);
+
+            expect(loadBalancerStub.nextDataMember.called).to.be.false;
+            expect(loadBalancerStub.next.called).to.be.true;
+        });
+
+        it('should call load balancer\'s nextDataMember() when in smart mode and dataMember is needed', function () {
+            const loadBalancerStub = sandbox.stub(RoundRobinLB.prototype);
+            loadBalancerStub.canGetNextDataMember = sandbox.stub().returns(true);
+            loadBalancerStub.nextDataMember = sandbox.stub().returns(null);
+            const connectionRegistry = new ConnectionRegistryImpl(
+                new ConnectionStrategyConfigImpl(),
+                true,
+                loadBalancerStub
+            );
+
+            connectionRegistry.getRandomConnection(true);
+
+            expect(loadBalancerStub.nextDataMember.called).to.be.true;
+            expect(loadBalancerStub.next.called).to.be.false;
         });
 
         it('should use member uuid returned by load balancer to get connection in smart mode', function () {

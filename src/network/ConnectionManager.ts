@@ -201,11 +201,16 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
     getRandomConnection(dataMember = false): Connection | null {
         if (this.smartRoutingEnabled) {
             let member;
-            if(dataMember && this.loadBalancer.canGetNextDataMember()){
-                member = this.loadBalancer.nextDataMember();
+            if (dataMember) {
+                if (this.loadBalancer.canGetNextDataMember()) {
+                    member = this.loadBalancer.nextDataMember();
+                } else {
+                    member = null;
+                }
             } else {
                 member = this.loadBalancer.next();
             }
+
             if (member !== null) {
                 const connection = this.getConnection(member.uuid);
                 if (connection != null) {
@@ -610,10 +615,10 @@ export class ConnectionManager extends EventEmitter {
 
         // try to connect to a member in the member list first
         return this.tryConnecting(
-                0, members, triedAddressesPerAttempt,
-                (m) => m.address,
-                (m) => this.getOrConnectToMember(m)
-            )
+            0, members, triedAddressesPerAttempt,
+            (m) => m.address,
+            (m) => this.getOrConnectToMember(m)
+        )
             .then((connected) => {
                 if (connected) {
                     return true;
@@ -656,7 +661,7 @@ export class ConnectionManager extends EventEmitter {
             })
             .catch((err: Error) => {
                 if (err instanceof ClientNotAllowedInClusterError
-                        || err instanceof InvalidConfigurationError) {
+                    || err instanceof InvalidConfigurationError) {
                     this.logger.warn('ConnectionManager', 'Stopped trying on the cluster: '
                         + ctx.clusterName + ' reason: ' + err.message);
                     return false;
@@ -698,7 +703,7 @@ export class ConnectionManager extends EventEmitter {
                 this.logger.warn('ConnectionManager', 'Error during initial connection to '
                     + target.toString() + ' ' + err);
                 if (err instanceof InvalidConfigurationError
-                        || err instanceof ClientNotAllowedInClusterError) {
+                    || err instanceof ClientNotAllowedInClusterError) {
                     throw err;
                 }
                 return null;
