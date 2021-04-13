@@ -77,7 +77,7 @@ describe('ConnectionRegistryTest', function () {
     describe('getRandomConnection', function () {
         it('by default should call load balancer\'s next() when in smart mode', function () {
             const loadBalancerStub = sandbox.stub(RoundRobinLB.prototype);
-            loadBalancerStub.next = sandbox.stub().returns(null);
+            loadBalancerStub.next.returns(null);
             const connectionRegistry = new ConnectionRegistryImpl(
                 new ConnectionStrategyConfigImpl(),
                 true,
@@ -92,7 +92,7 @@ describe('ConnectionRegistryTest', function () {
 
         it('should call load balancer\'s next() when in smart mode and dataMember is not needed', function () {
             const loadBalancerStub = sandbox.stub(RoundRobinLB.prototype);
-            loadBalancerStub.next = sandbox.stub().returns(null);
+            loadBalancerStub.next.returns(null);
             const connectionRegistry = new ConnectionRegistryImpl(
                 new ConnectionStrategyConfigImpl(),
                 true,
@@ -107,8 +107,8 @@ describe('ConnectionRegistryTest', function () {
 
         it('should call load balancer\'s nextDataMember() when in smart mode and dataMember is needed', function () {
             const loadBalancerStub = sandbox.stub(RoundRobinLB.prototype);
-            loadBalancerStub.canGetNextDataMember = sandbox.stub().returns(true);
-            loadBalancerStub.nextDataMember = sandbox.stub().returns(null);
+            loadBalancerStub.canGetNextDataMember.returns(true);
+            loadBalancerStub.nextDataMember.returns(null);
             const connectionRegistry = new ConnectionRegistryImpl(
                 new ConnectionStrategyConfigImpl(),
                 true,
