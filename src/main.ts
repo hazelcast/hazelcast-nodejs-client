@@ -1,6 +1,7 @@
 'use strict';
 import {Client, HazelcastSqlException} from '.';
 import {SqlRowAsObject} from './sql/SqlResult';
+import {SqlExpectedResultType} from './sql/SqlStatement';
 
 const run = async function () {
     const client = await Client.newHazelcastClient();
@@ -15,7 +16,9 @@ const run = async function () {
     await testMap.put('d', 4);
 
     try {
-        const res = client.getSqlService().execute('SELECT * FROM testMap WHERE this < ?', [2]);
+        const res = client.getSqlService().execute('SELECT * FROM testMap WHERE this < ?', [2], {
+            expectedResultType: SqlExpectedResultType.ANY
+        });
 
         /*
         let next = await res.next();
