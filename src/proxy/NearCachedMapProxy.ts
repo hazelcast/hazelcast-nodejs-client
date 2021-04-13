@@ -114,7 +114,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
 
     protected evictInternal(key: Data): Promise<boolean> {
         return super.evictInternal(key)
-            .then<boolean>((bool) => this.invalidateCacheEntryAndReturn(key, bool));
+            .then<boolean>(evicted => this.invalidateCacheEntryAndReturn(key, evicted));
     }
 
     protected finalizePutAll(partitionsToKeysData: { [id: string]: Array<[Data, Data]> }): void {
@@ -138,7 +138,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
                                   ttl: number | Long = -1,
                                   maxIdle?: number | Long): Promise<V> {
         return super.putIfAbsentInternal(keyData, valueData, ttl, maxIdle)
-            .then<V>((val: V) => this.invalidateCacheEntryAndReturn(keyData, val));
+            .then<V>(oldValue => this.invalidateCacheEntryAndReturn(keyData, oldValue));
     }
 
     protected putTransientInternal(keyData: Data,
@@ -151,7 +151,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
 
     protected executeOnKeyInternal(keyData: Data, proData: Data): Promise<V> {
         return super.executeOnKeyInternal(keyData, proData)
-            .then<V>((val: V) => this.invalidateCacheEntryAndReturn(keyData, val));
+            .then<V>(oldValue => this.invalidateCacheEntryAndReturn(keyData, oldValue));
     }
 
     protected putInternal(keyData: Data,
@@ -159,7 +159,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
                           ttl: number | Long = -1,
                           maxIdle?: number | Long): Promise<V> {
         return super.putInternal(keyData, valueData, ttl, maxIdle)
-            .then<V>((val: V) => this.invalidateCacheEntryAndReturn(keyData, val));
+            .then<V>(oldValue => this.invalidateCacheEntryAndReturn(keyData, oldValue));
     }
 
     protected getInternal(keyData: Data): Promise<V> {
@@ -180,12 +180,12 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
 
     protected tryRemoveInternal(keyData: Data, timeout: number): Promise<boolean> {
         return super.tryRemoveInternal(keyData, timeout)
-            .then<boolean>((bool: boolean) => this.invalidateCacheEntryAndReturn(keyData, bool));
+            .then<boolean>(removed => this.invalidateCacheEntryAndReturn(keyData, removed));
     }
 
     protected removeInternal(keyData: Data, value: V): Promise<V | boolean> {
         return super.removeInternal(keyData, value)
-            .then<V | boolean>((val: V | boolean) => this.invalidateCacheEntryAndReturn(keyData, val));
+            .then<V | boolean>(oldValue => this.invalidateCacheEntryAndReturn(keyData, oldValue));
     }
 
     protected getAllInternal(partitionsToKeys: { [id: string]: Data[] },
@@ -228,12 +228,12 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
 
     protected replaceIfSameInternal(keyData: Data, oldValueData: Data, newValueData: Data): Promise<boolean> {
         return super.replaceIfSameInternal(keyData, oldValueData, newValueData)
-            .then<boolean>((bool: boolean) => this.invalidateCacheEntryAndReturn(keyData, bool));
+            .then<boolean>(replaced => this.invalidateCacheEntryAndReturn(keyData, replaced));
     }
 
     protected replaceInternal(keyData: Data, valueData: Data): Promise<V> {
         return super.replaceInternal(keyData, valueData)
-            .then<V>((val: V) => this.invalidateCacheEntryAndReturn(keyData, val));
+            .then<V>(replaced => this.invalidateCacheEntryAndReturn(keyData, replaced));
     }
 
     protected setInternal(keyData: Data,
@@ -246,12 +246,12 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
 
     protected tryPutInternal(keyData: Data, valueData: Data, timeout: number): Promise<boolean> {
         return super.tryPutInternal(keyData, valueData, timeout)
-            .then<boolean>((bool: boolean) => this.invalidateCacheEntryAndReturn(keyData, bool));
+            .then<boolean>(put => this.invalidateCacheEntryAndReturn(keyData, put));
     }
 
     protected setTtlInternal(keyData: Data, ttl: number): Promise<boolean> {
         return super.setTtlInternal(keyData, ttl)
-            .then<boolean>((bool: boolean) => this.invalidateCacheEntryAndReturn(keyData, bool));
+            .then<boolean>(setTtl => this.invalidateCacheEntryAndReturn(keyData, setTtl));
     }
 
     private removeNearCacheInvalidationListener(): Promise<boolean> {
