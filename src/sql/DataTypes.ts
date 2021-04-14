@@ -1,4 +1,11 @@
-import {getTimezoneOffsetFromSeconds, leftZeroPadInteger} from '../util/DatetimeUtil';
+import {
+    getTimezoneOffsetFromSeconds,
+    leftZeroPadInteger,
+    parseLocalTime,
+    parseOffsetDateTime,
+    parseLocalDateTime,
+    parseLocalDate
+} from '../util/DatetimeUtil';
 import {IllegalArgumentError} from '../core';
 
 export class HzLocalTime {
@@ -39,6 +46,10 @@ export class HzLocalTime {
 
     getNano(): number {
         return this.nano;
+    }
+
+    static fromString(timeString: string): HzLocalTime {
+        return parseLocalTime(timeString);
     }
 
     toString(): string {
@@ -135,6 +146,10 @@ export class HzLocalDate {
         return (year & 3) == 0 && (year % 100 != 0 || year % 400 == 0);
     }
 
+    static fromString(dateString: string): HzLocalDate {
+        return parseLocalDate(dateString);
+    }
+
     getYear(): number {
         return this.year;
     }
@@ -166,46 +181,80 @@ export class HzLocalDateTime {
         return this.hzLocalTime;
     }
 
+    static fromISOString(isoString: string): HzLocalDateTime{
+        return parseLocalDateTime(isoString);
+    }
+
     getHzLocalDate(): HzLocalDate {
         return this.hzLocalDate;
     }
 
-    toDate(): Date {
-        return new Date(
-            this.hzLocalDate.getYear(),
-            this.hzLocalDate.getMonth(),
-            this.hzLocalDate.getDate(),
-            this.hzLocalTime.getHour(),
-            this.hzLocalTime.getMinute(),
-            this.hzLocalTime.getSecond(),
-            Math.floor(this.hzLocalTime.getNano() / 1000_000)
-        )
-    }
-
-    toISOString(): string {
+    toString(): string {
         return `${this.hzLocalDate.toString()}T${this.hzLocalTime.toString()}`;
     }
 }
 
 export class HzOffsetDateTime {
 
-    constructor(
-        private readonly hzLocalDatetime: HzLocalDateTime,
-        private readonly offsetSeconds: number
-    ) {
+    private hzLocalDatetime: HzLocalDateTime;
+
+    constructor(date: Date, private readonly offsetSeconds: number) {
+        if (!(date instanceof Date) || isNaN(date.getTime())) {
+            throw new IllegalArgumentError('Invalid date.');
+        }
+        this.hzLocalDatetime = new HzLocalDateTime(
+            new HzLocalDate(
+                date.getUTCFullYear(),
+                date.getUTCMonth(),
+                date.getUTCDate()
+            ), new HzLocalTime(
+                date.getUTCHours(),
+                date.getUTCMinutes(),
+                date.getUTCSeconds(),
+                date.getUTCMilliseconds() * 1e6
+            ));
+    }
+
+    static fromHzLocalDateTime(hzLocalDatetime: HzLocalDateTime, offsetSeconds: number): HzOffsetDateTime {
+        const instance = new HzOffsetDateTime(new Date(), offsetSeconds);
+        instance.setHzLocalDatetime(hzLocalDatetime);
+        return instance;
+    }
+
+    /** @internal */
+    setHzLocalDatetime(hzLocalDatetime: HzLocalDateTime): void {
+        this.hzLocalDatetime = hzLocalDatetime;
+    }
+
+    static fromISOString(isoString: string): HzOffsetDateTime {
+        return parseOffsetDateTime(isoString);
+    }
+
+    toDate(): Date {
+        return new Date(
+            Date.UTC(
+                this.hzLocalDatetime.getHzLocalDate().getYear(),
+                this.hzLocalDatetime.getHzLocalDate().getMonth(),
+                this.hzLocalDatetime.getHzLocalDate().getDate(),
+                this.hzLocalDatetime.getHzLocalTime().getHour(),
+                this.hzLocalDatetime.getHzLocalTime().getMinute(),
+                this.hzLocalDatetime.getHzLocalTime().getSecond(),
+                Math.floor(this.hzLocalDatetime.getHzLocalTime().getNano() / 1000_000)
+            ) - this.offsetSeconds
+        );
     }
 
     getOffsetSeconds(): number {
         return this.offsetSeconds;
     }
 
-    getHzLocalDateTime() {
+    getHzLocalDateTime(): HzLocalDateTime {
         return this.hzLocalDatetime;
     }
 
-    toISOString(): string {
+    toString(): string {
         const timezoneOffsetString = getTimezoneOffsetFromSeconds(this.offsetSeconds);
-        return this.hzLocalDatetime.toISOString() + timezoneOffsetString;
+        return this.hzLocalDatetime.toString() + timezoneOffsetString;
     }
 }
 

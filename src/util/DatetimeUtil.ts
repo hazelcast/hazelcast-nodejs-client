@@ -14,13 +14,65 @@
  * limitations under the License.
  */
 
+import {IllegalArgumentError} from '../core';
+import {HzLocalDate, HzLocalDateTime, HzLocalTime, HzOffsetDateTime} from '../sql/DataTypes';
+
+
+export function parseLocalDateTime(isoString: string): HzLocalDateTime {
+    return null;
+}
+export function parseLocalDate(dateString: string): HzLocalDate {
+    return null;
+}
+/**
+ @internal
+ Parse local time string and return values in it
+
+ @param timeString A string in the form hh:mm:ss.sss (at most 9 digits, so nano second precision)
+ @return An object including hours, minutes, seconds and nano. If nano is not 0, it always includes 9 digits.
+ @throws [[IllegalArgumentError]] if invalid timeString is given
+ */
+export function parseLocalTime(timeString: string): HzLocalTime {
+    const timeStringSplit = timeString.split(':');
+    if (timeStringSplit.length != 3) {
+        throw new IllegalArgumentError('Illegal time string.');
+    }
+    const secondsSplit = timeStringSplit[2].split('.');
+    let nano = 0;
+    if (secondsSplit.length == 2) {
+        let nanoStr = secondsSplit[1];
+        // make nanoStr 9 digits if it's longer
+        if (nanoStr.length > 9) nanoStr = nanoStr.slice(0, 9);
+
+        nano = +nanoStr;
+        if (!isNaN(nano)) {
+            while (nano <= 99_999_999) nano *= 10;
+        }
+    }
+
+    const hours = +timeStringSplit[0];
+    const minutes = +timeStringSplit[1];
+    const seconds = +secondsSplit[0];
+
+    if (isNaN(hours) || isNaN(minutes) || isNaN(seconds) || isNaN(nano)) {
+        throw new IllegalArgumentError('Illegal time string.');
+    }
+
+    return new HzLocalTime(hours, minutes, seconds, nano);
+}
+
+export function parseOffsetDateTime(isoString: string): HzOffsetDateTime {
+    return null;
+}
+
 /**
  Constructs and returns timezone for iso string from offsetSeconds
+ @internal
 
- @param {number} offsetSeconds Offset in seconds, can be negative or positive. must be in valid timezone range [-64800, 64800]
- @return {string} timezone string, can be 'Z', +hh:mm or -hh:mm
+ @param offsetSeconds Offset in seconds, can be negative or positive. must be in valid timezone range [-64800, 64800]
+ @return Timezone string, can be 'Z', +hh:mm or -hh:mm
  */
-export function getTimezoneOffsetFromSeconds(offsetSeconds: number) {
+export function getTimezoneOffsetFromSeconds(offsetSeconds: number): string {
 
     if (offsetSeconds > 64800) {
         return '+18:00';
@@ -53,9 +105,10 @@ export function getTimezoneOffsetFromSeconds(offsetSeconds: number) {
 
 /**
  * Give this function integer and it will zero pad to the given length.
- * @param {number} value
- * @param {number} length total length after padding
- * @returns {string} Zero padded string
+ * @internal
+ * @param value
+ * @param length total length after padding
+ * @returns Zero padded string
  */
 export function leftZeroPadInteger(value: number, length: number): string {
     let asStr = value.toString();

@@ -55,7 +55,7 @@ export class FixSizedTypesCodec {
     static decodeOffsetDateTime(buffer: Buffer, offset: number): HzOffsetDateTime {
         const localDateTime = FixSizedTypesCodec.decodeLocalDatetime(buffer, offset);
         const offsetSeconds = FixSizedTypesCodec.decodeInt(buffer, offset + BitsUtil.LOCAL_DATETIME_SIZE_IN_BYTES);
-        return new HzOffsetDateTime(localDateTime, offsetSeconds);
+        return HzOffsetDateTime.fromHzLocalDateTime(localDateTime, offsetSeconds);
     }
 
     /*
