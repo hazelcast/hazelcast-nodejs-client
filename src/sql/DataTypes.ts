@@ -1,4 +1,5 @@
 import {combineISOStringWithTimeString, getTimezoneOffsetFromSeconds, leftZeroPadInteger} from '../util/DatetimeUtil';
+import {IllegalArgumentError} from '../core';
 
 export class HzLocalTime {
     constructor(
@@ -7,6 +8,21 @@ export class HzLocalTime {
         private readonly second: number,
         private readonly nano: number
     ) {
+        if(!Number.isInteger(hour) || !Number.isInteger(minute) || !Number.isInteger(second) || !Number.isInteger(nano)){
+            throw new IllegalArgumentError('Illegal arguments given to HzLocalTime. All arguments must be integers.');
+        }
+        if(!(hour >= 0 && hour <= 23)){
+            throw new IllegalArgumentError('Hour must be between 0-23');
+        }
+        if(!(minute >= 0 && minute <= 59)){
+            throw new IllegalArgumentError('Minute must be between 0-59');
+        }
+        if(!(second >= 0 && second <= 59)){
+            throw new IllegalArgumentError('Second must be between 0-24');
+        }
+        if(!(nano >= 0 && nano <= 1e9 - 1)){
+            throw new IllegalArgumentError('Nano must be between 0-(1e9-1)');
+        }
     }
 
     getHour(): number {
