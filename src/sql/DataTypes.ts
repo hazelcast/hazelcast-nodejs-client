@@ -91,6 +91,10 @@ export class HzLocalDate {
             throw new IllegalArgumentError('Year must be between -999_999_999-999_999_999');
         }
 
+        if (date < 1) {
+            throw new IllegalArgumentError('Invalid date. Date cannot be less than 1');
+        }
+
         if (date > 28) {
             let maxDate = 31;
             switch (month) {
@@ -115,9 +119,9 @@ export class HzLocalDate {
 
             if (date > maxDate) {
                 if (date == 29) {
-                    throw new IllegalArgumentError(`Invalid date 'February 29' as '${this.year}' is not a leap year`);
+                    throw new IllegalArgumentError(`Invalid date. February 29 as ${this.year} is not a leap year`);
                 }
-                throw new IllegalArgumentError(`Invalid date '${Months[this.month]} '${this.date}'`);
+                throw new IllegalArgumentError(`Invalid date. ${Months[this.month]} ${this.date}`);
             }
         }
     }
