@@ -236,10 +236,21 @@ export class HzLocalDate {
  * in SQL.
  */
 export class HzLocalDateTime {
+    /**
+     * @throws {@link IllegalArgumentError} if arguments are invalid
+     * @param hzLocalDate
+     * @param hzLocalTime
+     */
     constructor(
         private readonly hzLocalDate: HzLocalDate,
         private readonly hzLocalTime: HzLocalTime
     ) {
+        if (!(hzLocalDate instanceof HzLocalDate)) {
+            throw new IllegalArgumentError('Invalid local date.');
+        }
+        if (!(hzLocalTime instanceof HzLocalTime)) {
+            throw new IllegalArgumentError('Invalid local time.');
+        }
     }
 
     /**
@@ -296,7 +307,7 @@ export class HzOffsetDateTime {
         if (!(date instanceof Date) || isNaN(date.getTime())) {
             throw new IllegalArgumentError('Invalid date.');
         }
-        if (!(offsetSeconds >= -64800 && offsetSeconds <= 64800)) {
+        if (!Number.isInteger(offsetSeconds) || !(offsetSeconds >= -64800 && offsetSeconds <= 64800)) {
             throw new IllegalArgumentError('Offset seconds can be between -64800(-18:00) and 64800(+18:00).');
         }
 
@@ -354,7 +365,7 @@ export class HzOffsetDateTime {
                 this.hzLocalDateTime.getHzLocalTime().getSecond(),
                 Math.floor(this.hzLocalDateTime.getHzLocalTime().getNano() / 1_000_000)
             )
-            + this.offsetSeconds * 1000
+            - this.offsetSeconds * 1000
         );
     }
 
