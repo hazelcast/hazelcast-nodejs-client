@@ -2,9 +2,6 @@ import {
     getTimezoneOffsetFromSeconds,
     leftZeroPadInteger,
     parseLocalTime,
-    parseOffsetDateTime,
-    parseLocalDateTime,
-    parseLocalDate
 } from '../util/DatetimeUtil';
 import {IllegalArgumentError} from '../core';
 
@@ -196,7 +193,7 @@ export class HzLocalDate {
      * @param dateString
      */
     static fromString(dateString: string): HzLocalDate {
-        return parseLocalDate(dateString);
+        return null;
     }
 
     /**
@@ -266,7 +263,7 @@ export class HzLocalDateTime {
      * @throws {@link IllegalArgumentError} if iso string is invalid
      */
     static fromISOString(isoString: string): HzLocalDateTime {
-        return parseLocalDateTime(isoString);
+        return null;
     }
 
     /**
@@ -339,7 +336,7 @@ export class HzOffsetDateTime {
      * @param isoString ISO 8601 string with timezone. If timezone is omitted, UTC is assumed.
      */
     static fromISOString(isoString: string): HzOffsetDateTime {
-        return parseOffsetDateTime(isoString);
+        return null;
     }
 
     /**

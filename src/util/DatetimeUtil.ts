@@ -15,15 +15,8 @@
  */
 
 import {IllegalArgumentError} from '../core';
-import {HzLocalDate, HzLocalDateTime, HzLocalTime, HzOffsetDateTime} from '../sql/DataTypes';
+import {HzLocalTime} from '../sql/DataTypes';
 
-
-export function parseLocalDateTime(isoString: string): HzLocalDateTime {
-    return null;
-}
-export function parseLocalDate(dateString: string): HzLocalDate {
-    return null;
-}
 /**
  @internal
  */
@@ -54,10 +47,6 @@ export function parseLocalTime(timeString: string): HzLocalTime {
     }
 
     return new HzLocalTime(hours, minutes, seconds, nano);
-}
-
-export function parseOffsetDateTime(isoString: string): HzOffsetDateTime {
-    return null;
 }
 
 /**
