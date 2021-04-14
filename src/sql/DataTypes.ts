@@ -9,7 +9,7 @@ import {
 import {IllegalArgumentError} from '../core';
 
 /**
- * Local time object. This class is similar to LocalTime class in java. Node.js client uses this class to represent the sql data
+ * Local time object. This class is similar to LocalTime class in java. Node.js client uses this class to represent the SQL data
  * type TIME.
  */
 export class HzLocalTime {
@@ -72,9 +72,9 @@ export class HzLocalTime {
     }
 
     /**
-     * Constructs a new HzLocalTime object from timeString.
+     * Constructs a new {@link HzLocalTime} object from timeString.
      * @param timeString A string in the form hh:mm:ss.sss (at most 9 digits, so nano second precision)
-     * @throws [[IllegalArgumentError]] if invalid timeString is given
+     * @throws {@link IllegalArgumentError} if invalid timeString is given
      */
     static fromString(timeString: string): HzLocalTime {
         return parseLocalTime(timeString);
@@ -120,8 +120,17 @@ enum Months {
     November,
     December
 }
-
+/**
+ * Local date object. This class is similar to LocalDate class in java. Node.js client uses this class to represent the SQL data
+ * type DATE.
+ */
 export class HzLocalDate {
+    /**
+     * @param year Must be between -(1e9-1) - (1e9-1)
+     * @param month Must be between 1-12
+     * @param date Must be between 1-28/31 depending on year and month.
+     * @throws {@link IllegalArgumentError} if any of the arguments are invalid
+     */
     constructor(
         private readonly year: number,
         private readonly month: number,
@@ -134,7 +143,7 @@ export class HzLocalDate {
             throw new IllegalArgumentError('Month must be between 1-12');
         }
         if (!(year >= -999_999_999 && year <= 999_999_999)) {
-            throw new IllegalArgumentError('Year must be between -999_999_999-999_999_999');
+            throw new IllegalArgumentError('Year must be between -(1e9-1) - (1e9-1)');
         }
 
         if (date < 1) {
@@ -173,30 +182,48 @@ export class HzLocalDate {
     }
 
     /**
-     * Implementation is taken from java IsoChronology.isLeapYear()
      * @internal
-     * @param {number} year
+     * Implementation is taken from java IsoChronology.isLeapYear()
+     * @param year Year value
      */
     static isLeapYear(year: number): boolean {
         return (year & 3) == 0 && (year % 100 != 0 || year % 400 == 0);
     }
 
+    /**
+     * Constructs a {@link HzLocalDate} object from string.
+     * @param dateString
+     */
     static fromString(dateString: string): HzLocalDate {
         return parseLocalDate(dateString);
     }
 
+    /**
+     * Returns year value of this local date.
+     */
     getYear(): number {
         return this.year;
     }
 
+    /**
+     * Returns month value of this local date.
+     */
     getMonth(): number {
         return this.month;
     }
 
+    /**
+     * Returns date (day of month) value of this local date.
+     */
     getDate(): number {
         return this.date;
     }
 
+    /**
+     * Returns string representation of this local date.
+     * @returns A string in the form yyyy:mm:dd. Values are zero padded from left. Year is padded until 4 digits, 2 for month and
+     * date.
+     */
     toString(): string {
         const year = leftZeroPadInteger(this.year, 4);
         const month = leftZeroPadInteger(this.month, 2);
