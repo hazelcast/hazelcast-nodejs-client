@@ -9,8 +9,9 @@ import {
 import {IllegalArgumentError} from '../core';
 
 /**
- * Local time object. Represents time in day without timezone.
- * This class is similar to LocalTime class in java. Node.js client uses this class to represent the SQL data type TIME.
+ * ### Local time object
+ * * Represents time in day without timezone.
+ * * This class is similar to LocalTime class in java. Node.js client uses this class to represent the SQL data type TIME.
  */
 export class HzLocalTime {
     /**
@@ -121,8 +122,9 @@ enum Months {
     December
 }
 /**
- * Local date object. Represents date in year without timezone.
- * This class is similar to LocalDate class in java. Node.js client uses this class to represent the SQL data type DATE.
+ * ### Local date object
+ * * Represents date in year without timezone.
+ * * This class is similar to LocalDate class in java. Node.js client uses this class to represent the SQL data type DATE.
  */
 export class HzLocalDate {
     /**
