@@ -8,7 +8,18 @@ import {
 } from '../util/DatetimeUtil';
 import {IllegalArgumentError} from '../core';
 
+/**
+ * Local time object. This class is similar to LocalTime class in java. Node.js client uses this class to represent the sql data
+ * type TIME.
+ */
 export class HzLocalTime {
+    /**
+     * @param hour Must be between 0-23
+     * @param minute Must be between 0-59
+     * @param second Must be between 0-24
+     * @param nano Must be between 0-999_999_999(10^9-1)
+     * @throws {@link IllegalArgumentError} if any of the arguments are invalid
+     */
     constructor(
         private readonly hour: number,
         private readonly minute: number,
@@ -25,33 +36,58 @@ export class HzLocalTime {
             throw new IllegalArgumentError('Minute must be between 0-59');
         }
         if (!(second >= 0 && second <= 59)) {
-            throw new IllegalArgumentError('Second must be between 0-24');
+            throw new IllegalArgumentError('Second must be between 0-59');
         }
         if (!(nano >= 0 && nano <= 1e9 - 1)) {
             throw new IllegalArgumentError('Nano must be between 0-999_999_999');
         }
     }
 
+    /**
+     * Returns hour value of this local time
+     */
     getHour(): number {
         return this.hour;
     }
 
+    /**
+     * Returns minute value of this local time
+     */
     getMinute(): number {
         return this.minute;
     }
 
+    /**
+     * Returns second value of this local time
+     */
     getSecond(): number {
         return this.second;
     }
 
+    /**
+     * Returns nanosecond value of this local time
+     */
     getNano(): number {
         return this.nano;
     }
 
+    /**
+     * Constructs a new HzLocalTime object from timeString.
+     * @param timeString A string in the form hh:mm:ss.sss (at most 9 digits, so nano second precision)
+     * @throws [[IllegalArgumentError]] if invalid timeString is given
+     */
     static fromString(timeString: string): HzLocalTime {
         return parseLocalTime(timeString);
     }
 
+    /**
+     * Returns string representation of the localtime
+     *
+     * @returns A string in the form hh:mm:ss.sss (9 digits, so nano second precision). The constructed string is
+     * zero-padded. So if hour is 1, in the string it is denoted as "01". Likewise, minute and second values are also padded until
+     * 2 digits, whereas nano second value is padded until 9 digits. If nanosecond is 0, it is not included in the constructed
+     * string. e.g hh:mm:ss
+     */
     toString(): string {
         const hour = leftZeroPadInteger(this.hour, 2);
         const minute = leftZeroPadInteger(this.minute, 2);
@@ -62,7 +98,6 @@ export class HzLocalTime {
         if (this.nano !== 0) {
             hourMinuteSecondString += `.${leftZeroPadInteger(this.nano, 9)}`;
         }
-
         return hourMinuteSecondString;
     }
 }
@@ -165,8 +200,8 @@ export class HzLocalDate {
     toString(): string {
         const year = leftZeroPadInteger(this.year, 4);
         const month = leftZeroPadInteger(this.month, 2);
-        const dayOfMonth = leftZeroPadInteger(this.date, 2);
-        return `${year}-${month}-${dayOfMonth}`;
+        const date = leftZeroPadInteger(this.date, 2);
+        return `${year}-${month}-${date}`;
     }
 }
 
@@ -181,7 +216,12 @@ export class HzLocalDateTime {
         return this.hzLocalTime;
     }
 
-    static fromISOString(isoString: string): HzLocalDateTime{
+    /**
+     * Constructs HzLocalDateTime from iso 8601 iso string. The iso string must not include timezone information at the end.
+     * @throws {@link IllegalArgumentError} if iso string is invalid
+     * @param isoString
+     */
+    static fromISOString(isoString: string): HzLocalDateTime {
         return parseLocalDateTime(isoString);
     }
 
@@ -196,51 +236,58 @@ export class HzLocalDateTime {
 
 export class HzOffsetDateTime {
 
-    private hzLocalDatetime: HzLocalDateTime;
+    private hzLocalDateTime: HzLocalDateTime;
 
     constructor(date: Date, private readonly offsetSeconds: number) {
         if (!(date instanceof Date) || isNaN(date.getTime())) {
             throw new IllegalArgumentError('Invalid date.');
         }
-        this.hzLocalDatetime = new HzLocalDateTime(
+        if (!(offsetSeconds >= -64800 && offsetSeconds <= 64800)) {
+            throw new IllegalArgumentError('Offset seconds can be between -64800(-18:00) and 64800(+18:00).');
+        }
+
+        this.hzLocalDateTime = new HzLocalDateTime(
             new HzLocalDate(
                 date.getUTCFullYear(),
                 date.getUTCMonth(),
                 date.getUTCDate()
-            ), new HzLocalTime(
+            ),
+            new HzLocalTime(
                 date.getUTCHours(),
                 date.getUTCMinutes(),
                 date.getUTCSeconds(),
-                date.getUTCMilliseconds() * 1e6
-            ));
+                date.getUTCMilliseconds() * 1_000_000
+            )
+        );
     }
 
     static fromHzLocalDateTime(hzLocalDatetime: HzLocalDateTime, offsetSeconds: number): HzOffsetDateTime {
         const instance = new HzOffsetDateTime(new Date(), offsetSeconds);
         instance.setHzLocalDatetime(hzLocalDatetime);
-        return instance;
+        return instance
     }
 
     /** @internal */
     setHzLocalDatetime(hzLocalDatetime: HzLocalDateTime): void {
-        this.hzLocalDatetime = hzLocalDatetime;
+        this.hzLocalDateTime = hzLocalDatetime;
     }
 
     static fromISOString(isoString: string): HzOffsetDateTime {
         return parseOffsetDateTime(isoString);
     }
 
-    toDate(): Date {
+    asDate(): Date {
         return new Date(
             Date.UTC(
-                this.hzLocalDatetime.getHzLocalDate().getYear(),
-                this.hzLocalDatetime.getHzLocalDate().getMonth(),
-                this.hzLocalDatetime.getHzLocalDate().getDate(),
-                this.hzLocalDatetime.getHzLocalTime().getHour(),
-                this.hzLocalDatetime.getHzLocalTime().getMinute(),
-                this.hzLocalDatetime.getHzLocalTime().getSecond(),
-                Math.floor(this.hzLocalDatetime.getHzLocalTime().getNano() / 1000_000)
-            ) - this.offsetSeconds
+                this.hzLocalDateTime.getHzLocalDate().getYear(),
+                this.hzLocalDateTime.getHzLocalDate().getMonth(),
+                this.hzLocalDateTime.getHzLocalDate().getDate(),
+                this.hzLocalDateTime.getHzLocalTime().getHour(),
+                this.hzLocalDateTime.getHzLocalTime().getMinute(),
+                this.hzLocalDateTime.getHzLocalTime().getSecond(),
+                Math.floor(this.hzLocalDateTime.getHzLocalTime().getNano() / 1_000_000)
+            )
+            + this.offsetSeconds * 1000
         );
     }
 
@@ -248,13 +295,9 @@ export class HzOffsetDateTime {
         return this.offsetSeconds;
     }
 
-    getHzLocalDateTime(): HzLocalDateTime {
-        return this.hzLocalDatetime;
-    }
-
-    toString(): string {
+    toISOString(): string {
         const timezoneOffsetString = getTimezoneOffsetFromSeconds(this.offsetSeconds);
-        return this.hzLocalDatetime.toString() + timezoneOffsetString;
+        return this.hzLocalDateTime.toString() + timezoneOffsetString;
     }
 }
 

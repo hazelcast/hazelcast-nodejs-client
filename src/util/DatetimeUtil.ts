@@ -26,11 +26,6 @@ export function parseLocalDate(dateString: string): HzLocalDate {
 }
 /**
  @internal
- Parse local time string and return values in it
-
- @param timeString A string in the form hh:mm:ss.sss (at most 9 digits, so nano second precision)
- @return An object including hours, minutes, seconds and nano. If nano is not 0, it always includes 9 digits.
- @throws [[IllegalArgumentError]] if invalid timeString is given
  */
 export function parseLocalTime(timeString: string): HzLocalTime {
     const timeStringSplit = timeString.split(':');
