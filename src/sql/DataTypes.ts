@@ -11,14 +11,14 @@ import {IllegalArgumentError} from '../core';
 /**
  * ### Local time object
  * * Represents time in day without timezone.
- * * This class is similar to LocalTime class in java. Node.js client uses this class to represent the SQL data type TIME.
+ * * This class is similar to LocalTime class in java. Node.js client uses this class to represent the TIME datatype in SQL.
  */
 export class HzLocalTime {
     /**
      * @param hour Must be between 0-23
      * @param minute Must be between 0-59
      * @param second Must be between 0-24
-     * @param nano Must be between 0-999_999_999(10^9-1)
+     * @param nano Must be between 0-999999999
      * @throws {@link IllegalArgumentError} if any of the arguments are invalid
      */
     constructor(
@@ -74,7 +74,7 @@ export class HzLocalTime {
 
     /**
      * Constructs a new {@link HzLocalTime} object from timeString.
-     * @param timeString A string in the form hh:mm:ss.sss (at most 9 digits, so nano second precision)
+     * @param timeString A string in the form hh:mm:ss[.sss] (at most 9 digits allowed for second decimal)
      * @throws {@link IllegalArgumentError} if invalid timeString is given
      */
     static fromString(timeString: string): HzLocalTime {
@@ -82,12 +82,10 @@ export class HzLocalTime {
     }
 
     /**
-     * Returns string representation of the localtime
+     * Returns string representation of this local time.
      *
-     * @returns A string in the form hh:mm:ss.sss (9 digits, so nano second precision). The constructed string is
-     * zero-padded. So if hour is 1, in the string it is denoted as "01". Likewise, minute and second values are also padded until
-     * 2 digits, whereas nano second value is padded until 9 digits. If nanosecond is 0, it is not included in the constructed
-     * string. e.g hh:mm:ss
+     * @returns A string in the form hh:mm:ss[.sssssssss] (9 digits, nano second precision). The constructed string is
+     * zero-padded from left. If nanosecond is 0, it is not included in the constructed string.
      */
     toString(): string {
         const hour = leftZeroPadInteger(this.hour, 2);
@@ -121,14 +119,15 @@ enum Months {
     November,
     December
 }
+
 /**
  * ### Local date object
  * * Represents date in year without timezone.
- * * This class is similar to LocalDate class in java. Node.js client uses this class to represent the SQL data type DATE.
+ * * This class is similar to LocalDate class in java. Node.js client uses this class to represent the DATE datatype in SQL.
  */
 export class HzLocalDate {
     /**
-     * @param year Must be between -(1e9-1) - (1e9-1)
+     * @param year Must be between -999999999-999999999
      * @param month Must be between 1-12
      * @param date Must be between 1-28/31 depending on year and month.
      * @throws {@link IllegalArgumentError} if any of the arguments are invalid
@@ -223,8 +222,7 @@ export class HzLocalDate {
 
     /**
      * Returns string representation of this local date.
-     * @returns A string in the form yyyy:mm:dd. Values are zero padded from left. Year is padded until 4 digits, 2 for month and
-     * date.
+     * @returns A string in the form yyyy:mm:dd. Values are zero padded from left.
      */
     toString(): string {
         const year = leftZeroPadInteger(this.year, 4);
@@ -234,6 +232,12 @@ export class HzLocalDate {
     }
 }
 
+/**
+ * ### Local datetime object
+ * * Represents date and time without timezone.
+ * * This class is similar to LocalDateTime class in java. Node.js client uses this class to represent the TIMESTAMP datatype
+ * in SQL.
+ */
 export class HzLocalDateTime {
     constructor(
         private readonly hzLocalDate: HzLocalDate,
@@ -241,32 +245,56 @@ export class HzLocalDateTime {
     ) {
     }
 
+    /**
+     * Get {@link HzLocalTime} of this local datetime.
+     */
     getHzLocalTime(): HzLocalTime {
         return this.hzLocalTime;
     }
 
     /**
-     * Constructs HzLocalDateTime from iso 8601 iso string. The iso string must not include timezone information at the end.
+     * Get {@link HzLocalDate} of this local datetime.
+     */
+    getHzLocalDate(): HzLocalDate {
+        return this.hzLocalDate;
+    }
+
+    /**
+     * Constructs HzLocalDateTime from ISO 8601 string.
+     * @param isoString Must not include timezone information. The string format is yyyy-mm-ssThh:mm:ss[.sss], so, second
+     * decimal value can be omitted.
      * @throws {@link IllegalArgumentError} if iso string is invalid
-     * @param isoString
      */
     static fromISOString(isoString: string): HzLocalDateTime {
         return parseLocalDateTime(isoString);
     }
 
-    getHzLocalDate(): HzLocalDate {
-        return this.hzLocalDate;
-    }
-
+    /**
+     * Returns string representation of this local datetime.
+     * @returns A string in the form yyyy:mm:ddThh:mm:ss[.sssssssss]. Values are zero padded from left. If nano second value
+     * is zero, second decimal is not include in the returned string.
+     */
     toString(): string {
         return `${this.hzLocalDate.toString()}T${this.hzLocalTime.toString()}`;
     }
 }
 
+/**
+ * ### Offset datetime object
+ * * Represents date and time with timezone.
+ * * Timezone is specified with offset from utc in seconds. This offset can be negative or positive.
+ * * This class internally stores a {@link HzLocalDateTime} and offset number.
+ * * This class is similar to OffsetDateTime class in java. Node.js client uses this class to represent the
+ * TIMESTAMP WITH TIMEZONE datatype in SQL.
+ */
 export class HzOffsetDateTime {
 
     private hzLocalDateTime: HzLocalDateTime;
 
+    /**
+     * @param date Must be a valid date. So `date.getTime()` should be not NaN.
+     * @param offsetSeconds Must be between -64800-64800 (-+18:00)
+     */
     constructor(date: Date, private readonly offsetSeconds: number) {
         if (!(date instanceof Date) || isNaN(date.getTime())) {
             throw new IllegalArgumentError('Invalid date.');
@@ -290,6 +318,11 @@ export class HzOffsetDateTime {
         );
     }
 
+    /**
+     *
+     * @param hzLocalDatetime
+     * @param offsetSeconds
+     */
     static fromHzLocalDateTime(hzLocalDatetime: HzLocalDateTime, offsetSeconds: number): HzOffsetDateTime {
         const instance = new HzOffsetDateTime(new Date(), offsetSeconds);
         instance.setHzLocalDatetime(hzLocalDatetime);
@@ -301,10 +334,18 @@ export class HzOffsetDateTime {
         this.hzLocalDateTime = hzLocalDatetime;
     }
 
+    /**
+     * Constructs a new instance from ISO 8601 string.
+     * @param isoString ISO 8601 string with timezone. If timezone is omitted, UTC is assumed.
+     */
     static fromISOString(isoString: string): HzOffsetDateTime {
         return parseOffsetDateTime(isoString);
     }
 
+    /**
+     * Returns this offset datetime as date. In order to do this, internal {@link HzLocalDateTime} is treated as UTC date and
+     * offset seconds is added onto it.
+     */
     asDate(): Date {
         return new Date(
             Date.UTC(
@@ -320,10 +361,25 @@ export class HzOffsetDateTime {
         );
     }
 
+    /**
+     * Returns offset seconds of this offset datetime.
+     */
     getOffsetSeconds(): number {
         return this.offsetSeconds;
     }
 
+    /**
+     * Returns {@link HzLocalDateTime} of this offset datetime.
+     */
+    getHzLocalDateTime(): HzLocalDateTime {
+        return this.hzLocalDateTime;
+    }
+
+    /**
+     * Returns ISO 8601 string with timezone of this instance.
+     * @returns A string in the format yyyy-mm-ddThh-mm-ss[.sssssssss](Z | (+|-)hh:mm)
+     * Timezone is denoted either with `Z` or timezone string like +-hh:mm
+     */
     toISOString(): string {
         const timezoneOffsetString = getTimezoneOffsetFromSeconds(this.offsetSeconds);
         return this.hzLocalDateTime.toString() + timezoneOffsetString;
