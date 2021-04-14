@@ -15,39 +15,13 @@
  */
 'use strict';
 
-const {expect} = require('chai');
+const { expect } = require('chai');
 const {
-    combineISOStringWithTimeString,
     getTimezoneOffsetFromSeconds,
     leftZeroPadInteger
 } = require('../../../lib/util/DatetimeUtil');
 
 describe('DatetimeUtilTest', function () {
-    describe('combineTimeAndDateStringsTest', function () {
-        it('should be able to combine iso string with time string', function () {
-            expect(
-                combineISOStringWithTimeString('2021-04-06T12:00:09.401Z', '12:30:09.123456789')
-            ).to.be.equal('2021-04-06T12:30:09.123456789Z');
-        });
-
-        it('should be able to combine iso string with time string with positive timezone', function () {
-            expect(
-                combineISOStringWithTimeString('2021-04-06T12:00:09.401+01:45', '12:30:09.123456789')
-            ).to.be.equal('2021-04-06T12:30:09.123456789+01:45');
-        });
-
-        it('should be able to combine iso string with time string with negative timezone', function () {
-            expect(
-                combineISOStringWithTimeString('2021-04-06T12:00:09.401-01:46', '12:30:09.123456789')
-            ).to.be.equal('2021-04-06T12:30:09.123456789-01:46');
-        });
-
-        it('should be able to combine iso string with time string without timezone', function () {
-            expect(
-                combineISOStringWithTimeString('2021-04-06T12:00:09.401', '12:30:09.123456789')
-            ).to.be.equal('2021-04-06T12:30:09.123456789');
-        });
-    });
     describe('getTimezoneOffsetFromSecondsTest', function () {
         it('should extract 0 seconds correctly', function () {
             expect(

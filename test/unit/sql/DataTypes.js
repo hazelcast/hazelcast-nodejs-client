@@ -16,10 +16,10 @@
 'use strict';
 
 const { expect } = require('chai');
-const { HzLocalTime } = require('../../../lib/sql/DataTypes');
+const { HzLocalTime, HzLocalDate } = require('../../../lib/sql/DataTypes');
 const { IllegalArgumentError } = require('../../../lib/core/HazelcastError');
 
-describe('BuildInfo', function () {
+describe('HzLocalTime', function () {
     it('should return hour, minute and seconds correctly', function () {
         const newHzTime = new HzLocalTime(2, 3, 4, 60000);
         expect(newHzTime.getHour()).to.be.equal(2);
@@ -42,7 +42,7 @@ describe('BuildInfo', function () {
         expect(() => new HzLocalTime(1, -1, 1, 1)).to.throw(IllegalArgumentError, 'Minute');
         expect(() => new HzLocalTime(1, 1.1, 1, 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
         expect(() => new HzLocalTime(1, 233, 1, 1)).to.throw(IllegalArgumentError, 'Minute');
-        expect(() => new HzLocalTime(1, "1", 1, 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
+        expect(() => new HzLocalTime(1, '1', 1, 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
         expect(() => new HzLocalTime(1, {1:1}, 1, 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
         expect(() => new HzLocalTime(1, [], 1, 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
         expect(() => new HzLocalTime(1, 60, 1, 1)).to.throw(IllegalArgumentError, 'Minute');
@@ -52,15 +52,82 @@ describe('BuildInfo', function () {
         expect(() => new HzLocalTime(1, 1, -1, 1)).to.throw(IllegalArgumentError, 'Second');
         expect(() => new HzLocalTime(1, 1, 1.1, 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
         expect(() => new HzLocalTime(1, 1, 233, 1)).to.throw(IllegalArgumentError, 'Second');
-        expect(() => new HzLocalTime(1, 1, "1", 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
+        expect(() => new HzLocalTime(1, 1, '1', 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
         expect(() => new HzLocalTime(1, 1, {1:1}, 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
         expect(() => new HzLocalTime(1, 1, [], 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
         expect(() => new HzLocalTime(1, 1, 60, 1)).to.throw(IllegalArgumentError, 'Second');
     });
 
-    it('should give string zero padded correctly', function () {
+    it('should throw IllegalArgumentError if nano is not an integer between 0-999_999_999(inclusive)', function () {
+        expect(() => new HzLocalTime(1, 1, 1, -1)).to.throw(IllegalArgumentError, 'Nano');
+        expect(() => new HzLocalTime(1, 1, 1, 1.1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
+        expect(() => new HzLocalTime(1, 1, 1, 1e23)).to.throw(IllegalArgumentError, 'Nano');
+        expect(() => new HzLocalTime(1, 1, 1, '1')).to.throw(IllegalArgumentError, 'All arguments must be integers');
+        expect(() => new HzLocalTime(1, 1, 1, {1:1})).to.throw(IllegalArgumentError, 'All arguments must be integers');
+        expect(() => new HzLocalTime(1, 1, 1, [])).to.throw(IllegalArgumentError, 'All arguments must be integers');
+        expect(() => new HzLocalTime(1, 1, 1, 1e9)).to.throw(IllegalArgumentError, 'Nano');
+    });
+
+    it('should convert to string correctly', function () {
         expect(new HzLocalTime(1, 1, 1, 1).toString()).to.be.eq('01:01:01.000000001');
         expect(new HzLocalTime(12, 10, 10, 1).toString()).to.be.eq('12:10:10.000000001');
         expect(new HzLocalTime(23, 1, 11, 99999).toString()).to.be.eq('23:01:11.000099999');
+        expect(new HzLocalTime(23, 1, 11, 0).toString()).to.be.eq('23:01:11');
+    });
+});
+describe('HzLocalDate', function () {
+    it('should return hour, minute and seconds correctly', function () {
+        const newHzTime = new HzLocalDate(2, 3, 4, 60000);
+        expect(newHzTime.getHour()).to.be.equal(2);
+        expect(newHzTime.getMinute()).to.be.equal(3);
+        expect(newHzTime.getSecond()).to.be.equal(4);
+        expect(newHzTime.getNano()).to.be.equal(60000);
+    });
+
+    it('should throw IllegalArgumentError if hour is not an integer between 0-23(inclusive)', function () {
+        expect(() => new HzLocalDate(-1, 1, 1)).to.throw(IllegalArgumentError, 'Month');
+        expect(() => new HzLocalDate(1.1, 1, 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
+        expect(() => new HzLocalDate(25, 1, 1)).to.throw(IllegalArgumentError, 'Month');
+        expect(() => new HzLocalDate('500', 1, 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
+        expect(() => new HzLocalDate({}, 1, 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
+        expect(() => new HzLocalDate([], 1, 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
+        expect(() => new HzLocalDate(24, 1, 1)).to.throw(IllegalArgumentError, 'Month');
+    });
+
+    it('should throw IllegalArgumentError if minute is not an integer between 0-59(inclusive)', function () {
+        expect(() => new HzLocalDate(1, -1, 1, 1)).to.throw(IllegalArgumentError, 'Minute');
+        expect(() => new HzLocalDate(1, 1.1, 1, 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
+        expect(() => new HzLocalDate(1, 233, 1, 1)).to.throw(IllegalArgumentError, 'Minute');
+        expect(() => new HzLocalDate(1, '1', 1, 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
+        expect(() => new HzLocalDate(1, {1:1}, 1, 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
+        expect(() => new HzLocalDate(1, [], 1, 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
+        expect(() => new HzLocalDate(1, 60, 1, 1)).to.throw(IllegalArgumentError, 'Minute');
+    });
+
+    it('should throw IllegalArgumentError if seconds is not an integer between 0-59(inclusive)', function () {
+        expect(() => new HzLocalDate(1, 1, -1, 1)).to.throw(IllegalArgumentError, 'Second');
+        expect(() => new HzLocalDate(1, 1, 1.1, 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
+        expect(() => new HzLocalDate(1, 1, 233, 1)).to.throw(IllegalArgumentError, 'Second');
+        expect(() => new HzLocalDate(1, 1, '1', 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
+        expect(() => new HzLocalDate(1, 1, {1:1}, 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
+        expect(() => new HzLocalDate(1, 1, [], 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
+        expect(() => new HzLocalDate(1, 1, 60, 1)).to.throw(IllegalArgumentError, 'Second');
+    });
+
+    it('should throw IllegalArgumentError if nano is not an integer between 0-999_999_999(inclusive)', function () {
+        expect(() => new HzLocalDate(1, 1, 1, -1)).to.throw(IllegalArgumentError, 'Nano');
+        expect(() => new HzLocalDate(1, 1, 1, 1.1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
+        expect(() => new HzLocalDate(1, 1, 1, 1e23)).to.throw(IllegalArgumentError, 'Nano');
+        expect(() => new HzLocalDate(1, 1, 1, '1')).to.throw(IllegalArgumentError, 'All arguments must be integers');
+        expect(() => new HzLocalDate(1, 1, 1, {1:1})).to.throw(IllegalArgumentError, 'All arguments must be integers');
+        expect(() => new HzLocalDate(1, 1, 1, [])).to.throw(IllegalArgumentError, 'All arguments must be integers');
+        expect(() => new HzLocalDate(1, 1, 1, 1e9)).to.throw(IllegalArgumentError, 'Nano');
+    });
+
+    it('should convert to string correctly', function () {
+        expect(new HzLocalDate(1, 1, 1, 1).toString()).to.be.eq('01:01:01.000000001');
+        expect(new HzLocalDate(12, 10, 10, 1).toString()).to.be.eq('12:10:10.000000001');
+        expect(new HzLocalDate(23, 1, 11, 99999).toString()).to.be.eq('23:01:11.000099999');
+        expect(new HzLocalDate(23, 1, 11, 0).toString()).to.be.eq('23:01:11');
     });
 });
