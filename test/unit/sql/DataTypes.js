@@ -105,20 +105,22 @@ describe('DataTypesTest', function () {
             expect(() => HzLocalTime.fromString(1)).to.throw(IllegalArgumentError, 'String expected');
         });
 
-        it.skip('should return hour correctly', function () {
-            // getHour
+        const hzTime = new HzLocalTime(1, 2, 3, 4);
+
+        it('should return hour correctly', function () {
+            expect(hzTime.getHour()).to.be.eq(1);
         });
 
-        it.skip('should return minute correctly', function () {
-            // getMinute
+        it('should return minute correctly', function () {
+            expect(hzTime.getMinute()).to.be.eq(2);
         });
 
-        it.skip('should return second correctly', function () {
-            // getSecond
+        it('should return second correctly', function () {
+            expect(hzTime.getSecond()).to.be.eq(3);
         });
 
-        it.skip('should return nano correctly', function () {
-            // getNano
+        it('should return nano correctly', function () {
+            expect(hzTime.getNano()).to.be.eq(4);
         });
     });
     describe('HzLocalDateTest', function () {
