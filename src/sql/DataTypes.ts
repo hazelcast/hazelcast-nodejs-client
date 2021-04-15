@@ -1,4 +1,5 @@
 import {
+    getOffsetSecondsFromTimezoneString,
     getTimezoneOffsetFromSeconds,
     leftZeroPadInteger,
 } from '../util/DatetimeUtil';
@@ -89,7 +90,7 @@ export class HzLocalTime {
             // make nanoStr 9 digits if it's longer
             if (nanoStr.length > 9) nanoStr = nanoStr.slice(0, 9);
 
-            while (nanoStr.length < 9) nanoStr = '0' + nanoStr;
+            while (nanoStr.length < 9) nanoStr = nanoStr + '0';
             nano = +nanoStr;
         }
 
@@ -224,14 +225,15 @@ export class HzLocalDate {
             throw new IllegalArgumentError('String expected.');
         }
         const split = dateString.split('-');
-        if (split.length !== 3) {
+        if (split.length !== 3 || split[0].length !== 4 || split[1].length !== 2 || split[2].length !== 2) {
             throw new IllegalArgumentError('Invalid format. Expected a string in yyyy-mm-dd format');
         }
+
         const yearNumber = +split[0];
         const monthNumber = +split[1];
         const dateNumber = +split[2];
 
-        if(isNaN(yearNumber) || isNaN(monthNumber) || isNaN(dateNumber)){
+        if (isNaN(yearNumber) || isNaN(monthNumber) || isNaN(dateNumber)) {
             throw new IllegalArgumentError('Invalid format. Expected a string in yyyy-mm-dd format');
         }
         return new HzLocalDate(yearNumber, monthNumber, dateNumber);
@@ -310,12 +312,19 @@ export class HzLocalDateTime {
 
     /**
      * Constructs HzLocalDateTime from ISO 8601 string.
-     * @param isoString Must not include timezone information. The string format is yyyy-mm-ssThh:mm:ss[.sss], so, second
+     * @param isoString Must not include timezone information. The string format is yyyy-mm-ss(T|t)hh:mm:ss[.sss], so, second
      * decimal value can be omitted.
-     * @throws {@link IllegalArgumentError} if iso string is invalid
+     * @throws {@link IllegalArgumentError} if iso string is invalid or any of the values in iso string is invalid
      */
     static fromISOString(isoString: string): HzLocalDateTime {
-        return null;
+        if (typeof isoString !== 'string') {
+            throw new IllegalArgumentError('String expected.');
+        }
+        const split = isoString.split(/[Tt]/);
+        if (split.length !== 2) {
+            throw new IllegalArgumentError('Invalid format. Expected a string in the form yyyy-mm-ss(T|t)hh:mm:ss[.sss]');
+        }
+        return new HzLocalDateTime(HzLocalDate.fromString(split[0]), HzLocalTime.fromString(split[1]));
     }
 
     /**
@@ -388,7 +397,19 @@ export class HzOffsetDateTime {
      * @param isoString ISO 8601 string with timezone. If timezone is omitted, UTC is assumed.
      */
     static fromISOString(isoString: string): HzOffsetDateTime {
-        return null;
+        if (typeof isoString !== 'string') {
+            throw new IllegalArgumentError('String expected');
+        }
+        const timezoneRegex = /([Zz]|[+-]\d\d:\d\d)/;
+
+        const indexOfFirstMatch = isoString.search(timezoneRegex);
+        const split = isoString.split(isoString[indexOfFirstMatch]);
+        if (indexOfFirstMatch === -1 || split.length !== 2) {
+            throw new IllegalArgumentError('Invalid format.');
+        }
+        const offsetSeconds = getOffsetSecondsFromTimezoneString(isoString[indexOfFirstMatch] + split[1]);
+
+        return HzOffsetDateTime.fromHzLocalDateTime(HzLocalDateTime.fromISOString(split[0]), offsetSeconds);
     }
 
     /**
@@ -399,7 +420,7 @@ export class HzOffsetDateTime {
         return new Date(
             Date.UTC(
                 this.hzLocalDateTime.getHzLocalDate().getYear(),
-                this.hzLocalDateTime.getHzLocalDate().getMonth(),
+                this.hzLocalDateTime.getHzLocalDate().getMonth() - 1, // month start with 0 in Date
                 this.hzLocalDateTime.getHzLocalDate().getDate(),
                 this.hzLocalDateTime.getHzLocalTime().getHour(),
                 this.hzLocalDateTime.getHzLocalTime().getMinute(),

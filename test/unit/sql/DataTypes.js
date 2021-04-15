@@ -77,11 +77,11 @@ describe('DataTypesTest', function () {
         });
 
         it('should construct from string correctly', function () {
-            const localtime1 = HzLocalTime.fromString('23:41:01.000000001');
-            expect(localtime1.getNano()).to.be.eq(1);
-            expect(localtime1.getSecond()).to.be.eq(1);
-            expect(localtime1.getMinute()).to.be.eq(41);
-            expect(localtime1.getHour()).to.be.eq(23);
+            const localtime1 = HzLocalTime.fromString('07:35:02.1');
+            expect(localtime1.getNano()).to.be.eq(100000000);
+            expect(localtime1.getSecond()).to.be.eq(2);
+            expect(localtime1.getMinute()).to.be.eq(35);
+            expect(localtime1.getHour()).to.be.eq(7);
 
             const localtime2 = HzLocalTime.fromString('00:00:02');
             expect(localtime2.getNano()).to.be.eq(0);
@@ -102,7 +102,12 @@ describe('DataTypesTest', function () {
             // invalid format
             expect(() => HzLocalTime.fromString('23:0171')).to.throw(IllegalArgumentError);
             expect(() => HzLocalTime.fromString('-')).to.throw(IllegalArgumentError);
+            // Non string
             expect(() => HzLocalTime.fromString(1)).to.throw(IllegalArgumentError, 'String expected');
+            expect(() => HzLocalTime.fromString([])).to.throw(IllegalArgumentError, 'String expected');
+            expect(() => HzLocalTime.fromString({})).to.throw(IllegalArgumentError, 'String expected');
+            expect(() => HzLocalTime.fromString(null)).to.throw(IllegalArgumentError, 'String expected');
+            expect(() => HzLocalTime.fromString()).to.throw(IllegalArgumentError, 'String expected');
         });
 
         const hzTime = new HzLocalTime(1, 2, 3, 4);
@@ -190,25 +195,39 @@ describe('DataTypesTest', function () {
             expect(localtime1.getMonth()).to.be.eq(2);
             expect(localtime1.getDate()).to.be.eq(29);
 
-            // invalid year
-            expect(() => HzLocalDate.fromString('9999999999-02-29')).to.throw(IllegalArgumentError, 'Year');
+            const localtime2 = HzLocalDate.fromString('0001-02-03');
+            expect(localtime2.getYear()).to.be.eq(1);
+            expect(localtime2.getMonth()).to.be.eq(2);
+            expect(localtime2.getDate()).to.be.eq(3);
+
             // invalid month
             expect(() => HzLocalDate.fromString('2000-24-29')).to.throw(IllegalArgumentError, 'Month');
             // invalid date
             expect(() => HzLocalDate.fromString('2001-02-29')).to.throw(IllegalArgumentError, 'Invalid date');
             expect(() => HzLocalDate.fromString('2000-03-32')).to.throw(IllegalArgumentError, 'Invalid date');
             // invalid format
+            expect(() => HzLocalDate.fromString('9999999999-02-29')).to.throw(IllegalArgumentError, 'Invalid format');
             expect(() => HzLocalDate.fromString('2301-71')).to.throw(IllegalArgumentError, 'Invalid format');
             expect(() => HzLocalDate.fromString('-')).to.throw(IllegalArgumentError, 'Invalid format');
             expect(() => HzLocalDate.fromString('2000-02-a')).to.throw(IllegalArgumentError, 'Invalid format');
+            expect(() => HzLocalDate.fromString('00001-02-12')).to.throw(IllegalArgumentError, 'Invalid format');
+            expect(() => HzLocalDate.fromString('0001-002-21')).to.throw(IllegalArgumentError, 'Invalid format');
+            expect(() => HzLocalDate.fromString('0001-02-1')).to.throw(IllegalArgumentError, 'Invalid format');
+            expect(() => HzLocalDate.fromString('0001-2-10')).to.throw(IllegalArgumentError, 'Invalid format');
+            expect(() => HzLocalDate.fromString('1-2-10')).to.throw(IllegalArgumentError, 'Invalid format');
+            // Non string
             expect(() => HzLocalDate.fromString(1)).to.throw(IllegalArgumentError, 'String expected');
+            expect(() => HzLocalDate.fromString({})).to.throw(IllegalArgumentError, 'String expected');
+            expect(() => HzLocalDate.fromString([])).to.throw(IllegalArgumentError, 'String expected');
+            expect(() => HzLocalDate.fromString(null)).to.throw(IllegalArgumentError, 'String expected');
+            expect(() => HzLocalDate.fromString()).to.throw(IllegalArgumentError, 'String expected');
         });
     });
     describe('HzLocalDateTimeTest', function () {
-        const dateTime1 = new HzLocalDateTime(new HzLocalDate(2000, 2, 29), new HzLocalTime(2, 3, 4, 6000000));
-        const dateTime2 = new HzLocalDateTime(new HzLocalDate(2000, 2, 29), new HzLocalTime(2, 3, 4, 0));
 
         it('should return parse values correctly', function () {
+            const dateTime1 = new HzLocalDateTime(new HzLocalDate(2000, 2, 29), new HzLocalTime(2, 3, 4, 6000000));
+
             expect(dateTime1.getHzLocalDate().getYear()).to.be.equal(2000);
             expect(dateTime1.getHzLocalDate().getMonth()).to.be.equal(2);
             expect(dateTime1.getHzLocalDate().getDate()).to.be.equal(29);
@@ -218,41 +237,82 @@ describe('DataTypesTest', function () {
             expect(dateTime1.getHzLocalTime().getNano()).to.be.equal(6000000);
         });
 
-        it.skip('should throw IllegalArgumentError if local time is not valid', function () {
-
+        it('should throw IllegalArgumentError if local time is not valid', function () {
+            expect(() => new HzLocalDateTime(new HzLocalDate(2000, 2, 29), ''))
+                .to.throw(IllegalArgumentError, 'Invalid local time');
+            expect(() => new HzLocalDateTime(new HzLocalDate(2000, 2, 29), 100))
+                .to.throw(IllegalArgumentError, 'Invalid local time');
+            // hour is too big
+            expect(() => new HzLocalDateTime(new HzLocalDate(2000, 2, 29), new HzLocalTime(299, 3, 4, 0)))
+                .to.throw(IllegalArgumentError);
         });
 
-        it.skip('should throw IllegalArgumentError if local date is not valid', function () {
-
+        it('should throw IllegalArgumentError if local date is not valid', function () {
+            expect(() => new HzLocalDateTime(1, new HzLocalTime(2, 3, 4, 0)))
+                .to.throw(IllegalArgumentError, 'Invalid local date');
+            expect(() => new HzLocalDateTime('', new HzLocalTime(2, 3, 4, 0)))
+                .to.throw(IllegalArgumentError, 'Invalid local date');
+            // date is not possible
+            expect(() => new HzLocalDateTime(new HzLocalDate(2001, 2, 29), new HzLocalTime(2, 3, 4, 0)))
+                .to.throw(IllegalArgumentError);
         });
 
-        it.skip('should construct from iso string correctly', function () {
-            // fromISOString
+        it('should construct from iso string correctly', function () {
+            const localDatetime1 = HzLocalDateTime.fromISOString('2021-04-15T07:33:04.914456789');
+            const localTime1 = localDatetime1.getHzLocalTime();
+            const localDate1 = localDatetime1.getHzLocalDate();
+            expect(localTime1.getNano()).to.be.eq(914456789);
+            expect(localTime1.getSecond()).to.be.eq(4);
+            expect(localTime1.getMinute()).to.be.eq(33);
+            expect(localTime1.getHour()).to.be.eq(7);
+
+            expect(localDate1.getYear()).to.be.eq(2021);
+            expect(localDate1.getMonth()).to.be.eq(4);
+            expect(localDate1.getDate()).to.be.eq(15);
+
+            // use t instead of T
+            const localDatetime2 = HzLocalDateTime.fromISOString('2020-04-15t07:35:02.1');
+            const localTime2 = localDatetime2.getHzLocalTime();
+            const localDate2 = localDatetime2.getHzLocalDate();
+            expect(localTime2.getNano()).to.be.eq(100000000);
+            expect(localTime2.getSecond()).to.be.eq(2);
+            expect(localTime2.getMinute()).to.be.eq(35);
+            expect(localTime2.getHour()).to.be.eq(7);
+
+            expect(localDate2.getYear()).to.be.eq(2020);
+            expect(localDate2.getMonth()).to.be.eq(4);
+            expect(localDate2.getDate()).to.be.eq(15);
+
+            // invalid format
+            expect(() => HzLocalDateTime.fromISOString('23:0171')).to.throw(IllegalArgumentError, 'Invalid format');
+            expect(() => HzLocalDateTime.fromISOString('-')).to.throw(IllegalArgumentError, 'Invalid format');
+            // Non string
+            expect(() => HzLocalDateTime.fromISOString(1)).to.throw(IllegalArgumentError, 'String expected');
+            expect(() => HzLocalDateTime.fromISOString([])).to.throw(IllegalArgumentError, 'String expected');
+            expect(() => HzLocalDateTime.fromISOString({})).to.throw(IllegalArgumentError, 'String expected');
+            expect(() => HzLocalDateTime.fromISOString(null)).to.throw(IllegalArgumentError, 'String expected');
+            expect(() => HzLocalDateTime.fromISOString()).to.throw(IllegalArgumentError, 'String expected');
         });
 
-        it.skip('should return local time correctly', function () {
-            // getHzLocalTime
+        const dateTime1 = new HzLocalDateTime(new HzLocalDate(2000, 2, 29), new HzLocalTime(2, 3, 4, 6000000));
+        it('should return local time correctly', function () {
+            expect(dateTime1.getHzLocalTime().toString()).to.be.eq(new HzLocalTime(2, 3, 4, 6000000).toString());
         });
 
-        it.skip('should return local date correctly', function () {
-            // getHzLocalDate
+        it('should return local date correctly', function () {
+            expect(dateTime1.getHzLocalDate().toString()).to.be.eq(new HzLocalDate(2000, 2, 29).toString());
         });
 
         it('should convert to string correctly', function () {
             expect(dateTime1.toString()).to.be.eq('2000-02-29T02:03:04.006000000');
-            expect(dateTime2.toString()).to.be.eq('2000-02-29T02:03:04');
         });
 
     });
     describe('HzOffsetDateTimeTest', function () {
-        const dateTime1 = new HzOffsetDateTime(new Date(Date.UTC(2000, 2, 29, 2, 3, 4, 6)), 1000);
-        const dateTime2 = HzOffsetDateTime.fromISOString('2000-02-29T02:03:04+01:30');
-        const dateTime3 = HzOffsetDateTime.fromHzLocalDateTime(
-            new HzLocalDateTime(new HzLocalDate(2000, 2, 29), new HzLocalTime(2, 3, 4, 12)),
-            1800
-        );
 
         it('should return parse values correctly', function () {
+            const dateTime1 = new HzOffsetDateTime(new Date(Date.UTC(2000, 2, 29, 2, 3, 4, 6)), 1000);
+
             expect(dateTime1.getHzLocalDateTime().getHzLocalDate().getYear()).to.be.equal(2000);
             expect(dateTime1.getHzLocalDateTime().getHzLocalDate().getMonth()).to.be.equal(2);
             expect(dateTime1.getHzLocalDateTime().getHzLocalDate().getDate()).to.be.equal(29);
@@ -278,37 +338,99 @@ describe('DataTypesTest', function () {
             expect(() => new HzOffsetDateTime(new Date(), {})).to.throw(IllegalArgumentError, 'Offset');
         });
 
+        const dateTime1 = new HzOffsetDateTime(new Date(Date.UTC(2000, 2, 29, 2, 19, 4, 6)), 1000);
+
         it('should convert to date correctly', function () {
-            expect(dateTime1.asDate().getTime()).to.be.eq(
-                new Date(Date.UTC(2000, 2, 29, 2, 3, 4, 6)-1000*1000).getTime()
-            );
-            expect(dateTime3.asDate().getTime()).to.be.eq(
-                new Date(Date.UTC(2000, 2, 29, 2, 3, 4, 0)- 1800*1000).getTime()
-            );
-            expect(dateTime2.asDate().getTime()).to.be.eq(
-                new Date(Date.UTC(2000, 2, 29, 2, 3, 4, 0)-5400*1000).getTime()
+            expect(dateTime1.asDate().toISOString()).to.be.eq(
+                '2000-02-29T02:02:24.006Z'
             );
         });
 
         it('should convert to string correctly', function () {
-            expect(dateTime1.toString()).to.be.eq('2000-02-29T02:03:04.006000000+00:16');
-            expect(dateTime2.toString()).to.be.eq('2000-02-29T02:03:04+01:30');
-            expect(dateTime3.toString()).to.be.eq('2000-02-29T02:03:04.000000012+00:30');
+            expect(dateTime1.toISOString()).to.be.eq('2000-02-29T02:19:04.006000000+00:16');
         });
 
-        it.skip('should construct from iso string correctly', function () {
-            // fromISOString
+        it('should construct from iso string correctly', function () {
+            const offsetDatetime1 = HzOffsetDateTime.fromISOString('2000-02-29T02:03:04+01:30');
+            const offsetSeconds1 = offsetDatetime1.getOffsetSeconds();
+            const localDatetime1 = offsetDatetime1.getHzLocalDateTime();
+            const localTime1 = localDatetime1.getHzLocalTime();
+            const localDate1 = localDatetime1.getHzLocalDate();
+
+            expect(localDate1.getYear()).to.be.eq(2000);
+            expect(localDate1.getMonth()).to.be.eq(2);
+            expect(localDate1.getDate()).to.be.eq(29);
+
+            expect(localTime1.getHour()).to.be.eq(2);
+            expect(localTime1.getMinute()).to.be.eq(3);
+            expect(localTime1.getSecond()).to.be.eq(4);
+            expect(localTime1.getNano()).to.be.eq(0);
+
+            expect(offsetSeconds1).to.be.eq(90*60);
+
+            // use t instead of T
+            const offsetDatetime2 = HzOffsetDateTime.fromISOString('2021-04-15t07:33:04.914+02:30');
+            const offsetSeconds2 = offsetDatetime2.getOffsetSeconds();
+            const localDatetime2 = offsetDatetime2.getHzLocalDateTime();
+            const localTime2 = localDatetime2.getHzLocalTime();
+            const localDate2 = localDatetime2.getHzLocalDate();
+
+            expect(localDate2.getYear()).to.be.eq(2021);
+            expect(localDate2.getMonth()).to.be.eq(4);
+            expect(localDate2.getDate()).to.be.eq(15);
+
+            expect(localTime2.getHour()).to.be.eq(7);
+            expect(localTime2.getMinute()).to.be.eq(33);
+            expect(localTime2.getSecond()).to.be.eq(4);
+            expect(localTime2.getNano()).to.be.eq(914*1000000);
+
+            expect(offsetSeconds2).to.be.eq(150*60);
+
+            // Use of Z
+            const offsetDatetime3 = HzOffsetDateTime.fromISOString('2021-04-15T07:33:04.914Z');
+            const offsetSeconds3 = offsetDatetime3.getOffsetSeconds();
+            const localDatetime3 = offsetDatetime3.getHzLocalDateTime();
+            const localTime3 = localDatetime3.getHzLocalTime();
+            const localDate3 = localDatetime3.getHzLocalDate();
+
+            expect(localDate3.getYear()).to.be.eq(2021);
+            expect(localDate3.getMonth()).to.be.eq(4);
+            expect(localDate3.getDate()).to.be.eq(15);
+
+            expect(localTime3.getHour()).to.be.eq(7);
+            expect(localTime3.getMinute()).to.be.eq(33);
+            expect(localTime3.getSecond()).to.be.eq(4);
+            expect(localTime3.getNano()).to.be.eq(914*1000000);
+
+            expect(offsetSeconds3).to.be.eq(0);
+
+            // invalid format
+            expect(() => HzOffsetDateTime.fromISOString('2021-04-15T07:33:04.914++02:30'))
+                .to.throw(IllegalArgumentError, 'Invalid format');
+            expect(() => HzOffsetDateTime.fromISOString('2021-04-15T07:33:04')).to.throw(IllegalArgumentError, 'Invalid format');
+            // Non string
+            expect(() => HzOffsetDateTime.fromISOString(1)).to.throw(IllegalArgumentError, 'String expected');
+            expect(() => HzOffsetDateTime.fromISOString([])).to.throw(IllegalArgumentError, 'String expected');
+            expect(() => HzOffsetDateTime.fromISOString({})).to.throw(IllegalArgumentError, 'String expected');
+            expect(() => HzOffsetDateTime.fromISOString(null)).to.throw(IllegalArgumentError, 'String expected');
+            expect(() => HzOffsetDateTime.fromISOString()).to.throw(IllegalArgumentError, 'String expected');
         });
-        it.skip('should construct from fromHzLocalDateTime correctly', function () {
-            // fromHzLocalDateTime
+        it('should construct from fromHzLocalDateTime correctly', function () {
+            const dateTime3 = HzOffsetDateTime.fromHzLocalDateTime(
+                new HzLocalDateTime(new HzLocalDate(2000, 2, 29), new HzLocalTime(2, 3, 4, 12)),
+                1800
+            );
+
+            expect(dateTime3.toISOString()).to.be.eq('2000-02-29T02:03:04.000000012+00:30');
         });
 
-        it.skip('should return offset correctly', function () {
-            // getOffsetSeconds
-        });
-        it.skip('should return hzlocaldatetime correctly', function () {
-            // getHzLocalDateTime
+        it('should return offset correctly', function () {
+            expect(dateTime1.getOffsetSeconds()).to.be.eq(1000);
         });
 
+        it('should return HzLocalDateTime correctly', function () {
+            expect(new HzOffsetDateTime(new Date(Date.UTC(2000, 2, 29, 2, 19, 4, 6)), 1000).getHzLocalDateTime().toString()).to.be
+                .eq(new HzLocalDateTime(new HzLocalDate(2000, 2, 29), new HzLocalTime(2, 19, 4, 6* 1000000)).toString());
+        });
     });
 });

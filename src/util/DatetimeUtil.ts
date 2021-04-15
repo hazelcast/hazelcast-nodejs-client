@@ -14,14 +14,22 @@
  * limitations under the License.
  */
 
+import {IllegalArgumentError} from '../core';
+
 /**
  Constructs and returns timezone for iso string from offsetSeconds
  @internal
 
- @param offsetSeconds Offset in seconds, can be negative or positive. must be in valid timezone range [-64800, 64800]
+ @param offsetSeconds Offset in seconds, can be negative or positive. must be in valid timezone range [-64800, 64800]. If out of
+ this range, the limit values are assumed.
+ @throws {@link IllegalArgumentError} if offset seconds is not number
  @return Timezone string, can be 'Z', +hh:mm or -hh:mm
  */
 export function getTimezoneOffsetFromSeconds(offsetSeconds: number): string {
+
+    if (!Number.isInteger(offsetSeconds)) {
+        throw new IllegalArgumentError('Expected integer');
+    }
 
     if (offsetSeconds > 64800) {
         return '+18:00';
@@ -50,6 +58,44 @@ export function getTimezoneOffsetFromSeconds(offsetSeconds: number): string {
         timezoneString += leftZeroPadInteger(minutes, 2);
     }
     return timezoneString;
+}
+
+/**
+ Parses timezone string and returns offset in seconds
+ @internal
+
+ @param timezoneString string, can be 'Z', +hh:mm or -hh:mm
+ @return Timezone Offset in seconds, can be negative or positive. must be in valid timezone range [-64800, 64800]
+ */
+export function getOffsetSecondsFromTimezoneString(timezoneString: string): number {
+    if (typeof timezoneString !== 'string') {
+        throw new IllegalArgumentError('String expected');
+    }
+    let positive;
+    if (timezoneString.toUpperCase() === 'Z') return 0;
+    else if (timezoneString[0] === '-') {
+        positive = false;
+    } else if (timezoneString[0] === '+') {
+        positive = true;
+    } else {
+        throw new IllegalArgumentError('Invalid format');
+    }
+
+    const substring = timezoneString.substring(1);
+    const split = substring.split(':');
+    if (split.length !== 2) {
+        throw new IllegalArgumentError('Invalid format');
+    }
+    const hourAsNumber = +split[0]
+    const minuteAsNumber = +split[1];
+
+    if (isNaN(hourAsNumber) || isNaN(minuteAsNumber)) {
+        throw new IllegalArgumentError('Invalid format');
+    }
+
+    const offsetSeconds = hourAsNumber*3600 + minuteAsNumber*60;
+
+    return positive ? offsetSeconds : -offsetSeconds;
 }
 
 /**
