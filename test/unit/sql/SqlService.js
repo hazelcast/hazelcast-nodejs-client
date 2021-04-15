@@ -38,7 +38,7 @@ describe('SqlServiceTest', function () {
 
         beforeEach(function () {
             // spies
-            sqlResultSpy = sandbox.spy(SqlResultImpl.prototype, 'constructor');
+            sqlResultSpy = sandbox.spy(SqlResultImpl, 'newResult');
             handleExecuteResponseStub = sandbox.spy(SqlServiceImpl.prototype, 'handleExecuteResponse');
             sandbox.spy(SqlExecuteCodec, 'encodeRequest');
             sandbox.spy(SqlQueryId, 'fromMemberId');
@@ -57,7 +57,6 @@ describe('SqlServiceTest', function () {
                 connectionRegistryStub,
                 {},
                 invocationServiceStub,
-                {},
                 {}
             );
         });
@@ -68,6 +67,7 @@ describe('SqlServiceTest', function () {
 
         it('should return a SqlResultImpl', function () {
             expect(sqlService.execute('s', [], {})).to.be.instanceof(SqlResultImpl);
+            expect(sqlResultSpy.called).to.be.true;
         });
     });
 });

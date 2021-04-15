@@ -67,8 +67,7 @@ export class SqlServiceImpl implements SqlService {
         private readonly connectionRegistry: ConnectionRegistry,
         private readonly serializationService: SerializationService,
         private readonly invocationService: InvocationService,
-        private readonly connectionManager: ConnectionManager,
-        private readonly logger: ILogger
+        private readonly connectionManager: ConnectionManager
     ) {
     }
 
@@ -143,13 +142,12 @@ export class SqlServiceImpl implements SqlService {
                 queryId
             );
 
-            const res = new SqlResultImpl(
+            const res = SqlResultImpl.newResult(
                 this,
                 connection,
                 queryId,
                 cursorBufferSize,
-                SqlServiceImpl.RETURN_RAW_RESULTS,
-                this.logger
+                SqlServiceImpl.RETURN_RAW_RESULTS
             );
 
             this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {

@@ -106,15 +106,12 @@ export class SqlResultImpl implements SqlResult {
         private readonly queryId: SqlQueryId,
         private readonly cursorBufferSize: number,
         /* If true SqlResult is a SqlRow iterable, otherwise traditional objects are used */
-        private readonly rawResults: boolean,
-        private readonly logger: ILogger
+        private readonly rawResults: boolean
     ) {
         this.closed = false;
         this.rowMetadata = null;
         this.executeDeferred = deferredPromise<boolean>();
-        this.executeDeferred.promise.catch(err => {
-            this.logger.error('SqlResult', 'Error while executing sql', err);
-        });
+        this.executeDeferred.promise.catch(() => {});
     }
 
     [Symbol.asyncIterator](): AsyncIterator<SqlRowType, SqlRowType, SqlRowType> {
@@ -122,6 +119,20 @@ export class SqlResultImpl implements SqlResult {
         return {
             next: nextFn
         }
+    }
+
+    /**
+     * @internal
+     * Returns new result object. Useful for mocking. (Constructor mocking is hard/impossible)
+     */
+    static newResult(
+        service: SqlServiceImpl,
+        connection: Connection,
+        queryId: SqlQueryId,
+        cursorBufferSize: number,
+        rawResults: boolean
+    ) {
+        return new SqlResultImpl(service, connection, queryId, cursorBufferSize, rawResults);
     }
 
     getUpdateCount(): Promise<Long> {
