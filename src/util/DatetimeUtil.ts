@@ -95,6 +95,7 @@ export function getOffsetSecondsFromTimezoneString(timezoneString: string): numb
 
     const offsetSeconds = hourAsNumber*3600 + minuteAsNumber*60;
 
+    if(offsetSeconds > 64800) throw new IllegalArgumentError('Invalid offset');
     return positive ? offsetSeconds : -offsetSeconds;
 }
 

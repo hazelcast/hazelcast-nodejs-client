@@ -18,8 +18,11 @@
 const { expect } = require('chai');
 const {
     getTimezoneOffsetFromSeconds,
-    leftZeroPadInteger
+    leftZeroPadInteger,
+    getOffsetSecondsFromTimezoneString
 } = require('../../../lib/util/DatetimeUtil');
+
+const { IllegalArgumentError } = require('../../../lib/core/HazelcastError');
 
 describe('DatetimeUtilTest', function () {
     describe('getTimezoneOffsetFromSecondsTest', function () {
@@ -61,6 +64,45 @@ describe('DatetimeUtilTest', function () {
             expect(
                 getTimezoneOffsetFromSeconds(99999)
             ).to.be.equal('+18:00');
+        });
+    });
+    describe('getOffsetSecondsFromTimezoneString', function () {
+        it('should parse Z correctly', function () {
+            expect(
+                getOffsetSecondsFromTimezoneString('Z')
+            ).to.be.equal(0);
+        });
+
+        it('should parse positive offset correctly', function () {
+            expect(
+                getOffsetSecondsFromTimezoneString('+00:25')
+            ).to.be.equal(1500);
+        });
+
+        it('should parse big positive offset correctly', function () {
+            expect(
+                getOffsetSecondsFromTimezoneString('+02:05')
+            ).to.be.equal(7500);
+        });
+
+        it('should parse negative offset correctly', function () {
+            expect(
+                getOffsetSecondsFromTimezoneString('-00:19')
+            ).to.be.equal(19*-1*60);
+        });
+
+        it('should parse big negative offset correctly', function () {
+            expect(
+                getOffsetSecondsFromTimezoneString('-10:01')
+            ).to.be.equal(-(10*3600+60));
+        });
+
+        it('should throw if offset more than 18 hours is given', function () {
+            expect(() => getOffsetSecondsFromTimezoneString('+19:00')).to.throw(IllegalArgumentError);
+        });
+
+        it('should throw if offset less than -18 hours is given', function () {
+            expect(() => getOffsetSecondsFromTimezoneString('-19:00')).to.throw(IllegalArgumentError);
         });
     });
     describe('leftZeroPadIntegerTest', function () {
