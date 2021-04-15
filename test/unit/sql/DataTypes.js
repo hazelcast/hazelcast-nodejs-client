@@ -140,7 +140,6 @@ describe('DataTypesTest', function () {
             expect(() => new HzLocalDate({1: 1}, 1, 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
             expect(() => new HzLocalDate([], 1, 1)).to.throw(IllegalArgumentError, 'All arguments must be integers');
             expect(() => new HzLocalDate(1e12, 1, 1)).to.throw(IllegalArgumentError, 'Year');
-
         });
 
         it('should throw IllegalArgumentError if month is not an integer between 0-59(inclusive)', function () {
@@ -173,14 +172,16 @@ describe('DataTypesTest', function () {
             expect(new HzLocalDate(-100, 3, 31).toString()).to.be.eq('-100-03-31');
         });
 
-        it.skip('should return year correctly', function () {
-            // getYear
+        const hzDate = new HzLocalDate(2000, 2, 29);
+
+        it('should return year correctly', function () {
+            expect(hzDate.getYear()).to.be.eq(2000);
         });
-        it.skip('should return month correctly', function () {
-            // getMonth
+        it('should return month correctly', function () {
+            expect(hzDate.getMonth()).to.be.eq(2);
         });
-        it.skip('should return date correctly', function () {
-            // getDate
+        it('should return date correctly', function () {
+            expect(hzDate.getDate()).to.be.eq(29);
         });
 
         it.skip('should construct from string correctly', function () {
