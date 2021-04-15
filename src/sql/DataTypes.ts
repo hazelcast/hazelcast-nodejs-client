@@ -75,12 +75,12 @@ export class HzLocalTime {
      * @throws {@link IllegalArgumentError} if invalid timeString is given
      */
     static fromString(timeString: string): HzLocalTime {
-        if(typeof timeString !== 'string'){
+        if (typeof timeString !== 'string') {
             throw new IllegalArgumentError('String expected.');
         }
         const timeStringSplit = timeString.split(':');
         if (timeStringSplit.length != 3) {
-            throw new IllegalArgumentError('Illegal time string.');
+            throw new IllegalArgumentError('Illegal time string. Expected a string in hh:mm:ss[.sss] format');
         }
         const secondsSplit = timeStringSplit[2].split('.');
         let nano = 0;
@@ -216,10 +216,25 @@ export class HzLocalDate {
 
     /**
      * Constructs a {@link HzLocalDate} object from string.
-     * @param dateString
+     * @throws {@link IllegalArgumentError} if string is not passed, or string format is wrong
+     * @param dateString String in the form yyyy-mm-dd
      */
     static fromString(dateString: string): HzLocalDate {
-        return null;
+        if (typeof dateString !== 'string') {
+            throw new IllegalArgumentError('String expected.');
+        }
+        const split = dateString.split('-');
+        if (split.length !== 3) {
+            throw new IllegalArgumentError('Invalid format. Expected a string in yyyy-mm-dd format');
+        }
+        const yearNumber = +split[0];
+        const monthNumber = +split[1];
+        const dateNumber = +split[2];
+
+        if(isNaN(yearNumber) || isNaN(monthNumber) || isNaN(dateNumber)){
+            throw new IllegalArgumentError('Invalid format. Expected a string in yyyy-mm-dd format');
+        }
+        return new HzLocalDate(yearNumber, monthNumber, dateNumber);
     }
 
     /**

@@ -184,8 +184,24 @@ describe('DataTypesTest', function () {
             expect(hzDate.getDate()).to.be.eq(29);
         });
 
-        it.skip('should construct from string correctly', function () {
-            // fromString
+        it('should construct from string correctly', function () {
+            const localtime1 = HzLocalDate.fromString('2000-02-29');
+            expect(localtime1.getYear()).to.be.eq(2000);
+            expect(localtime1.getMonth()).to.be.eq(2);
+            expect(localtime1.getDate()).to.be.eq(29);
+
+            // invalid year
+            expect(() => HzLocalDate.fromString('9999999999-02-29')).to.throw(IllegalArgumentError, 'Year');
+            // invalid month
+            expect(() => HzLocalDate.fromString('2000-24-29')).to.throw(IllegalArgumentError, 'Month');
+            // invalid date
+            expect(() => HzLocalDate.fromString('2001-02-29')).to.throw(IllegalArgumentError, 'Invalid date');
+            expect(() => HzLocalDate.fromString('2000-03-32')).to.throw(IllegalArgumentError, 'Invalid date');
+            // invalid format
+            expect(() => HzLocalDate.fromString('2301-71')).to.throw(IllegalArgumentError, 'Invalid format');
+            expect(() => HzLocalDate.fromString('-')).to.throw(IllegalArgumentError, 'Invalid format');
+            expect(() => HzLocalDate.fromString('2000-02-a')).to.throw(IllegalArgumentError, 'Invalid format');
+            expect(() => HzLocalDate.fromString(1)).to.throw(IllegalArgumentError, 'String expected');
         });
     });
     describe('HzLocalDateTimeTest', function () {
