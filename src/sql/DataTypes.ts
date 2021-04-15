@@ -1,7 +1,6 @@
 import {
     getTimezoneOffsetFromSeconds,
     leftZeroPadInteger,
-    parseLocalTime,
 } from '../util/DatetimeUtil';
 import {IllegalArgumentError} from '../core';
 
@@ -71,11 +70,38 @@ export class HzLocalTime {
 
     /**
      * Constructs a new {@link HzLocalTime} object from timeString.
-     * @param timeString A string in the form hh:mm:ss[.sss] (at most 9 digits allowed for second decimal)
+     * @param timeString A string in the form hh:mm:ss[.sss]. At most 9 digits allowed for second decimal value. If more than 9
+     * digits are given, the first 9 of them are used.
      * @throws {@link IllegalArgumentError} if invalid timeString is given
      */
     static fromString(timeString: string): HzLocalTime {
-        return parseLocalTime(timeString);
+        if(typeof timeString !== 'string'){
+            throw new IllegalArgumentError('String expected.');
+        }
+        const timeStringSplit = timeString.split(':');
+        if (timeStringSplit.length != 3) {
+            throw new IllegalArgumentError('Illegal time string.');
+        }
+        const secondsSplit = timeStringSplit[2].split('.');
+        let nano = 0;
+        if (secondsSplit.length == 2) {
+            let nanoStr = secondsSplit[1];
+            // make nanoStr 9 digits if it's longer
+            if (nanoStr.length > 9) nanoStr = nanoStr.slice(0, 9);
+
+            while (nanoStr.length < 9) nanoStr = '0' + nanoStr;
+            nano = +nanoStr;
+        }
+
+        const hours = +timeStringSplit[0];
+        const minutes = +timeStringSplit[1];
+        const seconds = +secondsSplit[0];
+
+        if (isNaN(hours) || isNaN(minutes) || isNaN(seconds) || isNaN(nano)) {
+            throw new IllegalArgumentError('Illegal time string.');
+        }
+
+        return new HzLocalTime(hours, minutes, seconds, nano);
     }
 
     /**

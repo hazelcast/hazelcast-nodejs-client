@@ -14,41 +14,6 @@
  * limitations under the License.
  */
 
-import {IllegalArgumentError} from '../core';
-import {HzLocalTime} from '../sql/DataTypes';
-
-/**
- @internal
- */
-export function parseLocalTime(timeString: string): HzLocalTime {
-    const timeStringSplit = timeString.split(':');
-    if (timeStringSplit.length != 3) {
-        throw new IllegalArgumentError('Illegal time string.');
-    }
-    const secondsSplit = timeStringSplit[2].split('.');
-    let nano = 0;
-    if (secondsSplit.length == 2) {
-        let nanoStr = secondsSplit[1];
-        // make nanoStr 9 digits if it's longer
-        if (nanoStr.length > 9) nanoStr = nanoStr.slice(0, 9);
-
-        nano = +nanoStr;
-        if (!isNaN(nano)) {
-            while (nano <= 99_999_999) nano *= 10;
-        }
-    }
-
-    const hours = +timeStringSplit[0];
-    const minutes = +timeStringSplit[1];
-    const seconds = +secondsSplit[0];
-
-    if (isNaN(hours) || isNaN(minutes) || isNaN(seconds) || isNaN(nano)) {
-        throw new IllegalArgumentError('Illegal time string.');
-    }
-
-    return new HzLocalTime(hours, minutes, seconds, nano);
-}
-
 /**
  Constructs and returns timezone for iso string from offsetSeconds
  @internal

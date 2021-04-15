@@ -76,8 +76,33 @@ describe('DataTypesTest', function () {
             expect(new HzLocalTime(23, 1, 11, 0).toString()).to.be.eq('23:01:11');
         });
 
-        it.skip('should construct from string correctly', function () {
-            // fromString
+        it('should construct from string correctly', function () {
+            const localtime1 = HzLocalTime.fromString('23:41:01.000000001');
+            expect(localtime1.getNano()).to.be.eq(1);
+            expect(localtime1.getSecond()).to.be.eq(1);
+            expect(localtime1.getMinute()).to.be.eq(41);
+            expect(localtime1.getHour()).to.be.eq(23);
+
+            const localtime2 = HzLocalTime.fromString('00:00:02');
+            expect(localtime2.getNano()).to.be.eq(0);
+            expect(localtime2.getSecond()).to.be.eq(2);
+            expect(localtime2.getMinute()).to.be.eq(0);
+            expect(localtime2.getHour()).to.be.eq(0);
+
+            // Nano has 10 digits, first 9 digits is considered.
+            expect(HzLocalTime.fromString('23:41:01.0000011111').getNano()).to.be.eq(1111);
+            expect(HzLocalTime.fromString('23:01:01.0000000001').getNano()).to.be.eq(0);
+
+            // invalid hour
+            expect(() => HzLocalTime.fromString('24:01:01.000000001')).to.throw(IllegalArgumentError);
+            // invalid minute
+            expect(() => HzLocalTime.fromString('23:71:01.000000001')).to.throw(IllegalArgumentError);
+            // invalid second
+            expect(() => HzLocalTime.fromString('23:01:71.000000001')).to.throw(IllegalArgumentError);
+            // invalid format
+            expect(() => HzLocalTime.fromString('23:0171')).to.throw(IllegalArgumentError);
+            expect(() => HzLocalTime.fromString('-')).to.throw(IllegalArgumentError);
+            expect(() => HzLocalTime.fromString(1)).to.throw(IllegalArgumentError, 'String expected');
         });
 
         it.skip('should return hour correctly', function () {
@@ -88,11 +113,9 @@ describe('DataTypesTest', function () {
             // getMinute
         });
 
-
         it.skip('should return second correctly', function () {
             // getSecond
-        })
-
+        });
 
         it.skip('should return nano correctly', function () {
             // getNano
