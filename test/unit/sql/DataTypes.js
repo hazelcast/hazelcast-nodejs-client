@@ -109,24 +109,6 @@ describe('DataTypesTest', function () {
             expect(() => HzLocalTime.fromString(null)).to.throw(IllegalArgumentError, 'String expected');
             expect(() => HzLocalTime.fromString()).to.throw(IllegalArgumentError, 'String expected');
         });
-
-        const hzTime = new HzLocalTime(1, 2, 3, 4);
-
-        it('should return hour correctly', function () {
-            expect(hzTime.getHour()).to.be.eq(1);
-        });
-
-        it('should return minute correctly', function () {
-            expect(hzTime.getMinute()).to.be.eq(2);
-        });
-
-        it('should return second correctly', function () {
-            expect(hzTime.getSecond()).to.be.eq(3);
-        });
-
-        it('should return nano correctly', function () {
-            expect(hzTime.getNano()).to.be.eq(4);
-        });
     });
     describe('HzLocalDateTest', function () {
         it('should return hour, minute and seconds correctly', function () {
@@ -175,18 +157,6 @@ describe('DataTypesTest', function () {
             expect(new HzLocalDate(2001, 2, 1).toString()).to.be.eq('2001-02-01');
             expect(new HzLocalDate(35, 2, 28).toString()).to.be.eq('0035-02-28');
             expect(new HzLocalDate(-100, 3, 31).toString()).to.be.eq('-100-03-31');
-        });
-
-        const hzDate = new HzLocalDate(2000, 2, 29);
-
-        it('should return year correctly', function () {
-            expect(hzDate.getYear()).to.be.eq(2000);
-        });
-        it('should return month correctly', function () {
-            expect(hzDate.getMonth()).to.be.eq(2);
-        });
-        it('should return date correctly', function () {
-            expect(hzDate.getDate()).to.be.eq(29);
         });
 
         it('should construct from string correctly', function () {
@@ -320,6 +290,7 @@ describe('DataTypesTest', function () {
             expect(dateTime1.getHzLocalDateTime().getHzLocalTime().getMinute()).to.be.equal(3);
             expect(dateTime1.getHzLocalDateTime().getHzLocalTime().getSecond()).to.be.equal(4);
             expect(dateTime1.getHzLocalDateTime().getHzLocalTime().getNano()).to.be.equal(6000000);
+            expect(dateTime1.getOffsetSeconds()).to.be.equal(1000);
         });
 
         it('should throw IllegalArgumentError if date is invalid', function () {
@@ -420,17 +391,7 @@ describe('DataTypesTest', function () {
                 new HzLocalDateTime(new HzLocalDate(2000, 2, 29), new HzLocalTime(2, 3, 4, 12)),
                 1800
             );
-
             expect(dateTime3.toISOString()).to.be.eq('2000-02-29T02:03:04.000000012+00:30');
-        });
-
-        it('should return offset correctly', function () {
-            expect(dateTime1.getOffsetSeconds()).to.be.eq(1000);
-        });
-
-        it('should return HzLocalDateTime correctly', function () {
-            expect(new HzOffsetDateTime(new Date(Date.UTC(2000, 2, 29, 2, 19, 4, 6)), 1000).getHzLocalDateTime().toString()).to.be
-                .eq(new HzLocalDateTime(new HzLocalDate(2000, 2, 29), new HzLocalTime(2, 19, 4, 6* 1000000)).toString());
         });
     });
 });
