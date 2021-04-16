@@ -23,7 +23,6 @@ import {SqlQueryId} from './SqlQueryId';
 import {DeferredPromise, deferredPromise} from '../util/Util';
 import {HazelcastSqlException} from '../core';
 import {SqlErrorCode} from './SqlErrorCode';
-import {ILogger} from '../logging';
 
 export type SqlRowAsObject = { [key: string]: any };
 export type SqlRowType = SqlRow | SqlRowAsObject;
@@ -105,8 +104,8 @@ export class SqlResultImpl implements SqlResult {
         private readonly connection: Connection,
         private readonly queryId: SqlQueryId,
         private readonly cursorBufferSize: number,
-        /* If true SqlResult is a SqlRow iterable, otherwise traditional objects are used */
-        private readonly rawResults: boolean
+        /* If true SqlResult is an object iterable, otherwise SqlRow iterable */
+        private readonly objectResults: boolean
     ) {
         this.closed = false;
         this.rowMetadata = null;
@@ -130,9 +129,9 @@ export class SqlResultImpl implements SqlResult {
         connection: Connection,
         queryId: SqlQueryId,
         cursorBufferSize: number,
-        rawResults: boolean
+        objectResults: boolean
     ) {
-        return new SqlResultImpl(service, connection, queryId, cursorBufferSize, rawResults);
+        return new SqlResultImpl(service, connection, queryId, cursorBufferSize, objectResults);
     }
 
     getUpdateCount(): Promise<Long> {
@@ -200,13 +199,13 @@ export class SqlResultImpl implements SqlResult {
 
 
     getCurrentRow(): SqlRowType {
-        if (this.rawResults) {
+        if (!this.objectResults) { // raw result, returns SqlRowImpl
             const values = [];
             for (let i = 0; i < this.currentPage.getColumnCount(); i++) {
                 values.push(this.currentPage.getColumnValuesForClient(i, this.currentPosition));
             }
             return new SqlRowImpl(values, this.rowMetadata);
-        } else {
+        } else { // return objects
             const result: SqlRowAsObject = {};
             for (let i = 0; i < this.currentPage.getColumnCount(); i++) {
                 const columnMetadata = this.rowMetadata.getColumn(i);

@@ -22,15 +22,17 @@ export enum SqlExpectedResultType {
     UPDATE_COUNT
 }
 
+export type SqlExpectedResultTypeStrings = keyof typeof SqlExpectedResultType;
+
 export interface SqlStatementOptions {
     schema?: string;
     timeoutMillis?: Long;
     cursorBufferSize?: number;
-    expectedResultType?: SqlExpectedResultType;
+    expectedResultType?: SqlExpectedResultTypeStrings;
 }
 
 export interface SqlStatement {
     sql: string;
-    parameters?: any[];
+    params?: any[];
     options?: SqlStatementOptions;
 }

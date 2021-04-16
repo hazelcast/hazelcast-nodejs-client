@@ -17,7 +17,7 @@ const run = async function () {
 
     try {
         const res = client.getSqlService().execute('SELECT * FROM testMap WHERE this < ?', [2], {
-            expectedResultType: SqlExpectedResultType.ANY
+            expectedResultType: 'ANY'
         });
 
         /*

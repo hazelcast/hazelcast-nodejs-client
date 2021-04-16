@@ -28,9 +28,8 @@ import {Connection} from '../network/Connection';
 import {SqlRowMetadataImpl} from './SqlRowMetadata';
 import {SqlCloseCodec} from '../codec/SqlCloseCodec';
 import {SqlFetchCodec, SqlFetchResponseParams} from '../codec/SqlFetchCodec';
-import {assertNotNull, deferredPromise} from '../util/Util';
+import {assertNotNull, deferredPromise, tryGetArray, tryGetEnum, tryGetLong, tryGetNumber, tryGetString} from '../util/Util';
 import {SqlPage} from './SqlPage';
-import {ILogger} from '../logging';
 
 
 export interface SqlService {
@@ -61,7 +60,7 @@ export class SqlServiceImpl implements SqlService {
     /** Default cursor buffer size. */
     static readonly DEFAULT_CURSOR_BUFFER_SIZE = 4096;
 
-    static readonly RETURN_RAW_RESULTS = false;
+    static readonly RETURN_OBJECT_AS_RESULT = true; // return object result by default
 
     constructor(
         private readonly connectionRegistry: ConnectionRegistry,
@@ -71,7 +70,12 @@ export class SqlServiceImpl implements SqlService {
     ) {
     }
 
-
+    /**
+     *
+     * @param clientMessage
+     * @param res
+     * @param connection
+     */
     handleExecuteResponse(clientMessage: ClientMessage, res: SqlResultImpl, connection: Connection): void {
         const response = SqlExecuteCodec.decodeResponse(clientMessage);
         if (response.error !== null) {
@@ -91,28 +95,65 @@ export class SqlServiceImpl implements SqlService {
         )
     }
 
+    /**
+     * Validates sqlStatement
+     *
+     * @param sqlStatement
+     * @throws RangeError if validation is not successful
+     * @internal
+     */
+    static validateSqlStatement(sqlStatement: SqlStatement) : void {
+        if(sqlStatement === undefined || sqlStatement === null){
+            throw new RangeError('Sql statement cannot be undefined or null');
+        }
+        tryGetString(sqlStatement.sql);
+        if(sqlStatement.params)tryGetArray(sqlStatement.params);
+        if(sqlStatement.options)SqlServiceImpl.validateSqlStatementOptions(sqlStatement.options);
+    }
+
+    /**
+     * Validates sqlStatementOptions
+     *
+     * @param sqlStatementOptions
+     * @throws RangeError if validation is not successful
+     * @internal
+     */
+
+    static validateSqlStatementOptions(sqlStatementOptions: SqlStatementOptions): void {
+        if(sqlStatementOptions.schema)tryGetString(sqlStatementOptions.schema);
+        if(sqlStatementOptions.timeoutMillis)tryGetLong(sqlStatementOptions.timeoutMillis);
+        if(sqlStatementOptions.cursorBufferSize)tryGetNumber(sqlStatementOptions.cursorBufferSize);
+        if(sqlStatementOptions.expectedResultType)tryGetEnum(SqlExpectedResultType, sqlStatementOptions.expectedResultType);
+    }
+
     execute(sql: SqlStatement): SqlResult;
     execute(sql: string, params?: any[], options?: SqlStatementOptions): SqlResult;
     execute(sql: string | SqlStatement, params?: any[], options?: SqlStatementOptions): SqlResult {
         let sqlStatement: SqlStatement;
-        if (sql === undefined || sql === null) {
-            throw new IllegalArgumentError('Sql cannot be null or undefined');
-        }
+
         if (typeof sql === 'string') {
             sqlStatement = {
                 sql: sql
             };
             if (Array.isArray(params)) {
-                sqlStatement.parameters = params;
+                sqlStatement.params = params;
             }
             if (options !== undefined && options !== null && typeof options === 'object') {
                 sqlStatement.options = options;
             }
-        } else if (typeof sql === 'object') {
+        } else if (typeof sql === 'object') { // assume SqlStatement is passed
             sqlStatement = sql;
         } else {
-            throw new IllegalArgumentError('Sql parameter must be a string or an SqlStatement object');
+            throw new IllegalArgumentError('Sql can be an object or string');
         }
+
+        try{
+            SqlServiceImpl.validateSqlStatement(sqlStatement);
+
+        } catch (error){
+            throw new IllegalArgumentError(`Invalid argument given to execute(): ${error.message}`, error)
+        }
+
 
         const connection = this.connectionRegistry.getRandomConnection(true);
         if (connection === null) {
@@ -124,6 +165,10 @@ export class SqlServiceImpl implements SqlService {
         }
 
         const queryId = SqlQueryId.fromMemberId(connection.getRemoteUuid());
+
+        const expectedResultType: SqlExpectedResultType =
+            sqlStatement.options?.expectedResultType ?  SqlExpectedResultType[sqlStatement.options.expectedResultType]
+            : SqlExpectedResultType.ANY;
 
         try {
             const serializedParams = [];
@@ -138,7 +183,7 @@ export class SqlServiceImpl implements SqlService {
                 sqlStatement.options?.timeoutMillis ? sqlStatement.options.timeoutMillis : SqlServiceImpl.DEFAULT_TIMEOUT,
                 cursorBufferSize,
                 sqlStatement.options?.schema ? sqlStatement.options.schema : null,
-                sqlStatement.options?.expectedResultType ? sqlStatement.options.expectedResultType : SqlExpectedResultType.ANY,
+                expectedResultType,
                 queryId
             );
 
@@ -147,12 +192,12 @@ export class SqlServiceImpl implements SqlService {
                 connection,
                 queryId,
                 cursorBufferSize,
-                SqlServiceImpl.RETURN_RAW_RESULTS
+                SqlServiceImpl.RETURN_OBJECT_AS_RESULT
             );
 
             this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
                 this.handleExecuteResponse(clientMessage, res, connection);
-            }).catch(err => res.onExecuteError);
+            }).catch(res.onExecuteError);
 
             return res;
         } catch (error) {

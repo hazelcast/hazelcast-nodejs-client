@@ -116,6 +116,15 @@ export function tryGetArray(val: any): any[] {
 }
 
 /** @internal */
+export function tryGetLong(val: any): Long {
+    if (Long.isLong(val)) {
+        return val;
+    } else {
+        throw new RangeError(val + ' is not a long.');
+    }
+}
+
+/** @internal */
 export function tryGetString(val: any): string {
     if (typeof val === 'string') {
         return val;
