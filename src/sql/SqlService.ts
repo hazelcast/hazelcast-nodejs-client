@@ -246,20 +246,17 @@ export class SqlServiceImpl implements SqlService {
 
     fetch(connection: Connection, queryId: SqlQueryId, cursorBufferSize: number): Promise<SqlPage> {
         const requestMessage = SqlFetchCodec.encodeRequest(queryId, cursorBufferSize);
-        const deferred = deferredPromise<SqlPage>();
-        this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
+        return this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
             const response: SqlFetchResponseParams = SqlFetchCodec.decodeResponse(clientMessage);
             if (response.error !== null) {
-                return deferred.reject(new HazelcastSqlException(
+                throw new HazelcastSqlException(
                     response.error.originatingMemberId,
                     response.error.code,
                     response.error.message
-                ));
+                );
             }
             assertNotNull(response.rowPage);
-            deferred.resolve(response.rowPage);
-
-        }).catch(deferred.reject);
-        return deferred.promise;
+            return response.rowPage;
+        });
     }
 }
