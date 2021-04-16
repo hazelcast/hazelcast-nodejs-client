@@ -62,14 +62,16 @@ export interface SqlService {
 export class SqlServiceImpl implements SqlService {
     /** Value for the timeout that is not set. */
     static readonly TIMEOUT_NOT_SET = Long.fromInt(-1);
-    /** Value for the timeout that is disabled. */
-    static readonly TIMEOUT_DISABLED = 0;
     /** Default timeout. */
     static readonly DEFAULT_TIMEOUT = SqlServiceImpl.TIMEOUT_NOT_SET;
     /** Default cursor buffer size. */
     static readonly DEFAULT_CURSOR_BUFFER_SIZE = 4096;
 
     static readonly DEFAULT_FOR_RETURN_RAW_RESULT = false; // don't return raw result by default
+
+    static readonly DEFAULT_EXPECTED_RESULT_TYPE = SqlExpectedResultType.ANY;
+
+    static readonly DEFAULT_SCHEMA : null = null;
 
     constructor(
         private readonly connectionRegistry: ConnectionRegistry,
@@ -133,12 +135,21 @@ export class SqlServiceImpl implements SqlService {
     static validateSqlStatementOptions(sqlStatementOptions: SqlStatementOptions): void {
         if (sqlStatementOptions.hasOwnProperty('schema'))
             tryGetString(sqlStatementOptions.schema);
-        if (sqlStatementOptions.hasOwnProperty('timeoutMillis'))
-            tryGetLong(sqlStatementOptions.timeoutMillis);
-        if (sqlStatementOptions.hasOwnProperty('cursorBufferSize'))
-            tryGetNumber(sqlStatementOptions.cursorBufferSize);
+
+        if (sqlStatementOptions.hasOwnProperty('timeoutMillis')){
+            const longValue = tryGetLong(sqlStatementOptions.timeoutMillis);
+            if(longValue.lessThanOrEqual(Long.fromInt(-2))){
+                throw new RangeError('Timeout millis cannot be less than -1');
+            }
+        }
+
+        if (sqlStatementOptions.hasOwnProperty('cursorBufferSize') && tryGetNumber(sqlStatementOptions.cursorBufferSize) <= 0){
+            throw new RangeError('Cursor buffer size cannot be negative');
+        }
+
         if (sqlStatementOptions.hasOwnProperty('expectedResultType'))
             tryGetEnum(SqlExpectedResultType, sqlStatementOptions.expectedResultType);
+
         if (sqlStatementOptions.hasOwnProperty('returnRawResult'))
             tryGetBoolean(sqlStatementOptions.returnRawResult);
     }
@@ -183,12 +194,14 @@ export class SqlServiceImpl implements SqlService {
 
         const expectedResultType: SqlExpectedResultType =
             sqlStatement.options?.expectedResultType ? SqlExpectedResultType[sqlStatement.options.expectedResultType]
-                : SqlExpectedResultType.ANY;
+                : SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE;
 
         try {
             const serializedParams = [];
-            for (const param of params) {
-                serializedParams.push(this.serializationService.toData(param));
+            if(Array.isArray(params)){ // params can be undefined
+                for (const param of params) {
+                    serializedParams.push(this.serializationService.toData(param));
+                }
             }
             const cursorBufferSize = sqlStatement.options?.cursorBufferSize ?
                 sqlStatement.options.cursorBufferSize : SqlServiceImpl.DEFAULT_CURSOR_BUFFER_SIZE;
@@ -197,7 +210,7 @@ export class SqlServiceImpl implements SqlService {
                 serializedParams,
                 sqlStatement.options?.timeoutMillis ? sqlStatement.options.timeoutMillis : SqlServiceImpl.DEFAULT_TIMEOUT,
                 cursorBufferSize,
-                sqlStatement.options?.schema ? sqlStatement.options.schema : null,
+                sqlStatement.options?.schema ? sqlStatement.options.schema : SqlServiceImpl.DEFAULT_SCHEMA,
                 expectedResultType,
                 queryId
             );

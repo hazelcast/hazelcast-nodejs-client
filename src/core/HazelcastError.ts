@@ -472,6 +472,9 @@ export class UndefinedErrorCodeError extends HazelcastError {
 }
 
 export class HazelcastSqlException extends HazelcastError {
+    private readonly code: number;
+    private readonly originatingMemberId: UUID;
+
     constructor(
         originatingMemberId: UUID,
         code: number,
@@ -481,5 +484,7 @@ export class HazelcastSqlException extends HazelcastError {
     ) {
         super(msg, cause, serverStackTrace);
         Object.setPrototypeOf(this, HazelcastSqlException.prototype);
+        this.code = code;
+        this.originatingMemberId = originatingMemberId;
     }
 }

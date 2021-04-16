@@ -19,12 +19,13 @@ const { SqlServiceImpl } = require('../../../lib/sql/SqlService');
 const { SqlResultImpl } = require('../../../lib/sql/SqlResult');
 const { SqlExpectedResultType } = require('../../../lib/sql/SqlStatement');
 const { SqlQueryId } = require('../../../lib/sql/SqlQueryId');
-const long = require('long');
+const { SqlErrorCode } = require('../../../lib/sql/SqlErrorCode');
 
 const { SqlExecuteCodec } = require('../../../lib/codec/SqlExecuteCodec');
 const { UuidUtil } = require('../../../lib/util/UuidUtil');
-const { IllegalArgumentError } = require('../../../lib/core/HazelcastError');
+const { IllegalArgumentError, HazelcastSqlException } = require('../../../lib/core/HazelcastError');
 
+const long = require('long');
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
 const { expect } = require('chai');
@@ -37,16 +38,20 @@ describe('SqlServiceTest', function () {
         let sqlResultSpy;
         let handleExecuteResponseSpy;
 
-        let executeCodecStub;
+        let executeCodecFake;
+        let getRandomConnectionFake;
+
         let connectionRegistryStub;
         let serializationServiceStub;
         let invocationServiceStub;
         let connectionStub;
         let queryIdStub;
+        let connectionManagerStub;
 
         const remoteUUID = UuidUtil.generate();
 
         beforeEach(function () {
+
             // spies
             sqlResultSpy = sandbox.spy(SqlResultImpl, 'newResult');
             handleExecuteResponseSpy = sandbox.spy(SqlServiceImpl.prototype, 'handleExecuteResponse');
@@ -56,21 +61,27 @@ describe('SqlServiceTest', function () {
                 getRemoteUuid: sandbox.fake.returns(remoteUUID)
             };
 
-            executeCodecStub = sandbox.stub(SqlExecuteCodec, 'encodeRequest');
+            // fakes
+            getRandomConnectionFake = sandbox.fake.returns(connectionStub);
+            executeCodecFake = sandbox.fake.returns();
+            SqlExecuteCodec.encodeRequest = executeCodecFake;
+
+            // stubs continued
             queryIdStub = {};
             sandbox.stub(SqlQueryId, 'fromMemberId').returns(queryIdStub);
             connectionRegistryStub = {
-                getRandomConnection: sandbox.fake.returns(connectionStub)
+                getRandomConnection: getRandomConnectionFake
             };
-            serializationServiceStub = {toData: sandbox.spy()};
+            serializationServiceStub = {toData: sandbox.fake(v => v)}; // returns same thing
             invocationServiceStub = {invokeOnConnection: sandbox.fake.resolves(null)};
+            connectionManagerStub = {getClientUuid: sandbox.fake.returns('')};
 
             // sql service
             sqlService = new SqlServiceImpl(
                 connectionRegistryStub,
-                {},
+                serializationServiceStub,
                 invocationServiceStub,
-                {}
+                connectionManagerStub
             );
         });
 
@@ -80,6 +91,64 @@ describe('SqlServiceTest', function () {
 
         it('should return a SqlResultImpl', function () {
             expect(sqlService.execute('s', [], {})).to.be.instanceof(SqlResultImpl);
+        });
+
+        it('should call getRandomConnection once with data member being true', function () {
+            sqlService.execute('s', [], {});
+            expect(getRandomConnectionFake.calledOnceWithExactly(true)).to.be.true;
+        });
+
+        it('should call toData on params', function () {
+            const params = [1, 2, 3];
+            sqlService.execute('s', params, {});
+            expect(serializationServiceStub.toData.firstCall.calledWithExactly(1)).to.be.true;
+            expect(serializationServiceStub.toData.secondCall.calledWithExactly(2)).to.be.true;
+            expect(serializationServiceStub.toData.thirdCall.calledWithExactly(3)).to.be.true;
+        });
+
+        it('should call encodeRequest with correct params', function () {
+            const params = [1, 2, 3];
+            sqlService.execute('s', params, {}); // default options
+            expect(executeCodecFake.lastCall.calledWithExactly(
+                's',
+                [1, 2, 3],
+                SqlServiceImpl.DEFAULT_TIMEOUT,
+                SqlServiceImpl.DEFAULT_CURSOR_BUFFER_SIZE,
+                SqlServiceImpl.DEFAULT_SCHEMA,
+                SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE,
+                queryIdStub
+            ));
+
+            sqlService.execute('s', params, {
+                timeoutMillis: long.ZERO,
+                cursorBufferSize: 1,
+                returnRawResult: true,
+                schema: 'sd',
+                expectedResultType: 'ANY'
+            });
+            expect(executeCodecFake.lastCall.calledWithExactly(
+                's',
+                [1, 2, 3],
+                long.ZERO,
+                1,
+                'sd',
+                SqlExpectedResultType.ANY,
+                queryIdStub
+            ));
+        });
+
+        it('should throw HazelcastSqlException if no connection to a data member is available', function () {
+            connectionRegistryStub = {
+                getRandomConnection: sandbox.fake.returns(null)
+            };
+            sqlService = new SqlServiceImpl(
+                connectionRegistryStub,
+                {},
+                invocationServiceStub,
+                connectionManagerStub
+            );
+            expect(() => sqlService.execute('s', [], {})).to.throw(HazelcastSqlException)
+                .that.has.a.property('code', SqlErrorCode.CONNECTION_PROBLEM);
         });
 
         it('should construct a SqlResultImpl with default result type if it\'s not specified', function () {
@@ -108,6 +177,19 @@ describe('SqlServiceTest', function () {
             // If sql property is not present in the object
             expect(() => sqlService.execute({'sqll': ''})).to.throw(IllegalArgumentError);
 
+            // If timeout is less than -1 throw
+            expect(() => sqlService.execute({'sql': '', options: {timeoutMillis: long.fromNumber(-3)}}))
+                .to.throw(IllegalArgumentError);
+            expect(() => sqlService.execute({'sql': '', options: {timeoutMillis: long.fromNumber(-2)}}))
+                .to.throw(IllegalArgumentError);
+            expect(() => sqlService.execute({'sql': '', options: {timeoutMillis: long.fromNumber(-1)}})).not.to.throw();
+            expect(() => sqlService.execute({'sql': '', options: {timeoutMillis: long.fromNumber(0)}})).not.to.throw();
+
+            // If cursorBufferSize is non positive throw
+            expect(() => sqlService.execute({'sql': '', options: {cursorBufferSize: 1}})).not.to.throw();
+            expect(() => sqlService.execute({'sql': '', options: {cursorBufferSize: 0}})).to.throw(IllegalArgumentError);
+            expect(() => sqlService.execute({'sql': '', options: {cursorBufferSize: -1}})).to.throw(IllegalArgumentError);
+
             /*
              Depending on the type of these values, they are passed as arguments. If parameter type is not the expected
              type, we expect the method to throw IllegalArgumentError
@@ -123,12 +205,12 @@ describe('SqlServiceTest', function () {
                         .to.throw(IllegalArgumentError);
                 } else {
                     // valid sql string
-                    expect(() => sqlService.execute(v, [], {})).not.to.throw;
-                    expect(() => sqlService.execute({'sql': v})).not.to.throw;
+                    expect(() => sqlService.execute(v, [], {})).not.to.throw();
+                    expect(() => sqlService.execute({'sql': v})).not.to.throw();
                     // valid schema
-                    expect(() => sqlService.execute('', [], {schema: v})).not.to.throw;
+                    expect(() => sqlService.execute('', [], {schema: v})).not.to.throw();
                     expect(() => sqlService.execute({'sql': '', options: {schema: v}}))
-                        .not.to.throw;
+                        .not.to.throw();
                 }
 
                 if (!Array.isArray(v) && typeof v !== 'undefined') { // passing undefined is same as not passing
@@ -137,8 +219,7 @@ describe('SqlServiceTest', function () {
                     expect(() => sqlService.execute({'sql': '', params: v})).to.throw(IllegalArgumentError);
                 } else {
                     // valid params
-                    expect(() => sqlService.execute('', v, {})).not.to.throw;
-                    expect(() => sqlService.execute({'sql': '', params: v})).not.to.throw;
+                    expect(() => sqlService.execute('', v, {})).not.to.throw();
                 }
 
                 if (typeof v !== 'number') {
@@ -148,8 +229,8 @@ describe('SqlServiceTest', function () {
                         .to.throw(IllegalArgumentError);
                 } else {
                     // valid cursor buffer size
-                    expect(() => sqlService.execute('', [], {schema: v})).not.to.throw;
-                    expect(() => sqlService.execute({'sql': '', options: {schema: v}})).not.to.throw;
+                    expect(() => sqlService.execute('', [], {cursorBufferSize: v})).not.to.throw();
+                    expect(() => sqlService.execute({'sql': '', options: {cursorBufferSize: v}})).not.to.throw();
                 }
 
                 if (!long.isLong(v)) {
@@ -159,8 +240,8 @@ describe('SqlServiceTest', function () {
                         .to.throw(IllegalArgumentError);
                 } else {
                     // valid timeoutMillis
-                    expect(() => sqlService.execute('', [], {timeoutMillis: v})).not.to.throw;
-                    expect(() => sqlService.execute({'sql': '', options: {timeoutMillis: v}})).not.to.throw;
+                    expect(() => sqlService.execute('', [], {timeoutMillis: v})).not.to.throw();
+                    expect(() => sqlService.execute({'sql': '', options: {timeoutMillis: v}})).not.to.throw();
                 }
 
                 if (!(v in SqlExpectedResultType && typeof v === 'string')) { // enum objects at js has both numbers and strings
@@ -170,9 +251,9 @@ describe('SqlServiceTest', function () {
                         .to.throw(IllegalArgumentError);
                 } else {
                     // valid expectedResultType
-                    expect(() => sqlService.execute('', [], {expectedResultType: v})).not.to.throw;
+                    expect(() => sqlService.execute('', [], {expectedResultType: v})).not.to.throw();
                     expect(() => sqlService.execute({'sql': '', options: {expectedResultType: v}}))
-                        .not.to.throw;
+                        .not.to.throw();
                 }
 
                 if (typeof v !== 'boolean') {
@@ -182,8 +263,8 @@ describe('SqlServiceTest', function () {
                         .to.throw(IllegalArgumentError);
                 } else {
                     // valid returnRawResult
-                    expect(() => sqlService.execute('', [], {returnRawResult: v})).not.to.throw;
-                    expect(() => sqlService.execute({'sql': '', options: {returnRawResult: v}})).not.to.throw;
+                    expect(() => sqlService.execute('', [], {returnRawResult: v})).not.to.throw();
+                    expect(() => sqlService.execute({'sql': '', options: {returnRawResult: v}})).not.to.throw();
                 }
             });
         });
