@@ -142,7 +142,7 @@ describe('SqlServiceTest', function () {
             };
             sqlService = new SqlServiceImpl(
                 connectionRegistryStub,
-                {},
+                serializationServiceStub,
                 invocationServiceStub,
                 connectionManagerStub
             );
@@ -203,6 +203,26 @@ describe('SqlServiceTest', function () {
         it('should use connection member id to build a sql query id', function () {
             sqlService.execute('s', [], {});
             expect(fromMemberIdStub.calledOnceWithExactly(remoteUUID)).to.be.true;
+        });
+
+        it('should call result\'s onExecuteError method on invoke error', function () {
+            const fakeError = new Error();
+            const fakeResult = {onExecuteError: sinon.spy()};
+
+            SqlResultImpl.newResult = sinon.fake.returns(fakeResult);
+            invocationServiceStub = {invokeOnConnection: sandbox.fake.rejects(fakeError)};
+            sqlService = new SqlServiceImpl(
+                connectionRegistryStub,
+                serializationServiceStub,
+                invocationServiceStub,
+                connectionManagerStub
+            );
+
+            sqlService.execute('s', [], {});
+            return assertTrueEventually(async () => {
+                expect(fakeResult.onExecuteError.calledOnce).to.be.true;
+                expect(fakeResult.onExecuteError.firstCall.args[0]).to.be.eq(fakeError);
+            }, 100, 1000);
         });
 
         it('should throw IllegalArgumentError any of the parameters are invalid', function () {
