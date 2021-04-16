@@ -29,6 +29,7 @@ export interface SqlStatementOptions {
     timeoutMillis?: Long;
     cursorBufferSize?: number;
     expectedResultType?: SqlExpectedResultTypeStrings;
+    returnRawResult?: boolean;
 }
 
 export interface SqlStatement {

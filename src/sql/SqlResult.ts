@@ -105,7 +105,7 @@ export class SqlResultImpl implements SqlResult {
         private readonly queryId: SqlQueryId,
         private readonly cursorBufferSize: number,
         /* If true SqlResult is an object iterable, otherwise SqlRow iterable */
-        private readonly objectResults: boolean
+        private readonly returnRawResult: boolean
     ) {
         this.closed = false;
         this.rowMetadata = null;
@@ -129,9 +129,9 @@ export class SqlResultImpl implements SqlResult {
         connection: Connection,
         queryId: SqlQueryId,
         cursorBufferSize: number,
-        objectResults: boolean
+        returnRawResult: boolean
     ) {
-        return new SqlResultImpl(service, connection, queryId, cursorBufferSize, objectResults);
+        return new SqlResultImpl(service, connection, queryId, cursorBufferSize, returnRawResult);
     }
 
     getUpdateCount(): Promise<Long> {
@@ -199,7 +199,7 @@ export class SqlResultImpl implements SqlResult {
 
 
     getCurrentRow(): SqlRowType {
-        if (!this.objectResults) { // raw result, returns SqlRowImpl
+        if (this.returnRawResult) { // raw result, returns SqlRowImpl
             const values = [];
             for (let i = 0; i < this.currentPage.getColumnCount(); i++) {
                 values.push(this.currentPage.getColumnValuesForClient(i, this.currentPosition));
