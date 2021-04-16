@@ -233,7 +233,7 @@ export class SqlServiceImpl implements SqlService {
             throw new HazelcastSqlException(
                 connection.getRemoteUuid(),
                 SqlErrorCode.GENERIC,
-                'An error occurred during sql execution',
+                `An error occurred during sql execution: ${error.message}`,
                 error
             );
         }

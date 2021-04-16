@@ -23,6 +23,7 @@ const { SqlErrorCode } = require('../../../lib/sql/SqlErrorCode');
 
 const { SqlExecuteCodec } = require('../../../lib/codec/SqlExecuteCodec');
 const { UuidUtil } = require('../../../lib/util/UuidUtil');
+const { assertTrueEventually } = require('../../TestUtil');
 const { IllegalArgumentError, HazelcastSqlException } = require('../../../lib/core/HazelcastError');
 
 const long = require('long');
@@ -36,44 +37,42 @@ describe('SqlServiceTest', function () {
         let sqlService;
 
         let sqlResultSpy;
-        let handleExecuteResponseSpy;
 
         let executeCodecFake;
         let getRandomConnectionFake;
 
         let connectionRegistryStub;
+        let handleExecuteResponseStub;
         let serializationServiceStub;
         let invocationServiceStub;
-        let connectionStub;
-        let queryIdStub;
         let connectionManagerStub;
+        let fromMemberIdStub;
+        let connectionStub;
 
+        const fakeQueryId = {};
+        const fakeClientMessage = {};
         const remoteUUID = UuidUtil.generate();
+        const fakeClientResponseMessage = {};
 
         beforeEach(function () {
 
-            // spies
             sqlResultSpy = sandbox.spy(SqlResultImpl, 'newResult');
-            handleExecuteResponseSpy = sandbox.spy(SqlServiceImpl.prototype, 'handleExecuteResponse');
 
-            // stubs
             connectionStub = {
                 getRemoteUuid: sandbox.fake.returns(remoteUUID)
             };
 
-            // fakes
             getRandomConnectionFake = sandbox.fake.returns(connectionStub);
-            executeCodecFake = sandbox.fake.returns();
+            executeCodecFake = sandbox.fake.returns(fakeClientMessage);
             SqlExecuteCodec.encodeRequest = executeCodecFake;
 
-            // stubs continued
-            queryIdStub = {};
-            sandbox.stub(SqlQueryId, 'fromMemberId').returns(queryIdStub);
+            handleExecuteResponseStub = sandbox.stub(SqlServiceImpl.prototype, 'handleExecuteResponse');
+            fromMemberIdStub = sandbox.stub(SqlQueryId, 'fromMemberId').returns(fakeQueryId);
             connectionRegistryStub = {
                 getRandomConnection: getRandomConnectionFake
             };
-            serializationServiceStub = {toData: sandbox.fake(v => v)}; // returns same thing
-            invocationServiceStub = {invokeOnConnection: sandbox.fake.resolves(null)};
+            serializationServiceStub = {toData: sandbox.fake(v => v)};
+            invocationServiceStub = {invokeOnConnection: sandbox.fake.resolves(fakeClientResponseMessage)};
             connectionManagerStub = {getClientUuid: sandbox.fake.returns('')};
 
             // sql service
@@ -93,7 +92,7 @@ describe('SqlServiceTest', function () {
             expect(sqlService.execute('s', [], {})).to.be.instanceof(SqlResultImpl);
         });
 
-        it('should call getRandomConnection once with data member being true', function () {
+        it('should call getRandomConnection once with data member argument being true', function () {
             sqlService.execute('s', [], {});
             expect(getRandomConnectionFake.calledOnceWithExactly(true)).to.be.true;
         });
@@ -116,7 +115,7 @@ describe('SqlServiceTest', function () {
                 SqlServiceImpl.DEFAULT_CURSOR_BUFFER_SIZE,
                 SqlServiceImpl.DEFAULT_SCHEMA,
                 SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE,
-                queryIdStub
+                fakeQueryId
             ));
 
             sqlService.execute('s', params, {
@@ -133,7 +132,7 @@ describe('SqlServiceTest', function () {
                 1,
                 'sd',
                 SqlExpectedResultType.ANY,
-                queryIdStub
+                fakeQueryId
             ));
         });
 
@@ -156,7 +155,7 @@ describe('SqlServiceTest', function () {
             expect(sqlResultSpy.calledOnceWithExactly(
                 sqlService,
                 connectionStub,
-                queryIdStub,
+                fakeQueryId,
                 1,
                 SqlServiceImpl.DEFAULT_FOR_RETURN_RAW_RESULT
             )).to.be.true;
@@ -167,10 +166,43 @@ describe('SqlServiceTest', function () {
             expect(sqlResultSpy.calledOnceWithExactly(
                 sqlService,
                 connectionStub,
-                queryIdStub,
+                fakeQueryId,
                 SqlServiceImpl.DEFAULT_CURSOR_BUFFER_SIZE,
                 true
             )).to.be.true;
+        });
+
+        it('should construct a SqlResultImpl with parameters passed', function () {
+            sqlService.execute('s', [], {returnRawResult: true, cursorBufferSize: 1});
+            expect(sqlResultSpy.calledOnceWithExactly(
+                sqlService,
+                connectionStub,
+                fakeQueryId,
+                1,
+                true
+            )).to.be.true;
+        });
+
+        it('should invoke on connection returned from getRandomConnection', function () {
+            sqlService.execute('s', [], {});
+            expect(invocationServiceStub.invokeOnConnection.calledOnceWithExactly(connectionStub, fakeClientMessage)).to.be.true;
+        });
+
+        it('should call handleExecuteResponse if invoke is successful', function () {
+            const fakeResult = {};
+            SqlResultImpl.newResult = sinon.fake.returns(fakeResult);
+            sqlService.execute('s', [], {});
+            return assertTrueEventually(async () => {
+                expect(handleExecuteResponseStub.calledOnce).to.be.true;
+                expect(handleExecuteResponseStub.firstCall.args[0]).to.be.eq(fakeClientResponseMessage);
+                expect(handleExecuteResponseStub.firstCall.args[1]).to.be.eq(fakeResult);
+                expect(handleExecuteResponseStub.firstCall.args[2]).to.be.eq(connectionStub);
+            }, 100, 1000);
+        });
+
+        it('should use connection member id to build a sql query id', function () {
+            sqlService.execute('s', [], {});
+            expect(fromMemberIdStub.calledOnceWithExactly(remoteUUID)).to.be.true;
         });
 
         it('should throw IllegalArgumentError any of the parameters are invalid', function () {
@@ -268,5 +300,6 @@ describe('SqlServiceTest', function () {
                 }
             });
         });
+
     });
 });
