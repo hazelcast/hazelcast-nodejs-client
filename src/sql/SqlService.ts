@@ -30,7 +30,6 @@ import {SqlCloseCodec} from '../codec/SqlCloseCodec';
 import {SqlFetchCodec, SqlFetchResponseParams} from '../codec/SqlFetchCodec';
 import {
     assertNotNull,
-    deferredPromise,
     tryGetArray,
     tryGetBoolean,
     tryGetEnum,
