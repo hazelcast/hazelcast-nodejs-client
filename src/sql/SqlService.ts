@@ -241,8 +241,7 @@ export class SqlServiceImpl implements SqlService {
 
     close(connection: Connection, queryId: SqlQueryId): Promise<void> {
         const requestMessage = SqlCloseCodec.encodeRequest(queryId);
-        return this.invocationService.invokeOnConnection(connection, requestMessage).then(() => {
-        });
+        return this.invocationService.invokeOnConnection(connection, requestMessage).then(() => {});
     }
 
     fetch(connection: Connection, queryId: SqlQueryId, cursorBufferSize: number): Promise<SqlPage> {

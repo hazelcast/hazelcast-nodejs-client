@@ -22,6 +22,7 @@ const { SqlQueryId } = require('../../../lib/sql/SqlQueryId');
 const { SqlErrorCode } = require('../../../lib/sql/SqlErrorCode');
 
 const { SqlExecuteCodec } = require('../../../lib/codec/SqlExecuteCodec');
+const { SqlCloseCodec } = require('../../../lib/codec/SqlCloseCodec');
 const { UuidUtil } = require('../../../lib/util/UuidUtil');
 const { assertTrueEventually } = require('../../TestUtil');
 const { IllegalArgumentError, HazelcastSqlException } = require('../../../lib/core/HazelcastError');
@@ -38,8 +39,8 @@ describe('SqlServiceTest', function () {
 
         let sqlResultSpy;
 
-        let executeCodecFake;
-        let getRandomConnectionFake;
+        let fakeExecuteCodec;
+        let fakeGetRandomConnection;
 
         let connectionRegistryStub;
         let handleExecuteResponseStub;
@@ -51,7 +52,7 @@ describe('SqlServiceTest', function () {
 
         const fakeQueryId = {};
         const fakeClientMessage = {};
-        const remoteUUID = UuidUtil.generate();
+        const fakeRemoteUUID = UuidUtil.generate();
         const fakeClientResponseMessage = {};
 
         beforeEach(function () {
@@ -59,17 +60,17 @@ describe('SqlServiceTest', function () {
             sqlResultSpy = sandbox.spy(SqlResultImpl, 'newResult');
 
             connectionStub = {
-                getRemoteUuid: sandbox.fake.returns(remoteUUID)
+                getRemoteUuid: sandbox.fake.returns(fakeRemoteUUID)
             };
 
-            getRandomConnectionFake = sandbox.fake.returns(connectionStub);
-            executeCodecFake = sandbox.fake.returns(fakeClientMessage);
-            SqlExecuteCodec.encodeRequest = executeCodecFake;
+            fakeGetRandomConnection = sandbox.fake.returns(connectionStub);
+            fakeExecuteCodec = sandbox.fake.returns(fakeClientMessage);
+            SqlExecuteCodec.encodeRequest = fakeExecuteCodec;
 
             handleExecuteResponseStub = sandbox.stub(SqlServiceImpl.prototype, 'handleExecuteResponse');
             fromMemberIdStub = sandbox.stub(SqlQueryId, 'fromMemberId').returns(fakeQueryId);
             connectionRegistryStub = {
-                getRandomConnection: getRandomConnectionFake
+                getRandomConnection: fakeGetRandomConnection
             };
             serializationServiceStub = {toData: sandbox.fake(v => v)};
             invocationServiceStub = {invokeOnConnection: sandbox.fake.resolves(fakeClientResponseMessage)};
@@ -94,7 +95,7 @@ describe('SqlServiceTest', function () {
 
         it('should call getRandomConnection once with data member argument being true', function () {
             sqlService.execute('s', [], {});
-            expect(getRandomConnectionFake.calledOnceWithExactly(true)).to.be.true;
+            expect(fakeGetRandomConnection.calledOnceWithExactly(true)).to.be.true;
         });
 
         it('should call toData on params', function () {
@@ -108,7 +109,7 @@ describe('SqlServiceTest', function () {
         it('should call encodeRequest with correct params', function () {
             const params = [1, 2, 3];
             sqlService.execute('s', params, {}); // default options
-            expect(executeCodecFake.lastCall.calledWithExactly(
+            expect(fakeExecuteCodec.lastCall.calledWithExactly(
                 's',
                 [1, 2, 3],
                 SqlServiceImpl.DEFAULT_TIMEOUT,
@@ -125,7 +126,7 @@ describe('SqlServiceTest', function () {
                 schema: 'sd',
                 expectedResultType: 'ANY'
             });
-            expect(executeCodecFake.lastCall.calledWithExactly(
+            expect(fakeExecuteCodec.lastCall.calledWithExactly(
                 's',
                 [1, 2, 3],
                 long.ZERO,
@@ -202,7 +203,7 @@ describe('SqlServiceTest', function () {
 
         it('should use connection member id to build a sql query id', function () {
             sqlService.execute('s', [], {});
-            expect(fromMemberIdStub.calledOnceWithExactly(remoteUUID)).to.be.true;
+            expect(fromMemberIdStub.calledOnceWithExactly(fakeRemoteUUID)).to.be.true;
         });
 
         it('should call result\'s onExecuteError method on invoke error', function () {
@@ -320,6 +321,60 @@ describe('SqlServiceTest', function () {
                 }
             });
         });
+
+    });
+    describe('close', function () {
+        let sqlService;
+        let fakeCloseCodec;
+        let invocationServiceStub;
+
+        const fakeClientMessage = {};
+
+        beforeEach(function () {
+
+            fakeCloseCodec = sandbox.fake.returns(fakeClientMessage);
+            SqlCloseCodec.encodeRequest = fakeCloseCodec;
+
+            invocationServiceStub = {invokeOnConnection: sandbox.fake.resolves()};
+
+            // sql service
+            sqlService = new SqlServiceImpl(
+                {},
+                {},
+                invocationServiceStub,
+                {}
+            );
+        });
+
+        afterEach(function () {
+            sandbox.restore();
+        });
+
+        it('should call invokeOnConnection with connection provided and message created', function () {
+            const fakeConnection = {};
+            const fakeQueryId = {};
+            sqlService.close(fakeConnection, fakeQueryId);
+
+            expect(invocationServiceStub.invokeOnConnection.calledOnce).to.be.true;
+            expect(invocationServiceStub.invokeOnConnection.firstCall.args[0]).to.be.eq(fakeConnection);
+            expect(invocationServiceStub.invokeOnConnection.firstCall.args[1]).to.be.eq(fakeClientMessage);
+        });
+
+        it('should encode request using queryId passed', function () {
+            const fakeConnection = {};
+            const fakeQueryId = {};
+            sqlService.close(fakeConnection, fakeQueryId);
+
+            expect(fakeCloseCodec.calledOnce).to.be.true;
+            expect(fakeCloseCodec.firstCall.args[0]).to.be.eq(fakeQueryId);
+        });
+
+    });
+    describe('handleExecuteResponse', function () {
+
+    });
+
+    describe('fetch', function () {
 
     });
 });
