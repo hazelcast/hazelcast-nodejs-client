@@ -105,78 +105,85 @@ describe('SqlServiceTest', function () {
         });
 
         it('should throw IllegalArgumentError any of the parameters are invalid', function () {
+            // If sql property is not present in the object
+            expect(() => sqlService.execute({'sqll': ''})).to.throw(IllegalArgumentError);
+
+            /*
+             Depending on the type of these values, they are passed as arguments. If parameter type is not the expected
+             type, we expect the method to throw IllegalArgumentError
+             */
             ['', 1, null, undefined, {}, [], Symbol(), BigInt(1), long.ZERO, true, 'ANY'].forEach(v => {
                 if (typeof v !== 'string') {
                     // invalid sql string
                     expect(() => sqlService.execute(v, [], {})).to.throw(IllegalArgumentError);
-                    expect(() => sqlService.execute({'sql': v, options: {}, params: undefined})).to.throw(IllegalArgumentError);
+                    expect(() => sqlService.execute({'sql': v})).to.throw(IllegalArgumentError);
                     // invalid schema
                     expect(() => sqlService.execute('', undefined, {schema: v})).to.throw(IllegalArgumentError);
-                    expect(() => sqlService.execute({'sql': '', options: {schema: v}, params: undefined}))
+                    expect(() => sqlService.execute({'sql': '', options: {schema: v}}))
                         .to.throw(IllegalArgumentError);
                 } else {
                     // valid sql string
                     expect(() => sqlService.execute(v, [], {})).not.to.throw;
-                    expect(() => sqlService.execute({'sql': v, options: {}, params: undefined})).not.to.throw;
+                    expect(() => sqlService.execute({'sql': v})).not.to.throw;
                     // valid schema
                     expect(() => sqlService.execute('', [], {schema: v})).not.to.throw;
-                    expect(() => sqlService.execute({'sql': '', options: {schema: v}, params: undefined}))
+                    expect(() => sqlService.execute({'sql': '', options: {schema: v}}))
                         .not.to.throw;
                 }
 
                 if (!Array.isArray(v) && typeof v !== 'undefined') { // passing undefined is same as not passing
                     // invalid params
                     expect(() => sqlService.execute('', v, {})).to.throw(IllegalArgumentError);
-                    expect(() => sqlService.execute({'sql': '', options: undefined, params: v})).to.throw(IllegalArgumentError);
+                    expect(() => sqlService.execute({'sql': '', params: v})).to.throw(IllegalArgumentError);
                 } else {
                     // valid params
                     expect(() => sqlService.execute('', v, {})).not.to.throw;
-                    expect(() => sqlService.execute({'sql': '', options: undefined, params: v})).not.to.throw;
+                    expect(() => sqlService.execute({'sql': '', params: v})).not.to.throw;
                 }
 
                 if (typeof v !== 'number') {
                     // invalid cursor buffer size
                     expect(() => sqlService.execute('', [], {cursorBufferSize: v})).to.throw(IllegalArgumentError);
-                    expect(() => sqlService.execute({'sql': '', options: {cursorBufferSize: v}, params: undefined}))
+                    expect(() => sqlService.execute({'sql': '', options: {cursorBufferSize: v}}))
                         .to.throw(IllegalArgumentError);
                 } else {
                     // valid cursor buffer size
                     expect(() => sqlService.execute('', [], {schema: v})).not.to.throw;
-                    expect(() => sqlService.execute({'sql': '', options: {schema: v}, params: undefined})).not.to.throw;
+                    expect(() => sqlService.execute({'sql': '', options: {schema: v}})).not.to.throw;
                 }
 
                 if (!long.isLong(v)) {
                     // invalid timeoutMillis
                     expect(() => sqlService.execute('', [], {timeoutMillis: v})).to.throw(IllegalArgumentError);
-                    expect(() => sqlService.execute({'sql': '', options: {timeoutMillis: v}, params: undefined}))
+                    expect(() => sqlService.execute({'sql': '', options: {timeoutMillis: v}}))
                         .to.throw(IllegalArgumentError);
                 } else {
                     // valid timeoutMillis
                     expect(() => sqlService.execute('', [], {timeoutMillis: v})).not.to.throw;
-                    expect(() => sqlService.execute({'sql': '', options: {timeoutMillis: v}, params: undefined})).not.to.throw;
+                    expect(() => sqlService.execute({'sql': '', options: {timeoutMillis: v}})).not.to.throw;
                 }
 
                 if (!(v in SqlExpectedResultType && typeof v === 'string')) { // enum objects at js has both numbers and strings
                     // invalid expectedResultType
                     expect(() => sqlService.execute('', [], {expectedResultType: v})).to.throw(IllegalArgumentError);
-                    expect(() => sqlService.execute({'sql': '', options: {expectedResultType: v}, params: undefined}))
+                    expect(() => sqlService.execute({'sql': '', options: {expectedResultType: v}}))
                         .to.throw(IllegalArgumentError);
                 } else {
                     // valid expectedResultType
                     expect(() => sqlService.execute('', [], {expectedResultType: v})).not.to.throw;
-                    expect(() => sqlService.execute({'sql': '', options: {expectedResultType: v}, params: undefined}))
+                    expect(() => sqlService.execute({'sql': '', options: {expectedResultType: v}}))
                         .not.to.throw;
                 }
 
                 if (typeof v !== 'boolean') {
                     // invalid returnRawResult
                     expect(() => sqlService.execute('', [], {returnRawResult: v})).to.throw(IllegalArgumentError);
-                    expect(() => sqlService.execute({'sql': '', options: {returnRawResult: v}, params: undefined}))
+                    expect(() => sqlService.execute({'sql': '', options: {returnRawResult: v}}))
                         .to.throw(IllegalArgumentError);
                 } else {
                     // valid returnRawResult
                     expect(() => sqlService.execute('', [], {returnRawResult: v})).not.to.throw;
-                    expect(() => sqlService.execute({'sql': '', options: {returnRawResult: v}, params: undefined})).not.to.throw;
+                    expect(() => sqlService.execute({'sql': '', options: {returnRawResult: v}})).not.to.throw;
                 }
             });
         });
