@@ -20,9 +20,9 @@ const {
     getTimezoneOffsetFromSeconds,
     leftZeroPadInteger,
     getOffsetSecondsFromTimezoneString
-} = require('../../../lib/util/DatetimeUtil');
+} = require('../../../lib/util/DatetimeUtil.js');
 
-const { IllegalArgumentError } = require('../../../lib/core/HazelcastError');
+const { IllegalArgumentError } = require('../../../lib/core/HazelcastError.js');
 
 describe('DatetimeUtilTest', function () {
     describe('getTimezoneOffsetFromSecondsTest', function () {

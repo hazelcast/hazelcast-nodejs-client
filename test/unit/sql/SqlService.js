@@ -15,17 +15,17 @@
  */
 'use strict';
 
-const { SqlServiceImpl } = require('../../../lib/sql/SqlService');
-const { SqlResultImpl } = require('../../../lib/sql/SqlResult');
-const { SqlExpectedResultType } = require('../../../lib/sql/SqlStatement');
-const { SqlQueryId } = require('../../../lib/sql/SqlQueryId');
-const { SqlErrorCode } = require('../../../lib/sql/SqlErrorCode');
+const { SqlServiceImpl } = require('../../../lib/sql/SqlService.js');
+const { SqlResultImpl } = require('../../../lib/sql/SqlResult.js');
+const { SqlExpectedResultType } = require('../../../lib/sql/SqlStatement.js');
+const { SqlQueryId } = require('../../../lib/sql/SqlQueryId.js');
+const { SqlErrorCode } = require('../../../lib/sql/SqlErrorCode.js');
 
-const { SqlExecuteCodec } = require('../../../lib/codec/SqlExecuteCodec');
-const { SqlCloseCodec } = require('../../../lib/codec/SqlCloseCodec');
-const { UuidUtil } = require('../../../lib/util/UuidUtil');
-const { assertTrueEventually } = require('../../TestUtil');
-const { IllegalArgumentError, HazelcastSqlException } = require('../../../lib/core/HazelcastError');
+const { SqlExecuteCodec } = require('../../../lib/codec/SqlExecuteCodec.js');
+const { SqlCloseCodec } = require('../../../lib/codec/SqlCloseCodec.js');
+const { UuidUtil } = require('../../../lib/util/UuidUtil.js');
+const { assertTrueEventually } = require('../../TestUtil.js');
+const { IllegalArgumentError, HazelcastSqlException } = require('../../../lib/core/HazelcastError.js');
 
 const long = require('long');
 const sinon = require('sinon');

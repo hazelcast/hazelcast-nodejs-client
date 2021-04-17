@@ -16,8 +16,8 @@
 'use strict';
 
 const { expect } = require('chai');
-const { HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime } = require('../../../lib/sql/DataTypes');
-const { IllegalArgumentError } = require('../../../lib/core/HazelcastError');
+const { HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime } = require('../../../lib/sql/DataTypes.js');
+const { IllegalArgumentError } = require('../../../lib/core/HazelcastError.js');
 
 describe('DataTypesTest', function () {
     describe('HzLocalTimeTest', function () {
