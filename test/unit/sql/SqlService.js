@@ -37,8 +37,6 @@ describe('SqlServiceTest', function () {
     describe('execute', function () {
         let sqlService;
 
-        let sqlResultSpy;
-
         let fakeExecuteCodec;
         let fakeGetRandomConnection;
 
@@ -57,7 +55,7 @@ describe('SqlServiceTest', function () {
 
         beforeEach(function () {
 
-            sqlResultSpy = sandbox.spy(SqlResultImpl, 'newResult');
+
 
             connectionStub = {
                 getRemoteUuid: sandbox.fake.returns(fakeRemoteUUID)
@@ -65,7 +63,7 @@ describe('SqlServiceTest', function () {
 
             fakeGetRandomConnection = sandbox.fake.returns(connectionStub);
             fakeExecuteCodec = sandbox.fake.returns(fakeClientMessage);
-            SqlExecuteCodec.encodeRequest = fakeExecuteCodec;
+            sandbox.replace(SqlExecuteCodec, 'encodeRequest', fakeExecuteCodec);
 
             handleExecuteResponseStub = sandbox.stub(SqlServiceImpl.prototype, 'handleExecuteResponse');
             fromMemberIdStub = sandbox.stub(SqlQueryId, 'fromMemberId').returns(fakeQueryId);
@@ -152,6 +150,7 @@ describe('SqlServiceTest', function () {
         });
 
         it('should construct a SqlResultImpl with default result type if it\'s not specified', function () {
+            const sqlResultSpy = sandbox.spy(SqlResultImpl, 'newResult');
             sqlService.execute('s', [], {cursorBufferSize: 1});
             expect(sqlResultSpy.calledOnceWithExactly(
                 sqlService,
@@ -163,6 +162,7 @@ describe('SqlServiceTest', function () {
         });
 
         it('should construct a SqlResultImpl with default cursor buffer size if it\'s not specified', function () {
+            const sqlResultSpy = sandbox.spy(SqlResultImpl, 'newResult');
             sqlService.execute('s', [], {returnRawResult: true});
             expect(sqlResultSpy.calledOnceWithExactly(
                 sqlService,
@@ -174,6 +174,7 @@ describe('SqlServiceTest', function () {
         });
 
         it('should construct a SqlResultImpl with parameters passed', function () {
+            const sqlResultSpy = sandbox.spy(SqlResultImpl, 'newResult');
             sqlService.execute('s', [], {returnRawResult: true, cursorBufferSize: 1});
             expect(sqlResultSpy.calledOnceWithExactly(
                 sqlService,
@@ -191,7 +192,7 @@ describe('SqlServiceTest', function () {
 
         it('should call handleExecuteResponse if invoke is successful', function () {
             const fakeResult = {};
-            SqlResultImpl.newResult = sinon.fake.returns(fakeResult);
+            sandbox.replace(SqlResultImpl, 'newResult', sinon.fake.returns(fakeResult));
             sqlService.execute('s', [], {});
             return assertTrueEventually(async () => {
                 expect(handleExecuteResponseStub.calledOnce).to.be.true;
@@ -210,7 +211,7 @@ describe('SqlServiceTest', function () {
             const fakeError = new Error();
             const fakeResult = {onExecuteError: sinon.spy()};
 
-            SqlResultImpl.newResult = sinon.fake.returns(fakeResult);
+            sandbox.replace(SqlResultImpl, 'newResult', sinon.fake.returns(fakeResult));
             invocationServiceStub = {invokeOnConnection: sandbox.fake.rejects(fakeError)};
             sqlService = new SqlServiceImpl(
                 connectionRegistryStub,
