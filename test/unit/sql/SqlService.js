@@ -55,8 +55,6 @@ describe('SqlServiceTest', function () {
 
         beforeEach(function () {
 
-
-
             connectionStub = {
                 getRemoteUuid: sandbox.fake.returns(fakeRemoteUUID)
             };
