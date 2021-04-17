@@ -113,7 +113,7 @@ describe('SqlServiceTest', function () {
                 SqlServiceImpl.DEFAULT_SCHEMA,
                 SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE,
                 fakeQueryId
-            ));
+            )).to.be.true;
 
             sqlService.execute('s', params, {
                 timeoutMillis: long.ZERO,
@@ -130,7 +130,7 @@ describe('SqlServiceTest', function () {
                 'sd',
                 SqlExpectedResultType.ANY,
                 fakeQueryId
-            ));
+            )).to.be.true;
         });
 
         it('should throw HazelcastSqlException if no connection to a data member is available', function () {
