@@ -84,12 +84,12 @@ export class SqlResultImpl implements SqlResult {
     /**
      * Deferred promise that resolves to a SqlPage when fetch is completed.
      */
-    private fetchResult: DeferredPromise<SqlPage>;
+    private fetchDeferred: DeferredPromise<SqlPage>;
 
     /**
      * If closing of the result is triggered
      */
-    private closeResult: DeferredPromise<void>;
+    private closeDeferred: DeferredPromise<void>;
 
     /*
     Whether the result is closed or not. The result is closed if an update count or the last page is received.
@@ -161,23 +161,24 @@ export class SqlResultImpl implements SqlResult {
 
     close(): Promise<void> {
         // Return close promise if a close is already started
-        if (this.closeResult?.promise) {
-            return this.closeResult.promise;
+        if (this.closeDeferred?.promise) {
+            return this.closeDeferred.promise;
         }
 
-        this.closeResult = deferredPromise<void>();
+        this.closeDeferred = deferredPromise<void>();
 
         const error = new HazelcastSqlException(null, SqlErrorCode.CANCELLED_BY_USER, 'Cancelled by user');
         this.onExecuteError(error);
-        // Make sure that all subsequent fetches will fail.
-        this.fetchResult.reject(error);
+        // Reject ongoing fetch if there is one
+        if(this.fetchDeferred?.promise)
+            this.fetchDeferred.reject(error);
         // Send the close request.
         this.service.close(this.connection, this.queryId).then(() => {
             this.closed = true;
-            this.closeResult.resolve();
-        }).catch(this.closeResult.reject);
+            this.closeDeferred.resolve();
+        }).catch(this.closeDeferred.reject);
 
-        return this.closeResult.promise
+        return this.closeDeferred.promise
     }
 
     /** @internal */
@@ -238,14 +239,22 @@ export class SqlResultImpl implements SqlResult {
 
     /** @internal */
     fetch(): Promise<SqlPage> {
-        if (this.fetchResult?.promise) return this.fetchResult.promise;
-        this.fetchResult = deferredPromise<SqlPage>();
+        // If there is an ongoing fetch, return that promise
+        if (this.fetchDeferred?.promise)
+            return this.fetchDeferred.promise;
+
+        // Do not start a new fetch if the result is closed
+        if (this.closeDeferred?.promise) {
+            return Promise.reject('Cannot fetch, the result is closed');
+        }
+
+        this.fetchDeferred = deferredPromise<SqlPage>();
 
         this.service.fetch(this.connection, this.queryId, this.cursorBufferSize).then(value => {
-            this.fetchResult.resolve(value);
-        }).catch(this.fetchResult.reject);
+            this.fetchDeferred.resolve(value);
+        }).catch(this.fetchDeferred.reject);
 
-        return this.fetchResult.promise;
+        return this.fetchDeferred.promise;
     }
 
     /** @internal */
