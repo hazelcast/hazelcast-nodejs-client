@@ -195,9 +195,10 @@ describe('SqlServiceTest', function () {
             sandbox.replace(SqlResultImpl, 'newResult', sinon.fake.returns(fakeResult));
             sqlService.execute('s', [], {});
             return assertTrueEventually(async () => {
-                expect(handleExecuteResponseStub.calledOnce).to.be.true;
-                expect(handleExecuteResponseStub.firstCall.args[0]).to.be.eq(fakeClientResponseMessage);
-                expect(handleExecuteResponseStub.firstCall.args[1]).to.be.eq(fakeResult);
+                expect(handleExecuteResponseStub.calledOnceWithExactly(
+                    sandbox.match.same(fakeClientResponseMessage),
+                    sandbox.match.same(fakeResult)
+                )).to.be.true;
             }, 100, 1000);
         });
 
@@ -221,8 +222,9 @@ describe('SqlServiceTest', function () {
 
             sqlService.execute('s', [], {});
             return assertTrueEventually(async () => {
-                expect(fakeResult.onExecuteError.calledOnce).to.be.true;
-                expect(fakeResult.onExecuteError.firstCall.args[0]).to.be.eq(fakeError);
+                expect(fakeResult.onExecuteError.calledOnceWithExactly(
+                    sandbox.match.same(fakeError)
+                )).to.be.true;
             }, 100, 1000);
         });
 
@@ -355,9 +357,10 @@ describe('SqlServiceTest', function () {
             const fakeQueryId = {};
             sqlService.close(fakeConnection, fakeQueryId);
 
-            expect(invocationServiceStub.invokeOnConnection.calledOnce).to.be.true;
-            expect(invocationServiceStub.invokeOnConnection.firstCall.args[0]).to.be.eq(fakeConnection);
-            expect(invocationServiceStub.invokeOnConnection.firstCall.args[1]).to.be.eq(fakeClientMessage);
+            expect(invocationServiceStub.invokeOnConnection.calledOnceWithExactly(
+                sandbox.match.same(fakeConnection),
+                sandbox.match.same(fakeClientMessage)
+            )).to.be.true;
         });
 
         it('should encode request using queryId passed', function () {
@@ -365,8 +368,9 @@ describe('SqlServiceTest', function () {
             const fakeQueryId = {};
             sqlService.close(fakeConnection, fakeQueryId);
 
-            expect(fakeCloseCodec.calledOnce).to.be.true;
-            expect(fakeCloseCodec.firstCall.args[0]).to.be.eq(fakeQueryId);
+            expect(fakeCloseCodec.calledOnceWithExactly(
+                sandbox.match.same(fakeQueryId)
+            )).to.be.true;
         });
 
     });
@@ -436,11 +440,13 @@ describe('SqlServiceTest', function () {
             sqlService.handleExecuteResponse(fakeClientMessage, fakeResult);
 
             expect(decodeStub.calledOnceWithExactly(fakeClientMessage)).to.be.true;
-            expect(fakeResult.onExecuteResponse.calledOnce).to.be.true;
-            sandbox.assert.match(fakeResult.onExecuteResponse.firstCall.args[0],
-                new SqlRowMetadataImpl(fakeResponse.rowMetadata));
-            expect(fakeResult.onExecuteResponse.firstCall.args[1]).to.be.eq(fakeResponse.rowPage);
-            expect(fakeResult.onExecuteResponse.firstCall.args[2]).to.be.eq(fakeResponse.updateCount);
+
+            expect(fakeResult.onExecuteResponse.calledOnceWithExactly(
+                sandbox.match(new SqlRowMetadataImpl(fakeResponse.rowMetadata)),
+                sandbox.match.same(fakeResponse.rowPage),
+                fakeResponse.updateCount
+            )).to.be.true;
+
             expect(fakeResult.onExecuteError.called).to.be.false;
         });
     });
@@ -480,9 +486,10 @@ describe('SqlServiceTest', function () {
             const fakeQueryId = {};
             sqlService.fetch({}, fakeQueryId, 1);
 
-            expect(encodeFake.calledOnce).to.be.true;
-            expect(encodeFake.firstCall.args[0]).to.be.eq(fakeQueryId);
-            expect(encodeFake.firstCall.args[1]).to.be.eq(1);
+            expect(encodeFake.calledOnceWithExactly(
+                sandbox.match.same(fakeQueryId),
+                1
+            )).to.be.true;
         });
 
         it('should invoke on connection', function () {
@@ -491,9 +498,10 @@ describe('SqlServiceTest', function () {
             const fakeConnection = {};
             sqlService.fetch(fakeConnection, {}, 1);
 
-            expect(fakeInvokeOnConnection.calledOnce).to.be.true;
-            expect(fakeInvokeOnConnection.firstCall.args[0]).to.be.eq(fakeConnection);
-            expect(fakeInvokeOnConnection.firstCall.args[1]).to.be.eq(fakeRequestMessage);
+            expect(fakeInvokeOnConnection.calledOnceWithExactly(
+                sandbox.match.same(fakeConnection),
+                sandbox.match.same(fakeRequestMessage)
+            )).to.be.true;
         });
 
         it('should decode the response', function () {
@@ -501,8 +509,9 @@ describe('SqlServiceTest', function () {
             sandbox.replace(SqlFetchCodec, 'decodeResponse', decodeFake);
 
             sqlService.fetch({}, {}, 1).then(() => {
-                expect(decodeFake.calledOnce).to.be.true;
-                expect(decodeFake.firstCall.args[0]).to.be.eq(fakeClientResponseMessage);
+                expect(decodeFake.calledOnceWithExactly(
+                    sandbox.match.same(fakeClientResponseMessage)
+                )).to.be.true;
             });
         });
 
