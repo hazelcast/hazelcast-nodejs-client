@@ -146,7 +146,7 @@ describe('SqlServiceTest', function () {
                 connectionManagerStub
             );
             expect(() => sqlService.execute('s', [], {})).to.throw(HazelcastSqlException)
-                .that.has.a.property('code', SqlErrorCode.CONNECTION_PROBLEM);
+                .that.has.ownProperty('code', SqlErrorCode.CONNECTION_PROBLEM);
         });
 
         it('should construct a SqlResultImpl with default result type if it\'s not specified', function () {
@@ -230,7 +230,7 @@ describe('SqlServiceTest', function () {
 
         it('should throw IllegalArgumentError any of the parameters are invalid', function () {
             // If sql property is not present in the object
-            expect(() => sqlService.execute({'sqll': ''})).to.throw(IllegalArgumentError);
+            expect(() => sqlService.execute({'random': ''})).to.throw(IllegalArgumentError);
 
             // If timeout is less than -1 throw
             expect(() => sqlService.execute({'sql': '', options: {timeoutMillis: long.fromNumber(-3)}}))
@@ -337,7 +337,7 @@ describe('SqlServiceTest', function () {
             fakeCloseCodec = sandbox.fake.returns(fakeClientMessage);
             SqlCloseCodec.encodeRequest = fakeCloseCodec;
 
-            invocationServiceStub = {invokeOnConnection: sandbox.fake.resolves()};
+            invocationServiceStub = {invokeOnConnection: sandbox.fake.resolves(undefined)};
 
             // sql service
             sqlService = new SqlServiceImpl(

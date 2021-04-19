@@ -54,7 +54,7 @@ export class SqlPage {
 }
 
 /** @internal */
-class ColumnarDataHolder implements DataHolder {
+export class ColumnarDataHolder implements DataHolder {
     constructor(private readonly columns: any[][]) {
 
     }

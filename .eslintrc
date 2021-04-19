@@ -1,8 +1,7 @@
 {
     "env": {
         "commonjs": true,
-        "node": true,
-        "es2017": true
+        "node": true
     },
     "extends": "eslint:recommended",
     "rules": {
@@ -96,5 +95,8 @@
                 "FunctionExpression > BlockStatement.body"
             ]
         }]
+    },
+    "parserOptions": {
+        "ecmaVersion": 2018
     }
 }

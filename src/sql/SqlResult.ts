@@ -105,12 +105,13 @@ export class SqlResultImpl implements SqlResult {
         private readonly queryId: SqlQueryId,
         private readonly cursorBufferSize: number,
         /* If true SqlResult is an object iterable, otherwise SqlRow iterable */
-        private readonly returnRawResult: boolean
+        private readonly returnRawResult: boolean = false
     ) {
         this.closed = false;
         this.rowMetadata = null;
         this.executeDeferred = deferredPromise<boolean>();
-        this.executeDeferred.promise.catch(() => {});
+        this.executeDeferred.promise.catch(() => {
+        });
     }
 
     [Symbol.asyncIterator](): AsyncIterator<SqlRowType, SqlRowType, SqlRowType> {
@@ -179,6 +180,7 @@ export class SqlResultImpl implements SqlResult {
         return this.closeResult.promise
     }
 
+    /** @internal */
     onNextPage(page: SqlPage) {
         this.currentPage = page;
         this.currentRowCount = page.getRowCount();
@@ -190,6 +192,7 @@ export class SqlResultImpl implements SqlResult {
         }
     }
 
+    /** @internal */
     onExecuteError(error: Error): void {
         if (this.closed) return;
         this.updateCount = Long.fromInt(-1);
@@ -197,7 +200,7 @@ export class SqlResultImpl implements SqlResult {
         this.executeDeferred.reject(error);
     }
 
-
+    /** @internal */
     getCurrentRow(): SqlRowType {
         if (this.returnRawResult) { // raw result, returns SqlRowImpl
             const values = [];
@@ -217,6 +220,7 @@ export class SqlResultImpl implements SqlResult {
         }
     }
 
+    /** @internal */
     onExecuteResponse(rowMetadata: SqlRowMetadata | null, rowPage: SqlPage, updateCount: Long) {
         // Ignore the response if sql result is closed.
         if (this.closed) return;
@@ -232,6 +236,7 @@ export class SqlResultImpl implements SqlResult {
         this.executeDeferred.resolve(true);
     }
 
+    /** @internal */
     fetch(): Promise<SqlPage> {
         if (this.fetchResult?.promise) return this.fetchResult.promise;
         this.fetchResult = deferredPromise<SqlPage>();
@@ -243,6 +248,7 @@ export class SqlResultImpl implements SqlResult {
         return this.fetchResult.promise;
     }
 
+    /** @internal */
     _hasNext(): Promise<boolean> {
         return this.executeDeferred.promise.then(() => {
             const checkHasNext = () => {
