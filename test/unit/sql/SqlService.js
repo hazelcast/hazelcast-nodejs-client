@@ -17,12 +17,14 @@
 
 const { SqlServiceImpl } = require('../../../lib/sql/SqlService.js');
 const { SqlResultImpl } = require('../../../lib/sql/SqlResult.js');
+const { SqlRowMetadataImpl } = require('../../../lib/sql/SqlRowMetadata.js');
 const { SqlExpectedResultType } = require('../../../lib/sql/SqlStatement.js');
 const { SqlQueryId } = require('../../../lib/sql/SqlQueryId.js');
 const { SqlErrorCode } = require('../../../lib/sql/SqlErrorCode.js');
 
 const { SqlExecuteCodec } = require('../../../lib/codec/SqlExecuteCodec.js');
 const { SqlCloseCodec } = require('../../../lib/codec/SqlCloseCodec.js');
+const { SqlFetchCodec } = require('../../../lib/codec/SqlFetchCodec.js');
 const { UuidUtil } = require('../../../lib/util/UuidUtil.js');
 const { assertTrueEventually } = require('../../TestUtil.js');
 const { IllegalArgumentError, HazelcastSqlException } = require('../../../lib/core/HazelcastError.js');
@@ -196,7 +198,6 @@ describe('SqlServiceTest', function () {
                 expect(handleExecuteResponseStub.calledOnce).to.be.true;
                 expect(handleExecuteResponseStub.firstCall.args[0]).to.be.eq(fakeClientResponseMessage);
                 expect(handleExecuteResponseStub.firstCall.args[1]).to.be.eq(fakeResult);
-                expect(handleExecuteResponseStub.firstCall.args[2]).to.be.eq(connectionStub);
             }, 100, 1000);
         });
 
@@ -370,10 +371,174 @@ describe('SqlServiceTest', function () {
 
     });
     describe('handleExecuteResponse', function () {
+        let sqlService;
 
+        const fakeClientMessage = {};
+
+        let fakeResult;
+
+        beforeEach(function () {
+            fakeResult = {
+                onExecuteError: sandbox.fake(),
+                onExecuteResponse: sandbox.fake()
+            };
+            // sql service
+            sqlService = new SqlServiceImpl(
+                {},
+                {},
+                {},
+                {}
+            );
+        });
+
+        afterEach(function () {
+            sandbox.restore();
+        });
+
+        it('should decode the response', function () {
+            const decodeStub = sandbox.stub(SqlExecuteCodec, 'decodeResponse').returns({
+                error: null,
+                rowMetadata: [1]
+            });
+
+            sqlService.handleExecuteResponse(fakeClientMessage, fakeResult);
+
+            expect(decodeStub.calledOnceWithExactly(fakeClientMessage)).to.be.true;
+        });
+
+        it('should call onExecuteError method of result if response error is not null', function () {
+            const fakeResponse = {
+                error: {
+                    originatingMemberId: 1,
+                    code: 1,
+                    message: 'oops'
+                },
+                rowMetadata: [],
+                rowPage: {},
+                updateCount: 1
+            };
+            const decodeStub = sandbox.stub(SqlExecuteCodec, 'decodeResponse').returns(fakeResponse);
+            sqlService.handleExecuteResponse(fakeClientMessage, fakeResult);
+
+            expect(decodeStub.calledOnceWithExactly(fakeClientMessage)).to.be.true;
+            expect(fakeResult.onExecuteError.calledWithMatch(fakeResponse.error)).to.be.true;
+            expect(fakeResult.onExecuteResponse.called).to.be.false;
+        });
+
+        it('should call onExecuteResponse method of result if response error is null', function () {
+            const fakeResponse = {
+                error: null,
+                rowMetadata: [1],
+                rowPage: {},
+                updateCount: 1
+            };
+            const decodeStub = sandbox.stub(SqlExecuteCodec, 'decodeResponse').returns(fakeResponse);
+            sqlService.handleExecuteResponse(fakeClientMessage, fakeResult);
+
+            expect(decodeStub.calledOnceWithExactly(fakeClientMessage)).to.be.true;
+            expect(fakeResult.onExecuteResponse.calledOnce).to.be.true;
+            sandbox.assert.match(fakeResult.onExecuteResponse.firstCall.args[0],
+                new SqlRowMetadataImpl(fakeResponse.rowMetadata));
+            expect(fakeResult.onExecuteResponse.firstCall.args[1]).to.be.eq(fakeResponse.rowPage);
+            expect(fakeResult.onExecuteResponse.firstCall.args[2]).to.be.eq(fakeResponse.updateCount);
+            expect(fakeResult.onExecuteError.called).to.be.false;
+        });
     });
 
     describe('fetch', function () {
+        let sqlService;
 
+        let fakeInvokeOnConnection;
+        let encodeFake;
+        const fakeClientResponseMessage = {};
+        const fakeRequestMessage = {};
+
+        beforeEach(function () {
+
+            encodeFake = sinon.fake.returns(fakeRequestMessage);
+            sandbox.replace(SqlFetchCodec, 'encodeRequest', encodeFake);
+
+            fakeInvokeOnConnection = sandbox.fake.resolves(fakeClientResponseMessage);
+            // sql service
+            sqlService = new SqlServiceImpl(
+                {},
+                {},
+                {
+                    invokeOnConnection: fakeInvokeOnConnection
+                },
+                {}
+            );
+        });
+
+        afterEach(function () {
+            sandbox.restore();
+        });
+
+        it('should encode a request', function () {
+            const decodeFake = sinon.fake.returns({error: null, rowPage: []});
+            sandbox.replace(SqlFetchCodec, 'decodeResponse', decodeFake);
+            const fakeQueryId = {};
+            sqlService.fetch({}, fakeQueryId, 1);
+
+            expect(encodeFake.calledOnce).to.be.true;
+            expect(encodeFake.firstCall.args[0]).to.be.eq(fakeQueryId);
+            expect(encodeFake.firstCall.args[1]).to.be.eq(1);
+        });
+
+        it('should invoke on connection', function () {
+            const decodeFake = sinon.fake.returns({error: null, rowPage: []});
+            sandbox.replace(SqlFetchCodec, 'decodeResponse', decodeFake);
+            const fakeConnection = {};
+            sqlService.fetch(fakeConnection, {}, 1);
+
+            expect(fakeInvokeOnConnection.calledOnce).to.be.true;
+            expect(fakeInvokeOnConnection.firstCall.args[0]).to.be.eq(fakeConnection);
+            expect(fakeInvokeOnConnection.firstCall.args[1]).to.be.eq(fakeRequestMessage);
+        });
+
+        it('should decode the response', function () {
+            const decodeFake = sinon.fake.returns({error: null, rowPage: []});
+            sandbox.replace(SqlFetchCodec, 'decodeResponse', decodeFake);
+
+            sqlService.fetch({}, {}, 1).then(() => {
+                expect(decodeFake.calledOnce).to.be.true;
+                expect(decodeFake.firstCall.args[0]).to.be.eq(fakeClientResponseMessage);
+            });
+        });
+
+        it('should return a promise that will be rejected if response contains an error', function (done) {
+            const theError = {
+                originatingMemberId: 1,
+                code: 1,
+                message: 'oops'
+            };
+            const decodeFake = sinon.fake.returns({
+                error: theError, rowPage: []
+            });
+            sandbox.replace(SqlFetchCodec, 'decodeResponse', decodeFake);
+
+            sqlService.fetch({}, {}, 1).then(() => {
+                done(new Error('Expected promise to be rejected'));
+            }).catch(err => {
+                sandbox.assert.match(err, theError);
+                done();
+            });
+        });
+
+        it('should return a promise that will be resolved with a SqlPage if response does not contain an error',
+            function (done) {
+            const expectedPage = {};
+            const decodeFake = sinon.fake.returns({
+                error: null, rowPage: expectedPage
+            });
+            sandbox.replace(SqlFetchCodec, 'decodeResponse', decodeFake);
+
+            sqlService.fetch({}, {}, 1).then(actualPage => {
+                expect(actualPage).to.be.eq(expectedPage);
+                done();
+            }).catch(err => {
+                done(err);
+            });
+        });
     });
 });

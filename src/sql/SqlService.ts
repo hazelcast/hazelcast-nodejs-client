@@ -70,7 +70,7 @@ export class SqlServiceImpl implements SqlService {
 
     static readonly DEFAULT_EXPECTED_RESULT_TYPE = SqlExpectedResultType.ANY;
 
-    static readonly DEFAULT_SCHEMA : null = null;
+    static readonly DEFAULT_SCHEMA: null = null;
 
     constructor(
         private readonly connectionRegistry: ConnectionRegistry,
@@ -81,12 +81,11 @@ export class SqlServiceImpl implements SqlService {
     }
 
     /**
-     *
-     * @param clientMessage
-     * @param res
-     * @param connection
+     * Handles sql execute response.
+     * @param clientMessage The response message
+     * @param res Sql result for this response
      */
-    handleExecuteResponse(clientMessage: ClientMessage, res: SqlResultImpl, connection: Connection): void {
+    handleExecuteResponse(clientMessage: ClientMessage, res: SqlResultImpl): void {
         const response = SqlExecuteCodec.decodeResponse(clientMessage);
         if (response.error !== null) {
             const responseError = new HazelcastSqlException(
@@ -96,13 +95,13 @@ export class SqlServiceImpl implements SqlService {
                 null
             )
             res.onExecuteError(responseError);
-            return;
+        } else {
+            res.onExecuteResponse(
+                response.rowMetadata !== null ? new SqlRowMetadataImpl(response.rowMetadata) : null,
+                response.rowPage,
+                response.updateCount
+            );
         }
-        res.onExecuteResponse(
-            response.rowMetadata !== null ? new SqlRowMetadataImpl(response.rowMetadata) : null,
-            response.rowPage,
-            response.updateCount
-        )
     }
 
     /**
@@ -135,14 +134,14 @@ export class SqlServiceImpl implements SqlService {
         if (sqlStatementOptions.hasOwnProperty('schema'))
             tryGetString(sqlStatementOptions.schema);
 
-        if (sqlStatementOptions.hasOwnProperty('timeoutMillis')){
+        if (sqlStatementOptions.hasOwnProperty('timeoutMillis')) {
             const longValue = tryGetLong(sqlStatementOptions.timeoutMillis);
-            if(longValue.lessThanOrEqual(Long.fromInt(-2))){
+            if (longValue.lessThanOrEqual(Long.fromInt(-2))) {
                 throw new RangeError('Timeout millis cannot be less than -1');
             }
         }
 
-        if (sqlStatementOptions.hasOwnProperty('cursorBufferSize') && tryGetNumber(sqlStatementOptions.cursorBufferSize) <= 0){
+        if (sqlStatementOptions.hasOwnProperty('cursorBufferSize') && tryGetNumber(sqlStatementOptions.cursorBufferSize) <= 0) {
             throw new RangeError('Cursor buffer size cannot be negative');
         }
 
@@ -197,7 +196,7 @@ export class SqlServiceImpl implements SqlService {
 
         try {
             const serializedParams = [];
-            if(Array.isArray(params)){ // params can be undefined
+            if (Array.isArray(params)) { // params can be undefined
                 for (const param of params) {
                     serializedParams.push(this.serializationService.toData(param));
                 }
@@ -224,7 +223,7 @@ export class SqlServiceImpl implements SqlService {
             );
 
             this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
-                this.handleExecuteResponse(clientMessage, res, connection);
+                this.handleExecuteResponse(clientMessage, res);
             }).catch(res.onExecuteError);
 
             return res;
@@ -240,7 +239,8 @@ export class SqlServiceImpl implements SqlService {
 
     close(connection: Connection, queryId: SqlQueryId): Promise<void> {
         const requestMessage = SqlCloseCodec.encodeRequest(queryId);
-        return this.invocationService.invokeOnConnection(connection, requestMessage).then(() => {});
+        return this.invocationService.invokeOnConnection(connection, requestMessage).then(() => {
+        });
     }
 
     fetch(connection: Connection, queryId: SqlQueryId, cursorBufferSize: number): Promise<SqlPage> {
