@@ -15,10 +15,10 @@
  */
 'use strict';
 
-const long = require('long');
+// const long = require('long');
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
-const { expect } = require('chai');
+// const { expect } = require('chai');
 
 describe('SqlPageTest', function () {
 

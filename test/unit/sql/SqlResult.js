@@ -229,12 +229,26 @@ describe('SqlResultTest', function () {
     });
     describe('getRowMetadata', function () {
 
-        beforeEach(function () {
+        let fakeSqlService;
+        let fakeConnection;
+        let fakeQueryId;
 
+        beforeEach(function () {
+            fakeSqlService = {close: sandbox.fake.resolves(undefined), fetch: sandbox.fake(() => {
+                return delayedPromise(500);
+            })};
+            fakeConnection = sandbox.fake();
+            fakeQueryId = sandbox.fake();
         });
 
         afterEach(function () {
             sandbox.restore();
+        });
+
+        it('should return the same promise if close() is called again', function () {
+            const sqlResult = new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, 4096);
+            const closePromise = sqlResult.close();
+            expect(sqlResult.close()).to.be.eq(closePromise);
         });
 
     });

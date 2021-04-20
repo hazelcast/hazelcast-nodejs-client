@@ -1,7 +1,7 @@
 'use strict';
 import {Client, HazelcastSqlException} from '.';
 import {SqlRowAsObject} from './sql/SqlResult';
-import {SqlExpectedResultType} from './sql/SqlStatement';
+// import {SqlExpectedResultType} from './sql/SqlStatement';
 
 const run = async function () {
     const client = await Client.newHazelcastClient();
