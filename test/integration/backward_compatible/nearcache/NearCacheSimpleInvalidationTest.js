@@ -32,7 +32,7 @@ describe('NearCacheSimpleInvalidationTest', function () {
     let client;
     let updaterClient;
 
-    [false, true].forEach(function (batchInvalidationEnabled) {
+    [false, true].forEach((batchInvalidationEnabled) => {
         describe('batch invalidations enabled=' + batchInvalidationEnabled, function () {
             before(async function () {
                 let clusterConfig = null;

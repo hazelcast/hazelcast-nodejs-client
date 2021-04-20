@@ -36,7 +36,7 @@ class ManagedObjects {
 
     async destroyAll() {
         const promises = [];
-        this.managedObjects.forEach(function (obj) {
+        this.managedObjects.forEach((obj) => {
             promises.push(obj.destroy());
         });
         return Promise.all(promises);
@@ -46,7 +46,7 @@ class ManagedObjects {
         const deferred = deferredPromise();
         this.managedObjects.filter((el) => {
             if (el.getName() === name) {
-                el.destroy().then(function () {
+                el.destroy().then(() => {
                     deferred.resolve();
                 });
             }
@@ -73,7 +73,7 @@ const configParams = [
     smartConfig
 ];
 
-configParams.forEach(function (cfg) {
+configParams.forEach((cfg) => {
     describe('HazelcastClientTest[smart=' + cfg.network.smartRouting + ']', function () {
 
         let cluster;
@@ -119,7 +119,7 @@ configParams.forEach(function (cfg) {
         it('getDistributedObjects returns all dist objects', function () {
             managed.getObject(client.getMap.bind(client, 'map'));
             managed.getObject(client.getSet.bind(client, 'set'));
-            return TestUtil.assertTrueEventually(async function () {
+            return TestUtil.assertTrueEventually(async () => {
                 const distObjects = await client.getDistributedObjects();
                 const names = distObjects.map((o) => {
                     return o.getName();
@@ -133,10 +133,10 @@ configParams.forEach(function (cfg) {
             managed.getObject(client.getMap.bind(client, 'map2'));
             managed.getObject(client.getMap.bind(client, 'map3'));
 
-            return TestUtil.assertTrueEventually( async function () {
+            return TestUtil.assertTrueEventually(async () => {
                 await managed.destroy('map1');
                 const distObjects = await client.getDistributedObjects();
-                const names = distObjects.map(function (o) {
+                const names = distObjects.map(o => {
                     return o.getName();
                 });
                 expect(names).to.have.members(['map2', 'map3']);

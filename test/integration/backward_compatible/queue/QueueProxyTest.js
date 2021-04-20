@@ -107,7 +107,7 @@ describe('QueueProxyTest', function () {
 
     it('poll returns head after a new element added', async function () {
         await queue.clear();
-        setTimeout(async function () {
+        setTimeout(async () => {
             await queue.offer('new_item');
         }, 500);
         const ret = await queue.poll(1000);
@@ -186,8 +186,8 @@ describe('QueueProxyTest', function () {
     });
 
     it('take waits', function (done) {
-        queue.clear().then(function () {
-            queue.take().then(function (val) {
+        queue.clear().then(() => {
+            queue.take().then((val) => {
                 expect(val).to.equal('item_new');
                 done();
             }).catch(done);
@@ -265,7 +265,7 @@ describe('QueueProxyTest', function () {
                 expect(itemEvent.member).to.not.be.equal(null);
                 done();
             }
-        }, true).then(function () {
+        }, true).then(() => {
             queue.add('item_new');
         });
     });
@@ -275,7 +275,7 @@ describe('QueueProxyTest', function () {
             itemAdded: () => {
                 done();
             }
-        }, false).then(function () {
+        }, false).then(() => {
             queue.add('item_new');
         });
     });
@@ -289,7 +289,7 @@ describe('QueueProxyTest', function () {
                 expect(itemEvent.member).to.not.be.equal(null);
                 done();
             }
-        }, true).then(function () {
+        }, true).then(() => {
             queue.remove('item0');
         });
     });

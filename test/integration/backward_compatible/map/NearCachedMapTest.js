@@ -23,7 +23,7 @@ const TestUtil = require('../../../TestUtil');
 
 describe('NearCachedMapTest', function () {
 
-    [true, false].forEach(function (invalidateOnChange) {
+    [true, false].forEach((invalidateOnChange) => {
         describe('invalidate on change=' + invalidateOnChange, function () {
 
             let cluster;
@@ -187,7 +187,7 @@ describe('NearCachedMapTest', function () {
 
             // it('loadAll invalidates the cache');
 
-            [true, false].forEach(function (shouldUsePutAll) {
+            [true, false].forEach((shouldUsePutAll) => {
                 it((shouldUsePutAll ? 'putAll' : 'setAll') + ' invalidates entries', async function () {
                     await map1.getAll(['key1', 'key2']);
                     const entries = [
