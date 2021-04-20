@@ -197,6 +197,35 @@ describe('SqlResultTest', function () {
 
             sqlResult.close();
         });
+
+        it('should resolve close promise after sending a close request successfully', function () {
+            const sqlResult = new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, 4096);
+            return sqlResult.close().then(() => {
+                expect(fakeSqlService.close.calledOnceWithExactly(
+                    sandbox.match.same(fakeConnection),
+                    sandbox.match.same(fakeQueryId)
+                )).to.be.true;
+                expect(sqlResult.closed).to.be.true;
+            });
+        });
+
+        it('should reject close promise if an error occurs during close request', function (done) {
+            const sqlResult = new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, 4096);
+            const fakeError = new Error('Intended whoops error');
+            fakeSqlService.close = sandbox.fake.rejects(fakeError);
+
+            sqlResult.close().then(() => {
+                done(new Error('Not expected to run this'));
+            }).catch(err => {
+                try {
+                    expect(err).to.be.eq(fakeError);
+                    expect(sqlResult.closed).to.be.false;
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            });
+        });
     });
     describe('getRowMetadata', function () {
 
