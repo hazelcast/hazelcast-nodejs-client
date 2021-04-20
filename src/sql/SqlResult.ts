@@ -297,11 +297,6 @@ export class SqlResultImpl implements SqlResult {
                     value: undefined
                 };
             }
-        }).catch(() => {
-            return {
-                done: true,
-                value: undefined
-            };
         });
     }
 }

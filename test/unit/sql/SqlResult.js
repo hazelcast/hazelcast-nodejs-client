@@ -32,6 +32,44 @@ const { SqlColumnType } = require('../../../lib/sql/SqlColumnMetadata');
 const { SqlErrorCode } = require('../../../lib/sql/SqlErrorCode');
 const { HazelcastSqlException } = require('../../../lib/core/HazelcastError');
 
+/**
+ * Simulates a successful execute response
+ * @param sqlResult
+ * @param rowCount how many rows to add to the sqlResult
+ * @returns sqlResult
+ */
+function prepareSuccessfulSqlResult(sqlResult, rowCount) {
+    const columns = [];
+    for (let i = 0; i < 2; i++) { // column number
+        const column = [];
+        for (let j = 0; j<rowCount; j++) {
+            column.push((i*rowCount + j).toString());
+        }
+        columns.push(column);
+    }
+
+    const rowPage = new SqlPage(
+        [0, 0], // column types
+        new ColumnarDataHolder(columns),
+        true // isLast
+    );
+    const rowMetadata = new SqlRowMetadataImpl([
+        {
+            name: 'foo',
+            type: SqlColumnType.VARCHAR,
+            nullable: true
+        },
+        {
+            name: 'bar',
+            type: SqlColumnType.VARCHAR,
+            nullable: true
+        }
+    ]);
+
+    sqlResult.onExecuteResponse(rowMetadata, rowPage, long.ZERO);
+    return sqlResult;
+}
+
 describe('SqlResultTest', function () {
     describe('iteration', function () {
 
@@ -48,38 +86,6 @@ describe('SqlResultTest', function () {
         afterEach(function () {
             sandbox.restore();
         });
-
-        function prepareSuccessfulSqlResult(sqlResult, rowCount) {
-            const columns = [];
-            for (let i = 0; i < 2; i++) { // column number
-                const column = [];
-                for (let j = 0; j<rowCount; j++) {
-                    column.push((i*rowCount + j).toString());
-                }
-                columns.push(column);
-            }
-
-            const rowPage = new SqlPage(
-                [0, 0], // column types
-                new ColumnarDataHolder(columns),
-                true // isLast
-            );
-            const rowMetadata = new SqlRowMetadataImpl([
-                {
-                    name: 'foo',
-                    type: SqlColumnType.VARCHAR,
-                    nullable: true
-                },
-                {
-                    name: 'bar',
-                    type: SqlColumnType.VARCHAR,
-                    nullable: true
-                }
-            ]);
-
-            sqlResult.onExecuteResponse(rowMetadata, rowPage, long.ZERO);
-            return sqlResult;
-        }
 
         it('should be async iterable, iterating over objects; by default and if returnRawResults is false', function () {
             [
@@ -137,6 +143,48 @@ describe('SqlResultTest', function () {
             expect(counter).to.be.eq(rowCount);
         });
 
+        it('should reject for await iteration on execute error', function (done) {
+            const sqlResult = new SqlResultImpl(
+                fakeSqlService,
+                fakeConnection,
+                fakeQueryId,
+                4096
+            );
+
+            const executeError = new Error('whoops..');
+            sqlResult.onExecuteError(executeError);
+
+            (async function() {
+                // eslint-disable-next-line no-empty,no-unused-vars
+                for await (const row of sqlResult) {
+                }
+            })().then(() => {
+                done(new Error('Unexpected to run this line'));
+            }).catch(err => {
+                expect(err).to.be.eq(executeError);
+                done();
+            }).catch(done);
+        });
+
+        it('should reject next() iteration on execute error', function (done) {
+            const sqlResult = new SqlResultImpl(
+                fakeSqlService,
+                fakeConnection,
+                fakeQueryId,
+                4096
+            );
+
+            const executeError = new Error('whoops..');
+            sqlResult.onExecuteError(executeError);
+
+            sqlResult.next().then(() => {
+                done(new Error('Unexpected to run this line'));
+            }).catch(err => {
+                expect(err).to.be.eq(executeError);
+                done();
+            }).catch(done);
+        });
+
     });
     describe('close', function () {
 
@@ -167,14 +215,10 @@ describe('SqlResultTest', function () {
             sqlResult.fetch().then(() => {
                 done(new Error('Not expected to run this line'));
             }).catch(err => {
-                try {
-                    expect(err).to.be.instanceof(HazelcastSqlException)
+                expect(err).to.be.instanceof(HazelcastSqlException)
                         .with.property('code', SqlErrorCode.CANCELLED_BY_USER);
-                    done();
-                } catch (e) {
-                    done(e);
-                }
-            });
+                done();
+            }).catch(done);
             sqlResult.close();
         });
 
@@ -185,15 +229,11 @@ describe('SqlResultTest', function () {
             sqlResult.executeDeferred.promise.then(() => {
                 done(new Error('Not expected to run this line'));
             }).catch(err => {
-                try {
-                    expect(err).to.be.instanceof(HazelcastSqlException)
-                        .with.property('code', SqlErrorCode.CANCELLED_BY_USER);
-                    expect(onExecuteErrorSpy.calledOnceWithExactly(err)).to.be.true;
-                    done();
-                } catch (e) {
-                    done(e);
-                }
-            });
+                expect(err).to.be.instanceof(HazelcastSqlException)
+                    .with.property('code', SqlErrorCode.CANCELLED_BY_USER);
+                expect(onExecuteErrorSpy.calledOnceWithExactly(err)).to.be.true;
+                done();
+            }).catch(done);
 
             sqlResult.close();
         });
@@ -217,21 +257,19 @@ describe('SqlResultTest', function () {
             sqlResult.close().then(() => {
                 done(new Error('Not expected to run this'));
             }).catch(err => {
-                try {
-                    expect(err).to.be.eq(fakeError);
-                    expect(sqlResult.closed).to.be.false;
-                    done();
-                } catch (e) {
-                    done(e);
-                }
-            });
+                expect(err).to.be.eq(fakeError);
+                expect(sqlResult.closed).to.be.false;
+                done();
+            }).catch(done);
         });
     });
-    describe('getRowMetadata', function () {
+    describe('getters', function () {
 
         let fakeSqlService;
         let fakeConnection;
         let fakeQueryId;
+        let sqlResult;
+        const rowMetadata = {};
 
         beforeEach(function () {
             fakeSqlService = {close: sandbox.fake.resolves(undefined), fetch: sandbox.fake(() => {
@@ -239,39 +277,17 @@ describe('SqlResultTest', function () {
             })};
             fakeConnection = sandbox.fake();
             fakeQueryId = sandbox.fake();
+            sqlResult = new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, 4096);
+            sqlResult.onExecuteResponse(rowMetadata, {});
         });
 
         afterEach(function () {
             sandbox.restore();
         });
 
-        it('should return the same promise if close() is called again', function () {
-            const sqlResult = new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, 4096);
-            const closePromise = sqlResult.close();
-            expect(sqlResult.close()).to.be.eq(closePromise);
-        });
-
-    });
-    describe('isRowSet', function () {
-
-        beforeEach(function () {
-
-        });
-
-        afterEach(function () {
-            sandbox.restore();
-        });
-
-    });
-    describe('getUpdateCount', function () {
-
-        beforeEach(function () {
-
-        });
-
-        afterEach(function () {
-            sandbox.restore();
-        });
+        // getRowMetadata
+        // isRowSet
+        // getUpdateCount
 
     });
     describe('onNextPage', function () {
