@@ -119,14 +119,13 @@ configParams.forEach(function (cfg) {
         it('getDistributedObjects returns all dist objects', function () {
             managed.getObject(client.getMap.bind(client, 'map'));
             managed.getObject(client.getSet.bind(client, 'set'));
-            TestUtil.assertTrueEventually(function () {
-                return client.getDistributedObjects().then(function (distObjects) {
-                    const names = distObjects.map((o) => {
-                        return o.getName();
-                    });
-                    expect(names).to.have.members(['map', 'set']);
+            return TestUtil.assertTrueEventually(async function () {
+                const distObjects = await client.getDistributedObjects();
+                const names = distObjects.map((o) => {
+                    return o.getName();
                 });
-            });
+                expect(names).to.have.members(['map', 'set']);
+            }, 100, 5000);
         });
 
         it('getDistributedObjects does not return removed object', function () {
@@ -134,16 +133,14 @@ configParams.forEach(function (cfg) {
             managed.getObject(client.getMap.bind(client, 'map2'));
             managed.getObject(client.getMap.bind(client, 'map3'));
 
-            TestUtil.assertTrueEventually(function () {
-                return managed.destroy('map1').then(function () {
-                    client.getDistributedObjects().then(function (distObjects) {
-                        const names = distObjects.map(function (o) {
-                            return o.getName();
-                        });
-                        expect(names).to.have.members(['map2', 'map3']);
-                    });
+            return TestUtil.assertTrueEventually( async function () {
+                await managed.destroy('map1');
+                const distObjects = await client.getDistributedObjects();
+                const names = distObjects.map(function (o) {
+                    return o.getName();
                 });
-            });
+                expect(names).to.have.members(['map2', 'map3']);
+            }, 100, 5000);
         });
     });
 });
