@@ -5,7 +5,8 @@
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
     "files": [
-        "lib/"
+        "lib/**/*.js",
+        "lib/**/*.d.ts"
     ],
     "dependencies": {
         "@types/long": "4.0.1",
