@@ -116,44 +116,34 @@ configParams.forEach(function (cfg) {
             expect(info.labels).to.deep.equal(new Set());
         });
 
-        it('getDistributedObjects returns all dist objects', function (done) {
+        it('getDistributedObjects returns all dist objects', function () {
             managed.getObject(client.getMap.bind(client, 'map'));
             managed.getObject(client.getSet.bind(client, 'set'));
-            setTimeout(function () {
-                client.getDistributedObjects().then(function (distObjects) {
-                    try {
-                        const names = distObjects.map((o) => {
-                            return o.getName();
-                        });
-                        expect(names).to.have.members(['map', 'set']);
-                        done();
-                    } catch (e) {
-                        done(e);
-                    }
+            TestUtil.assertTrueEventually(function () {
+                return client.getDistributedObjects().then(function (distObjects) {
+                    const names = distObjects.map((o) => {
+                        return o.getName();
+                    });
+                    expect(names).to.have.members(['map', 'set']);
                 });
-            }, 300);
+            });
         });
 
-        it('getDistributedObjects does not return removed object', function (done) {
+        it('getDistributedObjects does not return removed object', function () {
             managed.getObject(client.getMap.bind(client, 'map1'));
             managed.getObject(client.getMap.bind(client, 'map2'));
             managed.getObject(client.getMap.bind(client, 'map3'));
 
-            setTimeout(function () {
-                managed.destroy('map1').then(function () {
+            TestUtil.assertTrueEventually(function () {
+                return managed.destroy('map1').then(function () {
                     client.getDistributedObjects().then(function (distObjects) {
-                        try {
-                            const names = distObjects.map(function (o) {
-                                return o.getName();
-                            });
-                            expect(names).to.have.members(['map2', 'map3']);
-                            done();
-                        } catch (e) {
-                            done(e);
-                        }
+                        const names = distObjects.map(function (o) {
+                            return o.getName();
+                        });
+                        expect(names).to.have.members(['map2', 'map3']);
                     });
                 });
-            }, 300);
+            });
         });
     });
 });
