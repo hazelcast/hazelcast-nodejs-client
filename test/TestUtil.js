@@ -23,23 +23,23 @@ exports.promiseLater = function (time, func) {
     if (func === undefined) {
         func = () => {};
     }
-    return new Promise(function (resolve) {
-        setTimeout(function () {
+    return new Promise(((resolve) => {
+        setTimeout(() => {
             resolve(func());
         }, time);
-    });
+    }));
 };
 
 exports.promiseWaitMilliseconds = function (milliseconds) {
-    return new Promise(function (resolve) {
-        setTimeout(function () {
+    return new Promise(((resolve) => {
+        setTimeout(() => {
             resolve();
         }, milliseconds);
-    });
+    }));
 };
 
 exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutMs = 60000) {
-    return new Promise(function (resolve, reject) {
+    return new Promise(((resolve, reject) => {
         let intervalTimer;
         function scheduleNext() {
             intervalTimer = setTimeout(() => {
@@ -59,7 +59,7 @@ exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutM
             clearInterval(intervalTimer);
             reject(new Error('Rejected due to timeout of ' + timeoutMs + 'ms'));
         }, timeoutMs);
-    });
+    }));
 };
 
 const expectAlmostEqual = function (actual, expected) {

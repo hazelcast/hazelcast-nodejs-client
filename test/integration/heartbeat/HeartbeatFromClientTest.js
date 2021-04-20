@@ -46,7 +46,7 @@ describe('HeartbeatFromClientTest', function () {
         };
         await RC.startMember(cluster.id);
         const client1 = await Client.newHazelcastClient(clientConfig);
-        client1.getConnectionManager().on('connectionClosed', function () {
+        client1.getConnectionManager().on('connectionClosed', () => {
             connectionClosedEventCount++;
         });
         const client2 = await Client.newHazelcastClient(clientConfig);
@@ -61,7 +61,7 @@ describe('HeartbeatFromClientTest', function () {
         });
         const mapFromClient2 = await client2.getMap(MAP_NAME);
         let counter = 0;
-        const pushTask = setInterval(function () {
+        const pushTask = setInterval(() => {
             mapFromClient2.put('testkey', counter++);
         }, 1000);
         await TestUtil.promiseLater(15000, () => { });

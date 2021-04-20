@@ -20,7 +20,7 @@ const RC = require('../RC');
 const { Client } = require('../../../');
 const TestUtil = require('../../TestUtil');
 
-[true, false].forEach(function (isSmartService) {
+[true, false].forEach((isSmartService) => {
     describe('ListenerServiceTest[smart=' + isSmartService + ']', function () {
 
         let cluster;
@@ -58,12 +58,12 @@ const TestUtil = require('../../TestUtil');
 
         it('listener is invoked when new object is created[smart=' + isSmartService + ']', function (done) {
             let listenerId;
-            client.addDistributedObjectListener(function (distributedObjectEvent) {
+            client.addDistributedObjectListener((distributedObjectEvent) => {
                 expect(distributedObjectEvent.objectName).to.eq('mapToListen');
                 expect(distributedObjectEvent.serviceName).to.eq('hz:impl:mapService');
                 expect(distributedObjectEvent.eventType).to.eq('created');
                 client.removeDistributedObjectListener(listenerId).then(() => done());
-            }).then(function (id) {
+            }).then((id) => {
                 listenerId = id;
                 client.getMap('mapToListen').catch(() => {
                     // the event may come earlier than the getMap response,
@@ -74,7 +74,7 @@ const TestUtil = require('../../TestUtil');
 
         it('listener is invoked when object is removed[smart=' + isSmartService + ']', function (done) {
             let map, listenerId;
-            client.addDistributedObjectListener(function (distributedObjectEvent) {
+            client.addDistributedObjectListener((distributedObjectEvent) => {
                 if (distributedObjectEvent.eventType === 'destroyed'
                         && distributedObjectEvent.objectName === 'mapToRemove') {
                     expect(distributedObjectEvent.objectName).to.eq('mapToRemove');
@@ -83,15 +83,15 @@ const TestUtil = require('../../TestUtil');
                     client.removeDistributedObjectListener(listenerId).then(() => done());
                 } else if (distributedObjectEvent.eventType === 'created'
                         && distributedObjectEvent.objectName === 'mapToRemove') {
-                    TestUtil.promiseWaitMilliseconds(1000).then(function () {
+                    TestUtil.promiseWaitMilliseconds(1000).then(() => {
                         map.destroy().catch(() => {
                             // no-op
                         });
                     });
                 }
-            }).then(function (id) {
+            }).then((id) => {
                 listenerId = id;
-                return client.getMap('mapToRemove').then(function (mp) {
+                return client.getMap('mapToRemove').then((mp) => {
                     map = mp;
                 });
             }).catch(done);

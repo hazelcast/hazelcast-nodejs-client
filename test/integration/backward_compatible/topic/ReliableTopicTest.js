@@ -74,17 +74,17 @@ describe('ReliableTopicTest', function () {
         const topicName = 't' + Math.random();
         let topicOne;
         let topicTwo;
-        clientOne.getReliableTopic(topicName).then(function (t) {
+        clientOne.getReliableTopic(topicName).then((t) => {
             topicOne = t;
             return clientTwo.getReliableTopic(topicName);
-        }).then(function (t) {
+        }).then((t) => {
             topicTwo = t;
             topicTwo.addMessageListener((msg) => {
                 if (msg.messageObject['value'] === 'foo') {
                     done();
                 }
             });
-            setTimeout(function () {
+            setTimeout(() => {
                 topicOne.publish({ 'value': 'foo' });
             }, 500);
         }).catch(done);
@@ -94,10 +94,10 @@ describe('ReliableTopicTest', function () {
         const topicName = 't' + Math.random();
         let topicOne;
         let topicTwo;
-        clientOne.getReliableTopic(topicName).then(function (topic) {
+        clientOne.getReliableTopic(topicName).then((topic) => {
             topicOne = topic;
             return clientTwo.getReliableTopic(topicName);
-        }).then(function (topic) {
+        }).then((topic) => {
             topicTwo = topic;
             let receivedMessages = 0;
             const id = topicTwo.addMessageListener(() => {
@@ -109,7 +109,7 @@ describe('ReliableTopicTest', function () {
 
             topicOne.publish({ 'value0': 'foo0' });
             topicOne.publish({ 'value1': 'foo1' });
-            setTimeout(function () {
+            setTimeout(() => {
                 topicTwo.removeMessageListener(id);
                 topicOne.publish({ 'value2': 'foo2' });
                 topicOne.publish({ 'value3': 'foo3' });
@@ -144,12 +144,12 @@ describe('ReliableTopicTest', function () {
     it('continues operating when stale sequence is reached', function (done) {
         let topic;
         let ringbuffer;
-        clientOne.getReliableTopic('stale').then(function (t) {
+        clientOne.getReliableTopic('stale').then((t) => {
             topic = t;
             return topic.getRingbuffer();
-        }).then(function (rb) {
+        }).then((rb) => {
             ringbuffer = rb;
-            topic.addMessageListener(function (m) {
+            topic.addMessageListener((m) => {
                 if (m.messageObject === 20) {
                     done();
                 }

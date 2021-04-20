@@ -120,7 +120,7 @@ describe('MultiMapProxyTest', function () {
         await Promise.all(puts);
         const entrySet = await map.entrySet();
         const initialValue = {};
-        const entries = entrySet.reduce(function (obj, tuple) {
+        const entries = entrySet.reduce((obj, tuple) => {
             obj[tuple[0]] = tuple[1];
             return obj;
         }, initialValue);

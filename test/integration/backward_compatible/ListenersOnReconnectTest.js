@@ -79,7 +79,7 @@ describe('ListenersOnReconnectTest', function () {
         return map.put('keyx', 'valx');
     }
 
-    [true, false].forEach(function (isSmart) {
+    [true, false].forEach((isSmart) => {
 
         /**
          * We use three members to simulate all configurations where connection is closed to;
