@@ -91,7 +91,7 @@ describe('ClientSSLAuthenticationTest', function () {
         };
     }
 
-    [false, true].forEach(function (value) {
+    [false, true].forEach((value) => {
         let createClientConfigFn;
         let title;
         if (value) {

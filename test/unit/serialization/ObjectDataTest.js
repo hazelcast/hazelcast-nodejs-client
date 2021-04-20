@@ -73,11 +73,11 @@ describe('ObjectDataTest', function () {
         expect(inp.readCharArray()).to.deep.equal(['h', 'a', 'z', 'e', 'l']);
         expect(inp.readCharArray().join('')).to.equal('cast');
         expect(inp.readDouble()).to.equals(435437.23);
-        inp.readDoubleArray().forEach(function (fl, index) {
+        inp.readDoubleArray().forEach((fl, index) => {
             expect(fl).to.be.closeTo([21.2, 0, -34253.2, -436, 41, 0.444444444444444444][index], 0.001);
         });
         expect(inp.readFloat()).to.be.closeTo(3.4, 0.0001);
-        inp.readFloatArray().forEach(function (fl, index) {
+        inp.readFloatArray().forEach((fl, index) => {
             expect(fl).to.be.closeTo([21.2, 0, -34253.2, -436, 41, 0.444444444444444444][index], 0.001);
         });
         expect(inp.readInt()).to.equal(9876543);

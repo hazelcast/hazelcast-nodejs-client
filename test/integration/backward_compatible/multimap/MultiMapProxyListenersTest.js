@@ -74,7 +74,7 @@ describe('MultiMap Proxy Listener', function () {
     it('listens for add with value excluded', function (done) {
         const listener = new Listener('added', done, 'test', 'foo', null, null, null);
 
-        map.addEntryListener(listener, null, false).then(function () {
+        map.addEntryListener(listener, null, false).then(() => {
             map.put('foo', 'bar');
         });
     });
@@ -82,7 +82,7 @@ describe('MultiMap Proxy Listener', function () {
     it('listens for add with value included', function (done) {
         const listener = new Listener('added', done, 'test', 'foo', 'bar', null, null);
 
-        map.addEntryListener(listener, null, true).then(function () {
+        map.addEntryListener(listener, null, true).then(() => {
             map.put('foo', 'bar');
         });
     });
@@ -90,7 +90,7 @@ describe('MultiMap Proxy Listener', function () {
     it('listens for add to specific key', function (done) {
         const listener = new Listener('added', done, 'test', 'foo', null, null, null);
 
-        map.addEntryListener(listener, 'foo', false).then(function () {
+        map.addEntryListener(listener, 'foo', false).then(() => {
             map.put('foo', 'bar');
         });
     });
@@ -102,11 +102,11 @@ describe('MultiMap Proxy Listener', function () {
             }
         };
 
-        setTimeout(function () {
+        setTimeout(() => {
             done();
         }, 5000);
 
-        map.addEntryListener(listener, 'xyz', false).then(function () {
+        map.addEntryListener(listener, 'xyz', false).then(() => {
             map.put('foo', 'bar');
         });
     });
@@ -116,9 +116,9 @@ describe('MultiMap Proxy Listener', function () {
     it('listens for remove with value excluded', function (done) {
         const listener = new Listener('removed', done, 'test', 'foo', null, null, null);
 
-        map.addEntryListener(listener, null, false).then(function () {
+        map.addEntryListener(listener, null, false).then(() => {
             return map.put('foo', 'bar');
-        }).then(function () {
+        }).then(() => {
             return map.remove('foo', 'bar');
         });
     });
@@ -126,9 +126,9 @@ describe('MultiMap Proxy Listener', function () {
     it('listens for remove with value included', function (done) {
         const listener = new Listener('removed', done, 'test', 'foo', null, 'bar', null);
 
-        map.addEntryListener(listener, null, true).then(function () {
+        map.addEntryListener(listener, null, true).then(() => {
             return map.put('foo', 'bar');
-        }).then(function () {
+        }).then(() => {
             return map.remove('foo', 'bar');
         });
     });
@@ -136,9 +136,9 @@ describe('MultiMap Proxy Listener', function () {
     it('listens for remove on specific key', function (done) {
         const listener = new Listener('added', done, 'test', 'foo', null, null, null);
 
-        map.addEntryListener(listener, 'foo', false).then(function () {
+        map.addEntryListener(listener, 'foo', false).then(() => {
             return map.put('foo', 'bar');
-        }).then(function () {
+        }).then(() => {
             return map.remove('foo', 'bar');
         });
     });
@@ -150,13 +150,13 @@ describe('MultiMap Proxy Listener', function () {
             }
         };
 
-        setTimeout(function () {
+        setTimeout(() => {
             done();
         }, 5000);
 
-        map.addEntryListener(listener, 'xyz', false).then(function () {
+        map.addEntryListener(listener, 'xyz', false).then(() => {
             return map.put('foo', 'bar');
-        }).then(function () {
+        }).then(() => {
             return map.remove('foo', 'bar');
         });
     });
@@ -177,9 +177,9 @@ describe('MultiMap Proxy Listener', function () {
             }
         };
 
-        map.addEntryListener(listener, null, true).then(function () {
+        map.addEntryListener(listener, null, true).then(() => {
             return map.put('foo', 'bar');
-        }).then(function () {
+        }).then(() => {
             return map.clear();
         });
     });

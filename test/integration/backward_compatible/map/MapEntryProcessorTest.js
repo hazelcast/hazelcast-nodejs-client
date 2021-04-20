@@ -65,7 +65,7 @@ describe('EntryProcessorTest', function () {
     it('executeOnEntries should modify entries', async function () {
         await map.executeOnEntries(new IdentifiedEntryProcessor('processed'));
         const entries = await map.entrySet();
-        expect(entries.every(function (entry) {
+        expect(entries.every((entry) => {
             return entry[1] === 'processed';
         })).to.be.true;
     });
@@ -73,7 +73,7 @@ describe('EntryProcessorTest', function () {
     it('executeOnEntries should return modified entries', async function () {
         const entries = await map.executeOnEntries(new IdentifiedEntryProcessor('processed'));
         expect(entries).to.have.lengthOf(MAP_SIZE);
-        expect(entries.every(function (entry) {
+        expect(entries.every((entry) => {
             return entry[1] === 'processed';
         })).to.be.true;
     });
@@ -88,7 +88,7 @@ describe('EntryProcessorTest', function () {
         const entries = await map.executeOnEntries(new IdentifiedEntryProcessor('processed'),
             Predicates.regex('this', '^[01]$'));
         expect(entries).to.have.lengthOf(2);
-        expect(entries.every(function (entry) {
+        expect(entries.every((entry) => {
             return entry[1] === 'processed';
         })).to.be.true;
     });

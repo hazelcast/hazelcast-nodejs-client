@@ -57,7 +57,7 @@ describe('LifecycleServiceTest', function () {
             clusterName: cluster.id,
             lifecycleListeners: [listener]
         })
-            .then(function (client) {
+            .then((client) => {
                 return client.shutdown();
             })
             .catch(done);
@@ -66,8 +66,8 @@ describe('LifecycleServiceTest', function () {
     it('event listener should get SHUTTING_DOWN, DISCONNECTED and SHUTDOWN events when added after startup', function (done) {
         let expectedState = 'SHUTTING_DOWN';
         Client.newHazelcastClient({ clusterName: cluster.id })
-            .then(function (client) {
-                client.lifecycleService.on('lifecycleEvent', function (state) {
+            .then((client) => {
+                client.lifecycleService.on('lifecycleEvent', (state) => {
                     if (state === 'SHUTTING_DOWN' && expectedState === 'SHUTTING_DOWN') {
                         expectedState = 'DISCONNECTED';
                     } else if (state === 'DISCONNECTED' && expectedState === 'DISCONNECTED') {
@@ -85,9 +85,9 @@ describe('LifecycleServiceTest', function () {
 
     it('isRunning returns correct values at lifecycle stages', function (done) {
         Client.newHazelcastClient({ clusterName: cluster.id })
-            .then(function (client) {
+            .then((client) => {
                 client.lifecycleService.on('lifecycleEvent',
-                    function (state) {
+                    (state) => {
                         if (state === 'STARTING') {
                             expect(client.lifecycleService.isRunning()).to.be.false;
                         } else if (state === 'STARTED') {

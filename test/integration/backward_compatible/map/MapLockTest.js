@@ -86,31 +86,31 @@ describe('MapLockTest', function () {
                 ['hazelcast.client.invocation.timeout.millis']: INVOCATION_TIMEOUT_FOR_TWO
             }
         };
-        RC.startMember(cluster.id).then(function (m) {
+        RC.startMember(cluster.id).then((m) => {
             keyOwner = m;
             return Client.newHazelcastClient(clientTwoCfg);
-        }).then(function (c) {
+        }).then((c) => {
             clientTwo = c;
             key = generateKeyOwnedBy(client, keyOwner);
             return map.lock(key);
-        }).then(function () {
+        }).then(() => {
             return clientTwo.getMap('test');
-        }).then(function (mapOnTwo) {
+        }).then((mapOnTwo) => {
             // try to lock concurrently
             mapOnTwo.lock(key)
-                .then(function () {
+                .then(() => {
                     return mapOnTwo.unlock(key);
                 })
                 .then(() => clientTwo.shutdown())
                 .then(done)
                 .catch(done);
             return TestUtil.promiseWaitMilliseconds(2 * INVOCATION_TIMEOUT_FOR_TWO);
-        }).then(function () {
+        }).then(() => {
             return map.isLocked(key);
-        }).then(function (locked) {
+        }).then((locked) => {
             expect(locked).to.be.true;
             return RC.terminateMember(cluster.id, keyOwner.uuid);
-        }).then(function () {
+        }).then(() => {
             return map.unlock(key);
         }).catch(done);
     });
