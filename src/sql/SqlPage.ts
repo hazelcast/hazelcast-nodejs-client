@@ -25,11 +25,11 @@ export class SqlPage {
         return this.columnTypes.length;
     }
 
-    getValue(columnIndex: number, rowIndex: number): any {
+    getValue(rowIndex: number, columnIndex: number): any {
         return this.data[rowIndex][columnIndex]
     }
 
-    static fromColumns(columnTypes: SqlColumnType[], columns: any[][], last: boolean): SqlPage {
-        return new SqlPage(columnTypes, columns, last);
+    static newPage(columnTypes: SqlColumnType[], data: any[][], last: boolean): SqlPage {
+        return new SqlPage(columnTypes, data, last);
     }
 }
