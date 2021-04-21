@@ -29,7 +29,7 @@ export interface SqlRowMetadata {
      *  Gets column metadata of column with given index.
      *  @returns {SqlColumnMetadata | null} SqlColumnMetadata of column with this index, null if column is not found.
      */
-    getColumn(index: number): SqlColumnMetadata | null;
+    getColumnByIndex(index: number): SqlColumnMetadata | undefined;
 
     /**
      *  Gets columns metadata.
@@ -54,7 +54,7 @@ export class SqlRowMetadataImpl implements SqlRowMetadata {
     private readonly nameToIndex: { [key: string]: number };
 
     constructor(columns: SqlColumnMetadata[]) {
-        if (columns === null || columns.length === 0) {
+        if (!Array.isArray(columns) || columns.length === 0) {
             throw new IllegalStateError('Invalid columns given');
         }
         this.columns = columns;
@@ -68,10 +68,7 @@ export class SqlRowMetadataImpl implements SqlRowMetadata {
         return this.columns.length;
     }
 
-    getColumn(index: number): SqlColumnMetadata | null {
-        if (index < 0 || index >= this.columns.length) {
-            return null;
-        }
+    getColumnByIndex(index: number): SqlColumnMetadata | undefined {
         return this.columns[index];
     }
 
@@ -85,7 +82,7 @@ export class SqlRowMetadataImpl implements SqlRowMetadata {
             throw new IllegalArgumentError(`Expected string got type ${typeof columnName}`);
         }
         const columnIndex = this.nameToIndex[columnName];
-        return columnIndex ? columnIndex : SqlRowMetadataImpl.COLUMN_NOT_FOUND;
+        return columnIndex !== undefined ? columnIndex : SqlRowMetadataImpl.COLUMN_NOT_FOUND;
     }
 }
 

@@ -211,7 +211,7 @@ export class SqlResultImpl implements SqlResult {
         } else { // return objects
             const result: SqlRowAsObject = {};
             for (let i = 0; i < this.currentPage.getColumnCount(); i++) {
-                const columnMetadata = this.rowMetadata.getColumn(i);
+                const columnMetadata = this.rowMetadata.getColumnByIndex(i);
                 if (columnMetadata != null) {
                     result[columnMetadata.name] = this.currentPage.getValue(this.currentPosition, i);
                 }

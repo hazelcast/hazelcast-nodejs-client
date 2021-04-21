@@ -15,22 +15,48 @@
  */
 'use strict';
 
-// const long = require('long');
-const sinon = require('sinon');
-const sandbox = sinon.createSandbox();
-// const { expect } = require('chai');
+const { expect } = require('chai');
+const { SqlRowMetadataImpl } = require('../../../lib/sql/SqlRowMetadata');
+const { SqlColumnMetadataImpl } = require('../../../lib/sql/SqlColumnMetadata');
+const { IllegalArgumentError, IllegalStateError } = require('../../../lib/core/HazelcastError');
 
 describe('SqlRowMetadataTest', function () {
 
-    describe('fetch', function () {
+    describe('constructor', function () {
+        it('should throw on non-array columns argument, or an empty array', function () {
+            [undefined, [], '', 1, BigInt(1), Symbol(), {}].forEach(invalidColumnValue => {
+                expect(() => new SqlRowMetadataImpl(invalidColumnValue)).to.throw(IllegalStateError, 'Invalid columns given');
+            });
+        });
+    });
 
-        beforeEach(function () {
+    describe('getColumnByIndex', function () {
+       it('should return correct column', function () {
+           const columnMetadata1 = {};
+           const columnMetadata2 = {};
 
+           const instance = new SqlRowMetadataImpl([columnMetadata1, columnMetadata2]);
+           expect(instance.getColumnByIndex(0)).to.be.eq(columnMetadata1);
+           expect(instance.getColumnByIndex(1)).to.be.eq(columnMetadata2);
+           expect(instance.getColumnByIndex(3)).to.be.eq(undefined);
+       });
+    });
+
+    describe('findColumn', function () {
+        const instance = new SqlRowMetadataImpl([
+            new SqlColumnMetadataImpl('foo', 0, true, true), new SqlColumnMetadataImpl('bar', 0, true, true)
+        ]);
+
+        it('should throw an error if non-string is passed', function () {
+            [0, undefined, null, {}, [], BigInt(1), Symbol()].forEach(v => {
+                expect(() => instance.findColumn(v)).to.throw(IllegalArgumentError, 'Expected string');
+            });
         });
 
-        afterEach(function () {
-            sandbox.restore();
+        it('should find columns', function () {
+            expect(instance.findColumn('foo')).to.be.eq(0);
+            expect(instance.findColumn('bar')).to.be.eq(1);
+            expect(instance.findColumn('unexisting-column')).to.be.eq(-1);
         });
-
     });
 });
