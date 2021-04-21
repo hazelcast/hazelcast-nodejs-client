@@ -239,8 +239,8 @@ describe('SqlResultTest', function () {
         });
 
         it('should resolve close promise after sending a close request successfully', function () {
-            const fakeConnection = sandbox.fake();
-            const fakeQueryId = sandbox.fake();
+            const fakeConnection = {};
+            const fakeQueryId = {};
             const sqlResult = new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, 4096);
             return sqlResult.close().then(() => {
                 expect(fakeSqlService.close.calledOnceWithExactly(
@@ -300,12 +300,11 @@ describe('SqlResultTest', function () {
                 true // isLast
             );
 
-            const fakeIsLast = sinon.fake(rowPage.isLast);
-            sandbox.replace(rowPage, 'isLast', fakeIsLast);
+            sandbox.replace(rowPage, 'isLast', sinon.fake(rowPage.isLast));
 
             sqlResult.onNextPage(rowPage);
 
-            expect(fakeIsLast.called).to.be.true;
+            expect(rowPage.isLast.called).to.be.true;
 
             expect(sqlResult.last).to.be.true;
             expect(sqlResult.closed).to.be.true;
@@ -323,12 +322,11 @@ describe('SqlResultTest', function () {
 
             rowPage.getRowCount();
 
-            const fakeIsLast = sinon.fake(rowPage.isLast);
-            sandbox.replace(rowPage, 'isLast', fakeIsLast);
+            sandbox.replace(rowPage, 'isLast', sinon.fake(rowPage.isLast));
 
             sqlResult.onNextPage(rowPage);
 
-            expect(fakeIsLast.called).to.be.true;
+            expect(rowPage.isLast.called).to.be.true;
 
             expect(sqlResult.last).to.be.false;
             expect(sqlResult.closed).to.be.false;
