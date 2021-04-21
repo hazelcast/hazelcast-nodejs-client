@@ -15,56 +15,41 @@
  */
 'use strict';
 
-// const long = require('long');
-const sinon = require('sinon');
-const sandbox = sinon.createSandbox();
-// const { expect } = require('chai');
+const { expect } = require('chai');
+const { SqlRowImpl } = require('../../../lib/sql/SqlRow');
+const { IndexOutOfBoundsError, IllegalArgumentError } = require('../../../lib/core/HazelcastError');
 
 describe('SqlRowTest', function () {
+    const instance = new SqlRowImpl([
+        {
+            name: 'foo',
+            value: 1
+        },
+        {
+            name: 'bar',
+            value: null
+        }
+    ], {});
 
     describe('getObject', function () {
 
-        beforeEach(function () {
+        it('should give correct values', function () {
+            expect(instance.getObject('foo')).to.be.eq(1);
+            expect(instance.getObject('bar')).to.be.eq(null);
+            expect(instance.getObject(0)).to.be.eq(1);
+            expect(instance.getObject(1)).to.be.eq(null);
 
+            expect(() => instance.getObject(2)).to.throw(IndexOutOfBoundsError, /Index .* does not exists/);
+            expect(() => instance.getObject(-1)).to.throw(IndexOutOfBoundsError, /Index .* does not exists/);
+
+            expect(() => instance.getObject('unexisted')).to.throw(IllegalArgumentError, /Could not find a column with name .*/);
+
+            [undefined, [], BigInt(1), Symbol(), {}].forEach(invalidValue => {
+                expect(() => instance.getObject(invalidValue)).to.throw(
+                    IllegalArgumentError,
+                    'Expected string or number for column argument'
+                );
+            });
         });
-
-        afterEach(function () {
-            sandbox.restore();
-        });
-
-    });
-    describe('getMetadata', function () {
-
-        beforeEach(function () {
-
-        });
-
-        afterEach(function () {
-            sandbox.restore();
-        });
-
-    });
-    describe('handleExecuteResponse', function () {
-
-        beforeEach(function () {
-
-        });
-
-        afterEach(function () {
-            sandbox.restore();
-        });
-
-    });
-
-    describe('fetch', function () {
-
-        beforeEach(function () {
-
-        });
-
-        afterEach(function () {
-            sandbox.restore();
-        });
-
     });
 });
