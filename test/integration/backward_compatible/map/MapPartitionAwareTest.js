@@ -78,10 +78,10 @@ describe('MapPartitionAwareTest', function () {
 
     it('put', async function () {
         await fillMap(map, numOfEntries);
-        const stats = await Promise.all(members.map(async function (member, index) {
+        const stats = await Promise.all(members.map(async (member, index) => {
             return RC.executeOnController(cluster.id, getLocalMapStats(index), 1);
         }));
-        const entriesPerMember = stats.map(function (item) {
+        const entriesPerMember = stats.map((item) => {
             return Number(item.result);
         });
         const expectedArray = [numOfEntries];

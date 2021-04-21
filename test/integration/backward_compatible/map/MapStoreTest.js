@@ -149,11 +149,11 @@ describe('MapStoreTest', function () {
         };
 
         map.addEntryListener(listener, undefined, true)
-            .then(function () {
+            .then(() => {
                 return map.put('some-key', 'some-value', 100);
-            }).then(function () {
+            }).then(() => {
                 return TestUtil.promiseWaitMilliseconds(2000);
-            }).then(function () {
+            }).then(() => {
                 return map.get('some-key');
             });
     });

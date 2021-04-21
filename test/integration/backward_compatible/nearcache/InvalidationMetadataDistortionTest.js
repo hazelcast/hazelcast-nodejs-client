@@ -74,19 +74,19 @@ describe('Invalidation metadata distortion', function () {
         let map;
         const populatePromises = [];
         const ignoredKey = mapSize;
-        client.getMap(mapName).then(function (mp) {
+        client.getMap(mapName).then((mp) => {
             map = mp;
             for (let i = 0; i < mapSize; i++) {
                 populatePromises.push(map.put(i, i));
             }
             populatePromises.push(map.put(ignoredKey, ignoredKey));
-        }).then(function () {
-            return Promise.all(populatePromises).then(function () {
+        }).then(() => {
+            return Promise.all(populatePromises).then(() => {
                 map.executeOnKey(ignoredKey, new DistortInvalidationMetadataEntryProcessor(mapName, mapSize, 5))
-                    .then(function () {
+                    .then(() => {
                         stopTest = true;
                     })
-                    .catch(function (err) {
+                    .catch((err) => {
                         done(err);
                     });
                 setTimeout(populateNearCacheAndCompare, 100);
@@ -94,10 +94,10 @@ describe('Invalidation metadata distortion', function () {
         });
 
         function compareActualAndExpected(actualMap, verificationMap, index) {
-            return actualMap.get(index).then(function (actual) {
-                return verificationMap.then(function (mp) {
+            return actualMap.get(index).then((actual) => {
+                return verificationMap.then((mp) => {
                     return mp.get(index);
-                }).then(function (expected) {
+                }).then((expected) => {
                     return expect(actual).to.equal(expected);
                 });
             });
@@ -109,7 +109,7 @@ describe('Invalidation metadata distortion', function () {
                 for (let i = 0; i < mapSize; i++) {
                     promises.push(map.get(i));
                 }
-                Promise.all(promises).then(function () {
+                Promise.all(promises).then(() => {
                     setTimeout(populateNearCacheAndCompare, 0);
                 });
             } else {

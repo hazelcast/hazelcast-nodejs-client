@@ -191,9 +191,9 @@ describe('ListProxyTest', function () {
                 done();
             }
         };
-        list.addItemListener(listener, true).then(function () {
+        list.addItemListener(listener, true).then(() => {
             list.add(1);
-        }).catch(function (e) {
+        }).catch((e) => {
             done(e);
         });
     });
@@ -217,11 +217,11 @@ describe('ListProxyTest', function () {
                 done();
             }
         };
-        list.addItemListener(listener, true).then(function () {
+        list.addItemListener(listener, true).then(() => {
             return list.add(2);
-        }).then(function () {
+        }).then(() => {
             return list.remove(2);
-        }).catch(function (e) {
+        }).catch((e) => {
             done(e);
         });
     });
@@ -236,11 +236,11 @@ describe('ListProxyTest', function () {
                 done();
             }
         };
-        list.addItemListener(listener, true).then(function () {
+        list.addItemListener(listener, true).then(() => {
             return list.add(1);
-        }).then(function () {
+        }).then(() => {
             return list.remove(1);
-        }).catch(function (e) {
+        }).catch((e) => {
             done(e);
         });
     });
@@ -255,11 +255,11 @@ describe('ListProxyTest', function () {
                 done();
             }
         };
-        list.addItemListener(listener, false).then(function () {
+        list.addItemListener(listener, false).then(() => {
             return list.add(1);
-        }).then(function () {
+        }).then(() => {
             return list.remove(1);
-        }).catch(function (e) {
+        }).catch((e) => {
             done(e);
         });
     });

@@ -94,7 +94,7 @@ const listener = {
     },
 };
 
-process.on('SIGINT', function () {
+process.on('SIGINT', () => {
     console.log('Shutting down!');
     stopTest = true;
     nz++;
@@ -132,7 +132,7 @@ function completeOperation() {
     if (totalOps % 10000 === 0) {
         console.log(`Completed operation count: ${totalOps}`);
         const lagStartTime = process.hrtime();
-        setImmediate(function () {
+        setImmediate(() => {
             const eventLoopLag = process.hrtime(lagStartTime);
             if (hrtimeToNanoSec(eventLoopLag) > 40 * NS_IN_MS) {
                 console.log(`Experiencing event loop lag: ${hrtimeToMilliSec(eventLoopLag)} ms.`);

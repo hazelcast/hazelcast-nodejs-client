@@ -97,7 +97,7 @@ describe('HazelcastCloudProviderTest', function () {
 
     it('refresh_whenException_thenLogWarning', async function () {
         HazelcastCloudDiscovery.prototype.discoverNodes.restore();
-        sandbox.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes').callsFake(function () {
+        sandbox.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes').callsFake(() => {
             return Promise.reject(new IllegalStateError('Expected exception'));
         });
         return provider.refresh();

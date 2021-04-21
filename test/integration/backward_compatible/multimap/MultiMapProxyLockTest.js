@@ -55,7 +55,7 @@ describe('MultiMapProxyLockTest', function () {
         const startTime = Date.now();
         await mapOne.put(1, 2);
         await mapOne.lock(1);
-        setTimeout(async function () {
+        setTimeout(async () => {
             await mapOne.unlock(1);
         }, 1000);
         await mapTwo.lock(1);

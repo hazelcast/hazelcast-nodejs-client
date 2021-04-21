@@ -47,9 +47,9 @@ describe('LostConnectionTest', function () {
         let newMember;
         const membershipListener = {
             memberAdded: () => {
-                RC.shutdownMember(cluster.id, oldMember.uuid).then(function () {
+                RC.shutdownMember(cluster.id, oldMember.uuid).then(() => {
                     return TestUtil.promiseWaitMilliseconds(4000);
-                }).then(function () {
+                }).then(() => {
                     try {
                         const address = TestUtil.getRandomConnection(client).getRemoteAddress();
                         expect(address.host).to.equal(newMember.host);

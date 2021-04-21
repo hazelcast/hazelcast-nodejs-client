@@ -73,7 +73,7 @@ describe('FlakeIdGeneratorProxyTest', function () {
             addToListFunction(idList)(await flakeIdGenerator.newId());
         }
         expect(idList.length).to.be.equal(50);
-        idList.sort(function (a, b) {
+        idList.sort((a, b) => {
             return (a.greaterThan(b) ? 1 : (a.lessThan(b) ? -1 : 0));
         });
         for (let i = 1; i < idList.length; i++) {

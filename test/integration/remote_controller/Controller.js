@@ -27,7 +27,7 @@ function HzRemoteController() {
         protocol: protocol
     });
 
-    connection.on('error', function(err) {
+    connection.on('error', (err) => {
         console.log(err);
     });
 
