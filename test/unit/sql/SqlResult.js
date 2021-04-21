@@ -191,8 +191,6 @@ describe('SqlResultTest', function () {
     describe('close', function () {
 
         let fakeSqlService;
-        let fakeConnection;
-        let fakeQueryId;
 
         beforeEach(function () {
             fakeSqlService = {
@@ -200,8 +198,6 @@ describe('SqlResultTest', function () {
                     return delayedPromise(500);
                 })
             };
-            fakeConnection = sandbox.fake();
-            fakeQueryId = sandbox.fake();
         });
 
         afterEach(function () {
@@ -209,13 +205,13 @@ describe('SqlResultTest', function () {
         });
 
         it('should return the same promise if close() is called again', function () {
-            const sqlResult = new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, 4096);
+            const sqlResult = new SqlResultImpl(fakeSqlService, {}, {}, 4096);
             const closePromise = sqlResult.close();
             expect(sqlResult.close()).to.be.eq(closePromise);
         });
 
         it('should cancel an ongoing fetch if close() is called', function (done) {
-            const sqlResult = new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, 4096);
+            const sqlResult = new SqlResultImpl(fakeSqlService, {}, {}, 4096);
             sqlResult.fetch().then(() => {
                 done(new Error('Not expected to run this line'));
             }).catch(err => {
@@ -227,7 +223,7 @@ describe('SqlResultTest', function () {
         });
 
         it('should stop an ongoing execute() if close() is called', function (done) {
-            const sqlResult = new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, 4096);
+            const sqlResult = new SqlResultImpl(fakeSqlService, {}, {}, 4096);
             const onExecuteErrorSpy = sandbox.spy(sqlResult, 'onExecuteError');
 
             sqlResult.executeDeferred.promise.then(() => {
@@ -243,6 +239,8 @@ describe('SqlResultTest', function () {
         });
 
         it('should resolve close promise after sending a close request successfully', function () {
+            const fakeConnection = sandbox.fake();
+            const fakeQueryId = sandbox.fake();
             const sqlResult = new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, 4096);
             return sqlResult.close().then(() => {
                 expect(fakeSqlService.close.calledOnceWithExactly(
@@ -254,7 +252,7 @@ describe('SqlResultTest', function () {
         });
 
         it('should reject close promise if an error occurs during close request', function (done) {
-            const sqlResult = new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, 4096);
+            const sqlResult = new SqlResultImpl(fakeSqlService, {}, {}, 4096);
             const fakeError = new Error('Intended whoops error');
             fakeSqlService.close = sandbox.fake.rejects(fakeError);
 
@@ -270,15 +268,7 @@ describe('SqlResultTest', function () {
     describe('getters', function () {
 
         it('should have working getters', async function () {
-
-            const fakeSqlService = {
-                close: sandbox.fake.resolves(undefined), fetch: sandbox.fake(() => {
-                    return delayedPromise(500);
-                })
-            };
-            const fakeConnection = sandbox.fake();
-            const fakeQueryId = sandbox.fake();
-            const sqlResult = new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, 4096);
+            const sqlResult = new SqlResultImpl({}, {}, {}, 4096);
 
             const rowMetadata = new SqlRowMetadataImpl([
                 {
@@ -348,30 +338,8 @@ describe('SqlResultTest', function () {
 
     });
     describe('onExecuteError', function () {
-
-        let sqlResult;
-
-        beforeEach(function () {
-            const fakeConnection = sandbox.fake();
-            const fakeQueryId = sandbox.fake();
-            sqlResult = new SqlResultImpl({}, fakeConnection, fakeQueryId, 4096);
-            const rowPage = new SqlPage(
-                [0, 0], // column types
-                new ColumnarDataHolder([[]]),
-                true // isLast
-            );
-            sqlResult.onExecuteResponse(null, rowPage, long.fromNumber(5));
-
-            const fakeIsLast = sinon.fake.returns(true);
-            sandbox.replace(rowPage, 'isLast', fakeIsLast);
-        });
-
-        afterEach(function () {
-            sandbox.restore();
-        });
-
         it('should reject execute promise and set update count to long(-1)', function (done) {
-            sqlResult = new SqlResultImpl({}, {}, {}, 4096);
+            const sqlResult = new SqlResultImpl({}, {}, {}, 4096);
             sqlResult.updateCount = long.fromNumber(1); // change update count to see if it's changed
 
             const anError = new Error('whoops');
@@ -390,24 +358,20 @@ describe('SqlResultTest', function () {
                 }
             });
         });
-
     });
     describe('onExecuteResponse', function () {
 
         let sqlResult;
-        let rowPage;
         beforeEach(function () {
             sqlResult = new SqlResultImpl({}, {}, {}, 4096);
-            rowPage = new SqlPage(
-                [],
-                new ColumnarDataHolder([[]]),
-                false
-            );
         });
+
         it('should close the result and set updateCount if update count result is received ', function (done) {
-            sqlResult.onExecuteResponse(null, rowPage, long.fromNumber(5));
+            // pass null to make sure row page is not used
+            sqlResult.onExecuteResponse(null, new SqlPage([], new ColumnarDataHolder([[]]), false), long.fromNumber(5));
 
             expect(sqlResult.closed).to.be.true;
+            expect(sqlResult.currentPage).to.be.null;
             expect(sqlResult.updateCount.eq(long.fromNumber(5))).to.true;
             sqlResult.executeDeferred.promise.then(() => {
                 done();
@@ -417,7 +381,9 @@ describe('SqlResultTest', function () {
         it('should call onNextpage and set row metadata if rowset result is received', function (done) {
             const onNextPageSpy = sandbox.spy(sqlResult, 'onNextPage');
             const rowMetadata = {};
-            sqlResult.onExecuteResponse(rowMetadata, rowPage, long.ZERO); // row metadata being not null means rows received
+
+            // row metadata being not null means rows received
+            sqlResult.onExecuteResponse(rowMetadata, new SqlPage([], new ColumnarDataHolder([[]]), false), long.ZERO);
 
             sqlResult.executeDeferred.promise.then(() => {
                 done();

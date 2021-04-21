@@ -110,8 +110,10 @@ export class SqlResultImpl implements SqlResult {
         this.closed = false;
         this.last = false;
         this.rowMetadata = null;
+        this.currentPage = null;
         this.executeDeferred = deferredPromise<boolean>();
-        this.executeDeferred.promise.catch(() => {});
+        this.executeDeferred.promise.catch(() => {
+        });
     }
 
     [Symbol.asyncIterator](): AsyncIterator<SqlRowType, SqlRowType, SqlRowType> {
@@ -170,7 +172,7 @@ export class SqlResultImpl implements SqlResult {
         const error = new HazelcastSqlException(null, SqlErrorCode.CANCELLED_BY_USER, 'Cancelled by user');
         this.onExecuteError(error);
         // Reject ongoing fetch if there is one
-        if(this.fetchDeferred?.promise)
+        if (this.fetchDeferred?.promise)
             this.fetchDeferred.reject(error);
         // Send the close request.
         this.service.close(this.connection, this.queryId).then(() => {
