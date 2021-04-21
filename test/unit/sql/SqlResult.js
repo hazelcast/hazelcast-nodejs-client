@@ -24,7 +24,7 @@ const expect = chai.expect;
 const { delayedPromise } = require('../../../lib/util/Util');
 const { SqlResultImpl } = require('../../../lib/sql/SqlResult');
 const { SqlRowImpl } = require('../../../lib/sql/SqlRow');
-const { SqlPage, ColumnarDataHolder } = require('../../../lib/sql/SqlPage');
+const { SqlPage } = require('../../../lib/sql/SqlPage');
 const { SqlRowMetadataImpl } = require('../../../lib/sql/SqlRowMetadata');
 const { SqlColumnType } = require('../../../lib/sql/SqlColumnMetadata');
 const { SqlErrorCode } = require('../../../lib/sql/SqlErrorCode');
@@ -38,18 +38,18 @@ const { HazelcastSqlException } = require('../../../lib/core/HazelcastError');
  * @returns sqlResult
  */
 function prepareSuccessfulSqlResult (sqlResult, rowCount, rowMetadata) {
-    const columns = [];
-    for (let i = 0; i < 2; i++) { // column number
-        const column = [];
-        for (let j = 0; j < rowCount; j++) {
-            column.push((i * rowCount + j).toString());
+    const data = [];
+    for (let i = 0; i < rowCount; i++) { // row number
+        const row = [];
+        for (let j = 0; j < 2; j++) {
+            row.push((i * rowCount + j).toString());
         }
-        columns.push(column);
+        data.push(row);
     }
 
     const rowPage = new SqlPage(
         [0, 0], // column types
-        new ColumnarDataHolder(columns),
+        data,
         true // isLast
     );
 
@@ -296,7 +296,7 @@ describe('SqlResultTest', function () {
             const sqlResult = new SqlResultImpl({}, {}, {}, 4096);
             const rowPage = new SqlPage(
                 [], // column types
-                new ColumnarDataHolder([[]]),
+                [[]],
                 true // isLast
             );
 
@@ -316,7 +316,7 @@ describe('SqlResultTest', function () {
             const sqlResult = new SqlResultImpl({}, {}, {}, 4096);
             const rowPage = new SqlPage(
                 [], // column types
-                new ColumnarDataHolder([[]]),
+                [[]],
                 false // isLast
             );
 
@@ -366,7 +366,7 @@ describe('SqlResultTest', function () {
 
         it('should close the result and set updateCount if update count result is received ', function (done) {
             // pass null to make sure row page is not used
-            sqlResult.onExecuteResponse(null, new SqlPage([], new ColumnarDataHolder([[]]), false), long.fromNumber(5));
+            sqlResult.onExecuteResponse(null, new SqlPage([], [[]], false), long.fromNumber(5));
 
             expect(sqlResult.closed).to.be.true;
             expect(sqlResult.currentPage).to.be.null;
@@ -381,7 +381,7 @@ describe('SqlResultTest', function () {
             const rowMetadata = {};
 
             // row metadata being not null means rows received
-            sqlResult.onExecuteResponse(rowMetadata, new SqlPage([], new ColumnarDataHolder([[]]), false), long.ZERO);
+            sqlResult.onExecuteResponse(rowMetadata, new SqlPage([], [[]], false), long.ZERO);
 
             sqlResult.executeDeferred.promise.then(() => {
                 done();

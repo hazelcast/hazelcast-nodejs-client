@@ -208,7 +208,10 @@ export class SqlResultImpl implements SqlResult {
         if (this.returnRawResult) { // raw result, returns SqlRowImpl
             const values = [];
             for (let i = 0; i < this.currentPage.getColumnCount(); i++) {
-                values.push(this.currentPage.getColumnValuesForClient(i, this.currentPosition));
+                values.push({
+                    name: this.rowMetadata.getColumns()[i].name,
+                    value: this.currentPage.getValue(this.currentPosition, i)
+                });
             }
             return new SqlRowImpl(values, this.rowMetadata);
         } else { // return objects
@@ -216,7 +219,7 @@ export class SqlResultImpl implements SqlResult {
             for (let i = 0; i < this.currentPage.getColumnCount(); i++) {
                 const columnMetadata = this.rowMetadata.getColumn(i);
                 if (columnMetadata != null) {
-                    result[columnMetadata.name] = this.currentPage.getColumnValuesForClient(i, this.currentPosition);
+                    result[columnMetadata.name] = this.currentPage.getValue(this.currentPosition, i);
                 }
             }
             return result;
