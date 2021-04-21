@@ -32,7 +32,6 @@ describe('SqlRowTest', function () {
     ], {});
 
     describe('getObject', function () {
-
         it('should give correct values', function () {
             expect(instance.getObject('foo')).to.be.eq(1);
             expect(instance.getObject('bar')).to.be.eq(null);
