@@ -224,14 +224,14 @@ describe('SqlResultTest', function () {
 
         it('should stop an ongoing execute() if close() is called', function (done) {
             const sqlResult = new SqlResultImpl(fakeSqlService, {}, {}, 4096);
-            const onExecuteErrorSpy = sandbox.spy(sqlResult, 'onExecuteError');
+            sandbox.replace(sqlResult, 'onExecuteError', sandbox.fake(sqlResult.onExecuteError));
 
             sqlResult.executeDeferred.promise.then(() => {
                 done(new Error('Not expected to run this line'));
             }).catch(err => {
                 expect(err).to.be.instanceof(HazelcastSqlException)
                     .with.property('code', SqlErrorCode.CANCELLED_BY_USER);
-                expect(onExecuteErrorSpy.calledOnceWithExactly(err)).to.be.true;
+                expect(sqlResult.onExecuteError.calledOnceWithExactly(err)).to.be.true;
                 done();
             }).catch(done);
 
@@ -300,7 +300,7 @@ describe('SqlResultTest', function () {
                 true // isLast
             );
 
-            sandbox.replace(rowPage, 'isLast', sinon.fake(rowPage.isLast));
+            sandbox.replace(rowPage, 'isLast', sandbox.fake(rowPage.isLast));
 
             sqlResult.onNextPage(rowPage);
 
@@ -322,7 +322,7 @@ describe('SqlResultTest', function () {
 
             rowPage.getRowCount();
 
-            sandbox.replace(rowPage, 'isLast', sinon.fake(rowPage.isLast));
+            sandbox.replace(rowPage, 'isLast', sandbox.fake(rowPage.isLast));
 
             sqlResult.onNextPage(rowPage);
 
@@ -377,7 +377,7 @@ describe('SqlResultTest', function () {
         });
 
         it('should call onNextpage and set row metadata if rowset result is received', function (done) {
-            const onNextPageSpy = sandbox.spy(sqlResult, 'onNextPage');
+            sandbox.replace(sqlResult, 'onNextPage', sandbox.fake(sqlResult.onNextPage));
             const rowMetadata = {};
 
             // row metadata being not null means rows received
@@ -387,7 +387,7 @@ describe('SqlResultTest', function () {
                 done();
             }).catch(done);
 
-            expect(onNextPageSpy.calledOnce).to.be.true;
+            expect(sqlResult.onNextPage.calledOnce).to.be.true;
             expect(sqlResult.rowMetadata).to.be.eq(rowMetadata);
         });
     });
