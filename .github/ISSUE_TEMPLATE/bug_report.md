@@ -29,7 +29,7 @@ Please share with us the following information:
 
 5. Java version. It is also helpful to mention the JVM parameters:
 
-6. NodeJS version. It is also useful to mention `node` command line arguments if there are any:
+6. Node.js version. It is also useful to mention `node` command line arguments if there are any:
 
 7. Operating system. If it is Linux, kernel version is helpful:
 
