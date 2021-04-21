@@ -4,7 +4,7 @@ import {SqlColumnType} from './SqlColumnMetadata';
 export class SqlPage {
     constructor(
         private readonly columnTypes: SqlColumnType[],
-        private readonly data: any[][], // first index is row index, second one is column index
+        private readonly data: any[][] | null, // first index is row index, second one is column index
         private readonly last: boolean
     ) {
     }
@@ -26,7 +26,7 @@ export class SqlPage {
     }
 
     getValue(rowIndex: number, columnIndex: number): any {
-        return this.data[rowIndex][columnIndex]
+        return this.data[rowIndex][columnIndex];
     }
 
     static newPage(columnTypes: SqlColumnType[], data: any[][], last: boolean): SqlPage {

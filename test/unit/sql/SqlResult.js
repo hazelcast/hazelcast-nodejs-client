@@ -29,15 +29,36 @@ const { SqlRowMetadataImpl } = require('../../../lib/sql/SqlRowMetadata');
 const { SqlColumnType } = require('../../../lib/sql/SqlColumnMetadata');
 const { SqlErrorCode } = require('../../../lib/sql/SqlErrorCode');
 const { HazelcastSqlException } = require('../../../lib/core/HazelcastError');
+const { assertTrueEventually } = require('../../TestUtil');
+
+const defaultRowMetadata = new SqlRowMetadataImpl([
+    {
+        name: 'foo',
+        type: SqlColumnType.VARCHAR,
+        nullable: true
+    },
+    {
+        name: 'bar',
+        type: SqlColumnType.VARCHAR,
+        nullable: true
+    }
+]);
 
 /**
  * Simulates a successful execute response
+ * @param timeoutMs timeout in ms to simulate response
  * @param sqlResult
  * @param rowCount how many rows to add to the sqlResult
  * @param rowMetadata
- * @returns sqlResult
+ * @param updateCount
  */
-function prepareSuccessfulSqlResult (sqlResult, rowCount, rowMetadata) {
+function simulateExecutionResponse(
+    timeoutMs = 1000,
+    sqlResult,
+    rowCount = 0,
+    rowMetadata = defaultRowMetadata,
+    updateCount = long.fromNumber(-1)
+) {
     const data = [];
     for (let i = 0; i < rowCount; i++) { // row number
         const row = [];
@@ -53,23 +74,21 @@ function prepareSuccessfulSqlResult (sqlResult, rowCount, rowMetadata) {
         true // isLast
     );
 
-    if (rowMetadata === undefined) {
-        rowMetadata = new SqlRowMetadataImpl([
-            {
-                name: 'foo',
-                type: SqlColumnType.VARCHAR,
-                nullable: true
-            },
-            {
-                name: 'bar',
-                type: SqlColumnType.VARCHAR,
-                nullable: true
-            }
-        ]);
-    }
+    setTimeout(() => {
+        sqlResult.onExecuteResponse(rowMetadata, rowPage, updateCount);
+    }, timeoutMs);
+}
 
-    sqlResult.onExecuteResponse(rowMetadata, rowPage, long.ZERO);
-    return sqlResult;
+/**
+ * Simulates an execute error after timeoutMs
+ * @param timeoutMs
+ * @param sqlResult
+ * @param error
+ */
+function simulateExecuteError(timeoutMs, sqlResult, error= new Error('whoops')) {
+    setTimeout(() => {
+        sqlResult.onExecuteError(error);
+    }, 1000);
 }
 
 describe('SqlResultTest', function () {
@@ -89,13 +108,13 @@ describe('SqlResultTest', function () {
             sandbox.restore();
         });
 
-        it('should be async iterable, iterating over objects; by default and if returnRawResults is false', function () {
-            [
-                new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, 4096),
-                new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, 4096, false)
-            ].forEach(async sqlResult => {
+        [
+            new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, 4096),
+            new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, 4096, false)
+        ].forEach(async sqlResult => {
+            it('should async iterable, over objects; by default and if returnRawResults is false', async function () {
                 const rowCount = 3;
-                prepareSuccessfulSqlResult(sqlResult, rowCount);
+                simulateExecutionResponse(1000, sqlResult, rowCount, defaultRowMetadata);
 
                 let rowCounter = 0;
                 for await (const row of sqlResult) {
@@ -103,8 +122,10 @@ describe('SqlResultTest', function () {
                     rowCounter++;
                 }
                 expect(rowCounter).to.be.eq(rowCount);
+                expect(await sqlResult.getRowMetadata()).to.be.eq(defaultRowMetadata);
+                expect(await sqlResult.isRowSet()).to.be.true;
+                expect((await sqlResult.getUpdateCount()).eq(long.fromNumber(-1))).to.be.true;
             });
-
         });
 
         it('should be async iterable, iterating over SqlRowImpls; if returnRawResults is true', async function () {
@@ -116,7 +137,7 @@ describe('SqlResultTest', function () {
                 true // return raw results
             );
             const rowCount = 3;
-            prepareSuccessfulSqlResult(sqlResult, rowCount);
+            simulateExecutionResponse(1000, sqlResult, rowCount, defaultRowMetadata);
 
             let rowCounter = 0;
             for await (const row of sqlResult) {
@@ -124,6 +145,9 @@ describe('SqlResultTest', function () {
                 rowCounter++;
             }
             expect(rowCounter).to.be.eq(rowCount);
+            expect(await sqlResult.getRowMetadata()).to.be.eq(defaultRowMetadata);
+            expect(await sqlResult.isRowSet()).to.be.true;
+            expect((await sqlResult.getUpdateCount()).eq(long.fromNumber(-1))).to.be.true;
         });
 
         it('should be iterable via next()', async function () {
@@ -134,7 +158,7 @@ describe('SqlResultTest', function () {
                 4096
             );
             const rowCount = 3;
-            prepareSuccessfulSqlResult(sqlResult, rowCount);
+            simulateExecutionResponse(1000, sqlResult, rowCount, defaultRowMetadata);
 
             let current;
             let counter = 0;
@@ -143,9 +167,12 @@ describe('SqlResultTest', function () {
                 counter++;
             }
             expect(counter).to.be.eq(rowCount);
+            expect(await sqlResult.getRowMetadata()).to.be.eq(defaultRowMetadata);
+            expect(await sqlResult.isRowSet()).to.be.true;
+            expect((await sqlResult.getUpdateCount()).eq(long.fromNumber(-1))).to.be.true;
         });
 
-        it('should reject for await iteration on execute error', function (done) {
+        it('should reject for await iteration on execute error', function () {
             const sqlResult = new SqlResultImpl(
                 fakeSqlService,
                 fakeConnection,
@@ -154,21 +181,20 @@ describe('SqlResultTest', function () {
             );
 
             const executeError = new Error('whoops..');
-            sqlResult.onExecuteError(executeError);
+            simulateExecuteError(1000, sqlResult, executeError);
 
-            (async function () {
-                // eslint-disable-next-line no-empty,no-unused-vars
-                for await (const row of sqlResult) {
+            return assertTrueEventually(async () => {
+                try {
+                    // eslint-disable-next-line no-empty,no-unused-vars
+                    for await (const row of sqlResult) {
+                    }
+                } catch (err) {
+                    expect(err).to.be.eq(executeError);
                 }
-            })().then(() => {
-                done(new Error('Unexpected to run this line'));
-            }).catch(err => {
-                expect(err).to.be.eq(executeError);
-                done();
-            }).catch(done);
+            });
         });
 
-        it('should reject next() iteration on execute error', function (done) {
+        it('should reject next() iteration on execute error', function () {
             const sqlResult = new SqlResultImpl(
                 fakeSqlService,
                 fakeConnection,
@@ -177,14 +203,15 @@ describe('SqlResultTest', function () {
             );
 
             const executeError = new Error('whoops..');
-            sqlResult.onExecuteError(executeError);
+            simulateExecuteError(1000, sqlResult, executeError);
 
-            sqlResult.next().then(() => {
-                done(new Error('Unexpected to run this line'));
-            }).catch(err => {
-                expect(err).to.be.eq(executeError);
-                done();
-            }).catch(done);
+            return assertTrueEventually(async () => {
+                try {
+                    await sqlResult.next();
+                } catch (err) {
+                    expect(err).to.be.eq(executeError);
+                }
+            });
         });
 
     });
@@ -194,7 +221,8 @@ describe('SqlResultTest', function () {
 
         beforeEach(function () {
             fakeSqlService = {
-                close: sandbox.fake.resolves(undefined), fetch: sandbox.fake(() => {
+                close: sandbox.fake.resolves(undefined),
+                fetch: sandbox.fake(() => {
                     return delayedPromise(500);
                 })
             };
@@ -234,11 +262,11 @@ describe('SqlResultTest', function () {
                 expect(sqlResult.onExecuteError.calledOnceWithExactly(err)).to.be.true;
                 done();
             }).catch(done);
-
+            simulateExecutionResponse(1000, sqlResult, 1, defaultRowMetadata);
             sqlResult.close();
         });
 
-        it('should resolve close promise after sending a close request successfully', function () {
+        it('should call close() of sql service, and mark result as closed', function () {
             const fakeConnection = {};
             const fakeQueryId = {};
             const sqlResult = new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, 4096);
@@ -253,11 +281,11 @@ describe('SqlResultTest', function () {
 
         it('should reject close promise if an error occurs during close request', function (done) {
             const sqlResult = new SqlResultImpl(fakeSqlService, {}, {}, 4096);
-            const fakeError = new Error('Intended whoops error');
+            const fakeError = new Error('whoops error');
             fakeSqlService.close = sandbox.fake.rejects(fakeError);
 
             sqlResult.close().then(() => {
-                done(new Error('Not expected to run this'));
+                done(new Error('Not expected to run this line'));
             }).catch(err => {
                 expect(err).to.be.eq(fakeError);
                 expect(sqlResult.closed).to.be.false;
@@ -267,8 +295,8 @@ describe('SqlResultTest', function () {
     });
     describe('getters', function () {
 
-        it('should have working getters', async function () {
-            const sqlResult = new SqlResultImpl({}, {}, {}, 4096);
+        it('should have working getters', function () {
+            const sqlResult1 = new SqlResultImpl({}, {}, {}, 4096);
 
             const rowMetadata = new SqlRowMetadataImpl([
                 {
@@ -282,11 +310,22 @@ describe('SqlResultTest', function () {
                     nullable: true
                 }
             ]);
-            prepareSuccessfulSqlResult(sqlResult, 2, rowMetadata);
 
-            expect(await sqlResult.getRowMetadata()).to.be.eq(rowMetadata);
-            expect(await sqlResult.isRowSet()).to.be.true;
-            expect((await sqlResult.getUpdateCount()).eq(long.fromNumber(-1))).to.be.true;
+            const sqlResult2 = new SqlResultImpl({}, {}, {}, 4096);
+
+            simulateExecutionResponse(1000, sqlResult1, 2, rowMetadata);
+            simulateExecutionResponse(1000, sqlResult2, 2, null, long.fromNumber(1));
+
+            return assertTrueEventually(async () => {
+                expect(await sqlResult1.getRowMetadata()).to.be.eq(rowMetadata);
+                expect(await sqlResult1.isRowSet()).to.be.true;
+                expect((await sqlResult1.getUpdateCount()).eq(long.fromNumber(-1))).to.be.true;
+
+                expect(await sqlResult2.getRowMetadata()).to.be.eq(null);
+                expect(await sqlResult2.isRowSet()).to.be.false;
+                expect((await sqlResult2.getUpdateCount()).eq(long.fromNumber(1))).to.be.true;
+            });
+
         });
 
     });
@@ -341,19 +380,14 @@ describe('SqlResultTest', function () {
             sqlResult.updateCount = long.fromNumber(1); // change update count to see if it's changed
 
             const anError = new Error('whoops');
-            sqlResult.onExecuteError(anError);
-
-            expect(sqlResult.updateCount.eq(long.fromNumber(-1))).to.be.true;
+            simulateExecuteError(1000, sqlResult, anError);
 
             sqlResult.executeDeferred.promise.then(() => {
-                done(new Error('not expected to run this'));
+                done(new Error('Not expected to run this line'));
             }).catch(err => {
-                try {
-                    expect(err).to.be.eq(anError);
-                    done();
-                } catch (e) {
-                    done(e);
-                }
+                expect(err).to.be.eq(anError);
+                expect(sqlResult.updateCount.eq(long.fromNumber(-1))).to.be.true;
+                done();
             });
         });
     });
@@ -366,12 +400,12 @@ describe('SqlResultTest', function () {
 
         it('should close the result and set updateCount if update count result is received ', function (done) {
             // pass null to make sure row page is not used
-            sqlResult.onExecuteResponse(null, new SqlPage([], [[]], false), long.fromNumber(5));
+            simulateExecutionResponse(1000, sqlResult, 0, null, long.fromNumber(5));
 
-            expect(sqlResult.closed).to.be.true;
-            expect(sqlResult.currentPage).to.be.null;
-            expect(sqlResult.updateCount.eq(long.fromNumber(5))).to.true;
             sqlResult.executeDeferred.promise.then(() => {
+                expect(sqlResult.closed).to.be.true;
+                expect(sqlResult.currentPage).to.be.null;
+                expect(sqlResult.updateCount.eq(long.fromNumber(5))).to.true;
                 done();
             }).catch(done);
         });
@@ -381,14 +415,15 @@ describe('SqlResultTest', function () {
             const rowMetadata = {};
 
             // row metadata being not null means rows received
-            sqlResult.onExecuteResponse(rowMetadata, new SqlPage([], [[]], false), long.ZERO);
+            simulateExecutionResponse(1000, sqlResult, 0, rowMetadata, undefined);
 
             sqlResult.executeDeferred.promise.then(() => {
+                expect(sqlResult.rowMetadata).to.be.eq(rowMetadata);
+                expect(sqlResult.onNextPage.calledOnce).to.be.true;
+                expect(sqlResult.updateCount.eq(long.fromNumber(-1))).to.true;
                 done();
             }).catch(done);
 
-            expect(sqlResult.onNextPage.calledOnce).to.be.true;
-            expect(sqlResult.rowMetadata).to.be.eq(rowMetadata);
         });
     });
 });

@@ -70,7 +70,7 @@ export class SqlServiceImpl implements SqlService {
 
     static readonly DEFAULT_EXPECTED_RESULT_TYPE = SqlExpectedResultType.ANY;
 
-    static readonly DEFAULT_SCHEMA: null = null;
+    static readonly DEFAULT_SCHEMA: string | null = null;
 
     constructor(
         private readonly connectionRegistry: ConnectionRegistry,

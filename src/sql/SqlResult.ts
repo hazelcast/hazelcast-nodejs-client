@@ -43,11 +43,11 @@ export interface SqlResult extends AsyncIterable<SqlRowType> {
 
     /**
      * Returns row metadata of the result.
-     * @returns {Promise<SqlRowMetadata | undefined>} a promise that returns SqlRowMetadata if rows exists in the result
-     * otherwise undefined is returned.(In the case of a update count result.). If SqlResult receives an error, this promise is
+     * @returns {Promise<SqlRowMetadata | null>} a promise that resolves to SqlRowMetadata if rows exists in the result,
+     * otherwise, i.e update count result is received, to null. If SqlResult execution encounters an error, this promise is
      * rejected with the same error.
      */
-    getRowMetadata(): Promise<SqlRowMetadata | undefined>;
+    getRowMetadata(): Promise<SqlRowMetadata | null>;
 
     /**
      * Return whether this result has rows to iterate. False if update count is returned or a response is not received yet.
@@ -149,15 +149,9 @@ export class SqlResultImpl implements SqlResult {
         });
     }
 
-    getRowMetadata(): Promise<SqlRowMetadata | undefined> {
+    getRowMetadata(): Promise<SqlRowMetadata | null> {
         return this.executeDeferred.promise.then(() => {
-            if (this.rowMetadata !== null) {
-                // rows returned
-                return this.rowMetadata;
-            } else {
-                // update count is returned
-                return undefined;
-            }
+            return this.rowMetadata;
         });
     }
 
@@ -231,7 +225,7 @@ export class SqlResultImpl implements SqlResult {
         // Ignore the response if sql result is closed.
         if (this.closed) return;
 
-        if (rowMetadata != null) { // Result that including rows
+        if (rowMetadata !== null) { // Result that including rows
             this.rowMetadata = rowMetadata;
             this.onNextPage(rowPage);
             this.updateCount = Long.fromInt(-1);
