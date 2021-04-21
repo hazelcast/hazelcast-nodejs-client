@@ -323,7 +323,7 @@ describe('SqlServiceTest', function () {
     describe('close', function () {
         let sqlService;
         let fakeCloseCodec;
-        let invocationServiceStub;
+        let fakeInvocationService;
 
         const fakeClientMessage = {};
 
@@ -332,13 +332,13 @@ describe('SqlServiceTest', function () {
             fakeCloseCodec = sandbox.fake.returns(fakeClientMessage);
             SqlCloseCodec.encodeRequest = fakeCloseCodec;
 
-            invocationServiceStub = {invokeOnConnection: sandbox.fake.resolves(undefined)};
+            fakeInvocationService = {invokeOnConnection: sandbox.fake.resolves(undefined)};
 
             // sql service
             sqlService = new SqlServiceImpl(
                 {},
                 {},
-                invocationServiceStub,
+                fakeInvocationService,
                 {}
             );
         });
@@ -352,7 +352,7 @@ describe('SqlServiceTest', function () {
             const fakeQueryId = {};
             sqlService.close(fakeConnection, fakeQueryId);
 
-            expect(invocationServiceStub.invokeOnConnection.calledOnceWithExactly(
+            expect(fakeInvocationService.invokeOnConnection.calledOnceWithExactly(
                 sandbox.match.same(fakeConnection),
                 sandbox.match.same(fakeClientMessage)
             )).to.be.true;
@@ -395,14 +395,14 @@ describe('SqlServiceTest', function () {
         });
 
         it('should decode the response', function () {
-            const decodeStub = sandbox.stub(SqlExecuteCodec, 'decodeResponse').returns({
+            sandbox.replace(SqlExecuteCodec, 'decodeResponse', sandbox.fake.returns({
                 error: null,
                 rowMetadata: [1]
-            });
+            }));
 
             sqlService.handleExecuteResponse(fakeClientMessage, fakeResult);
 
-            expect(decodeStub.calledOnceWithExactly(fakeClientMessage)).to.be.true;
+            expect(SqlExecuteCodec.decodeResponse.calledOnceWithExactly(fakeClientMessage)).to.be.true;
         });
 
         it('should call onExecuteError method of result if response error is not null', function () {
@@ -416,10 +416,12 @@ describe('SqlServiceTest', function () {
                 rowPage: {},
                 updateCount: 1
             };
-            const decodeStub = sandbox.stub(SqlExecuteCodec, 'decodeResponse').returns(fakeResponse);
+
+            sandbox.replace(SqlExecuteCodec, 'decodeResponse', sandbox.fake.returns(fakeResponse));
+
             sqlService.handleExecuteResponse(fakeClientMessage, fakeResult);
 
-            expect(decodeStub.calledOnceWithExactly(fakeClientMessage)).to.be.true;
+            expect(SqlExecuteCodec.decodeResponse.calledOnceWithExactly(fakeClientMessage)).to.be.true;
             expect(fakeResult.onExecuteError.calledWithMatch(fakeResponse.error)).to.be.true;
             expect(fakeResult.onExecuteResponse.called).to.be.false;
         });
@@ -431,10 +433,11 @@ describe('SqlServiceTest', function () {
                 rowPage: {},
                 updateCount: 1
             };
-            const decodeStub = sandbox.stub(SqlExecuteCodec, 'decodeResponse').returns(fakeResponse);
+            sandbox.replace(SqlExecuteCodec, 'decodeResponse', sandbox.fake.returns(fakeResponse));
+
             sqlService.handleExecuteResponse(fakeClientMessage, fakeResult);
 
-            expect(decodeStub.calledOnceWithExactly(fakeClientMessage)).to.be.true;
+            expect(SqlExecuteCodec.decodeResponse.calledOnceWithExactly(fakeClientMessage)).to.be.true;
 
             expect(fakeResult.onExecuteResponse.calledOnceWithExactly(
                 sandbox.match(new SqlRowMetadataImpl(fakeResponse.rowMetadata)),
