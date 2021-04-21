@@ -108,10 +108,10 @@ export class SqlResultImpl implements SqlResult {
         private readonly returnRawResult: boolean = false
     ) {
         this.closed = false;
+        this.last = false;
         this.rowMetadata = null;
         this.executeDeferred = deferredPromise<boolean>();
-        this.executeDeferred.promise.catch(() => {
-        });
+        this.executeDeferred.promise.catch(() => {});
     }
 
     [Symbol.asyncIterator](): AsyncIterator<SqlRowType, SqlRowType, SqlRowType> {

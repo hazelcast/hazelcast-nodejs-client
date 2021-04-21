@@ -20,8 +20,6 @@ const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
 const chai = require('chai');
 const expect = chai.expect;
-const chaiAsPromised = require('chai-as-promised');
-chai.use(chaiAsPromised);
 
 const { delayedPromise } = require('../../../lib/util/Util');
 const { SqlResultImpl } = require('../../../lib/sql/SqlResult');
@@ -36,14 +34,15 @@ const { HazelcastSqlException } = require('../../../lib/core/HazelcastError');
  * Simulates a successful execute response
  * @param sqlResult
  * @param rowCount how many rows to add to the sqlResult
+ * @param rowMetadata
  * @returns sqlResult
  */
-function prepareSuccessfulSqlResult(sqlResult, rowCount) {
+function prepareSuccessfulSqlResult (sqlResult, rowCount, rowMetadata) {
     const columns = [];
     for (let i = 0; i < 2; i++) { // column number
         const column = [];
-        for (let j = 0; j<rowCount; j++) {
-            column.push((i*rowCount + j).toString());
+        for (let j = 0; j < rowCount; j++) {
+            column.push((i * rowCount + j).toString());
         }
         columns.push(column);
     }
@@ -53,18 +52,21 @@ function prepareSuccessfulSqlResult(sqlResult, rowCount) {
         new ColumnarDataHolder(columns),
         true // isLast
     );
-    const rowMetadata = new SqlRowMetadataImpl([
-        {
-            name: 'foo',
-            type: SqlColumnType.VARCHAR,
-            nullable: true
-        },
-        {
-            name: 'bar',
-            type: SqlColumnType.VARCHAR,
-            nullable: true
-        }
-    ]);
+
+    if (rowMetadata === undefined) {
+        rowMetadata = new SqlRowMetadataImpl([
+            {
+                name: 'foo',
+                type: SqlColumnType.VARCHAR,
+                nullable: true
+            },
+            {
+                name: 'bar',
+                type: SqlColumnType.VARCHAR,
+                nullable: true
+            }
+        ]);
+    }
 
     sqlResult.onExecuteResponse(rowMetadata, rowPage, long.ZERO);
     return sqlResult;
@@ -154,7 +156,7 @@ describe('SqlResultTest', function () {
             const executeError = new Error('whoops..');
             sqlResult.onExecuteError(executeError);
 
-            (async function() {
+            (async function () {
                 // eslint-disable-next-line no-empty,no-unused-vars
                 for await (const row of sqlResult) {
                 }
@@ -193,9 +195,11 @@ describe('SqlResultTest', function () {
         let fakeQueryId;
 
         beforeEach(function () {
-            fakeSqlService = {close: sandbox.fake.resolves(undefined), fetch: sandbox.fake(() => {
-                return delayedPromise(500);
-            })};
+            fakeSqlService = {
+                close: sandbox.fake.resolves(undefined), fetch: sandbox.fake(() => {
+                    return delayedPromise(500);
+                })
+            };
             fakeConnection = sandbox.fake();
             fakeQueryId = sandbox.fake();
         });
@@ -216,7 +220,7 @@ describe('SqlResultTest', function () {
                 done(new Error('Not expected to run this line'));
             }).catch(err => {
                 expect(err).to.be.instanceof(HazelcastSqlException)
-                        .with.property('code', SqlErrorCode.CANCELLED_BY_USER);
+                    .with.property('code', SqlErrorCode.CANCELLED_BY_USER);
                 done();
             }).catch(done);
             sqlResult.close();
@@ -265,51 +269,162 @@ describe('SqlResultTest', function () {
     });
     describe('getters', function () {
 
-        let fakeSqlService;
-        let fakeConnection;
-        let fakeQueryId;
-        let sqlResult;
-        const rowMetadata = {};
+        it('should have working getters', async function () {
 
-        beforeEach(function () {
-            fakeSqlService = {close: sandbox.fake.resolves(undefined), fetch: sandbox.fake(() => {
-                return delayedPromise(500);
-            })};
-            fakeConnection = sandbox.fake();
-            fakeQueryId = sandbox.fake();
-            sqlResult = new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, 4096);
-            sqlResult.onExecuteResponse(rowMetadata, {});
+            const fakeSqlService = {
+                close: sandbox.fake.resolves(undefined), fetch: sandbox.fake(() => {
+                    return delayedPromise(500);
+                })
+            };
+            const fakeConnection = sandbox.fake();
+            const fakeQueryId = sandbox.fake();
+            const sqlResult = new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, 4096);
+
+            const rowMetadata = new SqlRowMetadataImpl([
+                {
+                    name: 'foo',
+                    type: SqlColumnType.VARCHAR,
+                    nullable: true
+                },
+                {
+                    name: 'bar',
+                    type: SqlColumnType.VARCHAR,
+                    nullable: true
+                }
+            ]);
+            prepareSuccessfulSqlResult(sqlResult, 2, rowMetadata);
+
+            expect(await sqlResult.getRowMetadata()).to.be.eq(rowMetadata);
+            expect(await sqlResult.isRowSet()).to.be.true;
+            expect((await sqlResult.getUpdateCount()).eq(long.fromNumber(-1))).to.be.true;
         });
-
-        afterEach(function () {
-            sandbox.restore();
-        });
-
-        // getRowMetadata
-        // isRowSet
-        // getUpdateCount
 
     });
     describe('onNextPage', function () {
 
-        beforeEach(function () {
+        it('should close on last page', function () {
+            const sqlResult = new SqlResultImpl({}, {}, {}, 4096);
+            const rowPage = new SqlPage(
+                [], // column types
+                new ColumnarDataHolder([[]]),
+                true // isLast
+            );
 
+            const fakeIsLast = sinon.fake(rowPage.isLast);
+            sandbox.replace(rowPage, 'isLast', fakeIsLast);
+
+            sqlResult.onNextPage(rowPage);
+
+            expect(fakeIsLast.called).to.be.true;
+
+            expect(sqlResult.last).to.be.true;
+            expect(sqlResult.closed).to.be.true;
+
+            expect(sqlResult.currentPage).to.be.eq(rowPage);
         });
 
-        afterEach(function () {
-            sandbox.restore();
+        it('should not close on a page other than last page', function () {
+            const sqlResult = new SqlResultImpl({}, {}, {}, 4096);
+            const rowPage = new SqlPage(
+                [], // column types
+                new ColumnarDataHolder([[]]),
+                false // isLast
+            );
+
+            rowPage.getRowCount();
+
+            const fakeIsLast = sinon.fake(rowPage.isLast);
+            sandbox.replace(rowPage, 'isLast', fakeIsLast);
+
+            sqlResult.onNextPage(rowPage);
+
+            expect(fakeIsLast.called).to.be.true;
+
+            expect(sqlResult.last).to.be.false;
+            expect(sqlResult.closed).to.be.false;
+
+            expect(sqlResult.currentPage).to.be.eq(rowPage);
         });
 
     });
     describe('onExecuteError', function () {
 
-        beforeEach(function () {
+        let sqlResult;
 
+        beforeEach(function () {
+            const fakeConnection = sandbox.fake();
+            const fakeQueryId = sandbox.fake();
+            sqlResult = new SqlResultImpl({}, fakeConnection, fakeQueryId, 4096);
+            const rowPage = new SqlPage(
+                [0, 0], // column types
+                new ColumnarDataHolder([[]]),
+                true // isLast
+            );
+            sqlResult.onExecuteResponse(null, rowPage, long.fromNumber(5));
+
+            const fakeIsLast = sinon.fake.returns(true);
+            sandbox.replace(rowPage, 'isLast', fakeIsLast);
         });
 
         afterEach(function () {
             sandbox.restore();
         });
 
+        it('should reject execute promise and set update count to long(-1)', function (done) {
+            sqlResult = new SqlResultImpl({}, {}, {}, 4096);
+            sqlResult.updateCount = long.fromNumber(1); // change update count to see if it's changed
+
+            const anError = new Error('whoops');
+            sqlResult.onExecuteError(anError);
+
+            expect(sqlResult.updateCount.eq(long.fromNumber(-1))).to.be.true;
+
+            sqlResult.executeDeferred.promise.then(() => {
+                done(new Error('not expected to run this'));
+            }).catch(err => {
+                try {
+                    expect(err).to.be.eq(anError);
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            });
+        });
+
+    });
+    describe('onExecuteResponse', function () {
+
+        let sqlResult;
+        let rowPage;
+        beforeEach(function () {
+            sqlResult = new SqlResultImpl({}, {}, {}, 4096);
+            rowPage = new SqlPage(
+                [],
+                new ColumnarDataHolder([[]]),
+                false
+            );
+        });
+        it('should close the result and set updateCount if update count result is received ', function (done) {
+            sqlResult.onExecuteResponse(null, rowPage, long.fromNumber(5));
+
+            expect(sqlResult.closed).to.be.true;
+            expect(sqlResult.updateCount.eq(long.fromNumber(5))).to.true;
+            sqlResult.executeDeferred.promise.then(() => {
+                done();
+            }).catch(done);
+        });
+
+        it('should call onNextpage and set row metadata if rowset result is received', function (done) {
+            const onNextPageSpy = sandbox.spy(sqlResult, 'onNextPage');
+            const rowMetadata = {};
+            sqlResult.onExecuteResponse(rowMetadata, rowPage, long.ZERO); // row metadata being not null means rows received
+
+            sqlResult.executeDeferred.promise.then(() => {
+                done();
+            }).catch(done);
+
+            expect(onNextPageSpy.calledOnce).to.be.true;
+            expect(sqlResult.rowMetadata).to.be.eq(rowMetadata);
+        });
     });
 });
