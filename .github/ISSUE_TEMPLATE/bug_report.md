@@ -1,10 +1,7 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: ''
 labels: 'Type: Defect'
-assignees: ''
-
 ---
 
 **Describe the bug**
@@ -31,11 +28,13 @@ Please share with us the following information:
 
 4. Number of clients:
 
-5. Java version.It is also helpful to mention the JVM parameters:
+5. Java version. It is also helpful to mention the JVM parameters:
 
-6. Operating system. If it is Linux, kernel version is helpful:
+6. NodeJS version. It is also useful to mention `node` command line arguments if there are any:
 
-7. Logs and stack traces, if available:
+7. Operating system. If it is Linux, kernel version is helpful:
+
+8. Logs and stack traces, if available:
 
 **To Reproduce**
 Steps to reproduce the behavior:
