@@ -27,7 +27,7 @@ jobs:
          project: API
          issuetype: Bug
          summary: | 
-          [GH-${{ github.event.issue.number }}] ${{ github.event.issue.title }}
+          ${{ github.event.issue.title }} [GH-${{ github.event.issue.number }}]
          description: |
           *URL:* ${{ github.event.issue.html_url }}
           *Created By:* ${{ github.event.issue.user.login }}
