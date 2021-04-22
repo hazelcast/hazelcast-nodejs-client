@@ -15,7 +15,8 @@
  */
 'use strict';
 
-const { expect } = require('chai');
+const chai = require('chai');
+const should = chai.should();
 const { SqlRowImpl } = require('../../../lib/sql/SqlRow');
 const { IndexOutOfBoundsError, IllegalArgumentError } = require('../../../lib/core/HazelcastError');
 
@@ -33,18 +34,18 @@ describe('SqlRowTest', function () {
 
     describe('getObject', function () {
         it('should give correct values', function () {
-            expect(instance.getObject('foo')).to.be.eq(1);
-            expect(instance.getObject('bar')).to.be.eq(null);
-            expect(instance.getObject(0)).to.be.eq(1);
-            expect(instance.getObject(1)).to.be.eq(null);
+            instance.getObject('foo').should.be.eq(1);
+            should.equal(instance.getObject('bar'), null);
+            instance.getObject(0).should.be.eq(1);
+            should.equal(instance.getObject(1), null);
 
-            expect(() => instance.getObject(2)).to.throw(IndexOutOfBoundsError, /Index .* does not exists/);
-            expect(() => instance.getObject(-1)).to.throw(IndexOutOfBoundsError, /Index .* does not exists/);
+            (() => instance.getObject(2)).should.throw(IndexOutOfBoundsError, /Index .* does not exists/);
+            (() => instance.getObject(-1)).should.throw(IndexOutOfBoundsError, /Index .* does not exists/);
 
-            expect(() => instance.getObject('unexisted')).to.throw(IllegalArgumentError, /Could not find a column with name .*/);
+            (() => instance.getObject('unexisted')).should.throw(IllegalArgumentError, /Could not find a column with name .*/);
 
             [undefined, [], BigInt(1), Symbol(), {}].forEach(invalidValue => {
-                expect(() => instance.getObject(invalidValue)).to.throw(
+                (() => instance.getObject(invalidValue)).should.throw(
                     IllegalArgumentError,
                     'Expected string or number for column argument'
                 );

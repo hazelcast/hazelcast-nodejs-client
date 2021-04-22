@@ -19,7 +19,7 @@ const long = require('long');
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
 const chai = require('chai');
-const expect = chai.expect;
+const should = chai.should();
 
 const { delayedPromise } = require('../../../lib/util/Util');
 const { SqlResultImpl } = require('../../../lib/sql/SqlResult');
@@ -118,13 +118,13 @@ describe('SqlResultTest', function () {
 
                 let rowCounter = 0;
                 for await (const row of sqlResult) {
-                    expect(row).not.to.be.instanceof(SqlRowImpl);
+                    row.should.not.be.instanceof(SqlRowImpl);
                     rowCounter++;
                 }
-                expect(rowCounter).to.be.eq(rowCount);
-                expect(await sqlResult.getRowMetadata()).to.be.eq(defaultRowMetadata);
-                expect(await sqlResult.isRowSet()).to.be.true;
-                expect((await sqlResult.getUpdateCount()).eq(long.fromNumber(-1))).to.be.true;
+                rowCounter.should.be.eq(rowCount);
+                (await sqlResult.getRowMetadata()).should.be.eq(defaultRowMetadata);
+                (await sqlResult.isRowSet()).should.be.true;
+                (await sqlResult.getUpdateCount()).eq(long.fromNumber(-1)).should.be.true;
             });
         });
 
@@ -141,13 +141,13 @@ describe('SqlResultTest', function () {
 
             let rowCounter = 0;
             for await (const row of sqlResult) {
-                expect(row).to.be.instanceof(SqlRowImpl);
+                row.should.be.instanceof(SqlRowImpl);
                 rowCounter++;
             }
-            expect(rowCounter).to.be.eq(rowCount);
-            expect(await sqlResult.getRowMetadata()).to.be.eq(defaultRowMetadata);
-            expect(await sqlResult.isRowSet()).to.be.true;
-            expect((await sqlResult.getUpdateCount()).eq(long.fromNumber(-1))).to.be.true;
+            rowCounter.should.be.eq(rowCount);
+            (await sqlResult.getRowMetadata()).should.be.eq(defaultRowMetadata);
+            (await sqlResult.isRowSet()).should.be.true;
+            (await sqlResult.getUpdateCount()).eq(long.fromNumber(-1)).should.be.true;
         });
 
         it('should be iterable via next()', async function () {
@@ -163,13 +163,13 @@ describe('SqlResultTest', function () {
             let current;
             let counter = 0;
             while (!(current = await sqlResult.next()).done) {
-                expect(current).not.to.be.instanceof(SqlRowImpl);
+                current.should.not.be.instanceof(SqlRowImpl);
                 counter++;
             }
-            expect(counter).to.be.eq(rowCount);
-            expect(await sqlResult.getRowMetadata()).to.be.eq(defaultRowMetadata);
-            expect(await sqlResult.isRowSet()).to.be.true;
-            expect((await sqlResult.getUpdateCount()).eq(long.fromNumber(-1))).to.be.true;
+            counter.should.be.eq(rowCount);
+            (await sqlResult.getRowMetadata()).should.be.eq(defaultRowMetadata);
+            (await sqlResult.isRowSet()).should.be.true;
+            (await sqlResult.getUpdateCount()).eq(long.fromNumber(-1)).should.be.true;
         });
 
         it('should reject for await iteration on execute error', function () {
@@ -189,7 +189,7 @@ describe('SqlResultTest', function () {
                     for await (const row of sqlResult) {
                     }
                 } catch (err) {
-                    expect(err).to.be.eq(executeError);
+                    err.should.be.eq(executeError);
                 }
             });
         });
@@ -209,7 +209,7 @@ describe('SqlResultTest', function () {
                 try {
                     await sqlResult.next();
                 } catch (err) {
-                    expect(err).to.be.eq(executeError);
+                    err.should.be.eq(executeError);
                 }
             });
         });
@@ -235,7 +235,7 @@ describe('SqlResultTest', function () {
         it('should return the same promise if close() is called again', function () {
             const sqlResult = new SqlResultImpl(fakeSqlService, {}, {}, 4096);
             const closePromise = sqlResult.close();
-            expect(sqlResult.close()).to.be.eq(closePromise);
+            sqlResult.close().should.be.eq(closePromise);
         });
 
         it('should cancel an ongoing fetch if close() is called', function (done) {
@@ -243,8 +243,7 @@ describe('SqlResultTest', function () {
             sqlResult.fetch().then(() => {
                 done(new Error('Not expected to run this line'));
             }).catch(err => {
-                expect(err).to.be.instanceof(HazelcastSqlException)
-                    .with.property('code', SqlErrorCode.CANCELLED_BY_USER);
+                err.should.be.instanceof(HazelcastSqlException).with.property('code', SqlErrorCode.CANCELLED_BY_USER);
                 done();
             }).catch(done);
             sqlResult.close();
@@ -257,9 +256,8 @@ describe('SqlResultTest', function () {
             sqlResult.executeDeferred.promise.then(() => {
                 done(new Error('Not expected to run this line'));
             }).catch(err => {
-                expect(err).to.be.instanceof(HazelcastSqlException)
-                    .with.property('code', SqlErrorCode.CANCELLED_BY_USER);
-                expect(sqlResult.onExecuteError.calledOnceWithExactly(err)).to.be.true;
+                err.should.be.instanceof(HazelcastSqlException).with.property('code', SqlErrorCode.CANCELLED_BY_USER);
+                sqlResult.onExecuteError.calledOnceWithExactly(err).should.be.true;
                 done();
             }).catch(done);
             simulateExecutionResponse(1000, sqlResult, 1, defaultRowMetadata);
@@ -271,11 +269,11 @@ describe('SqlResultTest', function () {
             const fakeQueryId = {};
             const sqlResult = new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, 4096);
             return sqlResult.close().then(() => {
-                expect(fakeSqlService.close.calledOnceWithExactly(
+                fakeSqlService.close.calledOnceWithExactly(
                     sandbox.match.same(fakeConnection),
                     sandbox.match.same(fakeQueryId)
-                )).to.be.true;
-                expect(sqlResult.closed).to.be.true;
+                ).should.be.true;
+                sqlResult.closed.should.be.true;
             });
         });
 
@@ -287,8 +285,8 @@ describe('SqlResultTest', function () {
             sqlResult.close().then(() => {
                 done(new Error('Not expected to run this line'));
             }).catch(err => {
-                expect(err).to.be.eq(fakeError);
-                expect(sqlResult.closed).to.be.false;
+                err.should.be.eq(fakeError);
+                sqlResult.closed.should.be.false;
                 done();
             }).catch(done);
         });
@@ -317,13 +315,13 @@ describe('SqlResultTest', function () {
             simulateExecutionResponse(1000, sqlResult2, 2, null, long.fromNumber(1));
 
             return assertTrueEventually(async () => {
-                expect(await sqlResult1.getRowMetadata()).to.be.eq(rowMetadata);
-                expect(await sqlResult1.isRowSet()).to.be.true;
-                expect((await sqlResult1.getUpdateCount()).eq(long.fromNumber(-1))).to.be.true;
+                (await sqlResult1.getRowMetadata()).should.be.eq(rowMetadata);
+                (await sqlResult1.isRowSet()).should.be.true;
+                (await sqlResult1.getUpdateCount()).eq(long.fromNumber(-1)).should.be.true;
 
-                expect(await sqlResult2.getRowMetadata()).to.be.eq(null);
-                expect(await sqlResult2.isRowSet()).to.be.false;
-                expect((await sqlResult2.getUpdateCount()).eq(long.fromNumber(1))).to.be.true;
+                should.equal((await sqlResult2.getRowMetadata()), null);
+                (await sqlResult2.isRowSet()).should.be.false;
+                (await sqlResult2.getUpdateCount()).eq(long.fromNumber(1)).should.be.true;
             });
 
         });
@@ -343,12 +341,12 @@ describe('SqlResultTest', function () {
 
             sqlResult.onNextPage(rowPage);
 
-            expect(rowPage.isLast.called).to.be.true;
+            rowPage.isLast.called.should.be.true;
 
-            expect(sqlResult.last).to.be.true;
-            expect(sqlResult.closed).to.be.true;
+            sqlResult.last.should.be.true;
+            sqlResult.closed.should.be.true;
 
-            expect(sqlResult.currentPage).to.be.eq(rowPage);
+            sqlResult.currentPage.should.be.eq(rowPage);
         });
 
         it('should not close on a page other than last page', function () {
@@ -365,12 +363,12 @@ describe('SqlResultTest', function () {
 
             sqlResult.onNextPage(rowPage);
 
-            expect(rowPage.isLast.called).to.be.true;
+            rowPage.isLast.called.should.be.true;
 
-            expect(sqlResult.last).to.be.false;
-            expect(sqlResult.closed).to.be.false;
+            sqlResult.last.should.be.false;
+            sqlResult.closed.should.be.false;
 
-            expect(sqlResult.currentPage).to.be.eq(rowPage);
+            sqlResult.currentPage.should.be.eq(rowPage);
         });
 
     });
@@ -385,10 +383,10 @@ describe('SqlResultTest', function () {
             sqlResult.executeDeferred.promise.then(() => {
                 done(new Error('Not expected to run this line'));
             }).catch(err => {
-                expect(err).to.be.eq(anError);
-                expect(sqlResult.updateCount.eq(long.fromNumber(-1))).to.be.true;
+                err.should.be.eq(anError);
+                sqlResult.updateCount.eq(long.fromNumber(-1)).should.be.true;
                 done();
-            });
+            }).catch(done);
         });
     });
     describe('onExecuteResponse', function () {
@@ -403,9 +401,9 @@ describe('SqlResultTest', function () {
             simulateExecutionResponse(1000, sqlResult, 0, null, long.fromNumber(5));
 
             sqlResult.executeDeferred.promise.then(() => {
-                expect(sqlResult.closed).to.be.true;
-                expect(sqlResult.currentPage).to.be.null;
-                expect(sqlResult.updateCount.eq(long.fromNumber(5))).to.true;
+                sqlResult.closed.should.be.true;
+                should.equal(sqlResult.currentPage, null);
+                sqlResult.updateCount.eq(long.fromNumber(5)).should.be.true;
                 done();
             }).catch(done);
         });
@@ -418,9 +416,9 @@ describe('SqlResultTest', function () {
             simulateExecutionResponse(1000, sqlResult, 0, rowMetadata, undefined);
 
             sqlResult.executeDeferred.promise.then(() => {
-                expect(sqlResult.rowMetadata).to.be.eq(rowMetadata);
-                expect(sqlResult.onNextPage.calledOnce).to.be.true;
-                expect(sqlResult.updateCount.eq(long.fromNumber(-1))).to.true;
+                sqlResult.rowMetadata.should.be.eq(rowMetadata);
+                sqlResult.onNextPage.calledOnce.should.be.true;
+                sqlResult.updateCount.eq(long.fromNumber(-1)).should.be.true;
                 done();
             }).catch(done);
 

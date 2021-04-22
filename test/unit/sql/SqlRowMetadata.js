@@ -15,7 +15,8 @@
  */
 'use strict';
 
-const { expect } = require('chai');
+const chai = require('chai');
+const should = chai.should();
 const { SqlRowMetadataImpl } = require('../../../lib/sql/SqlRowMetadata');
 const { SqlColumnMetadataImpl } = require('../../../lib/sql/SqlColumnMetadata');
 const { IllegalArgumentError, IllegalStateError } = require('../../../lib/core/HazelcastError');
@@ -25,7 +26,7 @@ describe('SqlRowMetadataTest', function () {
     describe('constructor', function () {
         it('should throw on non-array columns argument, or an empty array', function () {
             [undefined, [], '', 1, BigInt(1), Symbol(), {}].forEach(invalidColumnValue => {
-                expect(() => new SqlRowMetadataImpl(invalidColumnValue)).to.throw(IllegalStateError, 'Invalid columns given');
+                (() => new SqlRowMetadataImpl(invalidColumnValue)).should.throw(IllegalStateError, 'Invalid columns given');
             });
         });
     });
@@ -36,9 +37,9 @@ describe('SqlRowMetadataTest', function () {
            const columnMetadata2 = {};
 
            const instance = new SqlRowMetadataImpl([columnMetadata1, columnMetadata2]);
-           expect(instance.getColumnByIndex(0)).to.be.eq(columnMetadata1);
-           expect(instance.getColumnByIndex(1)).to.be.eq(columnMetadata2);
-           expect(instance.getColumnByIndex(3)).to.be.eq(undefined);
+           instance.getColumnByIndex(0).should.be.eq(columnMetadata1);
+           instance.getColumnByIndex(1).should.be.eq(columnMetadata2);
+           should.equal(instance.getColumnByIndex(3), undefined);
        });
     });
 
@@ -49,14 +50,14 @@ describe('SqlRowMetadataTest', function () {
 
         it('should throw an error if non-string is passed', function () {
             [0, undefined, null, {}, [], BigInt(1), Symbol()].forEach(v => {
-                expect(() => instance.findColumn(v)).to.throw(IllegalArgumentError, 'Expected string');
+                (() => instance.findColumn(v)).should.throw(IllegalArgumentError, 'Expected string');
             });
         });
 
         it('should find columns', function () {
-            expect(instance.findColumn('foo')).to.be.eq(0);
-            expect(instance.findColumn('bar')).to.be.eq(1);
-            expect(instance.findColumn('unexisting-column')).to.be.eq(-1);
+            instance.findColumn('foo').should.be.eq(0);
+            instance.findColumn('bar').should.be.eq(1);
+            instance.findColumn('unexisting-column').should.be.eq(-1);
         });
     });
 });

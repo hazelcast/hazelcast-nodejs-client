@@ -17,8 +17,8 @@
 
 const { SqlPage } = require('../../../lib/sql/SqlPage');
 const { SqlColumnType } = require('../../../lib/sql/SqlColumnMetadata');
-const { expect } = require('chai');
-
+const chai = require('chai');
+chai.should();
 describe('SqlPageTest', function () {
 
     const columnTypes = [
@@ -39,19 +39,19 @@ describe('SqlPageTest', function () {
 
     describe('newPage', function () {
         it('should construct same page as new', function () {
-            expect(staticInstance.getRowCount()).to.be.eq(instance.getRowCount());
-            expect(staticInstance.getColumnCount()).to.be.eq(instance.getColumnCount());
-            expect(staticInstance.getColumnTypes()).to.be.eq(instance.getColumnTypes());
-            expect(staticInstance.isLast()).to.be.eq(instance.isLast());
+            staticInstance.getRowCount().should.be.eq(instance.getRowCount());
+            staticInstance.getColumnCount().should.be.eq(instance.getColumnCount());
+            staticInstance.getColumnTypes().should.be.eq(instance.getColumnTypes());
+            staticInstance.isLast().should.be.eq(instance.isLast());
         });
     });
 
     describe('getValue', function () {
         it('should give row values correctly', function () {
-            expect(instance.getValue(0, 0)).to.be.eq('a');
-            expect(instance.getValue(0, 1)).to.be.eq('b');
-            expect(instance.getValue(1, 0)).to.be.eq('c');
-            expect(instance.getValue(2, 1)).to.be.eq('f');
+            instance.getValue(0, 0).should.be.eq('a');
+            instance.getValue(0, 1).should.be.eq('b');
+            instance.getValue(1, 0).should.be.eq('c');
+            instance.getValue(2, 1).should.be.eq('f');
         });
     });
 

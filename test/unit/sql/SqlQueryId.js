@@ -15,7 +15,8 @@
  */
 'use strict';
 
-const { expect } = require('chai');
+const chai = require('chai');
+chai.should();
 const { SqlQueryId } = require('../../../lib/sql/SqlQueryId');
 const { UuidUtil } = require('../../../lib/util/UuidUtil');
 const sinon = require('sinon');
@@ -30,11 +31,11 @@ describe('SqlQueryIdTest', function () {
             sinon.replace(UuidUtil, 'generate', sinon.fake.returns(localUuid)); // mock random generation
             const staticInstance = SqlQueryId.fromMemberId(memberUuid);
 
-            expect(staticInstance.memberIdHigh.eq(memberUuid.mostSignificant)).to.be.true;
-            expect(staticInstance.memberIdLow.eq(memberUuid.leastSignificant)).to.be.true;
-            expect(staticInstance.localIdHigh.eq(localUuid.mostSignificant)).to.be.true;
-            expect(staticInstance.localIdLow.eq(localUuid.leastSignificant)).to.be.true;
-            expect(UuidUtil.generate.calledOnce).to.be.true;
+            staticInstance.memberIdHigh.eq(memberUuid.mostSignificant).should.be.true;
+            staticInstance.memberIdLow.eq(memberUuid.leastSignificant).should.be.true;
+            staticInstance.localIdHigh.eq(localUuid.mostSignificant).should.be.true;
+            staticInstance.localIdLow.eq(localUuid.leastSignificant).should.be.true;
+            UuidUtil.generate.calledOnce.should.be.true;
         });
     });
 });
