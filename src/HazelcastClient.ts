@@ -233,7 +233,7 @@ export class HazelcastClient {
      * Creates a new client object and automatically connects to cluster.
      * @param config Client config. Default client config is used when this parameter
      *               is absent.
-     * @returns a new client instance
+     * @returns A promise that resolves to a new client instance
      */
     static newHazelcastClient(config?: ClientConfig): Promise<HazelcastClient> {
         const configBuilder = new ConfigBuilder(config);
@@ -248,7 +248,7 @@ export class HazelcastClient {
      * from a cluster.
      *
      * @param failoverConfig Configuration object describing the failover client configs and try count
-     * @returns a new client instance
+     * @returns A promise that resolves to a new client instance
      * @throws InvalidConfigurationError if the provided failover configuration is not valid
      */
     static newHazelcastFailoverClient(failoverConfig?: ClientFailoverConfig): Promise<HazelcastClient> {
