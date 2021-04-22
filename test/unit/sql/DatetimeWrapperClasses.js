@@ -17,10 +17,10 @@
 
 const chai = require('chai');
 chai.should();
-const { HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime } = require('../../../lib/sql/DataTypes.js');
+const { HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime } = require('../../../lib/sql/DatetimeWrapperClasses');
 const { IllegalArgumentError } = require('../../../lib/core/HazelcastError.js');
 
-describe('DataTypesTest', function () {
+describe('DatetimeWrapperClassesTest', function () {
     describe('HzLocalTimeTest', function () {
         it('should return hour, minute and seconds correctly', function () {
             const newHzTime = new HzLocalTime(2, 3, 4, 60000);

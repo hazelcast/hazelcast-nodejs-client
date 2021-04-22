@@ -16,11 +16,8 @@
 
 import * as Long from 'long';
 import {BitsUtil} from '../../util/BitsUtil';
-import {
-    getTimezoneOffsetFromSeconds
-} from '../../util/DatetimeUtil';
 import {UUID} from '../../core/UUID';
-import {HzLocalDate, HzLocalDateTime, HzLocalTime, HzOffsetDateTime} from '../../sql/DataTypes';
+import {HzLocalDate, HzLocalDateTime, HzLocalTime, HzOffsetDateTime} from '../../sql/DatetimeWrapperClasses';
 
 // Taken from long.js, https://github.com/dcodeIO/long.js/blob/master/src/long.js
 const TWO_PWR_16_DBL = 1 << 16;
