@@ -28,14 +28,14 @@ describe('SqlQueryIdTest', function () {
             const memberUuid = UuidUtil.generate();
             const localUuid = UuidUtil.generate();
 
-            sinon.replace(UuidUtil, 'generate', sinon.fake.returns(localUuid)); // mock random generation
+            const fake = sinon.replace(UuidUtil, 'generate', sinon.fake.returns(localUuid)); // mock random generation
             const staticInstance = SqlQueryId.fromMemberId(memberUuid);
 
             staticInstance.memberIdHigh.eq(memberUuid.mostSignificant).should.be.true;
             staticInstance.memberIdLow.eq(memberUuid.leastSignificant).should.be.true;
             staticInstance.localIdHigh.eq(localUuid.mostSignificant).should.be.true;
             staticInstance.localIdLow.eq(localUuid.leastSignificant).should.be.true;
-            UuidUtil.generate.calledOnce.should.be.true;
+            fake.calledOnce.should.be.true;
         });
     });
 });

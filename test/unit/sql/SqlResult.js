@@ -251,13 +251,13 @@ describe('SqlResultTest', function () {
 
         it('should stop an ongoing execute() if close() is called', function (done) {
             const sqlResult = new SqlResultImpl(fakeSqlService, {}, {}, 4096);
-            sandbox.replace(sqlResult, 'onExecuteError', sandbox.fake(sqlResult.onExecuteError));
+            const fake = sandbox.replace(sqlResult, 'onExecuteError', sandbox.fake(sqlResult.onExecuteError));
 
             sqlResult.executeDeferred.promise.then(() => {
                 done(new Error('Not expected to run this line'));
             }).catch(err => {
                 err.should.be.instanceof(HazelcastSqlException).with.property('code', SqlErrorCode.CANCELLED_BY_USER);
-                sqlResult.onExecuteError.calledOnceWithExactly(err).should.be.true;
+                fake.calledOnceWithExactly(err).should.be.true;
                 done();
             }).catch(done);
             simulateExecutionResponse(1000, sqlResult, 1, defaultRowMetadata);
@@ -337,11 +337,11 @@ describe('SqlResultTest', function () {
                 true // isLast
             );
 
-            sandbox.replace(rowPage, 'isLast', sandbox.fake(rowPage.isLast));
+            const fake = sandbox.replace(rowPage, 'isLast', sandbox.fake(rowPage.isLast));
 
             sqlResult.onNextPage(rowPage);
 
-            rowPage.isLast.called.should.be.true;
+            fake.called.should.be.true;
 
             sqlResult.last.should.be.true;
             sqlResult.closed.should.be.true;
@@ -359,11 +359,11 @@ describe('SqlResultTest', function () {
 
             rowPage.getRowCount();
 
-            sandbox.replace(rowPage, 'isLast', sandbox.fake(rowPage.isLast));
+            const fake = sandbox.replace(rowPage, 'isLast', sandbox.fake(rowPage.isLast));
 
             sqlResult.onNextPage(rowPage);
 
-            rowPage.isLast.called.should.be.true;
+            fake.called.should.be.true;
 
             sqlResult.last.should.be.false;
             sqlResult.closed.should.be.false;
@@ -409,7 +409,7 @@ describe('SqlResultTest', function () {
         });
 
         it('should call onNextpage and set row metadata if rowset result is received', function (done) {
-            sandbox.replace(sqlResult, 'onNextPage', sandbox.fake(sqlResult.onNextPage));
+            const fake = sandbox.replace(sqlResult, 'onNextPage', sandbox.fake(sqlResult.onNextPage));
             const rowMetadata = {};
 
             // row metadata being not null means rows received
@@ -417,7 +417,7 @@ describe('SqlResultTest', function () {
 
             sqlResult.executeDeferred.promise.then(() => {
                 sqlResult.rowMetadata.should.be.eq(rowMetadata);
-                sqlResult.onNextPage.calledOnce.should.be.true;
+                fake.calledOnce.should.be.true;
                 sqlResult.updateCount.eq(long.fromNumber(-1)).should.be.true;
                 done();
             }).catch(done);

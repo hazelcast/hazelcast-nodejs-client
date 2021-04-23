@@ -45,6 +45,9 @@ describe('SqlServiceTest', function () {
         let fakeInvocationService;
         let fakeConnectionManager;
         let fakeConnection;
+        let fakeEncodeRequest;
+        let fakeHandleExecuteResponse;
+        let fakeFromMemberId;
 
         const fakeQueryId = {};
         const fakeClientMessage = {};
@@ -53,14 +56,13 @@ describe('SqlServiceTest', function () {
 
         beforeEach(function () {
 
+            fakeEncodeRequest = sandbox.replace(SqlExecuteCodec, 'encodeRequest', sandbox.fake.returns(fakeClientMessage));
+            fakeHandleExecuteResponse = sandbox.replace(SqlServiceImpl.prototype, 'handleExecuteResponse', sandbox.fake());
+            fakeFromMemberId = sandbox.replace(SqlQueryId, 'fromMemberId', sandbox.fake.returns(fakeQueryId));
+
             fakeConnection = {
                 getRemoteUuid: sandbox.fake.returns(fakeRemoteUUID)
             };
-
-            sandbox.replace(SqlExecuteCodec, 'encodeRequest', sandbox.fake.returns(fakeClientMessage));
-            sandbox.replace(SqlServiceImpl.prototype, 'handleExecuteResponse', sandbox.fake());
-            sandbox.replace(SqlQueryId, 'fromMemberId', sandbox.fake.returns(fakeQueryId));
-
             fakeConnectionRegistry = {
                 getRandomConnection: sandbox.fake.returns(fakeConnection)
             };
@@ -101,7 +103,7 @@ describe('SqlServiceTest', function () {
         it('should call encodeRequest with correct params', function () {
             const params = [1, 2, 3];
             sqlService.execute('s', params, {}); // default options
-            SqlExecuteCodec.encodeRequest.lastCall.calledWithExactly(
+            fakeEncodeRequest.lastCall.calledWithExactly(
                 's',
                 [1, 2, 3],
                 SqlServiceImpl.DEFAULT_TIMEOUT,
@@ -118,7 +120,7 @@ describe('SqlServiceTest', function () {
                 schema: 'sd',
                 expectedResultType: 'ANY'
             });
-            SqlExecuteCodec.encodeRequest.lastCall.calledWithExactly(
+            fakeEncodeRequest.lastCall.calledWithExactly(
                 's',
                 [1, 2, 3],
                 long.ZERO,
@@ -144,9 +146,9 @@ describe('SqlServiceTest', function () {
         });
 
         it('should construct a SqlResultImpl with default result type if it\'s not specified', function () {
-            sandbox.replace(SqlResultImpl, 'newResult', sandbox.fake(SqlResultImpl.newResult));
+            const fake = sandbox.replace(SqlResultImpl, 'newResult', sandbox.fake(SqlResultImpl.newResult));
             sqlService.execute('s', [], {cursorBufferSize: 1});
-            SqlResultImpl.newResult.calledOnceWithExactly(
+            fake.calledOnceWithExactly(
                 sqlService,
                 fakeConnection,
                 fakeQueryId,
@@ -156,10 +158,10 @@ describe('SqlServiceTest', function () {
         });
 
         it('should construct a SqlResultImpl with default cursor buffer size if it\'s not specified', function () {
-            sandbox.replace(SqlResultImpl, 'newResult', sandbox.fake(SqlResultImpl.newResult));
+            const fake = sandbox.replace(SqlResultImpl, 'newResult', sandbox.fake(SqlResultImpl.newResult));
 
             sqlService.execute('s', [], {returnRawResult: true});
-            SqlResultImpl.newResult.calledOnceWithExactly(
+            fake.calledOnceWithExactly(
                 sqlService,
                 fakeConnection,
                 fakeQueryId,
@@ -169,10 +171,10 @@ describe('SqlServiceTest', function () {
         });
 
         it('should construct a SqlResultImpl with parameters passed', function () {
-            sandbox.replace(SqlResultImpl, 'newResult', sandbox.fake(SqlResultImpl.newResult));
+            const fake = sandbox.replace(SqlResultImpl, 'newResult', sandbox.fake(SqlResultImpl.newResult));
 
             sqlService.execute('s', [], {returnRawResult: true, cursorBufferSize: 1});
-            SqlResultImpl.newResult.calledOnceWithExactly(
+            fake.calledOnceWithExactly(
                 sqlService,
                 fakeConnection,
                 fakeQueryId,
@@ -191,7 +193,7 @@ describe('SqlServiceTest', function () {
             sandbox.replace(SqlResultImpl, 'newResult', sandbox.fake.returns(fakeResult));
             sqlService.execute('s', [], {});
             return assertTrueEventually(async () => {
-                SqlServiceImpl.prototype.handleExecuteResponse.calledOnceWithExactly(
+                fakeHandleExecuteResponse.calledOnceWithExactly(
                     sandbox.match.same(fakeClientResponseMessage),
                     sandbox.match.same(fakeResult)
                 ).should.be.true;
@@ -200,7 +202,7 @@ describe('SqlServiceTest', function () {
 
         it('should use connection member id to build a sql query id', function () {
             sqlService.execute('s', [], {});
-            SqlQueryId.fromMemberId.calledOnceWithExactly(fakeRemoteUUID).should.be.true;
+            fakeFromMemberId.calledOnceWithExactly(fakeRemoteUUID).should.be.true;
         });
 
         it('should call result\'s onExecuteError method on invoke error', function () {
@@ -396,14 +398,14 @@ describe('SqlServiceTest', function () {
         });
 
         it('should decode the response', function () {
-            sandbox.replace(SqlExecuteCodec, 'decodeResponse', sandbox.fake.returns({
+            const fake = sandbox.replace(SqlExecuteCodec, 'decodeResponse', sandbox.fake.returns({
                 error: null,
                 rowMetadata: [1]
             }));
 
             sqlService.handleExecuteResponse(fakeClientMessage, fakeResult);
 
-            SqlExecuteCodec.decodeResponse.calledOnceWithExactly(fakeClientMessage).should.be.true;
+            fake.calledOnceWithExactly(fakeClientMessage).should.be.true;
         });
 
         it('should call onExecuteError method of result if response error is not null', function () {
@@ -418,11 +420,11 @@ describe('SqlServiceTest', function () {
                 updateCount: 1
             };
 
-            sandbox.replace(SqlExecuteCodec, 'decodeResponse', sandbox.fake.returns(fakeResponse));
+            const fake = sandbox.replace(SqlExecuteCodec, 'decodeResponse', sandbox.fake.returns(fakeResponse));
 
             sqlService.handleExecuteResponse(fakeClientMessage, fakeResult);
 
-            SqlExecuteCodec.decodeResponse.calledOnceWithExactly(fakeClientMessage).should.be.true;
+            fake.calledOnceWithExactly(fakeClientMessage).should.be.true;
             fakeResult.onExecuteError.calledWithMatch(fakeResponse.error).should.be.true;
             fakeResult.onExecuteResponse.called.should.be.false;
         });
@@ -434,11 +436,11 @@ describe('SqlServiceTest', function () {
                 rowPage: {},
                 updateCount: 1
             };
-            sandbox.replace(SqlExecuteCodec, 'decodeResponse', sandbox.fake.returns(fakeResponse));
+            const fake = sandbox.replace(SqlExecuteCodec, 'decodeResponse', sandbox.fake.returns(fakeResponse));
 
             sqlService.handleExecuteResponse(fakeClientMessage, fakeResult);
 
-            SqlExecuteCodec.decodeResponse.calledOnceWithExactly(fakeClientMessage).should.be.true;
+            fake.calledOnceWithExactly(fakeClientMessage).should.be.true;
 
             fakeResult.onExecuteResponse.calledOnceWithExactly(
                 sandbox.match(new SqlRowMetadataImpl(fakeResponse.rowMetadata)),
@@ -492,8 +494,7 @@ describe('SqlServiceTest', function () {
         });
 
         it('should invoke on connection', function () {
-            const decodeFake = sandbox.fake.returns({error: null, rowPage: []});
-            sandbox.replace(SqlFetchCodec, 'decodeResponse', decodeFake);
+            sandbox.replace(SqlFetchCodec, 'decodeResponse', sandbox.fake.returns({error: null, rowPage: []}));
             const fakeConnection = {};
             sqlService.fetch(fakeConnection, {}, 1);
 
@@ -520,10 +521,9 @@ describe('SqlServiceTest', function () {
                 code: 1,
                 message: 'oops'
             };
-            const decodeFake = sandbox.fake.returns({
+            sandbox.replace(SqlFetchCodec, 'decodeResponse', sandbox.fake.returns({
                 error: theError, rowPage: []
-            });
-            sandbox.replace(SqlFetchCodec, 'decodeResponse', decodeFake);
+            }));
 
             sqlService.fetch({}, {}, 1).then(() => {
                 done(new Error('Expected promise to be rejected'));
