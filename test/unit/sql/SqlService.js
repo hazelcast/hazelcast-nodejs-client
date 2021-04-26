@@ -36,7 +36,6 @@ const chai = require('chai');
 chai.should();
 
 describe('SqlServiceTest', function () {
-
     describe('execute', function () {
         let sqlService;
 
@@ -451,7 +450,6 @@ describe('SqlServiceTest', function () {
             fakeResult.onExecuteError.called.should.be.false;
         });
     });
-
     describe('fetch', function () {
         let sqlService;
 

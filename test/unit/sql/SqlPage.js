@@ -19,6 +19,7 @@ const { SqlPage } = require('../../../lib/sql/SqlPage');
 const { SqlColumnType } = require('../../../lib/sql/SqlColumnMetadata');
 const chai = require('chai');
 chai.should();
+
 describe('SqlPageTest', function () {
 
     const columnTypes = [
@@ -44,7 +45,6 @@ describe('SqlPageTest', function () {
             staticInstance.isLast().should.be.eq(instance.isLast());
         });
     });
-
     describe('getValue', function () {
         it('should give row values correctly', function () {
             instance.getValue(0, 0).should.be.eq('a');
@@ -53,5 +53,4 @@ describe('SqlPageTest', function () {
             instance.getValue(2, 1).should.be.eq('f');
         });
     });
-
 });

@@ -31,7 +31,6 @@ describe('SqlRowTest', function () {
             value: null
         }
     ], {});
-
     describe('getObject', function () {
         it('should give correct values', function () {
             instance.getObject('foo').should.be.eq(1);

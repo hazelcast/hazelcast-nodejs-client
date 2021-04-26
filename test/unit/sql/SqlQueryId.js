@@ -22,7 +22,6 @@ const { UuidUtil } = require('../../../lib/util/UuidUtil');
 const sinon = require('sinon');
 
 describe('SqlQueryIdTest', function () {
-
     describe('fromMemberId', function () {
         it('construct SqlQueryId correctly', function () {
             const memberUuid = UuidUtil.generate();

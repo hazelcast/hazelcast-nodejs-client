@@ -22,7 +22,6 @@ const { SqlColumnMetadataImpl } = require('../../../lib/sql/SqlColumnMetadata');
 const { IllegalArgumentError, IllegalStateError } = require('../../../lib/core/HazelcastError');
 
 describe('SqlRowMetadataTest', function () {
-
     describe('constructor', function () {
         it('should throw on non-array columns argument, or an empty array', function () {
             [undefined, [], '', 1, BigInt(1), Symbol(), {}].forEach(invalidColumnValue => {
@@ -30,7 +29,6 @@ describe('SqlRowMetadataTest', function () {
             });
         });
     });
-
     describe('getColumnByIndex', function () {
        it('should return correct column', function () {
            const columnMetadata1 = {};
@@ -42,7 +40,6 @@ describe('SqlRowMetadataTest', function () {
            should.equal(instance.getColumnByIndex(3), undefined);
        });
     });
-
     describe('findColumn', function () {
         const instance = new SqlRowMetadataImpl([
             new SqlColumnMetadataImpl('foo', 0, true, true), new SqlColumnMetadataImpl('bar', 0, true, true)
