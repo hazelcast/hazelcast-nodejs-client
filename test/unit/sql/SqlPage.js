@@ -27,9 +27,8 @@ describe('SqlPageTest', function () {
     ];
 
     const data = [
-        ['a', 'b'], // row
-        ['c', 'd'], // another row
-        ['e', 'f']
+        ['a', 'c', 'e'], // holds one column
+        ['b', 'd', 'f'], // holds another
     ];
 
     const isLast = true;

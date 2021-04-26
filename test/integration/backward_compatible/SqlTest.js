@@ -26,6 +26,17 @@ const { HazelcastSqlException } = require('../../../lib/core/HazelcastError');
 const TestUtil = require('../../TestUtil');
 const RC = require('../RC');
 
+function randomString(length) {
+    var result = [];
+    var characters = 'abcdefghijklmnopqrstuvwxyz';
+    var charactersLength = characters.length;
+    for (var i = 0; i < length; i++) {
+        result.push(characters.charAt(Math.floor(Math.random() *
+            charactersLength)));
+    }
+    return result.join('');
+}
+
 /**
  * Sql tests
  */
@@ -38,8 +49,6 @@ describe('SqlServiceTest', function () {
         let client;
         let cluster;
         let someMap;
-        // let member;
-        const numberOfRecords = 20;
 
         before(async function () {
             cluster = await RC.createCluster(null, null);
@@ -50,17 +59,18 @@ describe('SqlServiceTest', function () {
             });
         });
 
+        after(async function () {
+            await RC.terminateCluster(cluster.id);
+            await client.shutdown();
+        });
+
         beforeEach(async function () {
             someMap = await client.getMap('someMap');
-            await someMap.clear();
-            for (let i=0; i < numberOfRecords; i++) {
-                await someMap.set(i.toString(), i);
-            }
+            await someMap.set(1, 2);
         });
 
         afterEach(async function () {
-            await RC.terminateCluster(cluster.id);
-            await client.shutdown();
+            await someMap.clear();
         });
 
         const testCases = [
@@ -78,7 +88,7 @@ describe('SqlServiceTest', function () {
                 ]
             },
             {
-                sql: 'SELECT * FROM someMap WHERE this > CAST(? AS INTEGER) + CAST(? AS INTEGER)', // need this 'workaround'
+                sql: 'SELECT * FROM someMap WHERE this < ? AND __key > ?',
                 invalidParams: [
                     [1],
                     [1, 2, 3],
@@ -89,22 +99,10 @@ describe('SqlServiceTest', function () {
                     [2, 3],
                     [1, 3]
                 ]
-            },
-            {
-                sql: 'SELECT * FROM someMap WHERE this > (CAST(? AS INTEGER) + CAST(? AS INTEGER)) / CAST(? AS INTEGER)',
-                invalidParams: [
-                    [1, 2, 3, 4],
-                    [2, 3],
-                    []
-                ],
-                validParams: [
-                    [1, 2, 4],
-                    [2, 3, 5]
-                ]
             }
         ];
 
-        it('should throw an error if parameters are mismatching with the placeholders in the sql string', async function () {
+        it('should resolve if parameter count matches placeholder count', async function () {
             for (const testCase of testCases) {
                 for (const validParam of testCase.validParams) {
                     const sqlResult = await client.getSqlService().execute(testCase.sql, validParam);
@@ -112,11 +110,104 @@ describe('SqlServiceTest', function () {
                     nextResult.should.have.property('done');
                     nextResult.should.have.property('value');
                 }
+            }
+        });
+
+        it('should reject iteration if parameter count is different than placeholder count', async function () {
+            for (const testCase of testCases) {
                 for (const invalidParam of testCase.invalidParams) {
                     const sqlResult = await client.getSqlService().execute(testCase.sql, invalidParam);
                     await sqlResult.next().should.eventually.be.rejectedWith(HazelcastSqlException, 'parameter count');
                 }
             }
+        });
+    });
+    describe('executeTest', function () {
+        let client;
+        let cluster;
+        let someMap;
+        let mapName;
+
+        const populateMap = async function (numberOfRecords) {
+            const entries = [];
+            for (let i = 0; i < numberOfRecords; i++) {
+                entries.push([i, i + 1]);
+            }
+            await someMap.setAll(entries);
+        };
+
+        before(async function () {
+            cluster = await RC.createCluster(null, null);
+            // member = await RC.startMember(cluster.id);
+            await RC.startMember(cluster.id);
+            client = await Client.newHazelcastClient({
+                clusterName: cluster.id
+            });
+        });
+
+        beforeEach(async function () {
+            mapName = randomString(10);
+            someMap = await client.getMap(mapName);
+        });
+
+        afterEach(async function () {
+            await someMap.destroy();
+        });
+
+        after(async function () {
+            await RC.terminateCluster(cluster.id);
+            await client.shutdown();
+        });
+
+        // Sorts sql result rows by __key, first the smallest __key
+        const sortByKey = (array) => {
+            array.sort((a, b) => {
+                if (a['__key'] < b['__key']) return -1;
+                else if (a['__key'] > b['__key']) return 1;
+                else return 0;
+            });
+        };
+
+        it('should execute without params', async function () {
+            const entryCount = 10;
+            await populateMap(entryCount);
+
+            const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+            const rows = [];
+            for await (const row of result) {
+                rows.push(row);
+            }
+
+            sortByKey(rows);
+
+            for (let i = 0; i < entryCount; i++) {
+                rows[i]['__key'].should.be.eq(i);
+                rows[i]['this'].should.be.eq(i + 1);
+            }
+            rows.should.have.lengthOf(entryCount);
+        });
+
+        it('should execute with params', async function () {
+            const entryCount = 10;
+            const limit = 6;
+
+            await populateMap(entryCount);
+            // At this point the map includes [0, 1], [1, 2].. [9, 10]
+
+            // There should be "limit" results
+            const result = await client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE this <= ?`, [limit]);
+            const rows = [];
+            for await (const row of result) {
+                rows.push(row);
+            }
+
+            sortByKey(rows);
+
+            for (let i = 0; i < limit; i++) {
+                rows[i]['__key'].should.be.eq(i);
+                rows[i]['this'].should.be.eq(i + 1);
+            }
+            rows.should.have.lengthOf(limit);
         });
     });
 });

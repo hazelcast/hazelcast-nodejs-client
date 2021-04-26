@@ -60,12 +60,13 @@ function simulateExecutionResponse(
     updateCount = long.fromNumber(-1)
 ) {
     const data = [];
-    for (let i = 0; i < rowCount; i++) { // row number
-        const row = [];
-        for (let j = 0; j < 2; j++) {
-            row.push((i * rowCount + j).toString());
+
+    for (let i = 0; i < 2; i++) { // row number
+        const column = [];
+        for (let j = 0; j < rowCount; j++) {
+            column.push((i * 2 + j).toString());
         }
-        data.push(row);
+        data.push(column);
     }
 
     const rowPage = new SqlPage(
@@ -85,7 +86,7 @@ function simulateExecutionResponse(
  * @param sqlResult
  * @param error
  */
-function simulateExecuteError(timeoutMs, sqlResult, error= new Error('whoops')) {
+function simulateExecuteError(timeoutMs, sqlResult, error = new Error('whoops')) {
     setTimeout(() => {
         sqlResult.onExecuteError(error);
     }, 1000);
