@@ -17,11 +17,15 @@
 'use strict';
 
 const chai = require('chai');
+const sinon = require('sinon');
 const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 chai.should();
+
 const { Client } = require('../../../');
 const { HazelcastSqlException } = require('../../../lib/core/HazelcastError');
+const { SqlServiceImpl } = require('../../../lib/sql/SqlService');
+const { SqlResultImpl } = require('../../../lib/sql/SqlResult');
 
 const TestUtil = require('../../TestUtil');
 const RC = require('../RC');
@@ -76,12 +80,12 @@ describe('SqlServiceTest', function () {
         const testCases = [
             {
                 sql: 'SELECT * FROM someMap WHERE this > ?',
-                invalidParams: [
+                invalidParamsArray: [
                     [1, 2],
                     [1, 2, 3],
                     []
                 ],
-                validParams: [
+                validParamsArray: [
                     [1],
                     [2],
                     [3]
@@ -89,12 +93,12 @@ describe('SqlServiceTest', function () {
             },
             {
                 sql: 'SELECT * FROM someMap WHERE this < ? AND __key > ?',
-                invalidParams: [
+                invalidParamsArray: [
                     [1],
                     [1, 2, 3],
                     []
                 ],
-                validParams: [
+                validParamsArray: [
                     [1, 2],
                     [2, 3],
                     [1, 3]
@@ -103,9 +107,22 @@ describe('SqlServiceTest', function () {
         ];
 
         it('should resolve if parameter count matches placeholder count', async function () {
+            // via params
             for (const testCase of testCases) {
-                for (const validParam of testCase.validParams) {
-                    const sqlResult = await client.getSqlService().execute(testCase.sql, validParam);
+                for (const validParams of testCase.validParamsArray) {
+                    const sqlResult = await client.getSqlService().execute(testCase.sql, validParams);
+                    const nextResult = await sqlResult.next();
+                    nextResult.should.have.property('done');
+                    nextResult.should.have.property('value');
+                }
+            }
+            // sql statement
+            for (const testCase of testCases) {
+                for (const validParams of testCase.validParamsArray) {
+                    const sqlResult = await client.getSqlService().execute({
+                        sql: testCase.sql,
+                        params: validParams
+                    });
                     const nextResult = await sqlResult.next();
                     nextResult.should.have.property('done');
                     nextResult.should.have.property('value');
@@ -115,8 +132,17 @@ describe('SqlServiceTest', function () {
 
         it('should reject iteration if parameter count is different than placeholder count', async function () {
             for (const testCase of testCases) {
-                for (const invalidParam of testCase.invalidParams) {
-                    const sqlResult = await client.getSqlService().execute(testCase.sql, invalidParam);
+                // via params
+                for (const invalidParams of testCase.invalidParamsArray) {
+                    const sqlResult = await client.getSqlService().execute(testCase.sql, invalidParams);
+                    await sqlResult.next().should.eventually.be.rejectedWith(HazelcastSqlException, 'parameter count');
+                }
+                // via sql statement
+                for (const invalidParams of testCase.invalidParamsArray) {
+                    const sqlResult = await client.getSqlService().execute({
+                        sql: testCase.sql,
+                        params: invalidParams
+                    });
                     await sqlResult.next().should.eventually.be.rejectedWith(HazelcastSqlException, 'parameter count');
                 }
             }
@@ -208,6 +234,87 @@ describe('SqlServiceTest', function () {
                 rows[i]['this'].should.be.eq(i + 1);
             }
             rows.should.have.lengthOf(limit);
+        });
+
+        it('should execute statement without params', async function () {
+            const entryCount = 10;
+            await populateMap(entryCount);
+
+            const sqlStatement = {
+                sql: `SELECT * FROM ${mapName}`,
+            };
+
+            const result = await client.getSqlService().execute(sqlStatement);
+            const rows = [];
+            for await (const row of result) {
+                rows.push(row);
+            }
+
+            sortByKey(rows);
+
+            for (let i = 0; i < entryCount; i++) {
+                rows[i]['__key'].should.be.eq(i);
+                rows[i]['this'].should.be.eq(i + 1);
+            }
+            rows.should.have.lengthOf(entryCount);
+        });
+
+        it('should execute statement with params', async function () {
+            const entryCount = 10;
+            const limit = 6;
+
+            await populateMap(entryCount);
+            // At this point the map includes [0, 1], [1, 2].. [9, 10]
+
+            // There should be "limit" results
+
+            const sqlStatement = {
+                sql: `SELECT * FROM ${mapName} WHERE this <= ?`,
+                params: [limit]
+            };
+
+            const result = await client.getSqlService().execute(sqlStatement);
+            const rows = [];
+            for await (const row of result) {
+                rows.push(row);
+            }
+
+            sortByKey(rows);
+
+            for (let i = 0; i < limit; i++) {
+                rows[i]['__key'].should.be.eq(i);
+                rows[i]['this'].should.be.eq(i + 1);
+            }
+            rows.should.have.lengthOf(limit);
+        });
+
+        it('should paginate according to cursorBufferSize', async function () {
+            const entryCount = 10;
+            const resultSpy = sinon.spy(SqlResultImpl.prototype, 'fetch');
+            const serviceSpy = sinon.spy(SqlServiceImpl.prototype, 'fetch');
+
+            await populateMap(entryCount);
+
+            const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
+                cursorBufferSize: 2
+            });
+
+            const rows = [];
+            for await (const row of result) {
+                rows.push(row);
+            }
+
+            sortByKey(rows);
+
+            for (let i = 0; i < entryCount; i++) {
+                rows[i]['__key'].should.be.eq(i);
+                rows[i]['this'].should.be.eq(i + 1);
+            }
+            rows.should.have.lengthOf(entryCount);
+
+            resultSpy.callCount.should.be.eq(4);
+            serviceSpy.callCount.should.be.eq(4);
+            sinon.restore();
         });
     });
 });

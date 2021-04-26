@@ -328,6 +328,12 @@ describe('SqlResultTest', function () {
         });
 
     });
+    describe('fetch', function () {
+
+    });
+    describe('getCurrentRow', function () {
+
+    });
     describe('onNextPage', function () {
 
         it('should close on last page', function () {

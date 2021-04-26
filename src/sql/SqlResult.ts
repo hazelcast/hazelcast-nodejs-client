@@ -251,6 +251,7 @@ export class SqlResultImpl implements SqlResult {
 
         this.service.fetch(this.connection, this.queryId, this.cursorBufferSize).then(value => {
             this.fetchDeferred.resolve(value);
+            this.fetchDeferred = undefined;
         }).catch(this.fetchDeferred.reject);
 
         return this.fetchDeferred.promise;
@@ -259,22 +260,20 @@ export class SqlResultImpl implements SqlResult {
     /** @internal */
     _hasNext(): Promise<boolean> {
         return this.executeDeferred.promise.then(() => {
-            const checkHasNext = () => {
+            const checkHasNext = (): Promise<boolean> => {
                 if (this.currentPosition === this.currentRowCount) {
                     // Reached end of the page. Try fetching the next one if possible.
                     if (!this.last) {
-                        this.fetch().then(page => {
+                        return this.fetch().then(page => {
                             this.onNextPage(page);
-                            checkHasNext();
-                        }).catch(err => {
-                            throw err;
+                            return checkHasNext();
                         });
                     } else {
-                        // No more pages expected, so return false.
-                        return false;
+                        // No more pages expected, so resolve false.
+                        return Promise.resolve(false);
                     }
                 } else {
-                    return true;
+                    return Promise.resolve(true);
                 }
             }
             return checkHasNext();

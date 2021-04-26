@@ -196,8 +196,8 @@ export class SqlServiceImpl implements SqlService {
 
         try {
             const serializedParams = [];
-            if (Array.isArray(params)) { // params can be undefined
-                for (const param of params) {
+            if (Array.isArray(sqlStatement.params)) { // params can be undefined
+                for (const param of sqlStatement.params) {
                     serializedParams.push(this.serializationService.toData(param));
                 }
             }
