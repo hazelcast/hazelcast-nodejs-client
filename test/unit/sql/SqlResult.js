@@ -334,6 +334,9 @@ describe('SqlResultTest', function () {
     describe('getCurrentRow', function () {
 
     });
+    describe('_hasNext', function () {
+
+    });
     describe('onNextPage', function () {
 
         it('should close on last page', function () {
