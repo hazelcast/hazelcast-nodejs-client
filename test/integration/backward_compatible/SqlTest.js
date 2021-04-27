@@ -17,6 +17,7 @@
 
 const chai = require('chai');
 const sinon = require('sinon');
+const long = require('long');
 const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 chai.should();
@@ -25,6 +26,7 @@ const { Client } = require('../../../');
 const { HazelcastSqlException } = require('../../../lib/core/HazelcastError');
 const { SqlServiceImpl } = require('../../../lib/sql/SqlService');
 const { SqlResultImpl } = require('../../../lib/sql/SqlResult');
+const { SqlRowImpl } = require('../../../lib/sql/SqlRow');
 
 const TestUtil = require('../../TestUtil');
 const RC = require('../RC');
@@ -309,7 +311,79 @@ describe('SqlTest', function () {
                 serviceSpy.callCount.should.be.eq(4);
                 sinon.restore();
             });
+            // TODO: add update count result type test once it's supported in imdg
+            // TODO: add schema test once it's supported in imdg
 
+            it('should return rows when expected result type is rows', async function () {
+                const entryCount = 1;
+                await populateMap(entryCount);
+
+                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
+                    expectedResultType: 'ROWS'
+                });
+
+                (await result.isRowSet()).should.be.true;
+                const updateCount = await result.getUpdateCount();
+                updateCount.eq(long.fromNumber(-1)).should.be.true;
+            });
+
+            it('should return rows when expected result type is any and select is used', async function () {
+                const entryCount = 1;
+                await populateMap(entryCount);
+
+                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
+                    expectedResultType: 'ANY'
+                });
+
+                (await result.isRowSet()).should.be.true;
+                const updateCount = await result.getUpdateCount();
+                updateCount.eq(long.fromNumber(-1)).should.be.true;
+            });
+
+            it('should reject with error, if select is used and updated count is expected', async function () {
+                const entryCount = 1;
+                await populateMap(entryCount);
+
+                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
+                    expectedResultType: 'UPDATE_COUNT'
+                });
+                try {
+                    await result.next();
+                    throw new Error('dummy');
+                } catch (e) {
+                    e.should.be.instanceof(HazelcastSqlException);
+                    e.message.should.include('update count');
+                }
+            });
+
+            it('should return objects, if raw result is false', async function () {
+                const entryCount = 1;
+                await populateMap(entryCount);
+
+                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
+                    returnRawResult: false
+                });
+                for await (const row of result) {
+                    row.should.not.be.instanceof(SqlRowImpl);
+                    row.should.have.property('this');
+                    row.should.have.property('__key');
+                }
+            });
+
+            it('should return sql rows, if raw result is true', async function () {
+                const entryCount = 1;
+                await populateMap(entryCount);
+
+                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
+                    returnRawResult: true
+                });
+
+                for await (const row of result) {
+                    row.should.be.instanceof(SqlRowImpl);
+                    row.should.not.have.property('this');
+                    row.should.not.have.property('__key');
+                }
+            });
         });
     });
 });
