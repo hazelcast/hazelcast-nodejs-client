@@ -51,13 +51,15 @@ const defaultRowMetadata = new SqlRowMetadataImpl([
  * @param rowCount how many rows to add to the sqlResult
  * @param rowMetadata
  * @param updateCount
+ * @param isLast
  */
 function simulateExecutionResponse(
     timeoutMs = 1000,
     sqlResult,
     rowCount = 0,
     rowMetadata = defaultRowMetadata,
-    updateCount = long.fromNumber(-1)
+    updateCount = long.fromNumber(-1),
+    isLast = true
 ) {
     const data = [];
 
@@ -72,7 +74,7 @@ function simulateExecutionResponse(
     const rowPage = new SqlPage(
         [0, 0], // column types
         data,
-        true // isLast
+        isLast // isLast
     );
 
     setTimeout(() => {
@@ -89,7 +91,7 @@ function simulateExecutionResponse(
 function simulateExecuteError(timeoutMs, sqlResult, error = new Error('whoops')) {
     setTimeout(() => {
         sqlResult.onExecuteError(error);
-    }, 1000);
+    }, timeoutMs);
 }
 
 describe('SqlResultTest', function () {
@@ -329,13 +331,198 @@ describe('SqlResultTest', function () {
 
     });
     describe('fetch', function () {
+        let fakeSqlService;
+        let fakeConnection;
+        let fakeQueryId;
+        let sqlResult;
 
+        const fakeSqlPage = {};
+        const cursorBufferSize = 4096;
+
+        beforeEach(function () {
+            fakeSqlService = {
+                fetch: sandbox.fake.resolves(fakeSqlPage),
+                close: sandbox.fake.resolves()
+            };
+            fakeConnection = sandbox.fake();
+            fakeQueryId = sandbox.fake();
+            sqlResult = new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, cursorBufferSize);
+        });
+
+        afterEach(function () {
+            sandbox.restore();
+        });
+
+        it('should return the same promise if there is another ongoing fetch', function () {
+            fakeSqlService.fetch = () => {
+                return new Promise(((resolve) => {
+                    setTimeout(() => {
+                        resolve();
+                    }, 1000);
+                }));
+            };
+
+            const promise1 = sqlResult.fetch();
+            const promise2 = sqlResult.fetch();
+
+            promise1.should.be.eq(promise2);
+        });
+
+        it('should not start a new fetch if result is closed', async function () {
+            await sqlResult.close();
+            try {
+                await sqlResult.fetch();
+                throw new Error('dummy error');
+            } catch (e) {
+                e.should.be.a('string');
+                e.should.include('the result is closed');
+            }
+        });
+
+        it('should return a promise that resolves an sql page', async function () {
+            const sqlPage = await sqlResult.fetch();
+            sqlPage.should.be.eq(fakeSqlPage);
+            fakeSqlService.fetch.calledOnceWithExactly(
+                sandbox.match.same(fakeConnection),
+                sandbox.match.same(fakeQueryId),
+                cursorBufferSize
+            ).should.be.true;
+        });
+
+        it('should return a promise that rejects if an error occurred during fetch', async function () {
+            const anError = new Error('whoops');
+            fakeSqlService.fetch = sandbox.fake.rejects(anError);
+
+            try {
+                await sqlResult.fetch();
+                throw new Error('dummy error');
+            } catch (e) {
+                e.should.be.eq(anError);
+                fakeSqlService.fetch.calledOnceWithExactly(
+                    sandbox.match.same(fakeConnection),
+                    sandbox.match.same(fakeQueryId),
+                    cursorBufferSize
+                ).should.be.true;
+            }
+        });
     });
     describe('getCurrentRow', function () {
+        let fakeSqlService;
+        let fakeConnection;
+        let fakeQueryId;
+        let sqlResult;
 
+        const fakeSqlPage = {};
+        const cursorBufferSize = 4096;
+        const rowMetadata = new SqlRowMetadataImpl([
+            {
+                name: 'this',
+                nullable: true,
+                type: 2
+            },
+            {
+                name: '__key',
+                nullable: true,
+                type: 2
+            }]);
+
+        beforeEach(function () {
+            fakeSqlService = {
+                fetch: sandbox.fake.resolves(fakeSqlPage),
+                close: sandbox.fake.resolves()
+            };
+            fakeConnection = sandbox.fake();
+            fakeQueryId = sandbox.fake();
+            sqlResult = new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, cursorBufferSize);
+            sqlResult.rowMetadata = rowMetadata;
+            sqlResult.currentPage = new SqlPage([2, 2], [['1', '2'], ['3', '4']], true);
+        });
+
+        afterEach(function () {
+            sandbox.restore();
+        });
+
+        it('should return object if returnRawResult is false', function () {
+            sqlResult.returnRawResult = false;
+            sqlResult.getCurrentRow().should.not.be.instanceof(SqlRowImpl);
+        });
+
+        it('should return sql row if returnRawResult is true', function () {
+            sqlResult.returnRawResult = true;
+            const currentRow = sqlResult.getCurrentRow();
+            currentRow.should.be.instanceof(SqlRowImpl);
+            currentRow.getMetadata().should.be.eq(rowMetadata);
+        });
     });
     describe('_hasNext', function () {
+        let fakeSqlService;
+        let fakeConnection;
+        let fakeQueryId;
+        let sqlResult;
 
+        const fakeSqlPage = new SqlPage([2, 2], [['1', '2'], ['3', '4']], true);
+        const cursorBufferSize = 4096;
+
+        beforeEach(function () {
+            fakeSqlService = {
+                fetch: sandbox.fake.resolves(fakeSqlPage)
+            };
+            fakeConnection = sandbox.fake();
+            fakeQueryId = sandbox.fake();
+            sqlResult = new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, cursorBufferSize);
+
+        });
+
+        afterEach(function () {
+            sandbox.restore();
+        });
+
+        it('should reject if execute is failed', async function () {
+            const anError = new Error('oops');
+            simulateExecuteError(1, sqlResult, anError);
+
+            try {
+                await sqlResult._hasNext();
+                throw new Error('dummy');
+            } catch (e) {
+                e.should.be.eq(anError);
+            }
+        });
+
+        it('should resolve to false if last page is received and all rows are read', async function () {
+            simulateExecutionResponse(1, sqlResult, 2);
+            // eslint-disable-next-line no-unused-vars,no-empty
+            for await (const row of sqlResult) {
+            }
+            const hasNext = await sqlResult._hasNext();
+            hasNext.should.be.false;
+        });
+
+        it('should resolve to true if there are rows to read from current page', async function () {
+            simulateExecutionResponse(1, sqlResult, 2);
+
+            await sqlResult.next();
+
+            const hasNext = await sqlResult._hasNext();
+            hasNext.should.be.true;
+        });
+
+        it('should fetch next page if current page is ends', async function () {
+            // Non-last page with one row
+            simulateExecutionResponse(1, sqlResult, 1, undefined, undefined, false);
+
+            // Consume the row
+            await sqlResult.next();
+
+            (await sqlResult._hasNext()).should.be.true;
+
+            fakeSqlService.fetch.calledOnce.should.be.true;
+
+            await sqlResult.next();
+            await sqlResult.next();
+
+            (await sqlResult._hasNext()).should.be.false;
+        });
     });
     describe('onNextPage', function () {
 
