@@ -27,6 +27,7 @@ const { HazelcastSqlException } = require('../../../lib/core/HazelcastError');
 const { SqlServiceImpl } = require('../../../lib/sql/SqlService');
 const { SqlResultImpl } = require('../../../lib/sql/SqlResult');
 const { SqlRowImpl } = require('../../../lib/sql/SqlRow');
+const { SqlColumnType } = require('../../../lib/sql/SqlColumnMetadata');
 
 const TestUtil = require('../../TestUtil');
 const RC = require('../RC');
@@ -64,14 +65,6 @@ describe('SqlTest', function () {
             await someMap.setAll(entries);
         };
 
-        before(async function () {
-            cluster = await RC.createCluster(null, null);
-            await RC.startMember(cluster.id);
-            client = await Client.newHazelcastClient({
-                clusterName: cluster.id
-            });
-        });
-
         after(async function () {
             await RC.terminateCluster(cluster.id);
             await client.shutdown();
@@ -82,6 +75,14 @@ describe('SqlTest', function () {
         });
 
         describe('sql parameter count', function () {
+            before(async function () {
+                cluster = await RC.createCluster(null, null);
+                await RC.startMember(cluster.id);
+                client = await Client.newHazelcastClient({
+                    clusterName: cluster.id
+                });
+            });
+
             beforeEach(async function () {
                 someMap = await client.getMap('someMap');
             });
@@ -149,7 +150,15 @@ describe('SqlTest', function () {
                 }
             });
         });
-        describe('basic usage', function () {
+        describe('basic valid usage', function () {
+            before(async function () {
+                cluster = await RC.createCluster(null, null);
+                await RC.startMember(cluster.id);
+                client = await Client.newHazelcastClient({
+                    clusterName: cluster.id
+                });
+            });
+
             beforeEach(async function () {
                 mapName = randomString(10);
                 someMap = await client.getMap(mapName);
@@ -219,6 +228,14 @@ describe('SqlTest', function () {
             });
         });
         describe('options', function () {
+            before(async function () {
+                cluster = await RC.createCluster(null, null);
+                await RC.startMember(cluster.id);
+                client = await Client.newHazelcastClient({
+                    clusterName: cluster.id
+                });
+            });
+
             beforeEach(async function () {
                 mapName = randomString(10);
                 someMap = await client.getMap(mapName);
@@ -399,6 +416,237 @@ describe('SqlTest', function () {
                 }
             });
         });
+        describe('parameter data types', function () {
+            class Employee {
+                constructor(id, name) {
+                    this.id = id;
+                    this.name = name;
+                    this.factoryId = 1000;
+                    this.classId = 100;
+                }
+
+                readData(input) {
+                    this.id = input.readInt();
+                    this.name = input.readString();
+                }
+
+                writeData(output) {
+                    output.writeInt(this.id);
+                    output.writeString(this.name);
+                }
+            }
+
+            class Customer {
+                constructor(name, id, lastOrder) {
+                    this.name = name;
+                    this.id = id;
+                    this.lastOrder = lastOrder;
+                    this.factoryId = 1;
+                    this.classId = 1;
+                }
+
+                readPortable(reader) {
+                    this.name = reader.readString('name');
+                    this.id = reader.readInt('id');
+                    this.lastOrder = reader.readLong('lastOrder').toNumber();
+                }
+
+                writePortable(writer) {
+                    writer.writeString('name', this.name);
+                    writer.writeInt('id', this.id);
+                    writer.writeLong('lastOrder', long.fromNumber(this.lastOrder));
+                }
+            }
+
+            function portableFactory(classId) {
+                if (classId === 1) {
+                    return new Customer();
+                }
+                return null;
+            }
+
+            function sampleDataSerializableFactory(classId) {
+                if (classId === 100) {
+                    return new Employee();
+                }
+                return null;
+            }
+
+            before(async function () {
+                cluster = await RC.createCluster(null, null);
+                await RC.startMember(cluster.id);
+                client = await Client.newHazelcastClient({
+                    clusterName: cluster.id,
+                    serialization: {
+                        defaultNumberType: 'Double',
+                        dataSerializableFactories: {
+                            1000: sampleDataSerializableFactory
+                        },
+                        portableFactories: {
+                            1: portableFactory
+                        }
+                    }
+                });
+            });
+
+            beforeEach(async function () {
+                mapName = randomString(10);
+                someMap = await client.getMap(mapName);
+            });
+
+            /*
+            export enum SqlColumnType {
+                VARCHAR,
+                BOOLEAN,
+                TINYINT,
+                SMALLINT,
+                INTEGER,
+                BIGINT,
+                DECIMAL,
+                REAL,
+                DOUBLE,
+                DATE,
+                TIME,
+                TIMESTAMP,
+                TIMESTAMP_WITH_TIME_ZONE,
+                OBJECT,
+                NULL
+            }
+             */
+            it('should be able to send and retrieve number', async function () {
+                await someMap.set('a', 1);
+
+                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                for await (const row of result) {
+                    row['this'].should.be.a('number');
+                }
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DOUBLE);
+            });
+
+            it('should be able to send and retrieve long', async function () {
+                await someMap.set('a', long.fromNumber(1));
+
+                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                for await (const row of result) {
+                    long.isLong(row['this']).should.be.true;
+                }
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BIGINT);
+            });
+
+            it('should be able to send and retrieve string', async function () {
+                await someMap.set('a', '1');
+
+                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                for await (const row of result) {
+                    long.isLong(row['this']).should.be.a('string');
+                }
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.VARCHAR);
+            });
+
+            it('should be able to send and retrieve boolean', async function () {
+                await someMap.set('a', true);
+
+                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                for await (const row of result) {
+                    long.isLong(row['this']).should.be.a('boolean');
+                }
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BOOLEAN);
+            });
+
+            it('should be able to send and retrieve date', async function () {
+                await someMap.set('a', 1);
+
+                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                for await (const row of result) {
+                    long.isLong(row['this']).should.be.true;
+                }
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DATE);
+            });
+
+            it('should be able to send and retrieve a', async function () {
+                await someMap.set('a', long.fromNumber(1));
+
+                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                for await (const row of result) {
+                    long.isLong(row['this']).should.be.true;
+                }
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BIGINT);
+            });
+
+            it('should be able to send and retrieve b', async function () {
+                await someMap.set('a', long.fromNumber(1));
+
+                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                for await (const row of result) {
+                    long.isLong(row['this']).should.be.true;
+                }
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BIGINT);
+            });
+
+            it('should be able to send and retrieve c', async function () {
+                await someMap.set('a', long.fromNumber(1));
+
+                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                for await (const row of result) {
+                    long.isLong(row['this']).should.be.true;
+                }
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BIGINT);
+            });
+
+            it('should be able to send and retrieve d', async function () {
+                await someMap.set('a', long.fromNumber(1));
+
+                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                for await (const row of result) {
+                    long.isLong(row['this']).should.be.true;
+                }
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BIGINT);
+            });
+
+            it('should be able to send and retrieve e', async function () {
+                await someMap.set('a', long.fromNumber(1));
+
+                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                for await (const row of result) {
+                    long.isLong(row['this']).should.be.true;
+                }
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BIGINT);
+            });
+        });
+        describe('errors/invalid usage', function () {
+            before(async function () {
+                cluster = await RC.createCluster(null, null);
+                await RC.startMember(cluster.id);
+                client = await Client.newHazelcastClient({
+                    clusterName: cluster.id
+                });
+            });
+
+            beforeEach(async function () {
+                mapName = randomString(10);
+                someMap = await client.getMap(mapName);
+            });
+
+            // lite member
+            // connection problem
+            // invalid sql strings
+        });
+    });
+    describe('sql result', function () {
+        // user close
+    });
+    describe('sql row', function () {
+
     });
 });
 
