@@ -222,7 +222,7 @@ export class ConfigBuilder {
     private handleSerialization(jsonObject: any): void {
         for (const key in jsonObject) {
             if (key === 'defaultNumberType') {
-                this.effectiveConfig.serialization.defaultNumberType = tryGetString(jsonObject[key]);
+                this.effectiveConfig.serialization.defaultNumberType = tryGetString(jsonObject[key]).toLowerCase();
             } else if (key === 'isBigEndian') {
                 this.effectiveConfig.serialization.isBigEndian = tryGetBoolean(jsonObject[key]);
             } else if (key === 'portableVersion') {

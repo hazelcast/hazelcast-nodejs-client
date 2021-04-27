@@ -26,6 +26,13 @@ export interface SerializationConfig {
 
     /**
      * Defines how the `number` type is represented on the cluster side. By default, it is serialized as `Double`.
+     * This option can be one of the following strings. The casing of the string does not matter, it's converted to lower
+     * case internally.
+     * * `byte`(8-bit signed integer)
+     * * `short`(16-bit signed integer)
+     * * `integer`(32-bit signed integer)
+     * * `float`(single-precision 32-bit IEEE 754 floating point)
+     * * `double`(double-precision 64-bit IEEE 754 floating point)
      */
     defaultNumberType?: string;
 
