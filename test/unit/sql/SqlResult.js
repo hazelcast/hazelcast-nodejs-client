@@ -117,7 +117,7 @@ describe('SqlResultTest', function () {
         ].forEach(async sqlResult => {
             it('should async iterable, over objects; by default and if returnRawResults is false', async function () {
                 const rowCount = 3;
-                simulateExecutionResponse(1000, sqlResult, rowCount, defaultRowMetadata);
+                simulateExecutionResponse(100, sqlResult, rowCount, defaultRowMetadata);
 
                 let rowCounter = 0;
                 for await (const row of sqlResult) {
@@ -140,7 +140,7 @@ describe('SqlResultTest', function () {
                 true // return raw results
             );
             const rowCount = 3;
-            simulateExecutionResponse(1000, sqlResult, rowCount, defaultRowMetadata);
+            simulateExecutionResponse(100, sqlResult, rowCount, defaultRowMetadata);
 
             let rowCounter = 0;
             for await (const row of sqlResult) {
@@ -161,7 +161,7 @@ describe('SqlResultTest', function () {
                 4096
             );
             const rowCount = 3;
-            simulateExecutionResponse(1000, sqlResult, rowCount, defaultRowMetadata);
+            simulateExecutionResponse(100, sqlResult, rowCount, defaultRowMetadata);
 
             let current;
             let counter = 0;
@@ -184,7 +184,7 @@ describe('SqlResultTest', function () {
             );
 
             const executeError = new Error('whoops..');
-            simulateExecuteError(1000, sqlResult, executeError);
+            simulateExecuteError(100, sqlResult, executeError);
 
             return assertTrueEventually(async () => {
                 try {
@@ -206,7 +206,7 @@ describe('SqlResultTest', function () {
             );
 
             const executeError = new Error('whoops..');
-            simulateExecuteError(1000, sqlResult, executeError);
+            simulateExecuteError(100, sqlResult, executeError);
 
             return assertTrueEventually(async () => {
                 try {
@@ -263,7 +263,7 @@ describe('SqlResultTest', function () {
                 fake.calledOnceWithExactly(err).should.be.true;
                 done();
             }).catch(done);
-            simulateExecutionResponse(1000, sqlResult, 1, defaultRowMetadata);
+            simulateExecutionResponse(100, sqlResult, 1, defaultRowMetadata);
             sqlResult.close();
         });
 
@@ -314,8 +314,8 @@ describe('SqlResultTest', function () {
 
             const sqlResult2 = new SqlResultImpl({}, {}, {}, 4096);
 
-            simulateExecutionResponse(1000, sqlResult1, 2, rowMetadata);
-            simulateExecutionResponse(1000, sqlResult2, 2, null, long.fromNumber(1));
+            simulateExecutionResponse(100, sqlResult1, 2, rowMetadata);
+            simulateExecutionResponse(100, sqlResult2, 2, null, long.fromNumber(1));
 
             return assertTrueEventually(async () => {
                 (await sqlResult1.getRowMetadata()).should.be.eq(rowMetadata);
@@ -575,7 +575,7 @@ describe('SqlResultTest', function () {
             sqlResult.updateCount = long.fromNumber(1); // change update count to see if it's changed
 
             const anError = new Error('whoops');
-            simulateExecuteError(1000, sqlResult, anError);
+            simulateExecuteError(100, sqlResult, anError);
 
             sqlResult.executeDeferred.promise.then(() => {
                 done(new Error('Not expected to run this line'));
@@ -595,7 +595,7 @@ describe('SqlResultTest', function () {
 
         it('should close the result and set updateCount if update count result is received ', function (done) {
             // pass null to make sure row page is not used
-            simulateExecutionResponse(1000, sqlResult, 0, null, long.fromNumber(5));
+            simulateExecutionResponse(100, sqlResult, 0, null, long.fromNumber(5));
 
             sqlResult.executeDeferred.promise.then(() => {
                 sqlResult.closed.should.be.true;
@@ -610,7 +610,7 @@ describe('SqlResultTest', function () {
             const rowMetadata = {};
 
             // row metadata being not null means rows received
-            simulateExecutionResponse(1000, sqlResult, 0, rowMetadata, undefined);
+            simulateExecutionResponse(100, sqlResult, 0, rowMetadata, undefined);
 
             sqlResult.executeDeferred.promise.then(() => {
                 sqlResult.rowMetadata.should.be.eq(rowMetadata);
