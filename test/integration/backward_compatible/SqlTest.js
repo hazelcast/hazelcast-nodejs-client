@@ -117,25 +117,18 @@ describe('SqlTest', function () {
 
             it('should resolve if parameter count matches placeholder count', async function () {
                 await populateMap(1);
-                // via params
                 for (const testCase of testCases) {
                     for (const validParams of testCase.validParamsArray) {
-                        const sqlResult = await client.getSqlService().execute(testCase.sql, validParams);
-                        const nextResult = await sqlResult.next();
-                        nextResult.should.have.property('done');
-                        nextResult.should.have.property('value');
-                    }
-                }
-                // sql statement
-                for (const testCase of testCases) {
-                    for (const validParams of testCase.validParamsArray) {
-                        const sqlResult = await client.getSqlService().execute({
+                        const result1 = await client.getSqlService().execute(testCase.sql, validParams);
+                        const result2 = await client.getSqlService().execute({
                             sql: testCase.sql,
                             params: validParams
                         });
-                        const nextResult = await sqlResult.next();
-                        nextResult.should.have.property('done');
-                        nextResult.should.have.property('value');
+                        for (const result of [result2, result1]) {
+                            const nextResult = await result.next();
+                            nextResult.should.have.property('done');
+                            nextResult.should.have.property('value');
+                        }
                     }
                 }
             });
@@ -143,18 +136,15 @@ describe('SqlTest', function () {
             it('should reject iteration if parameter count is different than placeholder count', async function () {
                 await populateMap(1);
                 for (const testCase of testCases) {
-                    // via params
                     for (const invalidParams of testCase.invalidParamsArray) {
-                        const sqlResult = await client.getSqlService().execute(testCase.sql, invalidParams);
-                        await sqlResult.next().should.eventually.be.rejectedWith(HazelcastSqlException, 'parameter count');
-                    }
-                    // via sql statement
-                    for (const invalidParams of testCase.invalidParamsArray) {
-                        const sqlResult = await client.getSqlService().execute({
+                        const result1 = await client.getSqlService().execute(testCase.sql, invalidParams);
+                        const result2 = await client.getSqlService().execute({
                             sql: testCase.sql,
                             params: invalidParams
                         });
-                        await sqlResult.next().should.eventually.be.rejectedWith(HazelcastSqlException, 'parameter count');
+                        for (const result of [result1, result2]) {
+                            await result.next().should.eventually.be.rejectedWith(HazelcastSqlException, 'parameter count');
+                        }
                     }
                 }
             });
@@ -178,19 +168,24 @@ describe('SqlTest', function () {
                 const entryCount = 10;
                 await populateMap(entryCount);
 
-                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
-                const rows = [];
-                for await (const row of result) {
-                    rows.push(row);
-                }
+                const result1 = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                const result2 = await client.getSqlService().execute({
+                    sql: `SELECT * FROM ${mapName}`
+                });
+                for (const result of [result1, result2]) {
+                    const rows = [];
+                    for await (const row of result) {
+                        rows.push(row);
+                    }
 
-                sortByKey(rows);
+                    sortByKey(rows);
 
-                for (let i = 0; i < entryCount; i++) {
-                    rows[i]['__key'].should.be.eq(i);
-                    rows[i]['this'].should.be.eq(i + 1);
+                    for (let i = 0; i < entryCount; i++) {
+                        rows[i]['__key'].should.be.eq(i);
+                        rows[i]['this'].should.be.eq(i + 1);
+                    }
+                    rows.should.have.lengthOf(entryCount);
                 }
-                rows.should.have.lengthOf(entryCount);
             });
 
             it('should execute with params', async function () {
@@ -201,71 +196,26 @@ describe('SqlTest', function () {
                 // At this point the map includes [0, 1], [1, 2].. [9, 10]
 
                 // There should be "limit" results
-                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE this <= ?`, [limit]);
-                const rows = [];
-                for await (const row of result) {
-                    rows.push(row);
-                }
-
-                sortByKey(rows);
-
-                for (let i = 0; i < limit; i++) {
-                    rows[i]['__key'].should.be.eq(i);
-                    rows[i]['this'].should.be.eq(i + 1);
-                }
-                rows.should.have.lengthOf(limit);
-            });
-
-            it('should execute statement without params', async function () {
-                const entryCount = 10;
-                await populateMap(entryCount);
-
-                const sqlStatement = {
-                    sql: `SELECT * FROM ${mapName}`,
-                };
-
-                const result = await client.getSqlService().execute(sqlStatement);
-                const rows = [];
-                for await (const row of result) {
-                    rows.push(row);
-                }
-
-                sortByKey(rows);
-
-                for (let i = 0; i < entryCount; i++) {
-                    rows[i]['__key'].should.be.eq(i);
-                    rows[i]['this'].should.be.eq(i + 1);
-                }
-                rows.should.have.lengthOf(entryCount);
-            });
-
-            it('should execute statement with params', async function () {
-                const entryCount = 10;
-                const limit = 6;
-
-                await populateMap(entryCount);
-                // At this point the map includes [0, 1], [1, 2].. [9, 10]
-
-                // There should be "limit" results
-
-                const sqlStatement = {
+                const result1 = await client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE this <= ?`, [limit]);
+                const result2 = await client.getSqlService().execute({
                     sql: `SELECT * FROM ${mapName} WHERE this <= ?`,
                     params: [limit]
-                };
+                });
 
-                const result = await client.getSqlService().execute(sqlStatement);
-                const rows = [];
-                for await (const row of result) {
-                    rows.push(row);
+                for (const result of [result1, result2]) {
+                    const rows = [];
+                    for await (const row of result) {
+                        rows.push(row);
+                    }
+
+                    sortByKey(rows);
+
+                    for (let i = 0; i < limit; i++) {
+                        rows[i]['__key'].should.be.eq(i);
+                        rows[i]['this'].should.be.eq(i + 1);
+                    }
+                    rows.should.have.lengthOf(limit);
                 }
-
-                sortByKey(rows);
-
-                for (let i = 0; i < limit; i++) {
-                    rows[i]['__key'].should.be.eq(i);
-                    rows[i]['this'].should.be.eq(i + 1);
-                }
-                rows.should.have.lengthOf(limit);
             });
         });
         describe('options', function () {
@@ -311,77 +261,141 @@ describe('SqlTest', function () {
                 serviceSpy.callCount.should.be.eq(4);
                 sinon.restore();
             });
+            it('should paginate according to cursorBufferSize with sql statement', async function () {
+                const entryCount = 10;
+                const resultSpy = sinon.spy(SqlResultImpl.prototype, 'fetch');
+                const serviceSpy = sinon.spy(SqlServiceImpl.prototype, 'fetch');
+
+                await populateMap(entryCount);
+
+                const result = await client.getSqlService().execute({
+                    sql: `SELECT * FROM ${mapName}`,
+                    options: {
+                        cursorBufferSize: 2
+                    }
+                });
+
+                const rows = [];
+                for await (const row of result) {
+                    rows.push(row);
+                }
+
+                sortByKey(rows);
+
+                for (let i = 0; i < entryCount; i++) {
+                    rows[i]['__key'].should.be.eq(i);
+                    rows[i]['this'].should.be.eq(i + 1);
+                }
+                rows.should.have.lengthOf(entryCount);
+
+                resultSpy.callCount.should.be.eq(4);
+                serviceSpy.callCount.should.be.eq(4);
+                sinon.restore();
+            });
             // TODO: add update count result type test once it's supported in imdg
             // TODO: add schema test once it's supported in imdg
-
             it('should return rows when expected result type is rows', async function () {
                 const entryCount = 1;
                 await populateMap(entryCount);
 
-                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
+                const result1 = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
                     expectedResultType: 'ROWS'
                 });
 
-                (await result.isRowSet()).should.be.true;
-                const updateCount = await result.getUpdateCount();
-                updateCount.eq(long.fromNumber(-1)).should.be.true;
-            });
+                const result2 = await client.getSqlService().execute({
+                    sql: `SELECT * FROM ${mapName}`,
+                    options: {
+                        expectedResultType: 'ROWS'
+                    }
+                });
 
+                for (const result of [result1, result2]) {
+                    (await result.isRowSet()).should.be.true;
+                    (await result.getUpdateCount()).eq(long.fromNumber(-1)).should.be.true;
+                }
+            });
             it('should return rows when expected result type is any and select is used', async function () {
                 const entryCount = 1;
                 await populateMap(entryCount);
 
-                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
+                const result1 = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
                     expectedResultType: 'ANY'
                 });
 
-                (await result.isRowSet()).should.be.true;
-                const updateCount = await result.getUpdateCount();
-                updateCount.eq(long.fromNumber(-1)).should.be.true;
-            });
+                const result2 = await client.getSqlService().execute({
+                    sql: `SELECT * FROM ${mapName}`,
+                    options: {
+                        expectedResultType: 'ANY'
 
-            it('should reject with error, if select is used and updated count is expected', async function () {
+                    }
+                });
+                for (const result of [result1, result2]) {
+                    (await result.isRowSet()).should.be.true;
+                    (await result.getUpdateCount()).eq(long.fromNumber(-1)).should.be.true;
+                }
+            });
+            it('should reject with error, if select is used and update count is expected', async function () {
                 const entryCount = 1;
                 await populateMap(entryCount);
 
-                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
+                const result1 = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
                     expectedResultType: 'UPDATE_COUNT'
                 });
-                try {
-                    await result.next();
-                    throw new Error('dummy');
-                } catch (e) {
-                    e.should.be.instanceof(HazelcastSqlException);
-                    e.message.should.include('update count');
+
+                const result2 = await client.getSqlService().execute({
+                    sql: `SELECT * FROM ${mapName}`,
+                    options: {
+                        expectedResultType: 'UPDATE_COUNT'
+                    }
+                });
+
+                for (const result of [result2, result1]) {
+                    try {
+                        await result.next();
+                        throw new Error('dummy');
+                    } catch (e) {
+                        e.should.be.instanceof(HazelcastSqlException);
+                        e.message.should.include('update count');
+                    }
                 }
             });
-
             it('should return objects, if raw result is false', async function () {
                 const entryCount = 1;
                 await populateMap(entryCount);
 
-                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
+                const result1 = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
                     returnRawResult: false
                 });
-                for await (const row of result) {
-                    row.should.not.be.instanceof(SqlRowImpl);
-                    row.should.have.property('this');
-                    row.should.have.property('__key');
+                const result2 = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
+                    returnRawResult: false
+                });
+
+                for (const result of [result2, result1]) {
+                    for await (const row of result) {
+                        row.should.not.be.instanceof(SqlRowImpl);
+                        row.should.have.property('this');
+                        row.should.have.property('__key');
+                    }
                 }
             });
-
             it('should return sql rows, if raw result is true', async function () {
                 const entryCount = 1;
                 await populateMap(entryCount);
 
-                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
+                const result1 = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
                     returnRawResult: true
                 });
 
-                for await (const row of result) {
-                    row.should.be.instanceof(SqlRowImpl);
-                    row.should.not.have.property('this');
-                    row.should.not.have.property('__key');
+                const result2 = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
+                    returnRawResult: true
+                });
+
+                for (const result of [result2, result1]) {
+                    for await (const row of result) {
+                        row.should.be.instanceof(SqlRowImpl);
+                        row.should.not.have.property('this');
+                        row.should.not.have.property('__key');
+                    }
                 }
             });
         });
