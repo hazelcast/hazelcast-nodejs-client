@@ -573,7 +573,7 @@ Hazelcast serializes all your objects before sending them to the server. Certain
 | Node.js         | Java                                  |
 |-----------------|---------------------------------------|
 | boolean         | Boolean                               |
-| number          | Byte, Short, Integer, Float, Double   |
+| number          | Short, Integer, Float, Double         |
 | string          | String                                |
 | Long            | Long                                  |
 | Buffer          | byte[]                                |
@@ -583,7 +583,7 @@ Hazelcast serializes all your objects before sending them to the server. Certain
 
 > **NOTE: A `number` is serialized as `Double` by default. You can configure this behavior using the `serialization.defaultNumberType` config option. Refer to [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) in order to learn how you can configure it**
 
-Arrays of the `boolean`, `number`, `string`, and `Long` types can be serialized as `boolean[]`, `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `string[]`, and `long[]` for the Java server side, respectively.
+Arrays of the `boolean`, `number`, `string`, and `Long` types can be serialized as `boolean[]`, `short[]`, `int[]`, `float[]`, `double[]`, `string[]`, and `long[]` for the Java server side, respectively.
 
 **Serialization Priority**
 
