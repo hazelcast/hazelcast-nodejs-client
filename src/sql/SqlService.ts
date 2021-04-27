@@ -38,6 +38,7 @@ import {
     tryGetString
 } from '../util/Util';
 import {SqlPage} from './SqlPage';
+import {HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime} from './DatetimeWrapperClasses';
 
 
 export interface SqlService {
@@ -152,6 +153,22 @@ export class SqlServiceImpl implements SqlService {
             tryGetBoolean(sqlStatementOptions.returnRawResult);
     }
 
+    /**
+     * Converts datetime related wrapper classes to string to be able to serialize them. (No default serializers yet)
+     * @internal
+     * @param value
+     */
+    convertToStringIfDatetimeValue(value: any) {
+        if (value instanceof HzLocalTime || value instanceof HzLocalDate || value instanceof HzLocalDateTime) {
+            return value.toString();
+        }
+        else if (value instanceof HzOffsetDateTime) {
+            return value.toISOString();
+        } else {
+            return value;
+        }
+    }
+
     execute(sql: SqlStatement): SqlResult;
     execute(sql: string, params?: any[], options?: SqlStatementOptions): SqlResult;
     execute(sql: string | SqlStatement, params?: any[], options?: SqlStatementOptions): SqlResult {
@@ -197,7 +214,8 @@ export class SqlServiceImpl implements SqlService {
         try {
             const serializedParams = [];
             if (Array.isArray(sqlStatement.params)) { // params can be undefined
-                for (const param of sqlStatement.params) {
+                for (let param of sqlStatement.params) {
+                    param = this.convertToStringIfDatetimeValue(param);
                     serializedParams.push(this.serializationService.toData(param));
                 }
             }

@@ -15,19 +15,19 @@
  */
 'use strict';
 
-const { SqlServiceImpl } = require('../../../lib/sql/SqlService.js');
-const { SqlResultImpl } = require('../../../lib/sql/SqlResult.js');
-const { SqlRowMetadataImpl } = require('../../../lib/sql/SqlRowMetadata.js');
-const { SqlExpectedResultType } = require('../../../lib/sql/SqlStatement.js');
-const { SqlQueryId } = require('../../../lib/sql/SqlQueryId.js');
-const { SqlErrorCode } = require('../../../lib/sql/SqlErrorCode.js');
-
-const { SqlExecuteCodec } = require('../../../lib/codec/SqlExecuteCodec.js');
-const { SqlCloseCodec } = require('../../../lib/codec/SqlCloseCodec.js');
-const { SqlFetchCodec } = require('../../../lib/codec/SqlFetchCodec.js');
-const { UuidUtil } = require('../../../lib/util/UuidUtil.js');
-const { assertTrueEventually } = require('../../TestUtil.js');
-const { IllegalArgumentError, HazelcastSqlException } = require('../../../lib/core/HazelcastError.js');
+const { SqlServiceImpl } = require('../../../lib/sql/SqlService');
+const { SqlResultImpl } = require('../../../lib/sql/SqlResult');
+const { SqlRowMetadataImpl } = require('../../../lib/sql/SqlRowMetadata');
+const { SqlExpectedResultType } = require('../../../lib/sql/SqlStatement');
+const { SqlQueryId } = require('../../../lib/sql/SqlQueryId');
+const { SqlErrorCode } = require('../../../lib/sql/SqlErrorCode');
+const { HzLocalDateTime, HzOffsetDateTime, HzLocalDate, HzLocalTime } = require('../../../lib/sql/DatetimeWrapperClasses');
+const { SqlExecuteCodec } = require('../../../lib/codec/SqlExecuteCodec');
+const { SqlCloseCodec } = require('../../../lib/codec/SqlCloseCodec');
+const { SqlFetchCodec } = require('../../../lib/codec/SqlFetchCodec');
+const { UuidUtil } = require('../../../lib/util/UuidUtil');
+const { assertTrueEventually } = require('../../TestUtil');
+const { IllegalArgumentError, HazelcastSqlException } = require('../../../lib/core/HazelcastError');
 
 const long = require('long');
 const sinon = require('sinon');
@@ -97,6 +97,20 @@ describe('SqlServiceTest', function () {
             fakeSerializationService.toData.firstCall.calledWithExactly(1).should.be.true;
             fakeSerializationService.toData.secondCall.calledWithExactly(2).should.be.true;
             fakeSerializationService.toData.thirdCall.calledWithExactly(3).should.be.true;
+        });
+
+        it('should call toData with string if datetime related wrapper classes are passed', function () {
+            const params = [
+                new HzLocalDate(1999, 12, 3),
+                new HzLocalTime(10, 19, 10, 10),
+                new HzOffsetDateTime(new Date(), 100),
+                new HzLocalDateTime(new HzLocalDate(1999, 12, 3), new HzLocalTime(10, 19, 10, 10))
+            ];
+            sqlService.execute('s', params, {});
+            fakeSerializationService.toData.getCall(0).args[0].should.be.a('string');
+            fakeSerializationService.toData.getCall(1).args[0].should.be.a('string');
+            fakeSerializationService.toData.getCall(2).args[0].should.be.a('string');
+            fakeSerializationService.toData.getCall(3).args[0].should.be.a('string');
         });
 
         it('should call encodeRequest with correct params', function () {
