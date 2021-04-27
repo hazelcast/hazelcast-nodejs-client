@@ -49,6 +49,7 @@ const downloadRC = () => {
             [
                 '-q',
                 'dependency:get',
+                '-Dtransitive=false',
                 `-DrepoUrl=${SNAPSHOT_REPO}`,
                 `-Dartifact=com.hazelcast:hazelcast-remote-controller:${HAZELCAST_RC_VERSION}`,
                 `-Ddest=hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar`
@@ -71,6 +72,7 @@ const downloadRC = () => {
             [
                 '-q',
                 'dependency:get',
+                '-Dtransitive=false',
                 `-DrepoUrl=${TEST_REPO}`,
                 `-Dartifact=com.hazelcast:hazelcast:${HAZELCAST_TEST_VERSION}:jar:tests`,
                 `-Ddest=hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar`
@@ -94,6 +96,7 @@ const downloadRC = () => {
             const subprocess = spawnSync('mvn', [
                 '-q',
                 'dependency:get',
+                '-Dtransitive=false',
                 `-DrepoUrl=${ENTERPRISE_REPO}`,
                 `-Dartifact=com.hazelcast:hazelcast-enterprise-all:${HAZELCAST_ENTERPRISE_VERSION}`,
                 `-Ddest=hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar`
@@ -116,6 +119,7 @@ const downloadRC = () => {
             const subprocess = spawnSync('mvn', [
                 '-q',
                 'org.apache.maven.plugins:maven-dependency-plugin:2.8:get',
+                '-Dtransitive=false',
                 `-DrepoUrl=${ENTERPRISE_TEST_REPO}`,
                 `-Dartifact=com.hazelcast:hazelcast-enterprise-all:${HAZELCAST_TEST_VERSION}:jar:tests`,
                 `-Ddest=hazelcast-enterprise-${HAZELCAST_TEST_VERSION}-tests.jar`
@@ -138,6 +142,7 @@ const downloadRC = () => {
             const subprocess = spawnSync('mvn', [
                 '-q',
                 'dependency:get',
+                '-Dtransitive=false',
                 `-DrepoUrl=${REPO}`,
                 `-Dartifact=com.hazelcast:hazelcast-all:${HAZELCAST_VERSION}`,
                 `-Ddest=hazelcast-${HAZELCAST_VERSION}.jar`
