@@ -171,10 +171,10 @@ describe('ReplicatedMapProxyTest', function () {
             ['key3', 'value3'],
             ['key1', 'value1']
         ]);
-        const values = await rm.values(function (a, b) {
+        const values = await rm.values((a, b) => {
             return b[b.length - 1] - a[a.length - 1];
         });
-        values.toArray().forEach(function (value, index) {
+        values.toArray().forEach((value, index) => {
             expect(value).to.equal(expectedArray[index]);
         });
     });
@@ -206,14 +206,14 @@ describe('ReplicatedMapProxyTest', function () {
                 }
 
                 rm.removeEntryListener(registrationId)
-                    .then(function () {
+                    .then(() => {
                         done(error);
                     });
             }
         };
 
         rm.addEntryListener(listener)
-            .then(function (listenerId) {
+            .then((listenerId) => {
                 registrationId = listenerId;
                 return rm.put('new-key', 'value', ONE_HOUR);
             });
@@ -236,17 +236,17 @@ describe('ReplicatedMapProxyTest', function () {
                 }
 
                 rm.removeEntryListener(registrationId)
-                    .then(function () {
+                    .then(() => {
                         done(error);
                     });
             }
         };
         rm.addEntryListener(listener)
-            .then(function (listenerId) {
+            .then((listenerId) => {
                 registrationId = listenerId;
                 return rm.put('key-to-remove', 'value', ONE_HOUR);
             })
-            .then(function () {
+            .then(() => {
                 return rm.remove('key-to-remove');
             });
     });
@@ -268,17 +268,17 @@ describe('ReplicatedMapProxyTest', function () {
                 }
 
                 rm.removeEntryListener(registrationId)
-                    .then(function () {
+                    .then(() => {
                         done(error);
                     });
             }
         };
         rm.addEntryListener(listener)
-            .then(function (listenerId) {
+            .then((listenerId) => {
                 registrationId = listenerId;
                 return rm.put('key-to-update', 'value1', ONE_HOUR);
             })
-            .then(function () {
+            .then(() => {
                 return rm.put('key-to-update', 'value2', ONE_HOUR);
             });
     });
@@ -297,13 +297,13 @@ describe('ReplicatedMapProxyTest', function () {
                 }
 
                 rm.removeEntryListener(registrationId)
-                    .then(function () {
+                    .then(() => {
                         done(error);
                     });
             }
         };
         rm.addEntryListener(listener)
-            .then(function (listenerId) {
+            .then((listenerId) => {
                 registrationId = listenerId;
                 return Promise.all([
                     rm.put('key-to-clear1', 'value1', ONE_HOUR),
@@ -312,7 +312,7 @@ describe('ReplicatedMapProxyTest', function () {
                     rm.put('key-to-clear4', 'value2', ONE_HOUR)
                 ]);
             })
-            .then(function () {
+            .then(() => {
                 return rm.clear();
             });
     });
@@ -342,7 +342,7 @@ describe('ReplicatedMapProxyTest', function () {
                     rm.removeEntryListener(listeners[0]),
                     rm.removeEntryListener(listeners[1])
                 ])
-                    .then(function () {
+                    .then(() => {
                         done(error);
                     });
             }
@@ -352,7 +352,7 @@ describe('ReplicatedMapProxyTest', function () {
             rm.addEntryListenerToKey(listener1, 'key'),
             rm.addEntryListenerToKey(listener2, 'key1')
         ])
-            .then(function (res) {
+            .then((res) => {
                 listeners = res;
                 return rm.put('key1', 'value', ONE_HOUR);
             });
@@ -374,14 +374,14 @@ describe('ReplicatedMapProxyTest', function () {
                     error = err;
                 }
                 rm.removeEntryListener(listenerId)
-                    .then(function () {
+                    .then(() => {
                         done(error);
                     });
 
             }
         };
         rm.addEntryListenerWithPredicate(listener, Predicates.sql('this == val10'))
-            .then(function (registrationId) {
+            .then((registrationId) => {
                 listenerId = registrationId;
                 return rm.put('key10', 'val10', ONE_HOUR);
             });
@@ -405,13 +405,13 @@ describe('ReplicatedMapProxyTest', function () {
                 }
 
                 rm.removeEntryListener(listenerId)
-                    .then(function () {
+                    .then(() => {
                         done(error);
                     });
             }
         };
         rm.addEntryListenerToKeyWithPredicate(listenerObject, 'key', Predicates.sql('this == value'))
-            .then(function (registrationId) {
+            .then((registrationId) => {
                 listenerId = registrationId;
                 return rm.put('key', 'value', ONE_HOUR);
             });

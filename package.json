@@ -13,12 +13,12 @@
         "long": "4.0.0"
     },
     "devDependencies": {
-        "@types/node": "~10.17.56",
-        "@typescript-eslint/eslint-plugin": "~4.21.0",
-        "@typescript-eslint/parser": "~4.21.0",
+        "@types/node": "~10.17.58",
+        "@typescript-eslint/eslint-plugin": "~4.22.0",
+        "@typescript-eslint/parser": "~4.22.0",
         "chai": "~4.3.4",
         "chai-as-promised": "~7.1.1",
-        "eslint": "~7.23.0",
+        "eslint": "~7.25.0",
         "eslint-plugin-mocha": "~8.1.0",
         "jsonschema": "~1.4.0",
         "mocha": "~8.3.2",
@@ -30,7 +30,7 @@
         "sinon-chai": "~3.6.0",
         "source-map-support": "^0.5.19",
         "thrift": "~0.14.1",
-        "typedoc": "~0.20.35",
+        "typedoc": "~0.20.36",
         "typescript": "~4.2.4",
         "winston": "~3.3.3",
         "yargs": "~16.2.0"
@@ -49,6 +49,7 @@
         "pregenerate-docs": "rimraf docs",
         "generate-docs": "typedoc --options typedoc.json",
         "lint": "eslint --ext .ts src && eslint --plugin mocha test && eslint code_samples && eslint scripts",
+        "lint:fix": "eslint --fix --ext .ts src && eslint --fix --plugin mocha test && eslint --fix code_samples && eslint --fix scripts",
         "startrc": "node scripts/test-runner.js startrc"
     },
     "repository": {

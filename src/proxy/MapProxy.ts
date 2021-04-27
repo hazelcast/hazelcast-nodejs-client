@@ -573,7 +573,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             );
         }
         const toObject = this.toObject.bind(this);
-        const deserializeEntry = function (entry: [Data, Data]): any[] {
+        const deserializeEntry = function (entry: [Data, Data]): [any, any] {
             return [toObject(entry[0]), toObject(entry[1])];
         };
         return Promise.all(partitionPromises)
@@ -718,12 +718,14 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             const member = this.clusterService.getMember(uuid);
             const name = this.name;
 
-            key = toObject(key);
-            value = toObject(value);
-            oldValue = toObject(oldValue);
-            mergingValue = toObject(mergingValue);
-
-            const entryEvent = new EntryEvent(name, key, value, oldValue, mergingValue, member);
+            const entryEvent = new EntryEvent(
+                name,
+                toObject(key),
+                toObject(value),
+                toObject(oldValue),
+                toObject(mergingValue),
+                member
+            );
 
             const mapEvent = new MapEvent(name, numberOfAffectedEntries, member);
 

@@ -21,17 +21,17 @@ const { HazelcastJsonValue } = require('../../../');
 
 describe('HazelcastJsonValue', function () {
     it('constructing HazelcastJsonValue with null or undefined', function () {
-        expect(function () {
+        expect(() => {
             new HazelcastJsonValue(null);
         }).to.throw(assert.AssertionError);
 
-        expect(function () {
+        expect(() => {
             new HazelcastJsonValue(undefined);
         }).to.throw(assert.AssertionError);
     });
 
     it('constructing HazelcastJsonValue with non-string value', function () {
-        expect(function () {
+        expect(() => {
             new HazelcastJsonValue(123);
         }).to.throw(assert.AssertionError);
     });

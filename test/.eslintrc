@@ -13,6 +13,9 @@
         "mocha/no-hooks-for-single-case": "off",
         "mocha/no-setup-in-describe": "off",
         "camelcase": "off",
-        "max-len": ["warn", 130]
+        "max-len": ["warn", 130],
+        "mocha/prefer-arrow-callback": ["error", {
+            "allowNamedFunctions": true
+        }]
     }
 }
