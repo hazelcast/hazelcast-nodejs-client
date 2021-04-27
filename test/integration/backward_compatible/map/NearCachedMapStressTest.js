@@ -73,7 +73,7 @@ describe('NearCachedMapStress', function () {
 
     it('stress test with put, get and remove', function (done) {
         let map;
-        client1.getMap(MAP_NAME).then(function (mp) {
+        client1.getMap(MAP_NAME).then((mp) => {
             map = mp;
             (function innerOperation() {
                 if (completedOperations >= TOTAL_NUM_OPS) {
@@ -98,18 +98,18 @@ describe('NearCachedMapStress', function () {
             })();
         });
 
-        completedDeferred.promise.then(function () {
+        completedDeferred.promise.then(() => {
             const p = [];
             // Value correctness check
             for (let i = 0; i < NUMBER_OF_ENTRIES; i++) {
                 (function () {
                     const key = i;
-                    const promise = validatingClient.getMap(MAP_NAME).then(function (mp) {
+                    const promise = validatingClient.getMap(MAP_NAME).then((mp) => {
                         return mp.get(key);
-                    }).then(function (expected) {
-                        return client1.getMap(MAP_NAME).then(function (mp) {
+                    }).then((expected) => {
+                        return client1.getMap(MAP_NAME).then((mp) => {
                             return mp.get(key);
-                        }).then(function (actual) {
+                        }).then((actual) => {
                             return expect(actual).to.be.equal(expected);
                         });
                     });
@@ -117,9 +117,9 @@ describe('NearCachedMapStress', function () {
                 })();
             }
             // Near cache usage check
-            Promise.all(p).then(function () {
+            Promise.all(p).then(() => {
                 let stats;
-                client1.getMap(MAP_NAME).then(function (mp) {
+                client1.getMap(MAP_NAME).then((mp) => {
                     stats = mp.nearCache.getStatistics();
                     expect(stats.hitCount + stats.missCount).to.equal(totalGetOperations + NUMBER_OF_ENTRIES);
                     expect(stats.entryCount).to.be.greaterThan(NUMBER_OF_ENTRIES / 100 * GET_PERCENT);
@@ -127,7 +127,7 @@ describe('NearCachedMapStress', function () {
                     expect(stats.hitCount).to.be.greaterThan(100);
                     done();
                 });
-            }).catch(function (e) {
+            }).catch((e) => {
                 done(e);
             });
         });

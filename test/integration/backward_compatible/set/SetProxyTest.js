@@ -126,9 +126,9 @@ describe('SetProxyTest', function () {
                 expect(itemEvent.member).to.not.be.equal(null);
                 done();
             }
-        }).then(function () {
+        }).then(() => {
             setInstance.add(1);
-        }).catch(function (e) {
+        }).catch((e) => {
             done(e);
         });
     });
@@ -148,11 +148,11 @@ describe('SetProxyTest', function () {
                 expect(itemEvent.member).to.not.be.equal(null);
                 done();
             },
-        }).then(function () {
+        }).then(() => {
             return setInstance.add(2);
-        }).then(function () {
+        }).then(() => {
             return setInstance.remove(2);
-        }).catch(function (e) {
+        }).catch((e) => {
             done(e);
         });
     });
@@ -166,11 +166,11 @@ describe('SetProxyTest', function () {
                 expect(itemEvent.member).to.not.be.equal(null);
                 done();
             }
-        }).then(function () {
+        }).then(() => {
             return setInstance.add(1);
-        }).then(function () {
+        }).then(() => {
             return setInstance.remove(1);
-        }).catch(function (e) {
+        }).catch((e) => {
             done(e);
         });
     });
