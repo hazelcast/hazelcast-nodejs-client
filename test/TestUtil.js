@@ -30,6 +30,18 @@ exports.promiseLater = function (time, func) {
     }));
 };
 
+/**
+ * Returns rejection reason if rejected, otherwise returns a dummy error.
+ */
+exports.getRejectionReasonOrDummy = async function (object, asyncMethodName, ...params) {
+    try {
+        await object[asyncMethodName](...params);
+        return new Error('dummy error');
+    } catch (e) {
+        return e;
+    }
+};
+
 exports.promiseWaitMilliseconds = function (milliseconds) {
     return new Promise(((resolve) => {
         setTimeout(() => {

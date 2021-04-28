@@ -278,6 +278,7 @@ describe('SqlTest', function () {
                 serviceSpy.callCount.should.be.eq(4);
                 sinon.restore();
             });
+
             it('should paginate according to cursorBufferSize with sql statement', async function () {
                 const entryCount = 10;
                 const resultSpy = sinon.spy(SqlResultImpl.prototype, 'fetch');
@@ -367,13 +368,9 @@ describe('SqlTest', function () {
                 });
 
                 for (const result of [result2, result1]) {
-                    try {
-                        await result.next();
-                        throw new Error('dummy');
-                    } catch (e) {
-                        e.should.be.instanceof(HazelcastSqlException);
-                        e.message.should.include('update count');
-                    }
+                    const rejectionReason = await TestUtil.getRejectionReasonOrDummy(result, 'next');
+                    rejectionReason.should.be.instanceof(HazelcastSqlException);
+                    rejectionReason.message.should.include('update count');
                 }
             });
             it('should return objects, if raw result is false', async function () {
@@ -416,7 +413,7 @@ describe('SqlTest', function () {
                 }
             });
         });
-        describe('parameter data types', function () {
+        describe('return type test (decode)', function () {
             class Employee {
                 constructor(id, name) {
                     this.id = id;

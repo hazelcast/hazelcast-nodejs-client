@@ -29,7 +29,7 @@ const { SqlRowMetadataImpl } = require('../../../lib/sql/SqlRowMetadata');
 const { SqlColumnType } = require('../../../lib/sql/SqlColumnMetadata');
 const { SqlErrorCode } = require('../../../lib/sql/SqlErrorCode');
 const { HazelcastSqlException } = require('../../../lib/core/HazelcastError');
-const { assertTrueEventually } = require('../../TestUtil');
+const { assertTrueEventually, getRejectionReasonOrDummy } = require('../../TestUtil');
 
 const defaultRowMetadata = new SqlRowMetadataImpl([
     {
@@ -295,8 +295,7 @@ describe('SqlResultTest', function () {
         });
     });
     describe('getters', function () {
-
-        it('should have working getters', function () {
+        it('should resolve after successful execute', function () {
             const sqlResult1 = new SqlResultImpl({}, {}, {}, 4096);
 
             const rowMetadata = new SqlRowMetadataImpl([
@@ -329,6 +328,17 @@ describe('SqlResultTest', function () {
 
         });
 
+        it('should reject after execute error', async function () {
+            const sqlResult1 = new SqlResultImpl({}, {}, {}, 4096);
+
+            const anError = new Error('oops');
+
+            simulateExecuteError(100, sqlResult1, anError);
+
+            (await getRejectionReasonOrDummy(sqlResult1, 'getRowMetadata')).should.be.eq(anError);
+            (await getRejectionReasonOrDummy(sqlResult1, 'isRowSet')).should.be.eq(anError);
+            (await getRejectionReasonOrDummy(sqlResult1, 'getUpdateCount')).should.be.eq(anError);
+        });
     });
     describe('fetch', function () {
         let fakeSqlService;
@@ -370,13 +380,9 @@ describe('SqlResultTest', function () {
 
         it('should not start a new fetch if result is closed', async function () {
             await sqlResult.close();
-            try {
-                await sqlResult.fetch();
-                throw new Error('dummy error');
-            } catch (e) {
-                e.should.be.a('string');
-                e.should.include('the result is closed');
-            }
+            const rejectionReason = await getRejectionReasonOrDummy(sqlResult, 'fetch');
+            rejectionReason.should.be.a('string');
+            rejectionReason.should.include('the result is closed');
         });
 
         it('should return a promise that resolves an sql page', async function () {
@@ -393,17 +399,13 @@ describe('SqlResultTest', function () {
             const anError = new Error('whoops');
             fakeSqlService.fetch = sandbox.fake.rejects(anError);
 
-            try {
-                await sqlResult.fetch();
-                throw new Error('dummy error');
-            } catch (e) {
-                e.should.be.eq(anError);
-                fakeSqlService.fetch.calledOnceWithExactly(
-                    sandbox.match.same(fakeConnection),
-                    sandbox.match.same(fakeQueryId),
-                    cursorBufferSize
-                ).should.be.true;
-            }
+            const rejectionReason = await getRejectionReasonOrDummy(sqlResult, 'fetch');
+            rejectionReason.should.be.eq(anError);
+            fakeSqlService.fetch.calledOnceWithExactly(
+                sandbox.match.same(fakeConnection),
+                sandbox.match.same(fakeQueryId),
+                cursorBufferSize
+            ).should.be.true;
         });
     });
     describe('getCurrentRow', function () {
@@ -479,14 +481,9 @@ describe('SqlResultTest', function () {
 
         it('should reject if execute is failed', async function () {
             const anError = new Error('oops');
-            simulateExecuteError(1, sqlResult, anError);
 
-            try {
-                await sqlResult._hasNext();
-                throw new Error('dummy');
-            } catch (e) {
-                e.should.be.eq(anError);
-            }
+            simulateExecuteError(1, sqlResult, anError);
+            (await getRejectionReasonOrDummy(sqlResult, '_hasNext')).should.be.eq(anError);
         });
 
         it('should resolve to false if last page is received and all rows are read', async function () {
