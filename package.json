@@ -22,7 +22,6 @@
         "jsonschema": "~1.4.0",
         "mocha": "~8.3.2",
         "mocha-jenkins-reporter": "^0.4.5",
-        "mocha-junit-reporter": "~2.0.0",
         "mousse": "~0.3.1",
         "nyc": "~15.1.0",
         "rimraf": "~3.0.2",
