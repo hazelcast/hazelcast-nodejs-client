@@ -65,15 +65,6 @@ describe('SqlTest', function () {
             await someMap.setAll(entries);
         };
 
-        after(async function () {
-            await RC.terminateCluster(cluster.id);
-            await client.shutdown();
-        });
-
-        afterEach(async function () {
-            await someMap.clear();
-        });
-
         describe('sql parameter count', function () {
             before(async function () {
                 cluster = await RC.createCluster(null, null);
@@ -85,6 +76,15 @@ describe('SqlTest', function () {
 
             beforeEach(async function () {
                 someMap = await client.getMap('someMap');
+            });
+
+            after(async function () {
+                await RC.terminateCluster(cluster.id);
+                await client.shutdown();
+            });
+
+            afterEach(async function () {
+                await someMap.clear();
             });
 
             const testCases = [
@@ -164,6 +164,15 @@ describe('SqlTest', function () {
                 someMap = await client.getMap(mapName);
             });
 
+            after(async function () {
+                await RC.terminateCluster(cluster.id);
+                await client.shutdown();
+            });
+
+            afterEach(async function () {
+                await someMap.clear();
+            });
+
             // Sorts sql result rows by __key, first the smallest __key
             const sortByKey = (array) => {
                 array.sort((a, b) => {
@@ -239,6 +248,15 @@ describe('SqlTest', function () {
             beforeEach(async function () {
                 mapName = randomString(10);
                 someMap = await client.getMap(mapName);
+            });
+
+            after(async function () {
+                await RC.terminateCluster(cluster.id);
+                await client.shutdown();
+            });
+
+            afterEach(async function () {
+                await someMap.clear();
             });
 
             // Sorts sql result rows by __key, first the smallest __key
@@ -491,6 +509,15 @@ describe('SqlTest', function () {
                 someMap = await client.getMap(mapName);
             });
 
+            after(async function () {
+                await RC.terminateCluster(cluster.id);
+                await client.shutdown();
+            });
+
+            afterEach(async function () {
+                await someMap.clear();
+            });
+
             /*
             export enum SqlColumnType {
                 VARCHAR,
@@ -510,115 +537,7 @@ describe('SqlTest', function () {
                 NULL
             }
              */
-            it('should be able to send and retrieve number', async function () {
-                await someMap.set('a', 1);
 
-                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
-                for await (const row of result) {
-                    row['this'].should.be.a('number');
-                }
-                const rowMetadata = await result.getRowMetadata();
-                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DOUBLE);
-            });
-
-            it('should be able to send and retrieve long', async function () {
-                await someMap.set('a', long.fromNumber(1));
-
-                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
-                for await (const row of result) {
-                    long.isLong(row['this']).should.be.true;
-                }
-                const rowMetadata = await result.getRowMetadata();
-                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BIGINT);
-            });
-
-            it('should be able to send and retrieve string', async function () {
-                await someMap.set('a', '1');
-
-                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
-                for await (const row of result) {
-                    long.isLong(row['this']).should.be.a('string');
-                }
-                const rowMetadata = await result.getRowMetadata();
-                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.VARCHAR);
-            });
-
-            it('should be able to send and retrieve boolean', async function () {
-                await someMap.set('a', true);
-
-                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
-                for await (const row of result) {
-                    long.isLong(row['this']).should.be.a('boolean');
-                }
-                const rowMetadata = await result.getRowMetadata();
-                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BOOLEAN);
-            });
-
-            it('should be able to send and retrieve date', async function () {
-                await someMap.set('a', 1);
-
-                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
-                for await (const row of result) {
-                    long.isLong(row['this']).should.be.true;
-                }
-                const rowMetadata = await result.getRowMetadata();
-                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DATE);
-            });
-
-            it('should be able to send and retrieve a', async function () {
-                await someMap.set('a', long.fromNumber(1));
-
-                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
-                for await (const row of result) {
-                    long.isLong(row['this']).should.be.true;
-                }
-                const rowMetadata = await result.getRowMetadata();
-                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BIGINT);
-            });
-
-            it('should be able to send and retrieve b', async function () {
-                await someMap.set('a', long.fromNumber(1));
-
-                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
-                for await (const row of result) {
-                    long.isLong(row['this']).should.be.true;
-                }
-                const rowMetadata = await result.getRowMetadata();
-                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BIGINT);
-            });
-
-            it('should be able to send and retrieve c', async function () {
-                await someMap.set('a', long.fromNumber(1));
-
-                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
-                for await (const row of result) {
-                    long.isLong(row['this']).should.be.true;
-                }
-                const rowMetadata = await result.getRowMetadata();
-                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BIGINT);
-            });
-
-            it('should be able to send and retrieve d', async function () {
-                await someMap.set('a', long.fromNumber(1));
-
-                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
-                for await (const row of result) {
-                    long.isLong(row['this']).should.be.true;
-                }
-                const rowMetadata = await result.getRowMetadata();
-                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BIGINT);
-            });
-
-            it('should be able to send and retrieve e', async function () {
-                await someMap.set('a', long.fromNumber(1));
-
-                const result = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
-                for await (const row of result) {
-                    long.isLong(row['this']).should.be.true;
-                }
-                const rowMetadata = await result.getRowMetadata();
-                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BIGINT);
-            });
         });
         describe('errors/invalid usage', function () {
             before(async function () {
@@ -632,6 +551,15 @@ describe('SqlTest', function () {
             beforeEach(async function () {
                 mapName = randomString(10);
                 someMap = await client.getMap(mapName);
+            });
+
+            after(async function () {
+                await RC.terminateCluster(cluster.id);
+                await client.shutdown();
+            });
+
+            afterEach(async function () {
+                await someMap.clear();
             });
 
             // lite member
