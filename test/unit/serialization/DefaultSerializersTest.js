@@ -86,12 +86,17 @@ describe('DefaultSerializersTest', function () {
         'double',
         'short',
         'integer',
-        'float'
+        'long',
+        'float',
+        'byte'
     ];
 
     defaultNumberTypes.forEach((type) => {
         it('convert default number type: ' + type, function () {
-            const num = 56;
+            let num = 56;
+            if (type === 'long') {
+                num = Long.fromNumber(56);
+            }
             const config = new SerializationConfigImpl();
             config.defaultNumberType = type;
             const serializationService = new SerializationServiceV1(config);
@@ -102,7 +107,13 @@ describe('DefaultSerializersTest', function () {
 
     defaultNumberTypes.forEach((type) => {
         it('convert array of default number type: ' + type, function () {
-            const nums = [56, 101];
+            let nums = [56, 101];
+            if (type === 'long') {
+                nums = [Long.fromNumber(56), Long.fromNumber(101)];
+            }
+            if (type === 'byte') {
+                nums = Buffer.from(nums);
+            }
             const config = new SerializationConfigImpl();
             config.defaultNumberType = type;
             const serializationService = new SerializationServiceV1(config);

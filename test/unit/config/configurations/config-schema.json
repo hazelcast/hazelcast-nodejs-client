@@ -162,7 +162,9 @@
                         "double",
                         "short",
                         "integer",
-                        "float"
+                        "float",
+                        "byte",
+                        "long"
                     ],
                     "default": "double"
                 },
