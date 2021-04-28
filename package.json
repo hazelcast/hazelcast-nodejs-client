@@ -12,7 +12,7 @@
         "long": "4.0.0"
     },
     "devDependencies": {
-        "@types/node": "~10.17.58",
+        "@types/node": "~10.17.59",
         "@typescript-eslint/eslint-plugin": "~4.22.0",
         "@typescript-eslint/parser": "~4.22.0",
         "chai": "~4.3.4",
