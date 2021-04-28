@@ -27,7 +27,14 @@ const { HazelcastSqlException } = require('../../../lib/core/HazelcastError');
 const { SqlServiceImpl } = require('../../../lib/sql/SqlService');
 const { SqlResultImpl } = require('../../../lib/sql/SqlResult');
 const { SqlRowImpl } = require('../../../lib/sql/SqlRow');
-// const { SqlColumnType } = require('../../../lib/sql/SqlColumnMetadata');
+const { Lang } = require('../remote_controller/remote-controller_types');
+const { SqlColumnType } = require('../../../lib/sql/SqlColumnMetadata');
+const {
+    HzLocalDate,
+    HzLocalDateTime,
+    HzOffsetDateTime,
+    HzLocalTime
+} = require('../../../lib/sql/DatetimeWrapperClasses');
 
 const TestUtil = require('../../TestUtil');
 const RC = require('../RC');
@@ -47,6 +54,15 @@ function randomString(length) {
  * Sql tests
  */
 describe('SqlTest', function () {
+    // Sorts sql result rows by __key, first the smallest __key
+    const sortByKey = (array) => {
+        array.sort((a, b) => {
+            if (a['__key'] < b['__key']) return -1;
+            else if (a['__key'] > b['__key']) return 1;
+            else return 0;
+        });
+    };
+
     beforeEach(function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
     });
@@ -172,15 +188,6 @@ describe('SqlTest', function () {
             afterEach(async function () {
                 await someMap.clear();
             });
-
-            // Sorts sql result rows by __key, first the smallest __key
-            const sortByKey = (array) => {
-                array.sort((a, b) => {
-                    if (a['__key'] < b['__key']) return -1;
-                    else if (a['__key'] > b['__key']) return 1;
-                    else return 0;
-                });
-            };
 
             it('should execute without params', async function () {
                 const entryCount = 10;
@@ -518,26 +525,380 @@ describe('SqlTest', function () {
                 await someMap.clear();
             });
 
-            /*
-            export enum SqlColumnType {
-                VARCHAR,
-                BOOLEAN,
-                TINYINT,
-                SMALLINT,
-                INTEGER,
-                BIGINT,
-                DECIMAL,
-                REAL,
-                DOUBLE,
-                DATE,
-                TIME,
-                TIMESTAMP,
-                TIMESTAMP_WITH_TIME_ZONE,
-                OBJECT,
-                NULL
-            }
-             */
+            it('should be able to decode VARCHAR', async function () {
+                const script = `
+                    var map = instance_0.getMap("${mapName}");
+                    for (var key = 0; key < 10; key++) {
+                        map.set(new java.lang.Integer(key), new java.lang.String(key.toString()));
+                    }
+                `;
+                await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+                const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.VARCHAR);
 
+                const rows = [];
+
+                for await (const row of result) {
+                    rows.push(row);
+                }
+                sortByKey(rows);
+
+                for (let i = 0; i < 10; i++) {
+                    rows[i]['this'].should.be.eq(i.toString());
+                    rows[i]['__key'].should.be.eq(i);
+                }
+            });
+            it('should be able to decode BOOLEAN', async function () {
+                const script = `
+                    var map = instance_0.getMap("${mapName}");
+                    for (var key = 0; key < 10; key++) {
+                        map.set(new java.lang.Integer(key), new java.lang.Boolean(key % 2 == 0));
+                    }
+                `;
+                await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+                const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BOOLEAN);
+
+                const rows = [];
+
+                for await (const row of result) {
+                    rows.push(row);
+                }
+                sortByKey(rows);
+
+                for (let i = 0; i < 10; i++) {
+                    rows[i]['this'].should.be.eq(i % 2 === 0);
+                    rows[i]['__key'].should.be.eq(i);
+                }
+            });
+            it('should be able to decode TINYINT', async function () {
+                const script = `
+                    var map = instance_0.getMap("${mapName}");
+                    for (var key = 0; key < 10; key++) {
+                        map.set(new java.lang.Integer(key), new java.lang.Byte(key * 2));
+                    }
+                `;
+                await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+                const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TINYINT);
+
+                const rows = [];
+
+                for await (const row of result) {
+                    rows.push(row);
+                }
+                sortByKey(rows);
+
+                for (let i = 0; i < 10; i++) {
+                    rows[i]['this'].should.be.eq(i * 2);
+                    rows[i]['__key'].should.be.eq(i);
+                }
+            });
+            it('should be able to decode SMALLINT', async function () {
+                const script = `
+                    var map = instance_0.getMap("${mapName}");
+                    for (var key = 0; key < 10; key++) {
+                        map.set(new java.lang.Integer(key), new java.lang.Short(key * 2));
+                    }
+                `;
+                await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+                const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.SMALLINT);
+
+                const rows = [];
+
+                for await (const row of result) {
+                    rows.push(row);
+                }
+                sortByKey(rows);
+
+                for (let i = 0; i < 10; i++) {
+                    rows[i]['this'].should.be.eq(i * 2);
+                    rows[i]['__key'].should.be.eq(i);
+                }
+            });
+            it('should be able to decode INTEGER', async function () {
+                const script = `
+                    var map = instance_0.getMap("${mapName}");
+                    for (var key = 0; key < 10; key++) {
+                        map.set(new java.lang.Integer(key), new java.lang.Integer(key * 2));
+                    }
+                `;
+                await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+                const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.INTEGER);
+
+                const rows = [];
+
+                for await (const row of result) {
+                    rows.push(row);
+                }
+                sortByKey(rows);
+
+                for (let i = 0; i < 10; i++) {
+                    rows[i]['this'].should.be.eq(i * 2);
+                    rows[i]['__key'].should.be.eq(i);
+                }
+            });
+            it('should be able to decode BIGINT', async function () {
+                const script = `
+                    var map = instance_0.getMap("${mapName}");
+                    for (var key = 0; key < 10; key++) {
+                        map.set(new java.lang.Integer(key), new java.lang.Long(key * 2));
+                    }
+                `;
+                await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+                const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BIGINT);
+
+                const rows = [];
+
+                for await (const row of result) {
+                    rows.push(row);
+                }
+                sortByKey(rows);
+
+                for (let i = 0; i < 10; i++) {
+                    rows[i]['this'].eq(long.fromNumber(i * 2)).should.be.true;
+                    rows[i]['__key'].should.be.eq(i);
+                }
+            });
+            it('should be able to decode DECIMAL', async function () {
+                const script = `
+                    var map = instance_0.getMap("${mapName}");
+                    for (var key = 1; key < 10; key++) {
+                        var str = '0.';
+                        for (var i = 0; i < 100; i++) {
+                            str += key.toString();
+                        }
+                        map.set(new java.lang.Integer(key), new java.math.BigDecimal(str));
+                    }
+                `;
+                await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+                const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DECIMAL);
+
+                const rows = [];
+
+                for await (const row of result) {
+                    rows.push(row);
+                }
+                sortByKey(rows);
+
+                for (let i = 0; i < 9; i++) {
+                    let str = '0.';
+                    for (let j = 0; j < 100; j++) {
+                        str += (i + 1).toString();
+                    }
+                    rows[i]['this'].should.be.eq(str);
+                    rows[i]['__key'].should.be.eq(i);
+                }
+            });
+            it('should be able to decode REAL', async function () {
+                const script = `
+                    var map = instance_0.getMap("${mapName}");
+                    for (var key = 1; key < 10; key++) {
+                        map.set(new java.lang.Integer(key), new java.lang.Float('0.' + key.toString()));
+                    }
+                `;
+                await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+                const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.REAL);
+
+                const rows = [];
+
+                for await (const row of result) {
+                    rows.push(row);
+                }
+                sortByKey(rows);
+
+                for (let i = 1; i < 10; i++) {
+                    (rows[i - 1]['this'] - i / 10).should.be.lessThan(1e-5);
+                    rows[i - 1]['__key'].should.be.eq(i);
+                }
+            });
+            it('should be able to decode DOUBLE', async function () {
+                const script = `
+                    var map = instance_0.getMap("${mapName}");
+                    for (var key = 1; key < 10; key++) {
+                        map.set(new java.lang.Integer(key), new java.lang.Double('0.' + key.toString()));
+                    }
+                `;
+                await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+                const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DOUBLE);
+
+                const rows = [];
+
+                for await (const row of result) {
+                    rows.push(row);
+                }
+                sortByKey(rows);
+
+                for (let i = 1; i < 10; i++) {
+                    (rows[i - 1]['this'] - i / 10).should.be.lessThan(1e-5);
+                    rows[i - 1]['__key'].should.be.eq(i);
+                }
+            });
+            it('should be able to decode DATE', async function () {
+                const script = `
+                    var map = instance_0.getMap("${mapName}");
+                    for (var key = 1; key < 12; key++) {
+                        map.set(new java.lang.Integer(key), java.time.LocalDate.of(key+2,key+1,key));
+                    }
+                `;
+                await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+                const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DATE);
+
+                const rows = [];
+
+                for await (const row of result) {
+                    rows.push(row);
+                }
+                sortByKey(rows);
+
+                for (let i = 0; i < 11; i++) {
+                    const date = rows[i]['this'];
+                    date.should.be.instanceof(HzLocalDate);
+
+                    date.getYear().should.be.eq(i + 3);
+                    date.getMonth().should.be.eq(i + 2);
+                    date.getDate().should.be.eq(i + 1);
+
+                    rows[i]['__key'].should.be.eq(i + 1);
+                }
+            });
+            it('should be able to decode TIME', async function () {
+                const script = `
+                    var map = instance_0.getMap("${mapName}");
+                    for (var key = 1; key < 12; key++) {
+                        map.set(new java.lang.Integer(key), java.time.LocalTime.of(key+3,key+2,key+1,key + 1e8));
+                    }
+                `;
+                await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+                const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TIME);
+
+                const rows = [];
+
+                for await (const row of result) {
+                    rows.push(row);
+                }
+                sortByKey(rows);
+
+                for (let i = 0; i < 11; i++) {
+                    const time = rows[i]['this'];
+                    time.should.be.instanceof(HzLocalTime);
+
+                    time.getHour().should.be.eq(i + 4);
+                    time.getMinute().should.be.eq(i + 3);
+                    time.getSecond().should.be.eq(i + 2);
+                    time.getNano().should.be.eq(i + 1 + 1e8);
+
+                    rows[i]['__key'].should.be.eq(i + 1);
+                }
+            });
+            it('should be able to decode TIMESTAMP', async function () {
+                const script = `
+                    var map = instance_0.getMap("${mapName}");
+                    for (var key = 1; key < 12; key++) {
+                        map.set(
+                          new java.lang.Integer(key),
+                          java.time.LocalDateTime.of(key+6, key, key+4, key+3, key+2, key+1, key + 1e8)
+                        );
+                    }
+                `;
+                await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+                const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TIMESTAMP);
+
+                const rows = [];
+
+                for await (const row of result) {
+                    rows.push(row);
+                }
+                sortByKey(rows);
+
+                for (let i = 0; i < 11; i++) {
+                    const datetime = rows[i]['this'];
+                    datetime.should.be.instanceof(HzLocalDateTime);
+
+                    datetime.getHzLocalDate().getYear().should.be.eq(i + 7);
+                    datetime.getHzLocalDate().getMonth().should.be.eq(i + 1);
+                    datetime.getHzLocalDate().getDate().should.be.eq(i + 5);
+
+                    datetime.getHzLocalTime().getHour().should.be.eq(i + 4);
+                    datetime.getHzLocalTime().getMinute().should.be.eq(i + 3);
+                    datetime.getHzLocalTime().getSecond().should.be.eq(i + 2);
+                    datetime.getHzLocalTime().getNano().should.be.eq(i + 1 + 1e8);
+
+                    rows[i]['__key'].should.be.eq(i + 1);
+                }
+            });
+            it('should be able to decode TIMESTAMP WITH TIMEZONE', async function () {
+                const script = `
+                    var map = instance_0.getMap("${mapName}");
+                    for (var key = 1; key < 12; key++) {
+                        map.set(
+                          new java.lang.Integer(key),
+                          java.time.OffsetDateTime.of(
+                            key+6, key, key+4, key+3, key+2, key+1, key + 1e8,
+                            java.time.ZoneOffset.ofTotalSeconds(key * key * key)
+                          )
+                        );
+                    }
+                `;
+                await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+                const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this'))
+                    .type.should.be.eq(SqlColumnType.TIMESTAMP_WITH_TIME_ZONE);
+
+                const rows = [];
+
+                for await (const row of result) {
+                    rows.push(row);
+                }
+                sortByKey(rows);
+
+                for (let i = 0; i < 11; i++) {
+                    const datetimeWithOffset = rows[i]['this'];
+                    datetimeWithOffset.should.be.instanceof(HzOffsetDateTime);
+
+                    datetimeWithOffset.getHzLocalDateTime().getHzLocalDate().getYear().should.be.eq(i + 7);
+                    datetimeWithOffset.getHzLocalDateTime().getHzLocalDate().getMonth().should.be.eq(i + 1);
+                    datetimeWithOffset.getHzLocalDateTime().getHzLocalDate().getDate().should.be.eq(i + 5);
+
+                    datetimeWithOffset.getHzLocalDateTime().getHzLocalTime().getHour().should.be.eq(i + 4);
+                    datetimeWithOffset.getHzLocalDateTime().getHzLocalTime().getMinute().should.be.eq(i + 3);
+                    datetimeWithOffset.getHzLocalDateTime().getHzLocalTime().getSecond().should.be.eq(i + 2);
+                    datetimeWithOffset.getHzLocalDateTime().getHzLocalTime().getNano().should.be.eq(i + 1 + 1e8);
+
+                    datetimeWithOffset.getOffsetSeconds().should.be.eq((i+1) ** 3);
+
+                    rows[i]['__key'].should.be.eq(i + 1);
+                }
+            });
+            it('should be able to decode OBJECT(portable)', function () {
+
+            });
+            it('should be able to decode OBJECT(identified data serializable)', function () {
+            });
+            it('should be able to decode NULL', function () {
+            });
         });
         describe('errors/invalid usage', function () {
             before(async function () {
