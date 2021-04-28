@@ -59,6 +59,8 @@ describe('LoggingTest', function () {
         }
     };
 
+    let consoleLogSpy;
+
     before(async function () {
         cluster = await RC.createCluster(null, null);
         return RC.startMember(cluster.id);
@@ -69,7 +71,7 @@ describe('LoggingTest', function () {
     });
 
     beforeEach(function () {
-        sinon.spy(console, 'log');
+        consoleLogSpy = sinon.spy(console, 'log');
     });
 
     afterEach(async function () {
@@ -77,7 +79,7 @@ describe('LoggingTest', function () {
             await client.shutdown();
             client = null;
         }
-        console.log.restore();
+        consoleLogSpy.restore();
     });
 
     it('winston should emit logging event', async function () {
