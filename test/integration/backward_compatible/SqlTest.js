@@ -27,7 +27,7 @@ const { HazelcastSqlException } = require('../../../lib/core/HazelcastError');
 const { SqlServiceImpl } = require('../../../lib/sql/SqlService');
 const { SqlResultImpl } = require('../../../lib/sql/SqlResult');
 const { SqlRowImpl } = require('../../../lib/sql/SqlRow');
-const { SqlColumnType } = require('../../../lib/sql/SqlColumnMetadata');
+// const { SqlColumnType } = require('../../../lib/sql/SqlColumnMetadata');
 
 const TestUtil = require('../../TestUtil');
 const RC = require('../RC');
