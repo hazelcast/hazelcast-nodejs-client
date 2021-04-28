@@ -6,9 +6,9 @@
         "test/user_code/**"
     ],
     "reporter": "mocha-jenkins-reporter",
-    "reporterOptions": {
-        "junit_report_name": "Node.js Client Tests",
-        "junit_report_path": "report.xml",
-        "junit_report_stack": 1
-    }
+    "reporter-option": [
+        "junit_report_name=Node.js Client Tests",
+        "junit_report_path=report.xml",
+        "junit_report_stack=1"
+    ]
 }
