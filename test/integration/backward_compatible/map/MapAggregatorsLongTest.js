@@ -36,7 +36,10 @@ describe('MapAggregatorsLongTest', function () {
         cluster = await RC.createCluster(null, null);
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({
-            clusterName: cluster.id
+            clusterName: cluster.id,
+            serialization: {
+                defaultNumberType: 'long'
+            }
         });
         map = await client.getMap('aggregatorsMap');
     });
