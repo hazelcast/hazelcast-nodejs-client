@@ -50,12 +50,12 @@ export function getTimezoneOffsetFromSeconds(offsetSeconds: number): string {
         }
 
         const hours = Math.floor(offsetMinutes / 60);
-        timezoneString += leftZeroPadInteger(hours, 2);
+        timezoneString += hours.toString().padStart(2, '0');
 
         timezoneString += ':';
 
         const minutes = offsetMinutes % 60;
-        timezoneString += leftZeroPadInteger(minutes, 2);
+        timezoneString += minutes.toString().padStart(2, '0');
     }
     return timezoneString;
 }
@@ -97,17 +97,4 @@ export function getOffsetSecondsFromTimezoneString(timezoneString: string): numb
 
     if(offsetSeconds > 64800) throw new IllegalArgumentError('Invalid offset');
     return positive ? offsetSeconds : -offsetSeconds;
-}
-
-/**
- * Give this function integer and it will zero pad to the given length.
- * @internal
- * @param value
- * @param length total length after padding
- * @returns Zero padded string
- */
-export function leftZeroPadInteger(value: number, length: number): string {
-    let asStr = value.toString();
-    while (asStr.length < length) asStr = '0' + asStr;
-    return asStr;
 }

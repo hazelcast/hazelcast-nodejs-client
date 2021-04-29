@@ -1,7 +1,6 @@
 import {
     getOffsetSecondsFromTimezoneString,
-    getTimezoneOffsetFromSeconds,
-    leftZeroPadInteger,
+    getTimezoneOffsetFromSeconds
 } from '../util/DatetimeUtil';
 import {IllegalArgumentError} from '../core';
 
@@ -112,14 +111,14 @@ export class HzLocalTime {
      * zero-padded from left. If nanosecond is 0, it is not included in the constructed string.
      */
     toString(): string {
-        const hour = leftZeroPadInteger(this.hour, 2);
-        const minute = leftZeroPadInteger(this.minute, 2);
-        const second = leftZeroPadInteger(this.second, 2);
+        const hour = this.hour.toString().padStart(2, '0');
+        const minute = this.minute.toString().padStart(2, '0');
+        const second = this.second.toString().padStart(2, '0');
 
         let hourMinuteSecondString = `${hour}:${minute}:${second}`;
         // Do not add .000000000 if nano is 0
         if (this.nano !== 0) {
-            hourMinuteSecondString += `.${leftZeroPadInteger(this.nano, 9)}`;
+            hourMinuteSecondString += `.${this.nano.toString().padStart(9, '0')}`;
         }
         return hourMinuteSecondString;
     }
@@ -265,9 +264,9 @@ export class HzLocalDate {
      * @returns A string in the form yyyy:mm:dd. Values are zero padded from left.
      */
     toString(): string {
-        const year = leftZeroPadInteger(this.year, 4);
-        const month = leftZeroPadInteger(this.month, 2);
-        const date = leftZeroPadInteger(this.date, 2);
+        const year = this.year.toString().padStart(4, '0');
+        const month = this.month.toString().padStart(2, '0');
+        const date = this.date.toString().padStart(2, '0');
         return `${year}-${month}-${date}`;
     }
 }

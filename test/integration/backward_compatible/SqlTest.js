@@ -672,13 +672,10 @@ describe('SqlTest', function () {
             it('should be able to decode DECIMAL', async function () {
                 const script = `
                     var map = instance_0.getMap("${mapName}");
-                    for (var key = 1; key < 10; key++) {
-                        var str = '0.';
-                        for (var i = 0; i < 100; i++) {
-                            str += key.toString();
-                        }
-                        map.set(new java.lang.Integer(key), new java.math.BigDecimal(str));
-                    }
+                    map.set(new java.lang.Integer(0), new java.math.BigDecimal('0.1111112983672389172378619283677891'));
+                    map.set(new java.lang.Integer(1), new java.math.BigDecimal('0.00000000000000000000000000000001'));
+                    map.set(new java.lang.Integer(2), new java.math.BigDecimal('132165413213543156412374800000000'));
+                    map.set(new java.lang.Integer(3), new java.math.BigDecimal('1234'));
                 `;
                 await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
                 const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
@@ -692,12 +689,15 @@ describe('SqlTest', function () {
                 }
                 sortByKey(rows);
 
-                for (let i = 0; i < 9; i++) {
-                    let str = '0.';
-                    for (let j = 0; j < 100; j++) {
-                        str += (i + 1).toString();
-                    }
-                    rows[i]['this'].should.be.eq(str);
+                const expectedResults = [
+                    '0.1111112983672389172378619283677891', // scale is equals to bigint length
+                    '0.00000000000000000000000000000001', // scale is more than bigint length
+                    '132165413213543156412374800000000', // scale is negative
+                    '1234' // scale is zero
+                ];
+
+                for (let i = 0; i < 4; i++) {
+                    rows[i]['this'].should.be.eq(expectedResults[i]);
                     rows[i]['__key'].should.be.eq(i);
                 }
             });
@@ -887,7 +887,7 @@ describe('SqlTest', function () {
                     datetimeWithOffset.getHzLocalDateTime().getHzLocalTime().getSecond().should.be.eq(i + 2);
                     datetimeWithOffset.getHzLocalDateTime().getHzLocalTime().getNano().should.be.eq(i + 1 + 1e8);
 
-                    datetimeWithOffset.getOffsetSeconds().should.be.eq((i+1) ** 3);
+                    datetimeWithOffset.getOffsetSeconds().should.be.eq((i + 1) ** 3);
 
                     rows[i]['__key'].should.be.eq(i + 1);
                 }

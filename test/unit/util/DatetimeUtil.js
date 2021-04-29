@@ -18,7 +18,6 @@
 const { expect } = require('chai');
 const {
     getTimezoneOffsetFromSeconds,
-    leftZeroPadInteger,
     getOffsetSecondsFromTimezoneString
 } = require('../../../lib/util/DatetimeUtil.js');
 
@@ -104,25 +103,5 @@ describe('DatetimeUtilTest', function () {
         it('should throw if offset less than -18 hours is given', function () {
             expect(() => getOffsetSecondsFromTimezoneString('-19:00')).to.throw(IllegalArgumentError);
         });
-    });
-    describe('leftZeroPadIntegerTest', function () {
-        it('should pad length of 5 digits correctly', function () {
-            expect(
-                leftZeroPadInteger(123, 5)
-            ).to.be.equal('00123');
-        });
-
-        it('should not change number if its length is same with desired length', function () {
-            expect(
-                leftZeroPadInteger(12345, 5)
-            ).to.be.equal('12345');
-        });
-
-        it('should not change number if its length is longer than desired length', function () {
-            expect(
-                leftZeroPadInteger(123456, 5)
-            ).to.be.equal('123456');
-        });
-
     });
 });
