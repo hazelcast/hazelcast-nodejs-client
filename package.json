@@ -39,7 +39,6 @@
     "scripts": {
         "clean": "rimraf lib *.jar *.log",
         "compile": "tsc",
-        "compile-watch": "tsc -w",
         "test": "node scripts/test-runner.js all",
         "test:unit": "node scripts/test-runner.js unit",
         "test:integration": "node scripts/test-runner.js integration",

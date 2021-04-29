@@ -17,10 +17,9 @@
         ],
         "removeComments": false,
         "sourceMap": true,
-        "stripInternal": false
+        "stripInternal": true
     },
     "include": [
-        "src/index.ts",
-        "src/main.ts"
+        "src/index.ts"
     ]
 }
