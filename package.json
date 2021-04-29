@@ -34,7 +34,7 @@
         "yargs": "~16.2.0"
     },
     "engines": {
-        "node": ">=10"
+        "node": ">=10.4.0"
     },
     "scripts": {
         "clean": "rimraf lib *.jar *.log",
