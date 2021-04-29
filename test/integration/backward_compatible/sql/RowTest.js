@@ -15,6 +15,9 @@
  */
 'use strict';
 
+const chai = require('chai');
+chai.should();
+
 const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
 const { Client } = require('../../../../');
@@ -24,6 +27,7 @@ describe('SqlRowTest', function () {
     let cluster;
     let someMap;
     let mapName;
+    let result;
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
@@ -37,6 +41,13 @@ describe('SqlRowTest', function () {
     beforeEach(async function () {
         mapName = TestUtil.randomString(10);
         someMap = await client.getMap(mapName);
+        await someMap.put(0, '1');
+        await someMap.put(1, '2');
+        await someMap.put(2, '3');
+
+        result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE __key > ?`, [0], {
+            returnRawResult: true
+        });
     });
 
     after(async function () {
@@ -46,6 +57,36 @@ describe('SqlRowTest', function () {
 
     afterEach(async function () {
         await someMap.clear();
+    });
+
+    it('getObject should work', async function () {
+        const values = new Set(['2', '3']);
+        const keys = new Set([1, 2]);
+
+        for await (const row of result) {
+            const rowMetadata = row.getMetadata();
+            const value = row.getObject('this');
+            value.should.be.eq(row.getObject(rowMetadata.findColumn('this')));
+            const key = row.getObject('__key');
+            key.should.be.eq(row.getObject(rowMetadata.findColumn('__key')));
+
+            keys.delete(key);
+            values.delete(value);
+
+            value.should.be.a('string');
+            key.should.be.a('number');
+        }
+
+        keys.size.should.be.eq(0);
+        values.size.should.be.eq(0);
+    });
+
+    it('getMetadata should return same metadata with result', async function () {
+        const rowMetadata = await result.getRowMetadata();
+
+        for await (const row of result) {
+            row.getMetadata().should.be.eq(rowMetadata);
+        }
     });
 
 });

@@ -15,15 +15,23 @@
  */
 'use strict';
 
+const chai = require('chai');
+chai.should();
+const long = require('long');
+
 const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
 const { Client } = require('../../../../');
+const { SqlErrorCode } = require('../../../../lib/sql/SqlErrorCode');
+const { SqlRowMetadataImpl } = require('../../../../lib/sql/SqlRowMetadata');
+const { HazelcastSqlException } = require('../../../../lib/core/HazelcastError');
 
 describe('SqlResultTest', function () {
     let client;
     let cluster;
     let someMap;
     let mapName;
+    let result;
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
@@ -37,6 +45,11 @@ describe('SqlResultTest', function () {
     beforeEach(async function () {
         mapName = TestUtil.randomString(10);
         someMap = await client.getMap(mapName);
+        await someMap.put(0, 1);
+        await someMap.put(1, 2);
+        await someMap.put(2, 3);
+
+        result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE this > ?`, [1]);
     });
 
     after(async function () {
@@ -48,5 +61,31 @@ describe('SqlResultTest', function () {
         await someMap.clear();
     });
 
-    // user close
+    it('should reject iteration after close()', async function () {
+        await result.close();
+
+        try {
+            for await (const row of result) {
+                console.log(row);
+            }
+            throw new Error('dummy');
+        } catch (e) {
+            e.should.be.instanceof(HazelcastSqlException);
+            e.code.should.be.eq(SqlErrorCode.CANCELLED_BY_USER);
+            e.message.should.include('Cancelled');
+            e.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
+        }
+    });
+
+    it('getters should work', async function () {
+        const rowMetadata = await result.getRowMetadata();
+        rowMetadata.should.be.instanceof(SqlRowMetadataImpl);
+        rowMetadata.getColumnCount().should.be.eq(2);
+
+        const isRowSet = await result.isRowSet();
+        isRowSet.should.be.true;
+
+        const updateCount = await result.getUpdateCount();
+        updateCount.eq(long.fromNumber(-1)).should.be.true;
+    });
 });
