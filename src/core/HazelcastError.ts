@@ -15,7 +15,6 @@
  */
 
 import {UUID} from './UUID';
-import {SqlErrorCode} from '../sql/SqlErrorCode';
 
 /** @internal */
 export interface HazelcastErrorConstructor {
@@ -473,12 +472,12 @@ export class UndefinedErrorCodeError extends HazelcastError {
 }
 
 export class HazelcastSqlException extends HazelcastError {
-    private readonly code: SqlErrorCode;
+    private readonly code: number;
     private readonly originatingMemberId: UUID;
 
     constructor(
         originatingMemberId: UUID,
-        code: SqlErrorCode,
+        code: number,
         msg: string,
         cause?: Error,
         serverStackTrace?: ServerErrorStackElement[]
